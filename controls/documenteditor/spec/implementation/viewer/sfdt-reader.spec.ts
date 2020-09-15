@@ -4,7 +4,8 @@ import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from '../../test-helper.spec';
 import { Editor } from '../../../src/document-editor/implementation/editor/editor';
 import { Selection } from '../../../src/document-editor/implementation/selection/selection';
-import { TextElementBox, BodyWidget, ParagraphWidget, LineWidget, EditRangeStartElementBox, EditRangeEndElementBox, FieldElementBox, TextFormField, CheckBoxFormField, DropDownFormField } from '../../../src/document-editor/implementation/viewer/page';
+import { TextElementBox, BodyWidget, ParagraphWidget, LineWidget, EditRangeStartElementBox, EditRangeEndElementBox, FieldElementBox, TextFormField, CheckBoxFormField, DropDownFormField, BlockWidget, ElementBox, ContentControl, TableCellWidget, TableRowWidget } from '../../../src/document-editor/implementation/viewer/page';
+import { ContentControlWidgetType, ContentControlType } from '../../../src';
 
 
 let charParaBidi: any = { "sections": [{ "blocks": [{ "characterFormat": { "bidi": true }, "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "text": "???", "characterFormat": { "bidi": true } }] }, { "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "text": "Second column", "characterFormat": { "bdo": "RTL" } }, { "name": "_GoBack", "bookmarkType": 0 }, { "name": "_GoBack", "bookmarkType": 1 }, { "text": " ", "characterFormat": { "bdo": "RTL" } }, { "text": "?", "characterFormat": { "bdo": "RTL" } }] }, { "paragraphFormat": { "styleName": "Normal", "bidi": true }, "inlines": [{ "text": "Third column " }] }, { "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "text": "Second Page" }] }, { "paragraphFormat": { "styleName": "Normal" }, "inlines": [] }, { "paragraphFormat": { "styleName": "Normal", "bidi": true }, "inlines": [{ "text": "ssASasAS" }] }], "headersFooters": {}, "sectionFormat": { "headerDistance": 36.0, "footerDistance": 36.0, "pageWidth": 612.0, "pageHeight": 792.0, "leftMargin": 72.0, "rightMargin": 72.0, "topMargin": 72.0, "bottomMargin": 72.0, "differentFirstPage": false, "differentOddAndEvenPages": false, "bidi": true } }], "characterFormat": { "fontSize": 11.0, "fontFamily": "Calibri" }, "paragraphFormat": { "afterSpacing": 8.0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple" }, "background": { "color": "#FFFFFFFF" }, "styles": [{ "type": "Paragraph", "name": "Normal", "next": "Normal" }, { "type": "Character", "name": "Default Paragraph Font" }, { "type": "Character", "name": "Line Number", "basedOn": "Default Paragraph Font" }, { "type": "Paragraph", "name": "Header", "basedOn": "Normal", "link": "Header Char", "paragraphFormat": { "afterSpacing": 0.0, "lineSpacing": 1.0, "lineSpacingType": "Multiple", "tabs": [{ "tabJustification": "Center", "position": 234.0, "tabLeader": "None", "deletePosition": 0.0 }, { "tabJustification": "Right", "position": 468.0, "tabLeader": "None", "deletePosition": 0.0 }] } }, { "type": "Character", "name": "Header Char", "basedOn": "Default Paragraph Font" }, { "type": "Paragraph", "name": "Footer", "basedOn": "Normal", "link": "Footer Char", "paragraphFormat": { "afterSpacing": 0.0, "lineSpacing": 1.0, "lineSpacingType": "Multiple", "tabs": [{ "tabJustification": "Center", "position": 234.0, "tabLeader": "None", "deletePosition": 0.0 }, { "tabJustification": "Right", "position": 468.0, "tabLeader": "None", "deletePosition": 0.0 }] } }, { "type": "Character", "name": "Footer Char", "basedOn": "Default Paragraph Font" }] };
@@ -1505,5 +1506,633 @@ let formFieldData: any = {
     it('Apply shading false validation', () => {
         editor.open(form);      
         expect(editor.documentEditorSettings.formFieldSettings.applyShading).toBe(true);
+    });
+});
+let contentControlJson: any = {
+    "sections": [
+        {
+            "blocks": [
+                {
+                    "blocks": [
+                        {
+                            "paragraphFormat": {
+                                "styleName": "Normal"
+                            },
+                            "inlines": [
+                                {
+                                    "text": "BlockContentControl"
+                                }
+                            ]
+                        }
+                    ],
+                    "contentControlProperties": {
+                        "lockContentControl": false,
+                        "lockContents": false,
+                        "color": "#00000000",
+                        "type": "RichText",
+                        "hasPlaceHolderText": false,
+                        "multiline": false,
+                        "isTemporary": false,
+                        "dateCalendarType": "Gregorian",
+                        "isChecked": false
+                    }
+                },
+                {
+                    "blocks": [
+                        {
+                            "rows": [
+                                {
+                                    "rowFormat": {
+                                        "allowBreakAcrossPages": true,
+                                        "isHeader": false,
+                                        "height": 0.0,
+                                        "heightType": "AtLeast"
+                                    },
+                                    "cells": [
+                                        {
+                                            "blocks": [
+                                                {
+                                                    "paragraphFormat": {
+                                                        "styleName": "Normal"
+                                                    },
+                                                    "inlines": [
+                                                        {
+                                                            "text": "Cell 1"
+                                                        }
+                                                    ]
+                                                }
+                                            ],
+                                            "cellFormat": {
+                                                "columnSpan": 1,
+                                                "rowSpan": 1,
+                                                "preferredWidth": 233.75,
+                                                "preferredWidthType": "Point",
+                                                "verticalAlignment": "Top",
+                                                "isSamePaddingAsTable": true,
+                                                "cellWidth": 233.75
+                                            }
+                                        },
+                                        {
+                                            "blocks": [
+                                                {
+                                                    "paragraphFormat": {
+                                                        "styleName": "Normal"
+                                                    },
+                                                    "inlines": []
+                                                }
+                                            ],
+                                            "cellFormat": {
+                                                "columnSpan": 1,
+                                                "rowSpan": 1,
+                                                "preferredWidth": 233.75,
+                                                "preferredWidthType": "Point",
+                                                "verticalAlignment": "Top",
+                                                "isSamePaddingAsTable": true,
+                                                "cellWidth": 233.75
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "rowFormat": {
+                                        "allowBreakAcrossPages": true,
+                                        "isHeader": false,
+                                        "height": 0.0,
+                                        "heightType": "AtLeast"
+                                    },
+                                    "cells": [
+                                        {
+                                            "blocks": [
+                                                {
+                                                    "paragraphFormat": {
+                                                        "styleName": "Normal"
+                                                    },
+                                                    "inlines": []
+                                                }
+                                            ],
+                                            "cellFormat": {
+                                                "columnSpan": 1,
+                                                "rowSpan": 1,
+                                                "preferredWidth": 233.75,
+                                                "preferredWidthType": "Point",
+                                                "verticalAlignment": "Top",
+                                                "isSamePaddingAsTable": true,
+                                                "cellWidth": 233.75
+                                            }
+                                        },
+                                        {
+                                            "blocks": [
+                                                {
+                                                    "paragraphFormat": {
+                                                        "styleName": "Normal"
+                                                    },
+                                                    "inlines": [
+                                                        {
+                                                            "text": "Cell 4"
+                                                        }
+                                                    ]
+                                                }
+                                            ],
+                                            "cellFormat": {
+                                                "columnSpan": 1,
+                                                "rowSpan": 1,
+                                                "preferredWidth": 233.75,
+                                                "preferredWidthType": "Point",
+                                                "verticalAlignment": "Top",
+                                                "isSamePaddingAsTable": true,
+                                                "cellWidth": 233.75
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "title": null,
+                            "description": null,
+                            "tableFormat": {
+                                "allowAutoFit": true,
+                                "leftIndent": 0.0,
+                                "tableAlignment": "Left",
+                                "preferredWidthType": "Auto",
+                                "bidi": false
+                            }
+                        }
+                    ],
+                    "contentControlProperties": {
+                        "lockContentControl": false,
+                        "lockContents": false,
+                        "color": "#00000000",
+                        "type": "RichText",
+                        "hasPlaceHolderText": false,
+                        "multiline": false,
+                        "isTemporary": false,
+                        "dateCalendarType": "Gregorian",
+                        "isChecked": false
+                    }
+                },
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": []
+                },
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "text": "Inline"
+                        },
+                        {
+                            "inlines": [
+                                {
+                                    "text": "ContentControl"
+                                }
+                            ],
+                            "contentControlProperties": {
+                                "lockContentControl": false,
+                                "lockContents": false,
+                                "color": "#00000000",
+                                "type": "RichText",
+                                "hasPlaceHolderText": false,
+                                "multiline": false,
+                                "isTemporary": false,
+                                "dateCalendarType": "Gregorian",
+                                "isChecked": false
+                            }
+                        },
+                        {
+                            "text": "     "
+                        },
+                        {
+                            "text": "CheckBox"
+                        },
+                        {
+                            "inlines": [
+                                {
+                                    "text": "☐",
+                                    "characterFormat": {
+                                        "fontFamily": "MS Gothic"
+                                    }
+                                }
+                            ],
+                            "contentControlProperties": {
+                                "lockContentControl": false,
+                                "lockContents": false,
+                                "color": "#00000000",
+                                "type": "CheckBox",
+                                "hasPlaceHolderText": false,
+                                "multiline": false,
+                                "isTemporary": false,
+                                "dateCalendarType": "Gregorian",
+                                "isChecked": false,
+                                "uncheckedState": {
+                                    "font": "MS Gothic",
+                                    "value": "☐"
+                                },
+                                "checkedState": {
+                                    "font": "MS Gothic",
+                                    "value": "☒"
+                                }
+                            }
+                        },
+                        {
+                            "text": "      "
+                        },
+                        {
+                            "text": "Date"
+                        },
+                        {
+                            "inlines": [
+                                {
+                                    "text": "7/23/2020"
+                                }
+                            ],
+                            "contentControlProperties": {
+                                "lockContentControl": false,
+                                "lockContents": false,
+                                "color": "#00000000",
+                                "type": "Date",
+                                "hasPlaceHolderText": false,
+                                "multiline": false,
+                                "isTemporary": false,
+                                "dateCalendarType": "Gregorian",
+                                "dateStorageFormat": "DateStorageDateTime",
+                                "dateDisplayLocale": "en_US",
+                                "dateDisplayFormat": "M/d/yyyy",
+                                "isChecked": false
+                            }
+                        },
+                        {
+                            "text": "     "
+                        },
+                        {
+                            "text": "ComboBox"
+                        },
+                        {
+                            "inlines": [
+                                {
+                                    "text": "Test 1"
+                                }
+                            ],
+                            "contentControlProperties": {
+                                "lockContentControl": false,
+                                "lockContents": false,
+                                "color": "#00000000",
+                                "type": "ComboBox",
+                                "hasPlaceHolderText": false,
+                                "multiline": false,
+                                "isTemporary": false,
+                                "dateCalendarType": "Gregorian",
+                                "isChecked": false,
+                                "contentControlListItems": [
+                                    {
+                                        "displayText": "Test 1",
+                                        "value": "Sync"
+                                    },
+                                    {
+                                        "displayText": "Test 2",
+                                        "value": "Test 2"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "text": "Content Control"
+                        }
+                    ]
+                },
+                {
+                    "rows": [
+                        {
+                            "rowFormat": {
+                                "allowBreakAcrossPages": true,
+                                "isHeader": false,
+                                "height": 0.0,
+                                "heightType": "AtLeast"
+                            },
+                            "cells": [
+                                {
+                                    "blocks": [
+                                        {
+                                            "paragraphFormat": {
+                                                "styleName": "Normal"
+                                            },
+                                            "inlines": [
+                                                {
+                                                    "text": "Row Content Control"
+                                                },
+                                                {
+                                                    "name": "_GoBack",
+                                                    "bookmarkType": 0
+                                                },
+                                                {
+                                                    "name": "_GoBack",
+                                                    "bookmarkType": 1
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "cellFormat": {
+                                        "columnSpan": 1,
+                                        "rowSpan": 1,
+                                        "preferredWidth": 233.75,
+                                        "preferredWidthType": "Point",
+                                        "verticalAlignment": "Top",
+                                        "isSamePaddingAsTable": true,
+                                        "cellWidth": 233.75
+                                    }
+                                },
+                                {
+                                    "blocks": [
+                                        {
+                                            "paragraphFormat": {
+                                                "styleName": "Normal"
+                                            },
+                                            "inlines": [
+                                                {
+                                                    "text": "e"
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "cellFormat": {
+                                        "columnSpan": 1,
+                                        "rowSpan": 1,
+                                        "preferredWidth": 233.75,
+                                        "preferredWidthType": "Point",
+                                        "verticalAlignment": "Top",
+                                        "isSamePaddingAsTable": true,
+                                        "cellWidth": 233.75
+                                    }
+                                }
+                            ],
+                            "contentControlProperties": {
+                                "lockContentControl": false,
+                                "lockContents": false,
+                                "color": "#00000000",
+                                "type": "RichText",
+                                "hasPlaceHolderText": false,
+                                "multiline": false,
+                                "isTemporary": false,
+                                "dateCalendarType": "Gregorian",
+                                "isChecked": false
+                            }
+                        },
+                        {
+                            "rowFormat": {
+                                "allowBreakAcrossPages": true,
+                                "isHeader": false,
+                                "height": 0.0,
+                                "heightType": "AtLeast"
+                            },
+                            "cells": [
+                                {
+                                    "blocks": [
+                                        {
+                                            "paragraphFormat": {
+                                                "styleName": "Normal"
+                                            },
+                                            "inlines": []
+                                        }
+                                    ],
+                                    "cellFormat": {
+                                        "columnSpan": 1,
+                                        "rowSpan": 1,
+                                        "preferredWidth": 233.75,
+                                        "preferredWidthType": "Point",
+                                        "verticalAlignment": "Top",
+                                        "isSamePaddingAsTable": true,
+                                        "cellWidth": 233.75
+                                    }
+                                },
+                                {
+                                    "blocks": [
+                                        {
+                                            "paragraphFormat": {
+                                                "styleName": "Normal"
+                                            },
+                                            "inlines": []
+                                        }
+                                    ],
+                                    "cellFormat": {
+                                        "columnSpan": 1,
+                                        "rowSpan": 1,
+                                        "preferredWidth": 233.75,
+                                        "preferredWidthType": "Point",
+                                        "verticalAlignment": "Top",
+                                        "isSamePaddingAsTable": true,
+                                        "cellWidth": 233.75
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "title": null,
+                    "description": null,
+                    "tableFormat": {
+                        "allowAutoFit": true,
+                        "leftIndent": 0.0,
+                        "tableAlignment": "Left",
+                        "preferredWidthType": "Auto",
+                        "bidi": false
+                    }
+                },
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": []
+                },
+                {
+                    "rows": [
+                        {
+                            "rowFormat": {
+                                "allowBreakAcrossPages": true,
+                                "isHeader": false,
+                                "height": 0.0,
+                                "heightType": "AtLeast"
+                            },
+                            "cells": [
+                                {
+                                    "blocks": [
+                                        {
+                                            "paragraphFormat": {
+                                                "styleName": "Normal"
+                                            },
+                                            "inlines": [
+                                                {
+                                                    "text": "Cell Content Control"
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "cellFormat": {
+                                        "columnSpan": 1,
+                                        "rowSpan": 1,
+                                        "preferredWidth": 467.5,
+                                        "preferredWidthType": "Point",
+                                        "verticalAlignment": "Top",
+                                        "isSamePaddingAsTable": true,
+                                        "cellWidth": 467.5
+                                    },
+                                    "contentControlProperties": {
+                                        "lockContentControl": false,
+                                        "lockContents": false,
+                                        "color": "#00000000",
+                                        "type": "RichText",
+                                        "hasPlaceHolderText": false,
+                                        "multiline": false,
+                                        "isTemporary": false,
+                                        "dateCalendarType": "Gregorian",
+                                        "isChecked": false
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "title": null,
+                    "description": null,
+                    "tableFormat": {
+                        "allowAutoFit": true,
+                        "leftIndent": 0.0,
+                        "tableAlignment": "Left",
+                        "preferredWidthType": "Auto",
+                        "bidi": false
+                    }
+                },
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": []
+                },
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": []
+                }
+            ],
+            "headersFooters": {},
+            "sectionFormat": {
+                "headerDistance": 36.0,
+                "footerDistance": 36.0,
+                "pageWidth": 612.0,
+                "pageHeight": 792.0,
+                "leftMargin": 72.0,
+                "rightMargin": 72.0,
+                "topMargin": 72.0,
+                "bottomMargin": 72.0,
+                "differentFirstPage": false,
+                "differentOddAndEvenPages": false,
+                "bidi": false,
+                "restartPageNumbering": false,
+                "pageStartingNumber": 0
+            }
+        }
+    ],
+    "characterFormat": {
+        "fontSize": 11.0,
+        "fontFamily": "Calibri",
+        "fontSizeBidi": 11.0,
+        "fontFamilyBidi": "Arial"
+    },
+    "paragraphFormat": {
+        "afterSpacing": 8.0,
+        "lineSpacing": 1.0791666507720947,
+        "lineSpacingType": "Multiple"
+    },
+    "background": {
+        "color": "#FFFFFFFF"
+    },
+    "styles": [
+        {
+            "type": "Paragraph",
+            "name": "Normal",
+            "next": "Normal"
+        },
+        {
+            "type": "Character",
+            "name": "Default Paragraph Font"
+        },
+        {
+            "type": "Character",
+            "name": "Placeholder Text",
+            "basedOn": "Default Paragraph Font",
+            "characterFormat": {
+                "fontColor": "#808080FF"
+            }
+        }
+    ],
+    "defaultTabWidth": 36.0,
+    "formatting": false,
+    "trackChanges": false,
+    "protectionType": "NoProtection",
+    "enforcement": false,
+    "dontUseHTMLParagraphAutoSpacing": false
+}
+describe('Content Control Validation', () => {
+    let editor: DocumentEditor;
+    let documentHelper:DocumentHelper;
+    let blocks: BlockWidget[];
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({});
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+        editor.open(contentControlJson);
+        blocks = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets as BlockWidget[];
+    });
+    afterAll((done): void => {
+        documentHelper.destroy();
+        documentHelper = undefined;
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 500);
+    });
+    it('Block Content Control', () => {
+        let cntntCtrlWidget: ContentControlWidgetType = 'Block';
+        expect(blocks[0].contentControlProperties.contentControlWidgetType).toBe(cntntCtrlWidget);
+        expect(blocks[0].contentControlProperties).toBe(((blocks[0].childWidgets[0] as LineWidget).children[0] as ElementBox).contentControlProperties);
+        expect(blocks[0].contentControlProperties).toBe(((blocks[0].childWidgets[0] as LineWidget).children[2] as ElementBox).contentControlProperties);
+        expect(((blocks[0].childWidgets[0] as LineWidget).children[0] as ContentControl).type).toBe(0);
+        expect(((blocks[0].childWidgets[0] as LineWidget).children[2] as ContentControl).type).toBe(1);
+    });
+    it('Table in Block Content Control', () => {        
+        let cntntCtrlWidget: ContentControlWidgetType = 'Block';
+        expect(blocks[1].contentControlProperties.contentControlWidgetType).toBe(cntntCtrlWidget);
+        let firstCell: TableCellWidget = (blocks[1].childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget;
+        let lastCell: TableCellWidget = (blocks[1].childWidgets[1] as TableRowWidget).childWidgets[1] as TableCellWidget;
+        expect(blocks[1].contentControlProperties).toBe((((firstCell.childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget).children[0] as ElementBox).contentControlProperties);
+        expect(blocks[1].contentControlProperties).toBe((((lastCell.childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget).children[1] as ElementBox).contentControlProperties);
+        expect((((firstCell.childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget).children[0] as ContentControl).type).toBe(0);
+        expect((((lastCell.childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget).children[1] as ContentControl).type).toBe(1);
+    });
+    it('Inline Content Control', () => {
+        let cntntCtrlWidget: ContentControlWidgetType = 'Inline';
+        let cntnCtrlType: ContentControlType = 'CheckBox';
+        expect((blocks[3].childWidgets[0] as LineWidget).children[2].contentControlProperties.contentControlWidgetType).toBe(cntntCtrlWidget);
+        expect((blocks[3].childWidgets[0] as LineWidget).children[2].contentControlProperties.checkedState).toBeUndefined;
+        let element: ElementBox = (blocks[3].childWidgets[0] as LineWidget).children[7];
+        expect(element.contentControlProperties.type).toBe(cntnCtrlType);
+        expect(element.contentControlProperties.checkedState).toBeDefined;
+        expect(element.contentControlProperties.uncheckedState).toBeDefined;
+        element = (blocks[3].childWidgets[0] as LineWidget).children[12];
+        cntnCtrlType = 'Date';
+        expect(element.contentControlProperties.type).toBe(cntnCtrlType);
+        expect(element.contentControlProperties.dateCalendarType).toBeDefined;
+        element = (blocks[3].childWidgets[0] as LineWidget).children[17];
+        cntnCtrlType = 'ComboBox';
+        expect(element.contentControlProperties.type).toBe(cntnCtrlType);
+        expect(element.contentControlProperties.contentControlListItems.length).toBe(2);
     });
 });

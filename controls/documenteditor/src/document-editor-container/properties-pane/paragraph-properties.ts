@@ -57,7 +57,7 @@ export class Paragraph {
             this.splitButtonClass = 'e-rtl ' + this.splitButtonClass;
         }
         this.textProperties = wholeDiv;
-        let element: string = 'font_properties';
+        let element: string = this.documentEditor.element.id + '_font_properties';
         let paragraphDiv: HTMLElement = this.createDivElement(element + '_paragraph', wholeDiv, '');
         classList(paragraphDiv, ['e-de-cntr-pane-padding'], []);
         let label: HTMLElement = createElement('label', { styles: 'width:26px;', className: 'e-de-ctnr-prop-label' });

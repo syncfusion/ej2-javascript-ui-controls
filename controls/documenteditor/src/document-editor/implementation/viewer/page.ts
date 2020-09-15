@@ -1,7 +1,7 @@
 import { WTableFormat, WRowFormat, WCellFormat } from '../format/index';
 import {
     WidthType, WColor, AutoFitType, TextFormFieldType, CheckBoxSizeType, VerticalOrigin, VerticalAlignment,
-    HorizontalOrigin, HorizontalAlignment, LineFormatType, LineDashing, AutoShapeType
+    HorizontalOrigin, HorizontalAlignment, LineFormatType, LineDashing, AutoShapeType, ContentControlType, ContentControlWidgetType
 } from '../../base/types';
 import { WListLevel } from '../list/list-level';
 import { WParagraphFormat, WCharacterFormat, WSectionFormat, WBorder, WBorders } from '../format/index';
@@ -720,6 +720,10 @@ export abstract class BlockWidget extends Widget {
     /**
      * @private
      */
+    public contentControlProperties: ContentControlProperties;
+    /**
+     * @private
+     */
     get bodyWidget(): BlockContainer {
         let widget: Widget = this;
         while (widget.containerWidget) {
@@ -924,6 +928,7 @@ export class ParagraphWidget extends BlockWidget {
                 if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
                     || inline instanceof EditRangeEndElementBox || inline instanceof EditRangeStartElementBox
                     || inline instanceof ChartElementBox || inline instanceof ShapeElementBox
+                    || inline instanceof ContentControl
                     || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
                     return false;
                 }
@@ -1132,6 +1137,9 @@ export class ParagraphWidget extends BlockWidget {
         paragraph.y = this.y;
         paragraph.height = this.height;
         paragraph.width = this.width;
+        if (this.contentControlProperties) {
+            paragraph.contentControlProperties = this.contentControlProperties;
+        }
         return paragraph;
     }
     /**
@@ -1885,6 +1893,9 @@ export class TableWidget extends BlockWidget {
         table.height = this.height;
         table.width = this.width;
         table.containerWidget = this.containerWidget;
+        if (this.contentControlProperties) {
+            table.contentControlProperties = this.contentControlProperties;
+        }
         return table;
     }
     /**
@@ -2088,6 +2099,10 @@ export class TableRowWidget extends BlockWidget {
      * @private
      */
     public rowFormat: WRowFormat;
+    /**
+     * @private
+     */
+    public contentControlProperties: ContentControlProperties;
 
     /**
      * @private
@@ -2354,6 +2369,9 @@ export class TableRowWidget extends BlockWidget {
         row.y = this.y;
         row.height = this.height;
         row.width = this.width;
+        if (this.contentControlProperties) {
+            row.contentControlProperties = this.contentControlProperties;
+        }
         return row;
     }
 
@@ -2434,6 +2452,10 @@ export class TableCellWidget extends BlockWidget {
      */
     public columnIndex: number;
     private sizeInfoInternal: ColumnSizeInfo = new ColumnSizeInfo();
+    /**
+     * @private
+     */
+    public contentControlProperties: ContentControlProperties;
     /**
      * @private
      */
@@ -3285,6 +3307,9 @@ export class TableCellWidget extends BlockWidget {
         cell.y = this.y;
         cell.height = this.height;
         cell.width = this.width;
+        if (this.contentControlProperties) {
+            cell.contentControlProperties = this.contentControlProperties;
+        }
         return cell;
     }
     /**
@@ -3461,7 +3486,8 @@ export class LineWidget implements IWidget {
                 }
                 if (inlineElement instanceof TextElementBox || inlineElement instanceof EditRangeStartElementBox
                     || inlineElement instanceof ImageElementBox || inlineElement instanceof EditRangeEndElementBox
-                    || inlineElement instanceof BookmarkElementBox || (inlineElement instanceof FieldElementBox
+                    || inlineElement instanceof BookmarkElementBox || inlineElement instanceof ContentControl
+                    || (inlineElement instanceof FieldElementBox
                         && HelperMethods.isLinkedFieldCharacter((inlineElement as FieldElementBox)))) {
                     startOffset = count + inlineElement.length;
                 }
@@ -3707,7 +3733,7 @@ export class LineWidget implements IWidget {
                     continue;
                 }
                 if (!isStarted && (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
-                    || inlineElement instanceof ShapeElementBox
+                    || inlineElement instanceof ShapeElementBox || inlineElement instanceof ContentControl
                     || inlineElement instanceof BookmarkElementBox || inlineElement instanceof EditRangeEndElementBox
                     || inlineElement instanceof EditRangeStartElementBox
                     || inlineElement instanceof FieldElementBox
@@ -3882,6 +3908,10 @@ export abstract class ElementBox {
      * @private
      */
     public isMarkedForRevision: boolean = false;
+    /**
+     * @private
+     */
+    public contentControlProperties: ContentControlProperties;
 
     /**
      * @private
@@ -3898,7 +3928,7 @@ export abstract class ElementBox {
      */
     get isValidNodeForTracking(): boolean {
         // tslint:disable-next-line:max-line-length
-        if (this instanceof BookmarkElementBox || this instanceof CommentCharacterElementBox || this instanceof EditRangeStartElementBox || this instanceof EditRangeEndElementBox) {
+        if (this instanceof BookmarkElementBox || this instanceof CommentCharacterElementBox || this instanceof EditRangeStartElementBox || this instanceof EditRangeEndElementBox || this instanceof ContentControl) {
             return false;
         }
         return true;
@@ -4119,7 +4149,7 @@ export abstract class ElementBox {
     get nextValidNodeForTracking(): ElementBox {
         let elementBox: ElementBox = this;
         //tslint:disable-next-line:max-line-length
-        while (!isNullOrUndefined(elementBox) && (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox)) {
+        while (!isNullOrUndefined(elementBox) && (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox || elementBox instanceof ContentControl)) {
             elementBox = elementBox.nextNode;
         }
         return elementBox;
@@ -4130,7 +4160,7 @@ export abstract class ElementBox {
     get previousValidNodeForTracking(): ElementBox {
         let elementBox: ElementBox = this;
         //tslint:disable-next-line:max-line-length
-        while (!isNullOrUndefined(elementBox) && (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox)) {
+        while (!isNullOrUndefined(elementBox) && (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox || elementBox instanceof ContentControl)) {
             elementBox = elementBox.previousNode;
         }
         return elementBox;
@@ -4592,6 +4622,9 @@ export class TextElementBox extends ElementBox {
         }
         span.width = this.width;
         span.height = this.height;
+        if (this.contentControlProperties) {
+            span.contentControlProperties = this.contentControlProperties;
+        }
         return span;
     }
     /**
@@ -4786,6 +4819,368 @@ export class BookmarkElementBox extends ElementBox {
         }
         span.width = this.width;
         span.height = this.height;
+        if (this.contentControlProperties) {
+            span.contentControlProperties = this.contentControlProperties;
+        }
+        return span;
+    }
+}
+/** 
+ * @private
+ */
+export class ContentControl extends ElementBox {
+    /**
+     * @private
+     */
+    public contentControlProperties: ContentControlProperties;
+    /**
+     * @private
+     */
+    public type: number;
+    /**
+     * @private
+     */
+    public reference: ContentControl;
+    /**
+     * @private
+     */
+    public contentControlWidgetType: ContentControlWidgetType;
+
+    constructor(widgetType: ContentControlWidgetType) {
+        super();
+        this.contentControlWidgetType = widgetType;
+        this.contentControlProperties = new ContentControlProperties(widgetType);
+    }
+    /**
+     * @private
+     */
+    public getLength(): number {
+        return 1;
+    }
+    /**
+     * @private
+     */
+    public clone(): ElementBox {
+        let span: ContentControl = new ContentControl(this.contentControlWidgetType);
+        span.characterFormat.copyFormat(this.characterFormat);
+        span.contentControlProperties = this.contentControlProperties;
+        span.contentControlWidgetType = this.contentControlWidgetType;
+        if (this.margin) {
+            span.margin = this.margin.clone();
+        }
+        if (this.revisions.length > 0) {
+            span.removedIds = Revision.cloneRevisions(this.revisions);
+        } else {
+            span.removedIds = this.removedIds.slice();
+        }
+        span.type = this.type;
+        span.width = this.width;
+        span.height = this.height;
+        span.reference = this.reference;
+        return span;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.contentControlProperties = undefined;
+        this.contentControlWidgetType = undefined;
+        super.destroy();
+    }
+}
+/** 
+ * @private
+ */
+/** 
+ * @private
+ */
+export class ContentControlProperties {
+    /**
+     * @private
+     */
+    public contentControlWidgetType: ContentControlWidgetType;
+    /**
+     * @private
+     */
+    public lockContentControl: boolean;
+    /**
+     * @private
+     */
+    public lockContents: boolean;
+    /**
+     * @private
+     */
+    public tag: string;
+    /**
+     * @private
+     */
+    public color: string;
+    /**
+     * @private
+     */
+    public title: string;
+    /**
+     * @private
+     */
+    public appearance: string;
+    /**
+     * @private
+     */
+    public type: ContentControlType;
+    /**
+     * @private
+     */
+    public hasPlaceHolderText: boolean;
+    /**
+     * @private
+     */
+    public multiline: boolean;
+    /**
+     * @private
+     */
+    public isTemporary: boolean;
+    /**
+     * @private
+     */
+    public isChecked: boolean;
+    /**
+     * @private
+     */
+    public dateCalendarType: string;
+    /**
+     * @private
+     */
+    public dateStorageFormat: string;
+    /**
+     * @private
+     */
+    public dateDisplayLocale: string;
+    /**
+     * @private
+     */
+    public dateDisplayFormat: string;
+    /**
+     * @private
+     */
+    public uncheckedState: CheckBoxState;
+    /**
+     * @private
+     */
+    public checkedState: CheckBoxState;
+    /**
+     * @private
+     */
+    public contentControlListItems: ContentControlListItems[] = [];
+    /**
+     * @private
+     */
+    public xmlMapping: XmlMapping;
+    /**
+     * @private
+     */
+    public characterFormat: WCharacterFormat;
+
+    constructor(widgetType: ContentControlWidgetType) {
+        this.contentControlWidgetType = widgetType;
+        this.characterFormat = new WCharacterFormat();
+    }
+
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.lockContentControl = undefined;
+        this.lockContents = undefined;
+        this.tag = undefined;
+        this.color = undefined;
+        this.title = undefined;
+        this.appearance = undefined;
+        this.type = undefined;
+        this.hasPlaceHolderText = undefined;
+        this.multiline = undefined;
+        this.isTemporary = undefined;
+        this.isChecked = undefined;
+        this.dateCalendarType = undefined;
+        this.dateStorageFormat = undefined;
+        this.dateDisplayLocale = undefined;
+        this.dateDisplayFormat = undefined;
+    }
+    /**
+     * @private
+     */
+    public clone(): ContentControlProperties {
+        let span: ContentControlProperties = new ContentControlProperties(this.contentControlWidgetType);
+        span.lockContentControl = this.lockContentControl;
+        span.lockContents = this.lockContents;
+        span.tag = this.tag;
+        span.color = this.color;
+        span.title = this.title;
+        span.appearance = this.appearance;
+        span.type = this.type;
+        span.hasPlaceHolderText = this.hasPlaceHolderText;
+        span.multiline = this.multiline;
+        span.isTemporary = this.isTemporary;
+        span.isChecked = this.isChecked;
+        span.dateCalendarType = this.dateCalendarType;
+        span.dateStorageFormat = this.dateStorageFormat;
+        span.dateDisplayLocale = this.dateDisplayLocale;
+        span.dateDisplayFormat = this.dateDisplayFormat;
+        if (this.contentControlListItems.length > 0) {
+            for (let i: number = 0; i < this.contentControlListItems.length; i++) {
+                span.contentControlListItems.push(this.contentControlListItems[i].clone());
+            }
+        }
+        if (this.checkedState) {
+            span.checkedState = this.checkedState.clone();
+        }
+        if (this.uncheckedState) {
+            span.uncheckedState = this.uncheckedState.clone();
+        }
+        if (this.xmlMapping) {
+            span.xmlMapping = this.xmlMapping.clone();
+        }
+        return span;
+    }
+}
+/** 
+ * @private
+ */
+export class ContentControlListItems {
+    /**
+     * @private
+     */
+    public displayText: string;
+    /**
+     * @private
+     */
+    public value: string;
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.displayText = undefined;
+        this.value = undefined;
+    }
+    /**
+     * @private
+     */
+    public clone(): ContentControlListItems {
+        let span: ContentControlListItems = new ContentControlListItems();
+        span.displayText = this.displayText;
+        span.value = this.value;
+        return span;
+    }
+}
+/** 
+ * @private
+ */
+export class CheckBoxState {
+    /**
+     * @private
+     */
+    public font: string;
+    /**
+     * @private
+     */
+    public value: string;
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.font = undefined;
+        this.value = undefined;
+    }
+    /**
+     * @private
+     */
+    public clone(): CheckBoxState {
+        let span: CheckBoxState = new CheckBoxState();
+        span.font = this.font;
+        span.value = this.value;
+        return span;
+    }
+}
+/** 
+ * @private
+ */
+export class XmlMapping {
+    /**
+     * @private
+     */
+    public isMapped: boolean;
+    /**
+     * @private
+     */
+    public isWordMl: boolean;
+    /**
+     * @private
+     */
+    public prefixMapping: string;
+    /**
+     * @private
+     */
+    public xPath: string;
+    /**
+     * @private
+     */
+    public storeItemId: string;
+    /**
+     * @private
+     */
+    public customXmlPart: CustomXmlPart;
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.isMapped = undefined;
+        this.isWordMl = undefined;
+        this.prefixMapping = undefined;
+        this.xPath = undefined;
+        this.storeItemId = undefined;
+        this.customXmlPart = undefined;
+    }
+    /**
+     * @private
+     */
+    public clone(): XmlMapping {
+        let span: XmlMapping = new XmlMapping();
+        span.isMapped = this.isMapped;
+        span.isWordMl = this.isWordMl;
+        span.prefixMapping = this.prefixMapping;
+        span.xPath = this.xPath;
+        span.storeItemId = this.storeItemId;
+        if (this.customXmlPart) {
+            span.customXmlPart = this.customXmlPart.clone();
+        }
+        return span;
+    }
+}
+/** 
+ * @private
+ */
+export class CustomXmlPart {
+    /**
+     * @private
+     */
+    public id: string;
+    /**
+     * @private
+     */
+    public xml: string;
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.id = undefined;
+        this.xml = undefined;
+    }
+    /**
+     * @private
+     */
+    public clone(): CustomXmlPart {
+        let span: CustomXmlPart = new CustomXmlPart();
+        span.id = this.id;
+        span.xml = this.xml;
         return span;
     }
 }
@@ -5139,13 +5534,13 @@ export class ImageElementBox extends ShapeBase {
         image.width = this.width;
         image.height = this.height;
         if (this.isCrop) {
-        image.verticalPosition = this.top;
-        image.horizontalPosition = this.left;
-        image.bottom = this.bottom;
-        image.right = this.right;
-        image.isCrop = this.isCrop;
-        image.heightScale = this.heightScale;
-        image.widthScale = this.widthScale;
+            image.verticalPosition = this.top;
+            image.horizontalPosition = this.left;
+            image.bottom = this.bottom;
+            image.right = this.right;
+            image.isCrop = this.isCrop;
+            image.heightScale = this.heightScale;
+            image.widthScale = this.widthScale;
         }
         if (this.margin) {
             image.margin = this.margin.clone();

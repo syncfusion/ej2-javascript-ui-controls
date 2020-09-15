@@ -606,7 +606,7 @@ var PivotUtil = /** @class */ (function () {
         return values;
     };
     PivotUtil.formatPdfHeaderFooter = function (pdf) {
-        var contents;
+        var contents = [];
         if (!sf.base.isNullOrUndefined(pdf)) {
             for (var i = 0; i < pdf.length; i++) {
                 var a = pdf[i];
@@ -1086,11 +1086,6 @@ var PivotEngine = /** @class */ (function () {
             }
             this.updateFilterMembers(dataSource);
             this.generateGridData(dataSource);
-        }
-        if (this.data.length === 0) {
-            this.removeIrrelevantFields(dataSource, []);
-            this.pivotValues = [];
-            this.fieldList = null;
         }
     };
     PivotEngine.prototype.removeIrrelevantFields = function (dataSource, fields) {
@@ -7526,7 +7521,7 @@ var Render = /** @class */ (function () {
     Render.prototype.rowCellBoundEvent = function (args) {
         var tCell = args.cell;
         /* tslint:disable-next-line */
-        if (tCell && (this.parent.notEmpty)) {
+        if (tCell && (this.parent.notEmpty) && this.engine.headerContent) {
             var customClass = this.parent.hyperlinkSettings.cssClass;
             tCell.setAttribute('index', (Number(tCell.getAttribute('index')) + this.engine.headerContent.length).toString());
             var cell = args.data[0];
@@ -9805,6 +9800,13 @@ var FilterDialog = /** @class */ (function () {
             }
         });
         this.allMemberSelect.isStringTemplate = true;
+        if (!sf.base.isNullOrUndefined(this.parent.currentTreeItems)) {
+            for (var i = 0; i < this.parent.currentTreeItems.length; i++) {
+                if (this.parent.currentTreeItems[i].id.indexOf("\n") || this.parent.currentTreeItems[i].id.startsWith("\n")) {
+                    this.parent.currentTreeItems[i].id = this.parent.currentTreeItems[i].id.replace('\n', ' ');
+                }
+            }
+        }
         this.allMemberSelect.appendTo(selectAllContainer);
         treeOuterDiv.appendChild(treeViewContainer);
         editorTreeWrapper.appendChild(treeOuterDiv);
@@ -14511,7 +14513,7 @@ var PivotChart = /** @class */ (function () {
     };
     PivotChart.prototype.pointClick = function (args) {
         var dataSource = args.series.dataSource ? args.series.dataSource : this.parent.chart.series[args.seriesIndex].dataSource;
-        if (['Pie', 'Funnel', 'Doughnut', 'Pyramid', 'Radar', 'Polar'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) {
+        if ((['Pie', 'Funnel', 'Doughnut', 'Pyramid', 'Radar', 'Polar'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) || !this.parent.chartSettings.showMultiLevelLabels) {
             this.pivotIndex = {
                 rIndex: dataSource ? dataSource[args.pointIndex].rIndex : undefined,
                 cIndex: dataSource ? dataSource[args.pointIndex].cIndex : undefined,
@@ -22469,9 +22471,6 @@ var PivotView = /** @class */ (function (_super) {
      * @hidden
      */
     PivotView.prototype.onPropertyChanged = function (newProp, oldProp) {
-        if (!sf.base.isNullOrUndefined(newProp.dataSourceSettings) && !sf.base.isNullOrUndefined(newProp.dataSourceSettings.dataSource)) {
-            this.localDataSourceSetting = PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings);
-        }
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
@@ -22486,6 +22485,13 @@ var PivotView = /** @class */ (function (_super) {
                     }
                     if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
                         && Object.keys(newProp.dataSourceSettings)[0] === 'dataSource') {
+                        if (newProp.dataSourceSettings.dataSource.length === 0) {
+                            this.savedDataSourceSettings = PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings);
+                            this.setProperties({ dataSourceSettings: { rows: [] } }, true);
+                            this.setProperties({ dataSourceSettings: { columns: [] } }, true);
+                            this.setProperties({ dataSourceSettings: { values: [] } }, true);
+                            this.pivotValues = [];
+                        }
                         this.engineModule.fieldList = null;
                         this.showWaitingPopup();
                         clearTimeout(this.timeOutObj);
@@ -22578,6 +22584,9 @@ var PivotView = /** @class */ (function (_super) {
                         (Object.keys(newProp.chartSettings).indexOf('enableMultiAxis') !== -1 ||
                             (newProp.chartSettings.chartSeries && Object.keys(newProp.chartSettings.chartSeries).indexOf('type') !== -1))) {
                         this.groupingBarModule.renderLayout();
+                    }
+                    if (this.displayOption.view === 'Both' && sf.base.isNullOrUndefined(this.chartModule)) {
+                        this.chartModule = new PivotChart();
                     }
                     this.chartModule.loadChart(this, this.chartSettings);
                     this.notify(uiUpdate, this);
@@ -23333,8 +23342,9 @@ var PivotView = /** @class */ (function (_super) {
     };
     /* tslint:enable */
     PivotView.prototype.onContentReady = function () {
-        if (!sf.base.isNullOrUndefined(this.localDataSourceSetting)) {
-            PivotUtil.updateDataSourceSettings(this, this.localDataSourceSetting);
+        if (!sf.base.isNullOrUndefined(this.savedDataSourceSettings)) {
+            PivotUtil.updateDataSourceSettings(this, this.savedDataSourceSettings);
+            this.savedDataSourceSettings = undefined;
         }
         if (this.currentView !== 'Table') {
             /* tslint:disable-next-line */
@@ -27219,7 +27229,7 @@ var PivotButton = /** @class */ (function () {
         else {
             engineModule = this.parent.engineModule;
         }
-        if (engineModule.fieldList[field[i].name] !== undefined) {
+        if (!sf.base.isNullOrUndefined(engineModule.fieldList) && engineModule.fieldList[field[i].name] !== undefined) {
             aggregation = engineModule.fieldList[field[i].name].aggregateType;
             if ((aggregation !== 'DistinctCount') && (engineModule.fieldList[field[i].name].type !== 'number' || engineModule.fieldList[field[i].name].type === 'include' ||
                 engineModule.fieldList[field[i].name].type === 'exclude')) {
@@ -27259,9 +27269,11 @@ var PivotButton = /** @class */ (function () {
         else {
             engineModule = this.parent.engineModule;
         }
-        var fieldListItem = engineModule.fieldList[field[i].name];
-        if (fieldListItem.aggregateType !== 'CalculatedField' && this.validateDropdown(fieldListItem.type)) {
-            this.createSummaryType(buttonElement, field[i].name, field[i]);
+        if (!sf.base.isNullOrUndefined(engineModule.fieldList)) {
+            var fieldListItem = engineModule.fieldList[field[i].name];
+            if (fieldListItem.aggregateType !== 'CalculatedField' && this.validateDropdown(fieldListItem.type)) {
+                this.createSummaryType(buttonElement, field[i].name, field[i]);
+            }
         }
     };
     PivotButton.prototype.validateDropdown = function (type) {
@@ -27384,7 +27396,7 @@ var PivotButton = /** @class */ (function () {
         else {
             engineModule = this.parent.engineModule;
         }
-        if (!this.parent.allowDeferLayoutUpdate) {
+        if (!this.parent.allowDeferLayoutUpdate && !sf.base.isNullOrUndefined(engineModule.fieldList)) {
             sortCLass = engineModule.fieldList[fieldName].sort === 'Descending' ? SORT_DESCEND_CLASS : '';
         }
         else {
@@ -27395,7 +27407,7 @@ var PivotButton = /** @class */ (function () {
                 }
             }
         }
-        if (engineModule.fieldList[fieldName].sort === 'None') {
+        if (!sf.base.isNullOrUndefined(engineModule.fieldList) && engineModule.fieldList[fieldName].sort === 'None') {
             spanElement = sf.base.createElement('span', {
                 attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('sort') },
                 className: ICON
@@ -27440,7 +27452,7 @@ var PivotButton = /** @class */ (function () {
         else {
             engineModule = this.parent.engineModule;
         }
-        if (!this.parent.allowDeferLayoutUpdate) {
+        if (!this.parent.allowDeferLayoutUpdate && !sf.base.isNullOrUndefined(engineModule.fieldList)) {
             engineModule.fieldList[fieldName].filter = engineModule.fieldList[fieldName].filter === null ?
                 [] : engineModule.fieldList[fieldName].filter;
             filterCLass = engineModule.fieldList[fieldName].filter.length === 0 ?
@@ -28973,10 +28985,6 @@ var PivotFieldList = /** @class */ (function (_super) {
      * @hidden
      */
     PivotFieldList.prototype.onPropertyChanged = function (newProp, oldProp) {
-        if (!sf.base.isNullOrUndefined(newProp.dataSourceSettings.dataSource)) {
-            this.localDataSourceSetting = PivotUtil.getClonedDataSourceSettings(this.staticPivotGridModule.dataSourceSettings);
-            this.initEngine();
-        }
         var requireRefresh = false;
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
@@ -28990,6 +28998,21 @@ var PivotFieldList = /** @class */ (function (_super) {
                     }
                     break;
                 case 'dataSourceSettings':
+                    if (!sf.base.isNullOrUndefined(newProp.dataSourceSettings.dataSource)) {
+                        if (newProp.dataSourceSettings.dataSource.length === 0 && !sf.base.isNullOrUndefined(this.staticPivotGridModule)) {
+                            this.savedDataSourceSettings = PivotUtil.getClonedDataSourceSettings(this.staticPivotGridModule.dataSourceSettings);
+                            this.staticPivotGridModule.setProperties({ dataSourceSettings: { rows: [] } }, true);
+                            this.staticPivotGridModule.setProperties({ dataSourceSettings: { columns: [] } }, true);
+                            this.staticPivotGridModule.setProperties({ dataSourceSettings: { values: [] } }, true);
+                            this.engineModule.fieldList = {};
+                            this.staticPivotGridModule.pivotValues = [];
+                        }
+                        this.initEngine();
+                        if (!sf.base.isNullOrUndefined(this.savedDataSourceSettings)) {
+                            PivotUtil.updateDataSourceSettings(this.staticPivotGridModule, this.savedDataSourceSettings);
+                            this.savedDataSourceSettings = undefined;
+                        }
+                    }
                     if (PivotUtil.isButtonIconRefesh(prop, oldProp, newProp)) {
                         if (this.isPopupView && this.pivotGridModule &&
                             this.pivotGridModule.showGroupingBar && this.pivotGridModule.groupingBarModule) {
@@ -29047,9 +29070,6 @@ var PivotFieldList = /** @class */ (function (_super) {
             if (requireRefresh) {
                 this.fieldListRender();
             }
-        }
-        if (!sf.base.isNullOrUndefined(this.localDataSourceSetting)) {
-            PivotUtil.updateDataSourceSettings(this.staticPivotGridModule, this.localDataSourceSetting);
         }
     };
     /* tslint:disable */
@@ -29217,7 +29237,7 @@ var PivotFieldList = /** @class */ (function (_super) {
                 if (this.captionData[lnt]) {
                     for (var _i = 0, _a = this.captionData[lnt]; _i < _a.length; _i++) {
                         var obj = _a[_i];
-                        if (obj) {
+                        if (obj && !sf.base.isNullOrUndefined(engineModule.fieldList)) {
                             if (engineModule.fieldList[obj.name]) {
                                 if (obj.caption) {
                                     engineModule.fieldList[obj.name].caption = obj.caption;

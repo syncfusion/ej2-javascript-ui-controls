@@ -642,7 +642,7 @@ export class PivotChart {
 
     private pointClick(args: IPointEventArgs): void {
         let dataSource: any = args.series.dataSource ? args.series.dataSource : this.parent.chart.series[args.seriesIndex].dataSource;
-        if (['Pie', 'Funnel', 'Doughnut', 'Pyramid', 'Radar', 'Polar'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) {
+        if ((['Pie', 'Funnel', 'Doughnut', 'Pyramid', 'Radar', 'Polar'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) || !this.parent.chartSettings.showMultiLevelLabels) {
             this.pivotIndex = {
                 rIndex: dataSource ? dataSource[args.pointIndex].rIndex : undefined,
                 cIndex: dataSource ? dataSource[args.pointIndex].cIndex : undefined,

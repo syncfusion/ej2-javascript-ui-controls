@@ -4,7 +4,7 @@ import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-mo
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { Layer } from "../../../src/diagram/diagram/layer";
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
-import { UndoRedo } from '../../../src/diagram/index';
+import { UndoRedo, NodeConstraints } from '../../../src/diagram/index';
 
 Diagram.Inject(UndoRedo);
 
@@ -604,6 +604,105 @@ describe('Diagram Control', () => {
             done();
             diagram.moveForward();
             expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[1]).toBe(true);
+            done();
+        });
+    });
+    describe('SendToBack and BringToFront does not work for connector with group node  ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let selArray: any = [];
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'nodehost',
+                    width: 270, height: 230,
+                    offsetX: 250, offsetY: 270,
+                    shape: { type: 'Basic', shape: 'Rectangle' },
+                    constraints: NodeConstraints.None | NodeConstraints.Select | NodeConstraints.Drag | NodeConstraints.PointerEvents,
+                    pivot: { x: 0, y: 0 },
+                    annotations: [
+                      { content: "Group Shape" }
+                    ],
+                    style: {
+                      fill: 'yellow'
+                    }
+                },
+                 {
+                    id: 'nodegroup',
+                    constraints: NodeConstraints.None | NodeConstraints.Select | NodeConstraints.Drag | NodeConstraints.PointerEvents,
+                    children: ['nodehost'],
+                },
+                {
+                    id: 'node2',
+                    width: 100, height: 100,
+                    offsetX: 450, offsetY: 250,
+                    annotations: [
+                        { content: "Node2" }
+                    ],
+                    zIndex: 4
+                }
+            ];
+            let connectors: ConnectorModel[] = [
+                {
+                    id: 'connector1',
+                    sourcePoint: {
+                        x: 100,
+                        y: 100
+                    },
+                    targetPoint: {
+                        x: 350,
+                        y: 350
+                    }, style: {
+                        strokeColor: 'red',
+                        strokeWidth: 3
+                    }
+                },
+                {
+                    id: 'connector2',
+                    sourcePoint: {
+                        x: 600,
+                        y: 100
+                    },
+                    targetPoint: {
+                        x: 350,
+                        y: 350
+                    },
+                    style: {
+                        strokeColor: 'green',
+                        strokeWidth: 3
+                    }
+                },
+            ];
+            diagram = new Diagram({
+                width: '1050px', height: '500px', nodes: nodes,
+                connectors: connectors,
+            });
+            diagram.appendTo('#diagram');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Check the connecter after bringToFront ', (done: Function) => {
+            diagram.select([diagram.nameTable["connector1"]]);
+            diagram.sendToBack();
+            diagram.select([diagram.nameTable["connector2"]]);
+            diagram.bringToFront();
+            let diagram_layer = document.getElementById("diagram_diagramLayer");
+            expect((diagram_layer.firstChild as HTMLElement).id === "connector1_groupElement").toBe(true);
+            expect((diagram_layer.lastChild as HTMLElement).id === "connector2_groupElement").toBe(true);
+            expect((diagram_layer.childNodes[2] as HTMLElement).id === "node2_groupElement").toBe(true);
             done();
         });
     });

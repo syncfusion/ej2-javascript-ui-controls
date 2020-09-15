@@ -244,6 +244,13 @@ export class FilterDialog {
             }
         });
         this.allMemberSelect.isStringTemplate = true;
+        if (!isNullOrUndefined(this.parent.currentTreeItems)) {
+            for (let i: number = 0; i < this.parent.currentTreeItems.length; i++) {
+                if ((this.parent.currentTreeItems[i].id as string).indexOf("\n") || (this.parent.currentTreeItems[i].id as any).startsWith("\n")) {
+                    this.parent.currentTreeItems[i].id = (this.parent.currentTreeItems[i].id as string).replace('\n', ' ');
+                }
+            }
+        }
         this.allMemberSelect.appendTo(selectAllContainer);
         treeOuterDiv.appendChild(treeViewContainer);
         editorTreeWrapper.appendChild(treeOuterDiv);

@@ -2191,7 +2191,7 @@ var LayoutPanel = /** @class */ (function () {
             }
         }
         templateFn = getTemplateFunction(template);
-        templateElement = templateFn(item['data'], null, null, this.treemap.element.id + baseTemplateId, false);
+        templateElement = templateFn(item['data'], this.treemap, template, this.treemap.element.id + baseTemplateId, false);
         labelEle = convertElement(templateElement, templateId, item['data']);
         templateSize = measureElement(labelEle, secondaryEle);
         templateLocation = findLabelLocation(rect, position, templateSize, 'Template', this.treemap);

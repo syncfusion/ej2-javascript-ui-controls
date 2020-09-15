@@ -136,7 +136,7 @@ export class Render {
                 gObj.notify(events.cancelBegin, args);
                 return;
             }
-            if (gObj.editSettings.mode === 'Normal' && gObj.isEdit && e.requestType !== 'infiniteScroll') {
+            if (isBlazor() && gObj.editSettings.mode === 'Normal' && gObj.isEdit && e.requestType !== 'infiniteScroll') {
                 gObj.notify('closeinline', {});
             }
             if (args.requestType === 'delete' as Action && gObj.allowPaging) {

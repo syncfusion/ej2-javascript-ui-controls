@@ -734,6 +734,81 @@ describe('Pie Series checking', () => {
         pie.refresh();
     });
 });
+    describe('Pie data source update using button click event', () => {
+        let ele: HTMLElement;
+        let btn: HTMLElement;
+        let id: string = 'container';
+        let pie: AccumulationChart;
+        let trigger: MouseEvents = new MouseEvents();
+        let seriesGroupElement: Element;
+        beforeAll((): void => {
+            ele = createElement('div', { id: id });
+            ele.style.width = '500px';
+            ele.style.height = '400px';
+            ele.style.border = '1px solid red';
+            btn = createElement('button', { id: 'btn' });
+            btn.innerHTML = 'Change Data';
+            document.body.appendChild(btn);
+            document.body.appendChild(ele);
+            pie = new AccumulationChart({
+                series: [
+                    {
+                        dataSource: [
+                            { x: 'Argentina', y: 505370, r: '100' },
+                            { x: 'Belgium', y: 551500, r: '118.7' },
+                            { x: 'Cuba', y: 312685, r: '124.6' },
+                            { x: 'Dominican Republic', y: 350000, r: '137.5' },
+                            { x: 'Egypt', y: 301000, r: '150.8' },
+                            { x: 'Kazakhstan', y: 300000, r: '155.5' },
+                            { x: 'Somalia', y: 357022, r: '160.6' }
+
+                        ],
+                        dataLabel: {
+                            visible: true
+                        },
+                        xName: 'x',
+                        yName: 'y',
+                        animation: { enable: false }
+                    },
+
+                ],
+                enableSmartLabels: true,
+                // Initialize tht tooltip
+                tooltip: { enable: false },
+            });
+            pie.appendTo('#' + id);
+            document.getElementById('btn').onclick = () => {
+                pie.series[0].dataSource = [
+                    { x: 'Argentina', y: 505, r: '100' },
+                    { x: 'Belgium', y: 551, r: '118.7' },
+                    { x: 'Cuba', y: 312, r: '124.6' },
+                    { x: 'Dominican Republic', y: 350, r: '137.5' },
+                ];
+            }
+        });
+        afterAll((): void => {
+            pie.loaded = null;
+            pie.destroy();
+            removeElement(id);
+            removeElement(btn);
+        });
+        it('Initial datasource checking', (done: Function) => {
+            pie.loaded = () => {
+                seriesGroupElement = getElement('container_Series_0');
+                expect(seriesGroupElement.childElementCount === 7).toBe(true);
+                done();
+            };
+            pie.refresh();
+        });
+        it('Data source is changed using button click event', (done: Function) => {
+            pie.loaded = () => {
+                seriesGroupElement = getElement('container_Series_0');
+                expect(seriesGroupElement.childElementCount === 4).toBe(true);
+                done();
+            };
+            trigger.clickEvent(btn);
+        });
+    });
 it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

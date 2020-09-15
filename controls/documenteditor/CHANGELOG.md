@@ -6,6 +6,24 @@
 
 #### New Features
 
+- `#290372` - Added support to apply restart page number for different sections.
+- `#290423` - Added resize API in document editor container.
+- `#243495`, `#247427`, `#248347`, `#252755`, `#254094`, `#254684`, `#256926`, `#248347`, `#260233`, `#262638`, `#273681`, `#155458`, `#278038` - Added support to preserve content control feature.
+
+#### Bug Fixes
+
+- `#155699` - Resolved selection change event gets triggered before created event of document editor issue.
+- `#290271` - Resolved some elements are not created with unique id in document editor component issue.
+- `#288253` - Exported document with comments from editor contain initials property in file level now.
+- `#287740` - Landscape Orientation not updated properly in page setup dialog now.
+- `#291080`, `#157393` - Restrict editing property works when setting on component creation now.
+
+## 18.2.57 (2020-09-08)
+
+### Document Editor
+
+#### New Features
+
 - `#156915` - Added public API to check whether the selection is in edit region.
 - `#287831` - Added public API to show spell check dialog.
 - `#284434` - Spell checker performance was optimized.
@@ -23,6 +41,7 @@
 - `#291882` - Now,Text contents were not transformed to upper case while copying.
 - `#287582` - Apply shading property for form field is now maintained also on exported document.
 - `#280951` - Table contents were not rendered on footer region now.
+- `#287195` - Resolved script error throw while deleting large text inside a table.
 
 ## 18.2.55 (2020-08-25)
 

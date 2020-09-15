@@ -1005,7 +1005,7 @@ export class Render {
     private rowCellBoundEvent(args: QueryCellInfoEventArgs): void {
         let tCell: HTMLElement = args.cell as HTMLElement;
         /* tslint:disable-next-line */
-        if (tCell && (this.parent.notEmpty)) {
+        if (tCell && (this.parent.notEmpty) && this.engine.headerContent) {
             let customClass: string = this.parent.hyperlinkSettings.cssClass;
             tCell.setAttribute('index', (Number(tCell.getAttribute('index')) + this.engine.headerContent.length).toString());
             let cell: IAxisSet = (args.data as IGridValues)[0] as IAxisSet;

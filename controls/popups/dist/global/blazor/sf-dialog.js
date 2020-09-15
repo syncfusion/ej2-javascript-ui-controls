@@ -276,7 +276,8 @@ var SfDialog = /** @class */ (function () {
         this.popupObj.setProperties({ position: { X: this.position.X, Y: this.position.Y } });
     };
     SfDialog.prototype.setEnableRTL = function () {
-        if (!sf.base.isNullOrUndefined(this.element.querySelector('.' + DLG_RESIZE_HANDLE))) {
+        var resizeElement = this.element.querySelector('.' + DLG_RESIZE_HANDLE);
+        if (!sf.base.isNullOrUndefined(resizeElement) && resizeElement.parentElement === this.element) {
             sf.popups.removeResize();
             this.setResize();
         }
@@ -620,15 +621,18 @@ var SfDialog = /** @class */ (function () {
         var _this = this;
         if (e.keyCode === TAB && this.isModal) {
             var btn = void 0;
+            var btns = void 0;
             var footer = this.element.querySelector('.' + FOOTER_CONTENT);
-            var btns = footer.querySelectorAll('button');
-            if (btns.length > 0) {
-                btn = btns[btns.length - 1];
-            }
-            if (sf.base.isNullOrUndefined(btn) && footer.childNodes.length > 0) {
-                var value = 'input,select,textarea,button,a,[contenteditable="true"],[tabindex]';
-                var items = footer.querySelectorAll(value);
-                btn = items[items.length - 1];
+            if (!sf.base.isNullOrUndefined(footer)) {
+                btns = footer.querySelectorAll('button');
+                if (!sf.base.isNullOrUndefined(btn) && btns.length > 0) {
+                    btn = btns[btns.length - 1];
+                }
+                if (sf.base.isNullOrUndefined(btn) && footer.childNodes.length > 0) {
+                    var value = 'input,select,textarea,button,a,[contenteditable="true"],[tabindex]';
+                    var items = footer.querySelectorAll(value);
+                    btn = items[items.length - 1];
+                }
             }
             if (!sf.base.isNullOrUndefined(btn) && document.activeElement === btn && !e.shiftKey) {
                 e.preventDefault();

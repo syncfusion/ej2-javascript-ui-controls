@@ -1,7 +1,7 @@
 import { Droppable, DropEventArgs, isBlazor, addClass, isUndefined } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { setStyleAttribute, remove, updateBlazorTemplate, removeClass } from '@syncfusion/ej2-base';
-import { getUpdateUsingRaf, appendChildren } from '../base/util';
+import { getUpdateUsingRaf, appendChildren, parentsUntil } from '../base/util';
 import * as events from '../base/constant';
 import { IRenderer, IGrid, NotifyArgs, IModelGenerator, RowDataBoundEventArgs, CellFocusArgs, InfiniteScrollArgs } from '../base/interface';
 import { VirtualInfo } from '../base/interface';
@@ -42,8 +42,10 @@ export class ContentRender implements IRenderer {
     private tbody: HTMLElement;
     private viewColIndexes: number[] = [];
     private drop: Function = (e: DropEventArgs) => {
-        this.parent.notify(events.columnDrop, { target: e.target, droppedElement: e.droppedElement });
-        remove(e.droppedElement);
+        if (parentsUntil(e.target, 'e-row') || parentsUntil(e.target, 'e-emptyrow')) {
+            this.parent.notify(events.columnDrop, { target: e.target, droppedElement: e.droppedElement });
+            remove(e.droppedElement);
+        }
     }
     private args: NotifyArgs;
     private infiniteCache: { [x: number]: Row<Column>[] } | { [x: number]: Row<Column>[][] } = {};

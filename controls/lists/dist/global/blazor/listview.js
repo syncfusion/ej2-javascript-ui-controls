@@ -188,7 +188,7 @@ var ListView = /** @class */ (function (_super) {
                     break;
                 case 'headerTitle':
                     if (!this.curDSLevel.length) {
-                        this.header(this.headerTitle, false);
+                        this.header(this.headerTitle, false, 'header');
                     }
                     break;
                 case 'query':
@@ -205,7 +205,7 @@ var ListView = /** @class */ (function (_super) {
                     }
                     break;
                 case 'showHeader':
-                    this.header(this.headerTitle, false);
+                    this.header(this.headerTitle, false, 'header');
                     break;
                 case 'enableVirtualization':
                     if (!sf.base.isNullOrUndefined(this.contentContainer)) {
@@ -299,7 +299,7 @@ var ListView = /** @class */ (function (_super) {
         }
     };
     // Support Component Functions
-    ListView.prototype.header = function (text, showBack) {
+    ListView.prototype.header = function (text, showBack, prop) {
         if (sf.base.isBlazor() && this.isServerRendered) {
             var args = { HeaderText: text, BackButton: showBack };
             // tslint:disable
@@ -323,7 +323,7 @@ var ListView = /** @class */ (function (_super) {
                 if (this.headerTemplate) {
                     var compiledString = sf.base.compile(this.headerTemplate);
                     var headerTemplateEle = this.createElement('div', { className: classNames.headerTemplateText });
-                    sf.base.append(compiledString({}, null, null, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
+                    sf.base.append(compiledString({}, this, prop, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
                     sf.base.append([headerTemplateEle], this.headerEle);
                     this.updateBlazorTemplates(false, true, true);
                 }
@@ -680,7 +680,7 @@ var ListView = /** @class */ (function (_super) {
                 this.setSelectLI(li, e);
             }
             closestElement = sf.base.closest(e.target, 'li');
-            if (closestElement !== undefined) {
+            if (!sf.base.isNullOrUndefined(closestElement)) {
                 if (closestElement.classList.contains('e-has-child') &&
                     !e.target.parentElement.classList.contains('e-listview-checkbox')) {
                     closestElement.classList.add(classNames.disable);
@@ -1432,7 +1432,7 @@ var ListView = /** @class */ (function (_super) {
             this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
             if (this.selectedItems) {
                 var fieldData = sf.lists.getFieldValues(this.selectedItems.data, this.listBaseOption.fields);
-                this.header((fieldData[this.listBaseOption.fields.text]), true);
+                this.header((fieldData[this.listBaseOption.fields.text]), true, 'header');
             }
             this.selectedLI = undefined;
         }
@@ -1571,7 +1571,7 @@ var ListView = /** @class */ (function (_super) {
         if (this.enableHtmlSanitizer) {
             this.setProperties({ headerTitle: sf.base.SanitizeHtmlHelper.sanitize(this.headerTitle) }, true);
         }
-        this.header((this.curDSLevel.length ? text : this.headerTitle), (this.curDSLevel.length ? true : false));
+        this.header((this.curDSLevel.length ? text : this.headerTitle), (this.curDSLevel.length ? true : false), 'header');
     };
     /**
      * Selects the list item from the ListView by passing the elements or field object.

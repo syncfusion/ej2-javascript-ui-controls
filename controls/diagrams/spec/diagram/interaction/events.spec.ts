@@ -932,3 +932,45 @@ describe('The node behind the scrollbar is not selected while clicking scrollbar
         done();
     });
 });
+describe('Mouse Enter, Mouse Over event does not get triggered for selected item', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramscrollselection' });
+        document.body.appendChild(ele);
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let node: NodeModel = {
+        id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1' }]
+        };
+
+        diagram = new Diagram({
+            width: 1000, height: 1000, nodes: [node]
+        });
+        diagram.appendTo('#diagramscrollselection');       
+        
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Mouse Enter, Mouse Over event does not get triggered for selected item', (done: Function) => {
+        debugger
+         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+         let val: number=0;
+         diagram.mouseOver = function () {
+            val = 1;
+         };
+         mouseEvents.clickEvent(diagramCanvas, 120, 120);
+         mouseEvents.mouseMoveEvent(diagramCanvas, 130, 130);
+         expect(val > 0).toBe(true);
+         done();
+     });
+});

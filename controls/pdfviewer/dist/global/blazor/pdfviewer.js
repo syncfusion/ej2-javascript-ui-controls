@@ -26314,7 +26314,7 @@ var PdfViewerBase = /** @class */ (function () {
             window.open(blobUrl, '_parent');
         }
     };
-    PdfViewerBase.prototype.downloadExportAnnotationJson = function (blobUrl) {
+    PdfViewerBase.prototype.downloadExportAnnotationJson = function (blobUrl, isForm) {
         // tslint:disable-next-line
         var Url = URL || webkitURL;
         blobUrl = Url.createObjectURL(blobUrl);
@@ -26333,7 +26333,12 @@ var PdfViewerBase = /** @class */ (function () {
             (document.body || document.documentElement).appendChild(anchorElement);
             anchorElement.click();
             anchorElement.parentNode.removeChild(anchorElement);
-            this.pdfViewer.fireExportSuccess(blobUrl, anchorElement.download);
+            if (isForm) {
+                this.pdfViewer.fireFormExportSuccess(blobUrl, anchorElement.download);
+            }
+            else {
+                this.pdfViewer.fireExportSuccess(blobUrl, anchorElement.download);
+            }
         }
         else {
             if (window.top === window &&
@@ -26342,7 +26347,12 @@ var PdfViewerBase = /** @class */ (function () {
                 blobUrl = blobUrl.replace(/#|$/, padCharacter + '$&');
             }
             window.open(blobUrl, '_parent');
-            this.pdfViewer.fireExportSuccess(blobUrl, this.pdfViewer.fileName.split('.')[0] + '.json');
+            if (isForm) {
+                this.pdfViewer.fireFormExportSuccess(blobUrl, this.pdfViewer.fileName.split('.')[0] + '.json');
+            }
+            else {
+                this.pdfViewer.fireExportSuccess(blobUrl, this.pdfViewer.fileName.split('.')[0] + '.json');
+            }
         }
     };
     /**
@@ -26401,6 +26411,7 @@ var PdfViewerBase = /** @class */ (function () {
                             // tslint:disable-next-line
                             var annotationJson = decodeURIComponent(escape(atob(data.split(',')[1])));
                             resolve(annotationJson);
+                            proxy.pdfViewer.fireFormExportSuccess(annotationJson, proxy.pdfViewer.fileName);
                         }
                         else if (data.split('base64,')[1]) {
                             var blobUrl = proxy.createBlobUrl(data.split('base64,')[1], 'application/json');
@@ -26408,7 +26419,7 @@ var PdfViewerBase = /** @class */ (function () {
                                 window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0]);
                             }
                             else {
-                                proxy.downloadExportAnnotationJson(blobUrl);
+                                proxy.downloadExportAnnotationJson(blobUrl, true);
                             }
                         }
                     }
@@ -26485,7 +26496,7 @@ var PdfViewerBase = /** @class */ (function () {
                         data = null;
                     }
                 }
-                proxy.pdfViewer.fireFormImportSuccess(source.pdfAnnotation);
+                proxy.pdfViewer.fireFormImportSuccess(source);
                 window.sessionStorage.removeItem(this.documentId + '_formfields');
                 proxy.saveFormfieldsData(data);
                 for (var i = 0; i < proxy.renderedPagesList.length; i++) {
@@ -27064,6 +27075,7 @@ var PdfViewerBase = /** @class */ (function () {
             this.sessionStorage.push(this.documentId + '_' + pageIndex + '_' + zoomFactor);
         }
         else {
+            this.sessionStorage.push(this.documentId + '_' + pageIndex + '_' + tileX + '_' + tileY + '_' + zoomFactor);
             // tslint:disable-next-line:max-line-length
             window.sessionStorage.setItem(this.documentId + '_' + pageIndex + '_' + tileX + '_' + tileY + '_' + zoomFactor, JSON.stringify(storeObject));
         }
@@ -28180,7 +28192,7 @@ var PdfViewerBase = /** @class */ (function () {
                         }
                     }
                     // tslint:disable-next-line:max-line-length
-                    if (this.action === 'ResizeSouthEast' || this.action === 'ResizeNorthEast' || this.action === 'ResizeNorthWest' || this.action === 'ResizeSouth' ||
+                    if (this.action === 'ResizeSouthEast' || this.action === 'ResizeNorthEast' || this.action === 'ResizeNorthWest' || this.action === 'ResizeSouthWest' || this.action === 'ResizeSouth' ||
                         // tslint:disable-next-line:max-line-length
                         this.action === 'ResizeNorth' || this.action === 'ResizeWest' || this.action === 'ResizeEast' || this.action.includes('ConnectorSegmentPoint') || this.action.includes('Leader')) {
                         if (this.pdfViewer.annotationModule.checkAllowedInteractions('Resize', obj)) {
@@ -40277,7 +40289,7 @@ var PdfViewer = /** @class */ (function (_super) {
      */
     // tslint:disable-next-line
     PdfViewer.prototype.fireFormImportSuccess = function (data) {
-        var eventArgs = { name: 'importFormFieldsSuccess', importData: null, formFieldData: data };
+        var eventArgs = { name: 'importFormFieldsSuccess', importData: data, formFieldData: data };
         this.trigger('importSuccess', eventArgs);
     };
     /**
@@ -40285,7 +40297,7 @@ var PdfViewer = /** @class */ (function (_super) {
      */
     // tslint:disable-next-line
     PdfViewer.prototype.fireFormExportSuccess = function (data, fileName) {
-        var eventArgs = { name: 'exportFormFieldsSuccess', exportData: null, fileName: fileName, formFieldData: data };
+        var eventArgs = { name: 'exportFormFieldsSuccess', exportData: data, fileName: fileName, formFieldData: data };
         this.trigger('exportSuccess', eventArgs);
     };
     /**
@@ -40294,7 +40306,7 @@ var PdfViewer = /** @class */ (function (_super) {
     // tslint:disable-next-line
     PdfViewer.prototype.fireFormImportFailed = function (data, errorDetails) {
         //tslint:disable-next-line:max-line-length
-        var eventArgs = { name: 'importFormFieldsfailed', importData: null, errorDetails: errorDetails, formFieldData: data };
+        var eventArgs = { name: 'importFormFieldsfailed', importData: data, errorDetails: errorDetails, formFieldData: data };
         this.trigger('importFailed', eventArgs);
     };
     /**
@@ -40303,7 +40315,7 @@ var PdfViewer = /** @class */ (function (_super) {
     // tslint:disable-next-line
     PdfViewer.prototype.fireFormExportFailed = function (data, errorDetails) {
         //tslint:disable-next-line:max-line-length
-        var eventArgs = { name: 'exportFormFieldsFailed', exportData: null, errorDetails: errorDetails, formFieldData: data };
+        var eventArgs = { name: 'exportFormFieldsFailed', exportData: data, errorDetails: errorDetails, formFieldData: data };
         this.trigger('exportFailed', eventArgs);
     };
     /**
@@ -44185,7 +44197,7 @@ var TextSearch = /** @class */ (function () {
         var proxy = this;
         var jsonObject;
         // tslint:disable-next-line:max-line-length
-        jsonObject = { pageStartIndex: startIndex, pageEndIndex: endIndex, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, action: 'Search', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
+        jsonObject = { pageStartIndex: startIndex, pageEndIndex: endIndex, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, action: 'RenderPdfTexts', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
         if (this.pdfViewerBase.jsonDocumentId) {
             // tslint:disable-next-line
             jsonObject.documentId = this.pdfViewerBase.jsonDocumentId;

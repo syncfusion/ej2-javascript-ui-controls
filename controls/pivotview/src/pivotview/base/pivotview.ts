@@ -405,8 +405,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /** @hidden */
     public dataType: string;
     /** @hidden */
-    private localDataSourceSetting: any;
-    /** @hidden */
     public tooltip: Tooltip;
     /** @hidden */
     public grid: Grid;
@@ -511,6 +509,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     private defaultLocale: Object;
     /* tslint:disable-next-line:no-any */
     private timeOutObj: any;
+    private savedDataSourceSettings: DataSourceSettingsModel;
     private isEmptyGrid: boolean;
     private shiftLockedPos: string[] = [];
     private savedSelectedCellsPos: { rowIndex: string, colIndex: string }[] = [];
@@ -2592,9 +2591,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * @hidden
      */
     public onPropertyChanged(newProp: PivotViewModel, oldProp: PivotViewModel): void {
-        if (!isNullOrUndefined(newProp.dataSourceSettings) && !isNullOrUndefined(newProp.dataSourceSettings.dataSource)) {
-            this.localDataSourceSetting = PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings);
-        }
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'dataSourceSettings':
@@ -2608,6 +2604,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     }
                     if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
                         && Object.keys(newProp.dataSourceSettings)[0] === 'dataSource') {
+                        if ((newProp.dataSourceSettings.dataSource as IDataSet[]).length === 0) {
+                            this.savedDataSourceSettings = PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings);
+                            this.setProperties({ dataSourceSettings: { rows: [] } }, true);
+                            this.setProperties({ dataSourceSettings: { columns: [] } }, true);
+                            this.setProperties({ dataSourceSettings: { values: [] } }, true);
+                            this.pivotValues = [];
+                        }
                         this.engineModule.fieldList = null;
                         this.showWaitingPopup();
                         clearTimeout(this.timeOutObj);
@@ -2696,6 +2699,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         (Object.keys(newProp.chartSettings).indexOf('enableMultiAxis') !== -1 ||
                             (newProp.chartSettings.chartSeries && Object.keys(newProp.chartSettings.chartSeries).indexOf('type') !== -1))) {
                         this.groupingBarModule.renderLayout();
+                    }
+                    if (this.displayOption.view === 'Both' && isNullOrUndefined(this.chartModule)) {
+                        this.chartModule = new PivotChart();
                     }
                     this.chartModule.loadChart(this, this.chartSettings);
                     this.notify(events.uiUpdate, this);
@@ -3435,8 +3441,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /* tslint:enable */
 
     private onContentReady(): void {
-        if(!isNullOrUndefined(this.localDataSourceSetting)){
-            PivotUtil.updateDataSourceSettings(this, this.localDataSourceSetting);
+        if (!isNullOrUndefined(this.savedDataSourceSettings)) {
+            PivotUtil.updateDataSourceSettings(this, this.savedDataSourceSettings);
+            this.savedDataSourceSettings = undefined;
         }
         if (this.currentView !== 'Table') {
             /* tslint:disable-next-line */

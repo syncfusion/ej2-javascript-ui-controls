@@ -436,6 +436,7 @@ export class SfGrid {
         }
         if (this.options.frozenColumns) {
             this.freezeModule.refreshRowHeight();
+            this.freezeModule.setFrozenHeight();
         }
         if (this.options.enableVirtualization) {
             this.virtualContentModule.onDataReady();

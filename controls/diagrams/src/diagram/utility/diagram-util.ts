@@ -543,7 +543,10 @@ export function intersect3(lineUtil1: Segment, lineUtil2: Segment): Intersection
     let d: number = (l2.y2 - l2.y1) * (l1.x2 - l1.x1) - (l2.x2 - l2.x1) * (l1.y2 - l1.y1);
     let na: number = (l2.x2 - l2.x1) * (l1.y1 - l2.y1) - (l2.y2 - l2.y1) * (l1.x1 - l2.x1);
     let nb: number = (l1.x2 - l1.x1) * (l1.y1 - l2.y1) - (l1.y2 - l1.y1) * (l1.x1 - l2.x1);
-    if (d === 0) {
+    /*( EJ2-42102 - Connector segments not update properly ) by sivakumar sekar - condition added to avoid bridging for
+     overlapping segments in the connectors and to validate whether the connector is intersecting over the other */
+    if (d === 0 || ((lineUtil1.x1 === lineUtil2.x1 || lineUtil1.y1 === lineUtil2.y1) &&
+        (lineUtil1.x2 === lineUtil2.x2 || lineUtil1.y2 === lineUtil2.y2) && ((na === 0 || nb === 0) && d > 0))) {
         return { enabled: false, intersectPt: point };
     }
     let ua: number = na / d;
@@ -567,7 +570,6 @@ export function intersect2(start1: PointModel, end1: PointModel, start2: PointMo
     } else {
         return point;
     }
-
 }
 /** @private */
 export function getLineSegment(x1: number, y1: number, x2: number, y2: number): Segment {

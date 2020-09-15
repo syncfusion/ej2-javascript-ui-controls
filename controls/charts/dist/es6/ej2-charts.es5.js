@@ -4918,7 +4918,8 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
             for (var j = 0; j < axis.minorTicksPerInterval; j++) {
                 value = this.findLogNumeric(axis, logPosition, logInterval, value, labelIndex);
                 if (inside(value, range)) {
-                    position = Math.ceil(((value - range.min) / (range.max - range.min)) * rect.height) * -1;
+                    position = ((value - range.min) / (range.max - range.min));
+                    position = Math.ceil(((axis.isInversed ? (1 - position) : position)) * rect.height) * -1; // For inversed axis
                     coor = (Math.floor(position + rect.y + rect.height));
                     minorGird = minorGird.concat('M' + ' ' + (this.seriesClipRect.x) + ' ' + coor
                         + 'L ' + (this.seriesClipRect.x + this.seriesClipRect.width) + ' ' + coor + ' ');
@@ -22999,7 +23000,10 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         for (var _i = 0, _a = chart.visibleSeries; _i < _a.length; _i++) {
             var series = _a[_i];
             series.points.filter(function (point) {
-                element = document.elementFromPoint(point.symbolLocations[0].x + offsetX, point.symbolLocations[0].y + offsetY);
+                // To check whether the point have symbol location value or not.
+                if (point.symbolLocations && point.symbolLocations.length) {
+                    element = document.elementFromPoint(point.symbolLocations[0].x + offsetX, point.symbolLocations[0].y + offsetY);
+                }
                 if (element === path) {
                     point.isSelect = true;
                     if ((_this.chart.allowMultiSelection) && _this.currentMode === 'Lasso') {
@@ -27353,6 +27357,9 @@ var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
         accumulation.allowServerDataBinding = false;
         accumulation.trigger(seriesRender, argsData);
         this.resultData = e.result !== '' ? e.result : [];
+        if (!accumulation.isBlazor && !render) {
+            this.getPoints(this.resultData, accumulation); // To update datasource using onPropertyChanged method. incident id: 290690
+        }
         // tslint:disable
         if ((++accumulation.seriesCounts === accumulation.visibleSeries.length && render) || (window['Blazor'] && !render && accumulation.seriesCounts === 1)) {
             this.getPoints(this.resultData, accumulation);
@@ -33571,6 +33578,7 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
             }
         });
         var isStringTemplate = 'isStringTemplate';
+        var dateRangeId = controlId + 'customRange';
         this.toolbar[isStringTemplate] = true;
         this.toolbar.appendTo(selectorElement);
         this.triggerChange = true;
@@ -33583,20 +33591,26 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
                 endDate: new Date(this.control.endValue),
                 created: function (args) {
                     if (selctorArgs.enableCustomFormat) {
-                        var datePickerElement = document.getElementsByClassName('e-date-range-wrapper')[0];
+                        var datePicker = document.getElementsByClassName('e-date-range-wrapper');
+                        var datePickerElement = void 0;
+                        for (var i = 0; i < datePicker.length; i++) {
+                            if (datePicker[i].children[0].id.indexOf(controlId) !== -1) {
+                                datePickerElement = datePicker[i];
+                            }
+                        }
                         datePickerElement.style.display = 'none';
                         datePickerElement.insertAdjacentElement('afterend', createElement('div', {
-                            id: 'customRange',
+                            id: dateRangeId,
                             innerHTML: selctorArgs.content, className: 'e-btn e-dropdown-btn',
                             styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none '
                         }));
-                        getElement$1('customRange').insertAdjacentElement('afterbegin', (createElement('span', {
-                            id: 'dateIcon', className: 'e-input-group-icon e-range-icon e-btn-icon e-icons',
+                        getElement$1(dateRangeId).insertAdjacentElement('afterbegin', (createElement('span', {
+                            id: controlId + 'dateIcon', className: 'e-input-group-icon e-range-icon e-btn-icon e-icons',
                             styles: 'font-size: 16px; min-height: 0px; margin: -3px 0 0 0; outline: none; min-width: 30px'
                             // fix for date range icon alignment issue.
                         })));
-                        document.getElementById('customRange').onclick = function () {
-                            _this.datePicker.show(getElement$1('customRange'));
+                        document.getElementById(dateRangeId).onclick = function () {
+                            _this.datePicker.show(getElement$1(dateRangeId));
                         };
                     }
                 },

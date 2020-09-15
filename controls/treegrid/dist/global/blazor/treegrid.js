@@ -1324,7 +1324,7 @@ var Render = /** @class */ (function () {
         var pad = ispadfilter ? data.level : data.filterLevel;
         var totalIconsWidth = 0;
         var cellElement;
-        var column = this.parent.getColumnByField(args.column.field);
+        var column = this.parent.getColumnByUid(args.column.uid);
         var summaryRow = data.isSummaryRow;
         if (!sf.base.isNullOrUndefined(data.parentItem)) {
             index = data.parentItem.index;
@@ -4175,22 +4175,12 @@ var TreeGrid = /** @class */ (function (_super) {
      * @return {Column}
      */
     TreeGrid.prototype.getColumnByUid = function (uid) {
-        if (sf.base.isBlazor() && this.isServerRendered) {
-            return sf.grids.iterateArrayOrObject(this.grid.columns, function (item, index) {
-                if (item.uid === uid) {
-                    return item;
-                }
-                return undefined;
-            })[0];
-        }
-        else {
-            return sf.grids.iterateArrayOrObject(this.columnModel, function (item, index) {
-                if (item.uid === uid) {
-                    return item;
-                }
-                return undefined;
-            })[0];
-        }
+        return sf.grids.iterateArrayOrObject(this.grid.columns, function (item, index) {
+            if (item.uid === uid) {
+                return item;
+            }
+            return undefined;
+        })[0];
     };
     /**
      * Gets the collection of column fields.
@@ -6056,15 +6046,33 @@ var RowDD$1 = /** @class */ (function () {
             for (var i = dragLength - 1; i > -1; i--) {
                 draggedRecord_1 = dragRecords_1[i];
                 var recordIndex1 = 0;
-                if (!draggedRecord_1.taskData.hasOwnProperty(tObj.childMapping)) {
+                if (!sf.base.isNullOrUndefined(draggedRecord_1.taskData) &&
+                    !draggedRecord_1.taskData.hasOwnProperty(tObj.childMapping)) {
                     draggedRecord_1.taskData[tObj.childMapping] = [];
+                }
+                if (draggedRecord_1.hasOwnProperty(tObj.childMapping) &&
+                    (draggedRecord_1[tObj.childMapping]).length && !this.isDraggedWithChild) {
+                    var childData = (draggedRecord_1[tObj.childMapping]);
+                    for (var j = 0; j < childData.length; j++) {
+                        if (dragRecords_1.indexOf(childData[j]) === -1) {
+                            dragRecords_1.splice(j, 0, childData[j]);
+                            childData[j].taskData = sf.base.extend({}, childData[j]);
+                            i += 1;
+                        }
+                    }
+                }
+                if (draggedRecord_1.hasOwnProperty(tObj.parentIdMapping) && draggedRecord_1[tObj.parentIdMapping] != null
+                    && !this.isDraggedWithChild) {
+                    draggedRecord_1.taskData[tObj.parentIdMapping] = null;
+                    delete draggedRecord_1.parentItem;
+                    delete draggedRecord_1.parentUniqueID;
                 }
                 if (sf.base.isNullOrUndefined(tObj.dataSource)) {
                     tObj.dataSource = [];
                 }
                 tObj.dataSource.splice(recordIndex1, 0, draggedRecord_1.taskData);
-                tObj.setProperties({ dataSource: tObj.dataSource }, false);
             }
+            tObj.setProperties({ dataSource: tObj.dataSource }, false);
         }
         else {
             for (var i = 0; i < dragRecords.length; i++) {
@@ -6073,9 +6081,11 @@ var RowDD$1 = /** @class */ (function () {
             var args = { data: e.records, dropIndex: e.toIndex };
             if (this.parent.dataSource instanceof sf.data.DataManager) {
                 this.treeGridData = this.parent.dataSource.dataSource.json;
+                this.treeData = this.parent.dataSource.dataSource.json;
             }
             else {
                 this.treeGridData = this.parent.grid.dataSource;
+                this.treeData = this.parent.dataSource;
             }
             this.dropRows(args);
         }
@@ -6469,6 +6479,16 @@ var RowDD$1 = /** @class */ (function () {
             }
             tObj.notify(rowsRemove, { indexes: indexes, records: records });
             srcControl.notify(rowsAdd, { toIndex: targetIndex, records: records });
+            var srcControlFlatData = srcControl.rowDragAndDropModule.treeGridData;
+            if (!sf.base.isNullOrUndefined(srcControlFlatData)) {
+                for (var i = 0; i < srcControlFlatData.length; i++) {
+                    srcControlFlatData[i].index = i;
+                    if (!sf.base.isNullOrUndefined(srcControlFlatData[i].parentItem)) {
+                        var actualIndex = sf.base.getValue('uniqueIDCollection.' + srcControlFlatData[i].parentUniqueID + '.index', srcControl);
+                        srcControlFlatData[i].parentItem.index = actualIndex;
+                    }
+                }
+            }
             tObj.refresh();
             srcControl.refresh();
             if (srcControl.grid.dataSource.length > 1) {
@@ -6700,6 +6720,7 @@ var RowDD$1 = /** @class */ (function () {
             currentRecord = record.childRecords[i];
             count++;
             tObj.flatData.splice(count, 0, currentRecord);
+            sf.base.setValue('uniqueIDCollection.' + currentRecord.uniqueID, currentRecord, this.parent);
             if (tObj.parentIdMapping) {
                 this.treeData.splice(count, 0, currentRecord.taskData);
             }

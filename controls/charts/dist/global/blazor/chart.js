@@ -4913,7 +4913,8 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
             for (var j = 0; j < axis.minorTicksPerInterval; j++) {
                 value = this.findLogNumeric(axis, logPosition, logInterval, value, labelIndex);
                 if (inside(value, range)) {
-                    position = Math.ceil(((value - range.min) / (range.max - range.min)) * rect.height) * -1;
+                    position = ((value - range.min) / (range.max - range.min));
+                    position = Math.ceil(((axis.isInversed ? (1 - position) : position)) * rect.height) * -1; // For inversed axis
                     coor = (Math.floor(position + rect.y + rect.height));
                     minorGird = minorGird.concat('M' + ' ' + (this.seriesClipRect.x) + ' ' + coor
                         + 'L ' + (this.seriesClipRect.x + this.seriesClipRect.width) + ' ' + coor + ' ');
@@ -22994,7 +22995,10 @@ var Selection = /** @class */ (function (_super) {
         for (var _i = 0, _a = chart.visibleSeries; _i < _a.length; _i++) {
             var series = _a[_i];
             series.points.filter(function (point) {
-                element = document.elementFromPoint(point.symbolLocations[0].x + offsetX, point.symbolLocations[0].y + offsetY);
+                // To check whether the point have symbol location value or not.
+                if (point.symbolLocations && point.symbolLocations.length) {
+                    element = document.elementFromPoint(point.symbolLocations[0].x + offsetX, point.symbolLocations[0].y + offsetY);
+                }
                 if (element === path) {
                     point.isSelect = true;
                     if ((_this.chart.allowMultiSelection) && _this.currentMode === 'Lasso') {

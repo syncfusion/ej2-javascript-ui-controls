@@ -648,6 +648,7 @@ var Freeze = /** @class */ (function () {
         }
         if (this.parent.options.frozenColumns || this.parent.options.frozenRows) {
             this.clearWrapHeight();
+            this.refreshStackedHdrHgt();
             this.refreshFreeze({ case: 'refreshHeight' });
             if (this.parent.options.allowResizing) {
                 this.updateResizeHandler();
@@ -2805,8 +2806,9 @@ var Edit = /** @class */ (function () {
     }
     Edit.prototype.createTooltip = function (results, isAdd) {
         var toolTipPos = {};
+        var arrowPosition;
         for (var i = 0; i < results.length; i++) {
-            var gcontent = this.parent.getContent().firstElementChild;
+            var gcontent = this.parent.getContent();
             if (this.parent.options.frozenColumns) {
                 gcontent = this.parent.getContent().querySelector('.e-movablecontent');
             }
@@ -2844,10 +2846,9 @@ var Edit = /** @class */ (function () {
                     // isFHdr = fHeraderRows.length > (parseInt(row.getAttribute('aria-rowindex'), 10) || 0);
                     // isFHdrLastRow = isFHdr && parseInt(row.getAttribute('aria-rowindex'), 10) === fHeraderRows.length - 1;
                 }
-                if (isFHdrLastRow ||
-                    //viewPortRowCount > 1 && rows.length >= viewPortRowCount
-                    ((this.parent.options.newRowPosition === 'Bottom' && isAdd || (!sf.base.isNullOrUndefined(td) &&
-                        td.classList.contains('e-lastrowcell') && !row.classList.contains('e-addedrow'))) || isBatchModeLastRow)) {
+                if (isFHdrLastRow || (viewPortRowCount > 1 && rows.length >= viewPortRowCount &&
+                    (this.parent.options.newRowPosition === 'Bottom' && isAdd || (!sf.base.isNullOrUndefined(td)
+                        && td.classList.contains('e-lastrowcell') && !row.classList.contains('e-addedrow')))) || isBatchModeLastRow) {
                     validationForBottomRowPos = true;
                 }
             }
@@ -2928,9 +2929,10 @@ var Edit = /** @class */ (function () {
                 div.style.top = null;
             }
             div.style.display = 'none';
+            arrowPosition = validationForBottomRowPos ? 'bottom' : 'top';
             toolTipPos[name_1] = "top: " + div.style.top + "; bottom: " + div.style.bottom + "; left: " + div.style.left + "; \n            max-width: " + div.style.maxWidth + "; width: " + div.style.width + "; text-align: center; position: " + div.style.position + ";";
         }
-        this.parent.dotNetRef.invokeMethodAsync("ShowValidationPopup", toolTipPos);
+        this.parent.dotNetRef.invokeMethodAsync("ShowValidationPopup", toolTipPos, arrowPosition);
     };
     return Edit;
 }());
@@ -4958,6 +4960,7 @@ var SfGrid = /** @class */ (function () {
         }
         if (this.options.frozenColumns) {
             this.freezeModule.refreshRowHeight();
+            this.freezeModule.setFrozenHeight();
         }
         if (this.options.enableVirtualization) {
             this.virtualContentModule.onDataReady();

@@ -2960,22 +2960,13 @@ private getGridEditSettings(): GridEditModel {
      * @return {Column}
      */
     public getColumnByUid(uid: string): Column {
-      if (isBlazor() && this.isServerRendered) {
-        return iterateArrayOrObject<Column, Column>(<Column[]>this.grid.columns, (item: Column, index: number) => {
+      return iterateArrayOrObject<Column, Column>(<Column[]>this.grid.columns, (item: Column, index: number) => {
           if (item.uid === uid) {
               return item;
           }
           return undefined;
         })[0];
-      } else {
-        return iterateArrayOrObject<Column, Column>(<Column[]>this.columnModel, (item: Column, index: number) => {
-          if (item.uid === uid) {
-              return item;
-          }
-          return undefined;
-        })[0];
-      }
-  }
+ }
 
     /**
      * Gets the collection of column fields.     

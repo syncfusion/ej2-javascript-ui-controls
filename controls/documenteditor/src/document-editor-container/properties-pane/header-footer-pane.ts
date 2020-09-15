@@ -162,7 +162,7 @@ export class HeaderFooterProperties {
         headerTopLabel.innerHTML = localObj.getConstant('Header from Top');
         headerTopDiv.appendChild(headerTopLabel);
         // tslint:disable-next-line:max-line-length
-        let headerFromTop: HTMLInputElement = createElement('input', { id: 'headerFromTop', className: 'e-de-prop-sub-label' }) as HTMLInputElement;
+        let headerFromTop: HTMLInputElement = createElement('input', { id: this.documentEditor.element.id + '_headerFromTop', className: 'e-de-prop-sub-label' }) as HTMLInputElement;
         headerTopDiv.appendChild(headerFromTop);
         // tslint:disable-next-line:max-line-length
         this.headerFromTop = new NumericTextBox({
@@ -179,7 +179,7 @@ export class HeaderFooterProperties {
         footerBottomLabel.innerHTML = localObj.getConstant('Footer from Bottom');
         footerBottomDiv.appendChild(footerBottomLabel);
         // tslint:disable-next-line:max-line-length
-        let footerFromTop: HTMLInputElement = createElement('input', { id: 'footerFromTop', className: 'e-de-prop-sub-label' }) as HTMLInputElement;
+        let footerFromTop: HTMLInputElement = createElement('input', { id: this.documentEditor.element.id + '_footerFromTop', className: 'e-de-prop-sub-label' }) as HTMLInputElement;
         footerBottomDiv.appendChild(footerFromTop);
         // tslint:disable-next-line:max-line-length
         this.footerFromTop = new NumericTextBox({

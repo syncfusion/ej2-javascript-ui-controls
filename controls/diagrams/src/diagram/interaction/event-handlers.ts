@@ -1543,6 +1543,11 @@ export class DiagramEventHandler {
             args.targetWrapper = wrapper;
         }
         args.actualObject = this.eventArgs.actualObject;
+        if (args.source instanceof Selector && args.actualObject === undefined &&
+            (args.source.nodes.length > 0 || args.source.connectors.length > 0)) {
+            args.actualObject = args.source.nodes.length > 0 ? this.diagram.nameTable[args.source.nodes[0].id]
+                : this.diagram.nameTable[args.source.connectors[0].id];
+        }
         args.startTouches = this.touchStartList;
         args.moveTouches = this.touchMoveList;
         return args;

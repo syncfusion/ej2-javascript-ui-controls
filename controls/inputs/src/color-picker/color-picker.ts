@@ -644,7 +644,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     }
 
     private updateOpacityInput(value: number): void {
-        if (!this.getWrapper().classList.contains(HIDEVALUE)) {
+        if (this.enableOpacity && !this.getWrapper().classList.contains(HIDEVALUE)) {
             let opacityTextBoxInst: NumericTextBox = getInstance(
                 select('.' + OPACITY, this.container) as HTMLInputElement, NumericTextBox) as NumericTextBox;
             opacityTextBoxInst.value = value; opacityTextBoxInst.dataBind();

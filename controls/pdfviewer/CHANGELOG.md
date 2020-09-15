@@ -4,6 +4,14 @@
 
 ### PDF Viewer
 
+#### Bug Fixes
+
+- `#F156838` - The exportSuccess event triggers properly if we export the form fields data using ExportFormFieldsAsObject method.
+
+## 18.2.57 (2020-09-08)
+
+### PDF Viewer
+
 #### New Features
 
 - `#283678` - Exposed the method for deleting the annotations.

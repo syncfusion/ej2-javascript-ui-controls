@@ -44,7 +44,7 @@ export class Text {
     public initializeTextPropertiesDiv(wholeDiv: HTMLElement, isRtl?: boolean): void {
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         this.textProperties = wholeDiv;
-        let element: string = 'font_properties';
+        let element: string = this.documentEditor.element.id + '_font_properties';
         let textDiv: HTMLElement = this.createDiv(element + '_text', wholeDiv);
         classList(textDiv, ['e-de-cntr-pane-padding', 'e-de-prop-separator-line'], []);
         let label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });

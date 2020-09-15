@@ -2749,6 +2749,10 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.hiddenElement.innerHTML = '';
         if (!isNullOrUndefined(this.value)) {
             for (let index: number = 0; !isNullOrUndefined(this.value[index]); index++) {
+                let listValue: HTMLElement = this.findListElement(this.mainList, 'li', 'data-value', this.value[index]);
+                if (isNullOrUndefined(listValue) && !this.allowCustomValue) {
+                    this.value.splice(index, 1);
+                }
                 if (this.listData) {
                     temp = this.getTextByValue(this.value[index]);
                 } else {

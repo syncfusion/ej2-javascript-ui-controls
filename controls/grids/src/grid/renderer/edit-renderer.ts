@@ -12,7 +12,7 @@ import { RowModelGenerator } from '../services/row-model-generator';
 import { IModelGenerator, ICellRenderer } from '../base/interface';
 import { Cell } from '../models/cell';
 import { FocusStrategy } from '../services/focus-strategy';
-import { getComplexFieldID, getObject, appendChildren, parentsUntil } from '../base/util';
+import { getComplexFieldID, getObject, appendChildren, parentsUntil, extendObjWithFn } from '../base/util';
 import * as events from '../base/constant';
 /**
  * Edit render module is used to render grid edit row.
@@ -151,7 +151,8 @@ export class EditRender {
         }
     }
 
-    private getEditElements(args: { rowData?: Object, columnName?: string, requestType?: string, row?: Element }): Object {
+    private getEditElements(args: { rowData?: Object, columnName?: string, requestType?: string, row?: Element,
+                            rowIndex?: number }): Object {
         let gObj: IGrid = this.parent;
         let elements: Object = {};
         let cols: Column[] = gObj.editSettings.mode !== 'Batch' ? gObj.getColumns() as Column[] : [gObj.getColumnByField(args.columnName)];
@@ -184,8 +185,9 @@ export class EditRender {
             if (col.editTemplate) {
                 input = this.parent.createElement('span', {attrs: {'e-mappinguid': col.uid}});
                 let tempID: string = this.parent.element.id + col.uid + 'editTemplate';
-                let tempData: object = extend({}, {}, args.rowData, true);
-                let template: Element[] | NodeList = col.getEditTemplate()(tempData, this.parent, 'editTemplate', tempID);
+                let tempData: object = extendObjWithFn({}, args.rowData, { column: col });
+                let template: Element[] | NodeList = col.getEditTemplate()(
+                    extend({ 'index': args.rowIndex }, tempData), this.parent, 'editTemplate', tempID);
                 /* tslint:disable-next-line:no-any */
                 (this.parent as any).isReact && this.parent.editSettings.mode === 'Batch' ?
                 setTimeout(() => { appendChildren(input, template); }) : appendChildren(input, template);

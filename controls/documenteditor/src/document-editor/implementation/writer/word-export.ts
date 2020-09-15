@@ -18,6 +18,9 @@ export class WordExport {
     }
 
     //Part path
+    private customXMLItemsPath: string = 'customXml/item';
+    private customXMLItemsPropspath: string = 'customXml/itemProps';
+    private itemPropsPath: string = 'itemProps';
     private documentPath: string = 'word/document.xml';
     private stylePath: string = 'word/styles.xml';
     private chartPath: string = 'word/charts';
@@ -53,6 +56,7 @@ export class WordExport {
     //Relationship path
     private generalRelationPath: string = '_rels/.rels';
     private wordRelationPath: string = 'word/_rels/document.xml.rels';
+    private customXMLRelPath: string = 'customXml/_rels/item';
     private excelRelationPath: string = 'xl/_rels/workbook.xml.rels';
     // private FontRelationPath: string = 'word/_rels/fontTable.xml.rels';
     // private CommentsRelationPath: string = 'word/_rels/comments.xml.rels';
@@ -262,6 +266,7 @@ export class WordExport {
     private wordMLCustomXmlPropsRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXmlProps';
     private wordMLControlRelType: string = 'http://schemas.microsoft.com/office/2006/relationships/activeXControlBinary';
     private wordMLDiagramContentType: string = 'application/vnd.ms-office.drawingml.diagramDrawing+xml';
+    private dsNamespace: string = 'http://schemas.openxmlformats.org/officeDocument/2006/customXml';
     private excelFiles: Dictionary<string, ZipArchive> = undefined;
     /* tslint:disable:no-any */
     // Owner Nodes
@@ -294,6 +299,7 @@ export class WordExport {
     private mVerticalMerge: Dictionary<number, number>;
     private mGridSpans: Dictionary<number, number>;
     private mDocumentImages: Dictionary<string, any>;
+    private mCustomXML: Dictionary<string, any>;
     private mDocumentCharts: Dictionary<string, any>;
     private mExternalLinkImages: Dictionary<string, string>;
     private mHeaderFooterImages: Dictionary<string, Dictionary<string, any>>;
@@ -309,6 +315,7 @@ export class WordExport {
     private spanCellFormat: any;
     private mComments: any[] = [];
     private revisions: any[] = [];
+    private customXMLProps: any[] = [];
     private paraID: number = 0;
     private commentParaID: number = 0;
     private commentParaIDInfo: any = {};
@@ -460,6 +467,7 @@ export class WordExport {
         let document: any = documentHelper.owner.sfdtExportModule.write();
         this.setDocument(document);
         this.mComments = documentHelper.comments;
+        this.mCustomXML = documentHelper.customXmlData;
         this.revisions = documentHelper.owner.revisions.changes;
         this.mArchive = new ZipArchive();
         this.mArchive.compressionLevel = 'Normal';
@@ -506,7 +514,6 @@ export class WordExport {
         //     SerializeNumberingsRelation();
         // }
         this.serializeHeaderFooters();
-
         //document relations
         this.serializeDocumentRelations();
         // // Add controls to archieve.
@@ -566,6 +573,7 @@ export class WordExport {
         this.defCharacterFormat = undefined;
         this.defParagraphFormat = undefined;
         this.defaultTabWidthValue = undefined;
+        this.customXMLProps = [];
         this.mRelationShipID = 0;
         this.eRelationShipId = 0;
         this.cRelationShipId = 0;
@@ -1016,12 +1024,222 @@ export class WordExport {
             this.serializeBodyItem(writer, blockCollection[i], isLastSection);
         }
     }
+    // serialize the content Control
+    // tslint:disable-next-line:max-line-length
+    private serializeContentControl(writer: XmlWriter, contentControlItem: any, item: any, isLastSection?: boolean, inlines?: boolean): void {
+        if (isNullOrUndefined(contentControlItem)) {
+            throw new Error('contentCOntrol should not be undefined');
+        }
+        writer.writeStartElement('w', 'sdt', this.wNamespace);
+        writer.writeStartElement(undefined, 'sdtPr', this.wNamespace);
+        if (!isNullOrUndefined(contentControlItem)) {
+            this.serializeContentProperties(writer, contentControlItem, item, isLastSection, inlines);
+        }
+    }
+    // serialize Content Control Properties
+    // tslint:disable-next-line:max-line-length
+    // tslint:disable:max-func-body-length
+    private serializeContentProperties(writer: XmlWriter, contentProperties: any, items: any, isLastSection: boolean, inlines?: boolean): void {
+        let repeatSdt: any = undefined;
+        if (!isNullOrUndefined(contentProperties.title)) {
+            writer.writeStartElement(undefined, 'alias', this.wNamespace);
+            writer.writeAttributeString('w', 'val', this.wNamespace, contentProperties.title);
+            writer.writeEndElement();
+            writer.writeStartElement(undefined, 'tag', this.wNamespace);
+            writer.writeAttributeString('w', 'val', this.wNamespace, contentProperties.tag);
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(contentProperties.characterFormat)) {
+            this.serializeCharacterFormat(writer, items.contentControlProperties.characterFormat);
+        }
+        // if (items.hasOwnProperty('blocks') && contentProperties.type !== 'CheckBox') {
+        //     this.serializeContentParagraph(writer, items);
+        // }
+        if (contentProperties.lockContents || contentProperties.lockContentControl) {
+            writer.writeStartElement(undefined, 'lock', this.wNamespace);
+            if (contentProperties.lockContentControl && contentProperties.lockContents) {
+                writer.writeAttributeString('w', 'val', this.wNamespace, 'sdtContentLocked');
+            } else if (contentProperties.lockContentControl) {
+                writer.writeAttributeString('w', 'val', this.wNamespace, 'sdtLocked');
+            } else if (contentProperties.lockContents) {
+                writer.writeAttributeString('w', 'val', this.wNamespace, 'contentLocked');
+            }
+            writer.writeEndElement();
+        }
+        if (contentProperties.hasPlaceHolderText && isNullOrUndefined(repeatSdt)) {
+            writer.writeStartElement('w', 'placeholder', undefined);
+            writer.writeAttributeString('w', 'docPart', this.wNamespace, undefined);
+            writer.writeEndElement();
+            writer.writeStartElement('w', 'showingPlcHdr', undefined);
+            writer.writeEndElement();
+        }
+        if (contentProperties.isTemporary) {
+            writer.writeStartElement('w', 'temporary', undefined);
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(contentProperties.appearance)) {
+            writer.writeStartElement('w15', 'appearance', undefined);
+            writer.writeAttributeString('w15', 'val', undefined, contentProperties.appearance.toLowerCase());
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(contentProperties.color)) {
+            writer.writeStartElement('w15', 'color', undefined);
+            writer.writeAttributeString('w', 'val', undefined, this.getColor(contentProperties.color));
+            writer.writeEndElement();
+        }
+        if (contentProperties.multiline) {
+            writer.writeStartElement(undefined, 'text', this.wNamespace);
+            writer.writeAttributeString('w', 'multiLine', this.wNamespace, '1');
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(contentProperties.xmlMapping)) {
+            if (contentProperties.xmlMapping.isMapped) {
+                writer.writeStartElement('w', 'dataBinding', this.wNamespace);
+                writer.writeAttributeString('w', 'xpath', undefined, contentProperties.xmlMapping.xPath);
+                writer.writeAttributeString('w', 'storeItemID', undefined, contentProperties.xmlMapping.storeItemId);
+                writer.writeEndElement();
+            }
+        }
+        if (contentProperties.picture) {
+            writer.writeStartElement('w', 'picture', this.wNamespace);
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(contentProperties.uncheckedState || contentProperties.checkedState)) {
+            writer.writeStartElement('w14', 'checkbox', undefined);
+            if (contentProperties.isChecked) {
+                writer.writeStartElement('w14', 'checked', undefined);
+                writer.writeAttributeString('w14', 'val', undefined, '1');
+                writer.writeEndElement();
+            } else {
+                writer.writeStartElement('w14', 'checked', undefined);
+                writer.writeAttributeString('w14', 'val', undefined, '0');
+                writer.writeEndElement();
+            }
+            writer.writeStartElement('w14', 'uncheckedState', undefined);
+            writer.writeAttributeString('w14', 'val', undefined, this.toUnicode(contentProperties.uncheckedState.value));
+            writer.writeAttributeString('w14', 'font', undefined, (contentProperties.uncheckedState.font));
+            writer.writeEndElement();
+            writer.writeStartElement('w14', 'checkedState', undefined);
+            writer.writeAttributeString('w14', 'val', undefined, this.toUnicode(contentProperties.checkedState.value));
+            writer.writeAttributeString('w14', 'font', undefined, contentProperties.checkedState.font);
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(contentProperties.contentControlListItems) && contentProperties.type === 'DropDownList') {
+            // tslint:disable:no-duplicate-variable
+            let dropDownLists: any = contentProperties.contentControlListItems;
+            writer.writeStartElement(undefined, 'dropDownList', this.wNamespace);
+            this.serializeContentControlList(writer, dropDownLists);
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(contentProperties.contentControlListItems) && contentProperties.type === 'ComboBox') {
+            let comboList: any = contentProperties.contentControlListItems;
+            writer.writeStartElement(undefined, 'comboBox', this.wNamespace);
+            this.serializeContentControlList(writer, comboList);
+            writer.writeEndElement();
+        }
+        this.serializeContentControlDate(writer, contentProperties);
+        if (!isNullOrUndefined(contentProperties.type)) {
+            if (contentProperties.type === 'Picture') {
+                writer.writeStartElement(undefined, 'picture', this.wNamespace);
+                writer.writeEndElement();
+            }
+        }
+        writer.writeEndElement();
+        writer.writeStartElement('w', 'sdtContent', this.wNamespace);
+        if (inlines) {
+            return;
+        }
+        if (items.hasOwnProperty('blocks') && (isNullOrUndefined(items.cellFormat))) {
+            for (let i: number = 0; i < items.blocks.length; i++) {
+                let block: any = items.blocks[i];
+                if (block.hasOwnProperty('inlines')) {
+                    this.paragraph = block;
+                    this.serializeParagraph(writer, block, isLastSection);
+                    this.paragraph = undefined;
+                } else if (block.hasOwnProperty('rowFormat')) {
+                    this.serializeRow(writer, block);
+                } else if (block.hasOwnProperty('contentControlProperties')) {
+                    this.serializeContentControl(writer, block.contentControlProperties, block, isLastSection);
+                } else {
+                    let table: any = block;
+                    this.serializeTable(writer, table);
+                }
+            }
+        } else if (items.hasOwnProperty('rowFormat')) {
+            if (items.cells.length > 0) {
+                this.serializeRow(writer, items);
+            }
+        } else if (items.hasOwnProperty('cellFormat')) {
+            this.serializeCell(writer, items);
+        }
+        writer.writeEndElement();
+        writer.writeEndElement();
+    }
+    private toUnicode(code: string): any {
+        let charCode: number = code.charCodeAt(0);
+        return charCode.toString(16);
+    }
+    //serialize dropdown and list property 
+    private serializeContentControlList(writer: XmlWriter, lists: any): void {
+        for (let i: number = 0; i < lists.length; i++) {
+            writer.writeStartElement(undefined, 'listItem', this.wNamespace);
+            if (!isNullOrUndefined(lists[i].displayText)) {
+                writer.writeAttributeString('w', 'displayText', this.wNamespace, lists[i].displayText);
+            }
+            writer.writeAttributeString('w', 'value', this.wNamespace, lists[i].value);
+            writer.writeEndElement();
+        }
+    }
+    //Serialize character formatfor content control
+    private serializeContentParagraph(writer: XmlWriter, items: any): any {
+        for (let i: number = 0; i < items.blocks.length; i++) {
+            let blocks: any = items.blocks[i];
+            if (blocks.hasOwnProperty('inlines')) {
+                for (let j: number = 0; j < blocks.inlines.length; j++) {
+                    let inlines: any = blocks.inlines[j];
+                    if (!isNullOrUndefined(inlines.characterFormat)) {
+                        this.serializeCharacterFormat(writer, inlines.characterFormat);
+                    }
+                }
+            }
+        }
+    }
+    // serialize content control date property
+    private serializeContentControlDate(writer: XmlWriter, contentProperties: any): any {
+        if (contentProperties.type === 'Date') {
+            writer.writeStartElement('w', 'date', this.wNamespace);
+            if (!isNullOrUndefined(contentProperties.dateDisplayFormat)) {
+                writer.writeStartElement('w', 'calender', this.wNamespace);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, contentProperties.dateCalendarType);
+                writer.writeEndElement();
+            }
+            if (!isNullOrUndefined(contentProperties.dateDisplayLocale)) {
+                writer.writeStartElement('w', 'lid', this.wNamespace);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, contentProperties.dateDisplayLocale);
+                writer.writeEndElement();
+            }
+            if (!isNullOrUndefined(contentProperties.dateStorageFormat)) {
+                writer.writeStartElement('w', 'storeMappedDataAs', this.wNamespace);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, contentProperties.dateStorageFormat);
+                writer.writeEndElement();
+            }
+            if (!isNullOrUndefined(contentProperties.dateCalendarType)) {
+                writer.writeStartElement('w', 'dateFormat', this.wNamespace);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, contentProperties.dateDisplayFormat);
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+    }
     // Serialize the TextBody item
     private serializeBodyItem(writer: XmlWriter, item: any, isLastSection: boolean): void {
         if (isNullOrUndefined(item)) {
             throw new Error('BodyItem should not be undefined');
         }
-        if (item.hasOwnProperty('inlines')) {
+        if (item.hasOwnProperty('contentControlProperties')) {
+            this.serializeContentControl(writer, item.contentControlProperties, item, isLastSection);
+        } else if (item.hasOwnProperty('inlines')) {
             this.paragraph = item;
             this.serializeParagraph(writer, item, isLastSection);
             this.paragraph = undefined;
@@ -1129,10 +1347,19 @@ export class WordExport {
     }
     // Serialize the paragraph items
     private serializeParagraphItems(writer: XmlWriter, paraItems: any): void {
+        let inlines: boolean;
         let previousNode: any = undefined;
         let isContinueOverride: boolean = false;
         for (let i: number = 0; i < paraItems.length; i++) {
             let item: any = paraItems[i];
+            if (item.hasOwnProperty('contentControlProperties')) {
+                inlines = true;
+                this.serializeContentControl(writer, item.contentControlProperties, item, undefined, inlines);
+                this.serializeParagraphItems(writer, item.inlines);
+            }
+            if (item.hasOwnProperty('inlines')) {
+                this.serializeParagraphItems(writer, item);
+            }
             this.serializeRevisionStart(writer, item, previousNode);
             let isBdo: boolean = false;
             if (item.characterFormat) {
@@ -1171,6 +1398,11 @@ export class WordExport {
             //Serialize revision end
             this.serializeRevisionEnd(writer, item, previousNode);
             previousNode = item;
+            if (inlines) {
+                writer.writeEndElement();
+                writer.writeEndElement();
+                inlines = false;
+            }
         }
         if (isContinueOverride) {
             writer.writeEndElement();
@@ -3134,6 +3366,10 @@ export class WordExport {
             for (let i: number = 0; i < rows.length; i++) {
                 let row: any = rows[i];
                 if (row.cells.length > 0) {
+                    if (row.hasOwnProperty('contentControlProperties')) {
+                        this.serializeContentControl(writer, row.contentControlProperties, row);
+                        continue;
+                    }
                     this.serializeRow(writer, row);
                 }
             }
@@ -3237,6 +3473,10 @@ export class WordExport {
     // serialize the table cells
     private serializeCells(writer: XmlWriter, cells: any): void {
         for (let i: number = 0; i < cells.length; i++) {
+            if (cells[i].hasOwnProperty('contentControlProperties')) {
+                this.serializeContentControl(writer, cells[i].contentControlProperties, cells[i]);
+                continue;
+            }
             this.serializeCell(writer, cells[i]);
         }
     }
@@ -4368,6 +4608,51 @@ export class WordExport {
         }
         writer.writeEndElement();
     }
+    //creates custom xml mapping
+    private serializeCustomXMLMapping(customXML: any, writer: XmlWriter): any {
+        if (customXML.length > 0) {
+            let keys: string = customXML.keys;
+            for (let i: number = 0; i < keys.length; i++) {
+                let customXmlWriter: XmlWriter = new XmlWriter();
+                customXmlWriter.writeStartElement(undefined, 'Relationships', this.rpNamespace);
+                let xmlData: any = this.mCustomXML.get(keys[i]);
+                let itemID: string = keys[i];
+                let id: string = this.getNextRelationShipID();
+                let fileIndex: number = i + 1;
+                let itemPath: string = this.createXMLItem(xmlData, id, fileIndex);
+                let itemPropsPath: string = this.createXMLItemProps(itemID, fileIndex);
+                this.serializeRelationShip(writer, id, this.customXmlRelType, '../' + itemPath);
+                this.customXMLRelation(customXmlWriter, fileIndex, itemPropsPath);
+                customXmlWriter.writeEndElement();
+                // tslint:disable-next-line:max-line-length
+                let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(customXmlWriter.buffer, this.customXMLRelPath + fileIndex + '.xml.rels');
+                this.mArchive.addItem(zipArchiveItem);
+            }
+        }
+    }
+    private customXMLRelation(writer: XmlWriter, fileIndex: number, itemPropsPath: string): void {
+        this.serializeRelationShip(writer, 'rId1', this.wordMLCustomXmlPropsRelType, itemPropsPath);
+    }
+    private createXMLItem(xmlData: any, id: string, fileIndex: number): any {
+        let xmlBlob: Blob = new Blob([xmlData], { type: 'text/plain' });
+        let itemPath: string = this.customXMLItemsPath + fileIndex + '.xml';
+        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(xmlBlob, itemPath);
+        this.mArchive.addItem(zipArchiveItem);
+        return itemPath;
+    }
+    private createXMLItemProps(itemID: string, fileIndex: number): any {
+        let writer: XmlWriter = new XmlWriter();
+        let customitemPropsPath: string = this.customXMLItemsPropspath + fileIndex + '.xml';
+        let itemPropsPath: string = this.itemPropsPath + fileIndex + '.xml';
+        writer.writeStartElement('ds', 'datastoreItem', this.wNamespace);
+        writer.writeAttributeString('ds', 'itemID', undefined, itemID);
+        writer.writeAttributeString('xmlns', 'ds', undefined, this.dsNamespace);
+        writer.writeEndElement();
+        this.customXMLProps.push(customitemPropsPath);
+        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, customitemPropsPath);
+        this.mArchive.addItem(zipArchiveItem);
+        return itemPropsPath;
+    }
     // Serialize the styles (styles.xml)
     private serializeStyles(): void {
 
@@ -5189,7 +5474,8 @@ export class WordExport {
         // SerializeIncludePictureUrlRelations(docRelstream, InclPicFieldUrl);
         // //// Creating relationships for every hyperlink and image containing in the document
         this.serializeImagesRelations(this.documentImages, writer);
-
+        // serialize custom xml
+        this.serializeCustomXMLMapping(this.mCustomXML, writer);
         // serialize chart relations
         this.serializeChartDocumentRelations(this.documentCharts, writer);
         // SerializeSvgImageRelation();
@@ -5496,7 +5782,12 @@ export class WordExport {
                 count++;
             }
         }
-
+        // Custom XML mapping
+        if (this.customXMLProps.length > 0) {
+            for (let i: number = 0; i < this.customXMLProps.length; i++) {
+                this.serializeOverrideContentType(writer, this.customXMLProps[i], this.customXmlContentType);
+            }
+        }
         //             //core.xml
         //             SerializeOverrideContentType(contentStream, this.corePath, this.CoreContentType);
         //             //app.xml

@@ -4054,13 +4054,17 @@ describe('MultiSelect', () => {
         let popupObj: any;
         let originalTimeout: number;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let remoteData: DataManager = new DataManager({ 
+            url: 'https://ej2services.syncfusion.com/production/web-services/api/Employees',
+            adaptor: new WebApiAdaptor ,
+            crossDomain: true
+         });
         beforeAll((done) => {
             document.body.innerHTML = '';
             document.body.appendChild(element);
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, mode: 'Delimiter', fields: { text: "text", value: "text" } });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, mode: 'Delimiter', fields: { text: "FirstName", value: "EmployeeID" } });
             listObj.appendTo(element);
             done();
         });
@@ -4071,7 +4075,7 @@ describe('MultiSelect', () => {
             }
         });
         it('value set dyanamically', (done) => {
-            listObj.value = [1004];
+            listObj.value = [1];
             listObj.dataBind();
             setTimeout(() => {
                 expect(listObj.value.length).toBe(1);
@@ -7311,5 +7315,61 @@ describe('MultiSelect', () => {
                 }
         });
     });
-
+    describe('EJ2-42061 - Preselected value is added to the control, if we provide invalid value', () => {
+        let listObj: any;
+        let mEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multi' });
+        let countries: { [key: string]: Object }[] = [
+            { Name: "Australia", Code: "AU" },
+            { Name: "Bermuda", Code: "BM" },
+            { Name: "Canada", Code: "CA" },
+            { Name: "Cameroon", Code: "CM" },
+            { Name: "Denmark", Code: "DK" },
+            { Name: "France", Code: "FR" },
+            { Name: "Greenland", Code: "GL" },
+            { Name: "Hong Kong", Code: "HK" },
+            { Name: "India", Code: "IN" },
+            { Name: "Italy", Code: "IT" },
+            { Name: "Japan", Code: "JP" },
+            { Name: "Mexico", Code: "MX" },
+            { Name: "Norway", Code: "NO" },
+            { Name: "Poland", Code: "PL" },
+            { Name: "Switzerland", Code: "CH" },
+            { Name: "United Kingdom", Code: "GB" },
+            { Name: "United States", Code: "US" }
+        ];
+        beforeEach(() => {
+            document.body.appendChild(mEle);
+            listObj = new MultiSelect({
+                dataSource: countries,
+                fields: { text: 'Name', value: 'Code' },
+                value: ['AU', 'CM', 'AM', 'PL'],
+            });
+            listObj.appendTo(mEle);
+        });
+        afterEach(() => {
+            listObj.destroy();
+            mEle.remove();
+        });
+        it('default mode', () => {
+            listObj.mode = "Default";
+            expect(listObj.value.length).toBe(3);
+            expect(listObj.value[0]).toBe("AU");
+            expect(listObj.value[1]).toBe("CM");
+            expect(listObj.value[2]).toBe("PL");
+        });
+        it('delimiter mode', () => {
+            listObj.mode = "Delimiter";
+            expect(listObj.value.length).toBe(3);
+            expect(listObj.value[0]).toBe("AU");
+            expect(listObj.value[1]).toBe("CM");
+            expect(listObj.value[2]).toBe("PL");
+        });
+        it('delimiter mode', () => {
+            listObj.mode = "Box";
+            expect(listObj.value.length).toBe(3);
+            expect(listObj.value[0]).toBe("AU");
+            expect(listObj.value[1]).toBe("CM");
+            expect(listObj.value[2]).toBe("PL");
+        });
+    });
 });

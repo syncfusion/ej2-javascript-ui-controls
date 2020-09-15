@@ -11273,7 +11273,7 @@ let ColorPicker = class ColorPicker extends Component {
         this.triggerEvent(cValue, pValue, rgb);
     }
     updateOpacityInput(value) {
-        if (!this.getWrapper().classList.contains(HIDEVALUE)) {
+        if (this.enableOpacity && !this.getWrapper().classList.contains(HIDEVALUE)) {
             let opacityTextBoxInst = getInstance(select('.' + OPACITY, this.container), NumericTextBox);
             opacityTextBoxInst.value = value;
             opacityTextBoxInst.dataBind();

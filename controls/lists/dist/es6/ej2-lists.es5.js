@@ -489,7 +489,7 @@ var ListBase;
      * @param  {{[key:string]:Object}[]} dataSource - Specifies local JSON data source.
      * @param  {ListBaseOptions} options? - Specifies listbase option for fields.
      */
-    function renderContentTemplate(createElement, template, dataSource, fields, options) {
+    function renderContentTemplate(createElement, template, dataSource, fields, options, prop) {
         cssClass = getModuleClass(defaultListBaseOptions.moduleName);
         var ulElement = createElement('ul', { className: cssClass.ul, attrs: { role: 'presentation' } });
         var curOpt = extend({}, defaultListBaseOptions, options);
@@ -525,7 +525,12 @@ var ListBase;
             }
             else {
                 var currentID = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
-                append(compiledString(curItem, null, null, currentID, !!curOpt.isStringTemplate), li);
+                if (isHeader) {
+                    append(compiledString(curItem, options, 'groupTemplate', currentID, !!curOpt.isStringTemplate), li);
+                }
+                else {
+                    append(compiledString(curItem, options, 'template', currentID, !!curOpt.isStringTemplate), li);
+                }
                 li.setAttribute('data-value', isNullOrUndefined(value) ? 'null' : value);
                 li.setAttribute('role', 'option');
             }
@@ -563,7 +568,7 @@ var ListBase;
             var headerData = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
-            append(compiledString(headerData, null, null, curOpt.groupTemplateID, !!curOpt.isStringTemplate), header);
+            append(compiledString(headerData, options, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), header);
         }
         return headerItems;
     }
@@ -728,11 +733,11 @@ var ListBase;
         }
         if (grpLI && options && options.groupTemplate) {
             var compiledString = compile(options.groupTemplate);
-            append(compiledString(item, null, null, curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
+            append(compiledString(item, options, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
         }
         else if (!grpLI && options && options.template) {
             var compiledString = compile(options.template);
-            append(compiledString(item, null, null, curOpt.templateID, !!curOpt.isStringTemplate), li);
+            append(compiledString(item, options, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
         }
         else {
             var innerDiv = createElement('div', {
@@ -1007,7 +1012,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'headerTitle':
                     if (!this.curDSLevel.length) {
-                        this.header(this.headerTitle, false);
+                        this.header(this.headerTitle, false, 'header');
                     }
                     break;
                 case 'query':
@@ -1024,7 +1029,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'showHeader':
-                    this.header(this.headerTitle, false);
+                    this.header(this.headerTitle, false, 'header');
                     break;
                 case 'enableVirtualization':
                     if (!isNullOrUndefined(this.contentContainer)) {
@@ -1118,7 +1123,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     // Support Component Functions
-    ListView.prototype.header = function (text, showBack) {
+    ListView.prototype.header = function (text, showBack, prop) {
         if (isBlazor() && this.isServerRendered) {
             var args = { HeaderText: text, BackButton: showBack };
             // tslint:disable
@@ -1142,7 +1147,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 if (this.headerTemplate) {
                     var compiledString = compile(this.headerTemplate);
                     var headerTemplateEle = this.createElement('div', { className: classNames.headerTemplateText });
-                    append(compiledString({}, null, null, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
+                    append(compiledString({}, this, prop, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
                     append([headerTemplateEle], this.headerEle);
                     this.updateBlazorTemplates(false, true, true);
                 }
@@ -1499,7 +1504,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 this.setSelectLI(li, e);
             }
             closestElement = closest(e.target, 'li');
-            if (closestElement !== undefined) {
+            if (!isNullOrUndefined(closestElement)) {
                 if (closestElement.classList.contains('e-has-child') &&
                     !e.target.parentElement.classList.contains('e-listview-checkbox')) {
                     closestElement.classList.add(classNames.disable);
@@ -2251,7 +2256,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
             if (this.selectedItems) {
                 var fieldData = getFieldValues(this.selectedItems.data, this.listBaseOption.fields);
-                this.header((fieldData[this.listBaseOption.fields.text]), true);
+                this.header((fieldData[this.listBaseOption.fields.text]), true, 'header');
             }
             this.selectedLI = undefined;
         }
@@ -2390,7 +2395,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         if (this.enableHtmlSanitizer) {
             this.setProperties({ headerTitle: SanitizeHtmlHelper.sanitize(this.headerTitle) }, true);
         }
-        this.header((this.curDSLevel.length ? text : this.headerTitle), (this.curDSLevel.length ? true : false));
+        this.header((this.curDSLevel.length ? text : this.headerTitle), (this.curDSLevel.length ? true : false), 'header');
     };
     /**
      * Selects the list item from the ListView by passing the elements or field object.

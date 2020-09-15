@@ -11521,7 +11521,7 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         this.triggerEvent(cValue, pValue, rgb);
     };
     ColorPicker.prototype.updateOpacityInput = function (value) {
-        if (!this.getWrapper().classList.contains(HIDEVALUE)) {
+        if (this.enableOpacity && !this.getWrapper().classList.contains(HIDEVALUE)) {
             var opacityTextBoxInst = getInstance(select('.' + OPACITY, this.container), NumericTextBox);
             opacityTextBoxInst.value = value;
             opacityTextBoxInst.dataBind();

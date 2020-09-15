@@ -469,6 +469,12 @@ export interface DocumentEditorModel extends ComponentModel{
      */
     afterFormFieldFill?: EmitType<FormFieldFillEventArgs>;
 
+    /**
+     * Triggers when user interaction prevented in content control.
+     * @event
+     */
+    contentControl?: EmitType<Object>;
+
 }
 
 /**

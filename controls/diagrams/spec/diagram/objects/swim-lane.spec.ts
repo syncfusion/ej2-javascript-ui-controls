@@ -8,7 +8,7 @@ import { DiagramElement } from '../../../src/diagram/core/elements/diagram-eleme
 import { Canvas } from '../../../src/diagram/core/containers/canvas';
 import { GridPanel, RowDefinition, ColumnDefinition } from '../../../src/diagram/core/containers/grid';
 import { Margin } from '../../../src/diagram/core/appearance';
-import { NodeModel, SwimLaneModel } from '../../../src/diagram/objects/node-model';
+import { NodeModel, SwimLaneModel, SelectorModel } from '../../../src/diagram/objects/node-model';
 import { Node, Html } from '../../../src/diagram/objects/node';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { Selector } from '../../../src/diagram/objects/node';
@@ -16,7 +16,7 @@ import { Container } from '../../../src/diagram/core/containers/container';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { PhaseModel, LaneModel } from '../../../src/diagram/objects/node-model';
 import { SymbolPalette, SymbolInfo, PaletteModel, } from '../../../src/symbol-palette/index'; 
-import { IElement, PointModel, NodeConstraints, LineRouting, Connector, DiagramConstraints, AnnotationConstraints, CommandHandler, DiagramEventHandler } from '../../../src/diagram/index';
+import { IElement, PointModel, NodeConstraints, LineRouting, Connector, DiagramConstraints, AnnotationConstraints, CommandHandler, DiagramEventHandler, UserHandleModel, ISelectionChangeEventArgs, ScrollSettingsModel, SnapSettingsModel, LayoutModel, BpmnSequenceFlows, SnapConstraints, SelectorConstraints } from '../../../src/diagram/index';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { Annotation } from '../../../src/diagram/objects/annotation';
 import { ShapeStyleModel } from '../../../src/diagram/core/appearance-model';
@@ -8193,5 +8193,1726 @@ describe('Swimlane - Enable Line Routing', () => {
            });
    
        });
+    });
+    describe('Infinite loop ', () => {
+        let diagram: Diagram;
+        
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramSwimlane1' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                getStartNode(),
+                getOrdinaryNode('node1', 'Activity 1', 200, 100),
+                getOrdinaryNode('node2', 'Activity 2', 350, 200),
+                getOrdinaryNode('node3', 'Activity 3', 350, 100),
+                getOrdinaryNode('node4', 'Activity 4', 500, 200),
+                getEndNode('node5', 650, 200)
+              ];
+            
+              let connectors: ConnectorModel[] = [
+                get01Connector('connector1', 'node0', 'node1'),
+                get01Connector('connector2', 'node0', 'node2'),
+                get03Connector('connector3', 'node1', 'node2', 'Conditional'),
+                get03Connector('connector4', 'node1', 'node3', 'Default'),
+                get01Connector('connector5', 'node2', 'node4'),
+              ];
+            function getOrdinaryNode(nodeId:string, label:string, x:number, y:number): NodeModel {
+                return {
+                  id: nodeId,
+                  offsetX: x,
+                  offsetY: y,
+                  width: 90,
+                  height: 60,
+                  annotations: [
+                    {
+                      content: label,
+                      style: {
+                        fontSize: 11,
+                        textWrapping: 'WrapWithOverflow',
+                        textOverflow: 'Ellipsis'
+                      },
+                      offset: { x: 0.5, y: 0.5 },
+                      margin: { top: 7, right: 0, bottom: -8, left: 0 },
+                    }
+                  ],
+                  /*borderColor: '#78BE83',*/
+                  borderWidth: 4,
+                  shape: {
+                    type: 'Bpmn',
+                    shape: 'Activity',
+                    activity: {
+                      activity: 'Task',
+                      task: {
+                        type: 'Service'
+                      }
+                    }
+                  },
+                  style: {
+                    fill: '#d8ecdc',
+                    strokeColor: '#78BE83',
+                    strokeWidth: 3,
+                    gradient: {
+                      // Start point of linear gradient
+                      x1: 0,
+                      y1: 0,
+                      // End point of linear gradient
+                      x2: 1,
+                      y2: 1,
+                      // Sets an array of stop objects
+                      stops: [
+                        {
+                            color: 'white',
+                            offset: x,
+                            opacity: 0.1
+                        },
+                        {
+                            color: '#d8ecdc',
+                            offset: y,
+                            opacity: 0.1
+                        }
+                      ],
+                      type: 'Linear'
+                    }
+                  },
+                  ports: [
+                    {
+                      id: 'left',
+                      offset: { x: 0, y: 0.5 }
+                    },
+                    {
+                      id: 'right',
+                      offset: { x: 1, y: 0.5 }
+                    },
+                    {
+                      id: 'top',
+                      offset: { x: 0.5, y: 0 }
+                    },
+                    {
+                      id: 'bottom',
+                      offset: { x: 0.5, y: 1 }
+                    }
+                  ]
+                };
+              }
+              function getStartNode(): NodeModel {
+                return {
+                  id: 'node0',
+                  offsetX: 100,
+                  offsetY: 300,
+                  width: 30,
+                  height: 30,
+                  annotations: [{
+                    content: 'Start',
+                    margin: { bottom: -30 }
+                  }],
+                  shape: {
+                    type: 'Bpmn',
+                    shape: 'Event',
+                    event: {
+                      event: 'Start',
+                      trigger: 'None'
+                    }
+                  },
+                  style: {
+                    strokeColor: '#62A716',
+                    strokeWidth: 1
+                  },
+                  ports: [
+                    { id: 'right', offset: { x: 1, y: 0.5 } },
+                    { id: 'bottom', offset: { x: 0.5, y: 1 } }
+                  ]
+                };
+              }
+              function getEndNode(nodeId: string, x: number, y: number): NodeModel {
+                return {
+                  id: nodeId,
+                  offsetX: x,
+                  offsetY: y,
+                  width: 30,
+                  height: 30,
+                  annotations: [{
+                    content: 'End',
+                    margin: { bottom: -30 }
+                  }],
+                  shape: {
+                    type: 'Bpmn',
+                    shape: 'Event',
+                    event: {
+                      event: 'End',
+                      trigger: 'None'
+                    }
+                  },
+                  style: {
+                    strokeColor: '#FF0000',
+                    strokeWidth: 1
+                  },
+                  ports: [
+                    { id: 'left', offset: { x: 0, y: 0.5 } },
+                    { id: 'top', offset: { x: 0.5, y: 0 } }
+                  ]
+                };
+              }
+              function get01Connector(conId:string, source:string, target:string): ConnectorModel {
+                return {
+                  id: conId,
+                  sourceID: source,
+                  targetID: target,
+                  sourcePortID: 'right',
+                  targetPortID: 'left',
+                  /*shape: {
+                    type: 'Bpmn',
+                    flow: 'Sequence',
+                    sequence: 'Default'
+                  },*/
+                  style: {
+                    strokeColor: '#888888',
+                    fill: '#555555',
+                    strokeWidth: 1
+                  },
+                  targetDecorator: {
+                    style: {
+                        fill: '#555555',
+                        strokeColor: '#888888'
+                    }
+                  },
+                  type: 'Orthogonal',
+                  cornerRadius: 10
+                };
+              }
+              function get03Connector(conId:string, source:string, target:string, sequence:BpmnSequenceFlows): ConnectorModel {
+                return {
+                  id: conId,
+                  sourceID: source,
+                  targetID: target,
+                  sourcePortID: 'right',
+                  targetPortID: 'left',
+                  shape: {
+                    type: 'Bpmn',
+                    flow: 'Sequence',
+                    sequence: sequence
+                  },
+                  style: {
+                    strokeColor: '#888888',
+                    fill: '#555555',
+                    strokeWidth: 1
+                  },
+                  targetDecorator: {
+                    style: {
+                        fill: '#555555',
+                        strokeColor: '#888888'
+                    }
+                  },
+                  type: 'Orthogonal',
+                  cornerRadius: 10
+                };
+              }
+              let layout: LayoutModel = {
+                horizontalAlignment: 'Left',
+                verticalAlignment: 'Top',
+                orientation: 'LeftToRight',
+                type: 'ComplexHierarchicalTree'
+              };
+            
+              let snapSettings: SnapSettingsModel = {
+                constraints: SnapConstraints.None,
+                horizontalGridlines: {
+                    lineDashArray: '2 2',
+                    lineIntervals: [1, 9, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75,
+                     0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75],
+                },
+                verticalGridlines: {
+                    lineDashArray: '2 2',
+                    lineIntervals: [1, 9, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75,
+                     0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75],
+                }
+              };
+            
+              let scrollSettings: ScrollSettingsModel = {
+                canAutoScroll: true,
+                scrollLimit: 'Infinity',
+
+                padding: { left: 0, top: 0, right: 10, bottom: 0 }
+            };
+            let constraints: DiagramConstraints = DiagramConstraints.Default | DiagramConstraints.LineRouting | DiagramConstraints.Bridging;
+            let handles: UserHandleModel[] = [
+                {
+                  name: 'arrow',
+                  pathData: 'M4,11v2h8v7l8-8L12,4v7Z',
+                  visible: true,
+                  offset: 0.5,
+                  side: 'Top',
+                  pathColor: 'black',
+                  backgroundColor: 'transparent',
+                  size: 32,
+                  margin: {top: 12, bottom: 0, left: 0, right: 0}
+                },
+                {
+                  name: 'Delete',
+                  pathData: `M 0, 0 c -3.201999999999998,-2.8130000000000006,-8.105999999999995,-2.455,-11.119,
+                          0.5579999999999998l-34.179,34.205l-34.337,-34.362c-3.093,-3.0920000000000005,-8.108,-3.0920000000000005,-11.201,
+                          0l-0.11299999999999956,0.11299999999999956c-3.093,3.093,-3.093,8.107,0,11.201l34.341,34.366l-34.34,34.366c-3.093,
+                          3.0930000000000035,-3.093,8.108000000000004,0,11.201000000000008l0.11299999999999956,0.11299999999999956c3.093,
+                          3.0930000000000035,8.107,3.0930000000000035,11.201,0l34.337,-34.363l34.17900000000001,34.205c3.0130000000000052,
+                          3.0130000000000052,7.917000000000002,3.3700000000000045,11.119,0.5580000000000069c3.507000000000005,
+                          -3.081000000000003,3.6370000000000005,-8.429000000000002,0.38800000000000534,-11.677999999999997l-34.37899999999999,
+                          -34.403l34.37700000000001,-34.404c3.25,-3.2489999999999988,3.1200000000000045,-8.596,-0.38800000000000534,-11.677Z`,
+                  visible: true,
+                  offset: 1,
+                  side: 'Top',
+                  pathColor: 'black',
+                  backgroundColor: 'none',
+                  size: 30,
+                  margin: {top: 12, bottom: 0, left: 0, right: 0}
+                },
+                {
+                  name: 'node',
+                  pathData: 'M17.75,13.89H2.5a2,2,0,0,1-2-2V2.5a2,2,0,0,1,2-2H17.75a2,2,0,0,1,2,2v9.39A2,2,0,0,1,17.75,13.89Z',
+                  visible: true,
+                  offset: 0,
+                  side: 'Right',
+                  pathColor: '#e9f8ff',
+                  backgroundColor: 'none',
+                  size: 35,
+                  margin: {top: 0, bottom: 0, left: 0, right: 12}
+                },
+                {
+                  name: 'decision',
+                  pathData: 'M19.94,11.93l-8,8a2,2,0,0,1-2.83,0l-8-8a2,2,0,0,1,0-2.83l8-8a2,2,0,0,1,2.83,0l8,8A2,2,0,0,1,19.94,11.93Z',
+                  visible: true,
+                  offset: 0.5,
+                  side: 'Right',
+                  pathColor: '#fff6df',
+                  backgroundColor: 'none',
+                  size: 35,
+                  margin: {top: 0, bottom: 0, left: 0, right: 12}
+                },
+                {
+                  name: 'end',
+                  pathData: 'M16.92,8.71A8.21,8.21,0,1,1,8.71.5,8.21,8.21,0,0,1,16.92,8.71Z',
+                  visible: true,
+                  offset: 1,
+                  side: 'Right',
+                  pathColor: '#ffedef',
+                  backgroundColor: 'none',
+                  size: 35,
+                  margin: {top: 0, bottom: 0, left: 0, right: 12}
+                },
+                {
+                  name: 'attachment',
+                  pathData: 'M11,9h5.5L11,3.5V9M4,2h8l6,6V20a2,2,0,0,1-2,2H4a2,2,0,0,1-2-2V4A2,2,0,0,1,4,2M9,4H4V20H16V11H9Z',
+                  visible: true,
+                  offset: 0.5,
+                  side: 'Bottom',
+                  pathColor: '#5a5a64',
+                  backgroundColor: 'none',
+                  size: 35,
+                  margin: {top: 0, bottom: 12, left: 0, right: 0}
+                },
+                {
+                  name: 'annotation',
+                  pathData: `M8,11h8v2H8Zm8-4H8V9h8Zm0,8H8v2h8ZM18,2H10V4h8V20H10v2h8a2,2,0,0,0,2-2V4A2,2,0,0,0,18,2ZM6,4H8V2H6A2,2,0,0,0,4,4v6L2,12l2,
+                            2v6a2,2,0,0,0,2,2H8V20H6Z`,
+                  visible: true,
+                  offset: 1,
+                  side: 'Bottom',
+                  pathColor: '#5a5a64',
+                  backgroundColor: 'none',
+                  size: 35,
+                  margin: {top: 0, bottom: 12, left: 0, right: 0}
+                }
+              ];
+              let selectedItems: SelectorModel = {
+                constraints: SelectorConstraints.UserHandle,
+                userHandles: handles
+              };
+              let commandManager: any;
+              
+              let _userHandles: UserHandleModel[] = JSON.parse(JSON.stringify(handles));
+              function selectionChanged(event: ISelectionChangeEventArgs): void {
+                if (event.state === 'Changed') {
+                  if (event.newValue.length > 0) {
+                    let node = null;
+                    if (event.newValue[0].addInfo) {
+                      node = (event.newValue[0].addInfo as any).getDiagramNode();
+                    }
+            
+                    if (event.newValue[0].id === '0') {
+                      handles[1].visible = false;
+                    handles[3].offset = 1;
+                      handles[4].visible = false;
+                      handles[6].offset = 0;
+                    } else {
+                      // tslint:disable
+                      event.newValue[0].constraints = NodeConstraints.Default & ~NodeConstraints.Rotate;
+                      // tslint:enable
+                      handles = JSON.parse(JSON.stringify(_userHandles));
+                    }
+                  }
+            
+                  selectedItems = {
+                    constraints: SelectorConstraints.UserHandle,
+                    userHandles: handles
+                  };
+                }
+              }
+              function loadJson(): void {
+                // this.diagram.clear();
+                diagram.loadDiagram(`{
+                  "enableRtl": false,
+                  "locale": "en-US",
+                  "animationComplete": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "click": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "collectionChange": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "commandExecute": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "connectionChange": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "contextMenuBeforeItemRender": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "contextMenuClick": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "contextMenuOpen": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "created": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "dataLoaded": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "doubleClick": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "dragEnter": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "dragLeave": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "dragOver": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "drop": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "expandStateChange": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "historyChange": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "historyStateChange": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "keyDown": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "keyUp": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "mouseEnter": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "mouseLeave": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "mouseOver": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "onImageLoad": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "onUserHandleMouseDown": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "onUserHandleMouseEnter": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "onUserHandleMouseLeave": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "onUserHandleMouseUp": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "positionChange": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "propertyChange": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "rotateChange": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "scrollChange": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "segmentCollectionChange": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "selectionChange": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "sizeChange": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "sourcePointChange": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "targetPointChange": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "textEdit": { "_isScalar": false, "closed": false, "isStopped": false, "hasError": false, "thrownError": null, "__isAsync": false },
+                  "commandManager": {
+                      "commands": [
+                          { "name": "undo", "parameter": "node", "canExecute": {}, "execute": {}, "gesture": { "key": 90, "keyModifiers": 1 } },
+                          { "name": "redo", "parameter": "node", "canExecute": {}, "execute": {}, "gesture": { "key": 89, "keyModifiers": 1 } },
+                          { "name": "copy", "parameter": "node", "canExecute": {}, "execute": {}, "gesture": { "key": 67, "keyModifiers": 1 } },
+                          { "name": "cut", "parameter": "node", "canExecute": {}, "execute": {}, "gesture": { "key": 88, "keyModifiers": 1 } },
+                          { "name": "paste", "parameter": "node", "canExecute": {}, "gesture": { "key": 86, "keyModifiers": 1 } },
+                          { "name": "delete", "parameter": "node", "canExecute": {}, "execute": {}, "gesture": {} }
+                      ]
+                  },
+                  "connectors": [
+                      {
+                          "id": "node0-node1",
+                          "sourceID": "node0",
+                          "sourceDecorator": {
+                              "shape": "None",
+                              "style": { "fill": "black", "strokeColor": "#778899", "strokeWidth": 1, "strokeDashArray": "", "opacity": 1, "gradient": { "type": "None" } },
+                              "width": 10,
+                              "height": 10,
+                              "pivot": { "x": 0, "y": 0.5 }
+                          },
+                          "targetID": "node1",
+                          "cornerRadius": 10,
+                          "targetDecorator": {
+                              "shape": "Arrow",
+                              "style": { "fill": "#778899", "strokeColor": "#778899", "strokeWidth": 1, "strokeDashArray": "", "opacity": 1, "gradient": { "type": "None" } },
+                              "height": 8,
+                              "width": 10,
+                              "pivot": { "x": 0, "y": 0.5 }
+                          },
+                          "type": "Orthogonal",
+                          "constraints": 486150,
+                          "sourcePortID": "right",
+                          "targetPortID": "left",
+                          "shape": { "type": "None" },
+                          "zIndex": 13,
+                          "sourcePoint": { "x": 175, "y": 127.5 },
+                          "targetPoint": { "x": 285, "y": 127.5 },
+                          "sourcePadding": 0,
+                          "targetPadding": 0,
+                          "segments": [{ "type": "Orthogonal", "length": null, "direction": null }],
+                          "wrapper": { "actualSize": { "width": 110, "height": 0 }, "offsetX": 230, "offsetY": 127.5 },
+                          "style": { "strokeWidth": 1, "strokeColor": "black", "fill": "transparent", "strokeDashArray": "", "opacity": 1, "gradient": { "type": "None" } },
+                          "annotations": [],
+                          "visible": true,
+                          "bridgeSpace": 10,
+                          "parentId": ""
+                      },
+                      {
+                          "id": "node1-node2",
+                          "sourceID": "node1",
+                          "sourceDecorator": {
+                              "shape": "None",
+                              "style": { "fill": "black", "strokeColor": "#778899", "strokeWidth": 1, "strokeDashArray": "", "opacity": 1, "gradient": { "type": "None" } },
+                              "width": 10,
+                              "height": 10,
+                              "pivot": { "x": 0, "y": 0.5 }
+                          },
+                          "targetID": "node2",
+                          "cornerRadius": 10,
+                          "targetDecorator": {
+                              "shape": "Arrow",
+                              "style": { "fill": "#778899", "strokeColor": "#778899", "strokeWidth": 1, "strokeDashArray": "", "opacity": 1, "gradient": { "type": "None" } },
+                              "height": 8,
+                              "width": 10,
+                              "pivot": { "x": 0, "y": 0.5 }
+                          },
+                          "type": "Orthogonal",
+                          "constraints": 486150,
+                          "sourcePortID": "right",
+                          "targetPortID": "left",
+                          "shape": { "type": "None" },
+                          "zIndex": 14,
+                          "sourcePoint": { "x": 375, "y": 127.5 },
+                          "targetPoint": { "x": 425, "y": 127.5 },
+                          "sourcePadding": 0,
+                          "targetPadding": 0,
+                          "segments": [{ "type": "Orthogonal", "length": null, "direction": null }],
+                          "wrapper": { "actualSize": { "width": 50, "height": 0 }, "offsetX": 400, "offsetY": 127.5 },
+                          "style": { "strokeWidth": 1, "strokeColor": "black", "fill": "transparent", "strokeDashArray": "", "opacity": 1, "gradient": { "type": "None" } },
+                          "annotations": [],
+                          "visible": true,
+                          "bridgeSpace": 10,
+                          "hitPadding": 10,
+                          "parentId": ""
+                      }
+                  ],
+                  "constraints": 2550,
+                  "getCustomTool": {},
+                  "height": "100%",
+                  "nodes": [
+                      {
+                          "id": "node3ABD5B643E43C09B1476DABD3DC49908",
+                          "offsetX": 702,
+                          "offsetY": 125,
+                          "width": 1354,
+                          "height": 225,
+                          "backgroundColor": "transparent",
+                          "style": { "fill": "white", "strokeWidth": 2, "strokeColor": "#778899", "strokeDashArray": "", "opacity": 1, "gradient": { "type": "None" } },
+                          "shape": {
+                              "type": "SwimLane",
+                              "header": {
+                                  "style": { "fill": "#E7F4FF", "strokeColor": "#CCCCCC", "strokeWidth": 1, "strokeDashArray": "", "opacity": 1, "gradient": { "type": "None" } },
+                                  "annotation": { "id": "aqPPB", "content": "New process", "style": { "strokeWidth": 0, "strokeColor": "transparent", "fill": "transparent" } },
+                                  "height": 25,
+                                  "id": "pCf0X"
+                              },
+                              "phaseSize": 0,
+                              "lanes": [
+                                  {
+                                      "id": "F2825CD4428DBB1954F509995CB3DA09",
+                                      "height": 200,
+                                      "style": { "fill": "transparent", "strokeColor": "#CCCCCC", "strokeWidth": 1, "strokeDashArray": "", "opacity": 1, "gradient": { "type": "None" } },
+                                      "header": {
+                                          "style": { "fill": "#E7F4FF", "strokeColor": "#CCCCCC", "strokeWidth": 1, "strokeDashArray": "", "opacity": 1, "gradient": { "type": "None" } },
+                                          "annotation": { "id": "cKdbG", "content": "Lane1", "style": { "strokeWidth": 0, "strokeColor": "transparent", "fill": "transparent", "textWrapping": "NoWrap", "textOverflow": "Ellipsis" } },
+                                          "width": 25,
+                                          "height": 600,
+                                          "id": "node3ABD5B643E43C09B1476DABD3DC49908F2825CD4428DBB1954F509995CB3DA09_0_header"
+                                      },
+                                      "children": [
+                                          {
+                                              "shape": { "type": "Bpmn", "shape": "Event", "event": { "event": "Start", "trigger": "None" }, "activity": { "subProcess": {} }, "annotations": [] },
+                                              "id": "node0",
+                                              "width": 30,
+                                              "height": 30,
+                                              "annotations": [
+                                                  {
+                                                      "id": "node0-label",
+                                                      "content": "Start",
+                                                      "horizontalAlignment": "Center",
+                                                      "verticalAlignment": "Top",
+                                                      "style": {
+                                                          "strokeWidth": 0,
+                                                          "strokeColor": "transparent",
+                                                          "fill": "transparent",
+                                                          "fontFamily": "Noto Sans, Helvetica, Arial, sans-serif",
+                                                          "fontSize": 11,
+                                                          "textOverflow": "Wrap",
+                                                          "textWrapping": "WrapWithOverflow",
+                                                          "whiteSpace": "CollapseSpace",
+                                                          "bold": false,
+                                                          "color": "black",
+                                                          "italic": false,
+                                                          "opacity": 1,
+                                                          "strokeDashArray": "",
+                                                          "textAlign": "Center",
+                                                          "textDecoration": "None"
+                                                      },
+                                                      "offset": { "x": 0.5, "y": 1 },
+                                                      "margin": { "left": 0, "top": 2, "right": 0, "bottom": 0 },
+                                                      "constraints": 0,
+                                                      "annotationType": "String",
+                                                      "hyperlink": { "link": "", "content": "", "textDecoration": "None" },
+                                                      "visibility": true,
+                                                      "rotateAngle": 0
+                                                  }
+                                              ],
+                                              "offsetX": 160,
+                                              "offsetY": 127.5,
+                                              "style": { "fill": "#FFFFFF", "strokeColor": "#62A716", "strokeWidth": 2, "strokeDashArray": "", "opacity": 1, "gradient": { "type": "None" } },
+                                              "constraints": 38795174,
+                                              "addInfo": {
+                                                  "node": {
+                                                      "__type": "StartNode:http://www.kofax.com/agility/services/sdk",
+                                                      "Identity": { "NodeType": 5, "Id": 0, "Name": "Start" },
+                                                      "ResetLimit": -1,
+                                                      "ActivityTimedOutAction": 0,
+                                                      "Annotations": [],
+                                                      "Allocate": false,
+                                                      "AppendAssociatedFile": false,
+                                                      "Attachments": [],
+                                                      "Automatic": false,
+                                                      "AvailableFireEvent": {},
+                                                      "CollaborationNodes": [],
+                                                      "CompletedFireEvent": {},
+                                                      "Dependants": [],
+                                                      "Destinations": [{ "Identity": { "NodeType": 1, "Id": 1, "Name": "Activity 1" }, "EmbeddedProcess": {} }],
+                                                      "EmbeddedProcessCount": 0,
+                                                      "ExpectedCost": 0,
+                                                      "ActivationProbability": 100,
+                                                      "Origins": [],
+                                                      "Priority": 1,
+                                                      "SecurityLevel": 10,
+                                                      "SkillLevel": 10,
+                                                      "FixedCost": 0,
+                                                      "MilestoneAvailable": { "Identity": {} },
+                                                      "MilestoneCompleted": { "Identity": {} },
+                                                      "NodeColorGroup": 0,
+                                                      "InheritNodeGroupColorFromSystem": true,
+                                                      "States": [],
+                                                      "SwimLane": { "Height": 600, "Index": 0, "Name": "Lane1", "PoolId": "3ABD5B643E43C09B1476DABD3DC49908" },
+                                                      "TitlePosition": 0,
+                                                      "TextPosition": 0,
+                                                      "StartNodeEventType": 0,
+                                                      "EndNodeEventType": 0,
+                                                      "GroupArtifacts": [],
+                                                      "MFPReady": 0,
+                                                      "DesignTimeType": 0,
+                                                      "NodeType": 5,
+                                                      "Color": "#62A716",
+                                                      "Width": 30,
+                                                      "Height": 30,
+                                                      "XPosition": 45,
+                                                      "YPosition": 414.5,
+                                                      "Process": {
+                                                          "__type": "ProcessSummary:http://www.kofax.com/agility/services/sdk",
+                                                          "Author": {},
+                                                          "CaptureEnabled": false,
+                                                          "Category": { "__type": "CategoryIdentity:http://www.kofax.com/agility/services/sdk", "Id": "201F370CA5164F76ADDD8EEEFF666AF7", "Name": "Default Category" },
+                                                          "ExpectedCost": 0,
+                                                          "ExpectedDuration": { "Days": 0, "Hours": 0, "Minutes": 0, "Negative": false, "Seconds": 0, "UseNegative": false, "DurationType": 0 },
+                                                          "Identity": { "Id": "51377FB0CA851FAC41F6D8C932B136B0", "Version": 0.01, "Name": "New process" },
+                                                          "LastModified": {},
+                                                          "LastModifiedDate": {},
+                                                          "LatestVersion": true,
+                                                          "LockedBy": {},
+                                                          "ProcessType": 0,
+                                                          "SupportsSkinning": false,
+                                                          "Synchronous": false,
+                                                          "Version": 0.01
+                                                      },
+                                                      "ThreadPool": { "Id": 0, "Name": "Default Thread Pool" }
+                                                  }
+                                              },
+                                              "ports": [
+                                                  {
+                                                      "inEdges": [],
+                                                      "outEdges": ["node0-node1"],
+                                                      "id": "right",
+                                                      "offset": { "x": 1, "y": 0.5 },
+                                                      "visibility": 2,
+                                                      "height": 12,
+                                                      "width": 12,
+                                                      "shape": "Square",
+                                                      "margin": { "right": 0, "bottom": 0, "left": 0, "top": 0 },
+                                                      "style": { "fill": "white", "strokeColor": "black", "opacity": 1, "strokeDashArray": "", "strokeWidth": 1 },
+                                                      "horizontalAlignment": "Center",
+                                                      "verticalAlignment": "Center",
+                                                      "constraints": 24
+                                                  },
+                                                  {
+                                                      "inEdges": [],
+                                                      "outEdges": [],
+                                                      "id": "bottom",
+                                                      "offset": { "x": 0.5, "y": 1 },
+                                                      "visibility": 2,
+                                                      "height": 12,
+                                                      "width": 12,
+                                                      "shape": "Square",
+                                                      "margin": { "right": 0, "bottom": 0, "left": 0, "top": 0 },
+                                                      "style": { "fill": "white", "strokeColor": "black", "opacity": 1, "strokeDashArray": "", "strokeWidth": 1 },
+                                                      "horizontalAlignment": "Center",
+                                                      "verticalAlignment": "Center",
+                                                      "constraints": 24
+                                                  }
+                                              ],
+                                              "margin": { "left": 120, "top": 75, "right": 0, "bottom": 0 },
+                                              "zIndex": 10,
+                                              "container": null,
+                                              "visible": true,
+                                              "horizontalAlignment": "Left",
+                                              "verticalAlignment": "Top",
+                                              "backgroundColor": "transparent",
+                                              "borderColor": "none",
+                                              "borderWidth": 0,
+                                              "rotateAngle": 0,
+                                              "pivot": { "x": 0.5, "y": 0.5 },
+                                              "flip": "None",
+                                              "wrapper": { "actualSize": { "width": 30, "height": 30 }, "offsetX": 160, "offsetY": 127.5 },
+                                              "isExpanded": true,
+                                              "expandIcon": { "shape": "None" },
+                                              "inEdges": [],
+                                              "outEdges": ["node0-node1"],
+                                              "parentId": "node3ABD5B643E43C09B1476DABD3DC49908F2825CD4428DBB1954F509995CB3DA090",
+                                              "processId": "",
+                                              "umlIndex": -1,
+                                              "isPhase": false,
+                                              "isLane": false
+                                          },
+                                          {
+                                              "shape": {
+                                                  "shape": "Activity",
+                                                  "type": "Bpmn",
+                                                  "activity": { "activity": "Task", "task": { "type": "User", "call": false, "compensation": false, "loop": "None" }, "subProcess": { "type": "None" } },
+                                                  "annotations": []
+                                              },
+                                              "id": "node1",
+                                              "width": 90,
+                                              "height": 60,
+                                              "annotations": [
+                                                  {
+                                                      "id": "node1-label",
+                                                      "content": "Activity 1",
+                                                      "style": {
+                                                          "strokeWidth": 0,
+                                                          "strokeColor": "transparent",
+                                                          "fill": "transparent",
+                                                          "fontFamily": "Noto Sans, Helvetica, Arial, sans-serif",
+                                                          "fontSize": 11,
+                                                          "textOverflow": "Wrap",
+                                                          "textWrapping": "WrapWithOverflow",
+                                                          "whiteSpace": "CollapseSpace",
+                                                          "color": "#000000",
+                                                          "bold": false,
+                                                          "italic": false,
+                                                          "opacity": 1,
+                                                          "strokeDashArray": "",
+                                                          "textAlign": "Center",
+                                                          "textDecoration": "None"
+                                                      },
+                                                      "offset": { "x": 0.5, "y": 0.5 },
+                                                      "margin": { "top": 10, "right": 2, "bottom": 3, "left": 2 },
+                                                      "constraints": 0,
+                                                      "annotationType": "String",
+                                                      "hyperlink": { "link": "", "content": "", "textDecoration": "None" },
+                                                      "visibility": true,
+                                                      "rotateAngle": 0,
+                                                      "horizontalAlignment": "Center",
+                                                      "verticalAlignment": "Center"
+                                                  }
+                                              ],
+                                              "offsetX": 330,
+                                              "offsetY": 127.5,
+                                              "style": { "fill": "#E3EDF3", "strokeColor": "#7fadc8", "strokeWidth": 2, "strokeDashArray": "", "opacity": 1, "gradient": { "type": "None" } },
+                                              "constraints": 38795238,
+                                              "addInfo": {
+                                                  "node": {
+                                                      "__type": "OrdinaryActivity:http://www.kofax.com/agility/services/sdk",
+                                                      "Notification": {
+                                                          "AppendAssociatedFile": false,
+                                                          "ContentText": "",
+                                                          "ContentVariable": null,
+                                                          "SendEmail": false,
+                                                          "SendTo": 0,
+                                                          "SubjectText": "",
+                                                          "SubjectVariable": null,
+                                                          "UrlText": "",
+                                                          "UrlVariable": null
+                                                      },
+                                                      "PreconditionInputs": [],
+                                                      "UsePreviousUser": false,
+                                                      "Resources": {
+                                                          "AdvanceWorkflowRules": {
+                                                              "ConcurrentActivityAccess": false,
+                                                              "ExitCondition": null,
+                                                              "ExpandGroupResources": false,
+                                                              "NeedsValidated": false,
+                                                              "NoOfResourcesRequired": 0,
+                                                              "NoOfResourcesRequiredValue": 0,
+                                                              "NoOfResourcesRequiredVariable": { "Id": "", "Name": "" },
+                                                              "SequentialActivityAssignment": false,
+                                                              "UseAdvanceWorkflowRules": false,
+                                                              "UseExcludedResources": false,
+                                                              "UseExitCondition": false,
+                                                              "UseResourceSettings": false
+                                                          },
+                                                          "DynamicResourcesOverwriteStatic": false,
+                                                          "RequiredResources": [],
+                                                          "UsableResources": [
+                                                              {
+                                                                  "Dynamic": false,
+                                                                  "DynamicResourceVariable": null,
+                                                                  "Excluded": false,
+                                                                  "SequentialOrder": 1,
+                                                                  "StaticResource": { "Id": "7DF43CCDF24611D2804B00104B71BD15", "ResourceType": 3, "Name": "Everyone", "__type": "ResourceIdentity:http://www.kofax.com/agility/services/sdk" },
+                                                                  "__type": "ActivityResource:http://www.kofax.com/agility/services/sdk"
+                                                              }
+                                                          ]
+                                                      },
+                                                      "BusinessEvents": [],
+                                                      "DueDateTriggers": [],
+                                                      "HasDueDateTriggers": false,
+                                                      "InputVariables": [],
+                                                      "OutputVariables": [],
+                                                      "LagDuration": { "Days": 0, "Hours": 0, "Minutes": 0, "Negative": false, "Seconds": 0, "UseNegative": false, "DurationType": 0 },
+                                                      "Identity": { "NodeType": 1, "Id": 1, "Name": "Activity 1" },
+                                                      "ResetLimit": -1,
+                                                      "ActivityTimedOutAction": 0,
+                                                      "Annotations": [],
+                                                      "Allocate": false,
+                                                      "AppendAssociatedFile": false,
+                                                      "Attachments": [],
+                                                      "Automatic": false,
+                                                      "AvailableFireEvent": {},
+                                                      "CollaborationNodes": [],
+                                                      "CompletedFireEvent": {},
+                                                      "Dependants": [],
+                                                      "Destinations": [{ "Identity": { "NodeType": 6, "Id": 2, "Name": "End" }, "EmbeddedProcess": {} }],
+                                                      "EmbeddedProcessCount": 0,
+                                                      "ExpectedCost": 0,
+                                                      "ActivationProbability": 100,
+                                                      "Origins": [{ "Identity": { "NodeType": 5, "Id": 0, "Name": "Start" }, "EmbeddedProcess": {} }],
+                                                      "Priority": 1,
+                                                      "SecurityLevel": 10,
+                                                      "SkillLevel": 10,
+                                                      "FixedCost": 0,
+                                                      "MilestoneAvailable": { "Identity": {} },
+                                                      "MilestoneCompleted": { "Identity": {} },
+                                                      "NodeColorGroup": 1,
+                                                      "InheritNodeGroupColorFromSystem": true,
+                                                      "States": [],
+                                                      "SwimLane": { "Height": 600, "Index": 0, "Name": "Lane1", "PoolId": "3ABD5B643E43C09B1476DABD3DC49908" },
+                                                      "TitlePosition": 0,
+                                                      "TextPosition": 0,
+                                                      "StartNodeEventType": 0,
+                                                      "EndNodeEventType": 0,
+                                                      "GroupArtifacts": [],
+                                                      "MFPReady": 0,
+                                                      "DesignTimeType": 1,
+                                                      "NodeType": 1,
+                                                      "Rag": {
+                                                          "SlaStatus2Threshold": { "Days": 0, "Hours": 0, "Minutes": 0, "Negative": false, "Seconds": 0, "UseNegative": false, "DurationType": 0 },
+                                                          "SlaStatus3Threshold": { "Days": 0, "Hours": 0, "Minutes": 0, "Negative": false, "Seconds": 0, "UseNegative": false, "DurationType": 0 },
+                                                          "SlaStatus4Threshold": { "Days": 0, "Hours": 0, "Minutes": 0, "Negative": false, "Seconds": 0, "UseNegative": false, "DurationType": 0 },
+                                                          "SlaStatus5Threshold": { "Days": 0, "Hours": 0, "Minutes": 0, "Negative": false, "Seconds": 0, "UseNegative": false, "DurationType": 0 }
+                                                      },
+                                                      "TargetDuration": { "Days": 0, "Hours": 0, "Minutes": 0, "Negative": false, "Seconds": 0, "UseNegative": false, "DurationType": 0 },
+                                                      "Width": 90,
+                                                      "Height": 60,
+                                                      "XPosition": 185,
+                                                      "YPosition": 414.5,
+                                                      "Color": "#FFE3EDF3",
+                                                      "Process": {
+                                                          "__type": "ProcessSummary:http://www.kofax.com/agility/services/sdk",
+                                                          "Author": {},
+                                                          "CaptureEnabled": false,
+                                                          "Category": { "__type": "CategoryIdentity:http://www.kofax.com/agility/services/sdk", "Id": "201F370CA5164F76ADDD8EEEFF666AF7", "Name": "Default Category" },
+                                                          "ExpectedCost": 0,
+                                                          "ExpectedDuration": { "Days": 0, "Hours": 0, "Minutes": 0, "Negative": false, "Seconds": 0, "UseNegative": false, "DurationType": 0 },
+                                                          "Identity": { "Id": "51377FB0CA851FAC41F6D8C932B136B0", "Version": 0.01, "Name": "New process" },
+                                                          "LastModified": {},
+                                                          "LastModifiedDate": {},
+                                                          "LatestVersion": true,
+                                                          "LockedBy": {},
+                                                          "ProcessType": 0,
+                                                          "SupportsSkinning": false,
+                                                          "Synchronous": false,
+                                                          "Version": 0.01
+                                                      },
+                                                      "ThreadPool": { "Id": 0, "Name": "Default Thread Pool" },
+                                                      "IsAfterStartNode": true,
+                                                      "ShouldTrackVariableChanges": false
+                                                  }
+                                              },
+                                              "ports": [
+                                                  {
+                                                      "inEdges": ["node0-node1"],
+                                                      "outEdges": [],
+                                                      "id": "left",
+                                                      "offset": { "x": 0, "y": 0.5 },
+                                                      "visibility": 2,
+                                                      "height": 12,
+                                                      "width": 12,
+                                                      "shape": "Square",
+                                                      "margin": { "right": 0, "bottom": 0, "left": 0, "top": 0 },
+                                                      "style": { "fill": "white", "strokeColor": "black", "opacity": 1, "strokeDashArray": "", "strokeWidth": 1 },
+                                                      "horizontalAlignment": "Center",
+                                                      "verticalAlignment": "Center",
+                                                      "constraints": 24
+                                                  },
+                                                  {
+                                                      "inEdges": [],
+                                                      "outEdges": [],
+                                                      "id": "top",
+                                                      "offset": { "x": 0.5, "y": 0 },
+                                                      "visibility": 2,
+                                                      "height": 12,
+                                                      "width": 12,
+                                                      "shape": "Square",
+                                                      "margin": { "right": 0, "bottom": 0, "left": 0, "top": 0 },
+                                                      "style": { "fill": "white", "strokeColor": "black", "opacity": 1, "strokeDashArray": "", "strokeWidth": 1 },
+                                                      "horizontalAlignment": "Center",
+                                                      "verticalAlignment": "Center",
+                                                      "constraints": 24
+                                                  },
+                                                  {
+                                                      "inEdges": [],
+                                                      "outEdges": ["node1-node2"],
+                                                      "id": "right",
+                                                      "offset": { "x": 1, "y": 0.5 },
+                                                      "visibility": 2,
+                                                      "height": 12,
+                                                      "width": 12,
+                                                      "shape": "Square",
+                                                      "margin": { "right": 0, "bottom": 0, "left": 0, "top": 0 },
+                                                      "style": { "fill": "white", "strokeColor": "black", "opacity": 1, "strokeDashArray": "", "strokeWidth": 1 },
+                                                      "horizontalAlignment": "Center",
+                                                      "verticalAlignment": "Center",
+                                                      "constraints": 24
+                                                  },
+                                                  {
+                                                      "inEdges": [],
+                                                      "outEdges": [],
+                                                      "id": "bottom",
+                                                      "offset": { "x": 0.5, "y": 1 },
+                                                      "visibility": 2,
+                                                      "height": 12,
+                                                      "width": 12,
+                                                      "shape": "Square",
+                                                      "margin": { "right": 0, "bottom": 0, "left": 0, "top": 0 },
+                                                      "style": { "fill": "white", "strokeColor": "black", "opacity": 1, "strokeDashArray": "", "strokeWidth": 1 },
+                                                      "horizontalAlignment": "Center",
+                                                      "verticalAlignment": "Center",
+                                                      "constraints": 24
+                                                  }
+                                              ],
+                                              "margin": { "left": 260, "top": 60, "right": 0, "bottom": 0 },
+                                              "zIndex": 11,
+                                              "container": null,
+                                              "visible": true,
+                                              "horizontalAlignment": "Left",
+                                              "verticalAlignment": "Top",
+                                              "backgroundColor": "transparent",
+                                              "borderColor": "none",
+                                              "borderWidth": 0,
+                                              "rotateAngle": 0,
+                                              "pivot": { "x": 0.5, "y": 0.5 },
+                                              "flip": "None",
+                                              "wrapper": { "actualSize": { "width": 90, "height": 60 }, "offsetX": 330, "offsetY": 127.5 },
+                                              "isExpanded": true,
+                                              "expandIcon": { "shape": "None" },
+                                              "inEdges": ["node0-node1"],
+                                              "outEdges": ["node1-node2"],
+                                              "parentId": "node3ABD5B643E43C09B1476DABD3DC49908F2825CD4428DBB1954F509995CB3DA090",
+                                              "processId": "",
+                                              "umlIndex": -1,
+                                              "isPhase": false,
+                                              "isLane": false
+                                          },
+                                          {
+                                              "shape": { "type": "Bpmn", "shape": "Event", "event": { "event": "End", "trigger": "None" }, "activity": { "subProcess": {} }, "annotations": [] },
+                                              "id": "node2",
+                                              "width": 30,
+                                              "height": 30,
+                                              "annotations": [
+                                                  {
+                                                      "id": "node2-label",
+                                                      "content": "End",
+                                                      "horizontalAlignment": "Center",
+                                                      "verticalAlignment": "Top",
+                                                      "style": {
+                                                          "strokeWidth": 0,
+                                                          "strokeColor": "transparent",
+                                                          "fill": "transparent",
+                                                          "fontFamily": "Noto Sans, Helvetica, Arial, sans-serif",
+                                                          "fontSize": 11,
+                                                          "textOverflow": "Wrap",
+                                                          "textWrapping": "WrapWithOverflow",
+                                                          "whiteSpace": "CollapseSpace",
+                                                          "bold": false,
+                                                          "color": "black",
+                                                          "italic": false,
+                                                          "opacity": 1,
+                                                          "strokeDashArray": "",
+                                                          "textAlign": "Center",
+                                                          "textDecoration": "None"
+                                                      },
+                                                      "offset": { "x": 0.5, "y": 1 },
+                                                      "margin": { "left": 0, "top": 2, "right": 0, "bottom": 0 },
+                                                      "constraints": 0,
+                                                      "annotationType": "String",
+                                                      "hyperlink": { "link": "", "content": "", "textDecoration": "None" },
+                                                      "visibility": true,
+                                                      "rotateAngle": 0
+                                                  }
+                                              ],
+                                              "offsetX": 440,
+                                              "offsetY": 127.5,
+                                              "style": { "fill": "#FFFFFF", "strokeColor": "#9b0000", "strokeWidth": 4, "strokeDashArray": "", "opacity": 1, "gradient": { "type": "None" } },
+                                              "constraints": 38795238,
+                                              "addInfo": {
+                                                  "node": {
+                                                      "__type": "EndNode:http://www.kofax.com/agility/services/sdk",
+                                                      "Identity": { "NodeType": 6, "Id": 2, "Name": "End" },
+                                                      "ResetLimit": -1,
+                                                      "ActivityTimedOutAction": 0,
+                                                      "Annotations": [],
+                                                      "Allocate": false,
+                                                      "AppendAssociatedFile": false,
+                                                      "Attachments": [],
+                                                      "Automatic": false,
+                                                      "AvailableFireEvent": {},
+                                                      "CollaborationNodes": [],
+                                                      "CompletedFireEvent": {},
+                                                      "Dependants": [],
+                                                      "Destinations": [],
+                                                      "EmbeddedProcessCount": 0,
+                                                      "ExpectedCost": 0,
+                                                      "ActivationProbability": 100,
+                                                      "Origins": [{ "Identity": { "NodeType": 1, "Id": 1, "Name": "Activity 1" }, "EmbeddedProcess": {} }],
+                                                      "Priority": 1,
+                                                      "SecurityLevel": 10,
+                                                      "SkillLevel": 10,
+                                                      "FixedCost": 0,
+                                                      "MilestoneAvailable": { "Identity": {} },
+                                                      "MilestoneCompleted": { "Identity": {} },
+                                                      "NodeColorGroup": 0,
+                                                      "InheritNodeGroupColorFromSystem": true,
+                                                      "States": [],
+                                                      "SwimLane": { "Height": 600, "Index": 0, "Name": "Lane1", "PoolId": "3ABD5B643E43C09B1476DABD3DC49908" },
+                                                      "TitlePosition": 0,
+                                                      "TextPosition": 0,
+                                                      "StartNodeEventType": 0,
+                                                      "EndNodeEventType": 0,
+                                                      "GroupArtifacts": [],
+                                                      "MFPReady": 0,
+                                                      "DesignTimeType": 0,
+                                                      "NodeType": 6,
+                                                      "Color": "#FF9B0000",
+                                                      "Width": 30,
+                                                      "Height": 30,
+                                                      "XPosition": 325,
+                                                      "YPosition": 414.5,
+                                                      "Process": {
+                                                          "__type": "ProcessSummary:http://www.kofax.com/agility/services/sdk",
+                                                          "Author": {},
+                                                          "CaptureEnabled": false,
+                                                          "Category": { "__type": "CategoryIdentity:http://www.kofax.com/agility/services/sdk", "Id": "201F370CA5164F76ADDD8EEEFF666AF7", "Name": "Default Category" },
+                                                          "ExpectedCost": 0,
+                                                          "ExpectedDuration": { "Days": 0, "Hours": 0, "Minutes": 0, "Negative": false, "Seconds": 0, "UseNegative": false, "DurationType": 0 },
+                                                          "Identity": { "Id": "51377FB0CA851FAC41F6D8C932B136B0", "Version": 0.01, "Name": "New process" },
+                                                          "LastModified": {},
+                                                          "LastModifiedDate": {},
+                                                          "LatestVersion": true,
+                                                          "LockedBy": {},
+                                                          "ProcessType": 0,
+                                                          "SupportsSkinning": false,
+                                                          "Synchronous": false,
+                                                          "Version": 0.01
+                                                      },
+                                                      "ThreadPool": { "Id": 0, "Name": "Default Thread Pool" },
+                                                      "ShouldTrackVariableChanges": false,
+                                                      "Notification": {
+                                                          "AppendAssociatedFile": false,
+                                                          "ContentText": "",
+                                                          "ContentVariable": null,
+                                                          "SendEmail": false,
+                                                          "SendTo": 0,
+                                                          "SubjectText": "",
+                                                          "SubjectVariable": null,
+                                                          "UrlText": "",
+                                                          "UrlVariable": null
+                                                      }
+                                                  }
+                                              },
+                                              "ports": [
+                                                  {
+                                                      "inEdges": ["node1-node2"],
+                                                      "outEdges": [],
+                                                      "id": "left",
+                                                      "offset": { "x": 0, "y": 0.5 },
+                                                      "visibility": 2,
+                                                      "height": 12,
+                                                      "width": 12,
+                                                      "shape": "Square",
+                                                      "margin": { "right": 0, "bottom": 0, "left": 0, "top": 0 },
+                                                      "style": { "fill": "white", "strokeColor": "black", "opacity": 1, "strokeDashArray": "", "strokeWidth": 1 },
+                                                      "horizontalAlignment": "Center",
+                                                      "verticalAlignment": "Center",
+                                                      "constraints": 24
+                                                  },
+                                                  {
+                                                      "inEdges": [],
+                                                      "outEdges": [],
+                                                      "id": "top",
+                                                      "offset": { "x": 0.5, "y": 0 },
+                                                      "visibility": 2,
+                                                      "height": 12,
+                                                      "width": 12,
+                                                      "shape": "Square",
+                                                      "margin": { "right": 0, "bottom": 0, "left": 0, "top": 0 },
+                                                      "style": { "fill": "white", "strokeColor": "black", "opacity": 1, "strokeDashArray": "", "strokeWidth": 1 },
+                                                      "horizontalAlignment": "Center",
+                                                      "verticalAlignment": "Center",
+                                                      "constraints": 24
+                                                  }
+                                              ],
+                                              "margin": { "left": 400, "top": 75, "right": 0, "bottom": 0 },
+                                              "zIndex": 12,
+                                              "container": null,
+                                              "visible": true,
+                                              "horizontalAlignment": "Left",
+                                              "verticalAlignment": "Top",
+                                              "backgroundColor": "transparent",
+                                              "borderColor": "none",
+                                              "borderWidth": 0,
+                                              "rotateAngle": 0,
+                                              "pivot": { "x": 0.5, "y": 0.5 },
+                                              "flip": "None",
+                                              "wrapper": { "actualSize": { "width": 30, "height": 30 }, "offsetX": 440, "offsetY": 127.5 },
+                                              "isExpanded": true,
+                                              "expandIcon": { "shape": "None" },
+                                              "inEdges": ["node1-node2"],
+                                              "outEdges": [],
+                                              "parentId": "node3ABD5B643E43C09B1476DABD3DC49908F2825CD4428DBB1954F509995CB3DA090",
+                                              "processId": "",
+                                              "umlIndex": -1,
+                                              "isPhase": false,
+                                              "isLane": false
+                                          }
+                                      ],
+                                      "width": 100
+                                  }
+                              ],
+                              "orientation": "Horizontal",
+                              "phases": [],
+                              "isLane": false,
+                              "isPhase": false,
+                              "hasHeader": true
+                          },
+                          "constraints": 22017646,
+                          "addInfo": {
+                              "node": {
+                                  "Height": 600,
+                                  "Width": 1354,
+                                  "Identity": { "Id": "3ABD5B643E43C09B1476DABD3DC49908", "Name": "New process", "PoolType": 0 },
+                                  "PoolXPosition": 25,
+                                  "PoolYPosition": 25,
+                                  "SwimLanes": [{ "Identity": { "Height": 600, "Index": 0, "Name": "Lane1", "PoolId": "3ABD5B643E43C09B1476DABD3DC49908" } }]
+                              },
+                              "diagramLanes": [
+                                  {
+                                      "poolLane": { "Identity": { "Height": 600, "Index": 0, "Name": "Lane1", "PoolId": "3ABD5B643E43C09B1476DABD3DC49908" } },
+                                      "lane": {
+                                          "id": "F2825CD4428DBB1954F509995CB3DA09",
+                                          "height": 200,
+                                          "style": { "fill": "transparent" },
+                                          "header": { "annotation": { "content": "Lane1", "style": { "fill": "transparent", "textWrapping": "NoWrap", "textOverflow": "Ellipsis" } }, "width": 25, "height": 600 },
+                                          "children": [
+                                              {
+                                                  "id": "node0",
+                                                  "width": 30,
+                                                  "height": 30,
+                                                  "annotations": [
+                                                      {
+                                                          "id": "node0-label",
+                                                          "content": "Start",
+                                                          "horizontalAlignment": "Center",
+                                                          "verticalAlignment": "Top",
+                                                          "style": { "fontFamily": "Noto Sans, Helvetica, Arial, sans-serif", "fontSize": 11, "textOverflow": "Wrap", "textWrapping": "WrapWithOverflow", "whiteSpace": "CollapseSpace" },
+                                                          "offset": { "x": 0.5, "y": 1 },
+                                                          "margin": { "left": 0, "top": 2, "right": 0, "bottom": 0 },
+                                                          "constraints": 0
+                                                      }
+                                                  ],
+                                                  "offsetX": 45,
+                                                  "offsetY": 414.5,
+                                                  "style": { "strokeColor": "#62A716", "fill": "#FFFFFF", "strokeWidth": 2 },
+                                                  "shape": { "type": "Bpmn", "shape": "Event", "event": { "event": "Start", "trigger": "None" } },
+                                                  "constraints": 38795174,
+                                                  "addInfo": {
+                                                      "node": {
+                                                          "__type": "StartNode:http://www.kofax.com/agility/services/sdk",
+                                                          "Identity": { "NodeType": 5, "Id": 0, "Name": "Start" },
+                                                          "ResetLimit": -1,
+                                                          "ActivityTimedOutAction": 0,
+                                                          "Annotations": [],
+                                                          "Allocate": false,
+                                                          "AppendAssociatedFile": false,
+                                                          "Attachments": [],
+                                                          "Automatic": false,
+                                                          "AvailableFireEvent": {},
+                                                          "CollaborationNodes": [],
+                                                          "CompletedFireEvent": {},
+                                                          "Dependants": [],
+                                                          "Destinations": [{ "Identity": { "NodeType": 1, "Id": 1, "Name": "Activity 1" }, "EmbeddedProcess": {} }],
+                                                          "EmbeddedProcessCount": 0,
+                                                          "ExpectedCost": 0,
+                                                          "ActivationProbability": 100,
+                                                          "Origins": [],
+                                                          "Priority": 1,
+                                                          "SecurityLevel": 10,
+                                                          "SkillLevel": 10,
+                                                          "FixedCost": 0,
+                                                          "MilestoneAvailable": { "Identity": {} },
+                                                          "MilestoneCompleted": { "Identity": {} },
+                                                          "NodeColorGroup": 0,
+                                                          "InheritNodeGroupColorFromSystem": true,
+                                                          "States": [],
+                                                          "SwimLane": { "Height": 600, "Index": 0, "Name": "Lane1", "PoolId": "3ABD5B643E43C09B1476DABD3DC49908" },
+                                                          "TitlePosition": 0,
+                                                          "TextPosition": 0,
+                                                          "StartNodeEventType": 0,
+                                                          "EndNodeEventType": 0,
+                                                          "GroupArtifacts": [],
+                                                          "MFPReady": 0,
+                                                          "DesignTimeType": 0,
+                                                          "NodeType": 5,
+                                                          "Color": "#62A716",
+                                                          "Width": 30,
+                                                          "Height": 30,
+                                                          "XPosition": 45,
+                                                          "YPosition": 414.5,
+                                                          "Process": {
+                                                              "__type": "ProcessSummary:http://www.kofax.com/agility/services/sdk",
+                                                              "Author": {},
+                                                              "CaptureEnabled": false,
+                                                              "Category": { "__type": "CategoryIdentity:http://www.kofax.com/agility/services/sdk", "Id": "201F370CA5164F76ADDD8EEEFF666AF7", "Name": "Default Category" },
+                                                              "ExpectedCost": 0,
+                                                              "ExpectedDuration": { "Days": 0, "Hours": 0, "Minutes": 0, "Negative": false, "Seconds": 0, "UseNegative": false, "DurationType": 0 },
+                                                              "Identity": { "Id": "51377FB0CA851FAC41F6D8C932B136B0", "Version": 0.01, "Name": "New process" },
+                                                              "LastModified": {},
+                                                              "LastModifiedDate": {},
+                                                              "LatestVersion": true,
+                                                              "LockedBy": {},
+                                                              "ProcessType": 0,
+                                                              "SupportsSkinning": false,
+                                                              "Synchronous": false,
+                                                              "Version": 0.01
+                                                          },
+                                                          "ThreadPool": { "Id": 0, "Name": "Default Thread Pool" }
+                                                      }
+                                                  },
+                                                  "ports": [
+                                                      { "id": "right", "offset": { "x": 1, "y": 0.5 }, "visibility": 2 },
+                                                      { "id": "bottom", "offset": { "x": 0.5, "y": 1 }, "visibility": 2 }
+                                                  ],
+                                                  "margin": { "left": 120, "top": 75 }
+                                              },
+                                              {
+                                                  "id": "node1",
+                                                  "width": 90,
+                                                  "height": 60,
+                                                  "annotations": [
+                                                      {
+                                                          "id": "node1-label",
+                                                          "content": "Activity 1",
+                                                          "style": { "fontFamily": "Noto Sans, Helvetica, Arial, sans-serif", "fontSize": 11, "textOverflow": "Wrap", "textWrapping": "WrapWithOverflow", "whiteSpace": "CollapseSpace", "color": "#000000" },
+                                                          "offset": { "x": 0.5, "y": 0.5 },
+                                                          "margin": { "top": 10, "right": 2, "bottom": 3, "left": 2 },
+                                                          "constraints": 0
+                                                      }
+                                                  ],
+                                                  "offsetX": 185,
+                                                  "offsetY": 414.5,
+                                                  "style": { "strokeColor": "#7fadc8", "fill": "#E3EDF3", "strokeWidth": 2 },
+                                                  "shape": { "shape": "Activity", "type": "Bpmn", "activity": { "activity": "Task", "task": { "type": "User" } } },
+                                                  "constraints": 38795238,
+                                                  "addInfo": {
+                                                      "node": {
+                                                          "__type": "OrdinaryActivity:http://www.kofax.com/agility/services/sdk",
+                                                          "Notification": {
+                                                              "AppendAssociatedFile": false,
+                                                              "ContentText": "",
+                                                              "ContentVariable": null,
+                                                              "SendEmail": false,
+                                                              "SendTo": 0,
+                                                              "SubjectText": "",
+                                                              "SubjectVariable": null,
+                                                              "UrlText": "",
+                                                              "UrlVariable": null
+                                                          },
+                                                          "PreconditionInputs": [],
+                                                          "UsePreviousUser": false,
+                                                          "Resources": {
+                                                              "AdvanceWorkflowRules": {
+                                                                  "ConcurrentActivityAccess": false,
+                                                                  "ExitCondition": null,
+                                                                  "ExpandGroupResources": false,
+                                                                  "NeedsValidated": false,
+                                                                  "NoOfResourcesRequired": 0,
+                                                                  "NoOfResourcesRequiredValue": 0,
+                                                                  "NoOfResourcesRequiredVariable": { "Id": "", "Name": "" },
+                                                                  "SequentialActivityAssignment": false,
+                                                                  "UseAdvanceWorkflowRules": false,
+                                                                  "UseExcludedResources": false,
+                                                                  "UseExitCondition": false,
+                                                                  "UseResourceSettings": false
+                                                              },
+                                                              "DynamicResourcesOverwriteStatic": false,
+                                                              "RequiredResources": [],
+                                                              "UsableResources": [
+                                                                  {
+                                                                      "Dynamic": false,
+                                                                      "DynamicResourceVariable": null,
+                                                                      "Excluded": false,
+                                                                      "SequentialOrder": 1,
+                                                                      "StaticResource": { "Id": "7DF43CCDF24611D2804B00104B71BD15", "ResourceType": 3, "Name": "Everyone", "__type": "ResourceIdentity:http://www.kofax.com/agility/services/sdk" },
+                                                                      "__type": "ActivityResource:http://www.kofax.com/agility/services/sdk"
+                                                                  }
+                                                              ]
+                                                          },
+                                                          "BusinessEvents": [],
+                                                          "DueDateTriggers": [],
+                                                          "HasDueDateTriggers": false,
+                                                          "InputVariables": [],
+                                                          "OutputVariables": [],
+                                                          "LagDuration": { "Days": 0, "Hours": 0, "Minutes": 0, "Negative": false, "Seconds": 0, "UseNegative": false, "DurationType": 0 },
+                                                          "Identity": { "NodeType": 1, "Id": 1, "Name": "Activity 1" },
+                                                          "ResetLimit": -1,
+                                                          "ActivityTimedOutAction": 0,
+                                                          "Annotations": [],
+                                                          "Allocate": false,
+                                                          "AppendAssociatedFile": false,
+                                                          "Attachments": [],
+                                                          "Automatic": false,
+                                                          "AvailableFireEvent": {},
+                                                          "CollaborationNodes": [],
+                                                          "CompletedFireEvent": {},
+                                                          "Dependants": [],
+                                                          "Destinations": [{ "Identity": { "NodeType": 6, "Id": 2, "Name": "End" }, "EmbeddedProcess": {} }],
+                                                          "EmbeddedProcessCount": 0,
+                                                          "ExpectedCost": 0,
+                                                          "ActivationProbability": 100,
+                                                          "Origins": [{ "Identity": { "NodeType": 5, "Id": 0, "Name": "Start" }, "EmbeddedProcess": {} }],
+                                                          "Priority": 1,
+                                                          "SecurityLevel": 10,
+                                                          "SkillLevel": 10,
+                                                          "FixedCost": 0,
+                                                          "MilestoneAvailable": { "Identity": {} },
+                                                          "MilestoneCompleted": { "Identity": {} },
+                                                          "NodeColorGroup": 1,
+                                                          "InheritNodeGroupColorFromSystem": true,
+                                                          "States": [],
+                                                          "SwimLane": { "Height": 600, "Index": 0, "Name": "Lane1", "PoolId": "3ABD5B643E43C09B1476DABD3DC49908" },
+                                                          "TitlePosition": 0,
+                                                          "TextPosition": 0,
+                                                          "StartNodeEventType": 0,
+                                                          "EndNodeEventType": 0,
+                                                          "GroupArtifacts": [],
+                                                          "MFPReady": 0,
+                                                          "DesignTimeType": 1,
+                                                          "NodeType": 1,
+                                                          "Rag": {
+                                                              "SlaStatus2Threshold": { "Days": 0, "Hours": 0, "Minutes": 0, "Negative": false, "Seconds": 0, "UseNegative": false, "DurationType": 0 },
+                                                              "SlaStatus3Threshold": { "Days": 0, "Hours": 0, "Minutes": 0, "Negative": false, "Seconds": 0, "UseNegative": false, "DurationType": 0 },
+                                                              "SlaStatus4Threshold": { "Days": 0, "Hours": 0, "Minutes": 0, "Negative": false, "Seconds": 0, "UseNegative": false, "DurationType": 0 },
+                                                              "SlaStatus5Threshold": { "Days": 0, "Hours": 0, "Minutes": 0, "Negative": false, "Seconds": 0, "UseNegative": false, "DurationType": 0 }
+                                                          },
+                                                          "TargetDuration": { "Days": 0, "Hours": 0, "Minutes": 0, "Negative": false, "Seconds": 0, "UseNegative": false, "DurationType": 0 },
+                                                          "Width": 90,
+                                                          "Height": 60,
+                                                          "XPosition": 185,
+                                                          "YPosition": 414.5,
+                                                          "Color": "#FFE3EDF3",
+                                                          "Process": {
+                                                              "__type": "ProcessSummary:http://www.kofax.com/agility/services/sdk",
+                                                              "Author": {},
+                                                              "CaptureEnabled": false,
+                                                              "Category": { "__type": "CategoryIdentity:http://www.kofax.com/agility/services/sdk", "Id": "201F370CA5164F76ADDD8EEEFF666AF7", "Name": "Default Category" },
+                                                              "ExpectedCost": 0,
+                                                              "ExpectedDuration": { "Days": 0, "Hours": 0, "Minutes": 0, "Negative": false, "Seconds": 0, "UseNegative": false, "DurationType": 0 },
+                                                              "Identity": { "Id": "51377FB0CA851FAC41F6D8C932B136B0", "Version": 0.01, "Name": "New process" },
+                                                              "LastModified": {},
+                                                              "LastModifiedDate": {},
+                                                              "LatestVersion": true,
+                                                              "LockedBy": {},
+                                                              "ProcessType": 0,
+                                                              "SupportsSkinning": false,
+                                                              "Synchronous": false,
+                                                              "Version": 0.01
+                                                          },
+                                                          "ThreadPool": { "Id": 0, "Name": "Default Thread Pool" },
+                                                          "IsAfterStartNode": true,
+                                                          "ShouldTrackVariableChanges": false
+                                                      }
+                                                  },
+                                                  "ports": [
+                                                      { "id": "left", "offset": { "x": 0, "y": 0.5 }, "visibility": 2 },
+                                                      { "id": "top", "offset": { "x": 0.5, "y": 0 }, "visibility": 2 },
+                                                      { "id": "right", "offset": { "x": 1, "y": 0.5 }, "visibility": 2 },
+                                                      { "id": "bottom", "offset": { "x": 0.5, "y": 1 }, "visibility": 2 }
+                                                  ],
+                                                  "margin": { "left": 260, "top": 60 }
+                                              },
+                                              {
+                                                  "id": "node2",
+                                                  "width": 30,
+                                                  "height": 30,
+                                                  "annotations": [
+                                                      {
+                                                          "id": "node2-label",
+                                                          "content": "End",
+                                                          "horizontalAlignment": "Center",
+                                                          "verticalAlignment": "Top",
+                                                          "style": { "fontFamily": "Noto Sans, Helvetica, Arial, sans-serif", "fontSize": 11, "textOverflow": "Wrap", "textWrapping": "WrapWithOverflow", "whiteSpace": "CollapseSpace" },
+                                                          "offset": { "x": 0.5, "y": 1 },
+                                                          "margin": { "left": 0, "top": 2, "right": 0, "bottom": 0 },
+                                                          "constraints": 0
+                                                      }
+                                                  ],
+                                                  "offsetX": 325,
+                                                  "offsetY": 414.5,
+                                                  "style": { "strokeColor": "#9b0000", "fill": "#FFFFFF", "strokeWidth": 4 },
+                                                  "shape": { "type": "Bpmn", "shape": "Event", "event": { "event": "End", "trigger": "None" } },
+                                                  "constraints": 38795238,
+                                                  "addInfo": {
+                                                      "node": {
+                                                          "__type": "EndNode:http://www.kofax.com/agility/services/sdk",
+                                                          "Identity": { "NodeType": 6, "Id": 2, "Name": "End" },
+                                                          "ResetLimit": -1,
+                                                          "ActivityTimedOutAction": 0,
+                                                          "Annotations": [],
+                                                          "Allocate": false,
+                                                          "AppendAssociatedFile": false,
+                                                          "Attachments": [],
+                                                          "Automatic": false,
+                                                          "AvailableFireEvent": {},
+                                                          "CollaborationNodes": [],
+                                                          "CompletedFireEvent": {},
+                                                          "Dependants": [],
+                                                          "Destinations": [],
+                                                          "EmbeddedProcessCount": 0,
+                                                          "ExpectedCost": 0,
+                                                          "ActivationProbability": 100,
+                                                          "Origins": [{ "Identity": { "NodeType": 1, "Id": 1, "Name": "Activity 1" }, "EmbeddedProcess": {} }],
+                                                          "Priority": 1,
+                                                          "SecurityLevel": 10,
+                                                          "SkillLevel": 10,
+                                                          "FixedCost": 0,
+                                                          "MilestoneAvailable": { "Identity": {} },
+                                                          "MilestoneCompleted": { "Identity": {} },
+                                                          "NodeColorGroup": 0,
+                                                          "InheritNodeGroupColorFromSystem": true,
+                                                          "States": [],
+                                                          "SwimLane": { "Height": 600, "Index": 0, "Name": "Lane1", "PoolId": "3ABD5B643E43C09B1476DABD3DC49908" },
+                                                          "TitlePosition": 0,
+                                                          "TextPosition": 0,
+                                                          "StartNodeEventType": 0,
+                                                          "EndNodeEventType": 0,
+                                                          "GroupArtifacts": [],
+                                                          "MFPReady": 0,
+                                                          "DesignTimeType": 0,
+                                                          "NodeType": 6,
+                                                          "Color": "#FF9B0000",
+                                                          "Width": 30,
+                                                          "Height": 30,
+                                                          "XPosition": 325,
+                                                          "YPosition": 414.5,
+                                                          "Process": {
+                                                              "__type": "ProcessSummary:http://www.kofax.com/agility/services/sdk",
+                                                              "Author": {},
+                                                              "CaptureEnabled": false,
+                                                              "Category": { "__type": "CategoryIdentity:http://www.kofax.com/agility/services/sdk", "Id": "201F370CA5164F76ADDD8EEEFF666AF7", "Name": "Default Category" },
+                                                              "ExpectedCost": 0,
+                                                              "ExpectedDuration": { "Days": 0, "Hours": 0, "Minutes": 0, "Negative": false, "Seconds": 0, "UseNegative": false, "DurationType": 0 },
+                                                              "Identity": { "Id": "51377FB0CA851FAC41F6D8C932B136B0", "Version": 0.01, "Name": "New process" },
+                                                              "LastModified": {},
+                                                              "LastModifiedDate": {},
+                                                              "LatestVersion": true,
+                                                              "LockedBy": {},
+                                                              "ProcessType": 0,
+                                                              "SupportsSkinning": false,
+                                                              "Synchronous": false,
+                                                              "Version": 0.01
+                                                          },
+                                                          "ThreadPool": { "Id": 0, "Name": "Default Thread Pool" },
+                                                          "ShouldTrackVariableChanges": false,
+                                                          "Notification": {
+                                                              "AppendAssociatedFile": false,
+                                                              "ContentText": "",
+                                                              "ContentVariable": null,
+                                                              "SendEmail": false,
+                                                              "SendTo": 0,
+                                                              "SubjectText": "",
+                                                              "SubjectVariable": null,
+                                                              "UrlText": "",
+                                                              "UrlVariable": null
+                                                          }
+                                                      }
+                                                  },
+                                                  "ports": [
+                                                      { "id": "left", "offset": { "x": 0, "y": 0.5 }, "visibility": 2 },
+                                                      { "id": "top", "offset": { "x": 0.5, "y": 0 }, "visibility": 2 }
+                                                  ],
+                                                  "margin": { "left": 400, "top": 75 }
+                                              }
+                                          ],
+                                          "addInfo": { "Identity": { "Height": 600, "Index": 0, "Name": "Lane1", "PoolId": "3ABD5B643E43C09B1476DABD3DC49908" } }
+                                      }
+                                  }
+                              ]
+                          },
+                          "margin": { "left": 0, "top": 0 },
+                          "zIndex": 6,
+                          "container": { "type": "Grid", "orientation": "Horizontal" },
+                          "visible": true,
+                          "horizontalAlignment": "Left",
+                          "verticalAlignment": "Top",
+                          "borderColor": "none",
+                          "borderWidth": 0,
+                          "rotateAngle": 0,
+                          "pivot": { "x": 0.5, "y": 0.5 },
+                          "flip": "None",
+                          "wrapper": { "actualSize": { "width": 1354, "height": 225 }, "offsetX": 702, "offsetY": 125 },
+                          "annotations": [],
+                          "ports": [],
+                          "isExpanded": true,
+                          "expandIcon": { "shape": "None" },
+                          "inEdges": [],
+                          "outEdges": [],
+                          "processId": "",
+                          "isPhase": false,
+                          "isLane": false
+                      }
+                  ],
+                  "scrollSettings": {
+                      "canAutoScroll": true,
+                      "scrollLimit": "Infinity",
+                      "padding": { "left": 10, "right": 30, "top": 10, "bottom": 30 },
+                      "viewPortWidth": 1404,
+                      "viewPortHeight": 829,
+                      "currentZoom": 1,
+                      "horizontalOffset": 0,
+                      "verticalOffset": 0
+                  },
+                  "selectedItems": {
+                      "constraints": 4096,
+                      "userHandles": [
+                          {
+                              "name": "connector",
+                              "backgroundColor": "transparent",
+                              "pathColor": "#5a5a64",
+                              "side": "Top",
+                              "offset": 0.5,
+                              "visible": false,
+                              "size": 33,
+                              "pathData": "M4,11v2h8v7l8-8L12,4v7Z",
+                              "margin": { "top": 17, "left": 0, "right": 0, "bottom": 0 },
+                              "disableConnectors": false,
+                              "disableNodes": false,
+                              "horizontalAlignment": "Center",
+                              "verticalAlignment": "Center",
+                              "borderColor": "",
+                              "borderWidth": 0.5
+                          },
+                          {
+                              "name": "delete",
+                              "backgroundColor": "transparent",
+                              "pathColor": "#5a5a64",
+                              "side": "Top",
+                              "offset": 1,
+                              "visible": false,
+                              "size": 25,
+                              "pathData": "M828.2096467757849,-5.547905384373092c-3.201999999999998,-2.8130000000000006,-8.105999999999995,-2.455,-11.119,0.5579999999999998l-34.179,34.205l-34.337,-34.362c-3.093,-3.0920000000000005,-8.108,-3.0920000000000005,-11.201,0l-0.11299999999999956,0.11299999999999956c-3.093,3.093,-3.093,8.107,0,11.201l34.341,34.366l-34.34,34.366c-3.093,3.0930000000000035,-3.093,8.108000000000004,0,11.201000000000008l0.11299999999999956,0.11299999999999956c3.093,3.0930000000000035,8.107,3.0930000000000035,11.201,0l34.337,-34.363l34.17900000000001,34.205c3.0130000000000052,3.0130000000000052,7.917000000000002,3.3700000000000045,11.119,0.5580000000000069c3.507000000000005,-3.081000000000003,3.6370000000000005,-8.429000000000002,0.38800000000000534,-11.677999999999997l-34.37899999999999,-34.403l34.37700000000001,-34.404c3.25,-3.2489999999999988,3.1200000000000045,-8.596,-0.38800000000000534,-11.677Z",
+                              "margin": { "top": 10, "right": 10, "left": 0, "bottom": 0 },
+                              "disableConnectors": false,
+                              "disableNodes": false,
+                              "horizontalAlignment": "Center",
+                              "verticalAlignment": "Center",
+                              "borderColor": "",
+                              "borderWidth": 0.5
+                          },
+                          {
+                              "name": "node",
+                              "backgroundColor": "transparent",
+                              "pathColor": "#e9f8ff",
+                              "side": "Right",
+                              "offset": 0,
+                              "visible": false,
+                              "size": 33,
+                              "pathData": "M17.75,13.89H2.5a2,2,0,0,1-2-2V2.5a2,2,0,0,1,2-2H17.75a2,2,0,0,1,2,2v9.39A2,2,0,0,1,17.75,13.89Z",
+                              "margin": { "right": 15, "left": 0, "top": 0, "bottom": 0 },
+                              "disableConnectors": false,
+                              "disableNodes": false,
+                              "horizontalAlignment": "Center",
+                              "verticalAlignment": "Center",
+                              "borderColor": "",
+                              "borderWidth": 0.5
+                          },
+                          {
+                              "name": "decision",
+                              "backgroundColor": "transparent",
+                              "pathColor": "#fff6df",
+                              "side": "Right",
+                              "offset": 0.5,
+                              "visible": false,
+                              "size": 33,
+                              "pathData": "M19.94,11.93l-8,8a2,2,0,0,1-2.83,0l-8-8a2,2,0,0,1,0-2.83l8-8a2,2,0,0,1,2.83,0l8,8A2,2,0,0,1,19.94,11.93Z",
+                              "margin": { "right": 15, "left": 0, "top": 0, "bottom": 0 },
+                              "disableConnectors": false,
+                              "disableNodes": false,
+                              "horizontalAlignment": "Center",
+                              "verticalAlignment": "Center",
+                              "borderColor": "",
+                              "borderWidth": 0.5
+                          },
+                          {
+                              "name": "end",
+                              "backgroundColor": "transparent",
+                              "pathColor": "#ffedef",
+                              "side": "Right",
+                              "offset": 1,
+                              "visible": false,
+                              "size": 33,
+                              "pathData": "M16.92,8.71A8.21,8.21,0,1,1,8.71.5,8.21,8.21,0,0,1,16.92,8.71Z",
+                              "margin": { "right": 15, "left": 0, "top": 0, "bottom": 0 },
+                              "disableConnectors": false,
+                              "disableNodes": false,
+                              "horizontalAlignment": "Center",
+                              "verticalAlignment": "Center",
+                              "borderColor": "",
+                              "borderWidth": 0.5
+                          },
+                          {
+                              "name": "annotation",
+                              "backgroundColor": "transparent",
+                              "pathColor": "#5a5a64",
+                              "side": "Bottom",
+                              "offset": 1,
+                              "visible": false,
+                              "size": 33,
+                              "pathData": "M8,11h8v2H8Zm8-4H8V9h8Zm0,8H8v2h8ZM18,2H10V4h8V20H10v2h8a2,2,0,0,0,2-2V4A2,2,0,0,0,18,2ZM6,4H8V2H6A2,2,0,0,0,4,4v6L2,12l2,2v6a2,2,0,0,0,2,2H8V20H6Z",
+                              "margin": { "right": 10, "bottom": 9, "left": 5, "top": 0 },
+                              "disableConnectors": false,
+                              "disableNodes": false,
+                              "horizontalAlignment": "Center",
+                              "verticalAlignment": "Center",
+                              "borderColor": "",
+                              "borderWidth": 0.5
+                          },
+                          {
+                              "name": "attachment",
+                              "backgroundColor": "transparent",
+                              "pathColor": "#5a5a64",
+                              "side": "Bottom",
+                              "offset": 0,
+                              "visible": false,
+                              "size": 33,
+                              "pathData": "M11,9h5.5L11,3.5V9M4,2h8l6,6V20a2,2,0,0,1-2,2H4a2,2,0,0,1-2-2V4A2,2,0,0,1,4,2M9,4H4V20H16V11H9Z",
+                              "margin": { "bottom": 9, "left": 0, "right": 0, "top": 0 },
+                              "disableConnectors": false,
+                              "disableNodes": false,
+                              "horizontalAlignment": "Center",
+                              "verticalAlignment": "Center",
+                              "borderColor": "",
+                              "borderWidth": 0.5
+                          }
+                      ],
+                      "nodes": [],
+                      "connectors": [],
+                      "rotateAngle": 0,
+                      "pivot": { "x": 0.5, "y": 0.5 },
+                      "width": 0,
+                      "height": 0,
+                      "offsetX": 0,
+                      "offsetY": 0,
+                      "wrapper": null
+                  },
+                  "snapSettings": {
+                      "constraints": 0,
+                      "horizontalGridlines": { "lineIntervals": [1, 9, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75], "snapIntervals": [10] },
+                      "verticalGridlines": { "lineIntervals": [1, 9, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75], "snapIntervals": [10] },
+                      "gridType": "Lines"
+                  },
+                  "width": "100%",
+                  "enablePersistence": false,
+                  "rulerSettings": { "showRulers": false },
+                  "backgroundColor": "transparent",
+                  "layout": {
+                      "type": "ComplexHierarchicalTree",
+                      "enableAnimation": true,
+                      "connectionDirection": "Orientation",
+                      "connectorSegments": "Layout",
+                      "margin": { "left": 30, "top": 30, "right": 30, "bottom": 30 },
+                      "orientation": "LeftToRight",
+                      "horizontalSpacing": 80,
+                      "verticalSpacing": 80,
+                      "horizontalAlignment": "Left",
+                      "verticalAlignment": "Center"
+                  },
+                  "contextMenuSettings": {},
+                  "dataSourceSettings": { "dataManager": null, "dataSource": null, "crudAction": { "read": "" }, "connectionDataSource": { "crudAction": { "read": "" } } },
+                  "mode": "SVG",
+                  "layers": [
+                      {
+                          "id": "default_layer",
+                          "visible": true,
+                          "lock": false,
+                          "objects": [
+                              "node3ABD5B643E43C09B1476DABD3DC49908",
+                              "node3ABD5B643E43C09B1476DABD3DC49908pCf0X",
+                              "node3ABD5B643E43C09B1476DABD3DC49908F2825CD4428DBB1954F509995CB3DA090",
+                              "node3ABD5B643E43C09B1476DABD3DC49908F2825CD4428DBB1954F509995CB3DA09_0_header",
+                              "node0",
+                              "node1",
+                              "node2",
+                              "node0-node1",
+                              "node1-node2"
+                          ],
+                          "zIndex": 0
+                      }
+                  ],
+                  "diagramSettings": { "inversedAlignment": true },
+                  "pageSettings": { "boundaryConstraints": "Infinity", "orientation": "Landscape", "height": null, "width": null, "background": { "source": "", "color": "transparent" }, "showPageBreaks": false, "fitOptions": { "canFit": false } },
+                  "basicElements": [],
+                  "tooltip": { "content": "", "relativeMode": "Mouse" },
+                  "tool": 3,
+                  "customCursor": [],
+                  "bridgeDirection": "Top",
+                  "version": 17.1
+              }`);
+            
+                setTimeout(() => diagram.resetSegments(), 100);
+              }
+              diagram = new Diagram({
+                width: '100%',height: '600px',nodes: nodes,connectors: connectors,
+                selectedItems: selectedItems,constraints: constraints,snapSettings: snapSettings,
+                scrollSettings: scrollSettings,commandManager: commandManager,selectionChange: selectionChanged
+            });
+            diagram.appendTo('#diagramSwimlane1');
+            loadJson();
+
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('While setting delete constraints for node in swimlane and clear the diagram', (done: Function) => {
+        diagram.clear();
+        expect(diagram.nodes.length === 0 && diagram.connectors.length === 0).toBe(true);
+        done();
+        });
     });
 });

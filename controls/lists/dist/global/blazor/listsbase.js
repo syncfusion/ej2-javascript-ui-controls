@@ -489,7 +489,7 @@ exports.cssClass = {
      * @param  {{[key:string]:Object}[]} dataSource - Specifies local JSON data source.
      * @param  {ListBaseOptions} options? - Specifies listbase option for fields.
      */
-    function renderContentTemplate(createElement, template, dataSource, fields, options) {
+    function renderContentTemplate(createElement, template, dataSource, fields, options, prop) {
         exports.cssClass = getModuleClass(defaultListBaseOptions.moduleName);
         var ulElement = createElement('ul', { className: exports.cssClass.ul, attrs: { role: 'presentation' } });
         var curOpt = sf.base.extend({}, defaultListBaseOptions, options);
@@ -525,7 +525,12 @@ exports.cssClass = {
             }
             else {
                 var currentID = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
-                sf.base.append(compiledString(curItem, null, null, currentID, !!curOpt.isStringTemplate), li);
+                if (isHeader) {
+                    sf.base.append(compiledString(curItem, options, 'groupTemplate', currentID, !!curOpt.isStringTemplate), li);
+                }
+                else {
+                    sf.base.append(compiledString(curItem, options, 'template', currentID, !!curOpt.isStringTemplate), li);
+                }
                 li.setAttribute('data-value', sf.base.isNullOrUndefined(value) ? 'null' : value);
                 li.setAttribute('role', 'option');
             }
@@ -563,7 +568,7 @@ exports.cssClass = {
             var headerData = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
-            sf.base.append(compiledString(headerData, null, null, curOpt.groupTemplateID, !!curOpt.isStringTemplate), header);
+            sf.base.append(compiledString(headerData, options, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), header);
         }
         return headerItems;
     }
@@ -728,11 +733,11 @@ exports.cssClass = {
         }
         if (grpLI && options && options.groupTemplate) {
             var compiledString = sf.base.compile(options.groupTemplate);
-            sf.base.append(compiledString(item, null, null, curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
+            sf.base.append(compiledString(item, options, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
         }
         else if (!grpLI && options && options.template) {
             var compiledString = sf.base.compile(options.template);
-            sf.base.append(compiledString(item, null, null, curOpt.templateID, !!curOpt.isStringTemplate), li);
+            sf.base.append(compiledString(item, options, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
         }
         else {
             var innerDiv = createElement('div', {

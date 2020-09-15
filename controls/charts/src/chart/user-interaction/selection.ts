@@ -1352,10 +1352,13 @@ export class Selection extends BaseSelection {
         this.multiDataIndexes[this.count] = [];
         for (let series of chart.visibleSeries) {
             series.points.filter((point: Points) => {
-                element = document.elementFromPoint(
-                    point.symbolLocations[0].x + offsetX,
-                    point.symbolLocations[0].y + offsetY
+                // To check whether the point have symbol location value or not.
+                if (point.symbolLocations && point.symbolLocations.length) {
+                    element = document.elementFromPoint(
+                        point.symbolLocations[0].x + offsetX,
+                        point.symbolLocations[0].y + offsetY
                     ) as SVGPathElement;
+                }
                 if (element === path) {
                     point.isSelect = true;
                     if ((this.chart.allowMultiSelection) && this.currentMode === 'Lasso') {

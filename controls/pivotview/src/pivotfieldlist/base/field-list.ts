@@ -56,8 +56,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     /** @hidden */
     public olapEngineModule: OlapEngine;
     /** @hidden */
-    public localDataSourceSetting: any;
-    /** @hidden */
     public isDragging: boolean;
     /** @hidden */
     public fieldListSpinnerElement: Element;
@@ -116,6 +114,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     /** @hidden */
     public enableValueSorting: boolean = false;
     private request: XMLHttpRequest = new XMLHttpRequest();
+    private savedDataSourceSettings: DataSourceSettingsModel;
     private remoteData: string[][] | IDataSet[] = [];
     /** @hidden */
     public guid: string;
@@ -692,7 +691,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             pageSettings: this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined,
             enableValueSorting: this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined,
             enableDrillThrough: this.pivotGridModule ?
-            (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true,
+                (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true,
             locale: JSON.stringify(PivotUtil.getLocalizedObject(this))
         };
         let params: any = {
@@ -752,9 +751,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         }
                     }
                     this.engineModule.headerContent = PivotUtil.frameContent(pivotValues, 'header', rowPos, this);
-                    this.engineModule.pageSettings = this.pivotGridModule ?  this.pivotGridModule.pageSettings : undefined;
+                    this.engineModule.pageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
                     let valueSort: any = JSON.parse(engine.valueSortSettings);
-                    this.engineModule.valueSortSettings = { 
+                    this.engineModule.valueSortSettings = {
                         headerText: valueSort.HeaderText,
                         headerDelimiter: valueSort.HeaderDelimiter,
                         sortOrder: valueSort.SortOrder,
@@ -875,10 +874,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      * @hidden
      */
     public onPropertyChanged(newProp: PivotFieldListModel, oldProp: PivotFieldListModel): void {
-        if (!isNullOrUndefined(newProp.dataSourceSettings.dataSource)) {
-            this.localDataSourceSetting = PivotUtil.getClonedDataSourceSettings(this.staticPivotGridModule.dataSourceSettings);
-            this.initEngine();
-        }
         let requireRefresh: boolean = false;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -890,6 +885,21 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     }
                     break;
                 case 'dataSourceSettings':
+                    if (!isNullOrUndefined(newProp.dataSourceSettings.dataSource)) {
+                        if ((newProp.dataSourceSettings.dataSource as IDataSet[]).length === 0 && !isNullOrUndefined(this.staticPivotGridModule)) {
+                            this.savedDataSourceSettings = PivotUtil.getClonedDataSourceSettings(this.staticPivotGridModule.dataSourceSettings);
+                            this.staticPivotGridModule.setProperties({ dataSourceSettings: { rows: [] } }, true);
+                            this.staticPivotGridModule.setProperties({ dataSourceSettings: { columns: [] } }, true);
+                            this.staticPivotGridModule.setProperties({ dataSourceSettings: { values: [] } }, true);
+                            this.engineModule.fieldList = {};
+                            this.staticPivotGridModule.pivotValues = [];
+                        }
+                        this.initEngine();
+                        if (!isNullOrUndefined(this.savedDataSourceSettings)) {
+                            PivotUtil.updateDataSourceSettings(this.staticPivotGridModule, this.savedDataSourceSettings);
+                            this.savedDataSourceSettings = undefined;
+                        }
+                    }
                     if (PivotUtil.isButtonIconRefesh(prop, oldProp, newProp)) {
                         if (this.isPopupView && this.pivotGridModule &&
                             this.pivotGridModule.showGroupingBar && this.pivotGridModule.groupingBarModule) {
@@ -945,9 +955,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             if (requireRefresh) {
                 this.fieldListRender();
             }
-        }
-        if(!isNullOrUndefined(this.localDataSourceSetting)) {
-            PivotUtil.updateDataSourceSettings(this.staticPivotGridModule, this.localDataSourceSetting);
         }
     }
     /* tslint:disable */
@@ -1112,7 +1119,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             while (lnt--) {
                 if (this.captionData[lnt]) {
                     for (let obj of this.captionData[lnt]) {
-                        if (obj) {
+                        if (obj && !isNullOrUndefined(engineModule.fieldList)) {
                             if (engineModule.fieldList[obj.name]) {
                                 if (obj.caption) {
                                     engineModule.fieldList[obj.name].caption = obj.caption;

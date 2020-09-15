@@ -1447,3 +1447,13 @@ export type FormattingExceptions = 'Bold' | 'Italic' | 'FontSize' | 'FontFamily'
     'BaselineAlignment' | 'Strikethrough' | 'Underline' | 'FontColor' | 'TextAlignment' | 'LeftIndent' | 'RightIndent' | 'LineSpacing'
     | 'LineSpacingType' | 'FirstLineIndent' | 'AfterSpacing'
     | 'BeforeSpacing' | 'ContextualSpacing' | 'ListFormat';
+
+/**
+ * Specifies the Content Control Widget type
+ */
+export type ContentControlWidgetType = 'Block' | 'Inline' | 'Row' | 'Cell';
+/**
+ * Specifies the Content Control type
+ */
+export type ContentControlType = 'BuildingBlockGallery' | 'CheckBox' | 'ComboBox' | 'Date' | 'DropDownList' | 'Group' | 'Picture'
+    | 'RepeatingSection' | 'RichText' | 'Text';

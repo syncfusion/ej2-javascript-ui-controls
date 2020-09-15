@@ -923,9 +923,9 @@ let Splitter = class Splitter extends Component {
                 }
             }
         }
-        setTimeout(() => { this.updateSplitterSize(); }, 200);
+        setTimeout(() => { this.updateSplitterSize(true); }, 200);
     }
-    updateSplitterSize() {
+    updateSplitterSize(iswindowResize) {
         let totalWidth = 0;
         let flexPaneIndexes = [];
         let flexCount = 0;
@@ -953,6 +953,39 @@ let Splitter = class Splitter extends Component {
             this.allPanes[flexPaneIndexes[j]].style.flexBasis = this.orientation === 'Horizontal' ?
                 (this.allPanes[flexPaneIndexes[j]].offsetWidth + avgDiffWidth) + 'px' :
                 (this.allPanes[flexPaneIndexes[j]].offsetHeight + avgDiffWidth) + 'px';
+        }
+        if (this.allPanes.length === 2 && iswindowResize) {
+            let paneCount = this.allPanes.length;
+            let minValue;
+            let paneMinRange;
+            let paneIndex = 0;
+            let updatePane;
+            let flexPane;
+            for (let i = 0; i < paneCount; i++) {
+                if (this.paneSettings[i].min !== null) {
+                    paneMinRange = this.convertPixelToNumber((this.paneSettings[i].min).toString());
+                    if (this.paneSettings[i].min.indexOf('%') > 0) {
+                        paneMinRange = this.convertPercentageToPixel(this.paneSettings[i].min);
+                    }
+                    minValue = this.convertPixelToNumber((paneMinRange).toString());
+                    if (this.allPanes[i].offsetWidth < minValue) {
+                        if (i === paneIndex) {
+                            updatePane = this.allPanes[i];
+                            flexPane = this.allPanes[i + 1];
+                        }
+                        else {
+                            updatePane = this.allPanes[i];
+                            flexPane = this.allPanes[i - 1];
+                        }
+                        let sizeDiff = minValue - this.allPanes[i].offsetWidth;
+                        let isPercent = updatePane.style.flexBasis.indexOf('%') > -1;
+                        updatePane.style.flexBasis = isPercent ? this.convertPixelToPercentage(updatePane.offsetWidth + sizeDiff) + '%'
+                            : (updatePane.offsetWidth + sizeDiff) + 'px';
+                        flexPane.style.flexBasis = flexPane.style.flexBasis.indexOf('%') > -1 ?
+                            this.convertPixelToPercentage(flexPane.offsetWidth - sizeDiff) + '%' : (flexPane.offsetWidth - sizeDiff) + 'px';
+                    }
+                }
+            }
         }
     }
     wireResizeEvents() {

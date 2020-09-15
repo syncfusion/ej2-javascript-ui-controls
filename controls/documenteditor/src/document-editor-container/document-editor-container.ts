@@ -203,6 +203,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Event()
     public trackChange: EmitType<TrackChangeEventArgs>;
     /**
+     * Triggers when user interaction prevented in content control.
+     * @event
+     */
+    @Event()
+    public contentControl: EmitType<Object>;
+    /**
      * Document editor container's toolbar module
      * @private
      */
@@ -360,7 +366,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Upload from computer': 'Upload from computer',
         'By URL': 'By URL',
         'Page Break': 'Page Break',
-        'Toggles the visibility of properties pane': 'Toggles the visibility of properties pane',
+        'Show properties pane': 'Show properties pane',
+        'Hide properties pane': 'Hide properties pane',
         'Section Break': 'Section Break',
         'Header And Footer': 'Header & Footer',
         'Options': 'Options',
@@ -492,7 +499,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Update cross reference fields': 'Update cross reference fields',
         'Track Changes': 'Keep track of the changes made in the document',
         'TrackChanges': 'Track Changes',
-        'AllCaps' : 'AllCaps'
+        'AllCaps': 'AllCaps'
     };
 
     /**
@@ -650,6 +657,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         this.element.style.minHeight = '320px';
         this.initializeDocumentEditor();
+        if (this.restrictEditing) {
+            if (this.toolbarModule) {
+                this.toolbarModule.enableDisableToolBarItem(this.restrictEditing, false);
+            }
+            this.documentEditor.isReadOnly = this.restrictEditing;
+        }
         this.textProperties = new TextProperties(this, this.element.id, false, this.enableRtl);
         this.headerFooterProperties = new HeaderFooterProperties(this, this.enableRtl);
         this.imageProperties = new ImageProperties(this, this.enableRtl);
@@ -858,8 +871,34 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.toolbarModule.propertiesPaneButton.element.style.opacity = show ? '1' : '0.5';
         }
         this.documentEditor.resize();
-    }
 
+    }
+    /**
+     * Resizes the container component and its sub elements based on given size or client size.
+     * @param width 
+     * @param height 
+     */
+    public resize(width?: number, height?: number): void {
+        if (this.element) {
+            if (isNullOrUndefined(height) && this.element) {
+                height = this.element.getBoundingClientRect().height;
+            }
+            if (isNullOrUndefined(width) && this.element) {
+                width = this.element.getBoundingClientRect().width;
+            }
+            if (!isNullOrUndefined(width) && width > 200) {
+                this.width = width.toString();
+                this.element.style.width = width + 'px';
+            }
+            if (!isNullOrUndefined(height) && height > 200) {
+                this.height = height.toString();
+                this.element.style.height = height + 'px';
+            }
+            if (this.documentEditor) {
+                this.documentEditor.resize();
+            }
+        }
+    }
     /**
      * @private
      */

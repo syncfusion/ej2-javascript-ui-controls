@@ -5373,4 +5373,33 @@ describe('Splitter Control', () => {
             expect(splitterObj.allPanes[1].style.flexBasis === '').toBe(true);
         });
     });
+
+    describe('Min in Window resizing', () => {
+        appendSplitterStyles();
+        let splitterObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            element.style.width ='300px';
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({width :'100%', paneSettings: [{ size: '100px', min: '250px' }]});
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+
+        it('check pane size', (done) => {
+            let resizeEvent  : any= window.document.createEvent('UIEvents'); 
+            resizeEvent.initUIEvent('resize', true, false, window, 0); 
+            window.dispatchEvent(resizeEvent);
+            setTimeout(() => {
+                expect(splitterObj.allPanes[0].style.flexBasis ==='250px').toBe(true);         
+                    done();
+            }, 3000);
+        });
+    });
  });

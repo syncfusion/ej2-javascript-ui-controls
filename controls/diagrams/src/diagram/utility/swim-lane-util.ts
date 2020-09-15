@@ -1362,7 +1362,7 @@ export function removeSwimLane(diagram: Diagram, obj: NodeModel): void {
         for (j = 0; j < rows[i].cells.length; j++) {
             child = getGridChildren(rows[i].cells[j]) as Container;
             if (child && child.children) {
-                for (k = 0; k < child.children.length; k++) {
+                for (k = child.children.length - 1; k >= 0; k--) {
                     if ((child.children[k] as Container).children) {
                         removeNode = diagram.nameTable[child.children[k].id];
                         if (removeNode) {
@@ -1377,7 +1377,6 @@ export function removeSwimLane(diagram: Diagram, obj: NodeModel): void {
                                     removeChildInContainer(diagram, removeNode, {}, false);
                                 }
                                 diagram.diagramActions &= ~DiagramAction.PreventHistory;
-                                k--;
                             }
                         }
                     }

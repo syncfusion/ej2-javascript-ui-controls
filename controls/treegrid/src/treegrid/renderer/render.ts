@@ -83,7 +83,7 @@ export class Render {
         let ispadfilter: boolean = isNullOrUndefined(data.filterLevel);
         let pad: number = ispadfilter ? data.level : data.filterLevel;
         let totalIconsWidth: number = 0; let cellElement: HTMLElement;
-        let column: Column = this.parent.getColumnByField(args.column.field);
+        let column: Column = this.parent.getColumnByUid(args.column.uid);
         let summaryRow: boolean = data.isSummaryRow;
         if (!isNullOrUndefined(data.parentItem)) {
             index = data.parentItem.index;

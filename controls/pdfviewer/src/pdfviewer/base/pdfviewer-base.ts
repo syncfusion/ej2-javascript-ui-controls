@@ -4086,7 +4086,7 @@ export class PdfViewerBase {
         }
     }
 
-    private downloadExportAnnotationJson(blobUrl: string): void {
+    private downloadExportAnnotationJson(blobUrl: string, isForm?: boolean): void {
         // tslint:disable-next-line
         let Url: any = URL || webkitURL;
         blobUrl = Url.createObjectURL(blobUrl);
@@ -4104,7 +4104,11 @@ export class PdfViewerBase {
             (document.body || document.documentElement).appendChild(anchorElement);
             anchorElement.click();
             anchorElement.parentNode.removeChild(anchorElement);
-            this.pdfViewer.fireExportSuccess(blobUrl, (anchorElement as HTMLAnchorElement).download);
+            if (isForm) {
+                this.pdfViewer.fireFormExportSuccess(blobUrl, (anchorElement as HTMLAnchorElement).download);
+            } else {
+                this.pdfViewer.fireExportSuccess(blobUrl, (anchorElement as HTMLAnchorElement).download);
+            }
         } else {
             if (window.top === window &&
                 blobUrl.split('#')[0] === window.location.href.split('#')[0]) {
@@ -4112,7 +4116,11 @@ export class PdfViewerBase {
                 blobUrl = blobUrl.replace(/#|$/, padCharacter + '$&');
             }
             window.open(blobUrl, '_parent');
-            this.pdfViewer.fireExportSuccess(blobUrl, this.pdfViewer.fileName.split('.')[0] + '.json');
+            if (isForm) {
+                this.pdfViewer.fireFormExportSuccess(blobUrl, this.pdfViewer.fileName.split('.')[0] + '.json');
+            } else {
+                this.pdfViewer.fireExportSuccess(blobUrl, this.pdfViewer.fileName.split('.')[0] + '.json');
+            }
         }
     }
     /**
@@ -4172,12 +4180,13 @@ export class PdfViewerBase {
                             // tslint:disable-next-line
                             let annotationJson: any = decodeURIComponent(escape(atob(data.split(',')[1])));
                             resolve(annotationJson);
+                            proxy.pdfViewer.fireFormExportSuccess(annotationJson, proxy.pdfViewer.fileName);
                         } else if (data.split('base64,')[1]) {
                             let blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/json');
                             if (Browser.isIE || Browser.info.name === 'edge') {
                                 window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0]);
                             } else {
-                                proxy.downloadExportAnnotationJson(blobUrl);
+                                proxy.downloadExportAnnotationJson(blobUrl, true);
                             }
                         }
                     }
@@ -4254,7 +4263,7 @@ export class PdfViewerBase {
                     }
 
                 }
-                proxy.pdfViewer.fireFormImportSuccess(source.pdfAnnotation);
+                proxy.pdfViewer.fireFormImportSuccess(source);
                 window.sessionStorage.removeItem(this.documentId + '_formfields');
                 proxy.saveFormfieldsData(data);
                 for (let i: number = 0; i < proxy.renderedPagesList.length; i++) {
@@ -4822,6 +4831,7 @@ export class PdfViewerBase {
             window.sessionStorage.setItem(this.documentId + '_' + pageIndex + '_' + zoomFactor, JSON.stringify(storeObject));
             this.sessionStorage.push(this.documentId + '_' + pageIndex + '_' + zoomFactor);
         } else {
+            this.sessionStorage.push(this.documentId + '_' + pageIndex + '_' + tileX + '_' + tileY + '_' + zoomFactor);
             // tslint:disable-next-line:max-line-length
             window.sessionStorage.setItem(this.documentId + '_' + pageIndex + '_' + tileX + '_' + tileY + '_' + zoomFactor, JSON.stringify(storeObject));
         }
@@ -5915,7 +5925,7 @@ export class PdfViewerBase {
                         }
                     }
                     // tslint:disable-next-line:max-line-length
-                    if (this.action === 'ResizeSouthEast' || this.action === 'ResizeNorthEast' || this.action === 'ResizeNorthWest' || this.action === 'ResizeSouth' ||
+                    if (this.action === 'ResizeSouthEast' || this.action === 'ResizeNorthEast' || this.action === 'ResizeNorthWest' || this.action === 'ResizeSouthWest' || this.action === 'ResizeSouth' ||
                     // tslint:disable-next-line:max-line-length
                     this.action === 'ResizeNorth' || this.action === 'ResizeWest' || this.action === 'ResizeEast' || this.action.includes('ConnectorSegmentPoint') || this.action.includes('Leader')) {
                         if (this.pdfViewer.annotationModule.checkAllowedInteractions('Resize', obj)) {

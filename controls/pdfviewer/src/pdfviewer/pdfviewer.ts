@@ -4417,7 +4417,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     // tslint:disable-next-line
     public fireFormImportSuccess(data: any): void {
-        let eventArgs: ImportSuccessEventArgs = { name: 'importFormFieldsSuccess', importData: null, formFieldData: data };
+        let eventArgs: ImportSuccessEventArgs = { name: 'importFormFieldsSuccess', importData: data, formFieldData: data };
         this.trigger('importSuccess', eventArgs);
     }
     /**
@@ -4425,7 +4425,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     // tslint:disable-next-line
     public fireFormExportSuccess(data: any, fileName: string): void {
-        let eventArgs: ExportSuccessEventArgs = { name: 'exportFormFieldsSuccess', exportData: null, fileName: fileName, formFieldData: data };
+        let eventArgs: ExportSuccessEventArgs = { name: 'exportFormFieldsSuccess', exportData: data, fileName: fileName, formFieldData: data };
         this.trigger('exportSuccess', eventArgs);
     }
     /**
@@ -4434,7 +4434,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     // tslint:disable-next-line
     public fireFormImportFailed(data: any, errorDetails: string): void {
         //tslint:disable-next-line:max-line-length
-        let eventArgs: ImportFailureEventArgs = {name: 'importFormFieldsfailed', importData: null, errorDetails: errorDetails, formFieldData: data };
+        let eventArgs: ImportFailureEventArgs = {name: 'importFormFieldsfailed', importData: data, errorDetails: errorDetails, formFieldData: data };
         this.trigger('importFailed', eventArgs);
     }
     /**
@@ -4443,7 +4443,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     // tslint:disable-next-line
     public fireFormExportFailed(data: any, errorDetails: string) : void {
         //tslint:disable-next-line:max-line-length
-        let eventArgs: ExportFailureEventArgs = { name: 'exportFormFieldsFailed', exportData: null, errorDetails: errorDetails, formFieldData: data };
+        let eventArgs: ExportFailureEventArgs = { name: 'exportFormFieldsFailed', exportData: data, errorDetails: errorDetails, formFieldData: data };
         this.trigger('exportFailed', eventArgs);
     }
 

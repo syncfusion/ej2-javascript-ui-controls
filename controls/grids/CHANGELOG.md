@@ -6,6 +6,20 @@
 
 #### Bug Fixes
 
+- `#291552` - `Resizing` lines in stacked header issue has been resolved.
+- `#290601` - `Recordclick` event arguments has been fixed.
+- `#291949, #287468` - Provided the internal event to use custom datasource in `checkbox` filter.
+- `#280083` - Added the correct translated string in the locale `json` file.
+- `#291160` - Edit form closes when exception thrown from server issue has been fixed.
+- `#157390` - Provided the column and `rowIndex` details inside the `editTemplate`.
+- `#292599` - Script error while using grouped `foreignkeyColumn` with aggregate column has been fixed.
+
+## 18.2.57 (2020-09-08)
+
+### Grid
+
+#### Bug Fixes
+
 - `#288147` - Script error while using `addRecord` in `IE11`, has been fixed.
 - `#288292` - copy and paste in `mac os` issue has been resolved.
 - `#290651` - column chooser `pop-up` is hidden partially has been fixed.

@@ -1013,7 +1013,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**     
      * Defines the schema of dataSource. 
      * If the `columns` declaration is empty or undefined then the `columns` are automatically generated from data source.     
-     * {% codeBlock src='columns/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/columns/index.md' %}{% endcodeBlock %}
      * @default []   
      */
     @Property([])
@@ -1022,7 +1022,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**     
      * If `enableAltRow` is set to true, the grid will render with `e-altrow` CSS class to the alternative tr elements.    
      * > Check the [`AltRow`](../../grid/row/#styling-alternate-rows/) to customize the styles of alternative rows.
-     * {% codeBlock src='enableAltRow/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/enableAltRow/index.md' %}{% endcodeBlock %}
      * @default true 
      */
     @Property(true)
@@ -1030,7 +1030,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**     
      * If `enableHover` is set to true, the row hover is enabled in the Grid.
-     * {% codeBlock src='enableHover/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/enableHover/index.md' %}{% endcodeBlock %}
      * @default true     
      */
     @Property(true)
@@ -1039,7 +1039,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**     
      * If `enableAutoFill` is set to true, then the auto fill icon will displayed on cell selection for copy cells.
      * It requires the selection `mode` to be Cell and `cellSelectionMode` to be `Box`.
-     * {% codeBlock src='enableAutoFill/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/enableAutoFill/index.md' %}{% endcodeBlock %}
      * @default false 
      */
     @Property(false)
@@ -1056,7 +1056,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**   
      * If `allowTextWrap` set to true,  
      * then text content will wrap to the next line when its text content exceeds the width of the Column Cells. 
-     * {% codeBlock src='allowTextWrap/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/allowTextWrap/index.md' %}{% endcodeBlock %}
      * @default false     
      */
     @Property(false)
@@ -1064,7 +1064,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**     
      * Configures the text wrap in the Grid. 
-     * {% codeBlock src='textWrapSettings/index.md' %}{% endcodeBlock %} 
+     * {% codeBlock src='grid/textWrapSettings/index.md' %}{% endcodeBlock %} 
      * @default {wrapMode:"Both"}     
      */
     @Complex<TextWrapSettingsModel>({}, TextWrapSettings)
@@ -1081,7 +1081,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If `allowPaging` is set to true, the pager renders at the footer of the Grid. It is used to handle page navigation in the Grid.
      * 
      * > Check the [`Paging`](../../grid/paging/) to configure the grid pager.
-     * {% codeBlock src='allowPaging/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/allowPaging/index.md' %}{% endcodeBlock %}
      * @default false     
      */
     @Property(false)
@@ -1089,7 +1089,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**     
      * Configures the pager in the Grid.  
-     * {% codeBlock src='pageSettings/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/pageSettings/index.md' %}{% endcodeBlock %}
      * @default {currentPage: 1, pageSize: 12, pageCount: 8, enableQueryString: false, pageSizes: false, template: null}     
      */
     @Complex<PageSettingsModel>({}, PageSettings)
@@ -1098,7 +1098,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**    
      * If `enableVirtualization` set to true, then the Grid will render only the rows visible within the view-port
      * and load subsequent rows on vertical scrolling. This helps to load large dataset in Grid.
-     * {% codeBlock src='enableVirtualization/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/enableVirtualization/index.md' %}{% endcodeBlock %}
      * @default false
      */
     @Property(false)
@@ -1107,7 +1107,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**    
      * If `enableColumnVirtualization` set to true, then the Grid will render only the columns visible within the view-port
      * and load subsequent columns on horizontal scrolling. This helps to load large dataset of columns in Grid.
-     * {% codeBlock src='enableColumnVirtualization/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/enableColumnVirtualization/index.md' %}{% endcodeBlock %}
      * @default false
      */
     @Property(false)
@@ -1116,7 +1116,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * If `enableInfiniteScrolling` set to true, then the data will be loaded in Grid when the scrollbar reaches the end.
      * This helps to load large dataset in Grid.
-     * {% codeBlock src='enableInfiniteScrolling/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/enableInfiniteScrolling/index.md' %}{% endcodeBlock %}
      * @default false
      * @deprecated
      */
@@ -1125,7 +1125,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**    
      * Configures the search behavior in the Grid. 
-     * {% codeBlock src='searchSettings/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/searchSettings/index.md' %}{% endcodeBlock %}
      * @default { ignoreCase: true, fields: [], operator: 'contains', key: '' }    
      */
     @Complex<SearchSettingsModel>({}, SearchSettings)
@@ -1135,7 +1135,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If `allowSorting` is set to true, it allows sorting of grid records when column header is clicked.  
      * 
      * > Check the [`Sorting`](../../grid/sorting/) to customize its default behavior.
-     * {% codeBlock src='allowSorting/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/allowSorting/index.md' %}{% endcodeBlock %}
      * @default false    
      */
     @Property(false)
@@ -1147,7 +1147,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * `Ellipsis`: Displays ellipsis when the cell content overflows its area.
      * `EllipsisWithTooltip`:  Displays ellipsis when the cell content overflows its area,
      *  also it will display the tooltip while hover on ellipsis is applied.. 
-     * {% codeBlock src='clipMode/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/clipMode/index.md' %}{% endcodeBlock %}
      * @default Ellipsis
      */
     @Property('Ellipsis')
@@ -1156,7 +1156,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * If `allowMultiSorting` set to true, then it will allow the user to sort multiple column in the grid.
      * > `allowSorting` should be true.
-     * {% codeBlock src='allowMultiSorting/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/allowMultiSorting/index.md' %}{% endcodeBlock %}
      * @default false
      */
     @Property(true)
@@ -1166,7 +1166,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If `allowExcelExport` set to true, then it will allow the user to export grid to Excel file.
      * 
      * > Check the [`ExcelExport`](../../grid/excel-exporting/) to configure exporting document.
-     * {% codeBlock src='allowExcelExport/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/allowExcelExport/index.md' %}{% endcodeBlock %}
      * @default false    
      */
     @Property(false)
@@ -1175,14 +1175,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If `allowPdfExport` set to true, then it will allow the user to export grid to Pdf file.
      * 
      * > Check the [`Pdfexport`](../../grid/pdf-export/) to configure the exporting document.
-     * {% codeBlock src='allowPdfExport/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/allowPdfExport/index.md' %}{% endcodeBlock %}
      * @default false    
      */
     @Property(false)
     public allowPdfExport: boolean;
     /**    
      * Configures the sort settings.  
-     * {% codeBlock src='sortSettings/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/sortSettings/index.md' %}{% endcodeBlock %}
      * @default {columns:[]}    
      */
     @Complex<SortSettingsModel>({}, SortSettings)
@@ -1190,7 +1190,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**    
      * Configures the infinite scroll settings.  
-     * {% codeBlock src='infiniteScrollSettings/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/infiniteScrollSettings/index.md' %}{% endcodeBlock %}
      * @default { enableCache: false, maxBlocks: 5, initialBlocks: 5 }    
      * @deprecated
      */
@@ -1199,7 +1199,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**    
      * If `allowSelection` is set to true, it allows selection of (highlight row) Grid records by clicking it. 
-     * {% codeBlock src='allowSelection/index.md' %}{% endcodeBlock %} 
+     * {% codeBlock src='grid/allowSelection/index.md' %}{% endcodeBlock %} 
      * @default true        
      */
     @Property(true)
@@ -1208,7 +1208,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**    
      * The `selectedRowIndex` allows you to select a row at initial rendering. 
      * You can also get the currently selected row index.
-     * {% codeBlock src='selectedRowIndex/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/selectedRowIndex/index.md' %}{% endcodeBlock %}
      * @default -1        
      */
     @Property(-1)
@@ -1216,7 +1216,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**    
      * Configures the selection settings.  
-     * {% codeBlock src='selectionSettings/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/selectionSettings/index.md' %}{% endcodeBlock %}
      * @default {mode: 'Row', cellSelectionMode: 'Flow', type: 'Single'}    
      */
     @Complex<SelectionSettingsModel>({}, SelectionSettings)
@@ -1228,7 +1228,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Filter bar allows the user to filter grid records with required criteria.   
      * 
      * > Check the [`Filtering`](../../grid/filtering/) to customize its default behavior.
-     * {% codeBlock src='allowFiltering/index.md' %}{% endcodeBlock %}   
+     * {% codeBlock src='grid/allowFiltering/index.md' %}{% endcodeBlock %}   
      * @default false    
      */
     @Property(false)
@@ -1238,7 +1238,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If `allowReordering` is set to true, Grid columns can be reordered. 
      * Reordering can be done by drag and drop of a particular column from one index to another index.  
      * > If Grid is rendered with stacked headers, reordering is allowed only at the same level as the column headers.
-     * {% codeBlock src='allowReordering/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/allowReordering/index.md' %}{% endcodeBlock %}
      * @default false    
      */
     @Property(false)
@@ -1246,7 +1246,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**    
      * If `allowResizing` is set to true, Grid columns can be resized. 
-     * {% codeBlock src='allowResizing/index.md' %}{% endcodeBlock %}     
+     * {% codeBlock src='grid/allowResizing/index.md' %}{% endcodeBlock %}     
      * @default false    
      */
     @Property(false)
@@ -1254,7 +1254,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**    
      * If `allowRowDragAndDrop` is set to true, you can drag and drop grid rows at another grid. 
-     * {% codeBlock src='allowRowDragAndDrop/index.md' %}{% endcodeBlock %}   
+     * {% codeBlock src='grid/allowRowDragAndDrop/index.md' %}{% endcodeBlock %}   
      * @default false    
      */
     @Property(false)
@@ -1270,7 +1270,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**    
      * Configures the filter settings of the Grid.  
      * @default {columns: [], type: 'FilterBar', mode: 'Immediate', showFilterBarStatus: true, immediateModeDelay: 1500 , operators: {}} 
-     * {% codeBlock src='filterSettings/index.md' %}{% endcodeBlock %}   
+     * {% codeBlock src='grid/filterSettings/index.md' %}{% endcodeBlock %}   
      */
     @Complex<FilterSettingsModel>({}, FilterSettings)
     public filterSettings: FilterSettingsModel;
@@ -1280,7 +1280,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Grouping can be done by drag and drop columns from column header to group drop area. 
      * 
      * > Check the [`Grouping`](../../grid/grouping/) to customize its default behavior.
-     * {% codeBlock src='allowGrouping/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/allowGrouping/index.md' %}{% endcodeBlock %}
      * @default false    
      */
     @Property(false)
@@ -1290,7 +1290,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If `showColumnMenu` set to true, then it will enable the column menu options in each columns.
      * 
      * > Check the [`Column menu`](../../grid/columns/#column-menu/) for its configuration.
-     * {% codeBlock src='showColumnMenu/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/showColumnMenu/index.md' %}{% endcodeBlock %}
      * @default false    
      */
     @Property(false)
@@ -1298,7 +1298,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**    
      * Configures the group settings. 
-     * {% codeBlock src='groupSettings/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/groupSettings/index.md' %}{% endcodeBlock %}
      * @default {showDropArea: true, showToggleButton: false, showGroupedColumn: false, showUngroupButton: true, columns: []}    
      */
     @Complex<GroupSettingsModel>({}, GroupSettings)
@@ -1306,7 +1306,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**    
      * Configures the edit settings. 
-     * {% codeBlock src='editSettings/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/editSettings/index.md' %}{% endcodeBlock %}
      * @default { allowAdding: false, allowEditing: false, allowDeleting: false, mode:'Normal',
      * allowEditOnDblClick: true, showConfirmDialog: true, showDeleteConfirmDialog: false }    
      */
@@ -1315,7 +1315,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Configures the Grid aggregate rows.
-     * {% codeBlock src='aggregates/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/aggregates/index.md' %}{% endcodeBlock %}
      * > Check the [`Aggregates`](../../grid/aggregates/) for its configuration.
      * @default []
      */
@@ -1326,7 +1326,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If `showColumnChooser` is set to true, it allows you to dynamically show or hide columns.  
      * 
      * > Check the [`ColumnChooser`](../../grid/columns/#column-chooser/) for its configuration.
-     * {% codeBlock src='showColumnChooser/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/showColumnChooser/index.md' %}{% endcodeBlock %}
      * @default false    
      */
     @Property(false)
@@ -1347,7 +1347,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**    
      * Defines the scrollable height of the grid content.    
-     * {% codeBlock src='height/index.md' %}{% endcodeBlock %} 
+     * {% codeBlock src='grid/height/index.md' %}{% endcodeBlock %} 
      * @default 'auto'    
      */
     @Property('auto')
@@ -1355,7 +1355,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**    
      * Defines the Grid width.
-     * {% codeBlock src='width/index.md' %}{% endcodeBlock %}    
+     * {% codeBlock src='grid/width/index.md' %}{% endcodeBlock %}    
      * @default 'auto'    
      */
     @Property('auto')
@@ -1368,7 +1368,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * * `Horizontal`: Displays the horizontal grid lines only. 
      * * `Vertical`: Displays the vertical grid lines only.
      * * `Default`: Displays grid lines based on the theme.
-     * {% codeBlock src='gridLines/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/gridLines/index.md' %}{% endcodeBlock %}
      * @default Default
      */
     @Property('Default')
@@ -1416,7 +1416,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Defines the print modes. The available print modes are   
      * * `AllPages`: Prints all pages of the Grid. 
      * * `CurrentPage`: Prints the current page of the Grid.
-     * {% codeBlock src='printMode/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/printMode/index.md' %}{% endcodeBlock %}
      * @default AllPages
      */
     @Property('AllPages')
@@ -1441,7 +1441,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *  the Grid will not initialize a new one. 
      * 
      * > Check the available [`Adaptors`](../../data/adaptors/) to customize the data operation.
-     * {% codeBlock src='dataSource/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/dataSource/index.md' %}{% endcodeBlock %}
      * @default []    
      * @isGenericType true
      */
@@ -1450,7 +1450,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Defines the height of Grid rows.
-     * {% codeBlock src='rowHeight/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/rowHeight/index.md' %}{% endcodeBlock %}
      * @default null
      */
     @Property(null)
@@ -1459,7 +1459,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**    
      * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/data/api-query.html) 
      * that will be executed along with data processing.  
-     * {% codeBlock src='query/index.md' %}{% endcodeBlock %}  
+     * {% codeBlock src='grid/query/index.md' %}{% endcodeBlock %}  
      * @default null    
      * @blazorType Syncfusion.Blazor.Data.Query 
      */
@@ -1495,7 +1495,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *  > Check the [`Toolbar`](../../grid/tool-bar/#custom-toolbar-items/) to customize its default items.
      * 
      * {% codeBlock src="grid/toolbar-api/index.ts" %}{% endcodeBlock %}
-     * {% codeBlock src='toolbar/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/toolbar/index.md' %}{% endcodeBlock %}
      * @default null
      */
     @Property()
@@ -1562,7 +1562,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets or sets the number of frozen rows.
      * @default 0
-     * {% codeBlock src='frozenRows/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/frozenRows/index.md' %}{% endcodeBlock %}
      */
     @Property(0)
     public frozenRows: number;
@@ -1570,7 +1570,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets or sets the number of frozen columns.
      * @default 0
-     * {% codeBlock src='frozenColumns/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/frozenColumns/index.md' %}{% endcodeBlock %}
      */
     @Property(0)
     public frozenColumns: number;
@@ -2186,7 +2186,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Get the properties to be maintained in the persisted state.
      * @return {string}
-     * {% codeBlock src='grid/getPersistData/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getPersistData/index.md' %}{% endcodeBlock %}
      */
     public getPersistData(): string {
         let keyEntity: string[] = ['pageSettings', 'sortSettings',
@@ -2580,14 +2580,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * By default, grid shows the spinner for all its actions. You can use this method to show spinner at your needed time.
-     * {% codeBlock src='grid/showSpinner/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/showSpinner/index.md' %}{% endcodeBlock %}
      */
     public showSpinner(): void {
         showSpinner(this.element);
     }
     /**
      * Manually showed spinner needs to hide by `hideSpinnner`.
-     * {% codeBlock src='grid/hideSpinner/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/hideSpinner/index.md' %}{% endcodeBlock %}
      */
     public hideSpinner(): void {
         hideSpinner(this.element);
@@ -3160,7 +3160,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets the visible columns from the Grid.
      * @return {Column[]} 
      * @blazorType List<GridColumn>
-     * {% codeBlock src='grid/getVisibleColumns/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getVisibleColumns/index.md' %}{% endcodeBlock %}
      */
     public getVisibleColumns(): Column[] {
         let cols: Column[] = [];
@@ -3175,7 +3175,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the header div of the Grid. 
      * @return {Element}
-     * {% codeBlock src='grid/getHeaderContent/index.md' %}{% endcodeBlock %} } 
+     * {% codeBlock src='grid/grid/getHeaderContent/index.md' %}{% endcodeBlock %} 
      */
     public getHeaderContent(): Element {
         return this.headerModule.getPanel();
@@ -3192,7 +3192,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Gets the content table of the Grid.
-     * {% codeBlock src='grid/getContentTable/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getContentTable/index.md' %}{% endcodeBlock %}
      * @return {Element} 
      */
     public getContentTable(): Element {
@@ -3211,7 +3211,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the content div of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/getContent/index.md' %}{% endcodeBlock %} } 
+     * {% codeBlock src='grid/grid/getContent/index.md' %}{% endcodeBlock %} 
      */
     public getContent(): Element {
         return this.contentModule.getPanel();
@@ -3229,7 +3229,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the header table element of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/getHeaderTable/index.md' %}{% endcodeBlock %} } 
+     * {% codeBlock src='grid/grid/getHeaderTable/index.md' %}{% endcodeBlock %} 
      */
     public getHeaderTable(): Element {
         return this.headerModule.getTable();
@@ -3247,7 +3247,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the footer div of the Grid.
      * @return {Element} 
-     * {% codeBlock src='grid/getFooterContent/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getFooterContent/index.md' %}{% endcodeBlock %}
      */
     public getFooterContent(): Element {
             this.footerElement = this.element.getElementsByClassName('e-gridfooter')[0];
@@ -3258,7 +3258,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the footer table element of the Grid.
      * @return {Element} 
-     * {% codeBlock src='grid/getFooterContentTable/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getFooterContentTable/index.md' %}{% endcodeBlock %}
      */
     public getFooterContentTable(): Element {
             this.footerElement = this.element.getElementsByClassName('e-gridfooter')[0];
@@ -3270,7 +3270,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the pager of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/getPager/index.md' %}{% endcodeBlock %} } 
+     * {% codeBlock src='grid/grid/getPager/index.md' %}{% endcodeBlock %} 
      */
     public getPager(): Element {
         return this.gridPager; //get element from pager
@@ -3289,7 +3289,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a row by index.
      * @param  {number} index - Specifies the row index.
      * @return {Element}
-     * {% codeBlock src='grid/getRowByIndex/index.md' %}{% endcodeBlock %} } 
+     * {% codeBlock src='grid/grid/getRowByIndex/index.md' %}{% endcodeBlock %} 
      */
     public getRowByIndex(index: number): Element {
         return this.contentModule.getRowByIndex(index);
@@ -3299,7 +3299,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a movable tables row by index.
      * @param  {number} index - Specifies the row index.
      * @return {Element}
-     * {% codeBlock src='grid/getMovableRowByIndex/index.md' %}{% endcodeBlock %} } 
+     * {% codeBlock src='grid/grid/getMovableRowByIndex/index.md' %}{% endcodeBlock %} 
      */
     public getMovableRowByIndex(index: number): Element {
         return this.contentModule.getMovableRowByIndex(index);
@@ -3309,7 +3309,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a frozen tables row by index.
      * @param  {number} index - Specifies the row index.
      * @return {Element}
-     * {% codeBlock src='grid/getFrozenRowByIndex/index.md' %}{% endcodeBlock %} } 
+     * {% codeBlock src='grid/grid/getFrozenRowByIndex/index.md' %}{% endcodeBlock %} 
      */
     public getFrozenRowByIndex(index: number): Element {
         return this.getFrozenDataRows()[index];
@@ -3318,7 +3318,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets all the data rows of the Grid.
      * @return {Element[]}
-     * {% codeBlock src='grid/getRows/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getRows/index.md' %}{% endcodeBlock %}
      */
     public getRows(): Element[] {
         return this.contentModule.getRowElements();
@@ -3328,7 +3328,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Get a row information based on cell
      * @param {Element}
      * @return RowInfo
-     * {% codeBlock src='grid/getRowInfo/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getRowInfo/index.md' %}{% endcodeBlock %}
      */
     public getRowInfo(target: Element | EventTarget): RowInfo {
         let ele: Element = target as Element;
@@ -3369,7 +3369,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the Grid's movable content rows from frozen grid.
      * @return {Element[]}
-     * {% codeBlock src='grid/getMovableRows/index.md' %}{% endcodeBlock %} } 
+     * {% codeBlock src='grid/grid/getMovableRows/index.md' %}{% endcodeBlock %} 
      */
     public getMovableRows(): Element[] {
         return this.contentModule.getMovableRowElements();
@@ -3378,7 +3378,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets all the Grid's data rows.
      * @return {Element[]}
-     * {% codeBlock src='grid/getDataRows/index.md' %}{% endcodeBlock %} } 
+     * {% codeBlock src='grid/grid/getDataRows/index.md' %}{% endcodeBlock %} 
      */
     public getDataRows(): Element[] {
         if (isNullOrUndefined(this.getContentTable().querySelector('tbody'))) { return []; }
@@ -3418,7 +3418,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets all the Grid's movable table data rows.
      * @return {Element[]}
-     * {% codeBlock src='grid/getMovableDataRows/index.md' %}{% endcodeBlock %} } 
+     * {% codeBlock src='grid/grid/getMovableDataRows/index.md' %}{% endcodeBlock %} 
      */
     public getMovableDataRows(): Element[] {
         let rows: HTMLElement[] =
@@ -3435,7 +3435,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets all the Grid's frozen table data rows.
      * @return {Element[]}
-     * {% codeBlock src='grid/getFrozenDataRows/index.md' %}{% endcodeBlock %} } 
+     * {% codeBlock src='grid/grid/getFrozenDataRows/index.md' %}{% endcodeBlock %} 
      */
     public getFrozenDataRows(): Element[] {
         let rows: HTMLElement[] =
@@ -3455,7 +3455,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param {string| number} key - Specifies the PrimaryKey value of dataSource.
      * @param {string } field - Specifies the field name which you want to update.
      * @param {string | number | boolean | Date} value - To update new value for the particular cell.
-     * {% codeBlock src='grid/setCellValue/index.md' %}{% endcodeBlock %} }  
+     * {% codeBlock src='grid/grid/setCellValue/index.md' %}{% endcodeBlock %}  
      */
     public setCellValue(key: string | number, field: string, value: string | number | boolean | Date): void {
         let cells: string = 'cells';
@@ -3525,7 +3525,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * > Primary key column must be specified using `columns.isPrimaryKey` property.
      *  @param {string| number} key - Specifies the PrimaryKey value of dataSource.
      *  @param {Object} rowData - To update new data for the particular row.
-     * {% codeBlock src='grid/setRowData/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/setRowData/index.md' %}{% endcodeBlock %}
      */
     public setRowData(key: string | number, rowData?: Object): void {
         let rwdata: string = 'data';
@@ -3560,7 +3560,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {number} rowIndex - Specifies the row index.
      * @param  {number} columnIndex - Specifies the column index.
      * @return {Element}
-     * {% codeBlock src='grid/getCellFromIndex/index.md' %}{% endcodeBlock %} } 
+     * {% codeBlock src='grid/grid/getCellFromIndex/index.md' %}{% endcodeBlock %} 
      */
     public getCellFromIndex(rowIndex: number, columnIndex: number): Element {
         let frzCols: number = this.getFrozenColumns();
@@ -3574,7 +3574,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {number} rowIndex - Specifies the row index.
      * @param  {number} columnIndex - Specifies the column index.
      * @return {Element}
-     * {% codeBlock src='grid/getMovableCellFromIndex/index.md' %}{% endcodeBlock %} } 
+     * {% codeBlock src='grid/grid/getMovableCellFromIndex/index.md' %}{% endcodeBlock %} 
      */
     public getMovableCellFromIndex(rowIndex: number, columnIndex: number): Element {
         return this.getMovableDataRows()[rowIndex] &&
@@ -3585,7 +3585,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a column header by column index.
      * @param  {number} index - Specifies the column index.
      * @return {Element}
-     * {% codeBlock src='grid/getColumnHeaderByIndex/index.md' %}{% endcodeBlock %} } 
+     * {% codeBlock src='grid/grid/getColumnHeaderByIndex/index.md' %}{% endcodeBlock %} 
      */
     public getColumnHeaderByIndex(index: number): Element {
         return this.getHeaderTable().querySelectorAll('.e-headercell')[index];
@@ -3637,7 +3637,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a column header by column name.
      * @param  {string} field - Specifies the column name.
      * @return {Element} 
-     * {% codeBlock src='grid/getColumnHeaderByField/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getColumnHeaderByField/index.md' %}{% endcodeBlock %}
      */
     public getColumnHeaderByField(field: string): Element {
         let column: Column = this.getColumnByField(field);
@@ -3648,7 +3648,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a column header by UID.
      * @param  {string} field - Specifies the column uid.
      * @return {Element}
-     * {% codeBlock src='grid/getColumnHeaderByUid/index.md' %}{% endcodeBlock %} } 
+     * {% codeBlock src='grid/grid/getColumnHeaderByUid/index.md' %}{% endcodeBlock %} 
      */
     public getColumnHeaderByUid(uid: string): Element {
         let element: Element = this.getHeaderContent().querySelector('[e-mappinguid=' + uid + ']');
@@ -3674,7 +3674,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {string} field - Specifies the column name.
      * @return {Column}
      * @blazorType GridColumn
-     * {% codeBlock src='grid/getColumnByField/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getColumnByField/index.md' %}{% endcodeBlock %}
      */
     public getColumnByField(field: string): Column {
         return iterateArrayOrObject<Column, Column>(<Column[]>this.getColumns(), (item: Column, index: number) => {
@@ -3689,7 +3689,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a column index by column name.
      * @param  {string} field - Specifies the column name.
      * @return {number}
-     * {% codeBlock src='grid/getColumnIndexByField/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getColumnIndexByField/index.md' %}{% endcodeBlock %}
      */
     public getColumnIndexByField(field: string): number {
         let cols: Column[] = this.getColumns();
@@ -3706,7 +3706,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {string} uid - Specifies the column UID.
      * @return {Column}
      * @blazorType GridColumn
-     * {% codeBlock src='grid/getColumnByUid/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getColumnByUid/index.md' %}{% endcodeBlock %}
      */
     public getColumnByUid(uid: string): Column {
         return iterateArrayOrObject<Column, Column>(
@@ -3736,7 +3736,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a column index by UID.
      * @param  {string} uid - Specifies the column UID.
      * @return {number}
-     * {% codeBlock src='grid/getColumnIndexByUid/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getColumnIndexByUid/index.md' %}{% endcodeBlock %}
      */
     public getColumnIndexByUid(uid: string): number {
         let index: number = iterateArrayOrObject<number, Column>
@@ -3754,7 +3754,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets UID by column name.
      * @param  {string} field - Specifies the column name.
      * @return {string}
-     * {% codeBlock src='grid/getUidByColumnField/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getUidByColumnField/index.md' %}{% endcodeBlock %}
      */
     public getUidByColumnField(field: string): string {
         return iterateArrayOrObject<string, Column>(<Column[]>this.getColumns(), (item: Column, index: number) => {
@@ -3801,7 +3801,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the collection of column fields.     
      * @return {string[]}
-     * {% codeBlock src='grid/getColumnFieldNames/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getColumnFieldNames/index.md' %}{% endcodeBlock %}
      */
     public getColumnFieldNames(): string[] {
         let columnNames: string[] = [];
@@ -3863,7 +3863,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Get the names of the primary key columns of the Grid. 
      * @return {string[]}
-     * {% codeBlock src='grid/getPrimaryKeyFieldNames/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getPrimaryKeyFieldNames/index.md' %}{% endcodeBlock %}
      */
     public getPrimaryKeyFieldNames(): string[] {
         let keys: string[] = [];
@@ -3877,7 +3877,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Refreshes the Grid header and content.
-     * {% codeBlock src='grid/refresh/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/refresh/index.md' %}{% endcodeBlock %}
      */
     public refresh(): void {
         this.headerModule.refreshUI();
@@ -3887,7 +3887,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Refreshes the Grid header.
-     * {% codeBlock src='grid/refreshHeader/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/refreshHeader/index.md' %}{% endcodeBlock %}
      */
     public refreshHeader(): void {
         this.headerModule.refreshUI();
@@ -3896,7 +3896,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the collection of selected rows.
      * @return {Element[]}
-     * {% codeBlock src='grid/getSelectedRows/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getSelectedRows/index.md' %}{% endcodeBlock %}
      */
     public getSelectedRows(): Element[] {
         return this.selectionModule ? this.selectionModule.selectedRecords : [];
@@ -3905,7 +3905,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the collection of selected row indexes.
      * @return {number[]}
-     * {% codeBlock src='grid/getSelectedRowIndexes/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getSelectedRowIndexes/index.md' %}{% endcodeBlock %}
      */
     public getSelectedRowIndexes(): number[] {
         return this.selectionModule ? this.selectionModule.selectedRowIndexes : [];
@@ -3914,7 +3914,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the collection of selected row and cell indexes.
      * @return {number[]}
-     * {% codeBlock src='grid/getSelectedRowCellIndexes/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getSelectedRowCellIndexes/index.md' %}{% endcodeBlock %}
      */
     public getSelectedRowCellIndexes(): ISelectedCell[] {
         return this.selectionModule ? this.selectionModule.selectedRowCellIndexes : [];
@@ -3924,7 +3924,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets the collection of selected records. 
      * @return {Object[]}
      * @isGenericType true
-     * {% codeBlock src='grid/getSelectedRecords/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getSelectedRecords/index.md' %}{% endcodeBlock %}
      */
     public getSelectedRecords(): Object[] {
         return this.selectionModule ? this.selectionModule.getSelectedRecords() : [];
@@ -3943,7 +3943,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {string|string[]} keys - Defines a single or collection of column names. 
      * @param  {string} showBy - Defines the column key either as field name or header text. 
      * @return {void} 
-     * {% codeBlock src='grid/showColumns/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/showColumns/index.md' %}{% endcodeBlock %}
      */
     public showColumns(keys: string | string[], showBy?: string): void {
         showBy = showBy ? showBy : 'headerText';
@@ -3955,7 +3955,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {string|string[]} keys - Defines a single or collection of column names. 
      * @param  {string} hideBy - Defines the column key either as field name or header text. 
      * @return {void} 
-     * {% codeBlock src='grid/hideColumns/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/hideColumns/index.md' %}{% endcodeBlock %}
      */
     public hideColumns(keys: string | string[], hideBy?: string): void {
         hideBy = hideBy ? hideBy : 'headerText';
@@ -4025,7 +4025,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Navigates to the specified target page. 
      * @param  {number} pageNo - Defines the page number to navigate. 
      * @return {void} 
-     * {% codeBlock src='grid/goToPage/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/goToPage/index.md' %}{% endcodeBlock %}
      */
     public goToPage(pageNo: number): void {
         if (this.pagerModule) {
@@ -4050,7 +4050,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param {SortDirection} direction - Defines the direction of sorting field.  
      * @param {boolean} isMultiSort - Specifies whether the previous sorted columns are to be maintained. 
      * @return {void} 
-     * {% codeBlock src='grid/sortColumn/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/sortColumn/index.md' %}{% endcodeBlock %}
      */
     public sortColumn(columnName: string, direction: SortDirection, isMultiSort?: boolean): void {
         if (this.sortModule) {
@@ -4060,7 +4060,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**  
      * Clears all the sorted columns of the Grid.
-     * {% codeBlock src='grid/clearSorting/index.md' %}{% endcodeBlock %} }  
+     * {% codeBlock src='grid/grid/clearSorting/index.md' %}{% endcodeBlock %}  
      * @return {void} 
      */
     public clearSorting(): void {
@@ -4094,7 +4094,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {string} actualFilterValue - Defines the actual filter value for the filter column. 
      * @param  {string} actualOperator - Defines the actual filter operator for the filter column. 
      * @return {void} 
-     * {% codeBlock src='grid/filterByColumn/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/filterByColumn/index.md' %}{% endcodeBlock %}
      */
     public filterByColumn(
         fieldName: string, filterOperator: string, filterValue: string | number | Date | boolean| number[]| string[]| Date[]| boolean[],
@@ -4110,7 +4110,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /** 
      * Clears all the filtered rows of the Grid.
-     * {% codeBlock src='grid/clearFiltering/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/clearFiltering/index.md' %}{% endcodeBlock %}
      * @return {void} 
      */
     public clearFiltering(fields?: string[]): void {
@@ -4137,7 +4137,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {number} index - Defines the row index. 
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.
      * @return {void} 
-     * {% codeBlock src='grid/selectRow/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/selectRow/index.md' %}{% endcodeBlock %}
      */
     public selectRow(index: number, isToggle?: boolean): void {
         if (this.selectionModule) {
@@ -4149,7 +4149,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Selects a collection of rows by indexes. 
      * @param  {number[]} rowIndexes - Specifies the row indexes.
      * @return {void}
-     * {% codeBlock src='grid/selectRows/index.md' %}{% endcodeBlock %} } 
+     * {% codeBlock src='grid/grid/selectRows/index.md' %}{% endcodeBlock %} 
      */
     public selectRows(rowIndexes: number[]): void {
         if (this.selectionModule) {
@@ -4159,7 +4159,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /** 
      * Deselects the current selected rows and cells.
-     * {% codeBlock src='grid/clearSelection/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/clearSelection/index.md' %}{% endcodeBlock %}
      * @return {void} 
      */
     public clearSelection(): void {
@@ -4173,7 +4173,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {IIndex} cellIndex - Defines the row and column indexes. 
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.
      * @return {void}
-     * {% codeBlock src='grid/selectCell/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/selectCell/index.md' %}{% endcodeBlock %}
      */
     public selectCell(cellIndex: IIndex, isToggle?: boolean): void {
         if (this.selectionModule) {
@@ -4186,7 +4186,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {IIndex} startIndex - Specifies the row and column's start index.
      * @param  {IIndex} endIndex - Specifies the row and column's end index.
      * @return {void}
-     * {% codeBlock src='grid/selectCellsByRange/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/selectCellsByRange/index.md' %}{% endcodeBlock %}
      */
     public selectCellsByRange(startIndex: IIndex, endIndex?: IIndex): void {
         this.selectionModule.selectCellsByRange(startIndex, endIndex);
@@ -4198,7 +4198,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * [`searchSettings`](./#searchsettings/).
      * @param  {string} searchString - Defines the key.
      * @return {void} 
-     * {% codeBlock src='grid/search/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/search/index.md' %}{% endcodeBlock %}
      */
     public search(searchString: string): void {
         if (this.searchModule) {
@@ -4211,7 +4211,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * > You can customize print options using the 
      * [`printMode`](./#printmode). 
      * @return {void}
-     * {% codeBlock src='grid/print/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/print/index.md' %}{% endcodeBlock %}
      */
     public print(): void {
         if (this.printModule) {
@@ -4224,7 +4224,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * > `editSettings.allowDeleting` should be true.
      * @param {string} fieldname - Defines the primary key field, 'Name of the column'.
      * @param {Object} data - Defines the JSON data of the record to be deleted.
-     * {% codeBlock src='grid/deleteRecord/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/deleteRecord/index.md' %}{% endcodeBlock %}
      */
     public deleteRecord(fieldname?: string, data?: Object): void {
         if (this.editModule) {
@@ -4236,7 +4236,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Starts edit the selected row. At least one row must be selected before invoking this method.
      * `editSettings.allowEditing` should be true.
      * @return {void}
-     * {% codeBlock src='grid/startEdit/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/startEdit/index.md' %}{% endcodeBlock %}
      */
     public startEdit(): void {
         if (this.editModule) {
@@ -4246,7 +4246,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * If Grid is in editable state, you can save a record by invoking endEdit.
-     * {% codeBlock src='grid/endEdit/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/endEdit/index.md' %}{% endcodeBlock %}
      */
     public endEdit(): void {
         if (this.editModule) {
@@ -4256,7 +4256,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Cancels edited state.
-     * {% codeBlock src='grid/closeEdit/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/closeEdit/index.md' %}{% endcodeBlock %}
      */
     public closeEdit(): void {
         if (this.editModule) {
@@ -4269,7 +4269,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * > `editSettings.allowEditing` should be true.
      * @param {Object} data - Defines the new add record data.
      * @param {number} index - Defines the row index to be added
-     * {% codeBlock src='grid/addRecord/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/addRecord/index.md' %}{% endcodeBlock %}
      */
     public addRecord(data?: Object, index?: number): void {
         if (this.editModule) {
@@ -4280,7 +4280,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Delete any visible row by TR element.
      * @param {HTMLTableRowElement} tr - Defines the table row element.
-     * {% codeBlock src='grid/deleteRow/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/deleteRow/index.md' %}{% endcodeBlock %}
      */
     public deleteRow(tr: HTMLTableRowElement): void {
         if (this.editModule) {
@@ -4292,7 +4292,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Changes a particular cell into edited state based on the row index and field name provided in the `batch` mode.
      * @param {number} index - Defines row index to edit a particular cell.
      * @param {string} field - Defines the field name of the column to perform batch edit.
-     * {% codeBlock src='grid/editCell/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/editCell/index.md' %}{% endcodeBlock %}
      */
     public editCell(index: number, field: string): void {
         if (this.editModule) {
@@ -4302,7 +4302,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Saves the cell that is currently edited. It does not save the value to the DataSource.
-     * {% codeBlock src='grid/saveCell/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/saveCell/index.md' %}{% endcodeBlock %}
      */
     public saveCell(): void {
         if (this.editModule) {
@@ -4315,7 +4315,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param {number} rowIndex Defines the row index.
      * @param {string} field Defines the column field.
      * @param {string | number | boolean | Date} value - Defines the value to be changed.
-     * {% codeBlock src='grid/updateCell/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/updateCell/index.md' %}{% endcodeBlock %}
      */
     public updateCell(rowIndex: number, field: string, value: string | number | boolean | Date): void {
         if (this.editModule) {
@@ -4327,7 +4327,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * To update the specified row by given values without changing into edited state.
      * @param {number} index Defines the row index.
      * @param {Object} data Defines the data object to be updated.
-     * {% codeBlock src='grid/updateRow/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/updateRow/index.md' %}{% endcodeBlock %}
      */
     public updateRow(index: number, data: Object): void {
         if (this.editModule) {
@@ -4338,7 +4338,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the added, edited,and deleted data before bulk save to the DataSource in batch mode.
      * @return {Object}
-     * {% codeBlock src='grid/getBatchChanges/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getBatchChanges/index.md' %}{% endcodeBlock %}
      */
     public getBatchChanges(): Object {
         if (this.editModule) {
@@ -4352,7 +4352,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param {string[]} items - Defines the collection of itemID of ToolBar items.
      * @param {boolean} isEnable - Defines the items to be enabled or disabled.
      * @return {void}
-     * {% codeBlock src='grid/enableToolbarItems/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/enableToolbarItems/index.md' %}{% endcodeBlock %}
      */
     public enableToolbarItems(items: string[], isEnable: boolean): void {
         if (this.toolbarModule) {
@@ -4363,7 +4363,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Copy the selected rows or cells data into clipboard.
      * @param {boolean} withHeader - Specifies whether the column header text needs to be copied along with rows or cells.
-     * {% codeBlock src='grid/copy/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/copy/index.md' %}{% endcodeBlock %}
      */
     public copy(withHeader?: boolean): void {
         if (this.clipboardModule) {
@@ -4448,7 +4448,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {string} fromFName - Defines the origin field name. 
      * @param  {string} toFName - Defines the destination field name. 
      * @return {void} 
-     * {% codeBlock src='grid/reorderColumns/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/reorderColumns/index.md' %}{% endcodeBlock %}
      */
     public reorderColumns(fromFName: string | string[], toFName: string): void {
         if (this.reorderModule) {
@@ -4462,7 +4462,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {number} fromIndex - Defines the origin field index. 
      * @param  {number} toIndex - Defines the destination field index. 
      * @return {void} 
-     * {% codeBlock src='grid/reorderColumnByIndex/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/reorderColumnByIndex/index.md' %}{% endcodeBlock %}
      */
     public reorderColumnByIndex(fromIndex: number, toIndex: number): void {
         if (this.reorderModule) {
@@ -4476,7 +4476,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {string} fieldName - Defines the field name. 
      * @param  {number} toIndex - Defines the destination field index. 
      * @return {void} 
-     * {% codeBlock src='grid/reorderColumnByTargetIndex/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/reorderColumnByTargetIndex/index.md' %}{% endcodeBlock %}
      */
     public reorderColumnByTargetIndex(fieldName: string | string[], toIndex: number): void {
         if (this.reorderModule) {
@@ -4489,7 +4489,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {number} fromIndexes - Defines the origin Indexes. 
      * @param  {number} toIndex - Defines the destination Index. 
      * @return {void} 
-     * {% codeBlock src='grid/reorderRows/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/reorderRows/index.md' %}{% endcodeBlock %}
      */
     public reorderRows(fromIndexes: number[], toIndex: number): void {
         if (this.rowDragAndDropModule) {
@@ -4547,7 +4547,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * </script>
      * ``` 
      *  
-     * {% codeBlock src='grid/autoFitColumns/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/autoFitColumns/index.md' %}{% endcodeBlock %}
      */
     public autoFitColumns(fieldNames?: string | string[]): void {
         if (this.resizeModule) {
@@ -5010,7 +5010,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Get current visible data of grid.
      * @return {Object[]} 
      * @isGenericType true
-     * {% codeBlock src='grid/getCurrentViewRecords/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getCurrentViewRecords/index.md' %}{% endcodeBlock %}
      */
     public getCurrentViewRecords(): Object[] {
         if (isGroupAdaptive(this)) {
@@ -5248,7 +5248,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets the foreign columns from Grid.
      * @return {Column[]}
      * @blazorType List<GridColumn>
-     * {% codeBlock src='grid/getForeignKeyColumns/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getForeignKeyColumns/index.md' %}{% endcodeBlock %}
      */
     public getForeignKeyColumns(): Column[] {
         return this.getColumns().filter((col: Column) => {
@@ -5265,7 +5265,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Refreshes the Grid column changes.
-     * {% codeBlock src='grid/refreshColumns/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/refreshColumns/index.md' %}{% endcodeBlock %}
      */
     public refreshColumns(): void {
         let fCnt: Element = this.getContent().querySelector('.e-frozencontent');
@@ -5300,7 +5300,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>} 
      * @blazorType void
-     * {% codeBlock src='grid/excelExport/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/excelExport/index.md' %}{% endcodeBlock %}
      */
     public excelExport(
         excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean,
@@ -5322,7 +5322,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>} 
      * @blazorType void
-     * {% codeBlock src='grid/csvExport/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/csvExport/index.md' %}{% endcodeBlock %}
      */
     public csvExport(
         excelExportProperties?: ExcelExportProperties,
@@ -5343,7 +5343,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>} 
      * @blazorType void
-     * {% codeBlock src='grid/pdfExport/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/pdfExport/index.md' %}{% endcodeBlock %}
      */
     public pdfExport(
         pdfExportProperties?: PdfExportProperties,
@@ -5360,7 +5360,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Groups a column by column name. 
      * @param  {string} columnName - Defines the column name to group.  
      * @return {void} 
-     * {% codeBlock src='grid/groupColumn/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/groupColumn/index.md' %}{% endcodeBlock %}
      */
     public groupColumn(columnName: string): void {
         if (this.groupModule) {
@@ -5370,7 +5370,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Expands all the grouped rows of the Grid.          
      * @return {void} 
-     * {% codeBlock src='grid/groupExpandAll/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/groupExpandAll/index.md' %}{% endcodeBlock %}
      */
     public groupExpandAll(): void {
         if (this.groupModule) {
@@ -5380,7 +5380,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
     * Collapses all the grouped rows of the Grid.         
     * @return {void} 
-    * {% codeBlock src='grid/groupCollapseAll/index.md' %}{% endcodeBlock %} }
+    * {% codeBlock src='grid/grid/groupCollapseAll/index.md' %}{% endcodeBlock %}
     */
     public groupCollapseAll(): void {
         if (this.groupModule) {
@@ -5401,7 +5401,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**  
      * Clears all the grouped columns of the Grid.
-     * {% codeBlock src='grid/clearGrouping/index.md' %}{% endcodeBlock %} }  
+     * {% codeBlock src='grid/grid/clearGrouping/index.md' %}{% endcodeBlock %}  
      * @return {void} 
      */
     public clearGrouping(): void {
@@ -5413,7 +5413,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Ungroups a column by column name. 
      * @param  {string} columnName - Defines the column name to ungroup.  
      * @return {void} 
-     * {% codeBlock src='grid/ungroupColumn/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/ungroupColumn/index.md' %}{% endcodeBlock %}
      */
     public ungroupColumn(columnName: string): void {
         if (this.groupModule) {
@@ -5426,7 +5426,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {number} X - Defines the X axis.
      * @param  {number} Y - Defines the Y axis. 
      * @return {void}
-     * {% codeBlock src='grid/openColumnChooser/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/openColumnChooser/index.md' %}{% endcodeBlock %}
      */
     public openColumnChooser(x?: number, y?: number): void {
         if (this.columnChooserModule) {
@@ -5486,7 +5486,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /** 
      * Deselects the currently selected cells.
-     * {% codeBlock src='grid/clearCellSelection/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/clearCellSelection/index.md' %}{% endcodeBlock %}
      * @return {void} 
      */
     public clearCellSelection(): void {
@@ -5497,7 +5497,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /** 
      * Deselects the currently selected rows.
-     * {% codeBlock src='grid/clearRowSelection/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/clearRowSelection/index.md' %}{% endcodeBlock %}
      * @return {void} 
      */
     public clearRowSelection(): void {
@@ -5510,7 +5510,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Selects a collection of cells by row and column indexes. 
      * @param  {ISelectedCell[]} rowCellIndexes - Specifies the row and column indexes.
      * @return {void}
-     * {% codeBlock src='grid/selectCells/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/selectCells/index.md' %}{% endcodeBlock %}
      */
     public selectCells(rowCellIndexes: ISelectedCell[]): void {
         if (this.selectionModule) {
@@ -5523,7 +5523,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {number} startIndex - Specifies the start row index. 
      * @param  {number} endIndex - Specifies the end row index. 
      * @return {void} 
-     * {% codeBlock src='grid/selectRowsByRange/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/selectRowsByRange/index.md' %}{% endcodeBlock %}
      */
     public selectRowsByRange(startIndex: number, endIndex?: number): void {
         if (this.selectionModule) {
@@ -5582,7 +5582,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Hides the scrollbar placeholder of Grid content when grid content is not overflown.  
      * @return {void} 
-     * {% codeBlock src='grid/hideScroll/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/hideScroll/index.md' %}{% endcodeBlock %}
      */
     public hideScroll(): void {
         let content: HTMLElement = this.getContent().querySelector('.e-content');
@@ -5651,7 +5651,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Get all filtered records from the Grid and it returns array of objects for the local dataSource, returns a promise object if the Grid has remote data.
      * @return {Object[] | Promise<Object>} 
      * @deprecated
-     * {% codeBlock src='grid/getFilteredRecords/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getFilteredRecords/index.md' %}{% endcodeBlock %}
      */
     public getFilteredRecords(): Object[] | Promise<Object> {
         if (this.allowFiltering && this.filterSettings.columns.length) {
@@ -5767,7 +5767,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets the hidden columns from the Grid.
      * @return {Column[]} 
      * @blazorType List<GridColumn>
-     * {% codeBlock src='grid/getHiddenColumns/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getHiddenColumns/index.md' %}{% endcodeBlock %}
      */
     public getHiddenColumns(): Column[] {
         let cols: Column[] = []

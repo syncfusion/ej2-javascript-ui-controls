@@ -267,7 +267,8 @@ class SfDialog {
         this.popupObj.setProperties({ position: { X: this.position.X, Y: this.position.Y } });
     }
     public setEnableRTL(): void {
-        if (!isNOU(this.element.querySelector('.' + DLG_RESIZE_HANDLE))) {
+        let resizeElement : HTMLElement = this.element.querySelector('.' + DLG_RESIZE_HANDLE);
+        if (!isNOU(resizeElement) && resizeElement.parentElement === this.element) {
             removeResize();
             this.setResize();
         }
@@ -574,13 +575,16 @@ class SfDialog {
     private keyDown(e: KeyboardEvent): void {
         if (e.keyCode === TAB && this.isModal) {
             let btn: HTMLElement;
+            let btns: NodeListOf<HTMLElement>;
             let footer: HTMLElement = this.element.querySelector('.' + FOOTER_CONTENT);
-            let btns: NodeListOf<HTMLElement> = footer.querySelectorAll('button');
-            if (btns.length > 0) { btn = btns[btns.length - 1]; }
-            if (isNOU(btn) && footer.childNodes.length > 0) {
-                let value: string = 'input,select,textarea,button,a,[contenteditable="true"],[tabindex]';
-                let items: NodeListOf<HTMLElement> = footer.querySelectorAll(value);
-                btn = items[items.length - 1] as HTMLElement;
+            if (!isNOU(footer)) {
+                btns = footer.querySelectorAll('button');
+                if (!isNOU(btn) && btns.length > 0) { btn = btns[btns.length - 1]; }
+                if (isNOU(btn) && footer.childNodes.length > 0) {
+                    let value: string = 'input,select,textarea,button,a,[contenteditable="true"],[tabindex]';
+                    let items: NodeListOf<HTMLElement> = footer.querySelectorAll(value);
+                    btn = items[items.length - 1] as HTMLElement;
+                }
             }
             if (!isNOU(btn) && document.activeElement === btn && !e.shiftKey) {
                 e.preventDefault();

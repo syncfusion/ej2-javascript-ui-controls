@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### ColorPicker
+
+- Issue with `enableOpacity` has been fixed.
+
 ## 18.2.54 (2020-08-18)
 
 ### Range Slider

@@ -2281,8 +2281,10 @@ class ContentRender {
         this.isLoaded = true;
         this.viewColIndexes = [];
         this.drop = (e) => {
-            this.parent.notify(columnDrop, { target: e.target, droppedElement: e.droppedElement });
-            remove(e.droppedElement);
+            if (parentsUntil(e.target, 'e-row') || parentsUntil(e.target, 'e-emptyrow')) {
+                this.parent.notify(columnDrop, { target: e.target, droppedElement: e.droppedElement });
+                remove(e.droppedElement);
+            }
         };
         this.infiniteCache = {};
         this.isRemove = false;
@@ -4777,7 +4779,7 @@ class Render {
                 gObj.notify(cancelBegin, args);
                 return;
             }
-            if (gObj.editSettings.mode === 'Normal' && gObj.isEdit && e.requestType !== 'infiniteScroll') {
+            if (isBlazor() && gObj.editSettings.mode === 'Normal' && gObj.isEdit && e.requestType !== 'infiniteScroll') {
                 gObj.notify('closeinline', {});
             }
             if (args.requestType === 'delete' && gObj.allowPaging) {
@@ -11513,7 +11515,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Get the properties to be maintained in the persisted state.
      * @return {string}
-     * {% codeBlock src='grid/getPersistData/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getPersistData/index.md' %}{% endcodeBlock %}
      */
     getPersistData() {
         let keyEntity = ['pageSettings', 'sortSettings',
@@ -11897,14 +11899,14 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * By default, grid shows the spinner for all its actions. You can use this method to show spinner at your needed time.
-     * {% codeBlock src='grid/showSpinner/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/showSpinner/index.md' %}{% endcodeBlock %}
      */
     showSpinner() {
         showSpinner(this.element);
     }
     /**
      * Manually showed spinner needs to hide by `hideSpinnner`.
-     * {% codeBlock src='grid/hideSpinner/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/hideSpinner/index.md' %}{% endcodeBlock %}
      */
     hideSpinner() {
         hideSpinner(this.element);
@@ -12503,7 +12505,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets the visible columns from the Grid.
      * @return {Column[]}
      * @blazorType List<GridColumn>
-     * {% codeBlock src='grid/getVisibleColumns/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getVisibleColumns/index.md' %}{% endcodeBlock %}
      */
     getVisibleColumns() {
         let cols = [];
@@ -12517,7 +12519,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the header div of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/getHeaderContent/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getHeaderContent/index.md' %}{% endcodeBlock %}
      */
     getHeaderContent() {
         return this.headerModule.getPanel();
@@ -12532,7 +12534,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Gets the content table of the Grid.
-     * {% codeBlock src='grid/getContentTable/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getContentTable/index.md' %}{% endcodeBlock %}
      * @return {Element}
      */
     getContentTable() {
@@ -12549,7 +12551,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the content div of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/getContent/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getContent/index.md' %}{% endcodeBlock %}
      */
     getContent() {
         return this.contentModule.getPanel();
@@ -12565,7 +12567,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the header table element of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/getHeaderTable/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getHeaderTable/index.md' %}{% endcodeBlock %}
      */
     getHeaderTable() {
         return this.headerModule.getTable();
@@ -12581,7 +12583,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the footer div of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/getFooterContent/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getFooterContent/index.md' %}{% endcodeBlock %}
      */
     getFooterContent() {
         this.footerElement = this.element.getElementsByClassName('e-gridfooter')[0];
@@ -12590,7 +12592,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the footer table element of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/getFooterContentTable/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getFooterContentTable/index.md' %}{% endcodeBlock %}
      */
     getFooterContentTable() {
         this.footerElement = this.element.getElementsByClassName('e-gridfooter')[0];
@@ -12599,7 +12601,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the pager of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/getPager/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getPager/index.md' %}{% endcodeBlock %}
      */
     getPager() {
         return this.gridPager; //get element from pager
@@ -12616,7 +12618,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets a row by index.
      * @param  {number} index - Specifies the row index.
      * @return {Element}
-     * {% codeBlock src='grid/getRowByIndex/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getRowByIndex/index.md' %}{% endcodeBlock %}
      */
     getRowByIndex(index) {
         return this.contentModule.getRowByIndex(index);
@@ -12625,7 +12627,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets a movable tables row by index.
      * @param  {number} index - Specifies the row index.
      * @return {Element}
-     * {% codeBlock src='grid/getMovableRowByIndex/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getMovableRowByIndex/index.md' %}{% endcodeBlock %}
      */
     getMovableRowByIndex(index) {
         return this.contentModule.getMovableRowByIndex(index);
@@ -12634,7 +12636,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets a frozen tables row by index.
      * @param  {number} index - Specifies the row index.
      * @return {Element}
-     * {% codeBlock src='grid/getFrozenRowByIndex/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getFrozenRowByIndex/index.md' %}{% endcodeBlock %}
      */
     getFrozenRowByIndex(index) {
         return this.getFrozenDataRows()[index];
@@ -12642,7 +12644,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets all the data rows of the Grid.
      * @return {Element[]}
-     * {% codeBlock src='grid/getRows/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getRows/index.md' %}{% endcodeBlock %}
      */
     getRows() {
         return this.contentModule.getRowElements();
@@ -12651,7 +12653,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Get a row information based on cell
      * @param {Element}
      * @return RowInfo
-     * {% codeBlock src='grid/getRowInfo/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getRowInfo/index.md' %}{% endcodeBlock %}
      */
     getRowInfo(target) {
         let ele = target;
@@ -12691,7 +12693,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the Grid's movable content rows from frozen grid.
      * @return {Element[]}
-     * {% codeBlock src='grid/getMovableRows/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getMovableRows/index.md' %}{% endcodeBlock %}
      */
     getMovableRows() {
         return this.contentModule.getMovableRowElements();
@@ -12699,7 +12701,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets all the Grid's data rows.
      * @return {Element[]}
-     * {% codeBlock src='grid/getDataRows/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getDataRows/index.md' %}{% endcodeBlock %}
      */
     getDataRows() {
         if (isNullOrUndefined(this.getContentTable().querySelector('tbody'))) {
@@ -12739,7 +12741,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets all the Grid's movable table data rows.
      * @return {Element[]}
-     * {% codeBlock src='grid/getMovableDataRows/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getMovableDataRows/index.md' %}{% endcodeBlock %}
      */
     getMovableDataRows() {
         let rows = [].slice.call(this.getContent().querySelector('.e-movablecontent').querySelector('tbody').children);
@@ -12753,7 +12755,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets all the Grid's frozen table data rows.
      * @return {Element[]}
-     * {% codeBlock src='grid/getFrozenDataRows/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getFrozenDataRows/index.md' %}{% endcodeBlock %}
      */
     getFrozenDataRows() {
         let rows = [].slice.call(this.getContent().querySelector('.e-frozencontent').querySelector('tbody').children);
@@ -12770,7 +12772,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param {string| number} key - Specifies the PrimaryKey value of dataSource.
      * @param {string } field - Specifies the field name which you want to update.
      * @param {string | number | boolean | Date} value - To update new value for the particular cell.
-     * {% codeBlock src='grid/setCellValue/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/setCellValue/index.md' %}{% endcodeBlock %}
      */
     setCellValue(key, field, value) {
         let cells = 'cells';
@@ -12838,7 +12840,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * > Primary key column must be specified using `columns.isPrimaryKey` property.
      *  @param {string| number} key - Specifies the PrimaryKey value of dataSource.
      *  @param {Object} rowData - To update new data for the particular row.
-     * {% codeBlock src='grid/setRowData/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/setRowData/index.md' %}{% endcodeBlock %}
      */
     setRowData(key, rowData) {
         let rowuID = 'uid';
@@ -12870,7 +12872,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {number} rowIndex - Specifies the row index.
      * @param  {number} columnIndex - Specifies the column index.
      * @return {Element}
-     * {% codeBlock src='grid/getCellFromIndex/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getCellFromIndex/index.md' %}{% endcodeBlock %}
      */
     getCellFromIndex(rowIndex, columnIndex) {
         let frzCols = this.getFrozenColumns();
@@ -12883,7 +12885,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {number} rowIndex - Specifies the row index.
      * @param  {number} columnIndex - Specifies the column index.
      * @return {Element}
-     * {% codeBlock src='grid/getMovableCellFromIndex/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getMovableCellFromIndex/index.md' %}{% endcodeBlock %}
      */
     getMovableCellFromIndex(rowIndex, columnIndex) {
         return this.getMovableDataRows()[rowIndex] &&
@@ -12893,7 +12895,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets a column header by column index.
      * @param  {number} index - Specifies the column index.
      * @return {Element}
-     * {% codeBlock src='grid/getColumnHeaderByIndex/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getColumnHeaderByIndex/index.md' %}{% endcodeBlock %}
      */
     getColumnHeaderByIndex(index) {
         return this.getHeaderTable().querySelectorAll('.e-headercell')[index];
@@ -12940,7 +12942,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets a column header by column name.
      * @param  {string} field - Specifies the column name.
      * @return {Element}
-     * {% codeBlock src='grid/getColumnHeaderByField/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getColumnHeaderByField/index.md' %}{% endcodeBlock %}
      */
     getColumnHeaderByField(field) {
         let column = this.getColumnByField(field);
@@ -12950,7 +12952,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets a column header by UID.
      * @param  {string} field - Specifies the column uid.
      * @return {Element}
-     * {% codeBlock src='grid/getColumnHeaderByUid/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getColumnHeaderByUid/index.md' %}{% endcodeBlock %}
      */
     getColumnHeaderByUid(uid) {
         let element = this.getHeaderContent().querySelector('[e-mappinguid=' + uid + ']');
@@ -12973,7 +12975,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {string} field - Specifies the column name.
      * @return {Column}
      * @blazorType GridColumn
-     * {% codeBlock src='grid/getColumnByField/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getColumnByField/index.md' %}{% endcodeBlock %}
      */
     getColumnByField(field) {
         return iterateArrayOrObject(this.getColumns(), (item, index) => {
@@ -12987,7 +12989,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets a column index by column name.
      * @param  {string} field - Specifies the column name.
      * @return {number}
-     * {% codeBlock src='grid/getColumnIndexByField/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getColumnIndexByField/index.md' %}{% endcodeBlock %}
      */
     getColumnIndexByField(field) {
         let cols = this.getColumns();
@@ -13003,7 +13005,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {string} uid - Specifies the column UID.
      * @return {Column}
      * @blazorType GridColumn
-     * {% codeBlock src='grid/getColumnByUid/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getColumnByUid/index.md' %}{% endcodeBlock %}
      */
     getColumnByUid(uid) {
         return iterateArrayOrObject([...this.getColumns(), ...this.getStackedColumns(this.columns)], (item, index) => {
@@ -13029,7 +13031,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets a column index by UID.
      * @param  {string} uid - Specifies the column UID.
      * @return {number}
-     * {% codeBlock src='grid/getColumnIndexByUid/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getColumnIndexByUid/index.md' %}{% endcodeBlock %}
      */
     getColumnIndexByUid(uid) {
         let index = iterateArrayOrObject(this.getColumns(), (item, index) => {
@@ -13044,7 +13046,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets UID by column name.
      * @param  {string} field - Specifies the column name.
      * @return {string}
-     * {% codeBlock src='grid/getUidByColumnField/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getUidByColumnField/index.md' %}{% endcodeBlock %}
      */
     getUidByColumnField(field) {
         return iterateArrayOrObject(this.getColumns(), (item, index) => {
@@ -13089,7 +13091,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the collection of column fields.
      * @return {string[]}
-     * {% codeBlock src='grid/getColumnFieldNames/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getColumnFieldNames/index.md' %}{% endcodeBlock %}
      */
     getColumnFieldNames() {
         let columnNames = [];
@@ -13145,7 +13147,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Get the names of the primary key columns of the Grid.
      * @return {string[]}
-     * {% codeBlock src='grid/getPrimaryKeyFieldNames/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getPrimaryKeyFieldNames/index.md' %}{% endcodeBlock %}
      */
     getPrimaryKeyFieldNames() {
         let keys = [];
@@ -13158,7 +13160,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Refreshes the Grid header and content.
-     * {% codeBlock src='grid/refresh/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/refresh/index.md' %}{% endcodeBlock %}
      */
     refresh() {
         this.headerModule.refreshUI();
@@ -13167,7 +13169,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Refreshes the Grid header.
-     * {% codeBlock src='grid/refreshHeader/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/refreshHeader/index.md' %}{% endcodeBlock %}
      */
     refreshHeader() {
         this.headerModule.refreshUI();
@@ -13175,7 +13177,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the collection of selected rows.
      * @return {Element[]}
-     * {% codeBlock src='grid/getSelectedRows/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getSelectedRows/index.md' %}{% endcodeBlock %}
      */
     getSelectedRows() {
         return this.selectionModule ? this.selectionModule.selectedRecords : [];
@@ -13183,7 +13185,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the collection of selected row indexes.
      * @return {number[]}
-     * {% codeBlock src='grid/getSelectedRowIndexes/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getSelectedRowIndexes/index.md' %}{% endcodeBlock %}
      */
     getSelectedRowIndexes() {
         return this.selectionModule ? this.selectionModule.selectedRowIndexes : [];
@@ -13191,7 +13193,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the collection of selected row and cell indexes.
      * @return {number[]}
-     * {% codeBlock src='grid/getSelectedRowCellIndexes/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getSelectedRowCellIndexes/index.md' %}{% endcodeBlock %}
      */
     getSelectedRowCellIndexes() {
         return this.selectionModule ? this.selectionModule.selectedRowCellIndexes : [];
@@ -13200,7 +13202,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets the collection of selected records.
      * @return {Object[]}
      * @isGenericType true
-     * {% codeBlock src='grid/getSelectedRecords/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getSelectedRecords/index.md' %}{% endcodeBlock %}
      */
     getSelectedRecords() {
         return this.selectionModule ? this.selectionModule.getSelectedRecords() : [];
@@ -13217,7 +13219,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {string|string[]} keys - Defines a single or collection of column names.
      * @param  {string} showBy - Defines the column key either as field name or header text.
      * @return {void}
-     * {% codeBlock src='grid/showColumns/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/showColumns/index.md' %}{% endcodeBlock %}
      */
     showColumns(keys, showBy) {
         showBy = showBy ? showBy : 'headerText';
@@ -13228,7 +13230,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {string|string[]} keys - Defines a single or collection of column names.
      * @param  {string} hideBy - Defines the column key either as field name or header text.
      * @return {void}
-     * {% codeBlock src='grid/hideColumns/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/hideColumns/index.md' %}{% endcodeBlock %}
      */
     hideColumns(keys, hideBy) {
         hideBy = hideBy ? hideBy : 'headerText';
@@ -13293,7 +13295,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Navigates to the specified target page.
      * @param  {number} pageNo - Defines the page number to navigate.
      * @return {void}
-     * {% codeBlock src='grid/goToPage/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/goToPage/index.md' %}{% endcodeBlock %}
      */
     goToPage(pageNo) {
         if (this.pagerModule) {
@@ -13316,7 +13318,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param {SortDirection} direction - Defines the direction of sorting field.
      * @param {boolean} isMultiSort - Specifies whether the previous sorted columns are to be maintained.
      * @return {void}
-     * {% codeBlock src='grid/sortColumn/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/sortColumn/index.md' %}{% endcodeBlock %}
      */
     sortColumn(columnName, direction, isMultiSort) {
         if (this.sortModule) {
@@ -13325,7 +13327,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Clears all the sorted columns of the Grid.
-     * {% codeBlock src='grid/clearSorting/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/clearSorting/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     clearSorting() {
@@ -13357,7 +13359,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {string} actualFilterValue - Defines the actual filter value for the filter column.
      * @param  {string} actualOperator - Defines the actual filter operator for the filter column.
      * @return {void}
-     * {% codeBlock src='grid/filterByColumn/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/filterByColumn/index.md' %}{% endcodeBlock %}
      */
     filterByColumn(fieldName, filterOperator, filterValue, predicate, matchCase, ignoreAccent, actualFilterValue, actualOperator) {
         if (this.filterModule) {
@@ -13366,7 +13368,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Clears all the filtered rows of the Grid.
-     * {% codeBlock src='grid/clearFiltering/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/clearFiltering/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     clearFiltering(fields) {
@@ -13391,7 +13393,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {number} index - Defines the row index.
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.
      * @return {void}
-     * {% codeBlock src='grid/selectRow/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/selectRow/index.md' %}{% endcodeBlock %}
      */
     selectRow(index, isToggle) {
         if (this.selectionModule) {
@@ -13402,7 +13404,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Selects a collection of rows by indexes.
      * @param  {number[]} rowIndexes - Specifies the row indexes.
      * @return {void}
-     * {% codeBlock src='grid/selectRows/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/selectRows/index.md' %}{% endcodeBlock %}
      */
     selectRows(rowIndexes) {
         if (this.selectionModule) {
@@ -13411,7 +13413,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Deselects the current selected rows and cells.
-     * {% codeBlock src='grid/clearSelection/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/clearSelection/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     clearSelection() {
@@ -13424,7 +13426,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {IIndex} cellIndex - Defines the row and column indexes.
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.
      * @return {void}
-     * {% codeBlock src='grid/selectCell/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/selectCell/index.md' %}{% endcodeBlock %}
      */
     selectCell(cellIndex, isToggle) {
         if (this.selectionModule) {
@@ -13436,7 +13438,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {IIndex} startIndex - Specifies the row and column's start index.
      * @param  {IIndex} endIndex - Specifies the row and column's end index.
      * @return {void}
-     * {% codeBlock src='grid/selectCellsByRange/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/selectCellsByRange/index.md' %}{% endcodeBlock %}
      */
     selectCellsByRange(startIndex, endIndex) {
         this.selectionModule.selectCellsByRange(startIndex, endIndex);
@@ -13447,7 +13449,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * [`searchSettings`](./#searchsettings/).
      * @param  {string} searchString - Defines the key.
      * @return {void}
-     * {% codeBlock src='grid/search/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/search/index.md' %}{% endcodeBlock %}
      */
     search(searchString) {
         if (this.searchModule) {
@@ -13459,7 +13461,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * > You can customize print options using the
      * [`printMode`](./#printmode).
      * @return {void}
-     * {% codeBlock src='grid/print/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/print/index.md' %}{% endcodeBlock %}
      */
     print() {
         if (this.printModule) {
@@ -13471,7 +13473,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * > `editSettings.allowDeleting` should be true.
      * @param {string} fieldname - Defines the primary key field, 'Name of the column'.
      * @param {Object} data - Defines the JSON data of the record to be deleted.
-     * {% codeBlock src='grid/deleteRecord/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/deleteRecord/index.md' %}{% endcodeBlock %}
      */
     deleteRecord(fieldname, data) {
         if (this.editModule) {
@@ -13482,7 +13484,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Starts edit the selected row. At least one row must be selected before invoking this method.
      * `editSettings.allowEditing` should be true.
      * @return {void}
-     * {% codeBlock src='grid/startEdit/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/startEdit/index.md' %}{% endcodeBlock %}
      */
     startEdit() {
         if (this.editModule) {
@@ -13491,7 +13493,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * If Grid is in editable state, you can save a record by invoking endEdit.
-     * {% codeBlock src='grid/endEdit/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/endEdit/index.md' %}{% endcodeBlock %}
      */
     endEdit() {
         if (this.editModule) {
@@ -13500,7 +13502,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Cancels edited state.
-     * {% codeBlock src='grid/closeEdit/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/closeEdit/index.md' %}{% endcodeBlock %}
      */
     closeEdit() {
         if (this.editModule) {
@@ -13512,7 +13514,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * > `editSettings.allowEditing` should be true.
      * @param {Object} data - Defines the new add record data.
      * @param {number} index - Defines the row index to be added
-     * {% codeBlock src='grid/addRecord/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/addRecord/index.md' %}{% endcodeBlock %}
      */
     addRecord(data, index) {
         if (this.editModule) {
@@ -13522,7 +13524,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Delete any visible row by TR element.
      * @param {HTMLTableRowElement} tr - Defines the table row element.
-     * {% codeBlock src='grid/deleteRow/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/deleteRow/index.md' %}{% endcodeBlock %}
      */
     deleteRow(tr) {
         if (this.editModule) {
@@ -13533,7 +13535,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Changes a particular cell into edited state based on the row index and field name provided in the `batch` mode.
      * @param {number} index - Defines row index to edit a particular cell.
      * @param {string} field - Defines the field name of the column to perform batch edit.
-     * {% codeBlock src='grid/editCell/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/editCell/index.md' %}{% endcodeBlock %}
      */
     editCell(index, field) {
         if (this.editModule) {
@@ -13542,7 +13544,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Saves the cell that is currently edited. It does not save the value to the DataSource.
-     * {% codeBlock src='grid/saveCell/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/saveCell/index.md' %}{% endcodeBlock %}
      */
     saveCell() {
         if (this.editModule) {
@@ -13554,7 +13556,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param {number} rowIndex Defines the row index.
      * @param {string} field Defines the column field.
      * @param {string | number | boolean | Date} value - Defines the value to be changed.
-     * {% codeBlock src='grid/updateCell/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/updateCell/index.md' %}{% endcodeBlock %}
      */
     updateCell(rowIndex, field, value) {
         if (this.editModule) {
@@ -13565,7 +13567,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * To update the specified row by given values without changing into edited state.
      * @param {number} index Defines the row index.
      * @param {Object} data Defines the data object to be updated.
-     * {% codeBlock src='grid/updateRow/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/updateRow/index.md' %}{% endcodeBlock %}
      */
     updateRow(index, data) {
         if (this.editModule) {
@@ -13575,7 +13577,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the added, edited,and deleted data before bulk save to the DataSource in batch mode.
      * @return {Object}
-     * {% codeBlock src='grid/getBatchChanges/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getBatchChanges/index.md' %}{% endcodeBlock %}
      */
     getBatchChanges() {
         if (this.editModule) {
@@ -13588,7 +13590,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param {string[]} items - Defines the collection of itemID of ToolBar items.
      * @param {boolean} isEnable - Defines the items to be enabled or disabled.
      * @return {void}
-     * {% codeBlock src='grid/enableToolbarItems/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/enableToolbarItems/index.md' %}{% endcodeBlock %}
      */
     enableToolbarItems(items, isEnable) {
         if (this.toolbarModule) {
@@ -13598,7 +13600,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Copy the selected rows or cells data into clipboard.
      * @param {boolean} withHeader - Specifies whether the column header text needs to be copied along with rows or cells.
-     * {% codeBlock src='grid/copy/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/copy/index.md' %}{% endcodeBlock %}
      */
     copy(withHeader) {
         if (this.clipboardModule) {
@@ -13681,7 +13683,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {string} fromFName - Defines the origin field name.
      * @param  {string} toFName - Defines the destination field name.
      * @return {void}
-     * {% codeBlock src='grid/reorderColumns/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/reorderColumns/index.md' %}{% endcodeBlock %}
      */
     reorderColumns(fromFName, toFName) {
         if (this.reorderModule) {
@@ -13694,7 +13696,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {number} fromIndex - Defines the origin field index.
      * @param  {number} toIndex - Defines the destination field index.
      * @return {void}
-     * {% codeBlock src='grid/reorderColumnByIndex/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/reorderColumnByIndex/index.md' %}{% endcodeBlock %}
      */
     reorderColumnByIndex(fromIndex, toIndex) {
         if (this.reorderModule) {
@@ -13707,7 +13709,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {string} fieldName - Defines the field name.
      * @param  {number} toIndex - Defines the destination field index.
      * @return {void}
-     * {% codeBlock src='grid/reorderColumnByTargetIndex/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/reorderColumnByTargetIndex/index.md' %}{% endcodeBlock %}
      */
     reorderColumnByTargetIndex(fieldName, toIndex) {
         if (this.reorderModule) {
@@ -13719,7 +13721,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {number} fromIndexes - Defines the origin Indexes.
      * @param  {number} toIndex - Defines the destination Index.
      * @return {void}
-     * {% codeBlock src='grid/reorderRows/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/reorderRows/index.md' %}{% endcodeBlock %}
      */
     reorderRows(fromIndexes, toIndex) {
         if (this.rowDragAndDropModule) {
@@ -13774,7 +13776,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * </script>
      * ```
      *
-     * {% codeBlock src='grid/autoFitColumns/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/autoFitColumns/index.md' %}{% endcodeBlock %}
      */
     autoFitColumns(fieldNames) {
         if (this.resizeModule) {
@@ -14218,7 +14220,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Get current visible data of grid.
      * @return {Object[]}
      * @isGenericType true
-     * {% codeBlock src='grid/getCurrentViewRecords/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getCurrentViewRecords/index.md' %}{% endcodeBlock %}
      */
     getCurrentViewRecords() {
         if (isGroupAdaptive(this)) {
@@ -14445,7 +14447,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets the foreign columns from Grid.
      * @return {Column[]}
      * @blazorType List<GridColumn>
-     * {% codeBlock src='grid/getForeignKeyColumns/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getForeignKeyColumns/index.md' %}{% endcodeBlock %}
      */
     getForeignKeyColumns() {
         return this.getColumns().filter((col) => {
@@ -14460,7 +14462,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Refreshes the Grid column changes.
-     * {% codeBlock src='grid/refreshColumns/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/refreshColumns/index.md' %}{% endcodeBlock %}
      */
     refreshColumns() {
         let fCnt = this.getContent().querySelector('.e-frozencontent');
@@ -14496,7 +14498,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
      * @blazorType void
-     * {% codeBlock src='grid/excelExport/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/excelExport/index.md' %}{% endcodeBlock %}
      */
     excelExport(excelExportProperties, isMultipleExport, 
     /* tslint:disable-next-line:no-any */
@@ -14516,7 +14518,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
      * @blazorType void
-     * {% codeBlock src='grid/csvExport/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/csvExport/index.md' %}{% endcodeBlock %}
      */
     csvExport(excelExportProperties, 
     /* tslint:disable-next-line:no-any */
@@ -14536,7 +14538,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
      * @blazorType void
-     * {% codeBlock src='grid/pdfExport/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/pdfExport/index.md' %}{% endcodeBlock %}
      */
     pdfExport(pdfExportProperties, 
     /* tslint:disable-next-line:no-any */
@@ -14551,7 +14553,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Groups a column by column name.
      * @param  {string} columnName - Defines the column name to group.
      * @return {void}
-     * {% codeBlock src='grid/groupColumn/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/groupColumn/index.md' %}{% endcodeBlock %}
      */
     groupColumn(columnName) {
         if (this.groupModule) {
@@ -14561,7 +14563,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Expands all the grouped rows of the Grid.
      * @return {void}
-     * {% codeBlock src='grid/groupExpandAll/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/groupExpandAll/index.md' %}{% endcodeBlock %}
      */
     groupExpandAll() {
         if (this.groupModule) {
@@ -14571,7 +14573,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
     * Collapses all the grouped rows of the Grid.
     * @return {void}
-    * {% codeBlock src='grid/groupCollapseAll/index.md' %}{% endcodeBlock %} }
+    * {% codeBlock src='grid/grid/groupCollapseAll/index.md' %}{% endcodeBlock %}
     */
     groupCollapseAll() {
         if (this.groupModule) {
@@ -14590,7 +14592,7 @@ let Grid = Grid_1 = class Grid extends Component {
     // }
     /**
      * Clears all the grouped columns of the Grid.
-     * {% codeBlock src='grid/clearGrouping/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/clearGrouping/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     clearGrouping() {
@@ -14602,7 +14604,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Ungroups a column by column name.
      * @param  {string} columnName - Defines the column name to ungroup.
      * @return {void}
-     * {% codeBlock src='grid/ungroupColumn/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/ungroupColumn/index.md' %}{% endcodeBlock %}
      */
     ungroupColumn(columnName) {
         if (this.groupModule) {
@@ -14614,7 +14616,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {number} X - Defines the X axis.
      * @param  {number} Y - Defines the Y axis.
      * @return {void}
-     * {% codeBlock src='grid/openColumnChooser/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/openColumnChooser/index.md' %}{% endcodeBlock %}
      */
     openColumnChooser(x, y) {
         if (this.columnChooserModule) {
@@ -14668,7 +14670,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Deselects the currently selected cells.
-     * {% codeBlock src='grid/clearCellSelection/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/clearCellSelection/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     clearCellSelection() {
@@ -14678,7 +14680,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Deselects the currently selected rows.
-     * {% codeBlock src='grid/clearRowSelection/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/clearRowSelection/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     clearRowSelection() {
@@ -14690,7 +14692,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Selects a collection of cells by row and column indexes.
      * @param  {ISelectedCell[]} rowCellIndexes - Specifies the row and column indexes.
      * @return {void}
-     * {% codeBlock src='grid/selectCells/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/selectCells/index.md' %}{% endcodeBlock %}
      */
     selectCells(rowCellIndexes) {
         if (this.selectionModule) {
@@ -14702,7 +14704,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {number} startIndex - Specifies the start row index.
      * @param  {number} endIndex - Specifies the end row index.
      * @return {void}
-     * {% codeBlock src='grid/selectRowsByRange/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/selectRowsByRange/index.md' %}{% endcodeBlock %}
      */
     selectRowsByRange(startIndex, endIndex) {
         if (this.selectionModule) {
@@ -14754,7 +14756,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Hides the scrollbar placeholder of Grid content when grid content is not overflown.
      * @return {void}
-     * {% codeBlock src='grid/hideScroll/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/hideScroll/index.md' %}{% endcodeBlock %}
      */
     hideScroll() {
         let content = this.getContent().querySelector('.e-content');
@@ -14822,7 +14824,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Get all filtered records from the Grid and it returns array of objects for the local dataSource, returns a promise object if the Grid has remote data.
      * @return {Object[] | Promise<Object>}
      * @deprecated
-     * {% codeBlock src='grid/getFilteredRecords/index.md' %}{% endcodeBlock %} }
+     * {% codeBlock src='grid/grid/getFilteredRecords/index.md' %}{% endcodeBlock %}
      */
     getFilteredRecords() {
         if (this.allowFiltering && this.filterSettings.columns.length) {
@@ -14934,7 +14936,7 @@ let Grid = Grid_1 = class Grid extends Component {
     * Gets the hidden columns from the Grid.
     * @return {Column[]}
     * @blazorType List<GridColumn>
-    * {% codeBlock src='grid/getHiddenColumns/index.md' %}{% endcodeBlock %} }
+    * {% codeBlock src='grid/grid/getHiddenColumns/index.md' %}{% endcodeBlock %}
     */
     getHiddenColumns() {
         let cols = [];
@@ -25844,7 +25846,7 @@ class SummaryCellRenderer extends CellRenderer {
             data[column.columnName].headerText = gColumn.headerText;
             if (gColumn.isForeignColumn()) {
                 let fData = gColumn.columnData.filter((e) => {
-                    return e[data[column.columnName].field] === data[column.columnName].key;
+                    return e[gColumn.foreignKeyField] === data[column.columnName].key;
                 })[0];
                 data[column.columnName].foreignKey = fData[gColumn.foreignKeyValue];
             }
@@ -28242,8 +28244,8 @@ class EditRender {
             if (col.editTemplate) {
                 input = this.parent.createElement('span', { attrs: { 'e-mappinguid': col.uid } });
                 let tempID = this.parent.element.id + col.uid + 'editTemplate';
-                let tempData = extend({}, {}, args.rowData, true);
-                let template = col.getEditTemplate()(tempData, this.parent, 'editTemplate', tempID);
+                let tempData = extendObjWithFn({}, args.rowData, { column: col });
+                let template = col.getEditTemplate()(extend({ 'index': args.rowIndex }, tempData), this.parent, 'editTemplate', tempID);
                 /* tslint:disable-next-line:no-any */
                 this.parent.isReact && this.parent.editSettings.mode === 'Batch' ?
                     setTimeout(() => { appendChildren(input, template); }) : appendChildren(input, template);

@@ -296,3 +296,280 @@ describe('Selection header and footer  validation weblayout', () => {
     //   expect(editor.documentHelper.selectionContext.globalAlpha).toBe(0.4);
     //});
 });
+
+
+let sectionFormatJson : Object ={
+    "sections": [
+      {
+        "blocks": [
+          {
+            "characterFormat": { "fontColor": "empty" },
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": [
+              {
+                "text": "First section",
+                "characterFormat": { "fontColor": "empty" }
+              }
+            ]
+          }
+        ],
+        "headersFooters": {
+          "header": {
+            "blocks": [
+              {
+                "characterFormat": { "fontColor": "empty" },
+                "paragraphFormat": { "styleName": "Header" },
+                "inlines": []
+              }
+            ]
+          },
+          "footer": {
+            "blocks": [
+              {
+                "characterFormat": { "fontColor": "empty" },
+                "paragraphFormat": { "styleName": "Footer" },
+                "inlines": [
+                  {
+                    "name": "_GoBack",
+                    "bookmarkType": 0
+                  },
+                  {
+                    "name": "_GoBack",
+                    "bookmarkType": 1
+                  },
+                  {
+                    "hasFieldEnd": true,
+                    "characterFormat": { "fontColor": "empty" },
+                    "fieldType": 0
+                  },
+                  {
+                    "text": " PAGE \\* MERGEFORMAT ",
+                    "characterFormat": { "fontColor": "empty" }
+                  },
+                  { "fieldType": 2 },
+                  {
+                    "text": "1",
+                    "characterFormat": { "fontColor": "empty" }
+                  },
+                  { "fieldType": 1 }
+                ]
+              }
+            ]
+          },
+          "evenHeader": {
+            "blocks": [
+              {
+                "characterFormat": { "fontColor": "empty" },
+                "paragraphFormat": { "styleName": "Header" },
+                "inlines": []
+              }
+            ]
+          },
+          "evenFooter": {
+            "blocks": [
+              {
+                "characterFormat": { "fontColor": "empty" },
+                "paragraphFormat": { "styleName": "Footer" },
+                "inlines": []
+              }
+            ]
+          },
+          "firstPageHeader": {
+            "blocks": [
+              {
+                "characterFormat": { "fontColor": "empty" },
+                "paragraphFormat": { "styleName": "Header" },
+                "inlines": []
+              }
+            ]
+          },
+          "firstPageFooter": {
+            "blocks": [
+              {
+                "characterFormat": { "fontColor": "empty" },
+                "paragraphFormat": { "styleName": "Footer" },
+                "inlines": []
+              }
+            ]
+          }
+        },
+        "sectionFormat": {
+          "headerDistance": 36.0,
+          "footerDistance": 36.0,
+          "pageWidth": 612.0,
+          "pageHeight": 792.0,
+          "leftMargin": 72.0,
+          "rightMargin": 72.0,
+          "topMargin": 72.0,
+          "bottomMargin": 72.0,
+          "differentFirstPage": false,
+          "differentOddAndEvenPages": false,
+          "bidi": false,
+          "restartPageNumbering": false,
+          "pageStartingNumber": 0
+        }
+      },
+      {
+        "blocks": [
+          {
+            "characterFormat": { "fontColor": "empty" },
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": []
+          }
+        ],
+        "headersFooters": {},
+        "sectionFormat": {
+          "headerDistance": 36.0,
+          "footerDistance": 36.0,
+          "pageWidth": 612.0,
+          "pageHeight": 792.0,
+          "leftMargin": 72.0,
+          "rightMargin": 72.0,
+          "topMargin": 72.0,
+          "bottomMargin": 72.0,
+          "differentFirstPage": false,
+          "differentOddAndEvenPages": false,
+          "bidi": false,
+          "restartPageNumbering": true,
+          "pageStartingNumber": 1
+        }
+      }
+    ],
+    "characterFormat": {
+      "fontSize": 11.0,
+      "fontFamily": "Calibri",
+      "fontColor": "empty",
+      "fontSizeBidi": 11.0,
+      "fontFamilyBidi": "Arial"
+    },
+    "paragraphFormat": {
+      "afterSpacing": 8.0,
+      "lineSpacing": 1.0791666507720947,
+      "lineSpacingType": "Multiple"
+    },
+    "background": { "color": "#FFFFFFFF" },
+    "styles": [
+      {
+        "type": "Paragraph",
+        "name": "Normal",
+        "next": "Normal",
+        "characterFormat": { "fontColor": "empty" }
+      },
+      {
+        "type": "Character",
+        "name": "Default Paragraph Font",
+        "characterFormat": { "fontColor": "empty" }
+      },
+      {
+        "type": "Paragraph",
+        "name": "Header",
+        "basedOn": "Normal",
+        "next": "Header",
+        "link": "Header Char",
+        "characterFormat": { "fontColor": "empty" },
+        "paragraphFormat": {
+          "afterSpacing": 0.0,
+          "lineSpacing": 1.0,
+          "lineSpacingType": "Multiple",
+          "tabs": [
+            {
+              "tabJustification": "Center",
+              "position": 225.64999389648438,
+              "tabLeader": "None",
+              "deletePosition": 0.0
+            },
+            {
+              "tabJustification": "Right",
+              "position": 451.29998779296875,
+              "tabLeader": "None",
+              "deletePosition": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "type": "Character",
+        "name": "Header Char",
+        "basedOn": "Default Paragraph Font",
+        "characterFormat": { "fontColor": "empty" }
+      },
+      {
+        "type": "Paragraph",
+        "name": "Footer",
+        "basedOn": "Normal",
+        "next": "Footer",
+        "link": "Footer Char",
+        "characterFormat": { "fontColor": "empty" },
+        "paragraphFormat": {
+          "afterSpacing": 0.0,
+          "lineSpacing": 1.0,
+          "lineSpacingType": "Multiple",
+          "tabs": [
+            {
+              "tabJustification": "Center",
+              "position": 225.64999389648438,
+              "tabLeader": "None",
+              "deletePosition": 0.0
+            },
+            {
+              "tabJustification": "Right",
+              "position": 451.29998779296875,
+              "tabLeader": "None",
+              "deletePosition": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "type": "Character",
+        "name": "Footer Char",
+        "basedOn": "Default Paragraph Font",
+        "characterFormat": { "fontColor": "empty" }
+      }
+    ],
+    "defaultTabWidth": 35.400001525878906,
+    "formatting": false,
+    "trackChanges": false,
+    "protectionType": "NoProtection",
+    "enforcement": false,
+    "dontUseHTMLParagraphAutoSpacing": false,
+    "alignTablesRowByRow": false
+  };
+
+describe('Add support to apply restart page number and pageStartingNumber for different sections', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
+        document.body.innerHTML = '';
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, EditorHistory, Selection);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.open(JSON.stringify(sectionFormatJson));
+        documentHelper = editor.documentHelper;
+    });
+    afterEach((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        documentHelper = undefined;
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+
+    it('PageStartingNumber validation', () => {
+        // Before apply restart page number
+        expect(editor.documentHelper.pages[1].currentPageNum).toBe(1);
+        editor.selection.goToPage(2);
+        editor.selection.goToFooter();
+        editor.selection.sectionFormat.pageStartingNumber = 2;
+        // After apply restart page number
+        expect(editor.documentHelper.pages[1].currentPageNum).toBe(2);
+    });
+});

@@ -13,7 +13,8 @@ import {
     EditRangeEndElementBox, ChartElementBox, ChartCategoryAxis, ChartLegend, ChartLayout, ChartTitleArea, ChartDataFormat,
     ChartDataTable, ChartArea, ChartCategory, ChartData, ChartSeries, ChartDataLabels, ChartTrendLines,
     ChartSeriesFormat, ElementBox, CommentCharacterElementBox, CommentElementBox, FormField,
-    TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox, LineFormat, TextFrame
+    TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox, LineFormat, TextFrame, ContentControlProperties,
+    ContentControlListItems, ContentControl, IWidget, CheckBoxState, XmlMapping, CustomXmlPart
 } from './page';
 import { HelperMethods } from '../editor/editor-helper';
 import { Dictionary } from '../../base/dictionary';
@@ -108,10 +109,21 @@ export class SfdtReader {
         if (!isNullOrUndefined(jsonObject.sections)) {
             this.parseSections(jsonObject.sections, sections);
         }
+        if (!isNullOrUndefined(jsonObject.customXml)) {
+            this.parseCustomXml(jsonObject);
+        }
         if (!isNullOrUndefined(jsonObject.formFieldShading)) {
             this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading = jsonObject.formFieldShading;
         }
         return sections;
+    }
+    private parseCustomXml(data: any): void {
+        for (let i: number = 0; i < data.customXml.length; i++) {
+            let xmlData: any = data.customXml[i];
+            if (!this.revisionCollection.containsKey(xmlData.itemID)) {
+                this.documentHelper.customXmlData.add(xmlData.itemID, xmlData.xml);
+            }
+        }
     }
     private parseDocumentProtection(data: any): void {
         if (!isNullOrUndefined(data.formatting)) {
@@ -489,7 +501,8 @@ export class SfdtReader {
             }
         }
     }
-    public parseBody(data: any, blocks: BlockWidget[], container?: Widget, isSectionBreak?: boolean): void {
+    // tslint:disable-next-line:max-line-length
+    public parseBody(data: any, blocks: BlockWidget[], container?: Widget, isSectionBreak?: boolean, contentControlProperties?: ContentControlProperties): void {
         if (!isNullOrUndefined(data)) {
             for (let i: number = 0; i < data.length; i++) {
                 let block: any = data[i];
@@ -517,10 +530,47 @@ export class SfdtReader {
                     } else if (isSectionBreak && data.length === 1) {
                         blocks.push(paragraph);
                     }
-                    paragraph.index = i;
+                    paragraph.index = blocks.length - 1;
                     paragraph.containerWidget = container;
                 } else if (block.hasOwnProperty('rows')) {
-                    this.parseTable(block, blocks, i, container);
+                    this.parseTable(block, blocks, blocks.length, container);
+                } else if (block.hasOwnProperty('contentControlProperties')) {
+                    let blockStartContentControl: ContentControl = new ContentControl('Block');
+                    let blockEndContentControl: ContentControl = new ContentControl('Block');
+                    this.parseContentControlProperties(block.contentControlProperties, blockStartContentControl.contentControlProperties);
+                    blockEndContentControl.contentControlProperties = blockStartContentControl.contentControlProperties;
+                    blockStartContentControl.type = 0;
+                    blockEndContentControl.type = 1;
+
+                    this.parseBody(block.blocks, blocks, container, isSectionBreak, blockStartContentControl.contentControlProperties);
+                    for (let j: number = 0; j < 2; j++) {
+                        let para: IWidget = j === 0 ? blocks[blocks.length - block.blocks.length] : blocks[blocks.length - 1];
+                        let blockWidget: BlockWidget;
+                        if (para instanceof ParagraphWidget) {
+                            blockWidget = para as BlockWidget;
+                        } else if (para instanceof TableWidget) {
+                            if (j === 0) {
+                                blockWidget = ((para.firstChild as TableRowWidget).firstChild as TableCellWidget).firstChild as BlockWidget;
+                            } else {
+                                let cell: TableCellWidget = (para.lastChild as TableRowWidget).lastChild as TableCellWidget;
+                                blockWidget = cell.lastChild as BlockWidget;
+                            }
+                        }
+                        if (blockWidget.childWidgets.length === 0) {
+                            let lineWidget: LineWidget = new LineWidget(blockWidget as ParagraphWidget);
+                            blockWidget.childWidgets.push(lineWidget);
+                        }
+                        if (j === 0) {
+                            (blockWidget.firstChild as LineWidget).children.splice(0, 0, blockStartContentControl);
+                            blockStartContentControl.line = blockWidget.firstChild as LineWidget;
+                        } else {
+                            (blockWidget.lastChild as LineWidget).children.push(blockEndContentControl);
+                            blockEndContentControl.line = blockWidget.lastChild as LineWidget;
+                        }
+                    }
+                }
+                if (!isNullOrUndefined(contentControlProperties)) {
+                    (blocks[blocks.length - 1] as BlockWidget).contentControlProperties = contentControlProperties;
                 }
             }
         }
@@ -538,6 +588,10 @@ export class SfdtReader {
             let row: TableRowWidget = new TableRowWidget();
             row.rowFormat = new WRowFormat(row);
             let tableRow: any = block.rows[i];
+            if (!isNullOrUndefined(tableRow.contentControlProperties)) {
+                row.contentControlProperties = new ContentControlProperties('Row');
+                this.parseContentControlProperties(tableRow.contentControlProperties, row.contentControlProperties);
+            }
             if (tableRow.hasOwnProperty('rowFormat')) {
                 this.parseRowFormat(tableRow.rowFormat, row.rowFormat);
                 this.parseRowGridValues(tableRow, row.rowFormat);
@@ -546,6 +600,10 @@ export class SfdtReader {
                 for (let j: number = 0; j < block.rows[i].cells.length; j++) {
                     let cell: TableCellWidget = new TableCellWidget();
                     cell.cellFormat = new WCellFormat(cell);
+                    if (!isNullOrUndefined(block.rows[i].cells[j].contentControlProperties)) {
+                        cell.contentControlProperties = new ContentControlProperties('Cell');
+                        this.parseContentControlProperties(block.rows[i].cells[j].contentControlProperties, cell.contentControlProperties);
+                    }
                     row.childWidgets.push(cell);
                     cell.containerWidget = row;
                     cell.index = j;
@@ -556,6 +614,46 @@ export class SfdtReader {
                     }
                     this.isPageBreakInsideTable = true;
                     this.parseTextBody(block.rows[i].cells[j].blocks, cell, false);
+                    if (!isNullOrUndefined(cell.contentControlProperties)) {
+                        let cellStartContentControl: ContentControl = new ContentControl('Cell');
+                        let cellEndContentControl: ContentControl = new ContentControl('Cell');
+                        cellStartContentControl.contentControlProperties = cell.contentControlProperties;
+                        cellEndContentControl.contentControlProperties = cell.contentControlProperties;
+                        cellStartContentControl.type = 0;
+                        cellEndContentControl.type = 1;
+
+                        if ((cell.firstChild as ParagraphWidget).childWidgets.length === 0) {
+                            let lineWidget: LineWidget = new LineWidget(cell.firstChild as ParagraphWidget);
+                            (cell.firstChild as ParagraphWidget).childWidgets.push(lineWidget);
+                        }
+                        cellStartContentControl.line = (cell.firstChild as ParagraphWidget).firstChild as LineWidget;
+                        ((cell.firstChild as ParagraphWidget).firstChild as LineWidget).children.splice(0, 0, cellStartContentControl);
+                        cellEndContentControl.line = (cell.lastChild as ParagraphWidget).lastChild as LineWidget;
+                        ((cell.lastChild as ParagraphWidget).lastChild as LineWidget).children.push(cellEndContentControl);
+                    }
+                    if (!isNullOrUndefined(row.contentControlProperties)) {
+                        if (row.firstChild === cell) {
+                            let rowStartContentControl: ContentControl = new ContentControl('Row');
+                            rowStartContentControl.contentControlProperties = row.contentControlProperties;
+                            rowStartContentControl.type = 0;
+                            if ((cell.firstChild as ParagraphWidget).childWidgets.length === 0) {
+                                let lineWidget: LineWidget = new LineWidget(cell.firstChild as ParagraphWidget);
+                                (cell.firstChild as ParagraphWidget).childWidgets.push(lineWidget);
+                            }
+                            rowStartContentControl.line = (cell.firstChild as ParagraphWidget).firstChild as LineWidget;
+                            ((cell.firstChild as ParagraphWidget).firstChild as LineWidget).children.splice(0, 0, rowStartContentControl);
+                        } else if (row.lastChild === cell) {
+                            let rowEndContentControl: ContentControl = new ContentControl('Row');
+                            rowEndContentControl.contentControlProperties = row.contentControlProperties;
+                            rowEndContentControl.type = 1;
+                            if ((cell.lastChild as ParagraphWidget).childWidgets.length === 0) {
+                                let lineWidget: LineWidget = new LineWidget(cell.lastChild as ParagraphWidget);
+                                (cell.lastChild as ParagraphWidget).childWidgets.push(lineWidget);
+                            }
+                            rowEndContentControl.line = (cell.lastChild as ParagraphWidget).lastChild as LineWidget;
+                            ((cell.lastChild as ParagraphWidget).lastChild as LineWidget).children.push(rowEndContentControl);
+                        }
+                    }
                     this.isPageBreakInsideTable = false;
                 }
             }
@@ -586,10 +684,102 @@ export class SfdtReader {
             rowFormat.gridAfterWidthType = data.gridAfterWidthType;
         }
     }
+    private parseContentControlProperties(wContentControlProperties: any, contentControlProperties: ContentControlProperties): void {
+        if (!isNullOrUndefined(wContentControlProperties.lockContentControl)) {
+            contentControlProperties.lockContentControl = wContentControlProperties.lockContentControl;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.lockContents)) {
+            contentControlProperties.lockContents = wContentControlProperties.lockContents;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.tag)) {
+            contentControlProperties.tag = wContentControlProperties.tag;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.color)) {
+            contentControlProperties.color = wContentControlProperties.color;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.title)) {
+            contentControlProperties.title = wContentControlProperties.title;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.appearance)) {
+            contentControlProperties.appearance = wContentControlProperties.appearance;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.type)) {
+            contentControlProperties.type = wContentControlProperties.type;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.hasPlaceHolderText)) {
+            contentControlProperties.hasPlaceHolderText = wContentControlProperties.hasPlaceHolderText;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.multiline)) {
+            contentControlProperties.multiline = wContentControlProperties.multiline;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.isTemporary)) {
+            contentControlProperties.isTemporary = wContentControlProperties.isTemporary;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.characterFormat)) {
+            this.parseCharacterFormat(wContentControlProperties.characterFormat, contentControlProperties.characterFormat);
+        }
+        if (contentControlProperties.type === 'CheckBox') {
+            if (!isNullOrUndefined(wContentControlProperties.isChecked)) {
+                contentControlProperties.isChecked = wContentControlProperties.isChecked;
+            }
+            if (!isNullOrUndefined(wContentControlProperties.uncheckedState)) {
+                contentControlProperties.uncheckedState = new CheckBoxState();
+                contentControlProperties.uncheckedState.font = wContentControlProperties.uncheckedState.font;
+                contentControlProperties.uncheckedState.value = wContentControlProperties.uncheckedState.value;
+            }
+            if (!isNullOrUndefined(wContentControlProperties.checkedState)) {
+                contentControlProperties.checkedState = new CheckBoxState();
+                contentControlProperties.checkedState.font = wContentControlProperties.checkedState.font;
+                contentControlProperties.checkedState.value = wContentControlProperties.checkedState.value;
+            }
+        } else if (contentControlProperties.type === 'Date') {
+            if (!isNullOrUndefined(wContentControlProperties.dateCalendarType)) {
+                contentControlProperties.dateCalendarType = wContentControlProperties.dateCalendarType;
+            }
+            if (!isNullOrUndefined(wContentControlProperties.dateStorageFormat)) {
+                contentControlProperties.dateStorageFormat = wContentControlProperties.dateStorageFormat;
+            }
+            if (!isNullOrUndefined(wContentControlProperties.dateDisplayLocale)) {
+                contentControlProperties.dateDisplayLocale = wContentControlProperties.dateDisplayLocale;
+            }
+            if (!isNullOrUndefined(wContentControlProperties.dateDisplayFormat)) {
+                contentControlProperties.dateDisplayFormat = wContentControlProperties.dateDisplayFormat;
+            }
+        } else if (contentControlProperties.type === 'ComboBox' || contentControlProperties.type === 'DropDownList') {
+            if (!isNullOrUndefined(wContentControlProperties.contentControlListItems)) {
+                for (let i: number = 0; i < wContentControlProperties.contentControlListItems.length; i++) {
+                    let contentControlListItem: ContentControlListItems = new ContentControlListItems();
+                    contentControlListItem.displayText = wContentControlProperties.contentControlListItems[i].displayText;
+                    contentControlListItem.value = wContentControlProperties.contentControlListItems[i].value;
+                    contentControlProperties.contentControlListItems.push(contentControlListItem);
+                }
+            }
+        }
+        if (!isNullOrUndefined(wContentControlProperties.xmlMapping)) {
+            contentControlProperties.xmlMapping = new XmlMapping();
+            contentControlProperties.xmlMapping.isMapped = wContentControlProperties.xmlMapping.isMapped;
+            contentControlProperties.xmlMapping.isWordMl = wContentControlProperties.xmlMapping.isWordMl;
+            if (!isNullOrUndefined(wContentControlProperties.xmlMapping.prefixMapping)) {
+                contentControlProperties.xmlMapping.prefixMapping = wContentControlProperties.xmlMapping.prefixMapping;
+            }
+            contentControlProperties.xmlMapping.xPath = wContentControlProperties.xmlMapping.xPath;
+            contentControlProperties.xmlMapping.storeItemId = wContentControlProperties.xmlMapping.storeItemId;
+            if (!isNullOrUndefined(wContentControlProperties.xmlMapping.customXmlPart)) {
+                contentControlProperties.xmlMapping.customXmlPart = new CustomXmlPart();
+                contentControlProperties.xmlMapping.customXmlPart.id = wContentControlProperties.xmlMapping.customXmlPart.id;
+                contentControlProperties.xmlMapping.customXmlPart.xml = wContentControlProperties.xmlMapping.customXmlPart.xml;
+            }
+        }
+    }
 
     // tslint:disable:max-func-body-length
-    private parseParagraph(data: any, paragraph: ParagraphWidget, writeInlineFormat?: boolean): boolean {
-        let lineWidget: LineWidget = new LineWidget(paragraph);
+    private parseParagraph(data: any, paragraph: ParagraphWidget, writeInlineFormat?: boolean, lineWidget?: LineWidget): boolean {
+        let isContentControl: boolean = false;
+        if (isNullOrUndefined(lineWidget)) {
+            lineWidget = new LineWidget(paragraph);
+        } else {
+            isContentControl = true;
+        }
         let hasValidElmts: boolean = false;
         let revision: Revision;
         let trackChange: boolean = this.viewer.owner.enableTrackChanges;
@@ -906,10 +1096,31 @@ export class SfdtReader {
                 shape.line = lineWidget;
                 lineWidget.children.push(shape);
                 paragraph.floatingElements.push(shape);
+            } else if (inline.hasOwnProperty('contentControlProperties')) {
+                let inlineStartContentControl: ContentControl = new ContentControl('Inline');
+                let inlineEndContentControl: ContentControl = new ContentControl('Inline');
+                this.parseContentControlProperties(inline.contentControlProperties, inlineStartContentControl.contentControlProperties);
+                inlineEndContentControl.contentControlProperties = inlineStartContentControl.contentControlProperties;
+                inlineStartContentControl.line = lineWidget;
+                inlineEndContentControl.line = lineWidget;
+                inlineStartContentControl.type = 0;
+                inlineEndContentControl.type = 1;
+
+                lineWidget.children.push(inlineStartContentControl);
+                this.parseParagraph(inline.inlines, paragraph, writeInlineFormat, lineWidget);
+                let element: ElementBox = lineWidget.children[lineWidget.children.length - 1];
+                while (!(element instanceof ContentControl)) {
+                    (element as ElementBox).contentControlProperties = inlineStartContentControl.contentControlProperties;
+                    element = (element as ElementBox).previousElement;
+                }
+                lineWidget.children.push(inlineEndContentControl);
+                hasValidElmts = true;
             }
         }
         this.isCutPerformed = false;
-        paragraph.childWidgets.push(lineWidget);
+        if (!isContentControl) {
+            paragraph.childWidgets.push(lineWidget);
+        }
         return hasValidElmts;
     }
     private applyCharacterStyle(inline: any, elementbox: ElementBox): void {

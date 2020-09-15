@@ -115,7 +115,7 @@ export class Freeze {
         }
     }
 
-    private setFrozenHeight(height: number = getScrollBarWidth()): void {
+    public setFrozenHeight(height: number = getScrollBarWidth()): void {
         let movableContentHeight: number = this.parent.element.querySelector('.e-movablecontent').getBoundingClientRect().height;
         let movableContent: HTMLElement = this.parent.element.querySelector('.e-movablecontent') as HTMLElement;
         let frozenContent: HTMLElement = this.parent.element.querySelector('.e-frozencontent') as HTMLElement;
@@ -188,6 +188,7 @@ export class Freeze {
         if (this.parent.options.rowHeight != 0) { return;}
         if (this.parent.options.frozenColumns || this.parent.options.frozenRows) {
             this.clearWrapHeight();
+            this.refreshStackedHdrHgt();
             this.refreshFreeze({ case: 'refreshHeight' });
             if (this.parent.options.allowResizing) {
                 this.updateResizeHandler();

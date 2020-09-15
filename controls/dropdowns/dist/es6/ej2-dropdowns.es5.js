@@ -10723,6 +10723,10 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         this.hiddenElement.innerHTML = '';
         if (!isNullOrUndefined(this.value)) {
             for (var index = 0; !isNullOrUndefined(this.value[index]); index++) {
+                var listValue = this.findListElement(this.mainList, 'li', 'data-value', this.value[index]);
+                if (isNullOrUndefined(listValue) && !this.allowCustomValue) {
+                    this.value.splice(index, 1);
+                }
                 if (this.listData) {
                     temp = this.getTextByValue(this.value[index]);
                 }

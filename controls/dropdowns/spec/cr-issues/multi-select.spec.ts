@@ -797,7 +797,7 @@ describe('MultiSelect', () => {
         let element: HTMLInputElement;
         let data: { [key: string]: Object }[] = [
             { id: 'list1', text: 'JAVA', icon: 'icon' },
-            { id: 'list2 ', text: 'C#' },
+            { id: 'list2', text: 'C#' },
             { id: 'list3', text: 'C++' },
             { id: 'list4', text: '.NET', icon: 'icon' },
             { id: 'list5', text: 'Oracle' }

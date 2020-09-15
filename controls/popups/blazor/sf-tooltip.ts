@@ -693,8 +693,9 @@ class SfTooltip {
     public beforeOpenCallBack(cancel: boolean): void {
         if (cancel) {
             this.isPopupHidden = true;
-            this.clear();
-            this.restoreElement(this.contentTargetValue);
+            if (this.contentTargetValue) {
+                this.popupHide(this.properties.animation.close, this.contentTargetValue);
+            }
         } else {
             let openAnimation: Object = {
                 name: this.contentAnimation.effect,

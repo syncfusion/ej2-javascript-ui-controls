@@ -876,7 +876,7 @@ export class TextSearch {
         let proxy: TextSearch = this;
         let jsonObject: object;
         // tslint:disable-next-line:max-line-length
-        jsonObject = { pageStartIndex: startIndex, pageEndIndex: endIndex, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, action: 'Search', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
+        jsonObject = { pageStartIndex: startIndex, pageEndIndex: endIndex, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, action: 'RenderPdfTexts', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
         if (this.pdfViewerBase.jsonDocumentId) {
             // tslint:disable-next-line
             (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;

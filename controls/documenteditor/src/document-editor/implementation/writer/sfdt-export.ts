@@ -7,10 +7,11 @@ import { WBorder, WBorders, WShading } from '../format/index';
 import { LayoutViewer } from '../index';
 import {
     IWidget, LineWidget, ParagraphWidget, BlockContainer, BodyWidget, TextElementBox, Page, ElementBox, FieldElementBox, TableWidget,
-    TableRowWidget, TableCellWidget, ImageElementBox, HeaderFooterWidget, HeaderFooters,
+    TableRowWidget, TableCellWidget, ImageElementBox, HeaderFooterWidget, HeaderFooters, ContentControl,
     ListTextElementBox, BookmarkElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
     ChartElementBox, ChartDataTable, ChartTitleArea, ChartDataFormat, ChartLayout, ChartArea, ChartLegend, ChartCategoryAxis,
-    CommentElementBox, CommentCharacterElementBox, TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox
+    CommentElementBox, CommentCharacterElementBox, TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox,
+    ContentControlProperties
 } from '../viewer/page';
 import { BlockWidget } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -19,8 +20,8 @@ import { StreamWriter } from '@syncfusion/ej2-file-utils';
 import { TextPosition } from '../selection';
 import { DocumentHelper } from '../viewer';
 import { WLevelOverride } from '../list';
-import {DocumentEditor} from '../../document-editor';
-import {Revision} from '../track-changes/track-changes';
+import { DocumentEditor } from '../../document-editor';
+import { Revision } from '../track-changes/track-changes';
 /**
  * Exports the document to Sfdt format.
  */
@@ -34,7 +35,17 @@ export class SfdtExport {
     private lists: number[] = undefined;
     private document: any = undefined;
     private writeInlineStyles: boolean = undefined;
+    private nextBlock: any;
+    private blockContent: boolean = false;
+    private startContent: boolean = false;
+    private multipleLineContent: boolean = false;
+    private nestedContent: boolean = false;
+    private contentType: string;
     private editRangeId: number = -1;
+    private nestedBlockContent: boolean = false;
+    private nestedBlockEnabled: boolean = false;
+    private blocks: any = [];
+    private isBlockClosed: boolean = true;
     /**
      * @private
      */
@@ -54,7 +65,7 @@ export class SfdtExport {
     get viewer(): LayoutViewer {
         return this.documentHelper.owner.viewer;
     }
-    get owner(): DocumentEditor{
+    get owner(): DocumentEditor {
         return this.documentHelper.owner;
     }
     private getModuleName(): string {
@@ -194,6 +205,7 @@ export class SfdtExport {
         this.writeLists(this.documentHelper);
         this.writeComments(this.documentHelper);
         this.writeRevisions(this.documentHelper);
+        this.writeCustomXml(this.documentHelper);
         let doc: Document = this.document;
         this.clear();
         return doc;
@@ -296,15 +308,181 @@ export class SfdtExport {
             return undefined;
         }
         if (widget instanceof ParagraphWidget) {
-            let paragraph: any = this.createParagraph(widget);
-            blocks.push(paragraph);
-            return this.writeParagraph(widget, paragraph, blocks);
+            if (widget.hasOwnProperty('contentControlProperties')) {
+                let block: any = this.blockContentControl(widget);
+                if (!isNullOrUndefined(block) && this.isBlockClosed) {
+                    blocks.push(block);
+                    this.blocks = [];
+                }
+                return this.nextBlock;
+            } else {
+                let paragraph: any = this.createParagraph(widget);
+                blocks.push(paragraph);
+                return this.writeParagraph(widget, paragraph, blocks);
+            }
         } else {
             let tableWidget: TableWidget = widget as TableWidget;
+            if (tableWidget.hasOwnProperty('contentControlProperties')) {
+                let block: any = this.tableContentControl(tableWidget);
+                if (this.isBlockClosed) {
+                    blocks.push(block);
+                }
+                return this.nextBlock;
+            }
             let table: any = this.createTable(tableWidget);
             blocks.push(table);
             return this.writeTable(tableWidget, table, 0, blocks);
         }
+    }
+    private writeParagraphs(widget: ParagraphWidget): any {
+        let blocks: any = this.blocks;
+        let child: LineWidget = widget.childWidgets[0] as LineWidget;
+        let firstChild: ElementBox  = child.children[0];
+        let secondChild: ElementBox = child.children[1];
+        if (firstChild instanceof ListTextElementBox || secondChild instanceof ListTextElementBox) {
+            firstChild = child.children[2];
+            secondChild = child.children[3];
+        }
+        if (this.nestedBlockEnabled) {
+            blocks = [];
+        }
+        // tslint:disable-next-line:max-line-length
+        if ((firstChild instanceof ContentControl && secondChild instanceof ContentControl && !this.nestedBlockContent) || (this.blockContent && firstChild instanceof ContentControl && !this.nestedBlockContent)) {
+            let nestedBlocks: boolean = false;
+            if (secondChild instanceof ContentControl) {
+                if ((secondChild as ContentControl).contentControlWidgetType === 'Block') {
+                nestedBlocks = true;
+                }
+            }
+            // tslint:disable-next-line:max-line-length
+            if ((nestedBlocks || (this.blockContent && firstChild instanceof ContentControl && !this.nestedBlockContent && (firstChild as ContentControl).type === 0 && (firstChild as ContentControl).contentControlWidgetType === 'Block'))) {
+                this.nestedBlockContent = true;
+                this.nestedBlockEnabled = true;
+                let block: any = this.blockContentControl(widget);
+                if (!isNullOrUndefined(block)) {
+                    this.blocks.push(block);
+                }
+            } else {
+                let paragraph: any = this.createParagraph(widget);
+                blocks.push(paragraph);
+                this.nextBlock = this.writeParagraph(widget, paragraph, blocks);
+            }
+        } else {
+            let paragraph: any = this.createParagraph(widget);
+            blocks.push(paragraph);
+            this.nextBlock = this.writeParagraph(widget, paragraph, blocks);
+        }
+        if (!this.blockContent) {
+            return blocks;
+        } else if (!this.nestedBlockContent && this.nestedBlockEnabled) {
+            this.nestedBlockEnabled = false;
+            return blocks;
+        }
+    }
+    private contentControlProperty(contentControlPropertie: ContentControlProperties): any {
+        let contentControlProperties: any = {};
+        let contentControlListItems: any = [];
+        contentControlProperties.lockContentControl = contentControlPropertie.lockContentControl;
+        contentControlProperties.lockContents = contentControlPropertie.lockContents;
+        contentControlProperties.tag = contentControlPropertie.tag;
+        contentControlProperties.color = contentControlPropertie.color;
+        contentControlProperties.title = contentControlPropertie.title;
+        if (!isNullOrUndefined(contentControlPropertie.appearance)) {
+            contentControlProperties.appearance = contentControlPropertie.appearance;
+        }
+        contentControlProperties.type = contentControlPropertie.type;
+        contentControlProperties.hasPlaceHolderText = contentControlPropertie.hasPlaceHolderText;
+        contentControlProperties.multiline = contentControlPropertie.multiline;
+        contentControlProperties.isTemporary = contentControlPropertie.isTemporary;
+        if (!isNullOrUndefined(contentControlPropertie.isChecked)) {
+            contentControlProperties.isChecked = contentControlPropertie.isChecked;
+        }
+        if (!isNullOrUndefined(contentControlPropertie.uncheckedState)) {
+            contentControlProperties.uncheckedState = this.tounCheckedState(contentControlPropertie.uncheckedState);
+        }
+        if (!isNullOrUndefined(contentControlPropertie.checkedState)) {
+            contentControlProperties.checkedState = this.toCheckedState(contentControlPropertie.checkedState);
+        }
+        if (!isNullOrUndefined(contentControlPropertie.dateCalendarType)) {
+            contentControlProperties.dateCalendarType = contentControlPropertie.dateCalendarType;
+        }
+        if (!isNullOrUndefined(contentControlPropertie.dateStorageFormat)) {
+            contentControlProperties.dateStorageFormat = contentControlPropertie.dateStorageFormat;
+        }
+        if (!isNullOrUndefined(contentControlPropertie.dateDisplayLocale)) {
+            contentControlProperties.dateDisplayLocale = contentControlPropertie.dateDisplayLocale;
+        }
+        if (!isNullOrUndefined(contentControlPropertie.dateDisplayFormat)) {
+            contentControlProperties.dateDisplayFormat = contentControlPropertie.dateDisplayFormat;
+        }
+        if (!isNullOrUndefined(contentControlPropertie.xmlMapping)) {
+            contentControlProperties.xmlMapping = contentControlPropertie.xmlMapping;
+        }
+        if (!isNullOrUndefined(contentControlPropertie.characterFormat)) {
+            contentControlProperties.characterFormat = this.writeCharacterFormat(contentControlPropertie.characterFormat);
+        }
+        contentControlProperties.contentControlListItems = contentControlPropertie.contentControlListItems;
+        return contentControlProperties;
+    }
+    private tounCheckedState(state: any): any {
+        let unCheckedState: any = {};
+        unCheckedState.font = state.font;
+        unCheckedState.value = state.value;
+        return unCheckedState;
+    }
+    private toCheckedState(state: any): any {
+        let checkedState: any = {};
+        checkedState.font = state.font;
+        checkedState.value = state.value;
+        return checkedState;
+    }
+    private blockContentControl(widget: ParagraphWidget): any {
+        let block: any = {};
+        block.blocks = this.writeParagraphs(widget);
+        if (!isNullOrUndefined(block.blocks)) {
+            let child: LineWidget = widget.childWidgets[0] as LineWidget;
+            let firstChild: ElementBox  = child.children[0];
+            let secondChild: ElementBox = child.children[1];
+            if (firstChild instanceof ListTextElementBox || secondChild instanceof ListTextElementBox) {
+                firstChild = child.children[2];
+                secondChild = child.children[3];
+            }
+            // tslint:disable-next-line:max-line-length
+            if ((firstChild instanceof ContentControl && secondChild instanceof ContentControl && !this.nestedBlockContent) || (this.blockContent && firstChild instanceof ContentControl && !this.nestedBlockContent)) {
+                if (!(secondChild instanceof ContentControl)) {
+                    block.contentControlProperties = this.contentControlProperty(firstChild.contentControlProperties);
+                    return block;
+                } else if ((secondChild as ContentControl).contentControlWidgetType === 'Block') {
+                    block.contentControlProperties = this.contentControlProperty(secondChild.contentControlProperties);
+                } else {
+                    block.contentControlProperties = this.contentControlProperty(widget.contentControlProperties);
+                }
+            } else {
+                block.contentControlProperties = this.contentControlProperty(widget.contentControlProperties);
+            }
+            return block;
+        }
+    }
+    private tableContentControl(tableWidget: TableWidget): any {
+        let block: any = {};
+        block.blocks = this.tableContentControls(tableWidget);
+        if (!isNullOrUndefined(this.nextBlock)) {
+            if (tableWidget.contentControlProperties === this.nextBlock.contentControlProperties) {
+                return this.blocks = block.blocks;
+            }
+        }
+        block.contentControlProperties = this.contentControlProperty(tableWidget.contentControlProperties);
+        return block;
+    }
+    private tableContentControls(tableWidget: TableWidget): any {
+        let blocks: any = [];
+        if (!this.isBlockClosed) {
+            blocks = this.blocks;
+        }
+        let table: any = this.createTable(tableWidget);
+        blocks.push(table);
+        this.nextBlock = this.writeTable(tableWidget, table, 0, blocks);
+        return blocks;
     }
     private writeParagraph(paragraphWidget: ParagraphWidget, paragraph: any, blocks: any, lineIndex?: number, start?: number): BlockWidget {
         if (isNullOrUndefined(lineIndex)) {
@@ -327,6 +505,7 @@ export class SfdtExport {
         return (next instanceof BlockWidget && paragraphWidget.containerWidget.index === next.containerWidget.index) ? next : undefined;
     }
     private writeInlines(paragraph: ParagraphWidget, line: LineWidget, inlines: any): void {
+        let contentInline: any = [];
         let lineWidget: LineWidget = line.clone();
         let isformField: boolean = false;
         let bidi: boolean = paragraph.paragraphFormat.bidi;
@@ -335,6 +514,28 @@ export class SfdtExport {
         }
         for (let i: number = 0; i < lineWidget.children.length; i++) {
             let element: ElementBox = lineWidget.children[i];
+            if (element instanceof ContentControl) {
+                if (element.contentControlWidgetType === 'Block') {
+                    this.isBlockClosed = false;
+                    if (this.blockContent && element.type === 0) {
+                        this.nestedBlockContent = true;
+                        continue;
+                    } else if (this.nestedBlockContent && element.type === 1) {
+                        this.nestedBlockContent = false;
+                        continue;
+                    }
+                    this.blockContent = (element.type === 0) ? true : false;
+                    if (lineWidget.children[i - 1] instanceof ContentControl) {
+                        if ((lineWidget.children[i - 1] as ContentControl).contentControlWidgetType === 'Block') {
+                            this.blockContent = true;
+                        }
+                    }
+                    if (!this.blockContent) {
+                        this.isBlockClosed = true;
+                    }
+                    continue;
+                }
+            }
             if (this.isExport && this.checkboxOrDropdown) {
                 if (isformField && element instanceof TextElementBox) {
                     continue;
@@ -346,9 +547,52 @@ export class SfdtExport {
             if (element instanceof ListTextElementBox) {
                 continue;
             }
-            let inline: any = this.writeInline(element);
-            if (!isNullOrUndefined(inline)) {
-                inlines.push(inline);
+            if (element instanceof ContentControl) {
+                if (this.startContent && element.type === 0) {
+                    this.nestedContent = true;
+                    continue;
+                } else if (this.startContent && this.nestedContent) {
+                    let inline: any = {};
+                    inline.inlines = contentInline;
+                    if (contentInline.length > 0) {
+                        let nestedContent: any = this.nestedContentProperty(lineWidget.children[i + 1], inline);
+                        inlines.push(nestedContent);
+                        contentInline = [];
+                    }
+                    if (this.multipleLineContent) {
+                       inline = inlines[inlines.length - 1];
+                       this.nestedContentProperty(lineWidget.children[i + 1], inline);
+                       this.multipleLineContent = false;
+                    }
+                    this.nestedContent = false;
+                    continue;
+                }
+                this.contentType = element.contentControlWidgetType;
+                this.startContent = (element.type === 0) ? true : false;
+                continue;
+            }
+            if (this.startContent && ((this.contentType !== 'Row') && (this.contentType !== 'Block') && (this.contentType !== 'Cell'))) {
+                if (this.multipleLineContent) {
+                    this.inlineContentControl(contentInline, element, lineWidget.children[i + 1], inlines);
+                    contentInline = [];
+                } else {
+                    let contentinline: any = this.inlineContentControl(contentInline, element, lineWidget.children[i + 1]);
+                    if (!isNullOrUndefined(contentinline)) {
+                        if (this.nestedContent && this.multipleLineContent) {
+                            let inline: any = {};
+                            inline.inlines = contentInline;
+                            inlines.push(inline);
+                        } else {
+                            inlines.push(contentinline);
+                            contentInline = [];
+                        }
+                    }
+                }
+            } else {
+                let inline: any = this.writeInline(element);
+                if (!isNullOrUndefined(inline)) {
+                    inlines.push(inline);
+                }
             }
             if (this.isExport && element instanceof FieldElementBox && element.fieldType === 1) {
                 isformField = false;
@@ -356,11 +600,78 @@ export class SfdtExport {
             }
         }
     }
+    private inlineContentControl(contentInline: any, element: ElementBox, nextElement: any, inlines?: any): any {
+        let inline: any = {};
+        let nestedContentInline: any = [];
+        if (!isNullOrUndefined(inlines)) {
+            if (this.nestedContent) {
+                inlines = inlines[inlines.length - 1].inlines;
+                inline = this.inlineContentControls(element, inlines[inlines.length - 1].inlines);
+                let nestedContentinline: any = this.nestedContentProperty(nextElement, inlines[inlines.length - 1]);
+                if (!isNullOrUndefined(nestedContentinline)) {
+                    contentInline.push(inline);
+                    nestedContentInline = [];
+                }
+            } else {
+                this.inlineContentControls(element, inlines[inlines.length - 1].inlines);
+            }
+        } else {
+            if (this.nestedContent) {
+                inline.inlines = this.inlineContentControls(element, undefined, nestedContentInline);
+                let nestedContentinline: any = this.nestedContentProperty(nextElement, inline);
+                if (!isNullOrUndefined(nestedContentinline) || this.multipleLineContent) {
+                    contentInline.push(inline);
+                    nestedContentInline = [];
+                }
+            } else {
+                inline.inlines = this.inlineContentControls(element, contentInline);
+            }
+        }
+        if (!isNullOrUndefined(nextElement)) {
+            if (nextElement.type === 1 && !this.nestedContent) {
+                if (this.multipleLineContent) {
+                    // tslint:disable-next-line:max-line-length
+                    inlines[inlines.length - 1].contentControlProperties = this.contentControlProperty(nextElement.contentControlProperties);
+                    this.multipleLineContent = false;
+                    return;
+                } else {
+                    inline.contentControlProperties = this.contentControlProperty(nextElement.contentControlProperties);
+                }
+                return inline;
+            }
+        } else if (this.startContent) {
+            this.multipleLineContent = true;
+            return inline;
+        }
+    }
+    private nestedContentProperty(nextElement: any, inline: any, inlines?: any): any {
+        if (!isNullOrUndefined(nextElement)) {
+            if (nextElement.type === 1 ) {
+                inline.contentControlProperties = this.contentControlProperty(nextElement.contentControlProperties);
+                return inline;
+            } else if (this.startContent) {
+                this.multipleLineContent = true;
+                return inline;
+            }
+        } else if (this.startContent) {
+            this.multipleLineContent = true;
+            return inline;
+        }
+    }
+    private inlineContentControls(element: ElementBox, contentInline: any, nestedContentInline?: any): any {
+        let inline: any = this.writeInline(element);
+        if (!isNullOrUndefined(nestedContentInline)) {
+            nestedContentInline.push(inline);
+            return nestedContentInline;
+        }
+        contentInline.push(inline);
+        return contentInline;
+    }
     /* tslint:disable:max-func-body-length */
     private writeInline(element: ElementBox): any {
         let inline: any = {};
         if (element.removedIds.length > 0) {
-            for (let i: number = 0 ; i < element.removedIds.length; i++) {
+            for (let i: number = 0; i < element.removedIds.length; i++) {
                 element.revisions[i] = this.documentHelper.revisionsInternal.get(element.removedIds[i]);
             }
         }
@@ -413,7 +724,7 @@ export class SfdtExport {
                 inline.top = element.verticalPosition;
                 inline.getimagewidth = element.widthScale;
                 inline.getimageheight = element.heightScale;
-                }
+            }
         } else if (element instanceof BookmarkElementBox) {
             inline.bookmarkType = element.bookmarkType;
             inline.name = element.name;
@@ -437,7 +748,7 @@ export class SfdtExport {
                         }
                     }
                 } else {
-                   inline.text = element.text;
+                    inline.text = element.text;
                 }
             } else {
                 inline.text = element.text;
@@ -467,9 +778,9 @@ export class SfdtExport {
         if (element.revisions.length > 0) {
             inline.revisionIds = [];
             for (let x: number = 0; x < element.revisions.length; x++) {
-            //revisionIdes[x] = element.revisions[x];
-            inline.revisionIds.push(element.revisions[x].revisionID);
-            //this.document.revisionIdes.push(inline.revisionIds)
+                //revisionIdes[x] = element.revisions[x];
+                inline.revisionIds.push(element.revisions[x].revisionID);
+                //this.document.revisionIdes.push(inline.revisionIds)
             }
         }
         /*if(element.removedIds.length > 0){
@@ -928,6 +1239,9 @@ export class SfdtExport {
         let row: any = {};
         row.cells = [];
         row.rowFormat = this.writeRowFormat(rowWidget.rowFormat);
+        if (rowWidget.hasOwnProperty('contentControlProperties')) {
+            row.contentControlProperties = this.contentControlProperty(rowWidget.contentControlProperties);
+        }
         return row;
     }
     private createCell(cellWidget: TableCellWidget): any {
@@ -935,6 +1249,9 @@ export class SfdtExport {
         cell.blocks = [];
         cell.cellFormat = this.writeCellFormat(cellWidget.cellFormat);
         cell.columnIndex = cellWidget.columnIndex;
+        if (cellWidget.hasOwnProperty('contentControlProperties')) {
+            cell.contentControlProperties = this.contentControlProperty(cellWidget.contentControlProperties);
+        }
         return cell;
     }
     private writeShading(wShading: WShading): any {
@@ -1077,6 +1394,17 @@ export class SfdtExport {
             this.document.comments.push(this.writeComment(documentHelper.comments[i]));
         }
 
+    }
+    public writeCustomXml(documentHelper: DocumentHelper): void {
+        this.document.customXml = [];
+        for (let i: number = 0; i < documentHelper.customXmlData.length; i++) {
+            let customXml: any = {};
+            let key: string = documentHelper.customXmlData.keys[i];
+            customXml.itemID = key;
+            let xmlValue: string = this.documentHelper.customXmlData.get(key);
+            customXml.xml = xmlValue;
+            this.document.customXml.push(customXml);
+        }
     }
     private writeComment(comments: CommentElementBox): any {
         let comment: any = {};

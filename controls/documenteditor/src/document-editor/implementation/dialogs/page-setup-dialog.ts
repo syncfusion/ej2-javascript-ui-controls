@@ -494,7 +494,7 @@ export class PageSetupDialog {
         let height: number = sectionFormat.pageHeight;
         /* tslint:disable-next-line:max-line-length */
         if (this.documentHelper.selection.sectionFormat.pageWidth > this.documentHelper.selection.sectionFormat.pageHeight || this.landscape.checked) {
-            this.isPortrait = false;
+            this.isPortrait = false; this.portrait.checked = false;
         } else {
             this.isPortrait = true;
         }

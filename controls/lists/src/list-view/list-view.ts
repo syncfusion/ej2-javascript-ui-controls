@@ -532,7 +532,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     break;
                 case 'headerTitle':
                     if (!this.curDSLevel.length) {
-                        this.header(this.headerTitle, false);
+                        this.header(this.headerTitle, false, 'header');
                     }
                     break;
                 case 'query':
@@ -546,7 +546,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     }
                     break;
                 case 'showHeader':
-                    this.header(this.headerTitle, false);
+                    this.header(this.headerTitle, false, 'header');
                     break;
                 case 'enableVirtualization':
                     if (!isNullOrUndefined(this.contentContainer)) {
@@ -640,7 +640,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     // Support Component Functions
-    private header(text?: string, showBack?: boolean): void {
+    private header(text?: string, showBack?: boolean, prop?: string): void {
 
         if (isBlazor() && this.isServerRendered) {
             let args: object = { HeaderText: text, BackButton: showBack };
@@ -665,7 +665,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 if (this.headerTemplate) {
                     let compiledString: Function = compile(this.headerTemplate);
                     let headerTemplateEle: HTMLElement = this.createElement('div', { className: classNames.headerTemplateText });
-                    append(compiledString({}, null, null, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
+                    append(compiledString({}, this, prop, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
                     append([headerTemplateEle], this.headerEle);
                     this.updateBlazorTemplates(false, true, true);
                 }
@@ -1020,7 +1020,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 this.setSelectLI(li, e);
             }
             closestElement = closest((e.target as HTMLElement), 'li') as HTMLElement;
-            if (closestElement !== undefined) {
+            if (!isNullOrUndefined(closestElement)) {
                 if (closestElement.classList.contains('e-has-child') &&
                     !(e.target as HTMLElement).parentElement.classList.contains('e-listview-checkbox')) {
                         closestElement.classList.add(classNames.disable);
@@ -1781,7 +1781,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             if (this.selectedItems) {
                 let fieldData: DataSource = <DataSource>
                     getFieldValues(<DataSource | string>this.selectedItems.data, this.listBaseOption.fields);
-                this.header(<string>(fieldData[this.listBaseOption.fields.text]), true);
+                this.header(<string>(fieldData[this.listBaseOption.fields.text]), true, 'header');
             }
             this.selectedLI = undefined;
         }
@@ -1916,7 +1916,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.enableHtmlSanitizer) {
             this.setProperties({ headerTitle: SanitizeHtmlHelper.sanitize(this.headerTitle) }, true);
         }
-        this.header((this.curDSLevel.length ? text : this.headerTitle), (this.curDSLevel.length ? true : false));
+        this.header((this.curDSLevel.length ? text : this.headerTitle), (this.curDSLevel.length ? true : false), 'header');
     }
 
     /**

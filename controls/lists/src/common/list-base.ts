@@ -547,7 +547,7 @@ export namespace ListBase {
      */
     export function renderContentTemplate(
         createElement: createElementParams, template: string, dataSource: { [key: string]: Object }[],
-        fields?: FieldsMapping, options?: ListBaseOptions): HTMLElement {
+        fields?: FieldsMapping, options?: ListBaseOptions, prop?: string): HTMLElement {
         cssClass = getModuleClass(defaultListBaseOptions.moduleName);
         let ulElement: HTMLElement = createElement('ul', { className: cssClass.ul, attrs: { role: 'presentation' } });
         let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
@@ -582,7 +582,11 @@ export namespace ListBase {
                 li.innerText = fieldData[curFields.text] as string;
             } else {
                 const currentID: string = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
-                append(compiledString(curItem, null, null, currentID, !!curOpt.isStringTemplate), li);
+                if (isHeader) {
+                  append(compiledString(curItem, options, 'groupTemplate', currentID, !!curOpt.isStringTemplate), li);
+                } else {
+                  append(compiledString(curItem, options, 'template', currentID, !!curOpt.isStringTemplate), li);
+                }
                 li.setAttribute('data-value', isNullOrUndefined(value) ? 'null' : value);
                 li.setAttribute('role', 'option');
             }
@@ -625,8 +629,8 @@ export namespace ListBase {
             append(
                 compiledString(
                     headerData,
-                    null,
-                    null,
+                    options,
+                    'groupTemplate',
                     curOpt.groupTemplateID,
                     !!curOpt.isStringTemplate),
                 header);
@@ -808,10 +812,10 @@ export namespace ListBase {
         }
         if (grpLI && options && options.groupTemplate) {
             let compiledString: Function = compile(options.groupTemplate);
-            append(compiledString(item, null, null, curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
+            append(compiledString(item, options, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
         } else if (!grpLI && options && options.template) {
             let compiledString: Function = compile(options.template);
-            append(compiledString(item, null, null, curOpt.templateID, !!curOpt.isStringTemplate), li);
+            append(compiledString(item, options, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
         } else {
             let innerDiv: HTMLElement = createElement('div', {
                 className: cssClass.textContent,

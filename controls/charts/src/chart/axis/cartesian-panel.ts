@@ -1026,7 +1026,8 @@ export class CartesianAxisLayoutPanel {
             for (let j: number = 0; j < axis.minorTicksPerInterval; j++) {
                 value = this.findLogNumeric(axis, logPosition, logInterval, value, labelIndex);
                 if (inside(value, range)) {
-                    position = Math.ceil(((value - range.min) / (range.max - range.min)) * rect.height) * -1;
+                    position = ((value - range.min) / (range.max - range.min));
+                    position = Math.ceil(((axis.isInversed ? (1 - position) : position)) * rect.height) * -1; // For inversed axis
                     coor = (Math.floor(position + rect.y + rect.height));
                     minorGird = minorGird.concat('M' + ' ' + (this.seriesClipRect.x) + ' ' + coor
                         + 'L ' + (this.seriesClipRect.x + this.seriesClipRect.width) + ' ' + coor + ' ');

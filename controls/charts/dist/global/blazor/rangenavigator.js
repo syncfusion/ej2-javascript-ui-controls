@@ -6028,6 +6028,7 @@ var PeriodSelector = /** @class */ (function () {
             }
         });
         var isStringTemplate = 'isStringTemplate';
+        var dateRangeId = controlId + 'customRange';
         this.toolbar[isStringTemplate] = true;
         this.toolbar.appendTo(selectorElement);
         this.triggerChange = true;
@@ -6040,20 +6041,26 @@ var PeriodSelector = /** @class */ (function () {
                 endDate: new Date(this.control.endValue),
                 created: function (args) {
                     if (selctorArgs.enableCustomFormat) {
-                        var datePickerElement = document.getElementsByClassName('e-date-range-wrapper')[0];
+                        var datePicker = document.getElementsByClassName('e-date-range-wrapper');
+                        var datePickerElement = void 0;
+                        for (var i = 0; i < datePicker.length; i++) {
+                            if (datePicker[i].children[0].id.indexOf(controlId) !== -1) {
+                                datePickerElement = datePicker[i];
+                            }
+                        }
                         datePickerElement.style.display = 'none';
                         datePickerElement.insertAdjacentElement('afterend', sf.base.createElement('div', {
-                            id: 'customRange',
+                            id: dateRangeId,
                             innerHTML: selctorArgs.content, className: 'e-btn e-dropdown-btn',
                             styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none '
                         }));
-                        getElement('customRange').insertAdjacentElement('afterbegin', (sf.base.createElement('span', {
-                            id: 'dateIcon', className: 'e-input-group-icon e-range-icon e-btn-icon e-icons',
+                        getElement(dateRangeId).insertAdjacentElement('afterbegin', (sf.base.createElement('span', {
+                            id: controlId + 'dateIcon', className: 'e-input-group-icon e-range-icon e-btn-icon e-icons',
                             styles: 'font-size: 16px; min-height: 0px; margin: -3px 0 0 0; outline: none; min-width: 30px'
                             // fix for date range icon alignment issue.
                         })));
-                        document.getElementById('customRange').onclick = function () {
-                            _this.datePicker.show(getElement('customRange'));
+                        document.getElementById(dateRangeId).onclick = function () {
+                            _this.datePicker.show(getElement(dateRangeId));
                         };
                     }
                 },

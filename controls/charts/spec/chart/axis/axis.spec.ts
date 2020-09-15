@@ -1496,6 +1496,83 @@ describe('Chart Control', () =>{
             chartObj.refresh();
         });
     });
+    describe('Checking minor grid lines with inversed vertical axis', () => {
+        let chartContainer: HTMLElement;
+        let chartObj: Chart;
+        chartContainer = createElement('div', { id: 'container' });
+        chartContainer.style.width = '500px';
+        chartContainer.style.height = '400px';
+        beforeAll(() => {
+            document.body.appendChild(chartContainer);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: "DateTime",
+                        labelFormat: "y",
+                        intervalType: "Years",
+                        edgeLabelPlacement: "Shift",
+                        majorGridLines: { width: 0 }
+                    },
+
+                    //Initializing Primary Y Axis
+                    primaryYAxis: {
+                        labelFormat: "{value}%",
+                        rangePadding: "None",
+                        majorGridLines: { dashArray: "5,5", width: 0.75, color: "#606060" },
+                        minorGridLines: { dashArray: "5,5", width: 0.75, color: "blue" },
+                        majorTickLines: { width: 0 },
+                        minorTickLines: { width: 0 },
+                        lineStyle: { width: 0 },
+                        minorTicksPerInterval: 2,
+                        isInversed: true
+                    },
+                    series: [
+                        {
+                            type: "Line",
+                            dataSource: [
+                                { x: new Date(2005, 0, 1), y: 21 },
+                                { x: new Date(2006, 0, 1), y: 24 },
+                                { x: new Date(2007, 0, 1), y: 36 },
+                                { x: new Date(2008, 0, 1), y: 38 },
+                                { x: new Date(2009, 0, 1), y: 54 },
+                                { x: new Date(2010, 0, 1), y: 57 },
+                                { x: new Date(2011, 0, 1), y: 70 }
+                            ],
+                            xName: "x",
+                            width: 2,
+                            marker: {
+                                visible: true,
+                                width: 10,
+                                height: 10
+                            },
+                            yName: "y",
+                            name: "Germany",
+                            animation: { enable: false }
+                        }
+                    ],
+                    title: "Inflation - Consumer Price",
+                    tooltip: {
+                        enable: false
+                    },
+                }, '#container');
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            chartContainer.remove();
+        });
+        it('checking first and last minor grid lines', (done: Function) => {
+            chartObj.loaded = () => {
+                let gridLineElement: Element = document.getElementById('container_MinorGridLine_1_0');
+                let path: string = gridLineElement.getAttribute("d");
+                expect(path === "M 43 64L 490 64 M 43 83L 490 83 " || path === "M 42 61L 490 61 M 42 81L 490 81 ").toBe(true);
+                gridLineElement = document.getElementById('container_MinorGridLine_1_4');
+                path = gridLineElement.getAttribute("d");
+                expect(path === "M 43 296L 490 296 M 43 315L 490 315 " || path === "M 42 297L 490 297 M 42 317L 490 317 ").toBe(true);
+                done();
+            }
+            chartObj.refresh();
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

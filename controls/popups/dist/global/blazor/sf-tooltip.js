@@ -756,8 +756,9 @@ var SfTooltip = /** @class */ (function () {
         var _this = this;
         if (cancel) {
             this.isPopupHidden = true;
-            this.clear();
-            this.restoreElement(this.contentTargetValue);
+            if (this.contentTargetValue) {
+                this.popupHide(this.properties.animation.close, this.contentTargetValue);
+            }
         }
         else {
             var openAnimation_1 = {

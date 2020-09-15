@@ -79,6 +79,7 @@ export class Toolbar {
     private formFieldDropDown: DropDownButton;
     private toolbarItems: (CustomToolbarItemModel | ToolbarItem)[];
     private toolbarTimer: number;
+    private buttonElement: HTMLButtonElement;
     /**
      * @private
      */
@@ -129,8 +130,8 @@ export class Toolbar {
 
         // Show hide pane button initialization 
         let propertiesPaneDiv: HTMLElement = createElement('div', { className: 'e-de-ctnr-properties-pane-btn' });
-        let buttonElement: HTMLButtonElement = createElement('button', { attrs: { type: 'button' } }) as HTMLButtonElement;
-        propertiesPaneDiv.appendChild(buttonElement);
+        this.buttonElement = createElement('button', { attrs: { type: 'button' } }) as HTMLButtonElement;
+        propertiesPaneDiv.appendChild(this.buttonElement);
         let cssClassName: string = 'e-tbar-btn e-tbtn-txt e-control e-btn e-de-showhide-btn';
         let iconCss: string = 'e-icons e-de-ctnr-showhide';
         if (this.container.enableRtl) {
@@ -142,9 +143,9 @@ export class Toolbar {
             iconCss: iconCss
         });
         let locale: L10n = this.container.localObj;
-        buttonElement.title = locale.getConstant('Toggles the visibility of properties pane');
-        this.propertiesPaneButton.appendTo(buttonElement);
-        EventHandler.add(buttonElement, 'click', this.showHidePropertiesPane, this);
+        this.buttonElement.title = locale.getConstant('Hide properties pane');
+        this.propertiesPaneButton.appendTo(this.buttonElement);
+        EventHandler.add(this.buttonElement, 'click', this.showHidePropertiesPane, this);
         toolbarContainer.appendChild(propertiesPaneDiv);
         this.toolbar.appendTo(toolbarTarget);
         this.initToolbarDropdown(toolbarTarget);
@@ -232,9 +233,11 @@ export class Toolbar {
 
     private showHidePropertiesPane(): void {
         let paneDiv: HTMLElement = document.getElementsByClassName('e-de-ctnr-properties-pane-btn')[0] as HTMLButtonElement;
+        let locale: L10n = this.container.localObj;
         if (this.container.propertiesPaneContainer.style.display === 'none') {
             this.container.showPropertiesPane = true;
             paneDiv.classList.remove('e-de-pane-disable-clr');
+            this.buttonElement.title = locale.getConstant('Hide properties pane');
             classList(paneDiv, ['e-de-pane-enable-clr'], []);
             this.container.trigger('beforePaneSwitch', { type: 'PropertiesPane' });
         } else if (this.container.previousContext.indexOf('Header') >= 0
@@ -243,6 +246,7 @@ export class Toolbar {
         } else {
             this.container.showPropertiesPane = false;
             paneDiv.classList.remove('e-de-pane-enable-clr');
+            this.buttonElement.title = locale.getConstant('Show properties pane');
             classList(paneDiv, ['e-de-pane-disable-clr'], []);
         }
         this.enableDisablePropertyPaneButton(this.container.showPropertiesPane);

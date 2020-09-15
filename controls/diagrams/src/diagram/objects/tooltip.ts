@@ -10,6 +10,13 @@ import { DiagramTooltipModel } from './tooltip-model';
  * An object that defines the description, appearance and alignments of tooltip
  */
 export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
+    /**
+     * Defines the actual relative mode of the Tooltip
+     * * Object - sets the tooltip position relative to the node
+     * * Mouse - sets the tooltip position relative to the mouse
+     */
+    /** @private */
+    public actualRelativeMode: TooltipRelativeMode;
 
     /**
      * Defines the content of the Tooltip

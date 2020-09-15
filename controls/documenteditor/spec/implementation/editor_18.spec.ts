@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { TableOfContentsSettings, ParagraphWidget, TableWidget, FieldElementBox, TextFormField, ElementBox, WParagraphFormat, WCharacterFormat, HelperMethods } from '../../src/document-editor/index';
+import { TableOfContentsSettings, ParagraphWidget, TableWidget, FieldElementBox, TextFormField, ElementBox, WParagraphFormat, WCharacterFormat, HelperMethods, ContentControlWidgetType, ContentControlType, IWidget, TableRowWidget } from '../../src/document-editor/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { ImageResizer } from '../../src/document-editor/implementation/editor/image-resizer';
 import { Editor, EditorHistory, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition } from '../../src/index';
@@ -843,56 +843,56 @@ describe('Update Revision Collection validation', () => {
     editor.editorModule.insertText('Document Editor');
     let text: string = (editor.revisions.changes[0].range[0] as TextElementBox).text;
     expect(text).toBe('Document Editor');
-    text =  (editor.revisions.changes[1].range[0] as TextElementBox).text;
+    text = (editor.revisions.changes[1].range[0] as TextElementBox).text;
     expect(text).toBe('Syncfusion');
 
   });
 });
 
-describe('Validate Track Change have Page Break',()=>{
-  let container : DocumentEditor;
+describe('Validate Track Change have Page Break', () => {
+  let container: DocumentEditor;
   let imageResizer: ImageResizer;
   beforeAll(() => {
-      document.body.innerHTML = '';
-      let ele: HTMLElement = createElement('div', { id: 'container' });
-      document.body.appendChild(ele);
-      DocumentEditor.Inject(Editor, Selection, EditorHistory, ImageResizer);
-      container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableImageResizer: true });
-      (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
-      (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
-      (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
-      (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
-      container.appendTo('#container');
-      imageResizer = container.imageResizerModule;
-       });
+    document.body.innerHTML = '';
+    let ele: HTMLElement = createElement('div', { id: 'container' });
+    document.body.appendChild(ele);
+    DocumentEditor.Inject(Editor, Selection, EditorHistory, ImageResizer);
+    container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableImageResizer: true });
+    (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+    (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+    (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+    (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+    container.appendTo('#container');
+    imageResizer = container.imageResizerModule;
+  });
   afterAll((done): void => {
-      container.destroy();
-      imageResizer.destroy();
-      imageResizer = undefined;
-      document.body.removeChild(document.getElementById('container'));
-      container = undefined;
-      document.body.innerHTML = '';
-      setTimeout(function () {
-          done();
-      }, 1000);
+    container.destroy();
+    imageResizer.destroy();
+    imageResizer = undefined;
+    document.body.removeChild(document.getElementById('container'));
+    container = undefined;
+    document.body.innerHTML = '';
+    setTimeout(function () {
+      done();
+    }, 1000);
   });
   it('Rejected page break revision Validation', function () {
-      container.editor.insertText('Hello World');
-      container.selection.handleControlLeftKey();
-      container.enableTrackChanges = true;
-      container.showRevisions = true;
-      container.editor.insertPageBreak();
-      expect(container.documentHelper.pages.length).toBe(2);
-      expect(container.selection.start.currentWidget.children.length).toBe(1);
-      expect(container.revisions.length).toBe(1);
-      container.revisions.rejectAll();
-      expect(container.trackChangesPane.isTrackingPageBreak).toBe(true);
-      expect(container.selection.start.currentWidget.children.length).toBe(2);
-      expect(container.revisions.length).toBe(0);
-      container.editorHistory.undo();
-      expect(container.revisions.length).toBe(1);
-      container.editorHistory.redo();
-      expect(container.revisions.length).toBe(0);
+    container.editor.insertText('Hello World');
+    container.selection.handleControlLeftKey();
+    container.enableTrackChanges = true;
+    container.showRevisions = true;
+    container.editor.insertPageBreak();
+    expect(container.documentHelper.pages.length).toBe(2);
+    expect(container.selection.start.currentWidget.children.length).toBe(1);
+    expect(container.revisions.length).toBe(1);
+    container.revisions.rejectAll();
+    expect(container.trackChangesPane.isTrackingPageBreak).toBe(true);
+    expect(container.selection.start.currentWidget.children.length).toBe(2);
+    expect(container.revisions.length).toBe(0);
+    container.editorHistory.undo();
+    expect(container.revisions.length).toBe(1);
+    container.editorHistory.redo();
+    expect(container.revisions.length).toBe(0);
   });
   it('image resizer validation', function () {
     container.openBlank();
@@ -920,5 +920,89 @@ describe('Validate Track Change have Page Break',()=>{
     container.editor.applyStyle('Heading 1');
     container.editor.insertText('h');
     expect(container.documentHelper.selection.start.offset).toBe(1);
+  });
+});
+
+let plainContentControl: any = { "sections": [{ "blocks": [{ "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "text": "Test " }, { "inlines": [{ "text": "ContentControl" }], "contentControlProperties": { "lockContentControl": false, "lockContents": false, "color": "#00000000", "type": "Text", "hasPlaceHolderText": false, "multiline": false, "isTemporary": false, "dateCalendarType": "Gregorian", "isChecked": false } }, { "text": " Test" }, { "name": "_GoBack", "bookmarkType": 0 }, { "name": "_GoBack", "bookmarkType": 1 }] }], "headersFooters": {}, "sectionFormat": { "headerDistance": 36.0, "footerDistance": 36.0, "pageWidth": 612.0, "pageHeight": 792.0, "leftMargin": 72.0, "rightMargin": 72.0, "topMargin": 72.0, "bottomMargin": 72.0, "differentFirstPage": false, "differentOddAndEvenPages": false, "bidi": false, "restartPageNumbering": false, "pageStartingNumber": 0 } }], "characterFormat": { "fontSize": 11.0, "fontFamily": "Calibri", "fontSizeBidi": 11.0, "fontFamilyBidi": "Arial" }, "paragraphFormat": { "afterSpacing": 8.0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple" }, "background": { "color": "#FFFFFFFF" }, "styles": [{ "type": "Paragraph", "name": "Normal", "next": "Normal" }, { "type": "Character", "name": "Default Paragraph Font" }, { "type": "Character", "name": "Placeholder Text", "basedOn": "Default Paragraph Font", "characterFormat": { "fontColor": "#808080FF" } }], "defaultTabWidth": 36.0, "formatting": false, "trackChanges": false, "protectionType": "NoProtection", "enforcement": false, "dontUseHTMLParagraphAutoSpacing": false, "alignTablesRowByRow": false };
+let headerContentControl: any = { "sections": [{ "blocks": [{ "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "name": "_GoBack", "bookmarkType": 0 }, { "name": "_GoBack", "bookmarkType": 1 }] }], "headersFooters": { "header": { "blocks": [{ "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "text": "Test " }, { "inlines": [{ "text": "ContentControl" }], "contentControlProperties": { "lockContentControl": false, "lockContents": false, "color": "#00000000", "type": "Text", "hasPlaceHolderText": false, "multiline": false, "isTemporary": false, "dateCalendarType": "Gregorian", "isChecked": false } }, { "text": " Test" }] }, { "paragraphFormat": { "styleName": "Header" }, "inlines": [] }] } }, "sectionFormat": { "headerDistance": 36.0, "footerDistance": 36.0, "pageWidth": 612.0, "pageHeight": 792.0, "leftMargin": 72.0, "rightMargin": 72.0, "topMargin": 72.0, "bottomMargin": 72.0, "differentFirstPage": false, "differentOddAndEvenPages": false, "bidi": false, "restartPageNumbering": false, "pageStartingNumber": 0 } }], "characterFormat": { "fontSize": 11.0, "fontFamily": "Calibri", "fontSizeBidi": 11.0, "fontFamilyBidi": "Arial" }, "paragraphFormat": { "afterSpacing": 8.0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple" }, "background": { "color": "#FFFFFFFF" }, "styles": [{ "type": "Paragraph", "name": "Normal", "next": "Normal" }, { "type": "Character", "name": "Default Paragraph Font" }, { "type": "Paragraph", "name": "Header", "basedOn": "Normal", "next": "Header", "link": "Header Char", "paragraphFormat": { "afterSpacing": 0.0, "lineSpacing": 1.0, "lineSpacingType": "Multiple", "tabs": [{ "tabJustification": "Center", "position": 234.0, "tabLeader": "None", "deletePosition": 0.0 }, { "tabJustification": "Right", "position": 468.0, "tabLeader": "None", "deletePosition": 0.0 }] } }, { "type": "Character", "name": "Header Char", "basedOn": "Default Paragraph Font" }, { "type": "Paragraph", "name": "Footer", "basedOn": "Normal", "next": "Footer", "link": "Footer Char", "paragraphFormat": { "afterSpacing": 0.0, "lineSpacing": 1.0, "lineSpacingType": "Multiple", "tabs": [{ "tabJustification": "Center", "position": 234.0, "tabLeader": "None", "deletePosition": 0.0 }, { "tabJustification": "Right", "position": 468.0, "tabLeader": "None", "deletePosition": 0.0 }] } }, { "type": "Character", "name": "Footer Char", "basedOn": "Default Paragraph Font" }], "defaultTabWidth": 36.0, "formatting": false, "trackChanges": false, "protectionType": "NoProtection", "enforcement": false, "dontUseHTMLParagraphAutoSpacing": false, "alignTablesRowByRow": false };
+let tableContentControl: any = { "sections": [{ "blocks": [{ "blocks": [{ "rows": [{ "rowFormat": { "allowBreakAcrossPages": true, "isHeader": false, "height": 0.0, "heightType": "AtLeast" }, "cells": [{ "blocks": [{ "paragraphFormat": { "styleName": "Normal" }, "inlines": [] }], "cellFormat": { "columnSpan": 1, "rowSpan": 1, "preferredWidth": 233.75, "preferredWidthType": "Point", "verticalAlignment": "Top", "isSamePaddingAsTable": true, "cellWidth": 233.75 } }, { "blocks": [{ "paragraphFormat": { "styleName": "Normal" }, "inlines": [] }], "cellFormat": { "columnSpan": 1, "rowSpan": 1, "preferredWidth": 233.75, "preferredWidthType": "Point", "verticalAlignment": "Top", "isSamePaddingAsTable": true, "cellWidth": 233.75 } }] }, { "rowFormat": { "allowBreakAcrossPages": true, "isHeader": false, "height": 0.0, "heightType": "AtLeast" }, "cells": [{ "blocks": [{ "paragraphFormat": { "styleName": "Normal" }, "inlines": [] }], "cellFormat": { "columnSpan": 1, "rowSpan": 1, "preferredWidth": 233.75, "preferredWidthType": "Point", "verticalAlignment": "Top", "isSamePaddingAsTable": true, "cellWidth": 233.75 } }, { "blocks": [{ "paragraphFormat": { "styleName": "Normal" }, "inlines": [] }], "cellFormat": { "columnSpan": 1, "rowSpan": 1, "preferredWidth": 233.75, "preferredWidthType": "Point", "verticalAlignment": "Top", "isSamePaddingAsTable": true, "cellWidth": 233.75 } }] }], "title": null, "description": null, "tableFormat": { "allowAutoFit": true, "leftIndent": 0.0, "tableAlignment": "Left", "preferredWidthType": "Auto", "borders": { "left": { "lineStyle": "Single", "lineWidth": 0.5, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "right": { "lineStyle": "Single", "lineWidth": 0.5, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "top": { "lineStyle": "Single", "lineWidth": 0.5, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "bottom": { "lineStyle": "Single", "lineWidth": 0.5, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "vertical": { "lineStyle": "Single", "lineWidth": 0.5, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "horizontal": { "lineStyle": "Single", "lineWidth": 0.5, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "diagonalDown": { "lineStyle": "None", "lineWidth": 0.0, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "diagonalUp": { "lineStyle": "None", "lineWidth": 0.0, "shadow": false, "space": 0.0, "hasNoneStyle": false } }, "bidi": false, "horizontalPositionAbs": "Left", "horizontalPosition": 0.0 } }], "contentControlProperties": { "lockContentControl": false, "lockContents": true, "color": "#00000000", "type": "RichText", "hasPlaceHolderText": false, "multiline": false, "isTemporary": false, "dateCalendarType": "Gregorian", "isChecked": false } }, { "paragraphFormat": { "styleName": "Normal" }, "inlines": [] }, { "rows": [{ "rowFormat": { "allowBreakAcrossPages": true, "isHeader": false, "height": 0.0, "heightType": "AtLeast" }, "cells": [{ "blocks": [{ "paragraphFormat": { "styleName": "Normal", "tabs": [{ "tabJustification": "Center", "position": 111.44999694824219, "tabLeader": "None", "deletePosition": 0.0 }] }, "inlines": [{ "text": "e" }, { "text": "\t" }] }], "cellFormat": { "columnSpan": 1, "rowSpan": 1, "preferredWidth": 233.75, "preferredWidthType": "Point", "verticalAlignment": "Top", "isSamePaddingAsTable": true, "cellWidth": 233.75 } }, { "blocks": [{ "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "text": "e" }] }], "cellFormat": { "columnSpan": 1, "rowSpan": 1, "preferredWidth": 233.75, "preferredWidthType": "Point", "verticalAlignment": "Top", "isSamePaddingAsTable": true, "cellWidth": 233.75 } }], "contentControlProperties": { "lockContentControl": true, "lockContents": false, "color": "#00000000", "type": "RichText", "hasPlaceHolderText": false, "multiline": false, "isTemporary": false, "dateCalendarType": "Gregorian", "isChecked": false } }, { "rowFormat": { "allowBreakAcrossPages": true, "isHeader": false, "height": 0.0, "heightType": "AtLeast" }, "cells": [{ "blocks": [{ "paragraphFormat": { "styleName": "Normal" }, "inlines": [] }], "cellFormat": { "columnSpan": 1, "rowSpan": 1, "preferredWidth": 233.75, "preferredWidthType": "Point", "verticalAlignment": "Top", "isSamePaddingAsTable": true, "cellWidth": 233.75 } }, { "blocks": [{ "paragraphFormat": { "styleName": "Normal" }, "inlines": [] }], "cellFormat": { "columnSpan": 1, "rowSpan": 1, "preferredWidth": 233.75, "preferredWidthType": "Point", "verticalAlignment": "Top", "isSamePaddingAsTable": true, "cellWidth": 233.75 } }] }], "title": null, "description": null, "tableFormat": { "allowAutoFit": true, "leftIndent": 0.0, "tableAlignment": "Left", "preferredWidthType": "Auto", "borders": { "left": { "lineStyle": "Single", "lineWidth": 0.5, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "right": { "lineStyle": "Single", "lineWidth": 0.5, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "top": { "lineStyle": "Single", "lineWidth": 0.5, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "bottom": { "lineStyle": "Single", "lineWidth": 0.5, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "vertical": { "lineStyle": "Single", "lineWidth": 0.5, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "horizontal": { "lineStyle": "Single", "lineWidth": 0.5, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "diagonalDown": { "lineStyle": "None", "lineWidth": 0.0, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "diagonalUp": { "lineStyle": "None", "lineWidth": 0.0, "shadow": false, "space": 0.0, "hasNoneStyle": false } }, "bidi": false, "horizontalPositionAbs": "Left", "horizontalPosition": 0.0 } }, { "paragraphFormat": { "styleName": "Normal" }, "inlines": [] }, { "rows": [{ "rowFormat": { "allowBreakAcrossPages": true, "isHeader": false, "height": 0.0, "heightType": "AtLeast" }, "cells": [{ "blocks": [{ "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "text": "a" }] }], "cellFormat": { "columnSpan": 1, "rowSpan": 1, "preferredWidth": 467.5, "preferredWidthType": "Point", "verticalAlignment": "Top", "isSamePaddingAsTable": true, "cellWidth": 467.5 }, "contentControlProperties": { "lockContentControl": true, "lockContents": true, "color": "#00000000", "type": "RichText", "hasPlaceHolderText": false, "multiline": false, "isTemporary": false, "dateCalendarType": "Gregorian", "isChecked": false } }] }], "title": null, "description": null, "tableFormat": { "allowAutoFit": true, "leftIndent": 0.0, "tableAlignment": "Left", "preferredWidthType": "Auto", "borders": { "left": { "lineStyle": "Single", "lineWidth": 0.5, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "right": { "lineStyle": "Single", "lineWidth": 0.5, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "top": { "lineStyle": "Single", "lineWidth": 0.5, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "bottom": { "lineStyle": "Single", "lineWidth": 0.5, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "vertical": { "lineStyle": "Single", "lineWidth": 0.5, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "horizontal": { "lineStyle": "Single", "lineWidth": 0.5, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "diagonalDown": { "lineStyle": "None", "lineWidth": 0.0, "shadow": false, "space": 0.0, "hasNoneStyle": false }, "diagonalUp": { "lineStyle": "None", "lineWidth": 0.0, "shadow": false, "space": 0.0, "hasNoneStyle": false } }, "bidi": false, "horizontalPositionAbs": "Left", "horizontalPosition": 0.0 } }, { "paragraphFormat": { "styleName": "Normal" }, "inlines": [] }], "headersFooters": {}, "sectionFormat": { "headerDistance": 36.0, "footerDistance": 36.0, "pageWidth": 612.0, "pageHeight": 792.0, "leftMargin": 72.0, "rightMargin": 72.0, "topMargin": 72.0, "bottomMargin": 72.0, "differentFirstPage": false, "differentOddAndEvenPages": false, "bidi": false, "restartPageNumbering": false, "pageStartingNumber": 0 } }], "characterFormat": { "fontSize": 11.0, "fontFamily": "Calibri", "fontSizeBidi": 11.0, "fontFamilyBidi": "Arial" }, "paragraphFormat": { "afterSpacing": 8.0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple" }, "background": { "color": "#FFFFFFFF" }, "styles": [{ "type": "Paragraph", "name": "Normal", "next": "Normal" }, { "type": "Character", "name": "Default Paragraph Font" }, { "type": "Character", "name": "Placeholder Text", "basedOn": "Default Paragraph Font", "characterFormat": { "fontColor": "#808080FF" } }], "defaultTabWidth": 35.400001525878906, "formatting": false, "trackChanges": false, "protectionType": "NoProtection", "enforcement": false, "dontUseHTMLParagraphAutoSpacing": false, "alignTablesRowByRow": false }
+
+describe('Content control Validation', () => {
+  let editor: DocumentEditor;
+  beforeAll(() => {
+    document.body.innerHTML = '';
+    let ele: HTMLElement = createElement('div', { id: 'container' });
+    document.body.appendChild(ele);
+    DocumentEditor.Inject(Editor, Selection, EditorHistory);
+    editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
+    (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+    (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+    (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+    (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+    editor.appendTo('#container');
+  });
+  afterAll((done): void => {
+    editor.destroy();
+    document.body.removeChild(document.getElementById('container'));
+    editor = undefined;
+    document.body.innerHTML = '';
+    setTimeout(function () {
+      done();
+    }, 1000);
+  });
+  it('Plain text content control & Character format Validation & delete after contents locked', function () {
+    editor.open(JSON.stringify(plainContentControl));
+    let para: ParagraphWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
+    let elementCollec: ElementBox[] = (para.childWidgets[0] as LineWidget).children;
+    let eleLength: number = (para.childWidgets[0] as LineWidget).children.length;
+    let element: ElementBox = elementCollec[2];
+    let text: string = (element as TextElementBox).text;
+    let widgetType: ContentControlWidgetType = 'Inline';
+    let controlType: ContentControlType = 'Text';
+    expect(element.contentControlProperties).toBeDefined;
+    expect(element.contentControlProperties.contentControlWidgetType).toBe(widgetType);
+    expect(element.contentControlProperties.type).toBe(controlType);
+    editor.selection.start.setPositionParagraph(para.childWidgets[0] as LineWidget, 8);
+    editor.selection.end.setPositionParagraph(para.childWidgets[0] as LineWidget, 8);
+    editor.selection.characterFormat.bold = true;
+    expect((para.childWidgets[0] as LineWidget).children.length).toBe(eleLength);
+    expect(((para.childWidgets[0] as LineWidget).children[2] as TextElementBox).text).toBe(text);
+    expect(((para.childWidgets[0] as LineWidget).children[2] as TextElementBox).characterFormat.bold).toBe(true);
+    editor.selection.start.setPositionParagraph(para.childWidgets[0] as LineWidget, 8);
+    editor.selection.end.setPositionParagraph(para.childWidgets[0] as LineWidget, 8);
+    element.contentControlProperties.lockContents = true;
+    editor.selection.characterFormat.bold = false;
+    expect(((para.childWidgets[0] as LineWidget).children[2] as TextElementBox).characterFormat.bold).toBe(true);
+    element.contentControlProperties.lockContents = false;
+    editor.selection.start.setPositionParagraph(para.childWidgets[0] as LineWidget, 3);
+    editor.selection.end.setPositionParagraph(para.childWidgets[0] as LineWidget, 9);
+    editor.editorModule.handleBackKey();
+    expect((para.childWidgets[0] as LineWidget).children.length).toBe(eleLength);
+  });
+  it('Heaader backspace on half selection of content control', function () {
+    editor.open(JSON.stringify(headerContentControl));
+    let para: ParagraphWidget = editor.documentHelper.pages[0].headerWidget.childWidgets[0] as ParagraphWidget;
+    let elementCollec: ElementBox[] = (para.childWidgets[0] as LineWidget).children;
+    let eleLength: number = (para.childWidgets[0] as LineWidget).children.length;
+    let element: ElementBox = elementCollec[2];
+    let text: string = (element as TextElementBox).text;
+    editor.selection.start.setPositionParagraph(para.childWidgets[0] as LineWidget, 3);
+    editor.selection.end.setPositionParagraph(para.childWidgets[0] as LineWidget, 9);
+    expect(element.contentControlProperties).toBeDefined;
+    editor.editorModule.handleBackKey();
+    expect((para.childWidgets[0] as LineWidget).children.length).toBe(eleLength);
+    expect(((para.childWidgets[0] as LineWidget).children[2] as TextElementBox).text).toBe(text);
+  });
+  it('Table Content control Validation', function () {
+    editor.open(JSON.stringify(tableContentControl));
+    let paraCollec: IWidget[] = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets;
+    let table: TableWidget = paraCollec[0] as TableWidget;
+    expect(table.contentControlProperties).toBeDefined;
+    let para: ParagraphWidget = ((table.firstChild as TableRowWidget).firstChild as TableCellWidget).firstChild as ParagraphWidget;
+    editor.selection.start.setPositionParagraph(para.childWidgets[0] as LineWidget, 1);
+    editor.selection.end.setPositionParagraph(para.childWidgets[0] as LineWidget, 1);
+    editor.selection.selectTable();
+    editor.editorModule.handleBackKey();
+    expect((paraCollec[0] as TableWidget)).toBeDefined;
   });
 });

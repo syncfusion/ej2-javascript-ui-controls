@@ -64,6 +64,7 @@ import { getConnectors, updateConnectorsProperties, canLaneInterchange, findLane
 import { GridPanel } from '../core/containers/grid';
 import { swimLaneSelection, pasteSwimLane, gridSelection } from '../utility/swim-lane-util';
 import { DeepDiffMapper } from '../utility/diff-map';
+import { DiagramTooltip } from '../objects/tooltip';
 
 /**
  * Defines the behavior of commands
@@ -140,7 +141,7 @@ export class CommandHandler {
         if (isTooltipVisible) {
             this.diagram.tooltipObject.position = 'BottomCenter';
             this.diagram.tooltipObject.animation = { open: { delay: 0, duration: 0 } };
-            this.diagram.tooltip.relativeMode = toolName === 'ConnectTool' ? 'Mouse' : 'Object';
+            (this.diagram.tooltip as DiagramTooltip).actualRelativeMode = toolName === 'ConnectTool' ? 'Mouse' : 'Object';
             this.diagram.tooltipObject.openDelay = 0;
             this.diagram.tooltipObject.closeDelay = 0;
         }
@@ -1900,6 +1901,7 @@ export class CommandHandler {
                     while (!target && i < index) {
                         target = zIndexTable[++i];
                     }
+                    target = this.diagram.nameTable[target].parentId ? this.checkParentExist(target) : target;
                     this.moveSvgNode(objectId, target);
                     this.updateNativeNodeIndex(objectId);
                 } else {
@@ -1914,6 +1916,15 @@ export class CommandHandler {
         }
         this.diagram.protectPropertyChange(false);
     }
+
+    //Checks whether the target is a child node.
+    private checkParentExist (target: string): string {
+        let objBehind: string = target;
+        while (this.diagram.nameTable[objBehind].parentId) {
+            objBehind = this.diagram.nameTable[objBehind].parentId;
+        }
+        return objBehind;
+    };
 
     //Checks whether the selected node is not a parent of another node.
     public checkObjectBehind(objectId: string, zIndexTable: {}, index: number): boolean {
@@ -1941,6 +1952,10 @@ export class CommandHandler {
             let tabelLength: number = Number(Object.keys(zIndexTable).sort(
                 (a: string, b: string) => { return Number(a) - Number(b); }).reverse()[0]);
             let index: number = this.diagram.nameTable[objectName].zIndex;
+            let oldzIndexTable: string[] = [];
+            for (let i: number = 0; i <= tabelLength; i++) {
+                oldzIndexTable.push(zIndexTable[i]);
+            }
             for (let i: number = index; i < tabelLength; i++) {
                 //When there are empty records in the zindex table
                 if (zIndexTable[i]) {
@@ -1979,8 +1994,13 @@ export class CommandHandler {
                     let layer: LayerModel = this.getObjectLayer(objectName);
                     for (let i: number = 0; i < layer.objects.length; i++) {
                         if ((layer.objects[i] !== objectName) && (this.diagram.nameTable[layer.objects[i]].parentId) !== objectName) {
+                            //EJ2-42101 - SendToBack and BringToFront not working for connector with group node
+                            //Added @Dheepshiva to restrict the objects with lower zIndex
+                            if (layer.objects[i] !== undefined &&
+                            (oldzIndexTable.indexOf(objectName) < oldzIndexTable.indexOf(layer.objects[i]))) {
                             this.moveSvgNode(layer.objects[i], objectName);
                             this.updateNativeNodeIndex(objectName);
+                        }
                         }
                     }
                 }

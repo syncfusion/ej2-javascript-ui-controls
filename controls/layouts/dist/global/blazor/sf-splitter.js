@@ -156,7 +156,7 @@ var SfSplitter = /** @class */ (function () {
                 }
             }
         }
-        setTimeout(function () { _this.updateSplitterSize(); }, 200);
+        setTimeout(function () { _this.updateSplitterSize(true); }, 200);
     };
     SfSplitter.prototype.onMove = function (event) {
         if (this.allPanes.length > 1) {
@@ -526,7 +526,7 @@ var SfSplitter = /** @class */ (function () {
             this.updateSplitterSize();
         }
     };
-    SfSplitter.prototype.updateSplitterSize = function () {
+    SfSplitter.prototype.updateSplitterSize = function (iswindowResize) {
         var totalWidth = 0;
         var flexPaneIndexes = [];
         var flexCount = 0;
@@ -555,6 +555,39 @@ var SfSplitter = /** @class */ (function () {
             this.allPanes[flexPaneIndexes[j]].style.flexBasis = this.orientation === HORIZONTAL ?
                 (this.allPanes[flexPaneIndexes[j]].offsetWidth + avgDiffWidth) + PX :
                 (this.allPanes[flexPaneIndexes[j]].offsetHeight + avgDiffWidth) + PX;
+        }
+        if (this.allPanes.length === 2 && iswindowResize) {
+            var paneCount = this.allPanes.length;
+            var minValue = void 0;
+            var paneMinRange = void 0;
+            var paneIndex = 0;
+            var updatePane = void 0;
+            var flexPane = void 0;
+            for (var i = 0; i < paneCount; i++) {
+                if (this.paneSettings[i].min !== null) {
+                    paneMinRange = this.convertPixelToNumber((this.paneSettings[i].min).toString());
+                    if (this.paneSettings[i].min.indexOf('%') > 0) {
+                        paneMinRange = this.convertPercentageToPixel(this.paneSettings[i].min);
+                    }
+                    minValue = this.convertPixelToNumber((paneMinRange).toString());
+                    if (this.allPanes[i].offsetWidth < minValue) {
+                        if (i === paneIndex) {
+                            updatePane = this.allPanes[i];
+                            flexPane = this.allPanes[i + 1];
+                        }
+                        else {
+                            updatePane = this.allPanes[i];
+                            flexPane = this.allPanes[i - 1];
+                        }
+                        var sizeDiff = minValue - this.allPanes[i].offsetWidth;
+                        var isPercent = updatePane.style.flexBasis.indexOf('%') > -1;
+                        updatePane.style.flexBasis = isPercent ? this.convertPixelToPercentage(updatePane.offsetWidth + sizeDiff) + '%'
+                            : (updatePane.offsetWidth + sizeDiff) + 'px';
+                        flexPane.style.flexBasis = flexPane.style.flexBasis.indexOf('%') > -1 ?
+                            this.convertPixelToPercentage(flexPane.offsetWidth - sizeDiff) + '%' : (flexPane.offsetWidth - sizeDiff) + 'px';
+                    }
+                }
+            }
         }
     };
     SfSplitter.prototype.calcDragPosition = function (rectValue, offsetValue) {

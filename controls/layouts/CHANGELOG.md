@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Splitter
+
+#### Bug Fixes
+
+- `#I288982` - The issue with "Resizing feature is not working properly when the splitter’s height is more than the window" has been resolved.
+
 ## 18.2.46 (2020-07-21)
 
 ### Dashboard Layout

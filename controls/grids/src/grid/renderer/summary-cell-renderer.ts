@@ -37,7 +37,7 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
             data[column.columnName].headerText = gColumn.headerText;
             if (gColumn.isForeignColumn()) {
                 let fData: object = gColumn.columnData.filter((e: object) => {
-                    return e[data[column.columnName].field] === data[column.columnName].key;
+                    return e[gColumn.foreignKeyField] === data[column.columnName].key;
                 })[0];
                 data[column.columnName].foreignKey = fData[gColumn.foreignKeyValue];
             }

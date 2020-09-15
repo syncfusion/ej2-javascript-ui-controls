@@ -2395,6 +2395,10 @@ var MultiSelect = /** @class */ (function (_super) {
         this.hiddenElement.innerHTML = '';
         if (!sf.base.isNullOrUndefined(this.value)) {
             for (var index = 0; !sf.base.isNullOrUndefined(this.value[index]); index++) {
+                var listValue = this.findListElement(this.mainList, 'li', 'data-value', this.value[index]);
+                if (sf.base.isNullOrUndefined(listValue) && !this.allowCustomValue) {
+                    this.value.splice(index, 1);
+                }
                 if (this.listData) {
                     temp = this.getTextByValue(this.value[index]);
                 }

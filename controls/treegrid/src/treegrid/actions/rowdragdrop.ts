@@ -1,7 +1,7 @@
 import { TreeGrid } from '../base/treegrid';
 import { Grid, RowDD as GridDragDrop, RowDropEventArgs, parentsUntil } from '@syncfusion/ej2-grids';
 import { EJ2Intance, RowDragEventArgs, getObject, Scroll } from '@syncfusion/ej2-grids';
-import { closest, isNullOrUndefined, classList, setValue, extend } from '@syncfusion/ej2-base';
+import { closest, isNullOrUndefined, classList, setValue, extend, getValue } from '@syncfusion/ej2-base';
 import { ITreeData } from '../base';
 import { DataManager } from '@syncfusion/ej2-data';
 import * as events from '../base/constant';
@@ -20,7 +20,7 @@ export class RowDD {
     /** @hidden */
     private droppedRecord: ITreeData;
     /** @hidden */
-    private treeGridData: ITreeData[];
+    public treeGridData: ITreeData[];
     /** @hidden */
     private treeData: ITreeData[];
     /** @hidden */
@@ -146,15 +146,33 @@ export class RowDD {
             for (let i: number = dragLength - 1; i > -1; i--) {
                 draggedRecord = dragRecords[i];
                 let recordIndex1: number = 0;
-                if (!(draggedRecord.taskData as Object).hasOwnProperty(tObj.childMapping)) {
-                   draggedRecord.taskData[tObj.childMapping] = [];
+                if (!isNullOrUndefined(draggedRecord.taskData) &&
+                    !(draggedRecord.taskData as Object).hasOwnProperty(tObj.childMapping)) {
+                        draggedRecord.taskData[tObj.childMapping] = [];
+                }
+                if (draggedRecord.hasOwnProperty(tObj.childMapping) &&
+                    ((draggedRecord[tObj.childMapping]) as ITreeData[]).length && !this.isDraggedWithChild) {
+                        let childData: ITreeData[] = (draggedRecord[tObj.childMapping]) as ITreeData[];
+                        for (let j: number = 0; j < childData.length; j++) {
+                            if (dragRecords.indexOf(childData[j]) === -1) {
+                                dragRecords.splice(j, 0, childData[j]);
+                                childData[j].taskData = extend({}, childData[j]);
+                                i += 1;
+                            }
+                        }
+                }
+                if (draggedRecord.hasOwnProperty(tObj.parentIdMapping) && draggedRecord[tObj.parentIdMapping] != null
+                   && !this.isDraggedWithChild) {
+                    draggedRecord.taskData[tObj.parentIdMapping] = null;
+                    delete draggedRecord.parentItem;
+                    delete draggedRecord.parentUniqueID;
                 }
                 if (isNullOrUndefined(tObj.dataSource as ITreeData[])) {
                     tObj.dataSource = [];
                 }
                 (tObj.dataSource as ITreeData[]).splice(recordIndex1, 0, draggedRecord.taskData);
-                tObj.setProperties({ dataSource: tObj.dataSource }, false);
             }
+            tObj.setProperties({ dataSource: tObj.dataSource }, false);
         } else {
             for (let i: number = 0; i < dragRecords.length; i++) {
                 setValue ('uniqueIDCollection.' + dragRecords[i].uniqueID, dragRecords[i], this.parent);
@@ -162,8 +180,10 @@ export class RowDD {
             let args: RowDropEventArgs = { data: e.records, dropIndex: e.toIndex };
             if (this.parent.dataSource instanceof DataManager) {
                 this.treeGridData = this.parent.dataSource.dataSource.json;
+                this.treeData = this.parent.dataSource.dataSource.json;
             } else {
                 this.treeGridData = this.parent.grid.dataSource as ITreeData[];
+                this.treeData = this.parent.dataSource as ITreeData[];
             }
             this.dropRows(args);
         }
@@ -568,6 +588,17 @@ export class RowDD {
             }
             tObj.notify(events.rowsRemove, { indexes: indexes, records: records });
             srcControl.notify(events.rowsAdd, { toIndex: targetIndex, records: records });
+            let srcControlFlatData: ITreeData[] = srcControl.rowDragAndDropModule.treeGridData;
+            if (!isNullOrUndefined(srcControlFlatData)) {
+                for (let i: number = 0; i < srcControlFlatData.length; i++) {
+                    srcControlFlatData[i].index = i;
+                    if (!isNullOrUndefined(srcControlFlatData[i].parentItem)) {
+                        let actualIndex: number =
+                        <number>getValue('uniqueIDCollection.' + srcControlFlatData[i].parentUniqueID + '.index', srcControl);
+                        srcControlFlatData[i].parentItem.index = actualIndex;
+                    }
+                }
+            }
             tObj.refresh();
             srcControl.refresh();
             if ((<ITreeData[]>srcControl.grid.dataSource).length > 1) {
@@ -796,6 +827,7 @@ export class RowDD {
             currentRecord = record.childRecords[i];
             count++;
             tObj.flatData.splice(count, 0, currentRecord);
+            setValue ('uniqueIDCollection.' + currentRecord.uniqueID, currentRecord, this.parent);
             if (tObj.parentIdMapping) {
                 this.treeData.splice(count, 0, currentRecord.taskData);
             }

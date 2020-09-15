@@ -3680,6 +3680,9 @@ var AccumulationSeries = /** @class */ (function (_super) {
         accumulation.allowServerDataBinding = false;
         accumulation.trigger(seriesRender, argsData);
         this.resultData = e.result !== '' ? e.result : [];
+        if (!accumulation.isBlazor && !render) {
+            this.getPoints(this.resultData, accumulation); // To update datasource using onPropertyChanged method. incident id: 290690
+        }
         // tslint:disable
         if ((++accumulation.seriesCounts === accumulation.visibleSeries.length && render) || (window['Blazor'] && !render && accumulation.seriesCounts === 1)) {
             this.getPoints(this.resultData, accumulation);

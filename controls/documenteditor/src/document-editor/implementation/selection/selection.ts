@@ -4,7 +4,7 @@ import {
     LineWidget, TextElementBox, ListTextElementBox, ImageElementBox, Page, ParagraphWidget, TableCellWidget,
     FieldElementBox, BlockWidget, HeaderFooterWidget, BlockContainer, BookmarkElementBox, ElementBox, HeaderFooters,
     EditRangeStartElementBox, EditRangeEndElementBox, TabElementBox, CommentElementBox, CommentCharacterElementBox,
-    TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox, TextFrame, FieldTextElementBox
+    TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox, TextFrame, ContentControl, FieldTextElementBox
 } from '../viewer/page';
 import {
     ElementInfo, CaretHeightInfo, IndexInfo, SizeInfo,
@@ -3535,7 +3535,8 @@ export class Selection {
             if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
                 || inline instanceof ShapeElementBox || inline instanceof EditRangeStartElementBox
                 || inline instanceof EditRangeEndElementBox || inline instanceof CommentCharacterElementBox
-                || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
+                || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))
+                || inline instanceof ContentControl) {
                 return startOffset;
             }
             if (inline instanceof ListTextElementBox) {
@@ -6299,7 +6300,7 @@ export class Selection {
         if (isElement && element.nextElement) {
             element = element.nextElement;
         } else {
-           element = start.currentWidget.getInline(start.offset + 1, 0).element;
+            element = start.currentWidget.getInline(start.offset + 1, 0).element;
         }
         contextType = this.getContextElement(element);
         return contextType;
@@ -7475,12 +7476,12 @@ export class Selection {
         if (!this.pasteElement) {
             this.pasteElement = createElement('div', { className: 'e-de-tooltip' });
             this.documentHelper.viewerContainer.appendChild(this.pasteElement);
-            let splitButtonEle: HTMLElement = createElement('button', { id: 'iconsplitbtn' });
+            let splitButtonEle: HTMLElement = createElement('button', { id: this.owner.containerId + '_iconsplitbtn' });
             this.pasteElement.appendChild(splitButtonEle);
             this.pasteDropDwn = new DropDownButton({
                 items: items, iconCss: 'e-icons e-de-paste', select: this.pasteOptions
             });
-            this.pasteDropDwn.appendTo('#iconsplitbtn');
+            this.pasteDropDwn.appendTo('#' + this.owner.containerId + '_iconsplitbtn');
         }
         this.pasteElement.style.display = 'block';
         this.pasteElement.style.position = 'absolute';
@@ -9234,15 +9235,78 @@ export class Selection {
         }
         return false;
     }
-    private getPosition(element: ElementBox): PositionInfo {
+    /**
+     * @private
+     */
+    public getPosition(element: ElementBox): PositionInfo {
         let offset: number = element.line.getOffset(element, 1);
         let startPosition: TextPosition = new TextPosition(this.owner);
         startPosition.setPositionParagraph(element.line, offset);
-        let endElement: EditRangeEndElementBox = (element as EditRangeStartElementBox).editRangeEnd;
+        let endElement: ElementBox;
+        if (element instanceof EditRangeStartElementBox) {
+            endElement = (element as EditRangeStartElementBox).editRangeEnd as ElementBox;
+        } else if (element instanceof ContentControl) {
+            endElement = (element as ContentControl).reference as ElementBox;
+        }
         offset = endElement.line.getOffset(endElement, 1);
         let endPosition: TextPosition = new TextPosition(this.owner);
         endPosition.setPositionParagraph(endElement.line, offset);
         return { 'startPosition': startPosition, 'endPosition': endPosition };
+    }
+    /**
+     * @private
+     */
+    public checkContentControlLocked(checkFormat?: boolean): boolean {
+        this.owner.editorModule.isXmlMapped = false;
+        for (let i: number = 0; i < this.documentHelper.contentControlCollection.length; i++) {
+            let contentControlStart: ContentControl = this.documentHelper.contentControlCollection[i];
+            let position: PositionInfo = this.getPosition(contentControlStart);
+            let cCstart: TextPosition = position.startPosition;
+            let cCend: TextPosition = position.endPosition;
+            let start: TextPosition = this.start;
+            let end: TextPosition = this.end;
+            if (!this.isForward) {
+                start = this.end;
+                end = this.start;
+            }
+            if (isNullOrUndefined(checkFormat)) {
+                // tslint:disable-next-line:max-line-length
+                let cCStartInsideSelction: boolean = ((cCstart.isExistAfter(start) || cCstart.isAtSamePosition(start)) && (cCstart.isExistBefore(end) || cCstart.isAtSamePosition(end)));
+                // tslint:disable-next-line:max-line-length
+                let cCEndInsideSelction: boolean = ((cCend.isExistAfter(start) || cCend.isAtSamePosition(start)) && (cCend.isExistBefore(end) || cCend.isAtSamePosition(end)));
+                if (cCStartInsideSelction && cCEndInsideSelction) {
+                    if (contentControlStart.contentControlProperties.lockContentControl) {
+                        this.owner.trigger('contentControl');
+                        return true;
+                    }
+                    return false;
+                }
+                if ((cCStartInsideSelction) || (cCEndInsideSelction)) {
+                    if (!(cCstart.isAtSamePosition(start) || cCend.isAtSamePosition(start))) {
+                        return true;
+                    }
+                }
+            }
+            if ((start.isExistAfter(cCstart) || start.isAtSamePosition(cCstart))
+                && (end.isExistBefore(cCend) || end.isAtSamePosition(cCend))) {
+                if (contentControlStart.contentControlProperties.xmlMapping
+                    && contentControlStart.contentControlProperties.xmlMapping.isMapped) {
+                    this.owner.editorModule.isXmlMapped = true;
+                }
+                if (contentControlStart.contentControlProperties.lockContents) {
+                    this.owner.trigger('contentControl');
+                    return true;
+                } else if (isNullOrUndefined(checkFormat)
+                    && (contentControlStart.contentControlProperties.type === 'CheckBox'
+                        || contentControlStart.contentControlProperties.type === 'ComboBox'
+                        || contentControlStart.contentControlProperties.type === 'DropDownList'
+                        || contentControlStart.contentControlProperties.type === 'Date')) {
+                    this.owner.trigger('contentControl');
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     /**
      * @private

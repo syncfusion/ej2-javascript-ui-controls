@@ -631,7 +631,7 @@ export interface GridModel extends ComponentModel{
     /**
      * Defines the schema of dataSource. 
      * If the `columns` declaration is empty or undefined then the `columns` are automatically generated from data source.     
-     * {% codeBlock src='columns/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/columns/index.md' %}{% endcodeBlock %}
      * @default []   
      */
     columns?: Column[] | string[] | ColumnModel[];
@@ -639,14 +639,14 @@ export interface GridModel extends ComponentModel{
     /**
      * If `enableAltRow` is set to true, the grid will render with `e-altrow` CSS class to the alternative tr elements.    
      * > Check the [`AltRow`](../../grid/row/#styling-alternate-rows/) to customize the styles of alternative rows.
-     * {% codeBlock src='enableAltRow/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/enableAltRow/index.md' %}{% endcodeBlock %}
      * @default true 
      */
     enableAltRow?: boolean;
 
     /**
      * If `enableHover` is set to true, the row hover is enabled in the Grid.
-     * {% codeBlock src='enableHover/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/enableHover/index.md' %}{% endcodeBlock %}
      * @default true     
      */
     enableHover?: boolean;
@@ -654,7 +654,7 @@ export interface GridModel extends ComponentModel{
     /**
      * If `enableAutoFill` is set to true, then the auto fill icon will displayed on cell selection for copy cells.
      * It requires the selection `mode` to be Cell and `cellSelectionMode` to be `Box`.
-     * {% codeBlock src='enableAutoFill/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/enableAutoFill/index.md' %}{% endcodeBlock %}
      * @default false 
      */
     enableAutoFill?: boolean;
@@ -669,14 +669,14 @@ export interface GridModel extends ComponentModel{
     /**
      * If `allowTextWrap` set to true,  
      * then text content will wrap to the next line when its text content exceeds the width of the Column Cells. 
-     * {% codeBlock src='allowTextWrap/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/allowTextWrap/index.md' %}{% endcodeBlock %}
      * @default false     
      */
     allowTextWrap?: boolean;
 
     /**
      * Configures the text wrap in the Grid. 
-     * {% codeBlock src='textWrapSettings/index.md' %}{% endcodeBlock %} 
+     * {% codeBlock src='grid/textWrapSettings/index.md' %}{% endcodeBlock %} 
      * @default {wrapMode:"Both"}     
      */
     textWrapSettings?: TextWrapSettingsModel;
@@ -691,14 +691,14 @@ export interface GridModel extends ComponentModel{
      * If `allowPaging` is set to true, the pager renders at the footer of the Grid. It is used to handle page navigation in the Grid.
      * 
      * > Check the [`Paging`](../../grid/paging/) to configure the grid pager.
-     * {% codeBlock src='allowPaging/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/allowPaging/index.md' %}{% endcodeBlock %}
      * @default false     
      */
     allowPaging?: boolean;
 
     /**
      * Configures the pager in the Grid.  
-     * {% codeBlock src='pageSettings/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/pageSettings/index.md' %}{% endcodeBlock %}
      * @default {currentPage: 1, pageSize: 12, pageCount: 8, enableQueryString: false, pageSizes: false, template: null}     
      */
     pageSettings?: PageSettingsModel;
@@ -706,7 +706,7 @@ export interface GridModel extends ComponentModel{
     /**
      * If `enableVirtualization` set to true, then the Grid will render only the rows visible within the view-port
      * and load subsequent rows on vertical scrolling. This helps to load large dataset in Grid.
-     * {% codeBlock src='enableVirtualization/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/enableVirtualization/index.md' %}{% endcodeBlock %}
      * @default false
      */
     enableVirtualization?: boolean;
@@ -714,7 +714,7 @@ export interface GridModel extends ComponentModel{
     /**
      * If `enableColumnVirtualization` set to true, then the Grid will render only the columns visible within the view-port
      * and load subsequent columns on horizontal scrolling. This helps to load large dataset of columns in Grid.
-     * {% codeBlock src='enableColumnVirtualization/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/enableColumnVirtualization/index.md' %}{% endcodeBlock %}
      * @default false
      */
     enableColumnVirtualization?: boolean;
@@ -722,7 +722,7 @@ export interface GridModel extends ComponentModel{
     /**
      * If `enableInfiniteScrolling` set to true, then the data will be loaded in Grid when the scrollbar reaches the end.
      * This helps to load large dataset in Grid.
-     * {% codeBlock src='enableInfiniteScrolling/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/enableInfiniteScrolling/index.md' %}{% endcodeBlock %}
      * @default false
      * @deprecated
      */
@@ -730,7 +730,7 @@ export interface GridModel extends ComponentModel{
 
     /**
      * Configures the search behavior in the Grid. 
-     * {% codeBlock src='searchSettings/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/searchSettings/index.md' %}{% endcodeBlock %}
      * @default { ignoreCase: true, fields: [], operator: 'contains', key: '' }    
      */
     searchSettings?: SearchSettingsModel;
@@ -739,7 +739,7 @@ export interface GridModel extends ComponentModel{
      * If `allowSorting` is set to true, it allows sorting of grid records when column header is clicked.  
      * 
      * > Check the [`Sorting`](../../grid/sorting/) to customize its default behavior.
-     * {% codeBlock src='allowSorting/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/allowSorting/index.md' %}{% endcodeBlock %}
      * @default false    
      */
     allowSorting?: boolean;
@@ -750,7 +750,7 @@ export interface GridModel extends ComponentModel{
      * `Ellipsis`: Displays ellipsis when the cell content overflows its area.
      * `EllipsisWithTooltip`:  Displays ellipsis when the cell content overflows its area,
      *  also it will display the tooltip while hover on ellipsis is applied.. 
-     * {% codeBlock src='clipMode/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/clipMode/index.md' %}{% endcodeBlock %}
      * @default Ellipsis
      */
     clipMode?: ClipMode;
@@ -758,7 +758,7 @@ export interface GridModel extends ComponentModel{
     /**
      * If `allowMultiSorting` set to true, then it will allow the user to sort multiple column in the grid.
      * > `allowSorting` should be true.
-     * {% codeBlock src='allowMultiSorting/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/allowMultiSorting/index.md' %}{% endcodeBlock %}
      * @default false
      */
     allowMultiSorting?: boolean;
@@ -767,7 +767,7 @@ export interface GridModel extends ComponentModel{
      * If `allowExcelExport` set to true, then it will allow the user to export grid to Excel file.
      * 
      * > Check the [`ExcelExport`](../../grid/excel-exporting/) to configure exporting document.
-     * {% codeBlock src='allowExcelExport/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/allowExcelExport/index.md' %}{% endcodeBlock %}
      * @default false    
      */
     allowExcelExport?: boolean;
@@ -776,21 +776,21 @@ export interface GridModel extends ComponentModel{
      * If `allowPdfExport` set to true, then it will allow the user to export grid to Pdf file.
      * 
      * > Check the [`Pdfexport`](../../grid/pdf-export/) to configure the exporting document.
-     * {% codeBlock src='allowPdfExport/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/allowPdfExport/index.md' %}{% endcodeBlock %}
      * @default false    
      */
     allowPdfExport?: boolean;
 
     /**
      * Configures the sort settings.  
-     * {% codeBlock src='sortSettings/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/sortSettings/index.md' %}{% endcodeBlock %}
      * @default {columns:[]}    
      */
     sortSettings?: SortSettingsModel;
 
     /**
      * Configures the infinite scroll settings.  
-     * {% codeBlock src='infiniteScrollSettings/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/infiniteScrollSettings/index.md' %}{% endcodeBlock %}
      * @default { enableCache: false, maxBlocks: 5, initialBlocks: 5 }    
      * @deprecated
      */
@@ -798,7 +798,7 @@ export interface GridModel extends ComponentModel{
 
     /**
      * If `allowSelection` is set to true, it allows selection of (highlight row) Grid records by clicking it. 
-     * {% codeBlock src='allowSelection/index.md' %}{% endcodeBlock %} 
+     * {% codeBlock src='grid/allowSelection/index.md' %}{% endcodeBlock %} 
      * @default true        
      */
     allowSelection?: boolean;
@@ -806,14 +806,14 @@ export interface GridModel extends ComponentModel{
     /**
      * The `selectedRowIndex` allows you to select a row at initial rendering. 
      * You can also get the currently selected row index.
-     * {% codeBlock src='selectedRowIndex/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/selectedRowIndex/index.md' %}{% endcodeBlock %}
      * @default -1        
      */
     selectedRowIndex?: number;
 
     /**
      * Configures the selection settings.  
-     * {% codeBlock src='selectionSettings/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/selectionSettings/index.md' %}{% endcodeBlock %}
      * @default {mode: 'Row', cellSelectionMode: 'Flow', type: 'Single'}    
      */
     selectionSettings?: SelectionSettingsModel;
@@ -824,7 +824,7 @@ export interface GridModel extends ComponentModel{
      * Filter bar allows the user to filter grid records with required criteria.   
      * 
      * > Check the [`Filtering`](../../grid/filtering/) to customize its default behavior.
-     * {% codeBlock src='allowFiltering/index.md' %}{% endcodeBlock %}   
+     * {% codeBlock src='grid/allowFiltering/index.md' %}{% endcodeBlock %}   
      * @default false    
      */
     allowFiltering?: boolean;
@@ -833,21 +833,21 @@ export interface GridModel extends ComponentModel{
      * If `allowReordering` is set to true, Grid columns can be reordered. 
      * Reordering can be done by drag and drop of a particular column from one index to another index.  
      * > If Grid is rendered with stacked headers, reordering is allowed only at the same level as the column headers.
-     * {% codeBlock src='allowReordering/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/allowReordering/index.md' %}{% endcodeBlock %}
      * @default false    
      */
     allowReordering?: boolean;
 
     /**
      * If `allowResizing` is set to true, Grid columns can be resized. 
-     * {% codeBlock src='allowResizing/index.md' %}{% endcodeBlock %}     
+     * {% codeBlock src='grid/allowResizing/index.md' %}{% endcodeBlock %}     
      * @default false    
      */
     allowResizing?: boolean;
 
     /**
      * If `allowRowDragAndDrop` is set to true, you can drag and drop grid rows at another grid. 
-     * {% codeBlock src='allowRowDragAndDrop/index.md' %}{% endcodeBlock %}   
+     * {% codeBlock src='grid/allowRowDragAndDrop/index.md' %}{% endcodeBlock %}   
      * @default false    
      */
     allowRowDragAndDrop?: boolean;
@@ -861,7 +861,7 @@ export interface GridModel extends ComponentModel{
     /**
      * Configures the filter settings of the Grid.  
      * @default {columns: [], type: 'FilterBar', mode: 'Immediate', showFilterBarStatus: true, immediateModeDelay: 1500 , operators: {}} 
-     * {% codeBlock src='filterSettings/index.md' %}{% endcodeBlock %}   
+     * {% codeBlock src='grid/filterSettings/index.md' %}{% endcodeBlock %}   
      */
     filterSettings?: FilterSettingsModel;
 
@@ -870,7 +870,7 @@ export interface GridModel extends ComponentModel{
      * Grouping can be done by drag and drop columns from column header to group drop area. 
      * 
      * > Check the [`Grouping`](../../grid/grouping/) to customize its default behavior.
-     * {% codeBlock src='allowGrouping/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/allowGrouping/index.md' %}{% endcodeBlock %}
      * @default false    
      */
     allowGrouping?: boolean;
@@ -879,21 +879,21 @@ export interface GridModel extends ComponentModel{
      * If `showColumnMenu` set to true, then it will enable the column menu options in each columns.
      * 
      * > Check the [`Column menu`](../../grid/columns/#column-menu/) for its configuration.
-     * {% codeBlock src='showColumnMenu/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/showColumnMenu/index.md' %}{% endcodeBlock %}
      * @default false    
      */
     showColumnMenu?: boolean;
 
     /**
      * Configures the group settings. 
-     * {% codeBlock src='groupSettings/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/groupSettings/index.md' %}{% endcodeBlock %}
      * @default {showDropArea: true, showToggleButton: false, showGroupedColumn: false, showUngroupButton: true, columns: []}    
      */
     groupSettings?: GroupSettingsModel;
 
     /**
      * Configures the edit settings. 
-     * {% codeBlock src='editSettings/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/editSettings/index.md' %}{% endcodeBlock %}
      * @default { allowAdding: false, allowEditing: false, allowDeleting: false, mode:'Normal',
      * allowEditOnDblClick: true, showConfirmDialog: true, showDeleteConfirmDialog: false }    
      */
@@ -901,7 +901,7 @@ export interface GridModel extends ComponentModel{
 
     /**
      * Configures the Grid aggregate rows.
-     * {% codeBlock src='aggregates/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/aggregates/index.md' %}{% endcodeBlock %}
      * > Check the [`Aggregates`](../../grid/aggregates/) for its configuration.
      * @default []
      */
@@ -911,7 +911,7 @@ export interface GridModel extends ComponentModel{
      * If `showColumnChooser` is set to true, it allows you to dynamically show or hide columns.  
      * 
      * > Check the [`ColumnChooser`](../../grid/columns/#column-chooser/) for its configuration.
-     * {% codeBlock src='showColumnChooser/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/showColumnChooser/index.md' %}{% endcodeBlock %}
      * @default false    
      */
     showColumnChooser?: boolean;
@@ -930,14 +930,14 @@ export interface GridModel extends ComponentModel{
 
     /**
      * Defines the scrollable height of the grid content.    
-     * {% codeBlock src='height/index.md' %}{% endcodeBlock %} 
+     * {% codeBlock src='grid/height/index.md' %}{% endcodeBlock %} 
      * @default 'auto'    
      */
     height?: string | number;
 
     /**
      * Defines the Grid width.
-     * {% codeBlock src='width/index.md' %}{% endcodeBlock %}    
+     * {% codeBlock src='grid/width/index.md' %}{% endcodeBlock %}    
      * @default 'auto'    
      */
     width?: string | number;
@@ -949,7 +949,7 @@ export interface GridModel extends ComponentModel{
      * * `Horizontal`: Displays the horizontal grid lines only. 
      * * `Vertical`: Displays the vertical grid lines only.
      * * `Default`: Displays grid lines based on the theme.
-     * {% codeBlock src='gridLines/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/gridLines/index.md' %}{% endcodeBlock %}
      * @default Default
      */
     gridLines?: GridLine;
@@ -992,7 +992,7 @@ export interface GridModel extends ComponentModel{
      * Defines the print modes. The available print modes are   
      * * `AllPages`: Prints all pages of the Grid. 
      * * `CurrentPage`: Prints the current page of the Grid.
-     * {% codeBlock src='printMode/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/printMode/index.md' %}{% endcodeBlock %}
      * @default AllPages
      */
     printMode?: PrintMode;
@@ -1015,7 +1015,7 @@ export interface GridModel extends ComponentModel{
      *  the Grid will not initialize a new one. 
      * 
      * > Check the available [`Adaptors`](../../data/adaptors/) to customize the data operation.
-     * {% codeBlock src='dataSource/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/dataSource/index.md' %}{% endcodeBlock %}
      * @default []    
      * @isGenericType true
      */
@@ -1023,7 +1023,7 @@ export interface GridModel extends ComponentModel{
 
     /**
      * Defines the height of Grid rows.
-     * {% codeBlock src='rowHeight/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/rowHeight/index.md' %}{% endcodeBlock %}
      * @default null
      */
     rowHeight?: number;
@@ -1031,7 +1031,7 @@ export interface GridModel extends ComponentModel{
     /**
      * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/data/api-query.html) 
      * that will be executed along with data processing.  
-     * {% codeBlock src='query/index.md' %}{% endcodeBlock %}  
+     * {% codeBlock src='grid/query/index.md' %}{% endcodeBlock %}  
      * @default null    
      * @blazorType Syncfusion.Blazor.Data.Query 
      */
@@ -1065,7 +1065,7 @@ export interface GridModel extends ComponentModel{
      *  > Check the [`Toolbar`](../../grid/tool-bar/#custom-toolbar-items/) to customize its default items.
      * 
      * {% codeBlock src="grid/toolbar-api/index.ts" %}{% endcodeBlock %}
-     * {% codeBlock src='toolbar/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/toolbar/index.md' %}{% endcodeBlock %}
      * @default null
      */
     toolbar?: (ToolbarItems | string | ItemModel | ToolbarItem)[];
@@ -1127,14 +1127,14 @@ export interface GridModel extends ComponentModel{
     /**
      * Gets or sets the number of frozen rows.
      * @default 0
-     * {% codeBlock src='frozenRows/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/frozenRows/index.md' %}{% endcodeBlock %}
      */
     frozenRows?: number;
 
     /**
      * Gets or sets the number of frozen columns.
      * @default 0
-     * {% codeBlock src='frozenColumns/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='grid/frozenColumns/index.md' %}{% endcodeBlock %}
      */
     frozenColumns?: number;
 

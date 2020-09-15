@@ -6,6 +6,15 @@
 
 #### Bug Fixes
 
+- `#292933` - checkbox rendered properly while using  the template column.
+- `#290187` - Row drag and drop between treegrid works fine while using self reference data binding.
+
+## 18.2.57 (2020-09-08)
+
+### TreeGrid
+
+#### Bug Fixes
+
 - `#291330` - Expand or Collapse of the inner level parent records in custom binding works fine.
 - `#289600` - Updating the datasource dynamically with Virtualization after scrolling works fine.
 

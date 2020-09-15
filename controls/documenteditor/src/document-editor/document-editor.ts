@@ -685,6 +685,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public afterFormFieldFill: EmitType<FormFieldFillEventArgs>;
+    /**
+     * Triggers when user interaction prevented in content control.
+     * @event
+     */
+    @Event()
+    public contentControl: EmitType<Object>;
 
     /**
      * @private
@@ -889,8 +895,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         this.documentHelper.initializeComponents();
-        this.openBlank();
         this.renderComplete();
+        this.openBlank();
     }
     /**
      * Get component name
@@ -2263,7 +2269,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public showSpellCheckDialog(): void {
         if (this.spellCheckDialogModule && this.spellChecker) {
             let element: ContextElementInfo = this.spellChecker.retriveText();
-            this.spellCheckDialogModule.show(element.text, element.element);
+            if (!isNullOrUndefined(element)) {
+                this.spellCheckDialogModule.show(element.text, element.element);
+            }
         }
     }
     /**

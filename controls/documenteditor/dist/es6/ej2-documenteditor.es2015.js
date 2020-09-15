@@ -6367,7 +6367,8 @@ class Layout {
             return;
         }
         if (element instanceof ListTextElementBox || this.isFieldCode || element instanceof BookmarkElementBox ||
-            element instanceof EditRangeEndElementBox || element instanceof EditRangeStartElementBox) {
+            element instanceof EditRangeEndElementBox || element instanceof EditRangeStartElementBox
+            || element instanceof ContentControl) {
             if (element instanceof BookmarkElementBox) {
                 if (element.bookmarkType === 0 && !this.documentHelper.bookmarks.containsKey(element.name)) {
                     this.documentHelper.bookmarks.add(element.name, element);
@@ -6377,6 +6378,20 @@ class Layout {
                     if (isNullOrUndefined(bookmrkElement.reference)) {
                         bookmrkElement.reference = element;
                         element.reference = bookmrkElement;
+                    }
+                }
+            }
+            if (element instanceof ContentControl && this.documentHelper.contentControlCollection.indexOf(element) === -1) {
+                if (element.type === 0) {
+                    this.documentHelper.contentControlCollection.push(element);
+                }
+                else if (element.type === 1) {
+                    for (let i = 0; i < this.documentHelper.contentControlCollection.length; i++) {
+                        let cCStart = this.documentHelper.contentControlCollection[i];
+                        if (element.contentControlProperties === cCStart.contentControlProperties) {
+                            element.reference = cCStart;
+                            cCStart.reference = element;
+                        }
                     }
                 }
             }
@@ -16034,7 +16049,7 @@ class DocumentHelper {
          * @private
          */
         this.onPaste = (event) => {
-            if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
+            if ((!this.owner.isReadOnlyMode && this.owner.editor.canEditContentControl) || this.selection.isInlineFormFillMode()) {
                 this.owner.editorModule.pasteInternal(event);
             }
             this.editableDiv.innerText = '';
@@ -16799,6 +16814,8 @@ class DocumentHelper {
         this.isIosDevice = /Mac|iPad|iPod/i.test(navigator.userAgent);
         this.isMobileDevice = /Android|Windows Phone|webOS/i.test(navigator.userAgent);
         this.formFillPopup = new FormFieldPopUp(this.owner);
+        this.customXmlData = new Dictionary();
+        this.contentControlCollection = [];
     }
     /**
      * Gets visible bounds.
@@ -17069,6 +17086,8 @@ class DocumentHelper {
         if (this.formFillPopup) {
             this.formFillPopup.hidePopup();
         }
+        this.customXmlData.clear();
+        this.contentControlCollection = [];
     }
     /**
      * @private
@@ -20458,6 +20477,7 @@ class ParagraphWidget extends BlockWidget {
                 if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
                     || inline instanceof EditRangeEndElementBox || inline instanceof EditRangeStartElementBox
                     || inline instanceof ChartElementBox || inline instanceof ShapeElementBox
+                    || inline instanceof ContentControl
                     || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter(inline))) {
                     return false;
                 }
@@ -20668,6 +20688,9 @@ class ParagraphWidget extends BlockWidget {
         paragraph.y = this.y;
         paragraph.height = this.height;
         paragraph.width = this.width;
+        if (this.contentControlProperties) {
+            paragraph.contentControlProperties = this.contentControlProperties;
+        }
         return paragraph;
     }
     /**
@@ -21391,6 +21414,9 @@ class TableWidget extends BlockWidget {
         table.height = this.height;
         table.width = this.width;
         table.containerWidget = this.containerWidget;
+        if (this.contentControlProperties) {
+            table.contentControlProperties = this.contentControlProperties;
+        }
         return table;
     }
     /**
@@ -21858,6 +21884,9 @@ class TableRowWidget extends BlockWidget {
         row.y = this.y;
         row.height = this.height;
         row.width = this.width;
+        if (this.contentControlProperties) {
+            row.contentControlProperties = this.contentControlProperties;
+        }
         return row;
     }
     /**
@@ -22831,6 +22860,9 @@ class TableCellWidget extends BlockWidget {
         cell.y = this.y;
         cell.height = this.height;
         cell.width = this.width;
+        if (this.contentControlProperties) {
+            cell.contentControlProperties = this.contentControlProperties;
+        }
         return cell;
     }
     /**
@@ -23007,8 +23039,9 @@ class LineWidget {
                 }
                 if (inlineElement instanceof TextElementBox || inlineElement instanceof EditRangeStartElementBox
                     || inlineElement instanceof ImageElementBox || inlineElement instanceof EditRangeEndElementBox
-                    || inlineElement instanceof BookmarkElementBox || (inlineElement instanceof FieldElementBox
-                    && HelperMethods.isLinkedFieldCharacter(inlineElement))) {
+                    || inlineElement instanceof BookmarkElementBox || inlineElement instanceof ContentControl
+                    || (inlineElement instanceof FieldElementBox
+                        && HelperMethods.isLinkedFieldCharacter(inlineElement))) {
                     startOffset = count + inlineElement.length;
                 }
                 count += inlineElement.length;
@@ -23260,7 +23293,7 @@ class LineWidget {
                     continue;
                 }
                 if (!isStarted && (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
-                    || inlineElement instanceof ShapeElementBox
+                    || inlineElement instanceof ShapeElementBox || inlineElement instanceof ContentControl
                     || inlineElement instanceof BookmarkElementBox || inlineElement instanceof EditRangeEndElementBox
                     || inlineElement instanceof EditRangeStartElementBox
                     || inlineElement instanceof FieldElementBox
@@ -23447,7 +23480,7 @@ class ElementBox {
      */
     get isValidNodeForTracking() {
         // tslint:disable-next-line:max-line-length
-        if (this instanceof BookmarkElementBox || this instanceof CommentCharacterElementBox || this instanceof EditRangeStartElementBox || this instanceof EditRangeEndElementBox) {
+        if (this instanceof BookmarkElementBox || this instanceof CommentCharacterElementBox || this instanceof EditRangeStartElementBox || this instanceof EditRangeEndElementBox || this instanceof ContentControl) {
             return false;
         }
         return true;
@@ -23676,7 +23709,7 @@ class ElementBox {
     get nextValidNodeForTracking() {
         let elementBox = this;
         //tslint:disable-next-line:max-line-length
-        while (!isNullOrUndefined(elementBox) && (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox)) {
+        while (!isNullOrUndefined(elementBox) && (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox || elementBox instanceof ContentControl)) {
             elementBox = elementBox.nextNode;
         }
         return elementBox;
@@ -23687,7 +23720,7 @@ class ElementBox {
     get previousValidNodeForTracking() {
         let elementBox = this;
         //tslint:disable-next-line:max-line-length
-        while (!isNullOrUndefined(elementBox) && (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox)) {
+        while (!isNullOrUndefined(elementBox) && (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox || elementBox instanceof ContentControl)) {
             elementBox = elementBox.previousNode;
         }
         return elementBox;
@@ -24125,6 +24158,9 @@ class TextElementBox extends ElementBox {
         }
         span.width = this.width;
         span.height = this.height;
+        if (this.contentControlProperties) {
+            span.contentControlProperties = this.contentControlProperties;
+        }
         return span;
     }
     /**
@@ -24313,6 +24349,222 @@ class BookmarkElementBox extends ElementBox {
         }
         span.width = this.width;
         span.height = this.height;
+        if (this.contentControlProperties) {
+            span.contentControlProperties = this.contentControlProperties;
+        }
+        return span;
+    }
+}
+/**
+ * @private
+ */
+class ContentControl extends ElementBox {
+    constructor(widgetType) {
+        super();
+        this.contentControlWidgetType = widgetType;
+        this.contentControlProperties = new ContentControlProperties(widgetType);
+    }
+    /**
+     * @private
+     */
+    getLength() {
+        return 1;
+    }
+    /**
+     * @private
+     */
+    clone() {
+        let span = new ContentControl(this.contentControlWidgetType);
+        span.characterFormat.copyFormat(this.characterFormat);
+        span.contentControlProperties = this.contentControlProperties;
+        span.contentControlWidgetType = this.contentControlWidgetType;
+        if (this.margin) {
+            span.margin = this.margin.clone();
+        }
+        if (this.revisions.length > 0) {
+            span.removedIds = Revision.cloneRevisions(this.revisions);
+        }
+        else {
+            span.removedIds = this.removedIds.slice();
+        }
+        span.type = this.type;
+        span.width = this.width;
+        span.height = this.height;
+        span.reference = this.reference;
+        return span;
+    }
+    /**
+     * @private
+     */
+    destroy() {
+        this.contentControlProperties = undefined;
+        this.contentControlWidgetType = undefined;
+        super.destroy();
+    }
+}
+/**
+ * @private
+ */
+/**
+ * @private
+ */
+class ContentControlProperties {
+    constructor(widgetType) {
+        /**
+         * @private
+         */
+        this.contentControlListItems = [];
+        this.contentControlWidgetType = widgetType;
+        this.characterFormat = new WCharacterFormat();
+    }
+    /**
+     * @private
+     */
+    destroy() {
+        this.lockContentControl = undefined;
+        this.lockContents = undefined;
+        this.tag = undefined;
+        this.color = undefined;
+        this.title = undefined;
+        this.appearance = undefined;
+        this.type = undefined;
+        this.hasPlaceHolderText = undefined;
+        this.multiline = undefined;
+        this.isTemporary = undefined;
+        this.isChecked = undefined;
+        this.dateCalendarType = undefined;
+        this.dateStorageFormat = undefined;
+        this.dateDisplayLocale = undefined;
+        this.dateDisplayFormat = undefined;
+    }
+    /**
+     * @private
+     */
+    clone() {
+        let span = new ContentControlProperties(this.contentControlWidgetType);
+        span.lockContentControl = this.lockContentControl;
+        span.lockContents = this.lockContents;
+        span.tag = this.tag;
+        span.color = this.color;
+        span.title = this.title;
+        span.appearance = this.appearance;
+        span.type = this.type;
+        span.hasPlaceHolderText = this.hasPlaceHolderText;
+        span.multiline = this.multiline;
+        span.isTemporary = this.isTemporary;
+        span.isChecked = this.isChecked;
+        span.dateCalendarType = this.dateCalendarType;
+        span.dateStorageFormat = this.dateStorageFormat;
+        span.dateDisplayLocale = this.dateDisplayLocale;
+        span.dateDisplayFormat = this.dateDisplayFormat;
+        if (this.contentControlListItems.length > 0) {
+            for (let i = 0; i < this.contentControlListItems.length; i++) {
+                span.contentControlListItems.push(this.contentControlListItems[i].clone());
+            }
+        }
+        if (this.checkedState) {
+            span.checkedState = this.checkedState.clone();
+        }
+        if (this.uncheckedState) {
+            span.uncheckedState = this.uncheckedState.clone();
+        }
+        if (this.xmlMapping) {
+            span.xmlMapping = this.xmlMapping.clone();
+        }
+        return span;
+    }
+}
+/**
+ * @private
+ */
+class ContentControlListItems {
+    /**
+     * @private
+     */
+    destroy() {
+        this.displayText = undefined;
+        this.value = undefined;
+    }
+    /**
+     * @private
+     */
+    clone() {
+        let span = new ContentControlListItems();
+        span.displayText = this.displayText;
+        span.value = this.value;
+        return span;
+    }
+}
+/**
+ * @private
+ */
+class CheckBoxState {
+    /**
+     * @private
+     */
+    destroy() {
+        this.font = undefined;
+        this.value = undefined;
+    }
+    /**
+     * @private
+     */
+    clone() {
+        let span = new CheckBoxState();
+        span.font = this.font;
+        span.value = this.value;
+        return span;
+    }
+}
+/**
+ * @private
+ */
+class XmlMapping {
+    /**
+     * @private
+     */
+    destroy() {
+        this.isMapped = undefined;
+        this.isWordMl = undefined;
+        this.prefixMapping = undefined;
+        this.xPath = undefined;
+        this.storeItemId = undefined;
+        this.customXmlPart = undefined;
+    }
+    /**
+     * @private
+     */
+    clone() {
+        let span = new XmlMapping();
+        span.isMapped = this.isMapped;
+        span.isWordMl = this.isWordMl;
+        span.prefixMapping = this.prefixMapping;
+        span.xPath = this.xPath;
+        span.storeItemId = this.storeItemId;
+        if (this.customXmlPart) {
+            span.customXmlPart = this.customXmlPart.clone();
+        }
+        return span;
+    }
+}
+/**
+ * @private
+ */
+class CustomXmlPart {
+    /**
+     * @private
+     */
+    destroy() {
+        this.id = undefined;
+        this.xml = undefined;
+    }
+    /**
+     * @private
+     */
+    clone() {
+        let span = new CustomXmlPart();
+        span.id = this.id;
+        span.xml = this.xml;
         return span;
     }
 }
@@ -27579,10 +27831,21 @@ class SfdtReader {
         if (!isNullOrUndefined(jsonObject.sections)) {
             this.parseSections(jsonObject.sections, sections);
         }
+        if (!isNullOrUndefined(jsonObject.customXml)) {
+            this.parseCustomXml(jsonObject);
+        }
         if (!isNullOrUndefined(jsonObject.formFieldShading)) {
             this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading = jsonObject.formFieldShading;
         }
         return sections;
+    }
+    parseCustomXml(data) {
+        for (let i = 0; i < data.customXml.length; i++) {
+            let xmlData = data.customXml[i];
+            if (!this.revisionCollection.containsKey(xmlData.itemID)) {
+                this.documentHelper.customXmlData.add(xmlData.itemID, xmlData.xml);
+            }
+        }
     }
     parseDocumentProtection(data) {
         if (!isNullOrUndefined(data.formatting)) {
@@ -27972,7 +28235,8 @@ class SfdtReader {
             }
         }
     }
-    parseBody(data, blocks, container, isSectionBreak) {
+    // tslint:disable-next-line:max-line-length
+    parseBody(data, blocks, container, isSectionBreak, contentControlProperties) {
         if (!isNullOrUndefined(data)) {
             for (let i = 0; i < data.length; i++) {
                 let block = data[i];
@@ -28001,11 +28265,51 @@ class SfdtReader {
                     else if (isSectionBreak && data.length === 1) {
                         blocks.push(paragraph);
                     }
-                    paragraph.index = i;
+                    paragraph.index = blocks.length - 1;
                     paragraph.containerWidget = container;
                 }
                 else if (block.hasOwnProperty('rows')) {
-                    this.parseTable(block, blocks, i, container);
+                    this.parseTable(block, blocks, blocks.length, container);
+                }
+                else if (block.hasOwnProperty('contentControlProperties')) {
+                    let blockStartContentControl = new ContentControl('Block');
+                    let blockEndContentControl = new ContentControl('Block');
+                    this.parseContentControlProperties(block.contentControlProperties, blockStartContentControl.contentControlProperties);
+                    blockEndContentControl.contentControlProperties = blockStartContentControl.contentControlProperties;
+                    blockStartContentControl.type = 0;
+                    blockEndContentControl.type = 1;
+                    this.parseBody(block.blocks, blocks, container, isSectionBreak, blockStartContentControl.contentControlProperties);
+                    for (let j = 0; j < 2; j++) {
+                        let para = j === 0 ? blocks[blocks.length - block.blocks.length] : blocks[blocks.length - 1];
+                        let blockWidget;
+                        if (para instanceof ParagraphWidget) {
+                            blockWidget = para;
+                        }
+                        else if (para instanceof TableWidget) {
+                            if (j === 0) {
+                                blockWidget = para.firstChild.firstChild.firstChild;
+                            }
+                            else {
+                                let cell = para.lastChild.lastChild;
+                                blockWidget = cell.lastChild;
+                            }
+                        }
+                        if (blockWidget.childWidgets.length === 0) {
+                            let lineWidget = new LineWidget(blockWidget);
+                            blockWidget.childWidgets.push(lineWidget);
+                        }
+                        if (j === 0) {
+                            blockWidget.firstChild.children.splice(0, 0, blockStartContentControl);
+                            blockStartContentControl.line = blockWidget.firstChild;
+                        }
+                        else {
+                            blockWidget.lastChild.children.push(blockEndContentControl);
+                            blockEndContentControl.line = blockWidget.lastChild;
+                        }
+                    }
+                }
+                if (!isNullOrUndefined(contentControlProperties)) {
+                    blocks[blocks.length - 1].contentControlProperties = contentControlProperties;
                 }
             }
         }
@@ -28023,6 +28327,10 @@ class SfdtReader {
             let row = new TableRowWidget();
             row.rowFormat = new WRowFormat(row);
             let tableRow = block.rows[i];
+            if (!isNullOrUndefined(tableRow.contentControlProperties)) {
+                row.contentControlProperties = new ContentControlProperties('Row');
+                this.parseContentControlProperties(tableRow.contentControlProperties, row.contentControlProperties);
+            }
             if (tableRow.hasOwnProperty('rowFormat')) {
                 this.parseRowFormat(tableRow.rowFormat, row.rowFormat);
                 this.parseRowGridValues(tableRow, row.rowFormat);
@@ -28031,6 +28339,10 @@ class SfdtReader {
                 for (let j = 0; j < block.rows[i].cells.length; j++) {
                     let cell = new TableCellWidget();
                     cell.cellFormat = new WCellFormat(cell);
+                    if (!isNullOrUndefined(block.rows[i].cells[j].contentControlProperties)) {
+                        cell.contentControlProperties = new ContentControlProperties('Cell');
+                        this.parseContentControlProperties(block.rows[i].cells[j].contentControlProperties, cell.contentControlProperties);
+                    }
                     row.childWidgets.push(cell);
                     cell.containerWidget = row;
                     cell.index = j;
@@ -28041,6 +28353,46 @@ class SfdtReader {
                     }
                     this.isPageBreakInsideTable = true;
                     this.parseTextBody(block.rows[i].cells[j].blocks, cell, false);
+                    if (!isNullOrUndefined(cell.contentControlProperties)) {
+                        let cellStartContentControl = new ContentControl('Cell');
+                        let cellEndContentControl = new ContentControl('Cell');
+                        cellStartContentControl.contentControlProperties = cell.contentControlProperties;
+                        cellEndContentControl.contentControlProperties = cell.contentControlProperties;
+                        cellStartContentControl.type = 0;
+                        cellEndContentControl.type = 1;
+                        if (cell.firstChild.childWidgets.length === 0) {
+                            let lineWidget = new LineWidget(cell.firstChild);
+                            cell.firstChild.childWidgets.push(lineWidget);
+                        }
+                        cellStartContentControl.line = cell.firstChild.firstChild;
+                        cell.firstChild.firstChild.children.splice(0, 0, cellStartContentControl);
+                        cellEndContentControl.line = cell.lastChild.lastChild;
+                        cell.lastChild.lastChild.children.push(cellEndContentControl);
+                    }
+                    if (!isNullOrUndefined(row.contentControlProperties)) {
+                        if (row.firstChild === cell) {
+                            let rowStartContentControl = new ContentControl('Row');
+                            rowStartContentControl.contentControlProperties = row.contentControlProperties;
+                            rowStartContentControl.type = 0;
+                            if (cell.firstChild.childWidgets.length === 0) {
+                                let lineWidget = new LineWidget(cell.firstChild);
+                                cell.firstChild.childWidgets.push(lineWidget);
+                            }
+                            rowStartContentControl.line = cell.firstChild.firstChild;
+                            cell.firstChild.firstChild.children.splice(0, 0, rowStartContentControl);
+                        }
+                        else if (row.lastChild === cell) {
+                            let rowEndContentControl = new ContentControl('Row');
+                            rowEndContentControl.contentControlProperties = row.contentControlProperties;
+                            rowEndContentControl.type = 1;
+                            if (cell.lastChild.childWidgets.length === 0) {
+                                let lineWidget = new LineWidget(cell.lastChild);
+                                cell.lastChild.childWidgets.push(lineWidget);
+                            }
+                            rowEndContentControl.line = cell.lastChild.lastChild;
+                            cell.lastChild.lastChild.children.push(rowEndContentControl);
+                        }
+                    }
                     this.isPageBreakInsideTable = false;
                 }
             }
@@ -28071,9 +28423,104 @@ class SfdtReader {
             rowFormat.gridAfterWidthType = data.gridAfterWidthType;
         }
     }
+    parseContentControlProperties(wContentControlProperties, contentControlProperties) {
+        if (!isNullOrUndefined(wContentControlProperties.lockContentControl)) {
+            contentControlProperties.lockContentControl = wContentControlProperties.lockContentControl;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.lockContents)) {
+            contentControlProperties.lockContents = wContentControlProperties.lockContents;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.tag)) {
+            contentControlProperties.tag = wContentControlProperties.tag;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.color)) {
+            contentControlProperties.color = wContentControlProperties.color;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.title)) {
+            contentControlProperties.title = wContentControlProperties.title;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.appearance)) {
+            contentControlProperties.appearance = wContentControlProperties.appearance;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.type)) {
+            contentControlProperties.type = wContentControlProperties.type;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.hasPlaceHolderText)) {
+            contentControlProperties.hasPlaceHolderText = wContentControlProperties.hasPlaceHolderText;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.multiline)) {
+            contentControlProperties.multiline = wContentControlProperties.multiline;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.isTemporary)) {
+            contentControlProperties.isTemporary = wContentControlProperties.isTemporary;
+        }
+        if (!isNullOrUndefined(wContentControlProperties.characterFormat)) {
+            this.parseCharacterFormat(wContentControlProperties.characterFormat, contentControlProperties.characterFormat);
+        }
+        if (contentControlProperties.type === 'CheckBox') {
+            if (!isNullOrUndefined(wContentControlProperties.isChecked)) {
+                contentControlProperties.isChecked = wContentControlProperties.isChecked;
+            }
+            if (!isNullOrUndefined(wContentControlProperties.uncheckedState)) {
+                contentControlProperties.uncheckedState = new CheckBoxState();
+                contentControlProperties.uncheckedState.font = wContentControlProperties.uncheckedState.font;
+                contentControlProperties.uncheckedState.value = wContentControlProperties.uncheckedState.value;
+            }
+            if (!isNullOrUndefined(wContentControlProperties.checkedState)) {
+                contentControlProperties.checkedState = new CheckBoxState();
+                contentControlProperties.checkedState.font = wContentControlProperties.checkedState.font;
+                contentControlProperties.checkedState.value = wContentControlProperties.checkedState.value;
+            }
+        }
+        else if (contentControlProperties.type === 'Date') {
+            if (!isNullOrUndefined(wContentControlProperties.dateCalendarType)) {
+                contentControlProperties.dateCalendarType = wContentControlProperties.dateCalendarType;
+            }
+            if (!isNullOrUndefined(wContentControlProperties.dateStorageFormat)) {
+                contentControlProperties.dateStorageFormat = wContentControlProperties.dateStorageFormat;
+            }
+            if (!isNullOrUndefined(wContentControlProperties.dateDisplayLocale)) {
+                contentControlProperties.dateDisplayLocale = wContentControlProperties.dateDisplayLocale;
+            }
+            if (!isNullOrUndefined(wContentControlProperties.dateDisplayFormat)) {
+                contentControlProperties.dateDisplayFormat = wContentControlProperties.dateDisplayFormat;
+            }
+        }
+        else if (contentControlProperties.type === 'ComboBox' || contentControlProperties.type === 'DropDownList') {
+            if (!isNullOrUndefined(wContentControlProperties.contentControlListItems)) {
+                for (let i = 0; i < wContentControlProperties.contentControlListItems.length; i++) {
+                    let contentControlListItem = new ContentControlListItems();
+                    contentControlListItem.displayText = wContentControlProperties.contentControlListItems[i].displayText;
+                    contentControlListItem.value = wContentControlProperties.contentControlListItems[i].value;
+                    contentControlProperties.contentControlListItems.push(contentControlListItem);
+                }
+            }
+        }
+        if (!isNullOrUndefined(wContentControlProperties.xmlMapping)) {
+            contentControlProperties.xmlMapping = new XmlMapping();
+            contentControlProperties.xmlMapping.isMapped = wContentControlProperties.xmlMapping.isMapped;
+            contentControlProperties.xmlMapping.isWordMl = wContentControlProperties.xmlMapping.isWordMl;
+            if (!isNullOrUndefined(wContentControlProperties.xmlMapping.prefixMapping)) {
+                contentControlProperties.xmlMapping.prefixMapping = wContentControlProperties.xmlMapping.prefixMapping;
+            }
+            contentControlProperties.xmlMapping.xPath = wContentControlProperties.xmlMapping.xPath;
+            contentControlProperties.xmlMapping.storeItemId = wContentControlProperties.xmlMapping.storeItemId;
+            if (!isNullOrUndefined(wContentControlProperties.xmlMapping.customXmlPart)) {
+                contentControlProperties.xmlMapping.customXmlPart = new CustomXmlPart();
+                contentControlProperties.xmlMapping.customXmlPart.id = wContentControlProperties.xmlMapping.customXmlPart.id;
+                contentControlProperties.xmlMapping.customXmlPart.xml = wContentControlProperties.xmlMapping.customXmlPart.xml;
+            }
+        }
+    }
     // tslint:disable:max-func-body-length
-    parseParagraph(data, paragraph, writeInlineFormat) {
-        let lineWidget = new LineWidget(paragraph);
+    parseParagraph(data, paragraph, writeInlineFormat, lineWidget) {
+        let isContentControl = false;
+        if (isNullOrUndefined(lineWidget)) {
+            lineWidget = new LineWidget(paragraph);
+        }
+        else {
+            isContentControl = true;
+        }
         let hasValidElmts = false;
         let revision;
         let trackChange = this.viewer.owner.enableTrackChanges;
@@ -28410,9 +28857,30 @@ class SfdtReader {
                 lineWidget.children.push(shape);
                 paragraph.floatingElements.push(shape);
             }
+            else if (inline.hasOwnProperty('contentControlProperties')) {
+                let inlineStartContentControl = new ContentControl('Inline');
+                let inlineEndContentControl = new ContentControl('Inline');
+                this.parseContentControlProperties(inline.contentControlProperties, inlineStartContentControl.contentControlProperties);
+                inlineEndContentControl.contentControlProperties = inlineStartContentControl.contentControlProperties;
+                inlineStartContentControl.line = lineWidget;
+                inlineEndContentControl.line = lineWidget;
+                inlineStartContentControl.type = 0;
+                inlineEndContentControl.type = 1;
+                lineWidget.children.push(inlineStartContentControl);
+                this.parseParagraph(inline.inlines, paragraph, writeInlineFormat, lineWidget);
+                let element = lineWidget.children[lineWidget.children.length - 1];
+                while (!(element instanceof ContentControl)) {
+                    element.contentControlProperties = inlineStartContentControl.contentControlProperties;
+                    element = element.previousElement;
+                }
+                lineWidget.children.push(inlineEndContentControl);
+                hasValidElmts = true;
+            }
         }
         this.isCutPerformed = false;
-        paragraph.childWidgets.push(lineWidget);
+        if (!isContentControl) {
+            paragraph.childWidgets.push(lineWidget);
+        }
         return hasValidElmts;
     }
     applyCharacterStyle(inline, elementbox) {
@@ -30157,6 +30625,40 @@ class SelectionSectionFormat {
         this.notifyPropertyChanged('headerDistance');
     }
     /**
+     * Gets or sets the starting page number.
+     * @aspType int
+     * @blazorType int
+     */
+    get pageStartingNumber() {
+        return this.pageStartingNumberIn;
+    }
+    /**
+     * Gets or sets the starting page number.
+     * @aspType int
+     * @blazorType int
+     */
+    set pageStartingNumber(value) {
+        this.pageStartingNumberIn = value;
+        this.notifyPropertyChanged('pageStartingNumber');
+    }
+    /**
+     * Gets or sets a value indicating whether to restart page numbering.
+     * @aspType bool
+     * @blazorType bool
+     */
+    get restartPageNumbering() {
+        return this.restartPageNumberingIn;
+    }
+    /**
+     * Gets or sets a value indicating whether to restart page numbering.
+     * @aspType bool
+     * @blazorType bool
+     */
+    set restartPageNumbering(value) {
+        this.restartPageNumberingIn = value;
+        this.notifyPropertyChanged('restartPageNumbering');
+    }
+    /**
      * Gets or sets the footer distance.
      * @aspType int
      * @blazorType int
@@ -30225,6 +30727,8 @@ class SelectionSectionFormat {
         this.differentFirstPage = format.differentFirstPage;
         this.differentOddAndEvenPages = format.differentOddAndEvenPages;
         this.bidi = format.bidi;
+        this.pageStartingNumber = format.pageStartingNumber;
+        this.restartPageNumbering = format.restartPageNumbering;
     }
     notifyPropertyChanged(propertyName) {
         let selection = this.selection;
@@ -30286,6 +30790,16 @@ class SelectionSectionFormat {
                 return this.headerDistanceIn;
             case 'footerDistance':
                 return this.footerDistance;
+            case 'pageStartingNumber':
+                if (!isNullOrUndefined(this.pageStartingNumber)) {
+                    return this.pageStartingNumber;
+                }
+                return undefined;
+            case 'restartPageNumbering':
+                if (!isNullOrUndefined(this.restartPageNumbering)) {
+                    return this.restartPageNumbering;
+                }
+                return undefined;
             default:
                 return undefined;
         }
@@ -30323,6 +30837,12 @@ class SelectionSectionFormat {
         if (!isNullOrUndefined(this.differentFirstPage) && this.differentFirstPage !== format.differentFirstPage) {
             this.differentFirstPage = undefined;
         }
+        if (!isNullOrUndefined(this.pageStartingNumber) && this.pageStartingNumber !== format.pageStartingNumber) {
+            this.pageStartingNumber = undefined;
+        }
+        if (!isNullOrUndefined(this.restartPageNumbering) && this.restartPageNumbering !== format.restartPageNumbering) {
+            this.restartPageNumbering = undefined;
+        }
         if (!isNullOrUndefined(this.differentOddAndEvenPages) && this.differentOddAndEvenPages !== format.differentOddAndEvenPages) {
             this.differentOddAndEvenPages = undefined;
         }
@@ -30347,6 +30867,8 @@ class SelectionSectionFormat {
         this.differentFirstPage = undefined;
         this.differentOddAndEvenPages = undefined;
         this.bidi = undefined;
+        this.pageStartingNumber = undefined;
+        this.restartPageNumbering = undefined;
     }
     /**
      * Destroys the managed resources.
@@ -30366,6 +30888,8 @@ class SelectionSectionFormat {
         this.differentOddAndEvenPagesIn = undefined;
         this.selection = undefined;
         this.bidi = undefined;
+        this.pageStartingNumberIn = undefined;
+        this.restartPageNumberingIn = undefined;
     }
 }
 /**
@@ -38081,7 +38605,8 @@ class Selection {
             if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
                 || inline instanceof ShapeElementBox || inline instanceof EditRangeStartElementBox
                 || inline instanceof EditRangeEndElementBox || inline instanceof CommentCharacterElementBox
-                || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter(inline))) {
+                || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter(inline))
+                || inline instanceof ContentControl) {
                 return startOffset;
             }
             if (inline instanceof ListTextElementBox) {
@@ -42182,12 +42707,12 @@ class Selection {
         if (!this.pasteElement) {
             this.pasteElement = createElement('div', { className: 'e-de-tooltip' });
             this.documentHelper.viewerContainer.appendChild(this.pasteElement);
-            let splitButtonEle = createElement('button', { id: 'iconsplitbtn' });
+            let splitButtonEle = createElement('button', { id: this.owner.containerId + '_iconsplitbtn' });
             this.pasteElement.appendChild(splitButtonEle);
             this.pasteDropDwn = new DropDownButton({
                 items: items, iconCss: 'e-icons e-de-paste', select: this.pasteOptions
             });
-            this.pasteDropDwn.appendTo('#iconsplitbtn');
+            this.pasteDropDwn.appendTo('#' + this.owner.containerId + '_iconsplitbtn');
         }
         this.pasteElement.style.display = 'block';
         this.pasteElement.style.position = 'absolute';
@@ -43943,15 +44468,80 @@ class Selection {
         }
         return false;
     }
+    /**
+     * @private
+     */
     getPosition(element) {
         let offset = element.line.getOffset(element, 1);
         let startPosition = new TextPosition(this.owner);
         startPosition.setPositionParagraph(element.line, offset);
-        let endElement = element.editRangeEnd;
+        let endElement;
+        if (element instanceof EditRangeStartElementBox) {
+            endElement = element.editRangeEnd;
+        }
+        else if (element instanceof ContentControl) {
+            endElement = element.reference;
+        }
         offset = endElement.line.getOffset(endElement, 1);
         let endPosition = new TextPosition(this.owner);
         endPosition.setPositionParagraph(endElement.line, offset);
         return { 'startPosition': startPosition, 'endPosition': endPosition };
+    }
+    /**
+     * @private
+     */
+    checkContentControlLocked(checkFormat) {
+        this.owner.editorModule.isXmlMapped = false;
+        for (let i = 0; i < this.documentHelper.contentControlCollection.length; i++) {
+            let contentControlStart = this.documentHelper.contentControlCollection[i];
+            let position = this.getPosition(contentControlStart);
+            let cCstart = position.startPosition;
+            let cCend = position.endPosition;
+            let start = this.start;
+            let end = this.end;
+            if (!this.isForward) {
+                start = this.end;
+                end = this.start;
+            }
+            if (isNullOrUndefined(checkFormat)) {
+                // tslint:disable-next-line:max-line-length
+                let cCStartInsideSelction = ((cCstart.isExistAfter(start) || cCstart.isAtSamePosition(start)) && (cCstart.isExistBefore(end) || cCstart.isAtSamePosition(end)));
+                // tslint:disable-next-line:max-line-length
+                let cCEndInsideSelction = ((cCend.isExistAfter(start) || cCend.isAtSamePosition(start)) && (cCend.isExistBefore(end) || cCend.isAtSamePosition(end)));
+                if (cCStartInsideSelction && cCEndInsideSelction) {
+                    if (contentControlStart.contentControlProperties.lockContentControl) {
+                        this.owner.trigger('contentControl');
+                        return true;
+                    }
+                    return false;
+                }
+                if ((cCStartInsideSelction) || (cCEndInsideSelction)) {
+                    if (!(cCstart.isAtSamePosition(start) || cCend.isAtSamePosition(start))) {
+                        return true;
+                    }
+                }
+            }
+            if ((start.isExistAfter(cCstart) || start.isAtSamePosition(cCstart))
+                && (end.isExistBefore(cCend) || end.isAtSamePosition(cCend))) {
+                if (contentControlStart.contentControlProperties.xmlMapping
+                    && contentControlStart.contentControlProperties.xmlMapping.isMapped) {
+                    this.owner.editorModule.isXmlMapped = true;
+                }
+                if (contentControlStart.contentControlProperties.lockContents) {
+                    this.owner.trigger('contentControl');
+                    return true;
+                }
+                else if (isNullOrUndefined(checkFormat)
+                    && (contentControlStart.contentControlProperties.type === 'CheckBox'
+                        || contentControlStart.contentControlProperties.type === 'ComboBox'
+                        || contentControlStart.contentControlProperties.type === 'DropDownList'
+                        || contentControlStart.contentControlProperties.type === 'Date')) {
+                    this.owner.trigger('contentControl');
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     /**
      * @private
@@ -47401,6 +47991,10 @@ class Editor {
         this.editStartRangeCollection = [];
         this.skipReplace = false;
         this.skipTableElements = false;
+        /**
+         * @private
+         */
+        this.isXmlMapped = false;
         /* tslint:disable:no-any */
         this.copiedContent = '';
         /* tslint:enable:no-any */
@@ -47432,7 +48026,7 @@ class Editor {
                 let textBoxText = text.substring(2);
                 if (documentHelper.isCompositionStart && documentHelper.isCompositionUpdated) {
                     documentHelper.isCompositionUpdated = false;
-                    if (!documentHelper.owner.isReadOnlyMode && documentHelper.owner.isDocumentLoaded) {
+                    if (!documentHelper.owner.isReadOnlyMode && documentHelper.owner.isDocumentLoaded && this.canEditContentControl) {
                         if (documentHelper.prefix.substring(2) !== textBoxText) {
                             if (this.selection.isEmpty) {
                                 // tslint:disable-next-line:max-line-length
@@ -47497,7 +48091,7 @@ class Editor {
                     }
                 }
                 // tslint:disable-next-line:max-line-length
-                if (text !== '\r' && text !== '\b' && text !== '\u001B' && !documentHelper.owner.isReadOnlyMode && documentHelper.isControlPressed === false) {
+                if (text !== '\r' && text !== '\b' && text !== '\u001B' && !documentHelper.owner.isReadOnlyMode && documentHelper.isControlPressed === false && this.canEditContentControl) {
                     if (text === '@' || text[0] !== '@' || text === '' || text.length < documentHelper.prefix.length &&
                         textBoxText === documentHelper.prefix.substring(2, documentHelper.prefix.length - 1)) {
                         this.handleBackKey();
@@ -47525,7 +48119,7 @@ class Editor {
                 let text = this.documentHelper.editableDiv.innerText;
                 if (text !== String.fromCharCode(160)) {
                     // tslint:disable-next-line:max-line-length
-                    if (text !== '\r' && text !== '\b' && text !== '\u001B' && !this.owner.isReadOnlyMode && this.documentHelper.isControlPressed === false) {
+                    if (text !== '\r' && text !== '\b' && text !== '\u001B' && !this.owner.isReadOnlyMode && this.documentHelper.isControlPressed === false && this.canEditContentControl) {
                         this.handleTextInput(text);
                     }
                 }
@@ -47541,7 +48135,7 @@ class Editor {
          * @private
          */
         this.onPaste = (event) => {
-            if (!this.owner.isReadOnlyMode) {
+            if (!this.owner.isReadOnlyMode && this.canEditContentControl) {
                 this.pasteInternal(event);
             }
             event.preventDefault();
@@ -47563,6 +48157,15 @@ class Editor {
     get restrictEditing() {
         return this.documentHelper.isDocumentProtected && (this.documentHelper.protectionType === 'ReadOnly'
             && !this.selection.isSelectionInEditRegion() || this.documentHelper.protectionType === 'FormFieldsOnly');
+    }
+    get canEditContentControl() {
+        if (this.owner.isReadOnlyMode) {
+            return false;
+        }
+        if (this.selection.checkContentControlLocked()) {
+            return false;
+        }
+        return true;
     }
     get viewer() {
         return this.owner.viewer;
@@ -47674,7 +48277,7 @@ class Editor {
      * Moves the selected content in the document editor control to clipboard.
      */
     cut() {
-        if (this.owner.isReadOnlyMode || this.selection.isEmpty) {
+        if (this.owner.isReadOnlyMode || this.selection.isEmpty || !this.canEditContentControl) {
             return;
         }
         this.selection.copySelectedContent(true);
@@ -47764,6 +48367,7 @@ class Editor {
             this.owner.editorHistory.currentBaseHistoryInfo.removedNodes.push(commentAdv);
         }
         commentAdv.author = this.owner.currentUser ? this.owner.currentUser : 'Guest user';
+        commentAdv.initial = this.constructCommentInitial(commentAdv.author);
         commentAdv.text = text;
         commentAdv.commentId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         commentRangeStart.comment = commentAdv;
@@ -48599,7 +49203,7 @@ class Editor {
      * @private
      */
     handleBackKey() {
-        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
+        if ((!this.owner.isReadOnlyMode && this.canEditContentControl) || this.selection.isInlineFormFillMode()) {
             this.owner.editorModule.onBackSpace();
         }
         this.selection.checkForCursorVisibility();
@@ -48609,7 +49213,7 @@ class Editor {
      * @private
      */
     handleDelete() {
-        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
+        if ((!this.owner.isReadOnlyMode && this.canEditContentControl) || this.selection.isInlineFormFillMode()) {
             this.owner.editorModule.delete();
         }
         this.selection.checkForCursorVisibility();
@@ -48619,7 +49223,7 @@ class Editor {
      * @private
      */
     handleEnterKey() {
-        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
+        if ((!this.owner.isReadOnlyMode && this.canEditContentControl) || this.selection.isInlineFormFillMode()) {
             if (Browser.isDevice) {
                 this.documentHelper.isCompositionStart = false;
             }
@@ -48631,7 +49235,7 @@ class Editor {
      * @private
      */
     handleTextInput(text) {
-        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
+        if (!this.owner.isReadOnlyMode && this.canEditContentControl || this.selection.isInlineFormFillMode()) {
             if (this.animationTimer) {
                 clearTimeout(this.animationTimer);
             }
@@ -48688,6 +49292,62 @@ class Editor {
             insertFormat.strikethrough = sFormat.strikethrough;
         }
         return insertFormat;
+    }
+    getResultContentControlText(element) {
+        let ele = element.nextNode;
+        let text = '';
+        while (!(ele instanceof ContentControl)) {
+            if (ele instanceof TextElementBox) {
+                text += ele.text;
+            }
+            if (isNullOrUndefined(ele)) {
+                break;
+            }
+            if (isNullOrUndefined(ele.nextNode)) {
+                if (ele.paragraph.nextRenderedWidget) {
+                    ele = ele.paragraph.nextRenderedWidget.firstChild.children[0];
+                }
+                else {
+                    break;
+                }
+            }
+            else {
+                ele = ele.nextNode;
+            }
+        }
+        return text;
+    }
+    updateXmlMappedContentControl() {
+        if (this.isXmlMapped) {
+            let startInlineEle = this.getContentControl();
+            if (startInlineEle && startInlineEle.contentControlProperties) {
+                this.updateCustomXml(startInlineEle.contentControlProperties.xmlMapping.storeItemId, startInlineEle.contentControlProperties.xmlMapping.xPath, this.getResultContentControlText(startInlineEle));
+            }
+        }
+    }
+    updateCustomXml(itemId, xPath, text) {
+        if (this.documentHelper.customXmlData.containsKey(itemId)) {
+            let xml = this.documentHelper.customXmlData.get(itemId);
+            let parser = new DOMParser();
+            let xmlDoc = parser.parseFromString(xml, 'text/xml');
+            let lastText = xPath.substring(xPath.lastIndexOf('/') + 1);
+            lastText = lastText.split('[')[0];
+            lastText = lastText.substring(lastText.lastIndexOf(':') + 1);
+            lastText = lastText.substring(lastText.lastIndexOf('@') + 1);
+            let htmlCollec = xmlDoc.getElementsByTagName(lastText);
+            if (htmlCollec.length > 0) {
+                htmlCollec[0].childNodes[0].nodeValue = text;
+            }
+            else if (xmlDoc.documentElement.attributes.length > 0 && xmlDoc.documentElement.attributes.getNamedItem(lastText) !== null) {
+                xmlDoc.documentElement.attributes.getNamedItem(lastText).value = text;
+            }
+            else {
+                return;
+            }
+            let newXml = new XMLSerializer();
+            let xmlString = newXml.serializeToString(xmlDoc);
+            this.documentHelper.customXmlData.set(itemId, xmlString);
+        }
     }
     /**
      * Inserts the specified text at cursor position
@@ -48955,6 +49615,7 @@ class Editor {
             }
             this.documentHelper.isTextInput = false;
         }
+        this.updateXmlMappedContentControl();
         if (!isReplace && isRemoved && (text === ' ' || text === '\t' || text === '\v')) {
             let isList = false;
             if (!(text === '\v')) {
@@ -51989,6 +52650,9 @@ class Editor {
         }
         newElement.line = element.line;
         newElement.linkFieldCharacter(this.documentHelper);
+        if (newElement instanceof ContentControl && newElement.type === 0) {
+            this.documentHelper.contentControlCollection.push(newElement);
+        }
         if (isTrackingEnabled && !isRevisionCombined && !isUndoing && !this.skipFieldDeleteTracking) {
             // tslint:disable-next-line:max-line-length
             this.checkToCombineRevisionsinBlocks(newElement, prevRevisionCount === newElement.revisions.length, (index === element.length), revisionType);
@@ -52131,7 +52795,7 @@ class Editor {
      * @param {number} height? Image height
      */
     insertImage(imageString, width, height) {
-        if (this.owner.isReadOnlyMode) {
+        if (this.owner.isReadOnlyMode || !this.canEditContentControl) {
             return;
         }
         if (isNullOrUndefined(width)) {
@@ -52150,7 +52814,7 @@ class Editor {
      */
     insertTable(rows, columns) {
         let startPos = this.selection.start;
-        if (this.owner.isReadOnlyMode) {
+        if (this.owner.isReadOnlyMode || !this.canEditContentControl) {
             return;
         }
         rows = rows || 1;
@@ -52188,7 +52852,7 @@ class Editor {
      */
     insertRow(above, count) {
         let rowPlacement = above ? 'Above' : 'Below';
-        if (this.owner.isReadOnlyMode) {
+        if (this.owner.isReadOnlyMode || !this.canEditContentControl) {
             return;
         }
         let startPos = this.selection.isForward ? this.selection.start : this.selection.end;
@@ -52258,7 +52922,7 @@ class Editor {
      * @param {AutoFitType} - auto fit type
      */
     autoFitTable(fitType) {
-        if (this.documentHelper.owner.isReadOnlyMode) {
+        if (this.documentHelper.owner.isReadOnlyMode || !this.canEditContentControl) {
             return;
         }
         let startPosition = this.selection.start;
@@ -52410,7 +53074,7 @@ class Editor {
      * @param {number} count The count parameter is optional and if omitted, it takes the value as 1.
      */
     insertColumn(left, count) {
-        if (this.owner.isReadOnlyMode) {
+        if (this.owner.isReadOnlyMode || !this.canEditContentControl) {
             return;
         }
         let columnPlacement = left ? 'Left' : 'Right';
@@ -53358,39 +54022,40 @@ class Editor {
                 page.footerWidget = hfWidget;
             }
             this.removeFieldInWidget(headerOrFooter);
+            this.removeFieldInWidget(headerOrFooter, undefined, true);
             headerOrFooter.destroy();
         }
     }
     /**
      * @private
      */
-    removeFieldInWidget(widget, isBookmark) {
+    removeFieldInWidget(widget, isBookmark, isContentControl) {
         if (isNullOrUndefined(isBookmark)) {
             isBookmark = false;
         }
         for (let i = 0; i < widget.childWidgets.length; i++) {
-            this.removeFieldInBlock(widget.childWidgets[i], isBookmark);
+            this.removeFieldInBlock(widget.childWidgets[i], isBookmark, isContentControl);
         }
     }
     /**
      * @private
      */
-    removeFieldInBlock(block, isBookmark) {
+    removeFieldInBlock(block, isBookmark, isContentControl) {
         if (block instanceof TableWidget) {
-            this.removeFieldTable(block, isBookmark);
+            this.removeFieldTable(block, isBookmark, isContentControl);
         }
         else {
-            this.removeField(block, isBookmark);
+            this.removeField(block, isBookmark, isContentControl);
         }
     }
     /**
      * @private
      */
-    removeFieldTable(table, isBookmark) {
+    removeFieldTable(table, isBookmark, isContentControl) {
         for (let i = 0; i < table.childWidgets.length; i++) {
             let row = table.childWidgets[i];
             for (let j = 0; j < row.childWidgets.length; j++) {
-                this.removeFieldInWidget(row.childWidgets[j], isBookmark);
+                this.removeFieldInWidget(row.childWidgets[j], isBookmark, isContentControl);
             }
         }
     }
@@ -53508,6 +54173,69 @@ class Editor {
         }
         return false;
     }
+    getContentControl() {
+        for (let i = 0; i < this.documentHelper.contentControlCollection.length; i++) {
+            let contentControlStart = this.documentHelper.contentControlCollection[i];
+            let position = this.selection.getPosition(contentControlStart);
+            let cCstart = position.startPosition;
+            let cCend = position.endPosition;
+            let start = this.selection.start;
+            let end = this.selection.end;
+            if (!this.selection.isForward) {
+                start = this.selection.end;
+                end = this.selection.start;
+            }
+            if ((start.isExistAfter(cCstart) || start.isAtSamePosition(cCstart))
+                && (end.isExistBefore(cCend) || end.isAtSamePosition(cCend))) {
+                return contentControlStart;
+            }
+        }
+        return undefined;
+    }
+    checkPlainTextContentControl() {
+        let start = this.selection.start;
+        let end = this.selection.end;
+        if (!this.selection.isForward) {
+            end = this.selection.start;
+            start = this.selection.end;
+        }
+        let startIndex = 0;
+        let endIndex = 0;
+        let startInline = start.currentWidget.getInline(start.offset, startIndex);
+        let endInline = end.currentWidget.getInline(end.offset, endIndex);
+        startIndex = startInline.index;
+        endIndex = endInline.index;
+        let startInlineEle = startInline.element;
+        let endInlineEle = endInline.element;
+        let startPosition;
+        let endPosition;
+        if ((startInlineEle && startInlineEle.contentControlProperties && startInlineEle.contentControlProperties.type === 'Text')
+            || (endInlineEle && endInlineEle.contentControlProperties && endInlineEle.contentControlProperties.type === 'Text')) {
+            startInlineEle = this.getContentControl();
+            if (startInlineEle.contentControlProperties && !isNullOrUndefined(startInlineEle)) {
+                let offset = startInlineEle.line.getOffset(startInlineEle, 1);
+                startPosition = new TextPosition(this.owner);
+                startPosition.setPositionParagraph(startInlineEle.line, offset);
+            }
+            else {
+                startPosition = start;
+            }
+            if (endInlineEle.contentControlProperties && startInlineEle.reference) {
+                endInlineEle = startInlineEle.reference;
+                let endoffset = endInlineEle.line.getOffset(endInlineEle, endInlineEle.length);
+                endPosition = new TextPosition(this.owner);
+                endPosition.setPositionParagraph(endInlineEle.line, endoffset);
+            }
+            else {
+                endPosition = end;
+            }
+            this.selection.selectRange(startPosition, endPosition);
+        }
+        else if (start.paragraph.contentControlProperties
+            && start.paragraph.contentControlProperties.type === 'Text') {
+            this.selection.selectParagraph();
+        }
+    }
     //Paste Implementation ends
     //Character Format apply implementation starts
     /**
@@ -53522,7 +54250,7 @@ class Editor {
     onApplyCharacterFormat(property, value, update) {
         let allowFormatting = this.documentHelper.isFormFillProtectedMode
             && this.documentHelper.selection.isInlineFormFillMode() && this.allowFormattingInFormFields(property);
-        if (this.restrictFormatting && !allowFormatting) {
+        if ((this.restrictFormatting && !allowFormatting) || this.selection.checkContentControlLocked(true)) {
             return;
         }
         this.documentHelper.layout.isBidiReLayout = true;
@@ -53534,6 +54262,7 @@ class Editor {
         let action = (property[0].toUpperCase() + property.slice(1));
         let paragraph = selection.start.paragraph;
         let lastLine = paragraph.childWidgets[paragraph.childWidgets.length - 1];
+        this.checkPlainTextContentControl();
         if (selection.isEmpty && selection.contextType !== 'List') {
             selection.skipFormatRetrieval = true;
             if (selection.end.isAtParagraphEnd) {
@@ -55588,6 +56317,12 @@ class Editor {
         else if (property === 'footerDistance') {
             sectionFormat.footerDistance = value;
         }
+        else if (property === 'pageStartingNumber') {
+            sectionFormat.pageStartingNumber = value;
+        }
+        else if (property === 'restartPageNumbering') {
+            sectionFormat.restartPageNumbering = value;
+        }
     }
     /**
      * @private
@@ -56039,7 +56774,7 @@ class Editor {
      * Merge the selected cells.
      */
     mergeCells() {
-        if (this.owner.isReadOnlyMode || !this.owner.isDocumentLoaded) {
+        if (this.owner.isReadOnlyMode || !this.canEditContentControl || !this.owner.isDocumentLoaded) {
             return;
         }
         if (!isNullOrUndefined(this.documentHelper) && !this.selection.isEmpty) {
@@ -56050,7 +56785,7 @@ class Editor {
      * Deletes the entire table at selection.
      */
     deleteTable() {
-        if (this.owner.isReadOnlyMode) {
+        if (this.owner.isReadOnlyMode || !this.canEditContentControl) {
             return;
         }
         let startPos = this.selection.isForward ? this.selection.start : this.selection.end;
@@ -56088,7 +56823,7 @@ class Editor {
      * Deletes the selected column(s).
      */
     deleteColumn() {
-        if (this.owner.isReadOnlyMode) {
+        if (this.owner.isReadOnlyMode || !this.canEditContentControl) {
             return;
         }
         if (this.owner.enableTrackChanges) {
@@ -56192,7 +56927,7 @@ class Editor {
      * Deletes the selected row(s).
      */
     deleteRow() {
-        if (this.owner.isReadOnlyMode) {
+        if (this.owner.isReadOnlyMode || !this.canEditContentControl) {
             return;
         }
         let startPos = !this.selection.isForward ? this.selection.end : this.selection.start;
@@ -56687,6 +57422,7 @@ class Editor {
         let containerWidget;
         this.removeFieldInBlock(block);
         this.removeFieldInBlock(block, true);
+        this.removeFieldInBlock(block, undefined, true);
         if (block.isInsideTable) {
             containerWidget = block.associatedCell;
             index = block.associatedCell.childWidgets.indexOf(block);
@@ -56732,10 +57468,13 @@ class Editor {
         inline.line.paragraph.bodyWidget.floatingElements.splice(inline.line.paragraph.bodyWidget.floatingElements.indexOf(inline), 1);
         inline.line.paragraph.floatingElements.splice(shapeIndex, 1);
     }
-    removeField(block, isBookmark) {
+    removeField(block, isBookmark, isContentControl) {
         let collection = this.documentHelper.fields;
         if (isBookmark) {
             collection = this.documentHelper.bookmarks.keys;
+        }
+        else if (isContentControl) {
+            collection = this.documentHelper.contentControlCollection;
         }
         if (block.floatingElements.length > 0) {
             for (let z = 0; z < block.floatingElements.length; z++) {
@@ -56749,6 +57488,9 @@ class Editor {
             if (element.line.paragraph === block) {
                 if (isBookmark) {
                     this.documentHelper.bookmarks.remove(collection[i]);
+                }
+                else if (isContentControl) {
+                    this.documentHelper.contentControlCollection.splice(i, 1);
                 }
                 else {
                     this.documentHelper.fields.splice(i, 1);
@@ -56766,6 +57508,9 @@ class Editor {
     addRemovedNodes(node) {
         if (node instanceof CommentCharacterElementBox && node.commentType === 0 && node.commentMark) {
             node.removeCommentMark();
+        }
+        if (node instanceof ContentControl && node.type === 0) {
+            this.documentHelper.contentControlCollection.splice(this.documentHelper.contentControlCollection.indexOf(node), 1);
         }
         if (node instanceof FieldElementBox && node.fieldType === 0) {
             if (this.documentHelper.fields.indexOf(node) !== -1) {
@@ -57953,6 +58698,9 @@ class Editor {
      */
     onEnter(isInsertPageBreak) {
         let selection = this.documentHelper.selection;
+        if (this.isXmlMapped) {
+            return;
+        }
         if (selection.isEmpty) {
             //ToDo: Need to handle the CTRL + Enter (Page Break) and SHIFT + Enter (Line Break) behavior.
             let hyperlinkField = selection.getHyperlinkField();
@@ -58337,6 +59085,7 @@ class Editor {
             this.documentHelper.triggerSpellCheck = false;
         }
         this.removeEditRange = false;
+        this.updateXmlMappedContentControl();
     }
     /**
      * @private
@@ -58465,6 +59214,24 @@ class Editor {
                 selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
                 selection.fireSelectionChanged(true);
                 return;
+            }
+        }
+        if (inline && (inline instanceof ContentControl || inline.previousNode instanceof ContentControl)) {
+            if (inline instanceof ContentControl && inline.previousNode) {
+                inline = inline.previousNode;
+                paragraph = inline.line.paragraph;
+                offset = inline.line.getOffset(inline, inline.length);
+            }
+            if (inline && inline.length === 1 && inline.nextNode instanceof ContentControl
+                && inline.previousNode instanceof ContentControl) {
+                let start = inline.previousNode;
+                let end = inline.nextNode;
+                if (!start.contentControlProperties.lockContentControl) {
+                    selection.start.setPositionParagraph(start.line, start.line.getOffset(start, 0));
+                    selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
+                    this.removeWholeElement(selection);
+                    return;
+                }
             }
         }
         if (inline && (inline instanceof BookmarkElementBox || inline.previousNode instanceof BookmarkElementBox)) {
@@ -58748,6 +59515,9 @@ class Editor {
             span.text = inline.text.substr(indexInInline, removedCount);
             let text = inline.text;
             inline.text = text.substring(0, indexInInline) + text.substring(indexInInline + removedCount, text.length);
+            if (inline.contentControlProperties) {
+                span.contentControlProperties = inline.contentControlProperties.clone();
+            }
         }
         return span;
     }
@@ -59137,6 +59907,7 @@ class Editor {
             // }
         }
         this.removeEditRange = false;
+        this.updateXmlMappedContentControl();
     }
     deleteEditElement(selection) {
         this.initHistory('Delete');
@@ -59240,6 +60011,25 @@ class Editor {
                 selection.end.setPositionParagraph(editEnd.line, editEnd.line.getOffset(editEnd, 0) + 1);
                 this.deleteEditElement(selection);
                 return;
+            }
+        }
+        if (inline && (inline instanceof ContentControl || inline.nextNode instanceof ContentControl)) {
+            if (inline instanceof ContentControl && inline.nextNode) {
+                inline = inline.nextNode;
+                paragraph = inline.line.paragraph;
+                offset = inline.line.getOffset(inline, 0);
+                selection.start.setPositionParagraph(inline.line, offset);
+            }
+            if (inline && inline.length === 1 && inline.nextNode instanceof ContentControl
+                && inline.previousNode instanceof ContentControl) {
+                let cCstart = inline.previousNode;
+                let cCend = inline.nextNode;
+                if (!cCstart.contentControlProperties.lockContentControl) {
+                    selection.start.setPositionParagraph(cCstart.line, cCstart.line.getOffset(cCstart, 0));
+                    selection.end.setPositionParagraph(cCend.line, cCend.line.getOffset(cCend, 0) + 1);
+                    this.deleteEditElement(selection);
+                    return;
+                }
             }
         }
         if (inline && (inline instanceof BookmarkElementBox && inline.bookmarkType === 0
@@ -62553,6 +63343,16 @@ class Editor {
         this.selection.isFormatUpdated = true;
         this.reLayout(this.selection, false);
         this.selection.isFormatUpdated = false;
+    }
+    constructCommentInitial(authorName) {
+        let splittedName = authorName.split(' ');
+        let initials = '';
+        for (let i = 0; i < splittedName.length; i++) {
+            if (splittedName[i].length > 0 && splittedName[i] !== '') {
+                initials += splittedName[i][0];
+            }
+        }
+        return initials;
     }
 }
 
@@ -66107,6 +66907,9 @@ class EditorHistory {
 class WordExport {
     constructor() {
         //Part path
+        this.customXMLItemsPath = 'customXml/item';
+        this.customXMLItemsPropspath = 'customXml/itemProps';
+        this.itemPropsPath = 'itemProps';
         this.documentPath = 'word/document.xml';
         this.stylePath = 'word/styles.xml';
         this.chartPath = 'word/charts';
@@ -66141,6 +66944,7 @@ class WordExport {
         //Relationship path
         this.generalRelationPath = '_rels/.rels';
         this.wordRelationPath = 'word/_rels/document.xml.rels';
+        this.customXMLRelPath = 'customXml/_rels/item';
         this.excelRelationPath = 'xl/_rels/workbook.xml.rels';
         // private FontRelationPath: string = 'word/_rels/fontTable.xml.rels';
         // private CommentsRelationPath: string = 'word/_rels/comments.xml.rels';
@@ -66344,6 +67148,7 @@ class WordExport {
         this.wordMLCustomXmlPropsRelType = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXmlProps';
         this.wordMLControlRelType = 'http://schemas.microsoft.com/office/2006/relationships/activeXControlBinary';
         this.wordMLDiagramContentType = 'application/vnd.ms-office.drawingml.diagramDrawing+xml';
+        this.dsNamespace = 'http://schemas.openxmlformats.org/officeDocument/2006/customXml';
         this.excelFiles = undefined;
         this.lastSection = false;
         this.mRelationShipID = 0;
@@ -66357,6 +67162,7 @@ class WordExport {
         this.mBookmarks = undefined;
         this.mComments = [];
         this.revisions = [];
+        this.customXMLProps = [];
         this.paraID = 0;
         this.commentParaID = 0;
         this.commentParaIDInfo = {};
@@ -66510,6 +67316,7 @@ class WordExport {
         let document = documentHelper.owner.sfdtExportModule.write();
         this.setDocument(document);
         this.mComments = documentHelper.comments;
+        this.mCustomXML = documentHelper.customXmlData;
         this.revisions = documentHelper.owner.revisions.changes;
         this.mArchive = new ZipArchive();
         this.mArchive.compressionLevel = 'Normal';
@@ -66610,6 +67417,7 @@ class WordExport {
         this.defCharacterFormat = undefined;
         this.defParagraphFormat = undefined;
         this.defaultTabWidthValue = undefined;
+        this.customXMLProps = [];
         this.mRelationShipID = 0;
         this.eRelationShipId = 0;
         this.cRelationShipId = 0;
@@ -67035,12 +67843,231 @@ class WordExport {
             this.serializeBodyItem(writer, blockCollection[i], isLastSection);
         }
     }
+    // serialize the content Control
+    // tslint:disable-next-line:max-line-length
+    serializeContentControl(writer, contentControlItem, item, isLastSection, inlines) {
+        if (isNullOrUndefined(contentControlItem)) {
+            throw new Error('contentCOntrol should not be undefined');
+        }
+        writer.writeStartElement('w', 'sdt', this.wNamespace);
+        writer.writeStartElement(undefined, 'sdtPr', this.wNamespace);
+        if (!isNullOrUndefined(contentControlItem)) {
+            this.serializeContentProperties(writer, contentControlItem, item, isLastSection, inlines);
+        }
+    }
+    // serialize Content Control Properties
+    // tslint:disable-next-line:max-line-length
+    // tslint:disable:max-func-body-length
+    serializeContentProperties(writer, contentProperties, items, isLastSection, inlines) {
+        let repeatSdt = undefined;
+        if (!isNullOrUndefined(contentProperties.title)) {
+            writer.writeStartElement(undefined, 'alias', this.wNamespace);
+            writer.writeAttributeString('w', 'val', this.wNamespace, contentProperties.title);
+            writer.writeEndElement();
+            writer.writeStartElement(undefined, 'tag', this.wNamespace);
+            writer.writeAttributeString('w', 'val', this.wNamespace, contentProperties.tag);
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(contentProperties.characterFormat)) {
+            this.serializeCharacterFormat(writer, items.contentControlProperties.characterFormat);
+        }
+        // if (items.hasOwnProperty('blocks') && contentProperties.type !== 'CheckBox') {
+        //     this.serializeContentParagraph(writer, items);
+        // }
+        if (contentProperties.lockContents || contentProperties.lockContentControl) {
+            writer.writeStartElement(undefined, 'lock', this.wNamespace);
+            if (contentProperties.lockContentControl && contentProperties.lockContents) {
+                writer.writeAttributeString('w', 'val', this.wNamespace, 'sdtContentLocked');
+            }
+            else if (contentProperties.lockContentControl) {
+                writer.writeAttributeString('w', 'val', this.wNamespace, 'sdtLocked');
+            }
+            else if (contentProperties.lockContents) {
+                writer.writeAttributeString('w', 'val', this.wNamespace, 'contentLocked');
+            }
+            writer.writeEndElement();
+        }
+        if (contentProperties.hasPlaceHolderText && isNullOrUndefined(repeatSdt)) {
+            writer.writeStartElement('w', 'placeholder', undefined);
+            writer.writeAttributeString('w', 'docPart', this.wNamespace, undefined);
+            writer.writeEndElement();
+            writer.writeStartElement('w', 'showingPlcHdr', undefined);
+            writer.writeEndElement();
+        }
+        if (contentProperties.isTemporary) {
+            writer.writeStartElement('w', 'temporary', undefined);
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(contentProperties.appearance)) {
+            writer.writeStartElement('w15', 'appearance', undefined);
+            writer.writeAttributeString('w15', 'val', undefined, contentProperties.appearance.toLowerCase());
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(contentProperties.color)) {
+            writer.writeStartElement('w15', 'color', undefined);
+            writer.writeAttributeString('w', 'val', undefined, this.getColor(contentProperties.color));
+            writer.writeEndElement();
+        }
+        if (contentProperties.multiline) {
+            writer.writeStartElement(undefined, 'text', this.wNamespace);
+            writer.writeAttributeString('w', 'multiLine', this.wNamespace, '1');
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(contentProperties.xmlMapping)) {
+            if (contentProperties.xmlMapping.isMapped) {
+                writer.writeStartElement('w', 'dataBinding', this.wNamespace);
+                writer.writeAttributeString('w', 'xpath', undefined, contentProperties.xmlMapping.xPath);
+                writer.writeAttributeString('w', 'storeItemID', undefined, contentProperties.xmlMapping.storeItemId);
+                writer.writeEndElement();
+            }
+        }
+        if (contentProperties.picture) {
+            writer.writeStartElement('w', 'picture', this.wNamespace);
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(contentProperties.uncheckedState || contentProperties.checkedState)) {
+            writer.writeStartElement('w14', 'checkbox', undefined);
+            if (contentProperties.isChecked) {
+                writer.writeStartElement('w14', 'checked', undefined);
+                writer.writeAttributeString('w14', 'val', undefined, '1');
+                writer.writeEndElement();
+            }
+            else {
+                writer.writeStartElement('w14', 'checked', undefined);
+                writer.writeAttributeString('w14', 'val', undefined, '0');
+                writer.writeEndElement();
+            }
+            writer.writeStartElement('w14', 'uncheckedState', undefined);
+            writer.writeAttributeString('w14', 'val', undefined, this.toUnicode(contentProperties.uncheckedState.value));
+            writer.writeAttributeString('w14', 'font', undefined, (contentProperties.uncheckedState.font));
+            writer.writeEndElement();
+            writer.writeStartElement('w14', 'checkedState', undefined);
+            writer.writeAttributeString('w14', 'val', undefined, this.toUnicode(contentProperties.checkedState.value));
+            writer.writeAttributeString('w14', 'font', undefined, contentProperties.checkedState.font);
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(contentProperties.contentControlListItems) && contentProperties.type === 'DropDownList') {
+            // tslint:disable:no-duplicate-variable
+            let dropDownLists = contentProperties.contentControlListItems;
+            writer.writeStartElement(undefined, 'dropDownList', this.wNamespace);
+            this.serializeContentControlList(writer, dropDownLists);
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(contentProperties.contentControlListItems) && contentProperties.type === 'ComboBox') {
+            let comboList = contentProperties.contentControlListItems;
+            writer.writeStartElement(undefined, 'comboBox', this.wNamespace);
+            this.serializeContentControlList(writer, comboList);
+            writer.writeEndElement();
+        }
+        this.serializeContentControlDate(writer, contentProperties);
+        if (!isNullOrUndefined(contentProperties.type)) {
+            if (contentProperties.type === 'Picture') {
+                writer.writeStartElement(undefined, 'picture', this.wNamespace);
+                writer.writeEndElement();
+            }
+        }
+        writer.writeEndElement();
+        writer.writeStartElement('w', 'sdtContent', this.wNamespace);
+        if (inlines) {
+            return;
+        }
+        if (items.hasOwnProperty('blocks') && (isNullOrUndefined(items.cellFormat))) {
+            for (let i = 0; i < items.blocks.length; i++) {
+                let block = items.blocks[i];
+                if (block.hasOwnProperty('inlines')) {
+                    this.paragraph = block;
+                    this.serializeParagraph(writer, block, isLastSection);
+                    this.paragraph = undefined;
+                }
+                else if (block.hasOwnProperty('rowFormat')) {
+                    this.serializeRow(writer, block);
+                }
+                else if (block.hasOwnProperty('contentControlProperties')) {
+                    this.serializeContentControl(writer, block.contentControlProperties, block, isLastSection);
+                }
+                else {
+                    let table = block;
+                    this.serializeTable(writer, table);
+                }
+            }
+        }
+        else if (items.hasOwnProperty('rowFormat')) {
+            if (items.cells.length > 0) {
+                this.serializeRow(writer, items);
+            }
+        }
+        else if (items.hasOwnProperty('cellFormat')) {
+            this.serializeCell(writer, items);
+        }
+        writer.writeEndElement();
+        writer.writeEndElement();
+    }
+    toUnicode(code) {
+        let charCode = code.charCodeAt(0);
+        return charCode.toString(16);
+    }
+    //serialize dropdown and list property 
+    serializeContentControlList(writer, lists) {
+        for (let i = 0; i < lists.length; i++) {
+            writer.writeStartElement(undefined, 'listItem', this.wNamespace);
+            if (!isNullOrUndefined(lists[i].displayText)) {
+                writer.writeAttributeString('w', 'displayText', this.wNamespace, lists[i].displayText);
+            }
+            writer.writeAttributeString('w', 'value', this.wNamespace, lists[i].value);
+            writer.writeEndElement();
+        }
+    }
+    //Serialize character formatfor content control
+    serializeContentParagraph(writer, items) {
+        for (let i = 0; i < items.blocks.length; i++) {
+            let blocks = items.blocks[i];
+            if (blocks.hasOwnProperty('inlines')) {
+                for (let j = 0; j < blocks.inlines.length; j++) {
+                    let inlines = blocks.inlines[j];
+                    if (!isNullOrUndefined(inlines.characterFormat)) {
+                        this.serializeCharacterFormat(writer, inlines.characterFormat);
+                    }
+                }
+            }
+        }
+    }
+    // serialize content control date property
+    serializeContentControlDate(writer, contentProperties) {
+        if (contentProperties.type === 'Date') {
+            writer.writeStartElement('w', 'date', this.wNamespace);
+            if (!isNullOrUndefined(contentProperties.dateDisplayFormat)) {
+                writer.writeStartElement('w', 'calender', this.wNamespace);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, contentProperties.dateCalendarType);
+                writer.writeEndElement();
+            }
+            if (!isNullOrUndefined(contentProperties.dateDisplayLocale)) {
+                writer.writeStartElement('w', 'lid', this.wNamespace);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, contentProperties.dateDisplayLocale);
+                writer.writeEndElement();
+            }
+            if (!isNullOrUndefined(contentProperties.dateStorageFormat)) {
+                writer.writeStartElement('w', 'storeMappedDataAs', this.wNamespace);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, contentProperties.dateStorageFormat);
+                writer.writeEndElement();
+            }
+            if (!isNullOrUndefined(contentProperties.dateCalendarType)) {
+                writer.writeStartElement('w', 'dateFormat', this.wNamespace);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, contentProperties.dateDisplayFormat);
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+    }
     // Serialize the TextBody item
     serializeBodyItem(writer, item, isLastSection) {
         if (isNullOrUndefined(item)) {
             throw new Error('BodyItem should not be undefined');
         }
-        if (item.hasOwnProperty('inlines')) {
+        if (item.hasOwnProperty('contentControlProperties')) {
+            this.serializeContentControl(writer, item.contentControlProperties, item, isLastSection);
+        }
+        else if (item.hasOwnProperty('inlines')) {
             this.paragraph = item;
             this.serializeParagraph(writer, item, isLastSection);
             this.paragraph = undefined;
@@ -67139,10 +68166,19 @@ class WordExport {
     }
     // Serialize the paragraph items
     serializeParagraphItems(writer, paraItems) {
+        let inlines;
         let previousNode = undefined;
         let isContinueOverride = false;
         for (let i = 0; i < paraItems.length; i++) {
             let item = paraItems[i];
+            if (item.hasOwnProperty('contentControlProperties')) {
+                inlines = true;
+                this.serializeContentControl(writer, item.contentControlProperties, item, undefined, inlines);
+                this.serializeParagraphItems(writer, item.inlines);
+            }
+            if (item.hasOwnProperty('inlines')) {
+                this.serializeParagraphItems(writer, item);
+            }
             this.serializeRevisionStart(writer, item, previousNode);
             let isBdo = false;
             if (item.characterFormat) {
@@ -67188,6 +68224,11 @@ class WordExport {
             //Serialize revision end
             this.serializeRevisionEnd(writer, item, previousNode);
             previousNode = item;
+            if (inlines) {
+                writer.writeEndElement();
+                writer.writeEndElement();
+                inlines = false;
+            }
         }
         if (isContinueOverride) {
             writer.writeEndElement();
@@ -69152,6 +70193,10 @@ class WordExport {
             for (let i = 0; i < rows.length; i++) {
                 let row = rows[i];
                 if (row.cells.length > 0) {
+                    if (row.hasOwnProperty('contentControlProperties')) {
+                        this.serializeContentControl(writer, row.contentControlProperties, row);
+                        continue;
+                    }
                     this.serializeRow(writer, row);
                 }
             }
@@ -69253,6 +70298,10 @@ class WordExport {
     // serialize the table cells
     serializeCells(writer, cells) {
         for (let i = 0; i < cells.length; i++) {
+            if (cells[i].hasOwnProperty('contentControlProperties')) {
+                this.serializeContentControl(writer, cells[i].contentControlProperties, cells[i]);
+                continue;
+            }
             this.serializeCell(writer, cells[i]);
         }
     }
@@ -70367,6 +71416,51 @@ class WordExport {
         }
         writer.writeEndElement();
     }
+    //creates custom xml mapping
+    serializeCustomXMLMapping(customXML, writer) {
+        if (customXML.length > 0) {
+            let keys = customXML.keys;
+            for (let i = 0; i < keys.length; i++) {
+                let customXmlWriter = new XmlWriter();
+                customXmlWriter.writeStartElement(undefined, 'Relationships', this.rpNamespace);
+                let xmlData = this.mCustomXML.get(keys[i]);
+                let itemID = keys[i];
+                let id = this.getNextRelationShipID();
+                let fileIndex = i + 1;
+                let itemPath = this.createXMLItem(xmlData, id, fileIndex);
+                let itemPropsPath = this.createXMLItemProps(itemID, fileIndex);
+                this.serializeRelationShip(writer, id, this.customXmlRelType, '../' + itemPath);
+                this.customXMLRelation(customXmlWriter, fileIndex, itemPropsPath);
+                customXmlWriter.writeEndElement();
+                // tslint:disable-next-line:max-line-length
+                let zipArchiveItem = new ZipArchiveItem(customXmlWriter.buffer, this.customXMLRelPath + fileIndex + '.xml.rels');
+                this.mArchive.addItem(zipArchiveItem);
+            }
+        }
+    }
+    customXMLRelation(writer, fileIndex, itemPropsPath) {
+        this.serializeRelationShip(writer, 'rId1', this.wordMLCustomXmlPropsRelType, itemPropsPath);
+    }
+    createXMLItem(xmlData, id, fileIndex) {
+        let xmlBlob = new Blob([xmlData], { type: 'text/plain' });
+        let itemPath = this.customXMLItemsPath + fileIndex + '.xml';
+        let zipArchiveItem = new ZipArchiveItem(xmlBlob, itemPath);
+        this.mArchive.addItem(zipArchiveItem);
+        return itemPath;
+    }
+    createXMLItemProps(itemID, fileIndex) {
+        let writer = new XmlWriter();
+        let customitemPropsPath = this.customXMLItemsPropspath + fileIndex + '.xml';
+        let itemPropsPath = this.itemPropsPath + fileIndex + '.xml';
+        writer.writeStartElement('ds', 'datastoreItem', this.wNamespace);
+        writer.writeAttributeString('ds', 'itemID', undefined, itemID);
+        writer.writeAttributeString('xmlns', 'ds', undefined, this.dsNamespace);
+        writer.writeEndElement();
+        this.customXMLProps.push(customitemPropsPath);
+        let zipArchiveItem = new ZipArchiveItem(writer.buffer, customitemPropsPath);
+        this.mArchive.addItem(zipArchiveItem);
+        return itemPropsPath;
+    }
     // Serialize the styles (styles.xml)
     serializeStyles() {
         let writer = new XmlWriter();
@@ -71131,6 +72225,8 @@ class WordExport {
         // SerializeIncludePictureUrlRelations(docRelstream, InclPicFieldUrl);
         // //// Creating relationships for every hyperlink and image containing in the document
         this.serializeImagesRelations(this.documentImages, writer);
+        // serialize custom xml
+        this.serializeCustomXMLMapping(this.mCustomXML, writer);
         // serialize chart relations
         this.serializeChartDocumentRelations(this.documentCharts, writer);
         // SerializeSvgImageRelation();
@@ -71400,6 +72496,12 @@ class WordExport {
                 this.serializeOverrideContentType(writer, 'word/charts/chart' + count + '.xml', this.chartsContentType);
                 this.serializeOverrideContentType(writer, 'word/charts/colors' + count + '.xml', this.chartColorStyleContentType);
                 count++;
+            }
+        }
+        // Custom XML mapping
+        if (this.customXMLProps.length > 0) {
+            for (let i = 0; i < this.customXMLProps.length; i++) {
+                this.serializeOverrideContentType(writer, this.customXMLProps[i], this.customXmlContentType);
             }
         }
         //             //core.xml
@@ -71683,7 +72785,15 @@ class SfdtExport {
         this.lists = undefined;
         this.document = undefined;
         this.writeInlineStyles = undefined;
+        this.blockContent = false;
+        this.startContent = false;
+        this.multipleLineContent = false;
+        this.nestedContent = false;
         this.editRangeId = -1;
+        this.nestedBlockContent = false;
+        this.nestedBlockEnabled = false;
+        this.blocks = [];
+        this.isBlockClosed = true;
         /**
          * @private
          */
@@ -71839,6 +72949,7 @@ class SfdtExport {
         this.writeLists(this.documentHelper);
         this.writeComments(this.documentHelper);
         this.writeRevisions(this.documentHelper);
+        this.writeCustomXml(this.documentHelper);
         let doc = this.document;
         this.clear();
         return doc;
@@ -71940,16 +73051,188 @@ class SfdtExport {
             return undefined;
         }
         if (widget instanceof ParagraphWidget) {
-            let paragraph = this.createParagraph(widget);
-            blocks.push(paragraph);
-            return this.writeParagraph(widget, paragraph, blocks);
+            if (widget.hasOwnProperty('contentControlProperties')) {
+                let block = this.blockContentControl(widget);
+                if (!isNullOrUndefined(block) && this.isBlockClosed) {
+                    blocks.push(block);
+                    this.blocks = [];
+                }
+                return this.nextBlock;
+            }
+            else {
+                let paragraph = this.createParagraph(widget);
+                blocks.push(paragraph);
+                return this.writeParagraph(widget, paragraph, blocks);
+            }
         }
         else {
             let tableWidget = widget;
+            if (tableWidget.hasOwnProperty('contentControlProperties')) {
+                let block = this.tableContentControl(tableWidget);
+                if (this.isBlockClosed) {
+                    blocks.push(block);
+                }
+                return this.nextBlock;
+            }
             let table = this.createTable(tableWidget);
             blocks.push(table);
             return this.writeTable(tableWidget, table, 0, blocks);
         }
+    }
+    writeParagraphs(widget) {
+        let blocks = this.blocks;
+        let child = widget.childWidgets[0];
+        let firstChild = child.children[0];
+        let secondChild = child.children[1];
+        if (firstChild instanceof ListTextElementBox || secondChild instanceof ListTextElementBox) {
+            firstChild = child.children[2];
+            secondChild = child.children[3];
+        }
+        if (this.nestedBlockEnabled) {
+            blocks = [];
+        }
+        // tslint:disable-next-line:max-line-length
+        if ((firstChild instanceof ContentControl && secondChild instanceof ContentControl && !this.nestedBlockContent) || (this.blockContent && firstChild instanceof ContentControl && !this.nestedBlockContent)) {
+            let nestedBlocks = false;
+            if (secondChild instanceof ContentControl) {
+                if (secondChild.contentControlWidgetType === 'Block') {
+                    nestedBlocks = true;
+                }
+            }
+            // tslint:disable-next-line:max-line-length
+            if ((nestedBlocks || (this.blockContent && firstChild instanceof ContentControl && !this.nestedBlockContent && firstChild.type === 0 && firstChild.contentControlWidgetType === 'Block'))) {
+                this.nestedBlockContent = true;
+                this.nestedBlockEnabled = true;
+                let block = this.blockContentControl(widget);
+                if (!isNullOrUndefined(block)) {
+                    this.blocks.push(block);
+                }
+            }
+            else {
+                let paragraph = this.createParagraph(widget);
+                blocks.push(paragraph);
+                this.nextBlock = this.writeParagraph(widget, paragraph, blocks);
+            }
+        }
+        else {
+            let paragraph = this.createParagraph(widget);
+            blocks.push(paragraph);
+            this.nextBlock = this.writeParagraph(widget, paragraph, blocks);
+        }
+        if (!this.blockContent) {
+            return blocks;
+        }
+        else if (!this.nestedBlockContent && this.nestedBlockEnabled) {
+            this.nestedBlockEnabled = false;
+            return blocks;
+        }
+    }
+    contentControlProperty(contentControlPropertie) {
+        let contentControlProperties = {};
+        contentControlProperties.lockContentControl = contentControlPropertie.lockContentControl;
+        contentControlProperties.lockContents = contentControlPropertie.lockContents;
+        contentControlProperties.tag = contentControlPropertie.tag;
+        contentControlProperties.color = contentControlPropertie.color;
+        contentControlProperties.title = contentControlPropertie.title;
+        if (!isNullOrUndefined(contentControlPropertie.appearance)) {
+            contentControlProperties.appearance = contentControlPropertie.appearance;
+        }
+        contentControlProperties.type = contentControlPropertie.type;
+        contentControlProperties.hasPlaceHolderText = contentControlPropertie.hasPlaceHolderText;
+        contentControlProperties.multiline = contentControlPropertie.multiline;
+        contentControlProperties.isTemporary = contentControlPropertie.isTemporary;
+        if (!isNullOrUndefined(contentControlPropertie.isChecked)) {
+            contentControlProperties.isChecked = contentControlPropertie.isChecked;
+        }
+        if (!isNullOrUndefined(contentControlPropertie.uncheckedState)) {
+            contentControlProperties.uncheckedState = this.tounCheckedState(contentControlPropertie.uncheckedState);
+        }
+        if (!isNullOrUndefined(contentControlPropertie.checkedState)) {
+            contentControlProperties.checkedState = this.toCheckedState(contentControlPropertie.checkedState);
+        }
+        if (!isNullOrUndefined(contentControlPropertie.dateCalendarType)) {
+            contentControlProperties.dateCalendarType = contentControlPropertie.dateCalendarType;
+        }
+        if (!isNullOrUndefined(contentControlPropertie.dateStorageFormat)) {
+            contentControlProperties.dateStorageFormat = contentControlPropertie.dateStorageFormat;
+        }
+        if (!isNullOrUndefined(contentControlPropertie.dateDisplayLocale)) {
+            contentControlProperties.dateDisplayLocale = contentControlPropertie.dateDisplayLocale;
+        }
+        if (!isNullOrUndefined(contentControlPropertie.dateDisplayFormat)) {
+            contentControlProperties.dateDisplayFormat = contentControlPropertie.dateDisplayFormat;
+        }
+        if (!isNullOrUndefined(contentControlPropertie.xmlMapping)) {
+            contentControlProperties.xmlMapping = contentControlPropertie.xmlMapping;
+        }
+        if (!isNullOrUndefined(contentControlPropertie.characterFormat)) {
+            contentControlProperties.characterFormat = this.writeCharacterFormat(contentControlPropertie.characterFormat);
+        }
+        contentControlProperties.contentControlListItems = contentControlPropertie.contentControlListItems;
+        return contentControlProperties;
+    }
+    tounCheckedState(state) {
+        let unCheckedState = {};
+        unCheckedState.font = state.font;
+        unCheckedState.value = state.value;
+        return unCheckedState;
+    }
+    toCheckedState(state) {
+        let checkedState = {};
+        checkedState.font = state.font;
+        checkedState.value = state.value;
+        return checkedState;
+    }
+    blockContentControl(widget) {
+        let block = {};
+        block.blocks = this.writeParagraphs(widget);
+        if (!isNullOrUndefined(block.blocks)) {
+            let child = widget.childWidgets[0];
+            let firstChild = child.children[0];
+            let secondChild = child.children[1];
+            if (firstChild instanceof ListTextElementBox || secondChild instanceof ListTextElementBox) {
+                firstChild = child.children[2];
+                secondChild = child.children[3];
+            }
+            // tslint:disable-next-line:max-line-length
+            if ((firstChild instanceof ContentControl && secondChild instanceof ContentControl && !this.nestedBlockContent) || (this.blockContent && firstChild instanceof ContentControl && !this.nestedBlockContent)) {
+                if (!(secondChild instanceof ContentControl)) {
+                    block.contentControlProperties = this.contentControlProperty(firstChild.contentControlProperties);
+                    return block;
+                }
+                else if (secondChild.contentControlWidgetType === 'Block') {
+                    block.contentControlProperties = this.contentControlProperty(secondChild.contentControlProperties);
+                }
+                else {
+                    block.contentControlProperties = this.contentControlProperty(widget.contentControlProperties);
+                }
+            }
+            else {
+                block.contentControlProperties = this.contentControlProperty(widget.contentControlProperties);
+            }
+            return block;
+        }
+    }
+    tableContentControl(tableWidget) {
+        let block = {};
+        block.blocks = this.tableContentControls(tableWidget);
+        if (!isNullOrUndefined(this.nextBlock)) {
+            if (tableWidget.contentControlProperties === this.nextBlock.contentControlProperties) {
+                return this.blocks = block.blocks;
+            }
+        }
+        block.contentControlProperties = this.contentControlProperty(tableWidget.contentControlProperties);
+        return block;
+    }
+    tableContentControls(tableWidget) {
+        let blocks = [];
+        if (!this.isBlockClosed) {
+            blocks = this.blocks;
+        }
+        let table = this.createTable(tableWidget);
+        blocks.push(table);
+        this.nextBlock = this.writeTable(tableWidget, table, 0, blocks);
+        return blocks;
     }
     writeParagraph(paragraphWidget, paragraph, blocks, lineIndex, start) {
         if (isNullOrUndefined(lineIndex)) {
@@ -71972,6 +73255,7 @@ class SfdtExport {
         return (next instanceof BlockWidget && paragraphWidget.containerWidget.index === next.containerWidget.index) ? next : undefined;
     }
     writeInlines(paragraph, line, inlines) {
+        let contentInline = [];
         let lineWidget = line.clone();
         let isformField = false;
         let bidi = paragraph.paragraphFormat.bidi;
@@ -71980,6 +73264,29 @@ class SfdtExport {
         }
         for (let i = 0; i < lineWidget.children.length; i++) {
             let element = lineWidget.children[i];
+            if (element instanceof ContentControl) {
+                if (element.contentControlWidgetType === 'Block') {
+                    this.isBlockClosed = false;
+                    if (this.blockContent && element.type === 0) {
+                        this.nestedBlockContent = true;
+                        continue;
+                    }
+                    else if (this.nestedBlockContent && element.type === 1) {
+                        this.nestedBlockContent = false;
+                        continue;
+                    }
+                    this.blockContent = (element.type === 0) ? true : false;
+                    if (lineWidget.children[i - 1] instanceof ContentControl) {
+                        if (lineWidget.children[i - 1].contentControlWidgetType === 'Block') {
+                            this.blockContent = true;
+                        }
+                    }
+                    if (!this.blockContent) {
+                        this.isBlockClosed = true;
+                    }
+                    continue;
+                }
+            }
             if (this.isExport && this.checkboxOrDropdown) {
                 if (isformField && element instanceof TextElementBox) {
                     continue;
@@ -71991,15 +73298,136 @@ class SfdtExport {
             if (element instanceof ListTextElementBox) {
                 continue;
             }
-            let inline = this.writeInline(element);
-            if (!isNullOrUndefined(inline)) {
-                inlines.push(inline);
+            if (element instanceof ContentControl) {
+                if (this.startContent && element.type === 0) {
+                    this.nestedContent = true;
+                    continue;
+                }
+                else if (this.startContent && this.nestedContent) {
+                    let inline = {};
+                    inline.inlines = contentInline;
+                    if (contentInline.length > 0) {
+                        let nestedContent = this.nestedContentProperty(lineWidget.children[i + 1], inline);
+                        inlines.push(nestedContent);
+                        contentInline = [];
+                    }
+                    if (this.multipleLineContent) {
+                        inline = inlines[inlines.length - 1];
+                        this.nestedContentProperty(lineWidget.children[i + 1], inline);
+                        this.multipleLineContent = false;
+                    }
+                    this.nestedContent = false;
+                    continue;
+                }
+                this.contentType = element.contentControlWidgetType;
+                this.startContent = (element.type === 0) ? true : false;
+                continue;
+            }
+            if (this.startContent && ((this.contentType !== 'Row') && (this.contentType !== 'Block') && (this.contentType !== 'Cell'))) {
+                if (this.multipleLineContent) {
+                    this.inlineContentControl(contentInline, element, lineWidget.children[i + 1], inlines);
+                    contentInline = [];
+                }
+                else {
+                    let contentinline = this.inlineContentControl(contentInline, element, lineWidget.children[i + 1]);
+                    if (!isNullOrUndefined(contentinline)) {
+                        if (this.nestedContent && this.multipleLineContent) {
+                            let inline = {};
+                            inline.inlines = contentInline;
+                            inlines.push(inline);
+                        }
+                        else {
+                            inlines.push(contentinline);
+                            contentInline = [];
+                        }
+                    }
+                }
+            }
+            else {
+                let inline = this.writeInline(element);
+                if (!isNullOrUndefined(inline)) {
+                    inlines.push(inline);
+                }
             }
             if (this.isExport && element instanceof FieldElementBox && element.fieldType === 1) {
                 isformField = false;
                 this.checkboxOrDropdown = false;
             }
         }
+    }
+    inlineContentControl(contentInline, element, nextElement, inlines) {
+        let inline = {};
+        let nestedContentInline = [];
+        if (!isNullOrUndefined(inlines)) {
+            if (this.nestedContent) {
+                inlines = inlines[inlines.length - 1].inlines;
+                inline = this.inlineContentControls(element, inlines[inlines.length - 1].inlines);
+                let nestedContentinline = this.nestedContentProperty(nextElement, inlines[inlines.length - 1]);
+                if (!isNullOrUndefined(nestedContentinline)) {
+                    contentInline.push(inline);
+                    nestedContentInline = [];
+                }
+            }
+            else {
+                this.inlineContentControls(element, inlines[inlines.length - 1].inlines);
+            }
+        }
+        else {
+            if (this.nestedContent) {
+                inline.inlines = this.inlineContentControls(element, undefined, nestedContentInline);
+                let nestedContentinline = this.nestedContentProperty(nextElement, inline);
+                if (!isNullOrUndefined(nestedContentinline) || this.multipleLineContent) {
+                    contentInline.push(inline);
+                    nestedContentInline = [];
+                }
+            }
+            else {
+                inline.inlines = this.inlineContentControls(element, contentInline);
+            }
+        }
+        if (!isNullOrUndefined(nextElement)) {
+            if (nextElement.type === 1 && !this.nestedContent) {
+                if (this.multipleLineContent) {
+                    // tslint:disable-next-line:max-line-length
+                    inlines[inlines.length - 1].contentControlProperties = this.contentControlProperty(nextElement.contentControlProperties);
+                    this.multipleLineContent = false;
+                    return;
+                }
+                else {
+                    inline.contentControlProperties = this.contentControlProperty(nextElement.contentControlProperties);
+                }
+                return inline;
+            }
+        }
+        else if (this.startContent) {
+            this.multipleLineContent = true;
+            return inline;
+        }
+    }
+    nestedContentProperty(nextElement, inline, inlines) {
+        if (!isNullOrUndefined(nextElement)) {
+            if (nextElement.type === 1) {
+                inline.contentControlProperties = this.contentControlProperty(nextElement.contentControlProperties);
+                return inline;
+            }
+            else if (this.startContent) {
+                this.multipleLineContent = true;
+                return inline;
+            }
+        }
+        else if (this.startContent) {
+            this.multipleLineContent = true;
+            return inline;
+        }
+    }
+    inlineContentControls(element, contentInline, nestedContentInline) {
+        let inline = this.writeInline(element);
+        if (!isNullOrUndefined(nestedContentInline)) {
+            nestedContentInline.push(inline);
+            return nestedContentInline;
+        }
+        contentInline.push(inline);
+        return contentInline;
     }
     /* tslint:disable:max-func-body-length */
     writeInline(element) {
@@ -72591,6 +74019,9 @@ class SfdtExport {
         let row = {};
         row.cells = [];
         row.rowFormat = this.writeRowFormat(rowWidget.rowFormat);
+        if (rowWidget.hasOwnProperty('contentControlProperties')) {
+            row.contentControlProperties = this.contentControlProperty(rowWidget.contentControlProperties);
+        }
         return row;
     }
     createCell(cellWidget) {
@@ -72598,6 +74029,9 @@ class SfdtExport {
         cell.blocks = [];
         cell.cellFormat = this.writeCellFormat(cellWidget.cellFormat);
         cell.columnIndex = cellWidget.columnIndex;
+        if (cellWidget.hasOwnProperty('contentControlProperties')) {
+            cell.contentControlProperties = this.contentControlProperty(cellWidget.contentControlProperties);
+        }
         return cell;
     }
     writeShading(wShading) {
@@ -72737,6 +74171,17 @@ class SfdtExport {
         this.document.comments = [];
         for (let i = 0; i < documentHelper.comments.length; i++) {
             this.document.comments.push(this.writeComment(documentHelper.comments[i]));
+        }
+    }
+    writeCustomXml(documentHelper) {
+        this.document.customXml = [];
+        for (let i = 0; i < documentHelper.customXmlData.length; i++) {
+            let customXml = {};
+            let key = documentHelper.customXmlData.keys[i];
+            customXml.itemID = key;
+            let xmlValue = this.documentHelper.customXmlData.get(key);
+            customXml.xml = xmlValue;
+            this.document.customXml.push(customXml);
         }
     }
     writeComment(comments) {
@@ -74332,6 +75777,7 @@ class PageSetupDialog {
             /* tslint:disable-next-line:max-line-length */
             if (this.documentHelper.selection.sectionFormat.pageWidth > this.documentHelper.selection.sectionFormat.pageHeight || this.landscape.checked) {
                 this.isPortrait = false;
+                this.portrait.checked = false;
             }
             else {
                 this.isPortrait = true;
@@ -85385,8 +86831,8 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
             }
         }
         this.documentHelper.initializeComponents();
-        this.openBlank();
         this.renderComplete();
+        this.openBlank();
     }
     /**
      * Get component name
@@ -86410,7 +87856,9 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     showSpellCheckDialog() {
         if (this.spellCheckDialogModule && this.spellChecker) {
             let element = this.spellChecker.retriveText();
-            this.spellCheckDialogModule.show(element.text, element.element);
+            if (!isNullOrUndefined(element)) {
+                this.spellCheckDialogModule.show(element.text, element.element);
+            }
         }
     }
     /**
@@ -86756,6 +88204,9 @@ __decorate([
 __decorate([
     Event()
 ], DocumentEditor.prototype, "afterFormFieldFill", void 0);
+__decorate([
+    Event()
+], DocumentEditor.prototype, "contentControl", void 0);
 DocumentEditor = DocumentEditor_1 = __decorate([
     NotifyPropertyChanges
 ], DocumentEditor);
@@ -86893,8 +88344,8 @@ class Toolbar$1 {
         toolbarContainer.appendChild(toolbarWrapper);
         // Show hide pane button initialization 
         let propertiesPaneDiv = createElement('div', { className: 'e-de-ctnr-properties-pane-btn' });
-        let buttonElement = createElement('button', { attrs: { type: 'button' } });
-        propertiesPaneDiv.appendChild(buttonElement);
+        this.buttonElement = createElement('button', { attrs: { type: 'button' } });
+        propertiesPaneDiv.appendChild(this.buttonElement);
         let cssClassName = 'e-tbar-btn e-tbtn-txt e-control e-btn e-de-showhide-btn';
         let iconCss = 'e-icons e-de-ctnr-showhide';
         if (this.container.enableRtl) {
@@ -86906,9 +88357,9 @@ class Toolbar$1 {
             iconCss: iconCss
         });
         let locale = this.container.localObj;
-        buttonElement.title = locale.getConstant('Toggles the visibility of properties pane');
-        this.propertiesPaneButton.appendTo(buttonElement);
-        EventHandler.add(buttonElement, 'click', this.showHidePropertiesPane, this);
+        this.buttonElement.title = locale.getConstant('Hide properties pane');
+        this.propertiesPaneButton.appendTo(this.buttonElement);
+        EventHandler.add(this.buttonElement, 'click', this.showHidePropertiesPane, this);
         toolbarContainer.appendChild(propertiesPaneDiv);
         this.toolbar.appendTo(toolbarTarget);
         this.initToolbarDropdown(toolbarTarget);
@@ -86995,9 +88446,11 @@ class Toolbar$1 {
     }
     showHidePropertiesPane() {
         let paneDiv = document.getElementsByClassName('e-de-ctnr-properties-pane-btn')[0];
+        let locale = this.container.localObj;
         if (this.container.propertiesPaneContainer.style.display === 'none') {
             this.container.showPropertiesPane = true;
             paneDiv.classList.remove('e-de-pane-disable-clr');
+            this.buttonElement.title = locale.getConstant('Hide properties pane');
             classList(paneDiv, ['e-de-pane-enable-clr'], []);
             this.container.trigger('beforePaneSwitch', { type: 'PropertiesPane' });
         }
@@ -87008,6 +88461,7 @@ class Toolbar$1 {
         else {
             this.container.showPropertiesPane = false;
             paneDiv.classList.remove('e-de-pane-enable-clr');
+            this.buttonElement.title = locale.getConstant('Show properties pane');
             classList(paneDiv, ['e-de-pane-disable-clr'], []);
         }
         this.enableDisablePropertyPaneButton(this.container.showPropertiesPane);
@@ -87832,7 +89286,7 @@ class Text {
     initializeTextPropertiesDiv(wholeDiv, isRtl) {
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         this.textProperties = wholeDiv;
-        let element = 'font_properties';
+        let element = this.documentEditor.element.id + '_font_properties';
         let textDiv = this.createDiv(element + '_text', wholeDiv);
         classList(textDiv, ['e-de-cntr-pane-padding', 'e-de-prop-separator-line'], []);
         let label = createElement('label', { className: 'e-de-ctnr-prop-label' });
@@ -88517,7 +89971,7 @@ class Paragraph {
             this.splitButtonClass = 'e-rtl ' + this.splitButtonClass;
         }
         this.textProperties = wholeDiv;
-        let element = 'font_properties';
+        let element = this.documentEditor.element.id + '_font_properties';
         let paragraphDiv = this.createDivElement(element + '_paragraph', wholeDiv, '');
         classList(paragraphDiv, ['e-de-cntr-pane-padding'], []);
         let label = createElement('label', { styles: 'width:26px;', className: 'e-de-ctnr-prop-label' });
@@ -89238,7 +90692,7 @@ class HeaderFooterProperties {
         headerTopLabel.innerHTML = localObj.getConstant('Header from Top');
         headerTopDiv.appendChild(headerTopLabel);
         // tslint:disable-next-line:max-line-length
-        let headerFromTop = createElement('input', { id: 'headerFromTop', className: 'e-de-prop-sub-label' });
+        let headerFromTop = createElement('input', { id: this.documentEditor.element.id + '_headerFromTop', className: 'e-de-prop-sub-label' });
         headerTopDiv.appendChild(headerFromTop);
         // tslint:disable-next-line:max-line-length
         this.headerFromTop = new NumericTextBox({
@@ -89255,7 +90709,7 @@ class HeaderFooterProperties {
         footerBottomLabel.innerHTML = localObj.getConstant('Footer from Bottom');
         footerBottomDiv.appendChild(footerBottomLabel);
         // tslint:disable-next-line:max-line-length
-        let footerFromTop = createElement('input', { id: 'footerFromTop', className: 'e-de-prop-sub-label' });
+        let footerFromTop = createElement('input', { id: this.documentEditor.element.id + '_footerFromTop', className: 'e-de-prop-sub-label' });
         footerBottomDiv.appendChild(footerFromTop);
         // tslint:disable-next-line:max-line-length
         this.footerFromTop = new NumericTextBox({
@@ -90807,7 +92261,8 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             'Upload from computer': 'Upload from computer',
             'By URL': 'By URL',
             'Page Break': 'Page Break',
-            'Toggles the visibility of properties pane': 'Toggles the visibility of properties pane',
+            'Show properties pane': 'Show properties pane',
+            'Hide properties pane': 'Hide properties pane',
             'Section Break': 'Section Break',
             'Header And Footer': 'Header & Footer',
             'Options': 'Options',
@@ -91109,6 +92564,12 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         }
         this.element.style.minHeight = '320px';
         this.initializeDocumentEditor();
+        if (this.restrictEditing) {
+            if (this.toolbarModule) {
+                this.toolbarModule.enableDisableToolBarItem(this.restrictEditing, false);
+            }
+            this.documentEditor.isReadOnly = this.restrictEditing;
+        }
         this.textProperties = new TextProperties(this, this.element.id, false, this.enableRtl);
         this.headerFooterProperties = new HeaderFooterProperties(this, this.enableRtl);
         this.imageProperties = new ImageProperties(this, this.enableRtl);
@@ -91314,6 +92775,32 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             this.toolbarModule.propertiesPaneButton.element.style.opacity = show ? '1' : '0.5';
         }
         this.documentEditor.resize();
+    }
+    /**
+     * Resizes the container component and its sub elements based on given size or client size.
+     * @param width
+     * @param height
+     */
+    resize(width, height) {
+        if (this.element) {
+            if (isNullOrUndefined(height) && this.element) {
+                height = this.element.getBoundingClientRect().height;
+            }
+            if (isNullOrUndefined(width) && this.element) {
+                width = this.element.getBoundingClientRect().width;
+            }
+            if (!isNullOrUndefined(width) && width > 200) {
+                this.width = width.toString();
+                this.element.style.width = width + 'px';
+            }
+            if (!isNullOrUndefined(height) && height > 200) {
+                this.height = height.toString();
+                this.element.style.height = height + 'px';
+            }
+            if (this.documentEditor) {
+                this.documentEditor.resize();
+            }
+        }
     }
     /**
      * @private
@@ -91647,6 +93134,9 @@ __decorate$1([
     Event()
 ], DocumentEditorContainer.prototype, "trackChange", void 0);
 __decorate$1([
+    Event()
+], DocumentEditorContainer.prototype, "contentControl", void 0);
+__decorate$1([
     Complex({}, DocumentEditorSettings)
 ], DocumentEditorContainer.prototype, "documentEditorSettings", void 0);
 __decorate$1([
@@ -91670,5 +93160,5 @@ DocumentEditorContainer = __decorate$1([
  * export document editor modules
  */
 
-export { Dictionary, WUniqueFormat, WUniqueFormats, XmlHttpRequestHandler, Print, ContextMenu$1 as ContextMenu, WSectionFormat, WStyle, WParagraphStyle, WCharacterStyle, WStyles, WCharacterFormat, WListFormat, WTabStop, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WBorder, WBorders, WShading, WList, WAbstractList, WListLevel, WLevelOverride, DocumentHelper, LayoutViewer, PageLayoutViewer, WebLayoutViewer, Rect, Padding, Margin, Widget, BlockContainer, BodyWidget, HeaderFooterWidget, BlockWidget, ParagraphWidget, TableWidget, TableRowWidget, TableCellWidget, LineWidget, ElementBox, FieldElementBox, FormField, TextFormField, CheckBoxFormField, DropDownFormField, TextElementBox, ErrorTextElementBox, FieldTextElementBox, TabElementBox, BookmarkElementBox, ShapeCommon, ShapeBase, ShapeElementBox, TextFrame, LineFormat, ImageElementBox, ListTextElementBox, EditRangeEndElementBox, EditRangeStartElementBox, ChartElementBox, ChartArea, ChartCategory, ChartData, ChartLegend, ChartSeries, ChartErrorBar, ChartSeriesFormat, ChartDataLabels, ChartTrendLines, ChartTitleArea, ChartDataFormat, ChartFill, ChartLayout, ChartCategoryAxis, ChartDataTable, CommentCharacterElementBox, CommentElementBox, Page, WTableHolder, WColumn, ColumnSizeInfo, Layout, Renderer, SfdtReader, TextHelper, Zoom, Selection, SelectionCharacterFormat, SelectionParagraphFormat, SelectionSectionFormat, SelectionTableFormat, SelectionCellFormat, SelectionRowFormat, SelectionImageFormat, TextPosition, SelectionWidgetInfo, Hyperlink, ImageFormat, Search, OptionsPane, TextSearch, SearchWidgetInfo, TextSearchResult, TextSearchResults, Editor, ImageResizer, ImageResizingPoints, SelectedImageInfo, TableResizer, HelperMethods, Point, Base64, EditorHistory, BaseHistoryInfo, HistoryInfo, ModifiedLevel, ModifiedParagraphFormat, RowHistoryFormat, TableHistoryInfo, TableFormatHistoryInfo, RowFormatHistoryInfo, CellFormatHistoryInfo, CellHistoryFormat, WordExport, TextExport, SfdtExport, HtmlExport, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog, FormFieldPopUp, SpellChecker, AddUserDialog, EnforceProtectionDialog, UnProtectDocumentDialog, RestrictEditing, CommentReviewPane, CommentPane, CommentView, Revision, RevisionCollection, TrackChangesPane, ChangesSingleView, DocumentEditorSettings, DocumentEditor, ServerActionSettings, FormFieldSettings, ContainerServerActionSettings, Toolbar$1 as Toolbar, DocumentEditorContainer };
+export { Dictionary, WUniqueFormat, WUniqueFormats, XmlHttpRequestHandler, Print, ContextMenu$1 as ContextMenu, WSectionFormat, WStyle, WParagraphStyle, WCharacterStyle, WStyles, WCharacterFormat, WListFormat, WTabStop, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WBorder, WBorders, WShading, WList, WAbstractList, WListLevel, WLevelOverride, DocumentHelper, LayoutViewer, PageLayoutViewer, WebLayoutViewer, Rect, Padding, Margin, Widget, BlockContainer, BodyWidget, HeaderFooterWidget, BlockWidget, ParagraphWidget, TableWidget, TableRowWidget, TableCellWidget, LineWidget, ElementBox, FieldElementBox, FormField, TextFormField, CheckBoxFormField, DropDownFormField, TextElementBox, ErrorTextElementBox, FieldTextElementBox, TabElementBox, BookmarkElementBox, ContentControl, ContentControlProperties, ContentControlListItems, CheckBoxState, XmlMapping, CustomXmlPart, ShapeCommon, ShapeBase, ShapeElementBox, TextFrame, LineFormat, ImageElementBox, ListTextElementBox, EditRangeEndElementBox, EditRangeStartElementBox, ChartElementBox, ChartArea, ChartCategory, ChartData, ChartLegend, ChartSeries, ChartErrorBar, ChartSeriesFormat, ChartDataLabels, ChartTrendLines, ChartTitleArea, ChartDataFormat, ChartFill, ChartLayout, ChartCategoryAxis, ChartDataTable, CommentCharacterElementBox, CommentElementBox, Page, WTableHolder, WColumn, ColumnSizeInfo, Layout, Renderer, SfdtReader, TextHelper, Zoom, Selection, SelectionCharacterFormat, SelectionParagraphFormat, SelectionSectionFormat, SelectionTableFormat, SelectionCellFormat, SelectionRowFormat, SelectionImageFormat, TextPosition, SelectionWidgetInfo, Hyperlink, ImageFormat, Search, OptionsPane, TextSearch, SearchWidgetInfo, TextSearchResult, TextSearchResults, Editor, ImageResizer, ImageResizingPoints, SelectedImageInfo, TableResizer, HelperMethods, Point, Base64, EditorHistory, BaseHistoryInfo, HistoryInfo, ModifiedLevel, ModifiedParagraphFormat, RowHistoryFormat, TableHistoryInfo, TableFormatHistoryInfo, RowFormatHistoryInfo, CellFormatHistoryInfo, CellHistoryFormat, WordExport, TextExport, SfdtExport, HtmlExport, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog, FormFieldPopUp, SpellChecker, AddUserDialog, EnforceProtectionDialog, UnProtectDocumentDialog, RestrictEditing, CommentReviewPane, CommentPane, CommentView, Revision, RevisionCollection, TrackChangesPane, ChangesSingleView, DocumentEditorSettings, DocumentEditor, ServerActionSettings, FormFieldSettings, ContainerServerActionSettings, Toolbar$1 as Toolbar, DocumentEditorContainer };
 //# sourceMappingURL=ej2-documenteditor.es2015.js.map

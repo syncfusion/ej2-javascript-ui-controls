@@ -10,7 +10,7 @@ import { createElement, Browser } from '@syncfusion/ej2-base';
 import {
     Page, Rect, Widget, ListTextElementBox, FieldElementBox, ParagraphWidget, HeaderFooterWidget, EditRangeStartElementBox,
     CommentElementBox, CommentCharacterElementBox, Padding, DropDownFormField, TextFormField, CheckBoxFormField, ShapeElementBox,
-    TextFrame, BlockContainer
+    TextFrame, BlockContainer, ContentControl
 } from './page';
 import { DocumentEditor } from '../../document-editor';
 import {
@@ -482,6 +482,14 @@ export class DocumentHelper {
      */
     public isFormFilling: boolean = false;
     /**
+     * @private
+     */
+    public customXmlData: Dictionary<string, string>;
+    /**
+     * @private
+     */
+    public contentControlCollection: ContentControl[];
+    /**
      * Gets visible bounds.
      * @private
      */
@@ -681,6 +689,8 @@ export class DocumentHelper {
         this.isIosDevice = /Mac|iPad|iPod/i.test(navigator.userAgent);
         this.isMobileDevice = /Android|Windows Phone|webOS/i.test(navigator.userAgent);
         this.formFillPopup = new FormFieldPopUp(this.owner);
+        this.customXmlData = new Dictionary<string, string>();
+        this.contentControlCollection = [];
     }
     private initalizeStyles(): void {
         /* tslint:disable-next-line:max-line-length */
@@ -775,6 +785,8 @@ export class DocumentHelper {
         if (this.formFillPopup) {
             this.formFillPopup.hidePopup();
         }
+        this.customXmlData.clear();
+        this.contentControlCollection = [];
     }
     /**
      * @private
@@ -1298,7 +1310,7 @@ export class DocumentHelper {
      * @private
      */
     public onPaste = (event: ClipboardEvent): void => {
-        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
+        if ((!this.owner.isReadOnlyMode && this.owner.editor.canEditContentControl) || this.selection.isInlineFormFillMode()) {
             this.owner.editorModule.pasteInternal(event);
         }
         this.editableDiv.innerText = '';

@@ -1097,6 +1097,9 @@ export class SelectionSectionFormat {
     private topMarginIn: number;
     private rightMarginIn: number;
     private bottomMarginIn: number;
+    private restartPageNumberingIn: boolean;
+    private pageStartingNumberIn: number;
+
     /**
      * private
      */
@@ -1221,6 +1224,40 @@ export class SelectionSectionFormat {
         this.notifyPropertyChanged('headerDistance');
     }
     /**
+     * Gets or sets the starting page number.
+     * @aspType int
+     * @blazorType int
+     */
+    public get pageStartingNumber(): number {
+        return this.pageStartingNumberIn;
+    }
+    /**
+     * Gets or sets the starting page number.
+     * @aspType int
+     * @blazorType int
+     */
+    public set pageStartingNumber(value: number) {
+        this.pageStartingNumberIn = value;
+        this.notifyPropertyChanged('pageStartingNumber');
+    }
+    /**
+     * Gets or sets a value indicating whether to restart page numbering.
+     * @aspType bool
+     * @blazorType bool
+     */
+    public get restartPageNumbering(): boolean {
+        return this.restartPageNumberingIn;
+    }
+    /**
+     * Gets or sets a value indicating whether to restart page numbering.
+     * @aspType bool
+     * @blazorType bool
+     */
+    public set restartPageNumbering(value: boolean) {
+        this.restartPageNumberingIn = value;
+        this.notifyPropertyChanged('restartPageNumbering');
+    }
+    /**
      * Gets or sets the footer distance.
      * @aspType int
      * @blazorType int
@@ -1295,6 +1332,8 @@ export class SelectionSectionFormat {
         this.differentFirstPage = format.differentFirstPage;
         this.differentOddAndEvenPages = format.differentOddAndEvenPages;
         this.bidi = format.bidi;
+        this.pageStartingNumber = format.pageStartingNumber;
+        this.restartPageNumbering = format.restartPageNumbering;
     }
     private notifyPropertyChanged(propertyName: string): void {
         let selection: Selection = this.selection;
@@ -1356,6 +1395,16 @@ export class SelectionSectionFormat {
                 return this.headerDistanceIn;
             case 'footerDistance':
                 return this.footerDistance;
+            case 'pageStartingNumber':
+                if (!isNullOrUndefined(this.pageStartingNumber)) {
+                    return this.pageStartingNumber;
+                }
+                return undefined;
+            case 'restartPageNumbering':
+                if (!isNullOrUndefined(this.restartPageNumbering)) {
+                    return this.restartPageNumbering;
+                }
+                return undefined;
             default:
                 return undefined;
         }
@@ -1393,6 +1442,12 @@ export class SelectionSectionFormat {
         if (!isNullOrUndefined(this.differentFirstPage) && this.differentFirstPage !== format.differentFirstPage) {
             this.differentFirstPage = undefined;
         }
+        if (!isNullOrUndefined(this.pageStartingNumber) && this.pageStartingNumber !== format.pageStartingNumber) {
+            this.pageStartingNumber = undefined;
+        }
+        if (!isNullOrUndefined(this.restartPageNumbering) && this.restartPageNumbering !== format.restartPageNumbering) {
+            this.restartPageNumbering = undefined;
+        }
         if (!isNullOrUndefined(this.differentOddAndEvenPages) && this.differentOddAndEvenPages !== format.differentOddAndEvenPages) {
             this.differentOddAndEvenPages = undefined;
         }
@@ -1417,6 +1472,8 @@ export class SelectionSectionFormat {
         this.differentFirstPage = undefined;
         this.differentOddAndEvenPages = undefined;
         this.bidi = undefined;
+        this.pageStartingNumber = undefined;
+        this.restartPageNumbering = undefined;
     }
     /**
      * Destroys the managed resources.
@@ -1436,6 +1493,8 @@ export class SelectionSectionFormat {
         this.differentOddAndEvenPagesIn = undefined;
         this.selection = undefined;
         this.bidi = undefined;
+        this.pageStartingNumberIn = undefined;
+        this.restartPageNumberingIn = undefined;
     }
 }
 /**

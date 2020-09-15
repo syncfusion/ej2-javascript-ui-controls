@@ -15,8 +15,9 @@ export class Edit {
 
     public createTooltip(results: object[], isAdd: boolean): void {
         let toolTipPos: object = {};
+        let arrowPosition: string;
         for (var i = 0; i < results.length ; i++ ) {
-            let gcontent: HTMLElement = this.parent.getContent().firstElementChild as HTMLElement;
+            let gcontent: HTMLElement = this.parent.getContent() as HTMLElement;
             if (this.parent.options.frozenColumns) {
                 gcontent = this.parent.getContent().querySelector('.e-movablecontent') as HTMLElement;
             }
@@ -51,10 +52,9 @@ export class Edit {
                     // isFHdr = fHeraderRows.length > (parseInt(row.getAttribute('aria-rowindex'), 10) || 0);
                     // isFHdrLastRow = isFHdr && parseInt(row.getAttribute('aria-rowindex'), 10) === fHeraderRows.length - 1;
                 }
-                if (isFHdrLastRow || 
-                    //viewPortRowCount > 1 && rows.length >= viewPortRowCount
-                     ((this.parent.options.newRowPosition === 'Bottom' && isAdd || (!isNullOrUndefined(td) &&
-                      td.classList.contains('e-lastrowcell') && !row.classList.contains('e-addedrow'))) || isBatchModeLastRow)) {
+                if (isFHdrLastRow || (viewPortRowCount > 1 && rows.length >= viewPortRowCount &&
+                    (this.parent.options.newRowPosition === 'Bottom' && isAdd || (!isNullOrUndefined(td) 
+                    && td.classList.contains('e-lastrowcell') && !row.classList.contains('e-addedrow')))) || isBatchModeLastRow) {
                     validationForBottomRowPos = true;
                 }
             }
@@ -134,10 +134,11 @@ export class Edit {
                 div.style.top = null;
             }
             div.style.display = 'none';
+            arrowPosition = validationForBottomRowPos ? 'bottom' : 'top';
             toolTipPos[name] = `top: ${div.style.top}; bottom: ${div.style.bottom}; left: ${div.style.left}; 
             max-width: ${div.style.maxWidth}; width: ${div.style.width}; text-align: center; position: ${div.style.position};`;
         }
-        this.parent.dotNetRef.invokeMethodAsync("ShowValidationPopup", toolTipPos);
+        this.parent.dotNetRef.invokeMethodAsync("ShowValidationPopup", toolTipPos, arrowPosition);
     }
         
 

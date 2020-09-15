@@ -402,3 +402,35 @@ describe('Column Chooser', () => {
     destroy(gridObj);
   });
 }); 
+
+describe('Checkbox Column', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        autoCheckHierarchy: true,
+        columns: [
+          { template:"<span>PA-${taskID}</span>", headerText: 'Task ID', isPrimaryKey: true, showCheckbox: true, textAlign: 'Right', width: 100 },
+          { template:"<span> ${taskName}</span>", headerText: 'Task Name', width: 250 },
+          { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 },
+          { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+        ]
+      },
+      done
+    );
+  });
+  
+  it('Checkbox render', () => {
+    expect(gridObj.getCellFromIndex(2,0).classList.contains('e-treegridcheckbox')).toBe(true);
+    expect(gridObj.getCellFromIndex(2,1).classList.contains('e-treegridcheckbox')).toBe(false);
+  });
+ 
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

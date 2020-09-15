@@ -14,7 +14,7 @@ import {
     BlockContainer, BlockWidget, BodyWidget, BookmarkElementBox, CommentElementBox, EditRangeEndElementBox, EditRangeStartElementBox,
     ElementBox, ErrorTextElementBox, FieldElementBox, FieldTextElementBox, HeaderFooterWidget, ImageElementBox, IWidget, LineWidget,
     ListTextElementBox, Margin, Page, ParagraphWidget, Rect, TabElementBox, TableCellWidget, TableRowWidget,
-    TableWidget, TextElementBox, Widget, CheckBoxFormField, DropDownFormField, FormField, ShapeElementBox, TextFrame
+    TableWidget, TextElementBox, Widget, CheckBoxFormField, DropDownFormField, FormField, ShapeElementBox, TextFrame, ContentControl
 } from './page';
 import { TextSizeInfo } from './text-helper';
 import { DocumentHelper, LayoutViewer, PageLayoutViewer, WebLayoutViewer } from './viewer';
@@ -290,7 +290,7 @@ export class Layout {
                     element.linkFieldCharacter(this.documentHelper);
                 }
                 if (element instanceof FieldTextElementBox &&
-                   element.fieldBegin !== (element.previousElement as FieldElementBox).fieldBegin) {
+                    element.fieldBegin !== (element.previousElement as FieldElementBox).fieldBegin) {
                     element.fieldBegin = (element.previousElement as FieldElementBox).fieldBegin;
                 }
             }
@@ -607,7 +607,8 @@ export class Layout {
             return;
         }
         if (element instanceof ListTextElementBox || this.isFieldCode || element instanceof BookmarkElementBox ||
-            element instanceof EditRangeEndElementBox || element instanceof EditRangeStartElementBox) {
+            element instanceof EditRangeEndElementBox || element instanceof EditRangeStartElementBox
+            || element instanceof ContentControl) {
             if (element instanceof BookmarkElementBox) {
                 if (element.bookmarkType === 0 && !this.documentHelper.bookmarks.containsKey(element.name)) {
                     this.documentHelper.bookmarks.add(element.name, element);
@@ -616,6 +617,19 @@ export class Layout {
                     if (isNullOrUndefined(bookmrkElement.reference)) {
                         bookmrkElement.reference = element;
                         element.reference = bookmrkElement;
+                    }
+                }
+            }
+            if (element instanceof ContentControl && this.documentHelper.contentControlCollection.indexOf(element) === -1) {
+                if (element.type === 0) {
+                    this.documentHelper.contentControlCollection.push(element);
+                } else if (element.type === 1) {
+                    for (let i: number = 0; i < this.documentHelper.contentControlCollection.length; i++) {
+                        let cCStart: ContentControl = this.documentHelper.contentControlCollection[i];
+                        if (element.contentControlProperties === cCStart.contentControlProperties) {
+                            element.reference = cCStart;
+                            cCStart.reference = element;
+                        }
                     }
                 }
             }

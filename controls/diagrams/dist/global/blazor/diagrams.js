@@ -12381,7 +12381,7 @@ function removeSwimLane(diagram, obj) {
         for (j = 0; j < rows[i].cells.length; j++) {
             child = getGridChildren(rows[i].cells[j]);
             if (child && child.children) {
-                for (k = 0; k < child.children.length; k++) {
+                for (k = child.children.length - 1; k >= 0; k--) {
                     if (child.children[k].children) {
                         removeNode = diagram.nameTable[child.children[k].id];
                         if (removeNode) {
@@ -12398,7 +12398,6 @@ function removeSwimLane(diagram, obj) {
                                     removeChildInContainer(diagram, removeNode, {}, false);
                                 }
                                 diagram.diagramActions &= ~exports.DiagramAction.PreventHistory;
-                                k--;
                             }
                         }
                     }
@@ -13289,7 +13288,10 @@ function intersect3(lineUtil1, lineUtil2) {
     var d = (l2.y2 - l2.y1) * (l1.x2 - l1.x1) - (l2.x2 - l2.x1) * (l1.y2 - l1.y1);
     var na = (l2.x2 - l2.x1) * (l1.y1 - l2.y1) - (l2.y2 - l2.y1) * (l1.x1 - l2.x1);
     var nb = (l1.x2 - l1.x1) * (l1.y1 - l2.y1) - (l1.y2 - l1.y1) * (l1.x1 - l2.x1);
-    if (d === 0) {
+    /*( EJ2-42102 - Connector segments not update properly ) by sivakumar sekar - condition added to avoid bridging for
+     overlapping segments in the connectors and to validate whether the connector is intersecting over the other */
+    if (d === 0 || ((lineUtil1.x1 === lineUtil2.x1 || lineUtil1.y1 === lineUtil2.y1) &&
+        (lineUtil1.x2 === lineUtil2.x2 || lineUtil1.y2 === lineUtil2.y2) && ((na === 0 || nb === 0) && d > 0))) {
         return { enabled: false, intersectPt: point };
     }
     var ua = na / d;
@@ -26902,6 +26904,11 @@ var DiagramEventHandler = /** @class */ (function () {
             args.targetWrapper = wrapper;
         }
         args.actualObject = this.eventArgs.actualObject;
+        if (args.source instanceof Selector && args.actualObject === undefined &&
+            (args.source.nodes.length > 0 || args.source.connectors.length > 0)) {
+            args.actualObject = args.source.nodes.length > 0 ? this.diagram.nameTable[args.source.nodes[0].id]
+                : this.diagram.nameTable[args.source.connectors[0].id];
+        }
         args.startTouches = this.touchStartList;
         args.moveTouches = this.touchMoveList;
         return args;
@@ -27838,7 +27845,7 @@ var CommandHandler = /** @class */ (function () {
         if (isTooltipVisible) {
             this.diagram.tooltipObject.position = 'BottomCenter';
             this.diagram.tooltipObject.animation = { open: { delay: 0, duration: 0 } };
-            this.diagram.tooltip.relativeMode = toolName === 'ConnectTool' ? 'Mouse' : 'Object';
+            this.diagram.tooltip.actualRelativeMode = toolName === 'ConnectTool' ? 'Mouse' : 'Object';
             this.diagram.tooltipObject.openDelay = 0;
             this.diagram.tooltipObject.closeDelay = 0;
         }
@@ -29605,6 +29612,7 @@ var CommandHandler = /** @class */ (function () {
                     while (!target && i < index) {
                         target = zIndexTable[++i];
                     }
+                    target = this.diagram.nameTable[target].parentId ? this.checkParentExist(target) : target;
                     this.moveSvgNode(objectId, target);
                     this.updateNativeNodeIndex(objectId);
                 }
@@ -29620,6 +29628,15 @@ var CommandHandler = /** @class */ (function () {
         }
         this.diagram.protectPropertyChange(false);
     };
+    //Checks whether the target is a child node.
+    CommandHandler.prototype.checkParentExist = function (target) {
+        var objBehind = target;
+        while (this.diagram.nameTable[objBehind].parentId) {
+            objBehind = this.diagram.nameTable[objBehind].parentId;
+        }
+        return objBehind;
+    };
+    
     //Checks whether the selected node is not a parent of another node.
     CommandHandler.prototype.checkObjectBehind = function (objectId, zIndexTable, index) {
         for (var i = 0; i < index; i++) {
@@ -29643,6 +29660,10 @@ var CommandHandler = /** @class */ (function () {
             //find the maximum zIndex of the tabel
             var tabelLength = Number(Object.keys(zIndexTable).sort(function (a, b) { return Number(a) - Number(b); }).reverse()[0]);
             var index = this.diagram.nameTable[objectName].zIndex;
+            var oldzIndexTable = [];
+            for (var i = 0; i <= tabelLength; i++) {
+                oldzIndexTable.push(zIndexTable[i]);
+            }
             for (var i = index; i < tabelLength; i++) {
                 //When there are empty records in the zindex table
                 if (zIndexTable[i]) {
@@ -29679,8 +29700,13 @@ var CommandHandler = /** @class */ (function () {
                     var layer = this.getObjectLayer(objectName);
                     for (var i = 0; i < layer.objects.length; i++) {
                         if ((layer.objects[i] !== objectName) && (this.diagram.nameTable[layer.objects[i]].parentId) !== objectName) {
-                            this.moveSvgNode(layer.objects[i], objectName);
-                            this.updateNativeNodeIndex(objectName);
+                            //EJ2-42101 - SendToBack and BringToFront not working for connector with group node
+                            //Added @Dheepshiva to restrict the objects with lower zIndex
+                            if (layer.objects[i] !== undefined &&
+                                (oldzIndexTable.indexOf(objectName) < oldzIndexTable.indexOf(layer.objects[i]))) {
+                                this.moveSvgNode(layer.objects[i], objectName);
+                                this.updateNativeNodeIndex(objectName);
+                            }
                         }
                     }
                 }

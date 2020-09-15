@@ -327,7 +327,7 @@ export class PivotButton implements IAction {
         } else {
             engineModule = this.parent.engineModule;
         }
-        if (engineModule.fieldList[field[i].name] !== undefined) {
+        if (!isNullOrUndefined(engineModule.fieldList) && engineModule.fieldList[field[i].name] !== undefined) {
             aggregation = engineModule.fieldList[field[i].name].aggregateType;
             if ((aggregation !== 'DistinctCount') && (engineModule.fieldList[field[i].name].type !== 'number' || engineModule.fieldList[field[i].name].type === 'include' ||
                 engineModule.fieldList[field[i].name].type === 'exclude')) {
@@ -365,9 +365,11 @@ export class PivotButton implements IAction {
         } else {
             engineModule = this.parent.engineModule;
         }
-        let fieldListItem: IField = engineModule.fieldList[field[i].name];
-        if (fieldListItem.aggregateType !== 'CalculatedField' && this.validateDropdown(fieldListItem.type)) {
-            this.createSummaryType(buttonElement, field[i].name, field[i]);
+        if (!isNullOrUndefined(engineModule.fieldList)) {
+            let fieldListItem: IField = engineModule.fieldList[field[i].name];
+            if (fieldListItem.aggregateType !== 'CalculatedField' && this.validateDropdown(fieldListItem.type)) {
+                this.createSummaryType(buttonElement, field[i].name, field[i]);
+            }
         }
     }
     private validateDropdown(type: string): boolean {
@@ -485,7 +487,7 @@ export class PivotButton implements IAction {
         } else {
             engineModule = this.parent.engineModule;
         }
-        if (!this.parent.allowDeferLayoutUpdate) {
+        if (!this.parent.allowDeferLayoutUpdate && !isNullOrUndefined(engineModule.fieldList)) {
             sortCLass = engineModule.fieldList[fieldName].sort === 'Descending' ? cls.SORT_DESCEND_CLASS : '';
         } else {
             sortCLass = '';
@@ -495,7 +497,7 @@ export class PivotButton implements IAction {
                 }
             }
         }
-        if (engineModule.fieldList[fieldName].sort === 'None') {
+        if (!isNullOrUndefined(engineModule.fieldList) && engineModule.fieldList[fieldName].sort === 'None') {
             spanElement = createElement('span', {
                 attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('sort') },
                 className: cls.ICON
@@ -534,7 +536,7 @@ export class PivotButton implements IAction {
         } else {
             engineModule = this.parent.engineModule;
         }
-        if (!this.parent.allowDeferLayoutUpdate) {
+        if (!this.parent.allowDeferLayoutUpdate && !isNullOrUndefined(engineModule.fieldList)) {
             engineModule.fieldList[fieldName].filter = engineModule.fieldList[fieldName].filter === null ?
                 [] : engineModule.fieldList[fieldName].filter;
             filterCLass = engineModule.fieldList[fieldName].filter.length === 0 ?
@@ -886,7 +888,7 @@ export class PivotButton implements IAction {
                     $this.updateFilterEvents();
                 });
         } else if (pivotObj.dataSourceSettings.mode === 'Server') {
-            pivotObj.getEngine('fetchFieldMembers', null, null ,null, null, null, fieldName);
+            pivotObj.getEngine('fetchFieldMembers', null, null, null, null, null, fieldName);
         } else {
             this.updateFilterEvents();
         }

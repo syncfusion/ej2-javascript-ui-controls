@@ -4,6 +4,16 @@
 
 ### Diagram
 
+- `291364` - The issue "Connector's tooltip position updated wrongly" has been fixed.
+- `287349` - The issue "Infinite loop occurs while setting delete constraints for node in swim-lane and clear diagram" has been fixed.
+- `290066` - The issue "SendToBack and BringToFront not work for connector with group node" has been fixed.
+
+## 18.2.56 (2020-09-01)
+
+### Diagram
+
+- `291274` - The issue "Mouse Enter, Mouse Over event does not get triggered for selected item" has been fixed.
+- `287578` - The issue "Connector segments not update properly" has been fixed.
 - `289532` - The issue "Group width and height does not update" has been fixed.
 - `285600` - The issue "Complex hierarchical layout does not arrange properly" has been fixed.
 - `F157055` - The issue "Port inedge and outedge not updated properly" has been fixed.

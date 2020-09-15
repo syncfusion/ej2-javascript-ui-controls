@@ -615,7 +615,7 @@ export class PivotUtil {
     }
 
     public static formatPdfHeaderFooter(pdf: any): any {
-        let contents: any[];
+        let contents: any = [];
         if (!isNullOrUndefined(pdf)) {
             for (let i: number = 0; i < pdf.length; i++) {
                 let a = pdf[i];

@@ -181,6 +181,12 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     trackChange?: EmitType<TrackChangeEventArgs>;
 
     /**
+     * Triggers when user interaction prevented in content control.
+     * @event
+     */
+    contentControl?: EmitType<Object>;
+
+    /**
      * Defines the settings for DocumentEditor customization.
      * @default {}
      */

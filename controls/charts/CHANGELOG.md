@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Stock Chart
+
+#### Bug Fixes
+
+- `#290529` - Date range picker is not proper when rendering 2 stock charts issue has been fixed.
+
+## 18.2.56 (2020-09-01)
+
 ### Chart
 
 #### Bug Fixes
