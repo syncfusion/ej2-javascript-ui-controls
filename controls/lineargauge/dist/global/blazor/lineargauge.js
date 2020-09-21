@@ -4151,7 +4151,7 @@ var PdfExport = /** @class */ (function () {
  * Linear gauge component exported items
  */
 
-LinearGauge.Inject(GaugeTooltip, Annotations, Print, PdfExport, ImageExport, Gradient);
+LinearGauge.Inject(Print, PdfExport, GaugeTooltip, Annotations, ImageExport, Gradient);
 
 exports.LinearGauge = LinearGauge;
 exports.Font = Font;

@@ -529,8 +529,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                             return null;
                         };
                     } else {
-                        this.draggable.helper = this.helper;
-                    }
+                        this.initDraggable();
+                        this.draggable.helper = this.helper; }
                     break;
             }
         }

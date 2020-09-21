@@ -33,10 +33,9 @@ export function editAction(details: { value: ITreeData, action: string }, contro
     if (!isSkip && (action !== 'add' ||
         (control.editSettings.newRowPosition !== 'Top' && control.editSettings.newRowPosition !== 'Bottom'))) {
         for (let k: number = 0; k < modifiedData.length; k++) {
-            if (typeof(modifiedData[k][key]) === 'object') {
-                modifiedData[k] = modifiedData[k][key];
-            }
-            let keys: string[] = Object.keys((modifiedData[k] as ITreeData).taskData);
+            if (typeof(modifiedData[k][key]) === 'object') { modifiedData[k] = modifiedData[k][key]; }
+            let keys: string[] = (modifiedData[k] as ITreeData).taskData ? Object.keys((modifiedData[k] as ITreeData).taskData) :
+                        Object.keys(modifiedData[k]);
             i = treeData.length;
             while (i-- && i >= 0) {
                 if (treeData[i][key] === modifiedData[k][key]) {
@@ -68,7 +67,10 @@ export function editAction(details: { value: ITreeData, action: string }, contro
                                     || (!isNullOrUndefined(batchChanges) && batchChanges[changedRecords].length === 0))
                                     || keys[j] === columnName)) {
                                     let editedData: ITreeData = getParentData(control, (<ITreeData>modifiedData[k]).uniqueID);
-                                    editedData.taskData[keys[j]] = editedData[keys[j]] = treeData[i][keys[j]] = modifiedData[k][keys[j]];
+                                    treeData[i][keys[j]] = modifiedData[k][keys[j]];
+                                    if (editedData && editedData.taskData) {
+                                        editedData.taskData[keys[j]] = editedData[keys[j]] = treeData[i][keys[j]];
+                                    }
                                 }
                             }
                         } else if (action === 'add' || action === 'batchsave') {

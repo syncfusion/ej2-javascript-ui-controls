@@ -719,22 +719,34 @@ export class QuickPopups {
         return footerTemplate;
     }
 
-    private getResourceText(args: CellClickEventArgs | EventClickArgs, type: string): string {
+    public getResourceText(args: CellClickEventArgs | EventClickArgs, type: string): string {
         if (this.parent.resourceCollection.length === 0) {
             return null;
         }
         let resourceValue: string = '';
         if (this.parent.activeViewOptions.group.resources.length === 0) {
             let resourceCollection: ResourcesModel = this.parent.resourceBase.resourceCollection.slice(-1)[0];
-            let resourceData: { [key: string]: Object }[] = resourceCollection.dataSource as { [key: string]: Object }[];
+            let resourceData: { [key: string]: number }[] = resourceCollection.dataSource as { [key: string]: number }[];
             let resourceIndex: number = 0;
-            let eventData: { [key: string]: Object } = args.event as { [key: string]: Object };
-            for (let i: number = 0, len: number = resourceData.length; i < len; i++) {
-                if (resourceData[i][resourceCollection.idField] === eventData[resourceCollection.field]) {
-                    resourceIndex = i;
+            if (type === 'event') {
+                let eventData: { [key: string]: Object } = args.event as { [key: string]: Object };
+                for (let data of resourceData) {
+                    let resourceId: number | number[] = eventData[resourceCollection.field] as number | number[];
+                    if (resourceId instanceof Array) {
+                        if (resourceId.indexOf(data[resourceCollection.idField]) > -1) {
+                            let id: number = resourceId[resourceId.indexOf(data[resourceCollection.idField])];
+                            let resource: { [key: string]: number } = resourceData.filter((e: { [key: string]: number }) =>
+                                e[resourceCollection.idField] === id)[0];
+                            resourceValue += (resourceValue === '') ? resource[resourceCollection.textField] :
+                                ', ' + resource[resourceCollection.textField];
+                        }
+                    } else if (data[resourceCollection.idField] === resourceId) {
+                        resourceValue = data[resourceCollection.textField].toString();
+                    }
                 }
+            } else {
+                resourceValue = resourceData[0][resourceCollection.textField].toString();
             }
-            resourceValue = resourceData[resourceIndex][resourceCollection.textField] as string;
         } else {
             if (type === 'event') {
                 let eventData: { [key: string]: Object } = args.event as { [key: string]: Object };

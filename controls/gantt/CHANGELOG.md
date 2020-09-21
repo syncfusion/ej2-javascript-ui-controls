@@ -2,11 +2,28 @@
 
 ## [Unreleased]
 
+## 18.2.59 (2020-09-21)
+
+### Gantt
+
+#### New Features
+
+- `#292825` - Provided support to improvement of trigger actions on key press.
+
+#### Bug Fixes
+
+- `#293539` - Issue while dynamically updating `allowRowDragAndDrop` gets fixed.
+- `#292470` - Issue on edit template in dialog has been fixed.
+- `#293749` - Edit `params` not worked properly for progress column has been fixed.
+
+## 18.2.57 (2020-09-08)
+
 ### Gantt
 
 #### Bug Fixes
 
 - `#290457` - Issue on customizing the background colour of taskbar in Resource view has been fixed.
+- `F157498` - Console error on indenting record after sorting has been fixed.
 
 ## 18.2.56 (2020-09-01)
 

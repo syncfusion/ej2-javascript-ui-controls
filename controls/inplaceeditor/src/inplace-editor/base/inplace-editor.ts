@@ -476,6 +476,21 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     @Event()
     public change: EmitType<ChangeEventArgs>;
     /**
+     * Event triggers when click the submit button.
+     * @event 
+     * @blazorProperty 'SubmitClick'
+     */
+    @Event()
+    public submitClick: EmitType<MouseEvent>;
+    /**
+     * Event triggers when click the cancel button.
+     * @event 
+     * @blazorProperty 'CancelClick'
+     */
+    @Event()
+    public cancelClick: EmitType<MouseEvent>;
+
+    /**
      * The event will be fired when the component gets destroyed.
      * @event
      * @blazorProperty 'Destroyed'
@@ -1000,7 +1015,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.submitBtn = undefined;
         }
         if (!isNOU(this.cancelBtn)) {
-            EventHandler.remove(this.cancelBtn.element, 'mousedown', this.cancelHandler);
+            EventHandler.remove(this.cancelBtn.element, 'mousedown', this.cancelBtnClick);
             EventHandler.remove(this.cancelBtn.element, 'keydown', this.btnKeyDownHandler);
             this.cancelBtn.destroy();
             this.cancelBtn = undefined;
@@ -1116,13 +1131,17 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private enableEditor(val: boolean): void {
         (val) ? this.renderEditor() : this.cancelHandler();
     }
-    private checkValidation(isValidate?: boolean): void {
+    private checkValidation(fromSubmit : boolean , isValidate?: boolean): void {
         let args: ValidateEventArgs;
-        let fromSubmit: boolean = true;
         if (this.validationRules) {
+            let rules: string[] = Object.keys(this.validationRules);
+            let validationLength : number =  Object.keys(this.validationRules[rules[0]]).length;
+            validationLength = 'validateHidden' in this.validationRules[rules[0]] ? validationLength - 1 : validationLength;
+            let count : number = 0;
             this.formValidate = new FormValidator(this.formEle as HTMLFormElement, {
                 rules: this.validationRules,
                 validationComplete: (e: FormEventArgs) => {
+                        count = count + 1;
                         args = {
                             errorMessage: e.message,
                             data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
@@ -1134,16 +1153,20 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                             } else {
                                 this.toggleErrorClass(false);
                             }
-                            if (!isNOU(fromSubmit) && fromSubmit) {
+                            if (!isNOU(fromSubmit) && fromSubmit && (validationLength === count || e.status === 'failure')) {
                                 fromSubmit = false;
                                 this.afterValidation(isValidate);
+                                count = 0;
                             }
                         });
                 },
                 customPlacement: (inputElement: HTMLElement, errorElement: HTMLElement) => {
-                    select('.' + classes.EDITABLE_ERROR, this.formEle).appendChild(errorElement);
+                    if (this.formEle) {
+                        select('.' + classes.EDITABLE_ERROR, this.formEle).appendChild(errorElement);
+                    }
                 }
             });
+            count = 0;
             this.formValidate.validate();
         } else {
             this.afterValidation(isValidate);
@@ -1218,9 +1241,13 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             EventHandler.add(this.submitBtn.element, 'keydown', this.btnKeyDownHandler, this);
         }
         if (!isNOU(this.cancelBtn)) {
-            EventHandler.add(this.cancelBtn.element, 'mousedown', this.cancelHandler, this);
+            EventHandler.add(this.cancelBtn.element, 'mousedown', this.cancelBtnClick, this);
             EventHandler.add(this.cancelBtn.element, 'keydown', this.btnKeyDownHandler, this);
         }
+    }
+    private cancelBtnClick(e: MouseEvent) : void {
+        this.cancelHandler();
+        this.trigger('cancelClick' , e);
     }
     private unWireEvents(): void {
         this.unWireEditEvent(this.editableOn);
@@ -1319,6 +1346,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private submitHandler(e: MouseEvent): void {
         e.preventDefault();
         this.save();
+        this.trigger('submitClick', e);
     }
     private cancelHandler(): void {
         this.removeEditor();
@@ -1414,7 +1442,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * @returns void
      */
     public validate(): void {
-        this.checkValidation(false);
+        this.checkValidation(true, false);
     }
     /**
      * Submit the edited input value to the server.
@@ -1429,7 +1457,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (!this.isTemplate) {
             this.setValue();
         }
-        this.checkValidation(true);
+        this.checkValidation(true, true);
     }
     /**
      * Removes the control from the DOM and also removes all its related events.

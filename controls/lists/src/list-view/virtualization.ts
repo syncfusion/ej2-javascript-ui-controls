@@ -61,7 +61,7 @@ export class Virtualization {
         let firstDs: { [key: string]: Object; }[] = curViewDS.slice(0, 1);
         if (!(isBlazor() || this.listViewInstance.isServerRendered)) {
             this.listViewInstance.ulElement = this.listViewInstance.curUL = ListBase.createList(
-            this.listViewInstance.createElement, firstDs, this.listViewInstance.listBaseOption);
+            this.listViewInstance.createElement, firstDs, this.listViewInstance.listBaseOption, null, this);
             this.listViewInstance.contentContainer = this.listViewInstance.createElement('div', { className: classNames.content });
             this.listViewInstance.element.appendChild(this.listViewInstance.contentContainer);
             this.listViewInstance.contentContainer.appendChild(this.listViewInstance.ulElement);
@@ -74,7 +74,7 @@ export class Virtualization {
         let otherDs: { [key: string]: Object; }[] = curViewDS.slice(1, this.domItemCount);
         if (!(isBlazor() || this.listViewInstance.isServerRendered)) {
             let listItems: HTMLElement[] = ListBase.createListItemFromJson(
-            this.listViewInstance.createElement, otherDs, this.listViewInstance.listBaseOption);
+            this.listViewInstance.createElement, otherDs, this.listViewInstance.listBaseOption, null, null, this);
             append(listItems, this.listViewInstance.ulElement);
             this.listViewInstance.liCollection = <HTMLElement[] & NodeListOf<HTMLLIElement>>
             this.listViewInstance.curUL.querySelectorAll('li');
@@ -884,7 +884,10 @@ export class Virtualization {
         let li: HTMLElement[] = ListBase.createListItemFromJson(
             this.listViewInstance.createElement,
             [itemData],
-            this.listViewInstance.listBaseOption);
+            this.listViewInstance.listBaseOption,
+            null,
+            null,
+            this);
         // check for target element whether to insert before last item or group item
         if ((Object.keys(this.listViewInstance.curViewDS).length - 1) === index) {
             target = this.listViewInstance.curUL.lastElementChild as HTMLElement;
@@ -1210,3 +1213,4 @@ export class Virtualization {
 interface DataSource {
     [key: string]: Object;
 }
+

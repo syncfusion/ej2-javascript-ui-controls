@@ -155,6 +155,7 @@ var ListBox = /** @class */ (function (_super) {
             this.list.classList.add('e-list-template');
         }
         this.list.classList.add('e-wrapper');
+        this.list.classList.add('e-lib');
         if (this.element.tagName === 'EJS-LISTBOX') {
             this.element.setAttribute('tabindex', '0');
             if (this.initLoad) {
@@ -231,7 +232,7 @@ var ListBox = /** @class */ (function (_super) {
         if (this.toolbarSettings.items.length) {
             var toolElem = this.createElement('div', { className: 'e-listbox-tool', attrs: { 'role': 'toolbar' } });
             var wrapper = this.createElement('div', {
-                className: 'e-listboxtool-wrapper e-' + pos.toLowerCase()
+                className: 'e-listboxtool-wrapper e-lib e-' + pos.toLowerCase()
             });
             this.list.parentElement.insertBefore(wrapper, this.list);
             wrapper.appendChild(pos === 'Right' ? this.list : toolElem);
@@ -1530,10 +1531,8 @@ var ListBox = /** @class */ (function (_super) {
                     fListBox.ulElement.removeChild(noRecElem);
                 }
             }
-            else {
-                sf.lists.moveTo(fListBox.ulElement, tListBox.ulElement, Array.apply(null, { length: fListBox.ulElement.childElementCount }).map(Number.call, Number), index);
-                this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
-            }
+            sf.lists.moveTo(fListBox.ulElement, tListBox.ulElement, Array.apply(null, { length: fListBox.ulElement.childElementCount }).map(Number.call, Number), index);
+            this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
         }
         if (isKey) {
             this.list.focus();

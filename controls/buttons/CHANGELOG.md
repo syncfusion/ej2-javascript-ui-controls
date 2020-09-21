@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.58 (2020-09-15)
+
+### CheckBox
+
+#### Bug Fixes
+
+- Issue with destroy method has been fixed.
+
 ## 18.2.44 (2020-07-07)
 
 ### Chips

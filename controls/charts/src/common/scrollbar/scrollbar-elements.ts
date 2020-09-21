@@ -19,10 +19,12 @@ export function createScrollSvg(scrollbar: ScrollBar, renderer: SvgRenderer): vo
         }
     }
     for (let tempSeries of scrollbar.axis.series) {
-        yMin = tempSeries.yMin.toString();
-        enablePadding = (tempSeries.yData).some((yData: number | string) => {
-            return yData === yMin;
-        });
+        if (tempSeries.visible) { // To avoid the console error, when the visibility of the series is false.
+            yMin = tempSeries.yMin.toString();
+            enablePadding = (tempSeries.yData).some((yData: number | string) => {
+                return yData === yMin;
+            });
+        }
         if (enablePadding) {
             break;
         }

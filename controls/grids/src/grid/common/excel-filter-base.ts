@@ -830,7 +830,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                             obj[this.actObj.fields.value]) === index;
                     });
                 },
-                value: fValue as string
+                text: fValue as string
             },
             colObj.filter.params));
         if (dataSource && 'result' in dataSource) {

@@ -17336,7 +17336,7 @@ class Trendlines {
         if (!this.gaussJordanElimination(matrix, trendline.polynomialSlopes)) {
             trendline.polynomialSlopes = null;
         }
-        pts = this.getPoints(trendline, points, xValues, yValues, series);
+        pts = this.getPoints(trendline, points, xValues, series);
         return pts;
     }
     /**
@@ -17404,14 +17404,16 @@ class Trendlines {
     /**
      * Defines the points based on data point
      */
-    getPoints(trendline, points, xValues, yValues, series) {
-        let midPoint = Math.round((points.length / 2));
+    getPoints(trendline, points, xValues, series) {
         let polynomialSlopes = trendline.polynomialSlopes;
         let pts = [];
         let x1 = 1;
         let index = 1;
         let xValue;
         let yValue;
+        // We have to sort the points in ascending order. Because, the data source of the series may be random order.
+        points.sort((a, b) => { return a.xValue - b.xValue; });
+        xValues.sort((a, b) => { return a - b; });
         while (index <= polynomialSlopes.length) {
             if (index === 1) {
                 xValue = xValues[0] - trendline.backwardForecast;
@@ -24580,10 +24582,12 @@ function createScrollSvg(scrollbar, renderer) {
         }
     }
     for (let tempSeries of scrollbar.axis.series) {
-        yMin = tempSeries.yMin.toString();
-        enablePadding = (tempSeries.yData).some((yData) => {
-            return yData === yMin;
-        });
+        if (tempSeries.visible) { // To avoid the console error, when the visibility of the series is false.
+            yMin = tempSeries.yMin.toString();
+            enablePadding = (tempSeries.yData).some((yData) => {
+                return yData === yMin;
+            });
+        }
         if (enablePadding) {
             break;
         }

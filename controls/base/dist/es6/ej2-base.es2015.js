@@ -7311,6 +7311,10 @@ let Draggable = Draggable_1 = class Draggable extends Base {
                 element = intClosest;
             }
         }
+        /* istanbul ignore next */
+        if (this.isReplaceDragEle) {
+            element = this.currentStateCheck(evt.target, element);
+        }
         this.offset = this.calculateParentPosition(element);
         this.position = this.getMousePosition(evt, this.isDragScroll);
         let x = this.initialPosition.x - intCordinate.pageX;
@@ -7641,9 +7645,25 @@ let Draggable = Draggable_1 = class Draggable extends Base {
             this.helperElement.style.pointerEvents = prevStyle;
         }
         else {
-            ele = evt.target;
+            if (this.isReplaceDragEle) {
+                ele = this.currentStateCheck(evt.target);
+            }
+            else {
+                ele = evt.target;
+            }
         }
         return ele;
+    }
+    /* istanbul ignore next */
+    currentStateCheck(ele, oldEle) {
+        let elem;
+        if (!isNullOrUndefined(this.currentStateTarget) && this.currentStateTarget !== ele) {
+            elem = this.currentStateTarget;
+        }
+        else {
+            elem = !isNullOrUndefined(oldEle) ? oldEle : ele;
+        }
+        return elem;
     }
     getMousePosition(evt, isdragscroll) {
         /* tslint:disable no-any */
@@ -7739,6 +7759,9 @@ __decorate$2([
 __decorate$2([
     Property()
 ], Draggable.prototype, "isDragScroll", void 0);
+__decorate$2([
+    Property()
+], Draggable.prototype, "isReplaceDragEle", void 0);
 __decorate$2([
     Event$1()
 ], Draggable.prototype, "drag", void 0);

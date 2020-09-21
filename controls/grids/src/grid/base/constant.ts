@@ -438,3 +438,5 @@ export const pdfAggregateQueryCellInfo: string = 'pdfAggregateQueryCellInfo';
 export const excelAggregateQueryCellInfo: string = 'excelAggregateQueryCellInfo';
 /** @hidden */
 export const beforeCheckboxRenderer: string = 'beforeCheckboxRenderer';
+/** @hidden */
+export const refreshHandlers: string = 'refreshResizeHandlers';

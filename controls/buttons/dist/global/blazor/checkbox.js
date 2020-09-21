@@ -122,30 +122,36 @@ var CheckBox = /** @class */ (function (_super) {
         var wrapper = this.getWrapper();
         if (sf.base.isBlazor() && this.isServerRendered) {
             if (!this.disabled) {
+                this.wrapper = wrapper;
                 this.unWireEvents();
             }
         }
         else {
-            _super.prototype.destroy.call(this);
-            if (!this.disabled) {
-                this.unWireEvents();
-            }
-            if (this.tagName === 'INPUT') {
-                wrapper.parentNode.insertBefore(this.element, wrapper);
-                sf.base.detach(wrapper);
-                this.element.checked = false;
-                if (this.indeterminate) {
-                    this.element.indeterminate = false;
+            if (this.wrapper) {
+                wrapper = this.wrapper;
+                _super.prototype.destroy.call(this);
+                if (!this.disabled) {
+                    this.unWireEvents();
                 }
-                ['name', 'value', 'disabled'].forEach(function (key) {
-                    _this.element.removeAttribute(key);
-                });
-            }
-            else {
-                ['role', 'aria-checked', 'class'].forEach(function (key) {
-                    wrapper.removeAttribute(key);
-                });
-                wrapper.innerHTML = '';
+                if (this.tagName === 'INPUT') {
+                    if (this.getWrapper()) {
+                        wrapper.parentNode.insertBefore(this.element, wrapper);
+                    }
+                    sf.base.detach(wrapper);
+                    this.element.checked = false;
+                    if (this.indeterminate) {
+                        this.element.indeterminate = false;
+                    }
+                    ['name', 'value', 'disabled'].forEach(function (key) {
+                        _this.element.removeAttribute(key);
+                    });
+                }
+                else {
+                    ['role', 'aria-checked', 'class'].forEach(function (key) {
+                        wrapper.removeAttribute(key);
+                    });
+                    wrapper.innerHTML = '';
+                }
             }
         }
     };
@@ -171,7 +177,12 @@ var CheckBox = /** @class */ (function (_super) {
         return this.addOnPersist(['checked', 'indeterminate']);
     };
     CheckBox.prototype.getWrapper = function () {
-        return this.element.parentElement.parentElement;
+        if (this.element.parentElement) {
+            return this.element.parentElement.parentElement;
+        }
+        else {
+            return null;
+        }
     };
     CheckBox.prototype.initialize = function () {
         if (sf.base.isNullOrUndefined(this.initialCheckedValue)) {
@@ -264,6 +275,7 @@ var CheckBox = /** @class */ (function (_super) {
                 case 'disabled':
                     if (newProp.disabled) {
                         this.setDisabled();
+                        this.wrapper = this.getWrapper();
                         this.unWireEvents();
                     }
                     else {
@@ -354,6 +366,7 @@ var CheckBox = /** @class */ (function (_super) {
         }
         this.updateHtmlAttributeToWrapper();
         this.renderComplete();
+        this.wrapper = this.getWrapper();
     };
     CheckBox.prototype.setDisabled = function () {
         var wrapper = this.getWrapper();
@@ -386,7 +399,7 @@ var CheckBox = /** @class */ (function (_super) {
         this.element.checked = this.initialCheckedValue;
     };
     CheckBox.prototype.unWireEvents = function () {
-        var wrapper = this.getWrapper();
+        var wrapper = this.wrapper;
         sf.base.EventHandler.remove(this.element, 'click', this.clickHandler);
         sf.base.EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         sf.base.EventHandler.remove(this.element, 'focus', this.focusHandler);

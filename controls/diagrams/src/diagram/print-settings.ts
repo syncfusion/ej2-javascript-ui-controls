@@ -130,7 +130,12 @@ export class PrintAndExport {
                 scaleY: options[scaleY], scaleOffsetX: options[scaleOffsetX], scaleOffsetY: options[scaleOffsetY]
             } as IExportOptions,
             customBounds);
-        let image: string = content = canvas.toDataURL();
+        let image: string;
+        if (options.format === 'JPG') {
+            image = content = canvas.toDataURL('image/jpeg');
+        } else {
+            image = content = canvas.toDataURL();
+        }
         if (mode === 'Data') {
             return content;
         }

@@ -56,8 +56,10 @@ let Grid: object = {
             element.blazor__instance.filterModule.filterPopupRender(dlgID, uid, type, isColumnMenu);
         }
     },
-    autoFitColumns(element: BlazorGridElement, fieldNames: string | string[]) {
+    autoFitColumns(element: BlazorGridElement, columns: Column[], fieldNames: string | string[]) {
         if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            var instance = element.blazor__instance;
+            instance.options.columns = columns;
             element.blazor__instance.resizeModule.autoFitColumns(fieldNames);
         }
     },
@@ -70,7 +72,7 @@ let Grid: object = {
     },
     focus(element: BlazorGridElement, rowuid: string, celluid: string, action: string) {
         let cell: HTMLElement = element.querySelector("[data-uid=\"" + celluid + "\"]");
-        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance) && !isNullOrUndefined(cell)) {
             var instance = element.blazor__instance;
             if (!instance.options.enableVirtualization) {
                 cell.focus();
@@ -158,6 +160,11 @@ let Grid: object = {
     copyToClipBoard(element: BlazorGridElement, withHeader?: boolean) {
         if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.clipboardModule.copy(withHeader);
+        }
+    },
+    gridFocus(element: BlazorGridElement) {
+        if (!isNullOrUndefined(element)) {
+            element.focus();
         }
     }
 };

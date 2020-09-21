@@ -135,7 +135,7 @@ export class VirtualScroll {
     private beforeInvoke(resWrap: HTMLElement, conWrap: HTMLElement, eventWrap: HTMLElement, timeIndicator?: HTMLElement): void {
         if (isBlazor()) {
             clearTimeout(this.timeValue);
-            this.timeValue = setTimeout(() => { this.triggerScrolling(); }, 250);
+            this.timeValue = window.setTimeout(() => { this.triggerScrolling(); }, 250);
             this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
             this.previousTop = conWrap.scrollTop;
         }

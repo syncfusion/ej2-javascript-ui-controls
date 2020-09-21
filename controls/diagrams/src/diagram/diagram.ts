@@ -4300,6 +4300,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (!(parentNode as Node).isLane) {
                     this.nameTable[node.id].width = parentNode.wrapper.actualSize.width;
                     this.nameTable[node.id].height = parentNode.wrapper.actualSize.height;
+                    this.nameTable[node.id].offsetX = parentNode.wrapper.offsetX;
+                    this.nameTable[node.id].offsetY = parentNode.wrapper.offsetY;
                 }
                 if (parentNode.container !== undefined) {
                     childNode.offsetX = childNode.wrapper.offsetX;
@@ -7807,7 +7809,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.updatePorts(actualObject, node.flip);
             }
         }
-        if (node.rotateAngle !== undefined) {
+        if (node.rotateAngle !== undefined && (actualObject.constraints & NodeConstraints.Rotate)) {
             if (actualObject.children && rotate) {
                 this.commandHandler.rotateObjects(actualObject, [actualObject], actualObject.rotateAngle - actualObject.wrapper.rotateAngle, { x: actualObject.offsetX, y: actualObject.offsetY }, false)
             }

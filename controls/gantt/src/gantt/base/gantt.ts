@@ -30,7 +30,6 @@ import { Dependency } from '../actions/dependency';
 import * as cls from './css-constants';
 import { Query, DataManager } from '@syncfusion/ej2-data';
 import { Column, ColumnModel } from '../models/column';
-import { TextBox } from '@syncfusion/ej2-inputs';
 import { TreeGrid, FilterSettingsModel as TreeGridFilterSettingModel } from '@syncfusion/ej2-treegrid';
 import { Sort } from '../actions/sort';
 import { CellSelectEventArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';
@@ -61,9 +60,7 @@ import { ColumnMenu } from '../actions/column-menu';
 import { ITaskbarClickEventArgs, RecordDoubleClickEventArgs, IMouseMoveEventArgs } from './interface';
 import { PdfExport } from '../actions/pdf-export';
 import { WorkUnit, TaskType } from './enum';
-interface EJ2Instance extends HTMLElement {
-    ej2_instances: Object[];
-}
+import { FocusModule } from '../actions/keyboard';
 /**
  *
  * Represents the Gantt chart component.
@@ -88,6 +85,8 @@ export class Gantt extends Component<HTMLElement>
     public splitterElement: HTMLElement;
     /** @hidden */
     public toolbarModule: Toolbar;
+    /** @hidden */
+    public focusModule: FocusModule;
     /** @hidden */
     public ganttChartModule: GanttChart;
     /** @hidden */
@@ -258,9 +257,9 @@ export class Gantt extends Component<HTMLElement>
     public staticSelectedRowIndex: number = -1;
     protected needsID: boolean = true;
     /** @hidden */
-    public showActiveElement: boolean = false;
+    public showActiveElement: boolean = true;
     /** @hidden */
-    public enableHeaderFocus: boolean = false;
+    public enableHeaderFocus: boolean = true;
     /**
      * Enables or disables the key board interaction of Gantt.
      * 
@@ -1280,215 +1279,6 @@ export class Gantt extends Component<HTMLElement>
     public getModuleName(): string {
         return 'gantt';
     }
-
-    /**
-     * To perform key interaction in Gantt
-     * @private
-     */
-    /* tslint:disable-next-line:max-func-body-length */
-    public onKeyPress(e: KeyboardEventArgs): void | boolean {
-        let expandedRecords: IGanttData[] = this.getExpandedRecords(this.currentViewData);
-        if (e.action === 'home' || e.action === 'end' || e.action === 'downArrow' || e.action === 'upArrow' || e.action === 'delete' ||
-            e.action === 'rightArrow' || e.action === 'leftArrow' || e.action === 'focusTask' || e.action === 'focusSearch' ||
-            e.action === 'expandAll' || e.action === 'collapseAll') {
-            if (!isNullOrUndefined(this.editModule) && !isNullOrUndefined(this.editModule.cellEditModule) &&
-                this.editModule.cellEditModule.isCellEdit === true) {
-                return;
-            }
-        }
-        if (this.isAdaptive) {
-            if (e.action === 'addRowDialog' || e.action === 'editRowDialog' || e.action === 'delete'
-                || e.action === 'addRow') {
-                if (this.selectionModule && this.selectionSettings.type === 'Multiple') {
-                    this.selectionModule.hidePopUp();
-                    (<HTMLElement>document.getElementsByClassName('e-gridpopup')[0]).style.display = 'none';
-                }
-            }
-        }
-        switch (e.action) {
-            case 'home':
-                if (this.selectionModule && this.selectionSettings.mode !== 'Cell') {
-                    if (this.selectedRowIndex === 0) {
-                        return;
-                    }
-                    this.selectionModule.selectRow(0, false, true);
-                }
-                break;
-            case 'end':
-                if (this.selectionModule && this.selectionSettings.mode !== 'Cell') {
-                    let currentSelectingRecord: IGanttData = expandedRecords[expandedRecords.length - 1];
-                    if (this.selectedRowIndex === this.currentViewData.indexOf(currentSelectingRecord)) {
-                        return;
-                    }
-                    this.selectionModule.selectRow(this.currentViewData.indexOf(currentSelectingRecord), false, true);
-                }
-                break;
-            case 'downArrow':
-            case 'upArrow':
-                this.upDownKeyNavigate(e);
-                break;
-            case 'expandAll':
-                this.ganttChartModule.expandCollapseAll('expand');
-                break;
-            case 'collapseAll':
-                this.ganttChartModule.expandCollapseAll('collapse');
-                break;
-            case 'expandRow':
-            case 'collapseRow':
-                this.expandCollapseKey(e);
-                break;
-            case 'saveRequest':
-                if (!isNullOrUndefined(this.editModule) && !isNullOrUndefined(this.editModule.cellEditModule) &&
-                    this.editModule.cellEditModule.isCellEdit) {
-                    let col: ColumnModel = this.editModule.cellEditModule.editedColumn;
-                    if (col.field === this.columnMapping.duration && !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read)) {
-                        let textBox: TextBox = <TextBox>(<EJ2Instance>e.target).ej2_instances[0];
-                        let textValue: string = (e.target as HTMLInputElement).value;
-                        let ganttProp: ITaskData = this.currentViewData[this.selectedRowIndex].ganttProperties;
-                        let tempValue: string | Date | number;
-                        if (col.field === this.columnMapping.duration) {
-                            tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as Function)() :
-                                !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function)
-                                    (this.columnMapping.duration, this.editedRecords, col) :
-                                    this.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
-                            if (textValue !== tempValue.toString()) {
-                                textBox.value = textValue;
-                                textBox.dataBind();
-                            }
-                        }
-                    }
-                    if (this.editModule.dialogModule.dialogObj && getValue('dialogOpen', this.editModule.dialogModule.dialogObj)) {
-                        return;
-                    }
-                    this.editModule.cellEditModule.isCellEdit = false;
-                    this.treeGrid.grid.saveCell();
-                    let focussedElement: HTMLElement = <HTMLElement>this.element.querySelector('.e-treegrid');
-                    focussedElement.focus();
-                }
-                break;
-            case 'cancelRequest':
-                if (!isNullOrUndefined(this.editModule) && !isNullOrUndefined(this.editModule.cellEditModule)) {
-                    this.editModule.cellEditModule.isCellEdit = false;
-                    if (!isNullOrUndefined(this.toolbarModule)) {
-                        this.toolbarModule.refreshToolbarItems();
-                    }
-                }
-                break;
-            case 'addRow':
-                e.preventDefault();
-                let focussedElement: HTMLElement = <HTMLElement>this.element.querySelector('.e-gantt-chart');
-                focussedElement.focus();
-                this.addRecord();
-                break;
-            case 'addRowDialog':
-                e.preventDefault();
-                if (this.editModule && this.editModule.dialogModule && this.editSettings.allowAdding) {
-                    if (this.editModule.dialogModule.dialogObj && getValue('dialogOpen', this.editModule.dialogModule.dialogObj)) {
-                        return;
-                    }
-                    this.editModule.dialogModule.openAddDialog();
-                }
-                break;
-            case 'editRowDialog':
-                e.preventDefault();
-                let focussedTreeElement: HTMLElement = <HTMLElement>this.element.querySelector('.e-treegrid');
-                focussedTreeElement.focus();
-                if (this.editModule && this.editModule.dialogModule && this.editSettings.allowEditing) {
-                    if (this.editModule.dialogModule.dialogObj && getValue('dialogOpen', this.editModule.dialogModule.dialogObj)) {
-                        return;
-                    }
-                    this.editModule.dialogModule.openToolbarEditDialog();
-                }
-                break;
-            case 'delete':
-                if (this.selectionModule && this.editModule && (!this.editSettings.allowTaskbarEditing
-                    || (this.editSettings.allowTaskbarEditing && !this.editModule.taskbarEditModule.touchEdit))) {
-                    if ((this.selectionSettings.mode !== 'Cell' && this.selectionModule.selectedRowIndexes.length)
-                        || (this.selectionSettings.mode === 'Cell' && this.selectionModule.getSelectedRowCellIndexes().length)) {
-                        this.editModule.startDeleteAction();
-                    }
-                }
-                break;
-            case 'focusTask':
-                e.preventDefault();
-                let selectedId: string;
-                if (this.selectionModule) {
-                    if (this.selectionSettings.mode !== 'Cell' &&
-                        !isNullOrUndefined(this.currentViewData[this.selectedRowIndex])) {
-                        selectedId = this.currentViewData[this.selectedRowIndex].ganttProperties.rowUniqueID;
-                    } else if (this.selectionSettings.mode === 'Cell' && this.selectionModule.getSelectedRowCellIndexes().length > 0) {
-                        let selectCellIndex: ISelectedCell[] = this.selectionModule.getSelectedRowCellIndexes();
-                        selectedId = this.currentViewData[selectCellIndex[selectCellIndex.length - 1].rowIndex].ganttProperties.rowUniqueID;
-                    }
-                }
-                if (selectedId) {
-                    this.scrollToTask(selectedId.toString());
-                }
-                break;
-            case 'focusSearch':
-                if (<HTMLInputElement>this.element.querySelector('#' + this.element.id + '_searchbar')) {
-                    let searchElement: HTMLInputElement =
-                        <HTMLInputElement>this.element.querySelector('#' + this.element.id + '_searchbar');
-                    searchElement.setAttribute('tabIndex', '-1');
-                    searchElement.focus();
-                }
-                break;
-            case 'tab':
-            case 'shiftTab':
-                this.ganttChartModule.onTabAction(e);
-                break;
-            default:
-                let eventArgs: IKeyPressedEventArgs = {
-                    requestType: 'keyPressed',
-                    action: e.action,
-                    keyEvent: e
-                };
-                this.trigger('actionComplete', eventArgs);
-                break;
-        }
-    }
-    private expandCollapseKey(e: KeyboardEventArgs): void {
-        if (this.selectionModule && this.selectedRowIndex !== -1) {
-            let selectedRowIndex: number;
-            if (this.selectionSettings.mode !== 'Cell') {
-                selectedRowIndex = this.selectedRowIndex;
-            } else if (this.selectionSettings.mode === 'Cell' && this.selectionModule.getSelectedRowCellIndexes().length > 0) {
-                let selectCellIndex: ISelectedCell[] = this.selectionModule.getSelectedRowCellIndexes();
-                selectedRowIndex = selectCellIndex[selectCellIndex.length - 1].rowIndex;
-            }
-            if (e.action === 'expandRow') {
-                this.expandByIndex(selectedRowIndex);
-            } else {
-                this.collapseByIndex(selectedRowIndex);
-            }
-        }
-    }
-    private upDownKeyNavigate(e: KeyboardEventArgs): void {
-        e.preventDefault();
-        let expandedRecords: IGanttData[] = this.getExpandedRecords(this.currentViewData);
-        if (this.selectionModule) {
-            if (this.selectionSettings.mode !== 'Cell' && this.selectedRowIndex !== -1) {
-                let selectedItem: IGanttData = this.currentViewData[this.selectedRowIndex];
-                let selectingRowIndex: number = expandedRecords.indexOf(selectedItem);
-                let currentSelectingRecord: IGanttData = e.action === 'downArrow' ? expandedRecords[selectingRowIndex + 1] :
-                    expandedRecords[selectingRowIndex - 1];
-                this.selectionModule.selectRow(this.currentViewData.indexOf(currentSelectingRecord), false, true);
-            } else if (this.selectionSettings.mode === 'Cell' && this.selectionModule.getSelectedRowCellIndexes().length > 0) {
-                let selectCellIndex: ISelectedCell[] = this.selectionModule.getSelectedRowCellIndexes();
-                let selectedCellItem: ISelectedCell = selectCellIndex[selectCellIndex.length - 1];
-                let currentCellIndex: number = selectedCellItem.cellIndexes[selectedCellItem.cellIndexes.length - 1];
-                let selectedItem: IGanttData = this.currentViewData[selectedCellItem.rowIndex];
-                let selectingRowIndex: number = expandedRecords.indexOf(selectedItem);
-                let currentSelectingRecord: IGanttData = e.action === 'downArrow' ? expandedRecords[selectingRowIndex + 1] :
-                    expandedRecords[selectingRowIndex - 1];
-                let cellInfo: IIndex = {
-                    rowIndex: this.currentViewData.indexOf(currentSelectingRecord),
-                    cellIndex: currentCellIndex
-                };
-                this.selectionModule.selectCell(cellInfo);
-            }
-        }
-    }
     /**
      * For internal use only - Initialize the event handler
      * @private
@@ -1577,8 +1367,10 @@ export class Gantt extends Component<HTMLElement>
             focusTask: 'shift+f5',
             indentLevel: 'shift+leftarrow',
             outdentLevel: 'shift+rightarrow',
-            focusSearch: 'ctrl+shift+70' //F Key
+            focusSearch: 'ctrl+shift+70', //F Key
+            contextMenu: 'shift+F10' //F Key
         };
+        this.focusModule = new FocusModule(this);
         this.zoomingLevels = this.getZoomingLevels();
         this.resourceFieldsMapping();
         if (isNullOrUndefined(this.resourceFields.unit)) { //set resourceUnit as unit if not mapping
@@ -1735,8 +1527,8 @@ export class Gantt extends Component<HTMLElement>
                 });
         }
     }
-    private keyActionHandler(e: KeyboardEventArgs): void {
-        this.onKeyPress(e);
+    public keyActionHandler(e: KeyboardEventArgs): void {
+        this.focusModule.onKeyPress(e);
     }
     /**
      * @private
@@ -2067,6 +1859,10 @@ export class Gantt extends Component<HTMLElement>
             switch (prop) {
                 case 'allowSelection':
                     this.treeGrid.allowSelection = this.allowSelection;
+                    this.treeGrid.dataBind();
+                    break;
+                case 'allowRowDragAndDrop':
+                    this.treeGrid.allowRowDragAndDrop = this.allowRowDragAndDrop;
                     this.treeGrid.dataBind();
                     break;
                 case 'allowFiltering':
@@ -3454,7 +3250,7 @@ export class Gantt extends Component<HTMLElement>
      * @param element 
      * @hidden
      */
-    public getOffsetRect(element: HTMLElement): { top: number, left: number } {
+    public getOffsetRect(element: HTMLElement): { top: number, left: number, width?: number, height?: number } {
         let box: ClientRect = element.getBoundingClientRect();
         let scrollTop: number = window.pageYOffset || document.documentElement.scrollTop
             || document.body.scrollTop;
@@ -3464,7 +3260,7 @@ export class Gantt extends Component<HTMLElement>
         let clientLeft: number = document.documentElement.clientLeft || document.body.clientLeft || 0;
         let top: number = box.top + scrollTop - clientTop;
         let left: number = box.left + scrollLeft - clientLeft;
-        return { top: Math.round(top), left: Math.round(left) };
+        return { top: Math.round(top), left: Math.round(left), width: box.width, height: box.height };
     }
 
     /**

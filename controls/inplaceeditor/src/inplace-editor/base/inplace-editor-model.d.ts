@@ -290,6 +290,20 @@ export interface InPlaceEditorModel extends ComponentModel{
     change?: EmitType<ChangeEventArgs>;
 
     /**
+     * Event triggers when click the submit button.
+     * @event 
+     * @blazorProperty 'SubmitClick'
+     */
+    submitClick?: EmitType<MouseEvent>;
+
+    /**
+     * Event triggers when click the cancel button.
+     * @event 
+     * @blazorProperty 'CancelClick'
+     */
+    cancelClick?: EmitType<MouseEvent>;
+
+    /**
      * The event will be fired when the component gets destroyed.
      * @event
      * @blazorProperty 'Destroyed'

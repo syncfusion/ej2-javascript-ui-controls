@@ -62,7 +62,9 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * * `None` - The data source is not sorting.
      * * `Ascending` - The data source is sorting with ascending order.
      * * `Descending` - The data source is sorting with descending order.
-     * @default None
+     * @default null
+     * @asptype object
+     * @aspjsonconverterignore
      */
     sortOrder?: SortOrder;
 

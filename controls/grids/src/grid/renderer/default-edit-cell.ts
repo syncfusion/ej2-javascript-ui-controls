@@ -1,9 +1,8 @@
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { IGrid, IEditCell } from '../base/interface';
 import { Column } from '../models/column';
-import { Input } from '@syncfusion/ej2-inputs';
 import { isEditable, getComplexFieldID } from '../base/util';
-import { InputArgs }  from '@syncfusion/ej2-inputs';
+import { TextBox }  from '@syncfusion/ej2-inputs';
 
 /**
  * `DefaultEditCell` is used to handle default cell type editing.
@@ -12,6 +11,7 @@ import { InputArgs }  from '@syncfusion/ej2-inputs';
 export class DefaultEditCell implements IEditCell {
 
     private parent: IGrid;
+    private obj: TextBox;
 
     constructor(parent?: IGrid) {
         this.parent = parent;
@@ -36,13 +36,19 @@ export class DefaultEditCell implements IEditCell {
     public write(args: { rowData: Object, element: Element, column: Column, requestType: string }): void {
         let col: Column = args.column;
         let isInline: boolean = this.parent.editSettings.mode !== 'Dialog';
-        let inputargs: InputArgs = {
-            element: args.element as HTMLInputElement, floatLabelType: this.parent.editSettings.mode !== 'Dialog' ? 'Never' : 'Always',
-            properties: {
+        this.obj = new TextBox(extend(
+            {
+                element: args.element as HTMLInputElement, floatLabelType: this.parent.editSettings.mode !== 'Dialog' ? 'Never' : 'Always',
                 enableRtl: this.parent.enableRtl, enabled: isEditable(args.column, args.requestType, args.element),
-                placeholder: isInline ? '' : args.column.headerText
-            }
-        };
-        Input.createInput(inputargs, this.parent.createElement);
+                placeholder: isInline ? '' : args.column.headerText,
+            },
+            col.edit.params));
+        this.obj.appendTo(args.element as HTMLElement);
+    }
+
+    public destroy(): void {
+        if (this.obj) {
+            this.obj.destroy();
+        }
     }
 }

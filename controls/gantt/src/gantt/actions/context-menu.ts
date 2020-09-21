@@ -1,7 +1,7 @@
 import * as cons from './../base/css-constants';
 import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs } from './../base/interface';
 import { TreeGrid, ContextMenu as TreeGridContextMenu } from '@syncfusion/ej2-treegrid';
-import { remove, closest, isNullOrUndefined, getValue, extend, getElement, isBlazor } from '@syncfusion/ej2-base';
+import { remove, closest, isNullOrUndefined, getValue, extend, getElement, isBlazor, addClass } from '@syncfusion/ej2-base';
 import { Gantt } from './../base/gantt';
 import { Deferred } from '@syncfusion/ej2-data';
 import { ContextMenu as Menu, OpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
@@ -178,12 +178,15 @@ export class ContextMenu {
     }
 
     private contextMenuBeforeOpen(args: CMenuOpenEventArgs): void | Deferred {
-        args.gridRow = closest(args.event.target as Element, '.e-row');
-        args.chartRow = closest(args.event.target as Element, '.e-chart-row');
-        let menuElement: Element = closest(args.event.target as Element, '.e-gantt');
-        let editForm: Element = closest(args.event.target as Element, cons.editForm);
+        let target: Element = args.event ? args.event.target as Element :
+            !this.parent.focusModule ? this.parent.focusModule.getActiveElement() :
+                this.parent.ganttChartModule.targetElement;
+        args.gridRow = closest(target, '.e-row');
+        args.chartRow = closest(target, '.e-chart-row');
+        let menuElement: Element = closest(target as Element, '.e-gantt');
+        let editForm: Element = closest(target as Element, cons.editForm);
         if (!editForm && this.parent.editModule && this.parent.editModule.cellEditModule
-            && this.parent.editModule.cellEditModule.isCellEdit
+            && this.parent.editModule.cellEditModule.isCellEdit && this.parent.editModule.dialogModule.dialogObj
             && !this.parent.editModule.dialogModule.dialogObj.open) {
             this.parent.treeGrid.grid.saveCell();
             this.parent.editModule.cellEditModule.isCellEdit = false;
@@ -213,7 +216,7 @@ export class ContextMenu {
                 this.rowData = this.parent.currentViewData[rowIndex];
             }
             for (let item of args.items) {
-                let target: EventTarget = args.event.target;
+                // let target: EventTarget = target;
                 if (!item.separator) {
                     this.updateItemStatus(item, target);
                 }
@@ -352,8 +355,10 @@ export class ContextMenu {
             this.disableItems.push(text);
         }
     }
-    private contextMenuOpen(): void {
+    private contextMenuOpen(args: CMenuOpenEventArgs): void {
         this.isOpen = true;
+        let firstMenuItem: Element = args.element.querySelectorAll('li:not(.e-menu-hide)')[0] as Element;
+        addClass([firstMenuItem], 'e-focused');
     }
 
     private getMenuItems(): ContextMenuItemModel[] {

@@ -412,7 +412,7 @@ export class UndoRedo {
     }
 
     private ignoreProperty(key: string): boolean {
-        if (key === 'zIndex' || key === 'wrapper') {
+        if (key === 'zIndex' || key === 'wrapper' || key === 'parentObj' || key === 'controlParent') {
             return true;
         }
         return false;

@@ -28036,7 +28036,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
         }
         var target = evt.target;
         // tslint:disable-next-line:max-line-length
-        if (!touches && evt.cancelable && this.skipPreventDefault(target)) {
+        if (!touches && evt.cancelable && this.skipPreventDefault(target) && !Browser.isDevice) {
             evt.preventDefault();
         }
         this.eventArgs = {};

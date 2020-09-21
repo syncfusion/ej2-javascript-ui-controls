@@ -801,7 +801,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             this.submitBtn = undefined;
         }
         if (!isNullOrUndefined(this.cancelBtn)) {
-            EventHandler.remove(this.cancelBtn.element, 'mousedown', this.cancelHandler);
+            EventHandler.remove(this.cancelBtn.element, 'mousedown', this.cancelBtnClick);
             EventHandler.remove(this.cancelBtn.element, 'keydown', this.btnKeyDownHandler);
             this.cancelBtn.destroy();
             this.cancelBtn = undefined;
@@ -922,13 +922,17 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     enableEditor(val) {
         (val) ? this.renderEditor() : this.cancelHandler();
     }
-    checkValidation(isValidate) {
+    checkValidation(fromSubmit, isValidate) {
         let args;
-        let fromSubmit = true;
         if (this.validationRules) {
+            let rules = Object.keys(this.validationRules);
+            let validationLength = Object.keys(this.validationRules[rules[0]]).length;
+            validationLength = 'validateHidden' in this.validationRules[rules[0]] ? validationLength - 1 : validationLength;
+            let count = 0;
             this.formValidate = new FormValidator(this.formEle, {
                 rules: this.validationRules,
                 validationComplete: (e) => {
+                    count = count + 1;
                     args = {
                         errorMessage: e.message,
                         data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
@@ -941,16 +945,20 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                         else {
                             this.toggleErrorClass(false);
                         }
-                        if (!isNullOrUndefined(fromSubmit) && fromSubmit) {
+                        if (!isNullOrUndefined(fromSubmit) && fromSubmit && (validationLength === count || e.status === 'failure')) {
                             fromSubmit = false;
                             this.afterValidation(isValidate);
+                            count = 0;
                         }
                     });
                 },
                 customPlacement: (inputElement, errorElement) => {
-                    select('.' + EDITABLE_ERROR, this.formEle).appendChild(errorElement);
+                    if (this.formEle) {
+                        select('.' + EDITABLE_ERROR, this.formEle).appendChild(errorElement);
+                    }
                 }
             });
+            count = 0;
             this.formValidate.validate();
         }
         else {
@@ -1035,9 +1043,13 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             EventHandler.add(this.submitBtn.element, 'keydown', this.btnKeyDownHandler, this);
         }
         if (!isNullOrUndefined(this.cancelBtn)) {
-            EventHandler.add(this.cancelBtn.element, 'mousedown', this.cancelHandler, this);
+            EventHandler.add(this.cancelBtn.element, 'mousedown', this.cancelBtnClick, this);
             EventHandler.add(this.cancelBtn.element, 'keydown', this.btnKeyDownHandler, this);
         }
+    }
+    cancelBtnClick(e) {
+        this.cancelHandler();
+        this.trigger('cancelClick', e);
     }
     unWireEvents() {
         this.unWireEditEvent(this.editableOn);
@@ -1142,6 +1154,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     submitHandler(e) {
         e.preventDefault();
         this.save();
+        this.trigger('submitClick', e);
     }
     cancelHandler() {
         this.removeEditor();
@@ -1242,7 +1255,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
      * @returns void
      */
     validate() {
-        this.checkValidation(false);
+        this.checkValidation(true, false);
     }
     /**
      * Submit the edited input value to the server.
@@ -1259,7 +1272,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         if (!this.isTemplate) {
             this.setValue();
         }
-        this.checkValidation(true);
+        this.checkValidation(true, true);
     }
     /**
      * Removes the control from the DOM and also removes all its related events.
@@ -1455,6 +1468,12 @@ __decorate$1([
 __decorate$1([
     Event()
 ], InPlaceEditor.prototype, "change", void 0);
+__decorate$1([
+    Event()
+], InPlaceEditor.prototype, "submitClick", void 0);
+__decorate$1([
+    Event()
+], InPlaceEditor.prototype, "cancelClick", void 0);
 __decorate$1([
     Event()
 ], InPlaceEditor.prototype, "destroyed", void 0);

@@ -638,8 +638,19 @@ export function getZIndexCalcualtion(args: { popup: Popup }, dialogObj: Dialog):
 /** @hidden */
 export function toogleCheckbox(elem: Element): void {
     let span: Element = elem.querySelector('.e-frame');
-    span.classList.contains('e-check') ? classList(span, ['e-uncheck'], ['e-check']) :
+    let input: HTMLInputElement = span.previousSibling as HTMLInputElement;
+    if (span.classList.contains('e-check')) {
+        input.checked = false;
+        classList(span, ['e-uncheck'], ['e-check']);
+    } else {
+        input.checked = true;
         classList(span, ['e-check'], ['e-uncheck']);
+    }
+}
+
+/** @hidden */
+export function setChecked(elem: HTMLInputElement, checked: boolean): void {
+    elem.checked = checked;
 }
 
 /** @hidden */

@@ -1119,7 +1119,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             while (lnt--) {
                 if (this.captionData[lnt]) {
                     for (let obj of this.captionData[lnt]) {
-                        if (obj && !isNullOrUndefined(engineModule.fieldList)) {
+                        if (obj) {
                             if (engineModule.fieldList[obj.name]) {
                                 if (obj.caption) {
                                     engineModule.fieldList[obj.name].caption = obj.caption;

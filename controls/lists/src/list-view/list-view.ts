@@ -1612,7 +1612,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         this.currentLiElements = [];
         this.isNestedList = false;
         this.ulElement = this.curUL = ListBase.createList(
-            this.createElement, this.curViewDS as DataSource[], this.listBaseOption);
+            this.createElement, this.curViewDS as DataSource[], this.listBaseOption,  null , this);
         this.liCollection = <HTMLElement[] & NodeListOf<Element>>this.curUL.querySelectorAll('.' + classNames.listItem);
         this.setAttributes(this.liCollection);
         this.updateBlazorTemplates(true);
@@ -1765,7 +1765,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     (this as any).interopAdaptor.invokeMethodAsync('ListChildDataSource', data);
                     // tslint:enable
                 } else {
-                    ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length);
+                    ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length, null, this);
                     let lists: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>ele.querySelectorAll('.' + classNames.listItem);
                     this.setAttributes(lists);
                     ele.setAttribute('pID', <string>uID);
@@ -2292,7 +2292,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         // it becomes child viewable due to new child items are added now
         if (isTargetEmptyChild) {
             const targetRefreshedElement: HTMLElement[] = ListBase.createListItemFromJson(
-                this.createElement, targetDS, this.listBaseOption);
+                this.createElement, targetDS, this.listBaseOption, null, null, this);
             this.setAttributes(targetRefreshedElement);
             targetUL.insertBefore(targetRefreshedElement[0], targetLi);
             detach(targetLi);
@@ -2323,7 +2323,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private addListItem(dataSource: DataSource, index: number, ulElement: HTMLElement, curViewDS: DataSource[]): void {
         let target: HTMLElement = this.getLiFromObjOrElement((curViewDS as DataSource[])[index + 1]) ||
             this.getLiFromObjOrElement((curViewDS as DataSource[])[index + 2]) || null;
-        let li: HTMLElement[] = ListBase.createListItemFromJson(this.createElement, [dataSource], this.listBaseOption);
+        let li: HTMLElement[] = ListBase.createListItemFromJson(this.createElement, [dataSource], this.listBaseOption, null, null, this);
         this.setAttributes(li);
         ulElement.insertBefore(li[0], target);
     }
@@ -2390,7 +2390,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     let li: HTMLElement[] = ListBase.createListItemFromJson(
                         this.createElement,
                         [foundData.parent],
-                        this.listBaseOption);
+                        this.listBaseOption,
+                        null,
+                        null,
+                        this);
                     this.setAttributes(li);
                     parentLi.parentElement.insertBefore(li[0], parentLi);
                     parentLi.parentElement.removeChild(parentLi);

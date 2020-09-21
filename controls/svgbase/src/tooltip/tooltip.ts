@@ -822,7 +822,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (!argsData.cancel) {
             let elem: Element = createElement('div', { id: this.element.id + 'parent_template' });
-            let templateElement: HTMLCollection = this.templateFn(this.data, null, null, elem.id + '_blazorTemplate', '');
+            let templateElement: HTMLCollection = this.templateFn(this.data, this, 'tooltipTemplate', elem.id + '_blazorTemplate', '');
             while (templateElement && templateElement.length > 0) {
                 if (isBlazor()) {
                     elem.appendChild(templateElement[0]);

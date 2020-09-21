@@ -2,7 +2,7 @@ import { remove, extend, isNullOrUndefined, createElement, L10n, getValue, setVa
 import { DataManager, DataUtil } from '@syncfusion/ej2-data';
 import { Dialog, PositionDataModel, DialogModel } from '@syncfusion/ej2-popups';
 import { Tab, TabModel, TabItemModel, SelectEventArgs } from '@syncfusion/ej2-navigations';
-import { Grid, Edit, Toolbar as GridToolbar, Page, GridModel, GridActionEventArgs } from '@syncfusion/ej2-grids';
+import { Grid, Edit, Toolbar as GridToolbar, Page, GridModel, GridActionEventArgs, getObject } from '@syncfusion/ej2-grids';
 import {
     ColumnModel as GridColumnModel, ForeignKey,
     getActualProperties, RowSelectEventArgs
@@ -301,6 +301,9 @@ export class DialogEdit {
     public openToolbarEditDialog(): void {
         let gObj: Gantt = this.parent;
         if (gObj.editModule && gObj.editSettings.allowEditing) {
+            if (this.parent.ganttChartModule.focusedRowIndex > -1 && gObj.selectionModule) {
+                gObj.selectionModule.selectRow(this.parent.ganttChartModule.focusedRowIndex, false, false);
+            }
             let selectedRowId: number | string = gObj.selectionModule ?
                 (gObj.selectionSettings.mode === 'Row' || gObj.selectionSettings.mode === 'Both') &&
                     gObj.selectionModule.selectedRowIndexes.length === 1 ?
@@ -312,7 +315,7 @@ export class DialogEdit {
             if (!isNullOrUndefined(selectedRowId)) {
                 this.openEditDialog(selectedRowId);
             }
-        }
+         }
     }
     /**
      * @param taskId 
@@ -379,6 +382,9 @@ export class DialogEdit {
             if (this.parent.isAdaptive) {
                 dialogElement.style.maxHeight = 'none';
             }
+            if (this.parent.focusModule) {
+                this.parent.focusModule.setActiveElement(dialogElement);
+            }
         };
         dialogModel.locale = this.parent.locale;
         dialogModel.buttons = [{
@@ -412,6 +418,10 @@ export class DialogEdit {
     public dialogClose(): void {
         if (this.dialog) {
             this.resetValues();
+        }
+        if (!isNullOrUndefined(this.parent.focusModule) &&
+            !isNullOrUndefined(this.parent.focusModule.getActiveElement(true))) {
+            this.parent.focusModule.getActiveElement(true).focus();
         }
     }
 
@@ -472,7 +482,10 @@ export class DialogEdit {
                     let column: GanttColumnModel = ganttObj.columnByField[fieldName];
                     if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
                         let destroy: Function = column.edit.destroy as Function;
-                        if (typeof destroy !== 'string') {
+                        if (typeof destroy === 'string') {
+                            destroy = getObject(destroy, window);
+                            destroy();
+                        } else {
                             (column.edit.destroy as Function)();
                         }
                     } else {
@@ -1398,15 +1411,18 @@ export class DialogEdit {
         let editArgs: Object = { column: column, data: ganttData };
         if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
             let create: Function = column.edit.create as Function;
-            if (typeof create !== 'string') {
+            if (typeof create === 'string') {
+                create = getObject(create, window);
+                inputElement = create(editArgs);
+            } else {
                 inputElement = (column.edit.create as Function)(editArgs);
-                inputElement.className = '';
-                inputElement.setAttribute('type', 'text');
-                inputElement.setAttribute('id', ganttId + '' + column.field);
-                inputElement.setAttribute('name', column.field);
-                inputElement.setAttribute('title', column.field);
-                divElement.appendChild(inputElement);
             }
+            inputElement.className = '';
+            inputElement.setAttribute('type', 'text');
+            inputElement.setAttribute('id', ganttId + '' + column.field);
+            inputElement.setAttribute('name', column.field);
+            inputElement.setAttribute('title', column.field);
+            divElement.appendChild(inputElement);
         } else {
             inputElement = this.createInputElement('', ganttId + '' + column.field, column.field);
             divElement.appendChild(inputElement);
@@ -1432,13 +1448,21 @@ export class DialogEdit {
         }
         if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
             let write: Function = column.edit.write as Function;
-            if (typeof write !== 'string') {
-                let inputObj: Inputs = (column.edit.write as Function)({ column: column, rowData: ganttData, element: inputElement });
-                if (column.field === this.parent.taskFields.duration) {
+            let inputObj: Inputs;
+            if (typeof write === 'string') {
+                write = getObject(write, window);
+                inputObj = write({
+                    column: column, rowData: ganttData, element: inputElement,
+                });
+            } else {
+                inputObj = (column.edit.write as Function) ({
+                    column: column, rowData: ganttData, element: inputElement,
+                });
+            }
+            if (column.field === this.parent.taskFields.duration) {
                 inputObj.change = (args: CObject): void => {
                     this.validateScheduleFields(args, column, this.parent);
                 };
-            }
             }
         } else {
             let inputObj: Inputs = new this.inputs[column.editType](inputModel);
@@ -1615,10 +1639,13 @@ export class DialogEdit {
                 let column: GanttColumnModel = ganttObj.columnByField[fieldName];
                 if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
                     let read: Function = column.edit.read as Function;
-                    if (typeof read !== 'string') {
+                    if (typeof read === 'string') {
+                        read = getObject(read, window);
+                        tasksData[fieldName] = read(inputElement, controlObj.value);
+                    } else {
                         tasksData[fieldName] = (column.edit.read as Function)(inputElement, controlObj.value);
                     }
-                } else if (isCustom && column.editType === 'booleanedit') {
+                   } else if (isCustom && column.editType === 'booleanedit') {
                     if (inputElement.checked === true) {
                         tasksData[fieldName] = true;
                     } else {

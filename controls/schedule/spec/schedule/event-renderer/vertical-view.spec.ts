@@ -628,7 +628,7 @@ describe('Vertical View Event Render Module', () => {
         });
     });
 
-    describe('Vertical view resource grouping appointment rendering allowGroupEdit', () => {
+    xdescribe('Vertical view resource grouping appointment rendering allowGroupEdit', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let schOptions: ScheduleModel = {

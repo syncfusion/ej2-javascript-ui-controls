@@ -1711,6 +1711,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.notify(events.documentClick, { event: args });
     }
     private onScheduleResize(): void {
+        if (isNullOrUndefined(this.activeView)) { return; }
         if (this.quickPopup) {
             this.quickPopup.onClosePopup();
         }
@@ -1738,6 +1739,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /** @hidden */
     public getAnnocementString(event: { [key: string]: Object }, subject?: string): string {
+        let resourceName: string;
+        if (this.quickPopup) {
+            const constantText: string = '"s event - ';
+            resourceName = this.quickPopup.getResourceText({ event: event } as EventClickArgs, 'event') + constantText;
+        }
         let recordSubject: string = (subject || (event[this.eventFields.subject] || this.eventSettings.fields.subject.default)) as string;
         let skeleton: string = isBlazor() ? 'F' : 'full';
         let startDateText: string = this.globalize.formatDate(event[this.eventFields.startTime] as Date, {
@@ -1748,6 +1754,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         });
         let annocementString: string = recordSubject + ' ' + this.localeObj.getConstant('beginFrom') + ' '
             + startDateText + ' ' + this.localeObj.getConstant('endAt') + ' ' + endDateText;
+        if (resourceName) {
+            annocementString = resourceName + ' ' + annocementString;
+        }
         return annocementString;
     }
 

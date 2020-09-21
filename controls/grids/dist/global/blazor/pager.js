@@ -1148,6 +1148,8 @@ var resetColumns = 'reset-columns';
 
 /** @hidden */
 var beforeCheckboxRenderer = 'beforeCheckboxRenderer';
+/** @hidden */
+var refreshHandlers = 'refreshResizeHandlers';
 
 /**
  * Defines types of Cell
@@ -1279,11 +1281,13 @@ var CheckBoxFilterBase = /** @class */ (function () {
     };
     CheckBoxFilterBase.prototype.wireEvents = function () {
         sf.base.EventHandler.add(this.dlg, 'click', this.clickHandler, this);
+        sf.base.EventHandler.add(this.dlg, 'keyup', this.keyupHandler, this);
         this.searchHandler = sf.base.debounce(this.searchBoxKeyUp, 200);
         sf.base.EventHandler.add(this.dlg.querySelector('.e-searchinput'), 'keyup', this.searchHandler, this);
     };
     CheckBoxFilterBase.prototype.unWireEvents = function () {
         sf.base.EventHandler.remove(this.dlg, 'click', this.clickHandler);
+        sf.base.EventHandler.remove(this.dlg, 'keyup', this.keyupHandler);
         var elem = this.dlg.querySelector('.e-searchinput');
         if (elem) {
             sf.base.EventHandler.remove(elem, 'keyup', this.searchHandler);
@@ -1929,12 +1933,26 @@ var CheckBoxFilterBase = /** @class */ (function () {
             this.updateIndeterminatenBtn();
             elem.querySelector('.e-chk-hidden').focus();
         }
+        this.setFocus(parentsUntil(elem, 'e-ftrchk'));
+    };
+    CheckBoxFilterBase.prototype.keyupHandler = function (e) {
+        this.setFocus(parentsUntil(e.target, 'e-ftrchk'));
+    };
+    CheckBoxFilterBase.prototype.setFocus = function (elem) {
+        var prevElem = this.dlg.querySelector('.e-chkfocus');
+        if (prevElem) {
+            prevElem.classList.remove('e-chkfocus');
+        }
+        if (elem) {
+            elem.classList.add('e-chkfocus');
+        }
     };
     CheckBoxFilterBase.prototype.updateAllCBoxes = function (checked) {
         var cBoxes = [].slice.call(this.cBox.querySelectorAll('.e-frame'));
         for (var _i = 0, cBoxes_1 = cBoxes; _i < cBoxes_1.length; _i++) {
             var cBox = cBoxes_1[_i];
             removeAddCboxClasses(cBox, checked);
+            setChecked(cBox.previousSibling, checked);
         }
     };
     CheckBoxFilterBase.prototype.dialogOpen = function () {
@@ -1946,6 +1964,7 @@ var CheckBoxFilterBase = /** @class */ (function () {
     CheckBoxFilterBase.prototype.createCheckbox = function (value, checked, data) {
         var elem = checked ? this.cBoxTrue.cloneNode(true) :
             this.cBoxFalse.cloneNode(true);
+        setChecked(elem.querySelector('input'), checked);
         var label = elem.querySelector('.e-label');
         var dummyData = extendObjWithFn({}, data, { column: this.options.column, parent: this.parent });
         label.innerHTML = !sf.base.isNullOrUndefined(value) && value.toString().length ? value :
@@ -1964,11 +1983,16 @@ var CheckBoxFilterBase = /** @class */ (function () {
         var selected = this.cBox.querySelectorAll('.e-check:not(.e-selectall)').length;
         var btn = this.dialogObj.btnObj[0];
         btn.disabled = false;
+        var input = elem.previousSibling;
+        setChecked(input, false);
+        input.indeterminate = false;
         if (cnt === selected) {
             className = ['e-check'];
+            setChecked(input, true);
         }
         else if (selected) {
             className = ['e-stop'];
+            input.indeterminate = true;
         }
         else {
             className = ['e-uncheck'];
@@ -8999,6 +9023,7 @@ var Selection = /** @class */ (function () {
             var chkBox = row.querySelector('.e-checkselect');
             if (!sf.base.isNullOrUndefined(chkBox)) {
                 removeAddCboxClasses(chkBox.nextElementSibling, chkState);
+                setChecked(chkBox, chkState);
                 if (sf.base.isNullOrUndefined(this.checkedTarget) || (!sf.base.isNullOrUndefined(this.checkedTarget)
                     && !this.checkedTarget.classList.contains('e-checkselectall'))) {
                     this.setCheckAllState(rowIndex);
@@ -10921,15 +10946,19 @@ var Selection = /** @class */ (function () {
                 checkedLen = this.selectedRowIndexes.length;
                 this.totalRecordsCount = this.getCurrentBatchRecordChanges().length;
             }
-            if (this.getCheckAllBox()) {
-                var spanEle = this.getCheckAllBox().nextElementSibling;
+            var input = this.getCheckAllBox();
+            if (input) {
+                var spanEle = input.nextElementSibling;
                 sf.base.removeClass([spanEle], ['e-check', 'e-stop', 'e-uncheck']);
+                setChecked(input, false);
+                input.indeterminate = false;
                 if (checkToSelectAll || checkedLen === this.totalRecordsCount && this.totalRecordsCount
                     || ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
                         && !this.parent.allowPaging && !this.parent.getDataModule().isRemote()
                         && !(sf.base.isBlazor() && this.parent.isServerRendered)
                         && checkedLen === this.getData().length)) {
                     sf.base.addClass([spanEle], ['e-check']);
+                    setChecked(input, true);
                     if (isInteraction) {
                         this.getRenderer().setSelection(null, true, true);
                     }
@@ -10952,6 +10981,7 @@ var Selection = /** @class */ (function () {
                 else {
                     sf.base.addClass([spanEle], ['e-stop']);
                     this.parent.checkAllRows = 'Intermediate';
+                    input.indeterminate = true;
                 }
                 if ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
                     && !this.parent.allowPaging && !this.parent.getDataModule().isRemote()) {
@@ -12903,7 +12933,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Get the properties to be maintained in the persisted state.
      * @return {string}
-     * {% codeBlock src='grid/grid/getPersistData/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getPersistData = function () {
         var keyEntity = ['pageSettings', 'sortSettings',
@@ -13288,14 +13317,12 @@ var Grid = /** @class */ (function (_super) {
     };
     /**
      * By default, grid shows the spinner for all its actions. You can use this method to show spinner at your needed time.
-     * {% codeBlock src='grid/grid/showSpinner/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.showSpinner = function () {
         sf.popups.showSpinner(this.element);
     };
     /**
      * Manually showed spinner needs to hide by `hideSpinnner`.
-     * {% codeBlock src='grid/grid/hideSpinner/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.hideSpinner = function () {
         sf.popups.hideSpinner(this.element);
@@ -13897,7 +13924,6 @@ var Grid = /** @class */ (function (_super) {
      * Gets the visible columns from the Grid.
      * @return {Column[]}
      * @blazorType List<GridColumn>
-     * {% codeBlock src='grid/grid/getVisibleColumns/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getVisibleColumns = function () {
         var cols = [];
@@ -13912,7 +13938,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Gets the header div of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getHeaderContent/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getHeaderContent = function () {
         return this.headerModule.getPanel();
@@ -13927,7 +13952,6 @@ var Grid = /** @class */ (function (_super) {
     };
     /**
      * Gets the content table of the Grid.
-     * {% codeBlock src='grid/grid/getContentTable/index.md' %}{% endcodeBlock %}
      * @return {Element}
      */
     Grid.prototype.getContentTable = function () {
@@ -13944,7 +13968,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Gets the content div of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getContent/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getContent = function () {
         return this.contentModule.getPanel();
@@ -13960,7 +13983,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Gets the header table element of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getHeaderTable/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getHeaderTable = function () {
         return this.headerModule.getTable();
@@ -13976,7 +13998,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Gets the footer div of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getFooterContent/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getFooterContent = function () {
         this.footerElement = this.element.getElementsByClassName('e-gridfooter')[0];
@@ -13985,7 +14006,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Gets the footer table element of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getFooterContentTable/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getFooterContentTable = function () {
         this.footerElement = this.element.getElementsByClassName('e-gridfooter')[0];
@@ -13994,7 +14014,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Gets the pager of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getPager/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getPager = function () {
         return this.gridPager; //get element from pager
@@ -14011,7 +14030,6 @@ var Grid = /** @class */ (function (_super) {
      * Gets a row by index.
      * @param  {number} index - Specifies the row index.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getRowByIndex/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getRowByIndex = function (index) {
         return this.contentModule.getRowByIndex(index);
@@ -14020,7 +14038,6 @@ var Grid = /** @class */ (function (_super) {
      * Gets a movable tables row by index.
      * @param  {number} index - Specifies the row index.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getMovableRowByIndex/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getMovableRowByIndex = function (index) {
         return this.contentModule.getMovableRowByIndex(index);
@@ -14029,7 +14046,6 @@ var Grid = /** @class */ (function (_super) {
      * Gets a frozen tables row by index.
      * @param  {number} index - Specifies the row index.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getFrozenRowByIndex/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getFrozenRowByIndex = function (index) {
         return this.getFrozenDataRows()[index];
@@ -14037,7 +14053,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Gets all the data rows of the Grid.
      * @return {Element[]}
-     * {% codeBlock src='grid/grid/getRows/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getRows = function () {
         return this.contentModule.getRowElements();
@@ -14046,7 +14061,6 @@ var Grid = /** @class */ (function (_super) {
      * Get a row information based on cell
      * @param {Element}
      * @return RowInfo
-     * {% codeBlock src='grid/grid/getRowInfo/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getRowInfo = function (target) {
         var ele = target;
@@ -14086,7 +14100,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Gets the Grid's movable content rows from frozen grid.
      * @return {Element[]}
-     * {% codeBlock src='grid/grid/getMovableRows/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getMovableRows = function () {
         return this.contentModule.getMovableRowElements();
@@ -14094,7 +14107,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Gets all the Grid's data rows.
      * @return {Element[]}
-     * {% codeBlock src='grid/grid/getDataRows/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getDataRows = function () {
         if (sf.base.isNullOrUndefined(this.getContentTable().querySelector('tbody'))) {
@@ -14134,7 +14146,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Gets all the Grid's movable table data rows.
      * @return {Element[]}
-     * {% codeBlock src='grid/grid/getMovableDataRows/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getMovableDataRows = function () {
         var rows = [].slice.call(this.getContent().querySelector('.e-movablecontent').querySelector('tbody').children);
@@ -14148,7 +14159,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Gets all the Grid's frozen table data rows.
      * @return {Element[]}
-     * {% codeBlock src='grid/grid/getFrozenDataRows/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getFrozenDataRows = function () {
         var rows = [].slice.call(this.getContent().querySelector('.e-frozencontent').querySelector('tbody').children);
@@ -14165,7 +14175,6 @@ var Grid = /** @class */ (function (_super) {
      * @param {string| number} key - Specifies the PrimaryKey value of dataSource.
      * @param {string } field - Specifies the field name which you want to update.
      * @param {string | number | boolean | Date} value - To update new value for the particular cell.
-     * {% codeBlock src='grid/grid/setCellValue/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.setCellValue = function (key, field, value) {
         var cells = 'cells';
@@ -14237,7 +14246,6 @@ var Grid = /** @class */ (function (_super) {
      * > Primary key column must be specified using `columns.isPrimaryKey` property.
      *  @param {string| number} key - Specifies the PrimaryKey value of dataSource.
      *  @param {Object} rowData - To update new data for the particular row.
-     * {% codeBlock src='grid/grid/setRowData/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.setRowData = function (key, rowData) {
         var rowuID = 'uid';
@@ -14271,7 +14279,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {number} rowIndex - Specifies the row index.
      * @param  {number} columnIndex - Specifies the column index.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getCellFromIndex/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getCellFromIndex = function (rowIndex, columnIndex) {
         var frzCols = this.getFrozenColumns();
@@ -14284,7 +14291,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {number} rowIndex - Specifies the row index.
      * @param  {number} columnIndex - Specifies the column index.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getMovableCellFromIndex/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getMovableCellFromIndex = function (rowIndex, columnIndex) {
         return this.getMovableDataRows()[rowIndex] &&
@@ -14294,7 +14300,6 @@ var Grid = /** @class */ (function (_super) {
      * Gets a column header by column index.
      * @param  {number} index - Specifies the column index.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getColumnHeaderByIndex/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getColumnHeaderByIndex = function (index) {
         return this.getHeaderTable().querySelectorAll('.e-headercell')[index];
@@ -14342,7 +14347,6 @@ var Grid = /** @class */ (function (_super) {
      * Gets a column header by column name.
      * @param  {string} field - Specifies the column name.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getColumnHeaderByField/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getColumnHeaderByField = function (field) {
         var column = this.getColumnByField(field);
@@ -14352,7 +14356,6 @@ var Grid = /** @class */ (function (_super) {
      * Gets a column header by UID.
      * @param  {string} field - Specifies the column uid.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getColumnHeaderByUid/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getColumnHeaderByUid = function (uid) {
         var element = this.getHeaderContent().querySelector('[e-mappinguid=' + uid + ']');
@@ -14375,7 +14378,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {string} field - Specifies the column name.
      * @return {Column}
      * @blazorType GridColumn
-     * {% codeBlock src='grid/grid/getColumnByField/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getColumnByField = function (field) {
         return iterateArrayOrObject(this.getColumns(), function (item, index) {
@@ -14389,7 +14391,6 @@ var Grid = /** @class */ (function (_super) {
      * Gets a column index by column name.
      * @param  {string} field - Specifies the column name.
      * @return {number}
-     * {% codeBlock src='grid/grid/getColumnIndexByField/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getColumnIndexByField = function (field) {
         var cols = this.getColumns();
@@ -14405,7 +14406,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {string} uid - Specifies the column UID.
      * @return {Column}
      * @blazorType GridColumn
-     * {% codeBlock src='grid/grid/getColumnByUid/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getColumnByUid = function (uid) {
         return iterateArrayOrObject(this.getColumns().concat(this.getStackedColumns(this.columns)), function (item, index) {
@@ -14433,7 +14433,6 @@ var Grid = /** @class */ (function (_super) {
      * Gets a column index by UID.
      * @param  {string} uid - Specifies the column UID.
      * @return {number}
-     * {% codeBlock src='grid/grid/getColumnIndexByUid/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getColumnIndexByUid = function (uid) {
         var index = iterateArrayOrObject(this.getColumns(), function (item, index) {
@@ -14448,7 +14447,6 @@ var Grid = /** @class */ (function (_super) {
      * Gets UID by column name.
      * @param  {string} field - Specifies the column name.
      * @return {string}
-     * {% codeBlock src='grid/grid/getUidByColumnField/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getUidByColumnField = function (field) {
         return iterateArrayOrObject(this.getColumns(), function (item, index) {
@@ -14493,7 +14491,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Gets the collection of column fields.
      * @return {string[]}
-     * {% codeBlock src='grid/grid/getColumnFieldNames/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getColumnFieldNames = function () {
         var columnNames = [];
@@ -14549,7 +14546,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Get the names of the primary key columns of the Grid.
      * @return {string[]}
-     * {% codeBlock src='grid/grid/getPrimaryKeyFieldNames/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getPrimaryKeyFieldNames = function () {
         var keys = [];
@@ -14562,7 +14558,6 @@ var Grid = /** @class */ (function (_super) {
     };
     /**
      * Refreshes the Grid header and content.
-     * {% codeBlock src='grid/grid/refresh/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.refresh = function () {
         this.headerModule.refreshUI();
@@ -14571,7 +14566,6 @@ var Grid = /** @class */ (function (_super) {
     };
     /**
      * Refreshes the Grid header.
-     * {% codeBlock src='grid/grid/refreshHeader/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.refreshHeader = function () {
         this.headerModule.refreshUI();
@@ -14579,7 +14573,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Gets the collection of selected rows.
      * @return {Element[]}
-     * {% codeBlock src='grid/grid/getSelectedRows/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getSelectedRows = function () {
         return this.selectionModule ? this.selectionModule.selectedRecords : [];
@@ -14587,7 +14580,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Gets the collection of selected row indexes.
      * @return {number[]}
-     * {% codeBlock src='grid/grid/getSelectedRowIndexes/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getSelectedRowIndexes = function () {
         return this.selectionModule ? this.selectionModule.selectedRowIndexes : [];
@@ -14595,7 +14587,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Gets the collection of selected row and cell indexes.
      * @return {number[]}
-     * {% codeBlock src='grid/grid/getSelectedRowCellIndexes/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getSelectedRowCellIndexes = function () {
         return this.selectionModule ? this.selectionModule.selectedRowCellIndexes : [];
@@ -14604,7 +14595,6 @@ var Grid = /** @class */ (function (_super) {
      * Gets the collection of selected records.
      * @return {Object[]}
      * @isGenericType true
-     * {% codeBlock src='grid/grid/getSelectedRecords/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getSelectedRecords = function () {
         return this.selectionModule ? this.selectionModule.getSelectedRecords() : [];
@@ -14621,7 +14611,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {string|string[]} keys - Defines a single or collection of column names.
      * @param  {string} showBy - Defines the column key either as field name or header text.
      * @return {void}
-     * {% codeBlock src='grid/grid/showColumns/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.showColumns = function (keys, showBy) {
         showBy = showBy ? showBy : 'headerText';
@@ -14632,7 +14621,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {string|string[]} keys - Defines a single or collection of column names.
      * @param  {string} hideBy - Defines the column key either as field name or header text.
      * @return {void}
-     * {% codeBlock src='grid/grid/hideColumns/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.hideColumns = function (keys, hideBy) {
         hideBy = hideBy ? hideBy : 'headerText';
@@ -14697,7 +14685,6 @@ var Grid = /** @class */ (function (_super) {
      * Navigates to the specified target page.
      * @param  {number} pageNo - Defines the page number to navigate.
      * @return {void}
-     * {% codeBlock src='grid/grid/goToPage/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.goToPage = function (pageNo) {
         if (this.pagerModule) {
@@ -14720,7 +14707,6 @@ var Grid = /** @class */ (function (_super) {
      * @param {SortDirection} direction - Defines the direction of sorting field.
      * @param {boolean} isMultiSort - Specifies whether the previous sorted columns are to be maintained.
      * @return {void}
-     * {% codeBlock src='grid/grid/sortColumn/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.sortColumn = function (columnName, direction, isMultiSort) {
         if (this.sortModule) {
@@ -14729,7 +14715,6 @@ var Grid = /** @class */ (function (_super) {
     };
     /**
      * Clears all the sorted columns of the Grid.
-     * {% codeBlock src='grid/grid/clearSorting/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     Grid.prototype.clearSorting = function () {
@@ -14761,7 +14746,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {string} actualFilterValue - Defines the actual filter value for the filter column.
      * @param  {string} actualOperator - Defines the actual filter operator for the filter column.
      * @return {void}
-     * {% codeBlock src='grid/grid/filterByColumn/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.filterByColumn = function (fieldName, filterOperator, filterValue, predicate, matchCase, ignoreAccent, actualFilterValue, actualOperator) {
         if (this.filterModule) {
@@ -14770,7 +14754,6 @@ var Grid = /** @class */ (function (_super) {
     };
     /**
      * Clears all the filtered rows of the Grid.
-     * {% codeBlock src='grid/grid/clearFiltering/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     Grid.prototype.clearFiltering = function (fields) {
@@ -14795,7 +14778,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {number} index - Defines the row index.
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.
      * @return {void}
-     * {% codeBlock src='grid/grid/selectRow/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.selectRow = function (index, isToggle) {
         if (this.selectionModule) {
@@ -14806,7 +14788,6 @@ var Grid = /** @class */ (function (_super) {
      * Selects a collection of rows by indexes.
      * @param  {number[]} rowIndexes - Specifies the row indexes.
      * @return {void}
-     * {% codeBlock src='grid/grid/selectRows/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.selectRows = function (rowIndexes) {
         if (this.selectionModule) {
@@ -14815,7 +14796,6 @@ var Grid = /** @class */ (function (_super) {
     };
     /**
      * Deselects the current selected rows and cells.
-     * {% codeBlock src='grid/grid/clearSelection/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     Grid.prototype.clearSelection = function () {
@@ -14828,7 +14808,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {IIndex} cellIndex - Defines the row and column indexes.
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.
      * @return {void}
-     * {% codeBlock src='grid/grid/selectCell/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.selectCell = function (cellIndex, isToggle) {
         if (this.selectionModule) {
@@ -14840,7 +14819,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {IIndex} startIndex - Specifies the row and column's start index.
      * @param  {IIndex} endIndex - Specifies the row and column's end index.
      * @return {void}
-     * {% codeBlock src='grid/grid/selectCellsByRange/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.selectCellsByRange = function (startIndex, endIndex) {
         this.selectionModule.selectCellsByRange(startIndex, endIndex);
@@ -14851,7 +14829,6 @@ var Grid = /** @class */ (function (_super) {
      * [`searchSettings`](./#searchsettings/).
      * @param  {string} searchString - Defines the key.
      * @return {void}
-     * {% codeBlock src='grid/grid/search/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.search = function (searchString) {
         if (this.searchModule) {
@@ -14863,7 +14840,6 @@ var Grid = /** @class */ (function (_super) {
      * > You can customize print options using the
      * [`printMode`](./#printmode).
      * @return {void}
-     * {% codeBlock src='grid/grid/print/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.print = function () {
         if (this.printModule) {
@@ -14875,7 +14851,6 @@ var Grid = /** @class */ (function (_super) {
      * > `editSettings.allowDeleting` should be true.
      * @param {string} fieldname - Defines the primary key field, 'Name of the column'.
      * @param {Object} data - Defines the JSON data of the record to be deleted.
-     * {% codeBlock src='grid/grid/deleteRecord/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.deleteRecord = function (fieldname, data) {
         if (this.editModule) {
@@ -14886,7 +14861,6 @@ var Grid = /** @class */ (function (_super) {
      * Starts edit the selected row. At least one row must be selected before invoking this method.
      * `editSettings.allowEditing` should be true.
      * @return {void}
-     * {% codeBlock src='grid/grid/startEdit/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.startEdit = function () {
         if (this.editModule) {
@@ -14895,7 +14869,6 @@ var Grid = /** @class */ (function (_super) {
     };
     /**
      * If Grid is in editable state, you can save a record by invoking endEdit.
-     * {% codeBlock src='grid/grid/endEdit/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.endEdit = function () {
         if (this.editModule) {
@@ -14904,7 +14877,6 @@ var Grid = /** @class */ (function (_super) {
     };
     /**
      * Cancels edited state.
-     * {% codeBlock src='grid/grid/closeEdit/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.closeEdit = function () {
         if (this.editModule) {
@@ -14916,7 +14888,6 @@ var Grid = /** @class */ (function (_super) {
      * > `editSettings.allowEditing` should be true.
      * @param {Object} data - Defines the new add record data.
      * @param {number} index - Defines the row index to be added
-     * {% codeBlock src='grid/grid/addRecord/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.addRecord = function (data, index) {
         if (this.editModule) {
@@ -14926,7 +14897,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Delete any visible row by TR element.
      * @param {HTMLTableRowElement} tr - Defines the table row element.
-     * {% codeBlock src='grid/grid/deleteRow/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.deleteRow = function (tr) {
         if (this.editModule) {
@@ -14937,7 +14907,6 @@ var Grid = /** @class */ (function (_super) {
      * Changes a particular cell into edited state based on the row index and field name provided in the `batch` mode.
      * @param {number} index - Defines row index to edit a particular cell.
      * @param {string} field - Defines the field name of the column to perform batch edit.
-     * {% codeBlock src='grid/grid/editCell/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.editCell = function (index, field) {
         if (this.editModule) {
@@ -14946,7 +14915,6 @@ var Grid = /** @class */ (function (_super) {
     };
     /**
      * Saves the cell that is currently edited. It does not save the value to the DataSource.
-     * {% codeBlock src='grid/grid/saveCell/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.saveCell = function () {
         if (this.editModule) {
@@ -14958,7 +14926,6 @@ var Grid = /** @class */ (function (_super) {
      * @param {number} rowIndex Defines the row index.
      * @param {string} field Defines the column field.
      * @param {string | number | boolean | Date} value - Defines the value to be changed.
-     * {% codeBlock src='grid/grid/updateCell/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.updateCell = function (rowIndex, field, value) {
         if (this.editModule) {
@@ -14969,7 +14936,6 @@ var Grid = /** @class */ (function (_super) {
      * To update the specified row by given values without changing into edited state.
      * @param {number} index Defines the row index.
      * @param {Object} data Defines the data object to be updated.
-     * {% codeBlock src='grid/grid/updateRow/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.updateRow = function (index, data) {
         if (this.editModule) {
@@ -14979,7 +14945,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Gets the added, edited,and deleted data before bulk save to the DataSource in batch mode.
      * @return {Object}
-     * {% codeBlock src='grid/grid/getBatchChanges/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getBatchChanges = function () {
         if (this.editModule) {
@@ -14992,7 +14957,6 @@ var Grid = /** @class */ (function (_super) {
      * @param {string[]} items - Defines the collection of itemID of ToolBar items.
      * @param {boolean} isEnable - Defines the items to be enabled or disabled.
      * @return {void}
-     * {% codeBlock src='grid/grid/enableToolbarItems/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.enableToolbarItems = function (items, isEnable) {
         if (this.toolbarModule) {
@@ -15002,7 +14966,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Copy the selected rows or cells data into clipboard.
      * @param {boolean} withHeader - Specifies whether the column header text needs to be copied along with rows or cells.
-     * {% codeBlock src='grid/grid/copy/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.copy = function (withHeader) {
         if (this.clipboardModule) {
@@ -15086,7 +15049,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {string} fromFName - Defines the origin field name.
      * @param  {string} toFName - Defines the destination field name.
      * @return {void}
-     * {% codeBlock src='grid/grid/reorderColumns/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.reorderColumns = function (fromFName, toFName) {
         if (this.reorderModule) {
@@ -15099,7 +15061,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {number} fromIndex - Defines the origin field index.
      * @param  {number} toIndex - Defines the destination field index.
      * @return {void}
-     * {% codeBlock src='grid/grid/reorderColumnByIndex/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.reorderColumnByIndex = function (fromIndex, toIndex) {
         if (this.reorderModule) {
@@ -15112,7 +15073,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {string} fieldName - Defines the field name.
      * @param  {number} toIndex - Defines the destination field index.
      * @return {void}
-     * {% codeBlock src='grid/grid/reorderColumnByTargetIndex/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.reorderColumnByTargetIndex = function (fieldName, toIndex) {
         if (this.reorderModule) {
@@ -15124,7 +15084,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {number} fromIndexes - Defines the origin Indexes.
      * @param  {number} toIndex - Defines the destination Index.
      * @return {void}
-     * {% codeBlock src='grid/grid/reorderRows/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.reorderRows = function (fromIndexes, toIndex) {
         if (this.rowDragAndDropModule) {
@@ -15179,7 +15138,6 @@ var Grid = /** @class */ (function (_super) {
      * </script>
      * ```
      *
-     * {% codeBlock src='grid/grid/autoFitColumns/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.autoFitColumns = function (fieldNames) {
         if (this.resizeModule) {
@@ -15367,6 +15325,9 @@ var Grid = /** @class */ (function (_super) {
                     wrap(this.getContent(), false);
                     wrap(headerRows, false);
             }
+            if (this.textWrapSettings.wrapMode !== 'Content') {
+                this.notify(refreshHandlers, {});
+            }
         }
     };
     /**
@@ -15379,6 +15340,9 @@ var Grid = /** @class */ (function (_super) {
         var headerRows = [].slice.call(this.element.querySelectorAll('.e-columnheader'));
         wrap(headerRows, false);
         wrap(this.getContent(), false);
+        if (this.textWrapSettings.wrapMode !== 'Content') {
+            this.notify(refreshHandlers, {});
+        }
     };
     /**
      * The function is used to add Tooltip to the grid cell that has ellipsiswithtooltip clip mode.
@@ -15627,7 +15591,6 @@ var Grid = /** @class */ (function (_super) {
      * Get current visible data of grid.
      * @return {Object[]}
      * @isGenericType true
-     * {% codeBlock src='grid/grid/getCurrentViewRecords/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getCurrentViewRecords = function () {
         if (isGroupAdaptive(this)) {
@@ -15861,7 +15824,6 @@ var Grid = /** @class */ (function (_super) {
      * Gets the foreign columns from Grid.
      * @return {Column[]}
      * @blazorType List<GridColumn>
-     * {% codeBlock src='grid/grid/getForeignKeyColumns/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getForeignKeyColumns = function () {
         return this.getColumns().filter(function (col) {
@@ -15876,7 +15838,6 @@ var Grid = /** @class */ (function (_super) {
     };
     /**
      * Refreshes the Grid column changes.
-     * {% codeBlock src='grid/grid/refreshColumns/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.refreshColumns = function () {
         var fCnt = this.getContent().querySelector('.e-frozencontent');
@@ -15912,7 +15873,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
      * @blazorType void
-     * {% codeBlock src='grid/grid/excelExport/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.excelExport = function (excelExportProperties, isMultipleExport, 
     /* tslint:disable-next-line:no-any */
@@ -15932,7 +15892,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
      * @blazorType void
-     * {% codeBlock src='grid/grid/csvExport/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.csvExport = function (excelExportProperties, 
     /* tslint:disable-next-line:no-any */
@@ -15952,7 +15911,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
      * @blazorType void
-     * {% codeBlock src='grid/grid/pdfExport/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.pdfExport = function (pdfExportProperties, 
     /* tslint:disable-next-line:no-any */
@@ -15967,7 +15925,6 @@ var Grid = /** @class */ (function (_super) {
      * Groups a column by column name.
      * @param  {string} columnName - Defines the column name to group.
      * @return {void}
-     * {% codeBlock src='grid/grid/groupColumn/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.groupColumn = function (columnName) {
         if (this.groupModule) {
@@ -15977,7 +15934,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Expands all the grouped rows of the Grid.
      * @return {void}
-     * {% codeBlock src='grid/grid/groupExpandAll/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.groupExpandAll = function () {
         if (this.groupModule) {
@@ -15987,7 +15943,6 @@ var Grid = /** @class */ (function (_super) {
     /**
     * Collapses all the grouped rows of the Grid.
     * @return {void}
-    * {% codeBlock src='grid/grid/groupCollapseAll/index.md' %}{% endcodeBlock %}
     */
     Grid.prototype.groupCollapseAll = function () {
         if (this.groupModule) {
@@ -16006,7 +15961,6 @@ var Grid = /** @class */ (function (_super) {
     // }
     /**
      * Clears all the grouped columns of the Grid.
-     * {% codeBlock src='grid/grid/clearGrouping/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     Grid.prototype.clearGrouping = function () {
@@ -16018,7 +15972,6 @@ var Grid = /** @class */ (function (_super) {
      * Ungroups a column by column name.
      * @param  {string} columnName - Defines the column name to ungroup.
      * @return {void}
-     * {% codeBlock src='grid/grid/ungroupColumn/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.ungroupColumn = function (columnName) {
         if (this.groupModule) {
@@ -16030,7 +15983,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {number} X - Defines the X axis.
      * @param  {number} Y - Defines the Y axis.
      * @return {void}
-     * {% codeBlock src='grid/grid/openColumnChooser/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.openColumnChooser = function (x, y) {
         if (this.columnChooserModule) {
@@ -16085,7 +16037,6 @@ var Grid = /** @class */ (function (_super) {
     };
     /**
      * Deselects the currently selected cells.
-     * {% codeBlock src='grid/grid/clearCellSelection/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     Grid.prototype.clearCellSelection = function () {
@@ -16095,7 +16046,6 @@ var Grid = /** @class */ (function (_super) {
     };
     /**
      * Deselects the currently selected rows.
-     * {% codeBlock src='grid/grid/clearRowSelection/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     Grid.prototype.clearRowSelection = function () {
@@ -16107,7 +16057,6 @@ var Grid = /** @class */ (function (_super) {
      * Selects a collection of cells by row and column indexes.
      * @param  {ISelectedCell[]} rowCellIndexes - Specifies the row and column indexes.
      * @return {void}
-     * {% codeBlock src='grid/grid/selectCells/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.selectCells = function (rowCellIndexes) {
         if (this.selectionModule) {
@@ -16119,7 +16068,6 @@ var Grid = /** @class */ (function (_super) {
      * @param  {number} startIndex - Specifies the start row index.
      * @param  {number} endIndex - Specifies the end row index.
      * @return {void}
-     * {% codeBlock src='grid/grid/selectRowsByRange/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.selectRowsByRange = function (startIndex, endIndex) {
         if (this.selectionModule) {
@@ -16171,7 +16119,6 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Hides the scrollbar placeholder of Grid content when grid content is not overflown.
      * @return {void}
-     * {% codeBlock src='grid/grid/hideScroll/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.hideScroll = function () {
         var content = this.getContent().querySelector('.e-content');
@@ -16239,7 +16186,6 @@ var Grid = /** @class */ (function (_super) {
      * Get all filtered records from the Grid and it returns array of objects for the local dataSource, returns a promise object if the Grid has remote data.
      * @return {Object[] | Promise<Object>}
      * @deprecated
-     * {% codeBlock src='grid/grid/getFilteredRecords/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.getFilteredRecords = function () {
         if (this.allowFiltering && this.filterSettings.columns.length) {
@@ -16352,7 +16298,6 @@ var Grid = /** @class */ (function (_super) {
     * Gets the hidden columns from the Grid.
     * @return {Column[]}
     * @blazorType List<GridColumn>
-    * {% codeBlock src='grid/grid/getHiddenColumns/index.md' %}{% endcodeBlock %}
     */
     Grid.prototype.getHiddenColumns = function () {
         var cols = [];
@@ -16416,6 +16361,7 @@ var Grid = /** @class */ (function (_super) {
      *To perform aggregate operation on a column.
      *@param  {AggregateColumnModel} summaryCol - Pass Aggregate Column details.
      *@param  {Object} summaryData - Pass JSON Array for which its field values to be calculated.
+     *
      * @deprecated
      */
     Grid.prototype.getSummaryValues = function (summaryCol, summaryData) {
@@ -16474,6 +16420,21 @@ var Grid = /** @class */ (function (_super) {
                 }
             }
         }
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getHeight = function (height) {
+        if (!Number.isInteger(height) && height.indexOf('%') != -1) {
+            height = parseInt(height) / 100 * this.element.clientHeight;
+        }
+        else if (!Number.isInteger(height) && this.height !== 'auto') {
+            height = parseInt(height);
+        }
+        else {
+            height = this.height;
+        }
+        return height;
     };
     var Grid_1;
     __decorate$2([
@@ -17529,8 +17490,19 @@ function getFilterMenuPostion(target, dialogObj, grid) {
 /** @hidden */
 function toogleCheckbox(elem) {
     var span = elem.querySelector('.e-frame');
-    span.classList.contains('e-check') ? sf.base.classList(span, ['e-uncheck'], ['e-check']) :
+    var input = span.previousSibling;
+    if (span.classList.contains('e-check')) {
+        input.checked = false;
+        sf.base.classList(span, ['e-uncheck'], ['e-check']);
+    }
+    else {
+        input.checked = true;
         sf.base.classList(span, ['e-check'], ['e-uncheck']);
+    }
+}
+/** @hidden */
+function setChecked(elem, checked) {
+    elem.checked = checked;
 }
 /** @hidden */
 function createCboxWithWrap(uid, elem, className) {

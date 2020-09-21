@@ -399,7 +399,7 @@ export class Trendlines {
         if (!this.gaussJordanElimination(matrix, trendline.polynomialSlopes)) {
             trendline.polynomialSlopes = null;
         }
-        pts = this.getPoints(trendline, points, xValues, yValues, series);
+        pts = this.getPoints(trendline, points, xValues, series);
         return pts;
     }
 
@@ -477,11 +477,13 @@ export class Trendlines {
     /**
      * Defines the points based on data point
      */
-    private getPoints(trendline: Trendline, points: Points[], xValues: number[], yValues: number[], series: Series): Points[] {
-        let midPoint: number = Math.round((points.length / 2));
+    private getPoints(trendline: Trendline, points: Points[], xValues: number[], series: Series): Points[] {
         let polynomialSlopes: number[] = trendline.polynomialSlopes;
         let pts: Points[] = []; let x1: number = 1;
         let index: number = 1; let xValue: number; let yValue: number;
+        // We have to sort the points in ascending order. Because, the data source of the series may be random order.
+        points.sort((a: Points, b: Points) => { return a.xValue - b.xValue; });
+        xValues.sort((a: number, b: number) => { return a - b; });
         while (index <= polynomialSlopes.length) {
             if (index === 1) {
                 xValue = xValues[0] - trendline.backwardForecast;

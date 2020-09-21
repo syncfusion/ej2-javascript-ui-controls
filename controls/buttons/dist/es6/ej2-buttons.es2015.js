@@ -543,30 +543,36 @@ let CheckBox = class CheckBox extends Component {
         let wrapper = this.getWrapper();
         if (isBlazor() && this.isServerRendered) {
             if (!this.disabled) {
+                this.wrapper = wrapper;
                 this.unWireEvents();
             }
         }
         else {
-            super.destroy();
-            if (!this.disabled) {
-                this.unWireEvents();
-            }
-            if (this.tagName === 'INPUT') {
-                wrapper.parentNode.insertBefore(this.element, wrapper);
-                detach(wrapper);
-                this.element.checked = false;
-                if (this.indeterminate) {
-                    this.element.indeterminate = false;
+            if (this.wrapper) {
+                wrapper = this.wrapper;
+                super.destroy();
+                if (!this.disabled) {
+                    this.unWireEvents();
                 }
-                ['name', 'value', 'disabled'].forEach((key) => {
-                    this.element.removeAttribute(key);
-                });
-            }
-            else {
-                ['role', 'aria-checked', 'class'].forEach((key) => {
-                    wrapper.removeAttribute(key);
-                });
-                wrapper.innerHTML = '';
+                if (this.tagName === 'INPUT') {
+                    if (this.getWrapper()) {
+                        wrapper.parentNode.insertBefore(this.element, wrapper);
+                    }
+                    detach(wrapper);
+                    this.element.checked = false;
+                    if (this.indeterminate) {
+                        this.element.indeterminate = false;
+                    }
+                    ['name', 'value', 'disabled'].forEach((key) => {
+                        this.element.removeAttribute(key);
+                    });
+                }
+                else {
+                    ['role', 'aria-checked', 'class'].forEach((key) => {
+                        wrapper.removeAttribute(key);
+                    });
+                    wrapper.innerHTML = '';
+                }
             }
         }
     }
@@ -592,7 +598,12 @@ let CheckBox = class CheckBox extends Component {
         return this.addOnPersist(['checked', 'indeterminate']);
     }
     getWrapper() {
-        return this.element.parentElement.parentElement;
+        if (this.element.parentElement) {
+            return this.element.parentElement.parentElement;
+        }
+        else {
+            return null;
+        }
     }
     initialize() {
         if (isNullOrUndefined(this.initialCheckedValue)) {
@@ -684,6 +695,7 @@ let CheckBox = class CheckBox extends Component {
                 case 'disabled':
                     if (newProp.disabled) {
                         this.setDisabled();
+                        this.wrapper = this.getWrapper();
                         this.unWireEvents();
                     }
                     else {
@@ -774,6 +786,7 @@ let CheckBox = class CheckBox extends Component {
         }
         this.updateHtmlAttributeToWrapper();
         this.renderComplete();
+        this.wrapper = this.getWrapper();
     }
     setDisabled() {
         let wrapper = this.getWrapper();
@@ -806,7 +819,7 @@ let CheckBox = class CheckBox extends Component {
         this.element.checked = this.initialCheckedValue;
     }
     unWireEvents() {
-        let wrapper = this.getWrapper();
+        let wrapper = this.wrapper;
         EventHandler.remove(this.element, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);

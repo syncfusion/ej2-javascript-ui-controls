@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 18.2.59 (2020-09-21)
+
+### Common
+
+#### Bug Fixes
+
+- Resolved `Dragged item` is going away from the mouse position when border of the component gets dragged.
+
+## 18.2.57 (2020-09-08)
+
 ### Common
 
 #### Bug Fixes

@@ -162,9 +162,10 @@ export interface ResizeClasses {
         let calcTableWidth: number = tWidth + indentWidth;
         if (tWidth > 0 && !gObj.options.frozenColumns) {
             //TODO: why this?
-            // if (this.parent.options.hasDetailTemplate) {
-            //     this.widthService.setColumnWidth(new Column({ width: '30px' }));
-            // }
+            if (this.parent.options.hasDetailTemplate) {
+                //this.widthService.setColumnWidth(new Column({ width: '30px' }));
+                this.widthService.setWidth('30', 0);
+            }
             (<HTMLTableElement>headerTable).style.width = formatUnit(calcTableWidth);
             (<HTMLTableElement>contentTable).style.width = formatUnit(calcTableWidth);
             if (!isNullOrUndefined(footerTable)) {

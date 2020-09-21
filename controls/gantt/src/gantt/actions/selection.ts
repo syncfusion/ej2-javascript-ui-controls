@@ -443,6 +443,16 @@ export class Selection {
      */
     private mouseUpHandler(e: PointerEvent): void {
         let isTaskbarEdited: boolean = false;
+        let targetElement: Element = null;
+        if ((e.target as Element).closest('.e-rowcell')) {
+            targetElement = e.target as HTMLElement;
+        } else if ((e.target as Element).closest('.e-chart-row')) {
+            targetElement = (e.target as Element).closest('.e-left-label-container') ||
+                (e.target as Element).closest('.e-taskbar-main-container') || (e.target as Element).closest('.e-right-label-container');
+        }
+        if (this.parent.focusModule) {
+            this.parent.focusModule.setActiveElement(targetElement as HTMLElement);
+        }
         if (this.parent.editModule && this.parent.editSettings.allowTaskbarEditing && this.parent.editModule.taskbarEditModule) {
             let taskbarEdit: TaskbarEdit = this.parent.editModule.taskbarEditModule;
             if (taskbarEdit.isMouseDragged || taskbarEdit.tapPointOnFocus) {

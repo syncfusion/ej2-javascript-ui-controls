@@ -39,6 +39,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     private keyboardModule: KeyboardEvents;
     private formElement: HTMLElement;
     private initialCheckedValue: boolean;
+    private wrapper: Element;
 
     /**
      * Triggers when the CheckBox state has been changed by user interaction.
@@ -208,28 +209,34 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         let wrapper: Element = this.getWrapper();
         if (isBlazor() && this.isServerRendered) {
             if (!this.disabled) {
+                this.wrapper = wrapper;
                 this.unWireEvents();
             }
         } else {
-            super.destroy();
-            if (!this.disabled) {
-                this.unWireEvents();
-            }
-            if (this.tagName === 'INPUT') {
-                wrapper.parentNode.insertBefore(this.element, wrapper);
-                detach(wrapper);
-                this.element.checked = false;
-                if (this.indeterminate) {
-                    this.element.indeterminate = false;
+            if (this.wrapper) {
+                wrapper = this.wrapper;
+                super.destroy();
+                if (!this.disabled) {
+                    this.unWireEvents();
                 }
-                ['name', 'value', 'disabled'].forEach((key: string) => {
-                    this.element.removeAttribute(key);
-                });
-            } else {
-                ['role', 'aria-checked', 'class'].forEach((key: string) => {
-                    wrapper.removeAttribute(key);
-                });
-                wrapper.innerHTML = '';
+                if (this.tagName === 'INPUT') {
+                    if (this.getWrapper()) {
+                        wrapper.parentNode.insertBefore(this.element, wrapper);
+                    }
+                    detach(wrapper);
+                    this.element.checked = false;
+                    if (this.indeterminate) {
+                        this.element.indeterminate = false;
+                    }
+                    ['name', 'value', 'disabled'].forEach((key: string) => {
+                        this.element.removeAttribute(key);
+                    });
+                } else {
+                    ['role', 'aria-checked', 'class'].forEach((key: string) => {
+                        wrapper.removeAttribute(key);
+                    });
+                    wrapper.innerHTML = '';
+                }
             }
         }
     }
@@ -260,7 +267,11 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private getWrapper(): Element {
-        return this.element.parentElement.parentElement;
+        if (this.element.parentElement) {
+            return this.element.parentElement.parentElement;
+        } else {
+            return null;
+        }
     }
 
     private initialize(): void {
@@ -355,6 +366,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                 case 'disabled':
                     if (newProp.disabled) {
                         this.setDisabled();
+                        this.wrapper = this.getWrapper();
                         this.unWireEvents();
                     } else {
                         this.element.disabled = false;
@@ -444,6 +456,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         }
         this.updateHtmlAttributeToWrapper();
         this.renderComplete();
+        this.wrapper = this.getWrapper();
     }
 
     private setDisabled(): void {
@@ -479,7 +492,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     protected unWireEvents(): void {
-        let wrapper: Element = this.getWrapper();
+        let wrapper: Element = this.wrapper;
         EventHandler.remove(this.element, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);

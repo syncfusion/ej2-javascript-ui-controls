@@ -455,6 +455,7 @@ export class SfGrid {
         EventHandler.add(document,'click', this.documentClickHandler, this);
         EventHandler.add(this.element,'keydown', this.gridKeyDownHandler, this);
         EventHandler.add(this.element, 'keydown', this.keyDownHandler, this);
+        EventHandler.add(document.body,'keydown', this.documentKeyHandler, this);
     }
 
     public unWireEvents(): void {
@@ -462,7 +463,8 @@ export class SfGrid {
         EventHandler.remove(this.element, 'focus', this.gridFocus);
         EventHandler.remove(document, 'click', this.documentClickHandler);
         EventHandler.remove(this.element, 'keydown', this.gridKeyDownHandler);
-        EventHandler.remove(this.element, 'keydown', this.keyDownHandler)
+        EventHandler.remove(this.element, 'keydown', this.keyDownHandler);
+        EventHandler.remove(document.body,'keydown', this.documentKeyHandler);
     }
 
     public setOptions(newOptions: IGridOptions, options: IGridOptions) {
@@ -504,6 +506,15 @@ export class SfGrid {
         let CCButton: Element = parentsUntil(<Element>e.target,'e-cc-toolbar');
         if (!popupElement && !((<Element>e.target).classList.contains('e-cc-cancel')) && !((<Element>e.target).classList.contains('e-choosercheck')) && !((<Element>e.target).classList.contains('e-fltrcheck')) && !((<Element>e.target).classList.contains('e-icon-filter')) && !CCButton && (this.element.querySelectorAll('.e-filter-popup.e-popup-open').length || this.element.querySelectorAll('.e-ccdlg.e-popup-open').length)) {
             this.dotNetRef.invokeMethodAsync('FilterPopupClose');
+        }
+    }
+    private documentKeyHandler(e: KeyboardEventArgs): void {
+        //TODO: handle alt+w
+        // 74 - J
+        if (e.altKey && e.keyCode === 74 && !isNullOrUndefined(this.element))
+        {
+            this.element.focus();
+            this.dotNetRef.invokeMethodAsync("GridFocus", e);
         }
     }
 
@@ -581,7 +592,7 @@ export class SfGrid {
             e.preventDefault(); //prevent user select on shift pressing during selection
         }
         // e.button = 2 for right mouse button click
-        if ((e.button !== 2 && parentsUntil(<Element>e.target, 'e-headercell')) || closest(<Element>e.target, ".e-groupdroparea") || closest(<Element>e.target, ".e-gridpopup")
+        if ((e.button !== 2 && parentsUntil(<Element>e.target, 'e-headercell')) || parentsUntil(<Element>e.target, 'e-detailrowexpand') || parentsUntil(<Element>e.target, 'e-detailrowcollapse') || closest(<Element>e.target, ".e-groupdroparea") || closest(<Element>e.target, ".e-gridpopup")
             || closest(<Element>e.target, ".e-summarycell") || closest(<Element>e.target, ".e-rhandler")
             || closest(<Element>e.target, ".e-filtermenudiv") || closest(<Element>e.target, ".e-filterbarcell")
             || closest(<Element>e.target, ".e-groupcaption")) {

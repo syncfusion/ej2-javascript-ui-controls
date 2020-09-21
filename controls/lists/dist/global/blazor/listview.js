@@ -1266,7 +1266,7 @@ var ListView = /** @class */ (function (_super) {
     ListView.prototype.createList = function () {
         this.currentLiElements = [];
         this.isNestedList = false;
-        this.ulElement = this.curUL = sf.lists.ListBase.createList(this.createElement, this.curViewDS, this.listBaseOption);
+        this.ulElement = this.curUL = sf.lists.ListBase.createList(this.createElement, this.curViewDS, this.listBaseOption, null, this);
         this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
         this.setAttributes(this.liCollection);
         this.updateBlazorTemplates(true);
@@ -1417,7 +1417,7 @@ var ListView = /** @class */ (function (_super) {
                     // tslint:enable
                 }
                 else {
-                    ele = sf.lists.ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length);
+                    ele = sf.lists.ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length, null, this);
                     var lists = ele.querySelectorAll('.' + classNames.listItem);
                     this.setAttributes(lists);
                     ele.setAttribute('pID', uID);
@@ -1953,7 +1953,7 @@ var ListView = /** @class */ (function (_super) {
         // if li element is already rendered, that element needs to be refreshed so that
         // it becomes child viewable due to new child items are added now
         if (isTargetEmptyChild) {
-            var targetRefreshedElement = sf.lists.ListBase.createListItemFromJson(this.createElement, targetDS, this.listBaseOption);
+            var targetRefreshedElement = sf.lists.ListBase.createListItemFromJson(this.createElement, targetDS, this.listBaseOption, null, null, this);
             this.setAttributes(targetRefreshedElement);
             targetUL.insertBefore(targetRefreshedElement[0], targetLi);
             sf.base.detach(targetLi);
@@ -1982,7 +1982,7 @@ var ListView = /** @class */ (function (_super) {
     ListView.prototype.addListItem = function (dataSource, index, ulElement, curViewDS) {
         var target = this.getLiFromObjOrElement(curViewDS[index + 1]) ||
             this.getLiFromObjOrElement(curViewDS[index + 2]) || null;
-        var li = sf.lists.ListBase.createListItemFromJson(this.createElement, [dataSource], this.listBaseOption);
+        var li = sf.lists.ListBase.createListItemFromJson(this.createElement, [dataSource], this.listBaseOption, null, null, this);
         this.setAttributes(li);
         ulElement.insertBefore(li[0], target);
     };
@@ -2042,7 +2042,7 @@ var ListView = /** @class */ (function (_super) {
                 && foundData.parent[this.fields.child].length <= 0) {
                 var parentLi = this.getLiFromObjOrElement(foundData.parent);
                 if (parentLi) {
-                    var li_1 = sf.lists.ListBase.createListItemFromJson(this.createElement, [foundData.parent], this.listBaseOption);
+                    var li_1 = sf.lists.ListBase.createListItemFromJson(this.createElement, [foundData.parent], this.listBaseOption, null, null, this);
                     this.setAttributes(li_1);
                     parentLi.parentElement.insertBefore(li_1[0], parentLi);
                     parentLi.parentElement.removeChild(parentLi);
@@ -2215,7 +2215,7 @@ var Virtualization = /** @class */ (function () {
         var curViewDS = this.listViewInstance.curViewDS;
         var firstDs = curViewDS.slice(0, 1);
         if (!(sf.base.isBlazor() || this.listViewInstance.isServerRendered)) {
-            this.listViewInstance.ulElement = this.listViewInstance.curUL = sf.lists.ListBase.createList(this.listViewInstance.createElement, firstDs, this.listViewInstance.listBaseOption);
+            this.listViewInstance.ulElement = this.listViewInstance.curUL = sf.lists.ListBase.createList(this.listViewInstance.createElement, firstDs, this.listViewInstance.listBaseOption, null, this);
             this.listViewInstance.contentContainer = this.listViewInstance.createElement('div', { className: classNames.content });
             this.listViewInstance.element.appendChild(this.listViewInstance.contentContainer);
             this.listViewInstance.contentContainer.appendChild(this.listViewInstance.ulElement);
@@ -2227,7 +2227,7 @@ var Virtualization = /** @class */ (function () {
         this.uiLastIndex = this.domItemCount - 1;
         var otherDs = curViewDS.slice(1, this.domItemCount);
         if (!(sf.base.isBlazor() || this.listViewInstance.isServerRendered)) {
-            var listItems = sf.lists.ListBase.createListItemFromJson(this.listViewInstance.createElement, otherDs, this.listViewInstance.listBaseOption);
+            var listItems = sf.lists.ListBase.createListItemFromJson(this.listViewInstance.createElement, otherDs, this.listViewInstance.listBaseOption, null, null, this);
             sf.base.append(listItems, this.listViewInstance.ulElement);
             this.listViewInstance.liCollection = this.listViewInstance.curUL.querySelectorAll('li');
             this.topElement = this.listViewInstance.createElement('div');
@@ -3053,7 +3053,7 @@ var Virtualization = /** @class */ (function () {
     Virtualization.prototype.createAndInjectNewItem = function (itemData, index) {
         // generate li item for given datasource
         var target;
-        var li = sf.lists.ListBase.createListItemFromJson(this.listViewInstance.createElement, [itemData], this.listViewInstance.listBaseOption);
+        var li = sf.lists.ListBase.createListItemFromJson(this.listViewInstance.createElement, [itemData], this.listViewInstance.listBaseOption, null, null, this);
         // check for target element whether to insert before last item or group item
         if ((Object.keys(this.listViewInstance.curViewDS).length - 1) === index) {
             target = this.listViewInstance.curUL.lastElementChild;

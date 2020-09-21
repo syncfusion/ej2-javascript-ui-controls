@@ -589,6 +589,16 @@ describe('Print and export', () => {
             diagram.print(options);
             done();
         });
+        it('Exported data returns same png format for all other format', (done: Function) => {
+			let options: IExportOptions = {};
+            options.mode = 'Data';
+            options.region = 'Content';
+            options.fileName = 'export';
+            options.format = 'JPG';
+            let image: string|SVGElement = diagram.exportDiagram(options);
+            expect(image).not.toBeNull();
+            done();
+        });
     });
     describe('Print and Export Settings', () => {
         let diagram: Diagram;

@@ -45,6 +45,12 @@ export interface DraggableModel {
     isDragScroll?: boolean;
 
     /**
+     * Defines wheather need to replace drag element by currentstateTarget.
+     * @private
+     */
+    isReplaceDragEle?: boolean;
+
+    /**
      * Specifies the callback function for drag event.
      * @event
      */

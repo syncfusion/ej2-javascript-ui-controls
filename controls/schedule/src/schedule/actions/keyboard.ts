@@ -44,7 +44,11 @@ export class KeyboardInteraction {
         pageUp: 'pageup',
         pageDown: 'pagedown',
         tab: 'tab',
-        shiftTab: 'shift+tab'
+        shiftTab: 'shift+tab',
+        altUpArrow: 'alt+uparrow',
+        altDownArrow: 'alt+downarrow',
+        altLeftArrow: 'alt+leftarrow',
+        altRightArrow: 'alt+rightarrow'
     };
     private keyboardModule: KeyboardEvents;
     constructor(parent: Schedule) {
@@ -110,6 +114,12 @@ export class KeyboardInteraction {
                 break;
             case 'delete':
                 this.processDelete(e);
+                break;
+            case 'altUpArrow':
+            case 'altDownArrow':
+            case 'altLeftArrow':
+            case 'altRightArrow':
+                this.processAltNavigationArrows(e);
                 break;
             case 'escape':
                 this.processEscape();
@@ -733,6 +743,25 @@ export class KeyboardInteraction {
                 return;
             }
             this.parent.quickPopup.deleteClick();
+        }
+    }
+    private processAltNavigationArrows(e: KeyboardEventArgs): void {
+        if (this.parent.activeViewOptions.group.resources.length > 0 && document.activeElement.classList.contains(cls.APPOINTMENT_CLASS)) {
+            let groupIndex: number = parseInt(document.activeElement.getAttribute('data-group-index'), 10);
+            let index: number = (e.action === 'altLeftArrow' || e.action === 'altUpArrow') ? groupIndex - 1 : groupIndex + 1;
+            index = index < 0 ? 0 : index > this.parent.resourceBase.lastResourceLevel.length ?
+                this.parent.resourceBase.lastResourceLevel.length : index;
+            let eventEle: HTMLElement[] = [];
+            while (eventEle.length === 0 && index >= 0 && index <= this.parent.resourceBase.lastResourceLevel.length) {
+                eventEle = [].slice.call(this.parent.element.querySelectorAll(`.${cls.APPOINTMENT_CLASS}[data-group-index="${index}"]`));
+                index = (e.action === 'altLeftArrow' || e.action === 'altUpArrow') ? index - 1 : index + 1;
+            }
+            let nextAppEle: HTMLElement = eventEle[0];
+            if (nextAppEle) {
+                this.parent.eventBase.removeSelectedAppointmentClass();
+                this.parent.eventBase.addSelectedAppointments([nextAppEle]);
+                nextAppEle.focus();
+            }
         }
     }
     private processEscape(): void {

@@ -2765,10 +2765,14 @@ private getGridEditSettings(): GridEditModel {
      */
     public updateRow(index: number, data: Object): void {
       if (this.grid.editModule) {
+        if (!isNullOrUndefined(index)) {
           let griddata: Object = this.grid.getCurrentViewRecords()[index];
           extend(griddata, data);
           this.grid.editModule.updateRow(index, griddata);
-      }
+        } else {
+          this.grid.editModule.updateRow(index, data);
+        }
+    }
   }
 
     /**

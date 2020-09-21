@@ -3776,9 +3776,14 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      */
     updateRow(index, data) {
         if (this.grid.editModule) {
-            let griddata = this.grid.getCurrentViewRecords()[index];
-            extend(griddata, data);
-            this.grid.editModule.updateRow(index, griddata);
+            if (!isNullOrUndefined(index)) {
+                let griddata = this.grid.getCurrentViewRecords()[index];
+                extend(griddata, data);
+                this.grid.editModule.updateRow(index, griddata);
+            }
+            else {
+                this.grid.editModule.updateRow(index, data);
+            }
         }
     }
     /**
@@ -5413,7 +5418,8 @@ function editAction(details, control, isSelfReference, addRowIndex, selectedInde
             if (typeof (modifiedData[k][key]) === 'object') {
                 modifiedData[k] = modifiedData[k][key];
             }
-            let keys = Object.keys(modifiedData[k].taskData);
+            let keys = modifiedData[k].taskData ? Object.keys(modifiedData[k].taskData) :
+                Object.keys(modifiedData[k]);
             i = treeData.length;
             while (i-- && i >= 0) {
                 if (treeData[i][key] === modifiedData[k][key]) {
@@ -5445,7 +5451,10 @@ function editAction(details, control, isSelfReference, addRowIndex, selectedInde
                                     || (!isNullOrUndefined(batchChanges) && batchChanges[changedRecords].length === 0))
                                     || keys[j] === columnName)) {
                                     let editedData = getParentData(control, modifiedData[k].uniqueID);
-                                    editedData.taskData[keys[j]] = editedData[keys[j]] = treeData[i][keys[j]] = modifiedData[k][keys[j]];
+                                    treeData[i][keys[j]] = modifiedData[k][keys[j]];
+                                    if (editedData && editedData.taskData) {
+                                        editedData.taskData[keys[j]] = editedData[keys[j]] = treeData[i][keys[j]];
+                                    }
                                 }
                             }
                         }

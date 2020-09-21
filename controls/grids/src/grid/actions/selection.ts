@@ -17,7 +17,7 @@ import { Row } from '../models/row';
 import { Data } from '../actions/data';
 import { ReturnType } from '../base/type';
 import { FocusStrategy } from '../services/focus-strategy';
-import { iterateExtend } from '../base/util';
+import { iterateExtend, setChecked } from '../base/util';
 import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
 import { VirtualFreezeRenderer } from '../renderer/virtual-freeze-renderer';
 
@@ -687,6 +687,7 @@ export class Selection implements IAction {
             let chkBox: HTMLInputElement = row.querySelector('.e-checkselect') as HTMLInputElement;
             if (!isNullOrUndefined(chkBox)) {
                 removeAddCboxClasses(chkBox.nextElementSibling as HTMLElement, chkState);
+                setChecked(chkBox, chkState);
                 if (isNullOrUndefined(this.checkedTarget) || (!isNullOrUndefined(this.checkedTarget)
                     && !this.checkedTarget.classList.contains('e-checkselectall'))) {
                     this.setCheckAllState(rowIndex);
@@ -2668,15 +2669,19 @@ export class Selection implements IAction {
                 checkedLen = this.selectedRowIndexes.length;
                 this.totalRecordsCount = this.getCurrentBatchRecordChanges().length;
             }
-            if (this.getCheckAllBox()) {
-                let spanEle: HTMLElement = this.getCheckAllBox().nextElementSibling as HTMLElement;
+            let input: HTMLInputElement = this.getCheckAllBox();
+            if (input) {
+                let spanEle: HTMLElement = input.nextElementSibling as HTMLElement;
                 removeClass([spanEle], ['e-check', 'e-stop', 'e-uncheck']);
+                setChecked(input, false);
+                input.indeterminate = false;
                 if (checkToSelectAll || checkedLen === this.totalRecordsCount && this.totalRecordsCount
                     || ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
                         && !this.parent.allowPaging && !this.parent.getDataModule().isRemote()
                         && !(isBlazor() && this.parent.isServerRendered)
                         && checkedLen === this.getData().length)) {
                     addClass([spanEle], ['e-check']);
+                    setChecked(input, true);
                     if (isInteraction) {
                         this.getRenderer().setSelection(null, true, true);
                     }
@@ -2696,6 +2701,7 @@ export class Selection implements IAction {
                 } else {
                     addClass([spanEle], ['e-stop']);
                     this.parent.checkAllRows = 'Intermediate';
+                    input.indeterminate = true;
                 }
                 if ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
                     && !this.parent.allowPaging && !this.parent.getDataModule().isRemote()) {

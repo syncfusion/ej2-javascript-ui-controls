@@ -30,6 +30,7 @@ export class RowDD {
     private rowData: Object;
     private dragStartData: Object;
     private draggable: Draggable;
+    private isReplaceDragEle: boolean = true;
 
     /* tslint:disable-next-line:max-line-length */
     // tslint:disable-next-line:max-func-body-length
@@ -44,7 +45,7 @@ export class RowDD {
         let tbody: Element = this.parent.createElement('tbody');
 
         if (document.getElementsByClassName('e-griddragarea').length ||
-            (gObj.rowDropSettings.targetID && (!(e.sender.target as Element).classList.contains('e-selectionbackground')
+            (gObj.rowDropSettings.targetID && (!(target as Element).classList.contains('e-selectionbackground')
                 && gObj.selectionSettings.type !== 'Single')) ||
             (!gObj.rowDropSettings.targetID && !parentsUntil(e.sender.target as Element, 'e-rowdragdrop'))) {
             return false;
@@ -392,7 +393,8 @@ export class RowDD {
             helper: this.helper,
             dragStart: this.dragStart,
             drag: this.drag,
-            dragStop: this.dragStop
+            dragStop: this.dragStop,
+            isReplaceDragEle: this.isReplaceDragEle,
         });
     }
 

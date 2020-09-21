@@ -36482,6 +36482,8 @@ var Diagram = /** @class */ (function (_super) {
                 if (!parentNode.isLane) {
                     this.nameTable[node.id].width = parentNode.wrapper.actualSize.width;
                     this.nameTable[node.id].height = parentNode.wrapper.actualSize.height;
+                    this.nameTable[node.id].offsetX = parentNode.wrapper.offsetX;
+                    this.nameTable[node.id].offsetY = parentNode.wrapper.offsetY;
                 }
                 if (parentNode.container !== undefined) {
                     childNode.offsetX = childNode.wrapper.offsetX;
@@ -40012,7 +40014,7 @@ var Diagram = /** @class */ (function (_super) {
                 this.updatePorts(actualObject, node.flip);
             }
         }
-        if (node.rotateAngle !== undefined) {
+        if (node.rotateAngle !== undefined && (actualObject.constraints & exports.NodeConstraints.Rotate)) {
             if (actualObject.children && rotate) {
                 this.commandHandler.rotateObjects(actualObject, [actualObject], actualObject.rotateAngle - actualObject.wrapper.rotateAngle, { x: actualObject.offsetX, y: actualObject.offsetY }, false);
             }
@@ -42037,7 +42039,13 @@ var PrintAndExport = /** @class */ (function () {
             bounds: bounds, margin: margin, region: region, scaleX: options[scaleX],
             scaleY: options[scaleY], scaleOffsetX: options[scaleOffsetX], scaleOffsetY: options[scaleOffsetY]
         }, customBounds);
-        var image = content = canvas.toDataURL();
+        var image;
+        if (options.format === 'JPG') {
+            image = content = canvas.toDataURL('image/jpeg');
+        }
+        else {
+            image = content = canvas.toDataURL();
+        }
         if (mode === 'Data') {
             return content;
         }
@@ -48099,7 +48107,7 @@ var UndoRedo = /** @class */ (function () {
         diagram.commandHandler.unGroup(node);
     };
     UndoRedo.prototype.ignoreProperty = function (key) {
-        if (key === 'zIndex' || key === 'wrapper') {
+        if (key === 'zIndex' || key === 'wrapper' || key === 'parentObj' || key === 'controlParent') {
             return true;
         }
         return false;
@@ -54367,6 +54375,7 @@ var SymbolPalette = /** @class */ (function (_super) {
                         };
                     }
                     else {
+                        this.initDraggable();
                         this.draggable.helper = this.helper;
                     }
                     break;

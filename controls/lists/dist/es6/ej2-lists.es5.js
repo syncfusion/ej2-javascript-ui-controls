@@ -83,15 +83,20 @@ var ListBase;
      * @param  {{[key:string]:Object}[]|string[]} dataSource - Specifies an array of JSON or String data.
      * @param  {ListBaseOptions} options? - Specifies the list options that need to provide.
      */
-    function createList(createElement, dataSource, options, isSingleLevel) {
+    function createList(createElement, dataSource, 
+    // tslint:disable-next-line
+    options, isSingleLevel, componentInstance) {
         var curOpt = extend({}, defaultListBaseOptions, options);
         var ariaAttributes = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
         var type = typeofData(dataSource).typeof;
         if (type === 'string' || type === 'number') {
-            return createListFromArray(createElement, dataSource, isSingleLevel, options);
+            return createListFromArray(createElement, dataSource, isSingleLevel, options, componentInstance);
         }
         else {
-            return createListFromJson(createElement, dataSource, options, ariaAttributes.level, isSingleLevel);
+            // tslint:disable-next-line
+            return createListFromJson(createElement, dataSource, options, 
+            // tslint:disable-next-line
+            ariaAttributes.level, isSingleLevel, componentInstance);
         }
     }
     ListBase.createList = createList;
@@ -99,8 +104,10 @@ var ListBase;
      * Function helps to created an element list based on string array input .
      * @param  {string[]} dataSource - Specifies an array of string data
      */
-    function createListFromArray(createElement, dataSource, isSingleLevel, options) {
-        var subChild = createListItemFromArray(createElement, dataSource, isSingleLevel, options);
+    function createListFromArray(createElement, dataSource, 
+    // tslint:disable-next-line
+    isSingleLevel, options, componentInstance) {
+        var subChild = createListItemFromArray(createElement, dataSource, isSingleLevel, options, componentInstance);
         return generateUL(createElement, subChild, null, options);
     }
     ListBase.createListFromArray = createListFromArray;
@@ -108,7 +115,9 @@ var ListBase;
      * Function helps to created an element list based on string array input .
      * @param  {string[]} dataSource - Specifies an array of string data
      */
-    function createListItemFromArray(createElement, dataSource, isSingleLevel, options) {
+    function createListItemFromArray(createElement, dataSource, 
+    // tslint:disable-next-line
+    isSingleLevel, options, componentInstance) {
         var subChild = [];
         var curOpt = extend({}, defaultListBaseOptions, options);
         cssClass = getModuleClass(curOpt.moduleName);
@@ -131,7 +140,7 @@ var ListBase;
                 li = generateSingleLevelLI(createElement, dataSource[i], undefined, null, null, [], null, id, i, options);
             }
             else {
-                li = generateLI(createElement, dataSource[i], undefined, null, null, options);
+                li = generateLI(createElement, dataSource[i], undefined, null, null, options, componentInstance);
             }
             if (curOpt.itemCreated && typeof curOpt.itemCreated === 'function') {
                 var curData = {
@@ -154,7 +163,10 @@ var ListBase;
      * @param  {ListBaseOptions} options? - Specifies the list options that need to provide.
      */
     // tslint:disable-next-line:max-func-body-length
-    function createListItemFromJson(createElement, dataSource, options, level, isSingleLevel) {
+    // tslint:disable-next-line
+    function createListItemFromJson(createElement, dataSource, 
+    // tslint:disable-next-line
+    options, level, isSingleLevel, componentInstance) {
         var curOpt = extend({}, defaultListBaseOptions, options);
         cssClass = getModuleClass(curOpt.moduleName);
         var fields = extend({}, ListBase.defaultMappedFields, curOpt.fields);
@@ -214,7 +226,7 @@ var ListBase;
                 }
             }
             else {
-                li = generateLI(createElement, curItem, fieldData, fields, curOpt.itemClass, options);
+                li = generateLI(createElement, curItem, fieldData, fields, curOpt.itemClass, options, componentInstance);
                 li.classList.add(cssClass.level + '-' + ariaAttributes.level);
                 li.setAttribute('aria-level', ariaAttributes.level.toString());
                 anchorElement = li.querySelector('.' + cssClass.anchorWrap);
@@ -286,9 +298,11 @@ var ListBase;
      * @param  {{[key:string]:Object}[]} dataSource - Specifies an array of JSON data.
      * @param  {ListBaseOptions} options? - Specifies the list options that need to provide.
      */
-    function createListFromJson(createElement, dataSource, options, level, isSingleLevel) {
+    function createListFromJson(createElement, dataSource, 
+    // tslint:disable-next-line
+    options, level, isSingleLevel, componentInstance) {
         var curOpt = extend({}, defaultListBaseOptions, options);
-        var li = createListItemFromJson(createElement, dataSource, options, level, isSingleLevel);
+        var li = createListItemFromJson(createElement, dataSource, options, level, isSingleLevel, componentInstance);
         return generateUL(createElement, li, curOpt.listClass, options);
     }
     ListBase.createListFromJson = createListFromJson;
@@ -489,7 +503,9 @@ var ListBase;
      * @param  {{[key:string]:Object}[]} dataSource - Specifies local JSON data source.
      * @param  {ListBaseOptions} options? - Specifies listbase option for fields.
      */
-    function renderContentTemplate(createElement, template, dataSource, fields, options, prop) {
+    function renderContentTemplate(createElement, template, dataSource, 
+    // tslint:disable-next-line
+    fields, options, componentInstance) {
         cssClass = getModuleClass(defaultListBaseOptions.moduleName);
         var ulElement = createElement('ul', { className: cssClass.ul, attrs: { role: 'presentation' } });
         var curOpt = extend({}, defaultListBaseOptions, options);
@@ -526,10 +542,10 @@ var ListBase;
             else {
                 var currentID = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
                 if (isHeader) {
-                    append(compiledString(curItem, options, 'groupTemplate', currentID, !!curOpt.isStringTemplate), li);
+                    append(compiledString(curItem, componentInstance, 'headerTemplate', currentID, !!curOpt.isStringTemplate), li);
                 }
                 else {
-                    append(compiledString(curItem, options, 'template', currentID, !!curOpt.isStringTemplate), li);
+                    append(compiledString(curItem, componentInstance, 'template', currentID, !!curOpt.isStringTemplate), li);
                 }
                 li.setAttribute('data-value', isNullOrUndefined(value) ? 'null' : value);
                 li.setAttribute('role', 'option');
@@ -558,7 +574,10 @@ var ListBase;
      * @param  {FieldsMapping} fields - Specifies fields for mapping the dataSource.
      * @param  {Element[]} headerItems? - Specifies listbase header items.
      */
-    function renderGroupTemplate(groupTemplate, groupDataSource, fields, headerItems, options) {
+    // tslint:disable-next-line
+    function renderGroupTemplate(groupTemplate, groupDataSource, fields, 
+    // tslint:disable-next-line
+    headerItems, options, componentInstance) {
         var compiledString = compile(groupTemplate);
         var curFields = extend({}, ListBase.defaultMappedFields, fields);
         var curOpt = extend({}, defaultListBaseOptions, options);
@@ -568,7 +587,7 @@ var ListBase;
             var headerData = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
-            append(compiledString(headerData, options, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), header);
+            append(compiledString(headerData, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), header);
         }
         return headerItems;
     }
@@ -700,8 +719,11 @@ var ListBase;
         setAttribute(anchorTag, attr);
         return anchorTag;
     }
+    // tslint:disable-next-line
     /* tslint:disable:align */
-    function generateLI(createElement, item, fieldData, fields, className, options) {
+    function generateLI(createElement, item, fieldData, 
+    // tslint:disable-next-line
+    fields, className, options, prop, componentInstance) {
         var curOpt = extend({}, defaultListBaseOptions, options);
         var ariaAttributes = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
         var text = item;
@@ -717,7 +739,7 @@ var ListBase;
                 ? true : false;
         }
         if (options && options.enableHtmlSanitizer) {
-            text = SanitizeHtmlHelper.sanitize(text);
+            text = text;
         }
         var li = createElement('li', {
             className: (grpLI === true ? cssClass.group : cssClass.li) + ' ' + (isNullOrUndefined(className) ? '' : className),
@@ -733,11 +755,11 @@ var ListBase;
         }
         if (grpLI && options && options.groupTemplate) {
             var compiledString = compile(options.groupTemplate);
-            append(compiledString(item, options, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
+            append(compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
         }
         else if (!grpLI && options && options.template) {
             var compiledString = compile(options.template);
-            append(compiledString(item, options, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
+            append(compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
         }
         else {
             var innerDiv = createElement('div', {
@@ -754,7 +776,7 @@ var ListBase;
                     attrs: (ariaAttributes.itemText !== '' ? { role: ariaAttributes.itemText } : {})
                 });
                 if (options && options.enableHtmlSanitizer) {
-                    element.innerText = SanitizeHtmlHelper.sanitize(text);
+                    element.innerText = text;
                 }
                 else {
                     element.innerHTML = text;
@@ -2090,7 +2112,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     ListView.prototype.createList = function () {
         this.currentLiElements = [];
         this.isNestedList = false;
-        this.ulElement = this.curUL = ListBase.createList(this.createElement, this.curViewDS, this.listBaseOption);
+        this.ulElement = this.curUL = ListBase.createList(this.createElement, this.curViewDS, this.listBaseOption, null, this);
         this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
         this.setAttributes(this.liCollection);
         this.updateBlazorTemplates(true);
@@ -2241,7 +2263,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                     // tslint:enable
                 }
                 else {
-                    ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length);
+                    ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length, null, this);
                     var lists = ele.querySelectorAll('.' + classNames.listItem);
                     this.setAttributes(lists);
                     ele.setAttribute('pID', uID);
@@ -2777,7 +2799,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         // if li element is already rendered, that element needs to be refreshed so that
         // it becomes child viewable due to new child items are added now
         if (isTargetEmptyChild) {
-            var targetRefreshedElement = ListBase.createListItemFromJson(this.createElement, targetDS, this.listBaseOption);
+            var targetRefreshedElement = ListBase.createListItemFromJson(this.createElement, targetDS, this.listBaseOption, null, null, this);
             this.setAttributes(targetRefreshedElement);
             targetUL.insertBefore(targetRefreshedElement[0], targetLi);
             detach(targetLi);
@@ -2806,7 +2828,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     ListView.prototype.addListItem = function (dataSource, index, ulElement, curViewDS) {
         var target = this.getLiFromObjOrElement(curViewDS[index + 1]) ||
             this.getLiFromObjOrElement(curViewDS[index + 2]) || null;
-        var li = ListBase.createListItemFromJson(this.createElement, [dataSource], this.listBaseOption);
+        var li = ListBase.createListItemFromJson(this.createElement, [dataSource], this.listBaseOption, null, null, this);
         this.setAttributes(li);
         ulElement.insertBefore(li[0], target);
     };
@@ -2866,7 +2888,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 && foundData.parent[this.fields.child].length <= 0) {
                 var parentLi = this.getLiFromObjOrElement(foundData.parent);
                 if (parentLi) {
-                    var li_1 = ListBase.createListItemFromJson(this.createElement, [foundData.parent], this.listBaseOption);
+                    var li_1 = ListBase.createListItemFromJson(this.createElement, [foundData.parent], this.listBaseOption, null, null, this);
                     this.setAttributes(li_1);
                     parentLi.parentElement.insertBefore(li_1[0], parentLi);
                     parentLi.parentElement.removeChild(parentLi);
@@ -3039,7 +3061,7 @@ var Virtualization = /** @__PURE__ @class */ (function () {
         var curViewDS = this.listViewInstance.curViewDS;
         var firstDs = curViewDS.slice(0, 1);
         if (!(isBlazor() || this.listViewInstance.isServerRendered)) {
-            this.listViewInstance.ulElement = this.listViewInstance.curUL = ListBase.createList(this.listViewInstance.createElement, firstDs, this.listViewInstance.listBaseOption);
+            this.listViewInstance.ulElement = this.listViewInstance.curUL = ListBase.createList(this.listViewInstance.createElement, firstDs, this.listViewInstance.listBaseOption, null, this);
             this.listViewInstance.contentContainer = this.listViewInstance.createElement('div', { className: classNames.content });
             this.listViewInstance.element.appendChild(this.listViewInstance.contentContainer);
             this.listViewInstance.contentContainer.appendChild(this.listViewInstance.ulElement);
@@ -3051,7 +3073,7 @@ var Virtualization = /** @__PURE__ @class */ (function () {
         this.uiLastIndex = this.domItemCount - 1;
         var otherDs = curViewDS.slice(1, this.domItemCount);
         if (!(isBlazor() || this.listViewInstance.isServerRendered)) {
-            var listItems = ListBase.createListItemFromJson(this.listViewInstance.createElement, otherDs, this.listViewInstance.listBaseOption);
+            var listItems = ListBase.createListItemFromJson(this.listViewInstance.createElement, otherDs, this.listViewInstance.listBaseOption, null, null, this);
             append(listItems, this.listViewInstance.ulElement);
             this.listViewInstance.liCollection = this.listViewInstance.curUL.querySelectorAll('li');
             this.topElement = this.listViewInstance.createElement('div');
@@ -3877,7 +3899,7 @@ var Virtualization = /** @__PURE__ @class */ (function () {
     Virtualization.prototype.createAndInjectNewItem = function (itemData, index) {
         // generate li item for given datasource
         var target;
-        var li = ListBase.createListItemFromJson(this.listViewInstance.createElement, [itemData], this.listViewInstance.listBaseOption);
+        var li = ListBase.createListItemFromJson(this.listViewInstance.createElement, [itemData], this.listViewInstance.listBaseOption, null, null, this);
         // check for target element whether to insert before last item or group item
         if ((Object.keys(this.listViewInstance.curViewDS).length - 1) === index) {
             target = this.listViewInstance.curUL.lastElementChild;

@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-circulargauge/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-circulargauge)
-
 # ej2-circulargauge
 
 The circular gauge control is ideal to visualize numeric values over a circular scale. All the circular gauge elements are rendered using Scalable Vector Graphics (SVG).

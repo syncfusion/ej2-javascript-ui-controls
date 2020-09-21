@@ -833,7 +833,7 @@ var InPlaceEditor = /** @class */ (function (_super) {
             this.submitBtn = undefined;
         }
         if (!sf.base.isNullOrUndefined(this.cancelBtn)) {
-            sf.base.EventHandler.remove(this.cancelBtn.element, 'mousedown', this.cancelHandler);
+            sf.base.EventHandler.remove(this.cancelBtn.element, 'mousedown', this.cancelBtnClick);
             sf.base.EventHandler.remove(this.cancelBtn.element, 'keydown', this.btnKeyDownHandler);
             this.cancelBtn.destroy();
             this.cancelBtn = undefined;
@@ -955,14 +955,18 @@ var InPlaceEditor = /** @class */ (function (_super) {
     InPlaceEditor.prototype.enableEditor = function (val) {
         (val) ? this.renderEditor() : this.cancelHandler();
     };
-    InPlaceEditor.prototype.checkValidation = function (isValidate) {
+    InPlaceEditor.prototype.checkValidation = function (fromSubmit, isValidate) {
         var _this = this;
         var args;
-        var fromSubmit = true;
         if (this.validationRules) {
+            var rules = Object.keys(this.validationRules);
+            var validationLength_1 = Object.keys(this.validationRules[rules[0]]).length;
+            validationLength_1 = 'validateHidden' in this.validationRules[rules[0]] ? validationLength_1 - 1 : validationLength_1;
+            var count_1 = 0;
             this.formValidate = new sf.inputs.FormValidator(this.formEle, {
                 rules: this.validationRules,
                 validationComplete: function (e) {
+                    count_1 = count_1 + 1;
                     args = {
                         errorMessage: e.message,
                         data: { name: _this.name, primaryKey: _this.primaryKey, value: _this.checkValue(_this.getSendValue()) }
@@ -975,16 +979,20 @@ var InPlaceEditor = /** @class */ (function (_super) {
                         else {
                             _this.toggleErrorClass(false);
                         }
-                        if (!sf.base.isNullOrUndefined(fromSubmit) && fromSubmit) {
+                        if (!sf.base.isNullOrUndefined(fromSubmit) && fromSubmit && (validationLength_1 === count_1 || e.status === 'failure')) {
                             fromSubmit = false;
                             _this.afterValidation(isValidate);
+                            count_1 = 0;
                         }
                     });
                 },
                 customPlacement: function (inputElement, errorElement) {
-                    sf.base.select('.' + EDITABLE_ERROR, _this.formEle).appendChild(errorElement);
+                    if (_this.formEle) {
+                        sf.base.select('.' + EDITABLE_ERROR, _this.formEle).appendChild(errorElement);
+                    }
                 }
             });
+            count_1 = 0;
             this.formValidate.validate();
         }
         else {
@@ -1070,9 +1078,13 @@ var InPlaceEditor = /** @class */ (function (_super) {
             sf.base.EventHandler.add(this.submitBtn.element, 'keydown', this.btnKeyDownHandler, this);
         }
         if (!sf.base.isNullOrUndefined(this.cancelBtn)) {
-            sf.base.EventHandler.add(this.cancelBtn.element, 'mousedown', this.cancelHandler, this);
+            sf.base.EventHandler.add(this.cancelBtn.element, 'mousedown', this.cancelBtnClick, this);
             sf.base.EventHandler.add(this.cancelBtn.element, 'keydown', this.btnKeyDownHandler, this);
         }
+    };
+    InPlaceEditor.prototype.cancelBtnClick = function (e) {
+        this.cancelHandler();
+        this.trigger('cancelClick', e);
     };
     InPlaceEditor.prototype.unWireEvents = function () {
         this.unWireEditEvent(this.editableOn);
@@ -1177,6 +1189,7 @@ var InPlaceEditor = /** @class */ (function (_super) {
     InPlaceEditor.prototype.submitHandler = function (e) {
         e.preventDefault();
         this.save();
+        this.trigger('submitClick', e);
     };
     InPlaceEditor.prototype.cancelHandler = function () {
         this.removeEditor();
@@ -1278,7 +1291,7 @@ var InPlaceEditor = /** @class */ (function (_super) {
      * @returns void
      */
     InPlaceEditor.prototype.validate = function () {
-        this.checkValidation(false);
+        this.checkValidation(true, false);
     };
     /**
      * Submit the edited input value to the server.
@@ -1295,7 +1308,7 @@ var InPlaceEditor = /** @class */ (function (_super) {
         if (!this.isTemplate) {
             this.setValue();
         }
-        this.checkValidation(true);
+        this.checkValidation(true, true);
     };
     /**
      * Removes the control from the DOM and also removes all its related events.
@@ -1492,6 +1505,12 @@ var InPlaceEditor = /** @class */ (function (_super) {
     __decorate$1([
         sf.base.Event()
     ], InPlaceEditor.prototype, "change", void 0);
+    __decorate$1([
+        sf.base.Event()
+    ], InPlaceEditor.prototype, "submitClick", void 0);
+    __decorate$1([
+        sf.base.Event()
+    ], InPlaceEditor.prototype, "cancelClick", void 0);
     __decorate$1([
         sf.base.Event()
     ], InPlaceEditor.prototype, "destroyed", void 0);

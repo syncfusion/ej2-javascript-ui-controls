@@ -211,6 +211,12 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     @Property()
     public isDragScroll: boolean;
     /**
+     * Defines wheather need to replace drag element by currentstateTarget.
+     * @private
+     */
+    @Property()
+    public isReplaceDragEle: boolean;
+    /**
      * Specifies the callback function for drag event.
      * @event
      */
@@ -502,6 +508,10 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             if (!isNullOrUndefined(intClosest)) {
                 element = intClosest;
             }
+        }
+        /* istanbul ignore next */
+        if (this.isReplaceDragEle) {
+            element = this.currentStateCheck(evt.target as any, element);
         }
         this.offset = this.calculateParentPosition(element);
         this.position = this.getMousePosition(evt, this.isDragScroll);
@@ -836,9 +846,23 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             ele = <HTMLElement>document.elementFromPoint(intCoord.clientX, intCoord.clientY);
             this.helperElement.style.pointerEvents = prevStyle;
         } else {
-            ele = <HTMLElement>evt.target;
+            if (this.isReplaceDragEle) {
+                ele = this.currentStateCheck(evt.target as any);
+            } else {
+                ele = <HTMLElement>evt.target;
+            }
         }
         return ele;
+    }
+    /* istanbul ignore next */
+    private currentStateCheck(ele: HTMLElement, oldEle?: HTMLElement): HTMLElement {
+        let elem: HTMLElement;
+        if (!isNullOrUndefined(this.currentStateTarget) && this.currentStateTarget !== ele) {
+            elem = this.currentStateTarget;
+        } else {
+            elem = !isNullOrUndefined(oldEle) ? oldEle : ele;
+        }
+        return elem;
     }
     private getMousePosition(evt: MouseEvent & TouchEvent, isdragscroll?: boolean): PositionModel {
         /* tslint:disable no-any */

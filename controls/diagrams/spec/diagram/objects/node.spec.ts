@@ -2,7 +2,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel, PathModel, TextModel, ImageModel, NativeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
 import { Node } from '../../../src/diagram/objects/node';
-import { TextStyleModel } from '../../../src/diagram/core/appearance-model';
+import { LinearGradientModel, TextStyleModel } from '../../../src/diagram/core/appearance-model';
 import { Container } from '../../../src/diagram/core/containers/container';
 import { StackPanel } from '../../../src/diagram/core/containers/stack-panel';
 import { DiagramElement } from '../../../src/diagram/core/elements/diagram-element';
@@ -2176,5 +2176,111 @@ describe('Complex Hierarchical tree layout change', () => {
     it('Due to intersection', (done: Function) => {
         expect((diagram.nodes[1].offsetX) === 114.6953125).toBe(true)
         done();
+    });
+});
+describe('Call stack exceeded', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram97' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', width: 50, height: 50, offsetX: 100,
+                offsetY: 100,
+            }, {
+                id: 'node2', width: 50, height: 50, offsetX: 200,
+                offsetY: 200
+            },
+            { id: 'group', children: ['node1', 'node2']},
+        ];
+        diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes });
+        diagram.appendTo('#diagram97');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Call stack exceeded due to infinite loop', (done: Function) => {
+        let linearGradient:  LinearGradientModel;
+        linearGradient = {
+            x1: 0,
+            y1: 0,
+            x2: 50,
+            y2: 50,
+            stops: [{
+                    color: 'white',
+                    offset: 0,
+                    opacity:1
+                },
+                {
+                    color: '#6BA5D7',
+                    offset: 100,
+                    opacity:0
+                }
+            ],
+            type: 'Linear'
+        };
+        diagram.nodes[2].style.gradient = linearGradient
+        diagram.dataBind();
+        diagram.undo();
+        diagram.redo();
+        debugger
+        expect((diagram.nodes[2].style.gradient as any).x2 === 50 && (diagram.nodes[2].style.gradient as any).y2 === 50).toBe(true);
+        done();
+    });
+});
+describe('Node Rotate constraints does not work properly', () => {
+    let diagram: Diagram; let elements: HTMLElement
+    beforeAll((): void => {
+        elements = createElement('div', { styles: 'width:100%;height:500px;' });
+        elements.appendChild(createElement('div', { id: 'diagramNodeZindex' }));
+        document.body.appendChild(elements);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', width: 100, height: 100, offsetX: 100,
+                offsetY: 100, annotations: [{
+                    content: 'rectangle1'
+                }],
+                constraints:NodeConstraints.Rotate
+            }, {
+                id: 'node2', width: 100, height: 100, offsetX: 200,
+                offsetY: 200
+            },
+        ];
+        let node3: NodeModel = {
+            width: 100, height: 100, offsetX: 350,
+            offsetY: 300,
+        };
+        let group: NodeModel = {
+            id: 'group2',
+            children: ['node1', 'node2'],
+            
+        };
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: nodes, created: created,
+        });
+        diagram.appendTo('#diagramNodeZindex');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        elements.remove();  
+    });
+    function created(args: any) {
+        diagram.nodes[0].rotateAngle =90;
+    }
+    it('Node Rotate constraints does not work properly', (done: Function) => {
+        expect((diagram.nodes[0].rotateAngle === 90) && (diagram.nodes[0].wrapper.rotateAngle === 0) ).toBe(true)
+        done();        
     });
 });

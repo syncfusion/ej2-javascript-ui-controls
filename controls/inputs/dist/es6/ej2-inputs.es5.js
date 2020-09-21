@@ -8641,14 +8641,20 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     };
     Uploader.prototype.removeCompleted = function (e, files, customTemplate) {
         var response = e && e.currentTarget ? this.getResponse(e) : null;
-        var args = {
-            e: e, response: response, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedSuccessMessage'), '2')
-        };
-        this.trigger('success', args);
-        this.removeFilesData(files, customTemplate);
-        var index = this.uploadedFilesData.indexOf(files);
-        this.uploadedFilesData.splice(index, 1);
-        this.trigger('change', { files: this.uploadedFilesData });
+        var status = e.target;
+        if (status.readyState === 4 && status.status >= 200 && status.status <= 299) {
+            var args = {
+                e: e, response: response, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedSuccessMessage'), '2')
+            };
+            this.trigger('success', args);
+            this.removeFilesData(files, customTemplate);
+            var index = this.uploadedFilesData.indexOf(files);
+            this.uploadedFilesData.splice(index, 1);
+            this.trigger('change', { files: this.uploadedFilesData });
+        }
+        else {
+            this.removeFailed(e, files, customTemplate);
+        }
     };
     Uploader.prototype.removeFailed = function (e, files, customTemplate) {
         var response = e && e.currentTarget ? this.getResponse(e) : null;

@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 18.2.59 (2020-09-21)
+
+### In-place Editor
+
+#### Bug Fixes
+
+`#289326` - The issue with "Script error is thrown when configuring more than two validation rules in the In-place editor" has been resolved.
+
+## 18.2.57 (2020-09-08)
+
+### In-place Editor
+
+#### New Features
+
+- `#288860` - Provided the new events `submitClick` and `cancelClick` that triggers when clicking the In-place editor submit and cancel buttons.
+
+## 18.2.54 (2020-08-18)
+
 ### In-place Editor
 
 #### New Features

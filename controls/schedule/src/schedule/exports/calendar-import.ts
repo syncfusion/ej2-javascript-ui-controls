@@ -21,7 +21,7 @@ export class ICalendarImport {
                 let iCalString: string = fileReader.result as string;
                 this.iCalendarParser(iCalString);
             };
-            fileReader.readAsText(fileContent as Blob, 'ISO-8859-8');
+            fileReader.readAsText(fileContent as Blob, 'UTF-8');
         } else if (fileContent && typeof fileContent === 'string') {
             this.iCalendarParser(fileContent);
         }

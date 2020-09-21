@@ -2678,8 +2678,14 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         } else if (!this.chartModule && this.displayOption.view !== 'Table') {
                             this.chartModule = new PivotChart();
                         }
+                    } else if (this.showToolbar && !isNullOrUndefined(newProp.displayOption) && newProp.displayOption.view) {
+                        this.currentView = (newProp.displayOption.view === 'Both' ?
+                            this.displayOption.primary : newProp.displayOption.view);
                     }
-                    this.notify(events.dataReady, {});
+                    let engine: any = this.dataType === 'pivot' ? this.engineModule : this.olapEngineModule;
+                    if (!isNullOrUndefined(engine.fieldList) || !isNullOrUndefined(engine.pivotValues)) {
+                        this.notify(events.dataReady, {});
+                    }
                     break;
                 case 'gridSettings':
                     this.lastGridSettings = newProp.gridSettings;
@@ -2700,11 +2706,16 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                             (newProp.chartSettings.chartSeries && Object.keys(newProp.chartSettings.chartSeries).indexOf('type') !== -1))) {
                         this.groupingBarModule.renderLayout();
                     }
-                    if (this.displayOption.view === 'Both' && isNullOrUndefined(this.chartModule)) {
+                    if (isNullOrUndefined(this.chartModule) && this.displayOption.view !== 'Table') {
                         this.chartModule = new PivotChart();
                     }
-                    this.chartModule.loadChart(this, this.chartSettings);
-                    this.notify(events.uiUpdate, this);
+                    let engineModule: any = this.dataType === 'pivot' ? this.engineModule : this.olapEngineModule;
+                    if (!isNullOrUndefined(this.chartModule) && !isNullOrUndefined(engineModule.pivotValues)) {
+                        this.chartModule.loadChart(this, this.chartSettings);
+                    }
+                    if (!isNullOrUndefined(engineModule.pivotValues) && !isNullOrUndefined(engineModule.fieldList)) {
+                        this.notify(events.uiUpdate, this);
+                    }
                     break;
                 case 'locale':
                 case 'currencyCode':
@@ -4119,7 +4130,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             }
             if (this.chart && ((this.showToolbar && this.currentView === 'Chart') || !this.showToolbar)) {
                 this.chart.width = (this.showToolbar && this.grid) ? this.getGridWidthAsNumber().toString() :
-                    this.getWidthAsNumber().toString();
+                    (this.displayOption.view === 'Both' && this.grid) ? this.getGridWidthAsNumber().toString() : this.getWidthAsNumber().toString();
                 if (this.displayOption.view === 'Chart' && this.showGroupingBar && this.groupingBarModule &&
                     this.element.querySelector('.' + cls.CHART_GROUPING_BAR_CLASS)) {
                     this.groupingBarModule.refreshUI();

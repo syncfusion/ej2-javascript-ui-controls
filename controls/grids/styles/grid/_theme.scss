@@ -485,6 +485,10 @@
         border-right: 0 $grid-header-border-color solid;
       }
     }
+
+    .e-ftrchk.e-chkfocus {
+      background-color: $grid-hover-bg-color;
+    }
   }
 
   .e-tooltip-wrap.e-griderror,

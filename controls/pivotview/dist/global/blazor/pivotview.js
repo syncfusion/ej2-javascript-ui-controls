@@ -22564,7 +22564,14 @@ var PivotView = /** @class */ (function (_super) {
                             this.chartModule = new PivotChart();
                         }
                     }
-                    this.notify(dataReady, {});
+                    else if (this.showToolbar && !sf.base.isNullOrUndefined(newProp.displayOption) && newProp.displayOption.view) {
+                        this.currentView = (newProp.displayOption.view === 'Both' ?
+                            this.displayOption.primary : newProp.displayOption.view);
+                    }
+                    var engine = this.dataType === 'pivot' ? this.engineModule : this.olapEngineModule;
+                    if (!sf.base.isNullOrUndefined(engine.fieldList) || !sf.base.isNullOrUndefined(engine.pivotValues)) {
+                        this.notify(dataReady, {});
+                    }
                     break;
                 case 'gridSettings':
                     this.lastGridSettings = newProp.gridSettings;
@@ -22585,11 +22592,16 @@ var PivotView = /** @class */ (function (_super) {
                             (newProp.chartSettings.chartSeries && Object.keys(newProp.chartSettings.chartSeries).indexOf('type') !== -1))) {
                         this.groupingBarModule.renderLayout();
                     }
-                    if (this.displayOption.view === 'Both' && sf.base.isNullOrUndefined(this.chartModule)) {
+                    if (sf.base.isNullOrUndefined(this.chartModule) && this.displayOption.view !== 'Table') {
                         this.chartModule = new PivotChart();
                     }
-                    this.chartModule.loadChart(this, this.chartSettings);
-                    this.notify(uiUpdate, this);
+                    var engineModule = this.dataType === 'pivot' ? this.engineModule : this.olapEngineModule;
+                    if (!sf.base.isNullOrUndefined(this.chartModule) && !sf.base.isNullOrUndefined(engineModule.pivotValues)) {
+                        this.chartModule.loadChart(this, this.chartSettings);
+                    }
+                    if (!sf.base.isNullOrUndefined(engineModule.pivotValues) && !sf.base.isNullOrUndefined(engineModule.fieldList)) {
+                        this.notify(uiUpdate, this);
+                    }
                     break;
                 case 'locale':
                 case 'currencyCode':
@@ -24024,7 +24036,7 @@ var PivotView = /** @class */ (function (_super) {
             }
             if (this.chart && ((this.showToolbar && this.currentView === 'Chart') || !this.showToolbar)) {
                 this.chart.width = (this.showToolbar && this.grid) ? this.getGridWidthAsNumber().toString() :
-                    this.getWidthAsNumber().toString();
+                    (this.displayOption.view === 'Both' && this.grid) ? this.getGridWidthAsNumber().toString() : this.getWidthAsNumber().toString();
                 if (this.displayOption.view === 'Chart' && this.showGroupingBar && this.groupingBarModule &&
                     this.element.querySelector('.' + CHART_GROUPING_BAR_CLASS)) {
                     this.groupingBarModule.refreshUI();
@@ -27229,7 +27241,7 @@ var PivotButton = /** @class */ (function () {
         else {
             engineModule = this.parent.engineModule;
         }
-        if (!sf.base.isNullOrUndefined(engineModule.fieldList) && engineModule.fieldList[field[i].name] !== undefined) {
+        if (engineModule.fieldList[field[i].name] !== undefined) {
             aggregation = engineModule.fieldList[field[i].name].aggregateType;
             if ((aggregation !== 'DistinctCount') && (engineModule.fieldList[field[i].name].type !== 'number' || engineModule.fieldList[field[i].name].type === 'include' ||
                 engineModule.fieldList[field[i].name].type === 'exclude')) {
@@ -27269,11 +27281,9 @@ var PivotButton = /** @class */ (function () {
         else {
             engineModule = this.parent.engineModule;
         }
-        if (!sf.base.isNullOrUndefined(engineModule.fieldList)) {
-            var fieldListItem = engineModule.fieldList[field[i].name];
-            if (fieldListItem.aggregateType !== 'CalculatedField' && this.validateDropdown(fieldListItem.type)) {
-                this.createSummaryType(buttonElement, field[i].name, field[i]);
-            }
+        var fieldListItem = engineModule.fieldList[field[i].name];
+        if (fieldListItem.aggregateType !== 'CalculatedField' && this.validateDropdown(fieldListItem.type)) {
+            this.createSummaryType(buttonElement, field[i].name, field[i]);
         }
     };
     PivotButton.prototype.validateDropdown = function (type) {
@@ -27396,7 +27406,7 @@ var PivotButton = /** @class */ (function () {
         else {
             engineModule = this.parent.engineModule;
         }
-        if (!this.parent.allowDeferLayoutUpdate && !sf.base.isNullOrUndefined(engineModule.fieldList)) {
+        if (!this.parent.allowDeferLayoutUpdate) {
             sortCLass = engineModule.fieldList[fieldName].sort === 'Descending' ? SORT_DESCEND_CLASS : '';
         }
         else {
@@ -27407,7 +27417,7 @@ var PivotButton = /** @class */ (function () {
                 }
             }
         }
-        if (!sf.base.isNullOrUndefined(engineModule.fieldList) && engineModule.fieldList[fieldName].sort === 'None') {
+        if (engineModule.fieldList[fieldName].sort === 'None') {
             spanElement = sf.base.createElement('span', {
                 attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('sort') },
                 className: ICON
@@ -27452,7 +27462,7 @@ var PivotButton = /** @class */ (function () {
         else {
             engineModule = this.parent.engineModule;
         }
-        if (!this.parent.allowDeferLayoutUpdate && !sf.base.isNullOrUndefined(engineModule.fieldList)) {
+        if (!this.parent.allowDeferLayoutUpdate) {
             engineModule.fieldList[fieldName].filter = engineModule.fieldList[fieldName].filter === null ?
                 [] : engineModule.fieldList[fieldName].filter;
             filterCLass = engineModule.fieldList[fieldName].filter.length === 0 ?
@@ -29237,7 +29247,7 @@ var PivotFieldList = /** @class */ (function (_super) {
                 if (this.captionData[lnt]) {
                     for (var _i = 0, _a = this.captionData[lnt]; _i < _a.length; _i++) {
                         var obj = _a[_i];
-                        if (obj && !sf.base.isNullOrUndefined(engineModule.fieldList)) {
+                        if (obj) {
                             if (engineModule.fieldList[obj.name]) {
                                 if (obj.caption) {
                                     engineModule.fieldList[obj.name].caption = obj.caption;

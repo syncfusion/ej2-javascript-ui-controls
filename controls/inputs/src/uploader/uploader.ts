@@ -1974,14 +1974,19 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
 
     private removeCompleted(e: Event, files:  FileInfo, customTemplate: boolean): void {
         let response: Object = e && e.currentTarget ? this.getResponse(e) : null;
-        let args : Object = {
+        let status : XMLHttpRequest = e.target as XMLHttpRequest;
+        if (status.readyState === 4 && status.status >= 200 && status.status <= 299 ) {
+            let args : Object = {
             e, response: response, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedSuccessMessage'), '2')
-        };
-        this.trigger('success', args);
-        this.removeFilesData(files, customTemplate);
-        let index: number = this.uploadedFilesData.indexOf(files);
-        this.uploadedFilesData.splice(index, 1);
-        this.trigger('change', { files: this.uploadedFilesData });
+            };
+            this.trigger('success', args);
+            this.removeFilesData(files, customTemplate);
+            let index: number = this.uploadedFilesData.indexOf(files);
+            this.uploadedFilesData.splice(index, 1);
+            this.trigger('change', { files: this.uploadedFilesData });
+        } else {
+            this.removeFailed(e, files, customTemplate);
+        }
     }
 
     private removeFailed(e: Event, files:  FileInfo, customTemplate: boolean): void {

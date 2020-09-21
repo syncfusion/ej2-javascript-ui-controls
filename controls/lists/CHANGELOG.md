@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.59 (2020-09-21)
+
+### ListView
+
+#### Bug Fixes
+
+- #293862 Issue with `Angular template throws console error` has been fixed.
+
 ## 18.2.48 (2020-08-04)
 
 ### Common

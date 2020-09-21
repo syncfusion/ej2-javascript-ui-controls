@@ -35056,6 +35056,8 @@ class Diagram extends Component {
                 if (!parentNode.isLane) {
                     this.nameTable[node.id].width = parentNode.wrapper.actualSize.width;
                     this.nameTable[node.id].height = parentNode.wrapper.actualSize.height;
+                    this.nameTable[node.id].offsetX = parentNode.wrapper.offsetX;
+                    this.nameTable[node.id].offsetY = parentNode.wrapper.offsetY;
                 }
                 if (parentNode.container !== undefined) {
                     childNode.offsetX = childNode.wrapper.offsetX;
@@ -38532,7 +38534,7 @@ class Diagram extends Component {
                 this.updatePorts(actualObject, node.flip);
             }
         }
-        if (node.rotateAngle !== undefined) {
+        if (node.rotateAngle !== undefined && (actualObject.constraints & NodeConstraints.Rotate)) {
             if (actualObject.children && rotate) {
                 this.commandHandler.rotateObjects(actualObject, [actualObject], actualObject.rotateAngle - actualObject.wrapper.rotateAngle, { x: actualObject.offsetX, y: actualObject.offsetY }, false);
             }
@@ -40532,7 +40534,13 @@ class PrintAndExport {
             bounds: bounds, margin: margin, region: region, scaleX: options[scaleX],
             scaleY: options[scaleY], scaleOffsetX: options[scaleOffsetX], scaleOffsetY: options[scaleOffsetY]
         }, customBounds);
-        let image = content = canvas.toDataURL();
+        let image;
+        if (options.format === 'JPG') {
+            image = content = canvas.toDataURL('image/jpeg');
+        }
+        else {
+            image = content = canvas.toDataURL();
+        }
         if (mode === 'Data') {
             return content;
         }
@@ -46522,7 +46530,7 @@ class UndoRedo {
         diagram.commandHandler.unGroup(node);
     }
     ignoreProperty(key) {
-        if (key === 'zIndex' || key === 'wrapper') {
+        if (key === 'zIndex' || key === 'wrapper' || key === 'parentObj' || key === 'controlParent') {
             return true;
         }
         return false;
@@ -52725,6 +52733,7 @@ class SymbolPalette extends Component {
                         };
                     }
                     else {
+                        this.initDraggable();
                         this.draggable.helper = this.helper;
                     }
                     break;

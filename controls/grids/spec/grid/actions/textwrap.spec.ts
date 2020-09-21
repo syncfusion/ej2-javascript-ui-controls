@@ -213,4 +213,39 @@ describe('auto wrap testing', () => {
 //             destroy(gridObj);
 //         });
 //     });
+
+describe('EJ2-42308: Resize handler height with auto wrap', () => {
+    let gridObj: Grid;
+    let actionComplete: (e?: Object) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data, allowPaging: false,
+                width:500,
+                allowResizing: true,
+                allowTextWrap: true,
+                textWrapSettings: { wrapMode: 'Header' },
+                columns: [{ field: 'OrderID', headerText: 'OrderID', width: 140 },
+                { field: 'About', headerText: 'About', width: 140, maxWidth: 300, minWidth: 200 },
+                { field: 'EmployeeID', headerText: 'Employee details example for checking the resize handlers', width: 130 },
+                { field: 'Freight', headerText: 'Freight', width: 150, allowResizing: false },
+                { field: 'ShipCity', headerText: 'ShipCity', width: 150 }
+                ]
+            }, done);
+    });
+
+    it('checking the resize handlers height', () => {
+        expect((gridObj.element.querySelector('.e-rhandler') as HTMLElement).style.height).toBe(
+            gridObj.getHeaderTable().querySelector('tr').offsetHeight + 'px');
+    });
+    it('checking the resize handlers height after dynamically disabling the textWrap property', () => {
+        gridObj.allowTextWrap = false;
+        expect((gridObj.element.querySelector('.e-rhandler') as HTMLElement).style.height).toBe(
+            gridObj.getHeaderTable().querySelector('tr').offsetHeight + 'px');
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});
 });

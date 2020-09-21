@@ -1731,7 +1731,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         }
         if (!argsData.cancel) {
             var elem = createElement('div', { id: this.element.id + 'parent_template' });
-            var templateElement = this.templateFn(this.data, null, null, elem.id + '_blazorTemplate', '');
+            var templateElement = this.templateFn(this.data, this, 'tooltipTemplate', elem.id + '_blazorTemplate', '');
             while (templateElement && templateElement.length > 0) {
                 if (isBlazor()) {
                     elem.appendChild(templateElement[0]);

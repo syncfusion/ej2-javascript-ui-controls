@@ -312,13 +312,14 @@ export class MonthEvent extends EventBase {
 
     public createAppointmentElement(record: { [key: string]: Object }, resIndex: number, isCloneElement: boolean = false): HTMLElement {
         let eventSubject: string = (record[this.fields.subject] || this.parent.eventSettings.fields.subject.default) as string;
+        let newRecord: { [key: string]: Object } = extend({}, record, record.data, true) as { [key: string]: Object };
         let appointmentWrapper: HTMLElement = createElement('div', {
             className: cls.APPOINTMENT_CLASS,
             attrs: {
                 'data-id': 'Appointment_' + record[this.fields.id],
                 'role': 'button', 'tabindex': '0',
                 'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
-                'aria-label': this.parent.getAnnocementString(record.data as { [key: string]: Object }, eventSubject)
+                'aria-label': this.parent.getAnnocementString(newRecord as { [key: string]: Object }, eventSubject)
             }
         });
         if (!isCloneElement) {

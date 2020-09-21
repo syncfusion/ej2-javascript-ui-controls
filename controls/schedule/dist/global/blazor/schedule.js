@@ -1542,7 +1542,11 @@ var KeyboardInteraction = /** @class */ (function () {
             pageUp: 'pageup',
             pageDown: 'pagedown',
             tab: 'tab',
-            shiftTab: 'shift+tab'
+            shiftTab: 'shift+tab',
+            altUpArrow: 'alt+uparrow',
+            altDownArrow: 'alt+downarrow',
+            altLeftArrow: 'alt+leftarrow',
+            altRightArrow: 'alt+rightarrow'
         };
         this.parent = parent;
         this.parent.element.tabIndex = this.parent.element.tabIndex === -1 ? 0 : this.parent.element.tabIndex;
@@ -1606,6 +1610,12 @@ var KeyboardInteraction = /** @class */ (function () {
                 break;
             case 'delete':
                 this.processDelete(e);
+                break;
+            case 'altUpArrow':
+            case 'altDownArrow':
+            case 'altLeftArrow':
+            case 'altRightArrow':
+                this.processAltNavigationArrows(e);
                 break;
             case 'escape':
                 this.processEscape();
@@ -2260,6 +2270,25 @@ var KeyboardInteraction = /** @class */ (function () {
                 return;
             }
             this.parent.quickPopup.deleteClick();
+        }
+    };
+    KeyboardInteraction.prototype.processAltNavigationArrows = function (e) {
+        if (this.parent.activeViewOptions.group.resources.length > 0 && document.activeElement.classList.contains(APPOINTMENT_CLASS)) {
+            var groupIndex = parseInt(document.activeElement.getAttribute('data-group-index'), 10);
+            var index = (e.action === 'altLeftArrow' || e.action === 'altUpArrow') ? groupIndex - 1 : groupIndex + 1;
+            index = index < 0 ? 0 : index > this.parent.resourceBase.lastResourceLevel.length ?
+                this.parent.resourceBase.lastResourceLevel.length : index;
+            var eventEle = [];
+            while (eventEle.length === 0 && index >= 0 && index <= this.parent.resourceBase.lastResourceLevel.length) {
+                eventEle = [].slice.call(this.parent.element.querySelectorAll("." + APPOINTMENT_CLASS + "[data-group-index=\"" + index + "\"]"));
+                index = (e.action === 'altLeftArrow' || e.action === 'altUpArrow') ? index - 1 : index + 1;
+            }
+            var nextAppEle = eventEle[0];
+            if (nextAppEle) {
+                this.parent.eventBase.removeSelectedAppointmentClass();
+                this.parent.eventBase.addSelectedAppointments([nextAppEle]);
+                nextAppEle.focus();
+            }
         }
     };
     KeyboardInteraction.prototype.processEscape = function () {
@@ -6232,13 +6261,14 @@ var MonthEvent = /** @class */ (function (_super) {
     MonthEvent.prototype.createAppointmentElement = function (record, resIndex, isCloneElement) {
         if (isCloneElement === void 0) { isCloneElement = false; }
         var eventSubject = (record[this.fields.subject] || this.parent.eventSettings.fields.subject.default);
+        var newRecord = sf.base.extend({}, record, record.data, true);
         var appointmentWrapper = sf.base.createElement('div', {
             className: APPOINTMENT_CLASS,
             attrs: {
                 'data-id': 'Appointment_' + record[this.fields.id],
                 'role': 'button', 'tabindex': '0',
                 'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
-                'aria-label': this.parent.getAnnocementString(record.data, eventSubject)
+                'aria-label': this.parent.getAnnocementString(newRecord, eventSubject)
             }
         });
         if (!isCloneElement) {
@@ -7989,16 +8019,34 @@ var QuickPopups = /** @class */ (function () {
         }
         var resourceValue = '';
         if (this.parent.activeViewOptions.group.resources.length === 0) {
-            var resourceCollection = this.parent.resourceBase.resourceCollection.slice(-1)[0];
-            var resourceData = resourceCollection.dataSource;
-            var resourceIndex = 0;
-            var eventData = args.event;
-            for (var i = 0, len = resourceData.length; i < len; i++) {
-                if (resourceData[i][resourceCollection.idField] === eventData[resourceCollection.field]) {
-                    resourceIndex = i;
+            var resourceCollection_1 = this.parent.resourceBase.resourceCollection.slice(-1)[0];
+            var resourceData = resourceCollection_1.dataSource;
+            if (type === 'event') {
+                var eventData = args.event;
+                var _loop_2 = function (data) {
+                    var resourceId = eventData[resourceCollection_1.field];
+                    if (resourceId instanceof Array) {
+                        if (resourceId.indexOf(data[resourceCollection_1.idField]) > -1) {
+                            var id_1 = resourceId[resourceId.indexOf(data[resourceCollection_1.idField])];
+                            var resource = resourceData.filter(function (e) {
+                                return e[resourceCollection_1.idField] === id_1;
+                            })[0];
+                            resourceValue += (resourceValue === '') ? resource[resourceCollection_1.textField] :
+                                ', ' + resource[resourceCollection_1.textField];
+                        }
+                    }
+                    else if (data[resourceCollection_1.idField] === resourceId) {
+                        resourceValue = data[resourceCollection_1.textField].toString();
+                    }
+                };
+                for (var _i = 0, resourceData_1 = resourceData; _i < resourceData_1.length; _i++) {
+                    var data = resourceData_1[_i];
+                    _loop_2(data);
                 }
             }
-            resourceValue = resourceData[resourceIndex][resourceCollection.textField];
+            else {
+                resourceValue = resourceData[0][resourceCollection_1.textField].toString();
+            }
         }
         else {
             if (type === 'event') {
@@ -11842,7 +11890,7 @@ var VirtualScroll = /** @class */ (function () {
         var _this = this;
         if (sf.base.isBlazor()) {
             clearTimeout(this.timeValue);
-            this.timeValue = setTimeout(function () { _this.triggerScrolling(); }, 250);
+            this.timeValue = window.setTimeout(function () { _this.triggerScrolling(); }, 250);
             this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
             this.previousTop = conWrap.scrollTop;
         }
@@ -15400,6 +15448,9 @@ var Schedule = /** @class */ (function (_super) {
         this.notify(documentClick, { event: args });
     };
     Schedule.prototype.onScheduleResize = function () {
+        if (sf.base.isNullOrUndefined(this.activeView)) {
+            return;
+        }
         if (this.quickPopup) {
             this.quickPopup.onClosePopup();
         }
@@ -15426,6 +15477,11 @@ var Schedule = /** @class */ (function (_super) {
     };
     /** @hidden */
     Schedule.prototype.getAnnocementString = function (event, subject) {
+        var resourceName;
+        if (this.quickPopup) {
+            var constantText = '"s event - ';
+            resourceName = this.quickPopup.getResourceText({ event: event }, 'event') + constantText;
+        }
         var recordSubject = (subject || (event[this.eventFields.subject] || this.eventSettings.fields.subject.default));
         var skeleton = sf.base.isBlazor() ? 'F' : 'full';
         var startDateText = this.globalize.formatDate(event[this.eventFields.startTime], {
@@ -15436,6 +15492,9 @@ var Schedule = /** @class */ (function (_super) {
         });
         var annocementString = recordSubject + ' ' + this.localeObj.getConstant('beginFrom') + ' '
             + startDateText + ' ' + this.localeObj.getConstant('endAt') + ' ' + endDateText;
+        if (resourceName) {
+            annocementString = resourceName + ' ' + annocementString;
+        }
         return annocementString;
     };
     /** @hidden */
@@ -23243,7 +23302,7 @@ var ICalendarImport = /** @class */ (function () {
                 var iCalString = fileReader_1.result;
                 _this.iCalendarParser(iCalString);
             };
-            fileReader_1.readAsText(fileContent, 'ISO-8859-8');
+            fileReader_1.readAsText(fileContent, 'UTF-8');
         }
         else if (fileContent && typeof fileContent === 'string') {
             this.iCalendarParser(fileContent);

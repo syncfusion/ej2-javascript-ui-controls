@@ -71,7 +71,7 @@ export class ColumnWidthService {
         }
     }
 
-    private setWidth(width: string | number, index: number, clear?: boolean): void {
+    public setWidth(width: string | number, index: number, clear?: boolean): void {
         let chrome: string = 'chrome';
         let webstore: string = 'webstore';
         if (typeof (width) === 'string' && width.indexOf('%') !== -1 &&
@@ -247,9 +247,10 @@ export class ColumnWidthService {
             this.setWidthToFrozenTable();
             this.setWidthToMovableTable();
         } else {
-            // if (this.parent.options.hasDetailTemplate) {
-            //     this.setColumnWidth(new Column({ width: '30px' }));
-            // }
+            if (this.parent.options.hasDetailTemplate) {
+                //this.setColumnWidth(new Column({ width: '30px' }));
+                this.setWidth('30', 0);
+            }
             (this.parent.getHeaderTable() as HTMLTableElement).style.width = tWidth;
             (this.parent.getContentTable() as HTMLTableElement).style.width = tWidth;
             if (this.parent.options.aggregatesCount != 0) {

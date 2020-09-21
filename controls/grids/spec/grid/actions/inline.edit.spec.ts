@@ -823,6 +823,9 @@ describe('Inline Editing module', () => {
                     expect((row.querySelector('#' + gridObj.element.id + 'CustomerID') as any).style.textAlign).toBe('right');
                     expect((row.querySelector('#' + gridObj.element.id + 'ShipCity') as any).style.textAlign).toBe('center');
                     expect((row.querySelector('#' + gridObj.element.id + 'ShipRegion') as any).style.textAlign).toBe('left');
+                    expect(row.querySelector('#' + gridObj.element.id + 'CustomerID').classList.contains('e-textbox')).toBeTruthy();
+                    expect(row.querySelector('#' + gridObj.element.id + 'ShipCity').classList.contains('e-textbox')).toBeTruthy();
+                    expect(row.querySelector('#' + gridObj.element.id + 'ShipRegion').classList.contains('e-textbox')).toBeTruthy();
                     done();
                 }
             };

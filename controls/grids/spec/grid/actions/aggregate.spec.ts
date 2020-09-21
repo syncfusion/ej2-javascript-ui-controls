@@ -1596,4 +1596,31 @@ describe('Aggregates Functionality testing', () => {
         });
     });
 
+    describe('EJ2-42438 - Footer aggregate aligment issue', () => {
+        let grid: Grid;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: data,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    ],
+                    aggregates: [{
+                        columns: [{
+                                type: 'Sum',
+                                field: 'OrderID',
+                                footerTemplate: '${Sum}'
+                            }]
+                    }]
+                },done);
+        });
+        it('checking without scroll', () => {
+            expect(grid.getFooterContent().classList.contains('e-footerpadding')).toBeFalsy();
+        });
+        afterAll(() => {
+            destroy(grid);
+            grid = null;
+        });
+    });
+
 });

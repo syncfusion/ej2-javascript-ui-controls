@@ -271,6 +271,7 @@ export class Resize implements IAction {
         this.parent.on(events.headerRefreshed, this.refreshHeight, this);
         this.parent.on(events.initialEnd, this.wireEvents, this);
         this.parent.on(events.contentReady, this.autoFit, this);
+        this.parent.on(events.refreshHandlers, this.refreshHeight, this);
     }
     /**
      * @hidden
@@ -281,6 +282,7 @@ export class Resize implements IAction {
         }
         this.parent.off(events.headerRefreshed, this.refreshHeight);
         this.parent.off(events.initialEnd, this.wireEvents);
+        this.parent.off(events.refreshHandlers, this.refreshHeight);
     }
     /**
      * @hidden

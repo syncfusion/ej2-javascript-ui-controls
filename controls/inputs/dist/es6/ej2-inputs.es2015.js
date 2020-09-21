@@ -8462,14 +8462,20 @@ let Uploader = class Uploader extends Component {
     }
     removeCompleted(e, files, customTemplate) {
         let response = e && e.currentTarget ? this.getResponse(e) : null;
-        let args = {
-            e, response: response, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedSuccessMessage'), '2')
-        };
-        this.trigger('success', args);
-        this.removeFilesData(files, customTemplate);
-        let index = this.uploadedFilesData.indexOf(files);
-        this.uploadedFilesData.splice(index, 1);
-        this.trigger('change', { files: this.uploadedFilesData });
+        let status = e.target;
+        if (status.readyState === 4 && status.status >= 200 && status.status <= 299) {
+            let args = {
+                e, response: response, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedSuccessMessage'), '2')
+            };
+            this.trigger('success', args);
+            this.removeFilesData(files, customTemplate);
+            let index = this.uploadedFilesData.indexOf(files);
+            this.uploadedFilesData.splice(index, 1);
+            this.trigger('change', { files: this.uploadedFilesData });
+        }
+        else {
+            this.removeFailed(e, files, customTemplate);
+        }
     }
     removeFailed(e, files, customTemplate) {
         let response = e && e.currentTarget ? this.getResponse(e) : null;

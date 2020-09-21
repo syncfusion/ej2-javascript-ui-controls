@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 18.2.59 (2020-09-21)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#F157258` - `updateRow` method works fine for updating collapsed data.
+
+## 18.2.58 (2020-09-15)
+
 ### TreeGrid
 
 #### Bug Fixes

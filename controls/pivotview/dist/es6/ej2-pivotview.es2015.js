@@ -21908,7 +21908,14 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                             this.chartModule = new PivotChart();
                         }
                     }
-                    this.notify(dataReady, {});
+                    else if (this.showToolbar && !isNullOrUndefined(newProp.displayOption) && newProp.displayOption.view) {
+                        this.currentView = (newProp.displayOption.view === 'Both' ?
+                            this.displayOption.primary : newProp.displayOption.view);
+                    }
+                    let engine = this.dataType === 'pivot' ? this.engineModule : this.olapEngineModule;
+                    if (!isNullOrUndefined(engine.fieldList) || !isNullOrUndefined(engine.pivotValues)) {
+                        this.notify(dataReady, {});
+                    }
                     break;
                 case 'gridSettings':
                     this.lastGridSettings = newProp.gridSettings;
@@ -21929,11 +21936,16 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                             (newProp.chartSettings.chartSeries && Object.keys(newProp.chartSettings.chartSeries).indexOf('type') !== -1))) {
                         this.groupingBarModule.renderLayout();
                     }
-                    if (this.displayOption.view === 'Both' && isNullOrUndefined(this.chartModule)) {
+                    if (isNullOrUndefined(this.chartModule) && this.displayOption.view !== 'Table') {
                         this.chartModule = new PivotChart();
                     }
-                    this.chartModule.loadChart(this, this.chartSettings);
-                    this.notify(uiUpdate, this);
+                    let engineModule = this.dataType === 'pivot' ? this.engineModule : this.olapEngineModule;
+                    if (!isNullOrUndefined(this.chartModule) && !isNullOrUndefined(engineModule.pivotValues)) {
+                        this.chartModule.loadChart(this, this.chartSettings);
+                    }
+                    if (!isNullOrUndefined(engineModule.pivotValues) && !isNullOrUndefined(engineModule.fieldList)) {
+                        this.notify(uiUpdate, this);
+                    }
                     break;
                 case 'locale':
                 case 'currencyCode':
@@ -23356,7 +23368,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             }
             if (this.chart && ((this.showToolbar && this.currentView === 'Chart') || !this.showToolbar)) {
                 this.chart.width = (this.showToolbar && this.grid) ? this.getGridWidthAsNumber().toString() :
-                    this.getWidthAsNumber().toString();
+                    (this.displayOption.view === 'Both' && this.grid) ? this.getGridWidthAsNumber().toString() : this.getWidthAsNumber().toString();
                 if (this.displayOption.view === 'Chart' && this.showGroupingBar && this.groupingBarModule &&
                     this.element.querySelector('.' + CHART_GROUPING_BAR_CLASS)) {
                     this.groupingBarModule.refreshUI();
@@ -26515,7 +26527,7 @@ class PivotButton {
         else {
             engineModule = this.parent.engineModule;
         }
-        if (!isNullOrUndefined(engineModule.fieldList) && engineModule.fieldList[field[i].name] !== undefined) {
+        if (engineModule.fieldList[field[i].name] !== undefined) {
             aggregation = engineModule.fieldList[field[i].name].aggregateType;
             if ((aggregation !== 'DistinctCount') && (engineModule.fieldList[field[i].name].type !== 'number' || engineModule.fieldList[field[i].name].type === 'include' ||
                 engineModule.fieldList[field[i].name].type === 'exclude')) {
@@ -26555,11 +26567,9 @@ class PivotButton {
         else {
             engineModule = this.parent.engineModule;
         }
-        if (!isNullOrUndefined(engineModule.fieldList)) {
-            let fieldListItem = engineModule.fieldList[field[i].name];
-            if (fieldListItem.aggregateType !== 'CalculatedField' && this.validateDropdown(fieldListItem.type)) {
-                this.createSummaryType(buttonElement, field[i].name, field[i]);
-            }
+        let fieldListItem = engineModule.fieldList[field[i].name];
+        if (fieldListItem.aggregateType !== 'CalculatedField' && this.validateDropdown(fieldListItem.type)) {
+            this.createSummaryType(buttonElement, field[i].name, field[i]);
         }
     }
     validateDropdown(type) {
@@ -26682,7 +26692,7 @@ class PivotButton {
         else {
             engineModule = this.parent.engineModule;
         }
-        if (!this.parent.allowDeferLayoutUpdate && !isNullOrUndefined(engineModule.fieldList)) {
+        if (!this.parent.allowDeferLayoutUpdate) {
             sortCLass = engineModule.fieldList[fieldName].sort === 'Descending' ? SORT_DESCEND_CLASS : '';
         }
         else {
@@ -26693,7 +26703,7 @@ class PivotButton {
                 }
             }
         }
-        if (!isNullOrUndefined(engineModule.fieldList) && engineModule.fieldList[fieldName].sort === 'None') {
+        if (engineModule.fieldList[fieldName].sort === 'None') {
             spanElement = createElement('span', {
                 attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('sort') },
                 className: ICON
@@ -26738,7 +26748,7 @@ class PivotButton {
         else {
             engineModule = this.parent.engineModule;
         }
-        if (!this.parent.allowDeferLayoutUpdate && !isNullOrUndefined(engineModule.fieldList)) {
+        if (!this.parent.allowDeferLayoutUpdate) {
             engineModule.fieldList[fieldName].filter = engineModule.fieldList[fieldName].filter === null ?
                 [] : engineModule.fieldList[fieldName].filter;
             filterCLass = engineModule.fieldList[fieldName].filter.length === 0 ?
@@ -28481,7 +28491,7 @@ let PivotFieldList = class PivotFieldList extends Component {
             while (lnt--) {
                 if (this.captionData[lnt]) {
                     for (let obj of this.captionData[lnt]) {
-                        if (obj && !isNullOrUndefined(engineModule.fieldList)) {
+                        if (obj) {
                             if (engineModule.fieldList[obj.name]) {
                                 if (obj.caption) {
                                     engineModule.fieldList[obj.name].caption = obj.caption;

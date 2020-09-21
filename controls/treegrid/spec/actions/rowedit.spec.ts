@@ -2558,3 +2558,40 @@ describe('Expand / Collapse Icon Issue when adding a new record', () => {
     destroy(gridObj);
   });
 }); 
+
+describe('Updaterow method with self reference data', () => {
+  let gridObj: TreeGrid;
+  let rows: Element[];
+  let actionComplete: ()=> void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: selfEditData,
+        idMapping: 'TaskID',
+        parentIdMapping: 'parentID',
+        treeColumnIndex: 1,
+        allowPaging:true,
+        pageSettings: {pageSize:10},
+        columns: [{field: 'TaskID', headerText: 'Task ID', isPrimaryKey: true},
+                  {field: 'TaskName', headerText: 'Task Name'},
+                  {field: 'StartDate', headerText: 'Start Date'},
+                  {field: 'Progress', headerText: 'Progress'}
+       ]
+      },     
+      done
+    );
+  });
+  it(' update row method', () => {
+    gridObj.updateRow(undefined,{TaskID:7, TaskName:"Changed"});
+    expect(gridObj.dataSource[7].TaskName=='Changed');
+    });
+    
+  it(' update row method with index value', () => {
+    gridObj.updateRow(1,{TaskID:2, TaskName:"test"});
+    expect(gridObj.dataSource[1].TaskName=='test');
+   });
+
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

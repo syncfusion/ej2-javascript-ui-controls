@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 18.2.58 (2020-09-15)
+
 ### Document Editor
 
 #### New Features

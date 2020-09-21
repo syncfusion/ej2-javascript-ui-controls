@@ -254,22 +254,23 @@ export class DateProcessor {
         this.parent.setRecordValue('duration', tDuration, ganttProperties, true);
         let col: GanttColumnModel = this.parent.columnByField[this.parent.columnMapping.duration];
         if (!isNullOrUndefined(this.parent.editModule) && !isNullOrUndefined(this.parent.editModule.cellEditModule) &&
-        !this.parent.editModule.cellEditModule.isCellEdit && !isNullOrUndefined(col.edit)
-         && !isNullOrUndefined(col.edit.read)) {
-            let dialog: HTMLElement = this.parent.editModule.dialogModule.dialog;
-            if (!isNullOrUndefined(dialog)) {
-                let textBox: TextBox = <TextBox>(<EJ2Instance>dialog.querySelector('#' + this.parent.element.id + 'Duration'))
-                .ej2_instances[0];
-                if (!isNullOrUndefined(textBox) && textBox.value !== tDuration.toString()) {
-                    textBox.value = tDuration.toString();
-                    textBox.dataBind();
+            !this.parent.editModule.cellEditModule.isCellEdit && !isNullOrUndefined(col)) {
+            if (!isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read)) {
+                let dialog: HTMLElement = this.parent.editModule.dialogModule.dialog;
+                if (!isNullOrUndefined(dialog)) {
+                    let textBox: TextBox = <TextBox>(<EJ2Instance>dialog.querySelector('#' + this.parent.element.id + 'Duration'))
+                        .ej2_instances[0];
+                    if (!isNullOrUndefined(textBox) && textBox.value !== tDuration.toString()) {
+                        textBox.value = tDuration.toString();
+                        textBox.dataBind();
+                    }
                 }
             }
-        }
-        if (this.parent.taskFields.duration) {
-            this.parent.dataOperation.updateMappingData(ganttData, 'duration');
-            if (this.parent.taskFields.durationUnit) {
-                this.parent.dataOperation.updateMappingData(ganttData, 'durationUnit');
+            if (this.parent.taskFields.duration) {
+                this.parent.dataOperation.updateMappingData(ganttData, 'duration');
+                if (this.parent.taskFields.durationUnit) {
+                    this.parent.dataOperation.updateMappingData(ganttData, 'durationUnit');
+                }
             }
         }
     }

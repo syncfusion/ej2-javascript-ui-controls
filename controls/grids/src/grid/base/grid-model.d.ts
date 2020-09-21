@@ -860,8 +860,8 @@ export interface GridModel extends ComponentModel{
 
     /**
      * Configures the filter settings of the Grid.  
-     * @default {columns: [], type: 'FilterBar', mode: 'Immediate', showFilterBarStatus: true, immediateModeDelay: 1500 , operators: {}} 
-     * {% codeBlock src='grid/filterSettings/index.md' %}{% endcodeBlock %}   
+     * {% codeBlock src='grid/filterSettings/index.md' %}{% endcodeBlock %} 
+     * @default {columns: [], type: 'FilterBar', mode: 'Immediate', showFilterBarStatus: true, immediateModeDelay: 1500 , operators: {}}   
      */
     filterSettings?: FilterSettingsModel;
 
@@ -1126,15 +1126,15 @@ export interface GridModel extends ComponentModel{
 
     /**
      * Gets or sets the number of frozen rows.
-     * @default 0
      * {% codeBlock src='grid/frozenRows/index.md' %}{% endcodeBlock %}
+     * @default 0
      */
     frozenRows?: number;
 
     /**
      * Gets or sets the number of frozen columns.
-     * @default 0
      * {% codeBlock src='grid/frozenColumns/index.md' %}{% endcodeBlock %}
+     * @default 0
      */
     frozenColumns?: number;
 

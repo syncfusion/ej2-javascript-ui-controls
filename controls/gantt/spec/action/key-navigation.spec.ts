@@ -74,7 +74,7 @@ describe('Gantt Selection support', () => {
         it('downArrow shortcut testing', () => {
             let args: any = { action: 'downArrow', preventDefault: preventDefault };
             ganttObj.keyboardModule.keyAction(args);
-            expect(oldRowIndex + 1).toBe(ganttObj.selectedRowIndex);
+            expect(oldRowIndex).toBe(ganttObj.selectedRowIndex);
         });
         it('home key testing', () => {
             let args: any = { action: 'home', preventDefault: preventDefault };

@@ -92783,11 +92783,11 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
      */
     resize(width, height) {
         if (this.element) {
-            if (isNullOrUndefined(height) && this.element) {
-                height = this.element.getBoundingClientRect().height;
+            if (isNullOrUndefined(height) && this.element && this.element.parentElement) {
+                height = this.element.parentElement.clientHeight;
             }
-            if (isNullOrUndefined(width) && this.element) {
-                width = this.element.getBoundingClientRect().width;
+            if (isNullOrUndefined(width) && this.element && this.element.parentElement) {
+                width = this.element.parentElement.clientWidth;
             }
             if (!isNullOrUndefined(width) && width > 200) {
                 this.width = width.toString();

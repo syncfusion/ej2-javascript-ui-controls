@@ -18620,7 +18620,7 @@ var Trendlines = /** @__PURE__ @class */ (function () {
         if (!this.gaussJordanElimination(matrix, trendline.polynomialSlopes)) {
             trendline.polynomialSlopes = null;
         }
-        pts = this.getPoints(trendline, points, xValues, yValues, series);
+        pts = this.getPoints(trendline, points, xValues, series);
         return pts;
     };
     /**
@@ -18688,14 +18688,16 @@ var Trendlines = /** @__PURE__ @class */ (function () {
     /**
      * Defines the points based on data point
      */
-    Trendlines.prototype.getPoints = function (trendline, points, xValues, yValues, series) {
-        var midPoint = Math.round((points.length / 2));
+    Trendlines.prototype.getPoints = function (trendline, points, xValues, series) {
         var polynomialSlopes = trendline.polynomialSlopes;
         var pts = [];
         var x1 = 1;
         var index = 1;
         var xValue;
         var yValue;
+        // We have to sort the points in ascending order. Because, the data source of the series may be random order.
+        points.sort(function (a, b) { return a.xValue - b.xValue; });
+        xValues.sort(function (a, b) { return a - b; });
         while (index <= polynomialSlopes.length) {
             if (index === 1) {
                 xValue = xValues[0] - trendline.backwardForecast;
@@ -26101,10 +26103,12 @@ function createScrollSvg(scrollbar, renderer) {
     }
     for (var _b = 0, _c = scrollbar.axis.series; _b < _c.length; _b++) {
         var tempSeries = _c[_b];
-        yMin = tempSeries.yMin.toString();
-        enablePadding = (tempSeries.yData).some(function (yData) {
-            return yData === yMin;
-        });
+        if (tempSeries.visible) { // To avoid the console error, when the visibility of the series is false.
+            yMin = tempSeries.yMin.toString();
+            enablePadding = (tempSeries.yData).some(function (yData) {
+                return yData === yMin;
+            });
+        }
         if (enablePadding) {
             break;
         }

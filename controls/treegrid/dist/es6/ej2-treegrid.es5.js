@@ -3996,9 +3996,14 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      */
     TreeGrid.prototype.updateRow = function (index, data) {
         if (this.grid.editModule) {
-            var griddata = this.grid.getCurrentViewRecords()[index];
-            extend(griddata, data);
-            this.grid.editModule.updateRow(index, griddata);
+            if (!isNullOrUndefined(index)) {
+                var griddata = this.grid.getCurrentViewRecords()[index];
+                extend(griddata, data);
+                this.grid.editModule.updateRow(index, griddata);
+            }
+            else {
+                this.grid.editModule.updateRow(index, data);
+            }
         }
     };
     /**
@@ -5650,7 +5655,8 @@ function editAction(details, control, isSelfReference, addRowIndex, selectedInde
             if (typeof (modifiedData[k][key]) === 'object') {
                 modifiedData[k] = modifiedData[k][key];
             }
-            var keys = Object.keys(modifiedData[k].taskData);
+            var keys = modifiedData[k].taskData ? Object.keys(modifiedData[k].taskData) :
+                Object.keys(modifiedData[k]);
             i = treeData.length;
             var _loop_1 = function () {
                 if (treeData[i][key] === modifiedData[k][key]) {
@@ -5684,7 +5690,10 @@ function editAction(details, control, isSelfReference, addRowIndex, selectedInde
                                     || (!isNullOrUndefined(batchChanges) && batchChanges[changedRecords].length === 0))
                                     || keys[j] === columnName)) {
                                     var editedData = getParentData(control, modifiedData[k].uniqueID);
-                                    editedData.taskData[keys[j]] = editedData[keys[j]] = treeData[i][keys[j]] = modifiedData[k][keys[j]];
+                                    treeData[i][keys[j]] = modifiedData[k][keys[j]];
+                                    if (editedData && editedData.taskData) {
+                                        editedData.taskData[keys[j]] = editedData[keys[j]] = treeData[i][keys[j]];
+                                    }
                                 }
                             }
                         }

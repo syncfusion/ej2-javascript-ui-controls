@@ -1203,7 +1203,7 @@ describe('Group', () => {
         });
         it("When child is added to a group", (done: Function) => {
         diagram.addChildToGroup(diagram.nodes[2], diagram.nodes[3]);
-        expect(diagram.nodes[2].height === 300 && diagram.nodes[2].width === 350).toBe(true);
+        expect(diagram.nodes[2].height === 300 && diagram.nodes[2].width === 350 && diagram.nodes[2].offsetX === 225 && diagram.nodes[2].offsetY === 200 ).toBe(true);
         done();
         });
     });

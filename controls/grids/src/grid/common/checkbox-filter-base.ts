@@ -1,6 +1,6 @@
 /* tslint:disable-next-line:max-line-length */
 import { EventHandler, L10n, isNullOrUndefined, extend, classList, addClass, removeClass, Browser, getValue, setValue, isBlazor } from '@syncfusion/ej2-base';
-import { parentsUntil, getUid, appendChildren, getDatePredicate, getObject, extendObjWithFn, eventPromise } from '../base/util';
+import { parentsUntil, getUid, appendChildren, getDatePredicate, getObject, extendObjWithFn, eventPromise, setChecked } from '../base/util';
 import { remove, debounce } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DataUtil, Query, DataManager, Predicate, Deferred, QueryOptions } from '@syncfusion/ej2-data';
@@ -95,12 +95,14 @@ export class CheckBoxFilterBase {
 
     private wireEvents(): void {
         EventHandler.add(this.dlg, 'click', this.clickHandler, this);
+        EventHandler.add(this.dlg, 'keyup', this.keyupHandler, this);
         this.searchHandler = debounce(this.searchBoxKeyUp, 200);
         EventHandler.add(this.dlg.querySelector('.e-searchinput'), 'keyup', this.searchHandler, this);
     }
 
     private unWireEvents(): void {
         EventHandler.remove(this.dlg, 'click', this.clickHandler);
+        EventHandler.remove(this.dlg, 'keyup', this.keyupHandler);
         let elem: Element = this.dlg.querySelector('.e-searchinput');
         if (elem) {
             EventHandler.remove(elem, 'keyup', this.searchHandler);
@@ -779,12 +781,28 @@ export class CheckBoxFilterBase {
             this.updateIndeterminatenBtn();
             (elem.querySelector('.e-chk-hidden') as HTMLElement).focus();
         }
+        this.setFocus(parentsUntil(elem, 'e-ftrchk'));
+    }
+
+    private keyupHandler(e: MouseEvent): void {
+        this.setFocus(parentsUntil(e.target as Element, 'e-ftrchk'));
+    }
+
+    private setFocus(elem?: Element): void {
+        let prevElem: Element = this.dlg.querySelector('.e-chkfocus');
+        if (prevElem) {
+            prevElem.classList.remove('e-chkfocus');
+        }
+        if (elem) {
+            elem.classList.add('e-chkfocus');
+        }
     }
 
     private updateAllCBoxes(checked: boolean): void {
         let cBoxes: Element[] = [].slice.call(this.cBox.querySelectorAll('.e-frame'));
         for (let cBox of cBoxes) {
             removeAddCboxClasses(cBox, checked);
+            setChecked(cBox.previousSibling as HTMLInputElement, checked);
         }
     }
 
@@ -798,6 +816,7 @@ export class CheckBoxFilterBase {
     private createCheckbox(value: string, checked: boolean, data: Object): Element {
         let elem: Element = checked ? this.cBoxTrue.cloneNode(true) as Element :
             this.cBoxFalse.cloneNode(true) as Element;
+        setChecked(elem.querySelector('input'), checked);
         let label: Element = elem.querySelector('.e-label');
         let dummyData: Object = extendObjWithFn({}, data, { column: this.options.column, parent: this.parent });
         label.innerHTML = !isNullOrUndefined(value) && value.toString().length ? value :
@@ -817,10 +836,15 @@ export class CheckBoxFilterBase {
         let selected: number = this.cBox.querySelectorAll('.e-check:not(.e-selectall)').length;
         let btn: Button = (<{ btnObj?: Button }>(this.dialogObj as DialogModel)).btnObj[0];
         btn.disabled = false;
+        let input: HTMLInputElement = elem.previousSibling as HTMLInputElement;
+        setChecked(input, false);
+        input.indeterminate = false;
         if (cnt === selected) {
             className = ['e-check'];
+            setChecked(input, true);
         } else if (selected) {
             className = ['e-stop'];
+            input.indeterminate = true;
         } else {
             className = ['e-uncheck'];
             btn.disabled = true;

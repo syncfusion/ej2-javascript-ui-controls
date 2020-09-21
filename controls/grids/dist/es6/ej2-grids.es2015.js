@@ -2,7 +2,7 @@ import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Drop
 import { DataManager, DataUtil, Deferred, Predicate, Query, UrlAdaptor } from '@syncfusion/ej2-data';
 import { Dialog, Tooltip, calculatePosition, calculateRelativeBasedPosition, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, RadioButton, Switch, createCheckBox } from '@syncfusion/ej2-buttons';
-import { FormValidator, Input, MaskedTextBox, NumericTextBox } from '@syncfusion/ej2-inputs';
+import { FormValidator, Input, MaskedTextBox, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { AutoComplete, ComboBox, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { DatePicker, DateTimePicker, TimePicker } from '@syncfusion/ej2-calendars';
 import { ContextMenu, Toolbar } from '@syncfusion/ej2-navigations';
@@ -778,6 +778,8 @@ const pdfAggregateQueryCellInfo = 'pdfAggregateQueryCellInfo';
 const excelAggregateQueryCellInfo = 'excelAggregateQueryCellInfo';
 /** @hidden */
 const beforeCheckboxRenderer = 'beforeCheckboxRenderer';
+/** @hidden */
+const refreshHandlers = 'refreshResizeHandlers';
 
 /**
  * Defines types of Cell
@@ -7365,6 +7367,7 @@ class Selection {
             let chkBox = row.querySelector('.e-checkselect');
             if (!isNullOrUndefined(chkBox)) {
                 removeAddCboxClasses(chkBox.nextElementSibling, chkState);
+                setChecked(chkBox, chkState);
                 if (isNullOrUndefined(this.checkedTarget) || (!isNullOrUndefined(this.checkedTarget)
                     && !this.checkedTarget.classList.contains('e-checkselectall'))) {
                     this.setCheckAllState(rowIndex);
@@ -9276,15 +9279,19 @@ class Selection {
                 checkedLen = this.selectedRowIndexes.length;
                 this.totalRecordsCount = this.getCurrentBatchRecordChanges().length;
             }
-            if (this.getCheckAllBox()) {
-                let spanEle = this.getCheckAllBox().nextElementSibling;
+            let input = this.getCheckAllBox();
+            if (input) {
+                let spanEle = input.nextElementSibling;
                 removeClass([spanEle], ['e-check', 'e-stop', 'e-uncheck']);
+                setChecked(input, false);
+                input.indeterminate = false;
                 if (checkToSelectAll || checkedLen === this.totalRecordsCount && this.totalRecordsCount
                     || ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
                         && !this.parent.allowPaging && !this.parent.getDataModule().isRemote()
                         && !(isBlazor() && this.parent.isServerRendered)
                         && checkedLen === this.getData().length)) {
                     addClass([spanEle], ['e-check']);
+                    setChecked(input, true);
                     if (isInteraction) {
                         this.getRenderer().setSelection(null, true, true);
                     }
@@ -9307,6 +9314,7 @@ class Selection {
                 else {
                     addClass([spanEle], ['e-stop']);
                     this.parent.checkAllRows = 'Intermediate';
+                    input.indeterminate = true;
                 }
                 if ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
                     && !this.parent.allowPaging && !this.parent.getDataModule().isRemote()) {
@@ -11515,7 +11523,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Get the properties to be maintained in the persisted state.
      * @return {string}
-     * {% codeBlock src='grid/grid/getPersistData/index.md' %}{% endcodeBlock %}
      */
     getPersistData() {
         let keyEntity = ['pageSettings', 'sortSettings',
@@ -11899,14 +11906,12 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * By default, grid shows the spinner for all its actions. You can use this method to show spinner at your needed time.
-     * {% codeBlock src='grid/grid/showSpinner/index.md' %}{% endcodeBlock %}
      */
     showSpinner() {
         showSpinner(this.element);
     }
     /**
      * Manually showed spinner needs to hide by `hideSpinnner`.
-     * {% codeBlock src='grid/grid/hideSpinner/index.md' %}{% endcodeBlock %}
      */
     hideSpinner() {
         hideSpinner(this.element);
@@ -12505,7 +12510,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets the visible columns from the Grid.
      * @return {Column[]}
      * @blazorType List<GridColumn>
-     * {% codeBlock src='grid/grid/getVisibleColumns/index.md' %}{% endcodeBlock %}
      */
     getVisibleColumns() {
         let cols = [];
@@ -12519,7 +12523,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the header div of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getHeaderContent/index.md' %}{% endcodeBlock %}
      */
     getHeaderContent() {
         return this.headerModule.getPanel();
@@ -12534,7 +12537,6 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Gets the content table of the Grid.
-     * {% codeBlock src='grid/grid/getContentTable/index.md' %}{% endcodeBlock %}
      * @return {Element}
      */
     getContentTable() {
@@ -12551,7 +12553,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the content div of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getContent/index.md' %}{% endcodeBlock %}
      */
     getContent() {
         return this.contentModule.getPanel();
@@ -12567,7 +12568,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the header table element of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getHeaderTable/index.md' %}{% endcodeBlock %}
      */
     getHeaderTable() {
         return this.headerModule.getTable();
@@ -12583,7 +12583,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the footer div of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getFooterContent/index.md' %}{% endcodeBlock %}
      */
     getFooterContent() {
         this.footerElement = this.element.getElementsByClassName('e-gridfooter')[0];
@@ -12592,7 +12591,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the footer table element of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getFooterContentTable/index.md' %}{% endcodeBlock %}
      */
     getFooterContentTable() {
         this.footerElement = this.element.getElementsByClassName('e-gridfooter')[0];
@@ -12601,7 +12599,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the pager of the Grid.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getPager/index.md' %}{% endcodeBlock %}
      */
     getPager() {
         return this.gridPager; //get element from pager
@@ -12618,7 +12615,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets a row by index.
      * @param  {number} index - Specifies the row index.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getRowByIndex/index.md' %}{% endcodeBlock %}
      */
     getRowByIndex(index) {
         return this.contentModule.getRowByIndex(index);
@@ -12627,7 +12623,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets a movable tables row by index.
      * @param  {number} index - Specifies the row index.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getMovableRowByIndex/index.md' %}{% endcodeBlock %}
      */
     getMovableRowByIndex(index) {
         return this.contentModule.getMovableRowByIndex(index);
@@ -12636,7 +12631,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets a frozen tables row by index.
      * @param  {number} index - Specifies the row index.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getFrozenRowByIndex/index.md' %}{% endcodeBlock %}
      */
     getFrozenRowByIndex(index) {
         return this.getFrozenDataRows()[index];
@@ -12644,7 +12638,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets all the data rows of the Grid.
      * @return {Element[]}
-     * {% codeBlock src='grid/grid/getRows/index.md' %}{% endcodeBlock %}
      */
     getRows() {
         return this.contentModule.getRowElements();
@@ -12653,7 +12646,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Get a row information based on cell
      * @param {Element}
      * @return RowInfo
-     * {% codeBlock src='grid/grid/getRowInfo/index.md' %}{% endcodeBlock %}
      */
     getRowInfo(target) {
         let ele = target;
@@ -12693,7 +12685,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the Grid's movable content rows from frozen grid.
      * @return {Element[]}
-     * {% codeBlock src='grid/grid/getMovableRows/index.md' %}{% endcodeBlock %}
      */
     getMovableRows() {
         return this.contentModule.getMovableRowElements();
@@ -12701,7 +12692,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets all the Grid's data rows.
      * @return {Element[]}
-     * {% codeBlock src='grid/grid/getDataRows/index.md' %}{% endcodeBlock %}
      */
     getDataRows() {
         if (isNullOrUndefined(this.getContentTable().querySelector('tbody'))) {
@@ -12741,7 +12731,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets all the Grid's movable table data rows.
      * @return {Element[]}
-     * {% codeBlock src='grid/grid/getMovableDataRows/index.md' %}{% endcodeBlock %}
      */
     getMovableDataRows() {
         let rows = [].slice.call(this.getContent().querySelector('.e-movablecontent').querySelector('tbody').children);
@@ -12755,7 +12744,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets all the Grid's frozen table data rows.
      * @return {Element[]}
-     * {% codeBlock src='grid/grid/getFrozenDataRows/index.md' %}{% endcodeBlock %}
      */
     getFrozenDataRows() {
         let rows = [].slice.call(this.getContent().querySelector('.e-frozencontent').querySelector('tbody').children);
@@ -12772,7 +12760,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param {string| number} key - Specifies the PrimaryKey value of dataSource.
      * @param {string } field - Specifies the field name which you want to update.
      * @param {string | number | boolean | Date} value - To update new value for the particular cell.
-     * {% codeBlock src='grid/grid/setCellValue/index.md' %}{% endcodeBlock %}
      */
     setCellValue(key, field, value) {
         let cells = 'cells';
@@ -12840,7 +12827,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * > Primary key column must be specified using `columns.isPrimaryKey` property.
      *  @param {string| number} key - Specifies the PrimaryKey value of dataSource.
      *  @param {Object} rowData - To update new data for the particular row.
-     * {% codeBlock src='grid/grid/setRowData/index.md' %}{% endcodeBlock %}
      */
     setRowData(key, rowData) {
         let rowuID = 'uid';
@@ -12872,7 +12858,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {number} rowIndex - Specifies the row index.
      * @param  {number} columnIndex - Specifies the column index.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getCellFromIndex/index.md' %}{% endcodeBlock %}
      */
     getCellFromIndex(rowIndex, columnIndex) {
         let frzCols = this.getFrozenColumns();
@@ -12885,7 +12870,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {number} rowIndex - Specifies the row index.
      * @param  {number} columnIndex - Specifies the column index.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getMovableCellFromIndex/index.md' %}{% endcodeBlock %}
      */
     getMovableCellFromIndex(rowIndex, columnIndex) {
         return this.getMovableDataRows()[rowIndex] &&
@@ -12895,7 +12879,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets a column header by column index.
      * @param  {number} index - Specifies the column index.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getColumnHeaderByIndex/index.md' %}{% endcodeBlock %}
      */
     getColumnHeaderByIndex(index) {
         return this.getHeaderTable().querySelectorAll('.e-headercell')[index];
@@ -12942,7 +12925,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets a column header by column name.
      * @param  {string} field - Specifies the column name.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getColumnHeaderByField/index.md' %}{% endcodeBlock %}
      */
     getColumnHeaderByField(field) {
         let column = this.getColumnByField(field);
@@ -12952,7 +12934,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets a column header by UID.
      * @param  {string} field - Specifies the column uid.
      * @return {Element}
-     * {% codeBlock src='grid/grid/getColumnHeaderByUid/index.md' %}{% endcodeBlock %}
      */
     getColumnHeaderByUid(uid) {
         let element = this.getHeaderContent().querySelector('[e-mappinguid=' + uid + ']');
@@ -12975,7 +12956,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {string} field - Specifies the column name.
      * @return {Column}
      * @blazorType GridColumn
-     * {% codeBlock src='grid/grid/getColumnByField/index.md' %}{% endcodeBlock %}
      */
     getColumnByField(field) {
         return iterateArrayOrObject(this.getColumns(), (item, index) => {
@@ -12989,7 +12969,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets a column index by column name.
      * @param  {string} field - Specifies the column name.
      * @return {number}
-     * {% codeBlock src='grid/grid/getColumnIndexByField/index.md' %}{% endcodeBlock %}
      */
     getColumnIndexByField(field) {
         let cols = this.getColumns();
@@ -13005,7 +12984,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {string} uid - Specifies the column UID.
      * @return {Column}
      * @blazorType GridColumn
-     * {% codeBlock src='grid/grid/getColumnByUid/index.md' %}{% endcodeBlock %}
      */
     getColumnByUid(uid) {
         return iterateArrayOrObject([...this.getColumns(), ...this.getStackedColumns(this.columns)], (item, index) => {
@@ -13031,7 +13009,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets a column index by UID.
      * @param  {string} uid - Specifies the column UID.
      * @return {number}
-     * {% codeBlock src='grid/grid/getColumnIndexByUid/index.md' %}{% endcodeBlock %}
      */
     getColumnIndexByUid(uid) {
         let index = iterateArrayOrObject(this.getColumns(), (item, index) => {
@@ -13046,7 +13023,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets UID by column name.
      * @param  {string} field - Specifies the column name.
      * @return {string}
-     * {% codeBlock src='grid/grid/getUidByColumnField/index.md' %}{% endcodeBlock %}
      */
     getUidByColumnField(field) {
         return iterateArrayOrObject(this.getColumns(), (item, index) => {
@@ -13091,7 +13067,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the collection of column fields.
      * @return {string[]}
-     * {% codeBlock src='grid/grid/getColumnFieldNames/index.md' %}{% endcodeBlock %}
      */
     getColumnFieldNames() {
         let columnNames = [];
@@ -13147,7 +13122,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Get the names of the primary key columns of the Grid.
      * @return {string[]}
-     * {% codeBlock src='grid/grid/getPrimaryKeyFieldNames/index.md' %}{% endcodeBlock %}
      */
     getPrimaryKeyFieldNames() {
         let keys = [];
@@ -13160,7 +13134,6 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Refreshes the Grid header and content.
-     * {% codeBlock src='grid/grid/refresh/index.md' %}{% endcodeBlock %}
      */
     refresh() {
         this.headerModule.refreshUI();
@@ -13169,7 +13142,6 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Refreshes the Grid header.
-     * {% codeBlock src='grid/grid/refreshHeader/index.md' %}{% endcodeBlock %}
      */
     refreshHeader() {
         this.headerModule.refreshUI();
@@ -13177,7 +13149,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the collection of selected rows.
      * @return {Element[]}
-     * {% codeBlock src='grid/grid/getSelectedRows/index.md' %}{% endcodeBlock %}
      */
     getSelectedRows() {
         return this.selectionModule ? this.selectionModule.selectedRecords : [];
@@ -13185,7 +13156,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the collection of selected row indexes.
      * @return {number[]}
-     * {% codeBlock src='grid/grid/getSelectedRowIndexes/index.md' %}{% endcodeBlock %}
      */
     getSelectedRowIndexes() {
         return this.selectionModule ? this.selectionModule.selectedRowIndexes : [];
@@ -13193,7 +13163,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the collection of selected row and cell indexes.
      * @return {number[]}
-     * {% codeBlock src='grid/grid/getSelectedRowCellIndexes/index.md' %}{% endcodeBlock %}
      */
     getSelectedRowCellIndexes() {
         return this.selectionModule ? this.selectionModule.selectedRowCellIndexes : [];
@@ -13202,7 +13171,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets the collection of selected records.
      * @return {Object[]}
      * @isGenericType true
-     * {% codeBlock src='grid/grid/getSelectedRecords/index.md' %}{% endcodeBlock %}
      */
     getSelectedRecords() {
         return this.selectionModule ? this.selectionModule.getSelectedRecords() : [];
@@ -13219,7 +13187,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {string|string[]} keys - Defines a single or collection of column names.
      * @param  {string} showBy - Defines the column key either as field name or header text.
      * @return {void}
-     * {% codeBlock src='grid/grid/showColumns/index.md' %}{% endcodeBlock %}
      */
     showColumns(keys, showBy) {
         showBy = showBy ? showBy : 'headerText';
@@ -13230,7 +13197,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {string|string[]} keys - Defines a single or collection of column names.
      * @param  {string} hideBy - Defines the column key either as field name or header text.
      * @return {void}
-     * {% codeBlock src='grid/grid/hideColumns/index.md' %}{% endcodeBlock %}
      */
     hideColumns(keys, hideBy) {
         hideBy = hideBy ? hideBy : 'headerText';
@@ -13295,7 +13261,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Navigates to the specified target page.
      * @param  {number} pageNo - Defines the page number to navigate.
      * @return {void}
-     * {% codeBlock src='grid/grid/goToPage/index.md' %}{% endcodeBlock %}
      */
     goToPage(pageNo) {
         if (this.pagerModule) {
@@ -13318,7 +13283,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param {SortDirection} direction - Defines the direction of sorting field.
      * @param {boolean} isMultiSort - Specifies whether the previous sorted columns are to be maintained.
      * @return {void}
-     * {% codeBlock src='grid/grid/sortColumn/index.md' %}{% endcodeBlock %}
      */
     sortColumn(columnName, direction, isMultiSort) {
         if (this.sortModule) {
@@ -13327,7 +13291,6 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Clears all the sorted columns of the Grid.
-     * {% codeBlock src='grid/grid/clearSorting/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     clearSorting() {
@@ -13359,7 +13322,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {string} actualFilterValue - Defines the actual filter value for the filter column.
      * @param  {string} actualOperator - Defines the actual filter operator for the filter column.
      * @return {void}
-     * {% codeBlock src='grid/grid/filterByColumn/index.md' %}{% endcodeBlock %}
      */
     filterByColumn(fieldName, filterOperator, filterValue, predicate, matchCase, ignoreAccent, actualFilterValue, actualOperator) {
         if (this.filterModule) {
@@ -13368,7 +13330,6 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Clears all the filtered rows of the Grid.
-     * {% codeBlock src='grid/grid/clearFiltering/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     clearFiltering(fields) {
@@ -13393,7 +13354,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {number} index - Defines the row index.
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.
      * @return {void}
-     * {% codeBlock src='grid/grid/selectRow/index.md' %}{% endcodeBlock %}
      */
     selectRow(index, isToggle) {
         if (this.selectionModule) {
@@ -13404,7 +13364,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Selects a collection of rows by indexes.
      * @param  {number[]} rowIndexes - Specifies the row indexes.
      * @return {void}
-     * {% codeBlock src='grid/grid/selectRows/index.md' %}{% endcodeBlock %}
      */
     selectRows(rowIndexes) {
         if (this.selectionModule) {
@@ -13413,7 +13372,6 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Deselects the current selected rows and cells.
-     * {% codeBlock src='grid/grid/clearSelection/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     clearSelection() {
@@ -13426,7 +13384,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {IIndex} cellIndex - Defines the row and column indexes.
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.
      * @return {void}
-     * {% codeBlock src='grid/grid/selectCell/index.md' %}{% endcodeBlock %}
      */
     selectCell(cellIndex, isToggle) {
         if (this.selectionModule) {
@@ -13438,7 +13395,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {IIndex} startIndex - Specifies the row and column's start index.
      * @param  {IIndex} endIndex - Specifies the row and column's end index.
      * @return {void}
-     * {% codeBlock src='grid/grid/selectCellsByRange/index.md' %}{% endcodeBlock %}
      */
     selectCellsByRange(startIndex, endIndex) {
         this.selectionModule.selectCellsByRange(startIndex, endIndex);
@@ -13449,7 +13405,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * [`searchSettings`](./#searchsettings/).
      * @param  {string} searchString - Defines the key.
      * @return {void}
-     * {% codeBlock src='grid/grid/search/index.md' %}{% endcodeBlock %}
      */
     search(searchString) {
         if (this.searchModule) {
@@ -13461,7 +13416,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * > You can customize print options using the
      * [`printMode`](./#printmode).
      * @return {void}
-     * {% codeBlock src='grid/grid/print/index.md' %}{% endcodeBlock %}
      */
     print() {
         if (this.printModule) {
@@ -13473,7 +13427,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * > `editSettings.allowDeleting` should be true.
      * @param {string} fieldname - Defines the primary key field, 'Name of the column'.
      * @param {Object} data - Defines the JSON data of the record to be deleted.
-     * {% codeBlock src='grid/grid/deleteRecord/index.md' %}{% endcodeBlock %}
      */
     deleteRecord(fieldname, data) {
         if (this.editModule) {
@@ -13484,7 +13437,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Starts edit the selected row. At least one row must be selected before invoking this method.
      * `editSettings.allowEditing` should be true.
      * @return {void}
-     * {% codeBlock src='grid/grid/startEdit/index.md' %}{% endcodeBlock %}
      */
     startEdit() {
         if (this.editModule) {
@@ -13493,7 +13445,6 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * If Grid is in editable state, you can save a record by invoking endEdit.
-     * {% codeBlock src='grid/grid/endEdit/index.md' %}{% endcodeBlock %}
      */
     endEdit() {
         if (this.editModule) {
@@ -13502,7 +13453,6 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Cancels edited state.
-     * {% codeBlock src='grid/grid/closeEdit/index.md' %}{% endcodeBlock %}
      */
     closeEdit() {
         if (this.editModule) {
@@ -13514,7 +13464,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * > `editSettings.allowEditing` should be true.
      * @param {Object} data - Defines the new add record data.
      * @param {number} index - Defines the row index to be added
-     * {% codeBlock src='grid/grid/addRecord/index.md' %}{% endcodeBlock %}
      */
     addRecord(data, index) {
         if (this.editModule) {
@@ -13524,7 +13473,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Delete any visible row by TR element.
      * @param {HTMLTableRowElement} tr - Defines the table row element.
-     * {% codeBlock src='grid/grid/deleteRow/index.md' %}{% endcodeBlock %}
      */
     deleteRow(tr) {
         if (this.editModule) {
@@ -13535,7 +13483,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Changes a particular cell into edited state based on the row index and field name provided in the `batch` mode.
      * @param {number} index - Defines row index to edit a particular cell.
      * @param {string} field - Defines the field name of the column to perform batch edit.
-     * {% codeBlock src='grid/grid/editCell/index.md' %}{% endcodeBlock %}
      */
     editCell(index, field) {
         if (this.editModule) {
@@ -13544,7 +13491,6 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Saves the cell that is currently edited. It does not save the value to the DataSource.
-     * {% codeBlock src='grid/grid/saveCell/index.md' %}{% endcodeBlock %}
      */
     saveCell() {
         if (this.editModule) {
@@ -13556,7 +13502,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param {number} rowIndex Defines the row index.
      * @param {string} field Defines the column field.
      * @param {string | number | boolean | Date} value - Defines the value to be changed.
-     * {% codeBlock src='grid/grid/updateCell/index.md' %}{% endcodeBlock %}
      */
     updateCell(rowIndex, field, value) {
         if (this.editModule) {
@@ -13567,7 +13512,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * To update the specified row by given values without changing into edited state.
      * @param {number} index Defines the row index.
      * @param {Object} data Defines the data object to be updated.
-     * {% codeBlock src='grid/grid/updateRow/index.md' %}{% endcodeBlock %}
      */
     updateRow(index, data) {
         if (this.editModule) {
@@ -13577,7 +13521,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the added, edited,and deleted data before bulk save to the DataSource in batch mode.
      * @return {Object}
-     * {% codeBlock src='grid/grid/getBatchChanges/index.md' %}{% endcodeBlock %}
      */
     getBatchChanges() {
         if (this.editModule) {
@@ -13590,7 +13533,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param {string[]} items - Defines the collection of itemID of ToolBar items.
      * @param {boolean} isEnable - Defines the items to be enabled or disabled.
      * @return {void}
-     * {% codeBlock src='grid/grid/enableToolbarItems/index.md' %}{% endcodeBlock %}
      */
     enableToolbarItems(items, isEnable) {
         if (this.toolbarModule) {
@@ -13600,7 +13542,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Copy the selected rows or cells data into clipboard.
      * @param {boolean} withHeader - Specifies whether the column header text needs to be copied along with rows or cells.
-     * {% codeBlock src='grid/grid/copy/index.md' %}{% endcodeBlock %}
      */
     copy(withHeader) {
         if (this.clipboardModule) {
@@ -13683,7 +13624,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {string} fromFName - Defines the origin field name.
      * @param  {string} toFName - Defines the destination field name.
      * @return {void}
-     * {% codeBlock src='grid/grid/reorderColumns/index.md' %}{% endcodeBlock %}
      */
     reorderColumns(fromFName, toFName) {
         if (this.reorderModule) {
@@ -13696,7 +13636,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {number} fromIndex - Defines the origin field index.
      * @param  {number} toIndex - Defines the destination field index.
      * @return {void}
-     * {% codeBlock src='grid/grid/reorderColumnByIndex/index.md' %}{% endcodeBlock %}
      */
     reorderColumnByIndex(fromIndex, toIndex) {
         if (this.reorderModule) {
@@ -13709,7 +13648,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {string} fieldName - Defines the field name.
      * @param  {number} toIndex - Defines the destination field index.
      * @return {void}
-     * {% codeBlock src='grid/grid/reorderColumnByTargetIndex/index.md' %}{% endcodeBlock %}
      */
     reorderColumnByTargetIndex(fieldName, toIndex) {
         if (this.reorderModule) {
@@ -13721,7 +13659,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {number} fromIndexes - Defines the origin Indexes.
      * @param  {number} toIndex - Defines the destination Index.
      * @return {void}
-     * {% codeBlock src='grid/grid/reorderRows/index.md' %}{% endcodeBlock %}
      */
     reorderRows(fromIndexes, toIndex) {
         if (this.rowDragAndDropModule) {
@@ -13776,7 +13713,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * </script>
      * ```
      *
-     * {% codeBlock src='grid/grid/autoFitColumns/index.md' %}{% endcodeBlock %}
      */
     autoFitColumns(fieldNames) {
         if (this.resizeModule) {
@@ -13960,6 +13896,9 @@ let Grid = Grid_1 = class Grid extends Component {
                     wrap(this.getContent(), false);
                     wrap(headerRows, false);
             }
+            if (this.textWrapSettings.wrapMode !== 'Content') {
+                this.notify(refreshHandlers, {});
+            }
         }
     }
     /**
@@ -13972,6 +13911,9 @@ let Grid = Grid_1 = class Grid extends Component {
         let headerRows = [].slice.call(this.element.querySelectorAll('.e-columnheader'));
         wrap(headerRows, false);
         wrap(this.getContent(), false);
+        if (this.textWrapSettings.wrapMode !== 'Content') {
+            this.notify(refreshHandlers, {});
+        }
     }
     /**
      * The function is used to add Tooltip to the grid cell that has ellipsiswithtooltip clip mode.
@@ -14220,7 +14162,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Get current visible data of grid.
      * @return {Object[]}
      * @isGenericType true
-     * {% codeBlock src='grid/grid/getCurrentViewRecords/index.md' %}{% endcodeBlock %}
      */
     getCurrentViewRecords() {
         if (isGroupAdaptive(this)) {
@@ -14447,7 +14388,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets the foreign columns from Grid.
      * @return {Column[]}
      * @blazorType List<GridColumn>
-     * {% codeBlock src='grid/grid/getForeignKeyColumns/index.md' %}{% endcodeBlock %}
      */
     getForeignKeyColumns() {
         return this.getColumns().filter((col) => {
@@ -14462,7 +14402,6 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Refreshes the Grid column changes.
-     * {% codeBlock src='grid/grid/refreshColumns/index.md' %}{% endcodeBlock %}
      */
     refreshColumns() {
         let fCnt = this.getContent().querySelector('.e-frozencontent');
@@ -14498,7 +14437,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
      * @blazorType void
-     * {% codeBlock src='grid/grid/excelExport/index.md' %}{% endcodeBlock %}
      */
     excelExport(excelExportProperties, isMultipleExport, 
     /* tslint:disable-next-line:no-any */
@@ -14518,7 +14456,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
      * @blazorType void
-     * {% codeBlock src='grid/grid/csvExport/index.md' %}{% endcodeBlock %}
      */
     csvExport(excelExportProperties, 
     /* tslint:disable-next-line:no-any */
@@ -14538,7 +14475,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
      * @blazorType void
-     * {% codeBlock src='grid/grid/pdfExport/index.md' %}{% endcodeBlock %}
      */
     pdfExport(pdfExportProperties, 
     /* tslint:disable-next-line:no-any */
@@ -14553,7 +14489,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Groups a column by column name.
      * @param  {string} columnName - Defines the column name to group.
      * @return {void}
-     * {% codeBlock src='grid/grid/groupColumn/index.md' %}{% endcodeBlock %}
      */
     groupColumn(columnName) {
         if (this.groupModule) {
@@ -14563,7 +14498,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Expands all the grouped rows of the Grid.
      * @return {void}
-     * {% codeBlock src='grid/grid/groupExpandAll/index.md' %}{% endcodeBlock %}
      */
     groupExpandAll() {
         if (this.groupModule) {
@@ -14573,7 +14507,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
     * Collapses all the grouped rows of the Grid.
     * @return {void}
-    * {% codeBlock src='grid/grid/groupCollapseAll/index.md' %}{% endcodeBlock %}
     */
     groupCollapseAll() {
         if (this.groupModule) {
@@ -14592,7 +14525,6 @@ let Grid = Grid_1 = class Grid extends Component {
     // }
     /**
      * Clears all the grouped columns of the Grid.
-     * {% codeBlock src='grid/grid/clearGrouping/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     clearGrouping() {
@@ -14604,7 +14536,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Ungroups a column by column name.
      * @param  {string} columnName - Defines the column name to ungroup.
      * @return {void}
-     * {% codeBlock src='grid/grid/ungroupColumn/index.md' %}{% endcodeBlock %}
      */
     ungroupColumn(columnName) {
         if (this.groupModule) {
@@ -14616,7 +14547,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {number} X - Defines the X axis.
      * @param  {number} Y - Defines the Y axis.
      * @return {void}
-     * {% codeBlock src='grid/grid/openColumnChooser/index.md' %}{% endcodeBlock %}
      */
     openColumnChooser(x, y) {
         if (this.columnChooserModule) {
@@ -14670,7 +14600,6 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Deselects the currently selected cells.
-     * {% codeBlock src='grid/grid/clearCellSelection/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     clearCellSelection() {
@@ -14680,7 +14609,6 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Deselects the currently selected rows.
-     * {% codeBlock src='grid/grid/clearRowSelection/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     clearRowSelection() {
@@ -14692,7 +14620,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Selects a collection of cells by row and column indexes.
      * @param  {ISelectedCell[]} rowCellIndexes - Specifies the row and column indexes.
      * @return {void}
-     * {% codeBlock src='grid/grid/selectCells/index.md' %}{% endcodeBlock %}
      */
     selectCells(rowCellIndexes) {
         if (this.selectionModule) {
@@ -14704,7 +14631,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {number} startIndex - Specifies the start row index.
      * @param  {number} endIndex - Specifies the end row index.
      * @return {void}
-     * {% codeBlock src='grid/grid/selectRowsByRange/index.md' %}{% endcodeBlock %}
      */
     selectRowsByRange(startIndex, endIndex) {
         if (this.selectionModule) {
@@ -14756,7 +14682,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Hides the scrollbar placeholder of Grid content when grid content is not overflown.
      * @return {void}
-     * {% codeBlock src='grid/grid/hideScroll/index.md' %}{% endcodeBlock %}
      */
     hideScroll() {
         let content = this.getContent().querySelector('.e-content');
@@ -14824,7 +14749,6 @@ let Grid = Grid_1 = class Grid extends Component {
      * Get all filtered records from the Grid and it returns array of objects for the local dataSource, returns a promise object if the Grid has remote data.
      * @return {Object[] | Promise<Object>}
      * @deprecated
-     * {% codeBlock src='grid/grid/getFilteredRecords/index.md' %}{% endcodeBlock %}
      */
     getFilteredRecords() {
         if (this.allowFiltering && this.filterSettings.columns.length) {
@@ -14936,7 +14860,6 @@ let Grid = Grid_1 = class Grid extends Component {
     * Gets the hidden columns from the Grid.
     * @return {Column[]}
     * @blazorType List<GridColumn>
-    * {% codeBlock src='grid/grid/getHiddenColumns/index.md' %}{% endcodeBlock %}
     */
     getHiddenColumns() {
         let cols = [];
@@ -14999,6 +14922,7 @@ let Grid = Grid_1 = class Grid extends Component {
      *To perform aggregate operation on a column.
      *@param  {AggregateColumnModel} summaryCol - Pass Aggregate Column details.
      *@param  {Object} summaryData - Pass JSON Array for which its field values to be calculated.
+     *
      * @deprecated
      */
     getSummaryValues(summaryCol, summaryData) {
@@ -15057,6 +14981,21 @@ let Grid = Grid_1 = class Grid extends Component {
                 }
             }
         }
+    }
+    /**
+     * @hidden
+     */
+    getHeight(height) {
+        if (!Number.isInteger(height) && height.indexOf('%') != -1) {
+            height = parseInt(height) / 100 * this.element.clientHeight;
+        }
+        else if (!Number.isInteger(height) && this.height !== 'auto') {
+            height = parseInt(height);
+        }
+        else {
+            height = this.height;
+        }
+        return height;
     }
 };
 __decorate$1([
@@ -16275,8 +16214,19 @@ function getZIndexCalcualtion(args, dialogObj) {
 /** @hidden */
 function toogleCheckbox(elem) {
     let span = elem.querySelector('.e-frame');
-    span.classList.contains('e-check') ? classList(span, ['e-uncheck'], ['e-check']) :
+    let input = span.previousSibling;
+    if (span.classList.contains('e-check')) {
+        input.checked = false;
+        classList(span, ['e-uncheck'], ['e-check']);
+    }
+    else {
+        input.checked = true;
         classList(span, ['e-check'], ['e-uncheck']);
+    }
+}
+/** @hidden */
+function setChecked(elem, checked) {
+    elem.checked = checked;
 }
 /** @hidden */
 function createCboxWithWrap(uid, elem, className) {
@@ -16723,11 +16673,13 @@ class CheckBoxFilterBase {
     }
     wireEvents() {
         EventHandler.add(this.dlg, 'click', this.clickHandler, this);
+        EventHandler.add(this.dlg, 'keyup', this.keyupHandler, this);
         this.searchHandler = debounce(this.searchBoxKeyUp, 200);
         EventHandler.add(this.dlg.querySelector('.e-searchinput'), 'keyup', this.searchHandler, this);
     }
     unWireEvents() {
         EventHandler.remove(this.dlg, 'click', this.clickHandler);
+        EventHandler.remove(this.dlg, 'keyup', this.keyupHandler);
         let elem = this.dlg.querySelector('.e-searchinput');
         if (elem) {
             EventHandler.remove(elem, 'keyup', this.searchHandler);
@@ -17366,11 +17318,25 @@ class CheckBoxFilterBase {
             this.updateIndeterminatenBtn();
             elem.querySelector('.e-chk-hidden').focus();
         }
+        this.setFocus(parentsUntil(elem, 'e-ftrchk'));
+    }
+    keyupHandler(e) {
+        this.setFocus(parentsUntil(e.target, 'e-ftrchk'));
+    }
+    setFocus(elem) {
+        let prevElem = this.dlg.querySelector('.e-chkfocus');
+        if (prevElem) {
+            prevElem.classList.remove('e-chkfocus');
+        }
+        if (elem) {
+            elem.classList.add('e-chkfocus');
+        }
     }
     updateAllCBoxes(checked) {
         let cBoxes = [].slice.call(this.cBox.querySelectorAll('.e-frame'));
         for (let cBox of cBoxes) {
             removeAddCboxClasses(cBox, checked);
+            setChecked(cBox.previousSibling, checked);
         }
     }
     dialogOpen() {
@@ -17382,6 +17348,7 @@ class CheckBoxFilterBase {
     createCheckbox(value, checked, data) {
         let elem = checked ? this.cBoxTrue.cloneNode(true) :
             this.cBoxFalse.cloneNode(true);
+        setChecked(elem.querySelector('input'), checked);
         let label = elem.querySelector('.e-label');
         let dummyData = extendObjWithFn({}, data, { column: this.options.column, parent: this.parent });
         label.innerHTML = !isNullOrUndefined(value) && value.toString().length ? value :
@@ -17400,11 +17367,16 @@ class CheckBoxFilterBase {
         let selected = this.cBox.querySelectorAll('.e-check:not(.e-selectall)').length;
         let btn = this.dialogObj.btnObj[0];
         btn.disabled = false;
+        let input = elem.previousSibling;
+        setChecked(input, false);
+        input.indeterminate = false;
         if (cnt === selected) {
             className = ['e-check'];
+            setChecked(input, true);
         }
         else if (selected) {
             className = ['e-stop'];
+            input.indeterminate = true;
         }
         else {
             className = ['e-uncheck'];
@@ -18307,7 +18279,7 @@ class ExcelFilterBase extends CheckBoxFilterBase {
                         obj[this.actObj.fields.value]) === index;
                 });
             },
-            value: fValue
+            text: fValue
         }, colObj.filter.params));
         if (dataSource && 'result' in dataSource) {
             let defObj = eventPromise({ requestType: 'stringfilterrequest' }, this.getQuery());
@@ -22241,6 +22213,7 @@ class Resize {
         this.parent.on(headerRefreshed, this.refreshHeight, this);
         this.parent.on(initialEnd, this.wireEvents, this);
         this.parent.on(contentReady, this.autoFit, this);
+        this.parent.on(refreshHandlers, this.refreshHeight, this);
     }
     /**
      * @hidden
@@ -22251,6 +22224,7 @@ class Resize {
         }
         this.parent.off(headerRefreshed, this.refreshHeight);
         this.parent.off(initialEnd, this.wireEvents);
+        this.parent.off(refreshHandlers, this.refreshHeight);
     }
     /**
      * @hidden
@@ -23231,6 +23205,7 @@ class RowDD {
         this.isOverflowBorder = true;
         this.selectedRowColls = [];
         this.isRefresh = true;
+        this.isReplaceDragEle = true;
         /* tslint:disable-next-line:max-line-length */
         // tslint:disable-next-line:max-func-body-length
         this.helper = (e) => {
@@ -23243,7 +23218,7 @@ class RowDD {
             let table = this.parent.createElement('table', { styles: 'width:' + gObj.element.offsetWidth });
             let tbody = this.parent.createElement('tbody');
             if (document.getElementsByClassName('e-griddragarea').length ||
-                (gObj.rowDropSettings.targetID && (!e.sender.target.classList.contains('e-selectionbackground')
+                (gObj.rowDropSettings.targetID && (!target.classList.contains('e-selectionbackground')
                     && gObj.selectionSettings.type !== 'Single')) ||
                 (!gObj.rowDropSettings.targetID && !parentsUntil(e.sender.target, 'e-rowdragdrop'))) {
                 return false;
@@ -23579,7 +23554,8 @@ class RowDD {
             helper: this.helper,
             dragStart: this.dragStart,
             drag: this.drag,
-            dragStop: this.dragStop
+            dragStop: this.dragStop,
+            isReplaceDragEle: this.isReplaceDragEle,
         });
     }
     updateScrollPostion(e, target) {
@@ -25895,7 +25871,7 @@ class Aggregate {
         this.footerRenderer.renderPanel();
         this.footerRenderer.renderTable();
         let footerContent = this.footerRenderer.getPanel();
-        if (this.parent.element.scrollHeight > this.parent.element.querySelector('.e-content').scrollHeight && footerContent) {
+        if (this.parent.element.scrollHeight >= this.parent.getHeight(this.parent.height) && footerContent) {
             addClass([footerContent], ['e-footerpadding']);
         }
         this.locator.register('footerRenderer', this.footerRenderer);
@@ -28527,14 +28503,17 @@ class DefaultEditCell {
     write(args) {
         let col = args.column;
         let isInline = this.parent.editSettings.mode !== 'Dialog';
-        let inputargs = {
+        this.obj = new TextBox(extend({
             element: args.element, floatLabelType: this.parent.editSettings.mode !== 'Dialog' ? 'Never' : 'Always',
-            properties: {
-                enableRtl: this.parent.enableRtl, enabled: isEditable(args.column, args.requestType, args.element),
-                placeholder: isInline ? '' : args.column.headerText
-            }
-        };
-        Input.createInput(inputargs, this.parent.createElement);
+            enableRtl: this.parent.enableRtl, enabled: isEditable(args.column, args.requestType, args.element),
+            placeholder: isInline ? '' : args.column.headerText,
+        }, col.edit.params));
+        this.obj.appendTo(args.element);
+    }
+    destroy() {
+        if (this.obj) {
+            this.obj.destroy();
+        }
     }
 }
 
@@ -38483,5 +38462,5 @@ class MaskedTextBoxCellEdit {
  * Export Grid components
  */
 
-export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, ResizeSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, AggregateTemplateType, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, getEditedDataIndex, eventPromise, getStateEventArgument, ispercentageWidth, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, exportDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, infiniteShowHide, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, infiniteEditHandler, initialCollapse, getAggregateQuery, closeFilterDialog, columnChooserCancelBtnClick, getFilterBarOperator, resetColumns, pdfAggregateQueryCellInfo, excelAggregateQueryCellInfo, beforeCheckboxRenderer, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, ResizeSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, AggregateTemplateType, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, setChecked, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, getEditedDataIndex, eventPromise, getStateEventArgument, ispercentageWidth, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, exportDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, infiniteShowHide, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, infiniteEditHandler, initialCollapse, getAggregateQuery, closeFilterDialog, columnChooserCancelBtnClick, getFilterBarOperator, resetColumns, pdfAggregateQueryCellInfo, excelAggregateQueryCellInfo, beforeCheckboxRenderer, refreshHandlers, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es2015.js.map

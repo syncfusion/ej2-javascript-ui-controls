@@ -1,6 +1,6 @@
 import { extend, merge, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { attributes, prepend, isVisible, append, addClass } from '@syncfusion/ej2-base';
-import { compile, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { compile } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 
 export let cssClass: ClassList = {
@@ -119,17 +119,22 @@ export namespace ListBase {
      * @param  {{[key:string]:Object}[]|string[]} dataSource - Specifies an array of JSON or String data.
      * @param  {ListBaseOptions} options? - Specifies the list options that need to provide.
      */
+
     export function createList(
         createElement: createElementParams, dataSource: { [key: string]: Object }[] | string[] | number[],
-        options?: ListBaseOptions, isSingleLevel?: boolean):
+        // tslint:disable-next-line
+        options?: ListBaseOptions, isSingleLevel?: boolean, componentInstance?: any):
         HTMLElement {
         let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
         let ariaAttributes: AriaAttributesMapping = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
         let type: string = typeofData(dataSource).typeof as string;
         if (type === 'string' || type === 'number') {
-            return createListFromArray(createElement, <string[] | number[]>dataSource, isSingleLevel, options);
+            return createListFromArray(createElement, <string[] | number[]>dataSource, isSingleLevel, options, componentInstance);
         } else {
-            return createListFromJson(createElement, <{ [key: string]: Object }[]>dataSource, options, ariaAttributes.level, isSingleLevel);
+            // tslint:disable-next-line
+            return createListFromJson(createElement, <{ [key: string]: Object }[]>dataSource, options,
+                // tslint:disable-next-line
+                 ariaAttributes.level, isSingleLevel, componentInstance);
         }
     }
 
@@ -139,8 +144,9 @@ export namespace ListBase {
      */
     export function createListFromArray(
         createElement: createElementParams, dataSource: string[] | number[],
-        isSingleLevel?: boolean, options?: ListBaseOptions): HTMLElement {
-        let subChild: HTMLElement[] = createListItemFromArray(createElement, dataSource, isSingleLevel, options);
+        // tslint:disable-next-line
+        isSingleLevel?: boolean, options?: ListBaseOptions, componentInstance?: any): HTMLElement {
+        let subChild: HTMLElement[] = createListItemFromArray(createElement, dataSource, isSingleLevel, options, componentInstance);
         return generateUL(createElement, subChild, null, options);
     }
 
@@ -150,7 +156,8 @@ export namespace ListBase {
      */
     export function createListItemFromArray(
         createElement: createElementParams, dataSource: string[] | number[],
-        isSingleLevel?: boolean, options?: ListBaseOptions): HTMLElement[] {
+        // tslint:disable-next-line
+        isSingleLevel?: boolean, options?: ListBaseOptions, componentInstance?: any): HTMLElement[] {
         let subChild: HTMLElement[] = [];
         let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
         cssClass = getModuleClass(curOpt.moduleName);
@@ -173,7 +180,7 @@ export namespace ListBase {
             if (isSingleLevel) {
                 li = generateSingleLevelLI(createElement, dataSource[i], undefined, null, null, [], null, id, i, options);
             } else {
-                li = generateLI(createElement, dataSource[i], undefined, null, null, options);
+                li = generateLI(createElement, dataSource[i], undefined, null, null, options, componentInstance);
             }
             if (curOpt.itemCreated && typeof curOpt.itemCreated === 'function') {
                 let curData: Object = {
@@ -198,9 +205,11 @@ export namespace ListBase {
      * @param  {ListBaseOptions} options? - Specifies the list options that need to provide.
      */
     // tslint:disable-next-line:max-func-body-length
+    // tslint:disable-next-line
     export function createListItemFromJson(
         createElement: createElementParams, dataSource: { [key: string]: Object }[],
-        options?: ListBaseOptions, level?: number, isSingleLevel?: boolean): HTMLElement[] {
+        // tslint:disable-next-line
+        options?: ListBaseOptions, level?: number, isSingleLevel?: boolean, componentInstance?: any): HTMLElement[] {
         let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
         cssClass = getModuleClass(curOpt.moduleName);
         let fields: FieldsMapping = extend({}, defaultMappedFields, curOpt.fields);
@@ -265,7 +274,7 @@ export namespace ListBase {
                     prepend(checkboxElement, li.firstElementChild);
                 }
             } else {
-                li = generateLI(createElement, curItem, fieldData, fields, curOpt.itemClass, options);
+                li = generateLI(createElement, curItem, fieldData, fields, curOpt.itemClass, options, componentInstance);
                 li.classList.add(cssClass.level + '-' + ariaAttributes.level);
                 li.setAttribute('aria-level', ariaAttributes.level.toString());
                 anchorElement = li.querySelector('.' + cssClass.anchorWrap);
@@ -337,9 +346,10 @@ export namespace ListBase {
      */
     export function createListFromJson(
         createElement: createElementParams, dataSource: { [key: string]: Object }[],
-        options?: ListBaseOptions, level?: number, isSingleLevel?: boolean): HTMLElement {
+        // tslint:disable-next-line
+        options?: ListBaseOptions, level?: number, isSingleLevel?: boolean, componentInstance?: any): HTMLElement {
         let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
-        let li: HTMLElement[] = createListItemFromJson(createElement, dataSource, options, level, isSingleLevel);
+        let li: HTMLElement[] = createListItemFromJson(createElement, dataSource, options, level, isSingleLevel, componentInstance);
         return generateUL(createElement, li, curOpt.listClass, options);
     }
 
@@ -547,7 +557,8 @@ export namespace ListBase {
      */
     export function renderContentTemplate(
         createElement: createElementParams, template: string, dataSource: { [key: string]: Object }[],
-        fields?: FieldsMapping, options?: ListBaseOptions, prop?: string): HTMLElement {
+        // tslint:disable-next-line
+        fields?: FieldsMapping, options?: ListBaseOptions, componentInstance?: any): HTMLElement {
         cssClass = getModuleClass(defaultListBaseOptions.moduleName);
         let ulElement: HTMLElement = createElement('ul', { className: cssClass.ul, attrs: { role: 'presentation' } });
         let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
@@ -583,9 +594,9 @@ export namespace ListBase {
             } else {
                 const currentID: string = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
                 if (isHeader) {
-                  append(compiledString(curItem, options, 'groupTemplate', currentID, !!curOpt.isStringTemplate), li);
+                    append(compiledString(curItem, componentInstance, 'headerTemplate', currentID, !!curOpt.isStringTemplate), li);
                 } else {
-                  append(compiledString(curItem, options, 'template', currentID, !!curOpt.isStringTemplate), li);
+                    append(compiledString(curItem, componentInstance, 'template', currentID, !!curOpt.isStringTemplate), li);
                 }
                 li.setAttribute('data-value', isNullOrUndefined(value) ? 'null' : value);
                 li.setAttribute('role', 'option');
@@ -613,11 +624,13 @@ export namespace ListBase {
      * @param  {FieldsMapping} fields - Specifies fields for mapping the dataSource.
      * @param  {Element[]} headerItems? - Specifies listbase header items.
      */
+    // tslint:disable-next-line
     export function renderGroupTemplate(
         groupTemplate: string,
         groupDataSource: { [key: string]: Object }[],
         fields: FieldsMapping,
-        headerItems: Element[], options?: ListBaseOptions): Element[] {
+        // tslint:disable-next-line
+        headerItems: Element[], options?: ListBaseOptions, componentInstance?: any): Element[] {
         let compiledString: Function = compile(groupTemplate);
         let curFields: FieldsMapping = extend({}, defaultMappedFields, fields);
         let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
@@ -629,7 +642,7 @@ export namespace ListBase {
             append(
                 compiledString(
                     headerData,
-                    options,
+                    componentInstance,
                     'groupTemplate',
                     curOpt.groupTemplateID,
                     !!curOpt.isStringTemplate),
@@ -775,11 +788,12 @@ export namespace ListBase {
         setAttribute(anchorTag, attr);
         return anchorTag;
     }
-
+    // tslint:disable-next-line
     /* tslint:disable:align */
     function generateLI(
         createElement: createElementParams, item: string | { [key: string]: Object } | number, fieldData: { [key: string]: Object },
-        fields: FieldsMapping, className?: string, options?: ListBaseOptions): HTMLElement {
+        // tslint:disable-next-line
+        fields: FieldsMapping, className?: string, options?: ListBaseOptions, prop?: string, componentInstance?: any): HTMLElement {
         let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
         let ariaAttributes: AriaAttributesMapping = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
         let text: string = <string>item;
@@ -789,13 +803,13 @@ export namespace ListBase {
         if (typeof item !== 'string' && typeof item !== 'number') {
             dataSource = <{ [key: string]: Object }>item;
             text = <string>fieldData[fields.text] || '';
-			// tslint:disable-next-line
+            // tslint:disable-next-line
             uID = (isNullOrUndefined(<string>fieldData['_id'])) ? <string>fieldData[fields.id] : <string>fieldData['_id'];
             grpLI = (item.hasOwnProperty('isHeader') && (item as { isHeader: Object } & { [key: string]: Object }).isHeader)
                 ? true : false;
         }
         if (options && options.enableHtmlSanitizer) {
-            text = SanitizeHtmlHelper.sanitize(text);
+            text = text;
         }
         let li: HTMLElement = createElement('li', {
             className: (grpLI === true ? cssClass.group : cssClass.li) + ' ' + (isNullOrUndefined(className) ? '' : className),
@@ -812,10 +826,10 @@ export namespace ListBase {
         }
         if (grpLI && options && options.groupTemplate) {
             let compiledString: Function = compile(options.groupTemplate);
-            append(compiledString(item, options, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
+            append(compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
         } else if (!grpLI && options && options.template) {
             let compiledString: Function = compile(options.template);
-            append(compiledString(item, options, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
+            append(compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
         } else {
             let innerDiv: HTMLElement = createElement('div', {
                 className: cssClass.textContent,
@@ -830,7 +844,7 @@ export namespace ListBase {
                     attrs: (ariaAttributes.itemText !== '' ? { role: ariaAttributes.itemText } : {})
                 });
                 if (options && options.enableHtmlSanitizer) {
-                    element.innerText = SanitizeHtmlHelper.sanitize(text);
+                    element.innerText = text;
                 } else {
                     element.innerHTML = text;
                 }

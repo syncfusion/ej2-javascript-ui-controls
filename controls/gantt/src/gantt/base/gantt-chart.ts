@@ -28,8 +28,10 @@ export class GanttChart {
     public isExpandCollapseFromChart: boolean = false;
     public isExpandAll: boolean = false;
     private focusedElement: HTMLElement;
+    public focusedRowIndex: number;
     private isGanttElement: boolean = false;
     public keyboardModule: KeyboardEvents;
+    public targetElement: Element;
     constructor(parent: Gantt) {
         this.parent = parent;
         this.chartTimelineContainer = null;
@@ -365,7 +367,7 @@ export class GanttChart {
      * This event triggered when click on taskbar element
      * @return {void}
      */
-    public onTaskbarClick(e: PointerEvent, target: EventTarget, taskbarElement: Element): void {
+    public onTaskbarClick(e: PointerEvent | KeyboardEventArgs, target: EventTarget, taskbarElement: Element): void {
         let chartRow: Node = closest(target as Element, 'tr');
         let rowIndex: number = getValue('rowIndex', chartRow);
         let data: IGanttData = this.getRecordByTarget(e);
@@ -497,7 +499,7 @@ export class GanttChart {
     /**
      * @private
      */
-    public getRecordByTarget(e: PointerEvent): IGanttData {
+    public getRecordByTarget(e: PointerEvent | KeyboardEventArgs): IGanttData {
         let ganttData: IGanttData;
         let row: Element = closest(e.target as Element, 'div.' + cls.taskBarMainContainer);
         if (!isNullOrUndefined(row)) {
@@ -821,6 +823,13 @@ export class GanttChart {
             return;
         }
         let $target: Element = isInEditedState ? (e.target as Element).closest('.e-rowcell') : e.target as Element;
+        if ($target.closest('.e-rowcell') || $target.closest('.e-chart-row')) {
+            this.parent.focusModule.setActiveElement($target as HTMLElement);
+        }
+        /* tslint:disable-next-line:no-any */
+        this.focusedRowIndex = $target.closest('.e-rowcell') ? ($target.parentElement as any).rowIndex :
+        /* tslint:disable-next-line:no-any */
+            $target.closest('.e-chart-row') ? ($target.closest('.e-chart-row') as any).rowIndex : -1;
         let isTab: boolean = (e.action === 'tab') ? true : false;
         let nextElement: Element | string = this.getNextElement($target, isTab);
         if (nextElement === 'noNextRow') {
@@ -856,6 +865,7 @@ export class GanttChart {
                     } else {
                         this.manageFocus(nextElement as HTMLElement, 'add', true);
                     }
+                    this.parent.focusModule.setActiveElement(nextElement as HTMLElement);
                 }
             }
         }
@@ -962,11 +972,12 @@ export class GanttChart {
     }
     /**
      * Add/Remove active element.
+     * @private
      * @param element 
      * @param focus 
      * @param isChartElement 
      */
-    private manageFocus(element: HTMLElement, focus: string, isChartElement?: boolean): void {
+    public manageFocus(element: HTMLElement, focus: string, isChartElement?: boolean): void {
         if (isChartElement) {
             let childElement: Element = null;
             if (element.classList.contains('e-left-label-container') ||
@@ -976,7 +987,8 @@ export class GanttChart {
                 /* tslint:disable-next-line:no-any */
                 let rowIndex: number = (closest(element, '.e-chart-row') as any).rowIndex;
                 let data: IGanttData = this.parent.currentViewData[rowIndex];
-                let className: string = data.hasChildRecords ? 'e-gantt-parent-taskbar' :
+                let className: string = data.hasChildRecords ? data.ganttProperties.isAutoSchedule ? 'e-gantt-parent-taskbar' :
+                'e-manualparent-main-container' :
                     data.ganttProperties.isMilestone ? 'e-gantt-milestone' : 'e-gantt-child-taskbar';
                 childElement = element.getElementsByClassName(className)[0];
             }

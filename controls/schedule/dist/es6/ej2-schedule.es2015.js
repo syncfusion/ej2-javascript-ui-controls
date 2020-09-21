@@ -1543,7 +1543,11 @@ class KeyboardInteraction {
             pageUp: 'pageup',
             pageDown: 'pagedown',
             tab: 'tab',
-            shiftTab: 'shift+tab'
+            shiftTab: 'shift+tab',
+            altUpArrow: 'alt+uparrow',
+            altDownArrow: 'alt+downarrow',
+            altLeftArrow: 'alt+leftarrow',
+            altRightArrow: 'alt+rightarrow'
         };
         this.parent = parent;
         this.parent.element.tabIndex = this.parent.element.tabIndex === -1 ? 0 : this.parent.element.tabIndex;
@@ -1607,6 +1611,12 @@ class KeyboardInteraction {
                 break;
             case 'delete':
                 this.processDelete(e);
+                break;
+            case 'altUpArrow':
+            case 'altDownArrow':
+            case 'altLeftArrow':
+            case 'altRightArrow':
+                this.processAltNavigationArrows(e);
                 break;
             case 'escape':
                 this.processEscape();
@@ -2255,6 +2265,25 @@ class KeyboardInteraction {
                 return;
             }
             this.parent.quickPopup.deleteClick();
+        }
+    }
+    processAltNavigationArrows(e) {
+        if (this.parent.activeViewOptions.group.resources.length > 0 && document.activeElement.classList.contains(APPOINTMENT_CLASS)) {
+            let groupIndex = parseInt(document.activeElement.getAttribute('data-group-index'), 10);
+            let index = (e.action === 'altLeftArrow' || e.action === 'altUpArrow') ? groupIndex - 1 : groupIndex + 1;
+            index = index < 0 ? 0 : index > this.parent.resourceBase.lastResourceLevel.length ?
+                this.parent.resourceBase.lastResourceLevel.length : index;
+            let eventEle = [];
+            while (eventEle.length === 0 && index >= 0 && index <= this.parent.resourceBase.lastResourceLevel.length) {
+                eventEle = [].slice.call(this.parent.element.querySelectorAll(`.${APPOINTMENT_CLASS}[data-group-index="${index}"]`));
+                index = (e.action === 'altLeftArrow' || e.action === 'altUpArrow') ? index - 1 : index + 1;
+            }
+            let nextAppEle = eventEle[0];
+            if (nextAppEle) {
+                this.parent.eventBase.removeSelectedAppointmentClass();
+                this.parent.eventBase.addSelectedAppointments([nextAppEle]);
+                nextAppEle.focus();
+            }
         }
     }
     processEscape() {
@@ -6080,13 +6109,14 @@ class MonthEvent extends EventBase {
     }
     createAppointmentElement(record, resIndex, isCloneElement = false) {
         let eventSubject = (record[this.fields.subject] || this.parent.eventSettings.fields.subject.default);
+        let newRecord = extend({}, record, record.data, true);
         let appointmentWrapper = createElement('div', {
             className: APPOINTMENT_CLASS,
             attrs: {
                 'data-id': 'Appointment_' + record[this.fields.id],
                 'role': 'button', 'tabindex': '0',
                 'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
-                'aria-label': this.parent.getAnnocementString(record.data, eventSubject)
+                'aria-label': this.parent.getAnnocementString(newRecord, eventSubject)
             }
         });
         if (!isCloneElement) {
@@ -7798,14 +7828,26 @@ class QuickPopups {
         if (this.parent.activeViewOptions.group.resources.length === 0) {
             let resourceCollection = this.parent.resourceBase.resourceCollection.slice(-1)[0];
             let resourceData = resourceCollection.dataSource;
-            let resourceIndex = 0;
-            let eventData = args.event;
-            for (let i = 0, len = resourceData.length; i < len; i++) {
-                if (resourceData[i][resourceCollection.idField] === eventData[resourceCollection.field]) {
-                    resourceIndex = i;
+            if (type === 'event') {
+                let eventData = args.event;
+                for (let data of resourceData) {
+                    let resourceId = eventData[resourceCollection.field];
+                    if (resourceId instanceof Array) {
+                        if (resourceId.indexOf(data[resourceCollection.idField]) > -1) {
+                            let id = resourceId[resourceId.indexOf(data[resourceCollection.idField])];
+                            let resource = resourceData.filter((e) => e[resourceCollection.idField] === id)[0];
+                            resourceValue += (resourceValue === '') ? resource[resourceCollection.textField] :
+                                ', ' + resource[resourceCollection.textField];
+                        }
+                    }
+                    else if (data[resourceCollection.idField] === resourceId) {
+                        resourceValue = data[resourceCollection.textField].toString();
+                    }
                 }
             }
-            resourceValue = resourceData[resourceIndex][resourceCollection.textField];
+            else {
+                resourceValue = resourceData[0][resourceCollection.textField].toString();
+            }
         }
         else {
             if (type === 'event') {
@@ -11571,7 +11613,7 @@ class VirtualScroll {
     beforeInvoke(resWrap, conWrap, eventWrap, timeIndicator) {
         if (isBlazor()) {
             clearTimeout(this.timeValue);
-            this.timeValue = setTimeout(() => { this.triggerScrolling(); }, 250);
+            this.timeValue = window.setTimeout(() => { this.triggerScrolling(); }, 250);
             this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
             this.previousTop = conWrap.scrollTop;
         }
@@ -14832,6 +14874,9 @@ let Schedule = class Schedule extends Component {
         this.notify(documentClick, { event: args });
     }
     onScheduleResize() {
+        if (isNullOrUndefined(this.activeView)) {
+            return;
+        }
         if (this.quickPopup) {
             this.quickPopup.onClosePopup();
         }
@@ -14858,6 +14903,11 @@ let Schedule = class Schedule extends Component {
     }
     /** @hidden */
     getAnnocementString(event, subject) {
+        let resourceName;
+        if (this.quickPopup) {
+            const constantText = '"s event - ';
+            resourceName = this.quickPopup.getResourceText({ event: event }, 'event') + constantText;
+        }
         let recordSubject = (subject || (event[this.eventFields.subject] || this.eventSettings.fields.subject.default));
         let skeleton = isBlazor() ? 'F' : 'full';
         let startDateText = this.globalize.formatDate(event[this.eventFields.startTime], {
@@ -14868,6 +14918,9 @@ let Schedule = class Schedule extends Component {
         });
         let annocementString = recordSubject + ' ' + this.localeObj.getConstant('beginFrom') + ' '
             + startDateText + ' ' + this.localeObj.getConstant('endAt') + ' ' + endDateText;
+        if (resourceName) {
+            annocementString = resourceName + ' ' + annocementString;
+        }
         return annocementString;
     }
     /** @hidden */
@@ -22336,7 +22389,7 @@ class ICalendarImport {
                 let iCalString = fileReader.result;
                 this.iCalendarParser(iCalString);
             };
-            fileReader.readAsText(fileContent, 'ISO-8859-8');
+            fileReader.readAsText(fileContent, 'UTF-8');
         }
         else if (fileContent && typeof fileContent === 'string') {
             this.iCalendarParser(fileContent);

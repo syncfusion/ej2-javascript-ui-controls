@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 18.2.59 (2020-09-21)
+
 ### Excel Export
 
 #### Bug Fixes

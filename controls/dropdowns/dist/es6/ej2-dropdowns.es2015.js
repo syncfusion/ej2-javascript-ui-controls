@@ -12797,6 +12797,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             this.list.classList.add('e-list-template');
         }
         this.list.classList.add('e-wrapper');
+        this.list.classList.add('e-lib');
         if (this.element.tagName === 'EJS-LISTBOX') {
             this.element.setAttribute('tabindex', '0');
             if (this.initLoad) {
@@ -12872,7 +12873,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         if (this.toolbarSettings.items.length) {
             let toolElem = this.createElement('div', { className: 'e-listbox-tool', attrs: { 'role': 'toolbar' } });
             let wrapper = this.createElement('div', {
-                className: 'e-listboxtool-wrapper e-' + pos.toLowerCase()
+                className: 'e-listboxtool-wrapper e-lib e-' + pos.toLowerCase()
             });
             this.list.parentElement.insertBefore(wrapper, this.list);
             wrapper.appendChild(pos === 'Right' ? this.list : toolElem);
@@ -14148,10 +14149,8 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                     fListBox.ulElement.removeChild(noRecElem);
                 }
             }
-            else {
-                moveTo(fListBox.ulElement, tListBox.ulElement, Array.apply(null, { length: fListBox.ulElement.childElementCount }).map(Number.call, Number), index);
-                this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
-            }
+            moveTo(fListBox.ulElement, tListBox.ulElement, Array.apply(null, { length: fListBox.ulElement.childElementCount }).map(Number.call, Number), index);
+            this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
         }
         if (isKey) {
             this.list.focus();

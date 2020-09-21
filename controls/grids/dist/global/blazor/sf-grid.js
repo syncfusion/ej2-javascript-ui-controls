@@ -1592,9 +1592,10 @@ var ColumnWidthService = /** @class */ (function () {
             this.setWidthToMovableTable();
         }
         else {
-            // if (this.parent.options.hasDetailTemplate) {
-            //     this.setColumnWidth(new Column({ width: '30px' }));
-            // }
+            if (this.parent.options.hasDetailTemplate) {
+                //this.setColumnWidth(new Column({ width: '30px' }));
+                this.setWidth('30', 0);
+            }
             this.parent.getHeaderTable().style.width = tWidth;
             this.parent.getContentTable().style.width = tWidth;
             if (this.parent.options.aggregatesCount != 0) {
@@ -1743,9 +1744,10 @@ var Resize = /** @class */ (function () {
         var calcTableWidth = tWidth + indentWidth;
         if (tWidth > 0 && !gObj.options.frozenColumns) {
             //TODO: why this?
-            // if (this.parent.options.hasDetailTemplate) {
-            //     this.widthService.setColumnWidth(new Column({ width: '30px' }));
-            // }
+            if (this.parent.options.hasDetailTemplate) {
+                //this.widthService.setColumnWidth(new Column({ width: '30px' }));
+                this.widthService.setWidth('30', 0);
+            }
             headerTable.style.width = sf.base.formatUnit(calcTableWidth);
             contentTable.style.width = sf.base.formatUnit(calcTableWidth);
             if (!sf.base.isNullOrUndefined(footerTable)) {
@@ -4978,6 +4980,7 @@ var SfGrid = /** @class */ (function () {
         sf.base.EventHandler.add(document, 'click', this.documentClickHandler, this);
         sf.base.EventHandler.add(this.element, 'keydown', this.gridKeyDownHandler, this);
         sf.base.EventHandler.add(this.element, 'keydown', this.keyDownHandler, this);
+        sf.base.EventHandler.add(document.body, 'keydown', this.documentKeyHandler, this);
     };
     SfGrid.prototype.unWireEvents = function () {
         sf.base.EventHandler.remove(this.element, 'mousedown', this.mouseDownHandler);
@@ -4985,6 +4988,7 @@ var SfGrid = /** @class */ (function () {
         sf.base.EventHandler.remove(document, 'click', this.documentClickHandler);
         sf.base.EventHandler.remove(this.element, 'keydown', this.gridKeyDownHandler);
         sf.base.EventHandler.remove(this.element, 'keydown', this.keyDownHandler);
+        sf.base.EventHandler.remove(document.body, 'keydown', this.documentKeyHandler);
     };
     SfGrid.prototype.setOptions = function (newOptions, options) {
         var oldOptions = sf.base.extend(options, {});
@@ -5024,6 +5028,14 @@ var SfGrid = /** @class */ (function () {
         var CCButton = parentsUntil(e.target, 'e-cc-toolbar');
         if (!popupElement && !(e.target.classList.contains('e-cc-cancel')) && !(e.target.classList.contains('e-choosercheck')) && !(e.target.classList.contains('e-fltrcheck')) && !(e.target.classList.contains('e-icon-filter')) && !CCButton && (this.element.querySelectorAll('.e-filter-popup.e-popup-open').length || this.element.querySelectorAll('.e-ccdlg.e-popup-open').length)) {
             this.dotNetRef.invokeMethodAsync('FilterPopupClose');
+        }
+    };
+    SfGrid.prototype.documentKeyHandler = function (e) {
+        //TODO: handle alt+w
+        // 74 - J
+        if (e.altKey && e.keyCode === 74 && !sf.base.isNullOrUndefined(this.element)) {
+            this.element.focus();
+            this.dotNetRef.invokeMethodAsync("GridFocus", e);
         }
     };
     SfGrid.prototype.keyDownHandler = function (e) {
@@ -5091,7 +5103,7 @@ var SfGrid = /** @class */ (function () {
             e.preventDefault(); //prevent user select on shift pressing during selection
         }
         // e.button = 2 for right mouse button click
-        if ((e.button !== 2 && parentsUntil(e.target, 'e-headercell')) || sf.base.closest(e.target, ".e-groupdroparea") || sf.base.closest(e.target, ".e-gridpopup")
+        if ((e.button !== 2 && parentsUntil(e.target, 'e-headercell')) || parentsUntil(e.target, 'e-detailrowexpand') || parentsUntil(e.target, 'e-detailrowcollapse') || sf.base.closest(e.target, ".e-groupdroparea") || sf.base.closest(e.target, ".e-gridpopup")
             || sf.base.closest(e.target, ".e-summarycell") || sf.base.closest(e.target, ".e-rhandler")
             || sf.base.closest(e.target, ".e-filtermenudiv") || sf.base.closest(e.target, ".e-filterbarcell")
             || sf.base.closest(e.target, ".e-groupcaption")) {
@@ -5283,8 +5295,10 @@ var Grid = {
             element.blazor__instance.filterModule.filterPopupRender(dlgID, uid, type, isColumnMenu);
         }
     },
-    autoFitColumns: function (element, fieldNames) {
+    autoFitColumns: function (element, columns, fieldNames) {
         if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            var instance = element.blazor__instance;
+            instance.options.columns = columns;
             element.blazor__instance.resizeModule.autoFitColumns(fieldNames);
         }
     },
@@ -5297,7 +5311,7 @@ var Grid = {
     },
     focus: function (element, rowuid, celluid, action) {
         var cell = element.querySelector("[data-uid=\"" + celluid + "\"]");
-        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance) && !sf.base.isNullOrUndefined(cell)) {
             var instance = element.blazor__instance;
             if (!instance.options.enableVirtualization) {
                 cell.focus();
@@ -5382,6 +5396,11 @@ var Grid = {
     copyToClipBoard: function (element, withHeader) {
         if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.clipboardModule.copy(withHeader);
+        }
+    },
+    gridFocus: function (element) {
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.focus();
         }
     }
 };

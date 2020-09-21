@@ -83,15 +83,20 @@ exports.cssClass = {
      * @param  {{[key:string]:Object}[]|string[]} dataSource - Specifies an array of JSON or String data.
      * @param  {ListBaseOptions} options? - Specifies the list options that need to provide.
      */
-    function createList(createElement, dataSource, options, isSingleLevel) {
+    function createList(createElement, dataSource, 
+    // tslint:disable-next-line
+    options, isSingleLevel, componentInstance) {
         var curOpt = sf.base.extend({}, defaultListBaseOptions, options);
         var ariaAttributes = sf.base.extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
         var type = typeofData(dataSource).typeof;
         if (type === 'string' || type === 'number') {
-            return createListFromArray(createElement, dataSource, isSingleLevel, options);
+            return createListFromArray(createElement, dataSource, isSingleLevel, options, componentInstance);
         }
         else {
-            return createListFromJson(createElement, dataSource, options, ariaAttributes.level, isSingleLevel);
+            // tslint:disable-next-line
+            return createListFromJson(createElement, dataSource, options, 
+            // tslint:disable-next-line
+            ariaAttributes.level, isSingleLevel, componentInstance);
         }
     }
     ListBase.createList = createList;
@@ -99,8 +104,10 @@ exports.cssClass = {
      * Function helps to created an element list based on string array input .
      * @param  {string[]} dataSource - Specifies an array of string data
      */
-    function createListFromArray(createElement, dataSource, isSingleLevel, options) {
-        var subChild = createListItemFromArray(createElement, dataSource, isSingleLevel, options);
+    function createListFromArray(createElement, dataSource, 
+    // tslint:disable-next-line
+    isSingleLevel, options, componentInstance) {
+        var subChild = createListItemFromArray(createElement, dataSource, isSingleLevel, options, componentInstance);
         return generateUL(createElement, subChild, null, options);
     }
     ListBase.createListFromArray = createListFromArray;
@@ -108,7 +115,9 @@ exports.cssClass = {
      * Function helps to created an element list based on string array input .
      * @param  {string[]} dataSource - Specifies an array of string data
      */
-    function createListItemFromArray(createElement, dataSource, isSingleLevel, options) {
+    function createListItemFromArray(createElement, dataSource, 
+    // tslint:disable-next-line
+    isSingleLevel, options, componentInstance) {
         var subChild = [];
         var curOpt = sf.base.extend({}, defaultListBaseOptions, options);
         exports.cssClass = getModuleClass(curOpt.moduleName);
@@ -131,7 +140,7 @@ exports.cssClass = {
                 li = generateSingleLevelLI(createElement, dataSource[i], undefined, null, null, [], null, id, i, options);
             }
             else {
-                li = generateLI(createElement, dataSource[i], undefined, null, null, options);
+                li = generateLI(createElement, dataSource[i], undefined, null, null, options, componentInstance);
             }
             if (curOpt.itemCreated && typeof curOpt.itemCreated === 'function') {
                 var curData = {
@@ -154,7 +163,10 @@ exports.cssClass = {
      * @param  {ListBaseOptions} options? - Specifies the list options that need to provide.
      */
     // tslint:disable-next-line:max-func-body-length
-    function createListItemFromJson(createElement, dataSource, options, level, isSingleLevel) {
+    // tslint:disable-next-line
+    function createListItemFromJson(createElement, dataSource, 
+    // tslint:disable-next-line
+    options, level, isSingleLevel, componentInstance) {
         var curOpt = sf.base.extend({}, defaultListBaseOptions, options);
         exports.cssClass = getModuleClass(curOpt.moduleName);
         var fields = sf.base.extend({}, ListBase.defaultMappedFields, curOpt.fields);
@@ -214,7 +226,7 @@ exports.cssClass = {
                 }
             }
             else {
-                li = generateLI(createElement, curItem, fieldData, fields, curOpt.itemClass, options);
+                li = generateLI(createElement, curItem, fieldData, fields, curOpt.itemClass, options, componentInstance);
                 li.classList.add(exports.cssClass.level + '-' + ariaAttributes.level);
                 li.setAttribute('aria-level', ariaAttributes.level.toString());
                 anchorElement = li.querySelector('.' + exports.cssClass.anchorWrap);
@@ -286,9 +298,11 @@ exports.cssClass = {
      * @param  {{[key:string]:Object}[]} dataSource - Specifies an array of JSON data.
      * @param  {ListBaseOptions} options? - Specifies the list options that need to provide.
      */
-    function createListFromJson(createElement, dataSource, options, level, isSingleLevel) {
+    function createListFromJson(createElement, dataSource, 
+    // tslint:disable-next-line
+    options, level, isSingleLevel, componentInstance) {
         var curOpt = sf.base.extend({}, defaultListBaseOptions, options);
-        var li = createListItemFromJson(createElement, dataSource, options, level, isSingleLevel);
+        var li = createListItemFromJson(createElement, dataSource, options, level, isSingleLevel, componentInstance);
         return generateUL(createElement, li, curOpt.listClass, options);
     }
     ListBase.createListFromJson = createListFromJson;
@@ -489,7 +503,9 @@ exports.cssClass = {
      * @param  {{[key:string]:Object}[]} dataSource - Specifies local JSON data source.
      * @param  {ListBaseOptions} options? - Specifies listbase option for fields.
      */
-    function renderContentTemplate(createElement, template, dataSource, fields, options, prop) {
+    function renderContentTemplate(createElement, template, dataSource, 
+    // tslint:disable-next-line
+    fields, options, componentInstance) {
         exports.cssClass = getModuleClass(defaultListBaseOptions.moduleName);
         var ulElement = createElement('ul', { className: exports.cssClass.ul, attrs: { role: 'presentation' } });
         var curOpt = sf.base.extend({}, defaultListBaseOptions, options);
@@ -526,10 +542,10 @@ exports.cssClass = {
             else {
                 var currentID = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
                 if (isHeader) {
-                    sf.base.append(compiledString(curItem, options, 'groupTemplate', currentID, !!curOpt.isStringTemplate), li);
+                    sf.base.append(compiledString(curItem, componentInstance, 'headerTemplate', currentID, !!curOpt.isStringTemplate), li);
                 }
                 else {
-                    sf.base.append(compiledString(curItem, options, 'template', currentID, !!curOpt.isStringTemplate), li);
+                    sf.base.append(compiledString(curItem, componentInstance, 'template', currentID, !!curOpt.isStringTemplate), li);
                 }
                 li.setAttribute('data-value', sf.base.isNullOrUndefined(value) ? 'null' : value);
                 li.setAttribute('role', 'option');
@@ -558,7 +574,10 @@ exports.cssClass = {
      * @param  {FieldsMapping} fields - Specifies fields for mapping the dataSource.
      * @param  {Element[]} headerItems? - Specifies listbase header items.
      */
-    function renderGroupTemplate(groupTemplate, groupDataSource, fields, headerItems, options) {
+    // tslint:disable-next-line
+    function renderGroupTemplate(groupTemplate, groupDataSource, fields, 
+    // tslint:disable-next-line
+    headerItems, options, componentInstance) {
         var compiledString = sf.base.compile(groupTemplate);
         var curFields = sf.base.extend({}, ListBase.defaultMappedFields, fields);
         var curOpt = sf.base.extend({}, defaultListBaseOptions, options);
@@ -568,7 +587,7 @@ exports.cssClass = {
             var headerData = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
-            sf.base.append(compiledString(headerData, options, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), header);
+            sf.base.append(compiledString(headerData, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), header);
         }
         return headerItems;
     }
@@ -700,8 +719,11 @@ exports.cssClass = {
         setAttribute(anchorTag, attr);
         return anchorTag;
     }
+    // tslint:disable-next-line
     /* tslint:disable:align */
-    function generateLI(createElement, item, fieldData, fields, className, options) {
+    function generateLI(createElement, item, fieldData, 
+    // tslint:disable-next-line
+    fields, className, options, prop, componentInstance) {
         var curOpt = sf.base.extend({}, defaultListBaseOptions, options);
         var ariaAttributes = sf.base.extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
         var text = item;
@@ -717,7 +739,7 @@ exports.cssClass = {
                 ? true : false;
         }
         if (options && options.enableHtmlSanitizer) {
-            text = sf.base.SanitizeHtmlHelper.sanitize(text);
+            text = text;
         }
         var li = createElement('li', {
             className: (grpLI === true ? exports.cssClass.group : exports.cssClass.li) + ' ' + (sf.base.isNullOrUndefined(className) ? '' : className),
@@ -733,11 +755,11 @@ exports.cssClass = {
         }
         if (grpLI && options && options.groupTemplate) {
             var compiledString = sf.base.compile(options.groupTemplate);
-            sf.base.append(compiledString(item, options, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
+            sf.base.append(compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
         }
         else if (!grpLI && options && options.template) {
             var compiledString = sf.base.compile(options.template);
-            sf.base.append(compiledString(item, options, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
+            sf.base.append(compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
         }
         else {
             var innerDiv = createElement('div', {
@@ -754,7 +776,7 @@ exports.cssClass = {
                     attrs: (ariaAttributes.itemText !== '' ? { role: ariaAttributes.itemText } : {})
                 });
                 if (options && options.enableHtmlSanitizer) {
-                    element.innerText = sf.base.SanitizeHtmlHelper.sanitize(text);
+                    element.innerText = text;
                 }
                 else {
                     element.innerHTML = text;

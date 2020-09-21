@@ -7552,6 +7552,10 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
                 element = intClosest;
             }
         }
+        /* istanbul ignore next */
+        if (this.isReplaceDragEle) {
+            element = this.currentStateCheck(evt.target, element);
+        }
         this.offset = this.calculateParentPosition(element);
         this.position = this.getMousePosition(evt, this.isDragScroll);
         var x = this.initialPosition.x - intCordinate.pageX;
@@ -7882,9 +7886,25 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
             this.helperElement.style.pointerEvents = prevStyle;
         }
         else {
-            ele = evt.target;
+            if (this.isReplaceDragEle) {
+                ele = this.currentStateCheck(evt.target);
+            }
+            else {
+                ele = evt.target;
+            }
         }
         return ele;
+    };
+    /* istanbul ignore next */
+    Draggable.prototype.currentStateCheck = function (ele, oldEle) {
+        var elem;
+        if (!isNullOrUndefined(this.currentStateTarget) && this.currentStateTarget !== ele) {
+            elem = this.currentStateTarget;
+        }
+        else {
+            elem = !isNullOrUndefined(oldEle) ? oldEle : ele;
+        }
+        return elem;
     };
     Draggable.prototype.getMousePosition = function (evt, isdragscroll) {
         /* tslint:disable no-any */
@@ -7981,6 +8001,9 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         Property()
     ], Draggable.prototype, "isDragScroll", void 0);
+    __decorate$2([
+        Property()
+    ], Draggable.prototype, "isReplaceDragEle", void 0);
     __decorate$2([
         Event$1()
     ], Draggable.prototype, "drag", void 0);

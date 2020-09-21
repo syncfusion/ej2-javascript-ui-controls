@@ -5480,7 +5480,7 @@ var CircularGauge = /** @class */ (function (_super) {
  * Circular Gauge component exported items
  */
 
-CircularGauge.Inject(GaugeTooltip, Annotations, Legend, Print, PdfExport, ImageExport, Gradient);
+CircularGauge.Inject(Print, PdfExport, GaugeTooltip, Annotations, Legend, ImageExport, Gradient);
 
 exports.CircularGauge = CircularGauge;
 exports.Annotations = Annotations;
