@@ -542,10 +542,18 @@ var ListBase;
             else {
                 var currentID = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
                 if (isHeader) {
-                    append(compiledString(curItem, componentInstance, 'headerTemplate', currentID, !!curOpt.isStringTemplate), li);
+                    // tslint:disable-next-line
+                    var compiledElement = compiledString(curItem, componentInstance, 'headerTemplate', currentID, !!curOpt.isStringTemplate, null, li);
+                    if (compiledElement) {
+                        append(compiledElement, li);
+                    }
                 }
                 else {
-                    append(compiledString(curItem, componentInstance, 'template', currentID, !!curOpt.isStringTemplate), li);
+                    // tslint:disable-next-line
+                    var compiledElement = compiledString(curItem, componentInstance, 'template', currentID, !!curOpt.isStringTemplate, null, li);
+                    if (compiledElement) {
+                        append(compiledElement, li);
+                    }
                 }
                 li.setAttribute('data-value', isNullOrUndefined(value) ? 'null' : value);
                 li.setAttribute('role', 'option');
@@ -587,7 +595,11 @@ var ListBase;
             var headerData = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
-            append(compiledString(headerData, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), header);
+            // tslint:disable-next-line
+            var compiledElement = compiledString(headerData, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate, null, header);
+            if (compiledElement) {
+                append(compiledElement, header);
+            }
         }
         return headerItems;
     }
@@ -598,7 +610,9 @@ var ListBase;
             .substring(1);
     }
     ListBase.generateId = generateId;
-    function processSubChild(createElement, fieldData, fields, ds, options, element, level) {
+    function processSubChild(createElement, fieldData, fields, ds, 
+    // tslint:disable-next-line
+    options, element, level) {
         // Get SubList
         var subDS = fieldData[fields.child] || [];
         var hasChildren = fieldData[fields.hasChildren];
@@ -723,7 +737,7 @@ var ListBase;
     /* tslint:disable:align */
     function generateLI(createElement, item, fieldData, 
     // tslint:disable-next-line
-    fields, className, options, prop, componentInstance) {
+    fields, className, options, componentInstance) {
         var curOpt = extend({}, defaultListBaseOptions, options);
         var ariaAttributes = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
         var text = item;
@@ -755,11 +769,19 @@ var ListBase;
         }
         if (grpLI && options && options.groupTemplate) {
             var compiledString = compile(options.groupTemplate);
-            append(compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
+            // tslint:disable-next-line
+            var compiledElement = compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate, null, li);
+            if (compiledElement) {
+                append(compiledElement, li);
+            }
         }
         else if (!grpLI && options && options.template) {
             var compiledString = compile(options.template);
-            append(compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
+            // tslint:disable-next-line
+            var compiledElement = compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate, null, li);
+            if (compiledElement) {
+                append(compiledElement, li);
+            }
         }
         else {
             var innerDiv = createElement('div', {
@@ -1169,9 +1191,17 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 if (this.headerTemplate) {
                     var compiledString = compile(this.headerTemplate);
                     var headerTemplateEle = this.createElement('div', { className: classNames.headerTemplateText });
-                    append(compiledString({}, this, prop, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
+                    // tslint:disable-next-line
+                    var compiledElement = compiledString({}, this, prop, this.LISTVIEW_HEADERTEMPLATE_ID, null, null, this.headerEle);
+                    if (compiledElement) {
+                        append(compiledElement, headerTemplateEle);
+                    }
                     append([headerTemplateEle], this.headerEle);
                     this.updateBlazorTemplates(false, true, true);
+                    // tslint:disable-next-line
+                    if (this.isReact) {
+                        this.renderReactTemplates();
+                    }
                 }
                 if (this.headerTemplate && this.headerTitle) {
                     textEle.classList.add('header');
@@ -1254,6 +1284,20 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ListView.prototype.preRender = function () {
+        if (this.template) {
+            try {
+                if (document.querySelectorAll(this.template).length) {
+                    this.template = document.querySelector(this.template).innerHTML.trim();
+                }
+            }
+            catch (e) {
+                compile(this.template);
+                // tslint:disable-next-line
+                if (this.isReact) {
+                    this.renderReactTemplates();
+                }
+            }
+        }
         this.listBaseOption = {
             template: this.template,
             headerTemplate: this.headerTemplate,
@@ -1319,6 +1363,10 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         this.removeElement(this.ulElement);
         this.removeElement(this.headerEle);
         this.removeElement(this.contentContainer);
+        // tslint:disable-next-line
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         this.curUL = this.ulElement = this.liCollection = this.headerEle = this.contentContainer = undefined;
     };
     ListView.prototype.renderCheckbox = function (args) {
@@ -2052,6 +2100,9 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 _this.localData = e.result;
                 if (!_this.isServerRendered || (!isBlazor())) {
                     listViewComponent.removeElement(listViewComponent.contentContainer);
+                    if (_this.isReact) {
+                        _this.clearTemplate();
+                    }
                 }
                 _this.renderList();
                 _this.trigger('actionComplete', e);
@@ -2084,6 +2135,9 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             this.removeElement(this.headerEle);
             this.removeElement(this.ulElement);
             this.removeElement(this.contentContainer);
+            if (this.isReact) {
+                this.clearTemplate();
+            }
             if (Object.keys(window).indexOf('ejsInterop') === -1) {
                 this.element.innerHTML = '';
             }
@@ -2264,6 +2318,10 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 }
                 else {
                     ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length, null, this);
+                    // tslint:disable-next-line
+                    if (this.isReact) {
+                        this.renderReactTemplates();
+                    }
                     var lists = ele.querySelectorAll('.' + classNames.listItem);
                     this.setAttributes(lists);
                     ele.setAttribute('pID', uID);
@@ -2306,6 +2364,10 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 this.contentContainer = this.createElement('div', { className: classNames.content });
                 this.element.appendChild(this.contentContainer);
                 this.renderIntoDom(this.ulElement);
+                // tslint:disable-next-line
+                if (this.isReact) {
+                    this.renderReactTemplates();
+                }
             }
         }
     };
@@ -2334,6 +2396,10 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             this.header();
             this.setLocalData();
             this.setHTMLAttribute();
+            // tslint:disable-next-line
+            if (this.isReact) {
+                this.renderReactTemplates();
+            }
         }
         else {
             this.initBlazor(true);
@@ -2359,6 +2425,10 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
      */
     ListView.prototype.destroy = function () {
         this.resetBlazorTemplates();
+        // tslint:disable-next-line
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         this.unWireEvents();
         var classAr = [classNames.root, classNames.disable, 'e-rtl',
             'e-has-header', 'e-lib'].concat(this.cssClass.split(' ').filter(function (css) { return css; }));

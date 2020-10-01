@@ -540,10 +540,18 @@ var ListBase;
             else {
                 const currentID = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
                 if (isHeader) {
-                    append(compiledString(curItem, componentInstance, 'headerTemplate', currentID, !!curOpt.isStringTemplate), li);
+                    // tslint:disable-next-line
+                    let compiledElement = compiledString(curItem, componentInstance, 'headerTemplate', currentID, !!curOpt.isStringTemplate, null, li);
+                    if (compiledElement) {
+                        append(compiledElement, li);
+                    }
                 }
                 else {
-                    append(compiledString(curItem, componentInstance, 'template', currentID, !!curOpt.isStringTemplate), li);
+                    // tslint:disable-next-line
+                    let compiledElement = compiledString(curItem, componentInstance, 'template', currentID, !!curOpt.isStringTemplate, null, li);
+                    if (compiledElement) {
+                        append(compiledElement, li);
+                    }
                 }
                 li.setAttribute('data-value', isNullOrUndefined(value) ? 'null' : value);
                 li.setAttribute('role', 'option');
@@ -584,7 +592,11 @@ var ListBase;
             let headerData = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
-            append(compiledString(headerData, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), header);
+            // tslint:disable-next-line
+            let compiledElement = compiledString(headerData, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate, null, header);
+            if (compiledElement) {
+                append(compiledElement, header);
+            }
         }
         return headerItems;
     }
@@ -595,7 +607,9 @@ var ListBase;
             .substring(1);
     }
     ListBase.generateId = generateId;
-    function processSubChild(createElement, fieldData, fields, ds, options, element, level) {
+    function processSubChild(createElement, fieldData, fields, ds, 
+    // tslint:disable-next-line
+    options, element, level) {
         // Get SubList
         let subDS = fieldData[fields.child] || [];
         let hasChildren = fieldData[fields.hasChildren];
@@ -720,7 +734,7 @@ var ListBase;
     /* tslint:disable:align */
     function generateLI(createElement, item, fieldData, 
     // tslint:disable-next-line
-    fields, className, options, prop, componentInstance) {
+    fields, className, options, componentInstance) {
         let curOpt = extend({}, defaultListBaseOptions, options);
         let ariaAttributes = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
         let text = item;
@@ -752,11 +766,19 @@ var ListBase;
         }
         if (grpLI && options && options.groupTemplate) {
             let compiledString = compile(options.groupTemplate);
-            append(compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
+            // tslint:disable-next-line
+            let compiledElement = compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate, null, li);
+            if (compiledElement) {
+                append(compiledElement, li);
+            }
         }
         else if (!grpLI && options && options.template) {
             let compiledString = compile(options.template);
-            append(compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
+            // tslint:disable-next-line
+            let compiledElement = compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate, null, li);
+            if (compiledElement) {
+                append(compiledElement, li);
+            }
         }
         else {
             let innerDiv = createElement('div', {
@@ -1144,9 +1166,17 @@ let ListView = class ListView extends Component {
                 if (this.headerTemplate) {
                     let compiledString = compile(this.headerTemplate);
                     let headerTemplateEle = this.createElement('div', { className: classNames.headerTemplateText });
-                    append(compiledString({}, this, prop, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
+                    // tslint:disable-next-line
+                    let compiledElement = compiledString({}, this, prop, this.LISTVIEW_HEADERTEMPLATE_ID, null, null, this.headerEle);
+                    if (compiledElement) {
+                        append(compiledElement, headerTemplateEle);
+                    }
                     append([headerTemplateEle], this.headerEle);
                     this.updateBlazorTemplates(false, true, true);
+                    // tslint:disable-next-line
+                    if (this.isReact) {
+                        this.renderReactTemplates();
+                    }
                 }
                 if (this.headerTemplate && this.headerTitle) {
                     textEle.classList.add('header');
@@ -1228,6 +1258,20 @@ let ListView = class ListView extends Component {
         }
     }
     preRender() {
+        if (this.template) {
+            try {
+                if (document.querySelectorAll(this.template).length) {
+                    this.template = document.querySelector(this.template).innerHTML.trim();
+                }
+            }
+            catch (e) {
+                compile(this.template);
+                // tslint:disable-next-line
+                if (this.isReact) {
+                    this.renderReactTemplates();
+                }
+            }
+        }
         this.listBaseOption = {
             template: this.template,
             headerTemplate: this.headerTemplate,
@@ -1293,6 +1337,10 @@ let ListView = class ListView extends Component {
         this.removeElement(this.ulElement);
         this.removeElement(this.headerEle);
         this.removeElement(this.contentContainer);
+        // tslint:disable-next-line
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         this.curUL = this.ulElement = this.liCollection = this.headerEle = this.contentContainer = undefined;
     }
     renderCheckbox(args) {
@@ -2018,6 +2066,9 @@ let ListView = class ListView extends Component {
                 this.localData = e.result;
                 if (!this.isServerRendered || (!isBlazor())) {
                     listViewComponent.removeElement(listViewComponent.contentContainer);
+                    if (this.isReact) {
+                        this.clearTemplate();
+                    }
                 }
                 this.renderList();
                 this.trigger('actionComplete', e);
@@ -2050,6 +2101,9 @@ let ListView = class ListView extends Component {
             this.removeElement(this.headerEle);
             this.removeElement(this.ulElement);
             this.removeElement(this.contentContainer);
+            if (this.isReact) {
+                this.clearTemplate();
+            }
             if (Object.keys(window).indexOf('ejsInterop') === -1) {
                 this.element.innerHTML = '';
             }
@@ -2227,6 +2281,10 @@ let ListView = class ListView extends Component {
                 }
                 else {
                     ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length, null, this);
+                    // tslint:disable-next-line
+                    if (this.isReact) {
+                        this.renderReactTemplates();
+                    }
                     let lists = ele.querySelectorAll('.' + classNames.listItem);
                     this.setAttributes(lists);
                     ele.setAttribute('pID', uID);
@@ -2269,6 +2327,10 @@ let ListView = class ListView extends Component {
                 this.contentContainer = this.createElement('div', { className: classNames.content });
                 this.element.appendChild(this.contentContainer);
                 this.renderIntoDom(this.ulElement);
+                // tslint:disable-next-line
+                if (this.isReact) {
+                    this.renderReactTemplates();
+                }
             }
         }
     }
@@ -2297,6 +2359,10 @@ let ListView = class ListView extends Component {
             this.header();
             this.setLocalData();
             this.setHTMLAttribute();
+            // tslint:disable-next-line
+            if (this.isReact) {
+                this.renderReactTemplates();
+            }
         }
         else {
             this.initBlazor(true);
@@ -2322,6 +2388,10 @@ let ListView = class ListView extends Component {
      */
     destroy() {
         this.resetBlazorTemplates();
+        // tslint:disable-next-line
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         this.unWireEvents();
         let classAr = [classNames.root, classNames.disable, 'e-rtl',
             'e-has-header', 'e-lib'].concat(this.cssClass.split(' ').filter((css) => css));

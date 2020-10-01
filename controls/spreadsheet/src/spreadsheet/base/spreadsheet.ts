@@ -1,13 +1,13 @@
 /// <reference path='../../workbook/base/workbook-model.d.ts'/>
-import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclaration, Event, setStyleAttribute } from '@syncfusion/ej2-base';
-import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser, EventHandler } from '@syncfusion/ej2-base';
-import { detach, select, closest } from '@syncfusion/ej2-base';
+import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclaration, Event } from '@syncfusion/ej2-base';
+import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
+import { detach, select, closest, setStyleAttribute, EventHandler } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
-import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, getSiblingsHeight } from '../common/index';
-import { hideShow, performUndoRedo, overlay, DialogBeforeOpenEventArgs } from '../common/index';
+import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, blankWorkbook } from '../common/index';
+import { hideShow, performUndoRedo, overlay, DialogBeforeOpenEventArgs, createImageElement, deleteImage} from '../common/index';
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit, created } from '../common/index';
 import { actionEvents, collaborativeUpdate, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems } from '../common/index';
-import { ICellRenderer, colWidthChanged, rowHeightChanged, hideRibbonTabs, addFileMenuItems } from '../common/index';
+import { ICellRenderer, colWidthChanged, rowHeightChanged, hideRibbonTabs, addFileMenuItems, getSiblingsHeight } from '../common/index';
 import { defaultLocale, locale, setAriaOptions, setResize, updateToggleItem, initiateFilterUI, clearFilter } from '../common/index';
 import { CellEditEventArgs, CellSaveEventArgs, ribbon, formulaBar, sheetTabs, formulaOperation, addRibbonTabs } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, selectRange, addToolbarItems } from '../common/index';
@@ -35,14 +35,15 @@ import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups'
 import { setRowHeight, getRowsHeight, getColumnWidth, getRowHeight } from './../../workbook/base/index';
 import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, WorkbookNumberFormat, WorkbookFormula } from '../../workbook/index';
 import { RefreshValueArgs, Ribbon, FormulaBar, SheetTabs, Open, ContextMenu, Save, NumberFormat, Formula } from '../integrations/index';
-import { Sort, Filter } from '../integrations/index';
+import { Sort, Filter, SpreadsheetImage } from '../integrations/index';
 import { isNumber, getColumn, WorkbookFilter } from '../../workbook/index';
 import { PredicateModel } from '@syncfusion/ej2-grids';
 import { RibbonItemModel } from '../../ribbon/index';
 import { DataValidation } from '../actions/index';
 import { WorkbookDataValidation, WorkbookConditionalFormat, WorkbookFindAndReplace } from '../../workbook/actions/index';
-import { FindAllArgs, findAllValues, ClearOptions, ConditionalFormatModel } from './../../workbook/common/index';
+import { FindAllArgs, findAllValues, ClearOptions, ConditionalFormatModel, ImageModel } from './../../workbook/common/index';
 import { ConditionalFormatting } from '../actions/conditional-formatting';
+import { WorkbookImage } from '../../workbook/integrations/index';
 /**
  * Represents the Spreadsheet component. 
  * ```html
@@ -658,7 +659,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat,
             WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink,
             WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation,
-            ProtectSheet, FindAndReplace, WorkbookFindAndReplace, Merge, WorkbookMerge, ConditionalFormatting, WorkbookConditionalFormat
+            ProtectSheet, FindAndReplace, WorkbookFindAndReplace, Merge, WorkbookMerge, SpreadsheetImage, ConditionalFormatting,
+            WorkbookImage, WorkbookConditionalFormat
         );
         if (element) {
             this.appendTo(element);
@@ -802,7 +804,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @return {void}
      */
     public protectSheet(sheet?: number | string, protectSettings?: ProtectSettingsModel): void {
-        if (typeof(sheet) === 'string') {
+        if (typeof (sheet) === 'string') {
             sheet = getSheetIndex(this, sheet);
         }
         if (sheet) {
@@ -820,7 +822,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @return {void}
      */
     public unprotectSheet(sheet?: number | string): void {
-        if (typeof(sheet) === 'string') {
+        if (typeof (sheet) === 'string') {
             sheet = getSheetIndex(this, sheet);
         }
         if (sheet) {
@@ -1092,7 +1094,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {number} sheetIndex? - Specifies the sheetIndex. If not specified, it will consider the active sheet.
      * {% codeBlock src='spreadsheet/setRowHeight/index.md' %}{% endcodeBlock %}
      */
-    public setRowHeight(height: number | string = 20, rowIndex: number = 0, sheetIndex?: number): void {
+    public setRowHeight(height: number | string = 20, rowIndex: number = 0, sheetIndex?: number, edited?: boolean): void {
         let sheet: SheetModel = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex - 1];
         if (sheet) {
             let mIndex: number = rowIndex;
@@ -1110,7 +1112,14 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     let oldIdx: number = parseInt(trgt.parentElement.getAttribute('aria-rowindex'), 10) - 1;
                     if (this.getActiveSheet() === sheet) {
                         this.notify(rowHeightChanged, { threshold, rowIdx: oldIdx });
-                        setResize(rowIndex, rowHeight, false, this);
+                        if (isNullOrUndefined(edited)) {
+                            edited = false;
+                        }
+                        if (!edited) {
+                            setResize(rowIndex, rowHeight, false, this);
+                            edited = false;
+                        }
+
                     }
                 } else {
                     let oldHeight: number = getRowHeight(sheet, rowIndex);
@@ -1372,8 +1381,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         super.clearConditionalFormat(range);
     }
 
-     /** @hidden */
-     public setPanelSize(): void {
+    /** @hidden */
+    public setPanelSize(): void {
         if (this.height !== 'auto') {
             let panel: HTMLElement = document.getElementById(this.element.id + '_sheet_panel');
             panel.style.height = `${this.element.getBoundingClientRect().height - getSiblingsHeight(panel)}px`;
@@ -1418,7 +1427,42 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         this.notify(clearViewer, { options: options, isPublic: true });
     }
     /**
-     * Gets the row header div of the Spreadsheet. 
+     * Used to refresh the spreadsheet.
+     * @param {boolean} isNew - Specifies `true` / `false` to create new workbook in spreadsheet.
+     * @returns void
+     */
+    public refresh(isNew?: boolean): void {
+        (isNew) ? this.notify(blankWorkbook, {}) : super.refresh();
+    }
+
+    /**
+     * Used to set the image in spreadsheet.
+     * @param {ImageModel} images - Specifies the options to insert image in spreadsheet.
+     * @param {string} range - Specifies the range in spreadsheet.
+     * @returns void
+     */
+    public insertImage(images: ImageModel[], range?: string): void {
+        let i: number;
+        for (i = 0; i < images.length; i++) {
+            this.notify(createImageElement, {
+                options: images[i],
+                range: range ? range : this.getActiveSheet().selectedRange, isPublic: true
+            });
+        }
+    }
+
+    /**
+     * Used to delete the image in spreadsheet.
+     * @param {string} id - Specifies the id of the image element to be deleted.
+     * @param {string} range - Specifies the range in spreadsheet.
+     * @returns void
+     */
+    public deleteImage(id: string, range?: string): void {
+        this.notify(deleteImage, { id: id, range: range ? range : this.getActiveSheet().selectedRange });
+    }
+
+    /**
+     * Gets the row header div of the Spreadsheet.
      * @return {Element} 
      * @hidden
      */
@@ -1530,9 +1574,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         sheetIndex = getSheetIndexFromId(this, sheetIndex);
         this.notify(
             editOperation, {
-            action: 'refreshDependentCellValue', rowIdx: rowIndex, colIdx: colIndex,
-            sheetIdx: sheetIndex
-        });
+                action: 'refreshDependentCellValue', rowIdx: rowIndex, colIdx: colIndex,
+                sheetIdx: sheetIndex
+            });
     }
 
     /**
@@ -1586,6 +1630,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             }
             if (node && (node.nodeType === 3 || node.nodeType === 1)) {
                 node.nodeValue = value;
+
             } else {
                 td.appendChild(document.createTextNode(value));
             }
@@ -1936,7 +1981,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     break;
                 case 'activeSheetIndex':
                     this.renderModule.refreshSheet();
-                    this.notify(activeSheetChanged, { idx: newProp.activeSheetIndex});
+                    this.notify(activeSheetChanged, { idx: newProp.activeSheetIndex });
                     break;
                 case 'width':
                     this.setWidth();
@@ -1962,7 +2007,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     if (this.allowEditing) {
                         this.notify(editOperation, { action: 'renderEditor' });
                     }
-                break;
+                    break;
                 case 'sheets':
                     // Object.keys(newProp.sheets).forEach((sheetIdx: string): void => {
                     // if (this.activeSheetIndex === Number(sheetIdx)) {

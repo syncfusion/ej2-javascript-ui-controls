@@ -9,7 +9,8 @@ import { NodeAnimationSettings } from '@syncfusion/ej2-navigations';
 let shape: BasicShapeModel = { type: 'Basic', shape: 'Rectangle', cornerRadius: 10 };
 let port: PointPortModel[] = [{ id: 'a', visibility: PortVisibility.Visible | PortVisibility.Hover }];
 let node1: NodeModel = {
-    id: 'node', height: 50, width: 50, offsetX: 100, offsetY: 100, shape: shape, tooltip: { content: 'node1', position: 'BottomRight', relativeMode: 'Object', animation: { open: { effect: 'FadeZoomIn', delay: 0 }, close: { effect: 'FadeZoomOut', delay: 0 } } },
+    id: 'node', height: 50, width: 50, offsetX: 100, offsetY: 100, shape: shape,
+     tooltip: { content: 'node1', position: 'BottomRight', relativeMode: 'Object', animation: { open: { effect: 'FadeZoomIn', delay: 0 }, close: { effect: 'FadeZoomOut', delay: 0 } } },
     constraints: NodeConstraints.Default | NodeConstraints.Tooltip, ports: port,
 };
 let connectors: ConnectorModel[] = [{
@@ -21,7 +22,7 @@ let connectors: ConnectorModel[] = [{
 
 }];
 let diagram: Diagram = new Diagram({
-   connectors: connectors, nodes: [node1],
+    connectors: connectors, nodes: [node1],
     constraints: DiagramConstraints.Default | DiagramConstraints.Tooltip,
     tooltip: { content: getcontent(), position: 'TopLeft', relativeMode: 'Object', animation: { open: { effect: 'FadeZoomIn', delay: 0 }, close: { effect: 'FadeZoomOut', delay: 0 } } }
 });

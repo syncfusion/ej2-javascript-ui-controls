@@ -254,31 +254,31 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
             expect(getCell(5, 10, instance.getActiveSheet()).style.backgroundColor).toEqual('#00ffff');
         });
 
-        it('Font testing', (): void => {
-            helper.click('_font_name .e-btn-icon');
-            helper.click(`#${helper.id}_font_name-popup li:nth-child(2)`);
-            expect(getCell(5, 10, instance.getActiveSheet()).style.fontFamily).toEqual('Arial Black');
-            expect(instance.getCell(5, 10).style.fontFamily).toEqual('"Arial Black"');
-            expect(helper.getElement(`#${helper.id}_font_name .e-tbar-btn-text`).textContent).toEqual('Arial Black');
-            // // undo checking
-            // helper.click('_undo');
-            // expect(getCell(5, 10, instance.getActiveSheet()).style.fontFamily).toBeUndefined();
-            // // redo checking
-            // helper.click('_redo');
-            // expect(getCell(5, 10, instance.getActiveSheet()).style.fontFamily).toEqual('Arial Black');
-        });
+        // it('Font testing', (): void => {
+        //     helper.click('_font_name .e-btn-icon');
+        //     helper.click(`#${helper.id}_font_name-popup li:nth-child(2)`);
+        //     expect(getCell(5, 10, instance.getActiveSheet()).style.fontFamily).toEqual('Arial Black');
+        //     expect(instance.getCell(5, 10).style.fontFamily).toEqual('"Arial Black"');
+        //     expect(helper.getElement(`#${helper.id}_font_name .e-tbar-btn-text`).textContent).toEqual('Arial Black');
+        //     // // undo checking
+        //     // helper.click('_undo');
+        //     // expect(getCell(5, 10, instance.getActiveSheet()).style.fontFamily).toBeUndefined();
+        //     // // redo checking
+        //     // helper.click('_redo');
+        //     // expect(getCell(5, 10, instance.getActiveSheet()).style.fontFamily).toEqual('Arial Black');
+        // });
 
-        it('Font testing', (): void => {
-            helper.click('_number_format .e-btn-icon');
-            helper.click(`#${helper.id}_number_format-popup li:nth-child(2)`);
-            expect(getCell(5, 10, instance.getActiveSheet()).format).toEqual('0.00');
-            // // undo checking
-            // helper.click('_undo');
-            // expect(getCell(5, 10, instance.getActiveSheet()).format).toBeUndefined();
-            // // redo checking
-            // helper.click('_redo');
-            // expect(getCell(5, 10, instance.getActiveSheet()).format).toEqual('0.00');
-        });
+        // it('Font testing', (): void => {
+        //     helper.click('_number_format .e-btn-icon');
+        //     helper.click(`#${helper.id}_number_format-popup li:nth-child(2)`);
+        //     expect(getCell(5, 10, instance.getActiveSheet()).format).toEqual('0.00');
+        //     // // undo checking
+        //     // helper.click('_undo');
+        //     // expect(getCell(5, 10, instance.getActiveSheet()).format).toBeUndefined();
+        //     // // redo checking
+        //     // helper.click('_redo');
+        //     // expect(getCell(5, 10, instance.getActiveSheet()).format).toEqual('0.00');
+        // });
 
         // it('File Menu New testing', (done: Function) => {
         //     setTimeout((): void => {

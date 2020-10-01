@@ -2978,6 +2978,7 @@ var Clipboard = /** @class */ (function () {
         var cIdx = colIndex;
         var rIdx = rowIndex;
         var col;
+        var value;
         var isAvail;
         if (!grid.options.allowEditing || grid.options.editMode !== 'Batch' ||
             grid.options.selectionMode !== 'Cell' || grid.options.cellSelectionMode === 'Flow') {
@@ -3011,7 +3012,7 @@ var Clipboard = /** @class */ (function () {
                     break;
                 }
                 col = grid.getColumnByIndex(cIdx);
-                // value = col.getParser() ? col.getParser()(cols[c]) : cols[c];
+                value = cols[c];
                 if (col.allowEditing && !col.isPrimaryKey && !col.template) {
                     // let args: BeforePasteEventArgs = {
                     //     column: col,
@@ -3022,11 +3023,8 @@ var Clipboard = /** @class */ (function () {
                     //rIdx = args.rowIndex;
                     //if (!args.cancel) {
                     if (grid.editModule) {
-                        if (col.type === 'number') {
-                            // grid.editModule.updateCell(rIdx, col.field, parseInt(args.data as string, 10));
-                        }
-                        else {
-                            //grid.editModule.updateCell(rIdx, col.field, args.data);
+                        {
+                            grid.dotNetRef.invokeMethodAsync("UpdateCell", rIdx, col.field, value);
                         }
                     }
                     //}
@@ -3149,9 +3147,11 @@ var Clipboard = /** @class */ (function () {
     };
     Clipboard.prototype.copy = function (withHeader) {
         if (document.queryCommandSupported('copy')) {
+            var clipboardFocus = document.activeElement;
             this.setCopyData(withHeader);
             document.execCommand('copy');
             this.clipBoardTextArea.blur();
+            clipboardFocus.focus();
         }
         if (this.isSelect) {
             window.getSelection().removeAllRanges();
@@ -3770,8 +3770,6 @@ var RowDD = /** @class */ (function () {
 
 var Selection = /** @class */ (function () {
     function Selection(parent) {
-        this.prevStartDIndex = undefined;
-        this.prevEndIndex = undefined;
         this.parent = parent;
         this.addEventListener();
     }
@@ -3793,10 +3791,10 @@ var Selection = /** @class */ (function () {
             e.preventDefault();
         }
         if (parentsUntil(target, 'e-rowcell') && !e.shiftKey && !e.ctrlKey) {
-            // if (gObj.options.cellSelectionMode.indexOf('Box') > -1 && !this.isRowType() && !this.isSingleSel()) {
-            //     this.isCellDrag = true;
-            //     isDrag = true;
-            // } else 
+            if (gObj.options.cellSelectionMode.indexOf('Box') > -1 && !this.isRowType() && !this.isSingleSel()) {
+                this.isCellDrag = true;
+                isDrag = true;
+            }
             if (gObj.options.allowRowDragAndDrop && !gObj.options.isEdit) {
                 if (!this.isRowType() || this.isSingleSel() || sf.base.closest(target, 'td').classList.contains('e-selectionbackground')) {
                     this.isDragged = false;
@@ -3807,8 +3805,15 @@ var Selection = /** @class */ (function () {
                 gObj.getContent().appendChild(this.element);
             }
             if (isDrag) {
+                this.isAutoFillSel = false;
                 this.enableDrag(e, true);
             }
+        }
+        this.updateStartEndCells();
+        if (target.classList.contains('e-autofill') || target.classList.contains('e-xlsel')) {
+            this.isCellDrag = true;
+            this.isAutoFillSel = true;
+            this.enableDrag(e);
         }
     };
     Selection.prototype.mouseUpHandler = function (e) {
@@ -3837,6 +3842,28 @@ var Selection = /** @class */ (function () {
         this.isDragged = false;
         this.prevStartDIndex = undefined;
         this.prevEndIndex = undefined;
+        if (this.parent.options.editMode == "Batch" && this.parent.options.enableAutoFill) {
+            if (!sf.base.isNullOrUndefined(this.endRowIndex) && !sf.base.isNullOrUndefined(this.endColIndex) && !this.isAutoFillSel && this.isInitialSelect) {
+                this.parent.dotNetRef.invokeMethodAsync("ClearSelection");
+                var updateAFPos = this.updateAutofillPosition(this.endColIndex, this.endRowIndex, true);
+                this.parent.dotNetRef.invokeMethodAsync("UpdateAutofillPositions", updateAFPos, "UpdateAutofillBox");
+                this.assignCells();
+                this.selectCellByRow();
+                this.isInitialSelect = false;
+            }
+            if (this.isAutoFillSel) {
+                var _this_1 = this;
+                this.assignCells();
+                setTimeout(function () {
+                    _this_1.selectCellByRow();
+                }, 10);
+                this.expandAFBorder(e, true);
+                var updateAFBor = this.createBorder(this.startRowIndex, this.startColIndex, this.endRowIndex, this.endColIndex, true);
+                this.parent.dotNetRef.invokeMethodAsync("UpdateAutofillPositions", updateAFBor, "UpdateAutofillBorder");
+                var updateAFPos = this.updateAutofillPosition(this.endColIndex, this.endRowIndex, true);
+                this.parent.dotNetRef.invokeMethodAsync("UpdateAutofillPositions", updateAFPos, "UpdateAutofillBox");
+            }
+        }
         sf.base.EventHandler.remove(this.parent.getContent(), 'mousemove', this.mouseMoveHandler);
         if (this.parent.options.frozenRows) {
             sf.base.EventHandler.remove(this.parent.getHeaderContent(), 'mousemove', this.mouseMoveHandler);
@@ -3918,7 +3945,384 @@ var Selection = /** @class */ (function () {
                     this.performDragSelection(this.startDIndex, rowIndex, clearIndex);
                 }
             }
+            else if (this.parent.options.editMode == "Batch" && this.parent.options.enableAutoFill) {
+                if (this.startCell) {
+                    var td = parentsUntil(e.target, 'e-rowcell');
+                    if (td && !td.classList.contains("e-editedbatchcell")) {
+                        this.startAFCell = this.startCell;
+                        this.endAFCell = td;
+                        this.endCell = td;
+                        if (this.isAutoFillSel) {
+                            this.expandAFBorder(e, false);
+                        }
+                        else {
+                            this.assignCells();
+                            var updateAFBor = this.createBorder(this.startRowIndex, this.startColIndex, this.endRowIndex, this.endColIndex, true);
+                            this.parent.dotNetRef.invokeMethodAsync("UpdateAutofillPositions", updateAFBor, "UpdateAutofillBorder");
+                            this.isInitialSelect = true;
+                        }
+                    }
+                }
+            }
         }
+    };
+    /**
+     * @hidden
+     */
+    Selection.prototype.updateAutofillPosition = function (cellindex, index, newSelect) {
+        if (newSelect === void 0) { newSelect = false; }
+        var row = this.parent.getRowByIndex(index);
+        var cell = row.querySelector('[aria-colindex="' + cellindex + '"]');
+        var selectedCells = [].slice.call(this.parent.element.querySelectorAll('.e-cellselectionbackground'));
+        var autoFillBoxLeft = '';
+        var autoFillBoxRight = '';
+        var autoFillBoxTop = '';
+        if (selectedCells && !newSelect) {
+            cell = selectedCells[selectedCells.length - 1];
+        }
+        if (cell && cell.offsetParent) {
+            var clientRect = cell.getBoundingClientRect();
+            var parentOff = cell.offsetParent.getBoundingClientRect();
+            var colWidth = this.isLastCell(cell) ? 4 : 0;
+            var rowHeight = this.isLastRow(cell) ? 3 : 0;
+            if (!this.parent.options.enableRtl) {
+                autoFillBoxLeft = clientRect.left - parentOff.left + clientRect.width - 4 - colWidth + 'px';
+            }
+            else {
+                autoFillBoxRight = parentOff.right - clientRect.right + clientRect.width - 4 - colWidth + 'px';
+            }
+            autoFillBoxTop = clientRect.top - parentOff.top + clientRect.height - 5 - rowHeight + 'px';
+        }
+        return {
+            Left: autoFillBoxLeft,
+            Right: autoFillBoxRight,
+            Top: autoFillBoxTop
+        };
+    };
+    /**
+     * @hidden
+     */
+    Selection.prototype.createBorder = function (startRowIndex, startColIndex, endRowIndex, endColIndex, newSelect) {
+        if (endRowIndex === void 0) { endRowIndex = null; }
+        if (endColIndex === void 0) { endColIndex = null; }
+        if (newSelect === void 0) { newSelect = false; }
+        var selectedCells = [].slice.call(this.parent.element.querySelectorAll('.e-cellselectionbackground'));
+        var rowstart = this.parent.getRowByIndex(startRowIndex);
+        var cellStart = rowstart.querySelector('[aria-colindex="' + startColIndex + '"]');
+        var cellsStart = [].slice.call(cellStart.parentElement.querySelectorAll('[aria-colindex="' + startColIndex + '"]'));
+        var rowEnd;
+        var cellEnd;
+        var cellsEnd;
+        var autoFillBorderRight = '';
+        var autoFillBorderLeft = '';
+        var autoFillBordersWidth = '';
+        var autoFillBorderWidth = '';
+        var autoFillBorderHeight = '';
+        var autoFillBorderTop = '';
+        if (endRowIndex != null && endColIndex != null) {
+            rowEnd = this.parent.getRowByIndex(endRowIndex);
+            cellEnd = rowEnd.querySelector('[aria-colindex="' + endColIndex + '"]');
+            cellsEnd = [].slice.call(cellEnd.parentElement.querySelectorAll('[aria-colindex="' + endColIndex + '"]'));
+        }
+        else {
+            rowEnd = rowstart;
+            cellEnd = cellStart;
+            cellsEnd = cellsStart;
+        }
+        if (selectedCells && !newSelect) {
+            cellsStart = [].slice.call(selectedCells[0].parentElement.querySelectorAll('[aria-colindex="' + selectedCells[0].cellIndex + '"]'));
+            cellsEnd = [].slice.call(selectedCells[selectedCells.length - 1].parentElement.querySelectorAll('[aria-colindex="' + selectedCells[selectedCells.length - 1].cellIndex + '"]'));
+        }
+        if (!this.startCell) {
+            this.startCell = cellsStart[0];
+        }
+        this.endCells = cellsEnd[0];
+        var start = cellsStart[0];
+        var end = cellsEnd[0];
+        var stOff = start.getBoundingClientRect();
+        var endOff = end.getBoundingClientRect();
+        var parentOff = start.offsetParent.getBoundingClientRect();
+        var rowHeight = this.isLastRow(end) ? 2 : 0;
+        var topOffSet = this.parent.options.frozenRows && this.isFirstRow(start) ? 1.5 : 0;
+        var leftOffset = this.parent.options.frozenColumns && this.isFirstCell(start) ? 1 : 0;
+        if (this.parent.options.enableRtl) {
+            autoFillBorderRight = parentOff.right - stOff.right - leftOffset + 'px';
+            autoFillBorderWidth = stOff.right - endOff.left + leftOffset + 1 + 'px';
+        }
+        else {
+            autoFillBorderLeft = stOff.left - parentOff.left - leftOffset + 'px';
+            autoFillBorderWidth = endOff.right - stOff.left + leftOffset + 1 + 'px';
+        }
+        autoFillBorderTop = stOff.top - parentOff.top - topOffSet + 'px';
+        autoFillBorderHeight = endOff.top - stOff.top > 0 ?
+            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) - rowHeight + topOffSet + 'px' :
+            endOff.height + topOffSet - rowHeight + 1 + 'px';
+        autoFillBordersWidth = '2px';
+        return {
+            Right: autoFillBorderRight,
+            Width: autoFillBorderWidth,
+            BorderWidth: autoFillBordersWidth,
+            Left: autoFillBorderLeft,
+            Height: autoFillBorderHeight,
+            Top: autoFillBorderTop
+        };
+    };
+    Selection.prototype.expandAFBorder = function (e, isApply) {
+        var selectedCells = [].slice.call(this.parent.element.querySelectorAll('.e-cellselectionbackground'));
+        var startrowIdx = parseInt(parentsUntil(this.startCell, 'e-row').getAttribute('aria-rowindex'), 10);
+        var startCellIdx = parseInt(this.startCell.getAttribute('aria-colindex'), 10);
+        var endrowIdx = parseInt(parentsUntil(this.endCell, 'e-row').getAttribute('aria-rowindex'), 10);
+        var endCellIdx = parseInt(this.endCell.getAttribute('aria-colindex'), 10);
+        var rowLen = parseInt(parentsUntil(selectedCells[selectedCells.length - 1], 'e-row').getAttribute('aria-rowindex'), 10) - parseInt(parentsUntil(selectedCells[0], 'e-row').getAttribute('aria-rowindex'), 10);
+        var rowIdx = parseInt(parentsUntil(selectedCells[0], 'e-row').getAttribute('aria-rowindex'), 10);
+        var row = (this.parent.getRowByIndex(rowIdx));
+        var colLen = 0;
+        for (var i = 0, cellLen = row.cells.length; i < cellLen; i++) {
+            if (row.cells[i].classList.contains('e-cellselectionbackground')) {
+                colLen++;
+            }
+        }
+        colLen = colLen - 1;
+        colLen = colLen >= 0 ? colLen : 0;
+        switch (true) {
+            case !isApply && this.endAFCell.classList.contains('e-cellselectionbackground') &&
+                !!parentsUntil(e.target, 'e-rowcell'):
+                this.startAFCell = this.parent.getCellFromIndex(startrowIdx, startCellIdx);
+                this.endAFCell = this.parent.getCellFromIndex(startrowIdx + rowLen, startCellIdx + colLen);
+                this.drawAFBorders();
+                break;
+            case startCellIdx + colLen < endCellIdx &&
+                endCellIdx - startCellIdx - colLen + 1 > endrowIdx - startrowIdx - rowLen
+                && endCellIdx - startCellIdx - colLen + 1 > startrowIdx - endrowIdx:
+                this.endAFCell = this.parent.getCellFromIndex(startrowIdx + rowLen, endCellIdx);
+                endrowIdx = parseInt(parentsUntil(this.endAFCell, 'e-row').getAttribute('aria-rowindex'), 10);
+                endCellIdx = parseInt(this.endAFCell.getAttribute('aria-colindex'), 10);
+                if (!isApply) {
+                    this.drawAFBorders();
+                }
+                else {
+                    var cellIdx = parseInt(this.endCells.getAttribute('aria-colindex'), 10);
+                    for (var i = startrowIdx; i <= endrowIdx; i++) {
+                        var cells = this.getAutoFillCells(i, startCellIdx);
+                        var c = 0;
+                        for (var j = cellIdx + 1; j <= endCellIdx; j++) {
+                            if (c > colLen) {
+                                c = 0;
+                            }
+                            this.updateValue(i, j, cells[c]);
+                            c++;
+                        }
+                    }
+                }
+                break;
+            case startCellIdx > endCellIdx &&
+                startCellIdx - endCellIdx + 1 > endrowIdx - startrowIdx - rowLen &&
+                startCellIdx - endCellIdx + 1 > startrowIdx - endrowIdx:
+                this.startAFCell = this.parent.getCellFromIndex(startrowIdx, endCellIdx);
+                this.endAFCell = this.endCells;
+                if (!isApply) {
+                    this.drawAFBorders();
+                }
+                else {
+                    for (var i = startrowIdx; i <= startrowIdx + rowLen; i++) {
+                        var cells = this.getAutoFillCells(i, startCellIdx);
+                        cells.reverse();
+                        var c = 0;
+                        for (var j = this.startCellIndex - 1; j >= endCellIdx; j--) {
+                            if (c > colLen) {
+                                c = 0;
+                            }
+                            this.updateValue(i, j, cells[c]);
+                            c++;
+                        }
+                    }
+                }
+                break;
+            case startrowIdx > endrowIdx:
+                this.startAFCell = this.parent.getCellFromIndex(endrowIdx, startCellIdx);
+                this.endAFCell = this.endCells;
+                if (!isApply) {
+                    this.drawAFBorders();
+                }
+                else {
+                    var trIdx = parseInt(this.endCells.parentElement.getAttribute('aria-rowindex'), 10);
+                    var r = trIdx;
+                    for (var i = startrowIdx - 1; i >= endrowIdx; i--) {
+                        if (r === this.startIndex - 1) {
+                            r = trIdx;
+                        }
+                        var cells = this.getAutoFillCells(r, startCellIdx);
+                        var c = 0;
+                        r--;
+                        for (var j = this.startCellIndex; j <= this.startCellIndex + colLen; j++) {
+                            this.updateValue(i, j, cells[c]);
+                            c++;
+                        }
+                    }
+                }
+                break;
+            default:
+                this.endAFCell = this.parent.getCellFromIndex(endrowIdx, startCellIdx + colLen);
+                if (!isApply) {
+                    this.drawAFBorders();
+                }
+                else {
+                    var trIdx = parseInt(this.endCells.parentElement.getAttribute('aria-rowindex'), 10);
+                    var r = this.startIndex;
+                    for (var i = trIdx + 1; i <= endrowIdx; i++) {
+                        if (r === trIdx + 1) {
+                            r = this.startIndex;
+                        }
+                        var cells = this.getAutoFillCells(r, startCellIdx);
+                        r++;
+                        var c = 0;
+                        for (var m = this.startCellIndex; m <= this.startCellIndex + colLen; m++) {
+                            this.updateValue(i, m, cells[c]);
+                            c++;
+                        }
+                    }
+                }
+                break;
+        }
+    };
+    Selection.prototype.drawAFBorders = function () {
+        if (!this.startCell) {
+            return;
+        }
+        var stOff = this.startAFCell.getBoundingClientRect();
+        var endOff = this.endAFCell.getBoundingClientRect();
+        var top = endOff.top - stOff.top > 0 ? 1 : 0;
+        var firstCellTop = endOff.top - stOff.top >= 0 && (parentsUntil(this.startAFCell, 'e-movablecontent') ||
+            parentsUntil(this.startAFCell, 'e-frozencontent')) && this.isFirstRow(this.startAFCell) ? 1.5 : 0;
+        var firstCellLeft = (parentsUntil(this.startAFCell, 'e-movablecontent') ||
+            parentsUntil(this.startAFCell, 'e-movableheader')) && this.isFirstCell(this.startAFCell) ? 1 : 0;
+        var rowHeight = this.isLastRow(this.endAFCell) && (parentsUntil(this.endAFCell, 'e-movablecontent') ||
+            parentsUntil(this.endAFCell, 'e-frozencontent')) ? 2 : 0;
+        var parentOff = this.startAFCell.offsetParent.getBoundingClientRect();
+        var parentRect = this.parent.element.getBoundingClientRect();
+        var sTop = this.startAFCell.offsetParent.parentElement.scrollTop;
+        var sLeft = this.startAFCell.offsetParent.parentElement.scrollLeft;
+        var scrollTop = sTop - this.startAFCell.offsetTop;
+        var scrollLeft = sLeft - this.startAFCell.offsetLeft;
+        scrollTop = scrollTop > 0 ? Math.floor(scrollTop) - 1 : 0;
+        scrollLeft = scrollLeft > 0 ? scrollLeft : 0;
+        var left = stOff.left - parentRect.left;
+        var bdrAFLeftLeft = '';
+        var bdrAFLeftHeight = '';
+        var bdrAFLeftTop = '';
+        var bdrAFLeftRight = '';
+        var bdrAFRightLeft = '';
+        var bdrAFRightHeight = '';
+        var bdrAFRightRight = '';
+        var bdrAFRightTop = '';
+        var bdrAFTopLeft = '';
+        var bdrAFTopTop = '';
+        var bdrAFTopWidth = '';
+        var bdrAFBottomLeft = '';
+        var bdrAFBottomTop = '';
+        var bdrAFBottomWidth = '';
+        if (!this.parent.options.enableRtl) {
+            bdrAFLeftLeft = left - firstCellLeft + scrollLeft - 1 + 'px';
+            bdrAFRightLeft = endOff.left - parentRect.left - 2 + endOff.width + 'px';
+            bdrAFTopLeft = left + scrollLeft - 0.5 + 'px';
+            bdrAFTopWidth = parseInt(bdrAFRightLeft, 10) - parseInt(bdrAFLeftLeft, 10)
+                - firstCellLeft + 1 + 'px';
+        }
+        else {
+            var scrolloffSet = (parentsUntil(this.startAFCell, 'e-movablecontent') ||
+                parentsUntil(this.startAFCell, 'e-movableheader')) ? stOff.right -
+                this.startAFCell.offsetParent.parentElement.getBoundingClientRect().width -
+                parentRect.left : 0;
+            bdrAFLeftRight = parentRect.right - endOff.right - 2 + endOff.width + 'px';
+            bdrAFRightRight = parentRect.right - stOff.right - firstCellLeft + scrolloffSet - 1 + 'px';
+            bdrAFTopLeft = endOff.left - parentRect.left - 0.5 + 'px';
+            bdrAFTopWidth = parseInt(bdrAFLeftRight, 10) - parseInt(bdrAFRightRight, 10)
+                - firstCellLeft + 1 + 'px';
+        }
+        bdrAFLeftTop = stOff.top - parentRect.top - firstCellTop + scrollTop - 78 + 'px';
+        bdrAFLeftHeight = endOff.top - stOff.top > 0 ?
+            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) + firstCellTop - rowHeight - scrollTop + 'px' :
+            endOff.height + firstCellTop - rowHeight - scrollTop + 'px';
+        bdrAFRightTop = bdrAFLeftTop;
+        bdrAFRightHeight = parseInt(bdrAFLeftHeight, 10) + 'px';
+        bdrAFTopTop = bdrAFRightTop;
+        bdrAFBottomLeft = bdrAFTopLeft;
+        bdrAFBottomTop = parseFloat(bdrAFLeftTop) + parseFloat(bdrAFLeftHeight) - top - 1 + 'px';
+        bdrAFBottomWidth = bdrAFTopWidth;
+        var positionAF = {
+            BorderLeftAutofillLeft: bdrAFLeftLeft,
+            BorderLeftAutofillTop: bdrAFLeftTop,
+            BorderLeftAutofillHeight: bdrAFLeftHeight,
+            BorderLeftAutofillRight: bdrAFLeftRight,
+            BorderRightAutofillLeft: bdrAFRightLeft,
+            BorderRightAutofillHeight: bdrAFRightHeight,
+            BorderRightAutofillRight: bdrAFRightRight,
+            BorderRightAutofillTop: bdrAFRightTop,
+            BorderTopAutofillLeft: bdrAFTopLeft,
+            BorderTopAutofillTop: bdrAFTopTop,
+            BorderTopAutofillWidth: bdrAFTopWidth,
+            BorderBottomAutofillLeft: bdrAFBottomLeft,
+            BorderBottomAutofillTop: bdrAFBottomTop,
+            BorderBottomAutofillWidth: bdrAFBottomWidth
+        };
+        this.parent.dotNetRef.invokeMethodAsync("UpdateAutofillPositions", positionAF, "UpdateAutofillPosition");
+    };
+    Selection.prototype.updateValue = function (rowIndex, colIndex, cell) {
+        var col = this.parent.getColumnByIndex(colIndex);
+        var valueIndex = parseInt(parentsUntil(cell, 'e-row').getAttribute('aria-rowindex'), 10);
+        var column = this.parent.getColumnByIndex(cell.cellIndex);
+        var value = cell.innerText;
+        this.parent.dotNetRef.invokeMethodAsync("UpdateAutofillCell", rowIndex, col.field, column.field, valueIndex, value);
+    };
+    Selection.prototype.getAutoFillCells = function (rowIndex, startCellIdx) {
+        var cells = [].slice.call(this.parent.getDataRows()[rowIndex].querySelectorAll('.e-cellselectionbackground'));
+        return cells;
+    };
+    Selection.prototype.updateStartEndCells = function () {
+        var cells = [].slice.call(this.parent.element.querySelectorAll('.e-cellselectionbackground'));
+        this.startCell = cells[0];
+        this.endCell = cells[cells.length - 1];
+        if (this.startCell) {
+            this.startIndex = parseInt(this.startCell.parentElement.getAttribute('aria-rowindex'), 10);
+            this.startCellIndex = parseInt(parentsUntil(this.startCell, 'e-rowcell').getAttribute('aria-colindex'), 10);
+        }
+    };
+    Selection.prototype.assignCells = function () {
+        this.startRowIndex = parseInt(this.startAFCell.parentElement.getAttribute('aria-rowindex'), 10);
+        this.endRowIndex = parseInt(this.endAFCell.parentElement.getAttribute('aria-rowindex'), 10);
+        this.startColIndex = parseInt(this.startAFCell.getAttribute('aria-colindex'), 10);
+        this.endColIndex = parseInt(this.endAFCell.getAttribute('aria-colindex'), 10);
+        if (this.startRowIndex > this.endRowIndex) {
+            this.startRowIndex = this.endRowIndex;
+            this.endRowIndex = parseInt(this.startAFCell.parentElement.getAttribute('aria-rowindex'), 10);
+        }
+        if (this.endColIndex < this.startColIndex) {
+            this.startColIndex = this.endColIndex;
+            this.endColIndex = parseInt(this.startAFCell.getAttribute('aria-colindex'), 10);
+        }
+    };
+    Selection.prototype.selectCellByRow = function () {
+        for (var i = this.startRowIndex; i <= this.endRowIndex; i++) {
+            for (var j = this.startColIndex; j <= this.endColIndex; j++) {
+                this.parent.dotNetRef.invokeMethodAsync("SelectCellByRow", i, j);
+            }
+        }
+    };
+    Selection.prototype.isLastCell = function (cell) {
+        var LastCell = [].slice.call(cell.parentElement.querySelectorAll('.e-rowcell:not(.e-hide)'));
+        return LastCell[LastCell.length - 1] == cell;
+    };
+    Selection.prototype.isLastRow = function (cell) {
+        var LastRow = [].slice.call(sf.base.closest(cell, 'tbody').querySelectorAll('.e-row:not(.e-hiddenrow)'));
+        return LastRow[LastRow.length - 1] == cell.parentElement;
+    };
+    Selection.prototype.isFirstRow = function (cell) {
+        var rows = [].slice.call(sf.base.closest(cell, 'tbody').querySelectorAll('.e-row:not(.e-hiddenrow)'));
+        return cell.parentElement === rows[0];
+    };
+    Selection.prototype.isFirstCell = function (cell) {
+        var cells = [].slice.call(cell.parentElement.querySelectorAll('.e-rowcell:not(.e-hide)'));
+        return cells[0] === cell;
     };
     Selection.prototype.performDragSelection = function (startIndex, endIndex, clearIndex) {
         var sIndex = startIndex;
@@ -3935,9 +4339,11 @@ var Selection = /** @class */ (function () {
     Selection.prototype.selectRangeOfRows = function (startIndex, endIndex) {
         var rows = this.parent.getRows();
         for (var i = startIndex; i <= endIndex; i++) {
-            rows[i].setAttribute('aria-selected', 'true');
-            var cells = [].slice.call(rows[i].querySelectorAll('.e-rowcell'));
-            addRemoveActiveClasses.apply(void 0, [cells, true].concat(['e-aria-selected', 'e-active']));
+            if (!sf.base.isNullOrUndefined(rows[i])) {
+                rows[i].setAttribute('aria-selected', 'true');
+                var cells = [].slice.call(rows[i].querySelectorAll('.e-rowcell'));
+                addRemoveActiveClasses.apply(void 0, [cells, true].concat(['e-aria-selected', 'e-active']));
+            }
         }
     };
     Selection.prototype.clearSelectionByRow = function (row) {
@@ -5066,6 +5472,11 @@ var SfGrid = /** @class */ (function () {
                 e.target.dispatchEvent(evt);
             }
         }
+        //TODO: datepicker in dialog editing
+        if ((e.key == "Tab" || e.key == "shiftTab" || e.key == "Enter" || e.key == "shiftEnter")
+            && e.target.classList.contains('e-datepicker')) {
+            e.target.blur();
+        }
         if (e.key == "Shift" || e.key == "Control" || e.key == "Alt") {
             e.stopPropagation(); //dont let execute c# keydown handler for meta keys.
         }
@@ -5076,6 +5487,7 @@ var SfGrid = /** @class */ (function () {
             this.clipboardModule.copy(true);
         }
         if (e.keyCode === 86 && e.ctrlKey && !this.options.isEdit) {
+            e.stopPropagation();
             this.clipboardModule.pasteHandler();
         }
         if (this.element.querySelector('.e-batchrow')) {
@@ -5103,7 +5515,8 @@ var SfGrid = /** @class */ (function () {
             e.preventDefault(); //prevent user select on shift pressing during selection
         }
         // e.button = 2 for right mouse button click
-        if ((e.button !== 2 && parentsUntil(e.target, 'e-headercell')) || parentsUntil(e.target, 'e-detailrowexpand') || parentsUntil(e.target, 'e-detailrowcollapse') || sf.base.closest(e.target, ".e-groupdroparea") || sf.base.closest(e.target, ".e-gridpopup")
+        if ((e.button !== 2 && parentsUntil(e.target, 'e-headercell')) || parentsUntil(e.target, 'e-detailrowexpand') || parentsUntil(e.target, 'e-detailrowcollapse')
+            || e.target.classList.contains('e-content') || e.target.classList.contains('e-headercontent') || sf.base.closest(e.target, ".e-groupdroparea") || sf.base.closest(e.target, ".e-gridpopup")
             || sf.base.closest(e.target, ".e-summarycell") || sf.base.closest(e.target, ".e-rhandler")
             || sf.base.closest(e.target, ".e-filtermenudiv") || sf.base.closest(e.target, ".e-filterbarcell")
             || sf.base.closest(e.target, ".e-groupcaption")) {
@@ -5324,6 +5737,24 @@ var Grid = {
     refreshOnDataChange: function (element) {
         if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.virtualContentModule.refreshOnDataChange();
+        }
+    },
+    updateAutofillPosition: function (element, cellindex, index) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            var _this = element.blazor__instance;
+            return _this.selectionModule.updateAutofillPosition(cellindex, index);
+        }
+        else {
+            return null;
+        }
+    },
+    createBorder: function (element, rowIndex, cellIndex) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            var _this = element.blazor__instance;
+            return _this.selectionModule.createBorder(rowIndex, cellIndex);
+        }
+        else {
+            return null;
         }
     },
     focusChild: function (element, rowuid, celluid) {

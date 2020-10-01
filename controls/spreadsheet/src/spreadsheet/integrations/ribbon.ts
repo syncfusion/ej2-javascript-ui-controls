@@ -131,10 +131,16 @@ export class Ribbon {
                     { template: this.getBtn(id, 'wrap', false), tooltipText: `${l10n.getConstant('WrapText')}`, id: id + '_wrap' }]
             },
             {
-                header: { text: l10n.getConstant('Insert') }, content: [{
-                    prefixIcon: 'e-hyperlink-icon', text: l10n.getConstant('Link'),
-                    id: id + '_hyperlink', tooltipText: l10n.getConstant('Link'), click: (): void => { this.getHyperlinkDlg(); }
-                }]
+                header: { text: l10n.getConstant('Insert') }, content: [
+                    {
+                        prefixIcon: 'e-hyperlink-icon', text: l10n.getConstant('Link'),
+                        id: id + '_hyperlink', tooltipText: l10n.getConstant('Link'), click: (): void => { this.getHyperlinkDlg(); }
+                    },
+                    {
+                        prefixIcon: 'e-image-icon', text: l10n.getConstant('Image'),
+                        id: id + '_', tooltipText: l10n.getConstant('Image'), click: (): void => {
+                             (this.parent.element.querySelector('#' + id + '_imageUpload') as HTMLElement).click(); }
+                    }]
             },
             {
                 header: { text: l10n.getConstant('Formulas') }, content: [{
@@ -788,7 +794,6 @@ export class Ribbon {
         }
         return btnObj.element;
     }
-
     private datavalidationDDB(id: string): Element {
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
         this.datavalidationDdb = new DropDownButton({
@@ -1898,7 +1903,8 @@ export class Ribbon {
     }
     private protectSheetHandler(args?: {
         disableHomeBtnId: string[], enableHomeBtnId: string[], enableFrmlaBtnId: string[],
-        enableInsertBtnId: string[], findBtnId: string[], dataValidationBtnId: string[]
+        enableInsertBtnId: string[], findBtnId: string[], dataValidationBtnId: string[],
+        imageBtnId: string[]
     }): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
@@ -1922,9 +1928,11 @@ export class Ribbon {
         if (sheet.isProtected) {
             this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId, enable: false }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Formulas'), items: args.enableFrmlaBtnId, enable: false }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: false }]);
         } else {
             this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId, enable: true }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Formulas'), items: args.enableFrmlaBtnId, enable: true }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: true }]);
         }
     }
     private updateMergeItem(e: MouseEvent & TouchEvent): void {

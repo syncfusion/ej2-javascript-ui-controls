@@ -8,10 +8,11 @@ import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej2-popups';
 import { GridModel, ResizeSettingsModel } from './grid-model';
 import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompiler, isGroupAdaptive, refreshForeignData } from './util';
-import { getRowHeight, setColumnIndex, Global, ispercentageWidth } from './util';
+import { getRowHeight, setColumnIndex, Global, ispercentageWidth, renderMovable } from './util';
+import { setRowElements, resetRowIndex, compareChanges } from './util';
 import * as events from '../base/constant';
-import { ReturnType } from '../base/type';
-import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI } from './interface';
+import { ReturnType, BatchChanges } from '../base/type';
+import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs } from './interface';
 import {AggregateQueryCellInfoEventArgs } from './interface';
 import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';
 import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, ParentDetails, ContextMenuItemModel } from './interface';
@@ -80,6 +81,8 @@ import { CheckState } from './enum';
 import { Aggregate } from '../actions/aggregate';
 import { ILogger } from '../actions/logger';
 import { gridObserver, BlazorAction } from '../actions/blazor-action';
+import { IModelGenerator } from '../base/interface';
+import { RowModelGenerator } from '../services/row-model-generator';
 
 
 /** 
@@ -642,6 +645,14 @@ export class GroupSettings extends ChildProperty<GroupSettings> {
     @Property()
     public captionTemplate: string;
 
+    /**
+     * The Lazy load grouping, allows the Grid to render only the initial level caption rows in collapsed state while grouping.
+     * The child rows of each caption will render only when we expand the captions.
+     * @default false
+     */
+    @Property(false)
+    public enableLazyLoading: boolean;
+
 }
 
 
@@ -777,10 +788,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private mediaCol: Column[];
     private getShowHideService: ShowHide;
     private mediaColumn: Column[];
+    private keyA: boolean = false;
     private media: { [key: string]: MediaQueryList } = {};
     /** @hidden */
     public invokedFromMedia: boolean;
     private dataBoundFunction: Function;
+    private dataToBeUpdated: BatchChanges;
     private componentRefresh: Function = Component.prototype.refresh;
     /** @hidden */
     public recordsCount: number;
@@ -853,6 +866,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private mediaBindInstance: Object = {};
     /** @hidden */
     public commandDelIndex: number = undefined;
+    /** @hidden */
+    public asyncTimeOut: number = 50;
 
     //Module Declarations
     /**
@@ -1285,6 +1300,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Property(false)
     public allowGrouping: boolean;
+
+    /**    
+     * If `enableImmutableMode`  is set to true, the grid will reuse old rows if it exists in the new result instead of
+     * full refresh while performing the grid actions.
+     * @default false
+     */
+    @Property(false)
+    public enableImmutableMode: boolean;
 
     /**    
      * If `showColumnMenu` set to true, then it will enable the column menu options in each columns.
@@ -2174,6 +2197,22 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public exportGroupCaption: EmitType<ExportGroupCaptionEventArgs>;
 
     /**
+     * Triggers when expand the caption row in lazy load grouping.
+     * @event
+     * @deprecated 
+     */
+    @Event()
+    public lazyLoadGroupExpand: EmitType<LazyLoadArgs>;
+
+    /**
+     * Triggers when collapse the caption row in lazy load grouping.
+     * @event
+     * @deprecated 
+     */
+    @Event()
+    public lazyLoadGroupCollapse: EmitType<LazyLoadArgs>;
+
+    /**
      * Constructor for creating the component
      * @hidden
      */
@@ -2326,6 +2365,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.enableInfiniteScrolling) {
             modules.push({
                 member: 'infiniteScroll',
+                args: [this, this.serviceLocator]
+            });
+        }
+
+        if (this.groupSettings.enableLazyLoading) {
+            modules.push({
+                member: 'lazyLoadGroup',
                 args: [this, this.serviceLocator]
             });
         }
@@ -4950,6 +4996,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             return isNullOrUndefined((this.currentViewData as Object[] & { records: Object[] }).records) ?
                 this.currentViewData : (this.currentViewData as Object[] & { records: Object[] }).records;
         }
+        if (this.groupSettings.enableLazyLoading) { return this.currentViewData; };
         return (this.allowGrouping && this.groupSettings.columns.length && this.currentViewData.length && (<{records?: Object[]}>this.currentViewData).records) ?
             (this.currentViewData as Object[] & { records: Object[] }).records : this.currentViewData;
     }
@@ -5137,12 +5184,24 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private keyDownHandler(e: KeyboardEventArgs): void {
         if (e.altKey) {
             if (e.keyCode === 74) {//alt j
-                this.focusModule.focusHeader();
-                this.focusModule.addOutline();
+                if (this.keyA) {//alt A J
+                    this.notify(events.groupCollapse, { target: e.target, collapse: false });
+                    this.keyA = false;
+                } else {
+                    this.focusModule.focusHeader();
+                    this.focusModule.addOutline();
+                }
             }
             if (e.keyCode === 87) {//alt w
                 this.focusModule.focusContent();
                 this.focusModule.addOutline();
+            }
+            if (e.keyCode === 65) {//alt A
+                this.keyA = true;
+            }
+            if (e.keyCode === 72 && this.keyA) {//alt A H
+                this.notify(events.groupCollapse, { target: e.target, collapse: true });
+                this.keyA = false;
             }
         }
     }
@@ -5744,7 +5803,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *To perform aggregate operation on a column.
      *@param  {AggregateColumnModel} summaryCol - Pass Aggregate Column details.
      *@param  {Object} summaryData - Pass JSON Array for which its field values to be calculated.
-     *
      * @deprecated
      */
     public getSummaryValues(summaryCol: AggregateColumnModel, summaryData: Object): number {
@@ -5809,6 +5867,170 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
+    /**    
+     * @hidden
+     */
+    public renderTemplates(): void {
+        let portals: string = 'portals';
+        this.notify('reactTemplateRender', this[portals]);
+        this.renderReactTemplates();
+    }
+
+    /**
+     * Apply the changes to the Grid without refreshing the rows.
+     * @param  {BatchChanges} changes - Defines changes to be updated.
+     * @return {void}
+     */
+    public batchUpdate(changes: BatchChanges) {
+        this.processRowChanges(changes);
+    }
+
+    /**
+     * Apply the changes to the Grid in one batch after 50ms without refreshing the rows.
+     * @param  {BatchChanges} changes - Defines changes to be updated.
+     * @return {void}
+     */
+    public batchAsyncUpdate(changes: BatchChanges) {
+        this.processBulkRowChanges(changes);
+    }
+
+    private processBulkRowChanges(changes: BatchChanges): void {
+        if (!this.dataToBeUpdated) {
+            this.dataToBeUpdated = Object.assign({ addedRecords: [], changedRecords: [], deletedRecords: [] }, changes);
+            setTimeout(
+                () => {
+                    this.processRowChanges(this.dataToBeUpdated);
+                    this.dataToBeUpdated = null;
+                },
+                this.asyncTimeOut);
+        } else {
+            let loopstring: string[] = ['addedRecords', 'changedRecords', 'deletedRecords'];
+            let keyField: string = this.getPrimaryKeyFieldNames()[0];
+            for (let i: number = 0; i < loopstring.length; i++) {
+                if (changes[loopstring[i]]) {
+                    compareChanges(this, changes, loopstring[i], keyField);
+                }
+            }
+        }
+    }
+
+    private processRowChanges(changes: BatchChanges) {
+        let keyField: string = this.getPrimaryKeyFieldNames()[0];
+        changes = Object.assign({ addedRecords: [], changedRecords: [], deletedRecords: [] }, changes);
+        let promise: Promise<Object> = this.getDataModule().saveChanges(
+            changes, keyField, {}, this.getDataModule().generateQuery().requiresCount()
+        );
+        if (this.getDataModule().isRemote()) {
+            promise.then((e: ReturnType) => {
+                this.setNewData();
+            });
+        } else {
+            this.setNewData();
+        }
+    }
+
+    private setNewData(): void {
+        let oldValues: Object[] = JSON.parse(JSON.stringify(this.getCurrentViewRecords()));
+        let getData: Promise<Object> = this.getDataModule().getData({}, this.getDataModule().generateQuery().requiresCount());
+        getData.then((e: ReturnType) => {
+            this.bulkRefresh(e.result, oldValues, e.count);
+        });
+    }
+
+    private deleteRowElement(row: Row<Column>): void {
+        let tr: Element = this.getRowElementByUID(row.uid);
+        let index: number = parseInt(tr.getAttribute('aria-rowindex'), 10)
+        remove(tr);
+        if (this.getFrozenColumns()) {
+            let mtr: Element = this.getMovableRows()[index];
+            remove(mtr);
+        }
+    }
+
+    private bulkRefresh(result: Object[], oldValues: Object[], count: number): void {
+        let rowObj: Row<Column>[] = this.getRowsObject();
+        let keyField: string = this.getPrimaryKeyFieldNames()[0];
+        for (let i: number = 0; i < rowObj.length; i++) {
+            if (!result.filter((e: Object) => { return e[keyField] === rowObj[i].data[keyField] }).length) {
+                this.deleteRowElement(rowObj[i]);
+                rowObj.splice(i, 1);
+                i--;
+            }
+        }
+        for (let i: number = 0; i < result.length; i++) {
+            let isRowExist: boolean;
+             oldValues.filter((e: Object) => {
+                if (e[keyField] === result[i][keyField]) {
+                    if (e !== result[i]) {
+                        this.setRowData(result[i][keyField], result[i]);
+                    }
+                    isRowExist = true;
+                }
+            });
+            if (!isRowExist) {
+                this.renderRowElement(result[i], i);
+            }
+        }
+        this.currentViewData = result;
+        let rows: HTMLTableRowElement[] = [].slice.call(this.getContentTable().querySelectorAll('.e-row'));
+        resetRowIndex(this, this.getRowsObject(), rows);
+        setRowElements(this);
+        if (this.allowPaging) {
+            this.notify(events.inBoundModelChanged, { module: 'pager', properties: { totalRecordsCount: count } });
+        }
+    }
+
+    private renderRowElement(data: Object, index: number): void {
+        let row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this);
+        let model: IModelGenerator<Column> = new RowModelGenerator(this);
+        let modelData: Row<Column>[] = model.generateRows([data]);
+        let tr: HTMLTableRowElement = row.render(modelData[0], this.getColumns()) as HTMLTableRowElement;
+        let mTr: Element;
+        let mTbody: Element;
+        
+        this.addRowObject(modelData[0], index);
+        let tbody: Element = this.getContentTable().querySelector('tbody');
+        if (tbody.querySelector('.e-emptyrow')) {
+            let emptyRow: Element = tbody.querySelector('.e-emptyrow');
+            emptyRow.parentNode.removeChild(emptyRow);
+            if (this.getFrozenColumns()) {
+                let moveTbody: Element = this.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+                (moveTbody.firstElementChild).parentNode.removeChild(moveTbody.firstElementChild);
+            }
+        }
+        if (this.getFrozenColumns()) {
+            mTr = renderMovable(tr, this.getFrozenColumns(), this);
+            if (this.frozenRows && index < this.frozenRows) {
+                mTbody = this.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
+            } else {
+                mTbody = this.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+            }
+            mTbody.appendChild(mTr);
+            if (this.height === 'auto') {
+                this.notify(events.frozenHeight, {});
+            }
+        }
+        if (this.frozenRows && index < this.frozenRows) {
+            tbody = this.getHeaderContent().querySelector('tbody');
+        } else {
+            tbody = this.getContent().querySelector('tbody');
+        }
+        tbody = this.getContent().querySelector('tbody');
+        tbody.appendChild(tr);
+    }
+
+    private addRowObject(row: Row<Column>, index: number): void {
+        let frzCols: number = this.getFrozenColumns();
+        if (frzCols) {
+            let mRows: Row<Column>[] = this.getMovableRowsObject();
+            let mRow: Row<Column> = row.clone();
+            mRow.cells = mRow.cells.slice(frzCols);
+            row.cells = row.cells.slice(0, frzCols);
+            mRows.splice(index, 1, mRow)
+        }
+        this.getRowsObject().splice(index, 1, row)
+    }
+
     /**
      * @hidden
      */
@@ -5824,5 +6046,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         return height;
     }
+
 
 }

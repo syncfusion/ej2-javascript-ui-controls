@@ -1,6 +1,7 @@
 @include export-module('menu-fabric-icons') {
   /*! menu layout */
-  .e-menu-wrapper {
+  .e-menu-wrapper,
+  .e-menu-container {
     @at-root {
       & ul {
         &.e-vertical .e-menu-item {
@@ -76,7 +77,8 @@
     }
   }
 
-  .e-rtl.e-menu-wrapper ul {
+  .e-rtl.e-menu-wrapper ul,
+  .e-rtl.e-menu-container ul {
     &.e-vertical {
       & .e-caret {
         &::before {
@@ -95,7 +97,9 @@
   }
 
   .e-bigger .e-rtl.e-menu-wrapper ul,
-  .e-bigger.e-rtl.e-menu-wrapper ul {
+  .e-bigger.e-rtl.e-menu-wrapper ul,
+  .e-bigger .e-rtl.e-menu-container ul,
+  .e-bigger.e-rtl.e-menu-container ul {
     &.e-vertical {
       & .e-caret {
         &::before {
@@ -114,7 +118,9 @@
   }
 
   .e-bigger .e-rtl.e-menu-wrapper.e-hamburger ul,
-  .e-bigger.e-rtl.e-menu-wrapper.e-hamburger ul {
+  .e-bigger.e-rtl.e-menu-wrapper.e-hamburger ul,
+  .e-bigger .e-rtl.e-menu-container.e-hamburger ul,
+  .e-bigger.e-rtl.e-menu-container.e-hamburger ul {
 
     &.e-ul {
       & .e-caret {

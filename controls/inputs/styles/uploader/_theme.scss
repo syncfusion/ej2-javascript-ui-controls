@@ -5,11 +5,11 @@
   .e-upload {
     border: $upload-border;
 
-    & .e-file-drop {
+    #{if(&, '&', '*')} .e-file-drop {
       color: $drop-text-color;
     }
 
-    & .e-upload-files {
+    #{if(&, '&', '*')} .e-upload-files {
       border-top: $list-bottom-border;
 
       .e-upload-file-list {
@@ -46,20 +46,20 @@
             color: $upload-failure-color;
           }
 
-          & .e-progress-inner-wrap {
+          #{if(&, '&', '*')} .e-progress-inner-wrap {
             background-color: $progress-background-color;
 
-            & .e-upload-progress-bar {
+            #{if(&, '&', '*')} .e-upload-progress-bar {
 
-              &.e-upload-progress {
+              #{if(&, '&', '*')}.e-upload-progress {
                 background: $upload-in-progress-color;
               }
 
-              &.e-upload-success {
+              #{if(&, '&', '*')}.e-upload-success {
                 background: $upload-success-color;
               }
 
-              &.e-upload-failed {
+              #{if(&, '&', '*')}.e-upload-failed {
                 background: $upload-failure-color;
               }
 
@@ -67,32 +67,32 @@
 
           }
 
-          & .e-progress-bar-text {
+          #{if(&, '&', '*')} .e-progress-bar-text {
             color: $drop-text-color;
           }
         }
       }
 
-      & .e-file-remove-btn.e-icons,
-      & .e-file-delete-btn.e-icons,
-      & .e-file-reload-btn.e-icons,
-      & .e-file-abort-btn.e-icons,
-      & .e-file-pause-btn.e-icons,
-      & .e-file-play-btn.e-icons {
+      #{if(&, '&', '*')} .e-file-remove-btn.e-icons,
+      #{if(&, '&', '*')} .e-file-delete-btn.e-icons,
+      #{if(&, '&', '*')} .e-file-reload-btn.e-icons,
+      #{if(&, '&', '*')} .e-file-abort-btn.e-icons,
+      #{if(&, '&', '*')} .e-file-pause-btn.e-icons,
+      #{if(&, '&', '*')} .e-file-play-btn.e-icons {
         color: $remove-icon-color;
 
-        &:hover {
+        #{if(&, '&', '*')}:hover {
           color: $upload-hover-icon-color;
         }
       }
 
-      & .e-file-remove-btn.e-icons:not(.e-upload-progress):focus,
-      & .e-file-delete-btn.e-icons:not(.e-upload-progress):focus,
-      & .e-file-pause-btn.e-icons:not(.e-upload-progress):focus,
-      & .e-file-play-btn.e-icons:not(.e-upload-progress):focus,
-      & .e-file-reload-btn.e-icons:focus,
-      & .e-file-abort-btn.e-icons:not(.e-disabled):focus,
-      & .e-clear-icon-focus {
+      #{if(&, '&', '*')} .e-file-remove-btn.e-icons:not(.e-upload-progress):focus,
+      #{if(&, '&', '*')} .e-file-delete-btn.e-icons:not(.e-upload-progress):focus,
+      #{if(&, '&', '*')} .e-file-pause-btn.e-icons:not(.e-upload-progress):focus,
+      #{if(&, '&', '*')} .e-file-play-btn.e-icons:not(.e-upload-progress):focus,
+      #{if(&, '&', '*')} .e-file-reload-btn.e-icons:focus,
+      #{if(&, '&', '*')} .e-file-abort-btn.e-icons:not(.e-disabled):focus,
+      #{if(&, '&', '*')} .e-clear-icon-focus {
         background-color: $clear-icon-focus-color;
         border-color: transparent;
         box-shadow: 0 0 0 transparent;

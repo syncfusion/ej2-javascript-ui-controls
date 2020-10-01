@@ -175,3 +175,5 @@ export const clear: string = 'clear';
 export const clearCF: string = 'clearCF';
 /** @hidden */
 export const clearCells: string = 'clearCells';
+/** @hidden */
+export const setImage: string = 'setImage';

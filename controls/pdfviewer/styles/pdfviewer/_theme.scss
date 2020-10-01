@@ -2329,4 +2329,20 @@
     position: relative;
  }
 
+  .e-pv-font-sign {
+    border: 1px solid $pv-sidebar-bookmark-title-color;
+    border-radius: 5px;
+    display: inline-block;
+    font-size: 13px;
+    height: 90px;
+    margin-bottom: 5px;
+    margin-left: 20px;
+    margin-right: 15px;
+    margin-top: 25px;
+    padding-top: 40px;
+    text-align: center;
+    width: 200px;
+    word-wrap: break-word;
+ }
+
 }

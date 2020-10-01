@@ -334,6 +334,7 @@ export class AutoComplete extends ComboBox {
         } else {
             this.hidePopup();
         }
+        this.renderReactTemplates();
     }
 
     protected clearAll(e?: MouseEvent, property?: AutoCompleteModel): void {

@@ -280,6 +280,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     private isBlazor: boolean = false;
     private isInlineRendering: boolean = false;
     private removeAllCalled: boolean = false;
+    private resizeHeight: boolean = false;
 
     /**
      * If allowDragging is set to true, then the DashboardLayout allows you to drag and reorder the panels.
@@ -402,6 +403,8 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     @Event()
     public change: EmitType<ChangeEventArgs>;
 
+
+
     /**
      * Triggers when a panel is about to drag.
      * @event
@@ -458,10 +461,10 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     @Event()
     public created: EmitType<Object>;
     /** 
-     * Triggers when Dashboard Layout is destroyed.
-     * @event 
+     * Triggers when Dashboard Layout is destroyed.
+     * @event 
      * @blazorproperty 'Destroyed'
-     */
+     */
     @Event()
     public destroyed: EmitType<Object>;
 
@@ -502,7 +505,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     protected createPanelElement(cssClass: string[], idValue: string): HTMLElement {
         let ele: HTMLElement = <HTMLElement>this.createElement('div');
-        if (cssClass && cssClass.length > 0 ) { addClass([ele], cssClass); }
+        if (cssClass && cssClass.length > 0) { addClass([ele], cssClass); }
         if (idValue) { ele.setAttribute('id', idValue); }
         return ele;
     }
@@ -522,6 +525,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.updateDragArea();
         this.renderComplete();
         this.updateServerPanelData();
+        this.renderReactTemplates();
     }
 
     private updateServerPanelData(): void {
@@ -551,6 +555,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         }
         this.table.appendChild(tbody);
         this.element.appendChild(this.table);
+        this.renderReactTemplates();
     }
 
     private initialize(): void {
@@ -723,6 +728,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 let id: string = this.element.id + 'HeaderTemplate' + panelId;
                 this.renderTemplate(<string>panelModel.header, headerTemplateElement, id, isStringTemplate, 'header');
                 this.panelContent.appendChild(headerTemplateElement);
+                this.renderReactTemplates();
                 updateBlazorTemplate(id, 'HeaderTemplate', panelModel);
             }
         }
@@ -738,6 +744,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 let id: string = this.element.id + 'ContentTemplate' + panelId;
                 this.renderTemplate(<string>panelModel.content, this.panelBody, id, isStringTemplate, 'content');
                 this.panelContent.appendChild(this.panelBody);
+                this.renderReactTemplates();
                 updateBlazorTemplate(id, 'ContentTemplate', panelModel);
             }
 
@@ -821,6 +828,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.shadowEle.classList.add('e-holder');
         addClass([this.element], [preventSelect]);
         this.element.appendChild(this.shadowEle);
+        this.renderReactTemplates();
         this.elementX = parseFloat(el.style.left);
         this.elementY = parseFloat(el.style.top);
         this.elementWidth = el.offsetWidth;
@@ -1267,19 +1275,19 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             let panelElement: HTMLElement = document.getElementById(updatedPanel[i].id);
             if (panelElement) {
                 setStyle(<HTMLElement>panelElement, { 'width': '100%' });
-                (<HTMLElement>panelElement).style.height = ' ' + (this.element.parentElement
-                    && this.element.parentElement.offsetWidth / this.cellAspectRatio) + 'px';
-                this.cellSize[1] = this.element.parentElement
-                    && (this.element.parentElement.offsetWidth / this.cellAspectRatio);
+                (<HTMLElement>panelElement).style.height = ' ' + (<number>this.cellSize[1] * updatedPanel[i].sizeY) + 'px';
+                this.resizeHeight = true;
                 if (this.addPanelCalled && this.isBlazor) {
                     let panelProp: PanelModel = this.getActualProperties(updatedPanel[i]);
                     panelProp.row = i;
                     panelProp.col = 0;
                     this.panelPropertyChange(updatedPanel[i], panelProp);
                     this.setPanelPosition(<HTMLElement>panelElement, i, 0);
+                    this.setMediaQueryPanelPosition(<HTMLElement>panelElement, i, 0);
                 } else {
                     this.panelPropertyChange(updatedPanel[i], { row: i, col: 0 });
                     this.setPanelPosition(<HTMLElement>panelElement, updatedPanel[i].row, updatedPanel[i].col);
+                    this.setMediaQueryPanelPosition(<HTMLElement>panelElement, updatedPanel[i].row, updatedPanel[i].col);
                 }
                 this.setClasses(this.panelCollection);
                 this.checkDragging(this.dragCollection);
@@ -1346,6 +1354,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             }
             cellElement.style.zIndex = '' + panel.zIndex;
             this.element.appendChild(cellElement);
+            this.renderReactTemplates();
         }
         let dashBoardCell: HTMLElement = this.renderPanels(cellElement, panel, panel.id, isStringTemplate);
         this.panelCollection.push(dashBoardCell);
@@ -1372,6 +1381,26 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         let widthValue: number | string = this.getCellSize()[0];
         let left: number = col === 0 ? 0 : (((col) * ((widthValue) + this.cellSpacing[0])));
         let top: number = row === 0 ? 0 : (((row) * ((heightValue) + this.cellSpacing[1])));
+        setStyle(cellElement, { 'left': left + 'px', 'top': top + 'px' });
+    }
+
+    protected setMediaQueryPanelPosition(cellElement: HTMLElement, row: number, col: number): void {
+        if (!cellElement) {
+            return;
+        }
+        let widthValue: number | string = this.getCellSize()[0];
+        let heightValue: number | string = this.getCellSize()[1];
+        let top: number = 0; //= row === 0 ? 0 : (((row) * (parseInt(heightValue.toString(), 10) + this.cellSpacing[1])));
+        let left: number = 0;
+        if (this.resizeHeight && row !== 0) {
+            // top = 0;
+            for (let i: number = 1; i < this.panels.length; i++) {
+                top = top + (this.panels[i - 1].sizeY * <number>this.cellSize[1]) + this.cellSpacing[1];
+                if (i === row) {
+                    break;
+                }
+            }
+        }
         setStyle(cellElement, { 'left': left + 'px', 'top': top + 'px' });
     }
 
@@ -1443,6 +1472,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                         addClass([cell], 'e-rtl');
                     }
                     this.element.appendChild(cell);
+                    this.renderReactTemplates();
                 }
                 if (this.checkMediaQuery() && j === cells.length - 1) {
                     this.checkMediaQuerySizing();
@@ -2422,6 +2452,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         addClass([this.element], [preventSelect]);
         addClass([args.element], [dragging]);
         this.element.appendChild(this.shadowEle);
+        this.renderReactTemplates();
         this.shadowEle = document.querySelector('.e-holder');
         this.shadowEle.style.height = (this.getCellInstance(args.element.id).sizeY * <number>this.cellSize[1]) + 'px';
         this.shadowEle.style.width = (this.getCellInstance(args.element.id).sizeX * <number>this.cellSize[0]) + 'px';
@@ -2627,6 +2658,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         }
         this.setClasses([cell]);
         if (this.allowFloating) {
+            this.mainElement = null;
             this.moveItemsUpwards();
         }
         this.updateOldRowColumn();
@@ -2680,8 +2712,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             addClass([headerTemplateElement], [header]);
             headerTemplateElement.innerHTML = '';
             let id: string = this.element.id + 'HeaderTemplate' + panelInstance.id;
-            this.renderTemplate(<string>panelInstance.header, headerTemplateElement, id, true , 'header');
+            this.renderTemplate(<string>panelInstance.header, headerTemplateElement, id, true, 'header');
             this.panelContent.appendChild(headerTemplateElement);
+            this.renderReactTemplates();
         } else {
             if (cell.querySelector('.e-panel-header')) {
                 detach(cell.querySelector('.e-panel-header'));
@@ -2699,6 +2732,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             let id: string = this.element.id + 'ContentTemplate' + panelInstance.id;
             this.renderTemplate(<string>panelInstance.content, this.panelBody, id, true, 'content');
             this.panelContent.appendChild(this.panelBody);
+            this.renderReactTemplates();
         } else {
             if (cell.querySelector('.e-panel-content')) {
                 detach(cell.querySelector('.e-panel-content'));
@@ -2747,6 +2781,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.removeAllCalled = true;
         for (let i: number = 0; i < this.panelCollection.length; i++) {
             detach(this.panelCollection[i]);
+            this.clearTemplate();
         }
         this.removeAllPanel();
         this.updateServerPanelData();
@@ -2917,11 +2952,14 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         }
         this.removeAllPanel();
         super.destroy();
+        this.clearTemplate();
+        this.renderReactTemplates();
     }
 
     private removeAllPanel(): void {
         while (this.element.firstElementChild) {
             detach(this.element.firstElementChild);
+            this.clearTemplate();
         }
     }
 
@@ -2980,7 +3018,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      */
 
     public onPropertyChanged(newProp: DashboardLayoutModel, oldProp: DashboardLayoutModel): void {
-        if (newProp.panels && newProp.panels.length > 0) { this.checkForIDValues(newProp.panels); }
+        if (newProp.panels && newProp.panels.length > 0 && newProp.panels[0] instanceof Panel) { this.checkForIDValues(newProp.panels); }
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'enableRtl':
@@ -3030,16 +3068,22 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                     if (this.showGridLines) {
                         this.setProperties({ showGridLines: newProp.showGridLines }, true);
                         this.initGridLines();
-                    } else { if (this.table) { detach(this.table); } }
+                    } else {
+                        if (this.table) {
+                            detach(this.table);
+                        }
+                    }
                     break;
                 case 'allowPushing':
                     this.setProperties({ allowPushing: newProp.allowPushing }, true);
                     break;
                 case 'panels':
-                    if (!newProp.columns && !this.restrictDynamicUpdate) {
+                    if (!newProp.columns && !this.restrictDynamicUpdate && newProp.panels[0] instanceof Panel) {
                         this.isRenderComplete = false;
                         this.updatePanelsDynamically(newProp.panels);
                         this.isRenderComplete = true;
+                    } else if (!(newProp.panels[0] instanceof Panel)) {
+                        this.updatePanelsDynamically(this.panels);
                     } else { this.restrictDynamicUpdate = false; }
                     break;
                 case 'columns':

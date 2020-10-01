@@ -8,10 +8,10 @@
   user-select: none;
   width: 100%;
 
-  &.e-delimiter {
-    & .e-searcher {
+  #{if(&, '&', '*')}.e-delimiter {
+    #{if(&, '&', '*')} .e-searcher {
       height: 27px;
-      vertical-align: middle;& .e-dropdownbase {
+      vertical-align: middle;#{if(&, '&', '*')} .e-dropdownbase {
         height: 100%;
         min-height: 100%;
       }
@@ -21,8 +21,8 @@
   .e-delim-view {
     white-space: nowrap;
 
-    &.e-delim-values.e-delim-overflow,
-    &.e-delim-values.e-delim-total {
+    #{if(&, '&', '*')}.e-delim-values.e-delim-overflow,
+    #{if(&, '&', '*')}.e-delim-values.e-delim-total {
       box-sizing: border-box;
       display: inline-block;
       overflow: hidden;
@@ -131,8 +131,8 @@
   }
 }
 
-#{&}.e-multiselect.e-rtl .e-multi-select-wrapper .e-mob-chip.e-chips>.e-chipcontent,
-.e-bigger #{&}.e-multiselect.e-rtl .e-multi-select-wrapper .e-chips>.e-chipcontent {
+.e-multiselect.e-rtl .e-multi-select-wrapper .e-mob-chip.e-chips>.e-chipcontent,
+.e-bigger .e-multiselect.e-rtl .e-multi-select-wrapper .e-chips>.e-chipcontent {
   padding: $ddl-rtl-chip-mobile-content-padding;
 }
 
@@ -313,8 +313,8 @@
   padding-left: $ddl-remains-padding-left;
 }
 
-#{&}.e-multiselect.e-disabled .e-multi-select-wrapper,
-#{&}.e-multiselect.e-disabled .e-multi-select-wrapper .e-chips .e-chips-close::before {
+.e-multiselect.e-disabled .e-multi-select-wrapper,
+.e-multiselect.e-disabled .e-multi-select-wrapper .e-chips .e-chips-close::before {
   cursor: not-allowed;
 }
 
@@ -340,13 +340,13 @@
   content: '';
 }
 
-#{&}.e-multiselect.e-rtl .e-multi-select-wrapper.e-delimiter {
+.e-multiselect.e-rtl .e-multi-select-wrapper.e-delimiter {
   .e-searcher {
     float: none;
   }
 }
 
-#{&}.e-multiselect.e-rtl {
+.e-multiselect.e-rtl {
   .e-multi-select-wrapper.e-close-icon-hide {
     padding-left: 0;
   }
@@ -770,7 +770,7 @@ ejs-multiselect {
 
 .e-bigger {
   .e-multiselect.e-outline .e-multi-select-wrapper,
-  &.e-multiselect.e-outline .e-multi-select-wrapper {
+  #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
     @if $skin-name == 'material' {
       min-height: $outline-multiselect-bigger-height;
       padding: $outline-multiselect-bigger-overall-padding;
@@ -778,7 +778,7 @@ ejs-multiselect {
   }
 
   .e-small {
-    &.e-multiselect.e-outline .e-multi-select-wrapper {
+    #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
       @if $skin-name == 'material' {
         min-height: $ddl-outline-multiselect-height;
         padding: $outline-multiselect-overall-padding;
@@ -786,9 +786,9 @@ ejs-multiselect {
     }
   }
 
-  &.e-small {
+  #{if(&, '&', '*')}.e-small {
     .e-multiselect.e-outline .e-multi-select-wrapper,
-    &.e-multiselect.e-outline .e-multi-select-wrapper {
+    #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
       @if $skin-name == 'material' {
         min-height: $ddl-outline-multiselect-height;
         padding: $outline-multiselect-overall-padding;
@@ -799,7 +799,7 @@ ejs-multiselect {
 
 .e-small {
   .e-multiselect.e-outline .e-multi-select-wrapper,
-  &.e-multiselect.e-outline .e-multi-select-wrapper {
+  #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
     @if $skin-name == 'material' {
       min-height: $outline-multiselect-small-height;
       padding: $outline-multiselect-overall-padding;
@@ -807,7 +807,7 @@ ejs-multiselect {
   }
 
   .e-bigger {
-    &.e-multiselect.e-outline .e-multi-select-wrapper {
+    #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
       @if $skin-name == 'material' {
         min-height: $ddl-outline-multiselect-height;
         padding: $outline-multiselect-overall-padding;
@@ -815,7 +815,7 @@ ejs-multiselect {
     }
   }
 
-  &.e-bigger {
+  #{if(&, '&', '*')}.e-bigger {
     .e-multiselect.e-outline .e-multi-select-wrapper {
       @if $skin-name == 'material' {
         min-height: $ddl-outline-multiselect-height;

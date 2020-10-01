@@ -190,7 +190,7 @@ function wordWrapping(text: TextAttributes, textValue?: string, laneWidth?: numb
     let existingText: string;
     for (j = 0; j < eachLine.length; j++) {
         txt = '';
-        words = text.textWrapping !== 'NoWrap' ? eachLine[j].split(' ') : ( text.textWrapping === 'NoWrap') ? [eachLine[j]] : eachLine;
+        words = text.textWrapping !== 'NoWrap' ? eachLine[j].split(' ') : (text.textWrapping === 'NoWrap') ? [eachLine[j]] : eachLine;
         for (i = 0; i < words.length; i++) {
             txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[i];
             newText = txtValue + ' ' + (words[i + 1] || '');
@@ -682,6 +682,7 @@ export function getContent(
     let content: string = '';
     let sentNode: Object = {};
     let isSvg: boolean = false;
+    let propertyName: string;
     if (node instanceof Node) {
         sentNode = node;
         if (node.shape.type === 'Native') {
@@ -690,12 +691,12 @@ export function getContent(
             let div: SVGSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
             document.body.appendChild(div);
             /* tslint:disable */
-            div.innerHTML = ((node.shape as any).content) as string ;            
+            div.innerHTML = ((node.shape as any).content) as string;
             /* tslint:disable */
             svgContent = (div.getElementsByTagName('svg').length > 0)
-            ? div.getElementsByTagName('svg')[0].outerHTML : div.getElementsByTagName('g')[0].outerHTML;
+                ? div.getElementsByTagName('svg')[0].outerHTML : div.getElementsByTagName('g')[0].outerHTML;
             /* tslint:disable */
-            (node.shape as any).content = svgContent;            
+            (node.shape as any).content = svgContent;
             /* tslint:disable */
             element.content = svgContent;
             div.parentElement.removeChild(div);
@@ -705,6 +706,7 @@ export function getContent(
             content = 'diagramsf_node_template';
             sentNode = cloneBlazorObject(node);
         }
+        propertyName = "nodeTemplate";
     } else {
         sentNode = node;
         //new
@@ -712,8 +714,13 @@ export function getContent(
             sentNode = cloneBlazorObject(node);
             content = 'diagramsf_annotation_template';
         }
+        propertyName = "annotationTemplate";
     }
     let item: HTMLElement | SVGElement;
+    let diagramElement: Object = document.getElementById(element.diagramId);
+    let instance: string = 'ej2_instances';
+    let diagram: Object = diagramElement[instance][0];
+
     if (typeof element.content === 'string' && (!(element as DiagramHtmlElement).isTemplate || isBlazor())) {
         let template: HTMLElement = document.getElementById(element.content);
         if (template) {
@@ -721,7 +728,7 @@ export function getContent(
         } else {
             let compiledString: Function;
             compiledString = compile(element.content);
-            for (item of compiledString(sentNode, null, null, content)) {
+            for (item of compiledString(sentNode, diagram, propertyName, content)) {
                 div.appendChild(item);
             }
             //new
@@ -732,7 +739,7 @@ export function getContent(
     } else if ((element as DiagramHtmlElement).isTemplate) {
         let compiledString: Function;
         compiledString = (element as DiagramHtmlElement).getNodeTemplate()(
-            cloneObject(nodeObject), undefined, 'template', undefined, undefined, false);
+            cloneObject(nodeObject), diagram, propertyName, undefined, undefined, false);
         for (let i: number = 0; i < compiledString.length; i++) {
             div.appendChild(compiledString[i]);
         }
@@ -844,17 +851,21 @@ export function getTemplateContent(
 
 
 /** @private */
-export function createUserHandleTemplates(userHandleTemplate: string, template: HTMLCollection, selectedItems: SelectorModel): void {
+export function createUserHandleTemplates(userHandleTemplate: string, template: HTMLCollection, selectedItems: SelectorModel, diagramID: string): void {
     let userHandleFn: Function;
     let handle: UserHandleModel;
     let compiledString: Function;
     let i: number;
     let div: HTMLElement;
+    let diagramElement: Object = document.getElementById(diagramID);
+    let instance: string = 'ej2_instances';
+    let diagram: Object = diagramElement[instance][0];
+
     if (userHandleTemplate && template) {
         userHandleFn = templateCompiler(userHandleTemplate);
         for (handle of selectedItems.userHandles) {
             if (userHandleFn) {
-                compiledString = userHandleFn(cloneObject(handle), undefined, 'template', undefined, undefined, false);
+                compiledString = userHandleFn(cloneObject(handle), diagram, 'userHandleTemplate', undefined, undefined, false);
                 for (i = 0; i < compiledString.length; i++) {
                     let attr: Object = {
                         'style': 'height: 100%; width: 100%; pointer-events: all',
@@ -872,7 +883,7 @@ export function createUserHandleTemplates(userHandleTemplate: string, template: 
         for (handle of selectedItems.userHandles) {
             if (!handle.pathData && !handle.content && !handle.source) {
                 compiledString = compile(handle.content);
-                for (i = 0, a = compiledString(cloneBlazorObject(handle), null, null, content); i < a.length; i++) {
+                for (i = 0, a = compiledString(cloneBlazorObject(handle), diagram, 'userHandleTemplate', content); i < a.length; i++) {
                     let attr: object = {
                         'style': 'height: 100%; width: 100%; pointer-events: all',
                         'id': handle.name + '_template_hiddenUserHandle'

@@ -1131,34 +1131,41 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private enableEditor(val: boolean): void {
         (val) ? this.renderEditor() : this.cancelHandler();
     }
-    private checkValidation(fromSubmit : boolean , isValidate?: boolean): void {
+    private checkValidation(fromSubmit: boolean, isValidate?: boolean): void {
+        let proxy : this = this;
         let args: ValidateEventArgs;
         if (this.validationRules) {
             let rules: string[] = Object.keys(this.validationRules);
-            let validationLength : number =  Object.keys(this.validationRules[rules[0]]).length;
-            validationLength = 'validateHidden' in this.validationRules[rules[0]] ? validationLength - 1 : validationLength;
-            let count : number = 0;
+            let rulesIndex : number = 0;
+            let count: number = 0;
             this.formValidate = new FormValidator(this.formEle as HTMLFormElement, {
                 rules: this.validationRules,
                 validationComplete: (e: FormEventArgs) => {
-                        count = count + 1;
-                        args = {
-                            errorMessage: e.message,
-                            data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
-                        };
-                        this.trigger('validating', args, (validateArgs: ValidateEventArgs) => {
-                            if (e.status === 'failure') {
-                                e.errorElement.innerText = validateArgs.errorMessage;
-                                this.toggleErrorClass(true);
-                            } else {
-                                this.toggleErrorClass(false);
-                            }
-                            if (!isNOU(fromSubmit) && fromSubmit && (validationLength === count || e.status === 'failure')) {
+                    count = count + 1;
+                    args = {
+                        errorMessage: e.message,
+                        data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
+                    };
+                    this.trigger('validating', args, (validateArgs: ValidateEventArgs) => {
+                        if (e.status === 'failure') {
+                            e.errorElement.innerText = validateArgs.errorMessage;
+                            this.toggleErrorClass(true);
+                        } else {
+                            this.toggleErrorClass(false);
+                        }
+                        let validationLength: number = Object.keys(this.validationRules[rules[rulesIndex]]).length;
+                        validationLength = 'validateHidden' in this.validationRules[rules[rulesIndex]]
+                         ? validationLength - 1 : validationLength;
+                        if (!isNOU(fromSubmit) && fromSubmit && (validationLength === count || e.status === 'failure')) {
+                            rulesIndex++;
+                            if (this.template === '' || count - 1 === rulesIndex) {
                                 fromSubmit = false;
                                 this.afterValidation(isValidate);
-                                count = 0;
                             }
-                        });
+                            count = 0;
+                            rulesIndex = 0;
+                        }
+                    });
                 },
                 customPlacement: (inputElement: HTMLElement, errorElement: HTMLElement) => {
                     if (this.formEle) {
@@ -1168,6 +1175,20 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             });
             count = 0;
             this.formValidate.validate();
+        } else if (this.template !== '') {
+            args = {
+                errorMessage: '',
+                data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
+            };
+            this.trigger('validating', args, (validateArgs: ValidateEventArgs) => {
+                if (validateArgs.errorMessage) {
+                    select('.' + classes.EDITABLE_ERROR, this.formEle).innerHTML = validateArgs.errorMessage;
+                    this.toggleErrorClass(true);
+                } else {
+                    this.toggleErrorClass(false);
+                }
+                this.afterValidation(isValidate);
+            });
         } else {
             this.afterValidation(isValidate);
         }

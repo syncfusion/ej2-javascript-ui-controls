@@ -68,6 +68,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         }
     }
 
+    // tslint:disable-next-line:max-func-body-length
     private refreshRow(
         row: Row<T>, columns: Column[], attributes?: { [x: string]: Object }, rowTemplate?: string, cloneNode?: Element, isEdit?: boolean):
         Element {
@@ -154,6 +155,9 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         }
         if (row.cssClass) {
             tr.classList.add(row.cssClass);
+        }
+        if (row.lazyLoadCssClass) {
+            tr.classList.add(row.lazyLoadCssClass);
         }
         let vFTable: boolean = this.parent.enableColumnVirtualization && this.parent.frozenColumns !== 0;
         if (!vFTable && this.parent.element.scrollHeight > this.parent.height && this.parent.aggregates.length) {

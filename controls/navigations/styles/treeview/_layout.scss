@@ -54,8 +54,8 @@
     }
   }
 
-  .e-bigger #{&}.e-treeview,
-  #{&}.e-treeview.e-bigger {
+  .e-bigger .e-treeview,
+  .e-treeview.e-bigger {
 
     @if $treeview-skin-name == 'bootstrap4' {
       .e-ul,
@@ -274,7 +274,7 @@
     }
   }
 
-  #{&}.e-treeview {
+  .e-treeview {
     display: block;
     overflow: hidden;
     position: relative;
@@ -300,12 +300,7 @@
 
     .e-list-item {
       list-style: none;
-      @if $treeview-skin-name == 'bootstrap4' {
-        padding: 4px 0;
-      }
-      @else {
-        padding: 2px 0;
-      }
+      padding: 2px 0;
 
       .e-ul {
         margin: 2px 0 -2px;

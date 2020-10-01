@@ -83,8 +83,7 @@ function onResize(): void {
     spreadsheet.resize();
 }
 function renderOverlay() {
-    spreadsheet.selectRange("B2");
     let overlay1: Overlay = spreadsheet.serviceLocator.getService(overlay) as Overlay;
-    overlay1.insertOverlayElement();
+    overlay1.insertOverlayElement("imageId", "B2", 1);
 }
 switchTheme('#select-theme', spreadsheet);

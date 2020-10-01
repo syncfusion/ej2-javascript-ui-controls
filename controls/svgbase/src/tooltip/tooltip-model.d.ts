@@ -340,6 +340,13 @@ export interface TooltipModel extends ComponentModel{
     tooltipPlacement?: TooltipPlacement;
 
     /**
+     * Control instance
+     * @default null.
+     * @private.
+     */
+    controlInstance?: object;
+
+    /**
      * Triggers before each axis range is rendered.
      * @event
      * @private.

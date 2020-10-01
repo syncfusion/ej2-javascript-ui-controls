@@ -16,7 +16,7 @@ import { SelectorModel } from './selector-model';
 import { isLineShapes, setElementStype, findPointsLength, getBaseShapeAttributes, isLeader, Leader, cloneObject } from './drawing-util';
 // tslint:disable-next-line:max-line-length
 import { getConnectorPoints, updateSegmentElement, getSegmentElement, updateDecoratorElement, getDecoratorElement, clipDecorators, initDistanceLabel, initLeaders, initLeader, getPolygonPath, initPerimeterLabel } from './connector-util';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { AnnotationResizerLocation, AnnotationSelectorSettingsModel } from '../index';
 
 /**
@@ -312,6 +312,7 @@ export class Drawing {
                 }
                 break;
             case 'Image':
+            case 'SignatureImage':
                 // tslint:disable-next-line
                 let pathContent11: any = new ImageElement();
                 pathContent11.source = obj.data;
@@ -406,6 +407,21 @@ export class Drawing {
                 pathContent2.style.strokeWidth = 0;
                 content = pathContent2;
                 canvas.children.push(content);
+                break;
+            case 'SignatureText':
+                // tslint:disable-next-line
+                let rectElements: any = new DrawingElement();
+                content = rectElements;
+                canvas.children.push(content);
+                // tslint:disable-next-line
+                let signatureText: any = this.textElement(obj);
+                signatureText.style.fontFamily = obj.fontFamily;
+                signatureText.style.fontSize = obj.fontSize;
+                signatureText.style.textAlign = 'Left';
+                signatureText.rotateValue = undefined;
+                signatureText.content = obj.data;
+                signatureText.style.textWrapping = 'Wrap';
+                canvas.children.push(signatureText);
                 break;
             case 'FreeText':
                 // tslint:disable-next-line
@@ -795,10 +811,13 @@ export class Drawing {
                                         undefined, undefined, undefined, false, true, null, null, currentSelector);
                                 } else {
                                     if (this.pdfViewer.tool !== 'Stamp') {
+                                        // tslint:disable-next-line:max-line-length
+                                        // tslint:disable-next-line
+                                        let isSignature: any = node.shapeAnnotationType === 'Path' || node.shapeAnnotationType === 'SignatureImage' || node.shapeAnnotationType === 'SignatureText';
                                         this.renderResizeHandle(
                                             node.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints, zoom,
                                             // tslint:disable-next-line:max-line-length
-                                            undefined, undefined, undefined, node.shapeAnnotationType === 'Stamp', false, node.shapeAnnotationType === 'Path', (node.shapeAnnotationType === 'FreeText' || node.shapeAnnotationType === 'HandWrittenSignature' || node.shapeAnnotationType === 'Image'), currentSelector);
+                                            undefined, undefined, undefined, node.shapeAnnotationType === 'Stamp', false, isSignature, (node.shapeAnnotationType === 'FreeText' || node.shapeAnnotationType === 'HandWrittenSignature' || node.shapeAnnotationType === 'Image'), currentSelector);
                                     }
                                 }
                             }
@@ -2736,6 +2755,9 @@ export class Drawing {
                     let copy: PdfAnnotationBaseModel = copiedItems[j];
                     let pageDiv: HTMLElement = this.pdfViewer.viewerBase.getElement('_pageDiv_' + copy.pageIndex);
                     let events: MouseEvent = event as MouseEvent;
+                    if(isBlazor()) {
+                        events = this.pdfViewer.viewerBase.mouseDownEvent as MouseEvent;
+                    }
                     if (isLineShapes(copy)) {
                         this.calculateCopyPosition(copy, pageDiv, events);
                     } else {

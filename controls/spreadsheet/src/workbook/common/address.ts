@@ -21,7 +21,7 @@ export function getRangeIndexes(range: string): number[] {
  * To get single cell indexes
  */
 export function getCellIndexes(address: string): number[] {
-    return [parseInt(address.match(/\d+/)[0], 10) - 1, getColIndex(address.match(/[A-Z]+/i)[0])];
+    return [parseInt(address.match(/\d+/)[0], 10) - 1, getColIndex(address.match(/[A-Z]+/i)[0].toUpperCase())];
 }
 
 /**

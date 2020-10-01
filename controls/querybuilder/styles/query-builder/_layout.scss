@@ -620,11 +620,11 @@
 
     }
 
-  &.e-device .e-rule-value {
+  #{if(&, '&', '*')}.e-device .e-rule-value {
     width: $qrybldr-device-value-width;
     }
 
-  &.e-bigger .e-group-body .e-rule-container {
+  #{if(&, '&', '*')}.e-bigger .e-group-body .e-rule-container {
     & .e-rule-filter,
     & .e-operator,
     & .e-value {

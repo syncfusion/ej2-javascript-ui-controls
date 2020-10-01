@@ -544,7 +544,7 @@ export class TextSelection {
             if (this.pdfViewer.textSearchModule) {
                 this.pdfViewer.textSearchModule.searchAfterSelection();
             }
-            this.pdfViewerBase.contextMenuModule.contextMenuObj.close();
+            this.pdfViewerBase.contextMenuModule.close();
             this.removeTouchElements();
         }
     }
@@ -632,7 +632,7 @@ export class TextSelection {
             if (this.pdfViewer.textSearchModule) {
                 this.pdfViewer.textSearchModule.searchAfterSelection();
             }
-            this.pdfViewerBase.contextMenuModule.contextMenuObj.close();
+            this.pdfViewerBase.contextMenuModule.close();
             this.removeTouchElements();
         }
     }
@@ -1765,7 +1765,7 @@ export class TextSelection {
             left = left - 50;
         }
         // tslint:disable-next-line:max-line-length
-        this.pdfViewerBase.contextMenuModule.contextMenuObj.open(top, left - this.pdfViewerBase.viewerContainer.clientLeft, this.pdfViewerBase.viewerContainer);
+        this.pdfViewerBase.contextMenuModule.open(top, left - this.pdfViewerBase.viewerContainer.clientLeft, this.pdfViewerBase.viewerContainer);
     }
     private onLeftTouchSelectElementTouchStart = (event: TouchEvent): void => {
         this.initiateSelectionByTouch();
@@ -1787,7 +1787,7 @@ export class TextSelection {
      */
     public initiateSelectionByTouch(): void {
         this.pdfViewerBase.textLayer.clearDivSelection();
-        this.pdfViewerBase.contextMenuModule.contextMenuObj.close();
+        this.pdfViewerBase.contextMenuModule.close();
         let lowerPageIndex: number = this.pdfViewerBase.currentPageNumber - 3;
         lowerPageIndex = (lowerPageIndex < 0) ? 0 : lowerPageIndex;
         let higherPageIndex: number = this.pdfViewer.currentPageNumber + 1;
@@ -1816,7 +1816,7 @@ export class TextSelection {
         } else {
             this.fireTextSelectEnd();
             // tslint:disable-next-line:max-line-length
-            this.pdfViewerBase.contextMenuModule.contextMenuObj.open(event.changedTouches[0].clientY - this.pdfViewerBase.viewerContainer.offsetTop + this.pdfViewerBase.contextMenuModule.contextMenuElement.clientHeight, event.changedTouches[0].clientX - this.pdfViewerBase.viewerContainer.offsetLeft, this.pdfViewerBase.viewerContainer);
+            this.pdfViewerBase.contextMenuModule.open(event.changedTouches[0].clientY - this.pdfViewerBase.viewerContainer.offsetTop + this.pdfViewerBase.contextMenuModule.contextMenuElement.clientHeight, event.changedTouches[0].clientX - this.pdfViewerBase.viewerContainer.offsetLeft, this.pdfViewerBase.viewerContainer);
         }
     }
 

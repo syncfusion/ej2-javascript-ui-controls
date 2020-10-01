@@ -360,9 +360,12 @@ var DropDownBase = /** @class */ (function (_super) {
                 compiledString = sf.base.compile(template);
             }
             var templateName = actionFailure ? 'actionFailureTemplate' : 'noRecordsTemplate';
-            for (var _i = 0, _a = compiledString({}, this, templateName, templateId, this.isStringTemplate); _i < _a.length; _i++) {
-                var item = _a[_i];
-                ele.appendChild(item);
+            // tslint:disable-next-line
+            var noDataCompTemp = compiledString({}, this, templateName, templateId, this.isStringTemplate, null, ele);
+            if (noDataCompTemp && noDataCompTemp.length > 0) {
+                for (var i = 0; i < noDataCompTemp.length; i++) {
+                    ele.appendChild(noDataCompTemp[i]);
+                }
             }
             this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure, false, false, false, false);
         }
@@ -682,9 +685,9 @@ var DropDownBase = /** @class */ (function (_super) {
         }
         var type = this.typeOfData(spliceData).typeof;
         if (type === 'string' || type === 'number' || type === 'boolean') {
-            return sf.lists.ListBase.createListItemFromArray(this.createElement, spliceData, true, this.listOption(spliceData, fields));
+            return sf.lists.ListBase.createListItemFromArray(this.createElement, spliceData, true, this.listOption(spliceData, fields), this);
         }
-        return sf.lists.ListBase.createListItemFromJson(this.createElement, spliceData, this.listOption(spliceData, fields), 1, true);
+        return sf.lists.ListBase.createListItemFromJson(this.createElement, spliceData, this.listOption(spliceData, fields), 1, true, this);
     };
     DropDownBase.prototype.emptyDataRequest = function (fields) {
         var listItems = [];
@@ -711,6 +714,10 @@ var DropDownBase = /** @class */ (function (_super) {
             sf.base.remove(this.list.querySelector('.e-hidden-select'));
         }
         else {
+            // tslint:disable-next-line         
+            if (this.isReact) {
+                this.clearTemplate(['itemTemplate', 'groupTemplate', 'actionFailureTemplate', 'noRecordsTemplate']);
+            }
             this.list.innerHTML = '';
         }
         this.fixedHeaderElement = sf.base.isNullOrUndefined(this.fixedHeaderElement) ? this.fixedHeaderElement : null;
@@ -750,10 +757,10 @@ var DropDownBase = /** @class */ (function (_super) {
             var groupcheck = this.templateCompiler(this.groupTemplate);
             if (groupcheck) {
                 var groupValue = document.querySelector(this.groupTemplate).innerHTML.trim();
-                var tempHeaders = sf.lists.ListBase.renderGroupTemplate(groupValue, dataSource, this.fields.properties, headerItems, option);
+                var tempHeaders = sf.lists.ListBase.renderGroupTemplate(groupValue, dataSource, this.fields.properties, headerItems, option, this);
             }
             else {
-                var tempHeaders = sf.lists.ListBase.renderGroupTemplate(this.groupTemplate, dataSource, this.fields.properties, headerItems, option);
+                var tempHeaders = sf.lists.ListBase.renderGroupTemplate(this.groupTemplate, dataSource, this.fields.properties, headerItems, option, this);
             }
             this.DropDownBaseupdateBlazorTemplates(false, true, false, false, false, false, false, false);
         }
@@ -779,7 +786,7 @@ var DropDownBase = /** @class */ (function (_super) {
             new sf.data.DataManager(dataSource).executeLocal(new sf.data.Query().take(100))
             : dataSource;
         this.sortedData = dataSource;
-        return sf.lists.ListBase.createList(this.createElement, (this.getModuleName() === 'autocomplete') ? spliceData : dataSource, options, true);
+        return sf.lists.ListBase.createList(this.createElement, (this.getModuleName() === 'autocomplete') ? spliceData : dataSource, options, true, this);
     };
     
     DropDownBase.prototype.listOption = function (dataSource, fields) {
@@ -864,10 +871,10 @@ var DropDownBase = /** @class */ (function (_super) {
         var itemcheck = this.templateCompiler(this.itemTemplate);
         if (itemcheck) {
             var itemValue = document.querySelector(this.itemTemplate).innerHTML.trim();
-            return sf.lists.ListBase.renderContentTemplate(this.createElement, itemValue, dataSource, fields.properties, option);
+            return sf.lists.ListBase.renderContentTemplate(this.createElement, itemValue, dataSource, fields.properties, option, this);
         }
         else {
-            return sf.lists.ListBase.renderContentTemplate(this.createElement, this.itemTemplate, dataSource, fields.properties, option);
+            return sf.lists.ListBase.renderContentTemplate(this.createElement, this.itemTemplate, dataSource, fields.properties, option, this);
         }
     };
     
@@ -1127,7 +1134,11 @@ var DropDownBase = /** @class */ (function (_super) {
             }
             if (this.itemTemplate && !isHeader) {
                 var compiledString = sf.base.compile(this.itemTemplate);
-                sf.base.append(compiledString(item, this, 'itemTemplate', this.itemTemplateId, this.isStringTemplate), li);
+                // tslint:disable-next-line
+                var addItemTemplate = compiledString(item, this, 'itemTemplate', this.itemTemplateId, this.isStringTemplate, null, li);
+                if (addItemTemplate) {
+                    sf.base.append(addItemTemplate, li);
+                }
                 this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
             }
             else if (!isHeader) {
@@ -1138,6 +1149,9 @@ var DropDownBase = /** @class */ (function (_super) {
             this.notify('addItem', { module: 'CheckBoxSelection', item: li });
             liCollections.push(li);
             this.listData.push(item);
+            if (this.sortOrder === 'None' && sf.base.isNullOrUndefined(itemIndex) && index === 0) {
+                index = null;
+            }
             this.updateActionCompleteData(li, item, index);
             //Listbox event
             this.trigger('beforeItemRender', { element: li, item: item });
@@ -1352,5 +1366,4 @@ exports.DropDownBase = DropDownBase;
 return exports;
 
 });
-sfBlazor.modules["dropdownsbase"] = "dropdowns.DropDownBase";
 window.sf.dropdowns = window.sf.base.extend({}, window.sf.dropdowns, dropdownsbase({}));

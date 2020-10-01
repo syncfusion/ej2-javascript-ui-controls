@@ -1333,11 +1333,15 @@ class AxisRenderer extends Animations {
             clipId = 'url(#' + this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + '_' + pointer.type + 'ClipRect_' + i + ')';
             if (!(isNullOrUndefined(pointer.bounds))) {
                 pointerClipRectGroup = this.gauge.renderer.createGroup({
-                    'id': this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer_' + i,
-                    'clip-path': clipId
+                    'id': this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer_' + i
                 });
                 if (isNullOrUndefined(pointer.startValue)) {
                     pointer.startValue = axis.visibleRange.min;
+                }
+                if (pointer.animationDuration > 0 && !this.gauge.gaugeResized) {
+                    if (this.gauge.container.type === 'Thermometer' && pointer.startValue === 0) {
+                        pointerClipRectGroup.setAttribute('clip-path', clipId);
+                    }
                 }
                 this['draw' + pointer.type + 'Pointer'](axis, axisIndex, pointer, i, pointerClipRectGroup);
                 pointesGroup.appendChild(pointerClipRectGroup);
@@ -2027,6 +2031,7 @@ class Annotations {
     /**
      * To render annotation elements
      */
+    //tslint:disable
     renderAnnotationElements() {
         let secondaryID = this.gauge.element.id + '_Secondary_Element';
         let annotationGroup = createElement('div', { id: this.gauge.element.id + '_AnnotationsGroup' });
@@ -2044,6 +2049,7 @@ class Annotations {
                 updateBlazorTemplate(this.gauge.element.id + '_ContentTemplate' + i, 'ContentTemplate', this.gauge.annotations[i]);
             }
         }
+        this.gauge.renderReactTemplates();
     }
     /**
      * To create annotation elements
@@ -2075,8 +2081,8 @@ class Annotations {
         this.gauge.trigger(annotationRender, argsData, (observerArgs) => {
             if (!argsData.cancel) {
                 templateFn = getTemplateFunction(argsData.content);
-                if (templateFn && (!this.gauge.isBlazor ? templateFn(this.gauge, null, null, this.gauge.element.id + '_ContentTemplate' + annotationIndex).length : {})) {
-                    templateElement = Array.prototype.slice.call(templateFn(!this.gauge.isBlazor ? this.gauge : {}, null, null, this.gauge.element.id + '_ContentTemplate' + annotationIndex));
+                if (templateFn && (!this.gauge.isBlazor ? templateFn(this.gauge, this.gauge, argsData.content, this.gauge.element.id + '_ContentTemplate' + annotationIndex).length : {})) {
+                    templateElement = Array.prototype.slice.call(templateFn(!this.gauge.isBlazor ? this.gauge : {}, this.gauge, argsData.content, this.gauge.element.id + '_ContentTemplate' + annotationIndex));
                     let length = templateElement.length;
                     for (let i = 0; i < length; i++) {
                         childElement.appendChild(templateElement[i]);
@@ -2181,6 +2187,7 @@ class GaugeTooltip {
      * @param pointerElement
      */
     /* tslint:disable:no-string-literal */
+    //tslint:disable
     renderTooltip(e) {
         let pageX;
         let pageY;
@@ -2215,6 +2222,7 @@ class GaugeTooltip {
                 formatValue(this.currentPointer.currentValue, this.gauge).toString();
             tooltipEle = this.tooltipCreate(tooltipEle);
             this.tooltipRender(tooltipContent, target, tooltipEle, e, areaRect, pageX, pageY);
+            this.gauge.renderReactTemplates();
         }
         else if (target.id.indexOf('Range') > -1 && this.gauge.tooltip.type.indexOf('Range') > -1) {
             this.pointerElement = target;
@@ -2237,9 +2245,11 @@ class GaugeTooltip {
                 'Start : ' + startData + '<br>' + 'End : ' + endData;
             tooltipEle = this.tooltipCreate(tooltipEle);
             this.tooltipRender(tooltipContent, target, tooltipEle, e, areaRect, pageX, pageY);
+            this.gauge.renderReactTemplates();
         }
         else {
             this.removeTooltip();
+            this.gauge.clearTemplate();
         }
     }
     tooltipRender(tooltipContent, target, tooltipEle, e, areaRect, pageX, pageY) {
@@ -2786,6 +2796,7 @@ let LinearGauge = class LinearGauge extends Component {
         if (!(isNullOrUndefined(this.svgObject)) && !isNullOrUndefined(this.svgObject.parentNode)) {
             remove(this.svgObject);
         }
+        this.clearTemplate();
     }
     /**
      * Method to calculate the size of the gauge
@@ -2964,6 +2975,7 @@ let LinearGauge = class LinearGauge extends Component {
         let x;
         let y;
         let options;
+        let labelPadding = 20;
         let path = '';
         let topRadius;
         let bottomRadius;
@@ -2985,9 +2997,15 @@ let LinearGauge = class LinearGauge extends Component {
             height = height;
         }
         else {
-            width = (this.container.height > 0) ? this.container.height :
-                ((this.actualRect.width / 2) - ((this.actualRect.width / 2) / 4)) * 2;
-            width = (this.container.type === 'Thermometer') ? width - (bottomRadius * 2) - topRadius : width;
+            if (this.allowMargin) {
+                width = (this.container.height > 0) ? this.container.height :
+                    ((this.actualRect.width / 2) - ((this.actualRect.width / 2) / 4)) * 2;
+                width = (this.container.type === 'Thermometer') ? width - (bottomRadius * 2) - topRadius : width;
+            }
+            else {
+                width = this.actualRect.width - labelPadding;
+                width = (this.container.type === 'Thermometer') ? (this.actualRect.width - (bottomRadius * 2) - topRadius) : width;
+            }
             x = this.actualRect.x + ((this.actualRect.width / 2) - ((this.container.type === 'Thermometer') ?
                 (width - (bottomRadius * 2) + topRadius) / 2 : width / 2));
             y = (this.actualRect.y + ((this.actualRect.height / 2) - (this.container.width / 2))) + this.container.offset;
@@ -3597,6 +3615,9 @@ let LinearGauge = class LinearGauge extends Component {
 __decorate([
     Property(null)
 ], LinearGauge.prototype, "width", void 0);
+__decorate([
+    Property(true)
+], LinearGauge.prototype, "allowMargin", void 0);
 __decorate([
     Property(null)
 ], LinearGauge.prototype, "height", void 0);

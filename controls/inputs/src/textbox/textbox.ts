@@ -564,6 +564,22 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             EventHandler.add(this.formElement, 'reset', this.resetForm, this);
         }
         this.bindClearEvent();
+        if (!isNullOrUndefined(this.textboxWrapper.container.querySelector('.e-float-text')) && this.floatLabelType === 'Auto'
+           && this.textboxWrapper.container.classList.contains('e-autofill') &&
+           this.textboxWrapper.container.classList.contains('e-outline')) {
+            EventHandler.add((this.textboxWrapper.container.querySelector('.e-float-text')), 'animationstart', this.animationHandler, this);
+        }
+    }
+
+    private animationHandler() : void {
+        this.textboxWrapper.container.classList.add('e-valid-input');
+        let label: HTMLElement = this.textboxWrapper.container.querySelector('.e-float-text');
+        if (!isNullOrUndefined(label)) {
+            label.classList.add('e-label-top');
+            if (label.classList.contains('e-label-bottom')) {
+                label.classList.remove('e-label-bottom');
+            }
+        }
     }
 
     private resetValue(value: string) : void {
@@ -693,6 +709,11 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         EventHandler.remove(this.respectiveElement, 'change', this.changeHandler);
         if (this.isForm) {
             EventHandler.remove(this.formElement, 'reset', this.resetForm);
+        }
+        if (!isNullOrUndefined(this.textboxWrapper.container.querySelector('.e-float-text')) && this.floatLabelType === 'Auto'
+           && this.textboxWrapper.container.classList.contains('e-outline') &&
+           this.textboxWrapper.container.classList.contains('e-autofill')) {
+            EventHandler.remove((this.textboxWrapper.container.querySelector('.e-float-text')), 'animationstart', this.animationHandler);
         }
     }
 

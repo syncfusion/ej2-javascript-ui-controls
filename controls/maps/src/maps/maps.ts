@@ -1379,6 +1379,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 remove(this.svgObject);
             }
         }
+        this.clearTemplate();
     }
     /**
      * To bind event handlers for maps.
@@ -1430,6 +1431,17 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
+     * Gets the selected element to be maintained or not.
+     * @private
+     */
+    public SelectedElement(targetEle : Element) : boolean {
+        let isSelect : boolean = false;
+        if (targetEle.getAttribute('class') === 'ShapeselectionMapStyle') {
+            isSelect = true;
+        }
+        return isSelect;
+    }
+    /**
      * This method is used to perform the operations when a click operation is performed on maps.
      * @param e - Specifies the pointer event on maps.
      * @blazorProperty 'PerformClick'
@@ -1455,7 +1467,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             }
             let eventArgs: IMouseEventArgs = {
                 cancel: false, name: click, target: targetId, x: e.clientX, y: e.clientY,
-                latitude: latitude, longitude: longitude
+                latitude: latitude, longitude: longitude, isShapeSelected : this.SelectedElement(targetEle)
             };
             this.trigger('click', eventArgs, (mouseArgs: IMouseEventArgs) => {
                 if (targetEle.id.indexOf('shapeIndex') > -1) {

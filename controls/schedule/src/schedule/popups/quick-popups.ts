@@ -1052,6 +1052,7 @@ export class QuickPopups {
             this.updateQuickPopupTemplates(target);
             return;
         }
+        this.parent.renderTemplates();
         let isEventPopup: Element = this.quickPopup.element.querySelector('.' + cls.EVENT_POPUP_CLASS);
         let popupType: PopupType = this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo';
         let eventProp: PopupOpenEventArgs = {
@@ -1215,6 +1216,7 @@ export class QuickPopups {
                 resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
             }
         }
+        this.parent.resetTemplates();
     }
 
     private quickPopupClose(): void {

@@ -4221,7 +4221,5 @@ exports.SmithchartLegend = SmithchartLegend;
 return exports;
 
 });
-sfBlazor.modules["smithchart"] = "charts.Smithchart";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.smithchart, () => {
+
     sf.charts = sf.base.extend({}, sf.charts, sfsmithchart({}));
-});

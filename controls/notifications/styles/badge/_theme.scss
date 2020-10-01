@@ -1,6 +1,6 @@
 @include export-module('badge-theme') {
   //sass-lint:disable no-color-literals
-  #{&}.e-badge {
+  .e-badge {
     &.e-badge-primary:not(.e-badge-ghost):not([href]),
     &.e-badge-primary[href]:not(.e-badge-ghost) {
       background-color: $badge-primary-bg-color;

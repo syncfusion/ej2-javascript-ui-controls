@@ -159,6 +159,7 @@ var AutoComplete = /** @class */ (function (_super) {
         else {
             this.hidePopup();
         }
+        this.renderReactTemplates();
     };
     AutoComplete.prototype.clearAll = function (e, property) {
         if (sf.base.isNullOrUndefined(property) || (!sf.base.isNullOrUndefined(property) && sf.base.isNullOrUndefined(property.dataSource))) {
@@ -411,7 +412,5 @@ exports.AutoComplete = AutoComplete;
 return exports;
 
 });
-sfBlazor.modules["autocomplete"] = "dropdowns.AutoComplete";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.autocomplete, () => {
+
     sf.dropdowns = sf.base.extend({}, sf.dropdowns, sfautocomplete({}));
-});

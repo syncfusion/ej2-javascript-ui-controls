@@ -1458,7 +1458,7 @@ export class Zoom {
                     this.rectZoomingStart = false;
                     this.updateInteraction();
                     this.touchStartList = targetTouches(e);
-                } else if (this.touchStartList.length === 2 && touches.length === 2) {
+                } else if (touches.length === 2 && this.touchStartList.length === 2) {
                     this.touchMoveList = targetTouches(e);
                     e.preventDefault();
                     this.rectZoomingStart = false;
@@ -1470,7 +1470,7 @@ export class Zoom {
         this.mouseMovePoints = this.getMousePosition(pageX, pageY);
         let targetId: string = e.target['id'];
         let targetEle: Element = <Element>e.target;
-        if (zoom.enable && this.isPanning && ((Browser.isDevice && touches.length > 1) || !Browser.isDevice)) {
+        if (zoom.enable && this.isPanning && ((Browser.isDevice && touches.length >= 1) || !Browser.isDevice)) {
             e.preventDefault();
             this.maps.element.style.cursor = 'pointer';
             this.mouseMoveLatLong = { x: pageX, y: pageY };

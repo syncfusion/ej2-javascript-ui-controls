@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.35 (2020-10-01)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+`#292431` - The issue with "Rich Text Editor input elements are not destroyed properly when rendered based on the conditions" has been resolved.
+
 ## 18.2.56 (2020-09-01)
 
 ### RichTextEditor

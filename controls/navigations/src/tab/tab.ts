@@ -485,6 +485,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * @returns void
      */
     public destroy(): void {
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.clearTemplate(); }
         if (!isNOU(this.tbObj)) {
             this.tbObj.destroy();
         }
@@ -493,16 +495,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.element.removeAttribute(val);
         });
         this.expTemplateContent();
-        let subControls: NodeListOf<Element> = this.element.querySelectorAll('.e-control');
-        [].slice.call(subControls).forEach((node: HTMLElement): void => {
-            let instances: Object[] = (node as EJ2Instance).ej2_instances;
-            if (instances.length > 0) {
-                let instance: Tab = instances[0] as Tab;
-                if (instance) {
-                    instance.destroy();
-                }
-            }
-        });
         if (!this.isTemplate) {
             while (this.element.firstElementChild) {
                 remove(this.element.firstElementChild);
@@ -520,11 +512,15 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * Refresh the tab component
      */
     public refresh(): void {
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.clearTemplate(); }
         if (!this.isServerRendered) {
             super.refresh();
         } else if (this.isServerRendered && this.loadOn !== 'Dynamic') {
             this.setActiveBorder();
         }
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.renderReactTemplates(); }
     }
 
     /**
@@ -768,7 +764,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             }
             let txt: Str | HTEle = item.headerTemplate || item.header.text;
             if (typeof txt === 'string' && this.enableHtmlSanitizer) {
-                   txt = SanitizeHtmlHelper.sanitize(<Str>txt);
+                txt = SanitizeHtmlHelper.sanitize(<Str>txt);
             }
             this.lastIndex = ((tbCount === 0) ? i : ((this.isReplace) ? (index + i) : (this.lastIndex + 1)));
             let disabled: Str = (item.disabled) ? ' ' + CLS_DISABLE + ' ' + CLS_OVERLAY : '';
@@ -1038,6 +1034,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (tempEle.childNodes.length !== 0) {
             ele.appendChild(tempEle);
         }
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.renderReactTemplates(); }
     }
     private compileElement(ele: HTEle, val: string, prop: string, index: number): void {
         let templateFn: Function;
@@ -1601,6 +1599,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             if (isNOU(this.tbObj)) {
                 this.reRenderItems();
             } else {
+                // tslint:disable-next-line:no-any
+                if ((this as any).isRect) { this.clearTemplate(); }
                 this.setItems(<TabItemModel[]>newProp.items);
                 if (this.templateEle.length > 0) { this.expTemplateContent(); }
                 this.templateEle = [];
@@ -1653,6 +1653,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         } else {
             this.addingTabContent(items, index);
         }
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.renderReactTemplates(); }
     }
     private addingTabContent(items: TabItemModel[], index?: number): void {
         let lastEleIndex: number = 0;
@@ -1717,13 +1719,19 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     (this as any).interopAdaptor.invokeMethodAsync('OnRemoveItem', index);
                     return;
                 }
+                // tslint:disable-next-line:no-any
+                if ((this as any).isRect) { this.clearTemplate([], index); }
                 this.tbObj.removeItems(index);
                 this.items.splice(index, 1);
                 this.itemIndexArray.splice(index, 1);
                 this.refreshActiveBorder();
                 let cntTrg: HTEle =
                     <HTEle>select('#' + CLS_CONTENT + this.tabId + '_' + this.extIndex(trg.id), select('.' + CLS_CONTENT, this.element));
-                if (!isNOU(cntTrg)) { detach(cntTrg); }
+                if (!isNOU(cntTrg)) {
+                    // tslint:disable-next-line:no-any
+                    if ((this as any).isReact) { this.clearTemplate(); }
+                    detach(cntTrg);
+                }
                 this.trigger('removed', tabRemovingArgs);
                 if (trg.classList.contains(CLS_ACTIVE)) {
                     // tslint:disable-next-line:max-line-length

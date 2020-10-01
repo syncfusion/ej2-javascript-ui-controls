@@ -2932,7 +2932,7 @@ function createTemplate(childElement, pointIndex, content, chart, point, series,
     try {
         let blazor = 'Blazor';
         let tempObject = window[blazor] ? (dataLabelId ? point : { point: point }) : { chart: chart, series: series, point: point };
-        let elementData = templateFn ? templateFn(tempObject, null, null, dataLabelId ||
+        let elementData = templateFn ? templateFn(tempObject, chart, 'template', dataLabelId ||
             childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
         if (elementData.length) {
             templateElement = Array.prototype.slice.call(elementData);
@@ -2941,6 +2941,8 @@ function createTemplate(childElement, pointIndex, content, chart, point, series,
                 childElement.appendChild(templateElement[i]);
             }
         }
+        // tslint:disable-next-line:no-any
+        chart.renderReactTemplates();
     }
     catch (e) {
         return childElement;
@@ -8993,6 +8995,7 @@ let Chart = class Chart extends Component {
          */
         if (this.element) {
             this.unWireEvents();
+            this.clearTemplate();
             super.destroy();
             if (!this.enableCanvas) {
                 this.removeSvg();
@@ -9784,6 +9787,7 @@ let Chart = class Chart extends Component {
             return null;
         }
         removeElement$1(this.element.id + '_Secondary_Element');
+        this.clearTemplate();
         let removeLength = 0;
         if (this.zoomModule && this.zoomModule.pinchTarget) {
             this.zoomModule.pinchTarget.id = '';
@@ -10068,6 +10072,7 @@ let Chart = class Chart extends Component {
             }
             if (refreshBounds) {
                 this.enableCanvas ? this.createChartSvg() : this.removeSvg();
+                this.clearTemplate();
                 this.refreshAxis();
                 this.refreshBound();
                 this.trigger('loaded', { chart: this.isBlazor ? {} : this });
@@ -11862,9 +11867,10 @@ class LineSeries extends LineBase {
         let isPolar = (series.chart && series.chart.chartAreaType === 'PolarRadar');
         let isDrop = (series.emptyPointSettings && series.emptyPointSettings.mode === 'Drop');
         let getCoordinate = isPolar ? TransformToVisible : getPoint;
-        let visiblePoints = this.enableComplexProperty(series);
+        let visiblePoints = series.category === 'TrendLine' ? series.points : this.enableComplexProperty(series);
         for (let point of visiblePoints) {
             point.regions = [];
+            point.symbolLocations = [];
             if (isPolar && !(point.visible)) {
                 continue;
             }
@@ -11877,7 +11883,6 @@ class LineSeries extends LineBase {
             else {
                 prevPoint = isDrop ? prevPoint : null;
                 startPoint = isDrop ? startPoint : 'M';
-                point.symbolLocations = [];
             }
         }
         if (isPolar) {
@@ -15578,8 +15583,7 @@ class SplineSeries extends SplineBase {
         let direction = '';
         let startPoint = 'M';
         let points = [];
-        let tempPoints = [];
-        tempPoints = this.enableComplexProperty(series);
+        let tempPoints = series.category === 'TrendLine' ? series.points : this.enableComplexProperty(series);
         points = this.filterEmptyPoints(series, tempPoints);
         let previous;
         let getCoordinate = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
@@ -17030,7 +17034,7 @@ class Trendlines {
     /**
      * Defines the data point of trendline
      */
-    getDataPoint(x, y, sourcePoint, series, index) {
+    getDataPoint(x, y, series, index) {
         let trendPoint = new Points();
         trendPoint.x = series.xAxis.valueType === 'DateTime' ? new Date(Number(x)) : x;
         trendPoint.y = y;
@@ -17250,9 +17254,9 @@ class Trendlines {
         let x3Log = xValues[xValues.length - 1] + trendline.forwardForecast;
         let x3 = x3Log ? Math.log(x3Log) : 0;
         let y3Log = slopeInterceptLog.intercept + (slopeInterceptLog.slope * x3);
-        pts.push(this.getDataPoint(x1Log, y1Log, points[0], series, pts.length));
-        pts.push(this.getDataPoint(x2Log, y2Log, points[midPoint - 1], series, pts.length));
-        pts.push(this.getDataPoint(x3Log, y3Log, points[points.length - 1], series, pts.length));
+        pts.push(this.getDataPoint(x1Log, y1Log, series, pts.length));
+        pts.push(this.getDataPoint(x2Log, y2Log, series, pts.length));
+        pts.push(this.getDataPoint(x3Log, y3Log, series, pts.length));
         return pts;
     }
     /**
@@ -17268,9 +17272,9 @@ class Trendlines {
         let y2 = slopeInterceptPower.intercept * Math.pow(x2, slopeInterceptPower.slope);
         let x3 = xValues[xValues.length - 1] + trendline.forwardForecast;
         let y3 = slopeInterceptPower.intercept * Math.pow(x3, slopeInterceptPower.slope);
-        pts.push(this.getDataPoint(x1, y1, points[0], series, pts.length));
-        pts.push(this.getDataPoint(x2, y2, points[midPoint - 1], series, pts.length));
-        pts.push(this.getDataPoint(x3, y3, points[points.length - 1], series, pts.length));
+        pts.push(this.getDataPoint(x1, y1, series, pts.length));
+        pts.push(this.getDataPoint(x2, y2, series, pts.length));
+        pts.push(this.getDataPoint(x3, y3, series, pts.length));
         return pts;
     }
     /**
@@ -17363,7 +17367,7 @@ class Trendlines {
             y = period - nullCount <= 0 ? null : y / (period - nullCount);
             if (y && !isNaN(y)) {
                 x = xValues[period - 1 + index];
-                pts.push(this.getDataPoint(x, y, points[period - 1 + index], series, pts.length));
+                pts.push(this.getDataPoint(x, y, series, pts.length));
             }
             index++;
         }
@@ -17380,8 +17384,8 @@ class Trendlines {
         let y1Linear = slopeInterceptLinear.slope * x1Linear + slopeInterceptLinear.intercept;
         let x2Linear = xValues[max] + trendline.forwardForecast;
         let y2Linear = slopeInterceptLinear.slope * x2Linear + slopeInterceptLinear.intercept;
-        pts.push(this.getDataPoint(x1Linear, y1Linear, points[0], series, pts.length));
-        pts.push(this.getDataPoint(x2Linear, y2Linear, points[points.length - 1], series, pts.length));
+        pts.push(this.getDataPoint(x1Linear, y1Linear, series, pts.length));
+        pts.push(this.getDataPoint(x2Linear, y2Linear, series, pts.length));
         return pts;
     }
     /**
@@ -17396,9 +17400,9 @@ class Trendlines {
         let y2 = slopeInterceptExp.intercept * Math.exp(slopeInterceptExp.slope * x2);
         let x3 = xValues[xValues.length - 1] + trendline.forwardForecast;
         let y3 = slopeInterceptExp.intercept * Math.exp(slopeInterceptExp.slope * x3);
-        ptsExp.push(this.getDataPoint(x1, y1, points[0], series, ptsExp.length));
-        ptsExp.push(this.getDataPoint(x2, y2, points[midPoint - 1], series, ptsExp.length));
-        ptsExp.push(this.getDataPoint(x3, y3, points[points.length - 1], series, ptsExp.length));
+        ptsExp.push(this.getDataPoint(x1, y1, series, ptsExp.length));
+        ptsExp.push(this.getDataPoint(x2, y2, series, ptsExp.length));
+        ptsExp.push(this.getDataPoint(x3, y3, series, ptsExp.length));
         return ptsExp;
     }
     /**
@@ -17418,18 +17422,18 @@ class Trendlines {
             if (index === 1) {
                 xValue = xValues[0] - trendline.backwardForecast;
                 yValue = this.getPolynomialYValue(polynomialSlopes, xValue);
-                pts.push(this.getDataPoint(xValue, yValue, points[0], series, pts.length));
+                pts.push(this.getDataPoint(xValue, yValue, series, pts.length));
             }
             else if (index === polynomialSlopes.length) {
                 xValue = xValues[points.length - 1] + trendline.forwardForecast;
                 yValue = this.getPolynomialYValue(polynomialSlopes, xValue);
-                pts.push(this.getDataPoint(xValue, yValue, points[points.length - 1], series, pts.length));
+                pts.push(this.getDataPoint(xValue, yValue, series, pts.length));
             }
             else {
                 x1 += (points.length + trendline.forwardForecast) / polynomialSlopes.length;
                 xValue = xValues[parseInt(x1.toString(), 10) - 1];
                 yValue = this.getPolynomialYValue(polynomialSlopes, xValue);
-                pts.push(this.getDataPoint(xValue, yValue, points[parseInt(x1.toString(), 10) - 1], series, pts.length));
+                pts.push(this.getDataPoint(xValue, yValue, series, pts.length));
             }
             index++;
         }
@@ -18118,6 +18122,7 @@ class BaseTooltip extends ChartData {
                 availableSize: chart.availableSize, duration: this.chart.tooltip.duration,
                 isCanvas: this.chart.enableCanvas, isTextWrap: chart.tooltip.enableTextWrap && chart.getModuleName() === 'chart',
                 blazorTemplate: { name: 'Template', parent: this.chart.tooltip },
+                controlInstance: this.chart,
                 tooltipRender: () => {
                     module.removeHighlight(module.control);
                     module.highlightPoints();
@@ -18147,6 +18152,8 @@ class BaseTooltip extends ChartData {
                 this.svgTooltip.dataBind();
             }
         }
+        // tslint:disable-next-line:no-any
+        this.chart.renderReactTemplates();
     }
     findPalette() {
         let colors = [];
@@ -18234,6 +18241,8 @@ class BaseTooltip extends ChartData {
     removeTooltip(duration) {
         let tooltipElement = this.getElement(this.element.id + '_tooltip');
         this.stopAnimation();
+        // tslint:disable-next-line:no-any
+        this.chart.clearTemplate();
         if (tooltipElement && this.previousPoints.length > 0) {
             this.toolTipInterval = setTimeout(() => {
                 if (this.svgTooltip) {
@@ -32084,6 +32093,7 @@ let RangeNavigator = class RangeNavigator extends Component {
     removeSvg() {
         if (getElement$1(this.element.id + '_Secondary_Element')) {
             remove(getElement$1(this.element.id + '_Secondary_Element'));
+            this.clearTemplate();
         }
         let removeLength = 0;
         if (this.svgObject) {
@@ -32422,6 +32432,7 @@ let RangeNavigator = class RangeNavigator extends Component {
      */
     destroy() {
         this.unWireEvents();
+        this.clearTemplate();
         this.rangeSlider.destroy();
         super.destroy();
         this.element.innerHTML = '';
@@ -37166,6 +37177,7 @@ let BulletChart = class BulletChart extends Component {
             let id = 'tooltipDiv' + this.element.id;
             let tooltipDiv = document.getElementById(id);
             if (tooltipDiv) {
+                this.clearTemplate();
                 remove(tooltipDiv);
             }
             if (this.bulletTooltipModule) {
@@ -37192,6 +37204,7 @@ let BulletChart = class BulletChart extends Component {
         if (!this.isTouchEvent(e)) {
             let tooltipDiv = document.getElementById('.tooltipDiv' + this.element.id);
             if (tooltipDiv) {
+                this.clearTemplate();
                 remove(tooltipDiv);
             }
         }
@@ -37214,6 +37227,7 @@ let BulletChart = class BulletChart extends Component {
      */
     bulletMouseDown(e) {
         if (this.isTouchEvent(e)) {
+            this.clearTemplate();
             remove(document.getElementById(('tooltipDiv' + this.element.id)));
             let targetId = e.target.id;
             /* tslint:disable:no-string-literal */
@@ -37636,9 +37650,9 @@ class BulletTooltip {
             if (this.control.tooltip.template !== '' && this.control.tooltip.template != null) {
                 this.updateTemplateFn();
                 let elem = this.control.createElement('div', { id: this.control.element.id + 'parent_template' });
-                let templateElement = this.templateFn(blazorTooltipData, null, null, elem.id + '_blazorTemplate', '');
+                let templateElement = this.templateFn(blazorTooltipData, this.control, 'template', elem.id + '_blazorTemplate', '', null, elem);
                 while (templateElement && templateElement.length > 0) {
-                    if (isBlazor()) {
+                    if (isBlazor() || templateElement.length === 1) {
                         elem.appendChild(templateElement[0]);
                         templateElement = null;
                     }
@@ -37698,6 +37712,8 @@ class BulletTooltip {
                     document.getElementById(targetId).setAttribute('opacity', '0.6');
                 }
             }
+            // tslint:disable-next-line:no-any
+            this.control.renderReactTemplates();
         }
     }
     /**

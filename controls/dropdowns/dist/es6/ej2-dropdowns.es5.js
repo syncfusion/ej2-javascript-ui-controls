@@ -368,9 +368,12 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
                 compiledString = compile(template);
             }
             var templateName = actionFailure ? 'actionFailureTemplate' : 'noRecordsTemplate';
-            for (var _i = 0, _a = compiledString({}, this, templateName, templateId, this.isStringTemplate); _i < _a.length; _i++) {
-                var item = _a[_i];
-                ele.appendChild(item);
+            // tslint:disable-next-line
+            var noDataCompTemp = compiledString({}, this, templateName, templateId, this.isStringTemplate, null, ele);
+            if (noDataCompTemp && noDataCompTemp.length > 0) {
+                for (var i = 0; i < noDataCompTemp.length; i++) {
+                    ele.appendChild(noDataCompTemp[i]);
+                }
             }
             this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure, false, false, false, false);
         }
@@ -690,9 +693,9 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         }
         var type = this.typeOfData(spliceData).typeof;
         if (type === 'string' || type === 'number' || type === 'boolean') {
-            return ListBase.createListItemFromArray(this.createElement, spliceData, true, this.listOption(spliceData, fields));
+            return ListBase.createListItemFromArray(this.createElement, spliceData, true, this.listOption(spliceData, fields), this);
         }
-        return ListBase.createListItemFromJson(this.createElement, spliceData, this.listOption(spliceData, fields), 1, true);
+        return ListBase.createListItemFromJson(this.createElement, spliceData, this.listOption(spliceData, fields), 1, true, this);
     };
     DropDownBase.prototype.emptyDataRequest = function (fields) {
         var listItems = [];
@@ -719,6 +722,10 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
             remove(this.list.querySelector('.e-hidden-select'));
         }
         else {
+            // tslint:disable-next-line         
+            if (this.isReact) {
+                this.clearTemplate(['itemTemplate', 'groupTemplate', 'actionFailureTemplate', 'noRecordsTemplate']);
+            }
             this.list.innerHTML = '';
         }
         this.fixedHeaderElement = isNullOrUndefined(this.fixedHeaderElement) ? this.fixedHeaderElement : null;
@@ -758,10 +765,10 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
             var groupcheck = this.templateCompiler(this.groupTemplate);
             if (groupcheck) {
                 var groupValue = document.querySelector(this.groupTemplate).innerHTML.trim();
-                var tempHeaders = ListBase.renderGroupTemplate(groupValue, dataSource, this.fields.properties, headerItems, option);
+                var tempHeaders = ListBase.renderGroupTemplate(groupValue, dataSource, this.fields.properties, headerItems, option, this);
             }
             else {
-                var tempHeaders = ListBase.renderGroupTemplate(this.groupTemplate, dataSource, this.fields.properties, headerItems, option);
+                var tempHeaders = ListBase.renderGroupTemplate(this.groupTemplate, dataSource, this.fields.properties, headerItems, option, this);
             }
             this.DropDownBaseupdateBlazorTemplates(false, true, false, false, false, false, false, false);
         }
@@ -787,7 +794,7 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
             new DataManager(dataSource).executeLocal(new Query().take(100))
             : dataSource;
         this.sortedData = dataSource;
-        return ListBase.createList(this.createElement, (this.getModuleName() === 'autocomplete') ? spliceData : dataSource, options, true);
+        return ListBase.createList(this.createElement, (this.getModuleName() === 'autocomplete') ? spliceData : dataSource, options, true, this);
     };
     
     DropDownBase.prototype.listOption = function (dataSource, fields) {
@@ -872,10 +879,10 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         var itemcheck = this.templateCompiler(this.itemTemplate);
         if (itemcheck) {
             var itemValue = document.querySelector(this.itemTemplate).innerHTML.trim();
-            return ListBase.renderContentTemplate(this.createElement, itemValue, dataSource, fields.properties, option);
+            return ListBase.renderContentTemplate(this.createElement, itemValue, dataSource, fields.properties, option, this);
         }
         else {
-            return ListBase.renderContentTemplate(this.createElement, this.itemTemplate, dataSource, fields.properties, option);
+            return ListBase.renderContentTemplate(this.createElement, this.itemTemplate, dataSource, fields.properties, option, this);
         }
     };
     
@@ -1135,7 +1142,11 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
             }
             if (this.itemTemplate && !isHeader) {
                 var compiledString = compile(this.itemTemplate);
-                append(compiledString(item, this, 'itemTemplate', this.itemTemplateId, this.isStringTemplate), li);
+                // tslint:disable-next-line
+                var addItemTemplate = compiledString(item, this, 'itemTemplate', this.itemTemplateId, this.isStringTemplate, null, li);
+                if (addItemTemplate) {
+                    append(addItemTemplate, li);
+                }
                 this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
             }
             else if (!isHeader) {
@@ -1146,6 +1157,9 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
             this.notify('addItem', { module: 'CheckBoxSelection', item: li });
             liCollections.push(li);
             this.listData.push(item);
+            if (this.sortOrder === 'None' && isNullOrUndefined(itemIndex) && index === 0) {
+                index = null;
+            }
             this.updateActionCompleteData(li, item, index);
             //Listbox event
             this.trigger('beforeItemRender', { element: li, item: item });
@@ -2432,6 +2446,10 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     };
     DropDownList.prototype.setValueTemplate = function () {
         var compiledString;
+        // tslint:disable-next-line
+        if (this.isReact) {
+            this.clearTemplate(['valueTemplate']);
+        }
         if (!this.valueTempElement) {
             this.valueTempElement = this.createElement('span', { className: dropDownListClasses.value });
             this.inputElement.parentElement.insertBefore(this.valueTempElement, this.inputElement);
@@ -2446,10 +2464,14 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         else {
             compiledString = compile(this.valueTemplate);
         }
-        for (var _i = 0, _a = compiledString(templateData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
-            var item = _a[_i];
-            this.valueTempElement.appendChild(item);
+        // tslint:disable-next-line
+        var valueCompTemp = compiledString(templateData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate, null, this.valueTempElement);
+        if (valueCompTemp && valueCompTemp.length > 0) {
+            for (var i = 0; i < valueCompTemp.length; i++) {
+                this.valueTempElement.appendChild(valueCompTemp[i]);
+            }
         }
+        this.renderReactTemplates();
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, true, true);
     };
     DropDownList.prototype.removeSelection = function () {
@@ -2750,6 +2772,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 query = (this.filterInput.value.trim() === '') ? null : query;
                 this.resetList(dataSource, fields, query);
             }
+            this.renderReactTemplates();
         }
     };
     DropDownList.prototype.setSearchBox = function (popupElement) {
@@ -2925,7 +2948,12 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     };
     DropDownList.prototype.updateActionCompleteData = function (li, item, index) {
         if (this.getModuleName() !== 'autocomplete' && this.actionCompleteData.ulElement) {
-            this.actionCompleteData.ulElement.insertBefore(li.cloneNode(true), this.actionCompleteData.ulElement.childNodes[index]);
+            if (index != null) {
+                this.actionCompleteData.ulElement.insertBefore(li.cloneNode(true), this.actionCompleteData.ulElement.childNodes[index]);
+            }
+            else {
+                this.actionCompleteData.ulElement.appendChild(li.cloneNode(true));
+            }
             if (this.isFiltering() && this.actionCompleteData.list.indexOf(item) < 0) {
                 this.actionCompleteData.list.push(item);
             }
@@ -3066,6 +3094,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                         _this.serverBlazorUpdateSelection();
                         _this.bindServerScrollEvent();
                         addClass([_this.inputWrapper.container], [dropDownListClasses.iconAnimation]);
+                        _this.renderReactTemplates();
                         _this.popupObj.show(new Animation(eventArgs.animation), (_this.zIndex === 1000) ? _this.element : null);
                     }
                     else {
@@ -3142,6 +3171,10 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             close: function () {
                 if (!_this.isDocumentClick) {
                     _this.focusDropDown();
+                }
+                // tslint:disable-next-line
+                if (_this.isReact) {
+                    _this.clearTemplate(['headerTemplate', 'footerTemplate']);
                 }
                 var isResetItem = (_this.getModuleName() === 'autocomplete') ? true : false;
                 _this.DropDownBaseresetBlazorTemplates(isResetItem, isResetItem, true, true, false, true, true);
@@ -3552,9 +3585,12 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         else {
             compiledString = compile(this.footerTemplate);
         }
-        for (var _i = 0, _a = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
-            var item = _a[_i];
-            this.footer.appendChild(item);
+        // tslint:disable-next-line
+        var footerCompTemp = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate, null, this.footer);
+        if (footerCompTemp && footerCompTemp.length > 0) {
+            for (var i = 0; i < footerCompTemp.length; i++) {
+                this.footer.appendChild(footerCompTemp[i]);
+            }
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, false, true);
         append([this.footer], popupEle);
@@ -3575,9 +3611,12 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         else {
             compiledString = compile(this.headerTemplate);
         }
-        for (var _i = 0, _a = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
-            var item = _a[_i];
-            this.header.appendChild(item);
+        // tslint:disable-next-line
+        var headerCompTemp = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate, null, this.header);
+        if (headerCompTemp && headerCompTemp.length) {
+            for (var i = 0; i < headerCompTemp.length; i++) {
+                this.header.appendChild(headerCompTemp[i]);
+            }
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, true, false);
         var contentEle = popupEle.querySelector('div.e-content');
@@ -4032,6 +4071,10 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
      */
     DropDownList.prototype.destroy = function () {
         this.isActive = false;
+        // tslint:disable-next-line
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         if (!this.isServerBlazor || (this.popupObj && document.body.contains(this.popupObj.element))) {
             this.hidePopup();
         }
@@ -4491,6 +4534,8 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         }
         this.oldValue = this.value;
         this.isInitialized = true;
+        this.hasTemplate = this.itemTemplate || this.headerTemplate || this.footerTemplate || this.actionFailureTemplate
+            || this.noRecordsTemplate;
         this.renderComplete();
     };
     DropDownTree.prototype.ensureAutoCheck = function () {
@@ -4819,7 +4864,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DropDownTree.prototype.triggerChangeEvent = function (event) {
-        var isEqual = this.compareValues(this.oldValue, this.value);
+        var isEqual = this.ddtCompareValues(this.oldValue, this.value);
         if ((!isEqual || this.isChipDelete) && !this.removeValue) {
             var eventArgs = {
                 e: event,
@@ -4831,7 +4876,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
             this.trigger('change', eventArgs);
         }
     };
-    DropDownTree.prototype.compareValues = function (oldValue, newValue) {
+    DropDownTree.prototype.ddtCompareValues = function (oldValue, newValue) {
         if (oldValue === null || oldValue.length === 0) {
             var isValid = oldValue === null ? ((newValue === oldValue) ? true : false) :
                 (oldValue.length === 0 ? (newValue === oldValue) : false);
@@ -5042,7 +5087,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
             var remainElement = this.createElement('span', { className: REMAIN_WRAPPER });
             var compiledString = compile(remainContent);
             var totalCompiledString = compile(this.l10n.getConstant('totalCountTemplate'));
-            remainElement.appendChild(compiledString({ 'count': this.value.length }, null, null, null, !this.isStringTemplate)[0]);
+            remainElement.appendChild(compiledString({ 'count': this.value.length }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0]);
             this.overFlowWrapper.appendChild(remainElement);
             var remainSize = remainElement.offsetWidth;
             remove(remainElement);
@@ -5145,8 +5190,8 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         }
         remainElement.innerHTML = '';
         remainElement.appendChild((this.overFlowWrapper.firstChild && (this.overFlowWrapper.firstChild.nodeType === 3 || this.mode === 'Box')) ?
-            compiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0] :
-            totalCompiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0]);
+            compiledString({ 'count': remaining }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0] :
+            totalCompiledString({ 'count': remaining }, this, 'totalCountTemplate', null, !this.isStringTemplate)[0]);
         if (this.overFlowWrapper.firstChild && (this.overFlowWrapper.firstChild.nodeType === 3 || this.mode === 'Box')) {
             removeClass([this.overFlowWrapper], TOTAL_COUNT_WRAPPER);
         }
@@ -5316,7 +5361,8 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
             var compiledString = void 0;
             this.selectAllSpan.textContent = '';
             compiledString = compile(template);
-            for (var _i = 0, _a = compiledString({}, null, null, null, !this.isStringTemplate); _i < _a.length; _i++) {
+            var templateName = unSelect ? 'unSelectAllText' : 'selectAllText';
+            for (var _i = 0, _a = compiledString({}, this, templateName, null, !this.isStringTemplate); _i < _a.length; _i++) {
                 var item = _a[_i];
                 this.selectAllSpan.textContent = item.textContent;
             }
@@ -5624,6 +5670,12 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                     _this.setFooterTemplate();
                 }
                 _this.isFirstRender = false;
+                // tslint:disable
+                if (_this.hasTemplate && _this.portals) {
+                    // tslint:disable
+                    _this.portals = _this.portals.concat(_this.treeObj.portals);
+                    _this.renderReactTemplates();
+                }
             }
             if (!isCancelled) {
                 attributes(_this.inputWrapper, { 'aria-expanded': 'true' });
@@ -5927,6 +5979,9 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     /* Triggers when the tree fields is changed dynamically */
     DropDownTree.prototype.setFields = function () {
         this.resetValue();
+        if (this.hasTemplate) {
+            this.updateTemplate();
+        }
         this.treeObj.fields = this.getTreeFields(this.fields);
         this.treeObj.dataBind();
     };
@@ -6331,9 +6386,10 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
             addClass([this.header], HEADER);
         }
         compiledString = this.templateComplier(this.headerTemplate);
-        for (var _i = 0, _a = compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
-            var item = _a[_i];
-            this.header.appendChild(item);
+        var tempArr = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate, undefined, this.header);
+        if (tempArr) {
+            tempArr = Array.prototype.slice.call(tempArr);
+            append(tempArr, this.header);
         }
         this.ddtupdateBlazorTemplates(false, false, true, false);
         this.popupEle.insertBefore(this.header, this.checkAllParent ? this.checkAllParent : this.popupDiv);
@@ -6361,9 +6417,10 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
             addClass([this.footer], FOOTER);
         }
         compiledString = this.templateComplier(this.footerTemplate);
-        for (var _i = 0, _a = compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
-            var item = _a[_i];
-            this.footer.appendChild(item);
+        var tempArr = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate, undefined, this.footer);
+        if (tempArr) {
+            tempArr = Array.prototype.slice.call(tempArr);
+            append(tempArr, this.footer);
         }
         this.ddtupdateBlazorTemplates(false, false, false, true);
         append([this.footer], this.popupEle);
@@ -6491,6 +6548,9 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         this.setMultiSelect();
     };
     DropDownTree.prototype.updateCheckBoxState = function (checkBox) {
+        if (this.hasTemplate) {
+            this.updateTemplate();
+        }
         if (!this.wrapText) {
             this.updateOverflowWrapper(false);
         }
@@ -6509,6 +6569,9 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     };
     DropDownTree.prototype.updateTemplate = function () {
         if (this.popupObj) {
+            this.clearTemplate();
+            // tslint:disable
+            this.portals = [];
             this.popupObj.destroy();
             if (this.isPopupOpen) {
                 this.hidePopup();
@@ -6533,10 +6596,12 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
             var template = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
             var compiledString = void 0;
             var templateId = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
+            var templatestring = actionFailure ? 'actionFailureTemplate' : 'noRecordsTemplate';
             compiledString = this.templateComplier(template);
-            for (var _i = 0, _a = compiledString({}, null, null, templateId, this.isStringTemplate); _i < _a.length; _i++) {
-                var item = _a[_i];
-                this.noRecord.appendChild(item);
+            var tempArr = compiledString({}, this, templatestring, templateId, this.isStringTemplate, undefined, this.noRecord);
+            if (tempArr) {
+                tempArr = Array.prototype.slice.call(tempArr);
+                append(tempArr, this.noRecord);
             }
             this.ddtupdateBlazorTemplates(!actionFailure, actionFailure);
         }
@@ -6582,7 +6647,9 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     DropDownTree.prototype.updateRecordTemplate = function (action) {
         if (this.treeItems && this.treeItems.length <= 0) {
             this.l10nUpdate(action);
-            this.updateTemplate();
+            if (this.hasTemplate) {
+                this.updateTemplate();
+            }
         }
     };
     DropDownTree.prototype.updateOverflowWrapper = function (state) {
@@ -6775,7 +6842,11 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                     this.updateTreeSettings(newProp);
                     break;
                 case 'sortOrder':
+                    if (this.hasTemplate) {
+                        this.updateTemplate();
+                    }
                     this.treeObj.sortOrder = newProp.sortOrder;
+                    this.updateValue(this.value);
                     this.treeObj.dataBind();
                     break;
                 case 'showDropDownIcon':
@@ -6804,6 +6875,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                     this.updateTemplate();
                     break;
                 case 'itemTemplate':
+                    this.updateTemplate();
                     this.treeObj.nodeTemplate = newProp.itemTemplate;
                     this.treeObj.dataBind();
                     break;
@@ -6860,6 +6932,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
      */
     DropDownTree.prototype.destroy = function () {
         this.ddtresetBlazorTemplates(true, true, true, true);
+        this.clearTemplate();
         this.unWireEvents();
         this.setCssClass(null, this.cssClass);
         this.resetValue();
@@ -8083,6 +8156,7 @@ var AutoComplete = /** @__PURE__ @class */ (function (_super) {
         else {
             this.hidePopup();
         }
+        this.renderReactTemplates();
     };
     AutoComplete.prototype.clearAll = function (e, property) {
         if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource))) {
@@ -8694,6 +8768,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                     addClass([_this.overAllWrapper], [iconAnimation]);
                 }
                 _this.refreshPopup();
+                _this.renderReactTemplates();
                 _this.popupObj.show(eventArgs.animation, (_this.zIndex === 1000) ? _this.element : null);
                 attributes(_this.inputElement, { 'aria-expanded': 'true' });
                 if (_this.isFirstClick) {
@@ -10276,10 +10351,14 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             else {
                 compiledString = compile(this.valueTemplate);
             }
-            for (var _i = 0, _a = compiledString(itemData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
-                var item = _a[_i];
-                chipContent.appendChild(item);
+            // tslint:disable-next-line
+            var valueCompTemp = compiledString(itemData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate, null, chipContent);
+            if (valueCompTemp && valueCompTemp.length > 0) {
+                for (var i = 0; i < valueCompTemp.length; i++) {
+                    chipContent.appendChild(valueCompTemp[i]);
+                }
             }
+            this.renderReactTemplates();
             this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false, false);
         }
         else if (this.enableHtmlSanitizer) {
@@ -10482,9 +10561,12 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         else {
             compiledString = compile(this.headerTemplate);
         }
-        var elements = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate);
-        for (var temp = 0; temp < elements.length; temp++) {
-            this.header.appendChild(elements[temp]);
+        // tslint:disable-next-line
+        var elements = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate, null, this.header);
+        if (elements && elements.length > 0) {
+            for (var temp = 0; temp < elements.length; temp++) {
+                this.header.appendChild(elements[temp]);
+            }
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, true, false);
         if (this.mode === 'CheckBox' && this.showSelectAll) {
@@ -10509,9 +10591,12 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         else {
             compiledString = compile(this.footerTemplate);
         }
-        var elements = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate);
-        for (var temp = 0; temp < elements.length; temp++) {
-            this.footer.appendChild(elements[temp]);
+        // tslint:disable-next-line
+        var elements = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate, null, this.footer);
+        if (elements && elements.length > 0) {
+            for (var temp = 0; temp < elements.length; temp++) {
+                this.footer.appendChild(elements[temp]);
+            }
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, false, true);
         append([this.footer], this.popupWrapper);
@@ -11328,8 +11413,11 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                 overflowCountTemplate: '+${count} more..',
                 totalCountTemplate: '${count} selected'
             };
-            var l10n = new L10n(this.getLocaleName(), {}, this.locale);
+            var l10n = new L10n(this.getLocaleName(), l10nLocale, this.locale);
             if (l10n.getConstant('actionFailureTemplate') === '') {
+                l10n = new L10n('dropdowns', l10nLocale, this.locale);
+            }
+            if (l10n.getConstant('noRecordsTemplate') === '') {
                 l10n = new L10n('dropdowns', l10nLocale, this.locale);
             }
             var remainContent = l10n.getConstant('overflowCountTemplate');
@@ -11338,8 +11426,13 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             });
             var compiledString = compile(remainContent);
             var totalCompiledString = compile(l10n.getConstant('totalCountTemplate'));
-            raminElement.appendChild(compiledString({ 'count': this.value.length }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0]);
+            // tslint:disable-next-line
+            var remainCompildTemp = compiledString({ 'count': this.value.length }, this, 'overflowCountTemplate', null, !this.isStringTemplate, null, raminElement);
+            if (remainCompildTemp && remainCompildTemp.length > 0) {
+                raminElement.appendChild(remainCompildTemp[0]);
+            }
             this.viewWrapper.appendChild(raminElement);
+            this.renderReactTemplates();
             var remainSize = raminElement.offsetWidth;
             remove(raminElement);
             if (this.showDropDownIcon) {
@@ -11412,9 +11505,12 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             viewWrapper.removeChild(viewWrapper.firstChild);
         }
         raminElement.innerHTML = '';
+        // tslint:disable-next-line
+        var remainTemp = compiledString({ 'count': remaining }, this, 'overflowCountTemplate', null, !this.isStringTemplate, null, raminElement);
+        // tslint:disable-next-line
+        var totalTemp = totalCompiledString({ 'count': remaining }, this, 'totalCountTemplate', null, !this.isStringTemplate, null, raminElement);
         raminElement.appendChild((viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) ?
-            compiledString({ 'count': remaining }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0] :
-            totalCompiledString({ 'count': remaining }, this, 'totalCountTemplate', null, !this.isStringTemplate)[0]);
+            remainTemp && remainTemp[0] : totalTemp && totalTemp[0]);
         if (viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) {
             viewWrapper.classList.remove(TOTAL_COUNT_WRAPPER$1);
         }
@@ -12114,6 +12210,10 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     MultiSelect.prototype.destroy = function () {
+        // tslint:disable-next-line
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         if (this.popupObj) {
             this.popupObj.hide();
         }
@@ -13011,6 +13111,9 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         this.list.insertBefore(hiddenSelect, this.list.firstChild);
         if (this.list.getElementsByClassName('e-list-item')[0]) {
             this.list.getElementsByClassName('e-list-item')[0].classList.remove(dropDownBaseClasses.focus);
+        }
+        if (this.itemTemplate) {
+            this.renderReactTemplates();
         }
         removeClass([this.list], [dropDownBaseClasses.content, dropDownBaseClasses.root]);
         this.validationAttribute(this.element, hiddenSelect);
@@ -14911,6 +15014,9 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         }
         if (!isBlazor() || (isBlazor() && !this.isServerRendered)) {
             _super.prototype.destroy.call(this);
+        }
+        if (this.itemTemplate) {
+            this.clearTemplate();
         }
     };
     /**

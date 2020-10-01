@@ -134,7 +134,7 @@ export namespace ListBase {
             // tslint:disable-next-line
             return createListFromJson(createElement, <{ [key: string]: Object }[]>dataSource, options,
                 // tslint:disable-next-line
-                 ariaAttributes.level, isSingleLevel, componentInstance);
+                ariaAttributes.level, isSingleLevel, componentInstance);
         }
     }
 
@@ -594,9 +594,31 @@ export namespace ListBase {
             } else {
                 const currentID: string = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
                 if (isHeader) {
-                    append(compiledString(curItem, componentInstance, 'headerTemplate', currentID, !!curOpt.isStringTemplate), li);
+                    // tslint:disable-next-line
+                    let compiledElement: any = compiledString(
+                        curItem,
+                        componentInstance,
+                        'headerTemplate',
+                        currentID,
+                        !!curOpt.isStringTemplate,
+                        null,
+                        li);
+                    if (compiledElement) {
+                        append(compiledElement, li);
+                    }
                 } else {
-                    append(compiledString(curItem, componentInstance, 'template', currentID, !!curOpt.isStringTemplate), li);
+                    // tslint:disable-next-line
+                    let compiledElement: any = compiledString(
+                        curItem,
+                        componentInstance,
+                        'template',
+                        currentID,
+                        !!curOpt.isStringTemplate,
+                        null,
+                        li);
+                    if (compiledElement) {
+                        append(compiledElement, li);
+                    }
                 }
                 li.setAttribute('data-value', isNullOrUndefined(value) ? 'null' : value);
                 li.setAttribute('role', 'option');
@@ -639,14 +661,16 @@ export namespace ListBase {
             let headerData: { [key: string]: string; } = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
-            append(
-                compiledString(
-                    headerData,
-                    componentInstance,
-                    'groupTemplate',
-                    curOpt.groupTemplateID,
-                    !!curOpt.isStringTemplate),
-                header);
+            // tslint:disable-next-line
+            let compiledElement: any = compiledString(
+                headerData,
+                componentInstance,
+                'groupTemplate',
+                curOpt.groupTemplateID,
+                !!curOpt.isStringTemplate, null, header);
+            if (compiledElement) {
+                append(compiledElement, header);
+            }
         }
         return headerItems;
     }
@@ -659,6 +683,7 @@ export namespace ListBase {
 
     function processSubChild(
         createElement: createElementParams, fieldData: { [key: string]: Object }, fields: FieldsMapping, ds: { [key: string]: Object }[],
+        // tslint:disable-next-line
         options: ListBaseOptions, element: HTMLElement, level: number): void {
         // Get SubList
         let subDS: { [key: string]: Object }[] = <{ [key: string]: Object }[]>fieldData[fields.child] || [];
@@ -793,7 +818,7 @@ export namespace ListBase {
     function generateLI(
         createElement: createElementParams, item: string | { [key: string]: Object } | number, fieldData: { [key: string]: Object },
         // tslint:disable-next-line
-        fields: FieldsMapping, className?: string, options?: ListBaseOptions, prop?: string, componentInstance?: any): HTMLElement {
+        fields: FieldsMapping, className?: string, options?: ListBaseOptions, componentInstance?: any): HTMLElement {
         let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
         let ariaAttributes: AriaAttributesMapping = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
         let text: string = <string>item;
@@ -826,10 +851,32 @@ export namespace ListBase {
         }
         if (grpLI && options && options.groupTemplate) {
             let compiledString: Function = compile(options.groupTemplate);
-            append(compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
+            // tslint:disable-next-line
+            let compiledElement: any = compiledString(
+                item,
+                componentInstance,
+                'groupTemplate',
+                curOpt.groupTemplateID,
+                !!curOpt.isStringTemplate,
+                null,
+                li);
+            if (compiledElement) {
+                append(compiledElement, li);
+            }
         } else if (!grpLI && options && options.template) {
             let compiledString: Function = compile(options.template);
-            append(compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
+            // tslint:disable-next-line
+            let compiledElement: any = compiledString(
+                item,
+                componentInstance,
+                'template',
+                curOpt.templateID,
+                !!curOpt.isStringTemplate,
+                null,
+                li);
+            if (compiledElement) {
+                append(compiledElement, li);
+            }
         } else {
             let innerDiv: HTMLElement = createElement('div', {
                 className: cssClass.textContent,

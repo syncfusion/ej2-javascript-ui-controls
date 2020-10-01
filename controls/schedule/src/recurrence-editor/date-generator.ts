@@ -62,7 +62,7 @@ export function generateSummary(rule: string, localeObject: L10n, locale: string
     }
     return summary;
 }
-function getMonthSummary(ruleObject: RecRule, cldrObj: string[], localeObj: L10n, ): string {
+function getMonthSummary(ruleObject: RecRule, cldrObj: string[], localeObj: L10n): string {
     let summary: string = '';
     if (ruleObject.monthDay.length) {
         summary += ruleObject.monthDay[0];
@@ -94,7 +94,7 @@ export function generate(
     tempDate.forEach((content: string) => {
         let parsedDate: Date = getDateFromRecurrenceDateString(content);
         if (oldTimezone && newTimezone) {
-            parsedDate = tz.convert(new Date(parsedDate.getTime()), <number & string>oldTimezone, <number & string>newTimezone);
+            parsedDate = tz.convert(new Date(parsedDate.getTime()), oldTimezone, newTimezone);
         }
         tempExcludeDate.push(new Date(parsedDate.getTime()).setHours(0, 0, 0, 0));
     });

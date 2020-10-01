@@ -56,6 +56,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         node.innerHTML = '';
     }
 
+    /* tslint:disable-next-line:max-func-body-length */
     private prepareHeader(cell: Cell<Column>, node: Element, fltrMenuEle: Element): Element {
         let column: Column = cell.column; let ariaAttr: IAriaOptions<boolean> = {};
         //Prepare innerHtml
@@ -130,10 +131,19 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             let headerTempID: string = gridObj.element.id + column.uid + 'headerTemplate';
             let str: string = 'isStringTemplate';
             let col: Column = isBlazor() ? column.toJSON() : column;
-            result = column.getHeaderTemplate()(
-                extend({ 'index': colIndex }, col), gridObj, 'headerTemplate', headerTempID, this.parent[str]);
-            node.firstElementChild.innerHTML = '';
-            appendChildren(node.firstElementChild, result);
+            let isReactCompiler: boolean = this.parent.isReact && typeof (column.headerTemplate) !== 'string';
+            if (isReactCompiler) {
+                let copied: Object = { 'index': colIndex };
+                node.firstElementChild.innerHTML = '';
+                column.getHeaderTemplate()(
+                    extend(copied, col), gridObj, 'headerTemplate', headerTempID, this.parent[str], null, node.firstElementChild);
+                this.parent.renderTemplates();
+            } else {
+                result = column.getHeaderTemplate()(
+                    extend({ 'index': colIndex }, col), gridObj, 'headerTemplate', headerTempID, this.parent[str]);
+                node.firstElementChild.innerHTML = '';
+                appendChildren(node.firstElementChild, result);
+            }
         }
         this.ariaService.setOptions(<HTMLElement>node, ariaAttr);
         if (!isNullOrUndefined(column.headerTextAlign) || !isNullOrUndefined(column.textAlign)) {

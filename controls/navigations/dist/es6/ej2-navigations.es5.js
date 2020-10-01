@@ -942,6 +942,69 @@ var VScroll = /** @__PURE__ @class */ (function (_super) {
     return VScroll;
 }(Component));
 
+/**
+ * Used to add scroll in menu.
+ * @hidden
+ */
+function addScrolling(createElement$$1, container, content, scrollType, enableRtl, offset) {
+    var containerOffset;
+    var contentOffset;
+    if (scrollType === 'vscroll') {
+        containerOffset = offset || container.offsetHeight;
+        contentOffset = content.offsetHeight;
+    }
+    else {
+        containerOffset = container.offsetWidth;
+        contentOffset = content.offsetWidth;
+    }
+    if (containerOffset < contentOffset) {
+        var scrollEle = createElement$$1('div', { className: 'e-menu-' + scrollType });
+        container.appendChild(scrollEle);
+        scrollEle.appendChild(content);
+        if (offset) {
+            scrollEle.style.overflow = 'hidden';
+            scrollEle.style.height = offset + 'px';
+        }
+        else {
+            scrollEle.style.maxHeight = container.style.maxHeight;
+            container.style.overflow = 'hidden';
+        }
+        var scrollObj = void 0;
+        if (scrollType === 'vscroll') {
+            scrollObj = new VScroll({ enableRtl: enableRtl }, scrollEle);
+            scrollObj.scrollStep = select('.e-' + scrollType + '-bar', container).offsetHeight / 2;
+        }
+        else {
+            scrollObj = new HScroll({ enableRtl: enableRtl }, scrollEle);
+            scrollObj.scrollStep = select('.e-' + scrollType + '-bar', container).offsetWidth;
+        }
+        return scrollEle;
+    }
+    else {
+        return content;
+    }
+}
+/**
+ * Used to destroy the scroll option.
+ * @hidden
+ */
+function destroyScroll(scrollObj, element, skipEle) {
+    if (scrollObj) {
+        var menu = select('.e-menu-parent', element);
+        if (menu) {
+            if (!skipEle || skipEle === menu) {
+                scrollObj.destroy();
+                element.parentElement.appendChild(menu);
+                detach(element);
+            }
+        }
+        else {
+            scrollObj.destroy();
+            detach(element);
+        }
+    }
+}
+
 var __extends$2 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -1179,11 +1242,11 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         var ul = this.createItems(this.items);
         append(Array.prototype.slice.call(ul.children), this.element);
         this.element.classList.add('e-menu-parent');
-        if (this.isMenu) {
+        if (this.isMenu && this.enableScrolling) {
             var wrapper = this.getWrapper();
             this.element.classList.contains('e-vertical') ?
-                this.addScrolling(wrapper, this.element, 'vscroll', wrapper.offsetHeight, this.element.offsetHeight)
-                : this.addScrolling(wrapper, this.element, 'hscroll', wrapper.offsetWidth, this.element.offsetWidth);
+                addScrolling(this.createElement, wrapper, this.element, 'vscroll', this.enableRtl)
+                : addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
         }
     };
     MenuBase.prototype.wireEvents = function () {
@@ -1469,7 +1532,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                                 closest(ul_1, '.e-menu-item').setAttribute('aria-expanded', 'false');
                             }
                             _this.unWireKeyboardEvent(popupEle);
-                            _this.destroyScrollObj(getInstance(popupEle.children[0], VScroll), popupEle.children[0]);
+                            destroyScroll(getInstance(popupEle.children[0], VScroll), popupEle.children[0]);
                             popupObj = getInstance(popupEle, Popup);
                             popupObj.hide();
                             popupId = popupEle.id;
@@ -1483,6 +1546,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                         _this.trigger('onClose', closeArgs);
                         _this.navIdx.pop();
                     }
+                    _this.updateReactTemplate();
                     var trgtliId;
                     var closedLi;
                     var trgtLi;
@@ -1554,6 +1618,17 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    MenuBase.prototype.updateReactTemplate = function () {
+        // tslint:disable
+        if (this.isReact && this.template && this.navIdx.length === 0) {
+            // tslint:disable
+            var portals = this.portals.splice(0, this.items.length);
+            this.clearTemplate(['template']);
+            // tslint:disable
+            this.portals = portals;
+            this.renderReactTemplates();
+        }
+    };
     MenuBase.prototype.getMenuItemModel = function (item, level) {
         if (isNullOrUndefined(item)) {
             return null;
@@ -1564,13 +1639,6 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         var fields = this.getFields(level);
         return { text: item[fields.text], id: item[fields.id], items: item[fields.child], separator: item[fields.separator],
             iconCss: item[fields.iconCss], url: item[fields.url] };
-    };
-    MenuBase.prototype.destroyScrollObj = function (scrollObj, scrollEle) {
-        if (scrollObj) {
-            scrollObj.destroy();
-            scrollEle.parentElement.appendChild(select('.e-menu-parent', scrollEle));
-            detach(scrollEle);
-        }
     };
     MenuBase.prototype.getPopups = function () {
         var _this = this;
@@ -1639,6 +1707,9 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 }
                 this.isNestedOrVertical = this.element.classList.contains('e-vertical') || this.navIdx.length !== 1;
                 this.popupObj = this.generatePopup(this.popupWrapper, this.uList, li, this.isNestedOrVertical);
+                if (this.template) {
+                    this.renderReactTemplates();
+                }
                 if (this.hamburgerMode) {
                     this.calculateIndentSize(this.uList, li);
                 }
@@ -1772,7 +1843,9 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                     _this.popupWrapper.style.display = 'block';
                     if (!_this.hamburgerMode) {
                         _this.popupWrapper.style.maxHeight = _this.popupWrapper.getBoundingClientRect().height + 'px';
-                        _this.addScrolling(_this.popupWrapper, _this.uList, 'vscroll', _this.popupWrapper.offsetHeight, _this.uList.offsetHeight);
+                        if (_this.enableScrolling) {
+                            addScrolling(_this.createElement, _this.popupWrapper, _this.uList, 'vscroll', _this.enableRtl);
+                        }
                         _this.checkScrollOffset(e);
                     }
                     if (!_this.hamburgerMode && !_this.left && !_this.top) {
@@ -1885,24 +1958,6 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             offsetRight = trgt.offsetLeft + trgt.offsetWidth;
             if (offsetLeft < offsetRight) {
                 offsetEle.scrollLeft += (offsetRight - offsetLeft);
-            }
-        }
-    };
-    MenuBase.prototype.addScrolling = function (wrapper, ul, scrollType, wrapperOffset, contentOffset) {
-        if (this.enableScrolling && wrapperOffset < contentOffset) {
-            var scrollEle = this.createElement('div', { className: 'e-menu-' + scrollType });
-            wrapper.appendChild(scrollEle);
-            scrollEle.appendChild(ul);
-            scrollEle.style.maxHeight = wrapper.style.maxHeight;
-            var scrollObj = void 0;
-            wrapper.style.overflow = 'hidden';
-            if (scrollType === 'vscroll') {
-                scrollObj = new VScroll({ enableRtl: this.enableRtl }, scrollEle);
-                scrollObj.scrollStep = select('.e-' + scrollType + '-bar', wrapper).offsetHeight / 2;
-            }
-            else {
-                scrollObj = new HScroll({ enableRtl: this.enableRtl }, scrollEle);
-                scrollObj.scrollStep = select('.e-' + scrollType + '-bar', wrapper).offsetWidth;
             }
         }
     };
@@ -2039,7 +2094,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         if (this.isMenu) {
             listBaseOptions.templateID = this.element.id + TEMPLATE_PROPERTY;
         }
-        var ul = ListBase.createList(this.createElement, items, listBaseOptions, !this.template);
+        var ul = ListBase.createList(this.createElement, items, listBaseOptions, !this.template, this);
         ul.setAttribute('tabindex', '0');
         if (this.isMenu) {
             ul.setAttribute('role', 'menu');
@@ -2218,9 +2273,6 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                                 }
                                 this.isClosed = true;
                                 this.keyType = 'click';
-                                if (this.showItemOnClick) {
-                                    this.setLISelected(cli);
-                                }
                                 this.closeMenu(culIdx + 1, e);
                                 if (this.showItemOnClick) {
                                     this.setLISelected(cli);
@@ -2448,22 +2500,22 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                     if (newProp.enableScrolling) {
                         var ul_2;
                         this_1.element.classList.contains('e-vertical') ?
-                            this_1.addScrolling(wrapper, this_1.element, 'vscroll', wrapper.offsetHeight, this_1.element.offsetHeight)
-                            : this_1.addScrolling(wrapper, this_1.element, 'hscroll', wrapper.offsetWidth, this_1.element.offsetWidth);
+                            addScrolling(this_1.createElement, wrapper, this_1.element, 'vscroll', this_1.enableRtl)
+                            : addScrolling(this_1.createElement, wrapper, this_1.element, 'hscroll', this_1.enableRtl);
                         this_1.getPopups().forEach(function (wrapper) {
                             ul_2 = select('.e-ul', wrapper);
-                            _this.addScrolling(wrapper, ul_2, 'vscroll', wrapper.offsetHeight, ul_2.offsetHeight);
+                            addScrolling(_this.createElement, wrapper, ul_2, 'vscroll', _this.enableRtl);
                         });
                     }
                     else {
                         var ul_3 = wrapper.children[0];
-                        this_1.element.classList.contains('e-vertical') ? this_1.destroyScrollObj(getInstance(ul_3, VScroll), ul_3)
-                            : this_1.destroyScrollObj(getInstance(ul_3, HScroll), ul_3);
+                        this_1.element.classList.contains('e-vertical') ? destroyScroll(getInstance(ul_3, VScroll), ul_3)
+                            : destroyScroll(getInstance(ul_3, HScroll), ul_3);
                         wrapper.style.overflow = '';
                         wrapper.appendChild(this_1.element);
                         this_1.getPopups().forEach(function (wrapper) {
                             ul_3 = wrapper.children[0];
-                            _this.destroyScrollObj(getInstance(ul_3, VScroll), ul_3);
+                            destroyScroll(getInstance(ul_3, VScroll), ul_3);
                             wrapper.style.overflow = '';
                         });
                     }
@@ -2978,6 +3030,9 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 detach(wrapper);
             }
             _super.prototype.destroy.call(this);
+            if (this.template) {
+                this.clearTemplate(['template']);
+            }
         }
     };
     __decorate$2([
@@ -3204,6 +3259,10 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
      */
     Toolbar.prototype.destroy = function () {
         var _this = this;
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         _super.prototype.destroy.call(this);
         this.unwireEvents();
         this.tempId.forEach(function (ele) {
@@ -3213,18 +3272,6 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         });
         if (isBlazor() && this.isServerRendered) {
             this.resetServerItems();
-        }
-        else {
-            var subControls = this.element.querySelectorAll('.e-control');
-            [].slice.call(subControls).forEach(function (node) {
-                var instances = node.ej2_instances;
-                if (instances) {
-                    var instance = instances[0];
-                    if (instance) {
-                        instance.destroy();
-                    }
-                }
-            });
         }
         while (this.element.lastElementChild && !this.element.lastElementChild.classList.contains(BZ_ITEMS)) {
             this.element.removeChild(this.element.lastElementChild);
@@ -3755,6 +3802,10 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 itemEleDom.appendChild(innerItem);
+            }
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.renderReactTemplates();
             }
         }
     };
@@ -4730,6 +4781,10 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         }
         itemsDiv.style.width = '';
         this.renderOverflowMode();
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     };
     /**
      * Removes the items from the Toolbar. Acceptable arguments are index of item/HTMLElement/node list.
@@ -4770,6 +4825,10 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                 var indexAgn = void 0;
                 indexAgn = this.tbarAlgEle[(this.items[eleIdx].align + 's').toLowerCase()].indexOf(this.tbarEle[eleIdx]);
                 this.tbarAlgEle[(this.items[eleIdx].align + 's').toLowerCase()].splice(indexAgn, 1);
+            }
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.clearTemplate();
             }
             detach(innerItems[index]);
             this.items.splice(eleIdx, 1);
@@ -4963,12 +5022,20 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     };
     Toolbar.prototype.itemsRerender = function (newProp) {
         this.items = this.tbarItemsCol;
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         this.destroyMode();
         this.destroyItems();
         this.items = newProp;
         this.tbarItemsCol = this.items;
         this.renderItems();
         this.renderOverflowMode();
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     };
     Toolbar.prototype.resize = function () {
         var ele = this.element;
@@ -5056,6 +5123,10 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                                 this.destroyMode();
                             }
                             var itemCol = [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, tEle));
+                            // tslint:disable-next-line:no-any
+                            if (this.isReact) {
+                                this.clearTemplate();
+                            }
                             detach(itemCol[index]);
                             this.tbarEle.splice(index, 1);
                             this.addItems([this.items[index]], index);
@@ -5397,6 +5468,10 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      */
     Accordion.prototype.destroy = function () {
         var _this = this;
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         var ele = this.element;
         _super.prototype.destroy.call(this);
         this.unwireEvents();
@@ -5596,6 +5671,10 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                 this.expandItem(true, this.initExpand[i]);
             }
         }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     };
     Accordion.prototype.renderItems = function () {
         var _this = this;
@@ -5627,6 +5706,10 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                     }
                 });
             }
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     };
     Accordion.prototype.clickHandler = function (e) {
@@ -5694,6 +5777,10 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             this.afterContentRender(trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem);
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     };
     Accordion.prototype.afterContentRender = function (trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem) {
@@ -5922,14 +6009,21 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         }
         var tempArray;
         if (!isNullOrUndefined(templateFn)) {
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.renderReactTemplates();
+            }
             var templateProps = void 0;
+            var templateName = void 0;
             if (ele.classList.contains(CLS_HEADERCTN)) {
                 templateProps = this.element.id + index + '_header';
+                templateName = 'header';
             }
             else if (ele.classList.contains(CLS_CTENT)) {
                 templateProps = this.element.id + index + '_content';
+                templateName = 'content';
             }
-            tempArray = templateFn({}, null, null, templateProps, this.isStringTemplate);
+            tempArray = templateFn({}, this, templateName, templateProps, this.isStringTemplate);
         }
         if (!isNullOrUndefined(tempArray) && tempArray.length > 0 && !(isNullOrUndefined(tempArray[0].tagName) && tempArray.length === 1)) {
             [].slice.call(tempArray).forEach(function (el) {
@@ -5961,6 +6055,10 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         attributes(itemcnt, { 'aria-hidden': 'true' });
         var ctn = this.createElement('div', { className: CLS_CTENT });
         if (this.dataSource.length > 0) {
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.renderReactTemplates();
+            }
             append(this.getItemTemplate()(this.dataSource[index], this, 'itemTemplate', this.element.id + '_itemTemplate', false), ctn);
             itemcnt.appendChild(ctn);
         }
@@ -6238,6 +6336,10 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                 }
             });
         }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     };
     Accordion.prototype.expandedItemRefresh = function (ele) {
         var _this = this;
@@ -6255,6 +6357,10 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @deprecated
      */
     Accordion.prototype.removeItem = function (index) {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate(['headerTemplate', 'itemTemplate'], index);
+        }
         var itemEle = this.getItemElements();
         var ele = itemEle[index];
         var items = this.getItems();
@@ -6420,12 +6526,18 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         else if (!isNullOrUndefined(ctn)) {
             isExpand ? this.expand(ctn) : this.collapse(ctn);
         }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     };
     Accordion.prototype.destroyItems = function () {
         this.restoreContent(null);
-        [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1)).forEach(function (el) {
-            detach(el);
-        });
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
+        [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1)).forEach(function (el) { detach(el); });
     };
     Accordion.prototype.restoreContent = function (index) {
         var ctnElePos;
@@ -7190,6 +7302,10 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
      */
     Tab.prototype.destroy = function () {
         var _this = this;
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         if (!isNullOrUndefined(this.tbObj)) {
             this.tbObj.destroy();
         }
@@ -7198,16 +7314,6 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             _this.element.removeAttribute(val);
         });
         this.expTemplateContent();
-        var subControls = this.element.querySelectorAll('.e-control');
-        [].slice.call(subControls).forEach(function (node) {
-            var instances = node.ej2_instances;
-            if (instances.length > 0) {
-                var instance = instances[0];
-                if (instance) {
-                    instance.destroy();
-                }
-            }
-        });
         if (!this.isTemplate) {
             while (this.element.firstElementChild) {
                 remove(this.element.firstElementChild);
@@ -7227,11 +7333,19 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
      * Refresh the tab component
      */
     Tab.prototype.refresh = function () {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         if (!this.isServerRendered) {
             _super.prototype.refresh.call(this);
         }
         else if (this.isServerRendered && this.loadOn !== 'Dynamic') {
             this.setActiveBorder();
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     };
     /**
@@ -7765,6 +7879,10 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         this.compileElement(tempEle, cnt, 'content', index);
         if (tempEle.childNodes.length !== 0) {
             ele.appendChild(tempEle);
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     };
     Tab.prototype.compileElement = function (ele, val, prop, index) {
@@ -8408,6 +8526,10 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 this.reRenderItems();
             }
             else {
+                // tslint:disable-next-line:no-any
+                if (this.isRect) {
+                    this.clearTemplate();
+                }
                 this.setItems(newProp.items);
                 if (this.templateEle.length > 0) {
                     this.expTemplateContent();
@@ -8469,6 +8591,10 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             this.addingTabContent(items, index);
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     };
     Tab.prototype.addingTabContent = function (items, index) {
@@ -8552,12 +8678,20 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                     _this.interopAdaptor.invokeMethodAsync('OnRemoveItem', index);
                     return;
                 }
+                // tslint:disable-next-line:no-any
+                if (_this.isRect) {
+                    _this.clearTemplate([], index);
+                }
                 _this.tbObj.removeItems(index);
                 _this.items.splice(index, 1);
                 _this.itemIndexArray.splice(index, 1);
                 _this.refreshActiveBorder();
                 var cntTrg = select('#' + CLS_CONTENT$1 + _this.tabId + '_' + _this.extIndex(trg.id), select('.' + CLS_CONTENT$1, _this.element));
                 if (!isNullOrUndefined(cntTrg)) {
+                    // tslint:disable-next-line:no-any
+                    if (_this.isReact) {
+                        _this.clearTemplate();
+                    }
                     detach(cntTrg);
                 }
                 _this.trigger('removed', tabRemovingArgs);
@@ -9629,10 +9763,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.addActionClass(e, fields.expanded, EXPANDED);
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
             var textEle = e.item.querySelector('.' + LISTTEXT);
+            var dataId = e.item.getAttribute('data-uid');
             textEle.innerHTML = '';
-            var tempArr = this.nodeTemplateFn(e.curData, undefined, undefined, this.element.id + 'nodeTemplate', this.isStringTemplate);
-            tempArr = Array.prototype.slice.call(tempArr);
-            append(tempArr, textEle);
+            this.renderNodeTemplate(e.curData, textEle, dataId);
         }
         var eventArgs = {
             node: e.item,
@@ -10184,6 +10317,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 addClass([firstNode], FOCUS);
                 this.updateIdAttr(null, firstNode);
             }
+            this.renderReactTemplates();
             this.hasPid = this.rootData[0] ? this.rootData[0].hasOwnProperty(this.fields.parentID) : false;
             this.doExpandAction();
         }
@@ -10369,6 +10503,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
     };
     TreeView.prototype.expandNode = function (currLi, icon, loaded) {
         var _this = this;
+        this.renderReactTemplates();
         if (icon.classList.contains(LOAD)) {
             this.hideSpinner(icon);
         }
@@ -11527,8 +11662,15 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var nodeData = this.getNodeData(currLi);
         return { cancel: false, isInteracted: isNullOrUndefined(e) ? false : true, node: currLi, nodeData: nodeData, event: e };
     };
-    TreeView.prototype.destroyTemplate = function (nodeTemplate) {
-        this.clearTemplate(['nodeTemplate']);
+    TreeView.prototype.renderNodeTemplate = function (data, textEle, dataId) {
+        var tempArr = this.nodeTemplateFn(data, this, 'nodeTemplate' + dataId, this.element.id + 'nodeTemplate', this.isStringTemplate, undefined, textEle);
+        if (tempArr) {
+            tempArr = Array.prototype.slice.call(tempArr);
+            append(tempArr, textEle);
+        }
+    };
+    TreeView.prototype.destroyTemplate = function (liEle) {
+        this.clearTemplate(['nodeTemplate' + liEle.getAttribute('data-uid')]);
     };
     TreeView.prototype.reRenderNodes = function () {
         this.updateListProp(this.fields);
@@ -11541,7 +11683,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             this.element.innerHTML = '';
         }
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
-            this.destroyTemplate(this.nodeTemplate);
+            this.clearTemplate();
         }
         this.setTouchClass();
         this.setProperties({ selectedNodes: [], checkedNodes: [], expandedNodes: [] }, true);
@@ -11584,6 +11726,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 var inpWidth = textEle.offsetWidth + 5;
                 var style = 'width:' + inpWidth + 'px';
                 addClass([liEle], EDITING);
+                if (!isNullOrUndefined(_this.nodeTemplateFn)) {
+                    _this.destroyTemplate(liEle);
+                }
                 textEle.innerHTML = eventArgs.innerHtml;
                 var inpEle = select('.' + TREEINPUT, textEle);
                 _this.inputObj = Input.createInput({
@@ -11638,10 +11783,10 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var newData = setValue(this.editFields.text, newText, this.editData);
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
             txtEle.innerText = '';
-            var tempArr = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate', this.isStringTemplate);
-            tempArr = Array.prototype.slice.call(tempArr);
-            append(tempArr, txtEle);
+            var dataId = liEle.getAttribute('data-uid');
+            this.renderNodeTemplate(newData, txtEle, dataId);
             this.updateBlazorTemplate();
+            this.renderReactTemplates();
         }
         else {
             txtEle.innerText = newText;
@@ -12407,6 +12552,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
     TreeView.prototype.removeNode = function (node) {
         var dragParentUl = closest(node, '.' + PARENTITEM);
         var dragParentLi = closest(dragParentUl, '.' + LISTITEM);
+        if (!isNullOrUndefined(this.nodeTemplateFn)) {
+            this.destroyTemplate(node);
+        }
         detach(node);
         this.updateElement(dragParentUl, dragParentLi);
         this.updateInstance();
@@ -12828,6 +12976,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
     };
     TreeView.prototype.triggerEvent = function () {
         this.updateTemplateForBlazor();
+        this.renderReactTemplates();
         var eventArgs = { data: this.treeData };
         this.trigger('dataSourceChanged', eventArgs);
     };
@@ -13377,6 +13526,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
      */
     TreeView.prototype.destroy = function () {
         resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
+        this.clearTemplate();
         this.element.removeAttribute('aria-activedescendant');
         this.element.removeAttribute('tabindex');
         this.unWireEvents();
@@ -14609,5 +14759,5 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
  * Navigation all modules
  */
 
-export { MenuAnimationSettings, MenuItem, HScroll, VScroll, Item, Toolbar, AccordionActionSettings, AccordionAnimationSettings, AccordionItem, Accordion, ContextMenu, Menu, TabActionSettings, TabAnimationSettings, Header, TabItem, Tab, FieldsSettings, ActionSettings, NodeAnimationSettings, TreeView, Sidebar };
+export { MenuAnimationSettings, MenuItem, HScroll, VScroll, addScrolling, destroyScroll, Item, Toolbar, AccordionActionSettings, AccordionAnimationSettings, AccordionItem, Accordion, ContextMenu, Menu, TabActionSettings, TabAnimationSettings, Header, TabItem, Tab, FieldsSettings, ActionSettings, NodeAnimationSettings, TreeView, Sidebar };
 //# sourceMappingURL=ej2-navigations.es5.js.map

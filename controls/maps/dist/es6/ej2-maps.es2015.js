@@ -40,6 +40,8 @@ function stringToNumber(value, containerSize) {
 function calculateSize(maps) {
     let containerWidth = maps.element.clientWidth;
     let containerHeight = maps.element.clientHeight;
+    let parentHeight = maps.element.parentElement.clientHeight;
+    let parentWidth = maps.element.parentElement.clientWidth;
     let containerElementWidth = stringToNumber(maps.element.style.width, containerWidth);
     let containerElementHeight = stringToNumber(maps.element.style.height, containerWidth);
     if (maps.width === '0px' || maps.width === '0%' || maps.height === '0%' || maps.height === '0px') {
@@ -714,7 +716,8 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
                         indexCollection = indexCollection.filter((item, index, value) => value.indexOf(item) === index);
                         let container = maps.element.getBoundingClientRect();
                         tempX = tempX - container['left'];
-                        tempY = tempY - container['top'];
+                        tempY = (tempY - ((maps.availableSize.height < container['height']) ?
+                            container['top'] : (container['bottom'] - container['top'])));
                         let translate = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
                         let transPoint = (maps.isTileMap) ? { x: 0, y: 0 } : (maps.translatePoint.x !== 0) ?
                             maps.translatePoint : translate['location'];
@@ -942,8 +945,8 @@ function marker(eventArgs, markerSettings, markerData, dataIndex, location, tran
 }
 function markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplate, location, scale, offset, maps) {
     templateFn = getTemplateFunction(eventArgs.template);
-    if (templateFn && (!maps.isBlazor ? templateFn(data, null, null, maps.element.id + '_MarkerTemplate' + markerIndex, false).length : {})) {
-        let templateElement = templateFn(data, null, null, maps.element.id + '_MarkerTemplate' + markerIndex, false);
+    if (templateFn && (!maps.isBlazor ? templateFn(data, maps, eventArgs.template, maps.element.id + '_MarkerTemplate' + markerIndex, false).length : {})) {
+        let templateElement = templateFn(data, maps, eventArgs.template, maps.element.id + '_MarkerTemplate' + markerIndex, false);
         let markerElement = convertElement(templateElement, markerID, data, markerIndex, maps);
         for (let i = 0; i < markerElement.children.length; i++) {
             markerElement.children[i].style.pointerEvents = 'none';
@@ -3759,6 +3762,7 @@ class Marker {
                         if (eventArgs.template && (!isNaN(location.x) && !isNaN(location.y))) {
                             markerTemplateCount++;
                             markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateEle, location, scale, offset, this.maps);
+                            this.maps.renderReactTemplates();
                         }
                         else if (!eventArgs.template && (!isNaN(location.x) && !isNaN(location.y))) {
                             markerCount++;
@@ -3776,12 +3780,14 @@ class Marker {
                             this.maps.svgObject.appendChild(this.markerSVGObject);
                             this.maps.element.appendChild(this.maps.svgObject);
                             clusterTemplate(currentLayer, this.markerSVGObject, this.maps, layerIndex, this.markerSVGObject, layerElement, true, false);
+                            this.maps.renderReactTemplates();
                         }
                     }
                     if (markerTemplateEle.childElementCount === (markerData.length - markerCount - nullCount) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
                         getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
                         if (currentLayer.markerClusterSettings.allowClustering) {
                             clusterTemplate(currentLayer, markerTemplateEle, this.maps, layerIndex, this.markerSVGObject, layerElement, false, false);
+                            this.maps.renderReactTemplates();
                         }
                     }
                 });
@@ -4707,6 +4713,7 @@ class LayerPanel {
                     }
                     else if (layer.key && layer.key.length > 1) {
                         let proxy = this;
+                        let markerGroupElement = document.getElementById(this.mapObject.element.id + '_Markers_Group');
                         let bing = new BingMap(this.mapObject);
                         let bingType = layer.bingMapType === 'AerialWithLabel' ? 'AerialWithLabelsOnDemand' : layer.bingMapType;
                         let url = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + bingType;
@@ -4729,6 +4736,11 @@ class LayerPanel {
                                 bing.maxZoom = maxZoom;
                             }
                             proxy.mapObject['bingMap'] = bing;
+                            if (this.mapObject.isBlazor) {
+                                if (!isNullOrUndefined(markerGroupElement)) {
+                                    removeElement(this.mapObject.element.id + '_Markers_Group');
+                                }
+                            }
                             proxy.renderTileLayer(proxy, layer, layerIndex, bing);
                             this.mapObject.arrangeTemplate();
                         };
@@ -5025,10 +5037,8 @@ class LayerPanel {
             this.layerObject.appendChild(element);
         });
         if (this.mapObject.markerModule) {
-            if (!isNullOrUndefined(this.mapObject.baseMapRectBounds)) {
-                this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, (this.mapObject.isTileMap ? Math.floor(this.currentFactor)
-                    : this.currentFactor), null);
-            }
+            this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, (this.mapObject.isTileMap ? Math.floor(this.currentFactor)
+                : this.currentFactor), null);
         }
         this.translateLayerElements(this.layerObject, layerIndex);
         this.layerGroup.appendChild(this.layerObject);
@@ -5368,7 +5378,7 @@ class LayerPanel {
             }
             if (layer.layerType === 'OSM' || layer.layerType === 'Bing') {
                 for (let baseTile of proxTiles) {
-                    let subtile = extend(baseTile, {}, {}, true);
+                    let subtile = extend({}, baseTile, {}, true);
                     if (layer.layerType === 'Bing') {
                         subtile.src = bing.getBingMap(subtile, layer.key, layer.bingMapType, userLang, bing.imageUrl, bing.subDomains);
                     }
@@ -5616,6 +5626,8 @@ class Annotations {
                 updateBlazorTemplate(this.map.element.id + '_ContentTemplate_' + i, 'ContentTemplate', this.map.annotations[i]);
             }
         }
+        //tslint:disable
+        this.map.renderReactTemplates();
     }
     /**
      * To create annotation elements
@@ -5641,8 +5653,8 @@ class Annotations {
             }
             let blazor = 'Blazor';
             templateFn = getTemplateFunction(argsData.content);
-            if (templateFn && (!window[blazor] ? templateFn(this.map, null, null, this.map.element.id + '_ContentTemplate_' + annotationIndex).length : {})) {
-                templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? this.map : {}, null, null, this.map.element.id + '_ContentTemplate_' + annotationIndex));
+            if (templateFn && (!window[blazor] ? templateFn(this.map, this.map, argsData.content, this.map.element.id + '_ContentTemplate_' + annotationIndex).length : {})) {
+                templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? this.map : {}, this.map, argsData.content, this.map.element.id + '_ContentTemplate_' + annotationIndex));
                 let length = templateElement.length;
                 for (let i = 0; i < length; i++) {
                     childElement.appendChild(templateElement[i]);
@@ -6428,6 +6440,7 @@ let Maps = class Maps extends Component {
                 remove(this.svgObject);
             }
         }
+        this.clearTemplate();
     }
     /**
      * To bind event handlers for maps.
@@ -6470,6 +6483,17 @@ let Maps = class Maps extends Component {
         }
     }
     /**
+     * Gets the selected element to be maintained or not.
+     * @private
+     */
+    SelectedElement(targetEle) {
+        let isSelect = false;
+        if (targetEle.getAttribute('class') === 'ShapeselectionMapStyle') {
+            isSelect = true;
+        }
+        return isSelect;
+    }
+    /**
      * This method is used to perform the operations when a click operation is performed on maps.
      * @param e - Specifies the pointer event on maps.
      * @blazorProperty 'PerformClick'
@@ -6499,7 +6523,7 @@ let Maps = class Maps extends Component {
             }
             let eventArgs = {
                 cancel: false, name: click, target: targetId, x: e.clientX, y: e.clientY,
-                latitude: latitude, longitude: longitude
+                latitude: latitude, longitude: longitude, isShapeSelected: this.SelectedElement(targetEle)
             };
             this.trigger('click', eventArgs, (mouseArgs) => {
                 if (targetEle.id.indexOf('shapeIndex') > -1) {
@@ -8061,7 +8085,7 @@ class DataLabel {
                 if (eventargs.template !== '') {
                     templateFn = getTemplateFunction(eventargs.template);
                     let templateElement = templateFn ? templateFn(!isNullOrUndefined(datasrcObj) ?
-                        datasrcObj : shapeData['properties'], null, null, this.maps.element.id + '_LabelTemplate', false) : document.createElement('div');
+                        datasrcObj : shapeData['properties'], this.maps, eventargs.template, this.maps.element.id + '_LabelTemplate', false) : document.createElement('div');
                     templateElement.innerHTML = !templateFn ? eventargs.template : '';
                     labelElement = convertElementFromLabel(templateElement, labelId, !isNullOrUndefined(datasrcObj) ? datasrcObj : shapeData['properties'], index, this.maps);
                     labelElement.style.left = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location['x'])) * scale) + 'px';
@@ -8180,6 +8204,7 @@ class DataLabel {
                 });
                 if (labelTemplateElement.childElementCount > 0 && !this.maps.element.contains(labelTemplateElement)) {
                     document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(labelTemplateElement);
+                    this.maps.renderReactTemplates();
                 }
             });
         }
@@ -9523,6 +9548,9 @@ class Legend {
                 map.totalRect = totalRect;
             }
             else {
+                if ((legend.height || legend.width) && legend.mode === 'Interactive') {
+                    map.totalRect = totalRect;
+                }
                 map.mapAreaRect = totalRect;
             }
             this.translate = new Point(x, y);
@@ -10665,12 +10693,14 @@ class MapsTooltip {
     }
     /* tslint:disable:no-string-literal */
     //tslint:disable:max-func-body-length
+    //tslint:disable
     renderTooltip(e) {
         let pageX;
         let pageY;
         let target;
         let touchArg;
         let tooltipArgs;
+        let tooltipTemplateElement;
         if (e.type.indexOf('touch') !== -1) {
             this.isTouch = true;
             touchArg = e;
@@ -10875,11 +10905,14 @@ class MapsTooltip {
                                 fill: blazorArgs.fill
                             });
                         }
+                        let tooltipElement = tooltipEle;
                         this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                        this.svgTooltip.appendTo(tooltipEle);
+                        this.svgTooltip.appendTo(tooltipElement);
+                        this.maps.renderReactTemplates();
                     }
                     else {
                         this.removeTooltip();
+                        this.maps.clearTemplate();
                     }
                 });
             }
@@ -10924,9 +10957,18 @@ class MapsTooltip {
                         }
                         this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                         this.svgTooltip.appendTo(tooltipEle);
+                        this.maps.renderReactTemplates();
+                        tooltipTemplateElement = document.getElementById(this.maps.element.id + '_mapsTooltip');
+                        if (tooltipTemplateElement !== null && tooltipTemplateElement.innerHTML.indexOf('href') !== -1
+                            && tooltipTemplateElement.innerHTML.indexOf('</a>') !== -1) {
+                            let templateStyle = tooltipTemplateElement.getAttribute('style');
+                            templateStyle = templateStyle.replace('pointer-events: none;', 'position-events:all;');
+                            tooltipTemplateElement.setAttribute('style', templateStyle);
+                        }
                     }
                     else {
                         this.removeTooltip();
+                        this.maps.clearTemplate();
                     }
                 });
             }
@@ -10943,10 +10985,19 @@ class MapsTooltip {
             }
             else {
                 this.removeTooltip();
+                this.maps.clearTemplate();
             }
         }
         else {
-            this.removeTooltip();
+            tooltipTemplateElement = document.getElementById(this.maps.element.id + '_mapsTooltip');
+            if (tooltipTemplateElement !== null && tooltipTemplateElement.innerHTML.indexOf('href') !== -1
+                && tooltipTemplateElement.innerHTML.indexOf('</a>') !== -1) {
+                this.maps.notify(click, this);
+            }
+            else {
+                this.removeTooltip();
+                this.maps.clearTemplate();
+            }
         }
     }
     /**
@@ -12435,7 +12486,7 @@ class Zoom {
                     this.updateInteraction();
                     this.touchStartList = targetTouches(e);
                 }
-                else if (this.touchStartList.length === 2 && touches.length === 2) {
+                else if (touches.length === 2 && this.touchStartList.length === 2) {
                     this.touchMoveList = targetTouches(e);
                     e.preventDefault();
                     this.rectZoomingStart = false;
@@ -12447,7 +12498,7 @@ class Zoom {
         this.mouseMovePoints = this.getMousePosition(pageX, pageY);
         let targetId = e.target['id'];
         let targetEle = e.target;
-        if (zoom.enable && this.isPanning && ((Browser.isDevice && touches.length > 1) || !Browser.isDevice)) {
+        if (zoom.enable && this.isPanning && ((Browser.isDevice && touches.length >= 1) || !Browser.isDevice)) {
             e.preventDefault();
             this.maps.element.style.cursor = 'pointer';
             this.mouseMoveLatLong = { x: pageX, y: pageY };

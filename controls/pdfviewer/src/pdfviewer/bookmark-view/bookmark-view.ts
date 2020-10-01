@@ -1,5 +1,5 @@
 import { PdfViewerBase, PdfViewer } from '../index';
-import { createElement, Browser } from '@syncfusion/ej2-base';
+import { createElement, Browser, isBlazor } from '@syncfusion/ej2-base';
 import { TreeView, NodeSelectEventArgs } from '@syncfusion/ej2-navigations';
 import { ListView } from '@syncfusion/ej2-lists';
 import { AjaxHandler } from '../index';
@@ -69,6 +69,11 @@ export class BookmarkView {
                 if (data && data.uniqueId === proxy.pdfViewerBase.documentId) {
                     proxy.bookmarks = { bookMark: data.Bookmarks };
                     proxy.bookmarksDestination = { bookMarkDestination: data.BookmarksDestination };
+                    if (isBlazor()) {
+                        // tslint:disable-next-line
+                        let bookmarkCollection: any = { bookmarks: proxy.bookmarks, bookmarksDestination: proxy.bookmarksDestination };
+                        this.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateBookmarkCollection', bookmarkCollection);
+                    }
                 }
             }
             if (proxy.pdfViewerBase.navigationPane) {
@@ -95,7 +100,9 @@ export class BookmarkView {
      */
     public renderBookmarkcontent(): void {
         if (!this.isBookmarkViewDiv) {
-            this.bookmarkView = createElement('div', { id: this.pdfViewer.element.id + '_bookmark_view', className: 'e-pv-bookmark-view' });
+            let isblazor: boolean = isBlazor();
+            // tslint:disable-next-line:max-line-length
+            this.bookmarkView = isblazor ? this.pdfViewer.element.querySelector('.e-pv-bookmark-view') : createElement('div', { id: this.pdfViewer.element.id + '_bookmark_view', className: 'e-pv-bookmark-view' });
             this.pdfViewerBase.navigationPane.sideBarContent.appendChild(this.bookmarkView);
             // tslint:disable-next-line:max-line-length
             let bookmarkIconView: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_bookmark_iconview', className: 'e-pv-bookmark-icon-view' });
@@ -118,24 +125,26 @@ export class BookmarkView {
             }
             bookmarkTitle.innerText = '${Title}';
             bookmarkIconView.appendChild(bookmarkTitle);
-            // tslint:disable-next-line:max-line-length
-            this.treeObj = new TreeView({
-                fields:
-                {
-                    dataSource: this.bookmarks.bookMark,
-                    id: 'Id',
-                    text: 'Title',
-                    child: 'Child',
-                    hasChildren: 'HasChild',
-                },
-                nodeTemplate: bookmarkIconView.outerHTML,
-                nodeSelected: this.nodeClick.bind(this),
-            });
-            this.treeObj.isStringTemplate = true;
-            if (this.pdfViewer.enableRtl) {
-                this.treeObj.enableRtl = true;
+            if (!isblazor) {
+                // tslint:disable-next-line:max-line-length
+                this.treeObj = new TreeView({
+                    fields:
+                    {
+                        dataSource: this.bookmarks.bookMark,
+                        id: 'Id',
+                        text: 'Title',
+                        child: 'Child',
+                        hasChildren: 'HasChild',
+                    },
+                    nodeTemplate: bookmarkIconView.outerHTML,
+                    nodeSelected: this.nodeClick.bind(this),
+                });
+                this.treeObj.isStringTemplate = true;
+                if (this.pdfViewer.enableRtl) {
+                    this.treeObj.enableRtl = true;
+                }
+                this.treeObj.appendTo(this.bookmarkView);
             }
-            this.treeObj.appendTo(this.bookmarkView);
             // tslint:disable-next-line
             let event: any = ['mouseover', 'keydown'];
             for (let m: number = 0; m < event.length; m++) {
@@ -203,25 +212,27 @@ export class BookmarkView {
 
     // tslint:disable-next-line
     private setHeight(element: any): void {
-        if (this.treeObj.fullRowSelect && element.classList) {
-            if (element.classList.contains('e-treeview')) {
-                element = element.querySelector('.e-node-focus').querySelector('.e-fullrow');
-            } else if (element.classList.contains('e-list-parent')) {
-                element = element.querySelector('.e-fullrow');
-            } else if (element.classList.value !== ('e-fullrow')) {
-                if (element.closest && element.closest('.e-list-item')) {
-                    element = element.closest('.e-list-item').querySelector('.e-fullrow');
-                } else {
-                    if (element.classList.contains('e-list-item')) {
-                        element = element.querySelector('.e-fullrow');
-                    } else if (element.classList.contains('e-icons') && element.classList.contains('interaction')
-                        && element.parentElement.parentElement.classList.contains('e-list-item')) {
-                        element = element.parentElement.parentElement.querySelector('.e-fullrow');
+        if (this.treeObj) {
+            if (this.treeObj.fullRowSelect && element.classList) {
+                if (element.classList.contains('e-treeview')) {
+                    element = element.querySelector('.e-node-focus').querySelector('.e-fullrow');
+                } else if (element.classList.contains('e-list-parent')) {
+                    element = element.querySelector('.e-fullrow');
+                } else if (element.classList.value !== ('e-fullrow')) {
+                    if (element.closest && element.closest('.e-list-item')) {
+                        element = element.closest('.e-list-item').querySelector('.e-fullrow');
+                    } else {
+                        if (element.classList.contains('e-list-item')) {
+                            element = element.querySelector('.e-fullrow');
+                        } else if (element.classList.contains('e-icons') && element.classList.contains('interaction')
+                            && element.parentElement.parentElement.classList.contains('e-list-item')) {
+                            element = element.parentElement.parentElement.querySelector('.e-fullrow');
+                        }
                     }
                 }
-            }
-            if (element.nextElementSibling) {
-                element.style.height = element.nextElementSibling.offsetHeight + 'px';
+                if (element.nextElementSibling) {
+                    element.style.height = element.nextElementSibling.offsetHeight + 'px';
+                }
             }
         }
     }
@@ -231,16 +242,16 @@ export class BookmarkView {
      */
     public setBookmarkContentHeight(): void {
         if (this.treeObj) {
-        // tslint:disable-next-line
-        let element: any = this.treeObj.element;
-        if (this.treeObj.fullRowSelect) {
-            if (element.classList.contains('e-treeview')) {
-                element = element.querySelector('.e-node-focus').querySelector('.e-fullrow');
+            // tslint:disable-next-line
+            let element: any = this.treeObj.element;
+            if (this.treeObj.fullRowSelect) {
+                if (element.classList.contains('e-treeview')) {
+                    element = element.querySelector('.e-node-focus').querySelector('.e-fullrow');
+                }
+                if (element.nextElementSibling) {
+                    element.style.height = element.nextElementSibling.offsetHeight + 'px';
+                }
             }
-            if (element.nextElementSibling) {
-                element.style.height = element.nextElementSibling.offsetHeight + 'px';
-            }
-        }
         }
     }
 

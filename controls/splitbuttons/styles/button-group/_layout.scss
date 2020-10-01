@@ -1,7 +1,7 @@
 @include export-module('button-group-layout') {
 // sass-lint:disable-all
-  &.e-btn-group,
-  &.e-css.e-btn-group {
+  #{if(&, '&', '*')}.e-btn-group,
+  #{if(&, '&', '*')}.e-css.e-btn-group {
     display: -webkit-inline-flex;
     display: inline-flex;
     border-radius: $btn-grp-wrapper-border;

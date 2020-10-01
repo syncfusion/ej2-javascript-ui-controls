@@ -21,6 +21,7 @@ export class Render {
         this.parent = parent;
         this.templateResult = null;
         this.parent.grid.on('template-result', this.columnTemplateResult, this);
+        this.parent.grid.on('reactTemplateRender', this.reactTemplateRender, this);
     }
     /**
      * Updated row elements for TreeGrid
@@ -115,7 +116,7 @@ export class Render {
                 } else {
                    expand =  !(!data.expanded || !getExpandStatus(this.parent, data, this.parent.grid.getCurrentViewRecords()));
                 }
-                addClass([expandIcon], (expand) ? 'e-treegridexpand' : 'e-treegridcollapse');
+                addClass([expandIcon], (expand ) ? 'e-treegridexpand' : 'e-treegridcollapse');
                 totalIconsWidth += 18;
                 container.appendChild(expandIcon);
                 emptyExpandIcon.style.width = '7px'; totalIconsWidth += 7;
@@ -192,7 +193,16 @@ export class Render {
         this.templateResult = args.template;
     }
 
+    private reactTemplateRender(args: object[]): void {
+        let renderReactTemplates: string = 'renderReactTemplates';
+        let portals: string = 'portals';
+        this.parent[portals] = args;
+        this.parent.notify('renderReactTemplate', this.parent[portals]);
+        this.parent[renderReactTemplates]();
+    }
+
     public destroy(): void {
         this.parent.grid.off('template-result', this.columnTemplateResult);
+        this.parent.grid.off('reactTemplateRender', this.reactTemplateRender);
     }
 }

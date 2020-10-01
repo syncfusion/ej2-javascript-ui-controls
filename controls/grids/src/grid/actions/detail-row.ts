@@ -94,8 +94,14 @@ export class DetailRow {
                 detailRow.appendChild(detailCell);
                 tr.parentNode.insertBefore(detailRow, tr.nextSibling);
                 if (gObj.detailTemplate) {
+                    let isReactCompiler: boolean = this.parent.isReact && typeof (gObj.detailTemplate) !== 'string';
                     let detailTemplateID: string = gObj.element.id + 'detailTemplate';
-                    appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID));
+                    if (isReactCompiler) {
+                        gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID, null, null, detailCell);
+                        this.parent.renderTemplates();
+                    } else {
+                        appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID));
+                    }
                     if (isBlazor()) {
                         updateBlazorTemplate(detailTemplateID, 'DetailTemplate', gObj, false);
                     }

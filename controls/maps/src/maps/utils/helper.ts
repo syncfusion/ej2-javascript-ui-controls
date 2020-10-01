@@ -48,6 +48,8 @@ export function stringToNumber(value: string, containerSize: number): number {
 export function calculateSize(maps: Maps): void {
     let containerWidth: number = maps.element.clientWidth;
     let containerHeight: number = maps.element.clientHeight;
+    let parentHeight: number = maps.element.parentElement.clientHeight;
+    let parentWidth: number = maps.element.parentElement.clientWidth;
     let containerElementWidth : number = stringToNumber(maps.element.style.width, containerWidth);
     let containerElementHeight : number = stringToNumber(maps.element.style.height, containerWidth);
     if (maps.width === '0px' || maps.width === '0%' || maps.height === '0%' || maps.height === '0px') {
@@ -835,7 +837,8 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                         indexCollection = indexCollection.filter((item, index, value) => value.indexOf(item) === index);
                         let container: ClientRect = maps.element.getBoundingClientRect();
                         tempX = tempX - container['left'];
-                        tempY = tempY - container['top'];
+                        tempY = (tempY - ((maps.availableSize.height < container['height']) ?
+                        container['top'] : (container['bottom'] - container['top'])));
                         let translate: Object = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
                         let transPoint: Point = (maps.isTileMap) ? { x: 0, y: 0 } : (maps.translatePoint.x !== 0) ?
                             maps.translatePoint : translate['location'];
@@ -1068,8 +1071,8 @@ export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: Mar
 export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn: Function, markerID: string, data: object,
     markerIndex: number, markerTemplate: HTMLElement, location: Point, scale: number, offset: Point, maps: Maps): HTMLElement {
     templateFn = getTemplateFunction(eventArgs.template);
-    if (templateFn && (!maps.isBlazor ? templateFn(data, null, null, maps.element.id + '_MarkerTemplate' + markerIndex, false).length : {})) {
-        let templateElement: HTMLCollection = templateFn(data, null, null, maps.element.id + '_MarkerTemplate' + markerIndex, false);
+    if (templateFn && (!maps.isBlazor ? templateFn(data, maps, eventArgs.template, maps.element.id + '_MarkerTemplate' + markerIndex, false).length : {})) {
+        let templateElement: HTMLCollection = templateFn(data, maps, eventArgs.template, maps.element.id + '_MarkerTemplate' + markerIndex, false);
         let markerElement: HTMLElement = <HTMLElement>convertElement(
             templateElement, markerID, data, markerIndex, maps
         );

@@ -1,7 +1,8 @@
 @import 'theme-mixin.scss';
 @include export-module('contextmenu-theme') {
   /*! contextmenu theme */
-  .e-contextmenu-wrapper {
+  .e-contextmenu-wrapper,
+  .e-contextmenu-container {
     @at-root {
       & ul {
         background-color: $cmenu-ul-bgcolor;

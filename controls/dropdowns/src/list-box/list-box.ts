@@ -415,6 +415,7 @@ export class ListBox extends DropDownBase {
         if (this.list.getElementsByClassName('e-list-item')[0]) {
             this.list.getElementsByClassName('e-list-item')[0].classList.remove(dropDownBaseClasses.focus);
         }
+        if (this.itemTemplate) { this.renderReactTemplates(); }
         removeClass([this.list], [dropDownBaseClasses.content, dropDownBaseClasses.root]);
         this.validationAttribute(this.element as HTMLInputElement, hiddenSelect as HTMLSelectElement);
         this.list.setAttribute('role', 'listbox');
@@ -2266,6 +2267,7 @@ export class ListBox extends DropDownBase {
         if (!isBlazor() || (isBlazor() && !this.isServerRendered)) {
             super.destroy();
         }
+        if (this.itemTemplate) { this.clearTemplate(); }
     }
 
     /**

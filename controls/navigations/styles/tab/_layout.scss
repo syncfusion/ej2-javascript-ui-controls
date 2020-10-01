@@ -1,8 +1,8 @@
 @include export-module('tab-layout') {
   /*! tab layout */
 
-  .e-bigger #{&}.e-tab,
-  #{&}.e-tab.e-bigger {
+  .e-bigger .e-tab,
+  .e-tab.e-bigger {
 
     .e-tab-header {
       height: $tab-big-height;
@@ -1410,7 +1410,7 @@
     }
   }
 
-  #{&}.e-tab {
+  .e-tab {
     display: block;
     position: relative;
 

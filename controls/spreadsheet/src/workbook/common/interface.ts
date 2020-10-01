@@ -317,4 +317,21 @@ export interface ClearOptions {
 export interface UnprotectArgs {
     sheet?: number;
  }
- 
+
+/**
+ * Insert event options.
+ * @hidden
+ */
+export interface InsertDeleteEventArgs {
+    model?: RowModel[] | ColumnModel[] | CellModel[];
+    index?: number;
+    modelType?: ModelType;
+    isAction?: boolean;
+    startIndex?: number;
+    endIndex?: number;
+    deletedModel?: RowModel[] | ColumnModel[] | CellModel[] | SheetModel[];
+    deletedCellsModel?: RowModel[];
+    activeSheetIndex?: number;
+    sheetCount?: number;
+    name?: string;
+}

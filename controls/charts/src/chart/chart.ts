@@ -2355,6 +2355,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
          */
         if (this.element) {
             this.unWireEvents();
+            this.clearTemplate();
             super.destroy();
             if (!this.enableCanvas) {
                 this.removeSvg();
@@ -3205,6 +3206,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             return null;
         }
         removeElement(this.element.id + '_Secondary_Element');
+        this.clearTemplate();
         let removeLength: number = 0;
         if (this.zoomModule && this.zoomModule.pinchTarget) {
             this.zoomModule.pinchTarget.id = '';
@@ -3489,6 +3491,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             }
             if (refreshBounds) {
                 this.enableCanvas ? this.createChartSvg() : this.removeSvg();
+                this.clearTemplate();
                 this.refreshAxis();
                 this.refreshBound();
                 this.trigger('loaded', { chart: this.isBlazor ? {} : this });

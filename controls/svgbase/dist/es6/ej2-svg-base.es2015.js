@@ -380,7 +380,7 @@ class SvgRenderer {
 }
 
 /**
- * To import utils
+ * To import utils.
  */
 /**
  * @private
@@ -1669,9 +1669,9 @@ let Tooltip = class Tooltip extends Component {
         }
         if (!argsData.cancel) {
             let elem = createElement('div', { id: this.element.id + 'parent_template' });
-            let templateElement = this.templateFn(this.data, this, 'tooltipTemplate', elem.id + '_blazorTemplate', '');
+            let templateElement = this.templateFn(this.data, this.controlInstance, 'template', elem.id + '_blazorTemplate', '');
             while (templateElement && templateElement.length > 0) {
-                if (isBlazor()) {
+                if (isBlazor() || templateElement.length === 1) {
                     elem.appendChild(templateElement[0]);
                     templateElement = null;
                 }
@@ -2049,6 +2049,9 @@ __decorate([
 __decorate([
     Property(null)
 ], Tooltip.prototype, "tooltipPlacement", void 0);
+__decorate([
+    Property(null)
+], Tooltip.prototype, "controlInstance", void 0);
 __decorate([
     Event()
 ], Tooltip.prototype, "tooltipRender", void 0);

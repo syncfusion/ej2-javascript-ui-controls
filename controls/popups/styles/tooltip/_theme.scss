@@ -1,6 +1,6 @@
 @include export-module('tooltip-theme') {
   /*! Tooltip theme */
-  #{&}.e-tooltip-wrap {
+  .e-tooltip-wrap {
     border-radius: $tooltip-border-radius;
     filter: $tooltip-drop-shadow;
     opacity: $tooltip-opacity;
@@ -98,8 +98,8 @@
   }
 
   /*! bigger style */
-  .e-bigger #{&}.e-tooltip-wrap .e-tip-content,
-  &#{&}.e-tooltip-wrap.e-bigger .e-tip-content {
+  .e-bigger .e-tooltip-wrap .e-tip-content,
+  .e-tooltip-wrap.e-bigger .e-tip-content {
     font-size: $tooltip-mobile-font-size;
   }
 }

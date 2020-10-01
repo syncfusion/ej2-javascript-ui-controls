@@ -2,9 +2,9 @@
   /*! component icons */
 
   .e-time-wrapper,
-  &.e-control-wrapper.e-time-wrapper {
+  #{if(&, '&', '*')}.e-control-wrapper.e-time-wrapper {
 
-    & .e-time-icon.e-icons::before {
+    #{if(&, '&', '*')} .e-time-icon.e-icons::before {
       content: '\e93e';
     }
 

@@ -5,7 +5,7 @@
 
 @include export-module('dropdowntree-layout') {
 
-  #{&}.e-ddt {
+  .e-ddt {
     cursor: pointer;
     outline: none;
 
@@ -29,6 +29,7 @@
     &.e-input-group.e-control-wrapper,
     &.e-float-input.e-control-wrapper {
       .e-clear-icon {
+        box-sizing: content-box;
         min-height: $ddt-close-icon-min-height;
       }
 
@@ -428,22 +429,8 @@
     }
   }
 
-  #{&}.e-dropdowntree {
-    .e-ddt.e-input-group.e-control-wrapper,
-    .e-ddt.e-float-input.e-control-wrapper  {
-
-      .e-clear-icon {
-        @if $ddt-skin-name == 'material' {
-          margin: 6px;
-          min-height: $ddt-dd-icon-width;
-          padding: $ddt-close-icon-bottom;
-        }
-      }
-    }
-  }
-
-  .e-bigger #{&}.e-ddt,
-  #{&}.e-ddt.e-bigger {
+  .e-bigger .e-ddt,
+  .e-ddt.e-bigger {
 
     .e-chips {
       height: $ddt-chip-bigger-height;

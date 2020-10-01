@@ -284,7 +284,7 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             let node: NodeModel = diagram.nodes[0];
             let element: DiagramElement = node.wrapper.children[0];
-            expect((element as PathModel).data == 'M10,19.5c-5.238,0-9.5-4.262-9.5-9.5S4.762,0.5,10,0.5s9.5,4.262,9.5,9.5S15.238,19.5,10,19.5z').toBe(true);
+            expect((element as PathModel).data == 'M10,19.707L0.293,10L10,0.293L19.707,10L10,19.707z').toBe(true);
             done();
 
         });

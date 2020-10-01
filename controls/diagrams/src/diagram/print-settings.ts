@@ -80,11 +80,11 @@ export class PrintAndExport {
             options.margin = margin;
             let svg: SVGElement = content = this.diagramAsSvg(options, margin);
             if (mode === 'Data') {
-            if (isBlazor() && options.format === 'SVG') {
-                let svgData: string = new XMLSerializer().serializeToString(svg);
-                return svgData;
-            }
-            return content;
+                if (isBlazor() && options.format === 'SVG') {
+                    let svgData: string = new XMLSerializer().serializeToString(svg);
+                    return svgData;
+                }
+                return content;
             }
             let buffer: string = new XMLSerializer().serializeToString(svg);
             buffers.push(buffer);
@@ -428,7 +428,8 @@ export class PrintAndExport {
         let context: CanvasRenderingContext2D = canvas.getContext('2d');
         context.translate(-region.x, -region.y);
         context.save();
-        context.fillStyle = this.diagram.pageSettings.background.color;
+        context.fillStyle = (this.diagram.pageSettings.background.color === 'transparent') ? 'white' :
+        this.diagram.pageSettings.background.color;
         region = mode === 'Content' ? pageBounds : region;
         context.fillRect(region.x, region.y, region.width, region.height);
         let bgImg: BackgroundModel = this.diagram.pageSettings.background;

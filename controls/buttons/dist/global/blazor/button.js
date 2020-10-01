@@ -59,15 +59,7 @@ var Button = /** @class */ (function (_super) {
      * @private
      */
     Button.prototype.render = function () {
-        if (sf.base.isBlazor() && this.isServerRendered) {
-            if (!this.disabled) {
-                this.wireEvents();
-            }
-            buttonObserver.notify('component-rendered', { id: this.element.id, instance: this });
-        }
-        else {
-            this.initialize();
-        }
+        this.initialize();
         this.removeRippleEffect = sf.base.rippleEffect(this.element, { selector: '.' + cssClassName.BUTTON });
         this.renderComplete();
     };
@@ -142,29 +134,27 @@ var Button = /** @class */ (function (_super) {
      * @returns void
      */
     Button.prototype.destroy = function () {
-        if (!(sf.base.isBlazor() && this.isServerRendered)) {
-            var span = void 0;
-            var classList = [cssClassName.PRIMARY, cssClassName.RTL, cssClassName.ICONBTN, 'e-success', 'e-info', 'e-danger',
-                'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger', 'e-active', 'e-round',
-                'e-top-icon-btn', 'e-bottom-icon-btn'];
-            if (this.cssClass) {
-                classList = classList.concat(this.cssClass.split(' '));
-            }
-            _super.prototype.destroy.call(this);
-            sf.base.removeClass([this.element], classList);
-            if (!this.element.getAttribute('class')) {
-                this.element.removeAttribute('class');
-            }
-            if (this.disabled) {
-                this.element.removeAttribute('disabled');
-            }
-            if (this.content) {
-                this.element.innerHTML = this.element.innerHTML.replace(this.content, '');
-            }
-            span = this.element.querySelector('span.e-btn-icon');
-            if (span) {
-                sf.base.detach(span);
-            }
+        var span;
+        var classList = [cssClassName.PRIMARY, cssClassName.RTL, cssClassName.ICONBTN, 'e-success', 'e-info', 'e-danger',
+            'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger', 'e-active', 'e-round',
+            'e-top-icon-btn', 'e-bottom-icon-btn'];
+        if (this.cssClass) {
+            classList = classList.concat(this.cssClass.split(' '));
+        }
+        _super.prototype.destroy.call(this);
+        sf.base.removeClass([this.element], classList);
+        if (!this.element.getAttribute('class')) {
+            this.element.removeAttribute('class');
+        }
+        if (this.disabled) {
+            this.element.removeAttribute('disabled');
+        }
+        if (this.content) {
+            this.element.innerHTML = this.element.innerHTML.replace(this.content, '');
+        }
+        span = this.element.querySelector('span.e-btn-icon');
+        if (span) {
+            sf.base.detach(span);
         }
         this.unWireEvents();
         if (sf.base.isRippleEnabled) {
@@ -349,7 +339,5 @@ exports.Button = Button;
 return exports;
 
 });
-sfBlazor.modules["button"] = "buttons.Button";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.button, () => {
+
     sf.buttons = sf.base.extend({}, sf.buttons, sfbutton({}));
-});

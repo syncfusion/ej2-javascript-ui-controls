@@ -1,61 +1,54 @@
-import { BlazorDotnetObject, closest, MouseEventArgs, EventHandler, Browser, Touch, TapEventArgs, getInstance } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, selectAll } from '@syncfusion/ej2-base';
+import { BlazorDotnetObject, closest, MouseEventArgs, EventHandler, Browser, Touch, TapEventArgs } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, getInstance, select, selectAll } from '@syncfusion/ej2-base';
 import { getZindexPartial, getScrollableParent } from '@syncfusion/ej2-popups';
+import { keyActionHandler } from './menu-base';
 
 const TRANSPARENT: string = 'e-transparent';
+const MENU: string = 'e-menu-parent';
 const MENUITEM: string = 'e-menu-item';
 const FOCUSED: string = 'e-focused';
 const SELECTED: string = 'e-selected';
-const MENU: string = 'e-contextmenu';
-const SUBMENU: string = 'e-ul';
-const SEPARATOR: string = 'e-separator';
-const DISABLED: string = 'e-disabled';
-const HIDE: string = 'e-menu-hide';
 const CLOSE: string = 'CloseMenu';
 const KEYDOWN: string = 'keydown';
 const CONTEXTMENU: string = 'contextmenu';
-const MENUPARENT: string = 'e-menu-parent';
-const RTL: string = 'e-rtl';
+const SCROLLMENU: string = '.e-menu-vscroll';
+const SCROLLNAV: string = '.e-scroll-nav';
 const SPACE: string = ' ';
-const CLOSESUBMENU: string = 'CloseSubMenu';
 const HIDDEN: string = 'hidden';
 const OPENMENU: string = 'OpenContextMenu';
 const PIXEL: string = 'px';
 const MOUSEDOWN: string = 'mousedown touchstart';
 const MOUSEOVER: string = 'mouseover';
 const SCROLL: string = 'scroll';
+const NONE: string = 'none';
 const HASH: string = '#';
 const EMPTY: string = '';
 const DOT: string = '.';
 const TARGET: string = 'Target';
 const FILTER: string = 'Filter';
 const CARET: string = 'e-caret';
-const ESC: number = 27;
-const UP: number = 38;
-const DOWN: number = 40;
-const LEFT: number = 37;
-const RIGHT: number = 39;
 
 /**
  * Client side scripts for Blazor context menu
  */
 class SfContextMenu {
-    private wrapper: BlazorMenuElement;
+    private element: BlazorMenuElement;
     private target: string;
     private filter: string;
     private subMenuOpen: boolean;
+    private menuId: string;
     private targetElement: HTMLElement;
     private openAsMenu: boolean;
     private dotnetRef: BlazorDotnetObject;
 
     constructor(element: BlazorMenuElement, target: string, filter: string, dotnetRef: BlazorDotnetObject) {
-        this.wrapper = element;
+        this.element = element;
         this.target = target;
         this.filter = filter;
         this.dotnetRef = dotnetRef;
-        this.wrapper.blazor__instance = this;
+        this.element.blazor__instance = this;
         this.addContextMenuEvent();
-        EventHandler.add(this.wrapper, KEYDOWN, this.keyDownHandler, this);
+        EventHandler.add(this.element, KEYDOWN, this.keyDownHandler, this);
     }
 
     private addContextMenuEvent(add: boolean = true): void {
@@ -103,9 +96,9 @@ class SfContextMenu {
         }
     }
 
-    private scrollHandler(e: MouseEvent): void {
-        if (this.wrapper.childElementCount) {
-            this.dotnetRef.invokeMethodAsync(CLOSE, e);
+    private scrollHandler(): void {
+        if (select(DOT + MENU, this.element)) {
+            this.dotnetRef.invokeMethodAsync(CLOSE, 0, false, true, false);
         }
     }
 
@@ -115,51 +108,7 @@ class SfContextMenu {
 
     private keyDownHandler(e: KeyboardEvent): void {
         e.preventDefault();
-        if (e.keyCode === DOWN || e.keyCode === UP) {
-            let index: number; let ul: Element; let focusedLi: Element;
-            if ((e.target as Element).classList.contains(MENUPARENT)) {
-                ul = e.target as Element;
-                focusedLi = ul.querySelector(`${DOT}${MENUITEM}${DOT}${FOCUSED}`);
-                if (focusedLi) {
-                    index = Array.prototype.indexOf.call(ul.children, focusedLi);
-                    index = e.keyCode === DOWN ? (index === ul.childElementCount - 1 ? 0 : index + 1) :
-                        (index === 0 ? ul.childElementCount - 1 : index - 1);
-                } else {
-                    index = 0;
-                }
-                index = this.isValidLI(ul, 0, e.keyCode === DOWN);
-            } else if ((e.target as Element).classList.contains(MENUITEM)) {
-                ul = (e.target as Element).parentElement;
-                focusedLi = ul.querySelector(`${DOT}${MENUITEM}${DOT}${FOCUSED}`);
-                index = Array.prototype.indexOf.call(ul.children, focusedLi ? focusedLi : e.target);
-                index = e.keyCode === DOWN ? (index === ul.childElementCount - 1 ? 0 : index + 1) : (index === 0 ?
-                    ul.childElementCount - 1 : index - 1);
-                index = this.isValidLI(ul, index, e.keyCode === DOWN);
-            }
-            if (ul && index !== -1) {
-                (ul.children[index] as HTMLElement).focus();
-            }
-        } else if (((this.wrapper.classList.contains(RTL) ? e.keyCode === RIGHT : e.keyCode === LEFT) || e.keyCode === ESC) &&
-            ((e.target as Element).classList.contains(SUBMENU) || ((e.target as Element).classList.contains(MENUITEM) &&
-            !((e.target as Element).parentElement.classList.contains(MENU))))) {
-            let ul: Element = (e.target as Element).classList.contains(SUBMENU) ? e.target as Element : (e.target as Element).parentElement;
-            let selectedLi: HTMLElement = ul.previousElementSibling.querySelector(`.${MENUITEM}.${SELECTED}`) as HTMLElement;
-            if (selectedLi) { selectedLi.focus(); }
-        }
-    }
-
-    private isValidLI(ul: Element, index: number, isKeyDown: boolean, count: number = 0): number {
-        let cli: Element = ul.children[index];
-        if (count === ul.childElementCount) { return -1; }
-        if (cli.classList.contains(SEPARATOR) || cli.classList.contains(DISABLED) || cli.classList.contains(HIDE)) {
-            index = isKeyDown ? (index === ul.childElementCount - 1 ? 0 : index + 1) : (index === 0 ? ul.childElementCount - 1 : index - 1);
-            count++;
-        }
-        cli = ul.children[index];
-        if (cli.classList.contains(SEPARATOR) || cli.classList.contains(DISABLED) || cli.classList.contains(HIDE)) {
-            index = this.isValidLI(ul, index, isKeyDown);
-        }
-        return index;
+        keyActionHandler(this.element, e.target as Element, e.keyCode, this.menuId);
     }
 
     private cmenuHandler(e: MouseEventArgs): void {
@@ -172,53 +121,42 @@ class SfContextMenu {
             if (!canOpen) { return; }
         }
         e.preventDefault();
-        let left: number = e.changedTouches ? e.changedTouches[0].pageX : e.pageX;
-        let top: number = e.changedTouches ? e.changedTouches[0].pageY : e.pageY;
-        this.dotnetRef.invokeMethodAsync(OPENMENU, Math.ceil(left), Math.ceil(top), e);
+        let left: number = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+        let top: number = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+        // tslint:disable-next-line:no-any
+        (this.dotnetRef.invokeMethodAsync(OPENMENU, Math.ceil(left), Math.ceil(top)) as any).then(
+            (rtl: boolean): void => this.contextMenuPosition(left, top, rtl, false));
     }
 
-    public contextMenuPosition(left: number, top: number, isRtl: boolean, subMenu: boolean): Offset {
+    public contextMenuPosition(left: number, top: number, rtl: boolean, subMenu: boolean): void {
         this.removeEventListener();
-        let cmenu: HTMLElement = this.wrapper.firstElementChild as HTMLElement;
-        if (!cmenu) { return <Offset>{ Left: 0, Top: 0, ZIndex: 0, Width: 0 }; }
-        if (this.wrapper.parentElement !== document.body) { document.body.appendChild(this.wrapper); }
-        let zIndex: number = getZindexPartial(this.wrapper);
-        cmenu.style.visibility = HIDDEN;
-        cmenu.classList.remove(TRANSPARENT);
+        let cmenu: HTMLElement = this.hideMenu(true);
+        if (!cmenu) { return; }
         let cmenuOffset: ClientRect = cmenu.getBoundingClientRect();
-        let cmenuWidth: number = this.getMenuWidth(cmenu, cmenuOffset.width, isRtl);
+        let cmenuWidth: number = this.getMenuWidth(cmenu, cmenuOffset.width, rtl);
         if (subMenu && Browser.isDevice) {
-            cmenu.classList.add(TRANSPARENT);
+            cmenu.style.width = Math.ceil(cmenuWidth) + PIXEL;
             cmenu.style.visibility = EMPTY;
-            return <Offset>{ Width: Math.ceil(cmenuWidth) };
+            return;
         }
-        let wrapperOffset: ClientRect = this.wrapper.getBoundingClientRect();
-        if (top != null) {
-            if (top - pageYOffset + cmenuOffset.height > document.documentElement.clientHeight) {
-                let newTop: number = document.documentElement.clientHeight - cmenuOffset.height - 20;
-                if (newTop > document.documentElement.clientTop) { top = newTop + pageYOffset; }
-            }
-            top -= (wrapperOffset.top + pageYOffset);
-            top = Math.ceil(top + 1);
+        if (top + cmenuOffset.height > document.documentElement.clientHeight) {
+            let newTop: number = document.documentElement.clientHeight - cmenuOffset.height - 20;
+            if (newTop > document.documentElement.clientTop) { top = newTop; }
         }
-        if (left != null) {
-            if (left - pageXOffset + cmenuWidth > document.documentElement.clientWidth) {
-                let newLeft: number = document.documentElement.clientWidth - cmenuWidth - 20;
-                if (newLeft > document.documentElement.clientLeft) { left = newLeft + pageYOffset; }
-            }
-            left -= (wrapperOffset.left + pageXOffset);
-            left = Math.ceil(left + 1);
+        if (left + cmenuWidth > document.documentElement.clientWidth) {
+            let newLeft: number = document.documentElement.clientWidth - cmenuWidth - 20;
+            if (newLeft > document.documentElement.clientLeft) { left = newLeft; }
         }
-        cmenu.classList.add(TRANSPARENT);
-        if (top != null) { this.wrapper.style.top = top + PIXEL; }
-        if (left != null) { this.wrapper.style.left = left + PIXEL; }
+        this.element.style.top = Math.ceil(top + 1) + PIXEL;
+        this.element.style.left = Math.ceil(left + 1) + PIXEL;
+        cmenu.style.width = Math.ceil(cmenuWidth) + PIXEL;
+        this.element.style.zIndex = getZindexPartial(this.element).toString();
         cmenu.style.visibility = EMPTY;
         cmenu.focus();
         this.addEventListener();
-        return <Offset>{ Left: left, Top: top, ZIndex: zIndex, Width: Math.ceil(cmenuWidth) };
     }
 
-    private getMenuWidth(cmenu: Element, width: number, isRtl: boolean): number {
+    public getMenuWidth(cmenu: Element, width: number, isRtl: boolean): number {
         let caretIcon: HTMLElement = cmenu.getElementsByClassName(CARET)[0] as HTMLElement;
         if (caretIcon) { width += parseInt(getComputedStyle(caretIcon)[isRtl ? 'marginRight' : 'marginLeft'], 10); }
         return width < 120 ? 120 : width;
@@ -235,84 +173,134 @@ class SfContextMenu {
     }
 
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
-        if (!this.wrapper.childElementCount) { this.removeEventListener(); return; }
-        if (!closest(e.target as Element, HASH + this.wrapper.id)) {
-            this.dotnetRef.invokeMethodAsync(CLOSE, e);
+        if (!select(DOT + MENU, this.element)) { this.removeEventListener(); return; }
+        if (!closest(e.target as Element, HASH + this.element.id) && (isNullOrUndefined(this.menuId) ||
+            !closest(e.target as Element, this.menuId))) {
+            this.dotnetRef.invokeMethodAsync(CLOSE, 0, false, true, false);
         }
     }
 
     private mouseOverHandler(e: MouseEvent): void {
-        if (!this.wrapper.childElementCount) { this.removeEventListener(); return; }
-        if (this.subMenuOpen && this.wrapper.childElementCount > 1) {
-            if (!closest(e.target as Element, HASH + this.wrapper.id)) {
-                this.dotnetRef.invokeMethodAsync(CLOSESUBMENU, e);
+        if (!select(DOT + MENU, this.element)) { this.removeEventListener(); return; }
+        let target: Element = e.target as Element; let menus: HTMLElement[] = [].slice.call(selectAll(DOT + MENU, this.element));
+        let scrollNav: Element = closest(target, SCROLLNAV);
+        if (this.subMenuOpen && (menus.length > 1 || (!isNullOrUndefined(this.menuId) && !scrollNav))) {
+            if ((!closest(target, HASH + this.element.id) && (isNullOrUndefined(this.menuId) || !closest(target, this.menuId))) ||
+                scrollNav) {
+                let index: number = 1;
+                if (!isNullOrUndefined(this.menuId)) {
+                    index = 0;
+                    if (scrollNav) {
+                        index = menus.indexOf(select(DOT + MENU, scrollNav.parentElement)) + 1;
+                        if (index === menus.length) { return; }
+                    }
+                }
+                this.dotnetRef.invokeMethodAsync(CLOSE, index, false, true, false);
+                if (!isNullOrUndefined(this.menuId) && !closest(target, SCROLLNAV)) { this.destroyMenuScroll(null); }
+            }
+            if (!isNullOrUndefined(this.menuId) && (closest(target, HASH + this.element.id) || closest(target, this.menuId)) &&
+                closest(target, DOT + MENUITEM) && !closest(target, DOT + SELECTED)) {
+                this.destroyMenuScroll(closest(target, DOT + MENU));
             }
         }
         let activeEle: Element = document.activeElement;
-        if (!closest(activeEle, `${HASH}${this.wrapper.id}`) && this.wrapper.childElementCount) {
+        if (!closest(activeEle, `${HASH}${this.element.id}`) && menus.length) {
             if (this.openAsMenu) {
                 this.openAsMenu = false;
                 EventHandler.remove(document, MOUSEOVER, this.mouseOverHandler);
             }
-            let lastChild: HTMLElement = this.wrapper.lastElementChild as HTMLElement;
+            let lastChild: HTMLElement = this.getLastMenu();
             if (lastChild) { lastChild.focus(); }
         }
     }
 
-    public subMenuPosition(isRtl: boolean, showOnClick: boolean, isNull: boolean): Offset {
-        if (!this.wrapper.childElementCount || this.wrapper.childElementCount < 2) { return <Offset>{ Left: 0, Top: 0, Width: 0 }; }
-        let parentLi: Element = this.wrapper.children[this.wrapper.childElementCount - 2].querySelector(`.${MENUITEM}.${SELECTED}`);
+    private destroyMenuScroll(menu: Element): void {
+        if (!select(SCROLLMENU, this.element)) { return; }
+        let menuElement: BlazorMenuElement = select(this.menuId) as BlazorMenuElement;
+        if (menuElement) {
+            // tslint:disable-next-line:no-any
+            let menuInstance: any = menuElement.blazor__instance;
+            if (!isNullOrUndefined(menuInstance)) { menuInstance.destroyScroll(NONE, menu); }
+        }
+    }
+
+    public hideMenu(first?: boolean): HTMLElement {
+        let cMenu: HTMLElement;
+        if (first) {
+            cMenu = select(DOT + MENU, this.element);
+            if (!cMenu || isNullOrUndefined(this.element.parentElement)) { return null; }
+            if (this.element.parentElement !== document.body) { document.body.appendChild(this.element); }
+        } else {
+            let menus: HTMLElement[] = selectAll(DOT + MENU, this.element);
+            if (menus.length < 2) { return null; }
+            cMenu = menus[menus.length - 1];
+        }
+        cMenu.style.width = EMPTY;
+        cMenu.style.visibility = HIDDEN;
+        cMenu.classList.remove(TRANSPARENT);
+        return cMenu;
+    }
+
+    public subMenuPosition(cmenu: HTMLElement, isRtl: boolean, showOnClick: boolean, isNull: boolean, scrollHeight?: number): void {
+        if (!cmenu) { return; }
+        let menus: HTMLElement[] = selectAll(DOT + MENU, this.element);
+        let parentLi: Element = menus[menus.length - 2].querySelector(`.${MENUITEM}.${SELECTED}`);
         let parentOffset: ClientRect = parentLi.getBoundingClientRect();
-        let wrapperOffset: ClientRect = this.wrapper.getBoundingClientRect();
-        let cmenu: HTMLElement = this.wrapper.lastElementChild as HTMLElement;
-        cmenu.style.visibility = HIDDEN;
-        cmenu.classList.remove(TRANSPARENT);
-        let curUlOffset: ClientRect = cmenu.getBoundingClientRect();
-        let cmenuWidth: number = this.getMenuWidth(cmenu, curUlOffset.width, isRtl);
+        let containerOffset: ClientRect = this.element.getBoundingClientRect();
+        let menu: HTMLElement = cmenu.classList.contains(MENU) ? cmenu : select(DOT + MENU, cmenu);
+        let curUlOffset: ClientRect = menu.getBoundingClientRect();
+        let cmenuWidth: number = this.getMenuWidth(menu, curUlOffset.width, isRtl);
         let left: number; let borderLeft: number;
         if (isRtl) {
-            borderLeft = parseInt(getComputedStyle(cmenu).borderWidth, 10);
-            left = parentOffset.left - cmenuWidth - wrapperOffset.left;
+            borderLeft = parseInt(getComputedStyle(menu).borderWidth, 10);
+            left = parentOffset.left - cmenuWidth - containerOffset.left;
         } else {
-            left = parentOffset.right - wrapperOffset.left;
+            left = parentOffset.right - containerOffset.left;
         }
-        let top: number = parentOffset.top - wrapperOffset.top;
-        cmenu.classList.add(TRANSPARENT);
-        cmenu.style.visibility = EMPTY;
-        let focusedLi: HTMLElement = cmenu.querySelector(`${DOT}${MENUITEM}${DOT}${FOCUSED}`) as HTMLElement;
-        focusedLi ? focusedLi.focus() : cmenu.focus();
+        let top: number = parentOffset.top - containerOffset.top;
         if (isRtl) {
             if (parentOffset.left - borderLeft - cmenuWidth < document.documentElement.clientLeft) {
                 if (parentOffset.right + cmenuWidth < document.documentElement.clientWidth) {
-                    left = parentOffset.right - wrapperOffset.left;
+                    left = parentOffset.right - containerOffset.left;
                 }
             }
         } else if (parentOffset.right + cmenuWidth > document.documentElement.clientWidth) {
             let newLeft: number = parentOffset.left - cmenuWidth;
             if (newLeft > document.documentElement.clientLeft) {
-                left = newLeft - wrapperOffset.left;
+                left = newLeft - containerOffset.left;
             }
         }
-        if (parentOffset.top + curUlOffset.height > document.documentElement.clientHeight) {
-            let newTop: number = document.documentElement.clientHeight - curUlOffset.height - 20;
+        let height: number = scrollHeight || curUlOffset.height;
+        if (parentOffset.top + height > document.documentElement.clientHeight) {
+            let newTop: number = document.documentElement.clientHeight - height - 20;
             if (newTop > document.documentElement.clientTop) {
-                top = newTop - wrapperOffset.top;
+                top = newTop - containerOffset.top;
             }
         }
         this.subMenuOpen = !showOnClick;
+        cmenu.style.left = Math.ceil(left) + PIXEL;
+        cmenu.style.top = Math.ceil(top) + PIXEL;
+        cmenu.style.width = Math.ceil(cmenuWidth) + PIXEL;
+        menu.style.visibility = EMPTY;
+        let focusedLi: HTMLElement = menu.querySelector(`${DOT}${MENUITEM}${DOT}${FOCUSED}`) as HTMLElement;
+        focusedLi ? focusedLi.focus() : menu.focus();
         if (isNull) { this.openAsMenu = true; this.removeEventListener(); this.addEventListener(); }
-        return <Offset>{ Left: Math.ceil(left), Top: Math.ceil(top), Width: Math.ceil(cmenuWidth) };
     }
 
-    public onPropertyChanged(key: string, value: string): void {
+    public getLastMenu(): HTMLElement {
+        let menus: HTMLElement[] = selectAll(DOT + MENU, this.element);
+        return menus.length ? menus[menus.length - 1] : null;
+    }
+
+    public onPropertyChanged(key: string, result: string): void {
         switch (key) {
             case TARGET:
                 this.addContextMenuEvent(false);
-                this.target = value;
+                this.target = result;
                 this.addContextMenuEvent();
                 break;
             case FILTER:
-                this.filter = value;
+                this.filter = result;
                 break;
         }
     }
@@ -320,11 +308,21 @@ class SfContextMenu {
     public destroy(refElement: HTMLElement): void {
         this.removeEventListener();
         this.addContextMenuEvent(false);
-        if (refElement && refElement.parentElement && refElement.previousElementSibling !== this.wrapper) {
-            refElement.parentElement.insertBefore(this.wrapper, refElement);
+        EventHandler.remove(this.element, KEYDOWN, this.keyDownHandler);
+        if (refElement && refElement.parentElement && refElement.previousElementSibling !== this.element) {
+            refElement.parentElement.insertBefore(this.element, refElement);
         }
-        if ((!refElement || !refElement.parentElement) && this.wrapper.parentElement && this.wrapper.parentElement === document.body) {
-            document.body.removeChild(this.wrapper);
+        if ((!refElement || !refElement.parentElement) && this.element.parentElement && this.element.parentElement === document.body) {
+            document.body.removeChild(this.element);
+        }
+    }
+
+    public updateProperty(showItemOnClick: boolean, menu?: HTMLElement): void {
+        if (menu) { this.menuId = HASH + menu.id; }
+        if (!showItemOnClick) {
+            this.subMenuOpen = true;
+            this.removeEventListener();
+            this.addEventListener();
         }
     }
 }
@@ -333,36 +331,25 @@ interface BlazorMenuElement extends HTMLElement {
     blazor__instance: SfContextMenu;
 }
 
-interface Offset {
-    Left: number;
-    Top: number;
-    Width: number;
-    ZIndex?: number;
-}
-
 // tslint:disable-next-line:variable-name
 let ContextMenu: object = {
-    initialize(element: BlazorMenuElement, target: string, filter: string, dotnetRef: BlazorDotnetObject): Boolean {
+    initialize(element: BlazorMenuElement, target: string, filter: string, dotnetRef: BlazorDotnetObject): void {
         if (!isNullOrUndefined(element)) { new SfContextMenu(element, target, filter, dotnetRef); }
-        return Browser.isDevice;
     },
-    contextMenuPosition(element: BlazorMenuElement, left: number, top: number, isRtl: boolean, subMenu?: boolean): Offset {
+    contextMenuPosition(element: BlazorMenuElement, left: number, top: number, isRtl: boolean, subMenu: boolean): void {
         if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
-            return element.blazor__instance.contextMenuPosition(left, top, isRtl, subMenu);
-        } else {
-            return <Offset>{ Left: 0, Top: 0, ZIndex: 0, Width: 0 };
+            element.blazor__instance.contextMenuPosition(left, top, isRtl, subMenu);
         }
     },
-    subMenuPosition(element: BlazorMenuElement, isRtl: boolean, showOnClick: boolean, isNull?: boolean): Offset {
+    subMenuPosition(element: BlazorMenuElement, isRtl: boolean, showOnClick: boolean, isNull?: boolean): void {
         if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
-            return element.blazor__instance.subMenuPosition(isRtl, showOnClick, isNull);
-        } else {
-            return <Offset>{ Left: 0, Top: 0, Width: 0 };
+            let cmenu: HTMLElement = element.blazor__instance.hideMenu();
+            element.blazor__instance.subMenuPosition(cmenu, isRtl, showOnClick, isNull);
         }
     },
-    onPropertyChanged(element: BlazorMenuElement, key: string, value: string): void {
+    onPropertyChanged(element: BlazorMenuElement, key: string, result: string): void {
         if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
-            element.blazor__instance.onPropertyChanged(key, value);
+            element.blazor__instance.onPropertyChanged(key, result);
         }
     },
     destroy(element: BlazorMenuElement, refElement: HTMLElement): void {

@@ -1,8 +1,8 @@
 @include export-module('inplaceeditor-bootstrap-dark-icons') {
 
   /*! inplaceeditor icons */
-  #{&}.e-inplaceeditor,
-  #{&}.e-inplaceeditor-tip {
+  .e-inplaceeditor,
+  .e-inplaceeditor-tip {
 
     .e-save-icon::before {
       content: '\e614';

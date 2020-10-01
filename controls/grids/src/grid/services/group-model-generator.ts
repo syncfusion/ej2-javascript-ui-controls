@@ -15,7 +15,8 @@ import { getForeignData, getUid } from '../../grid/base/util';
 export class GroupModelGenerator extends RowModelGenerator implements IModelGenerator<Column> {
 
     private rows: Row<Column>[] = [];
-    private index: number = 0;
+    /** @hidden */
+    public index: number = 0;
     private prevKey: string;
 
     private summaryModelGen: GroupSummaryModelGenerator;
@@ -131,7 +132,8 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         return cells;
     }
 
-    private generateCaptionRow(
+    /** @hidden */
+    public generateCaptionRow(
         data: GroupedData, indent: number, parentID?: number, childID?: number, tIndex?: number, parentUid?: string): Row<Column> {
         let options: IRow<Column> = {};
         let tmp: Cell<Column>[] = [];
@@ -142,7 +144,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
             (<GroupedData>options.data).field = data.field;
         }
         options.isDataRow = false;
-        options.isExpand = !this.parent.isCollapseStateEnabled();
+        options.isExpand = !this.parent.groupSettings.enableLazyLoading && !this.parent.isCollapseStateEnabled();
         options.parentGid = parentID;
         options.childGid = childID;
         options.tIndex = tIndex;
@@ -171,7 +173,8 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         }
     }
 
-    private generateDataRows(data: Object[], indent: number, childID?: number, tIndex?: number, parentUid?: string): Row<Column>[] {
+    /** @hidden */
+    public generateDataRows(data: Object[], indent: number, childID?: number, tIndex?: number, parentUid?: string): Row<Column>[] {
         let rows: Row<Column>[] = []; let indexes: number[] = this.parent.getColumnIndexesInView();
         for (let i: number = 0, len: number = data.length; i < len; i++ , tIndex++) {
             rows[i] = this.generateRow(data[i], this.index, i ? undefined : 'e-firstchildrow', indent, childID, tIndex, parentUid);

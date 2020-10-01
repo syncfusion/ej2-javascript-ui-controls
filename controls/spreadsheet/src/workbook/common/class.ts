@@ -2,6 +2,7 @@ import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
 import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, HighlightCell } from './enum';
 import { ValidationType, ValidationOperator, TopBottom, DataBar, ColorScale, IconSet, CFColor } from './enum';
 import { CellStyleModel, FormatModel } from './class-model';
+import { CellModel } from '../base';
 
 /**
  * Represents the cell style.
@@ -317,4 +318,55 @@ export class ConditionalFormat extends ChildProperty<ConditionalFormat> {
      */
     @Property('')
     public range: string;
+}
+
+/**
+ * Represents the Image.
+ */
+export class Image extends ChildProperty<CellModel> {
+    /**
+     * Specifies the image source.
+     * @default ''
+     */
+    @Property('')
+    public src: string;
+
+    /**
+     * Specifies image element id.
+     * @default ''
+     */
+    @Property('')
+    public id: string;
+
+    /**
+     * Specifies the height of the image.
+     * @default 300
+     * @asptype int
+     */
+    @Property(300)
+    public height: number;
+
+    /**
+     * Specifies the width of the image.
+     * @default 400
+     * @asptype int
+     */
+    @Property(400)
+    public width: number;
+
+    /**
+     * Specifies the height of the image.
+     * @default 0
+     * @asptype int
+     */
+    @Property(0)
+    public top: number;
+
+    /**
+     * Specifies the width of the image.
+     * @default 0
+     * @asptype int
+     */
+    @Property(0)
+    public left: number;
 }

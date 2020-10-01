@@ -44,7 +44,7 @@ let nodes: NodeModel[] = [
             },
             {
                 id: "node_label3",
-                    width: 100,
+                width: 100,
                 height: 30,
                 constraints: AnnotationConstraints.Interaction,
                 offset: { x: 0, y: 0 },
@@ -76,43 +76,43 @@ let connectors: ConnectorModel[] = [
 let diagram: Diagram = new Diagram({
     width: '100%', height: 900, nodes: nodes, connectors: connectors,
     nodeTemplate: '#nodetemplate',
-        annotationTemplate: "#annotationtemplate"
+    annotationTemplate: "#annotationtemplate"
 });
 diagram.scrollSettings.canAutoScroll = true;
 diagram.appendTo('#diagram');
 var addport = document.getElementById('addport');
-    addport.onclick = function () {
-        var annotation1 = diagram.nodes[0].annotations[0].id
-        var annotation1Element = document.getElementById(diagram.nodes[0].id + '_' + annotation1 + '_html_element')
-        if (annotation1Element instanceof HTMLDivElement) {
-            
-        }
-        var annotation2 = diagram.nodes[0].annotations[1].id
-        var annotation2Element = document.getElementById(diagram.nodes[0].id + '_' + annotation2 + '_groupElement')
-        if ((annotation2Element.children[1].childNodes[0] as HTMLElement).innerHTML === "dvv") {
-            
-        }
-        var annotation3 = diagram.nodes[0].annotations[2].id
-        var annotation3Element = document.getElementById(diagram.nodes[0].id + '_' + annotation3 + '_html_element')
-        if (annotation3Element instanceof HTMLDivElement) {
-            
-        }
+addport.onclick = function () {
+    var annotation1 = diagram.nodes[0].annotations[0].id
+    var annotation1Element = document.getElementById(diagram.nodes[0].id + '_' + annotation1 + '_html_element')
+    if (annotation1Element instanceof HTMLDivElement) {
 
-
-
-        var connectorannotation1 = diagram.connectors[0].annotations[0].id
-        var connectorannotation1Element = document.getElementById(diagram.connectors[0].id + '_' + connectorannotation1 + '_html_element')
-        if (connectorannotation1Element instanceof HTMLDivElement) {
-            
-        }
-        var connectorannotation2 = diagram.connectors[0].annotations[1].id
-        var connectorannotation2Element = document.getElementById(diagram.connectors[0].id + '_' + connectorannotation2 + '_groupElement')
-        if ((connectorannotation2Element.children[1].childNodes[0] as HTMLElement).innerHTML === "dvv") {
-            
-        }
-        var connectorannotation3 = diagram.connectors[0].annotations[2].id
-        var connectorannotation3Element = document.getElementById(diagram.connectors[0].id + '_' + connectorannotation3 + '_html_element')
-        if (connectorannotation3Element instanceof HTMLDivElement) {
-            
-        }
     }
+    var annotation2 = diagram.nodes[0].annotations[1].id
+    var annotation2Element = document.getElementById(diagram.nodes[0].id + '_' + annotation2 + '_groupElement')
+    if ((annotation2Element.children[1].childNodes[0] as HTMLElement).innerHTML === "dvv") {
+
+    }
+    var annotation3 = diagram.nodes[0].annotations[2].id
+    var annotation3Element = document.getElementById(diagram.nodes[0].id + '_' + annotation3 + '_html_element')
+    if (annotation3Element instanceof HTMLDivElement) {
+
+    }
+
+
+
+    var connectorannotation1 = diagram.connectors[0].annotations[0].id
+    var connectorannotation1Element = document.getElementById(diagram.connectors[0].id + '_' + connectorannotation1 + '_html_element')
+    if (connectorannotation1Element instanceof HTMLDivElement) {
+
+    }
+    var connectorannotation2 = diagram.connectors[0].annotations[1].id
+    var connectorannotation2Element = document.getElementById(diagram.connectors[0].id + '_' + connectorannotation2 + '_groupElement')
+    if ((connectorannotation2Element.children[1].childNodes[0] as HTMLElement).innerHTML === "dvv") {
+
+    }
+    var connectorannotation3 = diagram.connectors[0].annotations[2].id
+    var connectorannotation3Element = document.getElementById(diagram.connectors[0].id + '_' + connectorannotation3 + '_html_element')
+    if (connectorannotation3Element instanceof HTMLDivElement) {
+
+    }
+}

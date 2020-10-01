@@ -16,6 +16,8 @@ import { DataUtil, Query } from '@syncfusion/ej2-data';
 import { AggregateColumn, AggregateRow } from '../models/aggregate';
 import { Row } from '../models/row';
 import { Cell } from '../models/cell';
+import { Grid } from '../base/grid';
+import { GroupLazyLoadRenderer } from '../renderer/group-lazy-load-renderer';
 
 /**
  * 
@@ -407,8 +409,10 @@ export class Group implements IAction {
             if (isBlazor() && this.parent.isCollapseStateEnabled()) {
                 this.parent.notify(
                     'group-expand-collapse',
-                    { uid: trgt.parentElement.getAttribute('data-uid'),
-                    isExpand: trgt.classList.contains('e-recordpluscollapse') });
+                    {
+                        uid: trgt.parentElement.getAttribute('data-uid'),
+                        isExpand: trgt.classList.contains('e-recordpluscollapse')
+                    });
                 return;
             }
             if (trgt.classList.contains('e-recordpluscollapse')) {
@@ -418,6 +422,9 @@ export class Group implements IAction {
                 if (isGroupAdaptive(gObj)) {
                     this.updateVirtualRows(gObj, target, expand, query, dataManager);
                 }
+                if (this.parent.groupSettings.enableLazyLoading) {
+                    (this.parent.contentModule as GroupLazyLoadRenderer).captionExpand(trgt.parentElement as HTMLTableRowElement);
+                }
             } else {
                 isHide = true;
                 removeClass([trgt], 'e-recordplusexpand'); addClass([trgt], 'e-recordpluscollapse');
@@ -425,9 +432,12 @@ export class Group implements IAction {
                 if (isGroupAdaptive(gObj)) {
                     this.updateVirtualRows(gObj, target, !isHide, query, dataManager);
                 }
+                if (this.parent.groupSettings.enableLazyLoading) {
+                    (this.parent.contentModule as GroupLazyLoadRenderer).captionCollapse(trgt.parentElement as HTMLTableRowElement);
+                }
             }
             this.aria.setExpand(trgt, expand);
-            if (!isGroupAdaptive(gObj)) {
+            if (!isGroupAdaptive(gObj) && !this.parent.groupSettings.enableLazyLoading) {
                 for (let i: number = 0, len: number = rows.length; i < len; i++) {
                     if (rows[i].querySelectorAll('td')[cellIdx] &&
                         rows[i].querySelectorAll('td')[cellIdx].classList.contains('e-indentcell') && rows) {
@@ -699,7 +709,6 @@ export class Group implements IAction {
         this.colName = null;
     }
 
-
     private groupAddSortingQuery(colName: string): void {
         let i: number = 0;
         while (i < this.parent.sortSettings.columns.length) {
@@ -906,6 +915,9 @@ export class Group implements IAction {
                     this.updateButtonVisibility(this.groupSettings.showToggleButton, 'e-togglegroupbutton ');
                     this.parent.refreshHeader();
                     break;
+                case 'enableLazyLoading':
+                    (this.parent as Grid).freezeRefresh();
+                    break;
             }
         }
     }
@@ -1019,6 +1031,9 @@ export class Group implements IAction {
         let rowData: Object[] = this.groupGenerator.generateRows(aggregates, {});
         let summaryRows: Row<Column>[] = this.parent.getRowsObject().filter((row: Row<Column>) => !row.isDataRow);
         let updateSummaryRows: Object[] = rowData.filter((data: Row<Column>) => !data.isDataRow);
+        if (this.parent.isReact) {
+            this.parent.destroyTemplate(['groupFooterTemplate', 'groupCaptionTemplate', 'footerTemplate']);
+        }
         for (let i: number = 0; i < updateSummaryRows.length; i++) {
             let row: Row<Column> = updateSummaryRows[i] as Row<Column>;
             let cells: Object[] = row.cells.filter((cell: Cell<{}>) => cell.isDataCell);

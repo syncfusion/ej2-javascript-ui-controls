@@ -1,4 +1,4 @@
-import { getObject } from '@syncfusion/ej2-grids';
+import { getObject, IGrid } from '@syncfusion/ej2-grids';
 import { TreeGrid } from './base/treegrid';
 import { ColumnModel } from './models/column';
 import { DataManager, ODataAdaptor, UrlAdaptor, AdaptorOptions } from '@syncfusion/ej2-data';
@@ -17,7 +17,7 @@ export function isRemoteData(parent: TreeGrid) : boolean {
   return false;
 }
 
-export function isCountRequired(parent: TreeGrid) : boolean {
+export function isCountRequired(parent: TreeGrid | IGrid) : boolean {
   if (parent.dataSource && 'result' in parent.dataSource) {
     return true;
   }

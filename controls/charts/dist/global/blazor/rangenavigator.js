@@ -2640,7 +2640,7 @@ function createTemplate(childElement, pointIndex, content, chart, point, series,
     try {
         var blazor = 'Blazor';
         var tempObject = window[blazor] ? (dataLabelId ? point : { point: point }) : { chart: chart, series: series, point: point };
-        var elementData = templateFn ? templateFn(tempObject, null, null, dataLabelId ||
+        var elementData = templateFn ? templateFn(tempObject, chart, 'template', dataLabelId ||
             childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
         if (elementData.length) {
             templateElement = Array.prototype.slice.call(elementData);
@@ -2649,6 +2649,8 @@ function createTemplate(childElement, pointIndex, content, chart, point, series,
                 childElement.appendChild(templateElement[i]);
             }
         }
+        // tslint:disable-next-line:no-any
+        chart.renderReactTemplates();
     }
     catch (e) {
         return childElement;
@@ -5517,10 +5519,11 @@ var LineSeries = /** @class */ (function (_super) {
         var isPolar = (series.chart && series.chart.chartAreaType === 'PolarRadar');
         var isDrop = (series.emptyPointSettings && series.emptyPointSettings.mode === 'Drop');
         var getCoordinate = isPolar ? TransformToVisible : getPoint;
-        var visiblePoints = this.enableComplexProperty(series);
+        var visiblePoints = series.category === 'TrendLine' ? series.points : this.enableComplexProperty(series);
         for (var _i = 0, visiblePoints_1 = visiblePoints; _i < visiblePoints_1.length; _i++) {
             var point = visiblePoints_1[_i];
             point.regions = [];
+            point.symbolLocations = [];
             if (isPolar && !(point.visible)) {
                 continue;
             }
@@ -5533,7 +5536,6 @@ var LineSeries = /** @class */ (function (_super) {
             else {
                 prevPoint = isDrop ? prevPoint : null;
                 startPoint = isDrop ? startPoint : 'M';
-                point.symbolLocations = [];
             }
         }
         if (isPolar) {
@@ -6450,6 +6452,7 @@ var RangeNavigator = /** @class */ (function (_super) {
     RangeNavigator.prototype.removeSvg = function () {
         if (getElement(this.element.id + '_Secondary_Element')) {
             sf.base.remove(getElement(this.element.id + '_Secondary_Element'));
+            this.clearTemplate();
         }
         var removeLength = 0;
         if (this.svgObject) {
@@ -6791,6 +6794,7 @@ var RangeNavigator = /** @class */ (function (_super) {
      */
     RangeNavigator.prototype.destroy = function () {
         this.unWireEvents();
+        this.clearTemplate();
         this.rangeSlider.destroy();
         _super.prototype.destroy.call(this);
         this.element.innerHTML = '';
@@ -7156,7 +7160,5 @@ exports.RangeTooltip = RangeTooltip;
 return exports;
 
 });
-sfBlazor.modules["rangenavigator"] = "charts.RangeNavigator";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.rangenavigator, () => {
+
     sf.charts = sf.base.extend({}, sf.charts, sfrangenavigator({}));
-});

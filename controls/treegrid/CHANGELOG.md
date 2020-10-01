@@ -2,75 +2,26 @@
 
 ## [Unreleased]
 
-## 18.2.59 (2020-09-21)
+## 18.3.35 (2020-10-01)
 
 ### TreeGrid
 
 #### Bug Fixes
 
 - `#F157258` - `updateRow` method works fine for updating collapsed data.
-
-## 18.2.58 (2020-09-15)
-
-### TreeGrid
-
-#### Bug Fixes
-
 - `#292933` - checkbox rendered properly while using  the template column.
-- `#290187` - Row drag and drop between treegrid works fine while using self reference data binding.
-
-## 18.2.57 (2020-09-08)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#291330` - Expand or Collapse of the inner level parent records in custom binding works fine.
-- `#289600` - Updating the datasource dynamically with Virtualization after scrolling works fine.
-
-## 18.2.56 (2020-09-01)
-
-### TreeGrid
-
-#### Bug Fixes
-
 - `#289685` - Aggregate Column Formatting is working fine
 - `#288542` - The Expand / Collapse icon has been rendered properly while enabling expand state mapping and adding a new record.
-- `#289459`, `#290332` - Alignment of rows in frozen column works perfectly.
-
-## 18.2.55 (2020-08-25)
-
-### TreeGrid
-
-#### Bug Fixes
-
 - `#287235` - While enabling expand state mapping the Expand / Collapse icon works fine at nested child levels.
-
-## 18.2.54 (2020-08-18)
-
-### TreeGrid
-
-#### Bug Fixes
-
 - `#285434`- Column SortComparer function works fine with null values for RemoteSaveAdaptor datasource.
-- `I286227` - Checkbox with `allowRowDragAndDrop` property rendered properly after editing and cancelling in cell edit mode.
-
-## 18.2.47 (2020-07-28)
-
-### TreeGrid
-
-#### Bug Fixes
-
 - `#284987`- Records rendered properly while using remote save adaptor in created event.
 - `#285434`- Column SortComparer function works fine with null values in datasource.
-
-## 18.2.45 (2020-07-14)
-
-### TreeGrid
-
-#### Bug Fixes
-
 - `#F155077`- Records rendered properly while using remote data with jQuery unobtrusive library.
+
+#### New Features
+
+- `#270014` - Provided support for `AutoFill` feature with Frozen Columns.
+- `#289630`, `#F154497` - Provided Virtualization support for custom data binding.
 
 ## 18.2.44 (2020-07-07)
 

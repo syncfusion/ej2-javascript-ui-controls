@@ -1,5 +1,5 @@
 @include export-module('badge-layout') {
-  #{&}.e-badge {
+  .e-badge {
     background: $badge-base-background-color;
     border-color: transparent;
     border-radius: $badge-base-border-radius;

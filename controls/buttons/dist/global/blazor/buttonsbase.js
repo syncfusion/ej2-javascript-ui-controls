@@ -125,5 +125,4 @@ exports.setHiddenInput = setHiddenInput;
 return exports;
 
 });
-sfBlazor.modules["buttonsbase"] = "buttons.wrapperInitialize";
 window.sf.buttons = window.sf.base.extend({}, window.sf.buttons, buttonsbase({}));

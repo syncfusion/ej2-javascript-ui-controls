@@ -1547,11 +1547,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.addActionClass(e, fields.expanded, EXPANDED);
         if (!isNOU(this.nodeTemplateFn)) {
             let textEle: Element = e.item.querySelector('.' + LISTTEXT);
+            let dataId: string = e.item.getAttribute('data-uid');
             textEle.innerHTML = '';
-            let tempArr: Element[]  = this.nodeTemplateFn(e.curData, undefined, undefined, this.element.id + 'nodeTemplate',
-                                                          this.isStringTemplate);
-            tempArr = Array.prototype.slice.call(tempArr);
-            append(tempArr, textEle);
+            this.renderNodeTemplate(e.curData, textEle, dataId);
         }
         let eventArgs: DrawNodeEventArgs = {
             node: e.item as HTMLLIElement,
@@ -2086,6 +2084,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 addClass([firstNode], FOCUS);
                 this.updateIdAttr(null, firstNode);
             }
+            this.renderReactTemplates();
             this.hasPid = this.rootData[0] ? this.rootData[0].hasOwnProperty(this.fields.parentID) : false;
             this.doExpandAction();
         }
@@ -2265,6 +2264,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private expandNode(currLi: Element, icon: Element, loaded?: boolean): void {
+        this.renderReactTemplates()
         if (icon.classList.contains(LOAD)) {
             this.hideSpinner(icon as HTMLElement);
         }
@@ -3437,8 +3437,18 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         return { cancel: false, isInteracted: isNOU(e) ? false : true, node: currLi as HTMLLIElement, nodeData: nodeData , event: e };
     }
 
-    private destroyTemplate(nodeTemplate : string) : void {
-        this.clearTemplate(['nodeTemplate']);
+    private renderNodeTemplate(data: { [key: string]: Object }, textEle: Element, dataId: string) : void {
+        
+        let tempArr: Element[]  = this.nodeTemplateFn(data, this, 'nodeTemplate' + dataId, this.element.id + 'nodeTemplate',
+                                                          this.isStringTemplate, undefined, textEle);
+            if (tempArr) {
+                tempArr = Array.prototype.slice.call(tempArr);
+                append(tempArr, textEle);
+            }
+    }
+
+    private destroyTemplate(liEle : Element) : void {
+        this.clearTemplate(['nodeTemplate' + liEle.getAttribute('data-uid')] );
      }
 
     private reRenderNodes(): void {
@@ -3451,7 +3461,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.element.innerHTML = '';
         }
         if (!isNOU(this.nodeTemplateFn)) {
-            this.destroyTemplate(this.nodeTemplate);
+            this.clearTemplate();
         }
         this.setTouchClass();
         this.setProperties({ selectedNodes: [], checkedNodes: [], expandedNodes: [] }, true);
@@ -3495,6 +3505,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 let inpWidth: Number = (<HTMLElement>textEle).offsetWidth + 5;
                 let style: string = 'width:' + inpWidth + 'px';
                 addClass([liEle], EDITING);
+                if (!isNOU(this.nodeTemplateFn)){
+                    this.destroyTemplate(liEle);
+                }
                 textEle.innerHTML = eventArgs.innerHtml;
                 let inpEle: HTMLElement = <HTMLElement>select('.' + TREEINPUT, textEle);
                 this.inputObj = Input.createInput(
@@ -3553,11 +3566,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let newData: { [key: string]: Object } = setValue(this.editFields.text, newText, this.editData);
             if (!isNOU(this.nodeTemplateFn)) {
                 txtEle.innerText = '';
-                let tempArr: Element[] = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate',
-                    this.isStringTemplate);
-                tempArr = Array.prototype.slice.call(tempArr);
-                append(tempArr, txtEle);
+                let dataId: string = liEle.getAttribute('data-uid');
+                this.renderNodeTemplate(newData, txtEle, dataId);
                 this.updateBlazorTemplate();
+                this.renderReactTemplates();
             } else {
                 txtEle.innerText = newText;
             }
@@ -4304,6 +4316,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private removeNode(node: Element): void {
         let dragParentUl: Element = closest(node, '.' + PARENTITEM);
         let dragParentLi: Element = closest(dragParentUl, '.' + LISTITEM);
+        if (!isNOU(this.nodeTemplateFn)){
+            this.destroyTemplate(node);
+        }
         detach(node);
         this.updateElement(dragParentUl, dragParentLi);
         this.updateInstance();
@@ -4741,6 +4756,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private triggerEvent(): void {
         this.updateTemplateForBlazor();
+        this.renderReactTemplates();
         let eventArgs: DataSourceChangedEventArgs = { data: this.treeData };
         this.trigger('dataSourceChanged', eventArgs);
     }
@@ -5305,6 +5321,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      */
     public destroy(): void {
         resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
+        this.clearTemplate();
         this.element.removeAttribute('aria-activedescendant');
         this.element.removeAttribute('tabindex');
         this.unWireEvents();

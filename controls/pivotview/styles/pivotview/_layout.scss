@@ -635,7 +635,7 @@
     width: 60% !important;
   }
 
-  &.e-rtl {
+  #{if(&, "&", "*")}.e-rtl {
     .e-pivotview-report-input {
       float: left;
     }
@@ -683,8 +683,8 @@
     // sass-lint:enable-all
   }
 
-  .e-bigger #{&}.e-pivotview,
-  .e-bigger#{&}.e-pivotview,
+  .e-bigger .e-pivotview,
+  .e-bigger.e-pivotview,
   .e-bigger .e-pivotview,
   .e-bigger.e-pivotview {
     .e-pivot-toolbar .e-menu-wrapper ul .e-menu-item {
@@ -849,8 +849,8 @@
     // sass-lint:enable-all
   }
 
-  .e-bigger #{&}.e-pivotview-report-dialog,
-  .e-bigger#{&}.e-pivotview-report-dialog,
+  .e-bigger .e-pivotview-report-dialog,
+  .e-bigger.e-pivotview-report-dialog,
   .e-bigger .e-pivotview-report-dialog,
   .e-bigger.e-pivotview-report-dialog {
     .e-pivotview-report-label {

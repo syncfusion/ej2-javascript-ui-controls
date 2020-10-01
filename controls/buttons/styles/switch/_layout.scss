@@ -216,10 +216,10 @@
   }
 }
 
-  &.e-small .e-switch-wrapper,
-  &.e-small.e-switch-wrapper,
-  &.e-small .e-css.e-switch-wrapper,
-  &.e-small.e-css.e-switch-wrapper {
+  #{if(&, '&', '*')}.e-small .e-switch-wrapper,
+  #{if(&, '&', '*')}.e-small.e-switch-wrapper,
+  #{if(&, '&', '*')}.e-small .e-css.e-switch-wrapper,
+  #{if(&, '&', '*')}.e-small.e-css.e-switch-wrapper {
     height: $switch-small-wrapper-height;
     width: $switch-small-wrapper-width;
 
@@ -291,10 +291,10 @@
     }
 }
 
-  &.e-bigger.e-small .e-switch-wrapper,
-  &.e-bigger.e-small.e-switch-wrapper,
-  &.e-bigger.e-small .e-css.e-switch-wrapper,
-  &.e-bigger.e-small.e-css.e-switch-wrapper {
+  #{if(&, '&', '*')}.e-bigger.e-small .e-switch-wrapper,
+  #{if(&, '&', '*')}.e-bigger.e-small.e-switch-wrapper,
+  #{if(&, '&', '*')}.e-bigger.e-small .e-css.e-switch-wrapper,
+  #{if(&, '&', '*')}.e-bigger.e-small.e-css.e-switch-wrapper {
     height: $switch-bigger-small-wrapper-height;
     width: $switch-bigger-small-wrapper-width;
 
@@ -368,10 +368,10 @@
       }
     }
 
-  &.e-bigger .e-switch-wrapper,
-  &.e-bigger.e-switch-wrapper,
-  &.e-bigger .e-css.e-switch-wrapper,
-  &.e-bigger.e-css.e-switch-wrapper {
+  #{if(&, '&', '*')}.e-bigger .e-switch-wrapper,
+  #{if(&, '&', '*')}.e-bigger.e-switch-wrapper,
+  #{if(&, '&', '*')}.e-bigger .e-css.e-switch-wrapper,
+  #{if(&, '&', '*')}.e-bigger.e-css.e-switch-wrapper {
     height: $switch-bigger-wrapper-height;
     width: $switch-bigger-wrapper-width;
 

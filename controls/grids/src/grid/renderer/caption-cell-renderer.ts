@@ -35,16 +35,29 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
         let value: string = cell.isForeignKey ? fKeyValue : cell.column.enableGroupByFormat ? data.key :
             this.format(cell.column, (cell.column.valueAccessor as Function)('key', data, cell.column));
         if (!isNullOrUndefined(gObj.groupSettings.captionTemplate)) {
+            let isReactCompiler: boolean = this.parent.isReact && typeof (gObj.groupSettings.captionTemplate) !== 'string';
             if (isBlazor()) {
                 let tempID: string = gObj.element.id + 'captionTemplate';
                 result = templateCompiler(gObj.groupSettings.captionTemplate)(data, null, null, tempID);
             } else {
-                result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
+                if (isReactCompiler) {
+                    let tempID: string = gObj.element.id + 'captionTemplate';
+                    templateCompiler(gObj.groupSettings.captionTemplate)(data, this.parent, 'captionTemplate', tempID, null, null, node);
+                    this.parent.renderTemplates();
+                } else {
+                    result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
+                }
             }
-            appendChildren(node, result);
+            if (!isReactCompiler) {
+                appendChildren(node, result);
+            }
         } else {
-            node.innerHTML = cell.column.headerText + ': ' + value + ' - ' + data.count + ' ' +
-                (data.count < 2 ? this.localizer.getConstant('Item') : this.localizer.getConstant('Items'));
+            if (gObj.groupSettings.enableLazyLoading) {
+                node.innerHTML = cell.column.headerText + ': ' + value;
+            } else {
+                node.innerHTML = cell.column.headerText + ': ' + value + ' - ' + data.count + ' ' +
+                    (data.count < 2 ? this.localizer.getConstant('Item') : this.localizer.getConstant('Items'));
+            }
         }
         node.setAttribute('colspan', cell.colSpan.toString());
         node.setAttribute('aria-label', node.innerHTML + ' is groupcaption cell');

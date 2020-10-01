@@ -208,6 +208,7 @@ export interface ChipDataArgs {
 export class ChipList extends Component<HTMLElement> implements INotifyPropertyChanged {
     /**
      * This chips property helps to render ChipList component.
+     * {% codeBlock src='chips/chips/index.md' %}{% endcodeBlock %}
      * @default []
      * @blazorType List<ChipListChip>
      */
@@ -216,6 +217,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Specifies the text content for the chip.
+     * {% codeBlock src='chips/text/index.md' %}{% endcodeBlock %}
      * @default ''
      */
     @Property('')
@@ -223,6 +225,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Specifies the customized text value for the avatar in the chip.
+     * {% codeBlock src='chips/avatarText/index.md' %}{% endcodeBlock %}
      * @default ''
      */
     @Property('')
@@ -230,6 +233,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Specifies the icon CSS class for the avatar in the chip.
+     * {% codeBlock src='chips/avatarIconCss/index.md' %}{% endcodeBlock %}
      * @default ''
      */
     @Property('')
@@ -237,6 +241,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Specifies the leading icon CSS class for the chip.
+     * {% codeBlock src='chips/leadingIconCss/index.md' %}{% endcodeBlock %}
      * @default ''
      */
     @Property('')
@@ -244,6 +249,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Specifies the trailing icon CSS class for the chip.
+     * {% codeBlock src='chips/trailingIconCss/index.md' %}{% endcodeBlock %}
      * @default ''
      */
     @Property('')
@@ -265,6 +271,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Specifies the custom classes to be added to the chip element used to customize the ChipList component.
+     * {% codeBlock src='chips/cssClass/index.md' %}{% endcodeBlock %}
      * @default ''
      */
     @Property('')
@@ -281,6 +288,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Sets or gets the selected chip items in the chip list.
+     * {% codeBlock src='chips/selectedChips/index.md' %}{% endcodeBlock %}
      * @default []
      */
     @Property([])
@@ -299,6 +307,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Enables or disables the delete functionality of a chip.
+     * {% codeBlock src='chips/enableDelete/index.md' %}{% endcodeBlock %}
      * @default false
      */
     @Property(false)
@@ -306,6 +315,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the component is created successfully.
+     * {% codeBlock src='chips/created/index.md' %}{% endcodeBlock %}
      * @event
      * @blazorProperty 'Created'
      */
@@ -314,6 +324,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when a chip is clicked.
+     * {% codeBlock src='chips/click/index.md' %}{% endcodeBlock %}
      * @event
      * @blazorProperty 'OnClick'
      */
@@ -323,6 +334,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers before the click event of the chip is fired. 
      * This event can be used to prevent the further process and restrict the click action over a chip.
+     * {% codeBlock src='chips/beforeClick/index.md' %}{% endcodeBlock %}
      * @event
      * @blazorProperty 'OnBeforeClick'
      */
@@ -331,6 +343,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Fires before removing the chip element.
+     * {% codeBlock src='chips/delete/index.md' %}{% endcodeBlock %}
      * @event
      * @blazorProperty 'OnDelete'
      */
@@ -519,6 +532,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * A function that finds chip based on given input.
      * @param  {number | HTMLElement } fields - We can pass index number or element of chip.
+     * {% codeBlock src='chips/find/index.md' %}{% endcodeBlock %}
      */
     public find(fields: number | HTMLElement): ChipDataArgs {
         let chipData: ChipDataArgs;
@@ -541,6 +555,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * Allows adding the chip item(s) by passing a single or array of string, number, or ChipModel values.
      * @param  {string[] | number[] | ChipModel[] | string | number | ChipModel} chipsData - We can pass array of string or
      *  array of number or array of chip model or string data or number data or chip model.
+     * {% codeBlock src='chips/add/index.md' %}{% endcodeBlock %}
      * @deprecated
      */
     public add(chipsData: string[] | number[] | ChipModel[] | string | number | ChipModel): void {
@@ -556,6 +571,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * Allows selecting the chip item(s) by passing a single or array of string, number, or ChipModel values.
      * @param  {number | number[] | HTMLElement | HTMLElement[]} fields - We can pass number or array of number
      *  or chip element or array of chip element.
+     * {% codeBlock src='chips/select/index.md' %}{% endcodeBlock %}
      */
     public select(fields: number | number[] | HTMLElement | HTMLElement[] | string[]): void {
         this.onSelect(fields, false);
@@ -603,6 +619,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * Allows removing the chip item(s) by passing a single or array of string, number, or ChipModel values.
      * @param  {number | number[] | HTMLElement | HTMLElement[]} fields - We can pass number or array of number
      *  or chip element or array of chip element.
+     * {% codeBlock src='chips/remove/index.md' %}{% endcodeBlock %}
      */
     public remove(fields: number | number[] | HTMLElement | HTMLElement[]): void {
         if (this.chipType()) {
@@ -626,6 +643,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Returns the selected chip(s) data.
+     * {% codeBlock src='chips/getSelectedChips/index.md' %}{% endcodeBlock %}
      */
     public getSelectedChips(): SelectedItem | SelectedItems {
         let selectedChips: SelectedItem | SelectedItems;
@@ -809,6 +827,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Removes the component from the DOM and detaches all its related event handlers. Also, it removes the attributes and classes.
+     * {% codeBlock src='chips/destroy/index.md' %}{% endcodeBlock %}
      */
     public destroy(): void {
         removeClass([this.element], [classNames.chipSet, classNames.chip, classNames.rtl,

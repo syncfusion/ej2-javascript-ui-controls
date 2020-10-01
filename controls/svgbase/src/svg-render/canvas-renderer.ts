@@ -1,5 +1,5 @@
 /**
- * To import utils
+ * To import utils.
  */
 import {isNullOrUndefined} from '@syncfusion/ej2-base';
 import {LineAttributes, PathAttributes, CircleAttributes, RectAttributes, EllipseAttributes, PolylineAttributes,

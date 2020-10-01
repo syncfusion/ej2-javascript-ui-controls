@@ -1,6 +1,6 @@
 @include export-module('tab-theme') {
   /*! tab theme */
-  #{&}.e-tab {
+  .e-tab {
     background: $tab-bg-color;
     border: $tab-border;
 

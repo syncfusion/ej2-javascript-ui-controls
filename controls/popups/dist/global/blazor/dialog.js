@@ -587,7 +587,7 @@ var Dialog = /** @class */ (function (_super) {
                 this.contentEle.appendChild(this.content);
             }
             else {
-                this.setTemplate(this.content, this.contentEle);
+                this.setTemplate(this.content, this.contentEle, 'content');
             }
         }
         if (!sf.base.isNullOrUndefined(this.headerContent)) {
@@ -603,7 +603,7 @@ var Dialog = /** @class */ (function (_super) {
             this.setMaxHeight();
         }
     };
-    Dialog.prototype.setTemplate = function (template, toElement) {
+    Dialog.prototype.setTemplate = function (template, toElement, prop) {
         var templateFn;
         var templateProps;
         if (toElement.classList.contains(DLG_HEADER)) {
@@ -631,7 +631,7 @@ var Dialog = /** @class */ (function (_super) {
             var isString = (sf.base.isBlazor() &&
                 !this.isStringTemplate && (templateValue).indexOf('<div>Blazor') === 0) ?
                 this.isStringTemplate : true;
-            for (var _i = 0, _a = templateFn({}, null, null, templateProps, isString); _i < _a.length; _i++) {
+            for (var _i = 0, _a = templateFn({}, this, prop, templateProps, isString); _i < _a.length; _i++) {
                 var item = _a[_i];
                 fromElements.push(item);
             }
@@ -705,7 +705,7 @@ var Dialog = /** @class */ (function (_super) {
         }
         this.createHeaderContent();
         this.headerContent.appendChild(this.headerEle);
-        this.setTemplate(this.header, this.headerEle);
+        this.setTemplate(this.header, this.headerEle, 'header');
         sf.base.attributes(this.element, { 'aria-labelledby': this.element.id + '_title' });
         this.element.insertBefore(this.headerContent, this.element.children[0]);
     };
@@ -719,7 +719,7 @@ var Dialog = /** @class */ (function (_super) {
             });
         }
         if (this.footerTemplate !== '' && !sf.base.isNullOrUndefined(this.footerTemplate)) {
-            this.setTemplate(this.footerTemplate, this.ftrTemplateContent);
+            this.setTemplate(this.footerTemplate, this.ftrTemplateContent, 'footerTemplate');
         }
         else {
             this.ftrTemplateContent.innerHTML = this.buttonContent.join('');
@@ -1138,6 +1138,10 @@ var Dialog = /** @class */ (function (_super) {
         else {
             this.isDestroyed = true;
         }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
     };
     /**
      * Binding event to the element while widget creation
@@ -1256,6 +1260,10 @@ var Dialog = /** @class */ (function (_super) {
                     _this.isProtectedOnChange = prevOnChange;
                 }
             });
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     };
     /**
@@ -1649,7 +1657,5 @@ exports.Dialog = Dialog;
 return exports;
 
 });
-sfBlazor.modules["dialog"] = "popups.Dialog";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.dialog, () => {
+
     sf.popups = sf.base.extend({}, sf.popups, sfdialog({}));
-});

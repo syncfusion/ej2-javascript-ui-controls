@@ -824,7 +824,5 @@ exports.ComboBox = ComboBox;
 return exports;
 
 });
-sfBlazor.modules["combobox"] = "dropdowns.ComboBox";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.combobox, () => {
+
     sf.dropdowns = sf.base.extend({}, sf.dropdowns, sfcombobox({}));
-});

@@ -552,13 +552,23 @@
    }
 
     &.sf-pager {
-      .e-link,
-      .e-prev,
       .e-last,
-      .e-next.e-icons.e-icon-next.e-nextpage.e-pager-default,
       .e-mnext,
       .e-mlast {
         margin-left: -4px;
+      }
+    }
+
+    &.sf-pager {
+      .e-prev {
+        margin-left: -3px;
+      }
+    }
+
+    &.sf-pager {
+      .e-link,
+      .e-next.e-icons.e-icon-next.e-nextpage.e-pager-default {
+        margin-left: 0;
       }
     }
 }

@@ -16,6 +16,7 @@ import { Node } from '../../objects/node';
 import { Size } from '../../primitives/size';
 import { ShapeAnnotationModel, PathAnnotationModel } from '../annotation-model';
 import { PaletteModel } from '../../../symbol-palette';
+import { NodeFixedUserHandleModel, ConnectorFixedUserHandleModel } from '../fixed-user-handle-model';
 
 /**
  * IElement interface defines the base of the diagram objects (node/connector)
@@ -86,7 +87,7 @@ export interface ISizeChangeEventArgs {
     /** returns the node that is selected for resizing
      * @blazorType DiagramSelectedItems
      */
-    source: SelectorModel;
+    source?: SelectorModel;
     /** returns the state of the event */
     state: State;
     /** returns the previous width, height, offsetX and offsetY values of the element that is being resized
@@ -109,7 +110,7 @@ export interface IRotationEventArgs {
     /** returns the node that is selected for rotation
      * @blazorType DiagramSelectedItems
      */
-    source: SelectorModel;
+    source?: SelectorModel;
     /** returns the state of the event */
     state: State;
     /** returns the previous rotation angle
@@ -146,6 +147,16 @@ export interface DiagramEventObjectCollection {
      * @blazorType ObservableCollection<DiagramConnector>
      */
     connectors?: ConnectorModel[];
+    /**
+     * @private
+     * Returns the collection of node id
+     */
+    nodeCollection?: string[];
+    /**
+     * @private
+     * Returns the collection of connector id
+     */
+    connectorCollection?: string[];
 }
 
 /**
@@ -162,6 +173,56 @@ export interface DiagramEventObject {
      * @blazorType DiagramConnector
      */
     connector?: ConnectorModel;
+    /**
+     * @private
+     * returns the id of node
+     */
+    nodeId?: string;
+    /**
+     * @private
+     * returns the id of connector
+     */
+    connectorId?: string;
+}
+
+/**
+ * fixedUserHandleClickEventArgs notifies when the fixed user handle gets clicked
+ * 
+ */
+/**   @private  */
+export interface BlazorFixedUserHandleClickEventArgs {
+    /** returns the fixed user handle of nodes/connector. 
+     */
+    fixedUserHandle: DiagramFixedUserHandle;
+    /** returns the selected nodes/connector */
+    element: DiagramEventObject;
+}
+
+/**
+ * fixedUserHandleClickEventArgs notifies when the fixed user handle gets clicked
+ * 
+ */
+export interface FixedUserHandleClickEventArgs {
+    /** returns the fixed user handle  of nodes/connector. 
+     */
+    fixedUserHandle: NodeFixedUserHandleModel | ConnectorFixedUserHandleModel;
+    /** returns the selected nodes/connector */
+    element: NodeModel | ConnectorModel;
+}
+/**
+ * DiagramFixedUserHandle is the interface for the fixed user handle
+ * 
+ */
+/**   @private  */
+export interface DiagramFixedUserHandle {
+    /** returns the  node fixed user handle
+     * @blazorType DiagramNodeFixedUserHandle
+     */
+    nodeFixedUserHandle?: NodeFixedUserHandleModel;
+    /** returns the  connector fixed user handle
+     * @blazorType DiagramConnectorFixedUserHandle
+     */
+    connectorFixedUserHandle?: ConnectorFixedUserHandleModel;
 }
 
 
@@ -338,7 +399,7 @@ export interface IBlazorConnectionChangeEventArgs {
     /** returns the new source node or target node of the connector 
      * @blazorType DiagramConnector
      */
-    connector: ConnectorModel;
+    connector?: ConnectorModel;
     /** returns the previous source or target node of the element */
     oldValue: BlazorConnectionObject;
     /** returns the current source or target node of the element */
@@ -369,7 +430,7 @@ export interface IBlazorDraggingEventArgs {
     /** returns the node or connector that is being dragged 
      * @blazorType DiagramSelectedItems
      */
-    source: SelectorModel;
+    source?: SelectorModel;
     /** returns the state of drag event (Starting, dragging, completed) */
     state: State;
     /** returns the previous node or connector that is dragged 
@@ -741,11 +802,16 @@ export interface DiagramEventAnnotation {
     /** returns the  node annotation
      * @blazorType DiagramNodeAnnotation
      */
-     nodeAnnotation?: ShapeAnnotationModel;
+    nodeAnnotation?: ShapeAnnotationModel;
     /** returns the  connector annotation 
      * @blazorType DiagramConnectorAnnotation
      */
     connectorAnnotation?: PathAnnotationModel;
+    /**
+     * @private
+     * returns the id of node
+     */
+    annotationId?: string;
     /** returns the  text node
      * @blazorType DiagramNode
      */
@@ -777,8 +843,8 @@ export interface IHistoryChangeArgs {
     change: SelectorModel;
     /** returns the cause of the event */
     cause: string;
-     /** returns the event action */
-     action?: HistoryChangeAction;
+    /** returns the event action */
+    action?: HistoryChangeAction;
 
 }
 /**

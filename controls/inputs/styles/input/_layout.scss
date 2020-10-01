@@ -1321,7 +1321,7 @@
   .e-bigger .e-float-input.e-control-wrapper.e-small.e-input-focus input ~ label.e-float-text {
     font-size: $float-label-bigger-small-font-size;
     @if $input-skin-name == 'material' {
-      top: -10px;
+      top: -7px;
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' {
       padding-right: 0;
@@ -4059,9 +4059,9 @@
     }
   }
 
-  .e-float-input input:-webkit-autofill~label.e-float-text,
-  .e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
-  .e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
+  .e-float-input:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-float-input.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     font-size: $float-label-font-size;
     @if $input-skin-name == 'material' {
       top: -9px;
@@ -4080,12 +4080,12 @@
     user-select: text;
   }
 
-  .e-bigger .e-float-input input:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-float-input input:-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
-  .e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
+  .e-bigger .e-float-input:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-bigger.e-float-input:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
+  .e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     font-size: $float-label-bigger-font-size;
     @if $input-skin-name == 'material' {
       top: -8px;
@@ -4106,12 +4106,12 @@
     user-select: text;
   }
 
-  .e-small .e-float-input input:-webkit-autofill~label.e-float-text,
-  .e-small.e-float-input input:-webkit-autofill~label.e-float-text,
-  .e-small .e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
-  .e-small.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
-  .e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
-  .e-small.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
+  .e-small .e-float-input:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-small.e-float-input:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-small.e-float-input.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
+  .e-small.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     font-size: $float-label-small-font-size;
     @if $input-skin-name == 'material' {
       top: -8px;
@@ -4132,16 +4132,16 @@
     user-select: text;
   }
 
-  .e-bigger .e-float-input.e-small input:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-float-input input:-webkit-autofill~label.e-float-text,
-  .e-float-input.e-bigger.e-small input:-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input.e-small.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
-  .e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
-  .e-small.e-bigger .e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
-  .e-small.e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
-  .e-bigger .e-small.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
-  .e-small .e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
+  .e-bigger .e-float-input.e-small:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-bigger.e-small .e-float-input:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-float-input.e-bigger.e-small:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-bigger .e-float-input.e-small.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-bigger.e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-small.e-bigger .e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
+  .e-small.e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-small.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
+  .e-small .e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     font-size: $float-label-bigger-small-font-size;
     @if $input-skin-name == 'material' {
       top: -10px;
@@ -6622,7 +6622,7 @@
   .e-outline.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
   .e-outline.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
-      font-size: $outline-float-label-font-size;
+      animation-name: slideTopUp;
     }
   }
 
@@ -6641,7 +6641,7 @@
   .e-bigger .e-outline.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-bigger.e-outline.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
-      font-size: $bigger-outline-float-label-font-size;
+      animation-name: slideTopUp;
     }
   }
 
@@ -6663,7 +6663,7 @@
   .e-small .e-outline.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-small.e-outline.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
-      font-size: $small-outline-float-label-font-size;
+      animation-name: slideTopUp;
     }
   }
 
@@ -6689,7 +6689,7 @@
   .e-bigger .e-small.e-outline.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-small .e-bigger.e-outline.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
-      font-size: $bigger-small-outline-float-label-font-size;
+      animation-name: slideTopUp;
     }
   }
 

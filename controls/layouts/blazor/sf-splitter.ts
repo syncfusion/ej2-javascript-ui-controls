@@ -927,7 +927,7 @@ class SfSplitter {
         if (this.collapseFlag) {
             this.collapsePane(e);
         } else {
-            this.dotNetRef.invokeMethodAsync(ONCOLLAPSED_EVENT, -1 , {
+            this.dotNetRef.invokeMethodAsync(ONCOLLAPSED_EVENT, {
                 event: this.getMouseEvtArgs(e as MouseEvent),
                 index: [this.getPreviousPaneIndex(), this.getNextPaneIndex()],
                 cancel: false,
@@ -1324,7 +1324,7 @@ class SfSplitter {
             }
             let event: Object = { target: targetEle };
             this.splitterDetails(event as Event);
-            this.dotNetRef.invokeMethodAsync(ONCOLLAPSED_EVENT, index , {
+            this.dotNetRef.invokeMethodAsync(ONCOLLAPSED_EVENT, {
                 index: [this.getPreviousPaneIndex(), this.getNextPaneIndex()],
                 cancel: false
             });
@@ -1540,49 +1540,33 @@ interface Coordinates {
 let Splitter: object = {
     initialize(element: BlazorSplitterElement, options: { [key: string]: Object }, dotnetRef: BlazorDotnetObject): void {
         new SfSplitter(element, options, dotnetRef);
-        if (!isNullOrUndefined(element)) {
-            element.blazor__instance.initialize();
-        }
+        element.blazor__instance.initialize();
     },
     collapse(element: BlazorSplitterElement, index: number): void {
-        if (!isNullOrUndefined(element)) {
-            element.blazor__instance.collapse(index);
-        }
+        element.blazor__instance.collapse(index);
     },
     expand(element: BlazorSplitterElement, index: number): void {
-        if (!isNullOrUndefined(element)) {
-            element.blazor__instance.expand(index);
-        }
+        element.blazor__instance.expand(index);
     },
     resizeEvent(element: BlazorSplitterElement, e: MouseEvent): void {
-        if (!isNullOrUndefined(element)) {
-            element.blazor__instance.resizeEvent(e);
-        }
+        element.blazor__instance.resizeEvent(e);
     },
     onCollapseEvent(element: BlazorSplitterElement, event: BeforeExpandEventArgs): void {
-        if (!isNullOrUndefined(element)) {
-            element.blazor__instance.onCollapseEvent(event);
-        }
+        element.blazor__instance.onCollapseEvent(event);
     },
-    collapseMethodEvent(element: BlazorSplitterElement, event: BeforeExpandEventArgs , index : number): void {
-        if (!isNullOrUndefined(element)) {
-            element.blazor__instance.collapseMethodEvent(index, event);
-        }
+    collapseMethodEvent(element: BlazorSplitterElement, event: BeforeExpandEventArgs): void {
+        element.blazor__instance.collapseMethodEvent(event.index[0], event);
     },
     onExpandEvent(element: BlazorSplitterElement, event: BeforeExpandEventArgs): void {
-        if (!isNullOrUndefined(element)) {
-            element.blazor__instance.onExpandEvent(event);
-        }
+        element.blazor__instance.onExpandEvent(event);
     },
     destroy(element: BlazorSplitterElement): void {
-        if (!isNullOrUndefined(element)) {
+        if (element) {
             element.blazor__instance.destroy();
         }
     },
     propertyChanged(splitObj: { [key: string]: Object }, changedArgs: { [key: string]: string }): void {
-        if (!isNullOrUndefined(splitObj.element)) {
-            (splitObj.element as BlazorSplitterElement).blazor__instance.propertyChanged(splitObj, changedArgs);
-        }
+        (splitObj.element as BlazorSplitterElement).blazor__instance.propertyChanged(splitObj, changedArgs);
     }
 };
 

@@ -64,6 +64,9 @@ Spreadsheet component is also offered in the following list of frameworks.
 - **Conditional formatting:** Provides option to format a cell or range of cells based on the conditions applied.
 - **Clear:** Provides option to clear the content, formats, and hyperlinks applied to a cell or range of cells in a spreadsheet.
 - **Aggregates:** Provides option to check the sum, average, and count for the selected cells or range in the sheet tab.
+- **Picture:** Allows you to view, insert, and modify a picture in a spreadsheet with customizing options.
+- **Multi-line editing:** Allows you to insert a line break between paragraphs of the text within a cell in a Spreadsheet.
+- **Range selection helper:** Helps you to select a range or multiple ranges when editing a formula in a cell.
 - **RTL:** Provides right-to-left mode which aligns content in the spreadsheet component from right to left.
 - **Localization:** Provides inherent support to localize the UI.
 - **Accessibility:** Provides with built-in accessibility support which helps to access all the spreadsheet component features through the keyboard, screen readers, or other assistive technology devices.

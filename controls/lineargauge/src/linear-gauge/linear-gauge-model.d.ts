@@ -15,6 +15,12 @@ export interface LinearGaugeModel extends ComponentModel{
     width?: string;
 
     /**
+     * Enables or disables the gauge to be rendered to the complete width.
+     * @default true
+     */
+    allowMargin?: boolean;
+
+    /**
      * Specifies the height of the linear gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full height of its parent element.
      * @default null

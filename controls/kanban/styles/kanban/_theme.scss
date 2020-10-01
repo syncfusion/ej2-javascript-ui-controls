@@ -109,7 +109,7 @@
     }
   }
 
-  #{&}.e-kanban-dialog {
+  .e-kanban-dialog {
     .e-kanban-form-wrapper table {
       textarea {
         @if $kanban-skin == 'highcontrast' {

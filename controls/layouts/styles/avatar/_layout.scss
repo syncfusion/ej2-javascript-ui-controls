@@ -1,5 +1,5 @@
 @include export-module('avatar-layout') {
-  #{&}.e-avatar {
+  .e-avatar {
     align-content: center;
     align-items: center;
     background-color: $avatar-base-background-color;

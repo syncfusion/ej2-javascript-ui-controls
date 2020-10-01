@@ -46,7 +46,15 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
             let guid: string = 'guid';
             tempID = this.parent.element.id + column[guid] + tempObj.property;
         }
-        appendChildren(node, tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID));
+        let isReactCompiler: boolean = this.parent.isReact && column.footerTemplate ?
+            typeof (column.footerTemplate) !== 'string' : column.groupFooterTemplate ? typeof (column.groupFooterTemplate) !== 'string'
+                : column.groupCaptionTemplate ? typeof (column.groupCaptionTemplate) !== 'string' : false;
+        if (isReactCompiler) {
+            tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID, null, null, node);
+            this.parent.renderTemplates();
+        } else {
+            appendChildren(node, tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID));
+        }
         return false;
     }
     public refreshWithAggregate(node: Element, cell: Cell<AggregateColumnModel>): Function {

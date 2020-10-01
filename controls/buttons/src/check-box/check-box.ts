@@ -1,5 +1,5 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';
-import { EmitType, Event, EventHandler, KeyboardEvents, isNullOrUndefined, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { EmitType, Event, EventHandler, KeyboardEvents, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect, closest } from '@syncfusion/ej2-base';
 import { CheckBoxModel } from './check-box-model';
 import { wrapperInitialize, rippleMouseHandler, ChangeEventArgs, setHiddenInput } from './../common/common';
@@ -44,7 +44,6 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Triggers when the CheckBox state has been changed by user interaction.
      * @event
-     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
@@ -52,7 +51,6 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Triggers once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
@@ -207,36 +205,29 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      */
     public destroy(): void {
         let wrapper: Element = this.getWrapper();
-        if (isBlazor() && this.isServerRendered) {
+        super.destroy();
+        if (this.wrapper) {
+            wrapper = this.wrapper;
             if (!this.disabled) {
-                this.wrapper = wrapper;
                 this.unWireEvents();
             }
-        } else {
-            if (this.wrapper) {
-                wrapper = this.wrapper;
-                super.destroy();
-                if (!this.disabled) {
-                    this.unWireEvents();
+            if (this.tagName === 'INPUT') {
+                if (this.getWrapper()) {
+                    wrapper.parentNode.insertBefore(this.element, wrapper);
                 }
-                if (this.tagName === 'INPUT') {
-                    if (this.getWrapper()) {
-                        wrapper.parentNode.insertBefore(this.element, wrapper);
-                    }
-                    detach(wrapper);
-                    this.element.checked = false;
-                    if (this.indeterminate) {
-                        this.element.indeterminate = false;
-                    }
-                    ['name', 'value', 'disabled'].forEach((key: string) => {
-                        this.element.removeAttribute(key);
-                    });
+                detach(wrapper);
+                this.element.checked = false;
+                if (this.indeterminate) {
+                    this.element.indeterminate = false;
+                }
+                ['name', 'value', 'disabled'].forEach((key: string) => {
+                    this.element.removeAttribute(key);
+                });
                 } else {
-                    ['role', 'aria-checked', 'class'].forEach((key: string) => {
-                        wrapper.removeAttribute(key);
-                    });
-                    wrapper.innerHTML = '';
-                }
+                ['role', 'aria-checked', 'class'].forEach((key: string) => {
+                    wrapper.removeAttribute(key);
+                });
+                wrapper.innerHTML = '';
             }
         }
     }
@@ -422,9 +413,6 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      * @private
      */
     protected preRender(): void {
-        if (isBlazor() && this.isServerRendered) {
-            return;
-        }
         let element: HTMLInputElement = this.element;
         this.formElement = <HTMLFormElement>closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -443,14 +431,8 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      * @private
      */
     protected render(): void {
-        if (isBlazor() && this.isServerRendered) {
-            if (isRippleEnabled) {
-                rippleEffect(this.getWrapper().getElementsByClassName(RIPPLE)[0] as HTMLElement, { duration: 400, isCenterRipple: true });
-            }
-        } else {
-            this.initWrapper();
-            this.initialize();
-        }
+        this.initWrapper();
+        this.initialize();
         if (!this.disabled) {
             this.wireEvents();
         }

@@ -2,7 +2,7 @@
 @include export-module('button-theme') {
   /*! button theme */
   // sass-lint:disable no-vendor-prefixes
-  #{&}.e-btn,
+  .e-btn,
   .e-css.e-btn {
     -webkit-tap-highlight-color: transparent;
     background-color: $btn-bgcolor;

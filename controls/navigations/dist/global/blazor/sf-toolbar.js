@@ -2,6 +2,7 @@ window.sfBlazor = window.sfBlazor || {};
 window.sfBlazor.Toolbar = (function () {
 'use strict';
 
+var CLS_TOOLBAR = 'e-toolbar';
 var CLS_VERTICAL = 'e-vertical';
 var CLS_ITEMS = 'e-toolbar-items';
 var BZ_ITEMS = 'e-blazor-toolbar-items';
@@ -89,7 +90,7 @@ var SfToolbar = /** @class */ (function () {
         ['aria-disabled', 'aria-orientation', 'aria-haspopup', 'role'].forEach(function (attrb) {
             return _this.element.removeAttribute(attrb);
         });
-        sf.base.removeClass([this.element], ['e-toolbar']);
+        sf.base.removeClass([this.element], [CLS_TOOLBAR]);
     };
     SfToolbar.prototype.wireEvents = function () {
         sf.base.EventHandler.add(this.element, 'click', this.clickHandler, this);
@@ -373,6 +374,7 @@ var SfToolbar = /** @class */ (function () {
         var isCloseIcon = clsList.contains(CLS_ICON_CLOSE);
         var popupNav = sf.base.closest(trgt, ('.' + CLS_TBARNAV));
         var trgParentDataIndex;
+        var id;
         if (!popupNav) {
             popupNav = trgt;
         }
@@ -389,8 +391,9 @@ var SfToolbar = /** @class */ (function () {
         }
         if (!sf.base.isNullOrUndefined(clst)) {
             trgParentDataIndex = parseInt(clst.getAttribute('data-index'), 10);
+            id = clst.id;
         }
-        this.dotNetRef.invokeMethodAsync('TriggerClickEvent', e, isPopupElement, isCloseIcon, trgParentDataIndex);
+        this.dotNetRef.invokeMethodAsync('TriggerClickEvent', e, isPopupElement, isCloseIcon, trgParentDataIndex, id);
     };
     SfToolbar.prototype.popupClickHandler = function (ele, popupNav, CLS_RTL) {
         var popObj = this.popObj;
@@ -459,7 +462,7 @@ var SfToolbar = /** @class */ (function () {
         }
         for (var i = 0; i < items.length; i++) {
             var itemEleBlaDom = this.element.querySelector('.' + BZ_ITEMS);
-            innerItem = itemEleBlaDom.querySelector('.' + CLS_ITEM + '[data-index="' + i + '"]');
+            innerItem = itemEleBlaDom.querySelector('.' + CLS_ITEM + '[id="' + items[i].id + '"]');
             if (!innerItem) {
                 continue;
             }
@@ -492,9 +495,15 @@ var SfToolbar = /** @class */ (function () {
         }
     };
     SfToolbar.prototype.serverItemsRefresh = function () {
-        var wrapBlaEleDom = this.element.querySelector('.' + BZ_ITEMS);
+        var ele = this.element;
+        var wrapBlaEleDom = ele.querySelector('.' + BZ_ITEMS);
         if (wrapBlaEleDom.children.length > 0) {
-            this.itemsAlign(this.options.items, this.element.querySelector('.' + CLS_ITEMS));
+            var itemEleDom = ele.querySelector('.' + CLS_ITEMS);
+            if (!itemEleDom && ele && ele.classList.contains(CLS_TOOLBAR) && ele.firstElementChild) {
+                itemEleDom = sf.base.createElement('div', { className: CLS_ITEMS });
+                ele.insertBefore(itemEleDom, ele.firstElementChild);
+            }
+            this.itemsAlign(this.options.items, itemEleDom);
             this.renderLayout();
             this.refreshOverflow();
         }
@@ -1498,6 +1507,7 @@ var Toolbar = {
     serverItemsRerender: function (element, items) {
         if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.options.items = items;
+            element.blazor__instance.extendedOpen();
             element.blazor__instance.destroyMode();
             element.blazor__instance.resetServerItems();
             element.blazor__instance.serverItemsRefresh();

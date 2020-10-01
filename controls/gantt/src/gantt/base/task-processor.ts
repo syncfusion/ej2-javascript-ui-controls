@@ -504,7 +504,7 @@ export class TaskProcessor extends DateProcessor {
         let isMileStone: boolean = taskSettings.milestone ? data[taskSettings.milestone] ? true : false : false;
         let durationMapping: string = data[taskSettings.durationUnit] ? data[taskSettings.durationUnit] : '';
         this.parent.setRecordValue('durationUnit', this.validateDurationUnitMapping(durationMapping), ganttProperties, true);
-        let work: number = !isNullOrUndefined(data[taskSettings.work]) ? parseInt(data[taskSettings.work], 10) : 0;
+        let work: number = !isNullOrUndefined(data[taskSettings.work]) ? parseFloat(data[taskSettings.work]) : 0;
         this.parent.setRecordValue('workUnit', this.validateWorkUnitMapping(this.parent.workUnit), ganttProperties, true);
         let taskTypeMapping: string = data[taskSettings.type] ? data[taskSettings.type] : '';
         let tType: string = this.validateTaskTypeMapping(taskTypeMapping);
@@ -969,13 +969,14 @@ export class TaskProcessor extends DateProcessor {
         }
     }
 
-    private setRecordDate(task: IGanttData, value: Date, mapping: string): void {
+    private setRecordDate(task: IGanttData, value: Date | string, mapping: string): void {
+        let tempDate: Date = typeof value === 'string' ? new Date(value as string) : value;
         if (!isNullOrUndefined(value)) {
-            value = new Date(value.getTime());
+            value = new Date(tempDate.getTime());
         }
         this.parent.setRecordValue(mapping, value, task);
         if (!isNullOrUndefined(value)) {
-            value = new Date(value.getTime());
+            value = new Date(tempDate.getTime());
         }
         this.parent.setRecordValue('taskData.' + mapping, value, task);
     }

@@ -346,4 +346,14 @@
   .e-blazor-toast-hidden {
     visibility: hidden;
   }
+
+  .e-toast-container .e-toast .e-toast-close-icon.blazor-toast-close-icon {
+    background-color: transparent;
+    border-color: transparent;
+    border-radius: 50%;
+    bottom: 6px;
+    height: 20px;
+    position: relative;
+    width: 22px;
+  }
 }

@@ -1,6 +1,6 @@
 @include export-module('dropdowntree-theme') {
 
-  #{&}.e-ddt {
+  .e-ddt {
 
     .e-chips {
       background-color: $ddt-chip-bg-color;

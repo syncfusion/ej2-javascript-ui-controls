@@ -24,9 +24,15 @@ export class ExportHelper {
         this.parent = parent;
     }
     public static getQuery(parent: IGrid, data: Data): Query {
-        return data.isRemote() ?
-            data.generateQuery(true).requiresCount().take(parent.pageSettings.totalRecordsCount) :
-            data.generateQuery(true).requiresCount();
+        let query: Query = data.generateQuery(true).requiresCount();
+        if (data.isRemote()) {
+            if (parent.groupSettings.enableLazyLoading && parent.groupSettings.columns.length) {
+                query.lazyLoad = [];
+            } else {
+                query.take(parent.pageSettings.totalRecordsCount);
+            }
+        }
+        return query;
     }
 
     public getFData(value: string, column: Column): Object {

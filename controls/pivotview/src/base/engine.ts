@@ -120,6 +120,7 @@ export class PivotEngine {
     public cMembers: IAxisSet[] = [];
     /** @hidden */
     public groupingFields: { [key: string]: string } = {};
+    private reportDataType: { [key: string]: string };
     private allowValueFilter: boolean;
     private isValueFiltered: boolean;
     private isValueFiltersAvail: boolean;
@@ -2376,12 +2377,29 @@ export class PivotEngine {
             this.formatFields[(headers[0].valueSort as any).axis].type);
         let childrens: IField = this.fieldList[(headers[0].valueSort as any).axis];
         if (isNotDateType) {
-            if (childrens && childrens.type == 'number' && headers.length > 0 && (typeof (headers[0].actualText) == 'string') && ((/^\d/).test(headers[0].actualText.toString()) === true)) {
-                return childrens.sort === 'Ascending' ?
-                    (headers.sort((a, b) => !isNullOrUndefined(a.actualText) && !isNullOrUndefined(b.actualText) ? (Number(a.actualText.toString().match(/\d+/)[0]) > Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) > Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0) : 0)) :
-                    childrens.sort === 'Descending' ?
-                        (headers.sort((a, b) => !isNullOrUndefined(a.actualText) && !isNullOrUndefined(b.actualText) ? (Number(a.actualText.toString().match(/\d+/)[0]) < Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) < Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0) : 0)) :
-                        headers;
+            if (childrens && childrens.type == 'number' && headers.length > 0 && (typeof (headers[0].actualText) == 'string')) {
+                let stringValue: IAxisSet[] = [];
+                let alphaNumbervalue: IAxisSet[] = [];
+                for (let i: number = 0; i < headers.length; i++) {
+                    if (isNaN(headers[i].actualText.toString().charAt(0) as any)) {
+                        stringValue.push(headers[i]);
+                    }
+                    else {
+                        alphaNumbervalue.push(headers[i]);
+                    }
+                }
+                if (stringValue.length > 0) {
+                    stringValue = childrens.sort === 'Ascending' ? (stringValue.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
+                        childrens.sort === 'Descending' ? (stringValue.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0))) : stringValue;
+                }
+                if (alphaNumbervalue.length > 0) {
+                    alphaNumbervalue = childrens.sort === 'Ascending' ?
+                        (alphaNumbervalue.sort((a, b) => (Number(a.actualText.toString().match(/\d+/)[0]) > Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) > Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
+                        childrens.sort === 'Descending' ?
+                            (alphaNumbervalue.sort((a, b) => (Number(a.actualText.toString().match(/\d+/)[0]) < Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) < Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
+                            alphaNumbervalue;
+                }
+                return headers = alphaNumbervalue.concat(stringValue);
             }
             else {
                 return sortOrder === 'Ascending' ?
@@ -2656,6 +2674,19 @@ export class PivotEngine {
             let field: IFieldOptions = keys[keyInd];
             // let members: string[] = Object.keys(this.fieldList[field].members);
             let childrens: IField = this.fieldList[fieldName];
+            if (isNullOrUndefined(this.reportDataType)) {
+                this.reportDataType = {};
+                for (let i: number = 0; i < this.dataSourceSettings.rows.length; i++) {
+                    this.reportDataType[this.dataSourceSettings.rows[i].name] = this.dataSourceSettings.rows[i].dataType;
+                }
+                for (let i: number = 0; i < this.dataSourceSettings.columns.length; i++) {
+                    this.reportDataType[this.dataSourceSettings.columns[i].name] = this.dataSourceSettings.columns[i].dataType;
+                }
+                for (let i: number = 0; i < this.dataSourceSettings.values.length; i++) {
+                    this.reportDataType[this.dataSourceSettings.values[i].name] = this.dataSourceSettings.values[i].dataType;
+                }
+            }
+            childrens.type = !isNullOrUndefined(this.reportDataType[childrens.id]) ? this.reportDataType[childrens.id] : childrens.type;
             let isNoData: boolean = false;
             let isDateType: boolean = (this.formatFields[fieldName] &&
                 (['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName].type) > -1));
@@ -2813,12 +2844,29 @@ export class PivotEngine {
                             (hierarchy.sort((a, b) => (a.dateText < b.dateText) ? 1 : ((b.dateText < a.dateText) ? -1 : 0))) :
                             hierarchy;
                 } else {
-                    if (childrens.type === 'number' && hierarchy.length > 0 && (typeof (hierarchy[0].actualText) === 'string') && ((/\d/).test(hierarchy[0].actualText.toString()) === true)) {
-                        return childrens.sort === 'Ascending' ?
-                            (hierarchy.sort((a, b) => (Number(a.actualText.toString().match(/\d+/)[0]) > Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) > Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
-                            childrens.sort === 'Descending' ?
-                                (hierarchy.sort((a, b) => (Number(a.actualText.toString().match(/\d+/)[0]) < Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) < Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
-                                hierarchy;
+                    if (childrens.type === 'number' && hierarchy.length > 0 && (typeof (hierarchy[0].actualText) === 'string')) {
+                        let stringValue: IAxisSet[] = [];
+                        let alphaNumbervalue: IAxisSet[] = [];
+                        for (let i: number = 0; i < hierarchy.length; i++) {
+                            if (isNaN(hierarchy[i].actualText.toString().charAt(0) as any)) {
+                                stringValue.push(hierarchy[i]);
+                            }
+                            else {
+                                alphaNumbervalue.push(hierarchy[i]);
+                            }
+                        }
+                        if (stringValue.length > 0) {
+                            stringValue = childrens.sort === 'Ascending' ? (stringValue.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
+                                childrens.sort === 'Descending' ? (stringValue.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0))) : stringValue;
+                        }
+                        if (alphaNumbervalue.length > 0) {
+                            alphaNumbervalue = childrens.sort === 'Ascending' ?
+                                (alphaNumbervalue.sort((a, b) => (Number(a.actualText.toString().match(/\d+/)[0]) > Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) > Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
+                                childrens.sort === 'Descending' ?
+                                    (alphaNumbervalue.sort((a, b) => (Number(a.actualText.toString().match(/\d+/)[0]) < Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) < Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
+                                    alphaNumbervalue;
+                        }
+                        return hierarchy = alphaNumbervalue.concat(stringValue);
                     }
                     else {
                         return childrens.sort === 'Ascending' ?

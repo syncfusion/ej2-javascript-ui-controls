@@ -499,6 +499,9 @@ export class LayoutPanel {
                     if (template) {
                         templateEle = this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item, isLeafItem);
                         templateGroup.appendChild(templateEle);
+                        /* tslint:disable */
+                        (this.treemap as any).renderReactTemplates();
+
                     }
                     itemGroup.setAttribute('aria-label', item['name']);
                     itemGroup.setAttribute('tabindex', (this.treemap.tabIndex + i + 2).toString());

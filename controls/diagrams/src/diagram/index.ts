@@ -64,6 +64,8 @@ export * from './objects/undo-redo';
 export * from './objects/tooltip';
 export * from './objects/layout-animation';
 export * from './objects/preview';
+export * from './objects/fixed-user-handle';
+export * from './objects/fixed-user-handle-model';
 
 //interaction 
 export * from './interaction/selector';
@@ -90,7 +92,7 @@ export * from './diagram/custom-cursor';
 export * from './diagram/custom-cursor-model';
 export * from './diagram/data-mapping';
 export * from './diagram/data-mapping-model';
-
+export * from './blazor-tooltip/blazor-Tooltip';
 
 //layout
 export * from './layout/layout-base';

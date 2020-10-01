@@ -7,6 +7,7 @@ import { TreeVirtualRowModelGenerator } from '../renderer/virtual-row-model-gene
 import * as events from '../base/constant';
 import { isNullOrUndefined, EventHandler, getValue, setValue } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
+import { isCountRequired } from '../utils';
 /**
  * Content renderer for TreeGrid
  */
@@ -93,7 +94,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     }
     public eventListener(action: string): void {
       if (!(this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
-            && (this.parent.dataSource as DataManager).dataSource.url !== '')) {
+            && (this.parent.dataSource as DataManager).dataSource.url !== '') || !isCountRequired(this.parent)) {
               this.parent[action]('data-ready', this.onDataReady, this);
       //this.parent[action]('refresh-virtual-block', this.refreshContentRows, this);
               this.fn = () => {
@@ -115,7 +116,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     protected onDataReady (e?: NotifyArgs) : void {
       super.onDataReady(e);
       if (!(this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
-            && (this.parent.dataSource as DataManager).dataSource.url !== '')) {
+            && (this.parent.dataSource as DataManager).dataSource.url !== '') || !isCountRequired(this.parent)) {
         if (!isNullOrUndefined(e.count)) {
           this.totalRecords = e.count;
           getValue('virtualEle', this).setVirtualHeight(this.parent.getRowHeight() * e.count, '100%');
@@ -130,7 +131,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     public renderTable() : void {
       super.renderTable();
       if (!(this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
-            && (this.parent.dataSource as DataManager).dataSource.url !== '')) {
+            && (this.parent.dataSource as DataManager).dataSource.url !== '') || !isCountRequired(this.parent)) {
               getValue('observer', this).options.debounceEvent = false;
               this.observers = new TreeInterSectionObserver(getValue('observer', this).element,
                                                             getValue('observer', this).options);
@@ -138,8 +139,8 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
           }
     }
     protected getTranslateY(sTop: number, cHeight: number, info?: VirtualInfo, isOnenter?: boolean): number {
-      if (this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
-            && (this.parent.dataSource as DataManager).dataSource.url !== '') {
+      if ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
+            && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
               if (this.isRemoteExpand) {
                 this.isRemoteExpand = false;
                 return this.preTranslate;
@@ -300,8 +301,8 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
       }
     }
     public appendContent(target: HTMLElement, newChild: DocumentFragment, e: NotifyArgs) : void {
-      if (this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
-            && (this.parent.dataSource as DataManager).dataSource.url !== '') {
+      if ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
+            && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
               if (getValue('isExpandCollapse', e)) {
                 this.isRemoteExpand = true;
               }

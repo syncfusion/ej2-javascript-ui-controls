@@ -650,7 +650,6 @@ export class CommentView {
     public reopenButton: Button;
     public deleteButton: Button;
 
-
     constructor(owner: DocumentEditor, commentPane: CommentPane, comment: CommentElementBox) {
         this.owner = owner;
         this.comment = comment;
@@ -717,7 +716,6 @@ export class CommentView {
         this.parentElement.appendChild(commentDiv);
         commentDiv.addEventListener('click', this.selectComment.bind(this));
     }
-
     private selectComment(event: MouseEvent): void {
         if (this.commentPane) {
             if (!this.commentPane.isEditMode) {
@@ -804,7 +802,6 @@ export class CommentView {
         this.replyViewTextBox.addEventListener('click', this.enableReplyView.bind(this));
         this.replyViewTextBox.addEventListener('keydown', this.updateReplyTextAreaHeight.bind(this));
         this.replyViewTextBox.addEventListener('keyup', this.enableDisableReplyPostButton.bind(this));
-
         let editRegionFooter: HTMLElement = createElement('div', { styles: 'display:none', className: 'e-de-cmt-action-button' });
         //tslint:disable-next-line:max-line-length
         let postButton: HTMLButtonElement = createElement('button', { className: 'e-de-cmt-post-btn e-de-overlay e-btn e-flat', attrs: { type: 'button' } }) as HTMLButtonElement;
@@ -859,6 +856,7 @@ export class CommentView {
         }
         this.owner.editorModule.deleteCommentInternal(this.comment);
     }
+
     private updateReplyTextAreaHeight(): void {
         setTimeout(() => {
             this.replyViewTextBox.style.height = 'auto';
@@ -894,6 +892,7 @@ export class CommentView {
 
     private postReply(): void {
         let replyText: string = this.replyViewTextBox.value;
+        // tslint:disable-next-line:max-line-length
         this.cancelReply();
         this.updateReplyTextAreaHeight();
         this.owner.editorModule.replyComment(this.comment, replyText);
@@ -907,8 +906,8 @@ export class CommentView {
         this.replyViewTextBox.value = '';
         this.replyViewTextBox.readOnly = true;
         this.replyFooter.style.display = 'none';
-    }
 
+    }
     private updateTextAreaHeight(): void {
         setTimeout(() => {
             this.textArea.style.height = 'auto';
@@ -992,6 +991,7 @@ export class CommentView {
     public postComment(): void {
         let updatedText: string = this.textArea.value;
         this.commentText.innerText = updatedText;
+        // tslint:disable-next-line:max-line-length
         this.comment.text = updatedText;
         this.showCommentView();
         if (this.commentPane && this.commentPane.parentPane) {
@@ -1090,6 +1090,7 @@ export class CommentView {
         if (this.textArea) {
             this.textArea.removeEventListener('keydown', this.updateTextAreaHeight.bind(this));
             this.textArea.removeEventListener('keyup', this.enableDisablePostButton.bind(this));
+
         }
         if (this.postButton) {
             this.postButton.removeEventListener('click', this.postComment.bind(this));

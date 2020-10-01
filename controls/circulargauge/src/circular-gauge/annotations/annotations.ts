@@ -41,6 +41,7 @@ export class Annotations {
         if (parentElement && element.childElementCount && !this.gauge.isBlazor) {
             parentElement.appendChild(element);
         }
+        (this.gauge as any).renderReactTemplates();
     }
 
     /**
@@ -67,8 +68,8 @@ export class Annotations {
             let templateElement: HTMLCollection;
             if (!argsData.cancel) {
                 templateFn = getTemplateFunction(argsData.content, this.gauge);
-                if (templateFn && (!this.gauge.isBlazor ? templateFn(axis, null, null, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex).length : {})) {
-                    templateElement = Array.prototype.slice.call(templateFn(!this.gauge.isBlazor ? axis : {}, null, null, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex));
+                if (templateFn && (!this.gauge.isBlazor ? templateFn(axis, this.gauge, argsData.content, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex).length : {})) {
+                    templateElement = Array.prototype.slice.call(templateFn(!this.gauge.isBlazor ? axis : {}, this.gauge, argsData.content, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex));
                     let length: number = templateElement.length;
                     for (let i: number = 0; i < length; i++) {
                         childElement.appendChild(templateElement[i]);

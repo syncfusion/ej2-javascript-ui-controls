@@ -48,24 +48,24 @@ $ddl-bigger-small-list-header-font-size: 14px !default;
 
 @include export-module('dropdownbase-highcontrast-light') {
   .e-dropdownbase {
-    & .e-list-item {
-      & .e-list-icon {
+    #{if(&, '&', '*')} .e-list-item {
+      #{if(&, '&', '*')} .e-list-icon {
         padding: 0 10px 0 0;
-      }.e-bigger & {
-        & .e-list-icon {
+      }.e-bigger #{if(&, '&', '*')} {
+        #{if(&, '&', '*')} .e-list-icon {
           padding: 0 12px 0 0;
         }
-      }&:not(.e-active) {
-        &.e-hover {
+      }#{if(&, '&', '*')}:not(.e-active) {
+        #{if(&, '&', '*')}.e-hover {
           border: 2px solid $hover-border;
-        }&:not(.e-hover) {
-          &:not(.e-item-focus) {
+        }#{if(&, '&', '*')}:not(.e-hover) {
+          #{if(&, '&', '*')}:not(.e-item-focus) {
             border: 2px solid $bg-base-0;
           }
         }
-      }&.e-active {
+      }#{if(&, '&', '*')}.e-active {
         border: 2px solid $selection-border;
-      }&.e-item-focus {
+      }#{if(&, '&', '*')}.e-item-focus {
         border: 2px solid $hover-bg;
       }
     }

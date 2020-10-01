@@ -76,6 +76,8 @@ export interface IMouseEventArgs extends IMapsEventArgs {
     latitude?: number;
     /** Defines the current longitude value of maps location */
     longitude?: number;
+    /** Specifies whether the shape is selected or not in the Map */
+    isShapeSelected?: boolean;
 }
 /**
  * Specifies the current position in maps.

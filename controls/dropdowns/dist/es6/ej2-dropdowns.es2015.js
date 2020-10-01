@@ -347,8 +347,12 @@ let DropDownBase = class DropDownBase extends Component {
                 compiledString = compile(template);
             }
             let templateName = actionFailure ? 'actionFailureTemplate' : 'noRecordsTemplate';
-            for (let item of compiledString({}, this, templateName, templateId, this.isStringTemplate)) {
-                ele.appendChild(item);
+            // tslint:disable-next-line
+            let noDataCompTemp = compiledString({}, this, templateName, templateId, this.isStringTemplate, null, ele);
+            if (noDataCompTemp && noDataCompTemp.length > 0) {
+                for (let i = 0; i < noDataCompTemp.length; i++) {
+                    ele.appendChild(noDataCompTemp[i]);
+                }
             }
             this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure, false, false, false, false);
         }
@@ -665,9 +669,9 @@ let DropDownBase = class DropDownBase extends Component {
         }
         let type = this.typeOfData(spliceData).typeof;
         if (type === 'string' || type === 'number' || type === 'boolean') {
-            return ListBase.createListItemFromArray(this.createElement, spliceData, true, this.listOption(spliceData, fields));
+            return ListBase.createListItemFromArray(this.createElement, spliceData, true, this.listOption(spliceData, fields), this);
         }
-        return ListBase.createListItemFromJson(this.createElement, spliceData, this.listOption(spliceData, fields), 1, true);
+        return ListBase.createListItemFromJson(this.createElement, spliceData, this.listOption(spliceData, fields), 1, true, this);
     }
     emptyDataRequest(fields) {
         let listItems = [];
@@ -694,6 +698,10 @@ let DropDownBase = class DropDownBase extends Component {
             remove(this.list.querySelector('.e-hidden-select'));
         }
         else {
+            // tslint:disable-next-line         
+            if (this.isReact) {
+                this.clearTemplate(['itemTemplate', 'groupTemplate', 'actionFailureTemplate', 'noRecordsTemplate']);
+            }
             this.list.innerHTML = '';
         }
         this.fixedHeaderElement = isNullOrUndefined(this.fixedHeaderElement) ? this.fixedHeaderElement : null;
@@ -733,10 +741,10 @@ let DropDownBase = class DropDownBase extends Component {
             let groupcheck = this.templateCompiler(this.groupTemplate);
             if (groupcheck) {
                 let groupValue = document.querySelector(this.groupTemplate).innerHTML.trim();
-                let tempHeaders = ListBase.renderGroupTemplate(groupValue, dataSource, this.fields.properties, headerItems, option);
+                let tempHeaders = ListBase.renderGroupTemplate(groupValue, dataSource, this.fields.properties, headerItems, option, this);
             }
             else {
-                let tempHeaders = ListBase.renderGroupTemplate(this.groupTemplate, dataSource, this.fields.properties, headerItems, option);
+                let tempHeaders = ListBase.renderGroupTemplate(this.groupTemplate, dataSource, this.fields.properties, headerItems, option, this);
             }
             this.DropDownBaseupdateBlazorTemplates(false, true, false, false, false, false, false, false);
         }
@@ -762,7 +770,7 @@ let DropDownBase = class DropDownBase extends Component {
             new DataManager(dataSource).executeLocal(new Query().take(100))
             : dataSource;
         this.sortedData = dataSource;
-        return ListBase.createList(this.createElement, (this.getModuleName() === 'autocomplete') ? spliceData : dataSource, options, true);
+        return ListBase.createList(this.createElement, (this.getModuleName() === 'autocomplete') ? spliceData : dataSource, options, true, this);
     }
     ;
     listOption(dataSource, fields) {
@@ -847,10 +855,10 @@ let DropDownBase = class DropDownBase extends Component {
         let itemcheck = this.templateCompiler(this.itemTemplate);
         if (itemcheck) {
             let itemValue = document.querySelector(this.itemTemplate).innerHTML.trim();
-            return ListBase.renderContentTemplate(this.createElement, itemValue, dataSource, fields.properties, option);
+            return ListBase.renderContentTemplate(this.createElement, itemValue, dataSource, fields.properties, option, this);
         }
         else {
-            return ListBase.renderContentTemplate(this.createElement, this.itemTemplate, dataSource, fields.properties, option);
+            return ListBase.renderContentTemplate(this.createElement, this.itemTemplate, dataSource, fields.properties, option, this);
         }
     }
     ;
@@ -1109,7 +1117,11 @@ let DropDownBase = class DropDownBase extends Component {
             }
             if (this.itemTemplate && !isHeader) {
                 let compiledString = compile(this.itemTemplate);
-                append(compiledString(item, this, 'itemTemplate', this.itemTemplateId, this.isStringTemplate), li);
+                // tslint:disable-next-line
+                let addItemTemplate = compiledString(item, this, 'itemTemplate', this.itemTemplateId, this.isStringTemplate, null, li);
+                if (addItemTemplate) {
+                    append(addItemTemplate, li);
+                }
                 this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
             }
             else if (!isHeader) {
@@ -1120,6 +1132,9 @@ let DropDownBase = class DropDownBase extends Component {
             this.notify('addItem', { module: 'CheckBoxSelection', item: li });
             liCollections.push(li);
             this.listData.push(item);
+            if (this.sortOrder === 'None' && isNullOrUndefined(itemIndex) && index === 0) {
+                index = null;
+            }
             this.updateActionCompleteData(li, item, index);
             //Listbox event
             this.trigger('beforeItemRender', { element: li, item: item });
@@ -2385,6 +2400,10 @@ let DropDownList = class DropDownList extends DropDownBase {
     }
     setValueTemplate() {
         let compiledString;
+        // tslint:disable-next-line
+        if (this.isReact) {
+            this.clearTemplate(['valueTemplate']);
+        }
         if (!this.valueTempElement) {
             this.valueTempElement = this.createElement('span', { className: dropDownListClasses.value });
             this.inputElement.parentElement.insertBefore(this.valueTempElement, this.inputElement);
@@ -2399,9 +2418,14 @@ let DropDownList = class DropDownList extends DropDownBase {
         else {
             compiledString = compile(this.valueTemplate);
         }
-        for (let item of compiledString(templateData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate)) {
-            this.valueTempElement.appendChild(item);
+        // tslint:disable-next-line
+        let valueCompTemp = compiledString(templateData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate, null, this.valueTempElement);
+        if (valueCompTemp && valueCompTemp.length > 0) {
+            for (let i = 0; i < valueCompTemp.length; i++) {
+                this.valueTempElement.appendChild(valueCompTemp[i]);
+            }
         }
+        this.renderReactTemplates();
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, true, true);
     }
     removeSelection() {
@@ -2701,6 +2725,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                 query = (this.filterInput.value.trim() === '') ? null : query;
                 this.resetList(dataSource, fields, query);
             }
+            this.renderReactTemplates();
         }
     }
     setSearchBox(popupElement) {
@@ -2873,7 +2898,12 @@ let DropDownList = class DropDownList extends DropDownBase {
     }
     updateActionCompleteData(li, item, index) {
         if (this.getModuleName() !== 'autocomplete' && this.actionCompleteData.ulElement) {
-            this.actionCompleteData.ulElement.insertBefore(li.cloneNode(true), this.actionCompleteData.ulElement.childNodes[index]);
+            if (index != null) {
+                this.actionCompleteData.ulElement.insertBefore(li.cloneNode(true), this.actionCompleteData.ulElement.childNodes[index]);
+            }
+            else {
+                this.actionCompleteData.ulElement.appendChild(li.cloneNode(true));
+            }
             if (this.isFiltering() && this.actionCompleteData.list.indexOf(item) < 0) {
                 this.actionCompleteData.list.push(item);
             }
@@ -3012,6 +3042,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                         this.serverBlazorUpdateSelection();
                         this.bindServerScrollEvent();
                         addClass([this.inputWrapper.container], [dropDownListClasses.iconAnimation]);
+                        this.renderReactTemplates();
                         this.popupObj.show(new Animation(eventArgs.animation), (this.zIndex === 1000) ? this.element : null);
                     }
                     else {
@@ -3087,6 +3118,10 @@ let DropDownList = class DropDownList extends DropDownBase {
             close: () => {
                 if (!this.isDocumentClick) {
                     this.focusDropDown();
+                }
+                // tslint:disable-next-line
+                if (this.isReact) {
+                    this.clearTemplate(['headerTemplate', 'footerTemplate']);
                 }
                 let isResetItem = (this.getModuleName() === 'autocomplete') ? true : false;
                 this.DropDownBaseresetBlazorTemplates(isResetItem, isResetItem, true, true, false, true, true);
@@ -3495,8 +3530,12 @@ let DropDownList = class DropDownList extends DropDownBase {
         else {
             compiledString = compile(this.footerTemplate);
         }
-        for (let item of compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate)) {
-            this.footer.appendChild(item);
+        // tslint:disable-next-line
+        let footerCompTemp = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate, null, this.footer);
+        if (footerCompTemp && footerCompTemp.length > 0) {
+            for (let i = 0; i < footerCompTemp.length; i++) {
+                this.footer.appendChild(footerCompTemp[i]);
+            }
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, false, true);
         append([this.footer], popupEle);
@@ -3517,8 +3556,12 @@ let DropDownList = class DropDownList extends DropDownBase {
         else {
             compiledString = compile(this.headerTemplate);
         }
-        for (let item of compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate)) {
-            this.header.appendChild(item);
+        // tslint:disable-next-line
+        let headerCompTemp = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate, null, this.header);
+        if (headerCompTemp && headerCompTemp.length) {
+            for (let i = 0; i < headerCompTemp.length; i++) {
+                this.header.appendChild(headerCompTemp[i]);
+            }
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, true, false);
         let contentEle = popupEle.querySelector('div.e-content');
@@ -3971,6 +4014,10 @@ let DropDownList = class DropDownList extends DropDownBase {
      */
     destroy() {
         this.isActive = false;
+        // tslint:disable-next-line
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         if (!this.isServerBlazor || (this.popupObj && document.body.contains(this.popupObj.element))) {
             this.hidePopup();
         }
@@ -4404,6 +4451,8 @@ let DropDownTree = class DropDownTree extends Component {
         }
         this.oldValue = this.value;
         this.isInitialized = true;
+        this.hasTemplate = this.itemTemplate || this.headerTemplate || this.footerTemplate || this.actionFailureTemplate
+            || this.noRecordsTemplate;
         this.renderComplete();
     }
     ensureAutoCheck() {
@@ -4730,7 +4779,7 @@ let DropDownTree = class DropDownTree extends Component {
         }
     }
     triggerChangeEvent(event) {
-        let isEqual = this.compareValues(this.oldValue, this.value);
+        let isEqual = this.ddtCompareValues(this.oldValue, this.value);
         if ((!isEqual || this.isChipDelete) && !this.removeValue) {
             let eventArgs = {
                 e: event,
@@ -4742,7 +4791,7 @@ let DropDownTree = class DropDownTree extends Component {
             this.trigger('change', eventArgs);
         }
     }
-    compareValues(oldValue, newValue) {
+    ddtCompareValues(oldValue, newValue) {
         if (oldValue === null || oldValue.length === 0) {
             let isValid = oldValue === null ? ((newValue === oldValue) ? true : false) :
                 (oldValue.length === 0 ? (newValue === oldValue) : false);
@@ -4950,7 +4999,7 @@ let DropDownTree = class DropDownTree extends Component {
             let remainElement = this.createElement('span', { className: REMAIN_WRAPPER });
             let compiledString = compile(remainContent);
             let totalCompiledString = compile(this.l10n.getConstant('totalCountTemplate'));
-            remainElement.appendChild(compiledString({ 'count': this.value.length }, null, null, null, !this.isStringTemplate)[0]);
+            remainElement.appendChild(compiledString({ 'count': this.value.length }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0]);
             this.overFlowWrapper.appendChild(remainElement);
             let remainSize = remainElement.offsetWidth;
             remove(remainElement);
@@ -5053,8 +5102,8 @@ let DropDownTree = class DropDownTree extends Component {
         }
         remainElement.innerHTML = '';
         remainElement.appendChild((this.overFlowWrapper.firstChild && (this.overFlowWrapper.firstChild.nodeType === 3 || this.mode === 'Box')) ?
-            compiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0] :
-            totalCompiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0]);
+            compiledString({ 'count': remaining }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0] :
+            totalCompiledString({ 'count': remaining }, this, 'totalCountTemplate', null, !this.isStringTemplate)[0]);
         if (this.overFlowWrapper.firstChild && (this.overFlowWrapper.firstChild.nodeType === 3 || this.mode === 'Box')) {
             removeClass([this.overFlowWrapper], TOTAL_COUNT_WRAPPER);
         }
@@ -5224,7 +5273,8 @@ let DropDownTree = class DropDownTree extends Component {
             let compiledString;
             this.selectAllSpan.textContent = '';
             compiledString = compile(template);
-            for (let item of compiledString({}, null, null, null, !this.isStringTemplate)) {
+            let templateName = unSelect ? 'unSelectAllText' : 'selectAllText';
+            for (let item of compiledString({}, this, templateName, null, !this.isStringTemplate)) {
                 this.selectAllSpan.textContent = item.textContent;
             }
         }
@@ -5529,6 +5579,12 @@ let DropDownTree = class DropDownTree extends Component {
                     this.setFooterTemplate();
                 }
                 this.isFirstRender = false;
+                // tslint:disable
+                if (this.hasTemplate && this.portals) {
+                    // tslint:disable
+                    this.portals = this.portals.concat(this.treeObj.portals);
+                    this.renderReactTemplates();
+                }
             }
             if (!isCancelled) {
                 attributes(this.inputWrapper, { 'aria-expanded': 'true' });
@@ -5831,6 +5887,9 @@ let DropDownTree = class DropDownTree extends Component {
     /* Triggers when the tree fields is changed dynamically */
     setFields() {
         this.resetValue();
+        if (this.hasTemplate) {
+            this.updateTemplate();
+        }
         this.treeObj.fields = this.getTreeFields(this.fields);
         this.treeObj.dataBind();
     }
@@ -6235,8 +6294,10 @@ let DropDownTree = class DropDownTree extends Component {
             addClass([this.header], HEADER);
         }
         compiledString = this.templateComplier(this.headerTemplate);
-        for (let item of compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate)) {
-            this.header.appendChild(item);
+        let tempArr = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate, undefined, this.header);
+        if (tempArr) {
+            tempArr = Array.prototype.slice.call(tempArr);
+            append(tempArr, this.header);
         }
         this.ddtupdateBlazorTemplates(false, false, true, false);
         this.popupEle.insertBefore(this.header, this.checkAllParent ? this.checkAllParent : this.popupDiv);
@@ -6264,8 +6325,10 @@ let DropDownTree = class DropDownTree extends Component {
             addClass([this.footer], FOOTER);
         }
         compiledString = this.templateComplier(this.footerTemplate);
-        for (let item of compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate)) {
-            this.footer.appendChild(item);
+        let tempArr = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate, undefined, this.footer);
+        if (tempArr) {
+            tempArr = Array.prototype.slice.call(tempArr);
+            append(tempArr, this.footer);
         }
         this.ddtupdateBlazorTemplates(false, false, false, true);
         append([this.footer], this.popupEle);
@@ -6393,6 +6456,9 @@ let DropDownTree = class DropDownTree extends Component {
         this.setMultiSelect();
     }
     updateCheckBoxState(checkBox) {
+        if (this.hasTemplate) {
+            this.updateTemplate();
+        }
         if (!this.wrapText) {
             this.updateOverflowWrapper(false);
         }
@@ -6411,6 +6477,9 @@ let DropDownTree = class DropDownTree extends Component {
     }
     updateTemplate() {
         if (this.popupObj) {
+            this.clearTemplate();
+            // tslint:disable
+            this.portals = [];
             this.popupObj.destroy();
             if (this.isPopupOpen) {
                 this.hidePopup();
@@ -6435,9 +6504,12 @@ let DropDownTree = class DropDownTree extends Component {
             let template = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
             let compiledString;
             let templateId = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
+            let templatestring = actionFailure ? 'actionFailureTemplate' : 'noRecordsTemplate';
             compiledString = this.templateComplier(template);
-            for (let item of compiledString({}, null, null, templateId, this.isStringTemplate)) {
-                this.noRecord.appendChild(item);
+            let tempArr = compiledString({}, this, templatestring, templateId, this.isStringTemplate, undefined, this.noRecord);
+            if (tempArr) {
+                tempArr = Array.prototype.slice.call(tempArr);
+                append(tempArr, this.noRecord);
             }
             this.ddtupdateBlazorTemplates(!actionFailure, actionFailure);
         }
@@ -6483,7 +6555,9 @@ let DropDownTree = class DropDownTree extends Component {
     updateRecordTemplate(action) {
         if (this.treeItems && this.treeItems.length <= 0) {
             this.l10nUpdate(action);
-            this.updateTemplate();
+            if (this.hasTemplate) {
+                this.updateTemplate();
+            }
         }
     }
     updateOverflowWrapper(state) {
@@ -6675,7 +6749,11 @@ let DropDownTree = class DropDownTree extends Component {
                     this.updateTreeSettings(newProp);
                     break;
                 case 'sortOrder':
+                    if (this.hasTemplate) {
+                        this.updateTemplate();
+                    }
                     this.treeObj.sortOrder = newProp.sortOrder;
+                    this.updateValue(this.value);
                     this.treeObj.dataBind();
                     break;
                 case 'showDropDownIcon':
@@ -6704,6 +6782,7 @@ let DropDownTree = class DropDownTree extends Component {
                     this.updateTemplate();
                     break;
                 case 'itemTemplate':
+                    this.updateTemplate();
                     this.treeObj.nodeTemplate = newProp.itemTemplate;
                     this.treeObj.dataBind();
                     break;
@@ -6760,6 +6839,7 @@ let DropDownTree = class DropDownTree extends Component {
      */
     destroy() {
         this.ddtresetBlazorTemplates(true, true, true, true);
+        this.clearTemplate();
         this.unWireEvents();
         this.setCssClass(null, this.cssClass);
         this.resetValue();
@@ -7949,6 +8029,7 @@ let AutoComplete = class AutoComplete extends ComboBox {
         else {
             this.hidePopup();
         }
+        this.renderReactTemplates();
     }
     clearAll(e, property) {
         if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource))) {
@@ -8540,6 +8621,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                     addClass([this.overAllWrapper], [iconAnimation]);
                 }
                 this.refreshPopup();
+                this.renderReactTemplates();
                 this.popupObj.show(eventArgs.animation, (this.zIndex === 1000) ? this.element : null);
                 attributes(this.inputElement, { 'aria-expanded': 'true' });
                 if (this.isFirstClick) {
@@ -10118,9 +10200,14 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             else {
                 compiledString = compile(this.valueTemplate);
             }
-            for (let item of compiledString(itemData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate)) {
-                chipContent.appendChild(item);
+            // tslint:disable-next-line
+            let valueCompTemp = compiledString(itemData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate, null, chipContent);
+            if (valueCompTemp && valueCompTemp.length > 0) {
+                for (let i = 0; i < valueCompTemp.length; i++) {
+                    chipContent.appendChild(valueCompTemp[i]);
+                }
             }
+            this.renderReactTemplates();
             this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false, false);
         }
         else if (this.enableHtmlSanitizer) {
@@ -10322,9 +10409,12 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         else {
             compiledString = compile(this.headerTemplate);
         }
-        let elements = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate);
-        for (let temp = 0; temp < elements.length; temp++) {
-            this.header.appendChild(elements[temp]);
+        // tslint:disable-next-line
+        let elements = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate, null, this.header);
+        if (elements && elements.length > 0) {
+            for (let temp = 0; temp < elements.length; temp++) {
+                this.header.appendChild(elements[temp]);
+            }
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, true, false);
         if (this.mode === 'CheckBox' && this.showSelectAll) {
@@ -10349,9 +10439,12 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         else {
             compiledString = compile(this.footerTemplate);
         }
-        let elements = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate);
-        for (let temp = 0; temp < elements.length; temp++) {
-            this.footer.appendChild(elements[temp]);
+        // tslint:disable-next-line
+        let elements = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate, null, this.footer);
+        if (elements && elements.length > 0) {
+            for (let temp = 0; temp < elements.length; temp++) {
+                this.footer.appendChild(elements[temp]);
+            }
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, false, true);
         append([this.footer], this.popupWrapper);
@@ -11165,8 +11258,11 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                 overflowCountTemplate: '+${count} more..',
                 totalCountTemplate: '${count} selected'
             };
-            let l10n = new L10n(this.getLocaleName(), {}, this.locale);
+            let l10n = new L10n(this.getLocaleName(), l10nLocale, this.locale);
             if (l10n.getConstant('actionFailureTemplate') === '') {
+                l10n = new L10n('dropdowns', l10nLocale, this.locale);
+            }
+            if (l10n.getConstant('noRecordsTemplate') === '') {
                 l10n = new L10n('dropdowns', l10nLocale, this.locale);
             }
             let remainContent = l10n.getConstant('overflowCountTemplate');
@@ -11175,8 +11271,13 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             });
             let compiledString = compile(remainContent);
             let totalCompiledString = compile(l10n.getConstant('totalCountTemplate'));
-            raminElement.appendChild(compiledString({ 'count': this.value.length }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0]);
+            // tslint:disable-next-line
+            let remainCompildTemp = compiledString({ 'count': this.value.length }, this, 'overflowCountTemplate', null, !this.isStringTemplate, null, raminElement);
+            if (remainCompildTemp && remainCompildTemp.length > 0) {
+                raminElement.appendChild(remainCompildTemp[0]);
+            }
             this.viewWrapper.appendChild(raminElement);
+            this.renderReactTemplates();
             let remainSize = raminElement.offsetWidth;
             remove(raminElement);
             if (this.showDropDownIcon) {
@@ -11249,9 +11350,12 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             viewWrapper.removeChild(viewWrapper.firstChild);
         }
         raminElement.innerHTML = '';
+        // tslint:disable-next-line
+        let remainTemp = compiledString({ 'count': remaining }, this, 'overflowCountTemplate', null, !this.isStringTemplate, null, raminElement);
+        // tslint:disable-next-line
+        let totalTemp = totalCompiledString({ 'count': remaining }, this, 'totalCountTemplate', null, !this.isStringTemplate, null, raminElement);
         raminElement.appendChild((viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) ?
-            compiledString({ 'count': remaining }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0] :
-            totalCompiledString({ 'count': remaining }, this, 'totalCountTemplate', null, !this.isStringTemplate)[0]);
+            remainTemp && remainTemp[0] : totalTemp && totalTemp[0]);
         if (viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) {
             viewWrapper.classList.remove(TOTAL_COUNT_WRAPPER$1);
         }
@@ -11946,6 +12050,10 @@ let MultiSelect = class MultiSelect extends DropDownBase {
      * @return {void}
      */
     destroy() {
+        // tslint:disable-next-line
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         if (this.popupObj) {
             this.popupObj.hide();
         }
@@ -12814,6 +12922,9 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         this.list.insertBefore(hiddenSelect, this.list.firstChild);
         if (this.list.getElementsByClassName('e-list-item')[0]) {
             this.list.getElementsByClassName('e-list-item')[0].classList.remove(dropDownBaseClasses.focus);
+        }
+        if (this.itemTemplate) {
+            this.renderReactTemplates();
         }
         removeClass([this.list], [dropDownBaseClasses.content, dropDownBaseClasses.root]);
         this.validationAttribute(this.element, hiddenSelect);
@@ -14680,6 +14791,9 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         }
         if (!isBlazor() || (isBlazor() && !this.isServerRendered)) {
             super.destroy();
+        }
+        if (this.itemTemplate) {
+            this.clearTemplate();
         }
     }
     /**

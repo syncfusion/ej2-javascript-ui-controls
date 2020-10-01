@@ -1044,6 +1044,7 @@ export class Filter implements IAction {
             let dialog: Element = parentsUntil(this.parent.element, 'e-dialog');
             let hasDialog: boolean = false;
             let popupEle: Element = parentsUntil(target, 'e-popup');
+            let hasDialogClosed: Element = this.parent.element.querySelector('.e-filter-popup');
             if (dialog && popupEle) {
                 hasDialog = dialog.id === popupEle.id;
             }
@@ -1052,7 +1053,7 @@ export class Filter implements IAction {
             } else if (this.filterModule && (!parentsUntil(target, 'e-popup-wrapper')
                 && (!closest(target, '.e-filter-item.e-menu-item'))) && !datepickerEle) {
                 if ((hasDialog && (!parentsUntil(target, 'e-filter-popup'))
-                    && (!parentsUntil(target, 'e-popup-flmenu'))) || (!popupEle)) {
+                    && (!parentsUntil(target, 'e-popup-flmenu'))) || (!popupEle && hasDialogClosed)) {
                     this.filterModule.isresetFocus = parentsUntil(target, 'e-grid') &&
                     parentsUntil(target, 'e-grid').id === this.parent.element.id;
                     this.filterModule.closeDialog(target);

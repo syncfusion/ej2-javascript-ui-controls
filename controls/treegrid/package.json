@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-treegrid",
-	"version": "18.2.58",
+	"version": "18.2.48",
 	"description": "Essential JS 2 TreeGrid Component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -49,5 +49,6 @@
 	"scripts": {
 		"build": "gulp build",
 		"test": "gulp test"
-	}
+	},
+	"typings": "index.d.ts"
 }

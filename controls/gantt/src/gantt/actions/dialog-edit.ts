@@ -700,7 +700,8 @@ export class DialogEdit {
                 break;
             case 'stringedit':
                 let textBox: TextBox = common as TextBox;
-                if (column.field === ganttObj.columnMapping.duration) {
+                if (column.field === ganttObj.columnMapping.duration || column.field === ganttObj.columnMapping.startDate ||
+                    column.field === ganttObj.columnMapping.endDate) {
                     textBox.change = (args: CObject): void => {
                         this.validateScheduleFields(args, column, ganttObj);
                     };
@@ -819,14 +820,18 @@ export class DialogEdit {
         let columnName: string = getValue(ganttField, ganttObj.columnMapping);
         let col: GanttColumnModel = ganttObj.columnByField[columnName];
         let tempValue: string | Date | number;
+        let taskField: TaskFieldsModel = this.parent.taskFields;
         if (col.editType === 'stringedit') {
             let textBox: TextBox = <TextBox>(<EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
             tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as Function)() :
             !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function)
             (columnName, ganttObj.editModule.dialogModule.editedRecord, col) :
             this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
-            if (textBox.value !== tempValue.toString()) {
+            if (textBox.value !== tempValue.toString() && taskField.duration === columnName) {
                 textBox.value = tempValue as string;
+                textBox.dataBind();
+            } else if (taskField.startDate === columnName || taskField.endDate === columnName) {
+                textBox.value = taskField.startDate === columnName ? ganttProp.startDate.toString() : ganttProp.endDate.toString();
                 textBox.dataBind();
             }
         } else if (col.editType === 'datepickeredit' || col.editType === 'datetimepickeredit') {
@@ -952,7 +957,7 @@ export class DialogEdit {
         if (taskSettings.startDate === columnName) {
             if (value !== '') {
                 let startDate: Date = this.parent.dateValidationModule.getDateFromFormat(value);
-                startDate = this.parent.dateValidationModule.checkStartDate(startDate);
+                startDate = this.parent.dateValidationModule.checkStartDate(startDate, ganttProp);
                 this.parent.setRecordValue('startDate', startDate, ganttProp, true);
             } else {
                 if (ganttObj.allowUnscheduledTasks && !(currentData.hasChildRecords)) {

@@ -1549,7 +1549,5 @@ exports.MaskedTextBox = MaskedTextBox;
 return exports;
 
 });
-sfBlazor.modules["maskedtextbox"] = "inputs.MaskedTextBox";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.maskedtextbox, () => {
+
     sf.inputs = sf.base.extend({}, sf.inputs, sfmaskedtextbox({}));
-});

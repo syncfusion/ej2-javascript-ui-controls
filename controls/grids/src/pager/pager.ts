@@ -159,6 +159,11 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     @Event()
     public created: EmitType<Object>;
 
+    /** 
+     * @hidden
+     */
+    public isReact: boolean;
+
     /**
      * Constructor for creating the component.
      * @hidden
@@ -266,10 +271,24 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
      * @return {void}
      */
     public destroy(): void {
-        super.destroy();
-        this.containerModule.destroy();
-        this.pagerMessageModule.destroy();
-        this.element.innerHTML = '';
+        if (this.isReact && typeof (this.template) !== 'string') {
+            this.destroyTemplate(['template']);
+            this.renderReactTemplates();
+        } else {
+            super.destroy();
+            this.containerModule.destroy();
+            this.pagerMessageModule.destroy();
+            this.element.innerHTML = '';
+        }
+    }
+
+    /**
+     * Destroys the given template reference.
+     * @param {string[]} propertyNames - Defines the collection of template name.
+     */
+    //tslint:disable-next-line:no-any
+    public destroyTemplate(propertyNames?: string[], index?: any): void {
+        this.clearTemplate(propertyNames, index);
     }
 
     /**

@@ -15,6 +15,7 @@ export class EventTooltip {
     constructor(parent: Schedule) {
         this.parent = parent;
         this.tooltipObj = new Tooltip({
+            animation: { close: { effect: isBlazor() ? 'None' : 'FadeOut' } },
             content: 'No title',
             position: 'BottomRight',
             offsetY: 10,
@@ -23,13 +24,10 @@ export class EventTooltip {
             cssClass: this.parent.cssClass + ' ' + cls.EVENT_TOOLTIP_ROOT_CLASS,
             target: this.getTargets(),
             beforeRender: this.onBeforeRender.bind(this),
-            enableRtl: this.parent.enableRtl
+            enableRtl: this.parent.enableRtl,
+            beforeOpen: this.onBeforeOpen.bind(this),
+            beforeClose: this.onBeforeClose.bind(this)
         });
-        if (isBlazor()) {
-            this.tooltipObj.beforeOpen = this.onBeforeOpen.bind(this);
-            this.tooltipObj.beforeClose = this.onBeforeClose.bind(this);
-            this.tooltipObj.animation = { close: { effect: 'None' } };
-        }
         this.tooltipObj.appendTo(this.parent.element);
         this.tooltipObj.isStringTemplate = true;
     }
@@ -46,25 +44,26 @@ export class EventTooltip {
     }
 
     private onBeforeOpen(): void {
-        if (this.parent.group.headerTooltipTemplate) {
+        if (isBlazor() && this.parent.group.headerTooltipTemplate) {
             let templateId: string = this.parent.element.id + '_headerTooltipTemplate';
             updateBlazorTemplate(templateId, 'HeaderTooltipTemplate', this.parent.group);
         }
-        if (this.parent.eventSettings.tooltipTemplate) {
+        if (isBlazor() && this.parent.eventSettings.tooltipTemplate) {
             let templateId: string = this.parent.element.id + '_tooltipTemplate';
             updateBlazorTemplate(templateId, 'TooltipTemplate', this.parent.eventSettings);
         }
     }
 
     private onBeforeClose(): void {
-        if (this.parent.group.headerTooltipTemplate) {
+        if (isBlazor() && this.parent.group.headerTooltipTemplate) {
             let templateId: string = this.parent.element.id + '_headerTooltipTemplate';
             resetBlazorTemplate(templateId, 'HeaderTooltipTemplate');
         }
-        if (this.parent.eventSettings.tooltipTemplate) {
+        if (isBlazor() && this.parent.eventSettings.tooltipTemplate) {
             let templateId: string = this.parent.element.id + '_tooltipTemplate';
             resetBlazorTemplate(templateId, 'TooltipTemplate');
         }
+        this.parent.resetTemplates();
     }
 
     // tslint:disable-next-line:max-func-body-length
@@ -170,6 +169,7 @@ export class EventTooltip {
                 '<div class="e-all-day">' + tooltipTime + '</div></div>';
             this.setContent(content);
         }
+        this.parent.renderTemplates();
     }
 
     private setContent(content: string | HTMLElement): void {

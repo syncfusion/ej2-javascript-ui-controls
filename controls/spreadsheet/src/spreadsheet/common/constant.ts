@@ -397,5 +397,6 @@ export let defaultLocale: object = {
     CellReference: 'Cell Reference',
     DefinedNames: 'Defined Names',
     EnterTheTextToDisplay: 'Enter the text to display',
-    EnterTheUrl: 'Enter the URL'
+    EnterTheUrl: 'Enter the URL',
+    Image: 'Image'
 };

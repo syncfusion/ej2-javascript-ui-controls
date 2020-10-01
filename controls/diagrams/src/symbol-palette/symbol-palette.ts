@@ -456,44 +456,44 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'width':
-                    this.element.style.width = this.width.toString();
-                    break;
+                    this.element.style.width = this.width.toString(); break;
                 case 'height':
-                    this.element.style.height = this.height.toString();
-                    break;
+                    this.element.style.height = this.height.toString(); break;
                 case 'symbolPreview':
                     break;
                 case 'symbolWidth':
                 case 'symbolHeight':
                 case 'getSymbolInfo':
-                    refresh = true;
-                    break;
+                    refresh = true; break;
                 case 'enableSearch':
-                    if (newProp.enableSearch) {
+                    if (newProp.enableSearch && !isBlazor()) {
                         this.createTextbox();
                     } else {
                         let divElement: HTMLElement = document.getElementById(this.element.id + '_search');
-                        if (divElement) {
-                            divElement.parentNode.removeChild(divElement);
-                        }
+                        if (divElement) { divElement.parentNode.removeChild(divElement); }
                     }
                     break;
                 case 'palettes':
                     for (let i of Object.keys(newProp.palettes)) {
                         let index: number = Number(i);
-
-                        if (!this.accordionElement.items[index]) {
+                        if (!isBlazor() && !this.accordionElement.items[index]) {
                             this.accordionElement.items[index] = {
                                 header: newProp.palettes[index].title || '',
                                 expanded: newProp.palettes[index].expanded,
                                 iconCss: newProp.palettes[index].iconCss || ''
                             };
                         }
-                        if (newProp.palettes[index].iconCss !== undefined) {
-                            this.accordionElement.items[index].iconCss = newProp.palettes[index].iconCss || '';
-                            refresh = true;
+                        if (newProp.palettes[index].height) {
+                            let paletteDiv: HTMLElement = document.getElementById((this.palettes[index] as Palette).id + '_content');
+                            paletteDiv.style.height = newProp.palettes[index].height + 'px';
                         }
-                        if (newProp.palettes[index].expanded !== undefined) {
+                        if (newProp.palettes[index].iconCss !== undefined) {
+                            if (!isBlazor()) {
+                                this.accordionElement.items[index].iconCss = newProp.palettes[index].iconCss || '';
+                                refresh = true;
+                            }
+                        }
+                        if (newProp.palettes[index].expanded !== undefined && !isBlazor()) {
                             if (!(this.palettes[index] as Palette).isInteraction) {
                                 this.accordionElement.items[index].expanded = newProp.palettes[index].expanded;
                                 this.isExpand = true;
@@ -503,24 +503,27 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                             if (!this.isExpandMode && !this.isMethod && !this.isExpand) {
                                 this.isExpand = true;
                             }
-
                         }
+                        if (isBlazor() && newProp.palettes[index].symbols !== null) { refresh = true; }
                         if (isBlazor() && newProp.palettes[index].symbols === null) {
                             this.updateBlazorProperties(newProp);
                         }
                     }
                     break;
                 case 'enableAnimation':
-                    if (!this.enableAnimation) {
-                        this.accordionElement.animation = { expand: { duration: 0 }, collapse: { duration: 0 } };
-                    } else {
-                        this.accordionElement.animation = { expand: { duration: 400 }, collapse: { duration: 400 } };
+                    if (!isBlazor()) {
+                        if (!this.enableAnimation) {
+                            this.accordionElement.animation = { expand: { duration: 0 }, collapse: { duration: 0 } };
+                        } else {
+                            this.accordionElement.animation = { expand: { duration: 400 }, collapse: { duration: 400 } };
+                        }
                     }
                     break;
                 case 'expandMode':
-                    this.accordionElement.expandMode = this.expandMode;
-                    refresh = true;
-                    this.isExpandMode = true;
+                    if (!isBlazor()) {
+                        this.accordionElement.expandMode = this.expandMode;
+                        refresh = true; this.isExpandMode = true;
+                    }
                     break;
                 case 'allowDrag':
                     this.allowDrag = newProp.allowDrag;
@@ -534,12 +537,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                     break;
             }
         }
-        if (refresh) {
-            this.refreshPalettes();
-        }
+        if (refresh) { this.refreshPalettes(); }
         if (this.isExpand && !refresh) {
-            this.refresh();
-            this.isExpand = false;
+            this.refresh(); this.isExpand = false;
             for (let p: number = 0; p < this.palettes.length; p++) {
                 let paletteElement: string = this.palettes[p].id;
                 if (window[paletteElement]) {
@@ -585,38 +585,40 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         this.element.style.overflow = 'auto';
         this.element.style.height = this.height.toString();
         this.element.style.width = this.width.toString();
-        if (this.enableSearch) {
+        if (this.enableSearch && !isBlazor()) {
             this.createTextbox();
         }
         //create accordion element
-        let accordionDiv: HTMLElement = createHtmlElement('div', { id: this.element.id + '_container' });
-        this.accordionElement = new Accordion({
-            expandMode: this.expandMode
-        });
-        if (!this.enableAnimation) {
-            this.accordionElement.animation = { expand: { duration: 0 }, collapse: { duration: 0 } };
-        }
-        this.accordionElement.created = () => {
-            this.checkOnRender = true;
-        };
-        this.accordionElement.expanded = (args: ExpandEventArgs) => {
-            let index: number = this.accordionElement.items.indexOf(args.item);
-            let isAllowDatabind: boolean = this.allowServerDataBinding;
-            this.allowServerDataBinding = false;
-            this.palettes[index].expanded = args.isExpanded;
-            (this.palettes[index] as Palette).isInteraction = true;
-            this.allowServerDataBinding = isAllowDatabind;
-        };
-        this.accordionElement.expanding = (args: ExpandEventArgs) => {
-            if (this.checkOnRender) {
-                let diagramArgs: IPaletteExpandArgs  = {element: args.element, content: args.content, index: args.index, cancel: false,
-                isExpanded: args.isExpanded, palette: this.palettes[args.index]};
-                let event: string = 'paletteExpanding';
-                this.trigger(event, diagramArgs);
-                args.cancel = diagramArgs.cancel;
+        if (!isBlazor()) {
+            let accordionDiv: HTMLElement = createHtmlElement('div', { id: this.element.id + '_container' });
+            this.accordionElement = new Accordion({
+                expandMode: this.expandMode
+            });
+            if (!this.enableAnimation) {
+                this.accordionElement.animation = { expand: { duration: 0 }, collapse: { duration: 0 } };
             }
-        };
-        this.element.appendChild(accordionDiv);
+            this.accordionElement.created = () => {
+                this.checkOnRender = true;
+            };
+            this.accordionElement.expanded = (args: ExpandEventArgs) => {
+                let index: number = this.accordionElement.items.indexOf(args.item);
+                let isAllowDatabind: boolean = this.allowServerDataBinding;
+                this.allowServerDataBinding = false;
+                this.palettes[index].expanded = args.isExpanded;
+                (this.palettes[index] as Palette).isInteraction = true;
+                this.allowServerDataBinding = isAllowDatabind;
+            };
+            this.accordionElement.expanding = (args: ExpandEventArgs) => {
+                if (this.checkOnRender) {
+                    let diagramArgs: IPaletteExpandArgs  = {element: args.element, content: args.content, index: args.index, cancel: false,
+                    isExpanded: args.isExpanded, palette: this.palettes[args.index]};
+                    let event: string = 'paletteExpanding';
+                    this.trigger(event, diagramArgs);
+                    args.cancel = diagramArgs.cancel;
+                }
+            };
+            this.element.appendChild(accordionDiv);
+        }
         let measureWindowElement: string = 'measureElement';
         if (window[measureWindowElement]) {
             window[measureWindowElement] = null;
@@ -633,8 +635,13 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         this.diagramRenderer = new DiagramRenderer(this.element.id, new SvgRenderer(), false);
         this.svgRenderer = new DiagramRenderer(this.element.id, new SvgRenderer(), true);
         this.updatePalettes();
-        this.accordionElement.appendTo('#' + this.element.id + '_container');
+        if (!isBlazor()) {
+            this.accordionElement.appendTo('#' + this.element.id + '_container');
+        }
         this.renderComplete();
+        if (isBlazor()) {
+            this.element.classList.remove('e-symbolpalette-hidden');
+        }
     }
 
     /**
@@ -711,7 +718,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             this.renderPalette(palette);
         }
         this.bulkChanges = {};
-        this.accordionElement.refresh();
+        if (!isBlazor()) {
+            this.accordionElement.refresh();
+        }
     }
     /**
      * @private
@@ -720,7 +729,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         for (let i: number = 0; i < this.palettes.length; i++) {
             if (this.palettes[i].id === paletteId) {
                 this.palettes.splice(i, 1);
-                this.accordionElement.items.splice(i, 1);
+                if (!isBlazor()) {
+                    this.accordionElement.items.splice(i, 1);
+                }
                 break;
             }
         }
@@ -736,7 +747,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         for (let i: number = 0; i < palettes.length; i++) {
             this.removePalette(palettes[i]);
         }
-        this.accordionElement.refresh();
+        if (!isBlazor()) {
+            this.accordionElement.refresh();
+        }
         this.allowServerDataBinding = isEnableServerDatabind;
     }
     //end region - protected methods
@@ -831,18 +844,26 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * Method to create the palette
      */
     private renderPalette(symbolGroup: PaletteModel): void {
-        let style: string = 'display:none;overflow:auto;';
+        let style: string = (isBlazor()) ? 'overflow:auto;' : 'display:none;overflow:auto;';
         if (symbolGroup.height) {
             style += 'height:' + symbolGroup.height + 'px';
         }
-        let paletteDiv: HTMLElement = createHtmlElement('div', { 'id': symbolGroup.id, style: style, class: 'e-remove-palette' });
-        this.element.appendChild(paletteDiv);
-
-        let item: AccordionItemModel = {
-            header: symbolGroup.title, expanded: symbolGroup.expanded,
-            content: '#' + symbolGroup.id, iconCss: symbolGroup.iconCss
-        };
-        this.accordionElement.items.push(item);
+        let paletteParentDiv: HTMLElement = document.getElementById(symbolGroup.id);
+        let paletteDiv: HTMLElement;
+        if (isBlazor() && paletteParentDiv != null) {
+            paletteDiv = createHtmlElement('div', { 'id': symbolGroup.id + '_content', style: style, class: 'e-remove-palette' });
+            paletteParentDiv.appendChild(paletteDiv);
+        } else {
+            paletteDiv = createHtmlElement('div', { 'id': symbolGroup.id, style: style, class: 'e-remove-palette' });
+            this.element.appendChild(paletteDiv);
+        }
+        if (!isBlazor()) {
+            let item: AccordionItemModel = {
+                header: symbolGroup.title, expanded: symbolGroup.expanded,
+                content: '#' + symbolGroup.id, iconCss: symbolGroup.iconCss
+            };
+            this.accordionElement.items.push(item);
+        }
         this.renderSymbols(symbolGroup, paletteDiv);
     }
     /**
@@ -874,9 +895,14 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 if (isChild) {
                     this.childTable[obj.id] = obj;
                 } else {
-                    let paletteDiv: HTMLElement = document.getElementById(symbolPaletteGroup.id);
+                    let paletteDiv: HTMLElement;
+                    if (isBlazor()) {
+                        paletteDiv = document.getElementById(symbolPaletteGroup.id + '_content');
+                    } else {
+                        paletteDiv = document.getElementById(symbolPaletteGroup.id);
+                    }
                     if (paletteDiv) {
-                     paletteDiv.appendChild(this.getSymbolContainer(obj, paletteDiv));
+                        paletteDiv.appendChild(this.getSymbolContainer(obj, paletteDiv));
                     }
                 }
                 break;
@@ -1407,6 +1433,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 if (element.classList.contains('e-clear-searchtext')) {
                     element.className = 'e-input-group-icon e-search e-icons';
                     (document.getElementById('textEnter') as HTMLInputElement).value = '';
+                    if (isBlazor()) {
+                        document.getElementById(this.element.id + '_search_content').classList.add('e-symbolpalette-search-hidden');
+                    }
                     this.searchPalette('');
                 }
             } else {
@@ -1417,6 +1446,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                     this.trigger(event, args);
                     this.oldObject = id;
                     evt.preventDefault();
+                } else if (this.oldObject !== '') {
+                    this.oldObject = '';
                 }
             }
         }
@@ -1427,6 +1458,13 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             let palette: SymbolPalette = this;
             let element: HTMLElement = document.getElementById('iconSearch');
             element.className = 'e-input-group-icon e-clear-searchtext e-icons';
+            if (isBlazor() && evt.target instanceof HTMLInputElement) {
+                if (evt.target.value === '') {
+                    document.getElementById(this.element.id + '_search_content').classList.add('e-symbolpalette-search-hidden');
+                } else {
+                    document.getElementById(this.element.id + '_search_content').classList.remove('e-symbolpalette-search-hidden');
+                }
+            }
             if (evt && (evt.key === 'Enter' || evt.keyCode === 13)) {
                 if (evt.target instanceof HTMLInputElement) {
                     this.searchPalette(evt.target.value);
@@ -1672,10 +1710,14 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     }
 
     private refreshPalettes(): void {
-        this.accordionElement.items = [];
+        if (!isBlazor()) {
+            this.accordionElement.items = [];
+        }
         removeElementsByClass('e-remove-palette', this.element.id);
         this.updatePalettes();
-        this.accordionElement.dataBind();
+        if (!isBlazor()) {
+            this.accordionElement.dataBind();
+        }
     }
 
     private updatePalettes(): void {
@@ -1744,7 +1786,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         }
 
         //create a palette collection
-        if (!element) {
+        if (!element && !isBlazor()) {
             paletteDiv = this.createSearchPalette(paletteDiv);
             element = paletteDiv;
         }
@@ -1760,10 +1802,12 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         } else {
             let element: HTMLElement = document.getElementById('iconSearch');
             element.className = 'e-input-group-icon e-search e-icons';
-            this.accordionElement.removeItem(0);
-            let searchPalette: HTMLElement = document.getElementById('SearchPalette');
-            if (searchPalette) {
-                searchPalette.remove();
+            if (!isBlazor()) {
+                this.accordionElement.removeItem(0);
+                let searchPalette: HTMLElement = document.getElementById('SearchPalette');
+                if (searchPalette) {
+                    searchPalette.remove();
+                }
             }
         }
     }

@@ -1,6 +1,6 @@
 import { PdfViewer } from '../index';
 import { PdfViewerBase } from '../index';
-import { createElement, Browser } from '@syncfusion/ej2-base';
+import { createElement, Browser, isBlazor } from '@syncfusion/ej2-base';
 import { Toolbar as Tool, ItemModel, ClickEventArgs, MenuItemModel, ContextMenu as Context } from '@syncfusion/ej2-navigations';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { Toast, ToastCloseArgs } from '@syncfusion/ej2-notifications';
@@ -117,50 +117,64 @@ export class NavigationPane {
     }
 
     private createNavigationPane(): void {
-        // tslint:disable-next-line:max-line-length
-        this.sideBarToolbar = createElement('div', { id: this.pdfViewer.element.id + '_sideBarToolbar', className: 'e-pv-sidebar-toolbar', attrs: { 'role': 'toolbar', 'aria-orientation': 'vertical', 'tabindex': '-1' } });
+        let isblazor: boolean = isBlazor();
+        if (!isblazor) {
+            // tslint:disable-next-line:max-line-length
+            this.sideBarToolbar = createElement('div', { id: this.pdfViewer.element.id + '_sideBarToolbar', className: 'e-pv-sidebar-toolbar', attrs: { 'role': 'toolbar', 'aria-orientation': 'vertical', 'tabindex': '-1' } });
+            // tslint:disable-next-line:max-line-length
+            this.sideBarToolbarSplitter = createElement('div', { id: this.pdfViewer.element.id + '_sideBarToolbarSplitter', className: 'e-pv-sidebar-toolbar-splitter' });
+            // tslint:disable-next-line:max-line-length
+            this.sideBarContentContainer = createElement('div', { id: this.pdfViewer.element.id + '_sideBarContentContainer', className: 'e-pv-sidebar-content-container' });
+            // tslint:disable-next-line:max-line-length
+            this.sideBarContentSplitter = createElement('div', { id: this.pdfViewer.element.id + '_sideBarContentSplitter', className: 'e-pv-sidebar-content-splitter' });
+            // tslint:disable-next-line:max-line-length
+            this.sideBarContent = createElement('div', { id: this.pdfViewer.element.id + '_sideBarContent', className: 'e-pv-sidebar-content', attrs: { 'tabindex': '0' } });
+            // tslint:disable-next-line:max-line-length
+            this.sideBarTitleContainer = createElement('div', { id: this.pdfViewer.element.id + '_sideBarTitleContainer', className: 'e-pv-sidebar-title-container' });
+            // tslint:disable-next-line:max-line-length
+            this.sideBarTitle = createElement('div', { id: this.pdfViewer.element.id + '_sideBarTitle', className: 'e-pv-sidebar-title', attrs: { 'tabindex': '-1' } });
+            // tslint:disable-next-line:max-line-length
+            this.sideBarResizer = createElement('div', { id: this.pdfViewer.element.id + '_sideBarResizer', className: 'e-pv-sidebar-resizer' });
+        } else {
+            this.sideBarToolbar = this.pdfViewer.element.querySelector('.e-pv-sidebar-toolbar');
+            this.sideBarToolbarSplitter = this.pdfViewer.element.querySelector('.e-pv-sidebar-toolbar-splitter');
+            this.sideBarContentContainer = this.pdfViewer.element.querySelector('.e-pv-sidebar-content-container');
+            this.sideBarContentSplitter = this.pdfViewer.element.querySelector('.e-pv-sidebar-content-splitter');
+            this.sideBarContent = this.pdfViewer.element.querySelector('.e-pv-sidebar-content');
+            this.sideBarTitleContainer = this.pdfViewer.element.querySelector('.e-pv-sidebar-title-container');
+            this.sideBarTitle = this.pdfViewer.element.querySelector('.e-pv-sidebar-title');
+            this.sideBarResizer = this.pdfViewer.element.querySelector('.e-pv-sidebar-resizer');
+        }
         this.pdfViewerBase.mainContainer.appendChild(this.sideBarToolbar);
         if (this.pdfViewer.enableRtl) {
             this.sideBarToolbar.style.cssFloat = 'right';
             this.sideBarToolbar.style.right = 1 + 'px';
             this.sideBarToolbar.style.position = 'relative';
         }
-        // tslint:disable-next-line:max-line-length
-        this.sideBarToolbarSplitter = createElement('div', { id: this.pdfViewer.element.id + '_sideBarToolbarSplitter', className: 'e-pv-sidebar-toolbar-splitter' });
         this.pdfViewerBase.mainContainer.appendChild(this.sideBarToolbarSplitter);
         if (this.pdfViewer.enableRtl) {
             this.sideBarToolbarSplitter.classList.add('e-right');
         } else {
             this.sideBarToolbarSplitter.classList.add('e-left');
         }
-        // tslint:disable-next-line:max-line-length
-        this.sideBarContentContainer = createElement('div', { id: this.pdfViewer.element.id + '_sideBarContentContainer', className: 'e-pv-sidebar-content-container' });
         if (this.pdfViewer.enableRtl) {
             this.sideBarContentContainer.classList.add('e-right');
         } else {
             this.sideBarContentContainer.classList.add('e-left');
         }
         this.pdfViewerBase.mainContainer.appendChild(this.sideBarContentContainer);
-        // tslint:disable-next-line:max-line-length
-        this.sideBarContentSplitter = createElement('div', { id: this.pdfViewer.element.id + '_sideBarContentSplitter', className: 'e-pv-sidebar-content-splitter' });
         if (this.pdfViewer.enableRtl) {
             this.sideBarContentSplitter.style.right = 0 + 'px';
         }
         this.sideBarContentContainer.appendChild(this.sideBarContentSplitter);
-        // tslint:disable-next-line:max-line-length
-        this.sideBarContent = createElement('div', { id: this.pdfViewer.element.id + '_sideBarContent', className: 'e-pv-sidebar-content', attrs: { 'tabindex': '0' } });
         if (this.pdfViewer.enableRtl) {
             this.sideBarContent.style.right = 0 + 'px';
             this.sideBarContent.style.direction = 'rtl';
         }
         this.sideBarContentContainer.appendChild(this.sideBarContent);
-        // tslint:disable-next-line:max-line-length
-        this.sideBarTitleContainer = createElement('div', { id: this.pdfViewer.element.id + '_sideBarTitleContainer', className: 'e-pv-sidebar-title-container' });
         if (this.pdfViewer.enableRtl) {
             this.sideBarTitleContainer.style.right = 0 + 'px';
         }
-        // tslint:disable-next-line:max-line-length
-        this.sideBarTitle = createElement('div', { id: this.pdfViewer.element.id + '_sideBarTitle', className: 'e-pv-sidebar-title', attrs: { 'tabindex': '-1' } });
         if (this.pdfViewer.enableRtl) {
             this.sideBarTitle.classList.add('e-right');
         } else {
@@ -168,8 +182,7 @@ export class NavigationPane {
         }
         this.sideBarTitleContainer.appendChild(this.sideBarTitle);
         this.sideBarContentContainer.appendChild(this.sideBarTitleContainer);
-        // tslint:disable-next-line:max-line-length
-        this.sideBarResizer = createElement('div', { id: this.pdfViewer.element.id + '_sideBarResizer', className: 'e-pv-sidebar-resizer' });
+
         this.sideBarResizer.addEventListener('mousedown', this.resizePanelMouseDown);
         this.pdfViewerBase.mainContainer.addEventListener('mousemove', this.resizePanelMouseMove);
         this.pdfViewerBase.mainContainer.addEventListener('mouseup', this.resizeViewerMouseLeave);
@@ -200,17 +213,33 @@ export class NavigationPane {
      * @private
      */
     public adjustPane(): void {
-        let splitterElement: HTMLElement = this.pdfViewerBase.getElement('_sideBarToolbarSplitter');
-        let toolbarContainer: HTMLElement = this.pdfViewerBase.getElement('_toolbarContainer');
-        let toolbarHeight: number = toolbarContainer.getBoundingClientRect().height;
-        if (toolbarHeight === 0) {
-            // tslint:disable-next-line
-            toolbarHeight = parseFloat(window.getComputedStyle(toolbarContainer)['height']) + 1;
+        if (isBlazor()) {
+            let splitterElement: HTMLElement = this.pdfViewer.element.querySelector('.e-pv-sidebar-toolbar-splitter');
+            let sideToolbarElement: HTMLElement = this.pdfViewer.element.querySelector('.e-pv-sidebar-toolbar');
+            let sideToolbarContent: HTMLElement = this.pdfViewer.element.querySelector('.e-pv-sidebar-content-container');
+            let toolbarContainer: HTMLElement = this.pdfViewer.element.querySelector('.e-pv-toolbar');
+            let toolbarHeight: number = toolbarContainer.getBoundingClientRect().height;
+            if (toolbarHeight === 0) {
+                // tslint:disable-next-line
+                toolbarHeight = parseFloat(window.getComputedStyle(toolbarContainer)['height']) + 1;
+            }
+            // tslint:disable-next-line:max-line-length
+            sideToolbarElement.style.top = toolbarHeight + 'px';
+            sideToolbarContent.style.top = toolbarHeight + 'px';
+            splitterElement.style.top = toolbarHeight + 'px';
+        } else {
+            let splitterElement: HTMLElement = this.pdfViewerBase.getElement('_sideBarToolbarSplitter');
+            let toolbarContainer: HTMLElement = this.pdfViewerBase.getElement('_toolbarContainer');
+            let toolbarHeight: number = toolbarContainer.getBoundingClientRect().height;
+            if (toolbarHeight === 0) {
+                // tslint:disable-next-line
+                toolbarHeight = parseFloat(window.getComputedStyle(toolbarContainer)['height']) + 1;
+            }
+            // tslint:disable-next-line:max-line-length
+            this.sideBarToolbar.style.top = toolbarHeight + 'px';
+            this.sideBarContentContainer.style.top = toolbarHeight + 'px';
+            splitterElement.style.top = toolbarHeight + 'px';
         }
-        // tslint:disable-next-line:max-line-length
-        this.sideBarToolbar.style.top = toolbarHeight + 'px';
-        this.sideBarContentContainer.style.top = toolbarHeight + 'px';
-        splitterElement.style.top = toolbarHeight + 'px';
     }
 
     private createCommentPanel(): void {
@@ -880,8 +909,7 @@ export class NavigationPane {
      */
     public updateViewerContainerOnClose(): void {
         let proxy: NavigationPane = this;
-        let sideBarContentContainer: HTMLElement = proxy.pdfViewerBase.getElement('_sideBarContentContainer');
-        if (sideBarContentContainer) {
+        if (proxy.sideBarContentContainer) {
             proxy.sideBarContentContainer.style.display = 'none';
             if (this.pdfViewer.enableRtl) {
                 proxy.pdfViewerBase.viewerContainer.style.right = (proxy.sideToolbarWidth) + 'px';
@@ -940,7 +968,9 @@ export class NavigationPane {
         this.sideBarTitle.textContent = this.pdfViewer.localeObj.getConstant('Page Thumbnails');
         this.sideBarContent.setAttribute('aria-label', 'Thumbnail View Panel');
         let proxy: NavigationPane = this;
-        let bookmarkPane: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_bookmark_view');
+        let isblazor: boolean = isBlazor();
+        // tslint:disable-next-line:max-line-length
+        let bookmarkPane: HTMLElement = isblazor ? this.pdfViewer.element.querySelector('.e-pv-bookmark-view') : document.getElementById(this.pdfViewer.element.id + '_bookmark_view');
         if (bookmarkPane) {
             proxy.removeBookmarkSelectionIconTheme();
             bookmarkPane.style.display = 'none';

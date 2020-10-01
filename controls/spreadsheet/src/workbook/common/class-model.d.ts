@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, HighlightCell } from './enum';import { ValidationType, ValidationOperator, TopBottom, DataBar, ColorScale, IconSet, CFColor } from './enum';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, HighlightCell } from './enum';import { ValidationType, ValidationOperator, TopBottom, DataBar, ColorScale, IconSet, CFColor } from './enum';import { CellModel } from '../base';
 
 /**
  * Interface for a class CellStyle
@@ -276,5 +276,52 @@ export interface ConditionalFormatModel {
      * @default ''
      */
     range?: string;
+
+}
+
+/**
+ * Interface for a class Image
+ */
+export interface ImageModel {
+
+    /**
+     * Specifies the image source.
+     * @default ''
+     */
+    src?: string;
+
+    /**
+     * Specifies image element id.
+     * @default ''
+     */
+    id?: string;
+
+    /**
+     * Specifies the height of the image.
+     * @default 300
+     * @asptype int
+     */
+    height?: number;
+
+    /**
+     * Specifies the width of the image.
+     * @default 400
+     * @asptype int
+     */
+    width?: number;
+
+    /**
+     * Specifies the height of the image.
+     * @default 0
+     * @asptype int
+     */
+    top?: number;
+
+    /**
+     * Specifies the width of the image.
+     * @default 0
+     * @asptype int
+     */
+    left?: number;
 
 }

@@ -665,9 +665,17 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 if (this.headerTemplate) {
                     let compiledString: Function = compile(this.headerTemplate);
                     let headerTemplateEle: HTMLElement = this.createElement('div', { className: classNames.headerTemplateText });
-                    append(compiledString({}, this, prop, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
+                     // tslint:disable-next-line
+                    let compiledElement: any = compiledString({}, this, prop, this.LISTVIEW_HEADERTEMPLATE_ID, null, null, this.headerEle);
+                    if (compiledElement) {
+                    append(compiledElement, headerTemplateEle);
+                    }
                     append([headerTemplateEle], this.headerEle);
                     this.updateBlazorTemplates(false, true, true);
+                     // tslint:disable-next-line
+                    if ((this as any).isReact) {
+                        this.renderReactTemplates();
+                    }
                 }
                 if (this.headerTemplate && this.headerTitle) {
                     textEle.classList.add('header');
@@ -748,6 +756,19 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     protected preRender(): void {
+        if (this.template) {
+            try {
+                if (document.querySelectorAll(this.template).length) {
+                    this.template = document.querySelector(this.template).innerHTML.trim();
+                }
+            } catch (e) {
+                compile(this.template);
+                // tslint:disable-next-line
+                if ((this as any).isReact) {
+                    this.renderReactTemplates();
+                }
+            }
+        }
         this.listBaseOption = {
             template: this.template,
             headerTemplate: this.headerTemplate,
@@ -813,6 +834,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         this.removeElement(this.ulElement);
         this.removeElement(this.headerEle);
         this.removeElement(this.contentContainer);
+        // tslint:disable-next-line
+        if ((this as any).isReact) {
+            this.clearTemplate();
+        }
         this.curUL = this.ulElement = this.liCollection = this.headerEle = this.contentContainer = undefined;
     }
 
@@ -1551,6 +1576,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 this.localData = (e as ResultData).result;
                 if (!this.isServerRendered || (!isBlazor())) {
                     listViewComponent.removeElement(listViewComponent.contentContainer);
+                    if ((this as any).isReact) {
+                        this.clearTemplate();
+                    }
                 }
                 this.renderList();
                 this.trigger('actionComplete', e);
@@ -1580,6 +1608,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             this.removeElement(this.headerEle);
             this.removeElement(this.ulElement);
             this.removeElement(this.contentContainer);
+            if ((this as any).isReact) {
+                this.clearTemplate();
+            }
             if (Object.keys(window).indexOf('ejsInterop') === -1) {
                 this.element.innerHTML = '';
             }
@@ -1612,7 +1643,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         this.currentLiElements = [];
         this.isNestedList = false;
         this.ulElement = this.curUL = ListBase.createList(
-            this.createElement, this.curViewDS as DataSource[], this.listBaseOption,  null , this);
+            this.createElement, this.curViewDS as DataSource[], this.listBaseOption, null, this);
         this.liCollection = <HTMLElement[] & NodeListOf<Element>>this.curUL.querySelectorAll('.' + classNames.listItem);
         this.setAttributes(this.liCollection);
         this.updateBlazorTemplates(true);
@@ -1766,6 +1797,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     // tslint:enable
                 } else {
                     ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length, null, this);
+                    // tslint:disable-next-line
+                    if ((this as any).isReact) {
+                     this.renderReactTemplates();
+                    }
                     let lists: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>ele.querySelectorAll('.' + classNames.listItem);
                     this.setAttributes(lists);
                     ele.setAttribute('pID', <string>uID);
@@ -1810,6 +1845,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 this.contentContainer = this.createElement('div', { className: classNames.content });
                 this.element.appendChild(this.contentContainer);
                 this.renderIntoDom(this.ulElement);
+                // tslint:disable-next-line
+                if ((this as any).isReact) {
+                    this.renderReactTemplates();
+                }
             }
         }
     }
@@ -1839,6 +1878,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             this.header();
             this.setLocalData();
             this.setHTMLAttribute();
+            // tslint:disable-next-line
+            if ((this as any).isReact) {
+                this.renderReactTemplates();
+            }
         } else {
             this.initBlazor(true);
         }
@@ -1863,6 +1906,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      */
     public destroy(): void {
         this.resetBlazorTemplates();
+        // tslint:disable-next-line
+        if ((this as any).isReact) {
+            this.clearTemplate();
+        }
         this.unWireEvents();
         let classAr: string[] = [classNames.root, classNames.disable, 'e-rtl',
             'e-has-header', 'e-lib'].concat(this.cssClass.split(' ').filter((css: string) => css));

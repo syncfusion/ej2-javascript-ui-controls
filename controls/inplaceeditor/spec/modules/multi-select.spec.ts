@@ -65,8 +65,8 @@ describe('MultiSelect module', () => {
             expect(selectAll('.e-chips-close', ele).length).toBe(1);
         });
         it('Value property testing', () => {
-            // expect(editorObj.value[0] === 'test').toEqual(true);
-            // expect(editorObj.multiSelectModule.compObj.value[0] === 'test').toEqual(true);
+            expect(editorObj.value[0] === 'test').toEqual(true);
+            expect(editorObj.multiSelectModule.compObj.value[0] === undefined).toEqual(true);
         });
         it('save method with value property testing', () => {
             editorObj.multiSelectModule.compObj.value = ['testing'];
@@ -82,12 +82,12 @@ describe('MultiSelect module', () => {
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-multiselect', ele).length === 2).toEqual(true);
             expect(editorObj.value).toEqual(['testing']);
-            //expect(editorObj.multiSelectModule.compObj.value).toEqual(['testing']);
+            expect(editorObj.multiSelectModule.compObj.value[0] === undefined).toEqual(true);
             editorObj.multiSelectModule.compObj.value = ['Tested'];
-            //expect(editorObj.multiSelectModule.compObj.value).toEqual(['Tested']);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(['Tested']);
             editorObj.multiSelectModule.compObj = undefined;
             editorObj.multiSelectModule.updateValue({ type: 'MultiSelect' });
-            //expect(editorObj.value).toEqual(['testing']);
+            expect(editorObj.value).toEqual(['testing']);
         });
     });
     describe('Popup - Basic testing', () => {

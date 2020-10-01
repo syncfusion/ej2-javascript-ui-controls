@@ -280,6 +280,27 @@ __decorate$5([
     Property()
 ], StackedHeaders.prototype, "keyFields", void 0);
 
+var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Holds the configuration of sort settings in kanban board.
+ */
+class SortSettings extends ChildProperty {
+}
+__decorate$6([
+    Property('DataSourceOrder')
+], SortSettings.prototype, "sortBy", void 0);
+__decorate$6([
+    Property()
+], SortSettings.prototype, "field", void 0);
+__decorate$6([
+    Property('Ascending')
+], SortSettings.prototype, "direction", void 0);
+
 /**
  * Kanban CSS Constants
  */
@@ -1112,7 +1133,7 @@ class DragAndDrop {
         this.dragObj.targetCloneMulti = createElement('div', { className: TARGET_MULTI_CLONE_CLASS });
         this.dragObj.targetClone = createElement('div', {
             className: DROPPED_CLONE_CLASS,
-            styles: 'width:' + formatUnit(this.dragObj.element.offsetWidth) + ';height:' + formatUnit(this.dragObj.element.offsetHeight)
+            styles: 'width:100%;height:' + formatUnit(this.dragObj.element.offsetHeight)
         });
         this.dragObj.modifiedData = [];
         return this.dragObj.cloneElement;
@@ -1243,10 +1264,6 @@ class DragAndDrop {
             removeClass(tColumn, TOGGLE_VISIBLE_CLASS);
         }
         this.parent.notify(contentReady, {});
-        let cloneCell = closest(target, '.' + CONTENT_CELLS_CLASS + ':not(.' + COLLAPSED_CLASS + ')');
-        if (cloneCell) {
-            this.dragObj.targetClone.style.width = formatUnit((cloneCell.offsetWidth - 2) - cardSpace);
-        }
         let multiKeyTarget = closest(target, '.' + MULTI_COLUMN_KEY_CLASS);
         if (multiKeyTarget) {
             let columnKeys = [].slice.call(this.parent.element.querySelectorAll('.' + MULTI_COLUMN_KEY_CLASS)).filter((element) => this.getColumnKey(element) === this.getColumnKey(multiKeyTarget));
@@ -1273,9 +1290,7 @@ class DragAndDrop {
             this.multiCloneRemove();
         }
         this.updateScrollPosition(e);
-        let dragArgs = {
-            data: this.dragObj.cardDetails, event: e, element: this.dragObj.selectedCards
-        };
+        let dragArgs = { data: this.dragObj.cardDetails, event: e, element: this.dragObj.selectedCards };
         this.parent.trigger(drag, dragArgs);
     }
     removeElement(element) {
@@ -1298,10 +1313,7 @@ class DragAndDrop {
         contentCell.style.borderStyle = 'none';
         this.removeElement(this.dragObj.targetClone);
         for (let key of keys) {
-            let colKey = createElement('div', {
-                className: MULTI_COLUMN_KEY_CLASS,
-                attrs: { 'data-key': key.trim() }
-            });
+            let colKey = createElement('div', { className: MULTI_COLUMN_KEY_CLASS, attrs: { 'data-key': key.trim() } });
             let text = createElement('div', { className: 'e-text', innerHTML: key.trim() });
             contentCell.appendChild(this.dragObj.targetCloneMulti).appendChild(colKey).appendChild(text);
             colKey.style.lineHeight = colKey.style.height = formatUnit((offsetHeight / keys.length));
@@ -1627,7 +1639,9 @@ class KanbanDialog {
                     this.destroyComponents();
                     [].slice.call(form.childNodes).forEach((node) => remove(node));
                 }
-                append(this.parent.templateParser(this.parent.dialogSettings.template)(args), form);
+                let templateId = this.parent.element.id + '_dialogTemplate';
+                let dialogTemplate = this.parent.templateParser(this.parent.dialogSettings.template)(args, this.parent, 'template', templateId, false);
+                append(dialogTemplate, form);
             }
             else {
                 let dialogWrapper = createElement('div', { className: DIALOG_CONTENT_CONTAINER });
@@ -1697,7 +1711,8 @@ class KanbanDialog {
         let element = createElement('input', { className: FIELD_CLASS, attrs: { 'name': field.key } });
         wrapper.appendChild(element);
         let controlObj;
-        let fieldValue = this.parent.activeCardData.data ? this.parent.activeCardData.data[field.key] : null;
+        let fieldValue = this.parent.activeCardData.data ?
+            this.parent.activeCardData.data[field.key] : null;
         switch (field.type) {
             case 'DropDown':
                 let dropDownOptions;
@@ -2247,7 +2262,8 @@ class KanbanTooltip {
             position: 'BottomCenter',
             showTipPointer: true,
             target: '.' + TOOLTIP_TEXT_CLASS,
-            beforeRender: this.onBeforeRender.bind(this)
+            beforeRender: this.onBeforeRender.bind(this),
+            beforeClose: this.onBeforeClose.bind(this)
         });
         this.tooltipObj.appendTo(this.parent.element);
         this.tooltipObj.isStringTemplate = true;
@@ -2262,13 +2278,18 @@ class KanbanTooltip {
             tooltipContent = createElement('div');
             let target = closest(args.target, '.' + CARD_CLASS);
             let data = this.parent.getCardDetails(target);
-            let tooltipTemplate = this.parent.templateParser(this.parent.tooltipTemplate)(data);
+            let templateId = this.parent.element.id + '_tooltipTemplate';
+            let tooltipTemplate = this.parent.templateParser(this.parent.tooltipTemplate)(data, this.parent, 'tooltipTemplate', templateId, false);
             append(tooltipTemplate, tooltipContent);
+            this.parent.renderTemplates();
         }
         else {
             tooltipContent = `<div class="e-card-header-caption">${args.target.innerText}</div>`;
         }
         this.tooltipObj.setProperties({ content: tooltipContent }, true);
+    }
+    onBeforeClose() {
+        this.parent.resetTemplates(['tooltipTemplate']);
     }
     destroy() {
         this.tooltipObj.destroy();
@@ -2547,12 +2568,16 @@ class LayoutRender extends MobileLayout {
             this.renderContent();
             this.renderCards();
             this.renderValidation();
+            this.parent.renderTemplates();
         }
         else {
             this.initializeSwimlaneTree();
         }
         this.parent.notify(contentReady, {});
         this.wireEvents();
+        if (this.parent.isInitialRender) {
+            this.parent.isInitialRender = false;
+        }
     }
     renderHeader(header) {
         let headerWrap = createElement('div', { className: this.parent.swimlaneSettings.keyField ? SWIMLANE_CLASS : '' });
@@ -2596,7 +2621,8 @@ class LayoutRender extends MobileLayout {
                         allowToggle: column.allowToggle, isExpanded: column.isExpanded, showItemCount: column.showItemCount, count: noOfCard
                     };
                     addClass([th], TEMPLATE_CLASS);
-                    let templateHeader = this.parent.templateParser(column.template)(templateArgs);
+                    let templateId = this.parent.element.id + '_columnTemplate';
+                    let templateHeader = this.parent.templateParser(column.template)(templateArgs, this.parent, 'template', templateId, false);
                     append(templateHeader, headerTitle);
                 }
                 else {
@@ -2732,7 +2758,8 @@ class LayoutRender extends MobileLayout {
         if (this.parent.swimlaneSettings.template) {
             let templateArgs = extend({}, row, { count: cardCount }, true);
             addClass([td], TEMPLATE_CLASS);
-            let swimlaneTemplate = this.parent.templateParser(this.parent.swimlaneSettings.template)(templateArgs);
+            let templateId = this.parent.element.id + '_swimlaneTemplate';
+            let swimlaneTemplate = this.parent.templateParser(this.parent.swimlaneSettings.template)(templateArgs, this.parent, 'template', templateId, false);
             append(swimlaneTemplate, headerWrap);
         }
         else {
@@ -2788,7 +2815,8 @@ class LayoutRender extends MobileLayout {
                         }
                         if (this.parent.cardSettings.template) {
                             addClass([cardElement], TEMPLATE_CLASS);
-                            let cardTemplate = this.parent.templateParser(this.parent.cardSettings.template)(data);
+                            let templateId = this.parent.element.id + '_cardTemplate';
+                            let cardTemplate = this.parent.templateParser(this.parent.cardSettings.template)(data, this.parent, 'template', templateId, false);
                             append(cardTemplate, cardElement);
                         }
                         else {
@@ -2986,10 +3014,20 @@ class LayoutRender extends MobileLayout {
                 node.style.paddingRight = formatUnit(paddingValue);
             }
         });
+        this.updateScrollPosition();
     }
     onContentScroll(e) {
-        let header = this.parent.element.querySelector('.' + HEADER_CLASS + ' div');
-        header.scrollLeft = e.target.scrollLeft;
+        let target = e.target;
+        let header = this.parent.element.querySelector('.' + HEADER_CLASS);
+        [].slice.call(header.children).forEach((node) => { node.scrollLeft = target.scrollLeft; });
+        this.parent.scrollPosition.content = { left: target.scrollLeft, top: target.scrollTop };
+    }
+    onColumnScroll(e) {
+        let target = e.target;
+        if (target.offsetParent) {
+            let columnKey = target.offsetParent.getAttribute('data-key');
+            this.parent.scrollPosition.column[columnKey] = { left: target.scrollLeft, top: target.scrollTop };
+        }
     }
     onAdaptiveScroll(e) {
         if (this.parent.touchModule.tabHold && !this.parent.touchModule.mobilePopup) {
@@ -3141,9 +3179,7 @@ class LayoutRender extends MobileLayout {
             cards.setAttribute('aria-selected', 'false');
         }
         else {
-            cards.forEach((card) => {
-                card.setAttribute('aria-selected', 'false');
-            });
+            cards.forEach((card) => { card.setAttribute('aria-selected', 'false'); });
         }
     }
     getColumnCards(data) {
@@ -3175,12 +3211,34 @@ class LayoutRender extends MobileLayout {
         cards.forEach((card) => remove(card));
         this.renderCards();
     }
+    updateScrollPosition() {
+        let content = this.parent.element.querySelector('.' + CONTENT_CLASS);
+        if (content) {
+            content.scrollTo(this.parent.scrollPosition.content.left, this.parent.scrollPosition.content.top);
+        }
+        let cardWrapper = [].slice.call(this.parent.element.querySelectorAll('.' + CARD_WRAPPER_CLASS));
+        cardWrapper.forEach((wrapper) => {
+            if (wrapper.offsetParent) {
+                let scrollData = this.parent.scrollPosition.column[wrapper.offsetParent.getAttribute('data-key')];
+                if (scrollData) {
+                    wrapper.scrollTo(scrollData.left, scrollData.top);
+                }
+            }
+        });
+    }
     wireEvents() {
         EventHandler.add(this.parent.element, 'click', this.parent.actionModule.clickHandler, this.parent.actionModule);
         EventHandler.add(this.parent.element, 'dblclick', this.parent.actionModule.doubleClickHandler, this.parent.actionModule);
         EventHandler.add(document, Browser.touchStartEvent, this.documentClick, this);
         let content = this.parent.element.querySelector('.' + CONTENT_CLASS);
         EventHandler.add(content, 'scroll', this.onContentScroll, this);
+        let cardWrapper = [].slice.call(this.parent.element.querySelectorAll('.' + CARD_WRAPPER_CLASS));
+        cardWrapper.forEach((wrapper) => {
+            if (this.parent.isInitialRender && wrapper.offsetParent) {
+                this.parent.scrollPosition.column[wrapper.offsetParent.getAttribute('data-key')] = { left: 0, top: 0 };
+            }
+            EventHandler.add(wrapper, 'scroll', this.onColumnScroll, this);
+        });
         if (this.parent.isAdaptive) {
             this.parent.touchModule.wireTouchEvents();
             content.scrollLeft = this.scrollLeft;
@@ -3198,6 +3256,8 @@ class LayoutRender extends MobileLayout {
                 this.unWireDragEvent();
             }
         }
+        let cardWrapper = [].slice.call(this.parent.element.querySelectorAll('.' + CARD_WRAPPER_CLASS));
+        cardWrapper.forEach((wrapper) => { EventHandler.remove(wrapper, 'scroll', this.onColumnScroll); });
         if (this.parent.isAdaptive) {
             this.parent.touchModule.unWireTouchEvents();
         }
@@ -3212,6 +3272,7 @@ class LayoutRender extends MobileLayout {
         this.parent.dragAndDropModule.unWireDragEvents(this.parent.element.querySelector('.' + CONTENT_CLASS));
     }
     destroy() {
+        this.parent.resetTemplates();
         this.parent.off(dataReady, this.initRender);
         this.parent.off(contentReady, this.scrollUiUpdate);
         this.unWireEvents();
@@ -3241,27 +3302,6 @@ class LayoutRender extends MobileLayout {
         }
     }
 }
-
-var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Holds the configuration of sort settings in kanban board.
- */
-class SortSettings extends ChildProperty {
-}
-__decorate$6([
-    Property('DataSourceOrder')
-], SortSettings.prototype, "sortBy", void 0);
-__decorate$6([
-    Property()
-], SortSettings.prototype, "field", void 0);
-__decorate$6([
-    Property('Ascending')
-], SortSettings.prototype, "direction", void 0);
 
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -3320,6 +3360,8 @@ let Kanban = class Kanban extends Component {
             };
             this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
         }
+        this.scrollPosition = { content: { left: 0, top: 0 }, column: {} };
+        this.isInitialRender = true;
     }
     /**
      * To provide the array of modules needed for control rendering
@@ -3551,6 +3593,24 @@ let Kanban = class Kanban extends Component {
         if (Browser.isDevice && isBlazor() && ref) {
             // tslint:disable-next-line
             ref.invokeMethodAsync('IsDevice', true, ((window.innerWidth * 80) / 100));
+        }
+    }
+    /**
+     * @hidden
+     */
+    renderTemplates() {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
+    }
+    /**
+     * @hidden
+     */
+    resetTemplates(templates) {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate(templates);
         }
     }
     /**

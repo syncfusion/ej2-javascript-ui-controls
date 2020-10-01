@@ -10,7 +10,8 @@ import { PageSettings, ScrollSettings } from './diagram/page-settings';
 import { PageSettingsModel, ScrollSettingsModel } from './diagram/page-settings-model';
 import { DiagramElement } from './core/elements/diagram-element';
 import { ServiceLocator } from './objects/service';
-import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs, IClickEventArgs, ScrollValues } from './objects/interface/IElement';
+import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs } from './objects/interface/IElement';
+import { IClickEventArgs, ScrollValues, FixedUserHandleClickEventArgs } from './objects/interface/IElement';
 import { ChangedObject, IBlazorTextEditEventArgs, DiagramEventObject, DiagramEventAnnotation } from './objects/interface/IElement';
 import { IBlazorDragLeaveEventArgs } from './objects/interface/IElement';
 import { UserHandleEventsArgs } from './objects/interface/IElement';
@@ -58,7 +59,7 @@ import { setSwimLaneDefaults } from './utility/diagram-util';
 import { checkPortRestriction, serialize, deserialize, updateHyperlink, getObjectType, removeGradient } from './utility/diagram-util';
 import { Rect } from './primitives/rect';
 import { getPortShape } from './objects/dictionary/common';
-import { PointPortModel } from './objects/port-model';
+import { PointPortModel, PortModel } from './objects/port-model';
 import { ShapeAnnotationModel, AnnotationModel, PathAnnotationModel } from './objects/annotation-model';
 import { ShapeAnnotation, PathAnnotation, Annotation } from './objects/annotation';
 import { PointModel } from './primitives/point-model';
@@ -136,7 +137,12 @@ import { SymbolSizeModel } from './../diagram/objects/preview-model';
 import { LineRouting } from './interaction/line-routing';
 import { DiagramSettingsModel } from '../diagram/diagram-settings-model';
 import { DiagramSettings } from '../diagram/diagram-settings';
+import { BlazorTooltip } from './blazor-tooltip/blazor-Tooltip';
 import { StackPanel } from './core/containers/stack-panel';
+import { UserHandleModel } from './interaction/selector-model';
+import { ConnectorFixedUserHandle, NodeFixedUserHandle } from './objects/fixed-user-handle';
+import { NodeFixedUserHandleModel, ConnectorFixedUserHandleModel, FixedUserHandleModel } from './objects/fixed-user-handle-model';
+
 /**
  * Represents the Diagram control
  * ```html
@@ -191,6 +197,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     public printandExportModule: PrintAndExport;
+
+    /**
+     * `tooltipBlazorModule` is used to render tooltip
+     * @private
+     */
+    public blazorTooltipModule: BlazorTooltip;
 
     /**
      * `bpmnModule` is used to add built-in BPMN Shapes to diagrams
@@ -1185,6 +1197,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public collectionChange: EmitType<ICollectionChangeEventArgs>;
 
     /**
+     * Triggers when a node/connector fixedUserHandle is clicked in the diagram.
+     * @event
+     * @blazorProperty 'FixedUserHandleClick'
+     * @blazorType 'BlazorFixedUserHandleClickEventArgs'
+     */
+    @Event()
+    public fixedUserHandleClick: EmitType<FixedUserHandleClickEventArgs>;
+
+    /**
      * Triggers when a mouseDown on the user handle.
      * @event
      * @blazorProperty 'OnUserHandleMouseDown'
@@ -1367,7 +1388,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private gridlineSvgLayer: SVGElement;
     private renderer: CanvasRenderer;
     /** @private */
-    public tooltipObject: Tooltip;
+    public tooltipObject: Tooltip | BlazorTooltip;
     /** @private */
     public hRuler: Ruler;
     /** @private */
@@ -1406,7 +1427,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public diagramActions: DiagramAction;
     /** @private */
-    public blazorActions: BlazorAction;
+    public blazorActions: BlazorAction = BlazorAction.Default;
     /** @private */
     public commands: {};
     /** @private */
@@ -1442,6 +1463,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private previousNodeCollection: NodeModel[] = [];
     private previousConnectorCollection: ConnectorModel[] = [];
     private crudDeleteNodes: Object[] = [];
+
+    // Group update to server when BlazorAction is isGroupAction;
+    private blazorAddorRemoveCollection: (NodeModel | ConnectorModel)[] = [];
+    private blazorRemoveIndexCollection: number[] = [];
+
     private diagramid: number = 88123;
     /** @private */
     public selectedObject: { helperObject: NodeModel, actualObject: NodeModel } = { helperObject: undefined, actualObject: undefined };
@@ -1472,22 +1498,24 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (child.shape && child.shape.type === 'SwimLane') {
                 setSwimLaneDefaults(child, node);
             }
+            if (canCloneObject) {
+                this.previousNodeCollection.push(cloneObject(node, undefined, undefined, true));
+            }
             if (this.nodeDefaults) {
-                if (canCloneObject) {
-                    this.previousNodeCollection.push(cloneObject(node, undefined, undefined, true));
-                }
                 updateDefaultValues(node, child, this.nodeDefaults);
             }
             this.updateAnnotationText(node.annotations);
         }
-        if (options && options.connectors && this.connectorDefaults) {
+        if (options && options.connectors) {
             for (let i: number = 0; options && options.connectors && i < options.connectors.length; i++) {
                 child = options.connectors[i];
                 node = this.connectors[i];
                 if (canCloneObject) {
                     this.previousConnectorCollection.push(cloneObject(node, undefined, undefined, true));
                 }
-                updateDefaultValues(node, child, this.connectorDefaults);
+                if (this.connectorDefaults) {
+                    updateDefaultValues(node, child, this.connectorDefaults);
+                }
                 this.updateAnnotationText(node.annotations);
             }
         }
@@ -1766,7 +1794,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (!refereshColelction && (this.canLogChange()) && (this.modelChanged(newProp, oldProp))) {
                 let entry: HistoryEntry = { type: 'PropertyChanged', undoObject: oldProp, redoObject: newProp, category: 'Internal' };
-                this.addHistoryEntry(entry);
+                if(this.historyManager) {
+                    this.addHistoryEntry(entry);
+                }
             }
             this.resetDiagramActions();
             if (refereshColelction) {
@@ -1919,6 +1949,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Renders the diagram control with nodes and connectors
      */
     public render(): void {
+        if(this.refreshing && this.dataSourceSettings.dataSource && !this.isLoading){
+            this.nodes =[];this.connectors = [];
+        }
         this.ignoreCollectionWatch = true;
         let domTable: string = 'domTable';
         window[domTable] = {};
@@ -1974,6 +2007,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     updateConnectorObject.push(cloneObject(obj, undefined, undefined, true));
                 }
                 this.commandHandler.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
+                if(!(this.blazorActions & BlazorAction.ClearObject)) 
+                {
                 let blazorInterop: string = 'sfBlazor';
                 let blazor: string = 'Blazor';
                 let diagramObject: Object = { nodes: [], connectors: changeConnectors };
@@ -1982,6 +2017,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     window[blazorInterop].updateBlazorProperties(obj, this);
                 }
             }
+        }
         }
         this.validatePageSize();
         this.renderPageBreaks();
@@ -2026,7 +2062,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         this.initCommands();
         let hiddenUserHandleTemplate: HTMLCollection = document.getElementsByClassName(this.element.id + '_hiddenUserHandleTemplate');
-        createUserHandleTemplates(this.userHandleTemplate, hiddenUserHandleTemplate, this.selectedItems);
+        createUserHandleTemplates(this.userHandleTemplate, hiddenUserHandleTemplate, this.selectedItems,this.element.id );
         this.updateTemplate();
         this.isLoading = false;
         this.renderComplete();
@@ -2076,13 +2112,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             templateAnnotation = htmlNode.annotations[0];
             if (htmlNode.shape.type === 'HTML' && (htmlNode.shape as HtmlModel).content instanceof HTMLElement) {
                 resetBlazorTemplate('diagramsf_node_template', 'NodeTemplate');
-            } else if (templateAnnotation && templateAnnotation.annotationType === 'Template') {
+            } else if (templateAnnotation && templateAnnotation.annotationType === 'Template'
+                && (templateAnnotation as HtmlModel).content instanceof HTMLElement) {
                 resetBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate');
             }
         }
         for (let i: number = 0; i < this.connectors.length; i++) {
             path = this.connectors[i].annotations[0];
-            if (path && path.annotationType === 'Template') {
+            if (path && path.annotationType === 'Template' && (path as HtmlModel).content instanceof HTMLElement) {
                 resetBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate');
             }
         }
@@ -2152,24 +2189,25 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     public requiredModules(): ModuleDeclaration[] {
-
         let modules: ModuleDeclaration[] = [];
-
         modules.push({
             member: 'Bpmn',
             args: []
         });
-
         modules.push({
             member: 'Bridging',
             args: []
         });
-
         modules.push({
             member: 'ConnectorEditingTool',
             args: []
         });
-
+        if (isBlazor()) {
+            modules.push({
+                member: 'BlazorTooltip',
+                args: []
+            });
+       }
         if (this.constraints & DiagramConstraints.UndoRedo) {
             modules.push({
                 member: 'UndoRedo',
@@ -2520,12 +2558,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
 
     public sendToBack(): void {
-        let objectName: NodeModel | ConnectorModel = this.selectedItems.nodes.length ? this.selectedItems.nodes[0]
-            : this.selectedItems.connectors[0];
-        this.insertBlazorDiagramObjects(objectName);
         this.commandHandler.sendToBack();
-        this.commandHandler.getBlazorOldValues();
     }
+
     /**
      * set the active layer
      *  @param {string} layerName - defines the name of the layer which is to be active layer
@@ -2557,7 +2592,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @deprecated
      */
     public removeLayer(layerId: string): void {
-        this.commandHandler.removeLayer(layerId);
+        this.commandHandler.removeLayer(layerId, isBlazor());
     }
     /**
      *  @private
@@ -2626,33 +2661,21 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * bring the selected nodes or connectors to front
      */
     public bringToFront(): void {
-        let objectName: NodeModel | ConnectorModel = this.selectedItems.nodes.length ? this.selectedItems.nodes[0]
-            : this.selectedItems.connectors[0];
-        this.insertBlazorDiagramObjects(objectName);
         this.commandHandler.bringToFront();
-        this.commandHandler.getBlazorOldValues();
     }
 
     /**
      * send the selected nodes or connectors forward
      */
     public moveForward(): void {
-        let objectName: NodeModel | ConnectorModel = this.selectedItems.nodes.length ? this.selectedItems.nodes[0]
-            : this.selectedItems.connectors[0];
-        this.insertBlazorDiagramObjects(objectName);
         this.commandHandler.sendForward();
-        this.commandHandler.getBlazorOldValues();
     }
 
     /**
      * send the selected nodes or connectors back
      */
     public sendBackward(): void {
-        let objectName: NodeModel | ConnectorModel = this.selectedItems.nodes.length ? this.selectedItems.nodes[0]
-            : this.selectedItems.connectors[0];
-        this.insertBlazorDiagramObjects(objectName);
         this.commandHandler.sendBackward();
-        this.commandHandler.getBlazorOldValues();
     }
 
     /**
@@ -2814,7 +2837,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (!(this.diagramActions & DiagramAction.ToolAction) && !(this.diagramActions & DiagramAction.DragUsingMouse)) {
             this.updateSelector();
         }
-        if (this.callBlazorModel && (!(this.blazorActions & BlazorAction.interaction))) {
+        if (this.callBlazorModel && (!(this.blazorActions & BlazorAction.interaction)) &&
+            (!(this.blazorActions & BlazorAction.GroupClipboardInProcess))) {
             this.commandHandler.getBlazorOldValues();
         }
     }
@@ -2870,7 +2894,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.commandHandler.scale(
                 obj as NodeModel | ConnectorModel, sx, sy, pivot, ((obj as NodeModel).children ? obj as IElement : undefined));
         }
-        if (this.callBlazorModel && (!(this.blazorActions & BlazorAction.interaction))) {
+        if (this.callBlazorModel && (!(this.blazorActions & BlazorAction.interaction)) &&
+            (!(this.blazorActions & BlazorAction.GroupClipboardInProcess))) {
             this.commandHandler.getBlazorOldValues();
         }
         this.disableStackContainerPadding(obj.wrapper as Container, true);
@@ -3080,7 +3105,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let change: {} = {};
         let oldValue: string = 'oldValue';
         let newValue: string = 'newValue';
-        let type: string = 'type';
+        let type: string = 'type'; let entryType: string = 'entryType';
         let source: (NodeModel | ConnectorModel)[] = [];
         if (entry.category === 'Internal') {
             if (entry && entry.redoObject && (((entry.redoObject as SelectorModel).nodes) instanceof Array) &&
@@ -3092,6 +3117,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
             change[type] = entry.type;
+            if (isBlazor()) {
+                (change as ChangedObject)[entryType] = entry.type;
+            }
             switch (entry.type) {
                 case 'PositionChanged':
                     change[oldValue] = {
@@ -3165,7 +3193,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public startGroupAction(): void {
         let entry: HistoryEntry = { type: 'StartGroup', category: 'Internal' };
+        if (!(this.diagramActions & DiagramAction.UndoRedo)) {
         this.addHistoryEntry(entry);
+        }
     }
 
     /**
@@ -3173,8 +3203,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public endGroupAction(): void {
         let entry: HistoryEntry = { type: 'EndGroup', category: 'Internal' };
-        this.addHistoryEntry(entry);
-    }
+        if (!(this.diagramActions & DiagramAction.UndoRedo)) {
+            this.addHistoryEntry(entry);
+            }
+        }
 
     /**
      * Restores the last action that is performed
@@ -3477,6 +3509,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
 
     public showTooltip(obj: NodeModel | ConnectorModel): void {
+        if (obj && obj.id && !obj.wrapper) { obj = this.nameTable[obj.id]; }
         let bounds: Rect = getBounds(obj.wrapper);
         let position: PointModel = { x: 0, y: 0 };
         let content: string | HTMLElement = obj.tooltip.content ?
@@ -3519,7 +3552,31 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @blazorArgsType obj|DiagramNode
      */
     public addChildToGroup(group: NodeModel, child: string | NodeModel | ConnectorModel): void {
-        this.addChild(group, child);
+        let severDataBind: boolean = this.allowServerDataBinding;
+        this.enableServerDataBinding(false);
+        let propChange: boolean = this.isProtectedOnChange; this.protectPropertyChange(true);
+        group = this.getObject(group.id) as NodeModel;
+        if (isBlazor()) { this.insertValue(group, true); }
+        let isHistoryAdded: boolean = (!(this.diagramActions & DiagramAction.UndoRedo) && !(this.diagramActions & DiagramAction.Group) &&
+            !(this.diagramActions & DiagramAction.PreventHistory));
+        if (isHistoryAdded) {
+            this.startGroupAction();
+        }
+        let id: string = this.addChild(group, child);
+        if (isHistoryAdded) {
+            let childTable: object = {};
+            childTable[id] = cloneObject(this.getObject(id));
+            let entry: HistoryEntry = {
+                type: 'AddChildToGroupNode', changeType: 'Insert', undoObject: cloneObject(group),
+                redoObject: cloneObject(group), category: 'Internal', objectId: id, childTable: childTable
+            };
+            this.addHistoryEntry(entry);
+            this.endGroupAction();
+        }
+        this.protectPropertyChange(propChange);
+        this.enableServerDataBinding(severDataBind);
+        this.updateSelector();
+        if (isBlazor() && isHistoryAdded) { this.commandHandler.getBlazorOldValues(); }
     }
     /**
      * Will return the history stack values 
@@ -3573,88 +3630,127 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /** @private */
     public UpdateBlazorDiagramModelCollection(
-        obj: Node | Connector, copiedObject?: (NodeModel | ConnectorModel)[], multiSelectDelete?: (NodeModel | ConnectorModel)[])
-        : void {
-        let blazorInterop: string = 'sfBlazor';
-        let updatedModel: object = cloneBlazorObject(obj);
-        let blazor: string = 'Blazor';
-        if (window && window[blazor] && (!this.isServerUpdate || multiSelectDelete)) {
-            this.isServerUpdate = true;
-            let removalIndexCollection: number[] = [];
-            let updatedModelCollection: object[] = [];
-            let connectorModelCollection: object[] = [];
-            let elements: (NodeModel | ConnectorModel)[] = [];
-            let removalIndex: number;
-            let tempNode: (NodeModel | ConnectorModel)[] = [];
-            let objectTypeCollection: string[] = [];
-            if (!copiedObject) {
-
-                if (!multiSelectDelete) {
-                    tempNode = this.commandHandler.getChildren(obj as Node, elements);
-                } else {
-                    tempNode = multiSelectDelete;
-                }
-                for (let i: number = 0; i < tempNode.length; i++) {
-                    updatedModel = cloneBlazorObject(tempNode[i]);
-                    updatedModelCollection.push(updatedModel);
-                    if (getObjectType(tempNode[i]) === Connector) {
-                        removalIndex = this.connectors.indexOf(tempNode[i] as Connector);
-                    } else {
-                        removalIndex = this.nodes.indexOf(tempNode[i] as Node);
+        obj: Node | Connector, copiedObject?: (NodeModel | ConnectorModel)[], multiSelectDelete?: (NodeModel | ConnectorModel)[],
+        isBlazorGroupUpdate?: boolean): void {
+        if (!(this.blazorActions & BlazorAction.ClearObject)) {
+            let blazorInterop: string = 'sfBlazor';
+            let blazor: string = 'Blazor';
+            if (window && window[blazor]) {
+                let updatedModel: object;
+                let connectorModelCollection: object[] = []; let updatedModelCollection: object[] = [];
+                let objectTypeCollection: string[] = []; let removalIndexCollection: number[] = [];
+                if (isBlazorGroupUpdate && !copiedObject) {
+                    for (let i: number = 0; i < this.blazorAddorRemoveCollection.length; i++) {
+                        objectTypeCollection.push(getObjectType(this.blazorAddorRemoveCollection[i]) === Connector ? 'Connector' : 'Node');
+                        updatedModel = cloneBlazorObject(this.blazorAddorRemoveCollection[i]);
+                        updatedModelCollection.push(updatedModel);
+                        removalIndexCollection = this.blazorRemoveIndexCollection;
                     }
-                    removalIndexCollection.push(removalIndex);
-                    objectTypeCollection.push(getObjectType(tempNode[i]) === Connector ? 'Connector' : 'Node');
+                } else if ((!this.isServerUpdate || multiSelectDelete)) {
+                    this.isServerUpdate = true;
+                    let updatedModel: object = cloneBlazorObject(obj);
+                    let elements: (NodeModel | ConnectorModel)[] = [];
+                    let removalIndex: number;
+                    let tempNode: (NodeModel | ConnectorModel)[] = [];
+                    if (!copiedObject) {
+                        if (!multiSelectDelete) {
+                            tempNode = this.commandHandler.getChildren(obj as Node, elements);
+                        } else {
+                            tempNode = multiSelectDelete;
+                        }
+                        for (let i: number = 0; i < tempNode.length; i++) {
+                            updatedModel = cloneBlazorObject(tempNode[i]);
+                            updatedModelCollection.push(updatedModel);
+                            if (getObjectType(tempNode[i]) === Connector) {
+                                removalIndex = this.connectors.indexOf(tempNode[i] as Connector);
+                            } else {
+                                removalIndex = this.nodes.indexOf(tempNode[i] as Node);
+                            }
+                            removalIndexCollection.push(removalIndex);
+                            objectTypeCollection.push(getObjectType(tempNode[i]) === Connector ? 'Connector' : 'Node');
+                        }
+                        if (!multiSelectDelete) {
+                            updatedModelCollection.push(cloneBlazorObject(obj));
+                            removalIndexCollection.push(this.nodes.indexOf(obj as Node));
+                            objectTypeCollection.push(getObjectType(obj) === Connector ? 'Connector' : 'Node');
+                        }
+                    }
+                    if (copiedObject && copiedObject.length > 0) {
+                        for (let i: number = 0; i < copiedObject.length; i++) {
+                            updatedModel = cloneBlazorObject(copiedObject[i]);
+                            let isNode: boolean = (copiedObject[i] instanceof Node) ? true : false;
+                            isNode ? updatedModelCollection.push(updatedModel) : connectorModelCollection.push(updatedModel);
+                            objectTypeCollection.push(getObjectType(copiedObject[i]) === Connector ? 'Connector' : 'Node');
+                        }
+                    }
+                    this.isServerUpdate = false;
                 }
-                if (!multiSelectDelete) {
-                    updatedModelCollection.push(cloneBlazorObject(obj));
-                    removalIndexCollection.push(this.nodes.indexOf(obj as Node));
-                    objectTypeCollection.push(getObjectType(obj) === Connector ? 'Connector' : 'Node');
+                let dgmObj: object = {
+                    'methodName': 'UpdateBlazorDiagramObjects',
+                    'diagramobj': {
+                        'nodeObj': JSON.stringify(updatedModelCollection),
+                        'ObjectType': objectTypeCollection,
+                        'removalIndex': copiedObject ? undefined : removalIndexCollection,
+                        'isMultipleObjects': true, 'annotationIndex': undefined,
+                        'connectorObj': JSON.stringify(connectorModelCollection)
+                    }
+                };
+                window[blazorInterop].updateBlazorProperties(dgmObj, this);
+                if (isBlazorGroupUpdate && !copiedObject) {
+                    this.blazorAddorRemoveCollection = [];
+                    this.blazorRemoveIndexCollection = [];
                 }
             }
-            if (copiedObject && copiedObject.length > 0) {
-                for (let i: number = 0; i < copiedObject.length; i++) {
-                    updatedModel = cloneBlazorObject(copiedObject[i]);
-                    let isNode: boolean = (copiedObject[i] instanceof Node) ? true : false;
-                    isNode ? updatedModelCollection.push(updatedModel) : connectorModelCollection.push(updatedModel);
-                    objectTypeCollection.push(getObjectType(copiedObject[i]) === Connector ? 'Connector' : 'Node');
-                }
-            }
-            let dgmObj: object = {
-                'methodName': 'UpdateBlazorDiagramObjects',
-                'diagramobj': {
-                    'nodeObj': JSON.stringify(updatedModelCollection),
-                    'ObjectType': objectTypeCollection,
-                    'removalIndex': copiedObject ? undefined : removalIndexCollection,
-                    'isMultipleObjects': true, 'annotationIndex': undefined,
-                    'connectorObj': JSON.stringify(connectorModelCollection)
-                }
-            };
-            window[blazorInterop].updateBlazorProperties(dgmObj, this);
         }
     }
-
     /**
      * @private
      */
     public UpdateBlazorDiagramModel(
         obj: Node | Connector | ShapeAnnotation | PathAnnotation,
-        objectType: string, removalIndex?: number, annotationNodeIndex?: number)
-        : void {
+        objectType: string, removalIndex?: number, annotationNodeIndex?: number): void {
+        if (!(this.blazorActions & BlazorAction.GroupClipboardInProcess)) {
+            let blazorInterop: string = 'sfBlazor';
+            let blazor: string = 'Blazor';
+            if (window && window[blazor] && !this.isServerUpdate && !(this.diagramActions & DiagramAction.Clear)) {
+                let updatedModel: object = cloneBlazorObject(obj);
+                let dgmObj: object = {
+                    'methodName': 'UpdateBlazorDiagramObjects',
+                    'diagramobj': {
+                        'nodeObj': JSON.stringify(updatedModel),
+                        'ObjectType': objectType, 'removalIndex': removalIndex,
+                        'isMultipleObjects': false,
+                        'annotationIndex': annotationNodeIndex, 'connectorObj': undefined
+                    }
+                };
+                window[blazorInterop].updateBlazorProperties(dgmObj, this);
+            }
+        }
+    }
+
+    private UpdateBlazorLabelOrPortObjects(
+        obj: (ShapeAnnotation | PathAnnotation | PortModel)[], objectType: string, removalIndex?: number[], nodeIndex?: number): void {
         let blazorInterop: string = 'sfBlazor';
-        let updatedModel: object = cloneBlazorObject(obj);
         let blazor: string = 'Blazor';
-        if (window && window[blazor] && !this.isServerUpdate && !(this.diagramActions & DiagramAction.Clear)) {
+        if (window && window[blazor] && obj.length > 0 && !this.isServerUpdate && !(this.diagramActions & DiagramAction.Clear)) {
+            let updatedModelCollection: object[] = []; let objectTypeCollection: string[] = []; let nodeIndexCollection: number[] = [];
+            for (let i: number = 0; i < obj.length; i++) {
+                updatedModelCollection.push(cloneBlazorObject(obj[i]));
+                objectTypeCollection.push(objectType);
+                nodeIndexCollection.push(nodeIndex);
+            }
             let dgmObj: object = {
                 'methodName': 'UpdateBlazorDiagramObjects',
                 'diagramobj': {
-                    'nodeObj': JSON.stringify(updatedModel),
-                    'ObjectType': objectType, 'removalIndex': removalIndex,
-                    'isMultipleObjects': false,
-                    'annotationIndex': annotationNodeIndex, 'connectorObj': undefined
+                    'nodeObj': JSON.stringify(updatedModelCollection),
+                    'ObjectType': objectTypeCollection, 'removalIndex': removalIndex,
+                    'isMultipleObjects': true,
+                    'annotationIndex': nodeIndexCollection,
+                    'connectorObj': null,
+                    'portIndex': (objectType === 'Port') ? nodeIndexCollection : []
                 }
             };
             window[blazorInterop].updateBlazorProperties(dgmObj, this);
-
         }
     }
 
@@ -3697,7 +3793,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
     }
-
+    /** @private */
+    public insertBlazorConnector(obj: Connector): void {
+        if (isBlazor() && (obj instanceof Connector)) {
+            if (obj.sourceID && this.nameTable[obj.sourceID]) {
+                this.insertValue(cloneObject(this.nameTable[obj.sourceID]), true);
+            }
+            if (obj.targetID && this.nameTable[obj.targetID]) {
+                this.insertValue(cloneObject(this.nameTable[obj.targetID]), true);
+            }
+        }
+    }
     /* tslint:disable */
     /**
      * Adds the given object to diagram control
@@ -3742,17 +3848,34 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     newObj = new Connector(this, 'connectors', obj, true); (newObj as Connector).status = 'New';
                     updateDefaultValues(newObj, obj, this.connectorDefaults);
                     (this.connectors as Connector[]).push(newObj); this.initObject(newObj);
-                    this.UpdateBlazorDiagramModel(newObj, "Connector");
+                    if ((this.blazorActions & BlazorAction.GroupingInProgress) && isBlazor()) {
+                        this.blazorAddorRemoveCollection.push(newObj);
+                    } else if (this.blazorAddorRemoveCollection.length > 0) {
+                        this.isServerUpdate = false;
+                        this.blazorAddorRemoveCollection.push(newObj);
+                        this.UpdateBlazorDiagramModelCollection(undefined, this.blazorAddorRemoveCollection, undefined, true);
+                        this.blazorAddorRemoveCollection = [];
+                    } else { this.UpdateBlazorDiagramModel(newObj, "Connector"); }
                     if (obj.visible === false) { this.updateElementVisibility(newObj.wrapper, newObj, obj.visible); }
                     this.updateEdges(newObj);
+                    this.insertBlazorConnector(newObj);
                 } else {
                     newObj = new Node(this, 'nodes', obj, true);
                     updateDefaultValues(newObj, obj, this.nodeDefaults); newObj.parentId = (obj as Node).parentId;
                     newObj.umlIndex = (obj as Node).umlIndex; (newObj as Node).status = 'New';
                     (this.nodes as Node[]).push(newObj);
                     this.initObject(newObj, layers, undefined, group);
+                    if(isBlazor() && (this.blazorActions & BlazorAction.GroupingInProgress)){
+                        this.blazorAddorRemoveCollection.push(newObj);
+                    } else if(this.blazorAddorRemoveCollection.length > 0){
+                        this.blazorAddorRemoveCollection.push(newObj);
+                        this.isServerUpdate = false;
+                        this.UpdateBlazorDiagramModelCollection(undefined, this.blazorAddorRemoveCollection, undefined, true);
+                        this.blazorAddorRemoveCollection = [];
+                    } else{
+                        this.UpdateBlazorDiagramModel(newObj, "Node");
+                    }
                     this.updateTemplate();
-                    this.UpdateBlazorDiagramModel(newObj, "Node");
                     if (this.bpmnModule) {
                         if ((newObj.shape as BpmnShape).annotations && (newObj.shape as BpmnShape).annotations.length !== 0) {
                             for (let obj of this.bpmnModule.getTextAnnotationConn(newObj)) {
@@ -3792,6 +3915,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     args.parentId = this.parentObject.id;
                 }
                 this.updateBlazorCollectionChange(newObj, true);
+                this.commandHandler.getBlazorOldValues();
+
                 if (isBlazor()) {
                     args = getCollectionChangeEventArguements(args as IBlazorCollectionChangeEventArgs, obj, 'Changed', 'Addition');
                 }
@@ -4034,6 +4159,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let groupAction: boolean = false;
         if (obj) {
             obj = this.nameTable[obj.id];
+            this.insertBlazorConnector(obj as Connector);
             if (obj && obj.shape && obj.shape.type === 'SwimLane') {
                 removeSwimLane(this, obj as NodeModel);
             }
@@ -4063,7 +4189,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         };
                         this.updateBlazorCollectionChange(obj, false)
                         if (!(this.diagramActions & DiagramAction.Clear)) {
-                            if (selectedItems.length > 0 && this.undoRedoModule && !this.layout.type) {
+                            if ((obj as Node).children && !(obj as Node).isLane && !(obj as Node).isPhase && (obj as Node).children.length > 0 && this.undoRedoModule && this.layout.type === 'None') {
                                 this.historyManager.startGroupAction();
                                 groupAction = true;
                             }
@@ -4077,7 +4203,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             }
                         }
                     }
-                    if ((obj as Node).children && !(obj as Node).isLane && !(obj as Node).isPhase) {
+                    if ((obj as Node).children && !(obj as Node).isLane && !(obj as Node).isPhase &&
+                    (!isBlazor() || !(this.diagramActions & DiagramAction.UndoRedo))) {
                         this.deleteGroup(obj as Node);
                     }
                     if ((obj as Node | Connector).parentId) {
@@ -4106,7 +4233,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                         index = (this.nodes as NodeModel[]).indexOf(currentObj);
                         if (isBlazor() && (obj.id !== 'helper')) {
-                            this.UpdateBlazorDiagramModel(obj as Node, "Node", index);
+                            if (this.blazorActions & BlazorAction.GroupingInProgress) {
+                                this.blazorAddorRemoveCollection.push(obj);
+                                this.blazorRemoveIndexCollection.splice(0,0,index);
+                            } else if (this.blazorAddorRemoveCollection.length > 0) {
+                                this.blazorAddorRemoveCollection.push(obj);
+                                this.blazorRemoveIndexCollection.splice(0,0,index);
+                                this.UpdateBlazorDiagramModelCollection(undefined, undefined, undefined, true);
+                            } else {
+                                this.UpdateBlazorDiagramModel(obj as Node, "Node", index);
+                            }
                         }
                         if (index !== -1) {
                             this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
@@ -4157,6 +4293,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             };
                             if (isBlazor()) {
                                 args = getCollectionChangeEventArguements(args as IBlazorCollectionChangeEventArgs, obj, 'Changed', 'Removal');
+                                this.commandHandler.getBlazorOldValues();
                             }
                             if (obj.id !== 'helper') {
                                 this.triggerEvent(DiagramEvent.collectionChange, args);
@@ -4170,6 +4307,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (this.undoRedoModule) {
                 this.historyManager.startGroupAction();
                 groupAction = true;
+            }
+            if (isBlazor() && selectedItems.length > 1) {
+                this.clearSelection();
             }
             for (let i: number = 0; i < selectedItems.length; i++) {
                 let node: Node = selectedItems[i] as Node;
@@ -4269,7 +4409,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /** @private  */
-    public addChild(node: NodeModel, child: string | NodeModel | ConnectorModel, index?: number): void {
+    public addChild(node: NodeModel, child: string | NodeModel | ConnectorModel, index?: number): string {
         let id: string;
         let parentNode: NodeModel = this.nameTable[node.id];
         if (!parentNode.children) { parentNode.children = []; }
@@ -4314,7 +4454,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
-
+        return id;
     }
 
     /**
@@ -4478,6 +4618,20 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+    private updateConnectorfixedUserHandles(connector: Connector): void {
+        if (connector.fixedUserHandles.length) {
+            let fixedUserHandleWrapper: DiagramElement;
+            for (let fixedUserHandle of connector.fixedUserHandles) {
+                fixedUserHandleWrapper = this.getWrapper(connector.wrapper, fixedUserHandle.id) as DiagramElement;
+                connector.updateAnnotation(
+                    fixedUserHandle as ConnectorFixedUserHandle,
+                    connector.intermediatePoints, connector.wrapper.bounds, fixedUserHandleWrapper);
+            }
+        }
+        connector.wrapper.measure(new Size(connector.wrapper.width, connector.wrapper.height));
+        connector.wrapper.arrange(connector.wrapper.desiredSize);
+    }
+
     /* tslint:enable */
     private updateNodeExpand(node: Node, visibility: boolean): void {
         for (let i: number = 0; i < node.outEdges.length; i++) {
@@ -4598,7 +4752,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                     }
                 }
-
                 for (let conn of Object.keys(connectors)) {
                     let connector: Connector = connectors[conn] as Connector;
                     let points: PointModel[] = this.getPoints(connector);
@@ -4609,6 +4762,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     connector.wrapper.measure(new Size(undefined, undefined));
                     connector.wrapper.arrange(connector.wrapper.desiredSize);
                     this.updateConnectorAnnotation(connector);
+                    this.updateConnectorfixedUserHandles(connector);
                     this.updateQuad(connector);
                     this.updateDiagramObject(connector, true);
                 }
@@ -4625,7 +4779,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (update) {
             this.updateDiagramElementQuad();
         }
-        return ((this.blazorActions & BlazorAction.expandNode) ? layout : true);
+        return ((this.blazorActions & BlazorAction.expandNode) ? layout : isBlazor() ? null : true);
     }
     /**
      * Serializes the diagram control as a string
@@ -4743,6 +4897,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public addPorts(obj: NodeModel, ports: PointPortModel[]): void {
         this.protectPropertyChange(true);
+        let portCollection: PointPort[] = [];
+        let isAddPortInServer: boolean = true;
+        if (isBlazor() && obj !== null && (obj.ports.length > 0 && !(this.diagramActions & DiagramAction.UndoRedo))) {
+            let index: number = Number(findObjectIndex(obj, (ports[0] as PointPortModel).id, false));
+            if (index !== -1) {
+                isAddPortInServer = false;
+            }
+        }
         obj = this.nameTable[obj.id] || obj;
         let newObj: PointPort;
         if (ports.length > 1) {
@@ -4751,9 +4913,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         for (let i: number = 0; i < ports.length; i++) {
             newObj = new PointPort(obj, 'ports', ports[i], true);
             obj.ports.push(newObj);
+            if (isBlazor() && isAddPortInServer) {
+                portCollection.push(newObj);
+            }
             if (obj.children) {
                 let container: Container = obj.wrapper;
-                (obj as Node).initPorts(this.getDescription, (obj.wrapper.children[container.children.length - 1] as Container));
+                (obj as Node).initPort(this.getDescription, (obj.wrapper.children[container.children.length - 1] as Container), newObj);
             } else {
                 let canvas: Container = obj.wrapper;
                 canvas.children.push((obj as Node).initPortWrapper(obj.ports[obj.ports.length - 1] as Port));
@@ -4768,6 +4933,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (ports.length > 1) {
             this.endGroupAction();
+        }
+        if (isBlazor() && isAddPortInServer) {
+            this.UpdateBlazorLabelOrPortObjects(portCollection, 'Port', undefined, this.nodes.indexOf(obj));
         }
         obj.wrapper.measure(new Size(obj.width, obj.height));
         obj.wrapper.arrange(obj.wrapper.desiredSize);
@@ -4807,7 +4975,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Add Labels at the run time
      */
     public addLabels(obj: NodeModel | ConnectorModel, labels: ShapeAnnotationModel[] | PathAnnotation[] | PathAnnotationModel[]): void {
-        this.protectPropertyChange(true);
+        this.protectPropertyChange(true); let isAddLabelInServer: boolean = true;
+        let annotationCollection: (PathAnnotation | ShapeAnnotation)[] = [];
+        if (isBlazor() && obj != null && obj.annotations.length > 0 && !(this.diagramActions & DiagramAction.UndoRedo)) {
+            let index: number = Number(findObjectIndex(obj, (labels[0] as ShapeAnnotationModel | PathAnnotationModel).id, true));
+            if (index !== -1) {
+                isAddLabelInServer = false;
+            }
+        }
         obj = this.nameTable[obj.id] || obj;
         let canvas: Container = obj.wrapper; let newObj: ShapeAnnotation | PathAnnotation;
         if (labels.length > 1) {
@@ -4817,11 +4992,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (obj instanceof Node) {
                 newObj = new ShapeAnnotation(obj, 'annotations', labels[i], true);
                 (obj as Node).annotations.push(newObj);
-                if (isBlazor()) {
-                    let selectedNode: NodeModel | ConnectorModel = cloneObject(obj);
-                    this.insertValue(selectedNode, (obj instanceof Node) ? true : false);
+                if (isBlazor() && isAddLabelInServer) {
+                    annotationCollection.push(newObj);
                 }
-                this.UpdateBlazorDiagramModel(newObj, 'NodeAnnotation', undefined, this.nodes.indexOf(obj));
                 if ((obj as Node).children) {
                     let node: Node = (obj as Node);
                     for (let i: number = 0; i < node.wrapper.children.length; i++) {
@@ -4839,11 +5012,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             } else if (obj instanceof Connector) {
                 newObj = new PathAnnotation(obj, 'annotations', labels[i], true);
-                this.UpdateBlazorDiagramModel(newObj, 'ConnectorAnnotation', undefined, this.connectors.indexOf(obj));
                 (obj as Connector).annotations.push(newObj as PathAnnotation);
-                if (isBlazor()) {
-                    let selectedNode: NodeModel | ConnectorModel = cloneObject(obj);
-                    this.insertValue(selectedNode, (obj instanceof Node) ? true : false);
+                if (isBlazor() && isAddLabelInServer) {
+                    annotationCollection.push(newObj);
                 }
                 let segment: DiagramElement = canvas.children[0];
                 let bounds: Rect = new Rect(
@@ -4864,6 +5035,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (labels.length > 1) {
             this.endGroupAction();
+        }
+        if (isBlazor() && isAddLabelInServer) {
+            this.UpdateBlazorLabelOrPortObjects(
+                annotationCollection, (obj instanceof Node) ? 'NodeAnnotation' : 'ConnectorAnnotation', undefined,
+                (obj instanceof Node) ? this.nodes.indexOf(obj) : this.connectors.indexOf(obj as Connector));
         }
         obj.wrapper.measure(new Size(canvas.width, canvas.height));
         obj.wrapper.arrange(canvas.desiredSize);
@@ -4964,7 +5140,26 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Remove Labels at the run time
      */
     public removeLabels(obj: Node | ConnectorModel, labels: ShapeAnnotationModel[] | PathAnnotationModel[]): void {
+        let isAddLabelInServer: boolean = true;
+        if (isBlazor() && obj !== null && !(this.diagramActions & DiagramAction.UndoRedo)) {
+            let index: number = (obj.annotations.length > 0) ? Number(findObjectIndex(obj, (labels[0]).id, true)) : -1;
+            if (index === -1) {
+                isAddLabelInServer = false;
+            }
+        }
         obj = this.nameTable[obj.id] || obj;
+        if (isBlazor() && isAddLabelInServer) {
+            let annotationCollection: (PathAnnotation | ShapeAnnotation)[] = [];
+            let removalIndexCollection: number[] = [];
+            for (let j: number = 0; j < labels.length; j++) {
+                let index: number = Number(findObjectIndex(obj, (labels[j] as ShapeAnnotationModel | PathAnnotationModel).id, true));
+                removalIndexCollection.push(index);
+                annotationCollection.push(labels[j] as (PathAnnotation | ShapeAnnotation));
+            }
+            this.UpdateBlazorLabelOrPortObjects(
+                annotationCollection, (obj instanceof Node) ? 'NodeAnnotation' : 'ConnectorAnnotation',
+                removalIndexCollection, (obj instanceof Node) ? this.nodes.indexOf(obj) : this.connectors.indexOf(obj as Connector));
+        }
         if (labels.length > 1) {
             this.startGroupAction();
         }
@@ -5020,7 +5215,24 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Remove Ports at the run time
      */
     public removePorts(obj: Node, ports: PointPortModel[]): void {
+        let isAddPortInServer: boolean = true;
+        if (isBlazor() && obj !== null && !(this.diagramActions & DiagramAction.UndoRedo)) {
+            let index: number = (obj.ports.length > 0) ? Number(findObjectIndex(obj, (ports[0] as PointPortModel).id, false)) : -1;
+            if (index === -1) {
+                isAddPortInServer = false;
+            }
+        }
         obj = this.nameTable[obj.id] || obj;
+        if (isBlazor() && isAddPortInServer) {
+            let removalIndexCollection: number[] = [];
+            let portCollection: PortModel[] = [];
+            for (let j: number = ports.length - 1; j >= 0; j--) {
+                let index: number = Number(findObjectIndex(obj, (ports[j] as PortModel).id, false));
+                removalIndexCollection.push(index);
+                portCollection.push(ports[j] as PortModel);
+            }
+            this.UpdateBlazorLabelOrPortObjects(portCollection, 'Port', removalIndexCollection, this.nodes.indexOf(obj));
+        }
         if (ports.length > 1) {
             this.startGroupAction();
         }
@@ -5402,14 +5614,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             this.commandHandler.getObjectChanges(previousNodeObject, updateNodeObject, changeNodes);
             this.commandHandler.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
-
-            let blazorInterop: string = 'sfBlazor';
-            let diagramObject: Object = { nodes: changeNodes, connectors: changeConnectors };
-            let obj: object = {
-                'methodName': 'UpdateBlazorProperties',
-                'diagramobj': diagramObject
-            };
-            window[blazorInterop].updateBlazorProperties(obj, this);
+            if (!(this.blazorActions & BlazorAction.ClearObject)) {
+                let blazorInterop: string = 'sfBlazor';
+                let diagramObject: Object = { nodes: changeNodes, connectors: changeConnectors };
+                let obj: object = {
+                    'methodName': 'UpdateBlazorProperties',
+                    'diagramobj': diagramObject
+                };
+                window[blazorInterop].updateBlazorProperties(obj, this);
+            }
         }
     }
     private alignGroup(parents: string[], tempTabel: {}): string[] {
@@ -5733,7 +5946,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 (obj as Connector).wrapper.measure(new Size(undefined, undefined));
                 (obj as Connector).wrapper.arrange((obj as Connector).wrapper.desiredSize);
-                if (obj instanceof Connector && obj.type === 'Bezier') { this.updateConnectorAnnotation(obj); }
+                if (obj instanceof Connector && obj.type === 'Bezier') { this.updateConnectorAnnotation(obj); this.updateConnectorfixedUserHandles(obj); }
                 for (let j: number = 0; j < (obj as Connector).wrapper.children.length; j++) {
                     this.pathTable[((obj as Connector).wrapper.children[j] as PathElement).data] = {};
                     this.pathTable[((obj as Connector).wrapper.children[j] as PathElement).data].absoluteBounds =
@@ -5835,12 +6048,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     public updateGroupOffset(node: NodeModel | ConnectorModel, isUpdateSize?: boolean): void {
+        let isUpdateGroupToBlazor: boolean = false;
         if (((node as Node).children && (node as Node).children.length > 0 && (!(node as Node).container)) || ((node as Node).processId)) {
             let node1: NodeModel = this.nameTable[node.id];
             if (!(this.realActions & RealAction.PreventScale) && !(this.realActions & RealAction.PreventDrag)) {
                 if (node1.offsetX && ((this.realActions & RealAction.EnableGroupAction) ||
-                    (!(this.diagramActions & DiagramAction.ToolAction)
-                        && !(this.diagramActions & DiagramAction.PublicMethod)))) {
+                    ((!(this.diagramActions & DiagramAction.UndoRedo)) && (!(this.diagramActions & DiagramAction.ToolAction)
+                        && !(this.diagramActions & DiagramAction.PublicMethod))))) {
                     this.realActions |= RealAction.PreventScale;
                     let diffX: number = (node1.offsetX - node.wrapper.offsetX);
                     node1.offsetX = node.wrapper.offsetX;
@@ -5851,10 +6065,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                     this.realActions &= ~RealAction.PreventScale;
                 } else {
+                    if (isBlazor()) {
+                        this.insertValue(cloneObject(node1), true); isUpdateGroupToBlazor = true;
+                    }
                     node1.offsetX = node.wrapper.offsetX;
                 }
                 if (node1.offsetY && ((this.realActions & RealAction.EnableGroupAction) ||
-                    (!(this.diagramActions & DiagramAction.ToolAction)))) {
+                    ((!(this.diagramActions & DiagramAction.UndoRedo)) && (!(this.diagramActions & DiagramAction.ToolAction)
+                        && !(this.diagramActions & DiagramAction.PublicMethod))))) {
                     this.realActions |= RealAction.PreventScale;
                     let diffY: number = (node1.offsetY - node.wrapper.offsetY);
                     node1.offsetY = node.wrapper.offsetY;
@@ -5864,9 +6082,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.realActions &= ~RealAction.PreventScale;
 
                 } else {
+                    if (isBlazor()) {
+                        this.insertValue(cloneObject(node1), true); isUpdateGroupToBlazor = true;
+                    }
                     node1.offsetY = node.wrapper.offsetY;
                 }
                 if (this.diagramActions) {
+                    if (isBlazor()) {
+                        this.insertValue(cloneObject(node1), true); isUpdateGroupToBlazor = true;
+                    }
                     node1.width = node.wrapper.actualSize.width;
                     node1.height = node.wrapper.actualSize.height;
                 }
@@ -5877,14 +6101,25 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (this.nameTable[(node as Node).id].width !== undefined) {
                     this.scaleObject((node as Node), this.nameTable[node.id].width, true);
                 } else {
+                    if (isBlazor()) {
+                        this.insertValue(cloneObject(this.nameTable[node.id]), true); isUpdateGroupToBlazor = true;
+                    }
                     this.nameTable[node.id].width = node.wrapper.actualSize.width;
                 }
                 if (this.nameTable[node.id].height !== undefined) {
                     this.scaleObject((node as Node), this.nameTable[node.id].height, false);
                 } else {
+                    if (isBlazor()) {
+                        this.insertValue(cloneObject(this.nameTable[node.id]), true); isUpdateGroupToBlazor = true;
+                    }
                     this.nameTable[node.id].height = node.wrapper.actualSize.height;
                 }
             }
+        }
+        if (isUpdateGroupToBlazor && !(this.diagramActions & DiagramAction.UndoRedo) &&
+            !(this.diagramActions & DiagramAction.ToolAction) &&
+            !(this.diagramActions & DiagramAction.PublicMethod)) {
+            this.commandHandler.getBlazorOldValues();
         }
     }
 
@@ -5942,6 +6177,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         obj.initAnnotations(this.getDescription, container, this.element.id, canVitualize(this) ? true : false, this.annotationTemplate);
         obj.initPorts(this.getDescription, container);
         obj.initIcons(this.getDescription, this.layout, container, diagramId);
+        for (let i: number = 0; obj.fixedUserHandles !== undefined, i < obj.fixedUserHandles.length; i++) {
+            let fixedUserHandles: DiagramElement = obj.initfixedUserHandles(obj.fixedUserHandles[i]);
+            container.children.push(fixedUserHandles);
+        }
         if (obj.shape.type === 'SwimLane' && obj.wrapper && obj.wrapper.children.length > 0 &&
             obj.wrapper.children[0] instanceof GridPanel) {
             swimLaneMeasureAndArrange(obj);
@@ -6225,11 +6464,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (rootNode.outEdges.length > 1) {
                 let isProtectedChange: boolean = this.isProtectedOnChange;
                 let connector: ConnectorModel = this.nameTable[rootNode.outEdges[1]];
+                let isAllowServerUpdate: boolean = this.allowServerDataBinding;
                 this.protectPropertyChange(false);
+                this.enableServerDataBinding(false);
                 this.preventDiagramUpdate = true;
                 connector.sourcePortID = rootNode.ports[1].id;
-                this.preventDiagramUpdate = false;
                 this.dataBind();
+                this.preventDiagramUpdate = false;
+                this.enableServerDataBinding(isAllowServerUpdate);
                 this.protectPropertyChange(isProtectedChange);
             }
         }
@@ -6919,6 +7161,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let selectorModel: Selector = this.selectedItems as Selector;
         let selectorConstraints: SelectorConstraints = selectorModel.constraints;
         let rendererActions: RendererAction = this.diagramRenderer.rendererActions;
+        let innertemplate: HTMLCollection = document.getElementsByClassName('blazor-inner-template');
+        let i: number;
+        let div: HTMLElement;
         this.diagramRenderer.rendererActions = this.currentSymbol ?
             this.addConstraints(rendererActions, RendererAction.DrawSelectorBorder) :
             this.removeConstraints(rendererActions, RendererAction.DrawSelectorBorder);
@@ -6991,6 +7236,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (!(selectorModel.annotation) && !this.currentSymbol) {
                 this.diagramRenderer.renderUserHandler(selectorModel, selectorElement, this.scroller.transform, diagramUserHandlelayer);
+                if (isBlazor() && innertemplate.length > 0) {
+                    for (i = 0; i < this.selectedItems.userHandles.length; i++) {
+                        let userHandle: UserHandleModel = this.selectedItems.userHandles[i];
+                        div = document.getElementById(userHandle.name + '_html_element');
+                        div.style.display = 'block';
+                    }
+                }
             }
         }
         this.isProtectedOnChange = isProtectedOnChangeValue;
@@ -6998,9 +7250,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /** @private */
     public updateSelector(): void {
+        let severDataBind: boolean = this.allowServerDataBinding;
+        this.enableServerDataBinding(false);
         let size: Size = new Size();
         let selector: Selector = this.selectedItems as Selector;
         let selectorConstraints: SelectorConstraints = selector.constraints;
+        let innertemplate: HTMLCollection = document.getElementsByClassName('blazor-inner-template');
+        let i: number;
+        let div: HTMLElement;
         if (!(this.diagramActions & DiagramAction.ToolAction) && this.selectedItems.nodes.length === 1) {
             this.selectedItems.rotateAngle = this.selectedItems.nodes[0].rotateAngle;
             this.selectedItems.wrapper.rotateAngle = this.selectedItems.nodes[0].rotateAngle;
@@ -7034,6 +7291,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 if ((this.selectedItems.constraints & SelectorConstraints.UserHandle) && (!(selector.annotation)) && !this.currentSymbol) {
                     this.diagramRenderer.renderUserHandler(selector, selectorEle, this.scroller.transform, diagramUserHandlelayer);
+                    if (isBlazor() && innertemplate.length > 0) {
+                        for (i = 0; i < this.selectedItems.userHandles.length; i++) {
+                            let userHandletemplate: UserHandleModel = this.selectedItems.userHandles[i];
+                            div = document.getElementById(userHandletemplate.name + '_html_element');
+                            div.style.display = 'block';
+                        }
+                    }
                 }
                 if (selector.annotation) {
                     this.renderSelectorForAnnotation(selector, selectorEle);
@@ -7077,6 +7341,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
+        this.enableServerDataBinding(severDataBind);
     }
 
     /** @private */
@@ -7128,6 +7393,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public clearSelectorLayer(): void {
         let adornerSvg: SVGElement = getAdornerLayerSvg(this.element.id);
+        let innertemplate: HTMLCollection = document.getElementsByClassName('blazor-inner-template');
+        let i: number;
+        let div: HTMLElement;
+        let j: number;
+
         if (!this.currentSymbol) {
             let selectionRect: SVGElement =
                 (adornerSvg as SVGSVGElement).getElementById(this.adornerLayer.id + '_selected_region') as SVGElement;
@@ -7141,10 +7411,20 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 child = childNodes[i - 1] as SVGElement;
                 child.parentNode.removeChild(child);
             }
-            let templates: NodeList = getUserHandleLayer(this.element.id).childNodes;
-            let i: number;
-            for (i = templates.length; i > 0; i--) {
-                (templates[i - 1] as HTMLElement).parentNode.removeChild(templates[i - 1]);
+            if (isBlazor() && !(this.diagramActions & DiagramAction.DragUsingMouse) && innertemplate.length > 0) {
+                for (i = 0; i < this.selectedItems.userHandles.length; i++) {
+                    let template: UserHandleModel = this.selectedItems.userHandles[i];
+                    div = document.getElementById(template.name + '_html_element');
+                    div.style.display = 'none';
+                }
+
+            } else {
+                if (!isBlazor()) {
+                    let templates: NodeList = getUserHandleLayer(this.element.id).childNodes;
+                    for (i = templates.length; i > 0; i--) {
+                        (templates[i - 1] as HTMLElement).parentNode.removeChild(templates[i - 1]);
+                    }
+                }
             }
         } else {
             let symbolBorder: SVGElement = (adornerSvg as SVGSVGElement).getElementById('borderRect_symbol') as SVGElement;
@@ -7211,6 +7491,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /* tslint:disable */
     public async endEdit(): Promise<void> {
         if (this.diagramActions & DiagramAction.TextEdit) {
+            let blazor: string = 'Blazor'; let blazorInterop: string = 'sfBlazor';
             let oldValues: Object; let changedvalues: Object; let annotations: Object = {};
             this.enableServerDataBinding(false);
             if (isBlazor()) { this.canEnableBlazorObject = true; }
@@ -7237,10 +7518,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     if (bpmnAnnotation) {
                         if (element.textContent !== text || text !== this.activeLabel.text) {
                             if (isBlazor()) {
-                                args = await this.triggerEvent(DiagramEvent.textEdit, args) as ITextEditEventArgs || args;
-                            } else {
-                                this.triggerEvent(DiagramEvent.textEdit, args);
-                            }
+                                if (this.textEdit && window && window[blazor]) {
+                                    let eventObj: object = { 'EventName': 'textEdit', args: JSON.stringify(args) };
+                                    args = await window[blazorInterop].updateBlazorDiagramEvents(eventObj, this) || args;
+                                }
+                            } else { this.triggerEvent(DiagramEvent.textEdit, args); }
                             if (!args.cancel) {
                                 this.bpmnModule.updateTextAnnotationContent(node, this.activeLabel, text, this);
                             }
@@ -7265,7 +7547,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     let deleteNode: boolean = this.eventHandler.isAddTextNode(node as Node, true);
                     if (!deleteNode && (element.textContent !== text || text !== this.activeLabel.text)) {
                         if (isBlazor()) {
-                            args = await this.triggerEvent(DiagramEvent.textEdit, args) as ITextEditEventArgs || args;
+                            if (window && window[blazor] && this.textEdit) {
+                                let eventObj: object = { 'EventName': 'textEdit', args: JSON.stringify(args) };
+                                args = await window[blazorInterop].updateBlazorDiagramEvents(eventObj, this) || args;
+                            }
                         } else {
                             this.triggerEvent(DiagramEvent.textEdit, args);
                         }
@@ -7385,17 +7670,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /* tslint:enable */
 
     private getBlazorTextEditArgs(args: IBlazorTextEditEventArgs | ITextEditEventArgs): IBlazorTextEditEventArgs {
-        let element: DiagramEventObject = getObjectType(args.element) === Connector ? { connector: cloneBlazorObject(args.element) }
-            : { node: cloneBlazorObject(args.element) };
+        let element: DiagramEventObject = getObjectType(args.element) === Connector ? { connectorId: (args.element as ConnectorModel).id }
+            : { nodeId: (args.element as Node).id };
         let annotation: DiagramEventAnnotation = {};
-        if (element.node) {
-            if (element.node.shape.type === 'Text') {
+        if (getObjectType(args.element) === Node) {
+            if ((args.element as Node).shape.type === 'Text') {
                 annotation.textNode = (args.element as NodeModel).shape as TextModel;
             } else {
-                annotation.nodeAnnotation = (args.element as NodeModel).annotations[0];
+                annotation.annotationId = (args.element as NodeModel).annotations[0].id;
             }
         } else {
-            annotation.connectorAnnotation = (args.element as ConnectorModel).annotations[0];
+            annotation.annotationId = (args.element as ConnectorModel).annotations[0].id;
         }
         args = {
             oldValue: args.oldValue,
@@ -7436,9 +7721,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /** @private */
-    public removeNode(node: NodeModel | ConnectorModel): void {
+    public removeNode(node: NodeModel, childernCollection: string[]): void {
         this.removeObjectsFromLayer(node);
         this.removeFromAQuad(this.nameTable[node.id]);
+        let groupElement: HTMLElement = document.getElementById(node.id + '_groupElement');
         delete this.nameTable[node.id];
         if ((node as NodeModel).children) {
             delete this.groupTable[node.id];
@@ -7449,10 +7735,25 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.UpdateBlazorDiagramModel(node as Node, 'Node', i);
                 }
             }
-
         }
-        this.UpdateBlazorDiagramModel(node as Node, 'Node', (this.nodes.indexOf(node as NodeModel)));
         this.nodes.splice(this.nodes.indexOf(node as NodeModel), 1);
+        if (groupElement.children && groupElement.children.length > 0) {
+            let beforeElement: Element = undefined;
+            for (let j: number = groupElement.children.length - 1; j >= 0; j--) {
+                let childElement: Element = groupElement.children[j];
+                if (childernCollection.length > 0 && childernCollection.indexOf(childElement.id.split('_')[0]) !== -1) {
+                    if (!beforeElement) {
+                        groupElement.parentNode.insertBefore(childElement, groupElement);
+                    } else {
+                        groupElement.parentNode.insertBefore(childElement, beforeElement);
+                    }
+                    beforeElement = childElement;
+                }
+            }
+        }
+        if (groupElement) {
+            groupElement.parentNode.removeChild(groupElement);
+        }
     }
 
     /** @private */
@@ -7718,7 +8019,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /* tslint:disable */
     /** @private */
     public nodePropertyChange(actualObject: Node, oldObject: Node, node: Node, isLayout?: boolean, rotate?: boolean, propertyChange?: boolean): void {
-        if (this.canEnableBlazorObject) {
+        if (this.canEnableBlazorObject && actualObject.id != 'helper') {
             let node: Object = cloneObject(actualObject);
             this.insertValue(node, true)
         }
@@ -7829,8 +8130,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.updateMargin(actualObject, node);
             updateConnector = true;
         }
-        if (((node.shape !== undefined && node.shape.type === undefined) || node.width !== undefined
-            || node.height !== undefined || node.style !== undefined) && actualObject.shape.type === 'Bpmn' && this.bpmnModule) {
+        if ((((node.shape !== undefined && (node.shape.type === undefined)) || node.width !== undefined
+            || node.height !== undefined || node.style !== undefined) && actualObject.shape.type === 'Bpmn' && this.bpmnModule)
+            ||(isBlazor() && node && node.shape && node.shape.type === 'Bpmn')) {
             update = true;
             updateConnector = true;
             this.bpmnModule.updateBPMN(node, oldObject, actualObject, this);
@@ -7891,6 +8193,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (node.isExpanded !== undefined) { this.commandHandler.expandNode(actualObject, this); }
             update = true;
         }
+        if (node.fixedUserHandles !== undefined) {
+            let index: number;
+            let changedObject: NodeFixedUserHandleModel;
+            let actualfixedUserHandle: NodeFixedUserHandleModel;
+            for (let key of Object.keys(node.fixedUserHandles)) {
+                index = Number(key); update = true;
+                if (node.fixedUserHandles[index]) {
+                    changedObject = node.fixedUserHandles[index];
+                }
+                actualfixedUserHandle = actualObject.fixedUserHandles[index];
+                if (actualfixedUserHandle) {
+                    this.updateNodefixedUserHandle(changedObject, actualfixedUserHandle, actualObject.wrapper, actualObject);
+                }
+            }
+        }
+
         if (node.tooltip !== undefined) { this.updateTooltip(actualObject, node); }
         if (update) {
             if (this.bpmnModule !== undefined) {
@@ -7942,14 +8260,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             // let objects: (NodeModel | ConnectorModel)[] = [];
             // objects = objects.concat(this.selectedItems.nodes, this.selectedItems.connectors);
             // if (objects.length === 0) {
-                if (actualObject.parentId && this.nameTable[actualObject.parentId]) {
-                    let parent: NodeModel = this.nameTable[actualObject.parentId];
-                    parent.wrapper.measure(new Size(parent.wrapper.width, actualObject.wrapper.height));
-                    parent.wrapper.arrange(parent.wrapper.desiredSize);
+            if (actualObject.parentId && this.nameTable[actualObject.parentId]) {
+                let parent: NodeModel = this.nameTable[actualObject.parentId];
+                parent.wrapper.measure(new Size(parent.wrapper.width, actualObject.wrapper.height));
+                parent.wrapper.arrange(parent.wrapper.desiredSize);
 
-                    parent.offsetX = parent.wrapper.offsetX;
-                    parent.offsetY = parent.wrapper.offsetY;
-                }
+                parent.offsetX = parent.wrapper.offsetX;
+                parent.offsetY = parent.wrapper.offsetY;
+            }
             // }
             if (existingInnerBounds.equals(existingInnerBounds, actualObject.wrapper.bounds) === false) {
                 this.updateGroupSize(actualObject);
@@ -8189,7 +8507,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (points.length > 0) {
                 actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
                 actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
-                this.updateConnectorAnnotation(actualObject); this.updateObject(actualObject, oldProp, newProp);
+                this.updateConnectorAnnotation(actualObject); this.updateConnectorfixedUserHandles(actualObject); this.updateObject(actualObject, oldProp, newProp);
             } //work-around to update intersected connector bridging
         }
         if ((newProp.sourcePoint || newProp.targetPoint || newProp.segments)
@@ -8197,7 +8515,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (actualObject.shape.type === 'Bpmn' && (actualObject.shape as BpmnFlowModel).sequence === 'Default') {
             this.commandHandler.updatePathElementOffset(actualObject);
         }
-        if (!disableBridging) { this.updateBridging(); } this.updateAnnotations(newProp, actualObject);
+        if (!disableBridging) { this.updateBridging(); } this.updateAnnotations(newProp, actualObject); this.updatefixedUserHandle(newProp, actualObject);
         actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
         actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
         if (existingBounds.equals(existingBounds, actualObject.wrapper.bounds) === false) {
@@ -8402,6 +8720,72 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+
+    private updatefixedUserHandle(newProp: Connector, actualObject: Connector): void {
+        if (newProp.fixedUserHandles !== undefined) {
+            let index: number;
+            let changedObject: ConnectorFixedUserHandleModel;
+            let actualAnnotation: ConnectorFixedUserHandleModel;
+            for (let key of Object.keys(newProp.fixedUserHandles)) {
+                index = Number(key);
+                changedObject = newProp.fixedUserHandles[key];
+                actualAnnotation = actualObject.fixedUserHandles[index];
+                this.updateConnectorfixedUserHandle(changedObject, actualAnnotation, actualObject.wrapper, actualObject);
+            }
+        }
+    }
+
+    /** @private */
+    public updateConnectorfixedUserHandle(
+        changedObject: ConnectorFixedUserHandleModel, actualfixedUserHandle: ConnectorFixedUserHandleModel, nodes: Container,
+        actualObject?: Object, canUpdateSize?: boolean): void {
+        let fixedUserHandleWrapper: Canvas; let isMeasure: boolean = false;
+        fixedUserHandleWrapper = this.getWrapper(nodes, actualfixedUserHandle.id) as Canvas;
+        if (fixedUserHandleWrapper !== undefined) {
+            if (changedObject.width !== undefined) {
+                fixedUserHandleWrapper.width = changedObject.width;
+                isMeasure = true;
+            }
+            if (changedObject.height !== undefined) {
+                fixedUserHandleWrapper.height = changedObject.height;
+                isMeasure = true;
+            }
+            if (actualfixedUserHandle instanceof ConnectorFixedUserHandle &&
+                ((changedObject as ConnectorFixedUserHandle).offset !== undefined)) {
+                (actualObject as Connector).updateAnnotation(
+                    actualfixedUserHandle, (actualObject as Connector).intermediatePoints,
+                    (actualObject as Connector).wrapper.bounds, (fixedUserHandleWrapper as Canvas));
+            }
+            if ((actualfixedUserHandle instanceof ConnectorFixedUserHandle) && (changedObject as ConnectorFixedUserHandle).displacement) {
+                if ((changedObject as ConnectorFixedUserHandle).displacement.x !== undefined ||
+                    (changedObject as ConnectorFixedUserHandle).displacement.y !== undefined) {
+                    isMeasure = true;
+
+                }
+            }
+            if (changedObject.fill !== undefined) {
+                fixedUserHandleWrapper.style.fill = changedObject.fill;
+            }
+            if (changedObject.handleStrokeColor !== undefined) {
+                fixedUserHandleWrapper.style.strokeColor = changedObject.handleStrokeColor;
+            }
+            if (changedObject.handleStrokeWidth !== undefined) {
+                fixedUserHandleWrapper.style.strokeWidth = changedObject.handleStrokeWidth;
+            }
+            if (changedObject.visibility !== undefined) {
+                fixedUserHandleWrapper.visible = changedObject.visibility;
+            }
+            if (changedObject.cornerRadius !== undefined) {
+                fixedUserHandleWrapper.cornerRadius = changedObject.cornerRadius;
+            }
+            this.updatefixedUserHandleContent(changedObject, isMeasure, fixedUserHandleWrapper, actualObject, actualfixedUserHandle, nodes);
+            if (isMeasure === true) {
+                fixedUserHandleWrapper.measure(new Size(fixedUserHandleWrapper.width, fixedUserHandleWrapper.height));
+                fixedUserHandleWrapper.arrange(fixedUserHandleWrapper.desiredSize);
+            }
+        }
+    }
+
     /** @private */
     public updateAnnotation(
         changedObject: AnnotationModel, actualAnnotation: ShapeAnnotationModel, nodes: Container,
@@ -8507,6 +8891,40 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+    private updatefixedUserHandleContent(
+        changedObject: ConnectorFixedUserHandleModel, isMeasure: boolean, fixedUserHandleWrapper: Canvas,
+        actualObject: Object, fixedUserHandleAnnotation: ConnectorFixedUserHandleModel, nodes: Container
+    ): void {
+        if (changedObject !== undefined) {
+            this.updateConnectorfixedUserHandleWrapper(fixedUserHandleWrapper, actualObject, fixedUserHandleAnnotation, nodes);
+        }
+    }
+    private updateConnectorfixedUserHandleWrapper(
+        fixedUserHandleWrapper: Canvas, actualObject: Object,
+        actualAnnotation: ConnectorFixedUserHandleModel, nodes: Container
+    ): void {
+        for (let elementId of this.views) {
+            removeElement(fixedUserHandleWrapper.id + '_groupElement', elementId);
+            removeElement(fixedUserHandleWrapper.id + '_html_element', elementId);
+        }
+        if (actualObject instanceof Connector) {
+            let canvas: Container = actualObject.wrapper;
+            let segment: DiagramElement = canvas.children[0];
+            let bounds: Rect = new Rect(
+                segment.offsetX - segment.width / 2, segment.offsetY - segment.height / 2, segment.width, segment.height);
+            fixedUserHandleWrapper =
+                actualObject.getfixedUserHandle(
+                    actualObject.fixedUserHandles[actualObject.fixedUserHandles.length - 1] as ConnectorFixedUserHandle,
+                    actualObject.intermediatePoints,
+                    bounds);
+        }
+        for (let i: number = 0; i < nodes.children.length; i++) {
+            if (fixedUserHandleWrapper.id === nodes.children[i].id) {
+                nodes.children.splice(i, 1, fixedUserHandleWrapper);
+            }
+        }
+    }
+
     private updateAnnotationContent(
         changedObject: AnnotationModel, isMeasure: boolean, annotationWrapper: TextElement | DiagramHtmlElement,
         actualObject: Object, actualAnnotation: ShapeAnnotationModel, nodes: Container
@@ -8515,8 +8933,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (annotationWrapper as TextElement) {
                 isMeasure = true;
                 if ((actualObject as Node).shape.type === 'UmlActivity' &&
-                    ((isBlazor && ((actualObject as Node).shape as DiagramShape).umlActivityShape === 'StructuredNode') ||
-                        (!isBlazor && ((actualObject as Node).shape as UmlActivityShapeModel).shape === 'StructuredNode'))) {
+                    ((isBlazor() && ((actualObject as Node).shape as DiagramShape).umlActivityShape === 'StructuredNode') ||
+                        (!isBlazor() && ((actualObject as Node).shape as UmlActivityShapeModel).shape === 'StructuredNode'))) {
                     (annotationWrapper as TextElement).content = '<<' + changedObject.content + '>>';
                 } else { (annotationWrapper as TextElement).content = changedObject.content; }
             }
@@ -8556,6 +8974,88 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         for (let i: number = 0; i < nodes.children.length; i++) {
             if (annotationWrapper.id === nodes.children[i].id) {
                 nodes.children.splice(i, 1, annotationWrapper);
+            }
+        }
+    }
+
+    /** @private */
+    public updateNodefixedUserHandle(
+        changedObject: NodeFixedUserHandleModel, actualfixedUserHandle: NodeFixedUserHandleModel, nodes: Container,
+        actualObject?: Object): void {
+        let fixedUserHandleWrapper: Canvas;
+        let isMeasure: boolean = false;
+        fixedUserHandleWrapper = this.getWrapper(nodes, actualfixedUserHandle.id) as Canvas;
+        if (fixedUserHandleWrapper !== undefined) {
+            if (changedObject.width !== undefined) {
+                fixedUserHandleWrapper.actualSize.width = changedObject.width;
+                isMeasure = true;
+            }
+            if (changedObject.height !== undefined) {
+                fixedUserHandleWrapper.height = changedObject.height;
+                isMeasure = true;
+            }
+            if (actualfixedUserHandle instanceof NodeFixedUserHandle &&
+                (changedObject as NodeFixedUserHandleModel).offset !== undefined) {
+                let offset: PointModel = (changedObject as NodeFixedUserHandleModel).offset;
+                isMeasure = true;
+                let offsetX: number = offset.x !== undefined ? offset.x :
+                    actualfixedUserHandle.offset.x;
+                let offsetY: number = offset.y !== undefined ? offset.y :
+                    actualfixedUserHandle.offset.y;
+                fixedUserHandleWrapper.setOffsetWithRespectToBounds(offsetX, offsetY, 'Fraction');
+                fixedUserHandleWrapper.relativeMode = 'Point';
+            }
+            if (changedObject.margin !== undefined) {
+                isMeasure = true;
+                if (changedObject.margin.bottom !== undefined) {
+                    fixedUserHandleWrapper.margin.bottom = changedObject.margin.bottom;
+                }
+                if (changedObject.margin.top !== undefined) {
+                    fixedUserHandleWrapper.margin.top = changedObject.margin.top;
+                }
+                if (changedObject.margin.left !== undefined) {
+                    fixedUserHandleWrapper.margin.left = changedObject.margin.left;
+                }
+                if (changedObject.margin.right !== undefined) {
+                    fixedUserHandleWrapper.margin.right = changedObject.margin.right;
+                }
+            }
+            if (changedObject.visibility !== undefined) {
+                fixedUserHandleWrapper.visible = changedObject.visibility;
+            }
+            if (changedObject.fill !== undefined) {
+                fixedUserHandleWrapper.style.fill = changedObject.fill;
+            }
+            if (changedObject.handleStrokeColor !== undefined) {
+                fixedUserHandleWrapper.style.strokeColor = changedObject.handleStrokeColor;
+            }
+            if (changedObject.handleStrokeWidth !== undefined) {
+                fixedUserHandleWrapper.style.strokeWidth = changedObject.handleStrokeWidth;
+            }
+            if (changedObject.cornerRadius !== undefined) {
+                fixedUserHandleWrapper.cornerRadius = changedObject.cornerRadius;
+            }
+            this.updatefixedUserHandleWrapper(fixedUserHandleWrapper, actualObject, actualfixedUserHandle, nodes);
+            if (isMeasure === true) {
+                fixedUserHandleWrapper.measure(new Size(fixedUserHandleWrapper.width, fixedUserHandleWrapper.height));
+                fixedUserHandleWrapper.arrange(fixedUserHandleWrapper.desiredSize);
+            }
+        }
+    }
+    private updatefixedUserHandleWrapper(
+        fixedUserHandleWrapper: DiagramElement, actualObject: Object,
+        actualAnnotation: FixedUserHandleModel, nodes: Container
+    ): void {
+        for (let elementId of this.views) {
+            removeElement(fixedUserHandleWrapper.id + '_groupElement', elementId);
+            removeElement(fixedUserHandleWrapper.id + '_html_element', elementId);
+        }
+        if (actualObject instanceof Node) {
+            fixedUserHandleWrapper = (actualObject as Node).initfixedUserHandles(actualAnnotation);
+        }
+        for (let i: number = 0; i < nodes.children.length; i++) {
+            if (fixedUserHandleWrapper.id === nodes.children[i].id) {
+                nodes.children.splice(i, 1, fixedUserHandleWrapper);
             }
         }
     }
@@ -8697,6 +9197,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (node.tooltip.showTipPointer !== undefined) {
             actualObject.tooltip.showTipPointer = node.tooltip.showTipPointer;
+        }
+        if (node.tooltip.relativeMode !== undefined) {
+            actualObject.tooltip.relativeMode = node.tooltip.relativeMode;
         }
     }
     /** @private */
@@ -9450,5 +9953,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         callback.onSuccess = (data: DataManager): void => {
 
         }
+    }
+
+    private getHiddenItems(args: BeforeOpenCloseMenuEventArgs): string[] {
+        let hiddenItems : string[] = [];
+        if (this.contextMenuModule) {
+            this.contextMenuModule.hiddenItems = [];
+            for (let item of args.items) {
+                this.contextMenuModule.ensureItems(item, args.event);
+                if (item.items && item.items.length) {
+                    for (let newItem of item.items) {
+                        this.contextMenuModule.ensureItems(newItem, args.event);
+                    }
+                }
+            }
+            return this.contextMenuModule.hiddenItems;
+        }
+        return hiddenItems;
     }
 }

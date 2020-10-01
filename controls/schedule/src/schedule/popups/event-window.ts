@@ -121,12 +121,14 @@ export class EventWindow {
         if (this.parent.editorTemplate) {
             updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
         }
+        this.parent.renderTemplates();
     }
 
     private resetEditorTemplate(): void {
         if (this.parent.editorTemplate) {
             resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
         }
+        this.parent.resetTemplates();
     }
 
     public refresh(): void {
@@ -388,6 +390,7 @@ export class EventWindow {
         parentDiv.appendChild(recurrenceEditor);
         this.recurrenceEditor = this.renderRecurrenceEditor();
         this.recurrenceEditor.appendTo(recurrenceEditor);
+        this.updateMinMaxDateToEditor();
     }
 
     private createDivElement(className?: string): HTMLElement {
@@ -1116,6 +1119,18 @@ export class EventWindow {
             firstDayOfWeek: this.parent.activeViewOptions.firstDayOfWeek,
             locale: this.parent.locale
         });
+    }
+
+    public updateMinMaxDateToEditor(): void {
+        if (this.recurrenceEditor) {
+            let untilDate: Element = this.recurrenceEditor.element.querySelector('.e-until-date');
+            if (untilDate) {
+                let untilObj: DatePicker = (untilDate as EJ2Instance).ej2_instances[0] as DatePicker;
+                untilObj.min = this.parent.minDate;
+                untilObj.max = this.parent.maxDate;
+                untilObj.dataBind();
+            }
+        }
     }
 
     private updateRepeatLabel(repeatRule: string): void {

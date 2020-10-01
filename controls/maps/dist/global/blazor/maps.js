@@ -57,6 +57,8 @@ function stringToNumber(value, containerSize) {
 function calculateSize(maps) {
     var containerWidth = maps.element.clientWidth;
     var containerHeight = maps.element.clientHeight;
+    var parentHeight = maps.element.parentElement.clientHeight;
+    var parentWidth = maps.element.parentElement.clientWidth;
     var containerElementWidth = stringToNumber(maps.element.style.width, containerWidth);
     var containerElementHeight = stringToNumber(maps.element.style.height, containerWidth);
     if (maps.width === '0px' || maps.width === '0%' || maps.height === '0%' || maps.height === '0px') {
@@ -767,7 +769,8 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
                         indexCollection = indexCollection.filter(function (item, index, value) { return value.indexOf(item) === index; });
                         var container = maps.element.getBoundingClientRect();
                         tempX = tempX - container['left'];
-                        tempY = tempY - container['top'];
+                        tempY = (tempY - ((maps.availableSize.height < container['height']) ?
+                            container['top'] : (container['bottom'] - container['top'])));
                         var translate = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
                         var transPoint = (maps.isTileMap) ? { x: 0, y: 0 } : (maps.translatePoint.x !== 0) ?
                             maps.translatePoint : translate['location'];
@@ -995,8 +998,8 @@ function marker(eventArgs, markerSettings, markerData, dataIndex, location, tran
 }
 function markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplate, location, scale, offset, maps) {
     templateFn = getTemplateFunction(eventArgs.template);
-    if (templateFn && (!maps.isBlazor ? templateFn(data, null, null, maps.element.id + '_MarkerTemplate' + markerIndex, false).length : {})) {
-        var templateElement = templateFn(data, null, null, maps.element.id + '_MarkerTemplate' + markerIndex, false);
+    if (templateFn && (!maps.isBlazor ? templateFn(data, maps, eventArgs.template, maps.element.id + '_MarkerTemplate' + markerIndex, false).length : {})) {
+        var templateElement = templateFn(data, maps, eventArgs.template, maps.element.id + '_MarkerTemplate' + markerIndex, false);
         var markerElement = convertElement(templateElement, markerID, data, markerIndex, maps);
         for (var i = 0; i < markerElement.children.length; i++) {
             markerElement.children[i].style.pointerEvents = 'none';
@@ -3978,6 +3981,7 @@ var Marker = /** @class */ (function () {
                         if (eventArgs.template && (!isNaN(location_1.x) && !isNaN(location_1.y))) {
                             markerTemplateCount++;
                             markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateEle, location_1, scale, offset, _this.maps);
+                            _this.maps.renderReactTemplates();
                         }
                         else if (!eventArgs.template && (!isNaN(location_1.x) && !isNaN(location_1.y))) {
                             markerCount++;
@@ -3995,12 +3999,14 @@ var Marker = /** @class */ (function () {
                             _this.maps.svgObject.appendChild(_this.markerSVGObject);
                             _this.maps.element.appendChild(_this.maps.svgObject);
                             clusterTemplate(currentLayer, _this.markerSVGObject, _this.maps, layerIndex, _this.markerSVGObject, layerElement, true, false);
+                            _this.maps.renderReactTemplates();
                         }
                     }
                     if (markerTemplateEle.childElementCount === (markerData.length - markerCount - nullCount) && getElementByID(_this.maps.element.id + '_Secondary_Element')) {
                         getElementByID(_this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
                         if (currentLayer.markerClusterSettings.allowClustering) {
                             clusterTemplate(currentLayer, markerTemplateEle, _this.maps, layerIndex, _this.markerSVGObject, layerElement, false, false);
+                            _this.maps.renderReactTemplates();
                         }
                     }
                 });
@@ -4933,6 +4939,7 @@ var LayerPanel = /** @class */ (function () {
                     }
                     else if (layer.key && layer.key.length > 1) {
                         var proxy_1 = _this;
+                        var markerGroupElement_1 = document.getElementById(_this.mapObject.element.id + '_Markers_Group');
                         var bing_1 = new BingMap(_this.mapObject);
                         var bingType = layer.bingMapType === 'AerialWithLabel' ? 'AerialWithLabelsOnDemand' : layer.bingMapType;
                         var url = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + bingType;
@@ -4955,6 +4962,11 @@ var LayerPanel = /** @class */ (function () {
                                 bing_1.maxZoom = maxZoom;
                             }
                             proxy_1.mapObject['bingMap'] = bing_1;
+                            if (_this.mapObject.isBlazor) {
+                                if (!sf.base.isNullOrUndefined(markerGroupElement_1)) {
+                                    removeElement(_this.mapObject.element.id + '_Markers_Group');
+                                }
+                            }
                             proxy_1.renderTileLayer(proxy_1, layer, layerIndex, bing_1);
                             _this.mapObject.arrangeTemplate();
                         };
@@ -5261,10 +5273,8 @@ var LayerPanel = /** @class */ (function () {
             _this.layerObject.appendChild(element);
         });
         if (this.mapObject.markerModule) {
-            if (!sf.base.isNullOrUndefined(this.mapObject.baseMapRectBounds)) {
-                this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, (this.mapObject.isTileMap ? Math.floor(this.currentFactor)
-                    : this.currentFactor), null);
-            }
+            this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, (this.mapObject.isTileMap ? Math.floor(this.currentFactor)
+                : this.currentFactor), null);
         }
         this.translateLayerElements(this.layerObject, layerIndex);
         this.layerGroup.appendChild(this.layerObject);
@@ -5610,7 +5620,7 @@ var LayerPanel = /** @class */ (function () {
             if (layer.layerType === 'OSM' || layer.layerType === 'Bing') {
                 for (var _b = 0, proxTiles_1 = proxTiles; _b < proxTiles_1.length; _b++) {
                     var baseTile = proxTiles_1[_b];
-                    var subtile = sf.base.extend(baseTile, {}, {}, true);
+                    var subtile = sf.base.extend({}, baseTile, {}, true);
                     if (layer.layerType === 'Bing') {
                         subtile.src = bing.getBingMap(subtile, layer.key, layer.bingMapType, userLang, bing.imageUrl, bing.subDomains);
                     }
@@ -5862,6 +5872,8 @@ var Annotations = /** @class */ (function () {
                 sf.base.updateBlazorTemplate(this.map.element.id + '_ContentTemplate_' + i, 'ContentTemplate', this.map.annotations[i]);
             }
         }
+        //tslint:disable
+        this.map.renderReactTemplates();
     };
     /**
      * To create annotation elements
@@ -5888,8 +5900,8 @@ var Annotations = /** @class */ (function () {
             }
             var blazor = 'Blazor';
             templateFn = getTemplateFunction(argsData.content);
-            if (templateFn && (!window[blazor] ? templateFn(_this.map, null, null, _this.map.element.id + '_ContentTemplate_' + annotationIndex).length : {})) {
-                templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? _this.map : {}, null, null, _this.map.element.id + '_ContentTemplate_' + annotationIndex));
+            if (templateFn && (!window[blazor] ? templateFn(_this.map, _this.map, argsData.content, _this.map.element.id + '_ContentTemplate_' + annotationIndex).length : {})) {
+                templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? _this.map : {}, _this.map, argsData.content, _this.map.element.id + '_ContentTemplate_' + annotationIndex));
                 var length_1 = templateElement.length;
                 for (var i = 0; i < length_1; i++) {
                     childElement.appendChild(templateElement[i]);
@@ -6705,6 +6717,7 @@ var Maps = /** @class */ (function (_super) {
                 sf.base.remove(this.svgObject);
             }
         }
+        this.clearTemplate();
     };
     /**
      * To bind event handlers for maps.
@@ -6747,6 +6760,17 @@ var Maps = /** @class */ (function (_super) {
         }
     };
     /**
+     * Gets the selected element to be maintained or not.
+     * @private
+     */
+    Maps.prototype.SelectedElement = function (targetEle) {
+        var isSelect = false;
+        if (targetEle.getAttribute('class') === 'ShapeselectionMapStyle') {
+            isSelect = true;
+        }
+        return isSelect;
+    };
+    /**
      * This method is used to perform the operations when a click operation is performed on maps.
      * @param e - Specifies the pointer event on maps.
      * @blazorProperty 'PerformClick'
@@ -6777,7 +6801,7 @@ var Maps = /** @class */ (function (_super) {
             }
             var eventArgs_1 = {
                 cancel: false, name: click, target: targetId, x: e.clientX, y: e.clientY,
-                latitude: latitude, longitude: longitude
+                latitude: latitude, longitude: longitude, isShapeSelected: this.SelectedElement(targetEle)
             };
             this.trigger('click', eventArgs_1, function (mouseArgs) {
                 if (targetEle.id.indexOf('shapeIndex') > -1) {
@@ -8360,7 +8384,7 @@ var DataLabel = /** @class */ (function () {
                 if (eventargs_1.template !== '') {
                     templateFn = getTemplateFunction(eventargs_1.template);
                     var templateElement = templateFn ? templateFn(!sf.base.isNullOrUndefined(datasrcObj) ?
-                        datasrcObj : shapeData['properties'], null, null, _this.maps.element.id + '_LabelTemplate', false) : document.createElement('div');
+                        datasrcObj : shapeData['properties'], _this.maps, eventargs_1.template, _this.maps.element.id + '_LabelTemplate', false) : document.createElement('div');
                     templateElement.innerHTML = !templateFn ? eventargs_1.template : '';
                     labelElement = convertElementFromLabel(templateElement, labelId, !sf.base.isNullOrUndefined(datasrcObj) ? datasrcObj : shapeData['properties'], index, _this.maps);
                     labelElement.style.left = ((Math.abs(_this.maps.baseMapRectBounds['min']['x'] - location['x'])) * scale) + 'px';
@@ -8479,6 +8503,7 @@ var DataLabel = /** @class */ (function () {
                 });
                 if (labelTemplateElement.childElementCount > 0 && !_this.maps.element.contains(labelTemplateElement)) {
                     document.getElementById(_this.maps.element.id + '_Secondary_Element').appendChild(labelTemplateElement);
+                    _this.maps.renderReactTemplates();
                 }
             });
         }
@@ -9826,6 +9851,9 @@ var Legend = /** @class */ (function () {
                 map.totalRect = totalRect;
             }
             else {
+                if ((legend.height || legend.width) && legend.mode === 'Interactive') {
+                    map.totalRect = totalRect;
+                }
                 map.mapAreaRect = totalRect;
             }
             this.translate = new Point(x, y);
@@ -10987,6 +11015,7 @@ var MapsTooltip = /** @class */ (function () {
     }
     /* tslint:disable:no-string-literal */
     //tslint:disable:max-func-body-length
+    //tslint:disable
     MapsTooltip.prototype.renderTooltip = function (e) {
         var _this = this;
         var pageX;
@@ -10994,6 +11023,7 @@ var MapsTooltip = /** @class */ (function () {
         var target;
         var touchArg;
         var tooltipArgs;
+        var tooltipTemplateElement;
         if (e.type.indexOf('touch') !== -1) {
             this.isTouch = true;
             touchArg = e;
@@ -11198,11 +11228,14 @@ var MapsTooltip = /** @class */ (function () {
                                 fill: blazorArgs_1.fill
                             });
                         }
+                        var tooltipElement = tooltipEle;
                         _this.svgTooltip.opacity = _this.maps.themeStyle.tooltipFillOpacity || _this.svgTooltip.opacity;
-                        _this.svgTooltip.appendTo(tooltipEle);
+                        _this.svgTooltip.appendTo(tooltipElement);
+                        _this.maps.renderReactTemplates();
                     }
                     else {
                         _this.removeTooltip();
+                        _this.maps.clearTemplate();
                     }
                 });
             }
@@ -11247,9 +11280,18 @@ var MapsTooltip = /** @class */ (function () {
                         }
                         _this.svgTooltip.opacity = _this.maps.themeStyle.tooltipFillOpacity || _this.svgTooltip.opacity;
                         _this.svgTooltip.appendTo(tooltipEle);
+                        _this.maps.renderReactTemplates();
+                        tooltipTemplateElement = document.getElementById(_this.maps.element.id + '_mapsTooltip');
+                        if (tooltipTemplateElement !== null && tooltipTemplateElement.innerHTML.indexOf('href') !== -1
+                            && tooltipTemplateElement.innerHTML.indexOf('</a>') !== -1) {
+                            var templateStyle = tooltipTemplateElement.getAttribute('style');
+                            templateStyle = templateStyle.replace('pointer-events: none;', 'position-events:all;');
+                            tooltipTemplateElement.setAttribute('style', templateStyle);
+                        }
                     }
                     else {
                         _this.removeTooltip();
+                        _this.maps.clearTemplate();
                     }
                 });
             }
@@ -11266,10 +11308,19 @@ var MapsTooltip = /** @class */ (function () {
             }
             else {
                 this.removeTooltip();
+                this.maps.clearTemplate();
             }
         }
         else {
-            this.removeTooltip();
+            tooltipTemplateElement = document.getElementById(this.maps.element.id + '_mapsTooltip');
+            if (tooltipTemplateElement !== null && tooltipTemplateElement.innerHTML.indexOf('href') !== -1
+                && tooltipTemplateElement.innerHTML.indexOf('</a>') !== -1) {
+                this.maps.notify(click, this);
+            }
+            else {
+                this.removeTooltip();
+                this.maps.clearTemplate();
+            }
         }
     };
     /**
@@ -12767,7 +12818,7 @@ var Zoom = /** @class */ (function () {
                     this.updateInteraction();
                     this.touchStartList = targetTouches(e);
                 }
-                else if (this.touchStartList.length === 2 && touches.length === 2) {
+                else if (touches.length === 2 && this.touchStartList.length === 2) {
                     this.touchMoveList = targetTouches(e);
                     e.preventDefault();
                     this.rectZoomingStart = false;
@@ -12779,7 +12830,7 @@ var Zoom = /** @class */ (function () {
         this.mouseMovePoints = this.getMousePosition(pageX, pageY);
         var targetId = e.target['id'];
         var targetEle = e.target;
-        if (zoom.enable && this.isPanning && ((sf.base.Browser.isDevice && touches.length > 1) || !sf.base.Browser.isDevice)) {
+        if (zoom.enable && this.isPanning && ((sf.base.Browser.isDevice && touches.length >= 1) || !sf.base.Browser.isDevice)) {
             e.preventDefault();
             this.maps.element.style.cursor = 'pointer';
             this.mouseMoveLatLong = { x: pageX, y: pageY };
@@ -13497,7 +13548,5 @@ exports.PdfExport = PdfExport;
 return exports;
 
 });
-sfBlazor.modules["maps"] = "maps.Maps";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.maps, () => {
+
     sf.maps = sf.base.extend({}, sf.maps, sfmaps({}));
-});

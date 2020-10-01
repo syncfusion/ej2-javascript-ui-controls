@@ -2,51 +2,147 @@ window.sfBlazor = window.sfBlazor || {};
 window.sfBlazor.ContextMenu = (function () {
 'use strict';
 
-var TRANSPARENT = 'e-transparent';
-var MENUITEM = 'e-menu-item';
-var FOCUSED = 'e-focused';
-var SELECTED = 'e-selected';
-var MENU = 'e-contextmenu';
+var MENUITEM$1 = 'e-menu-item';
+var FOCUSED$1 = 'e-focused';
+var SELECTED$1 = 'e-selected';
+var CONTAINER = 'e-menu-container';
+var MENU$1 = 'e-contextmenu';
 var SUBMENU = 'e-ul';
 var SEPARATOR = 'e-separator';
 var DISABLED = 'e-disabled';
 var HIDE = 'e-menu-hide';
+var MENUPARENT = 'e-menu-parent';
+var RTL = 'e-rtl';
+var HAMBURGER = '.e-hamburger';
+var SCROLLMENU$1 = '.e-menu-vscroll';
+var NONE$1 = 'none';
+var DOT$1 = '.';
+var ESC = 27;
+var ENTER = 13;
+var UP = 38;
+var DOWN = 40;
+var LEFT = 37;
+var RIGHT = 39;
+/**
+ * Keyboard action handler common for menu and context menu.
+ * @hidden
+ */
+function keyActionHandler(container, target, keyCode, menuId) {
+    if (keyCode === DOWN || keyCode === UP) {
+        var index = void 0;
+        var ul = void 0;
+        var focusedLi = void 0;
+        if (target.classList.contains(MENUPARENT)) {
+            ul = target;
+            focusedLi = ul.querySelector("" + DOT$1 + MENUITEM$1 + DOT$1 + FOCUSED$1);
+            if (focusedLi) {
+                index = Array.prototype.indexOf.call(ul.children, focusedLi);
+                index = keyCode === DOWN ? (index === ul.childElementCount - 1 ? 0 : index + 1) :
+                    (index === 0 ? ul.childElementCount - 1 : index - 1);
+            }
+            else {
+                index = 0;
+            }
+            index = isValidLI(ul, index, keyCode === DOWN);
+        }
+        else if (target.classList.contains(MENUITEM$1)) {
+            ul = target.parentElement;
+            focusedLi = ul.querySelector("" + DOT$1 + MENUITEM$1 + DOT$1 + FOCUSED$1);
+            index = Array.prototype.indexOf.call(ul.children, focusedLi ? focusedLi : target);
+            index = keyCode === DOWN ? (index === ul.childElementCount - 1 ? 0 : index + 1) : (index === 0 ?
+                ul.childElementCount - 1 : index - 1);
+            index = isValidLI(ul, index, keyCode === DOWN);
+        }
+        if (ul && index !== -1) {
+            ul.children[index].focus();
+        }
+    }
+    else if (((container.classList.contains(RTL) ? keyCode === RIGHT : keyCode === LEFT) || keyCode === ESC ||
+        (keyCode === ENTER && sf.base.closest(target, DOT$1 + CONTAINER))) && (target.classList.contains(SUBMENU) ||
+        (target.classList.contains(MENUITEM$1) && !(target.parentElement.classList.contains(MENU$1))))) {
+        var menuContainer = void 0;
+        if (menuId) {
+            menuContainer = sf.base.select(menuId);
+        }
+        var ul = target.classList.contains(SUBMENU) ? target : target.parentElement;
+        var menu = sf.base.closest(ul, SCROLLMENU$1);
+        var selectedLi = void 0;
+        var previousUl = menu ? menu.previousElementSibling : ul.previousElementSibling;
+        if (menuContainer && (!previousUl || keyCode === ENTER)) {
+            selectedLi = sf.base.select("" + DOT$1 + MENUITEM$1 + DOT$1 + SELECTED$1, menuContainer);
+            menu = sf.base.select(SCROLLMENU$1, container);
+            // tslint:disable-next-line:no-any
+            if (menu) {
+                menuContainer.blazor__instance.destroyScroll(NONE$1);
+            }
+        }
+        else {
+            var hamburgerMenu = sf.base.closest(ul, HAMBURGER);
+            if (hamburgerMenu) {
+                selectedLi = sf.base.select("" + DOT$1 + MENUITEM$1 + DOT$1 + SELECTED$1, hamburgerMenu);
+            }
+            else {
+                selectedLi = sf.base.select("" + DOT$1 + MENUITEM$1 + DOT$1 + SELECTED$1, previousUl);
+            }
+        }
+        if (selectedLi) {
+            selectedLi.focus();
+        }
+    }
+}
+function isValidLI(ul, index, isKeyDown, count) {
+    if (count === void 0) { count = 0; }
+    var cli = ul.children[index];
+    if (count === ul.childElementCount) {
+        return -1;
+    }
+    if (cli.classList.contains(SEPARATOR) || cli.classList.contains(DISABLED) || cli.classList.contains(HIDE)) {
+        index = isKeyDown ? (index === ul.childElementCount - 1 ? 0 : index + 1) : (index === 0 ? ul.childElementCount - 1 : index - 1);
+        count++;
+    }
+    cli = ul.children[index];
+    if (cli.classList.contains(SEPARATOR) || cli.classList.contains(DISABLED) || cli.classList.contains(HIDE)) {
+        index = isValidLI(ul, index, isKeyDown);
+    }
+    return index;
+}
+
+var TRANSPARENT = 'e-transparent';
+var MENU = 'e-menu-parent';
+var MENUITEM = 'e-menu-item';
+var FOCUSED = 'e-focused';
+var SELECTED = 'e-selected';
 var CLOSE = 'CloseMenu';
 var KEYDOWN = 'keydown';
 var CONTEXTMENU = 'contextmenu';
-var MENUPARENT = 'e-menu-parent';
-var RTL = 'e-rtl';
+var SCROLLMENU = '.e-menu-vscroll';
+var SCROLLNAV = '.e-scroll-nav';
 var SPACE = ' ';
-var CLOSESUBMENU = 'CloseSubMenu';
 var HIDDEN = 'hidden';
 var OPENMENU = 'OpenContextMenu';
 var PIXEL = 'px';
 var MOUSEDOWN = 'mousedown touchstart';
 var MOUSEOVER = 'mouseover';
 var SCROLL = 'scroll';
+var NONE = 'none';
 var HASH = '#';
 var EMPTY = '';
 var DOT = '.';
 var TARGET = 'Target';
 var FILTER = 'Filter';
 var CARET = 'e-caret';
-var ESC = 27;
-var UP = 38;
-var DOWN = 40;
-var LEFT = 37;
-var RIGHT = 39;
 /**
  * Client side scripts for Blazor context menu
  */
 var SfContextMenu = /** @class */ (function () {
     function SfContextMenu(element, target, filter, dotnetRef) {
-        this.wrapper = element;
+        this.element = element;
         this.target = target;
         this.filter = filter;
         this.dotnetRef = dotnetRef;
-        this.wrapper.blazor__instance = this;
+        this.element.blazor__instance = this;
         this.addContextMenuEvent();
-        sf.base.EventHandler.add(this.wrapper, KEYDOWN, this.keyDownHandler, this);
+        sf.base.EventHandler.add(this.element, KEYDOWN, this.keyDownHandler, this);
     }
     SfContextMenu.prototype.addContextMenuEvent = function (add) {
         if (add === void 0) { add = true; }
@@ -104,9 +200,9 @@ var SfContextMenu = /** @class */ (function () {
             }
         }
     };
-    SfContextMenu.prototype.scrollHandler = function (e) {
-        if (this.wrapper.childElementCount) {
-            this.dotnetRef.invokeMethodAsync(CLOSE, e);
+    SfContextMenu.prototype.scrollHandler = function () {
+        if (sf.base.select(DOT + MENU, this.element)) {
+            this.dotnetRef.invokeMethodAsync(CLOSE, 0, false, true, false);
         }
     };
     SfContextMenu.prototype.touchHandler = function (e) {
@@ -114,62 +210,10 @@ var SfContextMenu = /** @class */ (function () {
     };
     SfContextMenu.prototype.keyDownHandler = function (e) {
         e.preventDefault();
-        if (e.keyCode === DOWN || e.keyCode === UP) {
-            var index = void 0;
-            var ul = void 0;
-            var focusedLi = void 0;
-            if (e.target.classList.contains(MENUPARENT)) {
-                ul = e.target;
-                focusedLi = ul.querySelector("" + DOT + MENUITEM + DOT + FOCUSED);
-                if (focusedLi) {
-                    index = Array.prototype.indexOf.call(ul.children, focusedLi);
-                    index = e.keyCode === DOWN ? (index === ul.childElementCount - 1 ? 0 : index + 1) :
-                        (index === 0 ? ul.childElementCount - 1 : index - 1);
-                }
-                else {
-                    index = 0;
-                }
-                index = this.isValidLI(ul, 0, e.keyCode === DOWN);
-            }
-            else if (e.target.classList.contains(MENUITEM)) {
-                ul = e.target.parentElement;
-                focusedLi = ul.querySelector("" + DOT + MENUITEM + DOT + FOCUSED);
-                index = Array.prototype.indexOf.call(ul.children, focusedLi ? focusedLi : e.target);
-                index = e.keyCode === DOWN ? (index === ul.childElementCount - 1 ? 0 : index + 1) : (index === 0 ?
-                    ul.childElementCount - 1 : index - 1);
-                index = this.isValidLI(ul, index, e.keyCode === DOWN);
-            }
-            if (ul && index !== -1) {
-                ul.children[index].focus();
-            }
-        }
-        else if (((this.wrapper.classList.contains(RTL) ? e.keyCode === RIGHT : e.keyCode === LEFT) || e.keyCode === ESC) &&
-            (e.target.classList.contains(SUBMENU) || (e.target.classList.contains(MENUITEM) &&
-                !(e.target.parentElement.classList.contains(MENU))))) {
-            var ul = e.target.classList.contains(SUBMENU) ? e.target : e.target.parentElement;
-            var selectedLi = ul.previousElementSibling.querySelector("." + MENUITEM + "." + SELECTED);
-            if (selectedLi) {
-                selectedLi.focus();
-            }
-        }
-    };
-    SfContextMenu.prototype.isValidLI = function (ul, index, isKeyDown, count) {
-        if (count === void 0) { count = 0; }
-        var cli = ul.children[index];
-        if (count === ul.childElementCount) {
-            return -1;
-        }
-        if (cli.classList.contains(SEPARATOR) || cli.classList.contains(DISABLED) || cli.classList.contains(HIDE)) {
-            index = isKeyDown ? (index === ul.childElementCount - 1 ? 0 : index + 1) : (index === 0 ? ul.childElementCount - 1 : index - 1);
-            count++;
-        }
-        cli = ul.children[index];
-        if (cli.classList.contains(SEPARATOR) || cli.classList.contains(DISABLED) || cli.classList.contains(HIDE)) {
-            index = this.isValidLI(ul, index, isKeyDown);
-        }
-        return index;
+        keyActionHandler(this.element, e.target, e.keyCode, this.menuId);
     };
     SfContextMenu.prototype.cmenuHandler = function (e) {
+        var _this = this;
         if (this.filter) {
             var canOpen = false;
             var filter = this.filter.split(SPACE);
@@ -184,61 +228,43 @@ var SfContextMenu = /** @class */ (function () {
             }
         }
         e.preventDefault();
-        var left = e.changedTouches ? e.changedTouches[0].pageX : e.pageX;
-        var top = e.changedTouches ? e.changedTouches[0].pageY : e.pageY;
-        this.dotnetRef.invokeMethodAsync(OPENMENU, Math.ceil(left), Math.ceil(top), e);
+        var left = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+        var top = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+        // tslint:disable-next-line:no-any
+        this.dotnetRef.invokeMethodAsync(OPENMENU, Math.ceil(left), Math.ceil(top)).then(function (rtl) { return _this.contextMenuPosition(left, top, rtl, false); });
     };
-    SfContextMenu.prototype.contextMenuPosition = function (left, top, isRtl, subMenu) {
+    SfContextMenu.prototype.contextMenuPosition = function (left, top, rtl, subMenu) {
         this.removeEventListener();
-        var cmenu = this.wrapper.firstElementChild;
+        var cmenu = this.hideMenu(true);
         if (!cmenu) {
-            return { Left: 0, Top: 0, ZIndex: 0, Width: 0 };
+            return;
         }
-        if (this.wrapper.parentElement !== document.body) {
-            document.body.appendChild(this.wrapper);
-        }
-        var zIndex = sf.popups.getZindexPartial(this.wrapper);
-        cmenu.style.visibility = HIDDEN;
-        cmenu.classList.remove(TRANSPARENT);
         var cmenuOffset = cmenu.getBoundingClientRect();
-        var cmenuWidth = this.getMenuWidth(cmenu, cmenuOffset.width, isRtl);
+        var cmenuWidth = this.getMenuWidth(cmenu, cmenuOffset.width, rtl);
         if (subMenu && sf.base.Browser.isDevice) {
-            cmenu.classList.add(TRANSPARENT);
+            cmenu.style.width = Math.ceil(cmenuWidth) + PIXEL;
             cmenu.style.visibility = EMPTY;
-            return { Width: Math.ceil(cmenuWidth) };
+            return;
         }
-        var wrapperOffset = this.wrapper.getBoundingClientRect();
-        if (top != null) {
-            if (top - pageYOffset + cmenuOffset.height > document.documentElement.clientHeight) {
-                var newTop = document.documentElement.clientHeight - cmenuOffset.height - 20;
-                if (newTop > document.documentElement.clientTop) {
-                    top = newTop + pageYOffset;
-                }
+        if (top + cmenuOffset.height > document.documentElement.clientHeight) {
+            var newTop = document.documentElement.clientHeight - cmenuOffset.height - 20;
+            if (newTop > document.documentElement.clientTop) {
+                top = newTop;
             }
-            top -= (wrapperOffset.top + pageYOffset);
-            top = Math.ceil(top + 1);
         }
-        if (left != null) {
-            if (left - pageXOffset + cmenuWidth > document.documentElement.clientWidth) {
-                var newLeft = document.documentElement.clientWidth - cmenuWidth - 20;
-                if (newLeft > document.documentElement.clientLeft) {
-                    left = newLeft + pageYOffset;
-                }
+        if (left + cmenuWidth > document.documentElement.clientWidth) {
+            var newLeft = document.documentElement.clientWidth - cmenuWidth - 20;
+            if (newLeft > document.documentElement.clientLeft) {
+                left = newLeft;
             }
-            left -= (wrapperOffset.left + pageXOffset);
-            left = Math.ceil(left + 1);
         }
-        cmenu.classList.add(TRANSPARENT);
-        if (top != null) {
-            this.wrapper.style.top = top + PIXEL;
-        }
-        if (left != null) {
-            this.wrapper.style.left = left + PIXEL;
-        }
+        this.element.style.top = Math.ceil(top + 1) + PIXEL;
+        this.element.style.left = Math.ceil(left + 1) + PIXEL;
+        cmenu.style.width = Math.ceil(cmenuWidth) + PIXEL;
+        this.element.style.zIndex = sf.popups.getZindexPartial(this.element).toString();
         cmenu.style.visibility = EMPTY;
         cmenu.focus();
         this.addEventListener();
-        return { Left: left, Top: top, ZIndex: zIndex, Width: Math.ceil(cmenuWidth) };
     };
     SfContextMenu.prototype.getMenuWidth = function (cmenu, width, isRtl) {
         var caretIcon = cmenu.getElementsByClassName(CARET)[0];
@@ -256,109 +282,183 @@ var SfContextMenu = /** @class */ (function () {
         sf.base.EventHandler.remove(document, MOUSEOVER, this.mouseOverHandler);
     };
     SfContextMenu.prototype.mouseDownHandler = function (e) {
-        if (!this.wrapper.childElementCount) {
+        if (!sf.base.select(DOT + MENU, this.element)) {
             this.removeEventListener();
             return;
         }
-        if (!sf.base.closest(e.target, HASH + this.wrapper.id)) {
-            this.dotnetRef.invokeMethodAsync(CLOSE, e);
+        if (!sf.base.closest(e.target, HASH + this.element.id) && (sf.base.isNullOrUndefined(this.menuId) ||
+            !sf.base.closest(e.target, this.menuId))) {
+            this.dotnetRef.invokeMethodAsync(CLOSE, 0, false, true, false);
         }
     };
     SfContextMenu.prototype.mouseOverHandler = function (e) {
-        if (!this.wrapper.childElementCount) {
+        if (!sf.base.select(DOT + MENU, this.element)) {
             this.removeEventListener();
             return;
         }
-        if (this.subMenuOpen && this.wrapper.childElementCount > 1) {
-            if (!sf.base.closest(e.target, HASH + this.wrapper.id)) {
-                this.dotnetRef.invokeMethodAsync(CLOSESUBMENU, e);
+        var target = e.target;
+        var menus = [].slice.call(sf.base.selectAll(DOT + MENU, this.element));
+        var scrollNav = sf.base.closest(target, SCROLLNAV);
+        if (this.subMenuOpen && (menus.length > 1 || (!sf.base.isNullOrUndefined(this.menuId) && !scrollNav))) {
+            if ((!sf.base.closest(target, HASH + this.element.id) && (sf.base.isNullOrUndefined(this.menuId) || !sf.base.closest(target, this.menuId))) ||
+                scrollNav) {
+                var index = 1;
+                if (!sf.base.isNullOrUndefined(this.menuId)) {
+                    index = 0;
+                    if (scrollNav) {
+                        index = menus.indexOf(sf.base.select(DOT + MENU, scrollNav.parentElement)) + 1;
+                        if (index === menus.length) {
+                            return;
+                        }
+                    }
+                }
+                this.dotnetRef.invokeMethodAsync(CLOSE, index, false, true, false);
+                if (!sf.base.isNullOrUndefined(this.menuId) && !sf.base.closest(target, SCROLLNAV)) {
+                    this.destroyMenuScroll(null);
+                }
+            }
+            if (!sf.base.isNullOrUndefined(this.menuId) && (sf.base.closest(target, HASH + this.element.id) || sf.base.closest(target, this.menuId)) &&
+                sf.base.closest(target, DOT + MENUITEM) && !sf.base.closest(target, DOT + SELECTED)) {
+                this.destroyMenuScroll(sf.base.closest(target, DOT + MENU));
             }
         }
         var activeEle = document.activeElement;
-        if (!sf.base.closest(activeEle, "" + HASH + this.wrapper.id) && this.wrapper.childElementCount) {
+        if (!sf.base.closest(activeEle, "" + HASH + this.element.id) && menus.length) {
             if (this.openAsMenu) {
                 this.openAsMenu = false;
                 sf.base.EventHandler.remove(document, MOUSEOVER, this.mouseOverHandler);
             }
-            var lastChild = this.wrapper.lastElementChild;
+            var lastChild = this.getLastMenu();
             if (lastChild) {
                 lastChild.focus();
             }
         }
     };
-    SfContextMenu.prototype.subMenuPosition = function (isRtl, showOnClick, isNull) {
-        if (!this.wrapper.childElementCount || this.wrapper.childElementCount < 2) {
-            return { Left: 0, Top: 0, Width: 0 };
+    SfContextMenu.prototype.destroyMenuScroll = function (menu) {
+        if (!sf.base.select(SCROLLMENU, this.element)) {
+            return;
         }
-        var parentLi = this.wrapper.children[this.wrapper.childElementCount - 2].querySelector("." + MENUITEM + "." + SELECTED);
+        var menuElement = sf.base.select(this.menuId);
+        if (menuElement) {
+            // tslint:disable-next-line:no-any
+            var menuInstance = menuElement.blazor__instance;
+            if (!sf.base.isNullOrUndefined(menuInstance)) {
+                menuInstance.destroyScroll(NONE, menu);
+            }
+        }
+    };
+    SfContextMenu.prototype.hideMenu = function (first) {
+        var cMenu;
+        if (first) {
+            cMenu = sf.base.select(DOT + MENU, this.element);
+            if (!cMenu || sf.base.isNullOrUndefined(this.element.parentElement)) {
+                return null;
+            }
+            if (this.element.parentElement !== document.body) {
+                document.body.appendChild(this.element);
+            }
+        }
+        else {
+            var menus = sf.base.selectAll(DOT + MENU, this.element);
+            if (menus.length < 2) {
+                return null;
+            }
+            cMenu = menus[menus.length - 1];
+        }
+        cMenu.style.width = EMPTY;
+        cMenu.style.visibility = HIDDEN;
+        cMenu.classList.remove(TRANSPARENT);
+        return cMenu;
+    };
+    SfContextMenu.prototype.subMenuPosition = function (cmenu, isRtl, showOnClick, isNull, scrollHeight) {
+        if (!cmenu) {
+            return;
+        }
+        var menus = sf.base.selectAll(DOT + MENU, this.element);
+        var parentLi = menus[menus.length - 2].querySelector("." + MENUITEM + "." + SELECTED);
         var parentOffset = parentLi.getBoundingClientRect();
-        var wrapperOffset = this.wrapper.getBoundingClientRect();
-        var cmenu = this.wrapper.lastElementChild;
-        cmenu.style.visibility = HIDDEN;
-        cmenu.classList.remove(TRANSPARENT);
-        var curUlOffset = cmenu.getBoundingClientRect();
-        var cmenuWidth = this.getMenuWidth(cmenu, curUlOffset.width, isRtl);
+        var containerOffset = this.element.getBoundingClientRect();
+        var menu = cmenu.classList.contains(MENU) ? cmenu : sf.base.select(DOT + MENU, cmenu);
+        var curUlOffset = menu.getBoundingClientRect();
+        var cmenuWidth = this.getMenuWidth(menu, curUlOffset.width, isRtl);
         var left;
         var borderLeft;
         if (isRtl) {
-            borderLeft = parseInt(getComputedStyle(cmenu).borderWidth, 10);
-            left = parentOffset.left - cmenuWidth - wrapperOffset.left;
+            borderLeft = parseInt(getComputedStyle(menu).borderWidth, 10);
+            left = parentOffset.left - cmenuWidth - containerOffset.left;
         }
         else {
-            left = parentOffset.right - wrapperOffset.left;
+            left = parentOffset.right - containerOffset.left;
         }
-        var top = parentOffset.top - wrapperOffset.top;
-        cmenu.classList.add(TRANSPARENT);
-        cmenu.style.visibility = EMPTY;
-        var focusedLi = cmenu.querySelector("" + DOT + MENUITEM + DOT + FOCUSED);
-        focusedLi ? focusedLi.focus() : cmenu.focus();
+        var top = parentOffset.top - containerOffset.top;
         if (isRtl) {
             if (parentOffset.left - borderLeft - cmenuWidth < document.documentElement.clientLeft) {
                 if (parentOffset.right + cmenuWidth < document.documentElement.clientWidth) {
-                    left = parentOffset.right - wrapperOffset.left;
+                    left = parentOffset.right - containerOffset.left;
                 }
             }
         }
         else if (parentOffset.right + cmenuWidth > document.documentElement.clientWidth) {
             var newLeft = parentOffset.left - cmenuWidth;
             if (newLeft > document.documentElement.clientLeft) {
-                left = newLeft - wrapperOffset.left;
+                left = newLeft - containerOffset.left;
             }
         }
-        if (parentOffset.top + curUlOffset.height > document.documentElement.clientHeight) {
-            var newTop = document.documentElement.clientHeight - curUlOffset.height - 20;
+        var height = scrollHeight || curUlOffset.height;
+        if (parentOffset.top + height > document.documentElement.clientHeight) {
+            var newTop = document.documentElement.clientHeight - height - 20;
             if (newTop > document.documentElement.clientTop) {
-                top = newTop - wrapperOffset.top;
+                top = newTop - containerOffset.top;
             }
         }
         this.subMenuOpen = !showOnClick;
+        cmenu.style.left = Math.ceil(left) + PIXEL;
+        cmenu.style.top = Math.ceil(top) + PIXEL;
+        cmenu.style.width = Math.ceil(cmenuWidth) + PIXEL;
+        menu.style.visibility = EMPTY;
+        var focusedLi = menu.querySelector("" + DOT + MENUITEM + DOT + FOCUSED);
+        focusedLi ? focusedLi.focus() : menu.focus();
         if (isNull) {
             this.openAsMenu = true;
             this.removeEventListener();
             this.addEventListener();
         }
-        return { Left: Math.ceil(left), Top: Math.ceil(top), Width: Math.ceil(cmenuWidth) };
     };
-    SfContextMenu.prototype.onPropertyChanged = function (key, value) {
+    SfContextMenu.prototype.getLastMenu = function () {
+        var menus = sf.base.selectAll(DOT + MENU, this.element);
+        return menus.length ? menus[menus.length - 1] : null;
+    };
+    SfContextMenu.prototype.onPropertyChanged = function (key, result) {
         switch (key) {
             case TARGET:
                 this.addContextMenuEvent(false);
-                this.target = value;
+                this.target = result;
                 this.addContextMenuEvent();
                 break;
             case FILTER:
-                this.filter = value;
+                this.filter = result;
                 break;
         }
     };
     SfContextMenu.prototype.destroy = function (refElement) {
         this.removeEventListener();
         this.addContextMenuEvent(false);
-        if (refElement && refElement.parentElement && refElement.previousElementSibling !== this.wrapper) {
-            refElement.parentElement.insertBefore(this.wrapper, refElement);
+        sf.base.EventHandler.remove(this.element, KEYDOWN, this.keyDownHandler);
+        if (refElement && refElement.parentElement && refElement.previousElementSibling !== this.element) {
+            refElement.parentElement.insertBefore(this.element, refElement);
         }
-        if ((!refElement || !refElement.parentElement) && this.wrapper.parentElement && this.wrapper.parentElement === document.body) {
-            document.body.removeChild(this.wrapper);
+        if ((!refElement || !refElement.parentElement) && this.element.parentElement && this.element.parentElement === document.body) {
+            document.body.removeChild(this.element);
+        }
+    };
+    SfContextMenu.prototype.updateProperty = function (showItemOnClick, menu) {
+        if (menu) {
+            this.menuId = HASH + menu.id;
+        }
+        if (!showItemOnClick) {
+            this.subMenuOpen = true;
+            this.removeEventListener();
+            this.addEventListener();
         }
     };
     return SfContextMenu;
@@ -369,27 +469,21 @@ var ContextMenu = {
         if (!sf.base.isNullOrUndefined(element)) {
             new SfContextMenu(element, target, filter, dotnetRef);
         }
-        return sf.base.Browser.isDevice;
     },
     contextMenuPosition: function (element, left, top, isRtl, subMenu) {
         if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
-            return element.blazor__instance.contextMenuPosition(left, top, isRtl, subMenu);
-        }
-        else {
-            return { Left: 0, Top: 0, ZIndex: 0, Width: 0 };
+            element.blazor__instance.contextMenuPosition(left, top, isRtl, subMenu);
         }
     },
     subMenuPosition: function (element, isRtl, showOnClick, isNull) {
         if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
-            return element.blazor__instance.subMenuPosition(isRtl, showOnClick, isNull);
-        }
-        else {
-            return { Left: 0, Top: 0, Width: 0 };
+            var cmenu = element.blazor__instance.hideMenu();
+            element.blazor__instance.subMenuPosition(cmenu, isRtl, showOnClick, isNull);
         }
     },
-    onPropertyChanged: function (element, key, value) {
+    onPropertyChanged: function (element, key, result) {
         if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
-            element.blazor__instance.onPropertyChanged(key, value);
+            element.blazor__instance.onPropertyChanged(key, result);
         }
     },
     destroy: function (element, refElement) {

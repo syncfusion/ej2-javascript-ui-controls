@@ -431,7 +431,8 @@ export class Edit {
                         }
                         ganttObj.dataOperation.updateMappingData(ganttData, ganttPropByMapping[key]);
                     } else {
-                        ganttObj.setRecordValue(ganttPropByMapping[key], data[key], ganttData.ganttProperties, true);
+                        let tempDate: Date = typeof data[key] === 'string' ? new Date(data[key] as string) : data[key];
+                        ganttObj.setRecordValue(ganttPropByMapping[key], tempDate, ganttData.ganttProperties, true);
                         ganttObj.dataOperation.updateMappingData(ganttData, ganttPropByMapping[key]);
                     }
                 } else {
@@ -2730,14 +2731,14 @@ export class Edit {
                     let recordIndex1: number = this.treeGridData.indexOf(droppedRec);
                     if (this.dropPosition === 'bottomSegment') {
                         if (!droppedRec.hasChildRecords) {
-                            if (this.parent.taskFields.parentID && (this.parent.dataSource as IGanttData[]).length > 0) {
-                                (this.parent.dataSource as IGanttData[]).splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
+                            if (this.parent.taskFields.parentID && (this.ganttData as IGanttData[]).length > 0) {
+                                (this.ganttData as IGanttData[]).splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
                             }
                             this.treeGridData.splice(recordIndex1 + 1, 0, this.draggedRecord);
                         } else {
                             c = this.parent.editModule.getChildCount(droppedRec, 0);
-                            if (this.parent.taskFields.parentID && (this.parent.dataSource as IGanttData[]).length > 0) {
-                                (this.parent.dataSource as IGanttData[]).splice(recordIndex1 + c + 1, 0, this.draggedRecord.taskData);
+                            if (this.parent.taskFields.parentID && (this.ganttData as IGanttData[]).length > 0) {
+                                (this.ganttData as IGanttData[]).splice(recordIndex1 + c + 1, 0, this.draggedRecord.taskData);
                             }
                             this.treeGridData.splice(recordIndex1 + c + 1, 0, this.draggedRecord);
 
@@ -2812,8 +2813,8 @@ export class Edit {
         let proxy: Gantt = this.parent;
         let tempData: Object;
         let indx: number;
-        if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.json.length > 0) {
-            tempData = (<DataManager>proxy.dataSource).dataSource.json;
+        if (this.parent.dataSource instanceof DataManager) {
+            tempData = getValue('dataOperation.dataArray', this.parent);
         } else {
             tempData = proxy.dataSource;
         }
@@ -2856,8 +2857,8 @@ export class Edit {
         }
     }
     private deleteDragRow(): void {
-        if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.json.length > 0) {
-            this.ganttData = this.parent.dataSource.dataSource.json;
+        if (this.parent.dataSource instanceof DataManager) {
+            this.ganttData = getValue('dataOperation.dataArray', this.parent);
         } else {
             this.ganttData = this.parent.dataSource;
         }
@@ -2874,8 +2875,8 @@ export class Edit {
             childRec === 0) ? recordIndex1 + 1 :
             childRec + recordIndex1 + 1;
         if (this.dropPosition === 'middleSegment') {
-            if (obj.taskFields.parentID && (this.parent.dataSource as IGanttData[]).length > 0) {
-                (this.parent.dataSource as IGanttData[]).splice(childRecordsLength, 0, this.draggedRecord.taskData);
+            if (obj.taskFields.parentID && (this.ganttData as IGanttData[]).length > 0) {
+                (this.ganttData as IGanttData[]).splice(childRecordsLength, 0, this.draggedRecord.taskData);
             }
             this.treeGridData.splice(childRecordsLength, 0, this.draggedRecord);
             this.recordLevel();
@@ -2923,8 +2924,8 @@ export class Edit {
             count++;
             obj.flatData.splice(count, 0, currentRec);
             this.parent.ids.splice(count, 0, currentRec.ganttProperties.rowUniqueID.toString());
-            if (obj.taskFields.parentID && (obj.dataSource as IGanttData[]).length > 0) {
-                (obj.dataSource as IGanttData[]).splice(count, 0, currentRec.taskData);
+            if (obj.taskFields.parentID && (this.ganttData as IGanttData[]).length > 0) {
+                (this.ganttData as IGanttData[]).splice(count, 0, currentRec.taskData);
             }
             if (currentRec.hasChildRecords) {
                 count = this.updateChildRecord(currentRec, count);
@@ -2935,7 +2936,11 @@ export class Edit {
     private removeRecords(record: IGanttData): void {
         let obj: Gantt = this.parent;
         let dataSource: Object;
-        dataSource = this.parent.dataSource;
+        if (this.parent.dataSource instanceof DataManager) {
+            dataSource = getValue('dataOperation.dataArray', this.parent);
+        } else {
+            dataSource = this.parent.dataSource;
+        }
         let delRow: IGanttData = record;
         let flatParent: IGanttData = this.parent.getParentTask(delRow.parentItem);
         if (delRow) {
@@ -2997,16 +3002,19 @@ export class Edit {
         for (let i: number = 0; i < record.childRecords.length; i++) {
             currentRec = record.childRecords[i];
             let data: Object;
-            data = (this.parent.dataSource as IGanttData[]).length > 0 ?
-                this.parent.dataSource as IGanttData[] : this.parent.currentViewData;
+            if (this.parent.dataSource instanceof DataManager) {
+                data = getValue('dataOperation.dataArray', this.parent);
+            } else {
+                data = this.parent.dataSource;
+            }
             for (let i: number = 0; i < (<IGanttData[]>data).length; i++) {
                 if (data[i][this.parent.taskFields.id] === currentRec.taskData[this.parent.taskFields.id]) {
                     indx = i;
                 }
             }
             if (indx !== -1) {
-                if ((obj.dataSource as IGanttData[]).length > 0) {
-                    (obj.dataSource as IGanttData[]).splice(indx, 1);
+                if ((data as IGanttData[]).length > 0) {
+                    (data as IGanttData[]).splice(indx, 1);
                 }
                 this.treeGridData.splice(indx, 1);
             }

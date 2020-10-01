@@ -2,7 +2,7 @@
 
   /*! field-list theme */
 
-  #{&}.e-pivotfieldlist {
+  .e-pivotfieldlist {
     .e-disable {
       display: none;
     }
@@ -12,7 +12,7 @@
     }
   }
 
-  #{&}.e-pivot-formatting-dialog {
+  .e-pivot-formatting-dialog {
     // sass-lint:disable-all
     max-height: 480px !important;
     min-width: $format-dialog-width !important;
@@ -217,8 +217,8 @@
     }
   }
 
-  .e-bigger#{&}.e-pivot-formatting-dialog,
-  .e-bigger#{&} .e-pivot-formatting-dialog,
+  .e-bigger.e-pivot-formatting-dialog,
+  .e-bigger .e-pivot-formatting-dialog,
   .e-bigger.e-pivot-formatting-dialog,
   .e-bigger .e-pivot-formatting-dialog {
     // sass-lint:disable-all
@@ -291,7 +291,7 @@
     }
   }
 
-  #{&}.e-pivot-calc-dialog-div {
+  .e-pivot-calc-dialog-div {
     // sass-lint:disable-all
     max-height: 550px !important;
     // sass-lint:enable-all
@@ -705,8 +705,8 @@
     // sass-lint:enable-all
   }
 
-  .e-bigger#{&}.e-pivot-calc-dialog-div,
-  .e-bigger#{&} .e-pivot-calc-dialog-div,
+  .e-bigger.e-pivot-calc-dialog-div,
+  .e-bigger .e-pivot-calc-dialog-div,
   .e-bigger.e-pivot-calc-dialog-div,
   .e-bigger .e-pivot-calc-dialog-div {
     // sass-lint:disable-all
@@ -791,7 +791,7 @@
     // sass-lint:enable-all
   }
 
-  #{&}.e-pivotfieldlist-wrapper {
+  .e-pivotfieldlist-wrapper {
     .e-adaptive-field-list-dialog,
     .e-member-editor-dialog,
     .e-value-field-settings {
@@ -1223,8 +1223,8 @@
     }
   }
 
-  #{&}.e-field-list-tree.e-drag-item.e-treeview,
-  #{&}.e-pivot-calc.e-drag-item.e-treeview {
+  .e-field-list-tree.e-drag-item.e-treeview,
+  .e-pivot-calc.e-drag-item.e-treeview {
     background-color: $field-list-drag-clone-bg-color;
     border: $field-list-border-size $field-list-border-type $field-list-default-border-color;
     border-radius: $field-list-drag-clone-border-radius;
@@ -1305,10 +1305,10 @@
     }
   }
 
-  .e-bigger #{&}.e-field-list-tree.e-drag-item.e-treeview,
-  .e-bigger #{&}.e-pivot-calc.e-drag-item.e-treeview,
-  .e-bigger#{&}.e-field-list-tree.e-drag-item.e-treeview,
-  .e-bigger#{&}.e-pivot-calc.e-drag-item.e-treeview,
+  .e-bigger .e-field-list-tree.e-drag-item.e-treeview,
+  .e-bigger .e-pivot-calc.e-drag-item.e-treeview,
+  .e-bigger.e-field-list-tree.e-drag-item.e-treeview,
+  .e-bigger.e-pivot-calc.e-drag-item.e-treeview,
   .e-bigger .e-field-list-tree.e-drag-item.e-treeview,
   .e-bigger .e-pivot-calc.e-drag-item.e-treeview,
   .e-bigger.e-field-list-tree.e-drag-item.e-treeview
@@ -1338,7 +1338,7 @@
   }
 
   // sass-lint:disable-all
-  #{&}.e-button-drag-clone {
+  .e-button-drag-clone {
     background-color: $field-list-drag-clone-bg-color !important;
     border: $field-list-border-size $field-list-border-type $field-list-drag-default-border-color;
     border-radius: $field-list-drag-clone-border-radius;
@@ -1363,8 +1363,8 @@
     }
   }
 
-  .e-bigger #{&}.e-button-drag-clone,
-  .e-bigger#{&}.e-button-drag-clone,
+  .e-bigger .e-button-drag-clone,
+  .e-bigger.e-button-drag-clone,
   .e-bigger .e-button-drag-clone,
   .e-bigger.e-button-drag-clone {
     height: $field-list-bigger-button-height !important;
@@ -1377,7 +1377,7 @@
   }
 
   // sass-lint:enable-all
-  #{&}.e-pivot-error-dialog {
+  .e-pivot-error-dialog {
     max-width: 400px;
     width: auto;
 
@@ -1397,8 +1397,8 @@
     }
   }
 
-  .e-bigger #{&}.e-pivotfieldlist-wrapper,
-  .e-bigger#{&}.e-pivotfieldlist-wrapper,
+  .e-bigger .e-pivotfieldlist-wrapper,
+  .e-bigger.e-pivotfieldlist-wrapper,
   .e-bigger .e-pivotfieldlist-wrapper,
   .e-bigger.e-pivotfieldlist-wrapper {
     .e-adaptive-field-list-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container-outer-div ,

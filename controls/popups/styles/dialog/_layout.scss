@@ -1,7 +1,7 @@
 @include export-module('dialog-layout') {
   /*! dialog layout */
   // sass-lint:disable no-vendor-prefixes
-  #{&}.e-dialog {
+  .e-dialog {
     -webkit-flex-direction: column;
     border: $dialog-border;
     border-radius: $dialog-border-radius;
@@ -90,9 +90,9 @@
   }
 
   //Bigger Style 
-  .e-bigger#{&}.e-dialog,
-  &.e-bigger #{&}.e-dialog {
-    & .e-dlg-header-content {
+  .e-bigger.e-dialog,
+  #{if(&, '&', '*')}.e-bigger .e-dialog {
+    #{if(&, '&', '*')} .e-dlg-header-content {
       padding: $dialog-bigger-header-content-padding;
       }
 
@@ -139,7 +139,7 @@
 
   //Normal Style
 
-  #{&}.e-dialog {
+  .e-dialog {
     & .e-dlg-header-content {
       border-bottom: $dialog-header-border;
       padding: $dialog-header-content-padding;
@@ -162,11 +162,11 @@
     margin-right: $dialog-footer-button-margin-right;
   }
 
-  #{&}.e-dialog.e-draggable .e-dlg-header-content {
+  .e-dialog.e-draggable .e-dlg-header-content {
     cursor: move;
   }
 
-  #{&}.e-dialog {
+  .e-dialog {
     max-height: 98%;
     max-width: 100%;
     min-width: 240px;
@@ -184,11 +184,11 @@
     text-align: left;
   }
 
-  #{&}.e-dialog.e-rtl .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
+  .e-dialog.e-rtl .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
     float: left;
   }
 
-  #{&}.e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
+  .e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
     background-color: $dialog-btn-bg-color;
     border-color: $dialog-btn-border-color;
     border-radius: $dialog-headericon-border-radius;
@@ -248,7 +248,7 @@
     }
   // sass-lint:enable no-important
 
-  .e-popup.e-popup-open#{&}.e-dialog {
+  .e-popup.e-popup-open.e-dialog {
     display: inline-flex;
   }
 
@@ -327,9 +327,9 @@
     justify-content: flex-end;
   }
 
-  #{&}.e-dialog .e-btn.e-dlg-closeicon-btn:hover,
-  #{&}.e-dialog .e-btn.e-dlg-closeicon-btn:focus,
-  #{&}.e-dialog .e-btn.e-dlg-closeicon-btn:active {
+  .e-dialog .e-btn.e-dlg-closeicon-btn:hover,
+  .e-dialog .e-btn.e-dlg-closeicon-btn:focus,
+  .e-dialog .e-btn.e-dlg-closeicon-btn:active {
     background-color: $dialog-active-btn-bg-color;
     border-color: $dialog-active-btn-border-color;
     box-shadow: 0 0 0 transparent;

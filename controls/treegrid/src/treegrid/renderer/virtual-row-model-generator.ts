@@ -4,6 +4,7 @@ import { ITreeData } from '../base';
 import * as events from '../base/constant';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
+import { isCountRequired } from '../utils';
 /**
  * RowModelGenerator is used to generate grid data rows.
  * @hidden
@@ -22,8 +23,8 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
         this.visualData = args.data;
     }
     public generateRows(data: Object[], notifyArgs?: NotifyArgs): Row<Column>[] {
-        if (this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
-            && (this.parent.dataSource as DataManager).dataSource.url !== '') {
+        if ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
+            && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
                 return super.generateRows(data, notifyArgs);
             } else {
                 if (!isNullOrUndefined(notifyArgs.requestType) && notifyArgs.requestType.toString() === 'collapseAll') {
@@ -39,8 +40,8 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
     public checkAndResetCache(action: string): boolean {
         let clear: boolean = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'reorder',
                             'save', 'delete'].some((value: string) => action === value);
-        if (this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
-            && (this.parent.dataSource as DataManager).dataSource.url !== '') {
+        if ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
+            && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
                 let model: string = 'model';
                 let currentPage: number = this[model].currentPage;
                 if (clear) {

@@ -366,6 +366,7 @@ var MultiSelect = /** @class */ (function (_super) {
                     sf.base.addClass([_this.overAllWrapper], [iconAnimation]);
                 }
                 _this.refreshPopup();
+                _this.renderReactTemplates();
                 _this.popupObj.show(eventArgs.animation, (_this.zIndex === 1000) ? _this.element : null);
                 sf.base.attributes(_this.inputElement, { 'aria-expanded': 'true' });
                 if (_this.isFirstClick) {
@@ -1948,10 +1949,14 @@ var MultiSelect = /** @class */ (function (_super) {
             else {
                 compiledString = sf.base.compile(this.valueTemplate);
             }
-            for (var _i = 0, _a = compiledString(itemData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
-                var item = _a[_i];
-                chipContent.appendChild(item);
+            // tslint:disable-next-line
+            var valueCompTemp = compiledString(itemData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate, null, chipContent);
+            if (valueCompTemp && valueCompTemp.length > 0) {
+                for (var i = 0; i < valueCompTemp.length; i++) {
+                    chipContent.appendChild(valueCompTemp[i]);
+                }
             }
+            this.renderReactTemplates();
             this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false, false);
         }
         else if (this.enableHtmlSanitizer) {
@@ -2154,9 +2159,12 @@ var MultiSelect = /** @class */ (function (_super) {
         else {
             compiledString = sf.base.compile(this.headerTemplate);
         }
-        var elements = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate);
-        for (var temp = 0; temp < elements.length; temp++) {
-            this.header.appendChild(elements[temp]);
+        // tslint:disable-next-line
+        var elements = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate, null, this.header);
+        if (elements && elements.length > 0) {
+            for (var temp = 0; temp < elements.length; temp++) {
+                this.header.appendChild(elements[temp]);
+            }
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, true, false);
         if (this.mode === 'CheckBox' && this.showSelectAll) {
@@ -2181,9 +2189,12 @@ var MultiSelect = /** @class */ (function (_super) {
         else {
             compiledString = sf.base.compile(this.footerTemplate);
         }
-        var elements = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate);
-        for (var temp = 0; temp < elements.length; temp++) {
-            this.footer.appendChild(elements[temp]);
+        // tslint:disable-next-line
+        var elements = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate, null, this.footer);
+        if (elements && elements.length > 0) {
+            for (var temp = 0; temp < elements.length; temp++) {
+                this.footer.appendChild(elements[temp]);
+            }
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, false, true);
         sf.base.append([this.footer], this.popupWrapper);
@@ -3000,8 +3011,11 @@ var MultiSelect = /** @class */ (function (_super) {
                 overflowCountTemplate: '+${count} more..',
                 totalCountTemplate: '${count} selected'
             };
-            var l10n = new sf.base.L10n(this.getLocaleName(), {}, this.locale);
+            var l10n = new sf.base.L10n(this.getLocaleName(), l10nLocale, this.locale);
             if (l10n.getConstant('actionFailureTemplate') === '') {
+                l10n = new sf.base.L10n('dropdowns', l10nLocale, this.locale);
+            }
+            if (l10n.getConstant('noRecordsTemplate') === '') {
                 l10n = new sf.base.L10n('dropdowns', l10nLocale, this.locale);
             }
             var remainContent = l10n.getConstant('overflowCountTemplate');
@@ -3010,8 +3024,13 @@ var MultiSelect = /** @class */ (function (_super) {
             });
             var compiledString = sf.base.compile(remainContent);
             var totalCompiledString = sf.base.compile(l10n.getConstant('totalCountTemplate'));
-            raminElement.appendChild(compiledString({ 'count': this.value.length }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0]);
+            // tslint:disable-next-line
+            var remainCompildTemp = compiledString({ 'count': this.value.length }, this, 'overflowCountTemplate', null, !this.isStringTemplate, null, raminElement);
+            if (remainCompildTemp && remainCompildTemp.length > 0) {
+                raminElement.appendChild(remainCompildTemp[0]);
+            }
             this.viewWrapper.appendChild(raminElement);
+            this.renderReactTemplates();
             var remainSize = raminElement.offsetWidth;
             sf.base.remove(raminElement);
             if (this.showDropDownIcon) {
@@ -3084,9 +3103,12 @@ var MultiSelect = /** @class */ (function (_super) {
             viewWrapper.removeChild(viewWrapper.firstChild);
         }
         raminElement.innerHTML = '';
+        // tslint:disable-next-line
+        var remainTemp = compiledString({ 'count': remaining }, this, 'overflowCountTemplate', null, !this.isStringTemplate, null, raminElement);
+        // tslint:disable-next-line
+        var totalTemp = totalCompiledString({ 'count': remaining }, this, 'totalCountTemplate', null, !this.isStringTemplate, null, raminElement);
         raminElement.appendChild((viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) ?
-            compiledString({ 'count': remaining }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0] :
-            totalCompiledString({ 'count': remaining }, this, 'totalCountTemplate', null, !this.isStringTemplate)[0]);
+            remainTemp && remainTemp[0] : totalTemp && totalTemp[0]);
         if (viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) {
             viewWrapper.classList.remove(TOTAL_COUNT_WRAPPER);
         }
@@ -3786,6 +3808,10 @@ var MultiSelect = /** @class */ (function (_super) {
      * @return {void}
      */
     MultiSelect.prototype.destroy = function () {
+        // tslint:disable-next-line
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         if (this.popupObj) {
             this.popupObj.hide();
         }
@@ -4527,7 +4553,5 @@ exports.floatLabelBlur = floatLabelBlur;
 return exports;
 
 });
-sfBlazor.modules["multiselect"] = "dropdowns.MultiSelect";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.multiselect, () => {
+
     sf.dropdowns = sf.base.extend({}, sf.dropdowns, sfmultiselect({}));
-});

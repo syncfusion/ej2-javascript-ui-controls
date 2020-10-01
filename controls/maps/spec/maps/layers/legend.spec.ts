@@ -561,6 +561,22 @@ describe('Map marker properties tesing', () => {
             map.layers[0].shapeSettings.colorMapping = [];
             map.refresh();
         });
+        it('checking interactive mode with height', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Legend_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            map.legendSettings.height = '100px'
+            map.refresh();
+        });
+        it('checking interactive mode with width', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Legend_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            map.legendSettings.width = '50px'
+            map.refresh();
+        });
     });
 
     describe('Marker testing', () => {

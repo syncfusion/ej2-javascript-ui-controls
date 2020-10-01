@@ -3,7 +3,7 @@ import { Spreadsheet } from '../base/index';
 import { refreshSheetTabs, locale, insertSheetTab, cMenuBeforeOpen, dialog, renameSheet, hideSheet, beginAction } from '../common/index';
 import { sheetNameUpdate, clearUndoRedoCollection, completeAction, showAggregate } from '../common/index';
 import { sheetTabs, renameSheetTab, removeSheetTab, activeSheetChanged, onVerticalScroll, onHorizontalScroll } from '../common/index';
-import { protectSheet, DialogBeforeOpenEventArgs } from '../common/index';
+import { protectSheet, DialogBeforeOpenEventArgs, editOperation } from '../common/index';
 import { SheetModel, getSheetName, aggregateComputation, AggregateArgs } from '../../workbook/index';
 import { isSingleCell, getRangeIndexes, getSheet, getSheetIndex } from '../../workbook/index';
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -12,7 +12,7 @@ import { isCollide, OffsetPosition, calculatePosition } from '@syncfusion/ej2-po
 import { rippleEffect, L10n, closest, EventHandler, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dialog } from '../services/index';
 import { sheetsDestroyed, activeCellChanged, workbookFormulaOperation, InsertDeleteModelArgs } from '../../workbook/common/index';
-import { insertModel } from './../../workbook/common/index';
+import { insertModel, checkIsFormula } from './../../workbook/common/index';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
 /**
@@ -105,6 +105,11 @@ export class SheetTabs {
                         previousSheetIndex: args.previousIndex, currentSheetIndex: args.selectedIndex
                     };
                     this.parent.notify(completeAction, { eventArgs: completeEventArgs, action: 'gotoSheet' });
+                    let eventArgs: { action: string, sheetID: string } = {
+                        action: 'registerGridInCalc',
+                        sheetID: (args.selectedIndex + 1).toString()
+                    };
+                    this.parent.notify(workbookFormulaOperation, eventArgs);
                 }
             },
             created: (): void => {
@@ -178,9 +183,14 @@ export class SheetTabs {
     }
 
     private addSheetTab(): void {
+        let eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
+        this.parent.notify(editOperation, eventArgs);
+        let isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue);
+        if (!isFormulaEdit) {
         this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent, start: this.parent.activeSheetIndex + 1,  end:
             this.parent.activeSheetIndex + 1, modelType: 'Sheet', isAction: true, activeSheetIndex: this.parent.activeSheetIndex + 1 });
         this.parent.element.focus();
+        }
     }
 
     private insertSheetTab(args: { startIdx: number, endIdx: number }): void {
@@ -432,11 +442,11 @@ export class SheetTabs {
                     });
                 }
             } else {
-                this.destroySheet(sheetIndex);
                 let sheetArgs: { action: string, sheetName: string, index: number } = {
-                    action: 'deleteSheetTab', sheetName: '', index: sheetIndex
+                    action: 'deleteSheetTab', sheetName: '', index: sheetIndex + 1
                 };
                 this.parent.notify(workbookFormulaOperation, sheetArgs);
+                this.destroySheet(sheetIndex);
                 this.parent.notify(clearUndoRedoCollection, null);
                 if (args && !args.isAction) {
                     eventArgs.sheetCount = this.parent.sheets.length;
@@ -464,11 +474,11 @@ export class SheetTabs {
     }
 
     private forceDelete(sheetIndex: number): void {
-        this.destroySheet(sheetIndex);
         let sheetArgs: { action: string, sheetName: string, index: number } = {
-            action: 'deleteSheetTab', sheetName: '', index: sheetIndex
+            action: 'deleteSheetTab', sheetName: '', index: sheetIndex + 1
         };
         this.parent.notify(workbookFormulaOperation, sheetArgs);
+        this.destroySheet(sheetIndex);
     }
 
     private destroySheet(sheetIndex?: number): void {

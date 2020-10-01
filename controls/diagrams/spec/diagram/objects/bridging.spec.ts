@@ -5,11 +5,10 @@ import { PathElement } from '../../../src/diagram/core/elements/path-element';
 import { DiagramElement } from '../../../src/diagram/core/elements/diagram-element';
 import { ConnectorConstraints, DiagramConstraints } from '../../../src/diagram/enum/enum';
 import { ConnectorBridging } from '../../../src/diagram/objects/connector-bridging';
-import { Connector, BpmnDiagrams, OrthogonalSegment } from '../../../src/diagram/index';
+import { Connector, OrthogonalSegment } from '../../../src/diagram/index';
 import { getLineSegment } from '../../../src/diagram/utility/diagram-util';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(ConnectorBridging);
-Diagram.Inject(BpmnDiagrams);
 /**
  * Bridging spec
  */
@@ -4515,4 +4514,5 @@ describe('Diagram Control', () => {
         });
 
     });
+
 });

@@ -215,6 +215,12 @@ export interface IGrid extends Component<HTMLElement> {
     allowGrouping?: boolean;
 
     /**
+     * Specifies whether the immutable mode is enable or not.
+     * @default null
+     */
+    enableImmutableMode?: boolean;
+
+    /**
      * Specifies whether the column menu is show or not.
      * @default null
      */
@@ -492,6 +498,8 @@ export interface IGrid extends Component<HTMLElement> {
     isAutoGen?: boolean;
     pageTemplateChange?: boolean;
     enableHeaderFocus?: boolean;
+    renderTemplates?: Function;
+    isReact?: boolean;
 
     /**
      * @hidden
@@ -824,6 +832,26 @@ export interface NotifyArgs {
     rowObject?: Row<Column>;
     renderMovableContent?: boolean;
     promise?: Promise<Object>;
+}
+
+export interface LazyLoadArgs {
+    groupInfo?: Row<Column>;
+    enableCaching?: boolean;
+    cancel?: boolean;
+    captionRowElement?: HTMLTableRowElement;
+}
+
+export interface LazyLoadGroupArgs extends LazyLoadArgs {
+    makeRequest?: boolean;
+    skip?: number;
+    take?: number;
+    fields?: string[];
+    keys?: string[];
+    isExpand?: boolean;
+    isScroll?: boolean;
+    scrollUp?: boolean;
+    cachedRowIndex?: number;
+    rowIndex?: number;
 }
 
 export interface InfiniteScrollArgs {

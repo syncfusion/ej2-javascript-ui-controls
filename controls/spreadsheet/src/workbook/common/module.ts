@@ -78,5 +78,8 @@ export function getWorkbookRequiredModules(context: Workbook, modules: ModuleDec
     if (context.allowDataValidation) {
         modules.push({ member: 'workbookConditionalFormatting', args: [context] });
     }
+    if (context.allowImage) {
+        modules.push({ member: 'workbookImage', args: [context] });
+    }
     return modules;
 }

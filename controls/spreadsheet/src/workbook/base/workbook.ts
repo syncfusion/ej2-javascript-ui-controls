@@ -9,18 +9,19 @@ import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress, localeDa
 import * as events from '../common/event';
 import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';
 import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel, setLockCells } from '../common/index';
-import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs } from '../common/interface';
+import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, UnprotectArgs } from '../common/interface';
 import { SaveOptions, SetCellFormatArgs, ClearOptions } from '../common/interface';
 import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, ConditionalFormatModel } from '../common/index';
-import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, setMerge, MergeType, MergeArgs, UnprotectArgs } from '../common/index';
+import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs } from '../common/index';
+import { setMerge, MergeType, MergeArgs, ImageModel } from '../common/index';
 import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';
 import { DataBind, setRow, setColumn } from '../index';
-import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter } from '../integrations/index';
+import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter, WorkbookImage } from '../integrations/index';
 import { WorkbookNumberFormat } from '../integrations/number-format';
 import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet } from '../actions/index';
 import { WorkbookDataValidation, WorkbookMerge } from '../actions/index';
 import { ServiceLocator } from '../services/index';
-import { setLinkModel } from '../common/event';
+import { setLinkModel, setImage } from '../common/event';
 import { beginAction, completeAction } from '../../spreadsheet/common/event';
 import { WorkbookFindAndReplace } from '../actions/find-and-replace';
 import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
@@ -219,6 +220,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public allowDataValidation: boolean;
 
     /**
+     * It allows you to insert the image in spreadsheet.
+     * @default true
+     */
+    @Property(true)
+    public allowImage: boolean;
+
+    /**
      * It allows you to apply conditional formatting to the sheet. 
      * @default true
      */
@@ -403,7 +411,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         Workbook.Inject(
             DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit,
             WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookFindAndReplace,
-            WorkbookDataValidation, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat);
+            WorkbookDataValidation, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, WorkbookImage);
         this.commonCellStyle = {};
         if (options && options.cellStyle) { this.commonCellStyle = options.cellStyle; }
         if (this.getModuleName() === 'workbook') {
@@ -1004,6 +1012,16 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         clearRange(
             this, address || this.getActiveSheet().selectedRange,
             isNullOrUndefined(sheetIndex) ? this.activeSheetIndex : sheetIndex, valueOnly);
+    }
+
+    /**
+     * Used to set the image in spreadsheet.
+     * @param {ImageModel} images - Specifies the options to insert image in spreadsheet.
+     * @param {string} range - Specifies the range in spreadsheet.
+     * @returns void
+     */
+    public insertImage(images: ImageModel[], range?: string): void {
+        this.notify(setImage, { options: images, range: range ? range : this.getActiveSheet().selectedRange });
     }
 
     /**

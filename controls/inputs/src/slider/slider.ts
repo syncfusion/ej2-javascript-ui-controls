@@ -431,6 +431,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private formElement: HTMLFormElement;
     private formResetValue: number | number[];
     private rangeBarDragged : boolean;
+    public initialTooltip: boolean = true;
     /**
      * It is used to denote the current value of the Slider.
      * The value should be specified in array of number when render Slider type as range.
@@ -1123,13 +1124,15 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             value: this.value,
             text: ''
         };
-        if (isBlazor() && this.isServerRendered) {
-            args.text = this.formatContent(this.tooltipFormatInfo, false);
-        } else {
-            this.setTooltipContent();
-            args.text = text = this.tooltipObj.content as string;
-        }
-        this.trigger('tooltipChange', args, (observedArgs: SliderChangeEventArgs) => {
+        if (this.initialTooltip) {
+            this.initialTooltip = false;
+            if (isBlazor() && this.isServerRendered) {
+                args.text = this.formatContent(this.tooltipFormatInfo, false);
+            } else {
+                this.setTooltipContent();
+                args.text = text = this.tooltipObj.content as string;
+            }
+            this.trigger('tooltipChange', args, (observedArgs: SliderChangeEventArgs) => {
             this.addTooltipClass(observedArgs.text);
             if (text !== observedArgs.text) {
                 this.customAriaText = observedArgs.text;
@@ -1139,7 +1142,8 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                     this.setAriaAttrValue(this.secondHandle);
                 }
             }
-        });
+            });
+        }
     }
 
     private setTooltipContent(): void {
@@ -2187,6 +2191,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.setProperties({ 'value': this.handleVal1 }, true);
             if (previous !== this.value) {
                 this.trigger(eventName, this.changeEventArgs(eventName, e));
+                this.initialTooltip = true;
                 this.setPreviousVal(eventName, this.value);
             }
             this.setAriaAttrValue(this.firstHandle);
@@ -2196,7 +2201,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             if ((<number[]>previous).length === (<number[]>this.value).length
                 && (this.value as number[])[0] !== (<number[]>previous)[0] || (this.value as number[])[1] !== (<number[]>previous)[1]
             ) {
+                this.initialTooltip = false;
                 this.trigger(eventName, this.changeEventArgs(eventName, e));
+                this.initialTooltip = true;
                 this.setPreviousVal(eventName, this.value);
             }
             this.setAriaAttrValue(this.getHandle());
@@ -2206,7 +2213,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private changeEventArgs(eventName: string, e: MouseEvent | TouchEvent | KeyboardEvent): SliderChangeEventArgs {
         let eventArgs: SliderChangeEventArgs;
-        if (this.tooltip.isVisible && this.tooltipObj) {
+        if (this.tooltip.isVisible && this.tooltipObj && this.initialTooltip) {
             if (!isBlazor() || !this.isServerRendered) {
                 this.tooltipValue();
             }
@@ -2577,6 +2584,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.rangeBar.style.transition = transition.rangeBar;
         }
         this.setHandlePosition(evt);
+        this.changeEvent('changed', evt);
         if (this.type !== 'Default') {
             this.setRangeBar();
         }
@@ -2664,6 +2672,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.handleFocusOut();
         this.firstHandle.classList.remove(classNames.sliderActiveHandle);
         if (this.type === 'Range') {
+            this.initialTooltip = false;
             this.secondHandle.classList.remove(classNames.sliderActiveHandle);
         }
         this.closeTooltip();
@@ -2787,7 +2796,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         return 1;
     }
     private refreshTooltip(target: HTMLElement): void {
-        if (this.tooltip.isVisible && this.tooltipObj) {
+        if (this.tooltip.isVisible && this.tooltipObj && this.initialTooltip) {
             this.tooltipValue();
             if (target) {
                 this.tooltipObj.refresh(target);

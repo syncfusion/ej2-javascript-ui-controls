@@ -855,8 +855,8 @@ export class HeaderFocus extends ContentFocus implements IFocus {
     }
 
     public selector(row: Row<Column>, cell: Cell<Column>): boolean {
-        return (cell.visible && (cell.column.field !== undefined || cell.isTemplate)) || cell.column.type === 'checkbox' ||
-            cell.cellType === CellType.StackedHeader;
+        return (cell.visible && (cell.column.field !== undefined || cell.isTemplate || !isNullOrUndefined(cell.column.template))) ||
+            cell.column.type === 'checkbox' || cell.cellType === CellType.StackedHeader;
     }
 
     public jump(action: string, current: number[]): SwapInfo {

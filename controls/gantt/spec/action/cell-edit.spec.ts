@@ -813,7 +813,7 @@ describe('Work', () => {
         ganttObj.dataBind();
         //Task without resource
         expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo).toBe(null);
-        expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(40);
+        expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(40.45);
         expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(3);
         expect(ganttObj.currentViewData[1].ganttProperties.workUnit).toBe('hour');
         expect(ganttObj.currentViewData[1].ganttProperties.taskType).toBe('FixedWork');
@@ -825,7 +825,7 @@ describe('Work', () => {
         expect(ganttObj.currentViewData[2].ganttProperties.taskType).toBe('FixedWork');
         //Parent Task without resource
         expect(ganttObj.currentViewData[0].ganttProperties.resourceInfo).toBe(null);
-        expect(ganttObj.currentViewData[0].ganttProperties.work).toBe(140);
+        expect(ganttObj.currentViewData[0].ganttProperties.work).toBe(140.45);
         expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(3);
         expect(ganttObj.currentViewData[0].ganttProperties.workUnit).toBe('hour');
         expect(ganttObj.currentViewData[0].ganttProperties.taskType).toBe('FixedDuration');

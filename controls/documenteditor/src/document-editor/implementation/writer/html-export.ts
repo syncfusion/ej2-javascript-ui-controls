@@ -42,6 +42,8 @@ export class HtmlExport {
             let block: any = section.blocks[i];
             if (block.hasOwnProperty('inlines')) {
                 string += this.serializeParagraph(block);
+            } else if (block.hasOwnProperty('blocks')) {
+                string += this.serializeSection(block);
             } else {
                 string += this.closeList();
                 string += this.serializeTable(block);
@@ -214,6 +216,11 @@ export class HtmlExport {
 
         while (paragraph.inlines.length > i) {
             inline = paragraph.inlines[i];
+            if (inline.hasOwnProperty('inlines')) {
+                blockStyle += this.serializeContentInlines(inline, blockStyle);
+                i++;
+                continue;
+            }
             if (inline.hasOwnProperty('imageString')) {
                 blockStyle += this.serializeImageContainer(inline);
             } else if (inline.hasOwnProperty('fieldType')) {
@@ -259,7 +266,10 @@ export class HtmlExport {
         }
         return blockStyle;
     }
-
+    private serializeContentInlines(inline: any, inlineStyle: string): string {
+        inlineStyle += this.serializeInlines(inline, inlineStyle);
+        return inlineStyle;
+    }
     // Serialize Span
     /**
      * @private

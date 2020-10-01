@@ -383,7 +383,7 @@ var SvgRenderer = /** @class */ (function () {
 }());
 
 /**
- * To import utils
+ * To import utils.
  */
 /**
  * @private
@@ -1733,9 +1733,9 @@ var Tooltip = /** @class */ (function (_super) {
         }
         if (!argsData.cancel) {
             var elem = sf.base.createElement('div', { id: this.element.id + 'parent_template' });
-            var templateElement = this.templateFn(this.data, this, 'tooltipTemplate', elem.id + '_blazorTemplate', '');
+            var templateElement = this.templateFn(this.data, this.controlInstance, 'template', elem.id + '_blazorTemplate', '');
             while (templateElement && templateElement.length > 0) {
-                if (sf.base.isBlazor()) {
+                if (sf.base.isBlazor() || templateElement.length === 1) {
                     elem.appendChild(templateElement[0]);
                     templateElement = null;
                 }
@@ -2115,6 +2115,9 @@ var Tooltip = /** @class */ (function (_super) {
         sf.base.Property(null)
     ], Tooltip.prototype, "tooltipPlacement", void 0);
     __decorate([
+        sf.base.Property(null)
+    ], Tooltip.prototype, "controlInstance", void 0);
+    __decorate([
         sf.base.Event()
     ], Tooltip.prototype, "tooltipRender", void 0);
     __decorate([
@@ -2163,7 +2166,5 @@ exports.CanvasRenderer = CanvasRenderer;
 return exports;
 
 });
-sfBlazor.libs.push("svgbase")
-sfBlazor.loadDependencies(["base"], () => {
+
     sf.svgbase = sf.svgbase({});
-});

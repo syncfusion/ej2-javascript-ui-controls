@@ -822,7 +822,5 @@ exports.FormValidator = FormValidator;
 return exports;
 
 });
-sfBlazor.modules["formvalidator"] = "inputs.FormValidator";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.formvalidator, () => {
+
     sf.inputs = sf.base.extend({}, sf.inputs, sfformvalidator({}));
-});

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.35 (2020-10-01)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#293528` - Issue when work value is given as decimal values has been fixed.
+
 ## 18.2.59 (2020-09-21)
 
 ### Gantt

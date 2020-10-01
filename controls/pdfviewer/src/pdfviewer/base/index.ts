@@ -9,3 +9,5 @@ export * from './context-menu';
 export * from './types';
 export * from './ajax-handler';
 export * from './signature';
+export * from './interfaces';
+export * from './spinner';

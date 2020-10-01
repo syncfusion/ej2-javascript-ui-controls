@@ -17,9 +17,9 @@
       }
     }
 
-    &.e-primary,
-    &.e-primary.e-outline:hover,
-    &.e-primary.e-outline:focus {
+    #{if(&, '&', '*')}.e-primary,
+    #{if(&, '&', '*')}.e-primary.e-outline:hover,
+    #{if(&, '&', '*')}.e-primary.e-outline:focus {
       .e-spinner-pane .e-spinner-inner svg {
         fill: $btn-primary-color;
         stroke: $btn-primary-color;
@@ -49,9 +49,9 @@
        }
     }
 
-    &.e-success,
-    &.e-success.e-outline:hover,
-    &.e-success.e-outline:focus {
+    #{if(&, '&', '*')}.e-success,
+    #{if(&, '&', '*')}.e-success.e-outline:hover,
+    #{if(&, '&', '*')}.e-success.e-outline:focus {
       .e-spinner-pane .e-spinner-inner svg {
         fill: $btn-success-color;
         stroke: $btn-success-color;
@@ -274,22 +274,22 @@
     background-color: $progress-btn-bgcolor-normal;
   }
 
-  &.e-primary,
-  &.e-success,
-  &.e-danger,
-  &.e-info {
+  #{if(&, '&', '*')}.e-primary,
+  #{if(&, '&', '*')}.e-success,
+  #{if(&, '&', '*')}.e-danger,
+  #{if(&, '&', '*')}.e-info {
     .e-progress {
       background-color: $progress-btn-bgcolor;
       }
   }
 
-  &.e-warning {
+  #{if(&, '&', '*')}.e-warning {
     .e-progress {
       background-color: $progress-btn-warning-progress-color;
       }
   }
 
-  &.e-flat {
+  #{if(&, '&', '*')}.e-flat {
     &.e-primary {
       .e-progress {
         background-color: fade-out($progress-btn-flat-primary-progress-color, .8);
@@ -321,7 +321,7 @@
       }
   }
 
-  &.e-outline:not(:focus) {
+  #{if(&, '&', '*')}.e-outline:not(:focus) {
     &.e-primary {
       .e-progress {
         background-color: fade-out($btn-primary-bgcolor, .8);

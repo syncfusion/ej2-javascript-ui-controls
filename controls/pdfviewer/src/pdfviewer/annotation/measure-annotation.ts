@@ -4,7 +4,7 @@ import { ColorPicker, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 import { PdfAnnotationType } from '../drawing/enum';
-import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { PointModel, Point } from '@syncfusion/ej2-drawings';
@@ -358,44 +358,10 @@ export class MeasureAnnotation {
     /**
      * @private
      */
-    // tslint:disable-next-line
     public setAnnotationType(type: AnnotType): void {
         let date: Date = new Date();
         let author: string = 'Guest';
-        this.distanceFillColor = this.pdfViewer.distanceSettings.fillColor ? this.pdfViewer.distanceSettings.fillColor : '#ff0000';
-        this.distanceStrokeColor = this.pdfViewer.distanceSettings.strokeColor ? this.pdfViewer.distanceSettings.strokeColor : '#ff0000';
-        this.distanceOpacity = this.pdfViewer.distanceSettings.opacity ? this.pdfViewer.distanceSettings.opacity : 1;
-        this.distanceThickness = this.pdfViewer.distanceSettings.thickness ? this.pdfViewer.distanceSettings.thickness : 1;
-        this.distanceDashArray = this.pdfViewer.distanceSettings.borderDashArray ? this.pdfViewer.distanceSettings.borderDashArray : 0;
-        this.leaderLength = this.pdfViewer.distanceSettings.leaderLength != null ? this.pdfViewer.distanceSettings.leaderLength : 40;
-        // tslint:disable-next-line:max-line-length
-        this.distanceStartHead = this.pdfViewer.distanceSettings.lineHeadStartStyle ? this.pdfViewer.distanceSettings.lineHeadStartStyle : 'Closed';
-        this.distanceEndHead = this.pdfViewer.distanceSettings.lineHeadEndStyle ? this.pdfViewer.distanceSettings.lineHeadEndStyle : 'Closed';
-        this.perimeterFillColor = this.pdfViewer.perimeterSettings.fillColor ? this.pdfViewer.perimeterSettings.fillColor : '#ffffff00';
-        this.perimeterStrokeColor = this.pdfViewer.perimeterSettings.strokeColor ? this.pdfViewer.perimeterSettings.strokeColor : '#ff0000';
-        this.perimeterOpacity = this.pdfViewer.perimeterSettings.opacity ? this.pdfViewer.perimeterSettings.opacity : 1;
-        this.perimeterThickness = this.pdfViewer.perimeterSettings.thickness ? this.pdfViewer.perimeterSettings.thickness : 1;
-        this.perimeterDashArray = this.pdfViewer.perimeterSettings.borderDashArray ? this.pdfViewer.perimeterSettings.borderDashArray : 0;
-        // tslint:disable-next-line:max-line-length
-        this.perimeterStartHead = this.pdfViewer.perimeterSettings.lineHeadStartStyle ? this.pdfViewer.perimeterSettings.lineHeadStartStyle : 'Open';
-        this.perimeterEndHead = this.pdfViewer.perimeterSettings.lineHeadEndStyle ? this.pdfViewer.perimeterSettings.lineHeadEndStyle : 'Open';
-        this.areaFillColor = this.pdfViewer.areaSettings.fillColor ? this.pdfViewer.areaSettings.fillColor : '#ffffff00';
-        this.areaStrokeColor = this.pdfViewer.areaSettings.strokeColor ? this.pdfViewer.areaSettings.strokeColor : '#ff0000';
-        this.areaOpacity = this.pdfViewer.areaSettings.opacity ? this.pdfViewer.areaSettings.opacity : 1;
-        this.areaThickness = this.pdfViewer.areaSettings.thickness ? this.pdfViewer.areaSettings.thickness : 1;
-        this.radiusFillColor = this.pdfViewer.radiusSettings.fillColor ? this.pdfViewer.radiusSettings.fillColor : '#ffffff00';
-        this.radiusStrokeColor = this.pdfViewer.radiusSettings.strokeColor ? this.pdfViewer.radiusSettings.strokeColor : '#ff0000';
-        this.radiusOpacity = this.pdfViewer.radiusSettings.opacity ? this.pdfViewer.radiusSettings.opacity : 1;
-        this.radiusThickness = this.pdfViewer.radiusSettings.thickness ? this.pdfViewer.radiusSettings.thickness : 1;
-        this.volumeFillColor = this.pdfViewer.volumeSettings.fillColor ? this.pdfViewer.volumeSettings.fillColor : '#ffffff00';
-        this.volumeStrokeColor = this.pdfViewer.volumeSettings.strokeColor ? this.pdfViewer.volumeSettings.strokeColor : '#ff0000';
-        this.volumeOpacity = this.pdfViewer.volumeSettings.opacity ? this.pdfViewer.volumeSettings.opacity : 1;
-        this.volumeThickness = this.pdfViewer.volumeSettings.thickness ? this.pdfViewer.volumeSettings.thickness : 1;
-        this.unit = this.pdfViewer.measurementSettings.conversionUnit.toLowerCase() as CalibrationUnit;
-        this.displayUnit = this.pdfViewer.measurementSettings.displayUnit.toLowerCase() as CalibrationUnit;
-        this.ratio = this.pdfViewer.measurementSettings.scaleRatio;
-        this.volumeDepth = this.pdfViewer.measurementSettings.depth;
-        this.scaleRatioString = '1 ' + this.unit + ' = ' + '1 ' + this.displayUnit;
+        this.updateMeasureproperties();
         this.pdfViewerBase.disableTextSelectionMode();
         switch (type) {
             case 'Distance':
@@ -470,6 +436,42 @@ export class MeasureAnnotation {
                 this.pdfViewer.tool = 'Polygon';
                 break;
         }
+    }
+    private updateMeasureproperties(): void {
+        this.distanceFillColor = this.pdfViewer.distanceSettings.fillColor ? this.pdfViewer.distanceSettings.fillColor : '#ff0000';
+        this.distanceStrokeColor = this.pdfViewer.distanceSettings.strokeColor ? this.pdfViewer.distanceSettings.strokeColor : '#ff0000';
+        this.distanceOpacity = this.pdfViewer.distanceSettings.opacity ? this.pdfViewer.distanceSettings.opacity : 1;
+        this.distanceThickness = this.pdfViewer.distanceSettings.thickness ? this.pdfViewer.distanceSettings.thickness : 1;
+        this.distanceDashArray = this.pdfViewer.distanceSettings.borderDashArray ? this.pdfViewer.distanceSettings.borderDashArray : 0;
+        this.leaderLength = this.pdfViewer.distanceSettings.leaderLength != null ? this.pdfViewer.distanceSettings.leaderLength : 40;
+        // tslint:disable-next-line:max-line-length
+        this.distanceStartHead = this.pdfViewer.distanceSettings.lineHeadStartStyle ? this.pdfViewer.distanceSettings.lineHeadStartStyle : 'Closed';
+        this.distanceEndHead = this.pdfViewer.distanceSettings.lineHeadEndStyle ? this.pdfViewer.distanceSettings.lineHeadEndStyle : 'Closed';
+        this.perimeterFillColor = this.pdfViewer.perimeterSettings.fillColor ? this.pdfViewer.perimeterSettings.fillColor : '#ffffff00';
+        this.perimeterStrokeColor = this.pdfViewer.perimeterSettings.strokeColor ? this.pdfViewer.perimeterSettings.strokeColor : '#ff0000';
+        this.perimeterOpacity = this.pdfViewer.perimeterSettings.opacity ? this.pdfViewer.perimeterSettings.opacity : 1;
+        this.perimeterThickness = this.pdfViewer.perimeterSettings.thickness ? this.pdfViewer.perimeterSettings.thickness : 1;
+        this.perimeterDashArray = this.pdfViewer.perimeterSettings.borderDashArray ? this.pdfViewer.perimeterSettings.borderDashArray : 0;
+        // tslint:disable-next-line:max-line-length
+        this.perimeterStartHead = this.pdfViewer.perimeterSettings.lineHeadStartStyle ? this.pdfViewer.perimeterSettings.lineHeadStartStyle : 'Open';
+        this.perimeterEndHead = this.pdfViewer.perimeterSettings.lineHeadEndStyle ? this.pdfViewer.perimeterSettings.lineHeadEndStyle : 'Open';
+        this.areaFillColor = this.pdfViewer.areaSettings.fillColor ? this.pdfViewer.areaSettings.fillColor : '#ffffff00';
+        this.areaStrokeColor = this.pdfViewer.areaSettings.strokeColor ? this.pdfViewer.areaSettings.strokeColor : '#ff0000';
+        this.areaOpacity = this.pdfViewer.areaSettings.opacity ? this.pdfViewer.areaSettings.opacity : 1;
+        this.areaThickness = this.pdfViewer.areaSettings.thickness ? this.pdfViewer.areaSettings.thickness : 1;
+        this.radiusFillColor = this.pdfViewer.radiusSettings.fillColor ? this.pdfViewer.radiusSettings.fillColor : '#ffffff00';
+        this.radiusStrokeColor = this.pdfViewer.radiusSettings.strokeColor ? this.pdfViewer.radiusSettings.strokeColor : '#ff0000';
+        this.radiusOpacity = this.pdfViewer.radiusSettings.opacity ? this.pdfViewer.radiusSettings.opacity : 1;
+        this.radiusThickness = this.pdfViewer.radiusSettings.thickness ? this.pdfViewer.radiusSettings.thickness : 1;
+        this.volumeFillColor = this.pdfViewer.volumeSettings.fillColor ? this.pdfViewer.volumeSettings.fillColor : '#ffffff00';
+        this.volumeStrokeColor = this.pdfViewer.volumeSettings.strokeColor ? this.pdfViewer.volumeSettings.strokeColor : '#ff0000';
+        this.volumeOpacity = this.pdfViewer.volumeSettings.opacity ? this.pdfViewer.volumeSettings.opacity : 1;
+        this.volumeThickness = this.pdfViewer.volumeSettings.thickness ? this.pdfViewer.volumeSettings.thickness : 1;
+        this.unit = this.pdfViewer.measurementSettings.conversionUnit.toLowerCase() as CalibrationUnit;
+        this.displayUnit = this.pdfViewer.measurementSettings.displayUnit.toLowerCase() as CalibrationUnit;
+        this.ratio = this.pdfViewer.measurementSettings.scaleRatio;
+        this.volumeDepth = this.pdfViewer.measurementSettings.depth;
+        this.scaleRatioString = '1 ' + this.unit + ' = ' + '1 ' + this.displayUnit;
     }
 
     private createAnnotationObject(annotationModel: PdfAnnotationBaseModel): IMeasureShapeAnnotation {
@@ -709,42 +711,47 @@ export class MeasureAnnotation {
      * @private
      */
     public createScaleRatioWindow(): void {
-        let elementID: string = this.pdfViewer.element.id;
-        let dialogDiv: HTMLElement = createElement('div', { id: elementID + '_scale_ratio_window', className: 'e-pv-scale-ratio-window' });
-        this.pdfViewerBase.pageContainer.appendChild(dialogDiv);
-        let contentElement: HTMLElement = this.createRatioUI();
-        this.scaleRatioDialog = new Dialog({
-            showCloseIcon: true, closeOnEscape: false, isModal: true, header: this.pdfViewer.localeObj.getConstant('Scale Ratio'),
-            target: this.pdfViewer.element, content: contentElement, close: () => {
-                this.sourceTextBox.destroy();
-                this.convertUnit.destroy();
-                this.destTextBox.destroy();
-                this.dispUnit.destroy();
-                this.scaleRatioDialog.destroy();
-                let dialogElement: HTMLElement = this.pdfViewerBase.getElement('_scale_ratio_window');
-                dialogElement.parentElement.removeChild(dialogElement);
+        if (!isBlazor()) {
+            let elementID: string = this.pdfViewer.element.id;
+            // tslint:disable-next-line:max-line-length
+            let dialogDiv: HTMLElement = createElement('div', { id: elementID + '_scale_ratio_window', className: 'e-pv-scale-ratio-window' });
+            this.pdfViewerBase.pageContainer.appendChild(dialogDiv);
+            let contentElement: HTMLElement = this.createRatioUI();
+            this.scaleRatioDialog = new Dialog({
+                showCloseIcon: true, closeOnEscape: false, isModal: true, header: this.pdfViewer.localeObj.getConstant('Scale Ratio'),
+                target: this.pdfViewer.element, content: contentElement, close: () => {
+                    this.sourceTextBox.destroy();
+                    this.convertUnit.destroy();
+                    this.destTextBox.destroy();
+                    this.dispUnit.destroy();
+                    this.scaleRatioDialog.destroy();
+                    let dialogElement: HTMLElement = this.pdfViewerBase.getElement('_scale_ratio_window');
+                    dialogElement.parentElement.removeChild(dialogElement);
+                }
+            });
+            if (!Browser.isDevice) {
+                this.scaleRatioDialog.buttons = [
+                    // tslint:disable-next-line:max-line-length
+                    { buttonModel: { content: this.pdfViewer.localeObj.getConstant('OK'), isPrimary: true }, click: this.onOkClicked.bind(this) },
+                    { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Cancel') }, click: this.onCancelClicked.bind(this) }
+                ];
+            } else {
+                this.scaleRatioDialog.buttons = [
+                    { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Cancel') }, click: this.onCancelClicked.bind(this) },
+                    // tslint:disable-next-line:max-line-length
+                    { buttonModel: { content: this.pdfViewer.localeObj.getConstant('OK'), isPrimary: true }, click: this.onOkClicked.bind(this) }
+                ];
             }
-        });
-        if (!Browser.isDevice) {
-            this.scaleRatioDialog.buttons = [
-                // tslint:disable-next-line:max-line-length
-                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('OK'), isPrimary: true }, click: this.onOkClicked.bind(this) },
-                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Cancel') }, click: this.onCancelClicked.bind(this) }
-            ];
+            if (this.pdfViewer.enableRtl) {
+                this.scaleRatioDialog.enableRtl = true;
+            }
+            this.scaleRatioDialog.appendTo(dialogDiv);
+            this.convertUnit.content = this.createContent(this.unit).outerHTML;
+            this.dispUnit.content = this.createContent(this.displayUnit).outerHTML;
+            this.depthUnit.content = this.createContent(this.displayUnit).outerHTML;
         } else {
-            this.scaleRatioDialog.buttons = [
-                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Cancel') }, click: this.onCancelClicked.bind(this) },
-                // tslint:disable-next-line:max-line-length
-                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('OK'), isPrimary: true }, click: this.onOkClicked.bind(this) }
-            ];
+            this.pdfViewer._dotnetInstance.invokeMethodAsync('OpenScaleRatioDialog');
         }
-        if (this.pdfViewer.enableRtl) {
-            this.scaleRatioDialog.enableRtl = true;
-        }
-        this.scaleRatioDialog.appendTo(dialogDiv);
-        this.convertUnit.content = this.createContent(this.unit).outerHTML;
-        this.dispUnit.content = this.createContent(this.displayUnit).outerHTML;
-        this.depthUnit.content = this.createContent(this.displayUnit).outerHTML;
     }
 
     private createRatioUI(): HTMLElement {
@@ -818,15 +825,41 @@ export class MeasureAnnotation {
         return textBoxInput;
     }
 
-    private onOkClicked(): void {
-        this.unit = this.getContent(this.convertUnit.content) as CalibrationUnit;
-        this.displayUnit = this.getContent(this.dispUnit.content) as CalibrationUnit;
-        this.ratio = this.destTextBox.value / this.sourceTextBox.value;
-        this.volumeDepth = this.depthTextBox.value;
-        this.scaleRatioString = this.sourceTextBox.value + ' ' + this.unit + ' = ' + this.destTextBox.value + ' ' + this.displayUnit;
-        this.scaleRatioDialog.hide();
-        this.updateMeasureValues(this.scaleRatioString, this.displayUnit, this.unit, this.volumeDepth);
-
+    /**
+     * @private
+     */
+    public onOkClicked(): void {
+        if (isBlazor()) {
+            // tslint:disable-next-line
+            let unitElement: any = document.querySelector('#'+ this.pdfViewer.element.id +'_src_unit');
+            // tslint:disable-next-line
+            let displayElement: any = document.querySelector('#'+ this.pdfViewer.element.id +'_dest_unit');
+            // tslint:disable-next-line
+            let sourceTextBox: any = document.querySelector('#'+ this.pdfViewer.element.id +'_ratio_input');
+            // tslint:disable-next-line
+            let destTextBox: any = document.querySelector('#'+ this.pdfViewer.element.id +'_dest_input');
+            // tslint:disable-next-line
+            let depthTextBox: any = document.querySelector('#'+ this.pdfViewer.element.id +'_depth_input');
+            if (unitElement && displayElement && sourceTextBox && destTextBox && depthTextBox) {
+                this.unit = unitElement.value;
+                this.displayUnit = displayElement.value;
+                // tslint:disable-next-line
+                this.ratio = parseInt(destTextBox.value) / parseInt(sourceTextBox.value);
+                // tslint:disable-next-line
+                this.volumeDepth = parseInt(depthTextBox.value);
+            }
+            // tslint:disable-next-line
+            this.scaleRatioString = parseInt(sourceTextBox.value) + ' ' + this.unit + ' = ' + parseInt(destTextBox.value) + ' ' + this.displayUnit;
+            this.updateMeasureValues(this.scaleRatioString, this.displayUnit, this.unit, this.volumeDepth);
+        } else {
+            this.unit = this.getContent(this.convertUnit.content) as CalibrationUnit;
+            this.displayUnit = this.getContent(this.dispUnit.content) as CalibrationUnit;
+            this.ratio = this.destTextBox.value / this.sourceTextBox.value;
+            this.volumeDepth = this.depthTextBox.value;
+            this.scaleRatioString = this.sourceTextBox.value + ' ' + this.unit + ' = ' + this.destTextBox.value + ' ' + this.displayUnit;
+            this.scaleRatioDialog.hide();
+            this.updateMeasureValues(this.scaleRatioString, this.displayUnit, this.unit, this.volumeDepth);
+        }
     }
 
     /**

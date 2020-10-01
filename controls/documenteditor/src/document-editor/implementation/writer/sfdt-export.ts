@@ -45,6 +45,8 @@ export class SfdtExport {
     private nestedBlockContent: boolean = false;
     private nestedBlockEnabled: boolean = false;
     private blocks: any = [];
+    private contentInline: any = [];
+    private isContentControl: boolean = false;
     private isBlockClosed: boolean = true;
     /**
      * @private
@@ -505,7 +507,7 @@ export class SfdtExport {
         return (next instanceof BlockWidget && paragraphWidget.containerWidget.index === next.containerWidget.index) ? next : undefined;
     }
     private writeInlines(paragraph: ParagraphWidget, line: LineWidget, inlines: any): void {
-        let contentInline: any = [];
+        this.contentInline = [];
         let lineWidget: LineWidget = line.clone();
         let isformField: boolean = false;
         let bidi: boolean = paragraph.paragraphFormat.bidi;
@@ -514,28 +516,6 @@ export class SfdtExport {
         }
         for (let i: number = 0; i < lineWidget.children.length; i++) {
             let element: ElementBox = lineWidget.children[i];
-            if (element instanceof ContentControl) {
-                if (element.contentControlWidgetType === 'Block') {
-                    this.isBlockClosed = false;
-                    if (this.blockContent && element.type === 0) {
-                        this.nestedBlockContent = true;
-                        continue;
-                    } else if (this.nestedBlockContent && element.type === 1) {
-                        this.nestedBlockContent = false;
-                        continue;
-                    }
-                    this.blockContent = (element.type === 0) ? true : false;
-                    if (lineWidget.children[i - 1] instanceof ContentControl) {
-                        if ((lineWidget.children[i - 1] as ContentControl).contentControlWidgetType === 'Block') {
-                            this.blockContent = true;
-                        }
-                    }
-                    if (!this.blockContent) {
-                        this.isBlockClosed = true;
-                    }
-                    continue;
-                }
-            }
             if (this.isExport && this.checkboxOrDropdown) {
                 if (isformField && element instanceof TextElementBox) {
                     continue;
@@ -547,47 +527,9 @@ export class SfdtExport {
             if (element instanceof ListTextElementBox) {
                 continue;
             }
-            if (element instanceof ContentControl) {
-                if (this.startContent && element.type === 0) {
-                    this.nestedContent = true;
-                    continue;
-                } else if (this.startContent && this.nestedContent) {
-                    let inline: any = {};
-                    inline.inlines = contentInline;
-                    if (contentInline.length > 0) {
-                        let nestedContent: any = this.nestedContentProperty(lineWidget.children[i + 1], inline);
-                        inlines.push(nestedContent);
-                        contentInline = [];
-                    }
-                    if (this.multipleLineContent) {
-                       inline = inlines[inlines.length - 1];
-                       this.nestedContentProperty(lineWidget.children[i + 1], inline);
-                       this.multipleLineContent = false;
-                    }
-                    this.nestedContent = false;
-                    continue;
-                }
-                this.contentType = element.contentControlWidgetType;
-                this.startContent = (element.type === 0) ? true : false;
+            if (element instanceof ContentControl || this.startContent || this.blockContent) {
+                this.writeInlinesContentControl(element, line, inlines, i);
                 continue;
-            }
-            if (this.startContent && ((this.contentType !== 'Row') && (this.contentType !== 'Block') && (this.contentType !== 'Cell'))) {
-                if (this.multipleLineContent) {
-                    this.inlineContentControl(contentInline, element, lineWidget.children[i + 1], inlines);
-                    contentInline = [];
-                } else {
-                    let contentinline: any = this.inlineContentControl(contentInline, element, lineWidget.children[i + 1]);
-                    if (!isNullOrUndefined(contentinline)) {
-                        if (this.nestedContent && this.multipleLineContent) {
-                            let inline: any = {};
-                            inline.inlines = contentInline;
-                            inlines.push(inline);
-                        } else {
-                            inlines.push(contentinline);
-                            contentInline = [];
-                        }
-                    }
-                }
             } else {
                 let inline: any = this.writeInline(element);
                 if (!isNullOrUndefined(inline)) {
@@ -600,7 +542,7 @@ export class SfdtExport {
             }
         }
     }
-    private inlineContentControl(contentInline: any, element: ElementBox, nextElement: any, inlines?: any): any {
+    private inlineContentControl(element: ElementBox, nextElement: any, inlines?: any): any {
         let inline: any = {};
         let nestedContentInline: any = [];
         if (!isNullOrUndefined(inlines)) {
@@ -609,7 +551,7 @@ export class SfdtExport {
                 inline = this.inlineContentControls(element, inlines[inlines.length - 1].inlines);
                 let nestedContentinline: any = this.nestedContentProperty(nextElement, inlines[inlines.length - 1]);
                 if (!isNullOrUndefined(nestedContentinline)) {
-                    contentInline.push(inline);
+                    this.contentInline.push(inline);
                     nestedContentInline = [];
                 }
             } else {
@@ -620,11 +562,11 @@ export class SfdtExport {
                 inline.inlines = this.inlineContentControls(element, undefined, nestedContentInline);
                 let nestedContentinline: any = this.nestedContentProperty(nextElement, inline);
                 if (!isNullOrUndefined(nestedContentinline) || this.multipleLineContent) {
-                    contentInline.push(inline);
+                    this.contentInline.push(inline);
                     nestedContentInline = [];
                 }
             } else {
-                inline.inlines = this.inlineContentControls(element, contentInline);
+                inline.inlines = this.inlineContentControls(element, this.contentInline);
             }
         }
         if (!isNullOrUndefined(nextElement)) {
@@ -1042,6 +984,9 @@ export class SfdtExport {
         return endParagraph;
     }
     private writeLine(line: LineWidget, offset: number, inlines: any): void {
+        this.contentInline = [];
+        let isContentStarted: boolean = false;
+        let contentControl: boolean = false;
         let isEnd: boolean = line === this.endLine;
         let lineWidget: LineWidget = line.clone();
         let bidi: boolean = line.paragraph.paragraphFormat.bidi;
@@ -1059,8 +1004,37 @@ export class SfdtExport {
             let inline: any = undefined;
             length += element.length;
             started = length > offset;
+            if (element instanceof ContentControl) {
+                if (!started) {
+                    isContentStarted = element.type === 0 ? true : false;
+                }
+                contentControl = true;
+            }
+            if (element instanceof TextElementBox && element.hasOwnProperty('contentControlProperties') && started  && !contentControl) {
+                isContentStarted = true;
+            }
+            if (element instanceof ContentControl) {
+                if (isContentStarted) {
+                    if (element.type === 1) {
+                        isContentStarted = false;
+                    }
+                }
+                if (contentControl) {
+                    if (element.type === 1) {
+                        contentControl = false;
+                    }
+                }
+            }
             ended = isEnd && length >= this.endOffset;
-            if (!started) {
+            if (!started || isContentStarted) {
+                continue;
+            }
+            if (element instanceof ContentControl || this.startContent || this.blockContent) {
+                if (ended) {
+                    this.startContent = false;
+                    break;
+                }
+                this.writeInlinesContentControl(element, line, inlines, j);
                 continue;
             }
             inline = this.writeInline(element);
@@ -1080,6 +1054,78 @@ export class SfdtExport {
             }
             if (ended) {
                 break;
+            }
+        }
+    }
+    private writeInlinesContentControl(element: ElementBox, lineWidget: LineWidget, inlines: any, i: number): any {
+        if (element instanceof ContentControl) {
+            if (element.contentControlWidgetType === 'Block') {
+                this.isBlockClosed = false;
+                if (this.blockContent && element.type === 0) {
+                    this.nestedBlockContent = true;
+                    return true;
+                } else if (this.nestedBlockContent && element.type === 1) {
+                    this.nestedBlockContent = false;
+                    return true;
+                }
+                this.blockContent = (element.type === 0) ? true : false;
+                if (lineWidget.children[i - 1] instanceof ContentControl) {
+                    if ((lineWidget.children[i - 1] as ContentControl).contentControlWidgetType === 'Block') {
+                        this.blockContent = true;
+                    }
+                }
+                if (!this.blockContent) {
+                    this.isBlockClosed = true;
+                }
+                return true;
+            }
+        }
+        if (element instanceof ContentControl) {
+            if (this.startContent && element.type === 0) {
+                this.nestedContent = true;
+                return true;
+            } else if (this.startContent && this.nestedContent) {
+                let inline: any = {};
+                inline.inlines = this.contentInline;
+                if (this.contentInline.length > 0) {
+                    let nestedContent: any = this.nestedContentProperty(lineWidget.children[i + 1], inline);
+                    inlines.push(nestedContent);
+                    this.contentInline = [];
+                }
+                if (this.multipleLineContent) {
+                   inline = inlines[inlines.length - 1];
+                   this.nestedContentProperty(lineWidget.children[i + 1], inline);
+                   this.multipleLineContent = false;
+                }
+                this.nestedContent = false;
+                return true;
+            }
+            this.contentType = element.contentControlWidgetType;
+            this.startContent = (element.type === 0) ? true : false;
+            return true;
+        }
+        if (this.startContent && ((this.contentType === 'Inline'))) {
+            if (this.multipleLineContent) {
+                this.inlineContentControl(element, lineWidget.children[i + 1], inlines);
+                this.contentInline = [];
+            } else {
+                let contentinline: any = this.inlineContentControl(element, lineWidget.children[i + 1]);
+                if (!isNullOrUndefined(contentinline)) {
+                    if (this.nestedContent && this.multipleLineContent) {
+                        let inline: any = {};
+                        inline.inlines = this.contentInline;
+                        inlines.push(inline);
+                    } else {
+                        inlines.push(contentinline);
+                        this.contentInline = [];
+                        return false;
+                    }
+                }
+            }
+        } else {
+            let inline: any = this.writeInline(element);
+            if (!isNullOrUndefined(inline)) {
+                inlines.push(inline);
             }
         }
     }

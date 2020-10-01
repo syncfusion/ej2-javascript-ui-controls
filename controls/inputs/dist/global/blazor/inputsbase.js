@@ -782,5 +782,4 @@ var CLASSNAMES = {
 return exports;
 
 });
-sfBlazor.modules["inputsbase"] = "inputs.Input";
 window.sf.inputs = window.sf.base.extend({}, window.sf.inputs, inputsbase({}));

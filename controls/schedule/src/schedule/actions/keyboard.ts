@@ -211,7 +211,7 @@ export class KeyboardInteraction {
         if (this.parent.activeViewOptions.readonly || this.isPreventAction(e)) {
             return;
         }
-        let target: HTMLTableCellElement = (e.target) as HTMLTableCellElement;
+        let target: HTMLTableCellElement = e.target as HTMLTableCellElement;
         if (closest(target, '.' + cls.POPUP_WRAPPER_CLASS)) {
             if (target.classList.contains(cls.QUICK_POPUP_EVENT_DETAILS_CLASS) ||
                 target.classList.contains(cls.EVENT_CREATE_CLASS) ||
@@ -223,6 +223,13 @@ export class KeyboardInteraction {
             } else if (target.classList.contains(cls.SUBJECT_CLASS)) {
                 (this.parent.element.querySelector('.' + cls.EVENT_CREATE_CLASS) as HTMLElement).click();
                 e.preventDefault();
+            }
+            return;
+        }
+        if (target.classList.contains(cls.RESOURCE_CELLS_CLASS) && target.classList.contains(cls.RESOURCE_PARENT_CLASS)) {
+            let resourceIcon: HTMLElement = target.querySelector('.' + cls.RESOURCE_TREE_ICON_CLASS) as HTMLElement;
+            if (resourceIcon) {
+                resourceIcon.click();
             }
             return;
         }
@@ -705,15 +712,45 @@ export class KeyboardInteraction {
             this.parent.eventBase.removeSelectedAppointmentClass();
             return;
         }
+        if (target.classList.contains(cls.RESOURCE_CELLS_CLASS) && this.parent.activeView.isTimelineView()
+            && this.parent.activeViewOptions.group.resources.length > 0) {
+            let index: number = parseInt(target.getAttribute('data-group-index'), 10);
+            let appSelector: string = `.${cls.APPOINTMENT_CLASS}[data-group-index="${isReverse ? index - 1 : index}"]`;
+            let appElements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(appSelector));
+            if (appElements.length > 0) {
+                this.parent.eventBase.removeSelectedAppointmentClass();
+                let focusAppointment: HTMLElement = isReverse ? appElements.slice(-1)[0] : appElements[0];
+                this.parent.eventBase.addSelectedAppointments([focusAppointment]);
+                focusAppointment.focus();
+                e.preventDefault();
+            } else if (index + 1 === this.parent.resourceBase.lastResourceLevel.length) {
+                this.parent.element.focus();
+                e.preventDefault();
+            }
+            return;
+        }
         if (target.classList.contains(cls.APPOINTMENT_CLASS)) {
-            let appointments: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
+            let appElements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
+            if (this.parent.activeView.isTimelineView() && this.parent.activeViewOptions.group.resources.length > 0) {
+                let index: number = parseInt(target.getAttribute('data-group-index'), 10);
+                appElements = [].slice.call(this.parent.element.querySelectorAll(`.${cls.APPOINTMENT_CLASS}[data-group-index="${index}"]`));
+                let resCellSelector: string = `.${cls.RESOURCE_CELLS_CLASS}[data-group-index="${isReverse ? index : index + 1}"]`;
+                let resourceCell: HTMLElement = this.parent.element.querySelector(resCellSelector) as HTMLElement;
+                if (resourceCell && (isReverse && target.getAttribute('data-guid') === appElements[0].getAttribute('data-guid') ||
+                    !isReverse && target.getAttribute('data-guid') === appElements.slice(-1)[0].getAttribute('data-guid'))) {
+                    this.parent.eventBase.removeSelectedAppointmentClass();
+                    resourceCell.focus();
+                    e.preventDefault();
+                    return;
+                }
+            }
             let selectedAppointments: Element[] = this.parent.eventBase.getSelectedAppointments();
             if (selectedAppointments.length > 0) {
                 target = selectedAppointments[selectedAppointments.length - 1] as Element;
             }
             this.parent.eventBase.removeSelectedAppointmentClass();
-            if (!isReverse && target.getAttribute('data-guid') === appointments[appointments.length - 1].getAttribute('data-guid') ||
-                isReverse && target.getAttribute('data-guid') === appointments[0].getAttribute('data-guid')) {
+            if (!isReverse && target.getAttribute('data-guid') === appElements[appElements.length - 1].getAttribute('data-guid') ||
+                isReverse && target.getAttribute('data-guid') === appElements[0].getAttribute('data-guid')) {
                 return;
             }
             if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda') {

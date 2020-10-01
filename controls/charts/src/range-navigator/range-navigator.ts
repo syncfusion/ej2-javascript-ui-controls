@@ -665,6 +665,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public removeSvg(): void {
         if (getElement(this.element.id + '_Secondary_Element')) {
             remove(getElement(this.element.id + '_Secondary_Element'));
+            this.clearTemplate();
         }
         let removeLength: number = 0;
         if (this.svgObject) {
@@ -1037,6 +1038,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     public destroy(): void {
         this.unWireEvents();
+        this.clearTemplate();
         this.rangeSlider.destroy();
         super.destroy();
         this.element.innerHTML = '';

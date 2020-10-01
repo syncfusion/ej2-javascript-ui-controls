@@ -11,7 +11,8 @@ import { DecoratorModel, ConnectorShapeModel, BpmnFlowModel, VectorModel, Diagra
 import { Rect } from '../primitives/rect';
 import { Size } from '../primitives/size';
 import { findAngle, findConnectorPoints, Bridge, getOuterBounds } from '../utility/connector';
-import { getAnnotationPosition, alignLabelOnSegments, updateConnector, setUMLActivityDefaults } from '../utility/diagram-util';
+import { getAnnotationPosition, alignLabelOnSegments, updateConnector } from '../utility/diagram-util';
+import { setUMLActivityDefaults, initfixedUserHandlesSymbol } from '../utility/diagram-util';
 import { findDistance, findPath, updatePathElement, setConnectorDefaults } from '../utility/diagram-util';
 import { randomId, getFunction } from './../utility/base-util';
 import { flipConnector } from './../utility/diagram-util';
@@ -37,6 +38,8 @@ import { DiagramConnectorSegmentModel } from './connector-model';
 import { getTemplateContent } from '../utility/dom-util';
 import { SymbolSizeModel } from './preview-model';
 import { SymbolSize } from './preview';
+import { ConnectorFixedUserHandle } from './fixed-user-handle';
+import { ConnectorFixedUserHandleModel } from './fixed-user-handle-model';
 let getConnectorType: Function = (obj: ConnectorShape): Object => {
     if (isBlazor()) {
         return DiagramConnectorShape;
@@ -1002,6 +1005,16 @@ export class Connector extends NodeBase implements IElement {
     public targetPoint: PointModel;
 
     /**
+     * Specifies the collection of the fixed user handle
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
+     * @default undefined
+     * @blazorType ObservableCollection<DiagramFixedUserHandle>
+     */
+    @Collection<ConnectorFixedUserHandleModel>([], ConnectorFixedUserHandle)
+    public fixedUserHandles: ConnectorFixedUserHandleModel[];
+
+    /**
      * Defines the segments
      * @default []
      * @aspType object
@@ -1197,7 +1210,7 @@ export class Connector extends NodeBase implements IElement {
             }
         }
     }
-     /* tslint:enable */
+    /* tslint:enable */
     /** @private */
     // tslint:disable-next-line:no-any
     public init(diagram: any): Canvas {
@@ -1219,7 +1232,6 @@ export class Connector extends NodeBase implements IElement {
         container.height = bounds.height;
         container.offsetX = bounds.x + container.pivot.x * bounds.width;
         container.offsetY = bounds.y + container.pivot.y * bounds.height;
-
         switch (this.shape.type) {
             case 'Bpmn':
                 let flow: BpmnFlows = (isBlazor() ? (this.shape as DiagramConnectorShape).bpmnFlow : (this.shape as BpmnFlow).flow);
@@ -1264,12 +1276,10 @@ export class Connector extends NodeBase implements IElement {
         let accessContent: string = 'getDescription';
         let getDescription: Function = diagram[accessContent];
         let strokeWidth: number = this.sourceWrapper ? this.sourceWrapper.style.strokeWidth / 2 / 2 : 0;
-
         srcDecorator = this.getDecoratorElement(
             points[0], anglePoints[1], this.sourceDecorator, true, getDescription);
         targetDecorator = this.getDecoratorElement(
             points[points.length - 1], anglePoints[anglePoints.length - 2], this.targetDecorator, false, getDescription);
-
         srcDecorator.id = this.id + '_srcDec';
         targetDecorator.id = this.id + '_tarDec';
         segment.style = this.style as ShapeStyle;
@@ -1285,9 +1295,7 @@ export class Connector extends NodeBase implements IElement {
         container.style.strokeWidth = 0;
         container.children = [segment, srcDecorator, targetDecorator];
         container.id = this.id;
-        if (bpmnElement !== undefined) {
-            container.children.push(bpmnElement);
-        }
+        if (bpmnElement !== undefined) { container.children.push(bpmnElement); }
         container.offsetX = segment.offsetX;
         container.offsetY = segment.offsetY;
         container.width = segment.width;
@@ -1297,6 +1305,10 @@ export class Connector extends NodeBase implements IElement {
                 this.getAnnotationElement(
                     this.annotations[i] as PathAnnotation, this.intermediatePoints, bounds,
                     getDescription, diagram.element.id, diagram.annotationTemplate));
+        }
+        for (let i: number = 0; this.fixedUserHandles !== undefined, i < this.fixedUserHandles.length; i++) {
+            container.children.push(
+                this.getfixedUserHandle(this.fixedUserHandles[i] as ConnectorFixedUserHandle, this.intermediatePoints, bounds));
         }
         this.wrapper = container;
         return container;
@@ -1441,6 +1453,28 @@ export class Connector extends NodeBase implements IElement {
         }
     }
 
+    /** @private */
+    public getfixedUserHandle(fixedUserHandle: ConnectorFixedUserHandle, points: PointModel[], bounds: Rect): Canvas {
+        let fixedUserHandleContainer: Canvas = new Canvas();
+        fixedUserHandleContainer.float = true;
+        let children: DiagramElement[] = [];
+        fixedUserHandle.id = fixedUserHandle.id || randomId();
+        fixedUserHandleContainer.id = this.id + '_' + fixedUserHandle.id;
+        fixedUserHandleContainer.children = children;
+        fixedUserHandleContainer.visible = fixedUserHandle.visibility;
+        fixedUserHandleContainer.width = fixedUserHandle.width;
+        fixedUserHandleContainer.height = fixedUserHandle.height;
+        fixedUserHandleContainer.style.strokeWidth = fixedUserHandle.handleStrokeWidth;
+        fixedUserHandleContainer.style.fill = fixedUserHandle.fill;
+        fixedUserHandleContainer.style.strokeColor = fixedUserHandle.handleStrokeColor;
+        fixedUserHandleContainer.cornerRadius = fixedUserHandle.cornerRadius;
+        this.updateAnnotation(fixedUserHandle, points, bounds, fixedUserHandleContainer);
+        let symbolIcon: DiagramElement = initfixedUserHandlesSymbol(fixedUserHandle, fixedUserHandleContainer);
+        fixedUserHandleContainer.children.push(symbolIcon);
+        fixedUserHandleContainer.description = fixedUserHandleContainer.id;
+        return fixedUserHandleContainer;
+    }
+
     private getBpmnMessageFlow(): PathElement {
         let segmentMessage: PathElement = new PathElement();
         this.targetDecorator.shape = 'Arrow';
@@ -1514,18 +1548,20 @@ export class Connector extends NodeBase implements IElement {
     }
     /** @private */
     public updateAnnotation(
-        annotation: PathAnnotation, points: PointModel[], bounds: Rect, textElement: TextElement | DiagramHtmlElement, canRefresh?: number
+        annotation: PathAnnotation | ConnectorFixedUserHandle, points: PointModel[], bounds: Rect,
+        textElement: TextElement | DiagramHtmlElement | DiagramElement, canRefresh?: number
+
     ): void {
         let getPointloop: SegmentInfo;
         let newPoint: PointModel; let align: Alignment; let hAlign: string;
         let vAlign: string; let offsetPoint: PointModel; let pivotPoint: PointModel = { x: 0, y: 0 };
-        if (!(textElement instanceof DiagramHtmlElement) && (!canRefresh)) {
+        if (!(textElement instanceof DiagramHtmlElement || DiagramElement) && (!canRefresh)) {
             (textElement as TextElement).refreshTextElement();
         }
         textElement.width = (annotation.width || bounds.width);
         getPointloop = getAnnotationPosition(points, annotation, bounds);
         newPoint = getPointloop.point;
-        if (annotation.segmentAngle) {
+        if (annotation instanceof PathAnnotation && annotation.segmentAngle) {
             textElement.rotateAngle = annotation.rotateAngle + getPointloop.angle;
             textElement.rotateAngle = (textElement.rotateAngle + 360) % 360;
         }

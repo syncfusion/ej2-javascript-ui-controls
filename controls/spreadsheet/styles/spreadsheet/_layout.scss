@@ -1,7 +1,7 @@
 @import '../ribbon/mixin.scss';
 @include export-module('spreadsheet-layout') {
   /*! spreadsheet layout */
-  #{&}.e-spreadsheet {
+  .e-spreadsheet {
     display: block;
     user-select: none;
 
@@ -279,9 +279,14 @@
             text-decoration: underline;
           }
 
+          &.e-alt-unwrap {
+            white-space: nowrap;
+          }
+
           &.e-wraptext {
             overflow-wrap: break-word;
             white-space: pre-wrap;
+            word-break: break-all;
 
             .e-wrap-content {
               bottom: 0;
@@ -378,11 +383,13 @@
     }
 
     & .e-sheet-content .e-ss-overlay {
+      background-position: 0 0;
       background-repeat: no-repeat;
+      background-size: 100% 100%;
       left: 0;
       position: absolute;
       top: 0;
-      z-index: 1;
+      z-index: 2;
     }
 
     & .e-sheet-content .e-ss-overlay-active .e-ss-overlay-t {
@@ -683,6 +690,14 @@
       z-index: 1;
     }
 
+    .e-active-cell,
+    .e-formularef-indicator {
+      cursor: cell;
+      pointer-events: none;
+      position: absolute;
+      z-index: 1;
+    }
+
     .e-active-cell {
       border: 2px solid $selection-border-color;
       pointer-events: none;
@@ -695,7 +710,8 @@
       }
     }
 
-    .e-copy-indicator div {
+    .e-copy-indicator div,
+    .e-formularef-indicator div {
       position: absolute;
 
       &.e-top,

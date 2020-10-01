@@ -116,7 +116,7 @@ export class ResourceBase {
         let rIndex: number;
         let resColl: ResourcesModel[] = this.resourceCollection;
         let tr: Element = createElement('tr');
-        let td: Element = createElement('td');
+        let td: Element = createElement('td', { attrs: { tabindex: '0' } });
         for (let i: number = 0; i < resData.length; i++) {
             let ntd: Element = td.cloneNode() as Element;
             rIndex = util.findIndexInData(<{ [key: string]: Object }[]>resColl, 'name', resData[i].resource.name);
@@ -147,6 +147,7 @@ export class ResourceBase {
             }
             this.parent.activeView.setResourceHeaderContent(ntd, resData[i], cls.RESOURCE_TEXT_CLASS);
             ntd.setAttribute('data-group-index', resData[i].groupIndex.toString());
+            ntd.setAttribute('aria-label', (resData[i].resourceData[resData[i].resource.textField] as string) + ' resource');
             if (!this.parent.activeViewOptions.resourceHeaderTemplate) {
                 this.setMargin(ntd.querySelector('.' + cls.RESOURCE_TEXT_CLASS) as HTMLElement, left);
             }
@@ -688,7 +689,9 @@ export class ResourceBase {
                 if (!resTreeGroup[index]) {
                     resTreeGroup[index] = [];
                 }
-                resTreeGroup[index].push(resTree);
+                if (resTree.length > 0) {
+                    resTreeGroup[index].push(resTree);
+                }
                 return resTree;
             }
             return [];

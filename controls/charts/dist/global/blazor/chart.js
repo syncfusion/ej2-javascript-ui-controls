@@ -3159,7 +3159,7 @@ function createTemplate(childElement, pointIndex, content, chart, point, series,
     try {
         var blazor = 'Blazor';
         var tempObject = window[blazor] ? (dataLabelId ? point : { point: point }) : { chart: chart, series: series, point: point };
-        var elementData = templateFn ? templateFn(tempObject, null, null, dataLabelId ||
+        var elementData = templateFn ? templateFn(tempObject, chart, 'template', dataLabelId ||
             childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
         if (elementData.length) {
             templateElement = Array.prototype.slice.call(elementData);
@@ -3168,6 +3168,8 @@ function createTemplate(childElement, pointIndex, content, chart, point, series,
                 childElement.appendChild(templateElement[i]);
             }
         }
+        // tslint:disable-next-line:no-any
+        chart.renderReactTemplates();
     }
     catch (e) {
         return childElement;
@@ -9471,6 +9473,7 @@ var Chart = /** @class */ (function (_super) {
          */
         if (this.element) {
             this.unWireEvents();
+            this.clearTemplate();
             _super.prototype.destroy.call(this);
             if (!this.enableCanvas) {
                 this.removeSvg();
@@ -10273,6 +10276,7 @@ var Chart = /** @class */ (function (_super) {
             return null;
         }
         removeElement(this.element.id + '_Secondary_Element');
+        this.clearTemplate();
         var removeLength = 0;
         if (this.zoomModule && this.zoomModule.pinchTarget) {
             this.zoomModule.pinchTarget.id = '';
@@ -10563,6 +10567,7 @@ var Chart = /** @class */ (function (_super) {
             }
             if (refreshBounds) {
                 this.enableCanvas ? this.createChartSvg() : this.removeSvg();
+                this.clearTemplate();
                 this.refreshAxis();
                 this.refreshBound();
                 this.trigger('loaded', { chart: this.isBlazor ? {} : this });
@@ -12462,10 +12467,11 @@ var LineSeries = /** @class */ (function (_super) {
         var isPolar = (series.chart && series.chart.chartAreaType === 'PolarRadar');
         var isDrop = (series.emptyPointSettings && series.emptyPointSettings.mode === 'Drop');
         var getCoordinate = isPolar ? TransformToVisible : getPoint;
-        var visiblePoints = this.enableComplexProperty(series);
+        var visiblePoints = series.category === 'TrendLine' ? series.points : this.enableComplexProperty(series);
         for (var _i = 0, visiblePoints_1 = visiblePoints; _i < visiblePoints_1.length; _i++) {
             var point = visiblePoints_1[_i];
             point.regions = [];
+            point.symbolLocations = [];
             if (isPolar && !(point.visible)) {
                 continue;
             }
@@ -12478,7 +12484,6 @@ var LineSeries = /** @class */ (function (_super) {
             else {
                 prevPoint = isDrop ? prevPoint : null;
                 startPoint = isDrop ? startPoint : 'M';
-                point.symbolLocations = [];
             }
         }
         if (isPolar) {
@@ -16614,8 +16619,7 @@ var SplineSeries = /** @class */ (function (_super) {
         var direction = '';
         var startPoint = 'M';
         var points = [];
-        var tempPoints = [];
-        tempPoints = this.enableComplexProperty(series);
+        var tempPoints = series.category === 'TrendLine' ? series.points : this.enableComplexProperty(series);
         points = this.filterEmptyPoints(series, tempPoints);
         var previous;
         var getCoordinate = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
@@ -18309,7 +18313,7 @@ var Trendlines = /** @class */ (function () {
     /**
      * Defines the data point of trendline
      */
-    Trendlines.prototype.getDataPoint = function (x, y, sourcePoint, series, index) {
+    Trendlines.prototype.getDataPoint = function (x, y, series, index) {
         var trendPoint = new Points();
         trendPoint.x = series.xAxis.valueType === 'DateTime' ? new Date(Number(x)) : x;
         trendPoint.y = y;
@@ -18529,9 +18533,9 @@ var Trendlines = /** @class */ (function () {
         var x3Log = xValues[xValues.length - 1] + trendline.forwardForecast;
         var x3 = x3Log ? Math.log(x3Log) : 0;
         var y3Log = slopeInterceptLog.intercept + (slopeInterceptLog.slope * x3);
-        pts.push(this.getDataPoint(x1Log, y1Log, points[0], series, pts.length));
-        pts.push(this.getDataPoint(x2Log, y2Log, points[midPoint - 1], series, pts.length));
-        pts.push(this.getDataPoint(x3Log, y3Log, points[points.length - 1], series, pts.length));
+        pts.push(this.getDataPoint(x1Log, y1Log, series, pts.length));
+        pts.push(this.getDataPoint(x2Log, y2Log, series, pts.length));
+        pts.push(this.getDataPoint(x3Log, y3Log, series, pts.length));
         return pts;
     };
     /**
@@ -18547,9 +18551,9 @@ var Trendlines = /** @class */ (function () {
         var y2 = slopeInterceptPower.intercept * Math.pow(x2, slopeInterceptPower.slope);
         var x3 = xValues[xValues.length - 1] + trendline.forwardForecast;
         var y3 = slopeInterceptPower.intercept * Math.pow(x3, slopeInterceptPower.slope);
-        pts.push(this.getDataPoint(x1, y1, points[0], series, pts.length));
-        pts.push(this.getDataPoint(x2, y2, points[midPoint - 1], series, pts.length));
-        pts.push(this.getDataPoint(x3, y3, points[points.length - 1], series, pts.length));
+        pts.push(this.getDataPoint(x1, y1, series, pts.length));
+        pts.push(this.getDataPoint(x2, y2, series, pts.length));
+        pts.push(this.getDataPoint(x3, y3, series, pts.length));
         return pts;
     };
     /**
@@ -18642,7 +18646,7 @@ var Trendlines = /** @class */ (function () {
             y = period - nullCount <= 0 ? null : y / (period - nullCount);
             if (y && !isNaN(y)) {
                 x = xValues[period - 1 + index];
-                pts.push(this.getDataPoint(x, y, points[period - 1 + index], series, pts.length));
+                pts.push(this.getDataPoint(x, y, series, pts.length));
             }
             index++;
         }
@@ -18659,8 +18663,8 @@ var Trendlines = /** @class */ (function () {
         var y1Linear = slopeInterceptLinear.slope * x1Linear + slopeInterceptLinear.intercept;
         var x2Linear = xValues[max] + trendline.forwardForecast;
         var y2Linear = slopeInterceptLinear.slope * x2Linear + slopeInterceptLinear.intercept;
-        pts.push(this.getDataPoint(x1Linear, y1Linear, points[0], series, pts.length));
-        pts.push(this.getDataPoint(x2Linear, y2Linear, points[points.length - 1], series, pts.length));
+        pts.push(this.getDataPoint(x1Linear, y1Linear, series, pts.length));
+        pts.push(this.getDataPoint(x2Linear, y2Linear, series, pts.length));
         return pts;
     };
     /**
@@ -18675,9 +18679,9 @@ var Trendlines = /** @class */ (function () {
         var y2 = slopeInterceptExp.intercept * Math.exp(slopeInterceptExp.slope * x2);
         var x3 = xValues[xValues.length - 1] + trendline.forwardForecast;
         var y3 = slopeInterceptExp.intercept * Math.exp(slopeInterceptExp.slope * x3);
-        ptsExp.push(this.getDataPoint(x1, y1, points[0], series, ptsExp.length));
-        ptsExp.push(this.getDataPoint(x2, y2, points[midPoint - 1], series, ptsExp.length));
-        ptsExp.push(this.getDataPoint(x3, y3, points[points.length - 1], series, ptsExp.length));
+        ptsExp.push(this.getDataPoint(x1, y1, series, ptsExp.length));
+        ptsExp.push(this.getDataPoint(x2, y2, series, ptsExp.length));
+        ptsExp.push(this.getDataPoint(x3, y3, series, ptsExp.length));
         return ptsExp;
     };
     /**
@@ -18697,18 +18701,18 @@ var Trendlines = /** @class */ (function () {
             if (index === 1) {
                 xValue = xValues[0] - trendline.backwardForecast;
                 yValue = this.getPolynomialYValue(polynomialSlopes, xValue);
-                pts.push(this.getDataPoint(xValue, yValue, points[0], series, pts.length));
+                pts.push(this.getDataPoint(xValue, yValue, series, pts.length));
             }
             else if (index === polynomialSlopes.length) {
                 xValue = xValues[points.length - 1] + trendline.forwardForecast;
                 yValue = this.getPolynomialYValue(polynomialSlopes, xValue);
-                pts.push(this.getDataPoint(xValue, yValue, points[points.length - 1], series, pts.length));
+                pts.push(this.getDataPoint(xValue, yValue, series, pts.length));
             }
             else {
                 x1 += (points.length + trendline.forwardForecast) / polynomialSlopes.length;
                 xValue = xValues[parseInt(x1.toString(), 10) - 1];
                 yValue = this.getPolynomialYValue(polynomialSlopes, xValue);
-                pts.push(this.getDataPoint(xValue, yValue, points[parseInt(x1.toString(), 10) - 1], series, pts.length));
+                pts.push(this.getDataPoint(xValue, yValue, series, pts.length));
             }
             index++;
         }
@@ -19418,6 +19422,7 @@ var BaseTooltip = /** @class */ (function (_super) {
                 availableSize: chart.availableSize, duration: this.chart.tooltip.duration,
                 isCanvas: this.chart.enableCanvas, isTextWrap: chart.tooltip.enableTextWrap && chart.getModuleName() === 'chart',
                 blazorTemplate: { name: 'Template', parent: this.chart.tooltip },
+                controlInstance: this.chart,
                 tooltipRender: function () {
                     module.removeHighlight(module.control);
                     module.highlightPoints();
@@ -19447,6 +19452,8 @@ var BaseTooltip = /** @class */ (function (_super) {
                 this.svgTooltip.dataBind();
             }
         }
+        // tslint:disable-next-line:no-any
+        this.chart.renderReactTemplates();
     };
     BaseTooltip.prototype.findPalette = function () {
         var colors = [];
@@ -19537,6 +19544,8 @@ var BaseTooltip = /** @class */ (function (_super) {
         var _this = this;
         var tooltipElement = this.getElement(this.element.id + '_tooltip');
         this.stopAnimation();
+        // tslint:disable-next-line:no-any
+        this.chart.clearTemplate();
         if (tooltipElement && this.previousPoints.length > 0) {
             this.toolTipInterval = setTimeout(function () {
                 if (_this.svgTooltip) {
@@ -27343,7 +27352,5 @@ exports.Export = Export;
 return exports;
 
 });
-sfBlazor.modules["chart"] = "charts.Chart";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.chart, () => {
+
     sf.charts = sf.base.extend({}, sf.charts, sfchart({}));
-});

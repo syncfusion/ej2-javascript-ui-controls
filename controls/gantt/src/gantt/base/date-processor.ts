@@ -998,10 +998,14 @@ export class DateProcessor {
      * @private
      */
     public calculateProjectDates(editArgs?: Object): void {
+        let sDate: Date =  typeof this.parent.projectStartDate === 'string' ?
+         new Date(this.parent.projectStartDate as string) : this.parent.projectStartDate;
+        let eDate: Date =  typeof this.parent.projectEndDate === 'string' ?
+         new Date(this.parent.projectEndDate as string) : this.parent.projectEndDate;
         let projectStartDate: Date = this.parent.timelineModule.isZooming && this.parent.cloneProjectStartDate
-            ? this.getDateFromFormat(this.parent.cloneProjectStartDate) : this.getDateFromFormat(this.parent.projectStartDate);
+            ? this.getDateFromFormat(this.parent.cloneProjectStartDate) : this.getDateFromFormat(sDate);
         let projectEndDate: Date = this.parent.timelineModule.isZooming && this.parent.cloneProjectEndDate
-            ? this.getDateFromFormat(this.parent.cloneProjectEndDate) : this.getDateFromFormat(this.parent.projectEndDate);
+            ? this.getDateFromFormat(this.parent.cloneProjectEndDate) : this.getDateFromFormat(eDate);
         let minStartDate: Date = null; let maxEndDate: Date = null;
         let flatData: IGanttData[] = this.parent.flatData;
         let currentViewData: IGanttData[] = this.parent.currentViewData;

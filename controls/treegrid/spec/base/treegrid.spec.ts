@@ -1089,6 +1089,115 @@ describe('TreeGrid base module', () => {
     });
   });
 
+
+
+
+
+  describe('Self Reference Data ExpandState Mapping for multiple levels', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: expandStateData,
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          height: '450px',
+          treeColumnIndex: 1,
+          expandStateMapping: 'isExpand',
+          columns: [
+            { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 140 },
+            { field: 'TaskName', headerText: 'Task Name', width: 160 },
+            { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' }},
+            { field: 'EndDate', headerText: 'End Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' }},
+            { field: 'Duration', headerText: 'Duration', textAlign: 'Right', width: 110},
+            { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 110},
+            { field: 'Priority', headerText: 'Priority', width: 110}
+          ]
+        },
+        done
+      );
+    });
+
+    it('expand testing', () => {
+      rows = gridObj.getRows();
+      (rows[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
+      expect((rows[1] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect((rows[2] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect(rows[2].getElementsByClassName('e-treegridexpand').length).toBe(1);
+      expect((rows[3] as HTMLTableRowElement).style.display).toBe('table-row');
+    });    
+
+    it('collapse testing', () => {
+      rows = gridObj.getRows();
+      (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+      expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
+      expect((rows[2] as HTMLTableRowElement).style.display).toBe('none');
+      expect((rows[3] as HTMLTableRowElement).style.display).toBe('none');
+    });
+    
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  
+   describe('borderline testing after expand and collapse records', () => {
+    let gridObj: TreeGrid;
+    let rows: HTMLTableRowElement[];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          enableCollapseAll: true,
+          height: '400px',
+          treeColumnIndex: 1,
+          columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
+        },
+        done
+      );
+    });
+    it('borderline testing after expand', () => {
+      rows = gridObj.getRows();
+      gridObj.expandRow(rows[11]);
+      expect(rows[28].cells[0].classList.contains('e-lastrowcell')).toBe(true);
+    });
+    it('borderline testing after collapse', () => {
+      rows = gridObj.getRows();
+      gridObj.expandRow(rows[11]);
+      gridObj.collapseRow(rows[11]);
+      expect(rows[11].cells[0].classList.contains('e-lastrowcell')).toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  
+  describe('Checking borderline for last record after initial rendering', () => {
+    let gridObj: TreeGrid;
+    let rows: HTMLTableRowElement[];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          enableCollapseAll: true,
+          height: '400px',
+          columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
+        },
+        done
+      );
+    });
+    it('checking border line', () => {
+      rows = gridObj.getRows();
+      expect(rows[11].cells[0].classList.contains('e-lastrowcell')).toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
  describe('sort comparer', () => {
      let gridObj: TreeGrid;
      let actionComplete: () => void;
@@ -1164,13 +1273,13 @@ describe('TreeGrid base module', () => {
     let gridObj: TreeGrid;
     let rows: Element[];
     let data = [{"TaskId":1,"TaskName":"Parent Task 1","Duration":10,"ParentId":null,"isParent":true,"isExpanded":true},
-{"TaskId":2,"TaskName":"Child task 1","Duration":4,"ParentId":1,"isParent":null,"isExpanded":true},
-{"TaskId":15,"TaskName":"Sub task 1","Duration":4,"ParentId":2,"isParent":null,"isExpanded":true},
-{"TaskId":13,"TaskName":"Child task 5","Duration":4,"ParentId":15,"isParent":null,"isExpanded":false},
-{"TaskId":5,"TaskName":"Parent Task 2","Duration":10,"ParentId":null,"isParent":true,"isExpanded":true},
-{"TaskId":6,"TaskName":"Child task 2","Duration":4,"ParentId":5,"isParent":null,"isExpanded":false},
-{"TaskId":10,"TaskName":"Parent Task 3","Duration":10,"ParentId":null,"isParent":true,"isExpanded":true},
-{"TaskId":11,"TaskName":"Child task 3","Duration":4,"ParentId":10,"isParent":false,"isExpanded":false}];
+                {"TaskId":2,"TaskName":"Child task 1","Duration":4,"ParentId":1,"isParent":null,"isExpanded":true},
+                {"TaskId":15,"TaskName":"Sub task 1","Duration":4,"ParentId":2,"isParent":null,"isExpanded":true},
+                {"TaskId":13,"TaskName":"Child task 5","Duration":4,"ParentId":15,"isParent":null,"isExpanded":false},
+                {"TaskId":5,"TaskName":"Parent Task 2","Duration":10,"ParentId":null,"isParent":true,"isExpanded":true},
+                {"TaskId":6,"TaskName":"Child task 2","Duration":4,"ParentId":5,"isParent":null,"isExpanded":false},
+                {"TaskId":10,"TaskName":"Parent Task 3","Duration":10,"ParentId":null,"isParent":true,"isExpanded":true},
+                {"TaskId":11,"TaskName":"Child task 3","Duration":4,"ParentId":10,"isParent":false,"isExpanded":false}];
     beforeAll((done: Function) => {
       gridObj = createGrid(
         {

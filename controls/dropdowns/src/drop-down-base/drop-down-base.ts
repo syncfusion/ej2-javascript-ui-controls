@@ -596,8 +596,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 compiledString = compile(template);
             }
             let templateName: string = actionFailure ? 'actionFailureTemplate' : 'noRecordsTemplate';
-            for (let item of compiledString({}, this, templateName, templateId, this.isStringTemplate)) {
-                ele.appendChild(item);
+            // tslint:disable-next-line
+            let noDataCompTemp: any = compiledString({}, this, templateName, templateId, this.isStringTemplate, null, ele);
+            if (noDataCompTemp && noDataCompTemp.length > 0) {
+                for (let i: number = 0; i < noDataCompTemp.length; i++) {
+                    ele.appendChild(noDataCompTemp[i]);
+                }
             }
             this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure, false, false, false, false);
         } else {
@@ -926,14 +930,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             return ListBase.createListItemFromArray(
                 this.createElement, <string[] | number[]>spliceData,
                 true,
-                <{ [key: string]: Object }>this.listOption(spliceData, fields));
+                <{ [key: string]: Object }>this.listOption(spliceData, fields), this);
         }
         return ListBase.createListItemFromJson(
             this.createElement,
             <{ [key: string]: Object; }[]>spliceData,
             <{ [key: string]: Object }>this.listOption(spliceData, fields),
             1,
-            true);
+            true, this);
     }
     private emptyDataRequest(fields: FieldSettingsModel): void {
         let listItems: { [key: string]: Object }[] = [];
@@ -962,6 +966,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             remove(this.list.querySelector('.e-list-parent'));
             remove(this.list.querySelector('.e-hidden-select'));
         } else  {
+            // tslint:disable-next-line         
+            if ((this as any).isReact) {
+                this.clearTemplate(['itemTemplate', 'groupTemplate', 'actionFailureTemplate', 'noRecordsTemplate']);
+            }
             this.list.innerHTML = '';
         }
         this.fixedHeaderElement = isNullOrUndefined(this.fixedHeaderElement) ? this.fixedHeaderElement : null;
@@ -1008,12 +1016,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 let tempHeaders: Element[] = ListBase.renderGroupTemplate(
                     groupValue as string, <{ [key: string]: Object }[]>dataSource,
                     (this.fields as FieldSettingsModel & { properties: Object }).properties,
-                    headerItems, option);
+                    headerItems, option, this);
             } else {
                 let tempHeaders: Element[] = ListBase.renderGroupTemplate(
                     this.groupTemplate as string, <{ [key: string]: Object }[]>dataSource,
                     (this.fields as FieldSettingsModel & { properties: Object }).properties,
-                    headerItems, option);
+                    headerItems, option, this);
             }
             this.DropDownBaseupdateBlazorTemplates(false, true, false, false, false, false, false, false);
         }
@@ -1039,7 +1047,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             <{ [key: string]: Object }[]>new DataManager(dataSource as DataOptions | JSON[]).executeLocal(new Query().take(100))
             : dataSource;
         this.sortedData = dataSource;
-        return ListBase.createList(this.createElement, (this.getModuleName() === 'autocomplete') ? spliceData : dataSource, options, true);
+        return ListBase.createList(
+            this.createElement, (this.getModuleName() === 'autocomplete') ? spliceData : dataSource, options, true, this);
     };
 
     protected listOption(
@@ -1126,10 +1135,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         if (itemcheck) {
             let itemValue: string = document.querySelector(this.itemTemplate).innerHTML.trim();
             return ListBase.renderContentTemplate(
-                this.createElement, itemValue, dataSource, (fields as FieldSettingsModel & { properties: Object }).properties, option);
+                this.createElement, itemValue, dataSource,
+                (fields as FieldSettingsModel & { properties: Object }).properties, option, this);
         } else {
             return ListBase.renderContentTemplate(
-            this.createElement, this.itemTemplate, dataSource, (fields as FieldSettingsModel & { properties: Object }).properties, option);
+                this.createElement, this.itemTemplate, dataSource,
+                (fields as FieldSettingsModel & { properties: Object }).properties, option, this);
         }
     };
 
@@ -1392,7 +1403,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             if (isHeader) { li.innerText = itemText; }
             if (this.itemTemplate && !isHeader) {
                 let compiledString: Function = compile(this.itemTemplate);
-                append(compiledString(item, this, 'itemTemplate', this.itemTemplateId, this.isStringTemplate), li);
+                // tslint:disable-next-line
+                let addItemTemplate: any = compiledString(item, this, 'itemTemplate', this.itemTemplateId, this.isStringTemplate, null, li);
+                if (addItemTemplate) {
+                    append(addItemTemplate, li);
+                }
                 this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
             } else if (!isHeader) {
                 li.appendChild(document.createTextNode(itemText));
@@ -1402,6 +1417,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             this.notify('addItem', { module: 'CheckBoxSelection', item: li });
             liCollections.push(li);
             (this.listData as { [key: string]: Object }[]).push(item as { [key: string]: Object });
+            if (this.sortOrder === 'None' && isNullOrUndefined(itemIndex) && index === 0 ) { index = null; }
             this.updateActionCompleteData(li, item as { [key: string]: Object }, index);
             //Listbox event
             this.trigger('beforeItemRender', {element: li, item: item});
@@ -1446,9 +1462,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 tempLi.splice(index, 0, liCollections[i]);
                 this.liCollections = tempLi;
                 index += 1;
-                if (this.getModuleName() === 'multiselect') {
-                    this.updateDataList();
-                }
+                if (this.getModuleName() === 'multiselect') { this.updateDataList(); }
             }
         }
         if (selectedItemValue || itemIndex === 0) {

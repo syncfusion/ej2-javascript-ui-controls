@@ -457,6 +457,10 @@ const filterSearchBegin = 'filtersearchbegin';
 const commandClick = 'commandClick';
 /** @hidden */
 const exportGroupCaption = 'exportGroupCaption';
+/** @hidden */
+const lazyLoadGroupExpand = 'lazyLoadGroupExpand';
+/** @hidden */
+const lazyLoadGroupCollapse = 'lazyLoadGroupCollapse';
 /**
  * Specifies grid internal events
  */
@@ -777,6 +781,12 @@ const pdfAggregateQueryCellInfo = 'pdfAggregateQueryCellInfo';
 /** @hidden */
 const excelAggregateQueryCellInfo = 'excelAggregateQueryCellInfo';
 /** @hidden */
+const setGroupCache = 'group-cache';
+/** @hidden */
+const lazyLoadScrollHandler = 'lazy-load-scroll-handler';
+/** @hidden */
+const groupCollapse = 'group-collapse';
+/** @hidden */
 const beforeCheckboxRenderer = 'beforeCheckboxRenderer';
 /** @hidden */
 const refreshHandlers = 'refreshResizeHandlers';
@@ -1003,6 +1013,9 @@ class Data {
     groupQuery(query) {
         let gObj = this.parent;
         if (gObj.allowGrouping && gObj.groupSettings.columns.length) {
+            if (this.parent.groupSettings.enableLazyLoading) {
+                query.lazyLoad.push({ key: 'isLazyLoad', value: this.parent.groupSettings.enableLazyLoading });
+            }
             let columns = gObj.groupSettings.columns;
             for (let i = 0, len = columns.length; i < len; i++) {
                 let column = this.getColumnByField(columns[i]);
@@ -1439,14 +1452,47 @@ class Data {
  * @hidden
  */
 class Row {
-    constructor(options) {
+    constructor(options, parent) {
         merge(this, options);
+        this.parent = parent;
     }
     clone() {
         let row = new Row({});
         merge(row, this);
         row.cells = this.cells.map((cell) => cell.clone());
         return row;
+    }
+    /**
+     * Replaces the row data and grid refresh the particular row element only.
+     * @param  {Object} data - To update new data for the particular row.
+     * @return {void}
+     */
+    setRowValue(data) {
+        let key = this.data[this.parent.getPrimaryKeyFieldNames()[0]];
+        this.parent.setRowData(key, data);
+    }
+    /**
+     * Replaces the given field value and refresh the particular cell element only.
+     * @param {string} field - Specifies the field name which you want to update.
+     * @param {string | number | boolean | Date} value - To update new value for the particular cell.
+     * @return {void}
+     */
+    setCellValue(field, value) {
+        let isValDiff = !(this.data[field].toString() === value.toString());
+        if (isValDiff) {
+            let pKeyField = this.parent.getPrimaryKeyFieldNames()[0];
+            let key = this.data[pKeyField];
+            this.parent.setCellValue(key, field, value);
+            this.makechanges(pKeyField, this.data);
+        }
+        else {
+            return;
+        }
+    }
+    makechanges(key, data) {
+        let gObj = this.parent;
+        let dataManager = gObj.getDataModule().dataManager;
+        dataManager.update(key, data);
     }
 }
 
@@ -1627,6 +1673,7 @@ class RowRenderer {
             node.appendChild(cell);
         }
     }
+    // tslint:disable-next-line:max-func-body-length
     refreshRow(row, columns, attributes$$1, rowTemplate, cloneNode, isEdit) {
         let tr = !isNullOrUndefined(cloneNode) ? cloneNode : this.element.cloneNode();
         let rowArgs = { data: row.data };
@@ -1708,6 +1755,9 @@ class RowRenderer {
         }
         if (row.cssClass) {
             tr.classList.add(row.cssClass);
+        }
+        if (row.lazyLoadCssClass) {
+            tr.classList.add(row.lazyLoadCssClass);
         }
         let vFTable = this.parent.enableColumnVirtualization && this.parent.frozenColumns !== 0;
         if (!vFTable && this.parent.element.scrollHeight > this.parent.height && this.parent.aggregates.length) {
@@ -1833,7 +1883,7 @@ class RowModelGenerator {
         }
         this.refreshForeignKeyRow(options);
         let cells = this.ensureColumns();
-        let row = new Row(options);
+        let row = new Row(options, this.parent);
         row.cells = cells.concat(this.generateCells(options));
         return row;
     }
@@ -2072,6 +2122,7 @@ class GroupModelGenerator extends RowModelGenerator {
     constructor(parent) {
         super(parent);
         this.rows = [];
+        /** @hidden */
         this.index = 0;
         this.parent = parent;
         this.summaryModelGen = new GroupSummaryModelGenerator(parent);
@@ -2181,6 +2232,7 @@ class GroupModelGenerator extends RowModelGenerator {
         cells.push(...visibles);
         return cells;
     }
+    /** @hidden */
     generateCaptionRow(data, indent, parentID, childID, tIndex, parentUid) {
         let options = {};
         let records = 'records';
@@ -2190,7 +2242,7 @@ class GroupModelGenerator extends RowModelGenerator {
             options.data.field = data.field;
         }
         options.isDataRow = false;
-        options.isExpand = !this.parent.isCollapseStateEnabled();
+        options.isExpand = !this.parent.groupSettings.enableLazyLoading && !this.parent.isCollapseStateEnabled();
         options.parentGid = parentID;
         options.childGid = childID;
         options.tIndex = tIndex;
@@ -2212,6 +2264,7 @@ class GroupModelGenerator extends RowModelGenerator {
             setValue('foreignKey', fkValue, row.data);
         }
     }
+    /** @hidden */
     generateDataRows(data, indent, childID, tIndex, parentUid) {
         let rows = [];
         let indexes = this.parent.getColumnIndexesInView();
@@ -2280,6 +2333,8 @@ class ContentRender {
         this.freezeRowElements = [];
         /** @hidden */
         this.currentInfo = {};
+        /** @hidden */
+        this.prevCurrentView = [];
         this.isLoaded = true;
         this.viewColIndexes = [];
         this.drop = (e) => {
@@ -2294,6 +2349,8 @@ class ContentRender {
         this.visibleFrozenRows = [];
         this.isAddRows = false;
         this.isInfiniteFreeze = false;
+        this.useGroupCache = false;
+        this.mutableData = false;
         this.rafCallback = (args) => {
             let arg = args;
             return () => {
@@ -2339,11 +2396,13 @@ class ContentRender {
         this.parent = parent;
         this.serviceLocator = serviceLocator;
         this.ariaService = this.serviceLocator.getService('ariaService');
+        this.mutableData = this.parent.getDataModule().isRemote();
         this.generator = this.getModelGenerator();
         if (this.parent.isDestroyed) {
             return;
         }
-        if (!this.parent.enableColumnVirtualization && !this.parent.enableVirtualization) {
+        if (!this.parent.enableColumnVirtualization && !this.parent.enableVirtualization
+            && !this.parent.groupSettings.enableLazyLoading) {
             this.parent.on(columnVisibilityChanged, this.setVisible, this);
         }
         this.parent.on(colGroupRefresh, this.colGroupRefresh, this);
@@ -2447,11 +2506,12 @@ class ContentRender {
             return;
         }
         let dataSource = this.currentMovableRows || gObj.currentViewData;
-        let frag = document.createDocumentFragment();
+        let isReact = gObj.isReact && !isNullOrUndefined(gObj.rowTemplate);
+        let frag = isReact ? gObj.createElement('tbody') : document.createDocumentFragment();
         if (!this.initialPageRecords) {
             this.initialPageRecords = extend([], dataSource);
         }
-        let hdrfrag = document.createDocumentFragment();
+        let hdrfrag = isReact ? gObj.createElement('tbody') : document.createDocumentFragment();
         let columns = gObj.getColumns();
         let tr;
         let hdrTbody;
@@ -2572,11 +2632,12 @@ class ContentRender {
             modelData = this.parent.contentModule.generateRows(dataSource, args);
         }
         else {
-            modelData = this.checkInfiniteCache(modelData, args);
-            if (!this.isAddRows) {
+            modelData = this.checkCache(modelData, args);
+            if (!this.isAddRows && !this.useGroupCache) {
                 modelData = this.generator.generateRows(dataSource, args);
             }
         }
+        this.setGroupCache(modelData, args);
         this.parent.notify(setInfiniteCache, { isInfiniteScroll: isInfiniteScroll, modelData: modelData, args: args });
         if (isNullOrUndefined(modelData[0].cells[0])) {
             mCont.querySelector('tbody').innerHTML = '';
@@ -2602,6 +2663,10 @@ class ContentRender {
                 }
             }
             this.parent.destroyTemplate(['template'], templatetoclear);
+        }
+        if (this.parent.isReact && args.requestType !== 'infiniteScroll' && !args.isFrozen) {
+            this.parent.destroyTemplate(['template', 'rowTemplate', 'detailTemplate', 'captionTemplate', 'commandsTemplate']);
+            this.parent.renderTemplates();
         }
         if (this.parent.enableColumnVirtualization) {
             let cellMerge = new CellMergeRender(this.serviceLocator, this.parent);
@@ -2670,6 +2735,12 @@ class ContentRender {
         this.virtualFrozenHdrRefresh(hdrfrag, modelData, row, args, dataSource, columns);
         for (let i = startIndex, len = modelData.length; i < len; i++) {
             this.rows.push(modelData[i]);
+            if (this.parent.groupSettings.enableLazyLoading && !this.useGroupCache && this.parent.groupSettings.columns.length) {
+                this.setRowsInLazyGroup(modelData[i], i);
+                if (isNullOrUndefined(modelData[i].indent)) {
+                    continue;
+                }
+            }
             this.setInfiniteVisibleRows(args, modelData[i]);
             if (isGroupAdaptive(gObj) && this.rows.length >= (gObj.pageSettings.pageSize) && blockLoad) {
                 break;
@@ -2689,8 +2760,17 @@ class ContentRender {
             }
             else {
                 let rowTemplateID = gObj.element.id + 'rowTemplate';
-                let elements = gObj.getRowTemplate()(extend({ index: i }, dataSource[i]), gObj, 'rowTemplate', rowTemplateID);
-                if (elements[0].tagName === 'TBODY') {
+                let elements;
+                if (gObj.isReact) {
+                    let isHeader = gObj.frozenRows && i < gObj.frozenRows;
+                    let copied = extend({ index: i }, dataSource[i]);
+                    gObj.getRowTemplate()(copied, gObj, 'rowTemplate', rowTemplateID, null, null, isHeader ? hdrfrag : frag);
+                    gObj.renderTemplates();
+                }
+                else {
+                    elements = gObj.getRowTemplate()(extend({ index: i }, dataSource[i]), gObj, 'rowTemplate', rowTemplateID);
+                }
+                if (!gObj.isReact && elements[0].tagName === 'TBODY') {
                     for (let j = 0; j < elements.length; j++) {
                         let isTR = elements[j].nodeName.toLowerCase() === 'tr';
                         if (isTR || (elements[j].querySelectorAll && elements[j].querySelectorAll('tr').length)) {
@@ -2706,12 +2786,14 @@ class ContentRender {
                 }
                 else {
                     if (gObj.frozenRows && i < gObj.frozenRows) {
-                        tr = appendChildren(hdrfrag, elements);
+                        tr = !gObj.isReact ? appendChildren(hdrfrag, elements) : hdrfrag.lastElementChild;
                     }
                     else {
                         // frag.appendChild(tr);
-                        tr = appendChildren(frag, elements);
-                        trElement = tr.lastElementChild;
+                        if (!gObj.isReact) {
+                            tr = appendChildren(frag, elements);
+                        }
+                        trElement = gObj.isReact ? frag.lastElementChild : tr.lastElementChild;
                     }
                 }
                 let arg = { data: modelData[i].data, row: trElement ? trElement : tr };
@@ -2727,8 +2809,15 @@ class ContentRender {
             || (args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo && args.virtualInfo.sentinelInfo.axis === 'X')) {
             hdrTbody = frzCols ? gObj.getHeaderContent().querySelector(idx === 0 ? '.e-frozenheader'
                 : '.e-movableheader').querySelector('tbody') : gObj.getHeaderTable().querySelector('tbody');
-            hdrTbody.innerHTML = '';
-            hdrTbody.appendChild(hdrfrag);
+            if (isReact) {
+                let parentTable = hdrTbody.parentElement;
+                remove(hdrTbody);
+                parentTable.appendChild(hdrfrag);
+            }
+            else {
+                hdrTbody.innerHTML = '';
+                hdrTbody.appendChild(hdrfrag);
+            }
         }
         if (!gObj.enableVirtualization && gObj.frozenRows && idx === 0 && cont.offsetHeight === Number(gObj.height)) {
             cont.style.height = (cont.offsetHeight - hdrTbody.offsetHeight) + 'px';
@@ -2749,7 +2838,12 @@ class ContentRender {
                 this.tbody = this.parent.createElement('tbody');
             }
             if (frzCols && !isVFTable && !this.parent.enableInfiniteScrolling) {
-                this.tbody.appendChild(frag);
+                if (isReact) {
+                    this.tbody = frag;
+                }
+                else {
+                    this.tbody.appendChild(frag);
+                }
                 if (this.index === 0) {
                     this.isLoaded = false;
                     fCont.querySelector('table').appendChild(this.tbody);
@@ -2804,6 +2898,7 @@ class ContentRender {
                         }
                     }
                     else {
+                        this.useGroupCache = false;
                         this.appendContent(this.tbody, frag, args);
                     }
                 }
@@ -2818,8 +2913,24 @@ class ContentRender {
         }, this.rafCallback(extend({}, args)));
     }
     appendContent(tbody, frag, args) {
-        tbody.appendChild(frag);
-        this.getTable().appendChild(tbody);
+        let isReact = this.parent.isReact && !isNullOrUndefined(this.parent.rowTemplate);
+        if (isReact) {
+            this.getTable().appendChild(frag);
+        }
+        else {
+            tbody.appendChild(frag);
+            this.getTable().appendChild(tbody);
+        }
+    }
+    setRowsInLazyGroup(row, index) {
+        if (this.parent.groupSettings.enableLazyLoading && !this.useGroupCache && this.parent.groupSettings.columns.length) {
+            this.parent.contentModule.maintainRows(row, index);
+        }
+    }
+    setGroupCache(data, args) {
+        if (!this.useGroupCache && this.parent.groupSettings.enableLazyLoading) {
+            this.parent.notify(setGroupCache, { args: args, data: data });
+        }
     }
     ensureFrozenHeaderRender(args) {
         return !((this.parent.enableVirtualization
@@ -2827,7 +2938,7 @@ class ContentRender {
             && this.parent.frozenRows && this.parent.infiniteScrollModule.requestType === 'delete'
             && this.parent.pageSettings.currentPage !== 1));
     }
-    checkInfiniteCache(modelData, args) {
+    checkCache(modelData, args) {
         if (this.parent.infiniteScrollSettings.enableCache && args.requestType === 'infiniteScroll') {
             let index = args.isFrozen ? 1 : 0;
             let frozenCols = this.parent.getFrozenColumns();
@@ -2841,6 +2952,12 @@ class ContentRender {
                 modelData = this.parent.pageSettings.currentPage === 1 ? data.slice(this.parent.frozenRows) : data;
             }
             return modelData;
+        }
+        if (this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length &&
+            (args.requestType === 'paging' || args.requestType === 'columnstate' || args.requestType === 'reorder')
+            && this.parent.contentModule.getGroupCache()[this.parent.pageSettings.currentPage]) {
+            this.useGroupCache = true;
+            return this.parent.contentModule.initialGroupRows(args.requestType === 'reorder');
         }
         return null;
     }
@@ -3228,6 +3345,148 @@ class ContentRender {
     }
     setRowObjects(rows) {
         this.rows = rows;
+    }
+    /** @hidden */
+    immutableModeRendering(args = {}) {
+        let gObj = this.parent;
+        gObj.hideSpinner();
+        let key = gObj.getPrimaryKeyFieldNames()[0];
+        let oldKeys = {};
+        let newKeys = {};
+        let newRowObjs = [];
+        let oldIndexes = {};
+        let oldRowObjs = gObj.getRowsObject().slice();
+        let batchChangeKeys = this.getBatchEditedRecords(key, oldRowObjs);
+        let newIndexes = {};
+        let hasBatch = Object.keys(batchChangeKeys).length !== 0;
+        if (gObj.getContent().querySelector('.e-emptyrow') || args.requestType === 'reorder'
+            || this.parent.groupSettings.columns.length) {
+            this.refreshContentRows(args);
+        }
+        else {
+            if (gObj.currentViewData.length === 0) {
+                return;
+            }
+            let oldRowElements = {};
+            let tbody = gObj.createElement('tbody');
+            let dataSource = gObj.currentViewData;
+            let trs = [].slice.call(this.getTable().querySelector('tbody').children);
+            if (this.prevCurrentView.length) {
+                let prevLen = this.prevCurrentView.length;
+                let currentLen = dataSource.length;
+                if (prevLen === currentLen) {
+                    for (let i = 0; i < currentLen; i++) {
+                        newKeys[dataSource[i][key]] = oldKeys[this.prevCurrentView[i][key]] = i;
+                        newIndexes[i] = dataSource[i][key];
+                        oldRowElements[oldRowObjs[i].uid] = trs[i];
+                        oldIndexes[i] = this.prevCurrentView[i][key];
+                    }
+                }
+                else {
+                    for (let i = 0; i < currentLen; i++) {
+                        newKeys[dataSource[i][key]] = i;
+                        newIndexes[i] = dataSource[i][key];
+                    }
+                    for (let i = 0; i < prevLen; i++) {
+                        oldRowElements[oldRowObjs[i].uid] = trs[i];
+                        oldKeys[this.prevCurrentView[i][key]] = i;
+                        oldIndexes[i] = this.prevCurrentView[i][key];
+                    }
+                }
+            }
+            for (let i = 0; i < dataSource.length; i++) {
+                let oldIndex = oldKeys[dataSource[i][key]];
+                if (!isNullOrUndefined(oldIndex)) {
+                    let isEqual = false;
+                    if (this.mutableData) {
+                        isEqual = this.objectEqualityChecker(this.prevCurrentView[i], dataSource[i]);
+                    }
+                    let tr = oldRowElements[oldRowObjs[oldIndex].uid];
+                    newRowObjs.push(gObj.getRowsObject()[oldIndex]);
+                    if (this.rowElements[i] && this.rowElements[i].getAttribute('data-uid') === newRowObjs[i].uid
+                        && ((hasBatch && isNullOrUndefined(batchChangeKeys[newIndexes[i]]))
+                            || (!hasBatch && (isEqual || this.prevCurrentView[i] === dataSource[i])))) {
+                        if (oldIndex !== i) {
+                            this.refreshImmutableContent(i, tr, newRowObjs[i]);
+                        }
+                        tbody.appendChild(tr);
+                        continue;
+                    }
+                    if ((hasBatch && !isNullOrUndefined(batchChangeKeys[newIndexes[i]]))
+                        || (!this.mutableData && dataSource[i] !== this.prevCurrentView[oldIndex])
+                        || (this.mutableData && !isEqual)) {
+                        oldRowObjs[oldIndex].setRowValue(dataSource[i]);
+                    }
+                    tbody.appendChild(tr);
+                    this.refreshImmutableContent(i, tr, newRowObjs[i]);
+                }
+                else {
+                    let row = new RowRenderer(this.serviceLocator, null, gObj);
+                    let modelData = this.generator.generateRows([dataSource[i]]);
+                    newRowObjs.push(modelData[0]);
+                    let tr = row.render(modelData[0], gObj.getColumns());
+                    tbody.appendChild(tr);
+                    this.refreshImmutableContent(i, tr, newRowObjs[i]);
+                }
+            }
+            this.rows = newRowObjs;
+            this.rowElements = [].slice.call(tbody.children);
+            remove(this.getTable().querySelector('tbody'));
+            this.getTable().appendChild(tbody);
+            this.parent.trigger(dataBound, {}, () => {
+                if (this.parent.allowTextWrap) {
+                    this.parent.notify(freezeRender, { case: 'textwrap' });
+                }
+            });
+            if (args) {
+                let action = (args.requestType || '').toLowerCase() + '-complete';
+                this.parent.notify(action, args);
+            }
+        }
+    }
+    objectEqualityChecker(old, next) {
+        let keys = Object.keys(old);
+        let isEqual = true;
+        for (let i = 0; i < keys.length; i++) {
+            if (old[keys[i]] !== next[keys[i]]) {
+                isEqual = false;
+                break;
+            }
+        }
+        return isEqual;
+    }
+    getBatchEditedRecords(primaryKey, rows) {
+        let keys = {};
+        let changes = this.parent.getBatchChanges();
+        let changedRecords = [];
+        let addedRecords = [];
+        if (Object.keys(changes).length) {
+            changedRecords = changes.changedRecords;
+            addedRecords = changes.addedRecords;
+        }
+        if (addedRecords.length) {
+            if (this.parent.editSettings.newRowPosition === 'Bottom') {
+                rows.splice(rows.length - 1, addedRecords.length);
+            }
+            else {
+                rows.splice(0, addedRecords.length);
+            }
+        }
+        for (let i = 0; i < changedRecords.length; i++) {
+            keys[changedRecords[i][primaryKey]] = i;
+        }
+        return keys;
+    }
+    refreshImmutableContent(index, tr, row) {
+        row.isAltRow = this.parent.enableAltRow ? index % 2 !== 0 : false;
+        row.isAltRow ? tr.classList.add('e-altrow') : tr.classList.remove('e-altrow');
+        tr.setAttribute('aria-rowindex', index.toString());
+        this.updateCellIndex(tr, index);
+    }
+    updateCellIndex(rowEle, index) {
+        for (let i = 0; i < rowEle.cells.length; i++) {
+            rowEle.cells[i].setAttribute('index', index.toString());
+        }
     }
 }
 
@@ -3958,6 +4217,7 @@ class CellRenderer {
     evaluate(node, cell, data, attributes$$1, fData, isEdit) {
         let result;
         if (cell.column.template) {
+            let isReactCompiler = this.parent.isReact && typeof (cell.column.template) !== 'string';
             let literals = ['index'];
             let dummyData = extendObjWithFn({}, data, { [foreignKeyData]: fData, column: cell.column });
             let templateID = this.parent.element.id + cell.column.uid;
@@ -3972,9 +4232,18 @@ class CellRenderer {
                 }
             }
             else {
-                result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
+                if (isReactCompiler) {
+                    let copied = { 'index': attributes$$1[literals[0]] };
+                    cell.column.getColumnTemplate()(extend(copied, dummyData), this.parent, 'template', templateID, this.parent[str], null, node);
+                    this.parent.renderTemplates();
+                }
+                else {
+                    result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
+                }
             }
-            appendChildren(node, result);
+            if (!isReactCompiler) {
+                appendChildren(node, result);
+            }
             this.parent.notify('template-result', { template: result });
             result = null;
             node.setAttribute('aria-label', node.innerText + ' is template cell' + ' column header ' +
@@ -4023,12 +4292,37 @@ class CellRenderer {
      */
     refreshTD(td, cell, data, attributes$$1) {
         let isEdit = this.parent.editSettings.mode === 'Batch' && td.classList.contains('e-editedbatchcell');
-        let node = this.refreshCell(cell, data, attributes$$1, isEdit);
-        td.innerHTML = '';
-        td.setAttribute('aria-label', node.getAttribute('aria-label'));
-        let elements = [].slice.call(node.childNodes);
-        for (let elem of elements) {
-            td.appendChild(elem);
+        if (this.parent.isReact) {
+            td.innerHTML = '';
+            let cellIndex = td.cellIndex;
+            let parentRow = td.parentElement;
+            remove(td);
+            let newTD = this.refreshCell(cell, data, attributes$$1, isEdit);
+            this.cloneAttributes(newTD, td);
+            parentRow.cells.length !== cellIndex - 1 ? parentRow.insertBefore(newTD, parentRow.cells[cellIndex])
+                : parentRow.appendChild(newTD);
+        }
+        else {
+            let node = this.refreshCell(cell, data, attributes$$1, isEdit);
+            td.innerHTML = '';
+            td.setAttribute('aria-label', node.getAttribute('aria-label'));
+            let elements = [].slice.call(node.childNodes);
+            for (let elem of elements) {
+                td.appendChild(elem);
+            }
+        }
+    }
+    // tslint:disable-next-line:no-any
+    cloneAttributes(target, source) {
+        // tslint:disable-next-line:no-any
+        let attrs = source.attributes;
+        // tslint:disable-next-line:no-any
+        let i = attrs.length;
+        // tslint:disable-next-line:no-any
+        let attr;
+        while (i--) {
+            attr = attrs[i];
+            target.setAttribute(attr.name, attr.value);
         }
     }
     refreshCell(cell, data, attributes$$1, isEdit) {
@@ -4251,6 +4545,7 @@ class HeaderCellRenderer extends CellRenderer {
     clean(node) {
         node.innerHTML = '';
     }
+    /* tslint:disable-next-line:max-func-body-length */
     prepareHeader(cell, node, fltrMenuEle) {
         let column = cell.column;
         let ariaAttr = {};
@@ -4325,9 +4620,18 @@ class HeaderCellRenderer extends CellRenderer {
             let headerTempID = gridObj.element.id + column.uid + 'headerTemplate';
             let str = 'isStringTemplate';
             let col = isBlazor() ? column.toJSON() : column;
-            result = column.getHeaderTemplate()(extend({ 'index': colIndex }, col), gridObj, 'headerTemplate', headerTempID, this.parent[str]);
-            node.firstElementChild.innerHTML = '';
-            appendChildren(node.firstElementChild, result);
+            let isReactCompiler = this.parent.isReact && typeof (column.headerTemplate) !== 'string';
+            if (isReactCompiler) {
+                let copied = { 'index': colIndex };
+                node.firstElementChild.innerHTML = '';
+                column.getHeaderTemplate()(extend(copied, col), gridObj, 'headerTemplate', headerTempID, this.parent[str], null, node.firstElementChild);
+                this.parent.renderTemplates();
+            }
+            else {
+                result = column.getHeaderTemplate()(extend({ 'index': colIndex }, col), gridObj, 'headerTemplate', headerTempID, this.parent[str]);
+                node.firstElementChild.innerHTML = '';
+                appendChildren(node.firstElementChild, result);
+            }
         }
         this.ariaService.setOptions(node, ariaAttr);
         if (!isNullOrUndefined(column.headerTextAlign) || !isNullOrUndefined(column.textAlign)) {
@@ -4504,18 +4808,33 @@ class GroupCaptionCellRenderer extends CellRenderer {
         let value = cell.isForeignKey ? fKeyValue : cell.column.enableGroupByFormat ? data.key :
             this.format(cell.column, cell.column.valueAccessor('key', data, cell.column));
         if (!isNullOrUndefined(gObj.groupSettings.captionTemplate)) {
+            let isReactCompiler = this.parent.isReact && typeof (gObj.groupSettings.captionTemplate) !== 'string';
             if (isBlazor()) {
                 let tempID = gObj.element.id + 'captionTemplate';
                 result = templateCompiler(gObj.groupSettings.captionTemplate)(data, null, null, tempID);
             }
             else {
-                result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
+                if (isReactCompiler) {
+                    let tempID = gObj.element.id + 'captionTemplate';
+                    templateCompiler(gObj.groupSettings.captionTemplate)(data, this.parent, 'captionTemplate', tempID, null, null, node);
+                    this.parent.renderTemplates();
+                }
+                else {
+                    result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
+                }
             }
-            appendChildren(node, result);
+            if (!isReactCompiler) {
+                appendChildren(node, result);
+            }
         }
         else {
-            node.innerHTML = cell.column.headerText + ': ' + value + ' - ' + data.count + ' ' +
-                (data.count < 2 ? this.localizer.getConstant('Item') : this.localizer.getConstant('Items'));
+            if (gObj.groupSettings.enableLazyLoading) {
+                node.innerHTML = cell.column.headerText + ': ' + value;
+            }
+            else {
+                node.innerHTML = cell.column.headerText + ': ' + value + ' - ' + data.count + ' ' +
+                    (data.count < 2 ? this.localizer.getConstant('Item') : this.localizer.getConstant('Items'));
+            }
         }
         node.setAttribute('colspan', cell.colSpan.toString());
         node.setAttribute('aria-label', node.innerHTML + ' is groupcaption cell');
@@ -4822,6 +5141,11 @@ class Render {
             else if (args.requestType === 'reorder' && this.parent.dataSource && 'result' in this.parent.dataSource) {
                 this.contentRenderer.refreshContentRows(args);
             }
+            else if ((args.requestType === 'paging' || args.requestType === 'columnstate' || args.requestType === 'reorder')
+                && this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length
+                && this.parent.contentModule.getGroupCache()[this.parent.pageSettings.currentPage]) {
+                this.contentRenderer.refreshContentRows(args);
+            }
             else {
                 this.refreshDataManager(args);
             }
@@ -5074,6 +5398,7 @@ class Render {
         e.actionArgs = args;
         let isInfiniteDelete = this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache
             && (args.requestType === 'delete' || (args.requestType === 'save' && this.parent.infiniteScrollModule.requestType === 'add'));
+        // tslint:disable-next-line:max-func-body-length
         gObj.trigger(beforeDataBound, e, (dataArgs) => {
             if (dataArgs.cancel) {
                 return;
@@ -5094,6 +5419,7 @@ class Render {
             this.parent.isEdit = false;
             this.parent.notify(editReset, {});
             this.parent.notify(tooltipDestroy, {});
+            this.contentRenderer.prevCurrentView = this.parent.currentViewData.slice();
             gObj.currentViewData = dataArgs.result;
             if (isBlazor() && gObj.filterSettings.type === 'FilterBar'
                 && (isNullOrUndefined(gObj.currentViewData) ||
@@ -5115,6 +5441,10 @@ class Render {
                 }
             }
             if (!len && dataArgs.count && gObj.allowPaging && args && args.requestType !== 'delete') {
+                if (this.parent.groupSettings.enableLazyLoading
+                    && (args.requestType === 'grouping' || args.requestType === 'ungrouping')) {
+                    this.parent.notify(groupComplete, args);
+                }
                 gObj.prevPageMoving = true;
                 gObj.pageSettings.totalRecordsCount = dataArgs.count;
                 if (args.requestType !== 'paging') {
@@ -5149,7 +5479,12 @@ class Render {
                     args.scrollTop = { top: this.contentRenderer[content].scrollTop };
                 }
                 if (!isInfiniteDelete) {
-                    this.contentRenderer.refreshContentRows(args);
+                    if (this.parent.enableImmutableMode) {
+                        this.contentRenderer.immutableModeRendering(args);
+                    }
+                    else {
+                        this.contentRenderer.refreshContentRows(args);
+                    }
                 }
                 else {
                     this.parent.notify(infiniteEditHandler, { e: args, result: e.result, count: e.count, agg: e.aggregates });
@@ -5466,8 +5801,12 @@ class ColumnWidthService {
             return isNullOrUndefined(a.width) || a.width === 'auto';
         });
         if (collection.length) {
-            if (!isNullOrUndefined(this.parent.width) && this.parent.width !== 'auto') {
+            if (!isNullOrUndefined(this.parent.width) && this.parent.width !== 'auto' &&
+                typeof (this.parent.width) === 'string' && this.parent.width.indexOf('%') === -1) {
                 difference = (typeof this.parent.width === 'string' ? parseInt(this.parent.width, 10) : this.parent.width) - tWidth;
+            }
+            else {
+                difference = this.parent.element.getBoundingClientRect().width - tWidth;
             }
             let tmWidth = 0;
             for (let cols of collection) {
@@ -5541,7 +5880,7 @@ class ColumnWidthService {
             headerCol.style.width = fWidth;
         }
         else if (headerCol && clear) {
-            headerCol.style.width = ' ';
+            headerCol.style.width = '';
         }
         let contentCol;
         if (frzCols && index >= frzCols) {
@@ -5561,7 +5900,7 @@ class ColumnWidthService {
             contentCol.style.width = fWidth;
         }
         else if (contentCol && clear) {
-            contentCol.style.width = ' ';
+            contentCol.style.width = '';
         }
         let edit = this.parent.element.querySelectorAll('.e-table.e-inline-edit');
         let editTableCol = [];
@@ -6564,8 +6903,8 @@ class HeaderFocus extends ContentFocus {
         return info;
     }
     selector(row, cell) {
-        return (cell.visible && (cell.column.field !== undefined || cell.isTemplate)) || cell.column.type === 'checkbox' ||
-            cell.cellType === CellType.StackedHeader;
+        return (cell.visible && (cell.column.field !== undefined || cell.isTemplate || !isNullOrUndefined(cell.column.template))) ||
+            cell.column.type === 'checkbox' || cell.cellType === CellType.StackedHeader;
     }
     jump(action, current) {
         let frozenSwap = this.parent.frozenColumns > 0 &&
@@ -9468,6 +9807,7 @@ class Selection {
         }
         this.isDragged = false;
     }
+    /* tslint:disable-next-line:max-func-body-length */
     onCellFocused(e) {
         if (this.parent.frozenRows && e.container.isHeader && e.byKey) {
             if (e.keyArgs.action === 'upArrow') {
@@ -9493,7 +9833,8 @@ class Selection {
         let clear = this.parent.getFrozenColumns() ? (((e.container.isHeader && e.element.tagName !== 'TD' && e.isJump) ||
             ((e.container.isContent || e.element.tagName === 'TD') && !(e.container.isSelectable || e.element.tagName === 'TD')))
             && !(e.byKey && e.keyArgs.action === 'space')) : ((e.container.isHeader && e.isJump) ||
-            (e.container.isContent && !e.container.isSelectable)) && !(e.byKey && e.keyArgs.action === 'space');
+            (e.container.isContent && !e.container.isSelectable)) && !(e.byKey && e.keyArgs.action === 'space')
+            && !(e.element.classList.contains('e-detailrowexpand') || e.element.classList.contains('e-detailrowcollapse'));
         let headerAction = (e.container.isHeader && e.element.tagName !== 'TD' && !closest(e.element, '.e-rowcell'))
             && !(e.byKey && e.keyArgs.action === 'space');
         if (!e.byKey || clear) {
@@ -9777,7 +10118,7 @@ class Selection {
         this.isHeaderCheckboxClicked = false;
         let isInfinitecroll = this.parent.enableInfiniteScrolling && e.requestType === 'infiniteScroll';
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection && !isInfinitecroll) {
-            this.disableUI = true;
+            this.disableUI = !this.parent.enableImmutableMode;
             this.clearSelection();
             this.setCheckAllState();
             this.disableUI = false;
@@ -10168,6 +10509,10 @@ class Scroll {
             }
             if (!isNullOrUndefined(this.parent.infiniteScrollModule) && this.parent.enableInfiniteScrolling) {
                 this.parent.notify(infiniteScrollHandler, e);
+            }
+            if (this.parent.groupSettings.columns.length && this.parent.groupSettings.enableLazyLoading) {
+                let isDown = this.previousValues.top < this.parent.getContent().firstElementChild.scrollTop;
+                this.parent.notify(lazyLoadScrollHandler, { scrollDown: isDown });
             }
             this.parent.notify(virtualScrollEdit, {});
             let target = e.target;
@@ -11424,6 +11769,9 @@ __decorate$1([
 __decorate$1([
     Property()
 ], GroupSettings.prototype, "captionTemplate", void 0);
+__decorate$1([
+    Property(false)
+], GroupSettings.prototype, "enableLazyLoading", void 0);
 /**
  * Configures the edit behavior of the Grid.
  */
@@ -11487,6 +11835,7 @@ let Grid = Grid_1 = class Grid extends Component {
         super(options, element);
         this.isPreventScrollEvent = false;
         this.inViewIndexes = [];
+        this.keyA = false;
         this.media = {};
         this.componentRefresh = Component.prototype.refresh;
         /** @hidden */
@@ -11514,6 +11863,8 @@ let Grid = Grid_1 = class Grid extends Component {
         this.mediaBindInstance = {};
         /** @hidden */
         this.commandDelIndex = undefined;
+        /** @hidden */
+        this.asyncTimeOut = 50;
         // enable/disable logger for MVC & Core
         this.enableLogger = true;
         this.needsID = true;
@@ -11661,6 +12012,12 @@ let Grid = Grid_1 = class Grid extends Component {
         if (this.enableInfiniteScrolling) {
             modules.push({
                 member: 'infiniteScroll',
+                args: [this, this.serviceLocator]
+            });
+        }
+        if (this.groupSettings.enableLazyLoading) {
+            modules.push({
+                member: 'lazyLoadGroup',
                 args: [this, this.serviceLocator]
             });
         }
@@ -14168,6 +14525,10 @@ let Grid = Grid_1 = class Grid extends Component {
             return isNullOrUndefined(this.currentViewData.records) ?
                 this.currentViewData : this.currentViewData.records;
         }
+        if (this.groupSettings.enableLazyLoading) {
+            return this.currentViewData;
+        }
+        
         return (this.allowGrouping && this.groupSettings.columns.length && this.currentViewData.length && this.currentViewData.records) ?
             this.currentViewData.records : this.currentViewData;
     }
@@ -14346,12 +14707,25 @@ let Grid = Grid_1 = class Grid extends Component {
     keyDownHandler(e) {
         if (e.altKey) {
             if (e.keyCode === 74) { //alt j
-                this.focusModule.focusHeader();
-                this.focusModule.addOutline();
+                if (this.keyA) { //alt A J
+                    this.notify(groupCollapse, { target: e.target, collapse: false });
+                    this.keyA = false;
+                }
+                else {
+                    this.focusModule.focusHeader();
+                    this.focusModule.addOutline();
+                }
             }
             if (e.keyCode === 87) { //alt w
                 this.focusModule.focusContent();
                 this.focusModule.addOutline();
+            }
+            if (e.keyCode === 65) { //alt A
+                this.keyA = true;
+            }
+            if (e.keyCode === 72 && this.keyA) { //alt A H
+                this.notify(groupCollapse, { target: e.target, collapse: true });
+                this.keyA = false;
             }
         }
     }
@@ -14922,7 +15296,6 @@ let Grid = Grid_1 = class Grid extends Component {
      *To perform aggregate operation on a column.
      *@param  {AggregateColumnModel} summaryCol - Pass Aggregate Column details.
      *@param  {Object} summaryData - Pass JSON Array for which its field values to be calculated.
-     *
      * @deprecated
      */
     getSummaryValues(summaryCol, summaryData) {
@@ -14981,6 +15354,159 @@ let Grid = Grid_1 = class Grid extends Component {
                 }
             }
         }
+    }
+    /**
+     * @hidden
+     */
+    renderTemplates() {
+        let portals = 'portals';
+        this.notify('reactTemplateRender', this[portals]);
+        this.renderReactTemplates();
+    }
+    /**
+     * Apply the changes to the Grid without refreshing the rows.
+     * @param  {BatchChanges} changes - Defines changes to be updated.
+     * @return {void}
+     */
+    batchUpdate(changes) {
+        this.processRowChanges(changes);
+    }
+    /**
+     * Apply the changes to the Grid in one batch after 50ms without refreshing the rows.
+     * @param  {BatchChanges} changes - Defines changes to be updated.
+     * @return {void}
+     */
+    batchAsyncUpdate(changes) {
+        this.processBulkRowChanges(changes);
+    }
+    processBulkRowChanges(changes) {
+        if (!this.dataToBeUpdated) {
+            this.dataToBeUpdated = Object.assign({ addedRecords: [], changedRecords: [], deletedRecords: [] }, changes);
+            setTimeout(() => {
+                this.processRowChanges(this.dataToBeUpdated);
+                this.dataToBeUpdated = null;
+            }, this.asyncTimeOut);
+        }
+        else {
+            let loopstring = ['addedRecords', 'changedRecords', 'deletedRecords'];
+            let keyField = this.getPrimaryKeyFieldNames()[0];
+            for (let i = 0; i < loopstring.length; i++) {
+                if (changes[loopstring[i]]) {
+                    compareChanges(this, changes, loopstring[i], keyField);
+                }
+            }
+        }
+    }
+    processRowChanges(changes) {
+        let keyField = this.getPrimaryKeyFieldNames()[0];
+        changes = Object.assign({ addedRecords: [], changedRecords: [], deletedRecords: [] }, changes);
+        let promise = this.getDataModule().saveChanges(changes, keyField, {}, this.getDataModule().generateQuery().requiresCount());
+        if (this.getDataModule().isRemote()) {
+            promise.then((e) => {
+                this.setNewData();
+            });
+        }
+        else {
+            this.setNewData();
+        }
+    }
+    setNewData() {
+        let oldValues = JSON.parse(JSON.stringify(this.getCurrentViewRecords()));
+        let getData = this.getDataModule().getData({}, this.getDataModule().generateQuery().requiresCount());
+        getData.then((e) => {
+            this.bulkRefresh(e.result, oldValues, e.count);
+        });
+    }
+    deleteRowElement(row) {
+        let tr = this.getRowElementByUID(row.uid);
+        let index = parseInt(tr.getAttribute('aria-rowindex'), 10);
+        remove(tr);
+        if (this.getFrozenColumns()) {
+            let mtr = this.getMovableRows()[index];
+            remove(mtr);
+        }
+    }
+    bulkRefresh(result, oldValues, count) {
+        let rowObj = this.getRowsObject();
+        let keyField = this.getPrimaryKeyFieldNames()[0];
+        for (let i = 0; i < rowObj.length; i++) {
+            if (!result.filter((e) => { return e[keyField] === rowObj[i].data[keyField]; }).length) {
+                this.deleteRowElement(rowObj[i]);
+                rowObj.splice(i, 1);
+                i--;
+            }
+        }
+        for (let i = 0; i < result.length; i++) {
+            let isRowExist;
+            oldValues.filter((e) => {
+                if (e[keyField] === result[i][keyField]) {
+                    if (e !== result[i]) {
+                        this.setRowData(result[i][keyField], result[i]);
+                    }
+                    isRowExist = true;
+                }
+            });
+            if (!isRowExist) {
+                this.renderRowElement(result[i], i);
+            }
+        }
+        this.currentViewData = result;
+        let rows = [].slice.call(this.getContentTable().querySelectorAll('.e-row'));
+        resetRowIndex(this, this.getRowsObject(), rows);
+        setRowElements(this);
+        if (this.allowPaging) {
+            this.notify(inBoundModelChanged, { module: 'pager', properties: { totalRecordsCount: count } });
+        }
+    }
+    renderRowElement(data, index) {
+        let row = new RowRenderer(this.serviceLocator, null, this);
+        let model = new RowModelGenerator(this);
+        let modelData = model.generateRows([data]);
+        let tr = row.render(modelData[0], this.getColumns());
+        let mTr;
+        let mTbody;
+        this.addRowObject(modelData[0], index);
+        let tbody = this.getContentTable().querySelector('tbody');
+        if (tbody.querySelector('.e-emptyrow')) {
+            let emptyRow = tbody.querySelector('.e-emptyrow');
+            emptyRow.parentNode.removeChild(emptyRow);
+            if (this.getFrozenColumns()) {
+                let moveTbody = this.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+                (moveTbody.firstElementChild).parentNode.removeChild(moveTbody.firstElementChild);
+            }
+        }
+        if (this.getFrozenColumns()) {
+            mTr = renderMovable(tr, this.getFrozenColumns(), this);
+            if (this.frozenRows && index < this.frozenRows) {
+                mTbody = this.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
+            }
+            else {
+                mTbody = this.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+            }
+            mTbody.appendChild(mTr);
+            if (this.height === 'auto') {
+                this.notify(frozenHeight, {});
+            }
+        }
+        if (this.frozenRows && index < this.frozenRows) {
+            tbody = this.getHeaderContent().querySelector('tbody');
+        }
+        else {
+            tbody = this.getContent().querySelector('tbody');
+        }
+        tbody = this.getContent().querySelector('tbody');
+        tbody.appendChild(tr);
+    }
+    addRowObject(row, index) {
+        let frzCols = this.getFrozenColumns();
+        if (frzCols) {
+            let mRows = this.getMovableRowsObject();
+            let mRow = row.clone();
+            mRow.cells = mRow.cells.slice(frzCols);
+            row.cells = row.cells.slice(0, frzCols);
+            mRows.splice(index, 1, mRow);
+        }
+        this.getRowsObject().splice(index, 1, row);
     }
     /**
      * @hidden
@@ -15094,6 +15620,9 @@ __decorate$1([
 __decorate$1([
     Property(false)
 ], Grid.prototype, "allowGrouping", void 0);
+__decorate$1([
+    Property(false)
+], Grid.prototype, "enableImmutableMode", void 0);
 __decorate$1([
     Property(false)
 ], Grid.prototype, "showColumnMenu", void 0);
@@ -15394,6 +15923,12 @@ __decorate$1([
 __decorate$1([
     Event()
 ], Grid.prototype, "exportGroupCaption", void 0);
+__decorate$1([
+    Event()
+], Grid.prototype, "lazyLoadGroupExpand", void 0);
+__decorate$1([
+    Event()
+], Grid.prototype, "lazyLoadGroupCollapse", void 0);
 Grid = Grid_1 = __decorate$1([
     NotifyPropertyChanges
 ], Grid);
@@ -16586,6 +17121,13 @@ function ensureFirstRow(row, rowTop) {
     return row && row.getBoundingClientRect().top < rowTop;
 }
 /** @hidden */
+function isRowEnteredInGrid(index, gObj) {
+    let rowHeight = gObj.getRowHeight();
+    let startIndex = gObj.getContent().firstElementChild.scrollTop / rowHeight;
+    let endIndex = startIndex + (gObj.getContent().firstElementChild.offsetHeight / rowHeight);
+    return index < endIndex && index > startIndex;
+}
+/** @hidden */
 function getEditedDataIndex(gObj, data) {
     let keyField = gObj.getPrimaryKeyFieldNames()[0];
     let dataIndex;
@@ -16629,6 +17171,46 @@ function ispercentageWidth(gObj) {
     return (gObj.width === 'auto' || typeof (gObj.width) === 'string' && gObj.width.indexOf('%') !== -1) && Browser.info.name !== 'chrome'
         && !gObj.groupSettings.showGroupedColumn && gObj.groupSettings.columns.length
         && percentageCol && !undefinedWidthCol;
+}
+/** @hidden */
+function resetRowIndex(gObj, rows, rowElms, index) {
+    let startIndex = index ? index : 0;
+    for (let i = 0; i < rows.length; i++) {
+        if (rows[i].isDataRow) {
+            rows[i].index = startIndex;
+            rows[i].isAltRow = gObj.enableAltRow ? startIndex % 2 !== 0 : false;
+            rowElms[i].setAttribute('aria-rowindex', startIndex.toString());
+            rows[i].isAltRow ? rowElms[i].classList.add('e-altrow') : rowElms[i].classList.remove('e-altrow');
+            for (let j = 0; j < rowElms[i].cells.length; j++) {
+                rowElms[i].cells[j].setAttribute('index', startIndex.toString());
+            }
+            startIndex++;
+        }
+    }
+    if (!rows.length) {
+        gObj.renderModule.emptyRow(true);
+    }
+}
+/** @hidden */
+function compareChanges(gObj, changes, type, keyField) {
+    let newArray = gObj.dataToBeUpdated[type].concat(changes[type]).reduce((r, o) => {
+        r[o[keyField]] = r[o[keyField]] === undefined ? o : Object.assign(r[o[keyField]], o);
+        return r;
+    }, {});
+    gObj.dataToBeUpdated[type] = Object.keys(newArray).map((k) => newArray[k]);
+}
+/** @hidden */
+function setRowElements(gObj) {
+    if (gObj.getFrozenColumns()) {
+        (gObj).contentModule.rowElements =
+            [].slice.call(gObj.element.querySelectorAll('.e-movableheader .e-row, .e-movablecontent .e-row'));
+        (gObj).contentModule.freezeRowElements =
+            [].slice.call(gObj.element.querySelectorAll('.e-frozenheader .e-row, .e-frozencontent .e-row'));
+    }
+    else {
+        (gObj).contentModule.rowElements =
+            [].slice.call(gObj.element.querySelectorAll('.e-row:not(.e-addedrow)'));
+    }
 }
 
 /* tslint:disable-next-line:max-line-length */
@@ -16879,6 +17461,10 @@ class CheckBoxFilterBase {
             if (filterTemplateCol.length && !isNullOrUndefined(registeredTemplate) && registeredTemplate.filterItemTemplate) {
                 this.parent.destroyTemplate(['filterItemTemplate']);
             }
+            if (this.parent.isReact) {
+                this.parent.destroyTemplate(['filterItemTemplate']);
+                this.parent.renderTemplates();
+            }
             this.parent.notify(filterMenuClose, { field: this.options.field });
             this.dialogObj.destroy();
             this.unWireEvents();
@@ -16974,20 +17560,7 @@ class CheckBoxFilterBase {
                     fObj.operator = isNotEqual ? 'notequal' : 'equal';
                 }
                 if (value === '' || isNullOrUndefined(value)) {
-                    if (this.options.type === 'string') {
-                        coll.push({
-                            field: defaults.field, ignoreAccent: defaults.ignoreAccent, matchCase: defaults.matchCase,
-                            operator: defaults.operator, predicate: defaults.predicate, value: ''
-                        });
-                    }
-                    coll.push({
-                        field: defaults.field,
-                        matchCase: defaults.matchCase, operator: defaults.operator, predicate: defaults.predicate, value: null
-                    });
-                    coll.push({
-                        field: defaults.field, matchCase: defaults.matchCase, operator: defaults.operator,
-                        predicate: defaults.predicate, value: undefined
-                    });
+                    coll = coll.concat(CheckBoxFilterBase.generateNullValuePredicates(defaults));
                 }
                 else {
                     coll.push(fObj);
@@ -17016,6 +17589,25 @@ class CheckBoxFilterBase {
         else {
             this.clearFilter();
         }
+    }
+    /** @hidden */
+    static generateNullValuePredicates(defaults) {
+        let coll = [];
+        if (defaults.type === 'string') {
+            coll.push({
+                field: defaults.field, ignoreAccent: defaults.ignoreAccent, matchCase: defaults.matchCase,
+                operator: defaults.operator, predicate: defaults.predicate, value: ''
+            });
+        }
+        coll.push({
+            field: defaults.field,
+            matchCase: defaults.matchCase, operator: defaults.operator, predicate: defaults.predicate, value: null
+        });
+        coll.push({
+            field: defaults.field, matchCase: defaults.matchCase, operator: defaults.operator,
+            predicate: defaults.predicate, value: undefined
+        });
+        return coll;
     }
     initiateFilter(fColl) {
         let firstVal = fColl[0];
@@ -17356,7 +17948,15 @@ class CheckBoxFilterBase {
         addClass([label], ['e-checkboxfiltertext']);
         if (this.options.template && data[this.options.column.field] !== this.getLocalizedLabel('SelectAll')) {
             label.innerHTML = '';
-            appendChildren(label, this.options.template(dummyData, this.parent, 'filterItemTemplate'));
+            let isReactCompiler = this.parent.isReact && this.options.column.filter
+                && typeof (this.options.column.filter.itemTemplate) !== 'string';
+            if (isReactCompiler) {
+                this.options.template(dummyData, this.parent, 'filterItemTemplate', null, null, null, label);
+                this.parent.renderTemplates();
+            }
+            else {
+                appendChildren(label, this.options.template(dummyData, this.parent, 'filterItemTemplate'));
+            }
         }
         return elem;
     }
@@ -17852,6 +18452,10 @@ class ExcelFilterBase extends CheckBoxFilterBase {
                 }
             }
         }
+        if (this.parent.isReact) {
+            this.parent.destroyTemplate(['filterTemplate']);
+            this.parent.renderTemplates();
+        }
         this.removeObjects([this.dropOptr, this.datePicker, this.dateTimePicker, this.actObj, this.numericTxtObj, this.dlgObj]);
         remove(this.dlgDiv);
     }
@@ -18126,9 +18730,16 @@ class ExcelFilterBase extends CheckBoxFilterBase {
             if (isFilteredCol && elementId) {
                 data = this.getExcelFilterData(elementId, data, columnObj, predicates, fltrPredicates);
             }
+            let isReactCompiler = this.parent.isReact && typeof (this.options.column.filterTemplate) !== 'string';
             let tempID = this.parent.element.id + columnObj.uid + 'filterTemplate';
-            let element = this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
-            appendChildren(valueDiv, element);
+            if (isReactCompiler) {
+                this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate', tempID, null, null, valueDiv);
+                this.parent.renderTemplates();
+            }
+            else {
+                let element = this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
+                appendChildren(valueDiv, element);
+            }
             if (isBlazor()) {
                 valueDiv.children[0].classList.add(elementId);
                 if (this.dlgDiv.querySelectorAll('.e-xlfl-value').length > 1) {
@@ -19280,10 +19891,24 @@ let Pager = class Pager extends Component {
      * @return {void}
      */
     destroy() {
-        super.destroy();
-        this.containerModule.destroy();
-        this.pagerMessageModule.destroy();
-        this.element.innerHTML = '';
+        if (this.isReact && typeof (this.template) !== 'string') {
+            this.destroyTemplate(['template']);
+            this.renderReactTemplates();
+        }
+        else {
+            super.destroy();
+            this.containerModule.destroy();
+            this.pagerMessageModule.destroy();
+            this.element.innerHTML = '';
+        }
+    }
+    /**
+     * Destroys the given template reference.
+     * @param {string[]} propertyNames - Defines the collection of template name.
+     */
+    //tslint:disable-next-line:no-any
+    destroyTemplate(propertyNames, index) {
+        this.clearTemplate(propertyNames, index);
     }
     /**
      * For internal use only - Get the module name.
@@ -19974,7 +20599,17 @@ class Page {
         this.isInitialLoad = true;
         this.parent.element.appendChild(this.element);
         this.parent.setGridPager(this.element);
-        this.pagerObj.appendTo(this.element);
+        let tempID = this.parent.element.id + 'pagerTemplate';
+        let template = this.parent.pagerTemplate || this.pageSettings.template;
+        if (this.parent.isReact && !isNullOrUndefined(template) &&
+            typeof (template) !== 'string') {
+            this.pagerObj.isReact = true;
+            templateCompiler(template)({}, this.parent, 'pagerTemplate', tempID, null, null, this.element);
+            this.parent.renderTemplates();
+        }
+        else {
+            this.pagerObj.appendTo(this.element);
+        }
         this.isInitialLoad = false;
     }
     enableAfterRender(e) {
@@ -20029,7 +20664,13 @@ class Page {
      */
     destroy() {
         this.removeEventListener();
-        this.pagerDestroy();
+        if (this.parent.isReact && !this.pagerObj.element) {
+            this.parent.destroyTemplate(['pagerTemplate']);
+            this.parent.renderTemplates();
+        }
+        else {
+            this.pagerObj.destroy();
+        }
     }
     pagerDestroy() {
         if (this.pagerObj && !this.pagerObj.isDestroyed) {
@@ -20071,6 +20712,7 @@ class FilterCellRenderer extends CellRenderer {
      * @param  {Cell} cell
      * @param  {Object} data
      */
+    /* tslint:disable-next-line:max-func-body-length */
     render(cell, data) {
         let tr = this.parent.element.querySelector('.e-filterbar');
         let node = this.element.cloneNode();
@@ -20087,9 +20729,16 @@ class FilterCellRenderer extends CellRenderer {
             let col = 'column';
             fltrData[col] = column;
             if (column.visible) {
+                let isReactCompiler = this.parent.isReact && typeof (column.filterTemplate) !== 'string';
                 let tempID = this.parent.element.id + column.uid + 'filterTemplate';
-                let element = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
-                appendChildren(node, element);
+                if (isReactCompiler) {
+                    column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID, null, null, node);
+                    this.parent.renderTemplates();
+                }
+                else {
+                    let element = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
+                    appendChildren(node, element);
+                }
             }
             else {
                 node.classList.add('e-hide');
@@ -20553,6 +21202,10 @@ class FilterMenuRenderer {
                 }
             }
         }
+        if (this.parent.isReact) {
+            this.parent.destroyTemplate(['filterTemplate']);
+            this.parent.renderTemplates();
+        }
         let elem = document.getElementById(this.dlgObj.element.id);
         if (this.dlgObj && !this.dlgObj.isDestroyed && elem) {
             let argument = { cancel: false, column: this.col, target: target, element: elem };
@@ -20654,10 +21307,17 @@ class FilterMenuRenderer {
             }
             let col = 'column';
             fltrData[col] = column;
+            let isReactCompiler = this.parent.isReact && typeof (column.filterTemplate) !== 'string';
             let tempID = this.parent.element.id + column.uid + 'filterTemplate';
-            let compElement = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
-            updateBlazorTemplate(tempID, 'FilterTemplate', column);
-            appendChildren(valueDiv, compElement);
+            if (isReactCompiler) {
+                column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID, null, null, valueDiv);
+                this.parent.renderTemplates();
+            }
+            else {
+                let compElement = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
+                updateBlazorTemplate(tempID, 'FilterTemplate', column);
+                appendChildren(valueDiv, compElement);
+            }
         }
         else {
             if (!isNullOrUndefined(column.filter) && !isNullOrUndefined(column.filter.ui)
@@ -21854,6 +22514,7 @@ class Filter {
             let dialog = parentsUntil(this.parent.element, 'e-dialog');
             let hasDialog = false;
             let popupEle = parentsUntil(target, 'e-popup');
+            let hasDialogClosed = this.parent.element.querySelector('.e-filter-popup');
             if (dialog && popupEle) {
                 hasDialog = dialog.id === popupEle.id;
             }
@@ -21863,7 +22524,7 @@ class Filter {
             else if (this.filterModule && (!parentsUntil(target, 'e-popup-wrapper')
                 && (!closest(target, '.e-filter-item.e-menu-item'))) && !datepickerEle) {
                 if ((hasDialog && (!parentsUntil(target, 'e-filter-popup'))
-                    && (!parentsUntil(target, 'e-popup-flmenu'))) || (!popupEle)) {
+                    && (!parentsUntil(target, 'e-popup-flmenu'))) || (!popupEle && hasDialogClosed)) {
                     this.filterModule.isresetFocus = parentsUntil(target, 'e-grid') &&
                         parentsUntil(target, 'e-grid').id === this.parent.element.id;
                     this.filterModule.closeDialog(target);
@@ -22277,6 +22938,11 @@ class Resize {
         if (e.target.classList.contains('e-rhandler')) {
             if (!this.helper) {
                 if (this.getScrollBarWidth() === 0) {
+                    if (this.parent.allowGrouping) {
+                        for (let i = 0; i < this.parent.groupSettings.columns.length; i++) {
+                            this.widthService.setColumnWidth(new Column({ width: '30px' }), i);
+                        }
+                    }
                     for (let col of this.refreshColumnWidth()) {
                         this.widthService.setColumnWidth(col);
                     }
@@ -24214,8 +24880,10 @@ class Group {
             let indent = trgt.parentElement.querySelectorAll('.e-indentcell').length;
             let expand = false;
             if (isBlazor() && this.parent.isCollapseStateEnabled()) {
-                this.parent.notify('group-expand-collapse', { uid: trgt.parentElement.getAttribute('data-uid'),
-                    isExpand: trgt.classList.contains('e-recordpluscollapse') });
+                this.parent.notify('group-expand-collapse', {
+                    uid: trgt.parentElement.getAttribute('data-uid'),
+                    isExpand: trgt.classList.contains('e-recordpluscollapse')
+                });
                 return;
             }
             if (trgt.classList.contains('e-recordpluscollapse')) {
@@ -24226,6 +24894,9 @@ class Group {
                 if (isGroupAdaptive(gObj)) {
                     this.updateVirtualRows(gObj, target, expand, query, dataManager);
                 }
+                if (this.parent.groupSettings.enableLazyLoading) {
+                    this.parent.contentModule.captionExpand(trgt.parentElement);
+                }
             }
             else {
                 isHide = true;
@@ -24235,9 +24906,12 @@ class Group {
                 if (isGroupAdaptive(gObj)) {
                     this.updateVirtualRows(gObj, target, !isHide, query, dataManager);
                 }
+                if (this.parent.groupSettings.enableLazyLoading) {
+                    this.parent.contentModule.captionCollapse(trgt.parentElement);
+                }
             }
             this.aria.setExpand(trgt, expand);
-            if (!isGroupAdaptive(gObj)) {
+            if (!isGroupAdaptive(gObj) && !this.parent.groupSettings.enableLazyLoading) {
                 for (let i = 0, len = rows.length; i < len; i++) {
                     if (rows[i].querySelectorAll('td')[cellIdx] &&
                         rows[i].querySelectorAll('td')[cellIdx].classList.contains('e-indentcell') && rows) {
@@ -24698,6 +25372,9 @@ class Group {
                     this.updateButtonVisibility(this.groupSettings.showToggleButton, 'e-togglegroupbutton ');
                     this.parent.refreshHeader();
                     break;
+                case 'enableLazyLoading':
+                    this.parent.freezeRefresh();
+                    break;
             }
         }
     }
@@ -24804,6 +25481,9 @@ class Group {
         let rowData = this.groupGenerator.generateRows(aggregates, {});
         let summaryRows = this.parent.getRowsObject().filter((row) => !row.isDataRow);
         let updateSummaryRows = rowData.filter((data) => !data.isDataRow);
+        if (this.parent.isReact) {
+            this.parent.destroyTemplate(['groupFooterTemplate', 'groupCaptionTemplate', 'footerTemplate']);
+        }
         for (let i = 0; i < updateSummaryRows.length; i++) {
             let row = updateSummaryRows[i];
             let cells = row.cells.filter((cell) => cell.isDataCell);
@@ -24971,8 +25651,15 @@ class DetailRow {
                 detailRow.appendChild(detailCell);
                 tr.parentNode.insertBefore(detailRow, tr.nextSibling);
                 if (gObj.detailTemplate) {
+                    let isReactCompiler = this.parent.isReact && typeof (gObj.detailTemplate) !== 'string';
                     let detailTemplateID = gObj.element.id + 'detailTemplate';
-                    appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID));
+                    if (isReactCompiler) {
+                        gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID, null, null, detailCell);
+                        this.parent.renderTemplates();
+                    }
+                    else {
+                        appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID));
+                    }
                     if (isBlazor()) {
                         updateBlazorTemplate(detailTemplateID, 'DetailTemplate', gObj, false);
                     }
@@ -25249,6 +25936,9 @@ class Toolbar$1 {
         if (this.toolbar && !this.toolbar.isDestroyed) {
             if (!this.toolbar.element) {
                 this.parent.destroyTemplate(['toolbarTemplate']);
+                if (this.parent.isReact) {
+                    this.parent.renderTemplates();
+                }
             }
             else {
                 this.toolbar.destroy();
@@ -25310,7 +26000,15 @@ class Toolbar$1 {
                     updateBlazorTemplate(this.parent.element.id + 'toolbarTemplate', 'ToolbarTemplate', this.parent);
                 }
                 else {
-                    appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate'));
+                    let isReactCompiler = this.parent.isReact && typeof (this.parent.toolbarTemplate) !== 'string';
+                    let ID = this.parent.element.id + 'toolbarTemplate';
+                    if (isReactCompiler) {
+                        templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate', ID, null, null, this.element);
+                        this.parent.renderTemplates();
+                    }
+                    else {
+                        appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate'));
+                    }
                 }
             }
         }
@@ -25831,7 +26529,16 @@ class SummaryCellRenderer extends CellRenderer {
             let guid = 'guid';
             tempID = this.parent.element.id + column[guid] + tempObj.property;
         }
-        appendChildren(node, tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID));
+        let isReactCompiler = this.parent.isReact && column.footerTemplate ?
+            typeof (column.footerTemplate) !== 'string' : column.groupFooterTemplate ? typeof (column.groupFooterTemplate) !== 'string'
+            : column.groupCaptionTemplate ? typeof (column.groupCaptionTemplate) !== 'string' : false;
+        if (isReactCompiler) {
+            tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID, null, null, node);
+            this.parent.renderTemplates();
+        }
+        else {
+            appendChildren(node, tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID));
+        }
         return false;
     }
     refreshWithAggregate(node, cell) {
@@ -25871,7 +26578,8 @@ class Aggregate {
         this.footerRenderer.renderPanel();
         this.footerRenderer.renderTable();
         let footerContent = this.footerRenderer.getPanel();
-        if (this.parent.element.scrollHeight >= this.parent.getHeight(this.parent.height) && footerContent) {
+        if (this.parent.element.scrollHeight >= this.parent.getHeight(this.parent.height)
+            && footerContent) {
             addClass([footerContent], ['e-footerpadding']);
         }
         this.locator.register('footerRenderer', this.footerRenderer);
@@ -26691,8 +27399,14 @@ class VirtualContentRenderer extends ContentRender {
             remove(tbody);
             target = null;
         }
-        target = this.parent.createElement('tbody');
-        target.appendChild(newChild);
+        let isReact = this.parent.isReact && !isNullOrUndefined(this.parent.rowTemplate);
+        if (!isReact) {
+            target = this.parent.createElement('tbody');
+            target.appendChild(newChild);
+        }
+        else {
+            target = newChild;
+        }
         if (this.parent.frozenRows && e.requestType === 'virtualscroll' && this.parent.pageSettings.currentPage === 1) {
             for (let i = 0; i < this.parent.frozenRows; i++) {
                 target.children[0].remove();
@@ -28011,7 +28725,14 @@ class DialogEditRender {
         if (this.parent.editSettings.template) {
             let editTemplateID = this.parent.element.id + 'editSettingsTemplate';
             let dummyData = extend({}, args.rowData, { isAdd: !this.isEdit }, true);
-            appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
+            let isReactCompiler = this.parent.isReact && typeof (this.parent.editSettings.template) !== 'string';
+            if (isReactCompiler) {
+                this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID, null, null, form);
+                this.parent.renderTemplates();
+            }
+            else {
+                appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
+            }
             let setRules = () => {
                 let columns = this.parent.getColumns();
                 for (let i = 0; i < columns.length; i++) {
@@ -28221,10 +28942,15 @@ class EditRender {
                 input = this.parent.createElement('span', { attrs: { 'e-mappinguid': col.uid } });
                 let tempID = this.parent.element.id + col.uid + 'editTemplate';
                 let tempData = extendObjWithFn({}, args.rowData, { column: col });
-                let template = col.getEditTemplate()(extend({ 'index': args.rowIndex }, tempData), this.parent, 'editTemplate', tempID);
-                /* tslint:disable-next-line:no-any */
-                this.parent.isReact && this.parent.editSettings.mode === 'Batch' ?
-                    setTimeout(() => { appendChildren(input, template); }) : appendChildren(input, template);
+                let isReactCompiler = this.parent.isReact && typeof (col.editTemplate) !== 'string';
+                if (isReactCompiler) {
+                    col.getEditTemplate()(extend({ 'index': args.rowIndex }, tempData), this.parent, 'editTemplate', tempID, null, null, input);
+                    this.parent.renderTemplates();
+                }
+                else {
+                    let template = col.getEditTemplate()(extend({ 'index': args.rowIndex }, tempData), this.parent, 'editTemplate', tempID);
+                    appendChildren(input, template);
+                }
                 if (isBlazor()) {
                     let setRules = (ruleColumn) => {
                         let column = ruleColumn;
@@ -28971,8 +29697,10 @@ class NormalEdit {
                     this.refreshRow(closeEditArgs.data);
                 }
             }
+            let isLazyLoad = gObj.groupSettings.enableLazyLoading && gObj.groupSettings.columns.length
+                && !gObj.getContentTable().querySelector('tr.e-emptyrow');
             if (!gObj.getContentTable().querySelector('tr.e-emptyrow') &&
-                !gObj.getContentTable().querySelector('tr.e-row')) {
+                !gObj.getContentTable().querySelector('tr.e-row') && !isLazyLoad) {
                 gObj.renderModule.emptyRow();
             }
             if (gObj.editSettings.mode !== 'Dialog') {
@@ -29238,7 +29966,7 @@ class BatchEdit {
     }
     clickHandler(e) {
         if (!parentsUntil(e.target, this.parent.element.id + '_add', true)) {
-            if (this.parent.isEdit) {
+            if (this.parent.isEdit && closest(this.form, 'td') !== closest(e.target, 'td')) {
                 this.saveCell();
                 this.editNextValCell();
             }
@@ -30111,7 +30839,20 @@ class BatchEdit {
         else {
             rowcell = rowObj.cells;
         }
+        let parentElement;
+        let cellIndex;
+        if (this.parent.isReact) {
+            parentElement = td.parentElement;
+            cellIndex = td.cellIndex;
+        }
         cell.refreshTD(td, rowcell[this.getCellIdx(column.uid) - (this.getCellIdx(column.uid) >= frzCols ? frzCols : 0)], rowObj.changes, { 'index': this.getCellIdx(column.uid) });
+        if (this.parent.isReact) {
+            this.newReactTd = parentElement.cells[cellIndex];
+            parentElement.cells[cellIndex].classList.add('e-updatedtd');
+        }
+        else {
+            td.classList.add('e-updatedtd');
+        }
         td.classList.add('e-updatedtd');
         this.parent.notify(toolbarRefresh, {});
     }
@@ -30246,6 +30987,9 @@ class BatchEdit {
                 let rowObj = parentsUntil(cellSaveArgs.cell, 'e-movablecontent') ?
                     gObj.getMovableRowsObject()[this.cellDetails.rowIndex] : gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
                 this.refreshTD(cellSaveArgs.cell, column, rowObj, cellSaveArgs.value);
+                if (this.parent.isReact) {
+                    cellSaveArgs.cell = this.newReactTd;
+                }
             }
             removeClass([tr], ['e-editedrow', 'e-batchrow']);
             removeClass([cellSaveArgs.cell], ['e-editedbatchcell', 'e-boolcell']);
@@ -31001,10 +31745,16 @@ class Edit {
         let gObj = this.parent;
         if (gObj.editSettings.template) {
             this.parent.destroyTemplate(['editSettingsTemplate']);
+            if (this.parent.isReact) {
+                this.parent.renderTemplates();
+            }
         }
         cols = cols ? cols : this.parent.getVisibleColumns();
         if (cols.some((column) => !isNullOrUndefined(column.editTemplate))) {
             this.parent.destroyTemplate(['editTemplate']);
+            if (this.parent.isReact) {
+                this.parent.renderTemplates();
+            }
         }
         for (let col of cols) {
             let temp = col.edit.destroy;
@@ -32076,9 +32826,16 @@ class ExportHelper {
         this.parent = parent;
     }
     static getQuery(parent, data) {
-        return data.isRemote() ?
-            data.generateQuery(true).requiresCount().take(parent.pageSettings.totalRecordsCount) :
-            data.generateQuery(true).requiresCount();
+        let query = data.generateQuery(true).requiresCount();
+        if (data.isRemote()) {
+            if (parent.groupSettings.enableLazyLoading && parent.groupSettings.columns.length) {
+                query.lazyLoad = [];
+            }
+            else {
+                query.take(parent.pageSettings.totalRecordsCount);
+            }
+        }
+        return query;
     }
     getFData(value, column) {
         let foreignKeyData = getForeignData(column, {}, value, this.foreignKeyData[column.field])[0];
@@ -34678,7 +35435,14 @@ class CommandColumnRenderer extends CellRenderer {
         node.appendChild(this.unbounDiv.cloneNode());
         node.setAttribute('aria-label', 'is Command column column header ' + cell.column.headerText);
         if (cell.column.commandsTemplate) {
-            appendChildren(node.firstElementChild, cell.column.getColumnTemplate()(data));
+            if (this.parent.isReact && typeof (cell.column.commandsTemplate) !== 'string') {
+                let tempID = this.parent + 'commandsTemplate';
+                cell.column.getColumnTemplate()(data, this.parent, 'commandsTemplate', tempID, null, null, node.firstElementChild);
+                this.parent.renderTemplates();
+            }
+            else {
+                appendChildren(node.firstElementChild, cell.column.getColumnTemplate()(data));
+            }
         }
         else {
             for (let command of cell.commands) {
@@ -37393,7 +38157,7 @@ class InfiniteScroll {
                             remove(movableRows[this.parent.frozenRows]);
                             this.createRow([this.parent.getMovableRowsObject()[this.parent.frozenRows - 1]], args, true, true);
                         }
-                        this.setRowElements();
+                        setRowElements(this.parent);
                     }
                 }
             }
@@ -37430,7 +38194,7 @@ class InfiniteScroll {
         }
         if (!this.parent.infiniteScrollSettings.enableCache && !isFrozenRows) {
             if (!this.parent.getFrozenColumns() || isMovable) {
-                this.setRowElements();
+                setRowElements(this.parent);
                 this.parent.contentModule.visibleRows = this.requestType === 'add'
                     ? row.concat(rows) : rows.concat(row);
             }
@@ -37478,23 +38242,7 @@ class InfiniteScroll {
             });
         }
         let startIndex = isAdd ? 1 : 0;
-        for (let i = 0; i < rows.length; i++) {
-            rows[i].index = startIndex;
-            rowElms[i].setAttribute('aria-rowindex', startIndex.toString());
-            this.resetCellIndex(rowElms[i].cells, startIndex);
-            startIndex++;
-        }
-        if (!rows.length) {
-            this.renderEmptyRow();
-        }
-    }
-    renderEmptyRow() {
-        this.parent.renderModule.emptyRow(true);
-    }
-    resetCellIndex(cells, index) {
-        for (let i = 0; i < cells.length; i++) {
-            cells[i].setAttribute('index', index.toString());
-        }
+        resetRowIndex(this.parent, rows, rowElms, startIndex);
     }
     setDisplayNone(args) {
         if (this.parent.infiniteScrollSettings.enableCache) {
@@ -37838,7 +38586,7 @@ class InfiniteScroll {
                         this.parent.getFrozenVirtualContent().scrollTop = this.top;
                     }
                 }
-                this.setRowElements();
+                setRowElements(this.parent);
                 this.selectNewRow(e.tbody, e.args.startIndex);
                 this.pressedKey = undefined;
             }
@@ -38120,6 +38868,1184 @@ class InfiniteScroll {
     resetContentModuleCache(data) {
         this.parent.contentModule
             .infiniteCache = data;
+    }
+    /**
+     * @hidden
+     */
+    destroy() {
+        this.removeEventListener();
+    }
+}
+
+/**
+ * GroupLazyLoadRenderer is used to perform lazy load grouping
+ * @hidden
+ */
+class GroupLazyLoadRenderer extends ContentRender {
+    constructor(parent, locator) {
+        super(parent, locator);
+        this.childCount = 0;
+        this.scrollData = [];
+        this.isFirstChildRow = false;
+        this.groupCache = {};
+        this.startIndexes = {};
+        this.captionCounts = {};
+        this.rowsByUid = {};
+        this.objIdxByUid = {};
+        this.initialGroupCaptions = {};
+        this.requestType = ['paging', 'columnstate', 'reorder', 'cancel', 'save', 'beginEdit', 'add', 'delete'];
+        /** @hidden */
+        this.cacheMode = true;
+        /** @hidden */
+        this.cacheBlockSize = 5;
+        /** @hidden */
+        this.ignoreAccent = this.parent.allowFiltering ? this.parent.filterSettings.ignoreAccent : false;
+        /** @hidden */
+        this.allowCaseSensitive = false;
+        this.locator = locator;
+        this.groupGenerator = new GroupModelGenerator(this.parent);
+        this.summaryModelGen = new GroupSummaryModelGenerator(this.parent);
+        this.captionModelGen = new CaptionSummaryModelGenerator(this.parent);
+        this.rowRenderer = new RowRenderer(this.locator, null, this.parent);
+        this.eventListener();
+    }
+    eventListener() {
+        this.parent.addEventListener(actionBegin, this.actionBegin.bind(this));
+        this.parent.addEventListener(actionComplete, this.actionComplete.bind(this));
+        this.parent.on(initialEnd, this.setLazyLoadPageSize, this);
+        this.parent.on(setGroupCache, this.setCache, this);
+        this.parent.on(lazyLoadScrollHandler, this.scrollHandler, this);
+        this.parent.on(columnVisibilityChanged, this.setVisible, this);
+        this.parent.on(groupCollapse, this.collapseShortcut, this);
+    }
+    /** @hidden */
+    captionExpand(tr) {
+        let page = this.parent.pageSettings.currentPage;
+        let rowsObject = this.groupCache[page];
+        let uid = tr.getAttribute('data-uid');
+        let oriIndex = this.getRowObjectIndexByUid(uid);
+        let isRowExist = rowsObject[oriIndex + 1] ? rowsObject[oriIndex].indent < rowsObject[oriIndex + 1].indent : false;
+        let data = rowsObject[oriIndex];
+        let key = this.getGroupKeysAndFields(oriIndex, rowsObject);
+        let e = { captionRowElement: tr, groupInfo: data, enableCaching: this.cacheMode, cancel: false };
+        this.parent.trigger(lazyLoadGroupExpand, e, (args) => {
+            if (args.cancel) {
+                return;
+            }
+            args.keys = key.keys;
+            args.fields = key.fields;
+            args.rowIndex = tr.rowIndex;
+            args.makeRequest = !args.enableCaching || !isRowExist;
+            if (!args.enableCaching && isRowExist) {
+                this.clearCache([uid]);
+            }
+            args.skip = 0;
+            args.take = this.pageSize;
+            data.isExpand = this.rowsByUid[page][data.uid].isExpand = true;
+            this.captionRowExpand(args);
+        });
+    }
+    /** @hidden */
+    captionCollapse(tr) {
+        let cache = this.groupCache[this.parent.pageSettings.currentPage];
+        let rowIdx = tr.rowIndex;
+        let uid = tr.getAttribute('data-uid');
+        let captionIndex = this.getRowObjectIndexByUid(uid);
+        let e = {
+            captionRowElement: tr, groupInfo: cache[captionIndex], cancel: false
+        };
+        this.parent.trigger(lazyLoadGroupCollapse, e, (args) => {
+            if (args.cancel) {
+                return;
+            }
+            args.isExpand = false;
+            this.removeRows(captionIndex, rowIdx);
+        });
+    }
+    /** @hidden */
+    setLazyLoadPageSize() {
+        let scrollEle = this.parent.getContent().firstElementChild;
+        let blockSize = Math.floor(scrollEle.offsetHeight / this.parent.getRowHeight()) - 1;
+        this.pageSize = this.pageSize ? this.pageSize : blockSize * 3;
+        this.blockSize = Math.ceil(this.pageSize / 2);
+    }
+    /** @hidden */
+    clearLazyGroupCache() {
+        this.clearCache();
+    }
+    clearCache(uids) {
+        uids = uids ? uids : this.getInitialCaptionIndexes();
+        let cache = this.groupCache[this.parent.pageSettings.currentPage];
+        if (uids.length) {
+            for (let i = 0; i < uids.length; i++) {
+                let capIdx = this.getRowObjectIndexByUid(uids[i]);
+                let capRow = cache[capIdx];
+                if (!capRow) {
+                    continue;
+                }
+                if (this.captionCounts[this.parent.pageSettings.currentPage][capRow.uid]) {
+                    for (let i = capIdx + 1; i < cache.length; i++) {
+                        if (cache[i].indent === capRow.indent || cache[i].indent < capRow.indent) {
+                            delete this.captionCounts[this.parent.pageSettings.currentPage][capRow.uid];
+                            break;
+                        }
+                        if (cache[i].isCaptionRow) {
+                            delete this.captionCounts[this.parent.pageSettings.currentPage][cache[i].uid];
+                        }
+                    }
+                }
+                if (capRow.isExpand) {
+                    let tr = this.parent.getRowElementByUID(capRow.uid);
+                    if (!tr) {
+                        return;
+                    }
+                    this.parent.groupModule.expandCollapseRows(tr.querySelector('.e-recordplusexpand'));
+                }
+                let child = this.getNextChilds(capIdx);
+                if (!child.length) {
+                    continue;
+                }
+                let subChild = [];
+                if (child[child.length - 1].isCaptionRow) {
+                    subChild = this.getChildRowsByParentIndex(cache.indexOf(child[child.length - 1]), false, false, null, true, true);
+                }
+                let start = cache.indexOf(child[0]);
+                let end = subChild.length ? cache.indexOf(subChild[subChild.length - 1]) : cache.indexOf(child[child.length - 1]);
+                cache.splice(start, end - (start - 1));
+                this.refreshCaches();
+            }
+        }
+    }
+    refreshCaches() {
+        let page = this.parent.pageSettings.currentPage;
+        let cache = this.groupCache[page];
+        this.rowsByUid = {};
+        this.objIdxByUid = {};
+        for (let i = 0; i < cache.length; i++) {
+            this.maintainRows(cache[i], i);
+        }
+    }
+    getInitialCaptionIndexes() {
+        let page = this.parent.pageSettings.currentPage;
+        let uids = [];
+        for (let i = 0; i < this.initialGroupCaptions[page].length; i++) {
+            uids.push(this.initialGroupCaptions[page][i].uid);
+        }
+        return uids;
+    }
+    /** @hidden */
+    getRowObjectIndexByUid(uid) {
+        return this.objIdxByUid[this.parent.pageSettings.currentPage][uid];
+    }
+    collapseShortcut(args) {
+        if (this.parent.groupSettings.columns.length &&
+            args.target && parentsUntil(args.target, 'e-content') && args.target.parentElement.tagName === 'TR') {
+            if (!args.collapse && parentsUntil(args.target, 'e-row')) {
+                return;
+            }
+            let row = args.target.parentElement;
+            let uid = row.getAttribute('data-uid');
+            if (args.collapse) {
+                let rowObj = this.getRowByUid(uid);
+                let capRow = this.getRowByUid(rowObj.parentUid);
+                if (capRow.isCaptionRow && capRow.isExpand) {
+                    let capEle = this.getRowElementByUid(rowObj.parentUid);
+                    this.parent.groupModule.expandCollapseRows(capEle.cells[rowObj.indent - 1]);
+                }
+            }
+            else {
+                let capRow = this.getRowByUid(uid);
+                if (capRow.isCaptionRow && !capRow.isExpand) {
+                    let capEle = this.getRowElementByUid(uid);
+                    this.parent.groupModule.expandCollapseRows(capEle.cells[capRow.indent]);
+                }
+            }
+        }
+    }
+    getRowByUid(uid) {
+        return this.rowsByUid[this.parent.pageSettings.currentPage][uid];
+    }
+    actionBegin(args) {
+        if (!args.cancel) {
+            if (!this.requestType.some((value) => value === args.requestType)) {
+                this.groupCache = {};
+                this.resetRowMaintenance();
+            }
+            if (args.requestType === 'reorder' && this.parent.groupSettings.columns.length) {
+                let keys = Object.keys(this.groupCache);
+                for (let j = 0; j < keys.length; j++) {
+                    let cache = this.groupCache[keys[j]];
+                    for (let i = 0; i < cache.length; i++) {
+                        if (cache[i].isCaptionRow && !this.captionModelGen.isEmpty()) {
+                            this.changeCaptionRow(cache[i], null, keys[j]);
+                        }
+                        if (cache[i].isDataRow) {
+                            let from = args.fromIndex + cache[i].indent;
+                            let to = args.toIndex + cache[i].indent;
+                            this.moveCells(cache[i].cells, from, to);
+                        }
+                    }
+                }
+            }
+            if (args.requestType === 'delete'
+                || (args.action === 'add' && args.requestType === 'save')) {
+                this.groupCache = {};
+                this.resetRowMaintenance();
+            }
+        }
+    }
+    actionComplete(args) {
+        if (!args.cancel && args.requestType !== 'columnstate' && args.requestType !== 'beginEdit'
+            && args.requestType !== 'delete' && args.requestType !== 'save' && args.requestType !== 'reorder') {
+            this.scrollReset();
+        }
+    }
+    resetRowMaintenance() {
+        this.startIndexes = {};
+        this.captionCounts = {};
+        this.rowsByUid = {};
+        this.objIdxByUid = {};
+        this.initialGroupCaptions = {};
+    }
+    moveCells(arr, from, to) {
+        if (from >= arr.length) {
+            let k = from - arr.length;
+            while ((k--) + 1) {
+                arr.push(undefined);
+            }
+        }
+        arr.splice(from, 0, arr.splice(to, 1)[0]);
+    }
+    removeRows(idx, trIdx) {
+        let page = this.parent.pageSettings.currentPage;
+        let rows = this.groupCache[page];
+        let trs = [].slice.call(this.parent.getContent().querySelectorAll('tr'));
+        let aggUid;
+        if (this.parent.aggregates.length) {
+            let agg = this.getAggregateByCaptionIndex(idx);
+            aggUid = agg.length ? agg[agg.length - 1].uid : undefined;
+        }
+        let indent = rows[idx].indent;
+        this.addClass(this.getNextChilds(idx));
+        rows[idx].isExpand = this.rowsByUid[page][rows[idx].uid].isExpand = false;
+        let capUid;
+        for (let i = idx + 1; i < rows.length; i++) {
+            if (rows[i].indent === indent || rows[i].indent < indent) {
+                capUid = rows[i].uid;
+                break;
+            }
+            if (rows[i].isCaptionRow && rows[i].isExpand) {
+                this.addClass(this.getNextChilds(i));
+            }
+        }
+        for (let i = trIdx + 1; i < trs.length; i++) {
+            if (trs[i].getAttribute('data-uid') === capUid) {
+                break;
+            }
+            else if (trs[i].getAttribute('data-uid') === aggUid) {
+                remove(trs[i]);
+                break;
+            }
+            else {
+                remove(trs[i]);
+            }
+        }
+    }
+    addClass(rows) {
+        let last = rows[this.blockSize];
+        if (last) {
+            last.lazyLoadCssClass = 'e-lazyload-middle-down';
+        }
+    }
+    getNextChilds(index, rowObjects) {
+        let group = this.groupCache[this.parent.pageSettings.currentPage];
+        let rows = rowObjects ? rowObjects : group;
+        let indent = group[index].indent + 1;
+        let childRows = [];
+        for (let i = rowObjects ? 0 : index + 1; i < rows.length; i++) {
+            if (rows[i].indent < indent) {
+                break;
+            }
+            if (rows[i].indent === indent) {
+                childRows.push(rows[i]);
+            }
+        }
+        return childRows;
+    }
+    lazyLoadHandler(args) {
+        this.setStartIndexes();
+        let tr = this.parent.getContent().querySelectorAll('tr')[args.index];
+        let uid = tr.getAttribute('data-uid');
+        let captionIndex = this.getRowObjectIndexByUid(uid);
+        let captionRow = this.groupCache[this.parent.pageSettings.currentPage][captionIndex];
+        let rows = args.isRowExist ? args.isScroll ? this.scrollData
+            : this.getChildRowsByParentIndex(captionIndex, true, true, null, true) : [];
+        this.scrollData = [];
+        if (!args.isRowExist) {
+            this.setRowIndexes(captionIndex, captionRow);
+            this.refreshCaptionRowCount(this.groupCache[this.parent.pageSettings.currentPage][captionIndex], args.count);
+            if (Object.keys(args.data).indexOf('GroupGuid') !== -1) {
+                for (let i = 0; i < args.data.length; i++) {
+                    let data = this.groupGenerator.generateCaptionRow(args.data[i], args.level, captionRow.parentGid, undefined, 0, captionRow.uid);
+                    rows.push(data);
+                    if (this.parent.aggregates.length) {
+                        rows = rows.concat((this.summaryModelGen.generateRows(args.data[i], { level: args.level + 1, parentUid: data.uid })));
+                    }
+                }
+            }
+            else {
+                this.groupGenerator.index = this.getStartIndex(captionIndex, args.isScroll);
+                rows = this.groupGenerator.generateDataRows(args.data, args.level, captionRow.parentGid, 0, captionRow.uid);
+            }
+        }
+        let trIdx = args.isScroll ? this.rowIndex : args.index;
+        let nxtChild = this.getNextChilds(captionIndex, rows);
+        let lastRow = !args.up ? this.hasLastChildRow(args.isScroll, args.count, nxtChild.length) : true;
+        if (!args.isRowExist && !lastRow) {
+            nxtChild[this.blockSize].lazyLoadCssClass = 'e-lazyload-middle-down';
+        }
+        if (!lastRow) {
+            nxtChild[nxtChild.length - 1].lazyLoadCssClass = 'e-not-lazyload-end';
+        }
+        let aggregates = !args.isScroll && !args.isRowExist ? this.getAggregateByCaptionIndex(captionIndex) : [];
+        if (!args.up) {
+            if (!args.isRowExist) {
+                this.refreshRowObjects(rows, args.isScroll ? this.rowObjectIndex : captionIndex);
+            }
+        }
+        this.render(trIdx, rows, lastRow, aggregates);
+        if (this.isFirstChildRow && !args.up) {
+            this.parent.getContent().firstElementChild.scrollTop = rows.length * this.parent.getRowHeight();
+        }
+        this.isFirstChildRow = false;
+        this.rowIndex = undefined;
+        this.rowObjectIndex = undefined;
+        this.childCount = 0;
+    }
+    setRowIndexes(capIdx, row) {
+        if (!this.captionCounts[this.parent.pageSettings.currentPage]) {
+            this.captionCounts[this.parent.pageSettings.currentPage] = {};
+        }
+        if (row.isCaptionRow) {
+            this.captionCounts[this.parent.pageSettings.currentPage][row.uid] = row.data.count;
+        }
+    }
+    getStartIndex(capIdx, isScroll) {
+        let page = this.parent.pageSettings.currentPage;
+        let cache = this.groupCache[page];
+        if (isScroll) {
+            return cache[this.rowObjectIndex].index + 1;
+        }
+        let count = 0;
+        let idx = 0;
+        let prevCapRow = this.getRowByUid(cache[capIdx].parentUid);
+        if (prevCapRow) {
+            idx = this.prevCaptionCount(prevCapRow);
+        }
+        if (cache[capIdx].indent > 0) {
+            for (let i = capIdx - 1; i >= 0; i--) {
+                if (cache[i].indent < cache[capIdx].indent) {
+                    break;
+                }
+                if (cache[i].isCaptionRow && cache[i].indent === cache[capIdx].indent) {
+                    count = count + cache[i].data.count;
+                }
+            }
+        }
+        let index = count + idx + this.startIndexes[page][cache[capIdx].parentGid];
+        return index;
+    }
+    prevCaptionCount(prevCapRow) {
+        let page = this.parent.pageSettings.currentPage;
+        let cache = this.groupCache[page];
+        let idx = 0;
+        for (let i = cache.indexOf(prevCapRow) - 1; i >= 0; i--) {
+            if (cache[i].indent === 0) {
+                break;
+            }
+            if (cache[i].indent < prevCapRow.indent) {
+                break;
+            }
+            if (cache[i].isCaptionRow && cache[i].indent === prevCapRow.indent) {
+                let count = this.captionCounts[page][cache[i].uid];
+                idx = idx + (count ? count : cache[i].data.count);
+            }
+        }
+        let capRow = this.getRowByUid(prevCapRow.parentUid);
+        if (capRow) {
+            idx = idx + this.prevCaptionCount(capRow);
+        }
+        return idx;
+    }
+    setStartIndexes() {
+        let cache = this.groupCache[this.parent.pageSettings.currentPage];
+        if (!this.startIndexes[this.parent.pageSettings.currentPage]) {
+            let indexes = [];
+            let idx;
+            for (let i = 0; i < cache.length; i++) {
+                if (cache[i].isCaptionRow) {
+                    !indexes.length ? indexes.push(0)
+                        : indexes.push(cache[idx].data.count + indexes[indexes.length - 1]);
+                    idx = i;
+                }
+            }
+            this.startIndexes[this.parent.pageSettings.currentPage] = indexes;
+        }
+    }
+    hasLastChildRow(isScroll, captionCount, rowCount) {
+        return isScroll ? captionCount === this.childCount + rowCount : captionCount === rowCount;
+    }
+    refreshCaptionRowCount(row, count) {
+        row.data.count = count;
+    }
+    render(trIdx, rows, hasLastChildRow, aggregates) {
+        let tr = this.parent.getContent().querySelectorAll('tr')[trIdx];
+        if (tr && aggregates.length) {
+            for (let i = aggregates.length - 1; i >= 0; i--) {
+                tr.insertAdjacentElement('afterend', this.rowRenderer.render(aggregates[i], this.parent.getColumns()));
+            }
+        }
+        if (tr && rows.length) {
+            for (let i = rows.length - 1; i >= 0; i--) {
+                if (this.confirmRowRendering(rows[i])) {
+                    tr.insertAdjacentElement('afterend', this.rowRenderer.render(rows[i], this.parent.getColumns()));
+                }
+            }
+        }
+    }
+    /** @hidden */
+    maintainRows(row, index) {
+        let page = this.parent.pageSettings.currentPage;
+        if (!this.rowsByUid[page]) {
+            this.rowsByUid[page] = {};
+            this.objIdxByUid[page] = {};
+        }
+        if (row.uid) {
+            this.rowsByUid[page][row.uid] = row;
+        }
+        this.objIdxByUid[page][row.uid] = index;
+    }
+    confirmRowRendering(row) {
+        let check = true;
+        if (isNullOrUndefined(row.indent) && !row.isDataRow && !row.isCaptionRow) {
+            let cap = this.getRowByUid(row.parentUid);
+            if (cap.isCaptionRow && !cap.isExpand) {
+                check = false;
+            }
+        }
+        return check;
+    }
+    refreshRowObjects(newRows, index) {
+        let page = this.parent.pageSettings.currentPage;
+        let rowsObject = this.groupCache[page];
+        this.rowsByUid[page] = {};
+        this.objIdxByUid[page] = {};
+        let newRowsObject = [];
+        let k = 0;
+        for (let i = 0; i < rowsObject.length; i++) {
+            if (i === index) {
+                this.maintainRows(rowsObject[i], k);
+                newRowsObject.push(rowsObject[i]);
+                k++;
+                for (let j = 0; j < newRows.length; j++) {
+                    this.maintainRows(newRows[j], k);
+                    newRowsObject.push(newRows[j]);
+                    k++;
+                }
+            }
+            else {
+                this.maintainRows(rowsObject[i], k);
+                newRowsObject.push(rowsObject[i]);
+                k++;
+            }
+        }
+        this.groupCache[this.parent.pageSettings.currentPage] = extend([], newRowsObject);
+        this.updateCurrentViewData();
+    }
+    getAggregateByCaptionIndex(index) {
+        let cache = this.groupCache[this.parent.pageSettings.currentPage];
+        let parent = cache[index];
+        let indent = parent.indent;
+        let uid = parent.uid;
+        let agg = [];
+        for (let i = index + 1; i < cache.length; i++) {
+            if (cache[i].indent === indent) {
+                break;
+            }
+            if (isNullOrUndefined(cache[i].indent) && cache[i].parentUid === uid) {
+                agg.push(cache[i]);
+            }
+        }
+        return agg;
+    }
+    getChildRowsByParentIndex(index, deep, block, data, includeAgg, includeCollapseAgg) {
+        let cache = data ? data : this.groupCache[this.parent.pageSettings.currentPage];
+        let parentRow = cache[index];
+        let agg = [];
+        if (!parentRow.isCaptionRow || (parentRow.isCaptionRow && !parentRow.isExpand && !includeCollapseAgg)) {
+            return [];
+        }
+        if (includeAgg && this.parent.aggregates.length) {
+            agg = this.getAggregateByCaptionIndex(index);
+        }
+        let indent = parentRow.indent;
+        let uid = parentRow.uid;
+        let rows = [];
+        let count = 0;
+        for (let i = index + 1; i < cache.length; i++) {
+            if (cache[i].parentUid === uid) {
+                if (isNullOrUndefined(cache[i].indent)) {
+                    continue;
+                }
+                count++;
+                rows.push(cache[i]);
+                if (deep && cache[i].isCaptionRow) {
+                    rows = rows.concat(this.getChildRowsByParentIndex(i, deep, block, data, includeAgg));
+                }
+                if (block && count === this.pageSize) {
+                    break;
+                }
+            }
+            if (cache[i].indent === indent) {
+                break;
+            }
+        }
+        return rows.concat(agg);
+    }
+    /** @hidden */
+    initialGroupRows(isReorder) {
+        let rows = [];
+        let cache = this.groupCache[this.parent.pageSettings.currentPage];
+        if (isReorder) {
+            return this.getRenderedRowsObject();
+        }
+        for (let i = 0; i < cache.length; i++) {
+            if (cache[i].indent === 0) {
+                rows.push(cache[i]);
+                rows = rows.concat(this.getChildRowsByParentIndex(i, true, true, cache, true));
+            }
+        }
+        return rows;
+    }
+    /** @hidden */
+    getRenderedRowsObject() {
+        let rows = [];
+        let trs = [].slice.call(this.parent.getContent().querySelectorAll('tr'));
+        for (let i = 0; i < trs.length; i++) {
+            rows.push(this.getRowByUid(trs[i].getAttribute('data-uid')));
+        }
+        return rows;
+    }
+    getCacheRowsOnDownScroll(index) {
+        let rows = [];
+        let rowsObject = this.groupCache[this.parent.pageSettings.currentPage];
+        let k = index;
+        for (let i = 0; i < this.pageSize; i++) {
+            if (!rowsObject[k] || rowsObject[k].indent < rowsObject[index].indent) {
+                break;
+            }
+            if (rowsObject[k].indent === rowsObject[index].indent) {
+                rows.push(rowsObject[k]);
+                if (rowsObject[k].isCaptionRow && rowsObject[k].isExpand) {
+                    rows = rows.concat(this.getChildRowsByParentIndex(k, true, true, null, true));
+                }
+            }
+            if (rowsObject[k].indent > rowsObject[index].indent || isNullOrUndefined(rowsObject[k].indent)) {
+                i--;
+            }
+            k++;
+        }
+        return rows;
+    }
+    getCacheRowsOnUpScroll(start, end, index) {
+        let rows = [];
+        let rowsObject = this.groupCache[this.parent.pageSettings.currentPage];
+        let str = false;
+        for (let i = 0; i < rowsObject.length; i++) {
+            if (str && (!rowsObject[i] || rowsObject[i].indent < rowsObject[index].indent || rowsObject[i].uid === end)) {
+                break;
+            }
+            if (!str && rowsObject[i].uid === start) {
+                str = true;
+            }
+            if (str && rowsObject[i].indent === rowsObject[index].indent) {
+                rows.push(rowsObject[i]);
+                if (rowsObject[i].isCaptionRow && rowsObject[i].isExpand) {
+                    rows = rows.concat(this.getChildRowsByParentIndex(i, true, true, null, true));
+                }
+            }
+        }
+        return rows;
+    }
+    scrollHandler(e) {
+        if (this.parent.isDestroyed || this.childCount) {
+            return;
+        }
+        let downTrs = [].slice.call(this.parent.getContent().querySelectorAll('.e-lazyload-middle-down'));
+        let upTrs = [].slice.call(this.parent.getContent().querySelectorAll('.e-lazyload-middle-up'));
+        let endTrs = [].slice.call(this.parent.getContent().querySelectorAll('.e-not-lazyload-end'));
+        let tr;
+        let lazyLoadDown = false;
+        let lazyLoadUp = false;
+        let lazyLoadEnd = false;
+        if (e.scrollDown && downTrs.length) {
+            let result = this.findRowElements(downTrs);
+            tr = result.tr;
+            lazyLoadDown = result.entered;
+        }
+        if (!e.scrollDown && endTrs) {
+            for (let i = 0; i < endTrs.length; i++) {
+                let top = endTrs[i].getBoundingClientRect().top;
+                let scrollHeight = this.parent.getContent().scrollHeight;
+                if (top > 0 && top < scrollHeight) {
+                    tr = endTrs[i];
+                    lazyLoadEnd = true;
+                    this.rowIndex = tr.rowIndex;
+                    break;
+                }
+            }
+        }
+        if (!e.scrollDown && upTrs.length && !lazyLoadEnd) {
+            let result = this.findRowElements(upTrs);
+            tr = result.tr;
+            lazyLoadUp = result.entered;
+        }
+        if (tr) {
+            if (lazyLoadDown && e.scrollDown && lazyLoadDown && tr) {
+                this.scrollDownHandler(tr);
+            }
+            if (!e.scrollDown && lazyLoadEnd && tr) {
+                this.scrollUpEndRowHandler(tr);
+            }
+            if (this.cacheMode && !e.scrollDown && !lazyLoadEnd && lazyLoadUp && tr) {
+                this.scrollUpHandler(tr);
+            }
+        }
+    }
+    scrollUpEndRowHandler(tr) {
+        let page = this.parent.pageSettings.currentPage;
+        let rows = this.groupCache[page];
+        let uid = tr.getAttribute('data-uid');
+        let index = this.rowObjectIndex = this.getRowObjectIndexByUid(uid);
+        let idx = index;
+        let childRow = rows[index];
+        let parentCapRow = this.getRowByUid(childRow.parentUid);
+        let capRowObjIdx = this.getRowObjectIndexByUid(parentCapRow.uid);
+        let captionRowEle = this.parent.getContent().querySelector('tr[data-uid=' + parentCapRow.uid + ']');
+        let capRowEleIndex = captionRowEle.rowIndex;
+        let child = this.getChildRowsByParentIndex(capRowObjIdx);
+        let childIdx = child.indexOf(childRow);
+        let currentPage = Math.ceil(childIdx / this.pageSize);
+        if (currentPage === 1) {
+            return;
+        }
+        this.childCount = currentPage * this.pageSize;
+        index = this.getCurrentBlockEndIndex(childRow, index);
+        if (this.childCount < parentCapRow.data.count) {
+            tr.classList.remove('e-not-lazyload-end');
+            childRow.lazyLoadCssClass = '';
+            let isRowExist = rows[index + 1] ? childRow.indent === rows[index + 1].indent : false;
+            this.scrollData = isRowExist ? this.getCacheRowsOnDownScroll(index + 1) : [];
+            let key = this.getGroupKeysAndFields(capRowObjIdx, rows);
+            let args = {
+                rowIndex: capRowEleIndex, makeRequest: !isRowExist, groupInfo: parentCapRow, fields: key.fields,
+                keys: key.keys, skip: this.childCount, take: this.pageSize, isScroll: true
+            };
+            if (this.cacheMode && this.childCount >= (this.pageSize * this.cacheBlockSize)) {
+                let child = this.getChildRowsByParentIndex(capRowObjIdx);
+                let currenBlock = Math.ceil((child.indexOf(rows[idx]) / this.pageSize));
+                let removeBlock = currenBlock - (this.cacheBlockSize - 1);
+                this.removeBlock(uid, isRowExist, removeBlock, child);
+                args.cachedRowIndex = (removeBlock * this.pageSize);
+            }
+            this.captionRowExpand(args);
+        }
+        else {
+            this.childCount = 0;
+        }
+    }
+    scrollDownHandler(tr) {
+        let page = this.parent.pageSettings.currentPage;
+        let rows = this.groupCache[page];
+        let uid = tr.getAttribute('data-uid');
+        let index = this.getRowObjectIndexByUid(uid);
+        let idx = index;
+        let childRow = rows[index];
+        let parentCapRow = this.getRowByUid(childRow.parentUid);
+        let capRowObjIdx = this.getRowObjectIndexByUid(parentCapRow.uid);
+        let captionRowEle = this.getRowElementByUid(parentCapRow.uid);
+        let capRowEleIndex = captionRowEle.rowIndex;
+        let child = this.getChildRowsByParentIndex(capRowObjIdx);
+        let childIdx = child.indexOf(childRow);
+        let currentPage = Math.ceil(childIdx / this.pageSize);
+        this.childCount = currentPage * this.pageSize;
+        index = this.rowObjectIndex = this.getRowObjectIndexByUid(child[this.childCount - 1].uid);
+        let lastchild = rows[index];
+        let lastRow = this.getRowElementByUid(lastchild.uid);
+        this.rowIndex = lastRow.rowIndex;
+        index = this.getCurrentBlockEndIndex(lastchild, index);
+        if (this.childCount < parentCapRow.data.count) {
+            let isRowExist = rows[index + 1] ? childRow.indent === rows[index + 1].indent : false;
+            if (isRowExist && !isNullOrUndefined(this.getRowElementByUid(rows[index + 1].uid))) {
+                this.childCount = 0;
+                return;
+            }
+            if (currentPage > 1 || !this.cacheMode) {
+                tr.classList.remove('e-lazyload-middle-down');
+                lastRow.classList.remove('e-not-lazyload-end');
+                lastchild.lazyLoadCssClass = '';
+            }
+            this.scrollData = isRowExist ? this.getCacheRowsOnDownScroll(this.rowObjectIndex + 1) : [];
+            let query = this.getGroupKeysAndFields(capRowObjIdx, rows);
+            let args = {
+                rowIndex: capRowEleIndex, makeRequest: !isRowExist, groupInfo: parentCapRow, fields: query.fields,
+                keys: query.keys, skip: this.childCount, take: this.pageSize, isScroll: true
+            };
+            if (this.cacheMode && (this.childCount - this.pageSize) >= (this.pageSize * this.cacheBlockSize)) {
+                let child = this.getChildRowsByParentIndex(capRowObjIdx);
+                let currenBlock = Math.ceil((child.indexOf(rows[idx]) / this.pageSize)) - 1;
+                let removeBlock = (currenBlock - (this.cacheBlockSize - 1)) + 1;
+                this.removeBlock(uid, isRowExist, removeBlock, child, lastchild);
+                args.cachedRowIndex = (removeBlock * this.pageSize);
+            }
+            this.captionRowExpand(args);
+        }
+        else {
+            this.childCount = 0;
+        }
+    }
+    getCurrentBlockEndIndex(row, index) {
+        let page = this.parent.pageSettings.currentPage;
+        let rows = this.groupCache[page];
+        if (row.isCaptionRow) {
+            if (row.isExpand) {
+                let childCount = this.getChildRowsByParentIndex(index, true).length;
+                this.rowIndex = this.rowIndex + childCount;
+            }
+            let agg = this.getAggregateByCaptionIndex(index);
+            this.rowObjectIndex = this.rowObjectIndex + agg.length;
+            let idx = index;
+            for (let i = idx + 1; i < rows.length; i++) {
+                if (rows[i].indent === rows[index].indent || rows[i].indent < rows[index].indent) {
+                    index = idx;
+                    break;
+                }
+                else {
+                    idx++;
+                }
+            }
+        }
+        return index;
+    }
+    removeBlock(uid, isRowExist, removeBlock, child, lastchild) {
+        let page = this.parent.pageSettings.currentPage;
+        let rows = this.groupCache[page];
+        let uid1 = child[(((removeBlock + 1) * this.pageSize) - 1) - this.blockSize].uid;
+        let uid2 = child[(removeBlock * this.pageSize) - this.pageSize].uid;
+        let uid3 = child[(removeBlock * this.pageSize)].uid;
+        let firstIdx = this.getRowObjectIndexByUid(uid1);
+        rows[firstIdx].lazyLoadCssClass = 'e-lazyload-middle-up';
+        this.getRowElementByUid(uid1).classList.add('e-lazyload-middle-up');
+        if (lastchild) {
+            this.getRowElementByUid(uid3).classList.add('e-not-lazyload-first');
+            this.getRowByUid(uid3).lazyLoadCssClass = 'e-not-lazyload-first';
+            this.getRowByUid(uid2).lazyLoadCssClass = '';
+        }
+        if (isRowExist) {
+            this.removeTopRows(lastchild ? lastchild.uid : uid, uid2, uid3);
+        }
+        else {
+            this.uid1 = uid2;
+            this.uid2 = uid3;
+            this.uid3 = lastchild ? lastchild.uid : uid;
+        }
+    }
+    scrollUpHandler(tr) {
+        let page = this.parent.pageSettings.currentPage;
+        let rows = this.groupCache[page];
+        let uid = tr.getAttribute('data-uid');
+        let row = this.getRowByUid(uid);
+        let index = this.rowObjectIndex = this.getRowObjectIndexByUid(uid);
+        let parentCapRow = this.getRowByUid(row.parentUid);
+        let capRowObjIdx = this.rowIndex = this.getRowObjectIndexByUid(parentCapRow.uid);
+        let captionRowEle = this.parent.getRowElementByUID(parentCapRow.uid);
+        let capRowEleIndex = captionRowEle.rowIndex;
+        let child = this.getChildRowsByParentIndex(capRowObjIdx);
+        let childIdx = child.indexOf(rows[index]);
+        let currenBlock = Math.floor((childIdx / this.pageSize));
+        let idx = this.blockSize;
+        if ((this.blockSize * 2) > this.pageSize) {
+            idx = (this.blockSize * 2) - this.pageSize;
+            idx = this.blockSize - idx;
+        }
+        let start = child[(childIdx - (idx - 1)) - this.pageSize].uid;
+        let end = child[childIdx - (idx - 1)].uid;
+        this.scrollData = this.getCacheRowsOnUpScroll(start, end, index - (idx - 1));
+        this.isFirstChildRow = currenBlock > 1;
+        if (this.isFirstChildRow) {
+            this.scrollData[0].lazyLoadCssClass = 'e-not-lazyload-first';
+        }
+        this.getRowByUid(end).lazyLoadCssClass = '';
+        this.getRowElementByUid(end).classList.remove('e-not-lazyload-first');
+        let removeBlock = currenBlock + this.cacheBlockSize;
+        if (child.length !== parentCapRow.data.count && (removeBlock * this.pageSize > child.length)) {
+            this.isFirstChildRow = false;
+            this.scrollData[0].lazyLoadCssClass = '';
+            this.getRowElementByUid(end).classList.add('e-not-lazyload-first');
+            return;
+        }
+        let count = removeBlock * this.pageSize > parentCapRow.data.count
+            ? parentCapRow.data.count : removeBlock * this.pageSize;
+        let size = removeBlock * this.pageSize > parentCapRow.data.count
+            ? (this.pageSize - ((this.pageSize * removeBlock) - parentCapRow.data.count)) : this.pageSize;
+        let childRows = this.getChildRowsByParentIndex(rows.indexOf(child[count - 1]), true, false, null, true);
+        let uid1 = childRows.length ? childRows[childRows.length - 1].uid : child[(count - 1)].uid;
+        let uid2 = child[count - size].uid;
+        let uid3 = child[(count - size) - 1].uid;
+        let lastIdx = this.objIdxByUid[page][uid2] - idx;
+        if (rows[lastIdx].lazyLoadCssClass === 'e-lazyload-middle-down') {
+            let trEle = this.getRowElementByUid(rows[lastIdx].uid);
+            if (trEle) {
+                trEle.classList.add('e-lazyload-middle-down');
+            }
+        }
+        this.getRowByUid(uid1).lazyLoadCssClass = '';
+        this.getRowByUid(uid3).lazyLoadCssClass = 'e-not-lazyload-end';
+        this.getRowElementByUid(uid3).classList.add('e-not-lazyload-end');
+        this.removeBottomRows(uid1, uid2, uid3);
+        this.rowIndex = tr.rowIndex - idx;
+        tr.classList.length > 1 ? tr.classList.remove('e-lazyload-middle-up') : tr.removeAttribute('class');
+        if (!isNullOrUndefined(this.getRowElementByUid(start))) {
+            this.childCount = 0;
+            this.scrollData = [];
+            return;
+        }
+        let key = this.getGroupKeysAndFields(this.getRowObjectIndexByUid(parentCapRow.uid), rows);
+        let args = {
+            rowIndex: capRowEleIndex, makeRequest: false, groupInfo: parentCapRow, fields: key.fields,
+            keys: key.keys, skip: this.childCount, take: this.pageSize, isScroll: true, scrollUp: true
+        };
+        this.captionRowExpand(args);
+    }
+    findRowElements(rows) {
+        let entered = false;
+        let tr;
+        for (let i = 0; i < rows.length; i++) {
+            let rowIdx = rows[i].rowIndex;
+            if (isRowEnteredInGrid(rowIdx, this.parent)) {
+                entered = true;
+                this.rowIndex = rowIdx;
+                tr = rows[i];
+                break;
+            }
+        }
+        return { entered, tr };
+    }
+    getRowElementByUid(uid) {
+        return this.parent.getContent().querySelector('tr[data-uid=' + uid + ']');
+    }
+    removeTopRows(uid1, uid2, uid3) {
+        let trs = [].slice.call(this.parent.getContent().querySelectorAll('tr'));
+        let page = this.parent.pageSettings.currentPage;
+        let start = false;
+        for (let i = 0; i < trs.length; i++) {
+            if (trs[i].getAttribute('data-uid') === uid3) {
+                let tr = this.parent.getContent().querySelector('tr[data-uid=' + uid1 + ']');
+                if (tr) {
+                    this.rowIndex = tr.rowIndex;
+                }
+                break;
+            }
+            if (trs[i].getAttribute('data-uid') === uid2) {
+                start = true;
+            }
+            if (start) {
+                remove(trs[i]);
+            }
+        }
+    }
+    removeBottomRows(uid1, uid2, uid3) {
+        let trs = [].slice.call(this.parent.getContent().querySelectorAll('tr'));
+        let start = false;
+        for (let i = 0; i < trs.length; i++) {
+            if (trs[i].getAttribute('data-uid') === uid2) {
+                start = true;
+            }
+            if (start) {
+                remove(trs[i]);
+                if (trs[i].getAttribute('data-uid') === uid1) {
+                    break;
+                }
+            }
+        }
+    }
+    setCache(e) {
+        let page = this.parent.pageSettings.currentPage;
+        this.groupCache[page] = this.initialGroupCaptions[page] = extend([], e.data);
+    }
+    getGroupKeysAndFields(index, rowsObject) {
+        let fields = [];
+        let keys = [];
+        for (let i = index; i >= 0; i--) {
+            if (rowsObject[i].isCaptionRow && fields.indexOf(rowsObject[i].data.field) === -1
+                && (rowsObject[i].indent < rowsObject[index].indent || i === index)) {
+                fields.push(rowsObject[i].data.field);
+                keys.push(rowsObject[i].data.key);
+                if (rowsObject[i].indent === 0) {
+                    break;
+                }
+            }
+        }
+        return { fields: fields, keys: keys };
+    }
+    generateExpandPredicates(fields, values) {
+        let filterCols = [];
+        for (let i = 0; i < fields.length; i++) {
+            let column = this.parent.getColumnByField(fields[i]);
+            let value = values[i] === 'null' ? null : values[i];
+            let pred = {
+                field: fields[i], predicate: 'or', uid: column.uid, operator: 'equal', type: column.type,
+                matchCase: this.allowCaseSensitive, ignoreAccent: this.ignoreAccent
+            };
+            if (value === '' || isNullOrUndefined(value)) {
+                filterCols = filterCols.concat(CheckBoxFilterBase.generateNullValuePredicates(pred));
+            }
+            else {
+                filterCols.push(extend({}, { value: value }, pred));
+            }
+        }
+        return CheckBoxFilterBase.getPredicate(filterCols);
+    }
+    getPredicates(pred) {
+        let predicateList = [];
+        for (let prop of Object.keys(pred)) {
+            predicateList.push(pred[prop]);
+        }
+        return predicateList;
+    }
+    captionRowExpand(args) {
+        let captionRow = args.groupInfo;
+        let level = this.parent.groupSettings.columns.indexOf(captionRow.data.field) + 1;
+        let pred = this.generateExpandPredicates(args.fields, args.keys);
+        let predicateList = this.getPredicates(pred);
+        let lazyLoad = { level: level, skip: args.skip, take: args.take, where: predicateList };
+        if (args.makeRequest) {
+            let query = this.parent.renderModule.data.generateQuery(true);
+            if (!query.isCountRequired) {
+                query.isCountRequired = true;
+            }
+            query.lazyLoad.push({ key: 'onDemandGroupInfo', value: lazyLoad });
+            this.parent.showSpinner();
+            this.parent.renderModule.data.getData({}, query).then((e) => {
+                this.parent.hideSpinner();
+                if (e.result.length === 0) {
+                    return;
+                }
+                if (this.cacheMode && this.uid1 && this.uid2) {
+                    this.removeTopRows(this.uid3, this.uid1, this.uid2);
+                    this.uid1 = this.uid2 = this.uid3 = undefined;
+                }
+                this.lazyLoadHandler({
+                    data: e.result, count: e.count, level: level, index: args.rowIndex,
+                    isRowExist: false, isScroll: args.isScroll, up: false, rowIndex: args.cachedRowIndex
+                });
+            })
+                .catch((e) => this.parent.renderModule.dataManagerFailure(e, { requestType: 'grouping' }));
+        }
+        else {
+            this.lazyLoadHandler({
+                data: null, count: args.groupInfo.data.count, level: level, index: args.rowIndex,
+                isRowExist: true, isScroll: args.isScroll, up: args.scrollUp, rowIndex: args.cachedRowIndex
+            });
+        }
+    }
+    scrollReset(top) {
+        this.parent.getContent().firstElementChild.scrollTop = top ? this.parent.getContent().firstElementChild.scrollTop + top : 0;
+    }
+    updateCurrentViewData() {
+        let records = [];
+        this.getRows().filter((row) => {
+            if (row.isDataRow) {
+                records[row.index] = row.data;
+            }
+        });
+        this.parent.currentViewData = records.length ? records : this.parent.currentViewData;
+    }
+    /** @hidden */
+    getGroupCache() {
+        return this.groupCache;
+    }
+    /** @hidden */
+    getRows() {
+        return this.groupCache[this.parent.pageSettings.currentPage] || [];
+    }
+    /** @hidden */
+    getRowElements() {
+        return [].slice.call(this.parent.getContent().querySelectorAll('.e-row'));
+    }
+    /** @hidden */
+    getRowByIndex(index) {
+        let tr = [].slice.call(this.parent.getContent().querySelectorAll('.e-row'));
+        let row;
+        for (let i = 0; !isNullOrUndefined(index) && i < tr.length; i++) {
+            if (tr[i].getAttribute('aria-rowindex') === index.toString()) {
+                row = tr[i];
+                break;
+            }
+        }
+        return row;
+    }
+    /** @hidden */
+    setVisible(columns) {
+        let gObj = this.parent;
+        let rows = this.getRows();
+        let testRow;
+        rows.some((r) => { if (r.isDataRow) {
+            testRow = r;
+        } return r.isDataRow; });
+        let contentrows = this.getRows().filter((row) => !row.isDetailRow);
+        for (let i = 0; i < columns.length; i++) {
+            let column = columns[i];
+            let idx = this.parent.getNormalizedColumnIndex(column.uid);
+            let colIdx = this.parent.getColumnIndexByUid(column.uid);
+            let displayVal = column.visible === true ? '' : 'none';
+            if (idx !== -1 && testRow && idx < testRow.cells.length) {
+                setStyleAttribute(this.getColGroup().childNodes[idx], { 'display': displayVal });
+            }
+            this.setDisplayNone(gObj.getDataRows(), colIdx, displayVal, contentrows, idx);
+            if (!this.parent.invokedFromMedia && column.hideAtMedia) {
+                this.parent.updateMediaColumns(column);
+            }
+            this.parent.invokedFromMedia = false;
+        }
+    }
+    /** @hidden */
+    setDisplayNone(tr, idx, displayVal, rows, oriIdx) {
+        let trs = Object.keys(tr);
+        if (!this.parent.groupSettings.columns.length) {
+            for (let i = 0; i < trs.length; i++) {
+                let td = tr[trs[i]].querySelectorAll('td.e-rowcell')[idx];
+                if (tr[trs[i]].querySelectorAll('td.e-rowcell').length && td) {
+                    setStyleAttribute(tr[trs[i]].querySelectorAll('td.e-rowcell')[idx], { 'display': displayVal });
+                    if (tr[trs[i]].querySelectorAll('td.e-rowcell')[idx].classList.contains('e-hide')) {
+                        removeClass([tr[trs[i]].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);
+                    }
+                    rows[trs[i]].cells[idx].visible = displayVal === '' ? true : false;
+                }
+            }
+        }
+        else {
+            let keys = Object.keys(this.groupCache);
+            for (let j = 0; j < keys.length; j++) {
+                let uids = this.rowsByUid[keys[j]];
+                let idxs = Object.keys(uids);
+                for (let i = 0; i < idxs.length; i++) {
+                    let tr = this.parent.getContent().querySelector('tr[data-uid=' + idxs[i] + ']');
+                    let row = uids[idxs[i]];
+                    if (row.isCaptionRow) {
+                        if (!this.captionModelGen.isEmpty()) {
+                            this.changeCaptionRow(row, tr, keys[j]);
+                        }
+                        else {
+                            row.cells[row.indent + 1].colSpan = displayVal === '' ? row.cells[row.indent + 1].colSpan + 1
+                                : row.cells[row.indent + 1].colSpan - 1;
+                            if (tr) {
+                                tr.cells[row.indent + 1].colSpan = row.cells[row.indent + 1].colSpan;
+                            }
+                        }
+                    }
+                    if (row.isDataRow) {
+                        this.showAndHideCells(tr, idx, displayVal, false);
+                        row.cells[oriIdx].visible = displayVal === '' ? true : false;
+                    }
+                    if (!row.isCaptionRow && !row.isDataRow && isNullOrUndefined(row.indent)) {
+                        row.cells[oriIdx].visible = displayVal === '' ? true : false;
+                        row.visible = row.cells.some((cell) => cell.isDataCell && cell.visible);
+                        this.showAndHideCells(tr, idx, displayVal, true, row);
+                    }
+                }
+            }
+        }
+    }
+    changeCaptionRow(row, tr, index) {
+        let capRow = row;
+        let captionData = row.data;
+        let data = this.groupGenerator.generateCaptionRow(captionData, capRow.indent, capRow.parentGid, undefined, capRow.tIndex, capRow.parentUid);
+        data.uid = row.uid;
+        data.isExpand = row.isExpand;
+        data.lazyLoadCssClass = row.lazyLoadCssClass;
+        this.rowsByUid[index][row.uid] = data;
+        this.groupCache[index][this.objIdxByUid[index][row.uid]] = data;
+        if (tr) {
+            let tbody = this.parent.getContentTable().querySelector('tbody');
+            tbody.replaceChild(this.rowRenderer.render(data, this.parent.getColumns()), tr);
+        }
+    }
+    showAndHideCells(tr, idx, displayVal, isSummary, row) {
+        if (tr) {
+            let cls = isSummary ? 'td.e-summarycell' : 'td.e-rowcell';
+            setStyleAttribute(tr.querySelectorAll(cls)[idx], { 'display': displayVal });
+            if (tr.querySelectorAll(cls)[idx].classList.contains('e-hide')) {
+                removeClass([tr.querySelectorAll(cls)[idx]], ['e-hide']);
+            }
+            if (isSummary) {
+                if (row.visible && tr.classList.contains('e-hide')) {
+                    removeClass([tr], ['e-hide']);
+                }
+                else if (!row.visible) {
+                    addClass([tr], ['e-hide']);
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Group lazy load class
+ */
+class LazyLoadGroup {
+    /**
+     * Constructor for Grid group lazy load module
+     * @hidden
+     */
+    constructor(parent, serviceLocator) {
+        this.parent = parent;
+        this.serviceLocator = serviceLocator;
+        this.addEventListener();
+    }
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    getModuleName() {
+        return 'lazyLoadGroup';
+    }
+    /**
+     * @hidden
+     */
+    addEventListener() {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.on(initialLoad, this.instantiateRenderer, this);
+    }
+    /**
+     * @hidden
+     */
+    removeEventListener() {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off(initialLoad, this.instantiateRenderer);
+    }
+    instantiateRenderer() {
+        if (this.parent.height === 'auto') {
+            this.parent.height = this.parent.pageSettings.pageSize * this.parent.getRowHeight();
+        }
+        let renderer = this.serviceLocator.getService('rendererFactory');
+        if (this.parent.groupSettings.enableLazyLoading) {
+            renderer.addRenderer(RenderType.Content, new GroupLazyLoadRenderer(this.parent, this.serviceLocator));
+        }
     }
     /**
      * @hidden
@@ -38462,5 +40388,5 @@ class MaskedTextBoxCellEdit {
  * Export Grid components
  */
 
-export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, ResizeSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, AggregateTemplateType, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, setChecked, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, getEditedDataIndex, eventPromise, getStateEventArgument, ispercentageWidth, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, exportDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, infiniteShowHide, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, infiniteEditHandler, initialCollapse, getAggregateQuery, closeFilterDialog, columnChooserCancelBtnClick, getFilterBarOperator, resetColumns, pdfAggregateQueryCellInfo, excelAggregateQueryCellInfo, beforeCheckboxRenderer, refreshHandlers, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, ResizeSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, AggregateTemplateType, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, setChecked, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, isRowEnteredInGrid, getEditedDataIndex, eventPromise, getStateEventArgument, ispercentageWidth, resetRowIndex, compareChanges, setRowElements, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, lazyLoadGroupExpand, lazyLoadGroupCollapse, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, exportDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, infiniteShowHide, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, infiniteEditHandler, initialCollapse, getAggregateQuery, closeFilterDialog, columnChooserCancelBtnClick, getFilterBarOperator, resetColumns, pdfAggregateQueryCellInfo, excelAggregateQueryCellInfo, setGroupCache, lazyLoadScrollHandler, groupCollapse, beforeCheckboxRenderer, refreshHandlers, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, LazyLoadGroup, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, GroupLazyLoadRenderer, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es2015.js.map

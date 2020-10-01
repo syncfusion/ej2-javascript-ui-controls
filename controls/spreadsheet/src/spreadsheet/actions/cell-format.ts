@@ -3,7 +3,7 @@ import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt,
 import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, CellStyleExtendedModel, CellModel} from '../../workbook/index';
 import { SheetModel, isHiddenRow, getCell, getColumnWidth, getRangeIndexes, getSheetIndex } from '../../workbook/index';
 import {  wrapEvent, getRangeAddress, ClearOptions,  clear } from '../../workbook/index';
-import { removeClass } from '@syncfusion/ej2-base';
+import { removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * CellFormat module allows to format the cell styles.
  */
@@ -90,6 +90,22 @@ export class CellFormat {
             let cell: CellModel = getCell(rowIdx, colIdx, sheet);
             hgt = getTextHeight(this.parent, (cell && cell.style) || this.parent.cellStyle, (cell && cell.wrap) ?
                 getLines(this.parent.getDisplayText(cell), getColumnWidth(sheet, colIdx), cell.style, this.parent.cellStyle) : 1);
+            if (cell && !isNullOrUndefined(cell.value)) {
+                let val: string = cell.value.toString();
+                if (val.indexOf('\n') > -1) {
+                    let i: number;
+                    let splitVal: string[] = cell.value.split('\n');
+                    let n: number = 0; let valLength: number = splitVal.length;
+                    for (i = 0; i < valLength; i++) {
+                        let lines: number = getLines(splitVal[i], getColumnWidth(sheet, colIdx), cell.style, this.parent.cellStyle);
+                        if (lines === 0) {
+                            lines = 1; // for empty new line
+                        }
+                        n = n + lines;
+                    }
+                    hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, n) + 1;
+                }
+            }
             setMaxHgt(sheet, rowIdx, colIdx, hgt + borderSize);
             if (isLastCell) {
                 this.checkHeight = false;

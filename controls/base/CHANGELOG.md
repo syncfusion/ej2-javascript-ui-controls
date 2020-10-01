@@ -2,38 +2,6 @@
 
 ## [Unreleased]
 
-## 18.2.59 (2020-09-21)
-
-### Common
-
-#### Bug Fixes
-
-- Resolved `Dragged item` is going away from the mouse position when border of the component gets dragged.
-
-## 18.2.57 (2020-09-08)
-
-### Common
-
-#### Bug Fixes
-
-- `I291699`, `I291702`, `I291695`, `I291730`, `I291971`, `I291025`, `I291704`, `I291906`, `I291699`, `I292083`, `I291702`, `I292083` - Resolved `Dateformat` returns improper date value.
-
-## 18.2.55 (2020-08-25)
-
-### Common
-
-#### Bug Fixes
-
-- `I281274` - Resolved `Dateformat` returns improper date value.
-
-## 18.2.47 (2020-07-28)
-
-### Common
-
-#### Bug Fixes
-
-- `F154691` - Resolved the issue wrong separator for group and decimal in number format.
-
 ## 17.4.51 (2020-02-25)
 
 ### Common

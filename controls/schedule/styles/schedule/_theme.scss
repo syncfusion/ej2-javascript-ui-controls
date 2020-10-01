@@ -338,7 +338,7 @@
       }
     }
 
-    &.e-rtl {
+    #{if(&, '&', '*')}.e-rtl {
       .e-vertical-view {
         .e-date-header-wrap table tbody td:first-child,
         .e-content-wrap table td:first-child {

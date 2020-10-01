@@ -36,6 +36,12 @@ export class GanttTreeGrid {
         this.parent.on('renderPanels', this.createContainer, this);
         this.parent.on('chartScroll', this.updateScrollTop, this);
         this.parent.on('destroy', this.destroy, this);
+        this.parent.treeGrid.on('renderReactTemplate', this.renderReactTemplate, this);
+    }
+    private renderReactTemplate(args: Object[]): void {
+        let portals: string = 'portals';
+        this.parent[portals] = args;
+        this.parent.renderTemplates();
     }
     private createContainer(): void {
         //let height: number = this.parent.ganttHeight - this.parent.toolbarModule.element.offsetHeight - 46;
@@ -630,6 +636,7 @@ export class GanttTreeGrid {
         this.parent.off('renderPanels', this.createContainer);
         this.parent.off('chartScroll', this.updateScrollTop);
         this.parent.off('destroy', this.destroy);
+        this.parent.treeGrid.off('reactTemplateRender', this.renderReactTemplate);
     }
     private destroy(): void {
         this.removeEventListener();

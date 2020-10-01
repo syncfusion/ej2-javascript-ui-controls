@@ -17,6 +17,13 @@ export interface ITreeGridOptions {
     hasRowTemplate: boolean;
     hasDetailTemplate: boolean;
     copyHierarchyMode: string;
+    allowTextWrap: boolean;
+    toolbar: string[];
+    rowDropTargetID: string;
+    allowRowDragAndDrop: boolean;
+    allowPaging: boolean;
+    pageSize: number;
+    currentPage: number;
 }
 
 export interface BlazorTreeGridElement extends HTMLElement {

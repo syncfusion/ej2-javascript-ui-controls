@@ -25,3 +25,5 @@ export type SentinelType = {
 export type SentinelInfo = { up?: SentinelType, down?: SentinelType, right?: SentinelType, left?: SentinelType };
 
 export type Offsets = { top?: number, left?: number };
+
+export type BatchChanges = { addedRecords?: Object[], changedRecords?: Object[], deletedRecords?: Object[] };

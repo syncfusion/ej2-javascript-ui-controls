@@ -926,8 +926,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         let args;
         if (this.validationRules) {
             let rules = Object.keys(this.validationRules);
-            let validationLength = Object.keys(this.validationRules[rules[0]]).length;
-            validationLength = 'validateHidden' in this.validationRules[rules[0]] ? validationLength - 1 : validationLength;
+            let rulesIndex = 0;
             let count = 0;
             this.formValidate = new FormValidator(this.formEle, {
                 rules: this.validationRules,
@@ -945,10 +944,17 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                         else {
                             this.toggleErrorClass(false);
                         }
+                        let validationLength = Object.keys(this.validationRules[rules[rulesIndex]]).length;
+                        validationLength = 'validateHidden' in this.validationRules[rules[rulesIndex]]
+                            ? validationLength - 1 : validationLength;
                         if (!isNullOrUndefined(fromSubmit) && fromSubmit && (validationLength === count || e.status === 'failure')) {
-                            fromSubmit = false;
-                            this.afterValidation(isValidate);
+                            rulesIndex++;
+                            if (this.template === '' || count - 1 === rulesIndex) {
+                                fromSubmit = false;
+                                this.afterValidation(isValidate);
+                            }
                             count = 0;
+                            rulesIndex = 0;
                         }
                     });
                 },
@@ -960,6 +966,22 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             });
             count = 0;
             this.formValidate.validate();
+        }
+        else if (this.template !== '') {
+            args = {
+                errorMessage: '',
+                data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
+            };
+            this.trigger('validating', args, (validateArgs) => {
+                if (validateArgs.errorMessage) {
+                    select('.' + EDITABLE_ERROR, this.formEle).innerHTML = validateArgs.errorMessage;
+                    this.toggleErrorClass(true);
+                }
+                else {
+                    this.toggleErrorClass(false);
+                }
+                this.afterValidation(isValidate);
+            });
         }
         else {
             this.afterValidation(isValidate);

@@ -1,5 +1,5 @@
 /**
- * Export Spreadsheet viewer
+ * Export the Spreadsheet viewer
  */
 export * from './render';
 export * from './sheet';

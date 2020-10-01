@@ -307,7 +307,7 @@ export class Render {
                 if (this.parent.cellTemplate) {
                     /* tslint:disable-next-line */
                     let element: any = this.parent.getCellTemplate()(
-                        cell, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate');
+                        cell, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate', null, null, cell.targetCell);
                     if (element && element !== '' && element.length > 0) {
                         if (this.parent.enableHtmlSanitizer) {
                             this.parent.appendHtml(cell.targetCell, SanitizeHtmlHelper.sanitize(element[0].outerHTML));
@@ -338,6 +338,7 @@ export class Render {
         }
         this.parent.isScrolling = false;
         this.setFocusOnLastCell();
+        (this.parent as any).renderReactTemplates();
         this.parent.notify(events.contentReady, {});
     }
 
@@ -1117,7 +1118,7 @@ export class Render {
                 if (!(window && isBlazor())) {
                     /* tslint:disable-next-line */
                     let element: any = this.parent.getCellTemplate()(
-                        { targetCell: tCell }, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate');
+                        { targetCell: tCell }, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate', null, null, tCell);
                     if (element && element !== '' && element.length > 0) {
                         if (this.parent.enableHtmlSanitizer) {
                             this.parent.appendHtml(tCell, SanitizeHtmlHelper.sanitize(element[0].outerHTML));

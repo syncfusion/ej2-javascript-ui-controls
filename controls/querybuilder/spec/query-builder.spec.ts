@@ -77,7 +77,28 @@ describe('QueryBuilder', () => {
         'HomePhone': '(206) 555-3412',
         'Extension': '3355',
         'Photo': { 'Length': 21722 }
-    }];
+    },
+	{
+		'EmployeeID': 5,
+		'LastName': 'Buchanan',
+		'FirstName': 'Steven',
+		'Title': 'Sales Manager',
+		'TitleOfCourtesy': 'Mr.',
+		'Age': 34,
+		'BirthDate': new Date(-468010800000),
+		'HireDate': new Date(750830400000),
+		'Address': '14 - Garrett Hill',
+		'City': 'London',
+		'Region': null,
+		'PostalCode': 'SW1 8JR',
+		'Country': 'UK',
+		'HomePhone': '(71) 555-4848',
+		'Extension': '3453',
+		'Photo': { 'Length': 21626 },
+		'Notes': 'Steven Buchanan graduated from St. Andrews University, Scotland, with a BSC degree in 1976.',
+		'ReportsTo': 2,
+		'PhotoPath': 'http://accweb/emmployees/buchanan.bmp'
+	}];
     let mouseEvent: MouseEvent = document.createEvent('MouseEvents');
     let mouseEvent2: MouseEvent = document.createEvent('MouseEvents');
 
@@ -874,7 +895,7 @@ describe('QueryBuilder', () => {
             // setmodel datasource
             queryBuilder.dataSource = employeeData;
             queryBuilder.dataBind();
-            expect(queryBuilder.dataSource.length).toBe(3);
+            expect(queryBuilder.dataSource.length).toBe(4);
 
         });
     });

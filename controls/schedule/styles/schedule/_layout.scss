@@ -1,7 +1,7 @@
 @include export-module('schedule-layout') {
   /*! schedule component layout */
 
-  #{&}.e-schedule {
+  .e-schedule {
     display: block;
     outline: medium none;
     overflow: hidden;
@@ -197,7 +197,7 @@
       }
     }
 
-    &.e-device {
+    #{if(&, '&', '*')}.e-device {
       .e-schedule-toolbar {
         height: $schedule-tbar-bgr-size;
         min-height: $schedule-tbar-bgr-size;
@@ -422,7 +422,7 @@
       font-size: 12px;
     }
 
-    &.e-device {
+    #{if(&, '&', '*')}.e-device {
       .e-m-date {
         &:hover {
           text-decoration: none;
@@ -456,7 +456,7 @@
       z-index: 1;
     }
 
-    &.e-rtl .e-block-indicator {
+    #{if(&, '&', '*')}.e-rtl .e-block-indicator {
       float: left;
     }
 
@@ -502,13 +502,13 @@
       opacity: .8;
     }
 
-    &.e-event-action .e-appointment:not(.e-schedule-event-clone),
-    &.e-event-action .e-block-appointment {
+    #{if(&, '&', '*')}.e-event-action .e-appointment:not(.e-schedule-event-clone),
+    #{if(&, '&', '*')}.e-event-action .e-block-appointment {
       pointer-events: none;
     }
 
-    &.e-event-action .e-drag-clone,
-    &.e-event-action .e-timeline-view .e-drag-clone {
+    #{if(&, '&', '*')}.e-event-action .e-drag-clone,
+    #{if(&, '&', '*')}.e-event-action .e-timeline-view .e-drag-clone {
       cursor: move;
 
       .e-top-handler,
@@ -517,17 +517,17 @@
       }
     }
 
-    &.e-event-action .e-vertical-view .e-appointment-wrapper .e-resize-clone {
+    #{if(&, '&', '*')}.e-event-action .e-vertical-view .e-appointment-wrapper .e-resize-clone {
       cursor: ns-resize;
     }
 
-    &.e-event-action .e-timeline-view .e-resize-clone,
-    &.e-event-action .e-timeline-month-view .e-resize-clone,
-    &.e-event-action .e-all-day-appointment-wrapper .e-resize-clone {
+    #{if(&, '&', '*')}.e-event-action .e-timeline-view .e-resize-clone,
+    #{if(&, '&', '*')}.e-event-action .e-timeline-month-view .e-resize-clone,
+    #{if(&, '&', '*')}.e-event-action .e-all-day-appointment-wrapper .e-resize-clone {
       cursor: ew-resize;
     }
 
-    &.e-device {
+    #{if(&, '&', '*')}.e-device {
       .e-appointment {
         overflow: hidden;
       }
@@ -1070,7 +1070,7 @@
       }
     }
 
-    &.e-device {
+    #{if(&, '&', '*')}.e-device {
       .e-vertical-view {
         .e-header-cells {
           .e-header-day {
@@ -1111,7 +1111,7 @@
       }
     }
 
-    &.e-rtl {
+    #{if(&, '&', '*')}.e-rtl {
       text-align: right;
 
       .e-vertical-view {
@@ -1370,7 +1370,7 @@
       }
     }
 
-    &.e-rtl {
+    #{if(&, '&', '*')}.e-rtl {
       .e-month-view {
         @if ($schedule-skin == 'bootstrap4') {
           .e-date-header {
@@ -1509,11 +1509,11 @@
         color: $schedule-primary-content-font-color;
         font-size: 13px;
         overflow: hidden;
-        padding: 0 15px;
+        padding: 4px 15px;
         text-overflow: ellipsis;
 
         @if ($schedule-skin == 'bootstrap4') {
-          padding: 0 12px;
+          padding: 4px 12px;
         }
       }
 
@@ -1549,6 +1549,10 @@
           &.e-child-node {
             background-color: $schedule-workhour-bg-color;
           }
+
+          &:focus {
+            background-color: $schedule-hover-bg-color;
+          }
         }
       }
 
@@ -1566,6 +1570,7 @@
         float: left;
         font-family: 'e-icons';
         font-size: 12px;
+        padding: 4px 7px;
       }
 
       .e-resource-collapse {
@@ -1804,7 +1809,7 @@
       }
     }
 
-    &.e-device {
+    #{if(&, '&', '*')}.e-device {
       .e-year-view {
         .e-month-calendar {
           max-width: 100%;
@@ -1882,10 +1887,10 @@
         color: $schedule-primary-content-font-color;
         font-size: 13px;
         overflow: hidden;
-        padding: 0 15px;
+        padding: 4px 15px;
         text-overflow: ellipsis;
         @if ($schedule-skin == 'bootstrap4') {
-          padding: 0 12px;
+          padding: 4px 12px;
         }
       }
 
@@ -1911,6 +1916,16 @@
         vertical-align: middle;
         @if ($schedule-skin == 'bootstrap4') {
           padding-left: 12px;
+        }
+
+        &:focus {
+          background-color: $schedule-hover-bg-color;
+
+          .e-resource-tree-icon {
+            background-color: $schedule-popup-icon-hover-bg-color;
+            border-radius: 50%;
+            color: $schedule-popup-icon-hover-color;
+          }
         }
       }
 
@@ -1938,6 +1953,7 @@
         float: left;
         font-family: 'e-icons';
         font-size: 12px;
+        padding: 4px 7px;
       }
 
       .e-resource-collapse {
@@ -2091,7 +2107,7 @@
       }
     }
 
-    &.e-rtl {
+    #{if(&, '&', '*')}.e-rtl {
       .e-timeline-view,
       .e-timeline-month-view {
         .e-appointment {
@@ -2124,7 +2140,7 @@
       }
     }
 
-    &.e-device {
+    #{if(&, '&', '*')}.e-device {
       .e-month-view,
       .e-timeline-view,
       .e-timeline-month-view {
@@ -2341,7 +2357,7 @@
       }
     }
 
-    &.e-rtl {
+    #{if(&, '&', '*')}.e-rtl {
       .e-month-agenda-view {
         .e-left-indent {
           border-left: $border-size $border-type $schedule-content-border-color;
@@ -2372,7 +2388,7 @@
       }
     }
 
-    &.e-device {
+    #{if(&, '&', '*')}.e-device {
       .e-month-agenda-view {
         .e-date-header-wrap {
           font-size: $schedule-date-header-wrap-device-font-size;
@@ -2570,7 +2586,7 @@
       }
     }
 
-    &.e-device {
+    #{if(&, '&', '*')}.e-device {
       .e-agenda-view,
       .e-month-agenda-view {
         .e-m-date {
@@ -2585,7 +2601,7 @@
       }
     }
 
-    &.e-rtl {
+    #{if(&, '&', '*')}.e-rtl {
       .e-agenda-view {
         .e-appointment {
           border-left: 0;
@@ -2617,8 +2633,8 @@
     display: none;
   }
 
-  .e-bigger #{&}.e-schedule,
-  .e-bigger#{&}.e-schedule {
+  .e-bigger .e-schedule,
+  .e-bigger.e-schedule {
     .e-schedule-toolbar {
       height: $schedule-tbar-bgr-size;
       min-height: $schedule-tbar-bgr-size;
@@ -2786,19 +2802,19 @@
   }
 
   /*! schedule event tooltip */
-  #{&}.e-schedule-event-tooltip .e-subject {
+  .e-schedule-event-tooltip .e-subject {
     font-size: 12px;
   }
 
-  .e-bigger #{&}.e-schedule-event-tooltip,
-  &#{&}.e-schedule-event-tooltip.e-bigger {
+  .e-bigger .e-schedule-event-tooltip,
+  .e-schedule-event-tooltip.e-bigger {
     .e-subject {
       font-size: 14px;
       font-weight: 500;
     }
   }
 
-  #{&}.e-dialog.e-quick-dialog.e-following-events-dialog {
+  .e-dialog.e-quick-dialog.e-following-events-dialog {
     width: 420px;
 
     .e-footer-content {
@@ -2821,7 +2837,7 @@
     }
   }
 
-  #{&}.e-dialog.e-quick-dialog {
+  .e-dialog.e-quick-dialog {
     user-select: none;
     width: 320px;
 
@@ -2838,7 +2854,7 @@
     }
   }
 
-  .e-bigger #{&}.e-dialog.e-quick-dialog {
+  .e-bigger .e-dialog.e-quick-dialog {
     min-width: 370px;
   }
 

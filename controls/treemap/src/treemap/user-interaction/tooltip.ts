@@ -24,6 +24,7 @@ export class TreeMapTooltip {
     }
 
     /* tslint:disable:no-string-literal */
+    /* tslint:disable */
     public renderTooltip(e: PointerEvent): void {
         let pageX: number; let pageY: number;
         let target: Element; let touchArg: TouchEvent;
@@ -104,6 +105,7 @@ export class TreeMapTooltip {
             }
         } else {
             this.removeTooltip();
+           (this.treemap as any).clearTemplate();
         }
     }
 
@@ -136,8 +138,10 @@ export class TreeMapTooltip {
                 });
                 this.svgTooltip.opacity = this.treemap.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                 this.svgTooltip.appendTo(tooltipEle);
+                (this.treemap as any).renderReactTemplates();
             } else {
                 this.removeTooltip();
+                (this.treemap as any).clearTemplate();
             }
     }
 

@@ -144,7 +144,7 @@ $rte-resize-handler-height: 15px;
 $rte-resize-handler-position: 0;
 
 @include export-module('richtexteditor-bootstrap4') {
-  #{&}.e-richtexteditor {
+  .e-richtexteditor {
     border-radius: 4px;
 
     & .e-rte-toolbar {
@@ -237,7 +237,7 @@ $rte-resize-handler-position: 0;
     }
   }
 
-  .e-bigger #{&}.e-richtexteditor {
+  .e-bigger .e-richtexteditor {
     & .e-rte-toolbar {
       &.e-extended-toolbar {
         & .e-toolbar-extended.e-toolbar-pop .e-toolbar-item.e-toolbar-popup .e-tbar-btn {
@@ -281,7 +281,7 @@ $rte-resize-handler-position: 0;
     border-radius: 4px;
   }
 
-  #{&}.e-rte-quick-popup .e-rte-quick-toolbar .e-tbar-btn.e-rte-inline-dropdown {
+  .e-rte-quick-popup .e-rte-quick-toolbar .e-tbar-btn.e-rte-inline-dropdown {
     & .e-rte-color-content {
       line-height: 26px;
       min-height: 26px;
@@ -293,7 +293,7 @@ $rte-resize-handler-position: 0;
     }
   }
 
-  .e-bigger #{&}.e-rte-quick-popup .e-rte-quick-toolbar .e-tbar-btn.e-rte-inline-dropdown {
+  .e-bigger .e-rte-quick-popup .e-rte-quick-toolbar .e-tbar-btn.e-rte-inline-dropdown {
     & .e-rte-color-content {
       line-height: 32px;
       min-height: 26px;

@@ -28,7 +28,7 @@ function getRangeIndexes(range) {
  * To get single cell indexes
  */
 function getCellIndexes(address) {
-    return [parseInt(address.match(/\d+/)[0], 10) - 1, getColIndex(address.match(/[A-Z]+/i)[0])];
+    return [parseInt(address.match(/\d+/)[0], 10) - 1, getColIndex(address.match(/[A-Z]+/i)[0].toUpperCase())];
 }
 /**
  * To get column index from text.
@@ -536,6 +536,8 @@ const clear = 'clear';
 const clearCF = 'clearCF';
 /** @hidden */
 const clearCells = 'clearCells';
+/** @hidden */
+const setImage = 'setImage';
 
 /**
  * Specifies number format.
@@ -1711,6 +1713,37 @@ const checkConditionalFormat = 'checkConditionalFormat';
 const setCF = 'setCF';
 /** @hidden */
 const clearViewer = 'clearViewer';
+/** @hidden */
+const initiateFormulaReference = 'initiateFormulaReference';
+/** @hidden */
+const initiateCur = 'initiateCur';
+/** @hidden */
+const clearCellRef = 'clearCellRef';
+/** @hidden */
+const editValue = 'editValue';
+/** @hidden */
+const addressHandle = 'addressHandle';
+/** @hidden */
+const initiateEdit = 'initiateEdit';
+/** @hidden */
+const forRefSelRender = 'forRefSelRender';
+const blankWorkbook = 'blankWorkbook';
+/** @hidden */
+const insertImage = 'insertImage';
+/** @hidden */
+const refreshImgElem = 'refreshImgElem';
+/** @hidden */
+const refreshImgCellObj = 'refreshImgCellObj';
+/** @hidden */
+const getRowIdxFromClientY = 'getRowIdxFromClientY';
+/** @hidden */
+const getColIdxFromClientX = 'getColIdxFromClientX';
+/** @hidden */
+const createImageElement = 'createImageElement';
+/** @hidden */
+const deleteImage = 'deleteImage';
+/** @hidden */
+const refreshImagePosition = 'refreshImagePosition';
 
 /**
  * Open properties.
@@ -5474,23 +5507,41 @@ let Calculate = Calculate_1 = class Calculate extends Base {
     updateDependentCell(cellRef) {
         let family = this.getSheetFamilyItem(this.grid);
         let cell = this.cell;
-        if (family.sheetNameToParentObject !== null) {
+        if (cell !== this.emptyString) {
+            if (family.sheetNameToParentObject !== null) {
+                let token = family.parentObjectToToken.get(this.grid);
+                if (cell.indexOf(this.sheetToken) === -1) {
+                    cell = token + cell;
+                }
+                if (cellRef.indexOf(this.sheetToken) === -1) {
+                    cellRef = token + cellRef;
+                }
+            }
+            if (this.getDependentCells().has(cellRef)) {
+                let formulaCells = this.getDependentCells().get(cellRef);
+                if (formulaCells.indexOf(cell) < 0) {
+                    formulaCells.push(cell);
+                }
+            }
+            else {
+                this.getDependentCells().set(cellRef, [cell]);
+            }
+            this.addToFormulaDependentCells(cellRef);
+        }
+    }
+    addToFormulaDependentCells(cellRef) {
+        let cell1 = this.cell;
+        let family = this.getSheetFamilyItem(this.grid);
+        if (family.sheetNameToParentObject != null && cell1.indexOf(this.sheetToken) === -1) {
             let token = family.parentObjectToToken.get(this.grid);
-            if (cell.indexOf(this.sheetToken) === -1) {
-                cell = token + cell;
-            }
-            if (cellRef.indexOf(this.sheetToken) === -1) {
-                cellRef = token + cellRef;
-            }
+            cell1 = token + cell1;
         }
-        if (this.getDependentCells().has(cellRef)) {
-            let formulaCells = this.getDependentCells().get(cellRef);
-            if (formulaCells.indexOf(cell) < 0) {
-                formulaCells.push(cell);
-            }
+        if (!this.getDependentFormulaCells().has(cell1)) {
+            this.getDependentFormulaCells().set(cell1, new Map());
+            this.getDependentFormulaCells().get(cell1).set(cellRef, cellRef);
         }
-        else {
-            this.getDependentCells().set(cellRef, [cell]);
+        else if (!(this.getDependentFormulaCells().get(cell1)).has(cellRef)) {
+            this.getDependentFormulaCells().get(cell1).set(cellRef, cellRef);
         }
     }
     /**
@@ -5779,9 +5830,8 @@ let Calculate = Calculate_1 = class Calculate extends Base {
         }
     }
     arrayRemove(array, value) {
-        let index = null;
-        while (index !== -1) {
-            index = array.indexOf(value);
+        let index = array.indexOf(value);
+        if (index !== -1) {
             array.splice(index, 1);
         }
         return array;
@@ -7195,6 +7245,12 @@ let Calculate = Calculate_1 = class Calculate extends Base {
             }
         }
         text = text.split(this.tempSheetPlaceHolder).join(this.sheetToken);
+        if (text.indexOf('!!') > -1) {
+            text = text.replace('!!', '!');
+            let textSplit = text.split('');
+            textSplit[1] = (parseInt(textSplit[1], 10) + 1).toString();
+            text = textSplit.join('');
+        }
         return text;
     }
     getParentObjectCellValue(val) {
@@ -7888,6 +7944,20 @@ class WorkbookFormula {
      * @private
      */
     constructor(workbook) {
+        this.uniqueOBracket = String.fromCharCode(129);
+        this.uniqueCBracket = String.fromCharCode(130);
+        this.uniqueCSeparator = String.fromCharCode(131);
+        this.uniqueCOperator = String.fromCharCode(132);
+        this.uniquePOperator = String.fromCharCode(133);
+        this.uniqueSOperator = String.fromCharCode(134);
+        this.uniqueMOperator = String.fromCharCode(135);
+        this.uniqueDOperator = String.fromCharCode(136);
+        this.uniqueModOperator = String.fromCharCode(137);
+        this.uniqueConcateOperator = String.fromCharCode(138);
+        this.uniqueEqualOperator = String.fromCharCode(139);
+        this.uniqueExpOperator = String.fromCharCode(140);
+        this.uniqueGTOperator = String.fromCharCode(141);
+        this.uniqueLTOperator = String.fromCharCode(142);
         this.sheetInfo = [];
         this.parent = workbook;
         this.init();
@@ -8006,6 +8076,8 @@ class WorkbookFormula {
                         break;
                     }
                 }
+                this.calculateInstance.unregisterGridAsSheet((args.index - 1).toString(), args.index);
+                this.calculateInstance.tokenCount = this.calculateInstance.tokenCount - 1;
                 this.sheetDeletion(args.sheetName, args.index, args.index);
                 break;
             case 'getReferenceError':
@@ -8019,6 +8091,15 @@ class WorkbookFormula {
                 break;
             case 'computeExpression':
                 args.calcValue = this.calculateInstance.computeExpression(args.formula);
+                break;
+            case 'registerGridInCalc':
+                this.calculateInstance.grid = args.sheetID;
+                break;
+            case 'refreshInsDelFormula':
+                this.refreshInsDelFormula(args.insertArgs);
+                break;
+            case 'refreshNamedRange':
+                this.refreshNamedRange(args.insertArgs, action);
                 break;
         }
     }
@@ -8052,7 +8133,7 @@ class WorkbookFormula {
             let dependentCellRef = this.calculateInstance.getDependentCells().get(cellRef[i]);
             for (let j = 0; j < dependentCellRef.length; j++) {
                 fInfo = this.calculateInstance.getFormulaInfoTable().get(dependentCellRef[j]);
-                sheetId = getSheetIndexByName(this.parent, ('Sheet') + (parseInt(dependentCellRef[j].split('!')[1], 10) + 1), this.sheetInfo);
+                sheetId = parseInt(dependentCellRef[j].split('!')[1], 10) + 1;
                 if (!isNullOrUndefined(fInfo) && sheetId > -1) {
                     formulaVal = fInfo.formulaText;
                     if (formulaVal.toUpperCase().indexOf(delSheetName.toUpperCase()) > -1) {
@@ -8064,12 +8145,19 @@ class WorkbookFormula {
                         this.calculateInstance.refresh(fInfo.getParsedFormula());
                     }
                 }
+                if (delSheetName.split('Sheet')[1] === cellRef[i].split('!')[1]) {
+                    this.calculateInstance.getFormulaInfoTable().delete(cellRef[i]);
+                    this.calculateInstance.clearFormulaDependentCells(cellRef[i]);
+                }
             }
         }
     }
     removeSheetTokenIndex(value, index) {
         let family = this.calculateInstance.getSheetFamilyItem(this.calculateInstance.grid);
         family.sheetNameToToken.delete(index.toString());
+        family.sheetNameToParentObject.delete(index.toString());
+        family.parentObjectToToken.delete(index.toString());
+        family.tokenToParentObject.delete('!' + (index - 1).toString() + '!');
         return value;
     }
     renameUpdation(name, sheetIdx) {
@@ -8194,7 +8282,7 @@ class WorkbookFormula {
         }
     }
     refreshCalculate(rowIdx, colIdx, value, isFormula, sheetIdx) {
-        if (!sheetIdx) {
+        if (sheetIdx === undefined) {
             sheetIdx = this.parent.activeSheetIndex;
         }
         let sheetName = getSheet(this.parent, sheetIdx).id + '';
@@ -8249,11 +8337,32 @@ class WorkbookFormula {
     }
     initiateDefinedNames() {
         let definedNames = this.parent.definedNames;
-        let len = definedNames.length;
         let i = 0;
-        while (i < len) {
+        while (i < definedNames.length) {
             let definedname = definedNames[i];
-            this.addDefinedName(definedname, true);
+            let refersTo = this.parseSheetRef(definedname.refersTo);
+            let range = getRangeFromAddress(refersTo);
+            let cellRef = false;
+            range = range.split('$').join('');
+            range = range.split('=').join('');
+            if (range.indexOf(':') > -1) {
+                let rangeSplit = range.split(':');
+                if (isCellReference(rangeSplit[0]) && isCellReference(rangeSplit[1])) {
+                    cellRef = true;
+                }
+            }
+            else if (range.indexOf(':') < 0) {
+                if (isCellReference(range)) {
+                    cellRef = true;
+                }
+            }
+            if (cellRef) {
+                this.addDefinedName(definedname, true);
+            }
+            else {
+                this.removeDefinedName(definedname.name, definedname.scope);
+                i--;
+            }
             i++;
         }
     }
@@ -8392,6 +8501,290 @@ class WorkbookFormula {
         args.Avg = formatedValues[1];
         args.Min = formatedValues[2];
         args.Max = formatedValues[3];
+    }
+    clearFormula(args) {
+        if (this.parent.activeSheetIndex === args.sheetIdx) {
+            args.rowIdx = (args.type === 'Row') ? (args.status === 'insert') ? (args.rowIdx >= args.startIdx)
+                ? args.rowIdx - args.count : args.rowIdx : args.rowIdx + args.count : args.rowIdx;
+            args.colIdx = (args.type === 'Column') ? (args.status === 'insert') ? (args.colIdx >= args.startIdx) ?
+                args.colIdx - args.count : args.colIdx : args.colIdx + args.count : args.colIdx;
+        }
+        let cellRef = '!' + args.sheetIdx + '!' + getAlphalabel((args.colIdx === -1 ?
+            (args.colIdx + 2) : (args.colIdx + 1))) + (args.rowIdx === -1 ? (args.rowIdx + 2) : (args.rowIdx + 1));
+        this.calculateInstance.getFormulaInfoTable().delete(cellRef);
+        this.calculateInstance.clearFormulaDependentCells(cellRef);
+    }
+    refreshFormula(formulaValue, count, status, type, startIdx, sheetIdx) {
+        let diff;
+        let diff1;
+        let val = formulaValue;
+        let nAlpha;
+        let range = [];
+        let actSheet = this.parent.getActiveSheet();
+        let deleteIdxs = [];
+        let i;
+        let splitFormula = [];
+        let fArg;
+        let ridx;
+        let pVal;
+        if (checkIsFormula(val)) {
+            if (status === 'delete') {
+                for (i = 1; i <= count; i++) {
+                    deleteIdxs.push(startIdx + i);
+                }
+            }
+            splitFormula = this.parseFormula(val);
+            for (i = 0; i < splitFormula.length; i++) {
+                fArg = splitFormula[i].trim();
+                if (this.calculateInstance.isCellReference(fArg)) {
+                    pVal = i && splitFormula[i - 1].trim();
+                    if (pVal && pVal[pVal.length - 1] === '!') {
+                        pVal = pVal.replace(/['!]/g, '');
+                        if (pVal !== actSheet.name) {
+                            continue;
+                        }
+                    }
+                    else if (parseInt(pVal, 10) === 0 && pVal[pVal.length - 1] === undefined) {
+                        if ((actSheet.id - 1) !== sheetIdx) {
+                            continue;
+                        }
+                    }
+                    range = getRangeIndexes(fArg);
+                    diff = (type === 'Column') ? (status === 'insert') ? range[3] + count : range[3] - count :
+                        (status === 'insert') ? range[2] + count : range[2] - count;
+                    diff1 = (type === 'Column') ? (status === 'insert') ? range[1] + count : range[1] - count :
+                        (status === 'insert') ? range[0] + count : range[0] - count;
+                    diff1 = (type === 'Column') ? (startIdx > range[1]) ? range[1] : diff1 : (startIdx > range[0]) ? range[0] : diff1;
+                    diff = (type === 'Column') ? (startIdx > range[3]) ? range[3] : diff : (startIdx > range[2]) ? range[2] : diff;
+                    if (diff1 > -1) {
+                        nAlpha = (type === 'Column') ? getRangeAddress([range[0], diff1, range[2], diff]).split(':')[0] :
+                            getRangeAddress([diff1, range[1], diff, range[3]]).split(':')[0];
+                    }
+                    else {
+                        nAlpha = '#REF!';
+                        
+                    }
+                    if (status === 'delete') {
+                        ridx = parseInt(type === 'Row' ? fArg.replace(/[A-Z]/g, '') : (fArg.replace(/[0-9]/g, '')), 10);
+                        if (deleteIdxs.indexOf(ridx) > -1) {
+                            nAlpha = '#REF!';
+                            
+                        }
+                    }
+                    splitFormula[i] = nAlpha;
+                }
+            }
+            val = '=' + splitFormula.join('');
+        }
+        return val;
+    }
+    refreshInsDelFormula(args) {
+        let count;
+        let sheet;
+        let sheets = this.parent.sheets;
+        let sheetLen = sheets.length;
+        let address;
+        let cell;
+        let s;
+        let updatedFormulaVal;
+        for (s = 0; s < sheetLen; s++) {
+            count = args.model.length;
+            sheet = this.parent.sheets[s];
+            address = [0, 0, sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
+            for (let i = address[2]; i >= address[0]; i--) {
+                for (let j = address[1]; j <= address[3]; j++) {
+                    cell = getCell(i, j, sheet);
+                    if (cell && cell.formula && checkIsFormula(cell.formula)) {
+                        this.clearFormula({
+                            rowIdx: i, colIdx: j, sheetIdx: s, count: count, status: args.name,
+                            type: args.modelType, startIdx: args.startIndex
+                        });
+                        updatedFormulaVal = this.refreshFormula(cell.formula, count, args.name, args.modelType, args.startIndex, s);
+                        this.parent.notify(workbookEditOperation, {
+                            action: 'updateCellValue', address: [i, j, i,
+                                j], value: updatedFormulaVal, sheetIndex: s
+                        });
+                    }
+                }
+            }
+        }
+    }
+    parseFormula(formula) {
+        let temp;
+        let str;
+        let len;
+        let i = 0;
+        let arr = [];
+        let formulaVal = [];
+        formulaVal = this.markSpecialChar(formula.replace('=', ''));
+        formulaVal = formulaVal.split(/\(|\)|=|\^|>|<|,|:|\+|-|\*|\/|%|&/g);
+        len = formulaVal.length;
+        while (i < len) {
+            temp = formulaVal[i];
+            if (!temp) {
+                i++;
+                continue;
+            }
+            if (temp.length === 1) {
+                arr.push(this.isUniqueChar(temp) ? this.getUniqueCharVal(temp) : temp);
+            }
+            else {
+                str = temp[0];
+                if (temp.indexOf('!') > 0) {
+                    if (this.isUniqueChar(str)) {
+                        arr.push(this.getUniqueCharVal(str));
+                        temp = temp.substr(1);
+                    }
+                    str = temp.indexOf('!') + 1;
+                    arr.push(temp.substr(0, str));
+                    arr.push(temp.substr(str));
+                }
+                else if (this.isUniqueChar(str)) {
+                    arr.push(this.getUniqueCharVal(str));
+                    arr.push(temp.substr(1));
+                }
+                else {
+                    arr.push(temp);
+                }
+            }
+            i++;
+        }
+        return arr;
+    }
+    getUniqueCharVal(formula) {
+        switch (formula) {
+            case this.uniqueOBracket:
+                return '(';
+            case this.uniqueCBracket:
+                return ')';
+            case this.uniqueCSeparator:
+                return ',';
+            case this.uniqueCOperator:
+                return ':';
+            case this.uniquePOperator:
+                return '+';
+            case this.uniqueSOperator:
+                return '-';
+            case this.uniqueMOperator:
+                return '*';
+            case this.uniqueDOperator:
+                return '/';
+            case this.uniqueModOperator:
+                return '%';
+            case this.uniqueConcateOperator:
+                return '&';
+            case this.uniqueEqualOperator:
+                return '=';
+            case this.uniqueExpOperator:
+                return '^';
+            case this.uniqueGTOperator:
+                return '>';
+            case this.uniqueLTOperator:
+                return '<';
+        }
+        return '';
+    }
+    isUniqueChar(formula) {
+        let code = formula.charCodeAt(formula);
+        return code >= 129 && code <= 142;
+    }
+    markSpecialChar(formula) {
+        formula = formula.replace(/\(/g, '(' + this.uniqueOBracket).replace(/\)/g, ')' + this.uniqueCBracket);
+        formula = formula.replace(/,/g, ',' + this.uniqueCSeparator).replace(/:/g, ':' + this.uniqueCOperator);
+        formula = formula.replace(/\+/g, '+' + this.uniquePOperator).replace(/-/g, '-' + this.uniqueSOperator);
+        formula = formula.replace(/\*/g, '*' + this.uniqueMOperator).replace(/\//g, '/' + this.uniqueDOperator);
+        formula = formula.replace(/&/g, '&' + this.uniqueConcateOperator);
+        formula = formula.replace(/=/g, '=' + this.uniqueEqualOperator);
+        formula = formula.replace(/\^/g, '^' + this.uniqueExpOperator);
+        formula = formula.replace(/>/g, '>' + this.uniqueGTOperator).replace(/</g, '<' + this.uniqueLTOperator);
+        return formula.replace(/%/g, '%' + this.uniqueModOperator);
+    }
+    refreshNamedRange(args, action) {
+        let isChanged = false;
+        let modelDefinedNames = this.parent.definedNames;
+        let definedNames = Object.assign({}, modelDefinedNames);
+        let definedName;
+        let definedNameCnt = modelDefinedNames.length;
+        let range;
+        let rangeIndex;
+        let count;
+        let startIndex;
+        let endIndex;
+        let newIndex;
+        let newRange;
+        let sheetName;
+        let sheetIndex;
+        let sheet;
+        for (let idx = 0; idx < definedNameCnt; idx++) {
+            definedName = definedNames[idx];
+            range = definedNames[idx].refersTo.split('!')[1];
+            rangeIndex = getRangeIndexes(range);
+            sheetName = definedName.refersTo.split('!')[0].split('=')[1];
+            sheetIndex = getSheetIndex(this.parent, sheetName.replace(/'/g, ''));
+            sheet = getSheet(this.parent, sheetIndex);
+            if (sheetIndex === this.parent.activeSheetIndex) {
+                if (args.name === 'insert') {
+                    count = args.model.length;
+                    startIndex = args.index;
+                    endIndex = args.index + count;
+                    if (args.modelType === 'Row') { // for above the named range index
+                        if ((rangeIndex[0] >= endIndex) || (rangeIndex[0] >= startIndex && rangeIndex[2] >= endIndex)) {
+                            newIndex = [rangeIndex[0] + count, rangeIndex[1], rangeIndex[2] + count, rangeIndex[3]];
+                            isChanged = true;
+                        }
+                        else if ((rangeIndex[0] <= startIndex && rangeIndex[2] >= startIndex) || (rangeIndex[2] >= endIndex)) {
+                            newIndex = [rangeIndex[0], rangeIndex[1], rangeIndex[2] + count, rangeIndex[3]];
+                            isChanged = true;
+                        }
+                    }
+                    else if (args.modelType === 'Column') {
+                        if ((rangeIndex[1] >= endIndex) || (rangeIndex[1] >= startIndex && rangeIndex[3] >= endIndex)) {
+                            newIndex = [rangeIndex[0], rangeIndex[1] + count, rangeIndex[2], rangeIndex[3] + count];
+                            isChanged = true;
+                        }
+                        else if ((rangeIndex[1] <= startIndex && rangeIndex[3] >= startIndex) || (rangeIndex[3] >= endIndex)) {
+                            newIndex = [rangeIndex[0], rangeIndex[1], rangeIndex[2], rangeIndex[3] + count];
+                            isChanged = true;
+                        }
+                    }
+                }
+                else {
+                    count = args.deletedModel.length;
+                    startIndex = args.startIndex;
+                    endIndex = args.endIndex;
+                    if (args.modelType === 'Row') { // for above the named range index
+                        if ((rangeIndex[0] >= endIndex) || (rangeIndex[0] >= startIndex && rangeIndex[2] >= endIndex)) {
+                            newIndex = [rangeIndex[0] - count, rangeIndex[1], rangeIndex[2] - count, rangeIndex[3]];
+                            isChanged = true;
+                        }
+                        else if ((rangeIndex[0] <= startIndex && rangeIndex[2] >= startIndex) || (rangeIndex[2] >= endIndex)) {
+                            newIndex = [rangeIndex[0], rangeIndex[1], rangeIndex[2] - count, rangeIndex[3]];
+                            isChanged = true;
+                        }
+                    }
+                    else if (args.modelType === 'Column') {
+                        if ((rangeIndex[1] >= endIndex) || (rangeIndex[1] >= startIndex && rangeIndex[3] >= endIndex)) {
+                            newIndex = [rangeIndex[0], rangeIndex[1] - count, rangeIndex[2], rangeIndex[3] - count];
+                            isChanged = true;
+                        }
+                        else if ((rangeIndex[1] <= startIndex && rangeIndex[3] >= startIndex) || (rangeIndex[3] >= endIndex)) {
+                            newIndex = [rangeIndex[0], rangeIndex[1], rangeIndex[2], rangeIndex[3] - count];
+                            isChanged = true;
+                        }
+                    }
+                }
+                if (isChanged) {
+                    newRange = getRangeAddress(newIndex);
+                    definedName.refersTo = sheetName + '!' + newRange;
+                    this.parent.removeDefinedName(definedName.name, definedName.scope);
+                    let eventArgs = {
+                        action: 'addDefinedName', definedName: definedName, isAdded: false
+                    };
+                    this.parent.notify(workbookFormulaOperation, eventArgs);
+                }
+            }
+            modelDefinedNames = definedNames;
+        }
     }
 }
 
@@ -8649,6 +9042,61 @@ class WorkbookFilter {
      */
     getModuleName() {
         return 'workbookFilter';
+    }
+}
+
+/**
+ * Specifies image.
+ */
+class WorkbookImage {
+    constructor(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    setImage(args) {
+        let imgRange = args.range ? (args.range.indexOf('!') > 0) ? args.range.split('!')[1] : args.range.split('!')[0]
+            : this.parent.getActiveSheet().selectedRange;
+        let sheetIdx = (args.range && args.range.indexOf('!') > 0) ?
+            getSheetIndex(this.parent, args.range.split('!')[0]) : this.parent.activeSheetIndex;
+        let indexes = getRangeIndexes(imgRange);
+        let sheet = sheetIdx ? this.parent.sheets[sheetIdx] : this.parent.getActiveSheet();
+        let cell = getCell(indexes[0], indexes[1], sheet);
+        let oldImgData;
+        let imgData = args.options;
+        if (cell && cell.image) {
+            oldImgData = cell.image;
+            for (let i = 0; i < imgData.length; i++) {
+                oldImgData.push(imgData[i]);
+            }
+        }
+        setCell(indexes[0], indexes[1], sheet, { image: (cell && cell.image) ? oldImgData : imgData }, true);
+    }
+    /**
+     * Adding event listener for number format.
+     */
+    addEventListener() {
+        this.parent.on(setImage, this.setImage, this);
+    }
+    /**
+     * Removing event listener for number format.
+     */
+    removeEventListener() {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(setImage, this.setImage);
+        }
+    }
+    /**
+     * To Remove the event listeners.
+     */
+    destroy() {
+        this.removeEventListener();
+        this.parent = null;
+    }
+    /**
+     * Get the workbook number format module name.
+     */
+    getModuleName() {
+        return 'workbookImage';
     }
 }
 
@@ -9154,7 +9602,7 @@ class WorkbookEdit {
         return value;
     }
     updateCellValue(address, value, sheetIdx, isValueOnly = false) {
-        if (!sheetIdx) {
+        if (sheetIdx === undefined) {
             sheetIdx = this.parent.activeSheetIndex;
         }
         let range;
@@ -9356,10 +9804,12 @@ class WorkbookInsert {
             }
             let curIdx = index + model.length;
             for (let i = 0; i <= args.model.usedRange.colIndex; i++) {
-                if (args.model.rows[curIdx].cells[i] && args.model.rows[curIdx].cells[i].rowSpan !== undefined &&
+                if (args.model.rows[curIdx] && args.model.rows[curIdx].cells[i] && args.model.rows[curIdx].cells[i].rowSpan !== undefined &&
                     args.model.rows[curIdx].cells[i].rowSpan < 0 && args.model.rows[curIdx].cells[i].colSpan === undefined) {
-                    this.parent.notify(insertMerge, { range: [curIdx, i, curIdx, i], insertCount: model.length,
-                        insertModel: 'Row' });
+                    this.parent.notify(insertMerge, {
+                        range: [curIdx, i, curIdx, i], insertCount: model.length,
+                        insertModel: 'Row'
+                    });
                 }
             }
         }
@@ -9402,8 +9852,10 @@ class WorkbookInsert {
                 let curIdx = index + model.length;
                 if (args.model.rows[i].cells[curIdx] && args.model.rows[i].cells[curIdx].colSpan !== undefined &&
                     args.model.rows[i].cells[curIdx].colSpan < 0 && args.model.rows[i].cells[curIdx].rowSpan === undefined) {
-                    mergeCollection.push({ range: [i, curIdx, i, curIdx], insertCount: cellModel.length,
-                        insertModel: 'Column' });
+                    mergeCollection.push({
+                        range: [i, curIdx, i, curIdx], insertCount: cellModel.length,
+                        insertModel: 'Column'
+                    });
                 }
             }
             mergeCollection.forEach((mergeArgs) => { this.parent.notify(insertMerge, mergeArgs); });
@@ -9419,11 +9871,28 @@ class WorkbookInsert {
             }
             model.forEach((sheet) => {
                 id = sheet.id;
-                this.parent.notify(workbookFormulaOperation, { action: 'addSheet', visibleName: sheet.name, sheetName: 'Sheet' + id,
-                    index: id });
+                this.parent.notify(workbookFormulaOperation, {
+                    action: 'addSheet', visibleName: sheet.name, sheetName: 'Sheet' + id, index: id
+                });
             });
         }
-        this.parent.notify(insert, { model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length });
+        let insertArgs = {
+            action: 'refreshNamedRange', insertArgs: {
+                model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length, name: 'insert'
+            }
+        };
+        let eventArgs = {
+            action: 'refreshInsDelFormula', insertArgs: {
+                model: model, startIndex: args.start, endIndex: args.end, modelType: args.modelType, name: 'insert', activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length
+            }
+        };
+        if (args.modelType === 'Column' || args.modelType === 'Row') {
+            this.parent.notify(workbookFormulaOperation, insertArgs);
+            this.parent.notify(workbookFormulaOperation, eventArgs);
+        }
+        this.parent.notify(insert, {
+            model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length
+        });
     }
     setInsertInfo(sheet, startIndex, count, totalKey, modelType = 'Row') {
         let endIndex = count = startIndex + (count - 1);
@@ -9486,6 +9955,8 @@ class WorkbookDelete {
         let deletedCells;
         let mergeArgsCollection = [];
         let count = (args.end - args.start) + 1;
+        let prevCell;
+        let sheetIndex;
         if (args.modelType === 'Row') {
             args.model = args.model;
             if (args.start > args.model.usedRange.rowIndex) {
@@ -9510,7 +9981,7 @@ class WorkbookDelete {
                         this.parent.notify(activeCellMergedRange, mergeArgs);
                         mergeArgs.range = mergeArgs.range;
                         if (mergeArgs.range[2] <= args.end) {
-                            let prevCell = getCell(mergeArgs.range[0], i, args.model);
+                            prevCell = getCell(mergeArgs.range[0], i, args.model);
                             if (prevCell && prevCell.rowSpan > 1) {
                                 if (prevCell.rowSpan - ((mergeArgs.range[2] - args.start) + 1) > 1) {
                                     setCell(mergeArgs.range[0], i, args.model, { colSpan: prevCell.rowSpan - ((mergeArgs.range[2] - args.start) + 1) }, true);
@@ -9549,8 +10020,10 @@ class WorkbookDelete {
                                     indexes[2] += ((cell.rowSpan - ((args.end - mergeArgs.range[0]) + 1)) - 1);
                                 }
                             }
-                            mergeArgsCollection.push({ range: indexes, isAction: false, preventRefresh: true, merge: true,
-                                type: 'All', skipChecking: true });
+                            mergeArgsCollection.push({
+                                range: indexes, isAction: false, preventRefresh: true, merge: true,
+                                type: 'All', skipChecking: true
+                            });
                         }
                     }
                     mergeArgs = null;
@@ -9622,8 +10095,10 @@ class WorkbookDelete {
                                     indexes[3] += ((cell.colSpan - ((args.end - mergeArgs.range[1]) + 1)) - 1);
                                 }
                             }
-                            mergeArgsCollection.push({ range: indexes, isAction: false, preventRefresh: true, merge: true,
-                                type: 'All', skipChecking: true });
+                            mergeArgsCollection.push({
+                                range: indexes, isAction: false, preventRefresh: true, merge: true,
+                                type: 'All', skipChecking: true
+                            });
                         }
                     }
                     deletedCells[i].cells = args.model.rows[i].cells.splice(args.start, count);
@@ -9645,6 +10120,22 @@ class WorkbookDelete {
             }
         }
         mergeArgsCollection.forEach((merge$$1) => { this.parent.notify(setMerge, merge$$1); });
+        sheetIndex = getSheetIndex(this.parent, args.model.name);
+        let insertArgs = {
+            action: 'refreshNamedRange', insertArgs: {
+                startIndex: args.start, endIndex: args.end, modelType: args.modelType,
+                isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells,
+                activeSheetIndex: this.parent.activeSheetIndex, name: 'delete'
+            }
+        };
+        let eventArgs = {
+            action: 'refreshInsDelFormula', insertArgs: {
+                model: deletedModel, startIndex: args.start, endIndex: args.end, modelType: args.modelType,
+                name: 'delete', activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length
+            }
+        };
+        this.parent.notify(workbookFormulaOperation, insertArgs);
+        this.parent.notify(workbookFormulaOperation, eventArgs);
         this.parent.notify(deleteAction, {
             startIndex: args.start, endIndex: args.end, modelType: args.modelType,
             isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells,
@@ -10117,48 +10608,44 @@ class WorkbookFindAndReplace {
                         cellval = displayTxt;
                     }
                     else {
-                        if (cellType.value) {
-                            cellval = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex].value.toString();
+                        cellval = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex].value.toString();
+                    }
+                    if (findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
+                        if (cellval === findNextArgs.stringValue) {
+                            let address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findNextArgs.count++;
+                            return true;
                         }
                     }
-                    if (cellval) {
-                        if (findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
-                            if (cellval === findNextArgs.stringValue) {
-                                let address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
-                                this.parent.notify(goto, { address: address });
-                                findNextArgs.count++;
-                                return true;
-                            }
+                    else if (findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
+                        let index = cellval.indexOf(findNextArgs.args.value) > -1;
+                        if ((cellval === findNextArgs.stringValue) || (index)) {
+                            let address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findNextArgs.count++;
+                            return true;
                         }
-                        else if (findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
-                            let index = cellval.indexOf(findNextArgs.args.value) > -1;
-                            if ((cellval === findNextArgs.stringValue) || (index)) {
-                                let address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
-                                this.parent.notify(goto, { address: address });
-                                findNextArgs.count++;
-                                return true;
-                            }
+                    }
+                    else if (!findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
+                        findNextArgs.val = cellval.toString().toLowerCase();
+                        if (findNextArgs.val === findNextArgs.stringValue) {
+                            let address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findNextArgs.count++;
+                            return true;
                         }
-                        else if (!findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
-                            findNextArgs.val = cellval.toString().toLowerCase();
-                            if (findNextArgs.val === findNextArgs.stringValue) {
-                                let address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
-                                this.parent.notify(goto, { address: address });
-                                findNextArgs.count++;
-                                return true;
-                            }
-                        }
-                        else if (!findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
-                            findNextArgs.val = cellval.toString().toLowerCase();
-                            let index = cellval.indexOf(findNextArgs.args.value) > -1;
-                            let lowerCaseIndex = findNextArgs.val.indexOf(findNextArgs.args.value) > -1;
-                            if ((findNextArgs.val === findNextArgs.stringValue) || ((cellval === findNextArgs.stringValue) || (index)) ||
-                                (cellval === findNextArgs.stringValue) || (lowerCaseIndex)) {
-                                let address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
-                                this.parent.notify(goto, { address: address });
-                                findNextArgs.count++;
-                                return true;
-                            }
+                    }
+                    else if (!findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
+                        findNextArgs.val = cellval.toString().toLowerCase();
+                        let index = cellval.indexOf(findNextArgs.args.value) > -1;
+                        let lowerCaseIndex = findNextArgs.val.indexOf(findNextArgs.args.value) > -1;
+                        if ((findNextArgs.val === findNextArgs.stringValue) || ((cellval === findNextArgs.stringValue) || (index)) ||
+                            (cellval === findNextArgs.stringValue) || (lowerCaseIndex)) {
+                            let address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findNextArgs.count++;
+                            return true;
                         }
                     }
                 }
@@ -10420,48 +10907,44 @@ class WorkbookFindAndReplace {
                         cellvalue = displayTxt;
                     }
                     else {
-                        if (cellType.value) {
-                            cellvalue = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex].value.toString();
+                        cellvalue = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex].value.toString();
+                    }
+                    if (findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
+                        if (cellvalue === findPrevArgs.stringValue) {
+                            let address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findPrevArgs.count++;
+                            return true;
                         }
                     }
-                    if (cellvalue) {
-                        if (findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
-                            if (cellvalue === findPrevArgs.stringValue) {
-                                let address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
-                                this.parent.notify(goto, { address: address });
-                                findPrevArgs.count++;
-                                return true;
-                            }
+                    else if (findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
+                        let index = cellvalue.indexOf(findPrevArgs.args.value) > -1;
+                        if ((cellvalue === findPrevArgs.stringValue) || (index)) {
+                            let address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findPrevArgs.count++;
+                            return true;
                         }
-                        else if (findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
-                            let index = cellvalue.indexOf(findPrevArgs.args.value) > -1;
-                            if ((cellvalue === findPrevArgs.stringValue) || (index)) {
-                                let address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
-                                this.parent.notify(goto, { address: address });
-                                findPrevArgs.count++;
-                                return true;
-                            }
+                    }
+                    else if (!findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
+                        findPrevArgs.val = cellvalue.toString().toLowerCase();
+                        if (findPrevArgs.val === findPrevArgs.stringValue) {
+                            let address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findPrevArgs.count++;
+                            return true;
                         }
-                        else if (!findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
-                            findPrevArgs.val = cellvalue.toString().toLowerCase();
-                            if (findPrevArgs.val === findPrevArgs.stringValue) {
-                                let address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
-                                this.parent.notify(goto, { address: address });
-                                findPrevArgs.count++;
-                                return true;
-                            }
-                        }
-                        else if (!findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
-                            findPrevArgs.val = cellvalue.toString().toLowerCase();
-                            let index = cellvalue.indexOf(findPrevArgs.args.value) > -1;
-                            let lowerCaseIndex = findPrevArgs.val.indexOf(findPrevArgs.args.value) > -1;
-                            if ((cellvalue === findPrevArgs.stringValue) || ((cellvalue === findPrevArgs.stringValue) ||
-                                (index)) || (findPrevArgs.val === findPrevArgs.stringValue) || (lowerCaseIndex)) {
-                                let address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
-                                this.parent.notify(goto, { address: address });
-                                findPrevArgs.count++;
-                                return true;
-                            }
+                    }
+                    else if (!findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
+                        findPrevArgs.val = cellvalue.toString().toLowerCase();
+                        let index = cellvalue.indexOf(findPrevArgs.args.value) > -1;
+                        let lowerCaseIndex = findPrevArgs.val.indexOf(findPrevArgs.args.value) > -1;
+                        if ((cellvalue === findPrevArgs.stringValue) || ((cellvalue === findPrevArgs.stringValue) ||
+                            (index)) || (findPrevArgs.val === findPrevArgs.stringValue) || (lowerCaseIndex)) {
+                            let address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findPrevArgs.count++;
+                            return true;
                         }
                     }
                 }
@@ -10476,17 +10959,10 @@ class WorkbookFindAndReplace {
         }
         let sheet = this.parent.getActiveSheet();
         let activecell = getCellIndexes(sheet.activeCell);
-        let cellType = sheet.rows[activecell[0]].cells[activecell[1]];
-        let currentCell;
-        let index;
-        let lowerCaseIndex;
-        let val;
-        if (cellType && cellType.value) {
-            currentCell = sheet.rows[activecell[0]].cells[activecell[1]].value.toString();
-            index = currentCell.indexOf(args.value) > -1;
-            lowerCaseIndex = currentCell.toLowerCase().indexOf(args.value) > -1;
-            val = currentCell.toString().toLowerCase();
-        }
+        let currentCell = sheet.rows[activecell[0]].cells[activecell[1]].value.toString();
+        let index = currentCell.indexOf(args.value) > -1;
+        let lowerCaseIndex = currentCell.toLowerCase().indexOf(args.value) > -1;
+        let val = currentCell.toString().toLowerCase();
         if ((currentCell !== args.value) && (!index) && (val !== args.value) && (!lowerCaseIndex)) {
             args.findOpt = 'next';
             this.findNext(args);
@@ -10495,10 +10971,7 @@ class WorkbookFindAndReplace {
         let activecel = getCellIndexes(sheet.activeCell);
         let address = sheet.activeCell;
         let cell = sheet.rows[activecel[0]].cells[activecel[1]];
-        let cellFormat;
-        if (cell) {
-            cellFormat = cell.format;
-        }
+        let cellFormat = sheet.rows[activecel[0]].cells[activecel[1]].format;
         let compareVal;
         let replaceAddress = sheet.name + '!' + getCellAddress(activecel[0], activecel[1]);
         if (cellFormat) {
@@ -10506,37 +10979,33 @@ class WorkbookFindAndReplace {
             compareVal = dispTxt.toString();
         }
         else {
-            if (cell && cell.value) {
-                compareVal = cell.value.toString();
-            }
+            compareVal = sheet.rows[activecel[0]].cells[activecel[1]].value.toString();
         }
-        if (compareVal) {
-            let replaceAllCollection = { undoRedoOpt: 'before', address: replaceAddress, compareVal: compareVal };
+        let replaceAllCollection = { undoRedoOpt: 'before', address: replaceAddress, compareVal: compareVal };
+        this.parent.notify(findUndoRedo, replaceAllCollection);
+        let lcValueOfCell = compareVal.toLowerCase();
+        let ivalueOfCell = compareVal.indexOf(args.value) > -1;
+        let caseInSensitive = lcValueOfCell.indexOf(args.value) > -1;
+        if ((args.value === compareVal) || (args.value === lcValueOfCell)) {
+            sheet.rows[activecel[0]].cells[activecel[1]].value = args.replaceValue;
+            this.parent.updateCell(cell, address);
+            let replaceAllCollection = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
             this.parent.notify(findUndoRedo, replaceAllCollection);
-            let lcValueOfCell = compareVal.toLowerCase();
-            let ivalueOfCell = compareVal.indexOf(args.value) > -1;
-            let caseInSensitive = lcValueOfCell.indexOf(args.value) > -1;
-            if ((args.value === compareVal) || (args.value === lcValueOfCell)) {
-                sheet.rows[activecel[0]].cells[activecel[1]].value = args.replaceValue;
-                this.parent.updateCell(cell, address);
-                let replaceAllCollection = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
-                this.parent.notify(findUndoRedo, replaceAllCollection);
-            }
-            else if (ivalueOfCell) {
-                let newValue = compareVal.replace(args.value, args.replaceValue);
-                sheet.rows[activecel[0]].cells[activecel[1]].value = newValue;
-                this.parent.updateCell(cell, address);
-                let replaceAllCollection = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
-                this.parent.notify(findUndoRedo, replaceAllCollection);
-            }
-            else if (caseInSensitive) {
-                let regx = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
-                let updateValue = compareVal.replace(regx, args.replaceValue);
-                sheet.rows[activecel[0]].cells[activecel[1]].value = updateValue;
-                this.parent.updateCell(cell, address);
-                let replaceAllCollection = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
-                this.parent.notify(findUndoRedo, replaceAllCollection);
-            }
+        }
+        else if (ivalueOfCell) {
+            let newValue = compareVal.replace(args.value, args.replaceValue);
+            sheet.rows[activecel[0]].cells[activecel[1]].value = newValue;
+            this.parent.updateCell(cell, address);
+            let replaceAllCollection = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
+            this.parent.notify(findUndoRedo, replaceAllCollection);
+        }
+        else if (caseInSensitive) {
+            let regx = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
+            let updateValue = compareVal.replace(regx, args.replaceValue);
+            sheet.rows[activecel[0]].cells[activecel[1]].value = updateValue;
+            this.parent.updateCell(cell, address);
+            let replaceAllCollection = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
+            this.parent.notify(findUndoRedo, replaceAllCollection);
         }
     }
     replaceAll(args) {
@@ -10544,6 +11013,7 @@ class WorkbookFindAndReplace {
         let sheet = this.parent.sheets[startSheet];
         let endRow = sheet.usedRange.rowIndex;
         let count = 0;
+        let undoRedoOpt = 'beforeReplaceAll';
         let startRow = 0;
         let endColumn = sheet.usedRange.colIndex;
         let startColumn = 0;
@@ -10583,55 +11053,51 @@ class WorkbookFindAndReplace {
                                         cellval = displayTxt.toString();
                                     }
                                     else {
-                                        if (cellType.value) {
-                                            cellval = cellType.value.toString();
+                                        cellval = sheet.rows[startRow].cells[startColumn].value.toString();
+                                    }
+                                    if (args.isCSen && args.isEMatch) {
+                                        if (cellval === args.value) {
+                                            sheet.rows[startRow].cells[startColumn].value = args.replaceValue;
+                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
+                                            this.parent.updateCell(cell, address);
+                                            addressCollection.push(address);
+                                            count++;
                                         }
                                     }
-                                    if (cellval) {
-                                        if (args.isCSen && args.isEMatch) {
-                                            if (cellval === args.value) {
-                                                cellType.value = args.replaceValue;
-                                                address = sheet.name + '!' + getCellAddress(startRow, startColumn);
-                                                this.parent.updateCell(cell, address);
-                                                addressCollection.push(address);
-                                                count++;
-                                            }
+                                    else if (args.isCSen && !args.isEMatch) {
+                                        let index = cellval.indexOf(args.value) > -1;
+                                        if ((cellval === args.value) || (index)) {
+                                            let newValue = cellval.replace(args.value, args.replaceValue);
+                                            sheet.rows[startRow].cells[startColumn].value = newValue;
+                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
+                                            this.parent.updateCell(cell, address);
+                                            addressCollection.push(address);
+                                            count++;
                                         }
-                                        else if (args.isCSen && !args.isEMatch) {
-                                            let index = cellval.indexOf(args.value) > -1;
-                                            if ((cellval === args.value) || (index)) {
-                                                let newValue = cellval.replace(args.value, args.replaceValue);
-                                                cellType.value = newValue;
-                                                address = sheet.name + '!' + getCellAddress(startRow, startColumn);
-                                                this.parent.updateCell(cell, address);
-                                                addressCollection.push(address);
-                                                count++;
-                                            }
+                                    }
+                                    else if (!args.isCSen && args.isEMatch) {
+                                        let val = cellval.toString().toLowerCase();
+                                        if (val === args.value) {
+                                            sheet.rows[startRow].cells[startColumn].value = args.replaceValue;
+                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
+                                            this.parent.updateCell(cell, address);
+                                            addressCollection.push(address);
+                                            count++;
                                         }
-                                        else if (!args.isCSen && args.isEMatch) {
-                                            let val = cellval.toString().toLowerCase();
-                                            if (val === args.value) {
-                                                cellType.value = args.replaceValue;
-                                                address = sheet.name + '!' + getCellAddress(startRow, startColumn);
-                                                this.parent.updateCell(cell, address);
-                                                addressCollection.push(address);
-                                                count++;
-                                            }
-                                        }
-                                        else if (!args.isCSen && !args.isEMatch) {
-                                            let val = cellval.toString().toLowerCase();
-                                            let index = cellval.indexOf(args.value) > -1;
-                                            let lowerCaseValue = val.indexOf(args.value) > -1;
-                                            if (((cellval === args.value) || (index)) || (val === args.value) || (cellval === args.value) ||
-                                                (lowerCaseValue)) {
-                                                let regExepression = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
-                                                let newValue = cellval.replace(regExepression, args.replaceValue);
-                                                cellType.value = newValue;
-                                                address = sheet.name + '!' + getCellAddress(startRow, startColumn);
-                                                this.parent.updateCell(cell, address);
-                                                addressCollection.push(address);
-                                                count++;
-                                            }
+                                    }
+                                    else if (!args.isCSen && !args.isEMatch) {
+                                        let val = cellval.toString().toLowerCase();
+                                        let index = cellval.indexOf(args.value) > -1;
+                                        let lowerCaseValue = val.indexOf(args.value) > -1;
+                                        if (((cellval === args.value) || (index)) || (val === args.value) || (cellval === args.value) ||
+                                            (lowerCaseValue)) {
+                                            let regExepression = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
+                                            let newValue = cellval.replace(regExepression, args.replaceValue);
+                                            sheet.rows[startRow].cells[startColumn].value = newValue;
+                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
+                                            this.parent.updateCell(cell, address);
+                                            addressCollection.push(address);
+                                            count++;
                                         }
                                     }
                                 }
@@ -10641,6 +11107,16 @@ class WorkbookFindAndReplace {
                 }
             }
         }
+        let replaceAllCollection = {
+            undoRedoOpt: undoRedoOpt, Collection: addressCollection,
+            replaceValue: args.value
+        };
+        this.parent.notify(findUndoRedo, replaceAllCollection);
+        replaceAllCollection = {
+            undoRedoOpt: 'afterReplaceAll', Collection: addressCollection,
+            replaceValue: args.replaceValue
+        };
+        this.parent.notify(findUndoRedo, replaceAllCollection);
         let countNumber = count;
         this.parent.notify(replaceAllDialog, { count: countNumber, replaceValue: args.replaceValue });
     }
@@ -10671,36 +11147,32 @@ class WorkbookFindAndReplace {
                                     cellvalue = displayTxt.toString();
                                 }
                                 else {
-                                    if (cellType.value) {
-                                        cellvalue = cellType.value.toString();
+                                    cellvalue = cellType.value.toString();
+                                }
+                                if (args.isCSen && args.isEMatch) {
+                                    if (cellvalue === args.value) {
+                                        count++;
                                     }
                                 }
-                                if (cellvalue) {
-                                    if (args.isCSen && args.isEMatch) {
-                                        if (cellvalue === args.value) {
-                                            count++;
-                                        }
+                                else if (args.isCSen && !args.isEMatch) {
+                                    let index = cellvalue.indexOf(args.value) > -1;
+                                    if ((cellvalue === args.value) || (index)) {
+                                        count++;
                                     }
-                                    else if (args.isCSen && !args.isEMatch) {
-                                        let index = cellvalue.indexOf(args.value) > -1;
-                                        if ((cellvalue === args.value) || (index)) {
-                                            count++;
-                                        }
+                                }
+                                else if (!args.isCSen && args.isEMatch) {
+                                    let val = cellvalue.toString().toLowerCase();
+                                    if (val === args.value) {
+                                        count++;
                                     }
-                                    else if (!args.isCSen && args.isEMatch) {
-                                        let val = cellvalue.toString().toLowerCase();
-                                        if (val === args.value) {
-                                            count++;
-                                        }
-                                    }
-                                    else if (!args.isCSen && !args.isEMatch) {
-                                        let val = cellvalue.toString().toLowerCase();
-                                        let index = cellvalue.indexOf(args.value) > -1;
-                                        let lowerCaseValue = val.indexOf(args.value) > -1;
-                                        if ((val === args.value) || ((cellvalue === args.value) || (index)) || (cellvalue === args.value) ||
-                                            (lowerCaseValue)) {
-                                            count++;
-                                        }
+                                }
+                                else if (!args.isCSen && !args.isEMatch) {
+                                    let val = cellvalue.toString().toLowerCase();
+                                    let index = cellvalue.indexOf(args.value) > -1;
+                                    let lowerCaseValue = val.indexOf(args.value) > -1;
+                                    if ((val === args.value) || ((cellvalue === args.value) || (index)) || (cellvalue === args.value) ||
+                                        (lowerCaseValue)) {
+                                        count++;
                                     }
                                 }
                             }
@@ -10733,45 +11205,40 @@ class WorkbookFindAndReplace {
                 for (startColumn; startColumn <= endColumn; startColumn++) {
                     if (row) {
                         if (row.cells[startColumn]) {
-                            let cell = sheet.rows[startRow].cells[startColumn];
-                            if (cell) {
+                            if (sheet.rows[startRow].cells[startColumn]) {
                                 let cellval;
-                                if (cell.format) {
+                                if (sheet.rows[startRow].cells[startColumn].format) {
                                     let displayTxt = this.parent.getDisplayText(sheet.rows[startRow].
                                         cells[startColumn]);
                                     cellval = displayTxt.toString();
                                 }
                                 else {
-                                    if (cell.value) {
-                                        cellval = cell.value.toString();
+                                    cellval = sheet.rows[startRow].cells[startColumn].value.toString();
+                                }
+                                if (args.isCSen && !args.isEMatch) {
+                                    let index = cellval.indexOf(args.value) > -1;
+                                    if ((cellval === args.value) || (index)) {
+                                        requiredCount++;
                                     }
                                 }
-                                if (cellval) {
-                                    if (args.isCSen && !args.isEMatch) {
-                                        let index = cellval.indexOf(args.value) > -1;
-                                        if ((cellval === args.value) || (index)) {
-                                            requiredCount++;
-                                        }
+                                else if (args.isCSen && args.isEMatch) {
+                                    if (cellval === args.value) {
+                                        requiredCount++;
                                     }
-                                    else if (args.isCSen && args.isEMatch) {
-                                        if (cellval === args.value) {
-                                            requiredCount++;
-                                        }
+                                }
+                                else if (!args.isCSen && args.isEMatch) {
+                                    let val = cellval.toString().toLowerCase();
+                                    if (val === args.value) {
+                                        requiredCount++;
                                     }
-                                    else if (!args.isCSen && args.isEMatch) {
-                                        let val = cellval.toString().toLowerCase();
-                                        if (val === args.value) {
-                                            requiredCount++;
-                                        }
-                                    }
-                                    else if (!args.isCSen && !args.isEMatch) {
-                                        let val = cellval.toString().toLowerCase();
-                                        let index = cellval.indexOf(args.value) > -1;
-                                        let lowerCaseVal = val.indexOf(args.value) > -1;
-                                        if ((cellval === args.value) || ((cellval === args.value) || (index)) || (val === args.value) ||
-                                            (lowerCaseVal)) {
-                                            requiredCount++;
-                                        }
+                                }
+                                else if (!args.isCSen && !args.isEMatch) {
+                                    let val = cellval.toString().toLowerCase();
+                                    let index = cellval.indexOf(args.value) > -1;
+                                    let lowerCaseVal = val.indexOf(args.value) > -1;
+                                    if ((cellval === args.value) || ((cellval === args.value) || (index)) || (val === args.value) ||
+                                        (lowerCaseVal)) {
+                                        requiredCount++;
                                     }
                                 }
                             }
@@ -12263,7 +12730,7 @@ class WorkbookBasicModule {
      * @private
      */
     constructor() {
-        Workbook.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation, WorkbookMerge, WorkbookConditionalFormat);
+        Workbook.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation, WorkbookMerge, WorkbookConditionalFormat, WorkbookImage);
     }
     /**
      * For internal use only - Get the module name.
@@ -12291,7 +12758,7 @@ class WorkbookAllModule {
      * @private
      */
     constructor() {
-        Workbook.Inject(DataBind, WorkbookSave, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation, WorkbookMerge, WorkbookConditionalFormat);
+        Workbook.Inject(DataBind, WorkbookSave, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation, WorkbookMerge, WorkbookConditionalFormat, WorkbookImage);
     }
     /**
      * For internal use only - Get the module name.
@@ -12385,6 +12852,9 @@ function getWorkbookRequiredModules(context, modules = []) {
     }
     if (context.allowDataValidation) {
         modules.push({ member: 'workbookConditionalFormatting', args: [context] });
+    }
+    if (context.allowImage) {
+        modules.push({ member: 'workbookImage', args: [context] });
     }
     return modules;
 }
@@ -12544,6 +13014,29 @@ __decorate$3([
 __decorate$3([
     Property('')
 ], ConditionalFormat.prototype, "range", void 0);
+/**
+ * Represents the Image.
+ */
+class Image extends ChildProperty {
+}
+__decorate$3([
+    Property('')
+], Image.prototype, "src", void 0);
+__decorate$3([
+    Property('')
+], Image.prototype, "id", void 0);
+__decorate$3([
+    Property(300)
+], Image.prototype, "height", void 0);
+__decorate$3([
+    Property(400)
+], Image.prototype, "width", void 0);
+__decorate$3([
+    Property(0)
+], Image.prototype, "top", void 0);
+__decorate$3([
+    Property(0)
+], Image.prototype, "left", void 0);
 
 /**
  * Check whether the text is formula or not.
@@ -12632,6 +13125,9 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
  */
 class Cell extends ChildProperty {
 }
+__decorate$4([
+    Collection([], Image)
+], Cell.prototype, "image", void 0);
 __decorate$4([
     Property('')
 ], Cell.prototype, "value", void 0);
@@ -13472,7 +13968,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
          * @hidden
          */
         this.isOpen = false;
-        Workbook_1.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookFindAndReplace, WorkbookDataValidation, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat);
+        Workbook_1.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookFindAndReplace, WorkbookDataValidation, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, WorkbookImage);
         this.commonCellStyle = {};
         if (options && options.cellStyle) {
             this.commonCellStyle = options.cellStyle;
@@ -14021,6 +14517,15 @@ let Workbook = Workbook_1 = class Workbook extends Component {
         clearRange(this, address || this.getActiveSheet().selectedRange, isNullOrUndefined(sheetIndex) ? this.activeSheetIndex : sheetIndex, valueOnly);
     }
     /**
+     * Used to set the image in spreadsheet.
+     * @param {ImageModel} images - Specifies the options to insert image in spreadsheet.
+     * @param {string} range - Specifies the range in spreadsheet.
+     * @returns void
+     */
+    insertImage(images, range) {
+        this.notify(setImage, { options: images, range: range ? range : this.getActiveSheet().selectedRange });
+    }
+    /**
      * Filters the range of cells in the sheet.
      */
     filter(filterOptions, range) {
@@ -14153,6 +14658,9 @@ __decorate([
 __decorate([
     Property(true)
 ], Workbook.prototype, "allowDataValidation", void 0);
+__decorate([
+    Property(true)
+], Workbook.prototype, "allowImage", void 0);
 __decorate([
     Property(true)
 ], Workbook.prototype, "allowConditionalFormat", void 0);
@@ -14355,6 +14863,9 @@ function pushBasicModules(context, modules) {
     }
     if (context.allowConditionalFormat) {
         modules.push({ member: 'conditionalFormatting', args: [context] });
+    }
+    if (context.allowImage) {
+        modules.push({ member: 'spreadsheetImage', args: [context] });
     }
 }
 
@@ -14966,7 +15477,7 @@ function setWidthAndHeight(trgt, value, isCol) {
 /**
  * @hidden
  */
-function findMaxValue(table, text, isCol, parent) {
+function findMaxValue(table, text, isCol, parent, prevData, isWrap) {
     let myTableDiv = parent.createElement('div', { className: parent.element.className, styles: 'display: block' });
     let myTable = parent.createElement('table', {
         className: table.className + 'e-resizetable',
@@ -14988,8 +15499,16 @@ function findMaxValue(table, text, isCol, parent) {
     }
     myTableDiv.appendChild(myTable);
     document.body.appendChild(myTableDiv);
-    let offsetWidthValue = myTable.getBoundingClientRect().width;
-    let offsetHeightValue = myTable.getBoundingClientRect().height;
+    let offsetWidthValue;
+    let offsetHeightValue;
+    if (!isWrap) {
+        offsetHeightValue = myTable.getBoundingClientRect().height;
+        offsetWidthValue = myTable.getBoundingClientRect().width;
+    }
+    else {
+        offsetHeightValue = parseInt(prevData, 10);
+        offsetWidthValue = parseInt(prevData, 10);
+    }
     document.body.removeChild(myTableDiv);
     if (isCol) {
         return Math.ceil(offsetWidthValue);
@@ -15095,17 +15614,22 @@ function updateAction(options, spreadsheet, isRedo) {
                 spreadsheet.delete(options.eventArgs.index, options.eventArgs.index + (options.eventArgs.model.length - 1), options.eventArgs.modelType);
             }
             else {
-                spreadsheet.notify(insertModel, { model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
-                        spreadsheet.getActiveSheet(), start: options.eventArgs.index, end: options.eventArgs.index + (options.eventArgs.model
-                        .length - 1), modelType: options.eventArgs.modelType, isAction: false, checkCount: options.eventArgs.sheetCount,
-                    activeSheetIndex: options.eventArgs.activeSheetIndex });
+                spreadsheet.notify(insertModel, {
+                    model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
+                        spreadsheet.getActiveSheet(), start: options.eventArgs.index, end: options.eventArgs.index +
+                        (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType,
+                    isAction: false, checkCount: options.eventArgs.sheetCount,
+                    activeSheetIndex: options.eventArgs.activeSheetIndex
+                });
             }
             break;
         case 'delete':
             if (isRedo === false) {
-                spreadsheet.notify(insertModel, { model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
+                spreadsheet.notify(insertModel, {
+                    model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
                         spreadsheet.getActiveSheet(), start: options.eventArgs.deletedModel, modelType: options.eventArgs.modelType,
-                    isAction: false, columnCellsModel: options.eventArgs.deletedCellsModel });
+                    isAction: false, columnCellsModel: options.eventArgs.deletedCellsModel
+                });
             }
             else {
                 spreadsheet.delete(options.eventArgs.startIndex, options.eventArgs.endIndex, options.eventArgs.modelType);
@@ -15152,6 +15676,42 @@ function updateAction(options, spreadsheet, isRedo) {
                     oldRange: eventArgs.oldRange, selectedRange: eventArgs.selectedRange
                 });
             }
+            break;
+        case 'insertImage':
+            if (isRedo) {
+                spreadsheet.notify(createImageElement, {
+                    options: {
+                        data: options.eventArgs.imageData,
+                        height: options.eventArgs.imageHeight, width: options.eventArgs.imageWidth, imageId: options.eventArgs.id
+                    },
+                    range: options.eventArgs.range, isPublic: false, isUndoRedo: true
+                });
+            }
+            else {
+                spreadsheet.notify(deleteImage, {
+                    id: options.eventArgs.id, sheetIdx: options.eventArgs.sheetIndex + 1, range: options.eventArgs.range
+                });
+            }
+            break;
+        case 'imageRefresh':
+            let element = document.getElementById(options.eventArgs.id);
+            if (isRedo) {
+                options.eventArgs.isUndoRedo = true;
+                spreadsheet.notify(refreshImgCellObj, options.eventArgs);
+            }
+            else {
+                spreadsheet.notify(refreshImgCellObj, {
+                    prevTop: options.eventArgs.currentTop, prevLeft: options.eventArgs.currentLeft,
+                    currentTop: options.eventArgs.prevTop, currentLeft: options.eventArgs.prevLeft, id: options.eventArgs.id,
+                    currentHeight: options.eventArgs.prevHeight, currentWidth: options.eventArgs.prevWidth, requestType: 'imageRefresh',
+                    prevHeight: options.eventArgs.currentHeight, prevWidth: options.eventArgs.currentWidth, isUndoRedo: true
+                });
+            }
+            element.style.height = isRedo ? options.eventArgs.currentHeight + 'px' : options.eventArgs.prevHeight + 'px';
+            element.style.width = isRedo ? options.eventArgs.currentWidth + 'px' : options.eventArgs.prevWidth + 'px';
+            element.style.top = isRedo ? options.eventArgs.currentTop + 'px' : options.eventArgs.prevTop + 'px';
+            element.style.left = isRedo ? options.eventArgs.currentLeft + 'px' : options.eventArgs.prevLeft + 'px';
+            break;
     }
 }
 /**
@@ -15177,6 +15737,23 @@ function hasTemplate(workbook, rowIdx, colIdx, sheetIdx) {
  */
 function setRowEleHeight(parent, sheet, height, rowIdx, row, hRow, notifyRowHgtChange = true) {
     let prevHgt = getRowHeight(sheet, rowIdx);
+    let edit = parent.element.querySelector('.e-spreadsheet-edit');
+    if (edit && (edit.innerHTML.indexOf('\n') > -1)) {
+        let actCell = getCellIndexes(parent.getActiveSheet().activeCell);
+        let cell = getCell(actCell[0], actCell[1], sheet);
+        let i;
+        let splitVal = edit.innerHTML.split('\n');
+        let n = 0;
+        let valLength = splitVal.length;
+        for (i = 0; i < valLength; i++) {
+            let lines = getLines(splitVal[i], getColumnWidth(sheet, actCell[1]), cell.style, parent.cellStyle);
+            if (lines === 0) {
+                lines = 1; // for empty new line
+            }
+            n = n + lines;
+        }
+        height = getTextHeight(parent, cell.style || parent.cellStyle, n) + 1;
+    }
     (row || parent.getRow(rowIdx)).style.height = `${height}px`;
     if (sheet.showHeaders) {
         (hRow || parent.getRow(rowIdx, parent.getRowHeaderTable())).style.height = `${height}px`;
@@ -15344,7 +15921,7 @@ class Clipboard {
         this.parent.element.focus();
     }
     tabSwitchHandler(args) {
-        if (args.activeTab === 0 && !this.copiedInfo) {
+        if (args.activeTab === 0 && !this.copiedInfo && !this.copiedShapeInfo) {
             this.hidePaste();
         }
     }
@@ -15361,7 +15938,8 @@ class Clipboard {
         let isLocked = cellObj ? !isNullOrUndefined(cellObj.isLocked) ? cellObj.isLocked
             : sheet.isProtected : sheet.isProtected;
         if (e.target === 'Content' || e.target === 'RowHeader' || e.target === 'ColumnHeader') {
-            this.parent.enableContextMenuItems([l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], (this.copiedInfo && !isLocked) ? true : false);
+            this.parent.enableContextMenuItems([l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], (this.copiedInfo ||
+                this.copiedShapeInfo && !isLocked) ? true : false);
             this.parent.enableContextMenuItems([l10n.getConstant('Cut')], (!isLocked) ? true : false);
         }
         if ((e.target === 'Content') && isLocked) {
@@ -15410,8 +15988,9 @@ class Clipboard {
         /* tslint:disable-next-line */
         let isExternal = !this.copiedInfo && ((args && args.clipboardData) || window['clipboardData']);
         let copiedIdx = this.getCopiedIdx();
+        let isCut;
         let copyInfo = Object.assign({}, this.copiedInfo);
-        if (this.copiedInfo || isExternal) {
+        if (this.copiedInfo || isExternal || this.copiedShapeInfo) {
             let cSIdx = (args && args.sIdx > -1) ? args.sIdx : this.parent.activeSheetIndex;
             let curSheet = getSheet(this.parent, cSIdx);
             let selIdx = getSwapRange(args && args.range || getRangeIndexes(curSheet.selectedRange));
@@ -15421,7 +16000,8 @@ class Clipboard {
             }
             let rowIdx = selIdx[0];
             let cIdx = isExternal
-                ? [0, 0, rows.length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedInfo.range);
+                ? [0, 0, rows.length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedShapeInfo ?
+                getRangeIndexes(curSheet.selectedRange) : this.copiedInfo.range);
             let isRepeative = (selIdx[2] - selIdx[0] + 1) % (cIdx[2] - cIdx[0] + 1) === 0
                 && (selIdx[3] - selIdx[1] + 1) % (cIdx[3] - cIdx[1] + 1) === 0;
             rfshRange = isRepeative ? selIdx : [selIdx[0], selIdx[1]]
@@ -15434,7 +16014,7 @@ class Clipboard {
                 type: (args && args.type) || 'All',
                 cancel: false
             };
-            if (args.isAction) {
+            if (args.isAction && !this.copiedShapeInfo && this.copiedInfo) {
                 this.parent.notify(beginAction, { eventArgs: beginEventArgs, action: 'clipboard' });
             }
             if (beginEventArgs.cancel) {
@@ -15448,7 +16028,8 @@ class Clipboard {
             selIdx = getRangeIndexes(beginEventArgs.pastedRange);
             rowIdx = selIdx[0];
             cIdx = isExternal
-                ? [0, 0, rows.length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedInfo.range);
+                ? [0, 0, rows.length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedShapeInfo ?
+                getRangeIndexes(curSheet.selectedRange) : this.copiedInfo.range);
             isRepeative = (selIdx[2] - selIdx[0] + 1) % (cIdx[2] - cIdx[0] + 1) === 0 && (selIdx[3] - selIdx[1] + 1) %
                 (cIdx[3] - cIdx[1] + 1) === 0;
             let mergeArgs = {
@@ -15456,84 +16037,120 @@ class Clipboard {
             };
             rfshRange = isRepeative ? selIdx : [selIdx[0], selIdx[1]]
                 .concat([selIdx[0] + cIdx[2] - cIdx[0], selIdx[1] + cIdx[3] - cIdx[1] || selIdx[1]]);
-            this.parent.notify(pasteMerge, mergeArgs);
-            if (mergeArgs.cancel) {
-                return;
+            if (this.copiedShapeInfo && !this.copiedInfo) {
+                let pictureElem = this.copiedShapeInfo.pictureElem;
+                this.parent.notify(createImageElement, {
+                    options: {
+                        src: pictureElem.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'),
+                        height: this.copiedShapeInfo.height, width: this.copiedShapeInfo.width,
+                        imageId: this.copiedShapeInfo.isCut ? pictureElem.id : ''
+                    },
+                    range: getRangeAddress([rowIdx, selIdx[1], rowIdx, selIdx[1]]), isPublic: false, isUndoRedo: true
+                });
+                let pastedCell = getCell(rowIdx, selIdx[1], curSheet);
+                if (pastedCell && !isNullOrUndefined(pastedCell.image)) {
+                    let imgLen = pastedCell.image ? pastedCell.image.length - 1 : 0;
+                    let eventArgs = {
+                        requestType: 'imagePaste',
+                        copiedShapeInfo: this.copiedShapeInfo,
+                        pasteSheetIndex: this.parent.activeSheetIndex,
+                        pastedRange: getSheetName(this.parent) + '!' + getRangeAddress([rowIdx, selIdx[1], rowIdx, selIdx[1]]),
+                        pastedPictureElement: document.getElementById(pastedCell.image[imgLen].id)
+                    };
+                    this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
+                }
             }
-            for (let i = cIdx[0], l = 0; i <= cIdx[2]; i++, l++) {
-                for (let j = cIdx[1], k = 0; j <= cIdx[3]; j++, k++) {
-                    cell = isExternal ? rows[i].cells[j] : Object.assign({}, getCell(i, j, prevSheet));
-                    if (cell && args && args.type) {
-                        switch (args.type) {
-                            case 'Formats':
-                                cell = { format: cell.format, style: cell.style };
-                                break;
-                            case 'Values':
-                                cell = { value: cell.value };
-                                break;
+            else {
+                this.parent.notify(pasteMerge, mergeArgs);
+                if (mergeArgs.cancel) {
+                    return;
+                }
+                for (let i = cIdx[0], l = 0; i <= cIdx[2]; i++, l++) {
+                    for (let j = cIdx[1], k = 0; j <= cIdx[3]; j++, k++) {
+                        cell = isExternal ? rows[i].cells[j] : Object.assign({}, getCell(i, j, prevSheet));
+                        if (cell && args && args.type) {
+                            switch (args.type) {
+                                case 'Formats':
+                                    cell = { format: cell.format, style: cell.style };
+                                    break;
+                                case 'Values':
+                                    cell = { value: cell.value };
+                                    if (cell.value.indexOf('\n') > -1) {
+                                        let ele = this.parent.getCell(selIdx[0], selIdx[1]);
+                                        ele.classList.add('e-alt-unwrap');
+                                    }
+                                    break;
+                            }
+                            isExtend = ['Formats', 'Values'].indexOf(args.type) > -1;
                         }
-                        isExtend = ['Formats', 'Values'].indexOf(args.type) > -1;
-                    }
-                    if ((!this.parent.scrollSettings.isFinite && (cIdx[2] - cIdx[0] > (1048575 - selIdx[0])
-                        || cIdx[3] - cIdx[1] > (16383 - selIdx[1])))
-                        || (this.parent.scrollSettings.isFinite && (cIdx[2] - cIdx[0] > (curSheet.rowCount - 1 - selIdx[0])
-                            || cIdx[3] - cIdx[1] > (curSheet.colCount - 1 - selIdx[1])))) {
-                        this.showDialog();
-                        return;
-                    }
-                    if (isRepeative) {
-                        for (let x = selIdx[0]; x <= selIdx[2]; x += (cIdx[2] - cIdx[0]) + 1) {
-                            for (let y = selIdx[1]; y <= selIdx[3]; y += (cIdx[3] - cIdx[1] + 1)) {
-                                prevCell = getCell(x + l, y + k, curSheet) || {};
-                                if (prevCell.colSpan !== undefined || prevCell.rowSpan !== undefined) {
-                                    mergeArgs = { range: [x + l, y + k, x + l, y + k] };
-                                    let merge$$1 = { range: mergeArgs.range, merge: false, isAction: false, type: 'All' };
-                                    mergeCollection.push(merge$$1);
-                                    this.parent.notify(setMerge, merge$$1);
+                        if ((!this.parent.scrollSettings.isFinite && (cIdx[2] - cIdx[0] > (1048575 - selIdx[0])
+                            || cIdx[3] - cIdx[1] > (16383 - selIdx[1])))
+                            || (this.parent.scrollSettings.isFinite && (cIdx[2] - cIdx[0] > (curSheet.rowCount - 1 - selIdx[0])
+                                || cIdx[3] - cIdx[1] > (curSheet.colCount - 1 - selIdx[1])))) {
+                            this.showDialog();
+                            return;
+                        }
+                        if (isRepeative) {
+                            for (let x = selIdx[0]; x <= selIdx[2]; x += (cIdx[2] - cIdx[0]) + 1) {
+                                for (let y = selIdx[1]; y <= selIdx[3]; y += (cIdx[3] - cIdx[1] + 1)) {
+                                    prevCell = getCell(x + l, y + k, curSheet) || {};
+                                    if (prevCell.colSpan !== undefined || prevCell.rowSpan !== undefined) {
+                                        mergeArgs = { range: [x + l, y + k, x + l, y + k] };
+                                        let merge$$1 = { range: mergeArgs.range, merge: false, isAction: false, type: 'All' };
+                                        mergeCollection.push(merge$$1);
+                                        this.parent.notify(setMerge, merge$$1);
+                                    }
+                                    this.setCell(x + l, y + k, curSheet, cell, isExtend);
                                 }
-                                this.setCell(x + l, y + k, curSheet, cell, isExtend);
                             }
                         }
-                    }
-                    else {
-                        if (!hasTemplate(this.parent, i, j, copiedIdx)) {
-                            this.setCell(rowIdx, selIdx[1] + k, curSheet, cell, isExtend);
+                        else {
+                            if (!hasTemplate(this.parent, i, j, copiedIdx)) {
+                                this.setCell(rowIdx, selIdx[1] + k, curSheet, cell, isExtend);
+                            }
+                        }
+                        if (!isExternal && this.copiedInfo.isCut) {
+                            this.setCell(i, j, prevSheet, null, false, true);
                         }
                     }
-                    if (!isExternal && this.copiedInfo.isCut) {
-                        this.setCell(i, j, prevSheet, null, false, true);
+                    rowIdx++;
+                }
+                this.parent.setUsedRange(rfshRange[2] + 1, rfshRange[3]);
+                if (cSIdx === this.parent.activeSheetIndex) {
+                    this.parent.serviceLocator.getService('cell').refreshRange(rfshRange);
+                    this.parent.notify(selectRange, { indexes: rfshRange });
+                }
+                if (!isExternal && this.copiedInfo.isCut) {
+                    isCut = this.copiedInfo.isCut;
+                    if (copiedIdx === this.parent.activeSheetIndex) {
+                        this.parent.serviceLocator.getService('cell').refreshRange(cIdx);
                     }
+                    this.clearCopiedInfo();
+                    this.cutInfo = isCut;
                 }
-                rowIdx++;
-            }
-            this.parent.setUsedRange(rfshRange[2] + 1, rfshRange[3]);
-            if (cSIdx === this.parent.activeSheetIndex) {
-                this.parent.serviceLocator.getService('cell').refreshRange(rfshRange);
-                this.parent.notify(selectRange, { indexes: rfshRange });
-            }
-            if (!isExternal && this.copiedInfo.isCut) {
-                if (copiedIdx === this.parent.activeSheetIndex) {
-                    this.parent.serviceLocator.getService('cell').refreshRange(cIdx);
+                if (isExternal || (args && args.isAction)) {
+                    this.parent.element.focus();
                 }
-                this.clearCopiedInfo();
-            }
-            if (isExternal || (args && args.isAction)) {
-                this.parent.element.focus();
-            }
-            if (args.isAction) {
-                let sheetIndex = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
-                    this.parent.activeSheetIndex;
-                let eventArgs = {
-                    requestType: 'paste',
-                    copiedInfo: copyInfo,
-                    mergeCollection: mergeCollection,
-                    pasteSheetIndex: this.parent.activeSheetIndex,
-                    copiedRange: this.parent.sheets[sheetIndex].name + '!' + getRangeAddress(copyInfo && copyInfo.range ? copyInfo.range :
-                        getRangeIndexes(this.parent.sheets[sheetIndex].selectedRange)),
-                    pastedRange: getSheetName(this.parent) + '!' + getRangeAddress(rfshRange),
-                    type: (args && args.type) || 'All'
-                };
-                this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
+                if (args.isAction) {
+                    let sheetIndex = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
+                        this.parent.activeSheetIndex;
+                    let eventArgs = {
+                        requestType: 'paste',
+                        copiedInfo: copyInfo,
+                        mergeCollection: mergeCollection,
+                        pasteSheetIndex: this.parent.activeSheetIndex,
+                        copiedRange: this.parent.sheets[sheetIndex].name + '!' + getRangeAddress(copyInfo && copyInfo.range ?
+                            copyInfo.range : getRangeIndexes(this.parent.sheets[sheetIndex].selectedRange)),
+                        pastedRange: getSheetName(this.parent) + '!' + getRangeAddress(rfshRange),
+                        type: (args && args.type) || 'All'
+                    };
+                    this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
+                }
+                if (isCut) {
+                    setMaxHgt(prevSheet, cIdx[0], cIdx[1], 20);
+                    let hgt = getMaxHgt(prevSheet, cIdx[0]);
+                    setRowEleHeight(this.parent, prevSheet, hgt, cIdx[0]);
+                }
             }
         }
         else {
@@ -15595,12 +16212,37 @@ class Clipboard {
         let option = {
             sheet: sheet, indexes: [0, 0, sheet.rowCount - 1, sheet.colCount - 1], promise: new Promise((resolve, reject) => { resolve((() => { })()); })
         };
+        let pictureElements = document.getElementsByClassName('e-ss-overlay-active');
+        let pictureLen = pictureElements.length;
         if (sheet.isLocalData && !(args && args.clipboardData) && range[0] === 0 && range[2] === (sheet.rowCount - 1)) {
             this.parent.showSpinner();
             this.parent.notify('updateSheetFromDataSource', option);
         }
         option.promise.then(() => {
-            if (!(args && args.clipboardData)) {
+            if (pictureLen > 0) {
+                let imgRowIdx = {
+                    clientY: pictureElements[0].offsetTop,
+                    isImage: true
+                };
+                this.parent.notify(getRowIdxFromClientY, imgRowIdx);
+                let imgColIdx = {
+                    clientX: pictureElements[0].offsetLeft,
+                    isImage: true
+                };
+                this.parent.notify(getColIdxFromClientX, imgColIdx);
+                this.copiedShapeInfo = {
+                    sId: (args && args.sId) ? args.sId : sheet.id, isCut: isCut, pictureElem: pictureElements[0], copiedRange: getRangeAddress([imgRowIdx.clientY, imgColIdx.clientX,
+                        imgRowIdx.clientY, imgColIdx.clientX]), height: pictureElements[0].offsetHeight,
+                    width: pictureElements[0].offsetWidth
+                };
+                this.hidePaste(true);
+                if (isCut) {
+                    this.parent.notify(deleteImage, {
+                        id: this.copiedShapeInfo.pictureElem.id, sheetIdx: this.copiedShapeInfo.sId, range: this.copiedShapeInfo.copiedRange
+                    });
+                }
+            }
+            else if (!(args && args.clipboardData)) {
                 if (this.copiedInfo) {
                     this.clearCopiedInfo();
                 }
@@ -15633,6 +16275,10 @@ class Clipboard {
                 detach(this.parent.getMainContent().getElementsByClassName('e-copy-indicator')[0]);
             }
             this.copiedInfo = null;
+            this.hidePaste();
+        }
+        if (this.copiedShapeInfo) {
+            this.copiedShapeInfo = null;
             this.hidePaste();
         }
     }
@@ -15824,6 +16470,7 @@ class Edit {
         this.isEdit = false;
         this.isCellEdit = true;
         this.isNewValueEdit = true;
+        this.isAltEnter = false;
         this.keyCodes = {
             BACKSPACE: 8,
             SPACE: 32,
@@ -15868,6 +16515,11 @@ class Edit {
         this.parent.on(keyUp, this.keyUpHandler, this);
         this.parent.on(keyDown, this.keyDownHandler, this);
         this.parent.on(editOperation, this.performEditOperation, this);
+        this.parent.on(initiateCur, this.initiateCurPosition, this);
+        this.parent.on(editValue, this.updateFormulaBarValue, this);
+        this.parent.on(addressHandle, this.addressHandler, this);
+        this.parent.on(initiateEdit, this.initiateRefSelection, this);
+        this.parent.on(forRefSelRender, this.refSelectionRender, this);
     }
     removeEventListener() {
         EventHandler.remove(this.parent.element, 'dblclick', this.dblClickHandler);
@@ -15876,6 +16528,11 @@ class Edit {
             this.parent.off(keyUp, this.keyUpHandler);
             this.parent.off(keyDown, this.keyDownHandler);
             this.parent.off(editOperation, this.performEditOperation);
+            this.parent.off(initiateCur, this.initiateCurPosition);
+            this.parent.off(editValue, this.updateFormulaBarValue);
+            this.parent.off(addressHandle, this.addressHandler);
+            this.parent.off(initiateEdit, this.initiateRefSelection);
+            this.parent.off(forRefSelRender, this.refSelectionRender);
         }
     }
     /**
@@ -15926,12 +16583,34 @@ class Edit {
             case 'focusEditorElem':
                 this.editorElem.focus();
                 break;
+            case 'getCurrentEditSheetIdx':
+                args.sheetIndex = this.editCellData.sheetIndex;
+                break;
         }
     }
     keyUpHandler(e) {
         if (this.isEdit) {
-            if (this.isCellEdit && this.editCellData.value !== this.editorElem.textContent) {
+            if (e.altKey && e.keyCode === 13) {
+                let editElement = this.parent.element.querySelector('.e-spreadsheet-edit');
+                editElement.focus();
+                this.altEnter();
+                this.isAltEnter = true;
+            }
+            else if (this.isCellEdit && this.editCellData.value !== this.editorElem.textContent && e.keyCode !== 16) {
                 this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
+            }
+            let isFormulaEdit = checkIsFormula(this.editCellData.value);
+            if (isFormulaEdit && e.keyCode !== 16) {
+                let formulaRefIndicator = this.parent.element.querySelector('.e-formularef-indicator');
+                if (formulaRefIndicator) {
+                    formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
+                }
+                if (this.editCellData.value !== this.editorElem.textContent) {
+                    this.refreshEditor(this.editorElem.textContent, true);
+                }
+                let sheetIdx = this.editCellData.sheetIndex;
+                let editValue$$1 = this.editCellData.value;
+                this.parent.notify(initiateFormulaReference, { range: editValue$$1, formulaSheetIdx: sheetIdx });
             }
         }
     }
@@ -15944,24 +16623,51 @@ class Edit {
         if (!closest(e.target, '.e-findtool-dlg') && !closest(e.target, '.e-validationerror-dlg')) {
             if (!sheet.isProtected || closest(e.target, '.e-sheet-rename') || (cell.isLocked === false)) {
                 if (this.isEdit) {
-                    if (this.isCellEdit) {
+                    let isFormulaEdit = checkIsFormula(this.editCellData.value);
+                    if (this.isCellEdit || (isFormulaEdit &&
+                        this.editCellData.value !== this.editorElem.textContent && e.keyCode !== 16)) {
                         this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
                     }
-                    switch (keyCode) {
-                        case this.keyCodes.ENTER:
-                            if (Browser.isWindows) {
-                                e.preventDefault();
-                            }
-                            this.endEdit(false, e);
-                            break;
-                        case this.keyCodes.TAB:
-                            if (!this.hasFormulaSuggSelected()) {
-                                this.endEdit(false, e);
-                            }
-                            break;
-                        case this.keyCodes.ESC:
-                            this.cancelEdit(true, true, e);
-                            break;
+                    if (!e.altKey) {
+                        switch (keyCode) {
+                            case this.keyCodes.ENTER:
+                                if (Browser.isWindows) {
+                                    e.preventDefault();
+                                }
+                                if (this.isAltEnter) {
+                                    let text = this.parent.element.querySelector('.e-spreadsheet-edit').textContent;
+                                    if (text && text.indexOf('\n') > -1) {
+                                        wrap(this.parent.getActiveSheet().selectedRange, true, this.parent);
+                                        this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
+                                        this.isAltEnter = false;
+                                    }
+                                }
+                                if (!isFormulaEdit) {
+                                    this.endEdit(false, e);
+                                }
+                                else {
+                                    let formulaRefIndicator = this.parent.element.querySelector('.e-formularef-indicator');
+                                    if (formulaRefIndicator) {
+                                        formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
+                                    }
+                                    if (this.editCellData.sheetIndex === sheet.id - 1) {
+                                        this.endEdit(false, e);
+                                    }
+                                    else {
+                                        this.parent.goTo(this.editCellData.fullAddr);
+                                        this.endEdit(false, e);
+                                    }
+                                }
+                                break;
+                            case this.keyCodes.TAB:
+                                if (!this.hasFormulaSuggSelected()) {
+                                    this.endEdit(false, e);
+                                }
+                                break;
+                            case this.keyCodes.ESC:
+                                this.cancelEdit(true, true, e);
+                                break;
+                        }
                     }
                 }
                 else {
@@ -15983,7 +16689,16 @@ class Edit {
                             if (isF2Edit) {
                                 this.isNewValueEdit = false;
                             }
-                            this.startEdit();
+                            let pictureElements = document.getElementsByClassName('e-ss-overlay-active');
+                            let pictureLen = pictureElements.length;
+                            if (pictureLen > 0) {
+                                this.parent.notify(deleteImage, {
+                                    id: pictureElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1
+                                });
+                            }
+                            else {
+                                this.startEdit();
+                            }
                         }
                         if (keyCode === this.keyCodes.DELETE) {
                             this.editingHandler('delete');
@@ -16048,6 +16763,9 @@ class Edit {
         // }
     }
     startEdit(address, value, refreshCurPos = true) {
+        let sheet = this.parent.getActiveSheet();
+        let actCell = getCellIndexes(sheet.activeCell);
+        let cell = getCell(actCell[0], actCell[1], sheet) || {};
         let range = getRangeIndexes(this.parent.getActiveSheet().activeCell);
         if (hasTemplate(this.parent, range[0], range[1], this.parent.activeSheetIndex)) {
             return;
@@ -16058,6 +16776,10 @@ class Edit {
         this.parent.isEdit = this.isEdit = true;
         this.parent.notify(clearCopy, null);
         this.parent.notify(enableToolbarItems, [{ enable: false }]);
+        if (cell.formula) {
+            let sheetIdx = this.editCellData.sheetIndex;
+            this.parent.notify(initiateFormulaReference, { range: cell.formula, formulaSheetIdx: sheetIdx });
+        }
     }
     setCursorPosition() {
         let elem = this.editorElem;
@@ -16078,25 +16800,24 @@ class Edit {
             suggDdlElem.querySelectorAll('.e-item-focus').length > 0;
     }
     editingHandler(action) {
+        let pictureElements = document.getElementsByClassName('e-ss-overlay-active');
+        let pictureLen = pictureElements.length;
         switch (action) {
             case 'delete':
-                let address = this.parent.getActiveSheet().selectedRange;
-                let range = getIndexesFromAddress(address);
-                range = range[0] > range[2] ? getSwapRange(range) : range;
-                address = getRangeAddress(range);
-                let sheet = this.parent.getActiveSheet();
-                let cell = {};
-                Object.assign(cell, getCell(range[0], range[1], sheet));
-                this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: address } } });
-                this.parent.clearRange(address, null, true);
-                this.parent.serviceLocator.getService('cell').refreshRange(range);
-                this.parent.notify(selectionComplete, {});
-                let eventArgs = {
-                    value: '',
-                    oldValue: cell.value,
-                    address: getSheetName(this.parent, this.parent.activeSheetIndex) + '!' + address,
-                };
-                this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'cellSave' });
+                if (pictureLen > 0) {
+                    this.parent.notify(deleteImage, {
+                        id: pictureElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1
+                    });
+                }
+                else {
+                    let address = this.parent.getActiveSheet().selectedRange;
+                    let range = getIndexesFromAddress(address);
+                    range = range[0] > range[2] ? getSwapRange(range) : range;
+                    address = getRangeAddress(range);
+                    this.parent.clearRange(address, null, true);
+                    this.parent.serviceLocator.getService('cell').refreshRange(range);
+                    this.parent.notify(selectionComplete, {});
+                }
                 break;
         }
     }
@@ -16104,10 +16825,98 @@ class Edit {
         if (!closest(e.target, '.e-findtool-dlg')) {
             if (this.isEdit) {
                 let trgtElem = e.target;
+                let sheet = this.parent.getActiveSheet();
+                let formulaRefIndicator = this.parent.element.querySelector('.e-formularef-indicator');
                 this.isCellEdit = trgtElem.classList.contains('e-spreadsheet-edit');
                 if (trgtElem.classList.contains('e-cell') || trgtElem.classList.contains('e-header-cell') ||
                     trgtElem.classList.contains('e-selectall') || closest(trgtElem, '.e-toolbar-item.e-active')) {
-                    this.endEdit(false, e);
+                    if (this.isAltEnter) {
+                        let editText = this.parent.element.querySelector('.e-spreadsheet-edit').textContent;
+                        if (editText && editText.indexOf('\n') > -1) {
+                            this.isAltEnter = false;
+                            wrap(this.parent.getActiveSheet().selectedRange, true, this.parent);
+                            this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
+                        }
+                    }
+                    let isFormula = checkIsFormula(this.editCellData.value);
+                    if (!isFormula) {
+                        this.endEdit(false, e);
+                    }
+                    else {
+                        let curPos = window.getSelection().focusOffset;
+                        let actCellIdx = getCellIndexes(sheet.activeCell);
+                        let cell = getCell(actCellIdx[0], actCellIdx[1], sheet);
+                        if (this.editCellData.value === this.editorElem.textContent && this.editorElem.textContent.indexOf('(') !==
+                            this.editorElem.textContent.length - 1) {
+                            if (this.editCellData.sheetIndex !== sheet.id - 1) {
+                                let elem = this.parent.element.querySelector('.e-formula-bar');
+                                if (this.editorElem.textContent.substring(elem.selectionEnd - 1, elem.selectionEnd) !== ',' &&
+                                    !e.shiftKey) {
+                                    if (formulaRefIndicator) {
+                                        formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
+                                    }
+                                    this.parent.goTo(this.editCellData.fullAddr);
+                                    this.endEdit(false, e);
+                                    return;
+                                }
+                            }
+                            else {
+                                if (this.editorElem.textContent.substring(curPos - 1, curPos) !== ',') {
+                                    if (formulaRefIndicator) {
+                                        formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
+                                    }
+                                    this.endEdit(false, e);
+                                    return;
+                                }
+                            }
+                        }
+                        if (!cell) {
+                            return;
+                        }
+                        isFormula = cell.formula ?
+                            checkIsFormula(getCell(actCellIdx[0], actCellIdx[1], sheet).formula) : false;
+                        if (isFormula) {
+                            let curPos = window.getSelection().focusOffset;
+                            if (this.editCellData.value.length === curPos) {
+                                if (this.editCellData.value.substring(this.editCellData.value.length - 1) === ')') {
+                                    if (formulaRefIndicator) {
+                                        formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
+                                    }
+                                    this.endEdit(false, e);
+                                }
+                            }
+                            else if (this.editCellData.value === this.editorElem.textContent) {
+                                if ((this.editCellData.value + sheet.selectedRange).substring(curPos - 1, curPos) !== ',') {
+                                    if (formulaRefIndicator) {
+                                        formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
+                                    }
+                                    this.endEdit(false, e);
+                                }
+                                else if (this.editCellData.value.substring(curPos) !== ')') {
+                                    if (formulaRefIndicator) {
+                                        formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
+                                    }
+                                    this.endEdit(false, e);
+                                }
+                            }
+                        }
+                    }
+                }
+                else {
+                    if (this.editCellData.value === this.editorElem.textContent && this.editorElem.textContent.indexOf('(') !==
+                        this.editorElem.textContent.length - 1) {
+                        if (this.editCellData.sheetIndex === sheet.id - 1) {
+                            let curPos = window.getSelection().focusOffset;
+                            if (this.editorElem.textContent.substring(curPos - 1, curPos) !== ',') {
+                                if (formulaRefIndicator) {
+                                    formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
+                                }
+                                this.parent.goTo(this.editCellData.fullAddr);
+                                this.endEdit(false, e);
+                                return;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -16122,7 +16931,15 @@ class Edit {
                 (trgtElem.classList.contains('e-active-cell') || trgtElem.classList.contains('e-cell')
                     || closest(trgtElem, '.e-sheet-content'))) {
                 if (this.isEdit) {
-                    this.endEdit();
+                    if (checkIsFormula(this.editCellData.value)) {
+                        let sheetName = this.editCellData.fullAddr.substring(0, this.editCellData.fullAddr.indexOf('!'));
+                        if (this.parent.getActiveSheet().name === sheetName) {
+                            this.endEdit();
+                        }
+                    }
+                    else {
+                        this.endEdit();
+                    }
                 }
                 else {
                     this.isNewValueEdit = false;
@@ -16155,6 +16972,10 @@ class Edit {
             else {
                 addr = sheet.activeCell;
             }
+        }
+        else if (checkIsFormula(this.editCellData.value)) {
+            sheet = getSheet(this.parent, sheetIdx);
+            this.isNewValueEdit = false;
         }
         let range = getRangeIndexes(addr);
         let rowIdx = range[0];
@@ -16213,16 +17034,19 @@ class Edit {
         let cell = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
         let left = this.editCellData.position.left + 1;
         let top = this.editCellData.position.top + 1;
-        let minHeight = this.editCellData.element.offsetHeight - 3;
+        let minHeight = this.parent.getRow(this.editCellData.rowIndex).offsetHeight - 3;
         let minWidth = this.editCellData.element.offsetWidth - 3;
         let mainContElement = this.parent.getMainContent();
         let editWidth = mainContElement.offsetWidth - left - 28;
-        //let editHeight: number = mainContElement.offsetHeight - top - 28;
+        // let editHeight: number = mainContElement.offsetHeight - top - 28;
         let inlineStyles = 'display:block;top:' + top + 'px;' + (this.parent.enableRtl ? 'right:' : 'left:') + left + 'px;' +
-            'min-width:' + minWidth + 'px;max-width:' + editWidth + 'px;' + ((cell && cell.wrap) ? 'min-height:' : 'height:') +
-            minHeight + 'px;' + ((cell && cell.wrap) ? ('width:' + minWidth + 'px;') : '');
+            'min-width:' + minWidth + 'px;max-width:' + editWidth + 'px;' + ((cell && cell.wrap) ? 'height:' + 'auto;' : '') +
+            ((cell && cell.wrap) ? ('width:' + minWidth + 'px;') : '') + 'min-height:' + minHeight + 'px;';
         inlineStyles += tdElem.style.cssText;
         this.editorElem.setAttribute('style', inlineStyles);
+        this.parent.element.querySelector('.e-active-cell').style.height =
+            (this.editCellData.element.offsetHeight + 2) + 'px'; // we using edit div height as auto , while editing div enlarges and 
+        // hide active cell bottom border for that we increasing 2px height to active cell.
         if (tdElem.classList.contains('e-right-align')) {
             this.editorElem.classList.add('e-right-align');
         }
@@ -16264,7 +17088,7 @@ class Edit {
             let cell = getCell(cellIndex[0], cellIndex[1], sheet, true);
             let eventArgs = this.getRefreshNodeArgs(cell);
             this.editCellData.value = eventArgs.value;
-            if (cell.formula) {
+            if (cell && cell.formula) {
                 this.editCellData.formula = cell.formula;
             }
             if (cell.wrap) {
@@ -16373,6 +17197,9 @@ class Edit {
         let offset;
         let range = document.createRange();
         offset = (node.nodeType === 3) ? selection.anchorOffset : node.textContent.length;
+        if (offset === 0 && node.textContent.length > 0) {
+            offset = node.textContent.length;
+        }
         text = node.textContent;
         textBefore = text.slice(0, offset);
         textAfter = text.slice(offset) || ' ';
@@ -16391,6 +17218,9 @@ class Edit {
     }
     resetEditState(elemRefresh = true) {
         if (elemRefresh) {
+            if (checkIsFormula(this.editorElem.textContent)) {
+                this.parent.notify(clearCellRef, null);
+            }
             this.editCellData.element.classList.remove('e-ss-edited');
             this.editorElem.textContent = '';
             this.editorElem.removeAttribute('style');
@@ -16400,6 +17230,108 @@ class Edit {
         this.parent.isEdit = this.isEdit = false;
         this.isCellEdit = true;
         this.parent.notify(formulaOperation, { action: 'endEdit' });
+    }
+    refSelectionRender() {
+        if (checkIsFormula(this.editorElem.textContent)) {
+            this.parent.notify(initiateFormulaReference, {
+                range: this.editorElem.textContent, formulaSheetIdx: this.editCellData.sheetIndex
+            });
+        }
+    }
+    // Start edit the formula cell and set cursor position
+    initiateRefSelection() {
+        let sheetName = this.editCellData.fullAddr.substring(0, this.editCellData.fullAddr.indexOf('!'));
+        let value = this.parent.element.querySelector('.e-formula-bar').value;
+        if (this.parent.getActiveSheet().name === sheetName && checkIsFormula(this.editCellData.value)) {
+            this.startEdit(this.editCellData.addr, value, false);
+            this.parent.notify(initiateFormulaReference, {
+                range: this.editCellData.value, formulaSheetIdx: this.editCellData.sheetIndex
+            });
+            this.parent.element.querySelector('.e-spreadsheet-edit').innerHTML = value;
+            this.initiateCurPosition();
+        }
+        else {
+            this.initiateCurPosition();
+        }
+    }
+    addressHandler(args) {
+        let eventArgs = { action: 'getCurrentEditValue', editedValue: '' };
+        this.parent.notify(editOperation, eventArgs);
+        let address = args.range;
+        let sheetName = this.editCellData.fullAddr.substring(0, this.editCellData.fullAddr.indexOf('!'));
+        let sheetIdx = this.editCellData.sheetIndex;
+        let editorEle = this.parent.element.querySelector('.e-spreadsheet-edit');
+        if (this.parent.getActiveSheet().name !== sheetName) {
+            address = '\'' + this.parent.getActiveSheet().name + '\'' + '!' + address;
+        }
+        if (args.isSelect) {
+            this.parent.notify(initiateFormulaReference, { range: eventArgs.editedValue + address, formulaSheetIdx: sheetIdx });
+        }
+        else {
+            let editedValue = eventArgs.editedValue;
+            if (editedValue.indexOf(')') === editedValue.length - 1) {
+                editorEle.textContent = editedValue.substring(0, editedValue.length - 1)
+                    + address + editedValue.substring(editedValue.length - 1);
+            }
+            else {
+                editorEle.textContent = editedValue + address;
+            }
+        }
+    }
+    updateFormulaBarValue() {
+        let value = this.editCellData.value;
+        let address = this.parent.getActiveSheet().selectedRange;
+        let formulaBar$$1 = this.parent.element.querySelector('.e-formula-bar');
+        if (value && checkIsFormula(value)) {
+            let sheetName = this.editCellData.fullAddr.substring(0, this.editCellData.fullAddr.indexOf('!'));
+            if (this.parent.getActiveSheet().name !== sheetName) {
+                address = '\'' + this.parent.getActiveSheet().name + '\'' + '!' + address;
+            }
+            if (value.indexOf(')') === value.length - 1) {
+                formulaBar$$1.value = value.substring(0, value.length - 1) + address + value.substring(value.length - 1);
+            }
+            else {
+                formulaBar$$1.value = value + address;
+            }
+        }
+    }
+    setFormulaBarCurPosition(input, selectionStart, selectionEnd) {
+        if (input.setSelectionRange) {
+            input.focus();
+            input.selectionStart = selectionStart;
+            input.selectionEnd = selectionStart;
+            input.setSelectionRange(selectionStart, selectionEnd);
+        }
+    }
+    initiateCurPosition() {
+        let el = this.parent.element.querySelector('.e-spreadsheet-edit');
+        if (el.innerText) {
+            let range = document.createRange();
+            if (el.innerText.indexOf(')') === el.innerText.length - 1) {
+                range.setStart(el.childNodes[0], el.innerText.length - 1);
+                range.setEnd(el.childNodes[0], el.innerText.length - 1);
+            }
+            else {
+                range.setStart(el.childNodes[0], el.innerText.length);
+                range.setEnd(el.childNodes[0], el.innerText.length);
+            }
+            let selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+        let sheetIdx = this.editCellData.sheetIndex;
+        if (sheetIdx !== this.parent.getActiveSheet().id - 1) {
+            let elem = this.parent.element.querySelector('.e-formula-bar');
+            if (elem.value) {
+                let valueLength = elem.value.length;
+                if (elem.value.indexOf(')') === valueLength - 1) {
+                    this.setFormulaBarCurPosition(elem, valueLength - 1, valueLength - 1);
+                }
+                else {
+                    this.setFormulaBarCurPosition(elem, valueLength, valueLength);
+                }
+            }
+        }
     }
 }
 
@@ -16412,6 +17344,23 @@ class Selection {
      * @private
      */
     constructor(parent) {
+        this.uniqueOBracket = String.fromCharCode(129);
+        this.uniqueCBracket = String.fromCharCode(130);
+        this.uniqueCSeparator = String.fromCharCode(131);
+        this.uniqueCOperator = String.fromCharCode(132);
+        this.uniquePOperator = String.fromCharCode(133);
+        this.uniqueSOperator = String.fromCharCode(134);
+        this.uniqueMOperator = String.fromCharCode(135);
+        this.uniqueDOperator = String.fromCharCode(136);
+        this.uniqueModOperator = String.fromCharCode(137);
+        this.uniqueConcateOperator = String.fromCharCode(138);
+        this.uniqueEqualOperator = String.fromCharCode(139);
+        this.uniqueExpOperator = String.fromCharCode(140);
+        this.uniqueGTOperator = String.fromCharCode(141);
+        this.uniqueLTOperator = String.fromCharCode(142);
+        this.invalidOperators = ['%'];
+        this.formulaRange = [];
+        this.tableRangesFormula = {};
         this.parent = parent;
         this.addEventListener();
         this.mouseMoveEvt = this.mouseMoveHandler.bind(this);
@@ -16425,6 +17374,10 @@ class Selection {
         this.parent.on(rowHeightChanged, this.rowHeightChanged, this);
         this.parent.on(colWidthChanged, this.colWidthChanged, this);
         this.parent.on(protectSelection, this.protectHandler, this);
+        this.parent.on(initiateFormulaReference, this.initiateFormulaSelection, this);
+        this.parent.on(clearCellRef, this.clearBorder, this);
+        this.parent.on(getRowIdxFromClientY, this.getRowIdxFromClientY, this);
+        this.parent.on(getColIdxFromClientX, this.getColIdxFromClientX, this);
     }
     removeEventListener() {
         if (!this.parent.isDestroyed) {
@@ -16436,6 +17389,10 @@ class Selection {
             this.parent.off(rowHeightChanged, this.rowHeightChanged);
             this.parent.off(colWidthChanged, this.colWidthChanged);
             this.parent.off(protectSelection, this.protectHandler);
+            this.parent.off(initiateFormulaReference, this.initiateFormulaSelection);
+            this.parent.off(clearCellRef, this.clearBorder);
+            this.parent.off(getRowIdxFromClientY, this.getRowIdxFromClientY);
+            this.parent.off(getColIdxFromClientX, this.getColIdxFromClientX);
         }
     }
     rowHeightChanged(args) {
@@ -16508,7 +17465,10 @@ class Selection {
         cont.appendChild(activeCell);
     }
     mouseDownHandler(e) {
-        if (!this.parent.isEdit) {
+        let eventArgs = { action: 'getCurrentEditValue', editedValue: '' };
+        this.parent.notify(editOperation, eventArgs);
+        let isFormulaEdit = checkIsFormula(eventArgs.editedValue);
+        if (!this.parent.isEdit || isFormulaEdit) {
             let overlayElem = document.getElementById(this.parent.element.id + '_overlay');
             if (e.target.className.indexOf('e-ss-overlay') > -1) {
                 return;
@@ -16524,8 +17484,8 @@ class Selection {
                     && !e.target.classList.contains('e-rowresize')) {
                     let sheet = this.parent.getActiveSheet();
                     let mode = this.parent.selectionSettings.mode;
-                    let rowIdx = this.getRowIdxFromClientY(getClientY(e));
-                    let colIdx = this.getColIdxFromClientX(getClientX(e));
+                    let rowIdx = this.getRowIdxFromClientY({ clientY: getClientY(e) });
+                    let colIdx = this.getColIdxFromClientX({ clientX: getClientX(e) });
                     let activeIdx = getCellIndexes(sheet.activeCell);
                     let isRowSelected = sheet.showHeaders && this.parent.getRowHeaderContent().contains(e.target);
                     let isColSelected = sheet.showHeaders && this.parent.getColumnHeaderContent().contains(e.target);
@@ -16564,7 +17524,7 @@ class Selection {
                         this.startCell = [0, 0];
                         this.selectRangeByIdx([].concat(this.startCell, [sheet.rowCount - 1, sheet.colCount - 1]), e);
                     }
-                    else if (!e.target.classList.contains('e-main-content')) {
+                    else if (!e.target.classList.contains('e-sheet-content')) {
                         if (!e.shiftKey || mode === 'Single') {
                             this.startCell = [rowIdx, colIdx];
                         }
@@ -16577,19 +17537,29 @@ class Selection {
                 }
             }
         }
+        if (isFormulaEdit && (e.target.classList.contains('e-cell') ||
+            e.target.classList.contains('e-header-cell')) && this.parent.isEdit) {
+            let range = this.parent.getActiveSheet().selectedRange;
+            this.parent.notify(addressHandle, { range: range, isSelect: false });
+        }
     }
     mouseMoveHandler(e) {
         let sheet = this.parent.getActiveSheet();
         if (isTouchMove(e)) {
             e.preventDefault();
         }
+        let eventArgs = { action: 'getCurrentEditValue', editedValue: '' };
+        this.parent.notify(editOperation, eventArgs);
+        let isFormulaEdit = checkIsFormula(eventArgs.editedValue);
         let cont = this.getScrollContent();
         let clientRect = cont.getBoundingClientRect();
         let clientX = getClientX(e);
         let clientY = getClientY(e);
         // remove math.min or handle top and left auto scroll
-        let colIdx = this.isRowSelected ? sheet.colCount - 1 : this.getColIdxFromClientX(Math.min(clientX, clientRect.right));
-        let rowIdx = this.isColSelected ? sheet.rowCount - 1 : this.getRowIdxFromClientY(Math.min(clientY, clientRect.bottom));
+        let colIdx = this.isRowSelected ? sheet.colCount - 1 :
+            this.getColIdxFromClientX({ clientX: Math.min(clientX, clientRect.right) });
+        let rowIdx = this.isColSelected ? sheet.rowCount - 1 :
+            this.getRowIdxFromClientY({ clientY: Math.min(clientY, clientRect.bottom) });
         let prevIndex = getRangeIndexes(sheet.selectedRange);
         let mergeArgs = { range: [rowIdx, colIdx, rowIdx, colIdx] };
         this.parent.notify(activeCellMergedRange, mergeArgs);
@@ -16601,13 +17571,13 @@ class Selection {
         let isScrollRight = clientX > clientRect.right && colIdx < sheet.colCount;
         let isScrollLeft = clientX < clientRect.left && colIdx >= 0 && !this.isRowSelected;
         this.clearInterval();
-        if (!this.isColSelected && !this.isRowSelected) {
+        if (!isFormulaEdit && !this.isColSelected && !this.isRowSelected) {
             prevIndex = getCellIndexes(sheet.activeCell);
         }
         if (isScrollDown || isScrollUp || isScrollRight || isScrollLeft) {
             this.scrollInterval = setInterval(() => {
                 if ((isScrollDown || isScrollUp) && !this.isColSelected) {
-                    rowIdx = this.getRowIdxFromClientY(isScrollDown ? clientRect.bottom : clientRect.top);
+                    rowIdx = this.getRowIdxFromClientY({ clientY: isScrollDown ? clientRect.bottom : clientRect.top });
                     if (rowIdx >= sheet.rowCount) { // clear interval when scroll up
                         this.clearInterval();
                         return;
@@ -16615,7 +17585,7 @@ class Selection {
                     cont.scrollTop += (isScrollDown ? 1 : -1) * getRowHeight(sheet, rowIdx);
                 }
                 if ((isScrollRight || isScrollLeft) && !this.isRowSelected) {
-                    colIdx = this.getColIdxFromClientX(isScrollRight ? clientRect.right : clientRect.left);
+                    colIdx = this.getColIdxFromClientX({ clientX: isScrollRight ? clientRect.right : clientRect.left });
                     if (colIdx >= sheet.colCount) { // clear interval when scroll left
                         this.clearInterval();
                         return;
@@ -16629,14 +17599,18 @@ class Selection {
         else {
             this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]), e);
         }
+        if (isFormulaEdit) {
+            let range = this.parent.getActiveSheet().selectedRange;
+            this.parent.notify(addressHandle, { range: range, isSelect: false });
+        }
     }
     mouseUpHandler(e) {
-        let rowIdx = this.getRowIdxFromClientY(getClientY(e));
-        let colIdx = this.getColIdxFromClientX(getClientX(e));
+        let rowIdx = this.getRowIdxFromClientY({ clientY: getClientY(e) });
+        let colIdx = this.getColIdxFromClientX({ clientX: getClientX(e) });
         this.clearInterval();
         if (isTouchEnd(e) && !(this.isColSelected || this.isRowSelected) &&
-            (this.getRowIdxFromClientY(getClientY(this.touchEvt)) === rowIdx &&
-                this.getColIdxFromClientX(getClientX(this.touchEvt)) === colIdx)) {
+            (this.getRowIdxFromClientY({ clientY: getClientY(this.touchEvt) }) === rowIdx &&
+                this.getColIdxFromClientX({ clientX: getClientX(this.touchEvt) }) === colIdx)) {
             this.mouseDownHandler(e);
         }
         this.parent.trigger('select', { range: this.parent.getActiveSheet().selectedRange });
@@ -16646,6 +17620,12 @@ class Selection {
         }
         EventHandler.remove(document, getEndEvent(), this.mouseUpHandler);
         this.parent.notify(mouseUpAfterSelection, e);
+        let eventArgs = { action: 'getCurrentEditValue', editedValue: '' };
+        this.parent.notify(editOperation, eventArgs);
+        let isFormulaEdit = checkIsFormula(eventArgs.editedValue);
+        if (isFormulaEdit && this.parent.isEdit && !e.target.classList.contains('e-spreadsheet-edit')) {
+            this.parent.notify(initiateCur, {});
+        }
     }
     isSelected(rowIdx, colIdx) {
         let indexes = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
@@ -16684,36 +17664,60 @@ class Selection {
         }
         this.selectRangeByIdx(args.range.concat(args.range));
     }
-    getColIdxFromClientX(clientX) {
+    getColIdxFromClientX(args) {
         let width = 0;
         let sheet = this.parent.getActiveSheet();
         let cliRect = this.parent.getMainContent().getBoundingClientRect();
-        let left = (this.parent.enableRtl ? (cliRect.right - clientX) : (clientX - cliRect.left)) + this.getScrollLeft();
+        let left = 0;
+        left = (args.isImage) ? args.clientX : (this.parent.enableRtl ? (cliRect.right - args.clientX) :
+            (args.clientX - cliRect.left)) + this.getScrollLeft();
         for (let i = 0;; i++) {
             width += getColumnsWidth(sheet, i);
             if (left < width) {
+                args.clientX = i;
                 return i;
             }
         }
     }
-    getRowIdxFromClientY(clientY) {
+    getRowIdxFromClientY(args) {
         let height = 0;
         let sheet = this.parent.getActiveSheet();
-        let top = (clientY - this.parent.getMainContent().getBoundingClientRect().top)
+        let top = 0;
+        top = args.isImage ? args.clientY : (args.clientY - this.parent.getMainContent().getBoundingClientRect().top)
             + this.parent.getMainContent().scrollTop;
         for (let i = 0;; i++) {
             height += getRowHeight(sheet, i);
             if (top < height) {
+                args.clientY = i;
                 return i;
             }
         }
     }
+    initFormulaReferenceIndicator(range) {
+        if (this.parent.isEdit) {
+            let forRefIndicator = this.parent.createElement('div', { className: 'e-formularef-indicator' });
+            forRefIndicator.appendChild(this.parent.createElement('div', { className: 'e-top' }));
+            forRefIndicator.appendChild(this.parent.createElement('div', { className: 'e-bottom' }));
+            forRefIndicator.appendChild(this.parent.createElement('div', { className: 'e-left' }));
+            forRefIndicator.appendChild(this.parent.createElement('div', { className: 'e-right' }));
+            locateElem(forRefIndicator, range, this.parent.getActiveSheet(), false);
+            this.parent.getMainContent().appendChild(forRefIndicator);
+        }
+    }
     selectRangeByIdx(range, e, isScrollRefresh, isActCellChanged, isInit, skipChecking) {
+        let eventArgs = { action: 'getCurrentEditValue', editedValue: '' };
+        this.parent.notify(editOperation, eventArgs);
+        let isFormulaEdit = checkIsFormula(eventArgs.editedValue);
         let ele = this.getSelectionElement();
         let sheet = this.parent.getActiveSheet();
-        let mergeArgs = { range: range, isActiveCell: false, skipChecking: skipChecking };
+        let formulaRefIndicator = this.parent.element.querySelector('.e-formularef-indicator');
+        let mergeArgs = { range: [].slice.call(range), isActiveCell: false, skipChecking: skipChecking };
+        let isMergeRange;
         if (!this.isColSelected && !this.isRowSelected) {
             this.parent.notify(mergedRange, mergeArgs);
+        }
+        if (range !== mergeArgs.range) {
+            isMergeRange = true;
         }
         range = mergeArgs.range;
         let args = { range: getRangeAddress(range), cancel: false };
@@ -16721,24 +17725,69 @@ class Selection {
         if (args.cancel === true) {
             return;
         }
+        if (isFormulaEdit && formulaRefIndicator) {
+            formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
+        }
         if (isSingleCell(range) || mergeArgs.isActiveCell) {
-            ele.classList.add('e-hide');
+            if (ele) {
+                ele.classList.add('e-hide');
+            }
+            if (isFormulaEdit && e && !e.target.classList.contains('e-spreadsheet-edit') && this.parent.isEdit) {
+                this.parent.notify(addressHandle, { range: getRangeAddress(range), isSelect: true });
+                this.initFormulaReferenceIndicator(range);
+            }
         }
         else {
-            ele.classList.remove('e-hide');
-            locateElem(ele, range, sheet, this.parent.enableRtl, this.getOffset(range[2], range[3]));
+            if (isFormulaEdit) {
+                if (e && !e.target.classList.contains('e-spreadsheet-edit') && this.parent.isEdit) {
+                    this.parent.notify(addressHandle, { range: getRangeAddress(range), isSelect: true });
+                    this.initFormulaReferenceIndicator(range);
+                }
+            }
+            else {
+                if (ele) {
+                    ele.classList.remove('e-hide');
+                }
+                let offset = this.getOffset(range[2], range[3]);
+                if (isMergeRange) { // Need to handle half hidden merge cell in better way
+                    offset.left = { idx: 0, size: 0 };
+                }
+                locateElem(ele, range, sheet, this.parent.enableRtl, offset);
+            }
         }
-        updateSelectedRange(this.parent, getRangeAddress(range), sheet);
+        let eArgs = { action: 'getCurrentEditSheetIdx', sheetIndex: null };
+        this.parent.notify(editOperation, eArgs);
+        if (!isFormulaEdit) {
+            updateSelectedRange(this.parent, getRangeAddress(range), sheet);
+        }
+        else if (!isInit) {
+            updateSelectedRange(this.parent, getRangeAddress(range), sheet);
+        }
         this.UpdateRowColSelected(range);
         this.highlightHdr(range);
         if (!isScrollRefresh && !(e && (e.type === 'mousemove' || isTouchMove(e)))) {
-            this.updateActiveCell(isActCellChanged ? getRangeIndexes(sheet.activeCell) : range, isInit);
+            if (!isFormulaEdit) {
+                this.updateActiveCell(isActCellChanged ? getRangeIndexes(sheet.activeCell) : range, isInit);
+            }
+            else if (eArgs.sheetIndex === this.parent.getActiveSheet().id - 1 && isInit) {
+                isActCellChanged = true;
+                this.updateActiveCell(isActCellChanged ? getRangeIndexes(sheet.activeCell) : range, isInit);
+            }
+            else if (!this.parent.isEdit) {
+                this.updateActiveCell(isActCellChanged ? getRangeIndexes(sheet.activeCell) : range, isInit);
+            }
         }
         if (isNullOrUndefined(e)) {
             e = { type: 'mousedown' };
         }
-        this.parent.notify(selectionComplete, e);
+        if (!isFormulaEdit) {
+            this.parent.notify(selectionComplete, e);
+        }
+        else if (!isInit) {
+            this.parent.notify(selectionComplete, e);
+        }
         this.parent.notify(showAggregate, {});
+        this.parent.notify(refreshImgElem, {});
     }
     UpdateRowColSelected(indexes) {
         let sheet = this.parent.getActiveSheet();
@@ -16750,6 +17799,7 @@ class Selection {
         let topLeftIdx = getRangeIndexes(sheet.topLeftCell);
         let rowIdx;
         let colIdx;
+        let isMergeRange;
         if (this.isColSelected) {
             rowIdx = topLeftIdx[0];
             colIdx = range[1];
@@ -16766,10 +17816,19 @@ class Selection {
         }
         let mergeArgs = { range: [rowIdx, colIdx, ...[rowIdx, colIdx]] };
         this.parent.notify(activeCellMergedRange, mergeArgs);
+        if (range !== mergeArgs.range) {
+            isMergeRange = true;
+        }
         range = mergeArgs.range;
         if (sheet.activeCell !== getCellAddress(range[0], range[1]) || isInit) {
             sheet.activeCell = getCellAddress(range[0], range[1]);
-            locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl, this.getOffset(range[2], range[3]));
+            if (this.getActiveCell()) {
+                let offset = this.getOffset(range[2], range[3]);
+                if (isMergeRange) {
+                    offset.left = { idx: 0, size: 0 };
+                }
+                locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl, offset);
+            }
             this.parent.notify(activeCellChanged, null);
         }
         else {
@@ -16807,7 +17866,9 @@ class Selection {
             let selectAll$$1 = this.parent.element.getElementsByClassName('e-select-all-cell')[0];
             removeClass(this.getSheetElement().querySelectorAll('.e-highlight'), 'e-highlight');
             removeClass(this.getSheetElement().querySelectorAll('.e-prev-highlight'), 'e-prev-highlight');
-            removeClass([selectAll$$1], ['e-prev-highlight-right', 'e-prev-highlight-bottom']);
+            if (selectAll$$1) {
+                removeClass([selectAll$$1], ['e-prev-highlight-right', 'e-prev-highlight-bottom']);
+            }
             if (isRowRefresh) {
                 rowHdr = [].slice.call(this.parent.getRowHeaderContent().querySelectorAll('td')).slice(swapRange[0], swapRange[2] + 1);
             }
@@ -16834,11 +17895,13 @@ class Selection {
                     document.getElementById(`${this.parent.element.id}_select_all`).classList.add('e-highlight');
                 }
             }
-            if (swapRange[0] === 0) {
-                selectAll$$1.classList.add('e-prev-highlight-bottom');
-            }
-            if (swapRange[1] === 0) {
-                selectAll$$1.classList.add('e-prev-highlight-right');
+            if (selectAll$$1) {
+                if (swapRange[0] === 0) {
+                    selectAll$$1.classList.add('e-prev-highlight-bottom');
+                }
+                if (swapRange[1] === 0) {
+                    selectAll$$1.classList.add('e-prev-highlight-right');
+                }
             }
         }
     }
@@ -16866,6 +17929,252 @@ class Selection {
             return indexes;
         }
         return range;
+    }
+    initiateFormulaSelection(args) {
+        this.processFormulaEditRange(args.range, args.formulaSheetIdx);
+    }
+    processFormulaEditRange(val, formulaStartSheetIdx) {
+        let str;
+        let actSheetIdx;
+        let formulaSheetIdx = formulaStartSheetIdx;
+        let i = 0;
+        let parsedVal = this.parseFormula(val);
+        let len = parsedVal.length;
+        let ctrlKeyCount = 0;
+        let formulaBorder = [['e-vborderright', 'e-vborderbottom'], ['e-pborderright', 'e-pborderbottom'],
+            ['e-cborderright', 'e-cborderbottom'], ['e-gborderright', 'e-gborderbottom'], ['e-oborderright', 'e-oborderbottom'],
+            ['e-bborderright', 'e-bborderbottom']];
+        this.clearBorder();
+        actSheetIdx = this.parent.getActiveSheet().id - 1;
+        while (i < len) {
+            str = parsedVal[i];
+            if (this.invalidOperators.indexOf(str) > -1) {
+                break;
+            }
+            if (isCellReference(str.toUpperCase())) {
+                str = str.replace(/\$/g, '');
+                if (i > 0) {
+                    if (parsedVal[i - 1].indexOf('!') === parsedVal[i - 1].length - 1) {
+                        let splitStr = parsedVal[i - 1].split('!');
+                        formulaSheetIdx = getSheetIndex(this.parent, splitStr[0].substring(1, splitStr[0].length - 1));
+                    }
+                }
+                if (parsedVal[i + 1] === ':') {
+                    i++;
+                    if (parsedVal[i + 1] && isCellReference(parsedVal[i + 1].toUpperCase())) {
+                        str = str + ':' + parsedVal[i + 1];
+                        i++;
+                    }
+                }
+                if (actSheetIdx === formulaSheetIdx) {
+                    this.updateFormulaEditRange(str, ctrlKeyCount, formulaBorder);
+                }
+                formulaSheetIdx = formulaStartSheetIdx;
+                ctrlKeyCount++;
+            }
+            i++;
+        }
+    }
+    updateFormulaEditRange(str, i, formulaBorder) {
+        let indices = getRangeIndexes(str);
+        this.formulaRange[i] = str;
+        this.dStartCell = { rowIndex: indices[0], colIndex: indices[1] };
+        this.dEndCell = { rowIndex: indices[2], colIndex: indices[3] };
+        this.focusBorder(this.dStartCell, this.dEndCell, formulaBorder[i % 6]);
+    }
+    focusBorder(startcell, endcell, classes) {
+        let range = getSwapRange([startcell.rowIndex, startcell.colIndex, endcell.rowIndex, endcell.colIndex]);
+        let minr = range[0];
+        let minc = range[1];
+        let maxr = range[2];
+        let maxc = range[3];
+        if (minr) {
+            (this.getEleFromRange([minr - 1, minc, minr - 1, maxc])).forEach((td) => {
+                if (td) {
+                    td.classList.add(classes[1]);
+                    td.classList.add('e-formularef-selection');
+                }
+            }); // top                            
+        }
+        (this.getEleFromRange([minr, maxc, maxr, maxc])).forEach((td) => {
+            if (td) {
+                td.classList.add(classes[0]);
+                td.classList.add('e-formularef-selection');
+            }
+        }); // right
+        this.getEleFromRange([maxr, minc, maxr, maxc]).forEach((td) => {
+            if (td) {
+                td.classList.add(classes[1]);
+                td.classList.add('e-formularef-selection');
+            }
+        }); // bottom
+        if (minc) {
+            (this.getEleFromRange([minr, minc - 1, maxr, minc - 1])).forEach((td) => {
+                if (td) {
+                    td.classList.add(classes[0]);
+                    td.classList.add('e-formularef-selection');
+                }
+            }); // left
+        }
+    }
+    getEleFromRange(range, sheetIdx) {
+        sheetIdx = this.parent.getActiveSheet().index;
+        let sheet = this.parent.getActiveSheet();
+        let startRIndex = range[0];
+        let startCIndex = range[1];
+        let endRIndex = range[2];
+        let endCIndex = range[3];
+        let i;
+        let rowIdx;
+        let temp;
+        let tempCells = [];
+        let rowCells;
+        let cells = [];
+        if (startRIndex > endRIndex) {
+            temp = startRIndex;
+            startRIndex = endRIndex;
+            endRIndex = temp;
+        }
+        if (startCIndex > endCIndex) {
+            temp = startCIndex;
+            startCIndex = endCIndex;
+            endCIndex = temp;
+        }
+        if (this.parent.scrollSettings.enableVirtualization) {
+            for (i = startRIndex; i <= endRIndex; i++) {
+                rowIdx = i;
+                if (rowIdx > -1) {
+                    let row = this.parent.getRow(rowIdx);
+                    if (row) {
+                        rowCells = row.getElementsByClassName('e-cell');
+                        tempCells = (endCIndex === startCIndex) ?
+                            [rowCells[endCIndex]] : this.getRowCells(rowCells, startCIndex, endCIndex + 1);
+                        this.merge(cells, tempCells);
+                    }
+                }
+            }
+        }
+        return cells;
+    }
+    getRowCells(rowCells, startCIndex, endCIndex) {
+        let tdCol = [];
+        for (startCIndex; startCIndex < endCIndex; startCIndex++) {
+            if (rowCells[startCIndex]) {
+                tdCol.push(rowCells[startCIndex]);
+            }
+        }
+        return tdCol;
+    }
+    merge(first, second) {
+        if (!first || !second) {
+            return;
+        }
+        Array.prototype.push.apply(first, second);
+    }
+    ;
+    clearBorder() {
+        let borderEleColl = this.parent.element.getElementsByClassName('e-formularef-selection');
+        for (let idx = 0; idx < borderEleColl.length; idx++) {
+            let td = borderEleColl[idx];
+            let classArr = ['e-vborderright', 'e-vborderbottom', 'e-pborderright', 'e-pborderbottom',
+                'e-cborderright', 'e-cborderbottom', 'e-gborderright', 'e-gborderbottom', 'e-oborderright',
+                'e-oborderbottom', 'e-bborderright', 'e-bborderbottom'];
+            for (let idx = 0; idx < classArr.length; idx++) {
+                td.classList.remove(classArr[idx]);
+            }
+        }
+        for (let idx = 0; idx < borderEleColl.length; idx++) {
+            let td = borderEleColl[idx];
+        }
+    }
+    parseFormula(formulaStr) {
+        let tempStr;
+        let str;
+        let len;
+        let i = 0;
+        let arr = [];
+        formulaStr = this.markSpecialChar(formulaStr.replace('=', ''));
+        let formula = formulaStr.split(/\(|\)|=|\^|>|<|,|:|\+|-|\*|\/|%|&/g);
+        len = formula.length;
+        while (i < len) {
+            tempStr = formula[i];
+            if (!tempStr) {
+                i++;
+                continue;
+            }
+            if (tempStr.length === 1) {
+                arr.push(this.isUniqueChar(tempStr) ? this.getUniqueCharVal(tempStr) : tempStr);
+            }
+            else {
+                str = tempStr[0];
+                if (tempStr.indexOf('!') > 0) {
+                    if (this.isUniqueChar(str)) {
+                        arr.push(this.getUniqueCharVal(str));
+                        tempStr = tempStr.substr(1);
+                    }
+                    let strVal = tempStr.indexOf('!') + 1;
+                    arr.push(tempStr.substr(0, strVal));
+                    arr.push(tempStr.substr(strVal));
+                }
+                else if (this.isUniqueChar(str)) {
+                    arr.push(this.getUniqueCharVal(str));
+                    arr.push(tempStr.substr(1));
+                }
+                else {
+                    arr.push(tempStr);
+                }
+            }
+            i++;
+        }
+        return arr;
+    }
+    isUniqueChar(str) {
+        let code = str.charCodeAt(str.charAt[0]);
+        return code >= 129 && code <= 142;
+    }
+    getUniqueCharVal(tempStr) {
+        switch (tempStr) {
+            case this.uniqueOBracket:
+                return '(';
+            case this.uniqueCBracket:
+                return ')';
+            case this.uniqueCOperator:
+                return ':';
+            case this.uniqueSOperator:
+                return '-';
+            case this.uniquePOperator:
+                return '+';
+            case this.uniqueMOperator:
+                return '*';
+            case this.uniqueDOperator:
+                return '/';
+            case this.uniqueModOperator:
+                return '%';
+            case this.uniqueCSeparator:
+                return ',';
+            case this.uniqueConcateOperator:
+                return '&';
+            case this.uniqueEqualOperator:
+                return '=';
+            case this.uniqueExpOperator:
+                return '^';
+            case this.uniqueLTOperator:
+                return '<';
+            case this.uniqueGTOperator:
+                return '>';
+        }
+        return '';
+    }
+    markSpecialChar(formulaVal) {
+        formulaVal = formulaVal.replace(/\(/g, '(' + this.uniqueOBracket).replace(/\)/g, ')' + this.uniqueCBracket);
+        formulaVal = formulaVal.replace(/,/g, ',' + this.uniqueCSeparator).replace(/:/g, ':' + this.uniqueCOperator);
+        formulaVal = formulaVal.replace(/\+/g, '+' + this.uniquePOperator).replace(/-/g, '-' + this.uniqueSOperator);
+        formulaVal = formulaVal.replace(/\*/g, '*' + this.uniqueMOperator).replace(/\//g, '/' + this.uniqueDOperator);
+        formulaVal = formulaVal.replace(/&/g, '&' + this.uniqueConcateOperator);
+        formulaVal = formulaVal.replace(/=/g, '=' + this.uniqueEqualOperator);
+        formulaVal = formulaVal.replace(/\^/g, '^' + this.uniqueExpOperator);
+        formulaVal = formulaVal.replace(/>/g, '>' + this.uniqueGTOperator).replace(/</g, '<' + this.uniqueLTOperator);
+        return formulaVal.replace(/%/g, '%' + this.uniqueModOperator);
     }
     /**
      * For internal use only - Get the module name.
@@ -18040,6 +19349,23 @@ class CellFormat {
             let cell = getCell(rowIdx, colIdx, sheet);
             hgt = getTextHeight(this.parent, (cell && cell.style) || this.parent.cellStyle, (cell && cell.wrap) ?
                 getLines(this.parent.getDisplayText(cell), getColumnWidth(sheet, colIdx), cell.style, this.parent.cellStyle) : 1);
+            if (cell && !isNullOrUndefined(cell.value)) {
+                let val = cell.value.toString();
+                if (val.indexOf('\n') > -1) {
+                    let i;
+                    let splitVal = cell.value.split('\n');
+                    let n = 0;
+                    let valLength = splitVal.length;
+                    for (i = 0; i < valLength; i++) {
+                        let lines = getLines(splitVal[i], getColumnWidth(sheet, colIdx), cell.style, this.parent.cellStyle);
+                        if (lines === 0) {
+                            lines = 1; // for empty new line
+                        }
+                        n = n + lines;
+                    }
+                    hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, n) + 1;
+                }
+            }
             setMaxHgt(sheet, rowIdx, colIdx, hgt + borderSize);
             if (isLastCell) {
                 this.checkHeight = false;
@@ -18466,10 +19792,14 @@ class Resize {
             let headerTable = isCol ? this.parent.getColHeaderTable() : this.parent.getRowHeaderTable();
             let headerRow = headerTable.getElementsByTagName('tr');
         }
+        let isWrap = false;
         if (isCol) {
             let rowLength = sheet.rows.length;
             for (let rowIdx = 0; rowIdx < rowLength; rowIdx++) {
                 if (sheet.rows[rowIdx] && sheet.rows[rowIdx].cells && sheet.rows[rowIdx].cells[idx]) {
+                    if (getCell(rowIdx, idx, sheet).wrap) {
+                        isWrap = true;
+                    }
                     let td = this.parent.createElement('td', {
                         className: 'e-cell',
                         innerHTML: this.parent.getDisplayText(sheet.rows[rowIdx].cells[idx])
@@ -18492,6 +19822,9 @@ class Resize {
             let colLength = sheet.rows[idx] && sheet.rows[idx].cells ? sheet.rows[idx].cells.length : 0;
             for (let colIdx = 0; colIdx < colLength; colIdx++) {
                 if (sheet.rows[idx] && sheet.rows[idx].cells[colIdx]) {
+                    if (getCell(idx, colIdx, sheet).wrap) {
+                        isWrap = true;
+                    }
                     let style = sheet.rows[idx].cells[colIdx].style;
                     let td = this.parent.createElement('td', {
                         innerHTML: this.parent.getDisplayText(sheet.rows[idx].cells[colIdx])
@@ -18510,7 +19843,7 @@ class Resize {
                 }
             }
         }
-        let contentFit = findMaxValue(contentTable, contentClone, isCol, this.parent);
+        let contentFit = findMaxValue(contentTable, contentClone, isCol, this.parent, prevData, isWrap);
         if (isCol) {
             contentFit = this.getFloatingElementWidth(contentFit, idx);
         }
@@ -20227,6 +21560,9 @@ class UndoRedo {
             case 'beforeClear':
                 address = getRangeIndexes(eventArgs.range);
                 break;
+            case 'beforeInsertImage':
+                address = getRangeIndexes(eventArgs.range);
+                break;
         }
         cells = this.getCellDetails(address, sheet);
         this.beforeActionData = { cellDetails: cells, cutCellDetails: cutCellDetails };
@@ -20279,6 +21615,13 @@ class UndoRedo {
                     break;
                 case 'clearCF':
                     updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                    break;
+                case 'insertImage':
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                    break;
+                case 'imageRefresh':
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                    break;
             }
             args.isUndo ? this.redoCollection.push(undoRedoArgs) : this.undoCollection.push(undoRedoArgs);
             if (this.undoCollection.length > this.undoRedoStep) {
@@ -20298,7 +21641,7 @@ class UndoRedo {
     }
     updateUndoRedoCollection(options) {
         let actionList = ['clipboard', 'format', 'sorting', 'cellSave', 'resize', 'resizeToFit', 'wrap', 'hideShow', 'replace',
-            'validation', 'merge', 'clear', 'conditionalFormat', 'clearCF'];
+            'validation', 'merge', 'clear', 'conditionalFormat', 'clearCF', 'insertImage', 'imageRefresh'];
         if ((options.args.action === 'insert' || options.args.action === 'delete') && options.args.eventArgs.modelType !== 'Sheet') {
             actionList.push(options.args.action);
         }
@@ -20309,7 +21652,7 @@ class UndoRedo {
         let eventArgs = options.args.eventArgs;
         if (action === 'clipboard' || action === 'sorting' || action === 'format' || action === 'cellSave' ||
             action === 'wrap' || action === 'replace' || action === 'validation' || action === 'clear' || action === 'conditionalFormat' ||
-            action === 'clearCF') {
+            action === 'clearCF' || action === 'insertImage' || action === 'imageRefresh') {
             let beforeActionDetails = { beforeDetails: { cellDetails: [] } };
             this.parent.notify(getBeforeActionData, beforeActionDetails);
             eventArgs.beforeActionData = beforeActionDetails.beforeDetails;
@@ -20327,8 +21670,15 @@ class UndoRedo {
         this.updateUndoRedoIcons();
     }
     updateUndoRedoIcons() {
-        this.parent.notify(enableToolbarItems, [{ items: [this.parent.element.id + '_undo'], enable: this.undoCollection.length > 0 }]);
-        this.parent.notify(enableToolbarItems, [{ items: [this.parent.element.id + '_redo'], enable: this.redoCollection.length > 0 }]);
+        let l10n = this.parent.serviceLocator.getService(locale);
+        this.parent.notify(enableToolbarItems, [{
+                tab: l10n.getConstant('Home'), items: [this.parent.element.id + '_undo'],
+                enable: this.undoCollection.length > 0
+            }]);
+        this.parent.notify(enableToolbarItems, [{
+                tab: l10n.getConstant('Home'), items: [this.parent.element.id + '_redo'],
+                enable: this.redoCollection.length > 0
+            }]);
     }
     undoForClipboard(args) {
         let eventArgs = args.eventArgs;
@@ -20339,23 +21689,77 @@ class UndoRedo {
         let copiedInfo = eventArgs.copiedInfo;
         let actionData = eventArgs.beforeActionData;
         let isRefresh = this.checkRefreshNeeded(sheetIndex);
-        if (this.isUndo) {
-            if (copiedInfo.isCut) {
-                let cells = actionData.cutCellDetails;
-                this.updateCellDetails(cells, getSheet(this.parent, getSheetIndexFromId(this.parent, copiedInfo.sId)), copiedInfo.range, isRefresh);
+        let pictureElem;
+        if (args.eventArgs.requestType === 'imagePaste') {
+            let copiedShapeInfo = eventArgs.copiedShapeInfo;
+            if (this.isUndo) {
+                pictureElem = copiedShapeInfo.pictureElem;
+                if (copiedShapeInfo.isCut) {
+                    this.parent.notify(deleteImage, {
+                        id: pictureElem.id, sheetIdx: eventArgs.pasteSheetIndex + 1
+                    });
+                    this.parent.notify(createImageElement, {
+                        options: {
+                            data: pictureElem.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'),
+                            height: copiedShapeInfo.height, width: copiedShapeInfo.width, imageId: pictureElem.id
+                        },
+                        range: copiedShapeInfo.copiedRange, isPublic: false, isUndoRedo: true
+                    });
+                }
+                else {
+                    this.parent.notify(deleteImage, {
+                        id: eventArgs.pastedPictureElement.id, sheetIdx: eventArgs.pasteSheetIndex + 1
+                    });
+                }
             }
-            this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh);
-            eventArgs.mergeCollection.forEach((mergeArgs) => {
-                mergeArgs.merge = !mergeArgs.merge;
-                this.parent.notify(setMerge, mergeArgs);
-                mergeArgs.merge = !mergeArgs.merge;
-            });
+            else {
+                if (copiedShapeInfo.isCut) {
+                    pictureElem = copiedShapeInfo.pictureElem;
+                    this.parent.notify(deleteImage, {
+                        id: pictureElem.id, sheetIdx: copiedShapeInfo.sId
+                    });
+                    this.parent.notify(createImageElement, {
+                        options: {
+                            data: pictureElem.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'),
+                            height: copiedShapeInfo.height, width: copiedShapeInfo.width, imageId: pictureElem.id
+                        },
+                        range: copiedShapeInfo.pastedRange, isPublic: false, isUndoRedo: true
+                    });
+                }
+                else {
+                    pictureElem = eventArgs.pastedPictureElement;
+                    this.parent.notify(createImageElement, {
+                        options: {
+                            data: pictureElem.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'),
+                            height: pictureElem.offsetHeight, width: pictureElem.offsetWidth, imageId: pictureElem.id
+                        },
+                        range: copiedShapeInfo.pastedRange, isPublic: false, isUndoRedo: true
+                    });
+                }
+            }
         }
         else {
-            updateAction(args, this.parent, copiedInfo.isCut);
-        }
-        if (isRefresh) {
-            this.parent.notify(selectRange, { indexes: range });
+            if (this.isUndo) {
+                if (copiedInfo.isCut) {
+                    let cells = actionData.cutCellDetails;
+                    this.updateCellDetails(cells, getSheet(this.parent, getSheetIndexFromId(this.parent, copiedInfo.sId)), copiedInfo.range, isRefresh);
+                }
+                this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh);
+                setMaxHgt(sheet, range[0], range[1], 20);
+                let hgt = getMaxHgt(sheet, range[0]);
+                setRowEleHeight(this.parent, sheet, hgt, range[0]);
+                eventArgs.mergeCollection.forEach((mergeArgs) => {
+                    mergeArgs.merge = !mergeArgs.merge;
+                    this.parent.notify(setMerge, mergeArgs);
+                    mergeArgs.merge = !mergeArgs.merge;
+                });
+            }
+            else {
+                updateAction(args, this.parent, copiedInfo.isCut);
+            }
+            if (isRefresh) {
+                this.parent.notify(selectRange, { indexes: range });
+            }
         }
         return args;
     }
@@ -20391,6 +21795,9 @@ class UndoRedo {
         let isRefresh = this.checkRefreshNeeded(sheetIndex);
         if (this.isUndo) {
             this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh, args);
+            setMaxHgt(sheet, range[0], range[1], 20);
+            let hgt = getMaxHgt(sheet, range[0]);
+            setRowEleHeight(this.parent, sheet, hgt, range[0]);
         }
         else {
             updateAction(args, this.parent);
@@ -20409,7 +21816,8 @@ class UndoRedo {
                 cells.push({
                     rowIndex: i, colIndex: j, format: cell ? cell.format : null,
                     style: cell ? cell.style : null, value: cell ? cell.value : '', formula: cell ? cell.formula : '',
-                    wrap: cell && cell.wrap, rowSpan: cell && cell.rowSpan, colSpan: cell && cell.colSpan, hyperlink: cell && cell.hyperlink
+                    wrap: cell && cell.wrap, rowSpan: cell && cell.rowSpan, colSpan: cell && cell.colSpan,
+                    hyperlink: cell && cell.hyperlink, image: cell && cell.image
                 });
             }
         }
@@ -20543,14 +21951,45 @@ class WrapText {
                         colwidth = getColumnWidth(args.sheet, j);
                         cell = getCell(i, j, args.sheet);
                         let displayText = this.parent.getDisplayText(cell);
+                        if (displayText.indexOf('\n') < 0) {
+                            let editElem = this.parent.element.querySelector('.e-spreadsheet-edit');
+                            if (editElem) {
+                                if (editElem.textContent.indexOf('\n') > -1) {
+                                    displayText = editElem.textContent;
+                                }
+                            }
+                        }
                         if (displayText) {
                             if (args.wrap) {
-                                let lines = getLines(displayText, colwidth, cell.style, this.parent.cellStyle);
+                                if (ele.classList.contains('e-alt-unwrap')) {
+                                    ele.classList.remove('e-alt-unwrap');
+                                }
+                                let lines;
+                                let n = 0;
+                                let p;
+                                if (displayText.indexOf('\n') > -1) {
+                                    let splitVal = displayText.split('\n');
+                                    let valLength = splitVal.length;
+                                    for (p = 0; p < valLength; p++) {
+                                        lines = getLines(splitVal[p], colwidth, cell.style, this.parent.cellStyle);
+                                        if (lines === 0) {
+                                            lines = 1; // for empty new line
+                                        }
+                                        n = n + lines;
+                                    }
+                                    lines = n;
+                                }
+                                else {
+                                    lines = getLines(displayText, colwidth, cell.style, this.parent.cellStyle);
+                                }
                                 hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, lines) + 1;
                                 maxHgt = Math.max(maxHgt, hgt);
                                 setMaxHgt(args.sheet, i, j, hgt);
                             }
                             else {
+                                if (displayText.indexOf('\n') > -1) {
+                                    ele.classList.add('e-alt-unwrap');
+                                }
                                 hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, 1);
                                 setMaxHgt(args.sheet, i, j, hgt);
                                 maxHgt = Math.max(getMaxHgt(args.sheet, i), 20);
@@ -20650,7 +22089,9 @@ class Insert {
                         if (args.index < this.parent.viewport.topIndex) {
                             this.parent.viewport.topIndex += args.model.length;
                         }
-                        this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.topIndex === skipHiddenIdx(this.parent.getActiveSheet(), 0, true), rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex, refresh: 'Row' });
+                        this.parent.renderModule.refreshUI({
+                            skipUpdateOnFirst: this.parent.viewport.topIndex === skipHiddenIdx(this.parent.getActiveSheet(), 0, true), rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex, refresh: 'Row'
+                        });
                     }
                     else {
                         this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, rowIndex: args.index, colIndex: 0, refresh: 'Row' });
@@ -20664,17 +22105,39 @@ class Insert {
                         if (args.index < this.parent.viewport.leftIndex) {
                             this.parent.viewport.leftIndex += args.model.length;
                         }
-                        this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(this.parent.getActiveSheet(), 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex, refresh: 'Column' });
+                        this.parent.renderModule.refreshUI({
+                            skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(this.parent.getActiveSheet(), 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex, refresh: 'Column'
+                        });
                     }
                     else {
-                        this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, rowIndex: 0, colIndex: args.index, refresh: 'Column' });
+                        this.parent.renderModule.refreshUI({
+                            skipUpdateOnFirst: true, rowIndex: 0, colIndex: args.index, refresh: 'Column'
+                        });
                     }
                     this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
                 }
                 break;
         }
+        this.refreshImgElement(args.model.length, this.parent.activeSheetIndex, args.modelType, args.index);
         if (isAction) {
             this.parent.notify(completeAction, { eventArgs: args, action: 'insert' });
+        }
+    }
+    refreshImgElement(count, sheetIdx, modelType, index) {
+        let sheet = this.parent.sheets[sheetIdx];
+        let cellObj;
+        let indexes = [0, 0, sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
+        for (let i = 0; i <= indexes[2]; i++) {
+            for (let j = indexes[1]; j <= indexes[3]; j++) {
+                cellObj = getCell(i, j, sheet);
+                if (cellObj && cellObj.image && cellObj.image.length > 0) {
+                    if ((modelType === 'Row' && i >= index) || (modelType === 'Column' && j >= index)) {
+                        this.parent.notify(refreshImagePosition, {
+                            rowIdx: i, colIdx: j, sheetIdx: sheetIdx, type: modelType, count: count, status: 'insert'
+                        });
+                    }
+                }
+            }
         }
     }
     addEventListener() {
@@ -20733,8 +22196,10 @@ class Delete {
                     if (args.startIndex < this.parent.viewport.topIndex) {
                         this.parent.viewport.topIndex -= args.model.length;
                     }
-                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.topIndex === skipHiddenIdx(this.parent.getActiveSheet(), 0, true), rowIndex: this.parent.viewport.topIndex, refresh: 'Row',
-                        colIndex: this.parent.viewport.leftIndex });
+                    this.parent.renderModule.refreshUI({
+                        skipUpdateOnFirst: this.parent.viewport.topIndex === skipHiddenIdx(this.parent.getActiveSheet(), 0, true), rowIndex: this.parent.viewport.topIndex, refresh: 'Row',
+                        colIndex: this.parent.viewport.leftIndex
+                    });
                 }
                 else {
                     this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, refresh: 'Row', rowIndex: args.startIndex, colIndex: 0 });
@@ -20748,18 +22213,40 @@ class Delete {
                     if (args.startIndex < this.parent.viewport.leftIndex) {
                         this.parent.viewport.leftIndex -= args.model.length;
                     }
-                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(this.parent.getActiveSheet(), 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, refresh: 'Column',
-                        colIndex: this.parent.viewport.leftIndex });
+                    this.parent.renderModule.refreshUI({
+                        skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(this.parent.getActiveSheet(), 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, refresh: 'Column',
+                        colIndex: this.parent.viewport.leftIndex
+                    });
                 }
                 else {
-                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, refresh: 'Column', rowIndex: 0,
-                        colIndex: args.startIndex });
+                    this.parent.renderModule.refreshUI({
+                        skipUpdateOnFirst: true, refresh: 'Column', rowIndex: 0,
+                        colIndex: args.startIndex
+                    });
                 }
             }
             this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
         }
+        this.refreshImgElement(args.deletedModel.length, this.parent.activeSheetIndex, args.modelType, args.startIndex);
         if (isAction) {
             this.parent.notify(completeAction, { eventArgs: args, action: 'delete' });
+        }
+    }
+    refreshImgElement(count, sheetIdx, modelType, index) {
+        let sheet = this.parent.sheets[sheetIdx];
+        let cell;
+        let address = [0, 0, sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
+        for (let i = 0; i <= address[2]; i++) {
+            for (let j = address[1]; j <= address[3]; j++) {
+                cell = getCell(i, j, sheet);
+                if (cell && cell.image && cell.image.length > 0) {
+                    if ((modelType === 'Row' && i >= index) || (modelType === 'Column' && j >= index)) {
+                        this.parent.notify(refreshImagePosition, {
+                            rowIdx: i, colIdx: j, sheetIdx: sheetIdx, type: modelType, count: count, status: 'delete'
+                        });
+                    }
+                }
+            }
         }
     }
     addEventListener() {
@@ -21891,7 +23378,8 @@ class ProtectSheet {
             id + '_borders', id + '_text_align', id + '_vertical_align', id + '_wrap', id + '_sorting',
             id + '_clear', id + '_conditionalformatting'];
         let enableFrmlaBtnId = [id + '_insert_function'];
-        let enableInsertBtnId = [id + '_hyperlink'];
+        let enableInsertBtnId = [id + '_hyperlink', id + '_'];
+        let imageBtnId = [id + '_'];
         let findBtnId = [id + '_find'];
         let dataValidationBtnId = [id + '_datavalidation'];
         let sheetElement = document.getElementById(this.parent.element.id + '_sheet_panel');
@@ -21911,7 +23399,7 @@ class ProtectSheet {
         this.parent.dataBind();
         this.parent.notify(protectCellFormat, { disableHomeBtnId: disableHomeBtnId,
             enableHomeBtnId: enableHomeBtnId, enableFrmlaBtnId: enableFrmlaBtnId, enableInsertBtnId: enableInsertBtnId,
-            findBtnId: findBtnId, dataValidationBtnId: dataValidationBtnId });
+            findBtnId: findBtnId, dataValidationBtnId: dataValidationBtnId, imageBtnId: imageBtnId });
         this.parent.notify(enableFormulaInput, null);
         this.parent.notify(updateToggleItem, { props: 'Protect' });
     }
@@ -22802,15 +24290,7 @@ class ConditionalFormatting {
             width: 375, showCloseIcon: true, isModal: true, cssClass: 'e-conditionalformatting-dlg',
             header: args.action.replace('...', ''),
             target: document.querySelector('.e-control.e-spreadsheet'),
-            beforeOpen: (openArgs) => {
-                let dlgArgs = {
-                    dialogName: 'CFDialog', element: openArgs.element,
-                    target: openArgs.target, cancel: openArgs.cancel
-                };
-                this.parent.trigger('dialogBeforeOpen', dlgArgs);
-                if (dlgArgs.cancel) {
-                    openArgs.cancel = true;
-                }
+            beforeOpen: () => {
                 dialogInst.dialogInstance.content = this.cFDlgContent(args.action);
                 dialogInst.dialogInstance.dataBind();
                 this.parent.element.focus();
@@ -23069,6 +24549,7 @@ class ConditionalFormatting {
     }
     cFInitialCheckHandler(args) {
         let sheet = this.parent.getActiveSheet();
+        let formatStyle;
         let isApply = false;
         let cFColors = ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt'];
         let value = args.cell.value || '';
@@ -23078,23 +24559,40 @@ class ConditionalFormatting {
             return;
         }
         cFRule.type = cFRule.type || 'GreaterThan';
+        cFRule.cFColor = cFRule.cFColor ? cFRule.cFColor : cFRule.format ? cFRule.cFColor : 'RedFT';
         isApply = this.cFRCheck(cFRule, value, td, args.rowIdx, args.colIdx, true);
         if (isApply) {
             for (let idx = 0; idx < cFColors.length; idx++) {
                 if (td.classList.contains(cFColors[idx])) {
                     td.classList.remove(cFColors[idx]);
+                    break;
                 }
             }
-            cFRule.cFColor = cFRule.cFColor || 'RedFT';
-            td.classList.add('e-' + cFRule.cFColor.toLowerCase());
-            this.setFormat(td, cFRule);
-            if (cFRule && cFRule.format && cFRule.format.style) {
-                if (cFRule.format.style.backgroundColor) {
-                    td.style.setProperty('background-color', cFRule.format.style.backgroundColor);
-                }
-                if (cFRule.format.style.color) {
-                    td.style.setProperty('color', cFRule.format.style.color);
-                }
+            if (cFRule.format && cFRule.format.style) {
+                formatStyle = cFRule.format.style;
+            }
+            let style = {};
+            if (cFRule.cFColor) {
+                td.classList.add('e-' + cFRule.cFColor.toLowerCase());
+                style = this.setFormat(style, cFRule);
+            }
+            else {
+                style = formatStyle;
+            }
+            if (style.backgroundColor) {
+                td.style.setProperty('background-color', style.backgroundColor);
+            }
+            if (style.color) {
+                td.style.setProperty('color', style.color);
+            }
+            if (style.fontWeight) {
+                td.style.setProperty('font-weight', style.fontWeight);
+            }
+            if (style.fontStyle) {
+                td.style.setProperty('font-style', style.fontStyle);
+            }
+            if (style.textDecoration) {
+                td.style.setProperty('text-decoration', style.textDecoration);
             }
         }
     }
@@ -23159,7 +24657,6 @@ class ConditionalFormatting {
                             }
                         }
                     }
-                    isApply = true;
                 }
                 else if (('BlueDataBar' + 'GreenDataBar' + 'RedDataBar' + 'OrangeDataBar' + 'LightBlueDataBar' + 'PurpleColorScale' +
                     'GYRColorScale' + 'RYGColorScale' + 'GWRColorScale' + 'RWGColorScale' + 'BWRColorScale' + 'RWBColorScale' +
@@ -23183,31 +24680,64 @@ class ConditionalFormatting {
         let sheet = this.parent.getActiveSheet();
         let cFRules = sheet.conditionalFormats;
         let cFColors = ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt'];
+        let isActiveCF = false;
+        if (cFRules[cFRuleIdx].cFColor) {
+            if (td.classList.contains('e-' + cFRules[cFRuleIdx].cFColor.toLowerCase())) {
+                isActiveCF = true;
+            }
+        }
+        else if (cFRules[cFRuleIdx].format.style.backgroundColor && td.style.backgroundColor) {
+            let rgb = this.hexToRgb(cFRules[cFRuleIdx].format.style.backgroundColor);
+            if ('rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')' === td.style.backgroundColor) {
+                isActiveCF = true;
+            }
+        }
         if (isApply) {
-            for (let idx = 0; idx < cFColors.length; idx++) {
-                if (td.classList.contains(cFColors[idx])) {
-                    td.classList.remove(cFColors[idx]);
-                    break;
+            if (isActiveCF) {
+                for (let idx = 0; idx < cFColors.length; idx++) {
+                    if (td.classList.contains(cFColors[idx])) {
+                        td.classList.remove(cFColors[idx]);
+                        break;
+                    }
                 }
             }
-            td.classList.add('e-' + cFRules[cFRuleIdx].cFColor.toLowerCase());
-            this.setFormat(td, sheet.conditionalFormats[cFRuleIdx]);
+            let style = {};
+            if (cFRules[cFRuleIdx].cFColor) {
+                td.classList.add('e-' + cFRules[cFRuleIdx].cFColor.toLowerCase());
+                style = this.setFormat(style, cFRules[cFRuleIdx]);
+            }
+            else {
+                style = cFRules[cFRuleIdx].format.style;
+            }
             this.parent.notify(applyCellFormat, {
-                style: sheet.conditionalFormats[cFRuleIdx].format.style, rowIdx: rIdx, colIdx: cIdx,
+                style: style, rowIdx: rIdx, colIdx: cIdx,
                 lastCell: true, isHeightCheckNeeded: true, manualUpdate: true
             });
         }
         else {
-            for (let idx = 0; idx < cFColors.length; idx++) {
-                if (td.classList.contains(cFColors[idx])) {
-                    td.classList.remove(cFColors[idx]);
+            if (isActiveCF) {
+                for (let idx = 0; idx < cFColors.length; idx++) {
+                    if (td.classList.contains(cFColors[idx])) {
+                        td.classList.remove(cFColors[idx]);
+                        break;
+                    }
                 }
+                td.removeAttribute('style');
             }
-            let style = this.parent.getCellStyleValue(['backgroundColor', 'color'], [rIdx, cIdx]);
+            let cell = getCell(rIdx, cIdx, this.parent.getActiveSheet());
+            let style = cell.style ? cell.style : {};
             this.parent.notify(applyCellFormat, {
                 style: style, rowIdx: rIdx, colIdx: cIdx
             });
         }
+    }
+    hexToRgb(hex) {
+        let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
     }
     // tslint:disable-next-line:max-func-body-length
     cFRCheck(cFRule, value, td, rIdx, cIdx, isInitial) {
@@ -23946,31 +25476,28 @@ class ConditionalFormatting {
         }
         return type === 'Duplicate' ? false : true;
     }
-    setFormat(td, cFRule) {
-        if (!cFRule.format) {
-            cFRule.format = {};
+    setFormat(style, cFRule) {
+        switch (cFRule.cFColor) {
+            case 'RedFT':
+                style.backgroundColor = '#ffc7ce';
+                style.color = '#9c0055';
+                break;
+            case 'YellowFT':
+                style.backgroundColor = '#ffeb9c';
+                style.color = '#9c6500';
+                break;
+            case 'GreenFT':
+                style.backgroundColor = '#c6efce';
+                style.color = '#006100';
+                break;
+            case 'RedF':
+                style.backgroundColor = '#ffc7ce';
+                break;
+            case 'RedT':
+                style.color = '#9c0055';
+                break;
         }
-        if (!cFRule.format.style) {
-            cFRule.format.style = {};
-        }
-        if (td.classList.contains('e-redft')) {
-            cFRule.format.style.backgroundColor = '#ffc7ce';
-            cFRule.format.style.color = '#9c0055';
-        }
-        else if (td.classList.contains('e-yellowft')) {
-            cFRule.format.style.backgroundColor = '#ffeb9c';
-            cFRule.format.style.color = '#9c6500';
-        }
-        else if (td.classList.contains('e-greenft')) {
-            cFRule.format.style.backgroundColor = '#c6efce';
-            cFRule.format.style.color = '#006100';
-        }
-        else if (td.classList.contains('e-redf')) {
-            cFRule.format.style.backgroundColor = '#ffc7ce';
-        }
-        else if (td.classList.contains('e-redt')) {
-            cFRule.format.style.color = '#9c0055';
-        }
+        return style;
     }
     /**
      * Gets the module name.
@@ -24778,10 +26305,18 @@ class Ribbon$$1 {
                 ]
             },
             {
-                header: { text: l10n.getConstant('Insert') }, content: [{
+                header: { text: l10n.getConstant('Insert') }, content: [
+                    {
                         prefixIcon: 'e-hyperlink-icon', text: l10n.getConstant('Link'),
                         id: id + '_hyperlink', tooltipText: l10n.getConstant('Link'), click: () => { this.getHyperlinkDlg(); }
-                    }]
+                    },
+                    {
+                        prefixIcon: 'e-image-icon', text: l10n.getConstant('Image'),
+                        id: id + '_', tooltipText: l10n.getConstant('Image'), click: () => {
+                            this.parent.element.querySelector('#' + id + '_imageUpload').click();
+                        }
+                    }
+                ]
             },
             {
                 header: { text: l10n.getConstant('Formulas') }, content: [{
@@ -26681,10 +28216,12 @@ class Ribbon$$1 {
         if (sheet.isProtected) {
             this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId, enable: false }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Formulas'), items: args.enableFrmlaBtnId, enable: false }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: false }]);
         }
         else {
             this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId, enable: true }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Formulas'), items: args.enableFrmlaBtnId, enable: true }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: true }]);
         }
     }
     updateMergeItem(e) {
@@ -26858,6 +28395,9 @@ class FormulaBar {
     keyDownHandler(e) {
         let trgtElem = e.target;
         if (this.parent.isEdit && !this.parent.getActiveSheet().isProtected) {
+            if (checkIsFormula(trgtElem.value) && e.keyCode === 16) {
+                return;
+            }
             if (trgtElem.classList.contains('e-formula-bar')) {
                 this.parent.notify(editOperation, { action: 'refreshEditor', value: trgtElem.value, refreshEditorElem: true });
             }
@@ -26869,7 +28409,7 @@ class FormulaBar {
             if (trgtElem.classList.contains('e-formula-bar')) {
                 let eventArg = { action: 'getCurrentEditValue', editedValue: '' };
                 this.parent.notify(editOperation, eventArg);
-                if (eventArg.editedValue !== trgtElem.value) {
+                if (eventArg.editedValue !== trgtElem.value && e.keyCode !== 16) {
                     this.parent.notify(editOperation, { action: 'refreshEditor', value: trgtElem.value, refreshEditorElem: true });
                 }
             }
@@ -26923,13 +28463,17 @@ class FormulaBar {
         }
     }
     formulaBarUpdateHandler(e) {
-        let range = this.parent.getActiveSheet().selectedRange.split(':');
+        let sheet = this.parent.getActiveSheet();
+        let range = sheet.selectedRange.split(':');
         let address;
         let intl = new Internationalization();
         if (e.type === 'mousemove' || e.type === 'pointermove') {
             let indexes1 = getRangeIndexes(range[0]);
             let indexes2 = getRangeIndexes(range[1]);
             address = `${Math.abs(indexes1[0] - indexes2[0]) + 1}R x ${Math.abs(indexes1[1] - indexes2[1]) + 1}C`;
+            if (this.parent.isEdit) {
+                this.parent.notify(editValue, null);
+            }
         }
         else {
             address = range[0];
@@ -26965,7 +28509,14 @@ class FormulaBar {
                             value = cell.formula;
                         }
                     }
-                    document.getElementById(this.parent.element.id + '_formula_input').value = value;
+                    let formulaInp = document.getElementById(this.parent.element.id + '_formula_input');
+                    formulaInp.value = value;
+                    if (!isNullOrUndefined(value) && !this.parent.isEdit) {
+                        this.parent.notify(editOperation, { action: 'refreshEditor', value: formulaInp.value, refreshEditorElem: true });
+                    }
+                    if (this.parent.isEdit) {
+                        this.parent.notify(editValue, null);
+                    }
                 });
             });
         }
@@ -27438,15 +28989,15 @@ class Formula {
     onSelect(e) {
         let updatedFormulaValue = '=' + e.itemData.value + '(';
         if (this.isSubFormula) {
-            let editValue = this.getEditingValue();
-            let parseIndex = editValue.lastIndexOf(this.getArgumentSeparator());
+            let editValue$$1 = this.getEditingValue();
+            let parseIndex = editValue$$1.lastIndexOf(this.getArgumentSeparator());
             if (parseIndex > -1) {
-                updatedFormulaValue = editValue.slice(0, parseIndex + 1);
+                updatedFormulaValue = editValue$$1.slice(0, parseIndex + 1);
             }
             else {
-                parseIndex = editValue.lastIndexOf('(');
+                parseIndex = editValue$$1.lastIndexOf('(');
                 if (parseIndex > -1) {
-                    updatedFormulaValue = editValue.slice(0, parseIndex + 1);
+                    updatedFormulaValue = editValue$$1.slice(0, parseIndex + 1);
                 }
             }
             updatedFormulaValue += e.itemData.value + '(';
@@ -27473,13 +29024,13 @@ class Formula {
     }
     keyUpHandler(e) {
         if (this.parent.isEdit) {
-            let editValue = this.getEditingValue();
-            this.isFormula = checkIsFormula(editValue);
+            let editValue$$1 = this.getEditingValue();
+            this.isFormula = checkIsFormula(editValue$$1);
             if (this.isFormula || this.isPopupOpened) {
                 if (e.keyCode !== this.keyCodes.TAB && this.isFormula) {
-                    editValue = this.getSuggestionKeyFromFormula(editValue);
+                    editValue$$1 = this.getSuggestionKeyFromFormula(editValue$$1);
                 }
-                this.refreshFormulaSuggestion(e, editValue);
+                this.refreshFormulaSuggestion(e, editValue$$1);
             }
         }
         else if (this.isPopupOpened) {
@@ -27810,6 +29361,11 @@ class SheetTabs {
                         previousSheetIndex: args.previousIndex, currentSheetIndex: args.selectedIndex
                     };
                     this.parent.notify(completeAction, { eventArgs: completeEventArgs, action: 'gotoSheet' });
+                    let eventArgs = {
+                        action: 'registerGridInCalc',
+                        sheetID: (args.selectedIndex + 1).toString()
+                    };
+                    this.parent.notify(workbookFormulaOperation, eventArgs);
                 }
             },
             created: () => {
@@ -27884,8 +29440,13 @@ class SheetTabs {
         this.tabInstance.dataBind();
     }
     addSheetTab() {
-        this.parent.notify(insertModel, { model: this.parent, start: this.parent.activeSheetIndex + 1, end: this.parent.activeSheetIndex + 1, modelType: 'Sheet', isAction: true, activeSheetIndex: this.parent.activeSheetIndex + 1 });
-        this.parent.element.focus();
+        let eventArgs = { action: 'getCurrentEditValue', editedValue: '' };
+        this.parent.notify(editOperation, eventArgs);
+        let isFormulaEdit = checkIsFormula(eventArgs.editedValue);
+        if (!isFormulaEdit) {
+            this.parent.notify(insertModel, { model: this.parent, start: this.parent.activeSheetIndex + 1, end: this.parent.activeSheetIndex + 1, modelType: 'Sheet', isAction: true, activeSheetIndex: this.parent.activeSheetIndex + 1 });
+            this.parent.element.focus();
+        }
     }
     insertSheetTab(args) {
         this.dropDownInstance.items[this.tabInstance.selectedItem].iconCss = '';
@@ -28143,11 +29704,11 @@ class SheetTabs {
                 }
             }
             else {
-                this.destroySheet(sheetIndex);
                 let sheetArgs = {
-                    action: 'deleteSheetTab', sheetName: '', index: sheetIndex
+                    action: 'deleteSheetTab', sheetName: '', index: sheetIndex + 1
                 };
                 this.parent.notify(workbookFormulaOperation, sheetArgs);
+                this.destroySheet(sheetIndex);
                 this.parent.notify(clearUndoRedoCollection, null);
                 if (args && !args.isAction) {
                     eventArgs.sheetCount = this.parent.sheets.length;
@@ -28175,11 +29736,11 @@ class SheetTabs {
         }
     }
     forceDelete(sheetIndex) {
-        this.destroySheet(sheetIndex);
         let sheetArgs = {
-            action: 'deleteSheetTab', sheetName: '', index: sheetIndex
+            action: 'deleteSheetTab', sheetName: '', index: sheetIndex + 1
         };
         this.parent.notify(workbookFormulaOperation, sheetArgs);
+        this.destroySheet(sheetIndex);
     }
     destroySheet(sheetIndex) {
         let activeSheetIdx = sheetIndex || this.parent.activeSheetIndex;
@@ -29604,7 +31165,7 @@ class Filter {
      */
     processRange(sheet, sheetIdx, filterRange) {
         let range = getSwapRange(getIndexesFromAddress(filterRange || sheet.selectedRange));
-        if (range[0] === range[2] && range[1] === range[3]) { //if selected range is a single cell 
+        if (range[0] === range[2] && (range[2] - range[0]) === 0) { //if selected range is a single cell 
             range[0] = 0;
             range[1] = 0;
             range[2] = sheet.usedRange.rowIndex;
@@ -30089,6 +31650,269 @@ class Filter {
     }
 }
 
+class SpreadsheetImage {
+    constructor(parent) {
+        this.pictureCount = 1;
+        this.parent = parent;
+        this.addEventListener();
+        this.renderImageUpload();
+    }
+    /**
+     * Adding event listener for success and failure
+     */
+    addEventListener() {
+        this.parent.on(insertImage, this.insertImage, this);
+        this.parent.on(refreshImgElem, this.refreshImgElem, this);
+        this.parent.on(refreshImgCellObj, this.refreshImgCellObj, this);
+        this.parent.on(createImageElement, this.createImageElement, this);
+        this.parent.on(deleteImage, this.deleteImage, this);
+        this.parent.on(refreshImagePosition, this.refreshInsDelImagePosition, this);
+    }
+    /**
+     * Rendering upload component for importing images.
+     */
+    renderImageUpload() {
+        let uploadID = this.parent.element.id + '_imageUpload';
+        this.parent.element.appendChild(this.parent.createElement('input', {
+            id: uploadID,
+            attrs: { type: 'file', accept: '.image, .jpg, .png, .gif ,jpeg', name: 'fileUpload' }
+        }));
+        let uploadBox = document.getElementById(uploadID);
+        uploadBox.onchange = this.imageSelect.bind(this);
+        uploadBox.style.display = 'none';
+    }
+    /**
+     * Process after select the excel and image file.
+     * @param {Event} args - File select native event.
+     */
+    imageSelect(args) {
+        /* tslint:disable-next-line:no-any */
+        let filesData = args.target.files[0];
+        if (filesData && filesData.length < 1) {
+            return;
+        }
+        let impArgs = {
+            file: filesData
+        };
+        /* tslint:disable-next-line:no-any */
+        if (impArgs.file.type.indexOf('image') === 0) {
+            this.insertImage(impArgs);
+        }
+        else {
+            this.parent.serviceLocator.getService(dialog).show({
+                content: this.parent.serviceLocator.getService('spreadsheetLocale')
+                    .getConstant('UnsupportedFile'),
+                width: '300'
+            });
+        }
+        document.getElementById(this.parent.element.id + '_imageUpload').value = '';
+    }
+    /**
+     * Removing event listener for success and failure
+     */
+    removeEventListener() {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(insertImage, this.insertImage);
+            this.parent.off(refreshImgCellObj, this.refreshImgCellObj);
+            this.parent.off(createImageElement, this.createImageElement);
+            this.parent.off(deleteImage, this.deleteImage);
+            this.parent.off(refreshImagePosition, this.refreshInsDelImagePosition);
+        }
+    }
+    // tslint:disable
+    insertImage(args, range) {
+        this.binaryStringVal(args).then(src => this.createImageElement({ options: { src: src }, range: range, isPublic: true }));
+    }
+    binaryStringVal(args) {
+        return new Promise((resolve, reject) => {
+            let reader = new FileReader();
+            reader.readAsDataURL(args.file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    }
+    // tslint:enable
+    createImageElement(args) {
+        let range = args.range ? (args.range.indexOf('!') > 0) ? args.range.split('!')[1] : args.range.split('!')[0]
+            : this.parent.getActiveSheet().selectedRange;
+        let sheetIndex = (args.range && args.range.indexOf('!') > 0) ?
+            getSheetIndex(this.parent, args.range.split('!')[0]) : this.parent.activeSheetIndex;
+        let overlayObj = this.parent.serviceLocator.getService(overlay);
+        let id = args.options.imageId ? args.options.imageId : this.parent.element.id + '_overlay_picture_' + this.pictureCount;
+        let indexes = getRangeIndexes(range);
+        let sheet = sheetIndex ? this.parent.sheets[sheetIndex] : this.parent.getActiveSheet();
+        if (document.getElementById(id)) {
+            return;
+        }
+        let eventArgs = {
+            requestType: 'beforeInsertImage', range: sheet.name + '!' + range,
+            imageData: args.options.src, sheetIndex: sheetIndex
+        };
+        if (args.isPublic) {
+            this.parent.notify('actionBegin', { eventArgs: eventArgs, action: 'beforeInsertImage' });
+        }
+        if (eventArgs.cancel) {
+            return;
+        }
+        let element = overlayObj.insertOverlayElement(id, range, sheetIndex);
+        element.style.backgroundImage = 'url(\'' + args.options.src + '\')';
+        if (args.options.height || args.options.left) {
+            element.style.height = args.options.height + 'px';
+            element.style.width = args.options.width + 'px';
+            element.style.top = args.options.top + 'px';
+            element.style.left = args.options.left + 'px';
+        }
+        if (!args.options.imageId) {
+            this.pictureCount++;
+        }
+        let imgData = {
+            src: args.options.src, id: id, height: parseFloat(element.style.height.replace('px', '')),
+            width: parseFloat(element.style.width.replace('px', '')), top: parseFloat(element.style.top.replace('px', '')),
+            left: parseFloat(element.style.left.replace('px', ''))
+        };
+        this.parent.setUsedRange(indexes[0], indexes[1]);
+        if (args.isPublic || args.isUndoRedo) {
+            this.parent.notify(setImage, { options: [imgData], range: sheet.name + '!' + range });
+        }
+        let currCell = getCell(indexes[0], indexes[1], sheet);
+        if (!currCell.image[currCell.image.length - 1].id) {
+            currCell.image[currCell.image.length - 1].id = imgData.id;
+        }
+        eventArgs = {
+            requestType: 'insertImage', range: sheet.name + '!' + range, imageHeight: args.options.height ? args.options.height : 300,
+            imageWidth: args.options.width ? args.options.width : 400, imageData: args.options.src, id: id, sheetIndex: sheetIndex
+        };
+        if (!args.isUndoRedo && args.isPublic) {
+            this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'insertImage' });
+        }
+    }
+    refreshImgElem() {
+        let overlayElem = document.getElementsByClassName('e-ss-overlay-active')[0];
+        if (overlayElem) {
+            removeClass([overlayElem], 'e-ss-overlay-active');
+        }
+    }
+    refreshInsDelImagePosition(args) {
+        let count = args.count;
+        let sheetIdx = args.sheetIdx;
+        let sheet = this.parent.sheets[sheetIdx];
+        let pictureElements;
+        let currCellObj = getCell(args.rowIdx, args.colIdx, sheet);
+        let imageLen = currCellObj.image.length;
+        let top;
+        let left;
+        for (let i = 0; i < imageLen; i++) {
+            pictureElements = document.getElementById(currCellObj.image[i].id);
+            top = (args.type === 'Row') ? (args.status === 'insert') ? currCellObj.image[i].top + (count * 20) :
+                currCellObj.image[i].top - (count * 20) : currCellObj.image[i].top;
+            left = (args.type === 'Column') ? (args.status === 'insert') ? currCellObj.image[i].left + (count * 64) :
+                currCellObj.image[i].left - (count * 64) : currCellObj.image[i].left;
+            currCellObj.image[i].top = top;
+            currCellObj.image[i].left = left;
+            pictureElements.style.top = top + 'px';
+            pictureElements.style.left = left + 'px';
+        }
+    }
+    refreshImgCellObj(args) {
+        let prevRowIdx = { clientY: args.prevTop, isImage: true };
+        this.parent.notify(getRowIdxFromClientY, prevRowIdx);
+        let currRowIdx = { clientY: args.currentTop, isImage: true };
+        this.parent.notify(getRowIdxFromClientY, currRowIdx);
+        let prevColIdx = { clientX: args.prevLeft, isImage: true };
+        this.parent.notify(getColIdxFromClientX, prevColIdx);
+        let currColIdx = { clientX: args.currentLeft, isImage: true };
+        this.parent.notify(getColIdxFromClientX, currColIdx);
+        let sheet = this.parent.sheets[this.parent.activeSheetIndex];
+        let prevCellObj = getCell(prevRowIdx.clientY, prevColIdx.clientX, sheet);
+        let currCellObj = getCell(currRowIdx.clientY, currColIdx.clientX, sheet);
+        let prevCellImg = prevCellObj ? prevCellObj.image : [];
+        let prevImgObj;
+        let currImgObj;
+        let prevCellImgLen = (prevCellImg && prevCellImg.length) ? prevCellImg.length : 0;
+        if (prevCellObj && prevCellObj.image) {
+            for (let i = 0; i < prevCellImgLen; i++) {
+                if (prevCellImg[i].id === args.id) {
+                    prevImgObj = prevCellImg[i];
+                    prevImgObj.height = args.currentHeight;
+                    prevImgObj.width = args.currentWidth;
+                    prevImgObj.top = args.currentTop;
+                    prevImgObj.left = args.currentLeft;
+                    prevCellImg.splice(i, 1);
+                }
+            }
+            if (currCellObj && currCellObj.image) {
+                currImgObj = currCellObj.image;
+                if (prevImgObj) {
+                    currImgObj.push(prevImgObj);
+                }
+            }
+            (currImgObj) ? setCell(currRowIdx.clientY, currColIdx.clientX, sheet, { image: currImgObj }, true) :
+                setCell(currRowIdx.clientY, currColIdx.clientX, sheet, { image: [prevImgObj] }, true);
+            if (args.requestType === 'imageRefresh' && !args.isUndoRedo) {
+                let eventArgs = {
+                    requestType: 'imageRefresh', currentRowIdx: currRowIdx.clientY, currentColIdx: currColIdx.clientX,
+                    prevRowIdx: prevRowIdx.clientY, prevColIdx: prevColIdx.clientX, prevTop: args.prevTop, prevLeft: args.prevLeft,
+                    currentTop: args.currentTop, currentLeft: args.currentLeft, currentHeight: args.currentHeight,
+                    currentWidth: args.currentWidth, prevHeight: args.prevHeight, prevWidth: args.prevWidth,
+                    id: args.id, sheetIdx: this.parent.activeSheetIndex
+                };
+                this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'imageRefresh' });
+            }
+        }
+    }
+    deleteImage(args) {
+        let sheet;
+        let pictureElements = document.getElementById(args.id);
+        let rowIdx;
+        let colIdx;
+        let cellObj;
+        let prevCellImg;
+        let imgLength;
+        if (pictureElements) {
+            let imgTop = { clientY: pictureElements.offsetTop, isImage: true };
+            this.parent.notify(getRowIdxFromClientY, imgTop);
+            let imgleft = { clientX: pictureElements.offsetLeft, isImage: true };
+            this.parent.notify(getColIdxFromClientX, imgleft);
+            document.getElementById(args.id).remove();
+            rowIdx = imgTop.clientY;
+            colIdx = imgleft.clientX;
+            sheet = this.parent.sheets[this.parent.activeSheetIndex];
+        }
+        else {
+            let rangeVal = args.range ? args.range.indexOf('!') > 0 ? args.range.split('!')[1] : args.range.split('!')[0] :
+                this.parent.getActiveSheet().selectedRange;
+            let sheetIndex = args.range && args.range.indexOf('!') > 0 ? getSheetIndex(this.parent, args.range.split('!')[0]) :
+                this.parent.activeSheetIndex;
+            let index = getRangeIndexes(rangeVal);
+            rowIdx = index[0];
+            colIdx = index[1];
+            sheet = this.parent.sheets[sheetIndex];
+        }
+        cellObj = getCell(rowIdx, colIdx, sheet);
+        prevCellImg = cellObj.image;
+        imgLength = prevCellImg.length;
+        for (let i = 0; i < imgLength; i++) {
+            if (prevCellImg[i].id === args.id) {
+                prevCellImg.splice(i, 1);
+            }
+        }
+        setCell(rowIdx, colIdx, sheet, { image: prevCellImg }, true);
+    }
+    /**
+     * To Remove the event listeners.
+     */
+    destroy() {
+        this.removeEventListener();
+        this.parent = null;
+    }
+    /**
+     * Get the sheet picture module name.
+     */
+    getModuleName() {
+        return 'spreadsheetImage';
+    }
+}
+
 /**
  * Export Spreadsheet integration modules
  */
@@ -30103,7 +31927,7 @@ class BasicModule {
      * @private
      */
     constructor() {
-        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, Sort, CollaborativeEditing, UndoRedo, Resize, Filter, SpreadsheetHyperlink, WrapText, Insert, Delete, ProtectSheet, DataValidation, FindAndReplace, Merge, ConditionalFormatting);
+        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, Sort, CollaborativeEditing, UndoRedo, Resize, Filter, SpreadsheetHyperlink, WrapText, Insert, Delete, ProtectSheet, DataValidation, FindAndReplace, Merge, ConditionalFormatting, SpreadsheetImage);
     }
     /**
      * For internal use only - Get the module name.
@@ -30131,7 +31955,7 @@ class AllModule {
      * @private
      */
     constructor() {
-        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, Save, NumberFormat, CellFormat, Formula, Sort, Resize, CollaborativeEditing, UndoRedo, Filter, SpreadsheetHyperlink, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting);
+        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, Save, NumberFormat, CellFormat, Formula, Sort, Resize, CollaborativeEditing, UndoRedo, Filter, SpreadsheetHyperlink, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, SpreadsheetImage, ConditionalFormatting);
     }
     /**
      * For internal use only - Get the module name.
@@ -30571,7 +32395,8 @@ let defaultLocale = {
     CellReference: 'Cell Reference',
     DefinedNames: 'Defined Names',
     EnterTheTextToDisplay: 'Enter the text to display',
-    EnterTheUrl: 'Enter the URL'
+    EnterTheUrl: 'Enter the URL',
+    Image: 'Image'
 };
 
 /**
@@ -30770,6 +32595,9 @@ class SheetRender {
             }
             setAriaOptions(this.parent.getMainContent(), { busy: false });
             this.parent.trigger(dataBound, {});
+            if (this.parent.isEdit) {
+                this.parent.notify(initiateEdit, null);
+            }
             if (args.initLoad) {
                 let triggerEvent = true;
                 if (this.parent.scrollSettings.enableVirtualization) {
@@ -31079,6 +32907,10 @@ class SheetRender {
         if (this.parent.scrollSettings.enableVirtualization) {
             this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
         }
+        if (this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0] &&
+            checkIsFormula(this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0].textContent)) {
+            this.parent.notify(forRefSelRender, null);
+        }
         if (!this.parent.isOpen) {
             this.parent.hideSpinner();
         }
@@ -31358,6 +33190,17 @@ class CellRenderer {
             row: args.row,
             hRow: args.hRow
         });
+        let isWrap = args.td.classList.contains('e-wraptext');
+        let cellValue = args.td.innerHTML;
+        if (cellValue.indexOf('\n') > -1 && !isWrap) {
+            let splitVal = cellValue.split('\n');
+            if (splitVal.length > 1) {
+                wrap(args.address, true, this.parent);
+                let ht = getTextHeight(this.parent, args.cell.style || this.parent.cellStyle, splitVal.length);
+                this.parent.setRowHeight(ht, args.rowIdx, this.parent.activeSheetIndex + 1, true);
+                this.parent.getRow(args.rowIdx, this.parent.getRowHeaderTable()).style.height = `${ht}px`;
+            }
+        }
         return evtArgs.element;
     }
     update(args) {
@@ -31375,11 +33218,7 @@ class CellRenderer {
         if (args.cell && args.cell.formula && !args.cell.value) {
             let isFormula = checkIsFormula(args.cell.formula);
             let eventArgs = {
-                action: 'refreshCalculate',
-                value: args.cell.formula,
-                rowIndex: args.rowIdx,
-                colIndex: args.colIdx,
-                isFormula: isFormula
+                action: 'refreshCalculate', value: args.cell.formula, rowIndex: args.rowIdx, colIndex: args.colIdx, isFormula: isFormula
             };
             this.parent.notify(workbookFormulaOperation, eventArgs);
             args.cell.value = getCell(args.rowIdx, args.colIdx, this.parent.getActiveSheet()).value;
@@ -31428,6 +33267,18 @@ class CellRenderer {
                     this.parent.hiddenCount(args.colIdx, args.colIdx + (args.cell.colSpan - 1), 'columns');
                 if (colSpan > 1) {
                     args.td.colSpan = colSpan;
+                }
+            }
+            if (args.cell.image) {
+                for (let i = 0; i < args.cell.image.length; i++) {
+                    this.parent.notify(createImageElement, {
+                        options: {
+                            src: args.cell.image[i].src, imageId: args.cell.image[i].id,
+                            height: args.cell.image[i].height, width: args.cell.image[i].width,
+                            top: args.cell.image[i].top, left: args.cell.image[i].left
+                        },
+                        range: getRangeAddress([args.rowIdx, args.colIdx, args.rowIdx, args.colIdx]), isPublic: false
+                    });
                 }
             }
         }
@@ -31605,7 +33456,7 @@ class CellRenderer {
 }
 
 /**
- * Export Spreadsheet viewer
+ * Export the Spreadsheet viewer
  */
 
 /**
@@ -31930,8 +33781,8 @@ class ActionEvents {
     actionBeginHandler(args) {
         this.parent.trigger('actionBegin', { action: args.action, args: args });
         if (args.action === 'clipboard' || args.action === 'beforeSort' || args.action === 'format' || args.action === 'cellSave'
-            || args.action === 'beforeWrap' || args.action === 'beforeReplace' || args.action === 'beforeReplaceAll'
-            || args.action === 'beforeClear') {
+            || args.action === 'beforeWrap' || args.action === 'beforeReplace'
+            || args.action === 'beforeClear' || args.action === 'beforeInsertImage') {
             this.parent.notify(setActionData, { args: args });
         }
     }
@@ -31964,38 +33815,44 @@ class Overlay {
         this.minWidth = '400px';
         this.isOverlayClicked = false;
         this.isResizerClicked = false;
+        this.currentWidth = 400;
+        this.currenHeight = 300;
         this.parent = parent;
     }
     /**
      * To insert a shape.
      * @hidden
      */
-    insertOverlayElement() {
-        let sheet = this.parent.getActiveSheet();
+    insertOverlayElement(id, range, sheetIndex) {
         let div = this.parent.createElement('div', {
-            id: this.parent.element.id + '_overlay',
+            id: id,
             attrs: { 'class': 'e-ss-overlay' },
             styles: 'width: ' + this.minWidth + ';  height: ' + this.minHeight
         });
-        let indexes = getRangeIndexes(sheet.activeCell);
+        let indexes = getRangeIndexes(range);
+        let sheet = this.parent.sheets[sheetIndex];
         let pos = getCellPosition(sheet, indexes);
         div.style.top = pos.top + 'px';
         div.style.left = pos.left + 'px';
         this.parent.getMainContent().appendChild(div);
-        this.renderResizeHandles();
-        this.addEventListener();
-        this.sheetTop = this.parent.getMainContent().getClientRects()[0].top;
-        this.sheetLeft = this.parent.getMainContent().getClientRects()[0].left;
+        this.renderResizeHandles(div);
+        this.addEventListener(div);
+        this.sheetTop = document.getElementById(this.parent.element.id + '_sheet_panel').getClientRects()[0].top + 31;
+        this.sheetLeft = document.getElementById(this.parent.element.id + '_sheet_panel').getClientRects()[0].left + 30;
+        this.originalWidth = parseFloat(getComputedStyle(div, null).getPropertyValue('width').replace('px', ''));
+        this.originalHeight = parseFloat(getComputedStyle(div, null).getPropertyValue('height').replace('px', ''));
+        return div;
     }
-    addEventListener() {
-        let overlayElem = document.getElementById(this.parent.element.id + '_overlay');
+    addEventListener(div) {
+        let overlayElem = div;
         EventHandler.add(overlayElem, 'mousedown', this.overlayClickHandler, this);
         EventHandler.add(overlayElem, 'mousemove', this.overlayMouseMoveHandler, this);
         EventHandler.add(this.parent.getMainContent(), 'mousemove', this.overlayMouseMoveHandler, this);
         EventHandler.add(document, 'mouseup', this.overlayMouseUpHandler, this);
     }
     overlayMouseMoveHandler(e) {
-        let overlayElem = document.getElementById(this.parent.element.id + '_overlay');
+        let target = e.target;
+        let overlayElem = document.getElementsByClassName('e-ss-overlay-active')[0];
         if (this.isOverlayClicked && this.isResizerClicked) {
             switch (this.resizer) {
                 case 'e-ss-overlay-t':
@@ -32004,18 +33861,22 @@ class Overlay {
                     if (height1 > 180 && top > -1) {
                         overlayElem.style.height = height1 + 'px';
                         overlayElem.style.top = top + 'px';
+                        this.resizedReorderTop = e.clientX; // resized divTop
+                        this.currenHeight = height1;
                     }
                     break;
                 case 'e-ss-overlay-r':
                     const width1 = this.originalWidth + (e.pageX - this.originalMouseX);
                     if (width1 > 180) {
                         overlayElem.style.width = width1 + 'px';
+                        this.currentWidth = width1;
                     }
                     break;
                 case 'e-ss-overlay-b':
                     const height2 = this.originalHeight + (e.pageY - this.originalMouseY);
                     if (height2 > 180) {
                         overlayElem.style.height = height2 + 'px';
+                        this.currenHeight = height2;
                     }
                     break;
                 case 'e-ss-overlay-l':
@@ -32024,6 +33885,8 @@ class Overlay {
                     if (width2 > 180 && left > -1) {
                         overlayElem.style.width = width2 + 'px';
                         overlayElem.style.left = left + 'px';
+                        this.resizedReorderLeft = left; //resized divLeft
+                        this.currentWidth = width2;
                     }
                     break;
             }
@@ -32039,11 +33902,35 @@ class Overlay {
             if (aY > -1) {
                 overlayElem.style.top = aY + 'px';
             }
+            this.resizedReorderLeft = aX; //resized divLeft
+            this.resizedReorderTop = aY; // resized divTop
         }
     }
     overlayMouseUpHandler(e) {
         this.isOverlayClicked = false;
         this.isResizerClicked = false;
+        let elem = e.target;
+        let eventArgs = {
+            prevTop: this.originalReorderTop, prevLeft: this.originalReorderLeft,
+            currentTop: this.resizedReorderTop ? this.resizedReorderTop : this.originalReorderTop, currentLeft: this.resizedReorderLeft ?
+                this.resizedReorderLeft : this.originalReorderLeft, id: elem.id, currentHeight: this.currenHeight,
+            currentWidth: this.currentWidth, requestType: 'imageRefresh',
+            prevHeight: this.originalHeight, prevWidth: this.originalWidth
+        };
+        if (elem.id.indexOf('overlay') > 0 || elem.classList.contains('e-ss-resizer')) {
+            if (this.originalReorderTop !== this.resizedReorderTop || this.originalReorderLeft !== this.resizedReorderLeft) {
+                eventArgs.id = elem.id;
+                this.parent.notify(refreshImgCellObj, eventArgs);
+                this.resizedReorderTop = this.originalReorderTop;
+                this.resizedReorderLeft = this.originalReorderLeft;
+            }
+            else if (this.currenHeight !== this.originalHeight || this.originalWidth !== this.currentWidth) {
+                eventArgs.id = elem.id.indexOf('overlay') > 0 ? elem.id : elem.parentElement.id;
+                this.parent.notify(refreshImgCellObj, eventArgs);
+                this.originalHeight = this.currenHeight;
+                this.originalWidth = this.currentWidth;
+            }
+        }
     }
     overlayClickHandler(e) {
         this.isOverlayClicked = true;
@@ -32054,13 +33941,19 @@ class Overlay {
         }
         this.originalReorderLeft = parseInt(overlayElem.style.left, 10); //divLeft
         this.originalReorderTop = parseInt(overlayElem.style.top, 10); // divTop
-        this.originalResizeTop = overlayElem.getClientRects()[0].top;
-        this.originalResizeLeft = overlayElem.getClientRects()[0].left;
+        this.resizedReorderLeft = parseInt(overlayElem.style.left, 10); //resized divLeft
+        this.resizedReorderTop = parseInt(overlayElem.style.top, 10); // resized divTop
+        this.originalResizeTop = this.originalReorderTop;
+        this.originalResizeLeft = this.originalReorderLeft;
         this.originalMouseX = e.clientX; // posX
         this.originalMouseY = e.clientY; // posY
         this.diffX = this.originalMouseX - this.originalReorderLeft;
         this.diffY = this.originalMouseY - this.originalReorderTop;
-        document.getElementById(this.parent.element.id + '_overlay').classList.add('e-ss-overlay-active');
+        let actOverlayElem = document.getElementsByClassName('e-ss-overlay-active')[0];
+        if (actOverlayElem) {
+            removeClass([actOverlayElem], 'e-ss-overlay-active');
+        }
+        document.getElementById(overlayElem.id).classList.add('e-ss-overlay-active');
         if (target.classList.contains('e-ss-resizer')) {
             this.resizer = target.classList[0];
             this.originalWidth = parseFloat(getComputedStyle(overlayElem, null).getPropertyValue('width').replace('px', ''));
@@ -32068,11 +33961,11 @@ class Overlay {
             this.isResizerClicked = true;
         }
     }
-    renderResizeHandles() {
+    renderResizeHandles(div) {
         let handles = ['e-ss-overlay-t', 'e-ss-overlay-r', 'e-ss-overlay-b', 'e-ss-overlay-l'];
         let i = 0;
         let handleElem;
-        let overlay = document.getElementById(this.parent.element.id + '_overlay');
+        let overlay = div;
         while (handles.length > i) {
             handleElem = this.parent.createElement('div', {
                 attrs: { 'class': handles[i] + ' ' + 'e-ss-resizer' },
@@ -32136,7 +34029,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
             bottomIndex: 0, rightIndex: 0
         };
         this.needsID = true;
-        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink, WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation, ProtectSheet, FindAndReplace, WorkbookFindAndReplace, Merge, WorkbookMerge, ConditionalFormatting, WorkbookConditionalFormat);
+        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink, WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation, ProtectSheet, FindAndReplace, WorkbookFindAndReplace, Merge, WorkbookMerge, SpreadsheetImage, ConditionalFormatting, WorkbookImage, WorkbookConditionalFormat);
         if (element) {
             this.appendTo(element);
         }
@@ -32587,7 +34480,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @param {number} sheetIndex? - Specifies the sheetIndex. If not specified, it will consider the active sheet.
      * {% codeBlock src='spreadsheet/setRowHeight/index.md' %}{% endcodeBlock %}
      */
-    setRowHeight(height = 20, rowIndex = 0, sheetIndex) {
+    setRowHeight(height = 20, rowIndex = 0, sheetIndex, edited) {
         let sheet = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex - 1];
         if (sheet) {
             let mIndex = rowIndex;
@@ -32607,7 +34500,13 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
                     let oldIdx = parseInt(trgt.parentElement.getAttribute('aria-rowindex'), 10) - 1;
                     if (this.getActiveSheet() === sheet) {
                         this.notify(rowHeightChanged, { threshold, rowIdx: oldIdx });
-                        setResize(rowIndex, rowHeight, false, this);
+                        if (isNullOrUndefined(edited)) {
+                            edited = false;
+                        }
+                        if (!edited) {
+                            setResize(rowIndex, rowHeight, false, this);
+                            edited = false;
+                        }
                     }
                 }
                 else {
@@ -32904,6 +34803,38 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      */
     clear(options) {
         this.notify(clearViewer, { options: options, isPublic: true });
+    }
+    /**
+     * Used to refresh the spreadsheet.
+     * @param {boolean} isNew - Specifies `true` / `false` to create new workbook in spreadsheet.
+     * @returns void
+     */
+    refresh(isNew) {
+        (isNew) ? this.notify(blankWorkbook, {}) : super.refresh();
+    }
+    /**
+     * Used to set the image in spreadsheet.
+     * @param {ImageModel} images - Specifies the options to insert image in spreadsheet.
+     * @param {string} range - Specifies the range in spreadsheet.
+     * @returns void
+     */
+    insertImage(images, range) {
+        let i;
+        for (i = 0; i < images.length; i++) {
+            this.notify(createImageElement, {
+                options: images[i],
+                range: range ? range : this.getActiveSheet().selectedRange, isPublic: true
+            });
+        }
+    }
+    /**
+     * Used to delete the image in spreadsheet.
+     * @param {string} id - Specifies the id of the image element to be deleted.
+     * @param {string} range - Specifies the range in spreadsheet.
+     * @returns void
+     */
+    deleteImage(id, range) {
+        this.notify(deleteImage, { id: id, range: range ? range : this.getActiveSheet().selectedRange });
     }
     /**
      * Gets the row header div of the Spreadsheet.
@@ -33642,5 +35573,5 @@ Spreadsheet = Spreadsheet_1 = __decorate$9([
  * Export Spreadsheet modules
  */
 
-export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, Format, ConditionalFormat, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, checkIsFormula, isCellReference, isChar, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
+export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, Format, ConditionalFormat, Image, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, setImage, checkIsFormula, isCellReference, isChar, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookImage, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, initiateFormulaReference, initiateCur, clearCellRef, editValue, addressHandle, initiateEdit, forRefSelRender, blankWorkbook, insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY, getColIdxFromClientX, createImageElement, deleteImage, refreshImagePosition, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, SpreadsheetImage, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
 //# sourceMappingURL=ej2-spreadsheet.es2015.js.map

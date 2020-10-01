@@ -1,13 +1,13 @@
 import { Spreadsheet } from '../base/index';
 import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, checkConditionalFormat } from '../common/index';
-import { hasTemplate, createHyperlinkElement, checkPrevMerge } from '../common/index';
-import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes } from '../../workbook/common/index';
+import { hasTemplate, createHyperlinkElement, checkPrevMerge, getTextHeight, createImageElement } from '../common/index';
+import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { CellStyleExtendedModel } from '../../workbook/common/index';
 import { CellModel, SheetModel, getCell, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol } from '../../workbook/base/index';
 import { getRowHeight, setRowHeight } from '../../workbook/base/index';
 import { addClass, attributes, getNumberDependable, extend, compile, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent, cFRender } from '../../workbook/common/event';
-import { getTypeFromFormat } from '../../workbook/index';
+import { getTypeFromFormat, wrap as wrapText } from '../../workbook/index';
 import { checkIsFormula } from '../../workbook/common/util';
 /**
  * CellRenderer class which responsible for building cell content.
@@ -65,6 +65,17 @@ export class CellRenderer implements ICellRenderer {
             row: args.row,
             hRow: args.hRow
         });
+        let isWrap: boolean = args.td.classList.contains('e-wraptext');
+        let cellValue: string = args.td.innerHTML;
+        if (cellValue.indexOf('\n') > -1 && !isWrap) {
+            let splitVal: string[] = cellValue.split('\n');
+            if (splitVal.length > 1) {
+                wrapText(args.address, true, this.parent);
+                let ht: number = getTextHeight(this.parent, args.cell.style || this.parent.cellStyle, splitVal.length);
+                this.parent.setRowHeight(ht, args.rowIdx, this.parent.activeSheetIndex + 1, true);
+                this.parent.getRow(args.rowIdx, this.parent.getRowHeaderTable()).style.height = `${ht}px`;
+            }
+        }
         return evtArgs.element;
     }
     private update(args: CellRenderArgs): void {
@@ -75,21 +86,14 @@ export class CellRenderer implements ICellRenderer {
         if (args.cell && args.cell.formula && !args.cell.value) {
             let isFormula: boolean = checkIsFormula(args.cell.formula);
             let eventArgs: { [key: string]: string | number | boolean } = {
-                action: 'refreshCalculate',
-                value: args.cell.formula,
-                rowIndex: args.rowIdx,
-                colIndex: args.colIdx,
-                isFormula: isFormula
-            };
+                action: 'refreshCalculate', value: args.cell.formula, rowIndex: args.rowIdx, colIndex: args.colIdx, isFormula: isFormula };
             this.parent.notify(workbookFormulaOperation, eventArgs);
-            args.cell.value = getCell(args.rowIdx, args.colIdx, this.parent.getActiveSheet()).value;
-        }
+            args.cell.value = getCell(args.rowIdx, args.colIdx, this.parent.getActiveSheet()).value; }
         let formatArgs: { [key: string]: string | boolean | CellModel } = {
             type: args.cell && getTypeFromFormat(args.cell.format),
             value: args.cell && args.cell.value, format: args.cell && args.cell.format ? args.cell.format : 'General',
             formattedText: args.cell && args.cell.value, onLoad: true, isRightAlign: false, cell: args.cell,
-            rowIdx: args.rowIdx.toString(), colIdx: args.colIdx.toString()
-        };
+            rowIdx: args.rowIdx.toString(), colIdx: args.colIdx.toString() };
         if (args.cell) { this.parent.notify(getFormattedCellObject, formatArgs); }
         if (!isNullOrUndefined(args.td)) {
             this.parent.refreshNode(args.td, { type: formatArgs.type as string, result: formatArgs.formattedText as string,
@@ -102,9 +106,7 @@ export class CellRenderer implements ICellRenderer {
             if (args.cell.style) {
                 if ((args.cell.style as CellStyleExtendedModel).properties) {
                     style = skipDefaultValue(args.cell.style, true);
-                } else {
-                    style = args.cell.style;
-                }
+                } else { style = args.cell.style; }
             }
             if (args.cell.hyperlink) {
                 this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
@@ -123,6 +125,18 @@ export class CellRenderer implements ICellRenderer {
                 let colSpan: number = args.cell.colSpan -
                     this.parent.hiddenCount(args.colIdx, args.colIdx + (args.cell.colSpan - 1), 'columns');
                 if (colSpan > 1) { args.td.colSpan = colSpan; }
+            }
+            if (args.cell.image) {
+                for (let i: number = 0; i < args.cell.image.length; i++) {
+                    this.parent.notify(createImageElement, {
+                        options: {
+                            src: args.cell.image[i].src, imageId: args.cell.image[i].id,
+                            height: args.cell.image[i].height, width: args.cell.image[i].width,
+                            top: args.cell.image[i].top, left: args.cell.image[i].left
+                        },
+                        range: getRangeAddress([args.rowIdx, args.colIdx, args.rowIdx, args.colIdx]), isPublic: false
+                    });
+                }
             }
         }
         if (args.isRefresh) { this.removeStyle(args.td, args.rowIdx, args.colIdx); }
@@ -151,8 +165,7 @@ export class CellRenderer implements ICellRenderer {
             }
         }
         if (args.cell && args.cell.hyperlink && !hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetIndex)) {
-            let address: string;
-            if (typeof (args.cell.hyperlink) === 'string') {
+            let address: string; if (typeof (args.cell.hyperlink) === 'string') {
                 address = args.cell.hyperlink;
                 if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
                     args.cell.hyperlink = address.indexOf('www.') === 0 ? 'http://' + address : address;

@@ -5,9 +5,11 @@ import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, get
 import { CellStyleModel, getRangeAddress, workbookEditOperation, getSheetIndexFromId, getSheetName } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, applyCellFormat, checkIsFormula, Sheet } from '../../workbook/index';
 import { ExtendedSheet, Cell, pasteMerge, setMerge, MergeArgs, getCellIndexes } from '../../workbook/index';
-import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType, BeforePasteEventArgs, hasTemplate } from '../common/index';
+import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType } from '../common/index';
+import { BeforePasteEventArgs, hasTemplate, createImageElement } from '../common/index';
 import { enableToolbarItems, rowHeightChanged, completeAction, beginAction, DialogBeforeOpenEventArgs } from '../common/index';
 import { clearCopy, locateElem, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, locale } from '../common/index';
+import { getMaxHgt, setMaxHgt, setRowEleHeight, deleteImage, getRowIdxFromClientY, getColIdxFromClientX } from '../common/index';
 import { Dialog } from '../services/index';
 import { Deferred } from '@syncfusion/ej2-data';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
@@ -17,7 +19,9 @@ import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
  */
 export class Clipboard {
     private parent: Spreadsheet;
+    private cutInfo: boolean;
     private copiedInfo: { range: number[], sId: number, isCut: boolean };
+    private copiedShapeInfo: { pictureElem: HTMLElement, sId: number, isCut: boolean, copiedRange: string, height: number, width: number };
 
     constructor(parent: Spreadsheet) {
         this.parent = parent;
@@ -78,7 +82,7 @@ export class Clipboard {
     }
 
     private tabSwitchHandler(args: { activeTab: number }): void {
-        if (args.activeTab === 0 && !this.copiedInfo) { this.hidePaste(); }
+        if (args.activeTab === 0 && !this.copiedInfo && !this.copiedShapeInfo) { this.hidePaste(); }
     }
 
     private cMenuBeforeOpenHandler(e: { target: string }): void {
@@ -93,11 +97,12 @@ export class Clipboard {
             : sheet.isProtected : sheet.isProtected;
         if (e.target === 'Content' || e.target === 'RowHeader' || e.target === 'ColumnHeader') {
             this.parent.enableContextMenuItems(
-                [l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], (this.copiedInfo && !isLocked) ? true : false);
+                [l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], (this.copiedInfo ||
+                    this.copiedShapeInfo && !isLocked) ? true : false);
             this.parent.enableContextMenuItems([l10n.getConstant('Cut')], (!isLocked) ? true : false);
         }
         if ((e.target === 'Content') && isLocked) {
-            this.parent.enableContextMenuItems (
+            this.parent.enableContextMenuItems(
                 [l10n.getConstant('Cut'), l10n.getConstant('Filter'), l10n.getConstant('Sort')], false);
         }
         if ((e.target === 'Content') && (isLocked && !sheet.protectSettings.insertLink)) {
@@ -150,8 +155,9 @@ export class Clipboard {
         /* tslint:disable-next-line */
         let isExternal: DataTransfer = !this.copiedInfo && ((args && args.clipboardData) || window['clipboardData']);
         let copiedIdx: number = this.getCopiedIdx();
+        let isCut: boolean;
         let copyInfo: { range: number[], sId: number, isCut: boolean } = Object.assign({}, this.copiedInfo);
-        if (this.copiedInfo || isExternal) {
+        if (this.copiedInfo || isExternal || this.copiedShapeInfo) {
             let cSIdx: number = (args && args.sIdx > -1) ? args.sIdx : this.parent.activeSheetIndex;
             let curSheet: SheetModel = getSheet(this.parent, cSIdx);
             let selIdx: number[] = getSwapRange(args && args.range || getRangeIndexes(curSheet.selectedRange));
@@ -160,7 +166,8 @@ export class Clipboard {
                 return;
             }
             let rowIdx: number = selIdx[0]; let cIdx: number[] = isExternal
-                ? [0, 0, rows.length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedInfo.range);
+                ? [0, 0, rows.length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedShapeInfo ?
+                    getRangeIndexes(curSheet.selectedRange) : this.copiedInfo.range);
             let isRepeative: boolean = (selIdx[2] - selIdx[0] + 1) % (cIdx[2] - cIdx[0] + 1) === 0
                 && (selIdx[3] - selIdx[1] + 1) % (cIdx[3] - cIdx[1] + 1) === 0;
             rfshRange = isRepeative ? selIdx : [selIdx[0], selIdx[1]]
@@ -173,7 +180,7 @@ export class Clipboard {
                 type: (args && args.type) || 'All',
                 cancel: false
             };
-            if (args.isAction) {
+            if (args.isAction && !this.copiedShapeInfo && this.copiedInfo) {
                 this.parent.notify(beginAction, { eventArgs: beginEventArgs, action: 'clipboard' });
             }
             if (beginEventArgs.cancel) {
@@ -184,92 +191,128 @@ export class Clipboard {
             let prevSheet: SheetModel = getSheet(this.parent, isExternal ? cSIdx : copiedIdx);
             selIdx = getRangeIndexes(beginEventArgs.pastedRange);
             rowIdx = selIdx[0]; cIdx = isExternal
-                ? [0, 0, rows.length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedInfo.range);
+                ? [0, 0, rows.length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedShapeInfo ?
+                    getRangeIndexes(curSheet.selectedRange) : this.copiedInfo.range);
             isRepeative = (selIdx[2] - selIdx[0] + 1) % (cIdx[2] - cIdx[0] + 1) === 0 && (selIdx[3] - selIdx[1] + 1) %
                 (cIdx[3] - cIdx[1] + 1) === 0;
             let mergeArgs: { range: number[], prevSheet?: SheetModel, cancel?: boolean } = {
-                range: cIdx, prevSheet: prevSheet, cancel: false };
+                range: cIdx, prevSheet: prevSheet, cancel: false
+            };
             rfshRange = isRepeative ? selIdx : [selIdx[0], selIdx[1]]
                 .concat([selIdx[0] + cIdx[2] - cIdx[0], selIdx[1] + cIdx[3] - cIdx[1] || selIdx[1]]);
-            this.parent.notify(pasteMerge, mergeArgs);
-            if (mergeArgs.cancel) { return; }
-            for (let i: number = cIdx[0], l: number = 0; i <= cIdx[2]; i++ , l++) {
-                for (let j: number = cIdx[1], k: number = 0; j <= cIdx[3]; j++ , k++) {
-                    cell = isExternal ? rows[i].cells[j] : Object.assign({}, getCell(i, j, prevSheet));
-                    if (cell && args && args.type) {
-                        switch (args.type) {
-                            case 'Formats':
-                                cell = { format: cell.format, style: cell.style };
-                                break;
-                            case 'Values':
-                                cell = { value: cell.value };
-                                break;
+            if (this.copiedShapeInfo && !this.copiedInfo) {
+                let pictureElem: HTMLElement = this.copiedShapeInfo.pictureElem as HTMLElement;
+                this.parent.notify(createImageElement, {
+                    options: {
+                        src: pictureElem.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'),
+                        height: this.copiedShapeInfo.height, width: this.copiedShapeInfo.width,
+                        imageId: this.copiedShapeInfo.isCut ? pictureElem.id : ''
+                    },
+                    range: getRangeAddress([rowIdx, selIdx[1], rowIdx, selIdx[1]]), isPublic: false, isUndoRedo: true
+                });
+                let pastedCell: CellModel = getCell(rowIdx, selIdx[1], curSheet);
+                if (pastedCell && !isNullOrUndefined(pastedCell.image)) {
+                    let imgLen: number = pastedCell.image ? pastedCell.image.length - 1 : 0;
+                    let eventArgs: Object = {
+                        requestType: 'imagePaste',
+                        copiedShapeInfo: this.copiedShapeInfo,
+                        pasteSheetIndex: this.parent.activeSheetIndex,
+                        pastedRange: getSheetName(this.parent) + '!' + getRangeAddress([rowIdx, selIdx[1], rowIdx, selIdx[1]]),
+                        pastedPictureElement: document.getElementById(pastedCell.image[imgLen].id)
+                    };
+                    this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
+                }
+            } else {
+                this.parent.notify(pasteMerge, mergeArgs);
+                if (mergeArgs.cancel) { return; }
+                for (let i: number = cIdx[0], l: number = 0; i <= cIdx[2]; i++, l++) {
+                    for (let j: number = cIdx[1], k: number = 0; j <= cIdx[3]; j++, k++) {
+                        cell = isExternal ? rows[i].cells[j] : Object.assign({}, getCell(i, j, prevSheet));
+                        if (cell && args && args.type) {
+                            switch (args.type) {
+                                case 'Formats':
+                                    cell = { format: cell.format, style: cell.style };
+                                    break;
+                                case 'Values':
+                                    cell = { value: cell.value };
+                                    if (cell.value.indexOf('\n') > -1) {
+                                        let ele: Element = this.parent.getCell(selIdx[0], selIdx[1]);
+                                        ele.classList.add('e-alt-unwrap');
+                                    }
+                                    break;
+                            }
+                            isExtend = ['Formats', 'Values'].indexOf(args.type) > -1;
                         }
-                        isExtend = ['Formats', 'Values'].indexOf(args.type) > -1;
-                    }
-                    if ((!this.parent.scrollSettings.isFinite && (cIdx[2] - cIdx[0] > (1048575 - selIdx[0])
-                        || cIdx[3] - cIdx[1] > (16383 - selIdx[1])))
-                        || (this.parent.scrollSettings.isFinite && (cIdx[2] - cIdx[0] > (curSheet.rowCount - 1 - selIdx[0])
-                            || cIdx[3] - cIdx[1] > (curSheet.colCount - 1 - selIdx[1])))) {
-                        this.showDialog();
-                        return;
-                    }
-                    if (isRepeative) {
-                        for (let x: number = selIdx[0]; x <= selIdx[2]; x += (cIdx[2] - cIdx[0]) + 1) {
-                            for (let y: number = selIdx[1]; y <= selIdx[3]; y += (cIdx[3] - cIdx[1] + 1)) {
-                                prevCell = getCell(x + l, y + k, curSheet) || {};
-                                if (prevCell.colSpan !== undefined || prevCell.rowSpan !== undefined) {
-                                    mergeArgs = { range: [x + l, y + k, x + l, y + k] };
-                                    let merge: MergeArgs = { range: mergeArgs.range, merge: false, isAction: false, type: 'All' };
-                                    mergeCollection.push(merge); this.parent.notify(setMerge, merge);
+                        if ((!this.parent.scrollSettings.isFinite && (cIdx[2] - cIdx[0] > (1048575 - selIdx[0])
+                            || cIdx[3] - cIdx[1] > (16383 - selIdx[1])))
+                            || (this.parent.scrollSettings.isFinite && (cIdx[2] - cIdx[0] > (curSheet.rowCount - 1 - selIdx[0])
+                                || cIdx[3] - cIdx[1] > (curSheet.colCount - 1 - selIdx[1])))) {
+                            this.showDialog();
+                            return;
+                        }
+                        if (isRepeative) {
+                            for (let x: number = selIdx[0]; x <= selIdx[2]; x += (cIdx[2] - cIdx[0]) + 1) {
+                                for (let y: number = selIdx[1]; y <= selIdx[3]; y += (cIdx[3] - cIdx[1] + 1)) {
+                                    prevCell = getCell(x + l, y + k, curSheet) || {};
+                                    if (prevCell.colSpan !== undefined || prevCell.rowSpan !== undefined) {
+                                        mergeArgs = { range: [x + l, y + k, x + l, y + k] };
+                                        let merge: MergeArgs = { range: mergeArgs.range, merge: false, isAction: false, type: 'All' };
+                                        mergeCollection.push(merge); this.parent.notify(setMerge, merge);
+                                    }
+                                    this.setCell(x + l, y + k, curSheet, cell, isExtend);
                                 }
-                                this.setCell(x + l, y + k, curSheet, cell, isExtend);
+                            }
+                        } else {
+                            if (!hasTemplate(this.parent, i, j, copiedIdx)) {
+                                this.setCell(rowIdx, selIdx[1] + k, curSheet, cell, isExtend);
                             }
                         }
-                    } else {
-                        if (!hasTemplate(this.parent, i, j, copiedIdx)) {
-                            this.setCell(rowIdx, selIdx[1] + k, curSheet, cell, isExtend);
+                        if (!isExternal && this.copiedInfo.isCut) {
+                            this.setCell(i, j, prevSheet, null, false, true);
                         }
                     }
-                    if (!isExternal && this.copiedInfo.isCut) {
-                        this.setCell(i, j, prevSheet, null, false, true);
+                    rowIdx++;
+                }
+                this.parent.setUsedRange(rfshRange[2] + 1, rfshRange[3]);
+                if (cSIdx === this.parent.activeSheetIndex) {
+                    this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(rfshRange);
+                    this.parent.notify(selectRange, { indexes: rfshRange });
+                }
+                if (!isExternal && this.copiedInfo.isCut) {
+                    isCut = this.copiedInfo.isCut;
+                    if (copiedIdx === this.parent.activeSheetIndex) {
+                        this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(cIdx);
                     }
+                    this.clearCopiedInfo();
+                    this.cutInfo = isCut;
                 }
-                rowIdx++;
-            }
-            this.parent.setUsedRange(rfshRange[2] + 1, rfshRange[3]);
-            if (cSIdx === this.parent.activeSheetIndex) {
-                this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(rfshRange);
-                this.parent.notify(selectRange, { indexes: rfshRange });
-            }
-            if (!isExternal && this.copiedInfo.isCut) {
-                if (copiedIdx === this.parent.activeSheetIndex) {
-                    this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(cIdx);
+                if (isExternal || (args && args.isAction)) {
+                    this.parent.element.focus();
                 }
-                this.clearCopiedInfo();
-            }
-            if (isExternal || (args && args.isAction)) {
-                this.parent.element.focus();
-            }
-            if (args.isAction) {
-                let sheetIndex: number = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
-                    this.parent.activeSheetIndex;
-                let eventArgs: Object = {
-                    requestType: 'paste',
-                    copiedInfo: copyInfo,
-                    mergeCollection: mergeCollection,
-                    pasteSheetIndex: this.parent.activeSheetIndex,
-                    copiedRange: this.parent.sheets[sheetIndex].name + '!' + getRangeAddress(copyInfo && copyInfo.range ? copyInfo.range :
-                        getRangeIndexes(this.parent.sheets[sheetIndex].selectedRange)),
-                    pastedRange: getSheetName(this.parent) + '!' + getRangeAddress(rfshRange),
-                    type: (args && args.type) || 'All'
-                };
-                this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
+                if (args.isAction) {
+                    let sheetIndex: number = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
+                        this.parent.activeSheetIndex;
+                    let eventArgs: Object = {
+                        requestType: 'paste',
+                        copiedInfo: copyInfo,
+                        mergeCollection: mergeCollection,
+                        pasteSheetIndex: this.parent.activeSheetIndex,
+                        copiedRange: this.parent.sheets[sheetIndex].name + '!' + getRangeAddress(copyInfo && copyInfo.range ?
+                            copyInfo.range : getRangeIndexes(this.parent.sheets[sheetIndex].selectedRange)),
+                        pastedRange: getSheetName(this.parent) + '!' + getRangeAddress(rfshRange),
+                        type: (args && args.type) || 'All'
+                    };
+                    this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
+                }
+                if (isCut) {
+                    setMaxHgt(prevSheet, cIdx[0], cIdx[1], 20);
+                    let hgt: number = getMaxHgt(prevSheet, cIdx[0]);
+                    setRowEleHeight(this.parent, prevSheet, hgt, cIdx[0]);
+                }
             }
         } else {
             this.getClipboardEle().select();
         }
-
     }
 
     private setCell(rIdx: number, cIdx: number, sheet: SheetModel, cell: CellModel, isExtend?: boolean, isCut?: boolean): void {
@@ -333,12 +376,37 @@ export class Clipboard {
             sheet: sheet, indexes: [0, 0, sheet.rowCount - 1, sheet.colCount - 1], promise:
                 new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })
         };
+        let pictureElements: HTMLCollection = document.getElementsByClassName('e-ss-overlay-active');
+        let pictureLen: number = pictureElements.length;
         if (sheet.isLocalData && !(args && args.clipboardData) && range[0] === 0 && range[2] === (sheet.rowCount - 1)) {
             this.parent.showSpinner();
             this.parent.notify('updateSheetFromDataSource', option);
         }
         option.promise.then(() => {
-            if (!(args && args.clipboardData)) {
+            if (pictureLen > 0) {
+                let imgRowIdx: { clientY: number, isImage: Boolean } = {
+                    clientY: (pictureElements[0] as HTMLElement).offsetTop,
+                    isImage: true
+                };
+                this.parent.notify(getRowIdxFromClientY, imgRowIdx);
+                let imgColIdx: { clientX: number, isImage: Boolean } = {
+                    clientX: (pictureElements[0] as HTMLElement).offsetLeft,
+                    isImage: true
+                };
+                this.parent.notify(getColIdxFromClientX, imgColIdx);
+                this.copiedShapeInfo = {
+                    sId: (args && args.sId) ? args.sId : sheet.id, isCut: isCut, pictureElem:
+                        pictureElements[0] as HTMLElement, copiedRange: getRangeAddress([imgRowIdx.clientY, imgColIdx.clientX,
+                        imgRowIdx.clientY, imgColIdx.clientX]), height: (pictureElements[0] as HTMLElement).offsetHeight,
+                        width: (pictureElements[0] as HTMLElement).offsetWidth
+                };
+                this.hidePaste(true);
+                if (isCut) {
+                    this.parent.notify(deleteImage, {
+                        id: this.copiedShapeInfo.pictureElem.id, sheetIdx: this.copiedShapeInfo.sId, range: this.copiedShapeInfo.copiedRange
+                    });
+                }
+            } else if (!(args && args.clipboardData)) {
                 if (this.copiedInfo) {
                     this.clearCopiedInfo();
                 }
@@ -372,6 +440,10 @@ export class Clipboard {
                 detach(this.parent.getMainContent().getElementsByClassName('e-copy-indicator')[0]);
             }
             this.copiedInfo = null;
+            this.hidePaste();
+        }
+        if (this.copiedShapeInfo) {
+            this.copiedShapeInfo = null;
             this.hidePaste();
         }
     }

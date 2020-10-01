@@ -1,7 +1,8 @@
 @import 'layout-mixin.scss';
 @include export-module('contextmenu-layout') {
   /*! contextmenu layout */
-  .e-contextmenu-wrapper {
+  .e-contextmenu-wrapper,
+  .e-contextmenu-container {
     @at-root {
       & ul {
         @include ul-layout;
@@ -42,8 +43,7 @@
     }
 
     &.e-sfcontextmenu {
-      position: relative;
-      width: 1px;
+      position: fixed;
 
       & ul {
         @include transparent-ui;
@@ -52,13 +52,16 @@
     }
   }
 
-  .e-rtl.e-contextmenu-wrapper .e-menu-item {
+  .e-rtl.e-contextmenu-wrapper .e-menu-item,
+  .e-rtl.e-contextmenu-container .e-menu-item {
     @include rtl-li-layout;
     @include rtl-li-size;
   }
 
   .e-bigger .e-contextmenu-wrapper ul,
-  .e-bigger.e-contextmenu-wrapper ul {
+  .e-bigger.e-contextmenu-wrapper ul,
+  .e-bigger .e-contextmenu-container ul,
+  .e-bigger.e-contextmenu-container ul {
     @include bigger-ul-size;
     box-shadow: $cmenu-parent-ul-box-shadow;
     max-width: $cmenu-bigger-max-width;
@@ -74,7 +77,9 @@
   }
 
   .e-bigger .e-contextmenu-wrapper.e-rtl ul .e-blankicon,
-  .e-bigger.e-contextmenu-wrapper.e-rtl ul .e-blankicon {
+  .e-bigger.e-contextmenu-wrapper.e-rtl ul .e-blankicon,
+  .e-bigger .e-contextmenu-container.e-rtl ul .e-blankicon,
+  .e-bigger.e-contextmenu-container.e-rtl ul .e-blankicon {
     @include bigger-rtl-blank-icon;
   }
 }

@@ -70,6 +70,10 @@ export class FilterMenuRenderer {
                 }
             }
         }
+        if (this.parent.isReact) {
+            this.parent.destroyTemplate(['filterTemplate']);
+            this.parent.renderTemplates();
+        }
         let elem: Element = document.getElementById(this.dlgObj.element.id);
         if (this.dlgObj && !this.dlgObj.isDestroyed && elem) {
             let argument: Object = { cancel: false, column: this.col, target: target, element: elem };
@@ -177,10 +181,16 @@ export class FilterMenuRenderer {
             }
             let col: string = 'column';
             fltrData[col] = column;
+            let isReactCompiler: boolean = this.parent.isReact && typeof (column.filterTemplate) !== 'string';
             let tempID: string = this.parent.element.id + column.uid + 'filterTemplate';
-            let compElement: Element[] = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
-            updateBlazorTemplate(tempID, 'FilterTemplate', column);
-            appendChildren(valueDiv, compElement);
+            if (isReactCompiler) {
+                column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID, null, null, valueDiv);
+                this.parent.renderTemplates();
+            } else {
+                let compElement: Element[] = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
+                updateBlazorTemplate(tempID, 'FilterTemplate', column);
+                appendChildren(valueDiv, compElement);
+            }
         } else {
             if (!isNullOrUndefined(column.filter) && !isNullOrUndefined(column.filter.ui)
                 && !isNullOrUndefined(column.filter.ui.create as Function)) {

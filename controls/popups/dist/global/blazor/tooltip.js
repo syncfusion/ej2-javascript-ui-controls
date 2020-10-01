@@ -164,6 +164,7 @@ var Tooltip = /** @class */ (function (_super) {
     };
     Tooltip.prototype.closePopupHandler = function () {
         sf.base.resetBlazorTemplate(this.element.id + 'content', 'Content');
+        this.clearTemplate(['content']);
         this.clear();
         this.trigger('afterClose', this.tooltipEventArgs);
     };
@@ -328,7 +329,11 @@ var Tooltip = /** @class */ (function (_super) {
                 }
                 else {
                     var templateFunction = sf.base.compile(this.content);
-                    sf.base.append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
+                    var tempArr = templateFunction({}, this, 'content', this.element.id + 'content', undefined, undefined, tooltipContent);
+                    if (tempArr) {
+                        sf.base.append(tempArr, tooltipContent);
+                    }
+                    this.renderReactTemplates();
                     if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
                         this.isBlazorTemplate = true;
                         sf.base.updateBlazorTemplate(this.element.id + 'content', 'Content', this);
@@ -704,7 +709,6 @@ var Tooltip = /** @class */ (function (_super) {
     };
     Tooltip.prototype.popupHide = function (hideAnimation, target) {
         var _this = this;
-        this.clearTemplate();
         if (target) {
             this.restoreElement(target);
         }
@@ -1266,7 +1270,5 @@ exports.Tooltip = Tooltip;
 return exports;
 
 });
-sfBlazor.modules["tooltip"] = "popups.Tooltip";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.tooltip, () => {
+
     sf.popups = sf.base.extend({}, sf.popups, sftooltip({}));
-});

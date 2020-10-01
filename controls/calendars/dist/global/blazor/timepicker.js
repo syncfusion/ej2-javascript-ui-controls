@@ -2541,7 +2541,5 @@ exports.TimePicker = TimePicker;
 return exports;
 
 });
-sfBlazor.modules["timepicker"] = "calendars.TimePicker";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.timepicker, () => {
+
     sf.calendars = sf.base.extend({}, sf.calendars, sftimepicker({}));
-});

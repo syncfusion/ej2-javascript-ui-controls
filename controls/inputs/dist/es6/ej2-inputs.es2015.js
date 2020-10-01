@@ -3765,6 +3765,7 @@ let Slider = class Slider extends Component {
         this.scaleTransform = 'transform .4s cubic-bezier(.25, .8, .25, 1)';
         this.customAriaText = null;
         this.drag = true;
+        this.initialTooltip = true;
     }
     preRender() {
         let localeText = { incrementTitle: 'Increase', decrementTitle: 'Decrease' };
@@ -4235,24 +4236,27 @@ let Slider = class Slider extends Component {
             value: this.value,
             text: ''
         };
-        if (isBlazor() && this.isServerRendered) {
-            args.text = this.formatContent(this.tooltipFormatInfo, false);
-        }
-        else {
-            this.setTooltipContent();
-            args.text = text = this.tooltipObj.content;
-        }
-        this.trigger('tooltipChange', args, (observedArgs) => {
-            this.addTooltipClass(observedArgs.text);
-            if (text !== observedArgs.text) {
-                this.customAriaText = observedArgs.text;
-                this.tooltipObj.content = observedArgs.text;
-                this.setAriaAttrValue(this.firstHandle);
-                if (this.type === 'Range') {
-                    this.setAriaAttrValue(this.secondHandle);
-                }
+        if (this.initialTooltip) {
+            this.initialTooltip = false;
+            if (isBlazor() && this.isServerRendered) {
+                args.text = this.formatContent(this.tooltipFormatInfo, false);
             }
-        });
+            else {
+                this.setTooltipContent();
+                args.text = text = this.tooltipObj.content;
+            }
+            this.trigger('tooltipChange', args, (observedArgs) => {
+                this.addTooltipClass(observedArgs.text);
+                if (text !== observedArgs.text) {
+                    this.customAriaText = observedArgs.text;
+                    this.tooltipObj.content = observedArgs.text;
+                    this.setAriaAttrValue(this.firstHandle);
+                    if (this.type === 'Range') {
+                        this.setAriaAttrValue(this.secondHandle);
+                    }
+                }
+            });
+        }
     }
     setTooltipContent() {
         let content;
@@ -5297,6 +5301,7 @@ let Slider = class Slider extends Component {
             this.setProperties({ 'value': this.handleVal1 }, true);
             if (previous !== this.value) {
                 this.trigger(eventName, this.changeEventArgs(eventName, e));
+                this.initialTooltip = true;
                 this.setPreviousVal(eventName, this.value);
             }
             this.setAriaAttrValue(this.firstHandle);
@@ -5306,7 +5311,9 @@ let Slider = class Slider extends Component {
             this.setProperties({ 'value': value }, true);
             if (previous.length === this.value.length
                 && this.value[0] !== previous[0] || this.value[1] !== previous[1]) {
+                this.initialTooltip = false;
                 this.trigger(eventName, this.changeEventArgs(eventName, e));
+                this.initialTooltip = true;
                 this.setPreviousVal(eventName, this.value);
             }
             this.setAriaAttrValue(this.getHandle());
@@ -5315,7 +5322,7 @@ let Slider = class Slider extends Component {
     }
     changeEventArgs(eventName, e) {
         let eventArgs;
-        if (this.tooltip.isVisible && this.tooltipObj) {
+        if (this.tooltip.isVisible && this.tooltipObj && this.initialTooltip) {
             if (!isBlazor() || !this.isServerRendered) {
                 this.tooltipValue();
             }
@@ -5687,6 +5694,7 @@ let Slider = class Slider extends Component {
             this.rangeBar.style.transition = transition.rangeBar;
         }
         this.setHandlePosition(evt);
+        this.changeEvent('changed', evt);
         if (this.type !== 'Default') {
             this.setRangeBar();
         }
@@ -5776,6 +5784,7 @@ let Slider = class Slider extends Component {
         this.handleFocusOut();
         this.firstHandle.classList.remove(classNames.sliderActiveHandle);
         if (this.type === 'Range') {
+            this.initialTooltip = false;
             this.secondHandle.classList.remove(classNames.sliderActiveHandle);
         }
         this.closeTooltip();
@@ -5899,7 +5908,7 @@ let Slider = class Slider extends Component {
         return 1;
     }
     refreshTooltip(target) {
-        if (this.tooltip.isVisible && this.tooltipObj) {
+        if (this.tooltip.isVisible && this.tooltipObj && this.initialTooltip) {
             this.tooltipValue();
             if (target) {
                 this.tooltipObj.refresh(target);
@@ -8002,7 +8011,7 @@ let Uploader = class Uploader extends Component {
                 }
             }
             if (!enableDropText && dropTextArea) {
-                dropTextArea.remove();
+                remove(dropTextArea);
             }
         }
         else if (!isNullOrUndefined(this.uploaderOptions) && this.uploaderOptions.dropArea === undefined) {
@@ -8020,7 +8029,7 @@ let Uploader = class Uploader extends Component {
             this.dropZoneElement = null;
             let dropTextArea = this.dropAreaWrapper.querySelector('.e-file-drop');
             if (dropTextArea) {
-                dropTextArea.remove();
+                remove(dropTextArea);
             }
         }
     }
@@ -8142,7 +8151,9 @@ let Uploader = class Uploader extends Component {
         if (this.isForm) {
             EventHandler.remove(this.formElement, 'reset', this.resetForm);
         }
-        this.keyboardModule.destroy();
+        if (this.keyboardModule) {
+            this.keyboardModule.destroy();
+        }
     }
     resetForm() {
         this.clearAll();
@@ -8576,7 +8587,7 @@ let Uploader = class Uploader extends Component {
         for (let i = 0; i < this.filesEntries.length; i++) {
             // tslint:disable-next-line
             this.filesEntries[i].file((fileObj) => {
-                if (this.filesEntries) {
+                if (this.filesEntries.length) {
                     let path = this.filesEntries[i].fullPath;
                     files.push({ 'path': path, 'file': fileObj });
                     if (i === this.filesEntries.length - 1) {
@@ -8869,9 +8880,13 @@ let Uploader = class Uploader extends Component {
         for (let listItem of fileData) {
             let liElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
             this.uploadTemplateFn = this.templateComplier(this.template);
-            let fromElements = [].slice.call(this.uploadTemplateFn(listItem, this, 'template', this.element.id + 'Template', this.isStringTemplate));
+            // tslint:disable-next-line
+            let liTempCompiler = this.uploadTemplateFn(listItem, this, 'template', this.element.id + 'Template', this.isStringTemplate, null, liElement);
+            if (liTempCompiler) {
+                let fromElements = [].slice.call(liTempCompiler);
+                append(fromElements, liElement);
+            }
             let index = fileData.indexOf(listItem);
-            append(fromElements, liElement);
             let eventArgs = {
                 element: liElement,
                 fileInfo: listItem,
@@ -8889,6 +8904,7 @@ let Uploader = class Uploader extends Component {
             this.listParent.appendChild(liElement);
             this.fileList.push(liElement);
         }
+        this.renderReactTemplates();
         updateBlazorTemplate(this.element.id + 'Template', 'Template', this, false);
     }
     createParentUL() {
@@ -9063,9 +9079,13 @@ let Uploader = class Uploader extends Component {
         let result = this.mergeFileInfo(fileData, fileList);
         fileList.setAttribute('data-file-name', result.name);
         this.uploadTemplateFn = this.templateComplier(this.template);
-        let fromElements = [].slice.call(this.uploadTemplateFn(result, this, 'template', this.element.id + 'Template', this.isStringTemplate));
+        // tslint:disable-next-line
+        let liTempCompiler = this.uploadTemplateFn(result, this, 'template', this.element.id + 'Template', this.isStringTemplate, null, fileList);
+        if (liTempCompiler) {
+            let fromElements = [].slice.call(liTempCompiler);
+            append(fromElements, fileList);
+        }
         let index = this.listParent.querySelectorAll('li').length;
-        append(fromElements, fileList);
         if (!fileList.classList.contains(INVALID_FILE)) {
             this.createFormInput(fileData);
         }
@@ -9085,6 +9105,7 @@ let Uploader = class Uploader extends Component {
         this.trigger('fileListRendering', eventsArgs);
         this.listParent.appendChild(fileList);
         this.fileList.push(fileList);
+        this.renderReactTemplates();
         updateBlazorTemplate(this.element.id + 'Template', 'Template', this, false);
     }
     /**
@@ -10204,6 +10225,7 @@ let Uploader = class Uploader extends Component {
      */
     destroy() {
         this.element.value = null;
+        this.clearTemplate();
         if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
             this.clearAll();
         }
@@ -13028,6 +13050,21 @@ let TextBox = class TextBox extends Component {
             EventHandler.add(this.formElement, 'reset', this.resetForm, this);
         }
         this.bindClearEvent();
+        if (!isNullOrUndefined(this.textboxWrapper.container.querySelector('.e-float-text')) && this.floatLabelType === 'Auto'
+            && this.textboxWrapper.container.classList.contains('e-autofill') &&
+            this.textboxWrapper.container.classList.contains('e-outline')) {
+            EventHandler.add((this.textboxWrapper.container.querySelector('.e-float-text')), 'animationstart', this.animationHandler, this);
+        }
+    }
+    animationHandler() {
+        this.textboxWrapper.container.classList.add('e-valid-input');
+        let label = this.textboxWrapper.container.querySelector('.e-float-text');
+        if (!isNullOrUndefined(label)) {
+            label.classList.add('e-label-top');
+            if (label.classList.contains('e-label-bottom')) {
+                label.classList.remove('e-label-bottom');
+            }
+        }
     }
     resetValue(value) {
         let prevOnChange = this.isProtectedOnChange;
@@ -13152,6 +13189,11 @@ let TextBox = class TextBox extends Component {
         EventHandler.remove(this.respectiveElement, 'change', this.changeHandler);
         if (this.isForm) {
             EventHandler.remove(this.formElement, 'reset', this.resetForm);
+        }
+        if (!isNullOrUndefined(this.textboxWrapper.container.querySelector('.e-float-text')) && this.floatLabelType === 'Auto'
+            && this.textboxWrapper.container.classList.contains('e-outline') &&
+            this.textboxWrapper.container.classList.contains('e-autofill')) {
+            EventHandler.remove((this.textboxWrapper.container.querySelector('.e-float-text')), 'animationstart', this.animationHandler);
         }
     }
     /**

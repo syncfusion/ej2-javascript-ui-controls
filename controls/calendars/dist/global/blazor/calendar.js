@@ -2915,7 +2915,5 @@ exports.Islamic = Islamic;
 return exports;
 
 });
-sfBlazor.modules["calendar"] = "calendars.Calendar";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.calendar, () => {
+
     sf.calendars = sf.base.extend({}, sf.calendars, sfcalendar({}));
-});

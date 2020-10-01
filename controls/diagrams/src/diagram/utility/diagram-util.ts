@@ -9,7 +9,7 @@ import { TextStyleModel, GradientModel, LinearGradientModel, RadialGradientModel
 import { Point } from './../primitives/point';
 import {
     PortVisibility, ConnectorConstraints, NodeConstraints, Shapes, UmlActivityFlows, BpmnFlows, DiagramAction,
-    UmlActivityShapes, PortConstraints, DiagramConstraints, DiagramTools, Transform, EventState, ChangeType
+    UmlActivityShapes, PortConstraints, DiagramConstraints, DiagramTools, Transform, EventState, ChangeType, BlazorAction
 } from './../enum/enum';
 import { FlowShapes, SelectorConstraints, ThumbsConstraints, FlipDirection, DistributeOptions } from './../enum/enum';
 import { Alignment, SegmentInfo } from '../rendering/canvas-interface';
@@ -62,6 +62,8 @@ import { isBlazor, Browser } from '@syncfusion/ej2-base';
 import { TreeInfo, INode } from '../layout/layout-base';
 import { MouseEventArgs } from '../interaction/event-handlers';
 import { IBlazorDropEventArgs, IBlazorCollectionChangeEventArgs } from '../objects/interface/IElement';
+import { ConnectorFixedUserHandleModel, NodeFixedUserHandleModel } from '../objects/fixed-user-handle-model';
+import { ConnectorFixedUserHandle } from '../objects/fixed-user-handle';
 
 
 
@@ -544,7 +546,7 @@ export function intersect3(lineUtil1: Segment, lineUtil2: Segment): Intersection
     let na: number = (l2.x2 - l2.x1) * (l1.y1 - l2.y1) - (l2.y2 - l2.y1) * (l1.x1 - l2.x1);
     let nb: number = (l1.x2 - l1.x1) * (l1.y1 - l2.y1) - (l1.y2 - l1.y1) * (l1.x1 - l2.x1);
     /*( EJ2-42102 - Connector segments not update properly ) by sivakumar sekar - condition added to avoid bridging for
-     overlapping segments in the connectors and to validate whether the connector is intersecting over the other */
+    overlapping segments in the connectors and to validate whether the connector is intersecting over the other */
     if (d === 0 || ((lineUtil1.x1 === lineUtil2.x1 || lineUtil1.y1 === lineUtil2.y1) &&
         (lineUtil1.x2 === lineUtil2.x2 || lineUtil1.y2 === lineUtil2.y2) && ((na === 0 || nb === 0) && d > 0))) {
         return { enabled: false, intersectPt: point };
@@ -570,6 +572,7 @@ export function intersect2(start1: PointModel, end1: PointModel, start2: PointMo
     } else {
         return point;
     }
+
 }
 /** @private */
 export function getLineSegment(x1: number, y1: number, x2: number, y2: number): Segment {
@@ -599,7 +602,7 @@ export function getPoints(element: DiagramElement, corners: Corners, padding?: n
  * @param {PointModel} mousePosition
  * @param {NodeModel | ConnectorModel} node
  */
-export function getTooltipOffset(diagram: Diagram, mousePosition: PointModel, node: NodeModel | ConnectorModel): PointModel {
+export function getTooltipOffset(diagram: Diagram, mousePosition: PointModel, node: NodeModel | ConnectorModel, type?: string): PointModel {
     let offset: PointModel;
     let inheritTooltip: number = (node instanceof Node) ? ((node as NodeModel).constraints & NodeConstraints.InheritTooltip)
         : (node.constraints & ConnectorConstraints.InheritTooltip);
@@ -607,6 +610,11 @@ export function getTooltipOffset(diagram: Diagram, mousePosition: PointModel, no
         : (node.constraints & ConnectorConstraints.Tooltip);
     let isMouseBased: Boolean = ((!inheritTooltip && objectTooltip ? node.tooltip.relativeMode
         : diagram.tooltip.relativeMode) === 'Mouse') ? true : false;
+    if (type === 'Mouse') {
+        isMouseBased = true;
+    } else if (type === 'Object') {
+        isMouseBased = false;
+    }
     offset = tooltipOffset(node, mousePosition, diagram, isMouseBased);
     let rulerSize: Size = getRulerSize(diagram);
     return { x: offset.x + rulerSize.width, y: offset.y + rulerSize.height };
@@ -663,6 +671,34 @@ function offsetPoint(
     return point;
 }
 
+/**
+ * Gets the fixed user handles symbol.
+ */
+/** @private */
+export function initfixedUserHandlesSymbol(
+    options: ConnectorFixedUserHandleModel | NodeFixedUserHandleModel, fixedUserHandleContainer: Canvas): DiagramElement {
+    let fixedUserHandleContent: PathElement | DiagramNativeElement;
+    fixedUserHandleContent = new PathElement();
+    fixedUserHandleContent.data = options.pathData;
+    fixedUserHandleContent.height =
+        options.height > 10 ? options.height - (options.padding.bottom + options.padding.top) : options.height;
+    fixedUserHandleContent.width =
+        options.width > 10 ? options.width - (options.padding.left + options.padding.right) : options.width;
+    fixedUserHandleContent.visible = fixedUserHandleContainer.visible;
+    fixedUserHandleContent.id = fixedUserHandleContainer.id + '_shape';
+    fixedUserHandleContent.inversedAlignment = false;
+    fixedUserHandleContent.horizontalAlignment = 'Center';
+    fixedUserHandleContent.verticalAlignment = 'Center';
+    fixedUserHandleContent.style = {
+        fill: options.iconStrokeColor, strokeColor: options.iconStrokeColor,
+        strokeWidth: options.iconStrokeWidth
+    };
+    fixedUserHandleContent.setOffsetWithRespectToBounds(0.5, 0.5, 'Fraction');
+    fixedUserHandleContent.relativeMode = 'Object';
+    fixedUserHandleContent.description = fixedUserHandleContainer.description || '';
+    return fixedUserHandleContent;
+
+}
 
 /** @private */
 export function sort(objects: (NodeModel | ConnectorModel)[], option: DistributeOptions): (NodeModel | ConnectorModel)[] {
@@ -692,10 +728,10 @@ export function sort(objects: (NodeModel | ConnectorModel)[], option: Distribute
 }
 
 /** @private */
-export function getAnnotationPosition(pts: PointModel[], annotation: PathAnnotation, bound: Rect): SegmentInfo {
+export function getAnnotationPosition(pts: PointModel[], annotation: PathAnnotation | ConnectorFixedUserHandle, bound: Rect): SegmentInfo {
     let angle: number;
     let getloop: SegmentInfo; let point: PointModel;
-    getloop = getOffsetOfConnector(pts, annotation, bound);
+    getloop = getOffsetOfConnector(pts, annotation);
     angle = Point.findAngle(pts[getloop.index], pts[getloop.index + 1]);
     let alignednumber: number = getAlignedPosition(annotation);
     point = Point.transform(getloop.point, angle + 45, alignednumber);
@@ -703,7 +739,7 @@ export function getAnnotationPosition(pts: PointModel[], annotation: PathAnnotat
     return getloop;
 }
 /** @private */
-export function getOffsetOfConnector(points: PointModel[], annotation: PathAnnotation, bounds: Rect): SegmentInfo {
+export function getOffsetOfConnector(points: PointModel[], annotation: PathAnnotation | ConnectorFixedUserHandle): SegmentInfo {
     let length: number = 0; let offset: number = annotation.offset; let point: PointModel; let angle: number;
     let offsetLength: number; let lengths: number[] = []; let prevLength: number; let kCount: number;
     for (let j: number = 0; j < points.length - 1; j++) {
@@ -723,8 +759,12 @@ export function getOffsetOfConnector(points: PointModel[], annotation: PathAnnot
     return { point: point, index: kCount };
 }
 /** @private */
-export function getAlignedPosition(annotation: PathAnnotation): number {
-    let cnst: number = annotation.content === undefined ? 10 : 0;
+export function getAlignedPosition(annotation: PathAnnotation | ConnectorFixedUserHandle): number {
+    let cnst: number;
+    if ((annotation instanceof ConnectorFixedUserHandle)) {
+        cnst = 0;
+    } else { cnst = annotation.content === undefined ? 10 : 0; }
+
     let state: number = 0;
     switch (annotation.alignment) {
         case 'Center':
@@ -740,7 +780,7 @@ export function getAlignedPosition(annotation: PathAnnotation): number {
     return state;
 }
 /** @private */
-export function alignLabelOnSegments(obj: PathAnnotation, ang: number, pts: PointModel[]): Alignment {
+export function alignLabelOnSegments(obj: PathAnnotation | ConnectorFixedUserHandle, ang: number, pts: PointModel[]): Alignment {
     let angle: number = ang % 360;
     ang %= 360;
     let fourty5: number = 45; let one35: number = 135; let two25: number = 225; let three15: number = 315;
@@ -1056,7 +1096,10 @@ function getConstructor(model: object, defaultObject: object): object {
 /** @private */
 export function deserialize(model: string, diagram: Diagram): Object {
     diagram.enableServerDataBinding(false);
+    let blazorAction : BlazorAction = diagram.blazorActions;
+    diagram.blazorActions = diagram.addConstraints(blazorAction, BlazorAction.ClearObject);
     diagram.clear();
+    diagram.blazorActions = diagram.removeConstraints(blazorAction, BlazorAction.ClearObject);
     diagram.protectPropertyChange(true);
     let map: Function | string = diagram.dataSourceSettings.doBinding;
     let nodeTemp: Function | string = diagram.setNodeTemplate;
@@ -1131,7 +1174,9 @@ export function deserialize(model: string, diagram: Diagram): Object {
     let component: View | Diagram;
     for (let i: number = 0; i < diagram.views.length; i++) {
         component = diagram.views[diagram.views[i]] as Diagram;
+        diagram.blazorActions = diagram.addConstraints(blazorAction, BlazorAction.ClearObject);
         component.refresh();
+        diagram.blazorActions = diagram.removeConstraints(blazorAction, BlazorAction.ClearObject);
         if (component instanceof Diagram) {
             diagram.element.classList.add('e-diagram');
         }
@@ -1395,7 +1440,7 @@ export function updateShape(node: Node, actualObject: Node, oldObject: Node, dia
             content = htmlContent;
             updateShapeContent(content, actualObject, diagram);
     }
-    if (node.shape.type === undefined || node.shape.type === oldObject.shape.type) {
+    if (node.shape.type === undefined || node.shape.type === oldObject.shape.type || (isBlazor() && node.shape.type === 'UmlActivity' ) ) {
         updateContent(node, actualObject, diagram);
     } else {
         content.width = actualObject.wrapper.children[0].width;
@@ -1485,6 +1530,8 @@ export function updateUmlActivityNode(actualObject: Node, newValues: Node): void
         if (actualObject instanceof Node) {
             actualObject.wrapper = getUMLFinalNode(actualObject);
         }
+    }
+    if (umlActivityShapeData) {
         (actualObject.wrapper.children[0] as PathModel).data = umlActivityShapeData;
     }
 }
@@ -1626,7 +1673,7 @@ export function getUserHandlePosition(selectorItem: SelectorModel, handle: UserH
     } else if (selectorItem.connectors.length > 0) {
         let connector: Connector = selectorItem.connectors[0] as Connector;
         let annotation: PathAnnotation = { offset: offset } as PathAnnotation;
-        let connectorOffset: SegmentInfo = getOffsetOfConnector(connector.intermediatePoints, annotation, bounds as Rect);
+        let connectorOffset: SegmentInfo = getOffsetOfConnector(connector.intermediatePoints, annotation);
         let index: number = connectorOffset.index;
         point = connectorOffset.point;
         let getPointloop: SegmentInfo = getAnnotationPosition(connector.intermediatePoints, annotation, bounds);
@@ -1742,7 +1789,7 @@ export function findObjectIndex(node: NodeModel | ConnectorModel, id: string, an
             return (i).toString();
         }
     }
-    return null;
+    return '-1';
 }
 
 /** @private */
@@ -1927,10 +1974,12 @@ export function getCollectionChangeEventArguements(
 export function getDropEventArguements(args: MouseEventArgs, arg: IBlazorDropEventArgs): IBlazorDropEventArgs {
     if (isBlazor()) {
         let connector: boolean = (getObjectType(args.source) === Connector);
-        let object: NodeModel | ConnectorModel = cloneBlazorObject(args.source);
-        let target: NodeModel | ConnectorModel = cloneBlazorObject(args.target);
+        let object: Object = cloneBlazorObject(args.source);
+        let target: Object = cloneBlazorObject(args.target);
         arg = {
-            element: connector ? { connector: object as ConnectorModel } : { node: object as NodeModel },
+            element: connector ? { connector: (object as Selector).connectors[0] as ConnectorModel,
+                 connectorId: (object as Selector).connectors[0].id }
+             : { node: (object as Selector).nodes[0] as NodeModel, nodeId: (object as Selector).nodes[0].id },
             target: connector ? { connector: target } : { node: target },
             position: arg.position, cancel: arg.cancel
         } as IBlazorDropEventArgs;
@@ -2073,13 +2122,15 @@ export let alignElement: Function = (element: Container, offsetX: number, offset
 export let cloneSelectedObjects: Function = (diagram: Diagram): object => {
     let nodes: NodeModel[] = diagram.selectedItems.nodes;
     let connectors: ConnectorModel[] = diagram.selectedItems.connectors;
-    diagram.protectPropertyChange(true);
+    let isProtectedOnChange: string = 'isProtectedOnChange';
     let isEnableServerDatabind: boolean = diagram.allowServerDataBinding;
+    let isProtectedOnChangeValue: boolean = diagram[isProtectedOnChange];
+    diagram.protectPropertyChange(true);
     diagram.allowServerDataBinding = false;
     diagram.selectedItems.nodes = [];
     diagram.selectedItems.connectors = [];
     diagram.allowServerDataBinding = isEnableServerDatabind;
-    diagram.protectPropertyChange(false);
+    diagram.protectPropertyChange(isProtectedOnChangeValue);
     let clonedSelectedItems: object = cloneObject(diagram.selectedItems);
     for (let i: number = 0; i < nodes.length; i++) {
         diagram.selectedItems.nodes.push(diagram.nameTable[nodes[i].id]);

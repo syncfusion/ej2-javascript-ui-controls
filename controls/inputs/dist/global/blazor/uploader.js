@@ -629,7 +629,7 @@ var Uploader = /** @class */ (function (_super) {
                 }
             }
             if (!enableDropText && dropTextArea) {
-                dropTextArea.remove();
+                sf.base.remove(dropTextArea);
             }
         }
         else if (!sf.base.isNullOrUndefined(this.uploaderOptions) && this.uploaderOptions.dropArea === undefined) {
@@ -647,7 +647,7 @@ var Uploader = /** @class */ (function (_super) {
             this.dropZoneElement = null;
             var dropTextArea = this.dropAreaWrapper.querySelector('.e-file-drop');
             if (dropTextArea) {
-                dropTextArea.remove();
+                sf.base.remove(dropTextArea);
             }
         }
     };
@@ -771,7 +771,9 @@ var Uploader = /** @class */ (function (_super) {
         if (this.isForm) {
             sf.base.EventHandler.remove(this.formElement, 'reset', this.resetForm);
         }
-        this.keyboardModule.destroy();
+        if (this.keyboardModule) {
+            this.keyboardModule.destroy();
+        }
     };
     Uploader.prototype.resetForm = function () {
         this.clearAll();
@@ -1218,7 +1220,7 @@ var Uploader = /** @class */ (function (_super) {
         var _loop_4 = function (i) {
             // tslint:disable-next-line
             this_2.filesEntries[i].file(function (fileObj) {
-                if (_this.filesEntries) {
+                if (_this.filesEntries.length) {
                     var path = _this.filesEntries[i].fullPath;
                     files.push({ 'path': path, 'file': fileObj });
                     if (i === _this.filesEntries.length - 1) {
@@ -1519,9 +1521,13 @@ var Uploader = /** @class */ (function (_super) {
             var listItem = fileData_1[_i];
             var liElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
             this.uploadTemplateFn = this.templateComplier(this.template);
-            var fromElements = [].slice.call(this.uploadTemplateFn(listItem, this, 'template', this.element.id + 'Template', this.isStringTemplate));
+            // tslint:disable-next-line
+            var liTempCompiler = this.uploadTemplateFn(listItem, this, 'template', this.element.id + 'Template', this.isStringTemplate, null, liElement);
+            if (liTempCompiler) {
+                var fromElements = [].slice.call(liTempCompiler);
+                sf.base.append(fromElements, liElement);
+            }
             var index = fileData.indexOf(listItem);
-            sf.base.append(fromElements, liElement);
             var eventArgs = {
                 element: liElement,
                 fileInfo: listItem,
@@ -1539,6 +1545,7 @@ var Uploader = /** @class */ (function (_super) {
             this.listParent.appendChild(liElement);
             this.fileList.push(liElement);
         }
+        this.renderReactTemplates();
         sf.base.updateBlazorTemplate(this.element.id + 'Template', 'Template', this, false);
     };
     Uploader.prototype.createParentUL = function () {
@@ -1718,9 +1725,13 @@ var Uploader = /** @class */ (function (_super) {
         var result = this.mergeFileInfo(fileData, fileList);
         fileList.setAttribute('data-file-name', result.name);
         this.uploadTemplateFn = this.templateComplier(this.template);
-        var fromElements = [].slice.call(this.uploadTemplateFn(result, this, 'template', this.element.id + 'Template', this.isStringTemplate));
+        // tslint:disable-next-line
+        var liTempCompiler = this.uploadTemplateFn(result, this, 'template', this.element.id + 'Template', this.isStringTemplate, null, fileList);
+        if (liTempCompiler) {
+            var fromElements = [].slice.call(liTempCompiler);
+            sf.base.append(fromElements, fileList);
+        }
         var index = this.listParent.querySelectorAll('li').length;
-        sf.base.append(fromElements, fileList);
         if (!fileList.classList.contains(INVALID_FILE)) {
             this.createFormInput(fileData);
         }
@@ -1740,6 +1751,7 @@ var Uploader = /** @class */ (function (_super) {
         this.trigger('fileListRendering', eventsArgs);
         this.listParent.appendChild(fileList);
         this.fileList.push(fileList);
+        this.renderReactTemplates();
         sf.base.updateBlazorTemplate(this.element.id + 'Template', 'Template', this, false);
     };
     /**
@@ -2874,6 +2886,7 @@ var Uploader = /** @class */ (function (_super) {
      */
     Uploader.prototype.destroy = function () {
         this.element.value = null;
+        this.clearTemplate();
         if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
             this.clearAll();
         }
@@ -3539,7 +3552,5 @@ exports.Uploader = Uploader;
 return exports;
 
 });
-sfBlazor.modules["uploader"] = "inputs.Uploader";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.uploader, () => {
+
     sf.inputs = sf.base.extend({}, sf.inputs, sfuploader({}));
-});

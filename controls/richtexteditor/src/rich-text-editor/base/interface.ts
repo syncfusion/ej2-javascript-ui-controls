@@ -940,6 +940,10 @@ export interface ImageSuccessEventArgs {
      * Specify the name of the event.
      */
     name?: string;
+    /**
+     * Specify the name of the event.
+     */
+    element?: HTMLElement;
 }
 
 /**

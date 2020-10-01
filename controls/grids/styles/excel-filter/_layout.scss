@@ -11,21 +11,26 @@
       padding-top: 4px;
     }
 
-    .e-contextmenu-wrapper.e-sfcontextmenu .e-ul .e-menu-item:not(.e-separator) {
+    .e-contextmenu-container.e-sfcontextmenu .e-ul .e-menu-item:not(.e-separator) {
       height: 26px;
       line-height: 26px;
     }
 
-    .e-contextmenu-wrapper.e-sfcontextmenu .e-ul .e-separator {
+    .e-searchbox {
+      padding-left: 0;
+    }
+
+    .e-contextmenu-container.e-sfcontextmenu .e-ul .e-separator {
       height: auto;
     }
 
-    .e-contextmenu-wrapper.e-sfcontextmenu .e-ul {
+    .e-contextmenu-container.e-sfcontextmenu .e-ul {
       position: absolute;
     }
 
-    .e-contextmenu-wrapper.e-sfcontextmenu {
+    .e-contextmenu-container.e-sfcontextmenu {
       display: inline-block;
+      position: relative;
       width: 100%;
     }
 
@@ -182,12 +187,14 @@
       padding-top: $grid-bigger-checkbox-padding-topbottom;
     }
 
-    .e-contextmenu-wrapper ul li {
+    .e-contextmenu-wrapper ul li,
+    .e-contextmenu-container ul li {
       height: $grid-bigger-xlfl-li-height;
       line-height: $grid-bigger-xlfl-li-height;
     }
 
-    .e-contextmenu-wrapper ul li .e-menu-icon {
+    .e-contextmenu-wrapper ul li .e-menu-icon,
+    .e-contextmenu-container ul li .e-menu-icon {
       height: $grid-bigger-xlfl-li-height;
       line-height: $grid-bigger-xlfl-li-height;
       margin-right: $grid-bigger-xlfl-li-icon-margin-right;
@@ -197,6 +204,28 @@
       height: $grid-bigger-xlfl-li-height;
       line-height: $grid-bigger-xlfl-li-height;
     }
+
+    .e-dlg-content {
+      padding-left: $grid-bigger-checkbox-content-padding-left;
+      }
+
+    .e-ftrchk,
+    .e-searchbox {
+      padding-left: $grid-bigger-checkbox-padding-topbottom;
+      }
+
+    &.e-rtl {
+      .e-dlg-content {
+        padding-left: $grid-rtl-bigger-checkbox-content-padding-left;
+        padding-right: $grid-bigger-checkbox-content-padding-left;
+          }
+
+      .e-ftrchk,
+      .e-searchbox {
+        padding-left: 0;
+        padding-right: $grid-bigger-checkbox-padding-topbottom;
+              }
+          }
   }
 
   #{&}.e-excelfilter {
@@ -229,12 +258,14 @@
       position: static;
     }
 
-    .e-contextmenu-wrapper ul li {
+    .e-contextmenu-wrapper ul li,
+    .e-contextmenu-container ul li {
       height: $grid-xlfl-li-height;
       line-height: $grid-xlfl-li-height;
     }
 
-    .e-contextmenu-wrapper ul li .e-menu-icon {
+    .e-contextmenu-wrapper ul li .e-menu-icon,
+    .e-contextmenu-container ul li .e-menu-icon {
       height: $grid-xlfl-li-height;
       line-height: $grid-xlfl-li-height;
       margin-right: $grid-xlfl-li-icon-margin-right;
@@ -249,7 +280,8 @@
       line-height: $grid-xlfl-li-height;
     }
 
-    .e-contextmenu-wrapper ul {
+    .e-contextmenu-wrapper ul,
+    .e-contextmenu-container ul {
       border: 0;
       box-shadow: none;
       max-width: 300px;
@@ -280,12 +312,14 @@
       position: static;
     }
 
-    .e-contextmenu-wrapper ul li {
+    .e-contextmenu-wrapper ul li
+    .e-contextmenu-container ul li {
       height: $grid-xlfl-li-height;
       line-height: $grid-xlfl-li-height;
     }
 
-    .e-contextmenu-wrapper ul li .e-menu-icon {
+    .e-contextmenu-wrapper ul li .e-menu-icon,
+    .e-contextmenu-container ul li .e-menu-icon {
       height: $grid-xlfl-li-height;
       line-height: $grid-xlfl-li-height;
       margin-right: $grid-xlfl-li-icon-margin-right;
@@ -298,14 +332,6 @@
     .e-contextmenu-wrapper ul .e-menu-item .e-caret {
       height: $grid-xlfl-li-height;
       line-height: $grid-xlfl-li-height;
-    }
-
-    .e-contextmenu-wrapper ul {
-      border: 0;
-      box-shadow: none;
-      max-width: 300px;
-      padding-bottom: 4px;
-      position: static;
     }
 
     .e-footer-content {
@@ -326,6 +352,32 @@
       position: absolute;
       user-select: none;
     }
+
+    .e-dlg-content {
+      padding-left: $grid-checkbox-content-padding-left;
+      }
+
+    .e-ftrchk,
+    .e-searchbox {
+      padding-left: $grid-checkbox-padding-topbottom;
+      }
+
+    &.e-rtl {
+      .e-dlg-content {
+        padding-left: $grid-rtl-checkbox-content-padding-left;
+        padding-right: $grid-checkbox-content-padding-left;
+      }
+
+      .e-ftrchk,
+      .e-searchbox {
+        padding-left: 0;
+        padding-right: $grid-checkbox-padding-topbottom;
+          }
+      }
+
+    .e-searchbox {
+      display: block;
+      }
   }
 
   .e-ftrchk {

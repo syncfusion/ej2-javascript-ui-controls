@@ -1,6 +1,6 @@
 @include export-module('button-layout') {
   /*! button layout */
-  #{&}.e-btn,
+  .e-btn,
   .e-css.e-btn {
     // sass-lint:disable no-vendor-prefixes
     -webkit-font-smoothing: antialiased;
@@ -196,7 +196,7 @@
     }
   }
 
-  .e-small #{&}.e-btn,
+  .e-small .e-btn,
   .e-small.e-btn,
   .e-small .e-css.e-btn,
   .e-small.e-css.e-btn {
@@ -271,8 +271,8 @@
     }
 }
 
-  .e-bigger.e-small #{&}.e-btn,
-  .e-bigger.e-small#{&}.e-btn,
+  .e-bigger.e-small .e-btn,
+  .e-bigger.e-small .e-btn,
   .e-bigger.e-small .e-css.e-btn,
   .e-bigger.e-small.e-css.e-btn {
     font-size: $btn-bigger-small-font-size;
@@ -346,8 +346,8 @@
     }
 }
 
-  .e-bigger #{&}.e-btn,
-  .e-bigger#{&}.e-btn,
+  .e-bigger .e-btn,
+  .e-bigger .e-btn,
   .e-bigger .e-css.e-btn,
   .e-bigger.e-css.e-btn {
     font-size: $btn-bigger-font-size;

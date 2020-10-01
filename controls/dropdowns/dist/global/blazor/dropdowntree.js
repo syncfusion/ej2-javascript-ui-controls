@@ -309,6 +309,8 @@ var DropDownTree = /** @class */ (function (_super) {
         }
         this.oldValue = this.value;
         this.isInitialized = true;
+        this.hasTemplate = this.itemTemplate || this.headerTemplate || this.footerTemplate || this.actionFailureTemplate
+            || this.noRecordsTemplate;
         this.renderComplete();
     };
     DropDownTree.prototype.ensureAutoCheck = function () {
@@ -637,7 +639,7 @@ var DropDownTree = /** @class */ (function (_super) {
         }
     };
     DropDownTree.prototype.triggerChangeEvent = function (event) {
-        var isEqual = this.compareValues(this.oldValue, this.value);
+        var isEqual = this.ddtCompareValues(this.oldValue, this.value);
         if ((!isEqual || this.isChipDelete) && !this.removeValue) {
             var eventArgs = {
                 e: event,
@@ -649,7 +651,7 @@ var DropDownTree = /** @class */ (function (_super) {
             this.trigger('change', eventArgs);
         }
     };
-    DropDownTree.prototype.compareValues = function (oldValue, newValue) {
+    DropDownTree.prototype.ddtCompareValues = function (oldValue, newValue) {
         if (oldValue === null || oldValue.length === 0) {
             var isValid = oldValue === null ? ((newValue === oldValue) ? true : false) :
                 (oldValue.length === 0 ? (newValue === oldValue) : false);
@@ -860,7 +862,7 @@ var DropDownTree = /** @class */ (function (_super) {
             var remainElement = this.createElement('span', { className: REMAIN_WRAPPER });
             var compiledString = sf.base.compile(remainContent);
             var totalCompiledString = sf.base.compile(this.l10n.getConstant('totalCountTemplate'));
-            remainElement.appendChild(compiledString({ 'count': this.value.length }, null, null, null, !this.isStringTemplate)[0]);
+            remainElement.appendChild(compiledString({ 'count': this.value.length }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0]);
             this.overFlowWrapper.appendChild(remainElement);
             var remainSize = remainElement.offsetWidth;
             sf.base.remove(remainElement);
@@ -963,8 +965,8 @@ var DropDownTree = /** @class */ (function (_super) {
         }
         remainElement.innerHTML = '';
         remainElement.appendChild((this.overFlowWrapper.firstChild && (this.overFlowWrapper.firstChild.nodeType === 3 || this.mode === 'Box')) ?
-            compiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0] :
-            totalCompiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0]);
+            compiledString({ 'count': remaining }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0] :
+            totalCompiledString({ 'count': remaining }, this, 'totalCountTemplate', null, !this.isStringTemplate)[0]);
         if (this.overFlowWrapper.firstChild && (this.overFlowWrapper.firstChild.nodeType === 3 || this.mode === 'Box')) {
             sf.base.removeClass([this.overFlowWrapper], TOTAL_COUNT_WRAPPER);
         }
@@ -1134,7 +1136,8 @@ var DropDownTree = /** @class */ (function (_super) {
             var compiledString = void 0;
             this.selectAllSpan.textContent = '';
             compiledString = sf.base.compile(template);
-            for (var _i = 0, _a = compiledString({}, null, null, null, !this.isStringTemplate); _i < _a.length; _i++) {
+            var templateName = unSelect ? 'unSelectAllText' : 'selectAllText';
+            for (var _i = 0, _a = compiledString({}, this, templateName, null, !this.isStringTemplate); _i < _a.length; _i++) {
                 var item = _a[_i];
                 this.selectAllSpan.textContent = item.textContent;
             }
@@ -1442,6 +1445,12 @@ var DropDownTree = /** @class */ (function (_super) {
                     _this.setFooterTemplate();
                 }
                 _this.isFirstRender = false;
+                // tslint:disable
+                if (_this.hasTemplate && _this.portals) {
+                    // tslint:disable
+                    _this.portals = _this.portals.concat(_this.treeObj.portals);
+                    _this.renderReactTemplates();
+                }
             }
             if (!isCancelled) {
                 sf.base.attributes(_this.inputWrapper, { 'aria-expanded': 'true' });
@@ -1745,6 +1754,9 @@ var DropDownTree = /** @class */ (function (_super) {
     /* Triggers when the tree fields is changed dynamically */
     DropDownTree.prototype.setFields = function () {
         this.resetValue();
+        if (this.hasTemplate) {
+            this.updateTemplate();
+        }
         this.treeObj.fields = this.getTreeFields(this.fields);
         this.treeObj.dataBind();
     };
@@ -2149,9 +2161,10 @@ var DropDownTree = /** @class */ (function (_super) {
             sf.base.addClass([this.header], HEADER);
         }
         compiledString = this.templateComplier(this.headerTemplate);
-        for (var _i = 0, _a = compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
-            var item = _a[_i];
-            this.header.appendChild(item);
+        var tempArr = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate, undefined, this.header);
+        if (tempArr) {
+            tempArr = Array.prototype.slice.call(tempArr);
+            sf.base.append(tempArr, this.header);
         }
         this.ddtupdateBlazorTemplates(false, false, true, false);
         this.popupEle.insertBefore(this.header, this.checkAllParent ? this.checkAllParent : this.popupDiv);
@@ -2179,9 +2192,10 @@ var DropDownTree = /** @class */ (function (_super) {
             sf.base.addClass([this.footer], FOOTER);
         }
         compiledString = this.templateComplier(this.footerTemplate);
-        for (var _i = 0, _a = compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
-            var item = _a[_i];
-            this.footer.appendChild(item);
+        var tempArr = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate, undefined, this.footer);
+        if (tempArr) {
+            tempArr = Array.prototype.slice.call(tempArr);
+            sf.base.append(tempArr, this.footer);
         }
         this.ddtupdateBlazorTemplates(false, false, false, true);
         sf.base.append([this.footer], this.popupEle);
@@ -2309,6 +2323,9 @@ var DropDownTree = /** @class */ (function (_super) {
         this.setMultiSelect();
     };
     DropDownTree.prototype.updateCheckBoxState = function (checkBox) {
+        if (this.hasTemplate) {
+            this.updateTemplate();
+        }
         if (!this.wrapText) {
             this.updateOverflowWrapper(false);
         }
@@ -2327,6 +2344,9 @@ var DropDownTree = /** @class */ (function (_super) {
     };
     DropDownTree.prototype.updateTemplate = function () {
         if (this.popupObj) {
+            this.clearTemplate();
+            // tslint:disable
+            this.portals = [];
             this.popupObj.destroy();
             if (this.isPopupOpen) {
                 this.hidePopup();
@@ -2351,10 +2371,12 @@ var DropDownTree = /** @class */ (function (_super) {
             var template = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
             var compiledString = void 0;
             var templateId = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
+            var templatestring = actionFailure ? 'actionFailureTemplate' : 'noRecordsTemplate';
             compiledString = this.templateComplier(template);
-            for (var _i = 0, _a = compiledString({}, null, null, templateId, this.isStringTemplate); _i < _a.length; _i++) {
-                var item = _a[_i];
-                this.noRecord.appendChild(item);
+            var tempArr = compiledString({}, this, templatestring, templateId, this.isStringTemplate, undefined, this.noRecord);
+            if (tempArr) {
+                tempArr = Array.prototype.slice.call(tempArr);
+                sf.base.append(tempArr, this.noRecord);
             }
             this.ddtupdateBlazorTemplates(!actionFailure, actionFailure);
         }
@@ -2400,7 +2422,9 @@ var DropDownTree = /** @class */ (function (_super) {
     DropDownTree.prototype.updateRecordTemplate = function (action) {
         if (this.treeItems && this.treeItems.length <= 0) {
             this.l10nUpdate(action);
-            this.updateTemplate();
+            if (this.hasTemplate) {
+                this.updateTemplate();
+            }
         }
     };
     DropDownTree.prototype.updateOverflowWrapper = function (state) {
@@ -2593,7 +2617,11 @@ var DropDownTree = /** @class */ (function (_super) {
                     this.updateTreeSettings(newProp);
                     break;
                 case 'sortOrder':
+                    if (this.hasTemplate) {
+                        this.updateTemplate();
+                    }
                     this.treeObj.sortOrder = newProp.sortOrder;
+                    this.updateValue(this.value);
                     this.treeObj.dataBind();
                     break;
                 case 'showDropDownIcon':
@@ -2622,6 +2650,7 @@ var DropDownTree = /** @class */ (function (_super) {
                     this.updateTemplate();
                     break;
                 case 'itemTemplate':
+                    this.updateTemplate();
                     this.treeObj.nodeTemplate = newProp.itemTemplate;
                     this.treeObj.dataBind();
                     break;
@@ -2678,6 +2707,7 @@ var DropDownTree = /** @class */ (function (_super) {
      */
     DropDownTree.prototype.destroy = function () {
         this.ddtresetBlazorTemplates(true, true, true, true);
+        this.clearTemplate();
         this.unWireEvents();
         this.setCssClass(null, this.cssClass);
         this.resetValue();
@@ -2934,7 +2964,5 @@ exports.DropDownTree = DropDownTree;
 return exports;
 
 });
-sfBlazor.modules["dropdowntree"] = "dropdowns.DropDownTree";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.dropdowntree, () => {
+
     sf.dropdowns = sf.base.extend({}, sf.dropdowns, sfdropdowntree({}));
-});

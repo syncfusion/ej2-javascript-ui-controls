@@ -165,6 +165,10 @@ var Toolbar = /** @class */ (function (_super) {
      */
     Toolbar.prototype.destroy = function () {
         var _this = this;
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         _super.prototype.destroy.call(this);
         this.unwireEvents();
         this.tempId.forEach(function (ele) {
@@ -174,18 +178,6 @@ var Toolbar = /** @class */ (function (_super) {
         });
         if (sf.base.isBlazor() && this.isServerRendered) {
             this.resetServerItems();
-        }
-        else {
-            var subControls = this.element.querySelectorAll('.e-control');
-            [].slice.call(subControls).forEach(function (node) {
-                var instances = node.ej2_instances;
-                if (instances) {
-                    var instance = instances[0];
-                    if (instance) {
-                        instance.destroy();
-                    }
-                }
-            });
         }
         while (this.element.lastElementChild && !this.element.lastElementChild.classList.contains(BZ_ITEMS)) {
             this.element.removeChild(this.element.lastElementChild);
@@ -716,6 +708,10 @@ var Toolbar = /** @class */ (function (_super) {
             }
             else {
                 itemEleDom.appendChild(innerItem);
+            }
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.renderReactTemplates();
             }
         }
     };
@@ -1691,6 +1687,10 @@ var Toolbar = /** @class */ (function (_super) {
         }
         itemsDiv.style.width = '';
         this.renderOverflowMode();
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     };
     /**
      * Removes the items from the Toolbar. Acceptable arguments are index of item/HTMLElement/node list.
@@ -1731,6 +1731,10 @@ var Toolbar = /** @class */ (function (_super) {
                 var indexAgn = void 0;
                 indexAgn = this.tbarAlgEle[(this.items[eleIdx].align + 's').toLowerCase()].indexOf(this.tbarEle[eleIdx]);
                 this.tbarAlgEle[(this.items[eleIdx].align + 's').toLowerCase()].splice(indexAgn, 1);
+            }
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.clearTemplate();
             }
             sf.base.detach(innerItems[index]);
             this.items.splice(eleIdx, 1);
@@ -1924,12 +1928,20 @@ var Toolbar = /** @class */ (function (_super) {
     };
     Toolbar.prototype.itemsRerender = function (newProp) {
         this.items = this.tbarItemsCol;
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         this.destroyMode();
         this.destroyItems();
         this.items = newProp;
         this.tbarItemsCol = this.items;
         this.renderItems();
         this.renderOverflowMode();
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     };
     Toolbar.prototype.resize = function () {
         var ele = this.element;
@@ -2017,6 +2029,10 @@ var Toolbar = /** @class */ (function (_super) {
                                 this.destroyMode();
                             }
                             var itemCol = [].slice.call(sf.base.selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, tEle));
+                            // tslint:disable-next-line:no-any
+                            if (this.isReact) {
+                                this.clearTemplate();
+                            }
                             sf.base.detach(itemCol[index]);
                             this.tbarEle.splice(index, 1);
                             this.addItems([this.items[index]], index);
@@ -2217,7 +2233,5 @@ exports.Toolbar = Toolbar;
 return exports;
 
 });
-sfBlazor.modules["toolbar"] = "navigations.Toolbar";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.toolbar, () => {
+
     sf.navigations = sf.base.extend({}, sf.navigations, sftoolbar({}));
-});

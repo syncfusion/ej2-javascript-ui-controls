@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 18.3.35 (2020-10-01)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- `#289787` - Animation of the pointer will now work properly when the axis is in the anticlockwise direction.
+
 ## 18.2.44 (2020-07-07)
 
 ### CircularGauge

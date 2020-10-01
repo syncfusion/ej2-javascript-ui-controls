@@ -1,7 +1,7 @@
 @include export-module('accordion-layout') {
   /*! accordion layout */
-  .e-bigger #{&}.e-accordion,
-  #{&}.e-accordion.e-bigger {
+  .e-bigger .e-accordion,
+  .e-accordion.e-bigger {
 
     .e-acrdn-item {
 
@@ -159,7 +159,7 @@
     }
   }
 
-  #{&}.e-accordion {
+  .e-accordion {
     display: block;
     position: relative;
 

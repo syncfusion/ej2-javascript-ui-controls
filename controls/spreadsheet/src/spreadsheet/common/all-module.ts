@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../index';
 import { Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, CellFormat, WrapText, ProtectSheet } from '../actions/index';
 import { CollaborativeEditing, UndoRedo, Resize, SpreadsheetHyperlink, Insert, Delete, FindAndReplace, Merge } from '../actions/index';
-import { Ribbon, FormulaBar, SheetTabs, Open, Save, NumberFormat, Formula, Sort, Filter } from '../integrations/index';
+import { Ribbon, FormulaBar, SheetTabs, Open, Save, NumberFormat, Formula, Sort, Filter, SpreadsheetImage } from '../integrations/index';
 import { DataBind } from '../../workbook/integrations/index';
 import { DataValidation } from '../actions/data-validation';
 import { ConditionalFormatting } from '../actions/conditional-formatting';
@@ -20,7 +20,7 @@ export class AllModule {
         Spreadsheet.Inject(
             Ribbon, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open,
             Save, NumberFormat, CellFormat, Formula, Sort, Resize, CollaborativeEditing, UndoRedo, Filter, SpreadsheetHyperlink, WrapText,
-            Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting);
+            Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, SpreadsheetImage, ConditionalFormatting);
     }
 
     /**

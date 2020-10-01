@@ -824,5 +824,4 @@ exports.removeResize = removeResize;
 return exports;
 
 });
-sfBlazor.modules["popupsbase"] = "popups.isCollide";
 window.sf.popups = window.sf.base.extend({}, window.sf.popups, popupsbase({}));

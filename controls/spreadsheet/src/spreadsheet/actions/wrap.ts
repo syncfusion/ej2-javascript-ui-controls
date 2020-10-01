@@ -2,7 +2,7 @@ import { closest } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/spreadsheet';
 import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged, beginAction } from '../common/index';
-import { completeAction, BeforeWrapEventArgs, getTextHeight, getLines } from '../common/index';
+import { completeAction, BeforeWrapEventArgs, getTextHeight, getLines,  } from '../common/index';
 import { getColumnWidth, SheetModel, getCell, CellModel, CellStyleModel, wrap as wrapText, wrapEvent, getRow } from '../../workbook/index';
 import { getRowHeight, getAddressFromSelectedRange } from '../../workbook/index';
 
@@ -64,13 +64,40 @@ export class WrapText {
                         colwidth = getColumnWidth(args.sheet, j);
                         cell = getCell(i, j, args.sheet);
                         let displayText: string = this.parent.getDisplayText(cell);
+                        if (displayText.indexOf('\n') < 0) {
+                            let editElem: HTMLElement = this.parent.element.querySelector('.e-spreadsheet-edit');
+                            if (editElem) {
+                                if (editElem.textContent.indexOf('\n') > -1) {
+                                    displayText = editElem.textContent;
+                                }
+                            }
+                        }
                         if (displayText) {
                             if (args.wrap) {
-                                let lines: number = getLines(displayText, colwidth, cell.style, this.parent.cellStyle);
+                                if (ele.classList.contains('e-alt-unwrap')) {
+                                    ele.classList.remove('e-alt-unwrap');
+                                }
+                                let lines: number; let n: number = 0; let p: number;
+                                if (displayText.indexOf('\n') > -1) {
+                                    let splitVal: string[] = displayText.split('\n'); let valLength: number = splitVal.length;
+                                    for (p = 0; p < valLength; p++) {
+                                        lines = getLines(splitVal[p], colwidth, cell.style, this.parent.cellStyle);
+                                        if (lines === 0) {
+                                            lines = 1; // for empty new line
+                                        }
+                                        n = n + lines;
+                                    }
+                                    lines = n;
+                                } else {
+                                    lines = getLines(displayText, colwidth, cell.style, this.parent.cellStyle);
+                                }
                                 hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, lines) + 1;
                                 maxHgt = Math.max(maxHgt, hgt);
                                 setMaxHgt(args.sheet, i, j, hgt);
                             } else {
+                                if (displayText.indexOf('\n') > -1) {
+                                    ele.classList.add('e-alt-unwrap');
+                                }
                                 hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, 1);
                                 setMaxHgt(args.sheet, i, j, hgt);
                                 maxHgt = Math.max(getMaxHgt(args.sheet, i), 20);
@@ -88,7 +115,6 @@ export class WrapText {
             }
         }
     }
-
     private ribbonClickHandler(args: ClickEventArgs): void {
         let target: Element = closest(args.originalEvent.target as Element, '.e-btn');
         if (target && target.id === this.parent.element.id + '_wrap') {
@@ -126,7 +152,6 @@ export class WrapText {
             }
         }
     }
-
     /**
      * For internal use only - Get the module name.
      * @private

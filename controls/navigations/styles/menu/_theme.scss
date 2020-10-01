@@ -1,7 +1,8 @@
 @import '../context-menu/theme-mixin.scss';
 @include export-module('menu-theme') {
   /*! menu theme */
-  .e-menu-wrapper {
+  .e-menu-wrapper,
+  .e-menu-container {
     background-color: $menu-ul-bgcolor;
 
     @at-root {
@@ -220,7 +221,8 @@
     }
   }
 
-  .e-menu-wrapper.e-hamburger {
+  .e-menu-wrapper.e-hamburger,
+  .e-menu-container.e-hamburger {
     & .e-menu-header {
       color: $submenu-color;
 

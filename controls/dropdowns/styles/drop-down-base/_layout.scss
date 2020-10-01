@@ -3,13 +3,13 @@
   .e-dropdownbase.e-bigger {
     min-height: 45px;
     @at-root {
-      & .e-list-item,
-      & .e-list-group-item,
-      & .e-fixed-head {
+      #{if(&, '&', '*')} .e-list-item,
+      #{if(&, '&', '*')} .e-list-group-item,
+      #{if(&, '&', '*')} .e-fixed-head {
         line-height: 48px;
       }
 
-      & .e-list-item .e-list-icon {
+      #{if(&, '&', '*')} .e-list-item .e-list-icon {
         font-size: 20px;
       }
     }
@@ -22,17 +22,17 @@
     position: relative;
     width: 100%;
     @at-root {
-      & .e-list-parent {
+      #{if(&, '&', '*')} .e-list-parent {
         margin: 0;
         padding: 0;
       }
 
-      & .e-list-group-item,
-      & .e-fixed-head {
+      #{if(&, '&', '*')} .e-list-group-item,
+      #{if(&, '&', '*')} .e-fixed-head {
         cursor: default;
       }
 
-      & .e-list-item {
+      #{if(&, '&', '*')} .e-list-item {
         cursor: pointer;
         overflow: hidden;
         position: relative;
@@ -42,14 +42,14 @@
         width: 100%;
       }
 
-      & .e-list-item .e-list-icon {
+      #{if(&, '&', '*')} .e-list-item .e-list-icon {
         font-size: 16px;
         vertical-align: middle;
       }
 
-      & .e-fixed-head {
+      #{if(&, '&', '*')} .e-fixed-head {
         position: absolute;
-        top: 0;.e-rtl & {
+        top: 0;.e-rtl #{if(&, '&', '*')} {
           left: 33px;
         }
       }
@@ -61,7 +61,7 @@
     position: relative;
   }
 
-  #{&}.e-popup.e-ddl .e-dropdownbase.e-nodata {
+  .e-popup.e-ddl .e-dropdownbase.e-nodata {
     color: $ddl-nodata-font-color;
     cursor: default;
     font-family: $ddl-list-font-family;

@@ -959,9 +959,8 @@ var InPlaceEditor = /** @class */ (function (_super) {
         var _this = this;
         var args;
         if (this.validationRules) {
-            var rules = Object.keys(this.validationRules);
-            var validationLength_1 = Object.keys(this.validationRules[rules[0]]).length;
-            validationLength_1 = 'validateHidden' in this.validationRules[rules[0]] ? validationLength_1 - 1 : validationLength_1;
+            var rules_1 = Object.keys(this.validationRules);
+            var rulesIndex_1 = 0;
             var count_1 = 0;
             this.formValidate = new sf.inputs.FormValidator(this.formEle, {
                 rules: this.validationRules,
@@ -979,10 +978,17 @@ var InPlaceEditor = /** @class */ (function (_super) {
                         else {
                             _this.toggleErrorClass(false);
                         }
-                        if (!sf.base.isNullOrUndefined(fromSubmit) && fromSubmit && (validationLength_1 === count_1 || e.status === 'failure')) {
-                            fromSubmit = false;
-                            _this.afterValidation(isValidate);
+                        var validationLength = Object.keys(_this.validationRules[rules_1[rulesIndex_1]]).length;
+                        validationLength = 'validateHidden' in _this.validationRules[rules_1[rulesIndex_1]]
+                            ? validationLength - 1 : validationLength;
+                        if (!sf.base.isNullOrUndefined(fromSubmit) && fromSubmit && (validationLength === count_1 || e.status === 'failure')) {
+                            rulesIndex_1++;
+                            if (_this.template === '' || count_1 - 1 === rulesIndex_1) {
+                                fromSubmit = false;
+                                _this.afterValidation(isValidate);
+                            }
                             count_1 = 0;
+                            rulesIndex_1 = 0;
                         }
                     });
                 },
@@ -994,6 +1000,22 @@ var InPlaceEditor = /** @class */ (function (_super) {
             });
             count_1 = 0;
             this.formValidate.validate();
+        }
+        else if (this.template !== '') {
+            args = {
+                errorMessage: '',
+                data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
+            };
+            this.trigger('validating', args, function (validateArgs) {
+                if (validateArgs.errorMessage) {
+                    sf.base.select('.' + EDITABLE_ERROR, _this.formEle).innerHTML = validateArgs.errorMessage;
+                    _this.toggleErrorClass(true);
+                }
+                else {
+                    _this.toggleErrorClass(false);
+                }
+                _this.afterValidation(isValidate);
+            });
         }
         else {
             this.afterValidation(isValidate);

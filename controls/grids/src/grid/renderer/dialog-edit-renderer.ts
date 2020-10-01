@@ -137,7 +137,13 @@ export class DialogEditRender {
         if (this.parent.editSettings.template) {
             let editTemplateID: string = this.parent.element.id + 'editSettingsTemplate';
             let dummyData: Object = extend({}, args.rowData, { isAdd: !this.isEdit }, true);
-            appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
+            let isReactCompiler: boolean = this.parent.isReact && typeof (this.parent.editSettings.template) !== 'string';
+            if (isReactCompiler) {
+                this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID, null, null, form);
+                this.parent.renderTemplates();
+            } else {
+                appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
+            }
             let setRules: Function = () => {
                 let columns: Column[] = this.parent.getColumns();
                 for (let i: number = 0; i < columns.length; i++) {

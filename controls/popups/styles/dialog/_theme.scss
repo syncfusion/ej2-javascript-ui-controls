@@ -1,5 +1,5 @@
 @include export-module('dialog-theme') {
-  #{&}.e-dialog {
+  .e-dialog {
     background-color: $dialog-bg-color;
     box-shadow: $dialog-shadow-color;
  }

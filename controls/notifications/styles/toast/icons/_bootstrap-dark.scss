@@ -1,5 +1,5 @@
 @include export-module('toast-bootstrap-icons') {
-  #{&}.e-toast {
+  .e-toast {
     .e-toast-close-icon::before {
       content: $toast-close-icon;
     }

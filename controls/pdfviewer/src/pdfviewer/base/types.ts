@@ -210,4 +210,4 @@ export enum AllowedInteraction  {
 /**
  * Enum type for signature mode for signature fields
  */
-export type SignatureMode = 'Default' | 'Stretch' ;
+export type SignatureFitMode = 'Default' | 'Stretch' ;

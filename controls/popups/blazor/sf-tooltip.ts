@@ -69,6 +69,8 @@ class SfTooltip {
     public tooltipEle: HTMLElement;
     public beforeCloseTarget: HTMLElement;
     public touchModule: Touch;
+    private showTimer: number = 0;
+    private hideTimer: number = 0;
     public contentTargetValue: HTMLElement = null;
     public contentEvent: Event = null;
     public contentAnimation: TooltipAnimationSettings = null;
@@ -99,22 +101,37 @@ class SfTooltip {
             [this.tooltipPositionX, this.tooltipPositionY] = this.properties.position.split(/(?=[A-Z])/);
         }
     }
+    protected getTargetList(target: string): HTMLElement[] {
+        let targetElements: HTMLElement[] = [];
+        if (target === null || target === '') {
+            targetElements.push(this.element);
+        } else {
+            targetElements = [].slice.call(this.element.querySelectorAll(target));
+            if (targetElements && targetElements.length === 0) {
+                targetElements = [].slice.call(document.querySelectorAll(target));
+            }
+        }
+        return targetElements;
+    }
     public wireEvents(trigger: string): void {
         let triggerList: string[] = this.getTriggerList(trigger);
+        let targetList: HTMLElement[] = this.getTargetList(this.properties.target);
         for (let opensOn of triggerList) {
-            if (opensOn === 'Custom') { return; }
-            if (opensOn === 'Focus') { this.wireFocusEvents(); }
-            if (opensOn === 'Click') { EventHandler.add(this.element, Browser.touchStartEvent, this.targetClick, this); }
-            if (opensOn === 'Hover') {
-                if (Browser.isDevice) {
-                    this.touchModule = new Touch(this.element, {
-                        tapHoldThreshold: TAPHOLD_THRESHOLD,
-                        tapHold: this.tapHoldHandler.bind(this)
-                    });
-                    EventHandler.add(this.element, Browser.touchEndEvent, this.touchEndHandler, this);
-                } else {
-                    EventHandler.add(this.element, 'mouseover', this.targetHover, this);
-                    if (!this.properties.isSticky) { EventHandler.add(this.element, 'mouseleave', this.onMouseOut, this); }
+            for (let target of targetList) {
+                if (opensOn === 'Custom') { return; }
+                if (opensOn === 'Focus') { this.wireFocusEvents(); }
+                if (opensOn === 'Click') { EventHandler.add(target, Browser.touchStartEvent, this.targetClick, this); }
+                if (opensOn === 'Hover') {
+                    if (Browser.isDevice) {
+                        this.touchModule = new Touch(target, {
+                            tapHoldThreshold: TAPHOLD_THRESHOLD,
+                            tapHold: this.tapHoldHandler.bind(this)
+                        });
+                        EventHandler.add(target, Browser.touchEndEvent, this.touchEndHandler, this);
+                    } else {
+                        EventHandler.add(target, 'mouseover', this.targetHover, this);
+                        if (!this.properties.isSticky) { EventHandler.add(target, 'mouseleave', this.onMouseOut, this); }
+                    }
                 }
             }
         }
@@ -150,21 +167,24 @@ class SfTooltip {
     }
     public unwireEvents(trigger: string): void {
         let triggerList: string[] = this.getTriggerList(trigger);
+        let targetList: HTMLElement[] = this.getTargetList(this.properties.target);
         for (let opensOn of triggerList) {
-            if (opensOn === 'Custom') { return; }
-            if (opensOn === 'Focus') {
-                this.unwireFocusEvents();
-            }
-            if (opensOn === 'Click') {
-                EventHandler.remove(this.element, Browser.touchStartEvent, this.targetClick);
-            }
-            if (opensOn === 'Hover') {
-                if (Browser.isDevice) {
-                    if (this.touchModule) { this.touchModule.destroy(); }
-                    EventHandler.remove(this.element, Browser.touchEndEvent, this.touchEndHandler);
-                } else {
-                    EventHandler.remove(this.element, 'mouseover', this.targetHover);
-                    if (!this.properties.isSticky) { EventHandler.remove(this.element, 'mouseleave', this.onMouseOut); }
+            for (let target of targetList) {
+                if (opensOn === 'Custom') { return; }
+                if (opensOn === 'Focus') {
+                    this.unwireFocusEvents();
+                }
+                if (opensOn === 'Click') {
+                    EventHandler.remove(target, Browser.touchStartEvent, this.targetClick);
+                }
+                if (opensOn === 'Hover') {
+                    if (Browser.isDevice) {
+                        if (this.touchModule) { this.touchModule.destroy(); }
+                        EventHandler.remove(target, Browser.touchEndEvent, this.touchEndHandler);
+                    } else {
+                        EventHandler.remove(target, 'mouseover', this.targetHover);
+                        if (!this.properties.isSticky) { EventHandler.remove(target, 'mouseleave', this.onMouseOut); }
+                    }
                 }
             }
         }
@@ -257,7 +277,37 @@ class SfTooltip {
         }
         this.removeDescribedBy(target);
     }
+    public checkForOpen(opensOn: string, element: HTMLElement, e?: Event): boolean {
+        if (element == null || NOU(e)) { return false; }
+        let target: Element = this.properties.target ? closest(e.target as HTMLElement, this.properties.target) : this.element;
+        if ( target == null) {
+            return false;
+        }
+        let isOpenable: boolean = true;
+        if (opensOn === 'Hover') {
+            isOpenable = target.matches(':hover');
+        } else if (opensOn === 'Auto') {
+            isOpenable = (target.matches(':hover') || target.matches(':focus'));
+        } else if (opensOn === 'Focus') {
+            isOpenable = target.matches(':focus');
+        } else if (opensOn === 'Click') {
+            if (element === closest(e.target as HTMLElement, '.' + ROOT) &&
+                    getAttributeOrDefault(target as HTMLElement, 'data-tooltip-id', null) === null) {
+                isOpenable = true;
+            } else {
+                isOpenable = false;
+            }
+        } else if (opensOn === 'Custom') {
+            if (getAttributeOrDefault(target as HTMLElement, 'data-tooltip-id', null) === null) {
+                isOpenable = true;
+            } else {
+                isOpenable = false;
+            }
+        }
+        return isOpenable;
+    }
     private targetHover(e: Event): void {
+        if (!this.checkForOpen(this.properties.opensOn, this.element, e)) { return; }
         let target: HTMLElement = this.properties.target ? closest(e.target as HTMLElement, this.properties.target) as HTMLElement :
             this.element;
         if (NOU(target) || getAttributeOrDefault(target, 'data-tooltip-id', null) !== null) { return; }
@@ -271,16 +321,23 @@ class SfTooltip {
         return this.tooltipEle ? !this.tooltipEle.classList.contains(POPUP_OPEN) : true;
     }
     public showTooltip(target: HTMLElement, showAnimation: TooltipAnimationSettings, e?: Event): void {
-        this.isContiniousOpen = !NOU(this.tooltipEle);
-        this.tooltipEventArgs = {
-            type: e ? e.type.toString() : null, cancel: false, target: this.getDomObject('target', target), event: e ? e : null,
-            hasText: this.hasText(), element: this.getDomObject('tooltipElement', this.tooltipEle),
-            isInteracted: !NOU(e), name: 'beforeRender'
+        clearTimeout(this.showTimer);
+        clearTimeout(this.hideTimer);
+        let show: Function = (): void => {
+            this.isContiniousOpen = !NOU(this.tooltipEle);
+            this.tooltipEventArgs = {
+                type: e ? e.type.toString() : null, cancel: false, target: this.getDomObject('target', target), event: e ? e : null,
+                hasText: this.hasText(), element: this.getDomObject('tooltipElement', this.tooltipEle),
+                isInteracted: !NOU(e), name: 'beforeRender',
+                left: e ? this.getXYValue(e as TouchEvent | MouseEvent, 'x') : null,
+                top: e ? this.getXYValue(e as TouchEvent | MouseEvent, 'y') : null
+            };
+            this.contentTargetValue = target; this.contentEvent = e; this.contentAnimation = showAnimation;
+            this.isRestrictUpdate = this.element.eventList.beforeRender && !this.isHidden();
+            this.element.eventList.beforeRender ? this.triggerEvent('TriggerBeforeRenderEvent', this.tooltipEventArgs) :
+                this.beforeRenderCallBack(false);
         };
-        this.contentTargetValue = target; this.contentEvent = e; this.contentAnimation = showAnimation;
-        this.isRestrictUpdate = this.element.eventList.beforeRender && !this.isHidden();
-        this.element.eventList.beforeRender ? this.triggerEvent('TriggerBeforeRenderEvent', this.tooltipEventArgs) :
-            this.beforeRenderCallBack(false);
+        this.showTimer = setTimeout(show, this.properties.openDelay);
     }
     private triggerEvent(eventName: string, args: TooltipEventArgs): void {
         this.dotnetRef.invokeMethodAsync(eventName, JSON.stringify(args));
@@ -335,7 +392,7 @@ class SfTooltip {
         this.tooltipEventArgs = {
             type: null, cancel: false, target: this.getDomObject('target', target), event: null, isInteracted: false,
             hasText: this.hasText(), element: this.getDomObject('tooltipElement', this.tooltipEle),
-            collidedPosition: newpos, name: 'beforeCollision'
+            collidedPosition: newpos, name: 'beforeCollision', left: null, top: null
         };
         this.isRestrictUpdate = this.element.eventList.beforeCollision && !this.isHidden();
         if (this.element.eventList.beforeCollision) { this.triggerEvent('TriggerBeforeCollisionEvent', this.tooltipEventArgs); }
@@ -372,25 +429,41 @@ class SfTooltip {
     }
 
     public hideTooltip(hideAnimation: TooltipAnimationSettings, e?: Event, targetElement?: HTMLElement): void {
-        let target: HTMLElement;
-        if (e) {
-            target = this.properties.target ? (targetElement || e.target as HTMLElement) : this.element;
-        } else {
-            target = document.querySelector('[data-tooltip-id= ' + this.ctrlId + '_content]') as HTMLElement;
-        }
-        this.tooltipEventArgs = {
-            type: e ? e.type.toString() : null, cancel: false, target: this.getDomObject('target', target), event: e ? e : null,
-            element: this.getDomObject('tooltipElement', this.tooltipEle), hasText: this.hasText(),
-            isInteracted: !NOU(e), name: 'beforeClose', collidedPosition: null
+        clearTimeout(this.hideTimer);
+        clearTimeout(this.showTimer);
+        let hide: Function = (): void => {
+            if (this.checkForOpen(this.properties.opensOn, this.element, e)) { return; }
+            let target: HTMLElement;
+            if (e) {
+                target = this.properties.target ? (targetElement || e.target as HTMLElement) : this.element;
+            } else {
+                target = document.querySelector('[data-tooltip-id= ' + this.ctrlId + '_content]') as HTMLElement;
+            }
+            this.tooltipEventArgs = {
+                type: e ? e.type.toString() : null, cancel: false, target: this.getDomObject('target', target), event: e ? e : null,
+                element: this.getDomObject('tooltipElement', this.tooltipEle), hasText: this.hasText(),
+                isInteracted: !NOU(e), name: 'beforeClose', collidedPosition: null,
+                left: e ? this.getXYValue(e as TouchEvent | MouseEvent, 'x') : null,
+                top: e ? this.getXYValue(e as TouchEvent | MouseEvent, 'y') : null
+            };
+            this.beforeCloseTarget = target; this.beforeCloseAnimation = hideAnimation;
+            this.isRestrictUpdate = this.element.eventList.beforeClose && !this.isHidden();
+            this.element.eventList.beforeClose ? this.triggerEvent('TriggerBeforeCloseEvent', this.tooltipEventArgs) :
+                this.beforeCloseCallBack(false);
         };
-        this.beforeCloseTarget = target; this.beforeCloseAnimation = hideAnimation;
-        this.isRestrictUpdate = this.element.eventList.beforeClose && !this.isHidden();
-        this.element.eventList.beforeClose ? this.triggerEvent('TriggerBeforeCloseEvent', this.tooltipEventArgs) :
-            this.beforeCloseCallBack(false);
+        this.hideTimer = setTimeout(hide, this.properties.closeDelay);
     }
     public beforeCloseCallBack(cancel: boolean): void {
         if (!cancel) {
-            this.popupHide(this.beforeCloseAnimation, this.beforeCloseTarget);
+            let proxy: SfTooltip = this;
+            let hide: Function = (): void => {
+                proxy.popupHide(proxy.beforeCloseAnimation, proxy.beforeCloseTarget);
+            };
+            if (this.popupObj) {
+                this.popupHide(this.beforeCloseAnimation, this.beforeCloseTarget);
+            } else {
+                setTimeout(hide, 200);
+            }
         } else {
             this.isPopupHidden = false;
         }
@@ -407,14 +480,7 @@ class SfTooltip {
         if (hideAnimation.effect === 'None') {
             closeAnimation = undefined;
         }
-        if (this.properties.closeDelay > 0) {
-            let hide: Function = (): void => {
-                if (this.popupObj) { this.popupObj.hide(closeAnimation); }
-            };
-            setTimeout(hide, this.properties.closeDelay);
-        } else {
-            if (this.popupObj) { this.popupObj.hide(closeAnimation); }
-        }
+        if (this.popupObj) { this.popupObj.hide(closeAnimation); }
     }
     private calculateTooltipOffset(position: Position): OffsetPosition {
         let pos: OffsetPosition = { top: 0, left: 0 };
@@ -682,9 +748,10 @@ class SfTooltip {
         addClass([this.tooltipEle], POPUP_CLOSE);
         this.tooltipEventArgs = {
             type: this.contentEvent ? this.contentEvent.type.toString() : null, isInteracted: !NOU(this.contentEvent),
-            hasText: this.hasText(), target: this.getDomObject('target', this.contentTargetValue),
-            name: 'beforeOpen', cancel: false, event: this.contentEvent ? this.contentEvent : null,
-            element: this.getDomObject('tooltipElement', this.tooltipEle)
+            hasText: this.hasText(), target: this.getDomObject('target', this.contentTargetValue), name: 'beforeOpen', cancel: false,
+            event: this.contentEvent ? this.contentEvent : null, element: this.getDomObject('tooltipElement', this.tooltipEle),
+            left: this.contentEvent ? this.getXYValue(this.contentEvent as TouchEvent | MouseEvent, 'x') : null, top: this.contentEvent ?
+                this.getXYValue(this.contentEvent as TouchEvent | MouseEvent, 'y') : null
         };
         this.isRestrictUpdate = this.element.eventList.beforeOpen && !this.isHidden();
         this.element.eventList.beforeOpen ? this.triggerEvent('TriggerBeforeOpenEvent', this.tooltipEventArgs) :
@@ -706,16 +773,7 @@ class SfTooltip {
             if (this.contentAnimation.effect === 'None') {
                 openAnimation = undefined;
             }
-            if (this.properties.openDelay > 0) {
-                let show: Function = (): void => {
-                    if (this.popupObj) {
-                        this.popupObj.show(openAnimation, this.contentTargetValue);
-                    }
-                };
-                setTimeout(show, this.properties.openDelay);
-            } else {
-                if (this.popupObj) { this.popupObj.show(openAnimation, this.contentTargetValue); }
-            }
+            if (this.popupObj) { this.popupObj.show(openAnimation, this.contentTargetValue); }
         }
         if (this.contentEvent) { this.wireMouseEvents(this.contentEvent, this.contentTargetValue); }
         this.contentTargetValue = this.contentEvent = this.contentAnimation = null;
@@ -766,6 +824,21 @@ class SfTooltip {
 
     private hasText(): boolean {
         return this.tooltipEle ? (this.tooltipEle.innerText.trim() === '' ? false : true) : false;
+    }
+
+    private getXYValue(e: MouseEvent | TouchEvent, direction: string): number {
+        let touchList: TouchList = (e as TouchEvent).changedTouches;
+        let value: number;
+        if (direction === 'x') {
+            value = touchList ? touchList[0].clientX : (e as MouseEvent).clientX;
+        } else {
+            value = touchList ? touchList[0].clientY : (e as MouseEvent).clientY;
+        }
+        if (!value && e.type === 'focus' && e.target) {
+            let rect: ClientRect = (e.target as HTMLElement).getBoundingClientRect();
+            value = rect ? (direction === 'x' ? rect.left : rect.top) : null;
+        }
+        return Math.ceil(value);
     }
 
     public destroy(): void {
@@ -833,6 +906,15 @@ let Tooltip: object = {
         if (this.isValid(element)) {
             element.blazor__instance.destroy();
         }
+    },
+    refresh(element: BlazorTooltipElement): void {
+        if (!this.isValid(element)) { return; }
+        let blazInstance: SfTooltip = element.blazor__instance;
+        if (!blazInstance.isPopupHidden) {
+            blazInstance.hideTooltip(blazInstance.properties.animation.close);
+        }
+        blazInstance.unwireEvents(blazInstance.properties.opensOn);
+        blazInstance.wireEvents(blazInstance.properties.opensOn);
     },
     refreshPosition(element: BlazorTooltipElement, targetEle: HTMLElement, targetProp: string): void {
         if (!this.isValid(element)) { return; }
@@ -915,6 +997,8 @@ interface TooltipEventArgs extends BaseEventArgs {
     hasText:  boolean;
     collidedPosition?: string;
     isInteracted?: boolean;
+    left?: number;
+    top?: number;
 }
 interface TooltipAnimationSettings {
     effect?: Effect;

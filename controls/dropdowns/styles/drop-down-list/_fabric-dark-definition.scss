@@ -33,58 +33,58 @@ $ddl-bigger-small-list-font-size: 14px !default;
 //enddefault
 
 @include export-module('dropdownlist-fabric-dark') {
-  .e-ddl#{&}.e-popup {
+  .e-ddl.e-popup {
     border: 0;
     box-shadow: 0 0 5px 0 $ddl-list-box-shadow-color;
     margin-top: 1px;
     @at-root {
-      & .e-input-group {
-        & input {
+      #{if(&, '&', '*')} .e-input-group {
+        #{if(&, '&', '*')} input {
           line-height: 15px;
         }
       }
     }
   }
 
-  .e-ddl#{&}.e-popup .e-input-group {
+  .e-ddl.e-popup .e-input-group {
     display: flex;
     width: auto;
   }
 
-  .e-ddl#{&}.e-popup .e-filter-parent {
+  .e-ddl.e-popup .e-filter-parent {
     border-left-width: 0;
     border-right-width: 0;
   }
 
-  .e-bigger #{&}.e-popup.e-ddl-device-filter {
+  .e-bigger .e-popup.e-ddl-device-filter {
     margin-top: 0;
   }
 
-  #{&}.e-popup.e-ddl .e-dropdownbase {
+  .e-popup.e-ddl .e-dropdownbase {
     min-height: 26px;
   }
 
-  .e-bigger .e-ddl#{&}.e-popup {
+  .e-bigger .e-ddl.e-popup {
     @at-root {
-      & .e-list-item,
-      & .e-list-group-item,
-      & .e-fixed-head {
+      #{if(&, '&', '*')} .e-list-item,
+      #{if(&, '&', '*')} .e-list-group-item,
+      #{if(&, '&', '*')} .e-fixed-head {
         font-size: 15px;
         line-height: 45px;
         padding-left: 0;
         text-indent: 16px;
       }
 
-      & .e-dd-group .e-list-item {
+      #{if(&, '&', '*')} .e-dd-group .e-list-item {
         padding-left: 4px;
       }
 
-      & .e-input-group {
+      #{if(&, '&', '*')} .e-input-group {
         padding: 4px 0;
       }
 
-      & .e-input-group input,
-      & .e-input-group input.e-input {
+      #{if(&, '&', '*')} .e-input-group input,
+      #{if(&, '&', '*')} .e-input-group input.e-input {
         height: 38px;
       }
     }
@@ -92,34 +92,34 @@ $ddl-bigger-small-list-font-size: 14px !default;
 
   .e-input-group:not(.e-disabled) .e-control#{&}.e-dropdownlist ~ .e-ddl-icon:active,
   .e-input-group:not(.e-disabled) .e-control#{&}.e-dropdownlist ~ .e-ddl-icon:hover,
-  .e-ddl#{&}.e-popup .e-input-group:not(.e-disabled) .e-clear-icon:active,
-  .e-ddl#{&}.e-popup .e-input-group:not(.e-disabled) .e-clear-icon:hover {
+  .e-ddl.e-popup .e-input-group:not(.e-disabled) .e-clear-icon:active,
+  .e-ddl.e-popup .e-input-group:not(.e-disabled) .e-clear-icon:hover {
     background: transparent;
     color: $ddl-list-icon-color;
   }
 
-  .e-bigger.e-small .e-ddl#{&}.e-popup,
-  .e-ddl#{&}.e-popup .e-bigger.e-small {
+  .e-bigger.e-small .e-ddl.e-popup,
+  .e-ddl.e-popup .e-bigger.e-small {
     @at-root {
-      & .e-list-item,
-      & .e-list-group-item,
-      & .e-fixed-head {
+      #{if(&, '&', '*')} .e-list-item,
+      #{if(&, '&', '*')} .e-list-group-item,
+      #{if(&, '&', '*')} .e-fixed-head {
         font-size: 14px;
         line-height: 40px;
         padding-left: 0;
         text-indent: 16px;
       }
 
-      & .e-dd-group .e-list-item {
+      #{if(&, '&', '*')} .e-dd-group .e-list-item {
         padding-left: 4px;
       }
 
-      & .e-input-group {
+      #{if(&, '&', '*')} .e-input-group {
         padding: 0;
       }
 
-      & .e-input-group input,
-      & .e-input-group input.e-input {
+      #{if(&, '&', '*')} .e-input-group input,
+      #{if(&, '&', '*')} .e-input-group input.e-input {
         height: 34px;
       }
     }

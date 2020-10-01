@@ -1,9 +1,9 @@
-import { CellModel, BeforeSortEventArgs, SheetModel, RowModel, ColumnModel, ModelType } from './../../workbook/index';
+import { CellModel, BeforeSortEventArgs, SheetModel, InsertDeleteEventArgs, ImageModel } from './../../workbook/index';
 import { ValidationType, ValidationOperator, MergeArgs, HyperlinkModel, TopBottom } from './../../workbook/index';
 import { RefreshType } from './index';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BaseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import  { DataBar, ColorScale, IconSet, CellInfoEventArgs, CFColor, HighlightCell } from './../../workbook/index';
+import { DataBar, ColorScale, IconSet, CellInfoEventArgs, CFColor, HighlightCell } from './../../workbook/index';
 
 
 /**
@@ -65,7 +65,7 @@ export interface IViewport {
     height: number;
     width: number;
 }
-export interface ReplaceAllEventArgs  {
+export interface ReplaceAllEventArgs {
     replaceValue: string;
     addressCollection: string[];
 }
@@ -250,7 +250,7 @@ export interface CellSaveEventArgs {
     /** Defines the old value. */
     oldValue: string;
     /** Defines the element. */
-    element?: HTMLElement;
+    element: HTMLElement;
     /** Defines the address. */
     address: string;
     /** Defines the formula. */
@@ -295,11 +295,62 @@ export interface UndoRedoEventArgs extends CellSaveEventArgs, BeforeSortEventArg
     height?: string;
     merge?: boolean;
     mergeCollection?: MergeArgs[];
+    id?: string;
+    imageData?: string;
+    imageHeight?: number;
+    imageWidth?: number;
+    prevHeight?: number;
+    prevWidth?: number;
+    currentHeight?: number;
+    currentWidth?: number;
+    prevLeft?: number;
+    prevTop?: number;
+    currentLeft?: number;
+    currentTop?: number;
+    prevRowIdx?: number;
+    prevColIdx?: number;
+    currentRowIdx?: number;
+    currentColIdx?: number;
+    isUndoRedo?: boolean;
+    pasteSheetIndex: number;
+    pastedPictureElement: HTMLElement;
 }
 export interface BeforeActionData {
     cellDetails: PreviousCellDetails[];
     cutCellDetails?: PreviousCellDetails[];
 }
+export interface BeforeImageData {
+    imageHeight?: number;
+    imageWidth?: number;
+    imageLeft?: number;
+    imageTop?: number;
+    imageData?: string;
+    requestType: string;
+    range?: string;
+    cancel?: boolean;
+    id?: string;
+    sheetIndex?: number;
+}
+
+export interface BeforeImageRefreshData {
+    prevHeight?: number;
+    prevWidth?: number;
+    currentHeight?: number;
+    currentWidth?: number;
+    prevLeft?: number;
+    prevTop?: number;
+    currentLeft?: number;
+    currentTop?: number;
+    requestType: string;
+    prevRowIdx?: number;
+    prevColIdx?: number;
+    currentRowIdx?: number;
+    currentColIdx?: number;
+    id?: string;
+    sheetIdx?: number;
+    isUndoRedo?: boolean;
+}
+
 export interface PreviousCellDetails {
     rowIndex: number;
     colIndex: number;
@@ -311,11 +362,13 @@ export interface PreviousCellDetails {
     rowSpan: number;
     colSpan: number;
     hyperlink: string | HyperlinkModel;
+    image: ImageModel[];
 }
 
 export interface BeforePasteEventArgs {
     cancel?: boolean;
     copiedInfo: { [key: string]: Object };
+    copiedShapeInfo?: { [key: string]: Object };
     copiedRange: string;
     pastedRange: string;
     requestType: string;
@@ -335,32 +388,17 @@ export interface WrapEventArgs {
     wrap: boolean;
     action: string;
 }
-export interface BeforeReplaceEventArgs  {
+export interface BeforeReplaceEventArgs {
     address: string;
     compareVal: string;
     cancel: boolean;
 }
-export interface ReplaceEventArgs  {
+export interface ReplaceEventArgs {
     address: string;
     compareVal: string;
     action?: string;
 }
-/**
- * Insert event options.
- * @hidden
- */
-export interface InsertDeleteEventArgs {
-    model?: RowModel[] | ColumnModel[] | CellModel[];
-    index?: number;
-    modelType?: ModelType;
-    isAction?: boolean;
-    startIndex?: number;
-    endIndex?: number;
-    deletedModel?: RowModel[] | ColumnModel[] | CellModel[] | SheetModel;
-    deletedCellsModel?: RowModel[];
-    activeSheetIndex?: number;
-    sheetCount?: number;
-}
+
 /**
  * CellValidationEventArgs
  * @hidden

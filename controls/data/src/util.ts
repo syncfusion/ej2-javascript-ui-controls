@@ -143,8 +143,10 @@ export class DataUtil {
      * @param  {number} level?
      * @param  {Object[]} groupDs?
      */
-    public static group(jsonArray: Object[], field?: string, aggregates?: Object[], level?: number, groupDs?: Object[], format?: Function):
-        Object[] {
+    public static group(
+        jsonArray: Object[], field?: string, aggregates?: Object[], level?: number,
+        groupDs?: Object[], format?: Function, isLazyLoad?: boolean
+    ): Object[] {
         level = level || 1;
         let jsonData: Group[] = jsonArray;
         let guid: string = 'GroupGuid';
@@ -155,10 +157,14 @@ export class DataUtil {
                     let temp: Group[] = groupDs.filter((e: { key: string }) => { return e.key === jsonData[j].key; });
                     indx = groupDs.indexOf(temp[0]);
                     jsonData[j].items = this.group(
-                        jsonData[j].items, field, aggregates, (jsonData as Group).level + 1, (groupDs as Group[])[indx].items, format);
+                        jsonData[j].items, field, aggregates, (jsonData as Group).level + 1,
+                        (groupDs as Group[])[indx].items, format, isLazyLoad
+                    );
                     jsonData[j].count = (groupDs as Group[])[indx].count;
                 } else {
-                    jsonData[j].items = this.group(jsonData[j].items, field, aggregates, (jsonData as Group).level + 1, null, format);
+                    jsonData[j].items = this.group(
+                        jsonData[j].items, field, aggregates, (jsonData as Group).level + 1, null, format, isLazyLoad
+                    );
                     jsonData[j].count = jsonData[j].items.length;
                 }
             }
@@ -196,7 +202,9 @@ export class DataUtil {
             }
 
             grouped[val].count = !isNullOrUndefined(groupDs) ? grouped[val].count : grouped[val].count += 1;
-            grouped[val].items.push(jsonData[i]);
+            if (!isLazyLoad || (isLazyLoad && aggregates.length)) {
+                grouped[val].items.push(jsonData[i]);
+            }
         }
         if (aggregates && aggregates.length) {
 
@@ -218,6 +226,11 @@ export class DataUtil {
                     }
                 }
                 groupedArray[i].aggregates = res;
+            }
+        }
+        if (isLazyLoad && groupedArray.length && aggregates.length) {
+            for (let i: number = 0; i < groupedArray.length; i++) {
+                groupedArray[i].items = [];
             }
         }
         return jsonData.length && groupedArray || jsonData;

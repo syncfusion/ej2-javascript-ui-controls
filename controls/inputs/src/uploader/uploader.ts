@@ -1,7 +1,7 @@
 import { Component, Property, Event, EmitType, EventHandler, classList, L10n, compile, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, detach, append, Animation } from '@syncfusion/ej2-base';
 import { addClass, removeClass, KeyboardEvents, KeyboardEventArgs, setValue, getValue, ChildProperty } from '@syncfusion/ej2-base';
-import { Collection, Complex, Browser, Ajax, BeforeSendEventArgs, getUniqueID, closest } from '@syncfusion/ej2-base';
+import { Collection, Complex, Browser, Ajax, BeforeSendEventArgs, getUniqueID, closest, remove } from '@syncfusion/ej2-base';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { UploaderModel, AsyncSettingsModel, ButtonsPropsModel, FilesPropModel } from './uploader-model';
 import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
@@ -1518,7 +1518,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 }
             }
             if (!enableDropText && dropTextArea) {
-                dropTextArea.remove();
+                remove(dropTextArea);
             }
         } else if (!isNullOrUndefined(this.uploaderOptions) && this.uploaderOptions.dropArea === undefined) {
             this.createDropTextHint();
@@ -1535,7 +1535,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.dropZoneElement = null;
             let dropTextArea: HTMLElement = <HTMLElement>this.dropAreaWrapper.querySelector('.e-file-drop');
             if (dropTextArea) {
-                dropTextArea.remove();
+                remove(dropTextArea);
             }
         }
     }
@@ -1657,7 +1657,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         if (this.isForm) {
             EventHandler.remove(this.formElement, 'reset', this.resetForm);
         }
-        this.keyboardModule.destroy();
+        if (this.keyboardModule) { this.keyboardModule.destroy(); }
     }
 
     private resetForm() : void {
@@ -2085,7 +2085,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         for (let i: number = 0; i < this.filesEntries.length; i++) {
             // tslint:disable-next-line
             this.filesEntries[i].file( (fileObj: any) => {
-                if (this.filesEntries) {
+                if (this.filesEntries.length) {
                     let path: string = this.filesEntries[i].fullPath;
                     files.push({'path': path, 'file': fileObj});
                     if (i === this.filesEntries.length - 1) {
@@ -2369,10 +2369,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         for (let listItem of fileData) {
             let liElement: HTMLElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
             this.uploadTemplateFn = this.templateComplier(this.template);
-            let fromElements: HTMLElement[] = [].slice.call(
-                this.uploadTemplateFn(listItem, this, 'template', this.element.id + 'Template', this.isStringTemplate));
+            // tslint:disable-next-line
+            let liTempCompiler: any = this.uploadTemplateFn(listItem, this, 'template', this.element.id + 'Template', this.isStringTemplate, null, liElement);
+            if (liTempCompiler) {
+                let fromElements: HTMLElement[] = [].slice.call(liTempCompiler);
+                append(fromElements, liElement);
+            }
             let index: number = fileData.indexOf(listItem);
-            append(fromElements, liElement);
             let eventArgs: RenderingEventArgs = {
                 element: liElement,
                 fileInfo: listItem,
@@ -2390,6 +2393,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.listParent.appendChild(liElement);
             this.fileList.push(liElement);
         }
+        this.renderReactTemplates();
         updateBlazorTemplate(this.element.id + 'Template', 'Template', this, false);
     }
 
@@ -2571,10 +2575,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         let result: FileInfo = this.mergeFileInfo(fileData, fileList);
         fileList.setAttribute('data-file-name', result.name);
         this.uploadTemplateFn = this.templateComplier(this.template);
-        let fromElements: HTMLElement[] = [].slice.call(
-            this.uploadTemplateFn(result, this, 'template', this.element.id + 'Template', this.isStringTemplate));
+        // tslint:disable-next-line
+        let liTempCompiler: any = this.uploadTemplateFn(result, this, 'template', this.element.id + 'Template', this.isStringTemplate, null, fileList);
+        if (liTempCompiler) {
+            let fromElements: HTMLElement[] = [].slice.call(liTempCompiler);
+            append(fromElements, fileList);
+        }
         let index: number = this.listParent.querySelectorAll('li').length;
-        append(fromElements, fileList);
         if (!fileList.classList.contains(INVALID_FILE)) {
             this.createFormInput(fileData);
         }
@@ -2594,6 +2601,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.trigger('fileListRendering', eventsArgs);
         this.listParent.appendChild(fileList);
         this.fileList.push(fileList);
+        this.renderReactTemplates();
         updateBlazorTemplate(this.element.id + 'Template', 'Template', this, false);
     }
 
@@ -3713,6 +3721,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      */
     public destroy(): void {
         this.element.value = null;
+        this.clearTemplate();
         if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
             this.clearAll();
         }

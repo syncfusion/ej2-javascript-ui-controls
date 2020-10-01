@@ -1,6 +1,6 @@
 @include export-module('drop-down-button-bootstrap-icons') {
-  #{&}.e-dropdown-btn,
-  #{&}.e-dropdown-btn.e-btn {
+  .e-dropdown-btn,
+  .e-dropdown-btn.e-btn {
     .e-caret {
       &::before {
         content: '\e969';

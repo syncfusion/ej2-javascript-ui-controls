@@ -1,5 +1,5 @@
 import * as events from '../base/constant';
-import { IRichTextEditor, NotifyArgs, IRenderer, ImageUploadingEventArgs } from '../base/interface';
+import { IRichTextEditor, NotifyArgs, IRenderer, ImageUploadingEventArgs, ImageSuccessEventArgs } from '../base/interface';
 import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
@@ -265,7 +265,7 @@ export class PasteCleanup {
       cssClass: classes.CLS_RTE_DIALOG_UPLOAD,
       dropArea: this.parent.inputElement,
       allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
-      success: (e: object) => {
+      success: (e: ImageSuccessEventArgs) => {
         setTimeout(() => { this.popupClose(popupObj, uploadObj, imgElem, e); }, 900);
       },
       uploading: (e: UploadingEventArgs) => {
@@ -347,8 +347,9 @@ export class PasteCleanup {
     this.parent.trigger(events.imageUploadFailed, e);
     uploadObj.destroy();
   }
-  private popupClose(popupObj: Popup, uploadObj: Uploader, imgElem: Element, e: Object): void {
+  private popupClose(popupObj: Popup, uploadObj: Uploader, imgElem: Element, e: ImageSuccessEventArgs): void {
     this.parent.inputElement.contentEditable = 'true';
+    e.element = imgElem as HTMLElement;
     this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
       if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
         let url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;

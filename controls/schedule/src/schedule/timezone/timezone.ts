@@ -14,12 +14,12 @@ export class Timezone {
             return 0;
         }
     }
-    public convert(date: Date, fromOffset: number & string, toOffset: number & string): Date {
+    public convert(date: Date, fromOffset: number | string, toOffset: number | string): Date {
         if (typeof fromOffset === 'string') {
-            fromOffset = <number & string>this.offset(date, fromOffset);
+            fromOffset = this.offset(date, fromOffset);
         }
         if (typeof toOffset === 'string') {
-            toOffset = <number & string>this.offset(date, toOffset);
+            toOffset = this.offset(date, toOffset);
         }
         let fromLocalOffset: number = date.getTimezoneOffset();
         date = new Date(date.getTime() + (fromOffset - toOffset) * 60000);

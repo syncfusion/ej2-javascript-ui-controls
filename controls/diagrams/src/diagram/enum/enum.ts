@@ -13,6 +13,12 @@ export enum BlazorAction {
     expandNode = 1 << 1,
     /** Enabled during the mouse interaction  */
     interaction = 1 << 2,
+    /** Enable when the group action start in history */
+    GroupingInProgress = 1 << 3,
+	/** Enable when the group action start to clone another group node */
+    GroupClipboardInProcess = 1 << 4,
+    /** Enable when the clear the object to prevent the server update */
+    ClearObject = 1 << 5
 }
 /**
  * Defines how the diagram elements have to be aligned with respect to its immediate parent
@@ -286,6 +292,26 @@ export type AnnotationAlignment =
     'Before' |
     /**
      * After - Aligns the annotation after a connector segment
+     */
+    'After';
+
+/**
+ * Defines how the fixedUserHandle have to be aligned with respect to its immediate parent
+ * Center - Aligns the fixedUserHandle at the center of a connector segment
+ * Before - Aligns the fixedUserHandle before a connector segment
+ * After - Aligns the fixedUserHandle after a connector segment
+ */
+export type FixedUserHandleAlignment =
+    /**
+     * Center - Aligns the fixedUserHandle at the center of a connector segment
+     */
+    'Center' |
+    /**
+     * Before - Aligns the fixedUserHandle before a connector segment
+     */
+    'Before' |
+    /**
+     * After - Aligns the fixedUserHandle after a connector segment
      */
     'After';
 
@@ -1863,7 +1889,9 @@ export type EntryType =
     /** BringToFront - Sets the entry type as bringToFront */
     'BringToFront' |
     /** SendToBack - Sets the entry type as sendToBack */
-    'SendToBack';
+    'SendToBack' |
+    /** AddChildToGroupNode - Sets the entry type as  AddChildToGroupNode */
+    'AddChildToGroupNode';
 /**
  * Defines the entry category type
  * Internal - Sets the entry category type as Internal
@@ -2390,7 +2418,7 @@ export enum DiagramEvent {
     'scrollChange', 'dragEnter', 'dragLeave', 'dragOver', 'textEdit', 'paletteSelectionChange', 'historyChange',
     'mouseEnter', 'mouseLeave', 'mouseOver', 'expandStateChange', 'segmentCollectionChange', 'commandExecute', 'historyStateChange',
     'onUserHandleMouseDown', 'onUserHandleMouseUp', 'onUserHandleMouseEnter', 'onUserHandleMouseLeave', 'onImageLoad',
-    'onDoBindingInit', 'keyUp', 'keyDown'
+    'onDoBindingInit', 'keyUp', 'keyDown', 'fixedUserHandleClick'
 }
 /**
  * @private
@@ -2533,7 +2561,7 @@ export type MouseButtons =
     /** Middle - Whenever the mouse wheel is clicked, ‘Middle’ is returned. */
     'Middle' |
     /** Right - Whenever the right button of the mouse is clicked, ‘Right’ is returned. */
-    'Right' ;
+    'Right';
 
 /**
  * Defines whether an object is added/removed from diagram

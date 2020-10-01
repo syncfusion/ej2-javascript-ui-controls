@@ -1027,7 +1027,7 @@ export function createTemplate(
     try {
         let blazor: string = 'Blazor';
         let tempObject: Object = window[blazor] ? (dataLabelId ? point : { point: point }) : { chart: chart, series: series, point: point };
-        let elementData: Element[] = templateFn ? templateFn(tempObject, null, null, dataLabelId ||
+        let elementData: Element[] = templateFn ? templateFn(tempObject, chart, 'template', dataLabelId ||
             childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
         if (elementData.length) {
             templateElement = Array.prototype.slice.call(elementData);
@@ -1036,6 +1036,8 @@ export function createTemplate(
                 childElement.appendChild(templateElement[i]);
             }
         }
+        // tslint:disable-next-line:no-any
+        (chart as any).renderReactTemplates();
     } catch (e) {
         return childElement;
     }

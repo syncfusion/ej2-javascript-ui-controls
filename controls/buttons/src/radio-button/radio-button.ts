@@ -1,6 +1,6 @@
 import { Component, INotifyPropertyChanged, rippleEffect, NotifyPropertyChanges, Property, closest } from '@syncfusion/ej2-base';
 import { addClass, getInstance, getUniqueID, isRippleEnabled, removeClass, attributes, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { BaseEventArgs, detach, EmitType, Event, EventHandler, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { BaseEventArgs, detach, EmitType, Event, EventHandler, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { wrapperInitialize, rippleMouseHandler } from './../common/common';
 import { RadioButtonModel } from './radio-button-model';
 /**
@@ -35,7 +35,6 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     /**
      * Event trigger when the RadioButton state has been changed by user interaction.
      * @event
-     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<ChangeArgs>;
@@ -43,7 +42,6 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     /**
      * Triggers once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
@@ -146,11 +144,6 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
      * @returns void
      */
     public destroy(): void {
-        if (isBlazor() && this.isServerRendered) {
-            if (!this.disabled) {
-                this.unWireEvents();
-            }
-        } else {
             let radioWrap: Element = this.element.parentElement;
             super.destroy();
             if (!this.disabled) {
@@ -169,7 +162,6 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
                 });
                 radioWrap.innerHTML = '';
             }
-        }
     }
 
     private focusHandler(): void {
@@ -344,9 +336,6 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
      * @private
      */
     protected preRender(): void {
-        if (isBlazor() && this.isServerRendered) {
-            return;
-        }
         let element: HTMLInputElement = this.element;
         this.formElement = <HTMLFormElement>closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -371,14 +360,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
      * @private
      */
     protected render(): void {
-        if (isBlazor() && this.isServerRendered) {
-            if (isRippleEnabled) {
-                let rippleSpan: HTMLElement = this.element.parentElement.getElementsByClassName(RIPPLE)[0] as HTMLElement;
-                rippleEffect(rippleSpan, { duration: 400, isCenterRipple: true });
-            }
-        } else {
-            this.initialize();
-        }
+        this.initialize();
         if (!this.disabled) {
             this.wireEvents();
         }

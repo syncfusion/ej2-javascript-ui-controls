@@ -27,6 +27,7 @@ export class Render {
 
     private initializeLayout(viewName: View): void {
         if (this.parent.activeView) {
+            this.parent.resetTemplates();
             this.parent.activeView.removeEventListener();
             this.parent.activeView.destroy();
         }
@@ -101,6 +102,7 @@ export class Render {
         }
         this.updateHeader();
         this.parent.activeView.renderLayout(cls.CURRENT_PANEL_CLASS);
+        this.parent.renderTemplates();
         if (this.parent.eventTooltip) {
             this.parent.eventTooltip.destroy();
             this.parent.eventTooltip = null;
@@ -163,7 +165,7 @@ export class Render {
         // tslint:disable:no-any
         this.parent.trigger(
             events.actionFailure,
-            { error: isBlazor() ? (e as any).error ? (e as any).error.toString() : (e as any).toString() : e},
+            { error: isBlazor() ? (e as any).error ? (e as any).error.toString() : (e as any).toString() : e },
             () => this.parent.hideSpinner()
         );
         // tslint:disable:no-any

@@ -1,13 +1,12 @@
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { ContextMenu as Context, MenuEventArgs, MenuItemModel, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
-import { PdfViewer, PdfViewerBase } from '../index';
+import { PdfViewer, PdfViewerBase, IContextMenu } from '../index';
 import { ContextMenuItem } from './types';
-
 /**
  * ContextMenu module is used to handle the context menus used in the control.
  * @hidden
  */
-export class ContextMenu {
+export class ContextMenu implements IContextMenu {
 
     /**
      * @private
@@ -21,7 +20,7 @@ export class ContextMenu {
     private pdfViewerBase: PdfViewerBase;
     private copyContextMenu: MenuItemModel[] = [];
     // tslint:disable-next-line
-    private currentTarget: any;
+    public currentTarget: any;
     /**
      * @private
      */
@@ -112,7 +111,7 @@ export class ContextMenu {
         }
         if (this.pdfViewer.textSelectionModule || this.pdfViewerBase.isShapeBasedAnnotationsEnabled()) {
             if (args.event) {
-                let isClickWithinSelectionBounds: boolean = this.isClickWithinSelectionBounds(args.event);
+                let isClickWithinSelectionBounds: boolean = this.pdfViewerBase.isClickWithinSelectionBounds(args.event);
                 // tslint:disable-next-line:max-line-length
                 if (this.pdfViewerBase.isFreeTextContextMenu) {
                     this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Highlight context'), this.pdfViewer.localeObj.getConstant('Underline context'), this.pdfViewer.localeObj.getConstant('Strikethrough context'), this.pdfViewer.localeObj.getConstant('Properties'), this.pdfViewer.localeObj.getConstant('Comment'),
@@ -328,169 +327,12 @@ export class ContextMenu {
             this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
         }
     }
-
-    // tslint:disable-next-line
-    private isClickWithinSelectionBounds(event: any): boolean {
-        let isWithin: boolean = false;
-        if (this.pdfViewer.textSelectionModule) {
-            let bounds: ClientRect = this.pdfViewer.textSelectionModule.getCurrentSelectionBounds(this.pdfViewerBase.currentPageNumber - 1);
-            if (bounds) {
-                let currentBound: ClientRect = bounds;
-                if (this.getHorizontalValue(currentBound.left) < event.clientX && this.getHorizontalValue(currentBound.right) >
-                    event.clientX && this.getVerticalValue(currentBound.top) < event.clientY &&
-                    this.getVerticalValue(currentBound.bottom) > event.clientY) {
-                    isWithin = true;
-                }
-            }
-            if ((Browser.isIE || Browser.info.name === 'edge') && bounds) {
-                isWithin = true;
-            }
-        }
-        return isWithin;
+    public OnItemSelected(selectedMenu: string): void {
+        this.pdfViewerBase.OnItemSelected(selectedMenu);
     }
-
-    private getHorizontalClientValue(value: number): number {
-        let pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (this.pdfViewerBase.currentPageNumber - 1));
-        let pageBounds: ClientRect = pageDiv.getBoundingClientRect();
-        return (value - pageBounds.left);
-    }
-
-    private getVerticalClientValue(value: number): number {
-        let pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (this.pdfViewerBase.currentPageNumber - 1));
-        let pageBounds: ClientRect = pageDiv.getBoundingClientRect();
-        return (value - pageBounds.top);
-    }
-
-    private getHorizontalValue(value: number): number {
-        let pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (this.pdfViewerBase.currentPageNumber - 1));
-        let pageBounds: ClientRect = pageDiv.getBoundingClientRect();
-        return (value * this.pdfViewerBase.getZoomFactor()) + pageBounds.left;
-    }
-
-    private getVerticalValue(value: number): number {
-        let pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (this.pdfViewerBase.currentPageNumber - 1));
-        let pageBounds: ClientRect = pageDiv.getBoundingClientRect();
-        return (value * this.pdfViewerBase.getZoomFactor()) + pageBounds.top;
-    }
-
     private onMenuItemSelect(args: MenuEventArgs): void {
-        // tslint:disable-next-line
-        let target: any = this.currentTarget;
-        switch (args.item.text) {
-            case this.pdfViewer.localeObj.getConstant('Copy'):
-                let isSkip: boolean = false;
-                // tslint:disable-next-line:max-line-length
-                if (this.pdfViewerBase.isFreeTextContextMenu || (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus)) {
-                    this.pdfViewer.annotation.freeTextAnnotationModule.copySelectedText();
-                    this.contextMenuObj.close();
-                    isSkip = true;
-                } else if (this.pdfViewer.textSelectionModule) {
-                    this.pdfViewer.textSelectionModule.copyText();
-                    this.contextMenuObj.close();
-                }
-                if (this.pdfViewer.selectedItems.annotations.length && !isSkip) {
-                    this.pdfViewer.copy();
-                    this.previousAction = 'Copy';
-                }
-                break;
-            case this.pdfViewer.localeObj.getConstant('Highlight context'):
-                if (this.pdfViewer.annotation && this.pdfViewer.annotation.textMarkupAnnotationModule) {
-                    this.pdfViewer.annotation.textMarkupAnnotationModule.isSelectionMaintained = false;
-                    this.pdfViewer.annotation.textMarkupAnnotationModule.drawTextMarkupAnnotations('Highlight');
-                    this.pdfViewer.annotation.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
-                    this.pdfViewer.annotation.textMarkupAnnotationModule.currentTextMarkupAddMode = '';
-                    this.pdfViewer.annotation.textMarkupAnnotationModule.isSelectionMaintained = true;
-                }
-                break;
-            case this.pdfViewer.localeObj.getConstant('Underline context'):
-                if (this.pdfViewer.annotation && this.pdfViewer.annotation.textMarkupAnnotationModule) {
-                    this.pdfViewer.annotation.textMarkupAnnotationModule.isSelectionMaintained = false;
-                    this.pdfViewer.annotation.textMarkupAnnotationModule.drawTextMarkupAnnotations('Underline');
-                    this.pdfViewer.annotation.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
-                    this.pdfViewer.annotation.textMarkupAnnotationModule.currentTextMarkupAddMode = '';
-                    this.pdfViewer.annotation.textMarkupAnnotationModule.isSelectionMaintained = true;
-                }
-                break;
-            case this.pdfViewer.localeObj.getConstant('Strikethrough context'):
-                if (this.pdfViewer.annotation && this.pdfViewer.annotation.textMarkupAnnotationModule) {
-                    this.pdfViewer.annotation.textMarkupAnnotationModule.isSelectionMaintained = false;
-                    this.pdfViewer.annotation.textMarkupAnnotationModule.drawTextMarkupAnnotations('Strikethrough');
-                    this.pdfViewer.annotation.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
-                    this.pdfViewer.annotation.textMarkupAnnotationModule.currentTextMarkupAddMode = '';
-                    this.pdfViewer.annotation.textMarkupAnnotationModule.isSelectionMaintained = true;
-                }
-                break;
-            case this.pdfViewer.localeObj.getConstant('Properties'):
-                // tslint:disable-next-line:max-line-length
-                if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Line' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'LineWidthArrowHead' ||
-                    this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Distance') {
-                    this.pdfViewer.annotation.createPropertiesWindow();
-                }
-                break;
-            case this.pdfViewer.localeObj.getConstant('Cut'):
-                // tslint:disable-next-line:max-line-length
-                if (this.pdfViewerBase.isFreeTextContextMenu || this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus && (target && target.className === 'free-text-input' && target.tagName === 'TEXTAREA')) {
-                    this.pdfViewer.annotation.freeTextAnnotationModule.cutSelectedText(target);
-                    this.contextMenuObj.close();
-                } else if (this.pdfViewer.selectedItems.annotations.length === 1) {
-                    let pageIndex: number = this.pdfViewer.selectedItems.annotations[0].pageIndex;
-                    this.pdfViewer.cut();
-                    this.pdfViewer.clearSelection(pageIndex);
-                    this.previousAction = 'Cut';
-                }
-                break;
-            case this.pdfViewer.localeObj.getConstant('Paste'):
-                // tslint:disable-next-line:max-line-length
-                if (this.pdfViewerBase.isFreeTextContextMenu || this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus && (target && target.className === 'free-text-input' && target.tagName === 'TEXTAREA')) {
-                    this.pdfViewer.annotation.freeTextAnnotationModule.pasteSelectedText(target);
-                    this.contextMenuObj.close();
-                } else {
-                    this.pdfViewer.paste();
-                    this.previousAction = 'Paste';
-                }
-                break;
-            case this.pdfViewer.localeObj.getConstant('Delete Context'):
-                if (this.pdfViewer.annotation) {
-                    this.pdfViewer.annotation.deleteAnnotation();
-                }
-                break;
-            case this.pdfViewer.localeObj.getConstant('Scale Ratio'):
-                if (this.pdfViewerBase.isCalibrateAnnotationModule()) {
-                    this.pdfViewer.annotation.measureAnnotationModule.createScaleRatioWindow();
-                }
-                break;
-            case this.pdfViewer.localeObj.getConstant('Comment'):
-                if (this.pdfViewer.annotation) {
-                    this.pdfViewer.annotation.showCommentsPanel();
-                    if (this.pdfViewer.selectedItems.annotations.length !== 0 ||
-                        this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
-                        // tslint:disable-next-line
-                        let currentAnnotation: any;
-                        if (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
-                            currentAnnotation = this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
-                        } else {
-                            currentAnnotation = this.pdfViewer.selectedItems.annotations[0];
-                        }
-                        // tslint:disable-next-line
-                        let accordionExpand: any = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + this.pdfViewer.currentPageNumber);
-                        if (accordionExpand) {
-                            accordionExpand.ej2_instances[0].expandItem(true);
-                        }
-                        // tslint:disable-next-line
-                        let commentsDiv: any = document.getElementById(currentAnnotation.annotName);
-                        if (commentsDiv) {
-                            if (!commentsDiv.classList.contains('e-pv-comments-border')) {
-                                commentsDiv.firstChild.click();
-                            }
-                        }
-                    }
-                }
-                break;
-            default:
-                break;
-        }
+        this.pdfViewerBase.OnItemSelected(args.item.text);
     }
-
     /**
      * @private
      */
@@ -499,5 +341,15 @@ export class ContextMenu {
             this.previousAction = '';
             this.contextMenuObj.destroy();
         }
+    }
+    /**
+     * @private
+     */
+    public close(): void {
+        this.contextMenuObj.close();
+    }
+
+    public open(top: number, left: number, target: HTMLElement): void {
+        this.contextMenuObj.open(top, left, target);
     }
 }

@@ -898,6 +898,69 @@ VScroll = __decorate$1([
     NotifyPropertyChanges
 ], VScroll);
 
+/**
+ * Used to add scroll in menu.
+ * @hidden
+ */
+function addScrolling(createElement$$1, container, content, scrollType, enableRtl, offset) {
+    let containerOffset;
+    let contentOffset;
+    if (scrollType === 'vscroll') {
+        containerOffset = offset || container.offsetHeight;
+        contentOffset = content.offsetHeight;
+    }
+    else {
+        containerOffset = container.offsetWidth;
+        contentOffset = content.offsetWidth;
+    }
+    if (containerOffset < contentOffset) {
+        let scrollEle = createElement$$1('div', { className: 'e-menu-' + scrollType });
+        container.appendChild(scrollEle);
+        scrollEle.appendChild(content);
+        if (offset) {
+            scrollEle.style.overflow = 'hidden';
+            scrollEle.style.height = offset + 'px';
+        }
+        else {
+            scrollEle.style.maxHeight = container.style.maxHeight;
+            container.style.overflow = 'hidden';
+        }
+        let scrollObj;
+        if (scrollType === 'vscroll') {
+            scrollObj = new VScroll({ enableRtl: enableRtl }, scrollEle);
+            scrollObj.scrollStep = select('.e-' + scrollType + '-bar', container).offsetHeight / 2;
+        }
+        else {
+            scrollObj = new HScroll({ enableRtl: enableRtl }, scrollEle);
+            scrollObj.scrollStep = select('.e-' + scrollType + '-bar', container).offsetWidth;
+        }
+        return scrollEle;
+    }
+    else {
+        return content;
+    }
+}
+/**
+ * Used to destroy the scroll option.
+ * @hidden
+ */
+function destroyScroll(scrollObj, element, skipEle) {
+    if (scrollObj) {
+        let menu = select('.e-menu-parent', element);
+        if (menu) {
+            if (!skipEle || skipEle === menu) {
+                scrollObj.destroy();
+                element.parentElement.appendChild(menu);
+                detach(element);
+            }
+        }
+        else {
+            scrollObj.destroy();
+            detach(element);
+        }
+    }
+}
+
 var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -1105,11 +1168,11 @@ let MenuBase = class MenuBase extends Component {
         let ul = this.createItems(this.items);
         append(Array.prototype.slice.call(ul.children), this.element);
         this.element.classList.add('e-menu-parent');
-        if (this.isMenu) {
+        if (this.isMenu && this.enableScrolling) {
             let wrapper = this.getWrapper();
             this.element.classList.contains('e-vertical') ?
-                this.addScrolling(wrapper, this.element, 'vscroll', wrapper.offsetHeight, this.element.offsetHeight)
-                : this.addScrolling(wrapper, this.element, 'hscroll', wrapper.offsetWidth, this.element.offsetWidth);
+                addScrolling(this.createElement, wrapper, this.element, 'vscroll', this.enableRtl)
+                : addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
         }
     }
     wireEvents() {
@@ -1390,7 +1453,7 @@ let MenuBase = class MenuBase extends Component {
                                 closest(ul, '.e-menu-item').setAttribute('aria-expanded', 'false');
                             }
                             this.unWireKeyboardEvent(popupEle);
-                            this.destroyScrollObj(getInstance(popupEle.children[0], VScroll), popupEle.children[0]);
+                            destroyScroll(getInstance(popupEle.children[0], VScroll), popupEle.children[0]);
                             popupObj = getInstance(popupEle, Popup);
                             popupObj.hide();
                             popupId = popupEle.id;
@@ -1404,6 +1467,7 @@ let MenuBase = class MenuBase extends Component {
                         this.trigger('onClose', closeArgs);
                         this.navIdx.pop();
                     }
+                    this.updateReactTemplate();
                     let trgtliId;
                     let closedLi;
                     let trgtLi;
@@ -1475,6 +1539,17 @@ let MenuBase = class MenuBase extends Component {
             }
         }
     }
+    updateReactTemplate() {
+        // tslint:disable
+        if (this.isReact && this.template && this.navIdx.length === 0) {
+            // tslint:disable
+            let portals = this.portals.splice(0, this.items.length);
+            this.clearTemplate(['template']);
+            // tslint:disable
+            this.portals = portals;
+            this.renderReactTemplates();
+        }
+    }
     getMenuItemModel(item, level) {
         if (isNullOrUndefined(item)) {
             return null;
@@ -1485,13 +1560,6 @@ let MenuBase = class MenuBase extends Component {
         let fields = this.getFields(level);
         return { text: item[fields.text], id: item[fields.id], items: item[fields.child], separator: item[fields.separator],
             iconCss: item[fields.iconCss], url: item[fields.url] };
-    }
-    destroyScrollObj(scrollObj, scrollEle) {
-        if (scrollObj) {
-            scrollObj.destroy();
-            scrollEle.parentElement.appendChild(select('.e-menu-parent', scrollEle));
-            detach(scrollEle);
-        }
     }
     getPopups() {
         let popups = [];
@@ -1555,6 +1623,9 @@ let MenuBase = class MenuBase extends Component {
                 }
                 this.isNestedOrVertical = this.element.classList.contains('e-vertical') || this.navIdx.length !== 1;
                 this.popupObj = this.generatePopup(this.popupWrapper, this.uList, li, this.isNestedOrVertical);
+                if (this.template) {
+                    this.renderReactTemplates();
+                }
                 if (this.hamburgerMode) {
                     this.calculateIndentSize(this.uList, li);
                 }
@@ -1685,7 +1756,9 @@ let MenuBase = class MenuBase extends Component {
                     this.popupWrapper.style.display = 'block';
                     if (!this.hamburgerMode) {
                         this.popupWrapper.style.maxHeight = this.popupWrapper.getBoundingClientRect().height + 'px';
-                        this.addScrolling(this.popupWrapper, this.uList, 'vscroll', this.popupWrapper.offsetHeight, this.uList.offsetHeight);
+                        if (this.enableScrolling) {
+                            addScrolling(this.createElement, this.popupWrapper, this.uList, 'vscroll', this.enableRtl);
+                        }
                         this.checkScrollOffset(e);
                     }
                     if (!this.hamburgerMode && !this.left && !this.top) {
@@ -1798,24 +1871,6 @@ let MenuBase = class MenuBase extends Component {
             offsetRight = trgt.offsetLeft + trgt.offsetWidth;
             if (offsetLeft < offsetRight) {
                 offsetEle.scrollLeft += (offsetRight - offsetLeft);
-            }
-        }
-    }
-    addScrolling(wrapper, ul, scrollType, wrapperOffset, contentOffset) {
-        if (this.enableScrolling && wrapperOffset < contentOffset) {
-            let scrollEle = this.createElement('div', { className: 'e-menu-' + scrollType });
-            wrapper.appendChild(scrollEle);
-            scrollEle.appendChild(ul);
-            scrollEle.style.maxHeight = wrapper.style.maxHeight;
-            let scrollObj;
-            wrapper.style.overflow = 'hidden';
-            if (scrollType === 'vscroll') {
-                scrollObj = new VScroll({ enableRtl: this.enableRtl }, scrollEle);
-                scrollObj.scrollStep = select('.e-' + scrollType + '-bar', wrapper).offsetHeight / 2;
-            }
-            else {
-                scrollObj = new HScroll({ enableRtl: this.enableRtl }, scrollEle);
-                scrollObj.scrollStep = select('.e-' + scrollType + '-bar', wrapper).offsetWidth;
             }
         }
     }
@@ -1950,7 +2005,7 @@ let MenuBase = class MenuBase extends Component {
         if (this.isMenu) {
             listBaseOptions.templateID = this.element.id + TEMPLATE_PROPERTY;
         }
-        let ul = ListBase.createList(this.createElement, items, listBaseOptions, !this.template);
+        let ul = ListBase.createList(this.createElement, items, listBaseOptions, !this.template, this);
         ul.setAttribute('tabindex', '0');
         if (this.isMenu) {
             ul.setAttribute('role', 'menu');
@@ -2124,9 +2179,6 @@ let MenuBase = class MenuBase extends Component {
                                 }
                                 this.isClosed = true;
                                 this.keyType = 'click';
-                                if (this.showItemOnClick) {
-                                    this.setLISelected(cli);
-                                }
                                 this.closeMenu(culIdx + 1, e);
                                 if (this.showItemOnClick) {
                                     this.setLISelected(cli);
@@ -2352,22 +2404,22 @@ let MenuBase = class MenuBase extends Component {
                     if (newProp.enableScrolling) {
                         let ul;
                         this.element.classList.contains('e-vertical') ?
-                            this.addScrolling(wrapper, this.element, 'vscroll', wrapper.offsetHeight, this.element.offsetHeight)
-                            : this.addScrolling(wrapper, this.element, 'hscroll', wrapper.offsetWidth, this.element.offsetWidth);
+                            addScrolling(this.createElement, wrapper, this.element, 'vscroll', this.enableRtl)
+                            : addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
                         this.getPopups().forEach((wrapper) => {
                             ul = select('.e-ul', wrapper);
-                            this.addScrolling(wrapper, ul, 'vscroll', wrapper.offsetHeight, ul.offsetHeight);
+                            addScrolling(this.createElement, wrapper, ul, 'vscroll', this.enableRtl);
                         });
                     }
                     else {
                         let ul = wrapper.children[0];
-                        this.element.classList.contains('e-vertical') ? this.destroyScrollObj(getInstance(ul, VScroll), ul)
-                            : this.destroyScrollObj(getInstance(ul, HScroll), ul);
+                        this.element.classList.contains('e-vertical') ? destroyScroll(getInstance(ul, VScroll), ul)
+                            : destroyScroll(getInstance(ul, HScroll), ul);
                         wrapper.style.overflow = '';
                         wrapper.appendChild(this.element);
                         this.getPopups().forEach((wrapper) => {
                             ul = wrapper.children[0];
-                            this.destroyScrollObj(getInstance(ul, VScroll), ul);
+                            destroyScroll(getInstance(ul, VScroll), ul);
                             wrapper.style.overflow = '';
                         });
                     }
@@ -2866,6 +2918,9 @@ let MenuBase = class MenuBase extends Component {
                 detach(wrapper);
             }
             super.destroy();
+            if (this.template) {
+                this.clearTemplate(['template']);
+            }
         }
     }
 };
@@ -3070,6 +3125,10 @@ let Toolbar = class Toolbar extends Component {
      * @returns void.
      */
     destroy() {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         super.destroy();
         this.unwireEvents();
         this.tempId.forEach((ele) => {
@@ -3079,18 +3138,6 @@ let Toolbar = class Toolbar extends Component {
         });
         if (isBlazor() && this.isServerRendered) {
             this.resetServerItems();
-        }
-        else {
-            let subControls = this.element.querySelectorAll('.e-control');
-            [].slice.call(subControls).forEach((node) => {
-                let instances = node.ej2_instances;
-                if (instances) {
-                    let instance = instances[0];
-                    if (instance) {
-                        instance.destroy();
-                    }
-                }
-            });
         }
         while (this.element.lastElementChild && !this.element.lastElementChild.classList.contains(BZ_ITEMS)) {
             this.element.removeChild(this.element.lastElementChild);
@@ -3618,6 +3665,10 @@ let Toolbar = class Toolbar extends Component {
             }
             else {
                 itemEleDom.appendChild(innerItem);
+            }
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.renderReactTemplates();
             }
         }
     }
@@ -4581,6 +4632,10 @@ let Toolbar = class Toolbar extends Component {
         }
         itemsDiv.style.width = '';
         this.renderOverflowMode();
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     }
     /**
      * Removes the items from the Toolbar. Acceptable arguments are index of item/HTMLElement/node list.
@@ -4620,6 +4675,10 @@ let Toolbar = class Toolbar extends Component {
                 let indexAgn;
                 indexAgn = this.tbarAlgEle[(this.items[eleIdx].align + 's').toLowerCase()].indexOf(this.tbarEle[eleIdx]);
                 this.tbarAlgEle[(this.items[eleIdx].align + 's').toLowerCase()].splice(indexAgn, 1);
+            }
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.clearTemplate();
             }
             detach(innerItems[index]);
             this.items.splice(eleIdx, 1);
@@ -4813,12 +4872,20 @@ let Toolbar = class Toolbar extends Component {
     }
     itemsRerender(newProp) {
         this.items = this.tbarItemsCol;
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         this.destroyMode();
         this.destroyItems();
         this.items = newProp;
         this.tbarItemsCol = this.items;
         this.renderItems();
         this.renderOverflowMode();
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     }
     resize() {
         let ele = this.element;
@@ -4905,6 +4972,10 @@ let Toolbar = class Toolbar extends Component {
                                 this.destroyMode();
                             }
                             let itemCol = [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, tEle));
+                            // tslint:disable-next-line:no-any
+                            if (this.isReact) {
+                                this.clearTemplate();
+                            }
                             detach(itemCol[index]);
                             this.tbarEle.splice(index, 1);
                             this.addItems([this.items[index]], index);
@@ -5214,6 +5285,10 @@ let Accordion = class Accordion extends Component {
      * @returns void
      */
     destroy() {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         let ele = this.element;
         super.destroy();
         this.unwireEvents();
@@ -5412,6 +5487,10 @@ let Accordion = class Accordion extends Component {
                 this.expandItem(true, this.initExpand[i]);
             }
         }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     }
     renderItems() {
         let ele = this.element;
@@ -5442,6 +5521,10 @@ let Accordion = class Accordion extends Component {
                     }
                 });
             }
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     }
     clickHandler(e) {
@@ -5508,6 +5591,10 @@ let Accordion = class Accordion extends Component {
         }
         else {
             this.afterContentRender(trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem);
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     }
     afterContentRender(trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem) {
@@ -5734,14 +5821,21 @@ let Accordion = class Accordion extends Component {
         }
         let tempArray;
         if (!isNullOrUndefined(templateFn)) {
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.renderReactTemplates();
+            }
             let templateProps;
+            let templateName;
             if (ele.classList.contains(CLS_HEADERCTN)) {
                 templateProps = this.element.id + index + '_header';
+                templateName = 'header';
             }
             else if (ele.classList.contains(CLS_CTENT)) {
                 templateProps = this.element.id + index + '_content';
+                templateName = 'content';
             }
-            tempArray = templateFn({}, null, null, templateProps, this.isStringTemplate);
+            tempArray = templateFn({}, this, templateName, templateProps, this.isStringTemplate);
         }
         if (!isNullOrUndefined(tempArray) && tempArray.length > 0 && !(isNullOrUndefined(tempArray[0].tagName) && tempArray.length === 1)) {
             [].slice.call(tempArray).forEach((el) => {
@@ -5773,6 +5867,10 @@ let Accordion = class Accordion extends Component {
         attributes(itemcnt, { 'aria-hidden': 'true' });
         let ctn = this.createElement('div', { className: CLS_CTENT });
         if (this.dataSource.length > 0) {
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.renderReactTemplates();
+            }
             append(this.getItemTemplate()(this.dataSource[index], this, 'itemTemplate', this.element.id + '_itemTemplate', false), ctn);
             itemcnt.appendChild(ctn);
         }
@@ -6045,6 +6143,10 @@ let Accordion = class Accordion extends Component {
                 }
             });
         }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     }
     expandedItemRefresh(ele) {
         let itemEle = this.getItemElements();
@@ -6061,6 +6163,10 @@ let Accordion = class Accordion extends Component {
      * @deprecated
      */
     removeItem(index) {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate(['headerTemplate', 'itemTemplate'], index);
+        }
         let itemEle = this.getItemElements();
         let ele = itemEle[index];
         let items = this.getItems();
@@ -6224,12 +6330,18 @@ let Accordion = class Accordion extends Component {
         else if (!isNullOrUndefined(ctn)) {
             isExpand ? this.expand(ctn) : this.collapse(ctn);
         }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     }
     destroyItems() {
         this.restoreContent(null);
-        [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1)).forEach((el) => {
-            detach(el);
-        });
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
+        [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1)).forEach((el) => { detach(el); });
     }
     restoreContent(index) {
         let ctnElePos;
@@ -6923,6 +7035,10 @@ let Tab = class Tab extends Component {
      * @returns void
      */
     destroy() {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         if (!isNullOrUndefined(this.tbObj)) {
             this.tbObj.destroy();
         }
@@ -6931,16 +7047,6 @@ let Tab = class Tab extends Component {
             this.element.removeAttribute(val);
         });
         this.expTemplateContent();
-        let subControls = this.element.querySelectorAll('.e-control');
-        [].slice.call(subControls).forEach((node) => {
-            let instances = node.ej2_instances;
-            if (instances.length > 0) {
-                let instance = instances[0];
-                if (instance) {
-                    instance.destroy();
-                }
-            }
-        });
         if (!this.isTemplate) {
             while (this.element.firstElementChild) {
                 remove(this.element.firstElementChild);
@@ -6960,11 +7066,19 @@ let Tab = class Tab extends Component {
      * Refresh the tab component
      */
     refresh() {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         if (!this.isServerRendered) {
             super.refresh();
         }
         else if (this.isServerRendered && this.loadOn !== 'Dynamic') {
             this.setActiveBorder();
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     }
     /**
@@ -7493,6 +7607,10 @@ let Tab = class Tab extends Component {
         this.compileElement(tempEle, cnt, 'content', index);
         if (tempEle.childNodes.length !== 0) {
             ele.appendChild(tempEle);
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     }
     compileElement(ele, val, prop, index) {
@@ -8135,6 +8253,10 @@ let Tab = class Tab extends Component {
                 this.reRenderItems();
             }
             else {
+                // tslint:disable-next-line:no-any
+                if (this.isRect) {
+                    this.clearTemplate();
+                }
                 this.setItems(newProp.items);
                 if (this.templateEle.length > 0) {
                     this.expTemplateContent();
@@ -8195,6 +8317,10 @@ let Tab = class Tab extends Component {
         }
         else {
             this.addingTabContent(items, index);
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     }
     addingTabContent(items, index) {
@@ -8276,12 +8402,20 @@ let Tab = class Tab extends Component {
                     this.interopAdaptor.invokeMethodAsync('OnRemoveItem', index);
                     return;
                 }
+                // tslint:disable-next-line:no-any
+                if (this.isRect) {
+                    this.clearTemplate([], index);
+                }
                 this.tbObj.removeItems(index);
                 this.items.splice(index, 1);
                 this.itemIndexArray.splice(index, 1);
                 this.refreshActiveBorder();
                 let cntTrg = select('#' + CLS_CONTENT$1 + this.tabId + '_' + this.extIndex(trg.id), select('.' + CLS_CONTENT$1, this.element));
                 if (!isNullOrUndefined(cntTrg)) {
+                    // tslint:disable-next-line:no-any
+                    if (this.isReact) {
+                        this.clearTemplate();
+                    }
                     detach(cntTrg);
                 }
                 this.trigger('removed', tabRemovingArgs);
@@ -9316,10 +9450,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         this.addActionClass(e, fields.expanded, EXPANDED);
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
             let textEle = e.item.querySelector('.' + LISTTEXT);
+            let dataId = e.item.getAttribute('data-uid');
             textEle.innerHTML = '';
-            let tempArr = this.nodeTemplateFn(e.curData, undefined, undefined, this.element.id + 'nodeTemplate', this.isStringTemplate);
-            tempArr = Array.prototype.slice.call(tempArr);
-            append(tempArr, textEle);
+            this.renderNodeTemplate(e.curData, textEle, dataId);
         }
         let eventArgs = {
             node: e.item,
@@ -9870,6 +10003,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 addClass([firstNode], FOCUS);
                 this.updateIdAttr(null, firstNode);
             }
+            this.renderReactTemplates();
             this.hasPid = this.rootData[0] ? this.rootData[0].hasOwnProperty(this.fields.parentID) : false;
             this.doExpandAction();
         }
@@ -10054,6 +10188,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         this.trigger('nodeClicked', eventArgs);
     }
     expandNode(currLi, icon, loaded) {
+        this.renderReactTemplates();
         if (icon.classList.contains(LOAD)) {
             this.hideSpinner(icon);
         }
@@ -11202,8 +11337,15 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let nodeData = this.getNodeData(currLi);
         return { cancel: false, isInteracted: isNullOrUndefined(e) ? false : true, node: currLi, nodeData: nodeData, event: e };
     }
-    destroyTemplate(nodeTemplate) {
-        this.clearTemplate(['nodeTemplate']);
+    renderNodeTemplate(data, textEle, dataId) {
+        let tempArr = this.nodeTemplateFn(data, this, 'nodeTemplate' + dataId, this.element.id + 'nodeTemplate', this.isStringTemplate, undefined, textEle);
+        if (tempArr) {
+            tempArr = Array.prototype.slice.call(tempArr);
+            append(tempArr, textEle);
+        }
+    }
+    destroyTemplate(liEle) {
+        this.clearTemplate(['nodeTemplate' + liEle.getAttribute('data-uid')]);
     }
     reRenderNodes() {
         this.updateListProp(this.fields);
@@ -11216,7 +11358,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             this.element.innerHTML = '';
         }
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
-            this.destroyTemplate(this.nodeTemplate);
+            this.clearTemplate();
         }
         this.setTouchClass();
         this.setProperties({ selectedNodes: [], checkedNodes: [], expandedNodes: [] }, true);
@@ -11258,6 +11400,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 let inpWidth = textEle.offsetWidth + 5;
                 let style = 'width:' + inpWidth + 'px';
                 addClass([liEle], EDITING);
+                if (!isNullOrUndefined(this.nodeTemplateFn)) {
+                    this.destroyTemplate(liEle);
+                }
                 textEle.innerHTML = eventArgs.innerHtml;
                 let inpEle = select('.' + TREEINPUT, textEle);
                 this.inputObj = Input.createInput({
@@ -11311,10 +11456,10 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let newData = setValue(this.editFields.text, newText, this.editData);
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
             txtEle.innerText = '';
-            let tempArr = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate', this.isStringTemplate);
-            tempArr = Array.prototype.slice.call(tempArr);
-            append(tempArr, txtEle);
+            let dataId = liEle.getAttribute('data-uid');
+            this.renderNodeTemplate(newData, txtEle, dataId);
             this.updateBlazorTemplate();
+            this.renderReactTemplates();
         }
         else {
             txtEle.innerText = newText;
@@ -12077,6 +12222,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
     removeNode(node) {
         let dragParentUl = closest(node, '.' + PARENTITEM);
         let dragParentLi = closest(dragParentUl, '.' + LISTITEM);
+        if (!isNullOrUndefined(this.nodeTemplateFn)) {
+            this.destroyTemplate(node);
+        }
         detach(node);
         this.updateElement(dragParentUl, dragParentLi);
         this.updateInstance();
@@ -12497,6 +12645,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
     }
     triggerEvent() {
         this.updateTemplateForBlazor();
+        this.renderReactTemplates();
         let eventArgs = { data: this.treeData };
         this.trigger('dataSourceChanged', eventArgs);
     }
@@ -13043,6 +13192,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
      */
     destroy() {
         resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
+        this.clearTemplate();
         this.element.removeAttribute('aria-activedescendant');
         this.element.removeAttribute('tabindex');
         this.unWireEvents();
@@ -14253,5 +14403,5 @@ Sidebar = __decorate$9([
  * Navigation all modules
  */
 
-export { MenuAnimationSettings, MenuItem, HScroll, VScroll, Item, Toolbar, AccordionActionSettings, AccordionAnimationSettings, AccordionItem, Accordion, ContextMenu, Menu, TabActionSettings, TabAnimationSettings, Header, TabItem, Tab, FieldsSettings, ActionSettings, NodeAnimationSettings, TreeView, Sidebar };
+export { MenuAnimationSettings, MenuItem, HScroll, VScroll, addScrolling, destroyScroll, Item, Toolbar, AccordionActionSettings, AccordionAnimationSettings, AccordionItem, Accordion, ContextMenu, Menu, TabActionSettings, TabAnimationSettings, Header, TabItem, Tab, FieldsSettings, ActionSettings, NodeAnimationSettings, TreeView, Sidebar };
 //# sourceMappingURL=ej2-navigations.es2015.js.map

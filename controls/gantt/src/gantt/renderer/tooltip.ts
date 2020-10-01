@@ -160,6 +160,7 @@ export class Tooltip {
                 this.currentTarget = args.target;
                 EventHandler.add(this.currentTarget, 'mousemove', this.mouseMoveHandler.bind(this));
             }
+            this.parent.renderTemplates();
             return callBackPromise;
         }
     }

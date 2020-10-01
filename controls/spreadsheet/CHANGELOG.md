@@ -2,59 +2,22 @@
 
 ## [Unreleased]
 
-## 18.2.56 (2020-09-01)
-
-### Spreadsheet
-
-#### Bug Fixes
-
-`#I290997`- Undo redo not working for delete key action is fixed.
-
-## 18.2.55 (2020-08-25)
-
-### Spreadsheet
-
-#### Bug Fixes
-
-`#I289560` - Filter is not applied properly in a specified range while using applyFilter method issue fixed.
-`#I284268` - Excel file contains conditional format does not opening issue fixed.
-
-## 18.2.54 (2020-08-18)
-
-### Spreadsheet
-
-#### Bug Fixes
-
-`#I285113`, `#I285621`, `#I286053`, `#I286103`, `#I288652`- Spreadsheet is not working in ES2015 issue is fixed.
-`#I287385` - Added missed text in the localization file.
-
-## 18.2.48 (2020-08-04)
-
-### Spreadsheet
-
-#### Bug Fixes
-
-`#I282749`- Cell alignment issue while applying data validation has been fixed.
-
-## 18.2.46 (2020-07-21)
-
-### Spreadsheet
-
-#### Bug Fixes
-
-`#I282937`- Edit element is not showing the boolean value 'false' issue is fixed.
-
-## 18.2.45 (2020-07-14)
+## 18.3.35 (2020-10-01)
 
 ### Spreadsheet
 
 #### Bug Fixes
 
 `#I276272`- Spinner not showed until remote data being loaded issue is fixed.
+`#I285113`, `#I285621`, `#I286053`, `#I286103`, `#I288652`- Spreadsheet is not working in ES2015 issue is fixed.
+`#I287385` - Added missed text in the localization file.
 
 #### New Features
 
 `#I282699`- Provided option to prevent protected sheet dialog box in spreadsheet.
+- **Picture:** Allows you to view, insert, and modify a picture in a spreadsheet with customizing options.
+- **Multi-line editing:** Allows you to insert a line break between paragraphs of the text within a cell in a Spreadsheet.
+- **Range selection helper:** Helps you to select a range or multiple ranges when editing a formula in a cell.
 
 ## 18.2.44 (2020-07-07)
 

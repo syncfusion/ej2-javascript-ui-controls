@@ -1204,8 +1204,8 @@ export class DocumentHelper {
         }
         let color: string = this.owner.userColor;
         if (author !== this.owner.currentUser) {
-            if (this.authors.length === 0 && color !== '#b70f34') {
-                color = '#b70f34';
+            if (this.authors.length === 0 && color !== '#b5082e') {
+                color = '#b5082e';  //dark red
             } else {
                 color = this.generateRandomColor();
             }
@@ -1217,12 +1217,15 @@ export class DocumentHelper {
      * @private
      */
     public generateRandomColor(): string {
-        let letters: string = '0123456789ABCDEF';
-        let color: string = '#';
-        for (let i: number = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
-        }
-        return color;
+        let userColors: string[] = ['#b5082e',  //dark red
+            '#2e97d3',                          //sky blue
+            '#bb00ff',                          //purple
+            '#f37e43',                          //dark orange
+            '#03a60b',                          //green
+            '#881824',                          //brown
+            '#e09a2b',                          //dark yellow
+            '#50565e'];                         //dark grey
+        return userColors[(this.authors.length % 8)];
     }
     /**
      * @private

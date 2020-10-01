@@ -3,7 +3,7 @@ import {
     IReviewCollection,
     ISize
 } from '../index';
-import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { ColorPicker, ChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { AnnotationSelectorSettings } from '../pdfviewer';
 import { AnnotationSelectorSettingsModel } from '../pdfviewer-model';
@@ -1465,8 +1465,13 @@ export class TextMarkupAnnotation {
 
     private clearCurrentAnnotation(): void {
         if (!this.isExtended) {
-            this.selectTextMarkupCurrentPage = null;
-            this.currentTextMarkupAnnotation = null;
+            if (this.pdfViewer.isMaintainSelection && !this.pdfViewer.textSelectionModule.isTextSelection) {
+                this.selectTextMarkupCurrentPage = this.selectTextMarkupCurrentPage;
+                this.currentTextMarkupAnnotation = this.currentTextMarkupAnnotation;
+            } else {
+                this.selectTextMarkupCurrentPage = null;
+                this.currentTextMarkupAnnotation = null;
+            }
             let isSkip: boolean = false;
             // tslint:disable-next-line:max-line-length
             if (this.pdfViewer.annotation.freeTextAnnotationModule && this.pdfViewer.annotation.freeTextAnnotationModule.isInuptBoxInFocus) {
@@ -1835,16 +1840,24 @@ export class TextMarkupAnnotation {
                             comments.firstChild.click();
                         }
                     }
-                    if (this.pdfViewer.toolbarModule && this.pdfViewer.enableAnnotationToolbar) {
-                        this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;
-                        // tslint:disable-next-line:max-line-length
-                        this.pdfViewer.toolbarModule.annotationToolbarModule.showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
+                    if (!isBlazor()) {
+                        if (this.pdfViewer.toolbarModule && this.pdfViewer.enableAnnotationToolbar) {
+                            this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;
+                            // tslint:disable-next-line:max-line-length
+                            this.pdfViewer.toolbarModule.annotationToolbarModule.showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
+                        }
                     }
                 }
             } else {
                 this.clearCurrentAnnotation();
             }
-            this.clearCurrentAnnotationSelection(pageNumber);
+            if (this.pdfViewer.isMaintainSelection && !this.pdfViewer.textSelectionModule.isTextSelection) {
+                if (currentAnnot) {
+                    this.clearCurrentAnnotationSelection(pageNumber);
+                }
+            } else {
+                this.clearCurrentAnnotationSelection(pageNumber);
+            }
         } else {
             if (!this.pdfViewerBase.isClickedOnScrollBar(event, true)) {
                 this.clearCurrentAnnotation();
@@ -2189,6 +2202,10 @@ export class TextMarkupAnnotation {
      * @private
      */
     public enableAnnotationPropertiesTool(isEnable: boolean): void {
+        if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
+            // tslint:disable-next-line:max-line-length    
+            this.pdfViewer.toolbarModule.annotationToolbarModule.colorDropDownElementInBlazor = this.pdfViewer.element.querySelector('.e-pv-annotation-color-container');
+        }
         // tslint:disable-next-line:max-line-length
         if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
             this.pdfViewer.toolbarModule.annotationToolbarModule.createMobileAnnotationToolbar(isEnable);
@@ -2203,12 +2220,22 @@ export class TextMarkupAnnotation {
                 }
                 this.pdfViewer.toolbarModule.annotationToolbarModule.enableTextMarkupAnnotationPropertiesTools(enable);
                 if (this.currentTextMarkupAnnotation) {
-                    // tslint:disable-next-line:max-line-length
-                    this.pdfViewer.toolbarModule.annotationToolbarModule.updateColorInIcon(this.pdfViewer.toolbarModule.annotationToolbarModule.colorDropDownElement, this.currentTextMarkupAnnotation.color);
+                    if (!isBlazor()) {
+                        // tslint:disable-next-line:max-line-length
+                        this.pdfViewer.toolbarModule.annotationToolbarModule.updateColorInIcon(this.pdfViewer.toolbarModule.annotationToolbarModule.colorDropDownElement, this.currentTextMarkupAnnotation.color);
+                    } else {
+                        // tslint:disable-next-line:max-line-length
+                        this.pdfViewer.toolbarModule.annotationToolbarModule.updateColorInIcon(this.pdfViewer.toolbarModule.annotationToolbarModule.colorDropDownElementInBlazor, this.currentTextMarkupAnnotation.color);
+                    }
                 } else {
                     if (!this.isTextMarkupAnnotationMode) {
-                        // tslint:disable-next-line:max-line-length
-                        this.pdfViewer.toolbarModule.annotationToolbarModule.updateColorInIcon(this.pdfViewer.toolbarModule.annotationToolbarModule.colorDropDownElement, '#000000');
+                        if (!isBlazor()) {
+                            // tslint:disable-next-line:max-line-length
+                            this.pdfViewer.toolbarModule.annotationToolbarModule.updateColorInIcon(this.pdfViewer.toolbarModule.annotationToolbarModule.colorDropDownElement, '#000000');
+                        } else {
+                            // tslint:disable-next-line:max-line-length
+                            this.pdfViewer.toolbarModule.annotationToolbarModule.updateColorInIcon(this.pdfViewer.toolbarModule.annotationToolbarModule.colorDropDownElementInBlazor, '#000000');
+                        }
                     } else {
                         this.pdfViewer.toolbarModule.annotationToolbarModule.setCurrentColorInPicker();
                     }
@@ -2402,7 +2429,9 @@ export class TextMarkupAnnotation {
                     this.pdfViewer.toolbarModule.annotationToolbarModule.setCurrentColorInPicker();
                 }
                 this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;
-                this.pdfViewer.toolbarModule.annotationToolbarModule.showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
+                if (!isBlazor()) {
+                    this.pdfViewer.toolbarModule.annotationToolbarModule.showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
+                }
             }
         }
     }

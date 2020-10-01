@@ -1,7 +1,7 @@
 @include export-module('radiobutton-theme') {
   /*! radiobutton theme */
 
-  #{&}.e-radio {
+  .e-radio {
     +label {
       &::before {
         background-color: $radio-btn-background-color;

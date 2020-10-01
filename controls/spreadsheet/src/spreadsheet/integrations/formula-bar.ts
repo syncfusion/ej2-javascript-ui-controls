@@ -2,13 +2,13 @@ import { Spreadsheet } from '../base/index';
 import { formulaBar, locale, selectionComplete, enableFormulaInput, DialogBeforeOpenEventArgs } from '../common/index';
 import { mouseUpAfterSelection, click } from '../common/index';
 import { getRangeIndexes, getRangeFromAddress, getCellAddress } from './../../workbook/common/address';
-import { CellModel, getSheetName, getTypeFromFormat, getSheet, SheetModel } from '../../workbook/index';
+import { CellModel, getSheetName, getTypeFromFormat, getSheet, SheetModel, checkIsFormula } from '../../workbook/index';
 import { updateSelectedRange, getSheetNameFromAddress, getSheetIndex, DefineNameModel } from '../../workbook/index';
 import { ComboBox, ChangeEventArgs, DropDownList, SelectEventArgs as DdlSelectArgs } from '@syncfusion/ej2-dropdowns';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { rippleEffect, L10n, EventHandler, detach, Internationalization, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { isUndefined } from '@syncfusion/ej2-base';
-import { editOperation, formulaBarOperation, keyDown, keyUp, formulaOperation, editAlert } from '../common/event';
+import { editOperation, formulaBarOperation, keyDown, keyUp, formulaOperation, editAlert, editValue } from '../common/event';
 import { intToDate } from '../../workbook/common/math';
 import { Dialog } from '../services/dialog';
 import { SelectEventArgs, ListView } from '@syncfusion/ej2-lists';
@@ -103,6 +103,9 @@ export class FormulaBar {
     private keyDownHandler(e: KeyboardEvent): void {
         let trgtElem: HTMLTextAreaElement = <HTMLTextAreaElement>e.target;
         if (this.parent.isEdit && !this.parent.getActiveSheet().isProtected) {
+            if (checkIsFormula(trgtElem.value) && e.keyCode === 16) {
+                return;
+            }
             if (trgtElem.classList.contains('e-formula-bar')) {
                 this.parent.notify(
                     editOperation, { action: 'refreshEditor', value: trgtElem.value, refreshEditorElem: true });
@@ -116,7 +119,7 @@ export class FormulaBar {
                 let eventArg: { editedValue: string, action: string } = { action: 'getCurrentEditValue', editedValue: '' };
                 this.parent.notify(
                     editOperation, eventArg);
-                if (eventArg.editedValue !== trgtElem.value) {
+                if (eventArg.editedValue !== trgtElem.value && e.keyCode !== 16) {
                     this.parent.notify(
                         editOperation, { action: 'refreshEditor', value: trgtElem.value, refreshEditorElem: true });
                 }
@@ -172,12 +175,16 @@ export class FormulaBar {
     }
 
     private formulaBarUpdateHandler(e: MouseEvent & TouchEvent): void {
-        let range: string[] = this.parent.getActiveSheet().selectedRange.split(':');
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        let range: string[] = sheet.selectedRange.split(':');
         let address: string;
         let intl: Internationalization = new Internationalization();
         if (e.type === 'mousemove' || e.type === 'pointermove') {
             let indexes1: number[] = getRangeIndexes(range[0]); let indexes2: number[] = getRangeIndexes(range[1]);
             address = `${Math.abs(indexes1[0] - indexes2[0]) + 1}R x ${Math.abs(indexes1[1] - indexes2[1]) + 1}C`;
+            if (this.parent.isEdit) {
+              this.parent.notify(editValue, null);
+            }
         } else {
             address = range[0];
             let data: Promise<Map<string, CellModel>> = this.parent.getData(`${getSheetName(this.parent)}!${address}`);
@@ -210,7 +217,16 @@ export class FormulaBar {
                             value = cell.formula;
                         }
                     }
-                    (<HTMLTextAreaElement>document.getElementById(this.parent.element.id + '_formula_input')).value = value;
+                    let formulaInp: HTMLTextAreaElement =
+                        (<HTMLTextAreaElement>document.getElementById(this.parent.element.id + '_formula_input'));
+                    formulaInp.value = value;
+                    if (!isNullOrUndefined(value) && !this.parent.isEdit) {
+                        this.parent.notify(
+                            editOperation, { action: 'refreshEditor', value: formulaInp.value, refreshEditorElem: true });
+                    }
+                    if (this.parent.isEdit) {
+                        this.parent.notify(editValue, null);
+                    }
                 });
             });
         }

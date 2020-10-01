@@ -127,6 +127,7 @@ export class Marker {
                             markerTemplateCount++;
                             markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateEle, location,
                                 scale, offset, this.maps);
+                            (this.maps as any).renderReactTemplates();    
                         } else if(!eventArgs.template && (!isNaN(location.x) && !isNaN(location.y))) {
                             markerCount++;
                             marker(eventArgs, markerSettings, markerData, dataIndex,
@@ -145,6 +146,7 @@ export class Marker {
                             this.maps.element.appendChild(this.maps.svgObject);
                             clusterTemplate(currentLayer, this.markerSVGObject,
                                 this.maps, layerIndex, this.markerSVGObject, layerElement, true, false);
+                            (this.maps as any).renderReactTemplates();
                         }
                     }
                     if (markerTemplateEle.childElementCount === (markerData.length - markerCount - nullCount) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
@@ -152,6 +154,7 @@ export class Marker {
                         if (currentLayer.markerClusterSettings.allowClustering) {
                             clusterTemplate(currentLayer, markerTemplateEle, this.maps,
                                 layerIndex, this.markerSVGObject, layerElement, false, false);
+                            (this.maps as any).renderReactTemplates();
                         }
                     }
                 });

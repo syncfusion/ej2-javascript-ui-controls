@@ -1887,6 +1887,10 @@ var Splitter = /** @class */ (function (_super) {
         toElement.innerHTML = '';
         template = typeof (template) === 'string' ? this.sanitizeHelper(template) : template;
         this.templateCompile(toElement, template);
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     };
     // tslint:disable-next-line
     Splitter.prototype.templateCompile = function (ele, cnt) {
@@ -1937,7 +1941,7 @@ var Splitter = /** @class */ (function (_super) {
                 templateFUN = templateFn({}, this, prop, this.element.id + 'content' + this.allPanes.length.toString(), true);
             }
         }
-        if (!sf.base.isNullOrUndefined(templateFn) && templateFUN.length > 0) {
+        if (!sf.base.isNullOrUndefined(templateFn) && templateFUN && templateFUN.length > 0) {
             [].slice.call(templateFUN).forEach(function (el) {
                 ele.appendChild(el);
             });
@@ -2043,6 +2047,10 @@ var Splitter = /** @class */ (function (_super) {
                 this.allPanes = [];
             }
             this.restoreElem();
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.clearTemplate();
+            }
         }
     };
     Splitter.prototype.restoreElem = function () {
@@ -2204,7 +2212,5 @@ exports.Splitter = Splitter;
 return exports;
 
 });
-sfBlazor.modules["splitter"] = "layouts.Splitter";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.splitter, () => {
+
     sf.layouts = sf.base.extend({}, sf.layouts, sfsplitter({}));
-});

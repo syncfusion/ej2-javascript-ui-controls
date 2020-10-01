@@ -563,6 +563,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 resetBlazorTemplate(this.element.id + '_HeaderTemplate', 'HeaderTemplate');
             }
         }
+        this.clearTemplate();
         let containerWidth: number = this.element.clientWidth;
         let containerHeight: number = this.element.clientHeight;
         this.availableSize = new Size(

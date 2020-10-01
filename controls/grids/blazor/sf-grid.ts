@@ -86,6 +86,24 @@ let Grid: object = {
             element.blazor__instance.virtualContentModule.refreshOnDataChange();
         }
     },
+    updateAutofillPosition(element: BlazorGridElement, cellindex: number, index: number) {
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            var _this = element.blazor__instance;
+            return _this.selectionModule.updateAutofillPosition(cellindex, index);
+        }
+        else{
+            return null;
+        }
+    },
+    createBorder(element: BlazorGridElement, rowIndex: number, cellIndex: number) {
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            var _this = element.blazor__instance;
+            return _this.selectionModule.createBorder(rowIndex, cellIndex);
+        }
+        else{
+            return null;
+        }
+    },
     focusChild(element: BlazorGridElement, rowuid: string, celluid: string) {
         let query = 'button, [href], input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])';
         let child = [].slice.call(element.querySelector("[data-uid=\"" + celluid + "\"]").querySelectorAll(query));

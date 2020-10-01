@@ -1,4 +1,4 @@
-import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
+import { Spreadsheet } from '../index';
 import { checkConditionalFormat, initiateConditionalFormat, locale, dialog, setCF, CFormattingEventArgs } from '../common/index';
 import { beginAction, completeAction } from '../common/index';
 import { CellModel, SheetModel, getCell, setRow, setCell } from '../../workbook/base/index';
@@ -8,7 +8,6 @@ import { setCFRule, clearCells } from '../../workbook/common/index';
 import { isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { ColorScale, IconSet, HighlightCell, TopBottom, CFColor, ConditionalFormatModel } from '../../workbook/common/index';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 
@@ -194,15 +193,7 @@ export class ConditionalFormatting {
             width: 375, showCloseIcon: true, isModal: true, cssClass: 'e-conditionalformatting-dlg',
             header: args.action.replace('...', ''),
             target: document.querySelector('.e-control.e-spreadsheet') as HTMLElement,
-            beforeOpen: (openArgs: BeforeOpenEventArgs): void => {
-                let dlgArgs: DialogBeforeOpenEventArgs = {
-                    dialogName: 'CFDialog', element: openArgs.element,
-                    target: openArgs.target, cancel: openArgs.cancel
-                };
-                this.parent.trigger('dialogBeforeOpen', dlgArgs);
-                if (dlgArgs.cancel) {
-                    openArgs.cancel = true;
-                }
+            beforeOpen: (): void => {
                 dialogInst.dialogInstance.content = this.cFDlgContent(args.action);
                 dialogInst.dialogInstance.dataBind();
                 this.parent.element.focus();
@@ -476,6 +467,7 @@ export class ConditionalFormatting {
             conditionalFormat: ConditionalFormatModel
         }): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
+        let formatStyle: CellStyleModel;
         let isApply: boolean = false;
         let cFColors: string[] = ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt'];
         let value: string = args.cell.value || '';
@@ -485,26 +477,42 @@ export class ConditionalFormatting {
             return;
         }
         cFRule.type = cFRule.type || 'GreaterThan';
+        cFRule.cFColor = cFRule.cFColor ? cFRule.cFColor : cFRule.format ? cFRule.cFColor : 'RedFT';
         isApply = this.cFRCheck(cFRule, value, td, args.rowIdx, args.colIdx, true);
         if (isApply) {
             for (let idx: number = 0; idx < cFColors.length; idx++) {
                 if (td.classList.contains(cFColors[idx])) {
                     td.classList.remove(cFColors[idx]);
+                    break;
                 }
             }
-            cFRule.cFColor = cFRule.cFColor || 'RedFT';
-            td.classList.add('e-' + cFRule.cFColor.toLowerCase());
-            this.setFormat(td, cFRule);
-            if (cFRule && cFRule.format && cFRule.format.style) {
-                if (cFRule.format.style.backgroundColor) {
-                    td.style.setProperty('background-color', cFRule.format.style.backgroundColor);
-                }
-                if (cFRule.format.style.color) {
-                    td.style.setProperty('color', cFRule.format.style.color);
-                }
+            if (cFRule.format && cFRule.format.style) {
+                formatStyle = cFRule.format.style;
+            }
+            let style: CellStyleModel = {};
+            if (cFRule.cFColor) {
+                td.classList.add('e-' + cFRule.cFColor.toLowerCase());
+                style = this.setFormat(style, cFRule);
+            } else {
+                style = formatStyle;
+            }
+            if (style.backgroundColor) {
+                td.style.setProperty('background-color', style.backgroundColor);
+            }
+            if (style.color) {
+                td.style.setProperty('color', style.color);
+            }
+            if (style.fontWeight) {
+                td.style.setProperty('font-weight', style.fontWeight);
+            }
+            if (style.fontStyle) {
+                td.style.setProperty('font-style', style.fontStyle);
+            }
+            if (style.textDecoration) {
+                td.style.setProperty('text-decoration', style.textDecoration);
+            }
             }
         }
-    }
 
     private checkConditionalFormatHandler(args: { rowIdx: number, colIdx: number, cell: CellModel }): void {
         let indexes: number[];
@@ -563,7 +571,6 @@ export class ConditionalFormatting {
                             }
                         }
                     }
-                    isApply = true;
                 } else if (('BlueDataBar' + 'GreenDataBar' + 'RedDataBar' + 'OrangeDataBar' + 'LightBlueDataBar' + 'PurpleColorScale' +
                     'GYRColorScale' + 'RYGColorScale' + 'GWRColorScale' + 'RWGColorScale' + 'BWRColorScale' + 'RWBColorScale' +
                     'WRColorScale' + 'RWColorScale' + 'GWColorScale' + 'WGColorScale' + 'GYColorScale' + 'YGColorScale' + 'ThreeArrows' +
@@ -587,30 +594,62 @@ export class ConditionalFormatting {
         let sheet: SheetModel = this.parent.getActiveSheet();
         let cFRules: ConditionalFormatModel[] = sheet.conditionalFormats as ConditionalFormatModel[];
         let cFColors: string[] = ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt'];
+        let isActiveCF: boolean = false;
+        if (cFRules[cFRuleIdx].cFColor) {
+            if (td.classList.contains('e-' + cFRules[cFRuleIdx].cFColor.toLowerCase())) {
+                isActiveCF = true;
+            }
+        } else if (cFRules[cFRuleIdx].format.style.backgroundColor && td.style.backgroundColor) {
+            let rgb: { r: number, g: number, b: number } = this.hexToRgb(cFRules[cFRuleIdx].format.style.backgroundColor);
+            if ('rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')' === td.style.backgroundColor) {
+                isActiveCF = true;
+            }
+        }
         if (isApply) {
-            for (let idx: number = 0; idx < cFColors.length; idx++) {
-                if (td.classList.contains(cFColors[idx])) {
-                    td.classList.remove(cFColors[idx]);
-                    break;
+            if (isActiveCF) {
+                for (let idx: number = 0; idx < cFColors.length; idx++) {
+                    if (td.classList.contains(cFColors[idx])) {
+                        td.classList.remove(cFColors[idx]);
+                        break;
+                    }
                 }
             }
-            td.classList.add('e-' + cFRules[cFRuleIdx].cFColor.toLowerCase());
-            this.setFormat(td, sheet.conditionalFormats[cFRuleIdx]);
+            let style: CellStyleModel = {};
+            if (cFRules[cFRuleIdx].cFColor) {
+                td.classList.add('e-' + cFRules[cFRuleIdx].cFColor.toLowerCase());
+                style = this.setFormat(style, cFRules[cFRuleIdx]);
+            } else {
+                style = cFRules[cFRuleIdx].format.style;
+            }
             this.parent.notify(applyCellFormat, <CellFormatArgs>{
-                style: sheet.conditionalFormats[cFRuleIdx].format.style, rowIdx: rIdx, colIdx: cIdx,
+                style: style, rowIdx: rIdx, colIdx: cIdx,
                 lastCell: true, isHeightCheckNeeded: true, manualUpdate: true
             });
         } else {
-            for (let idx: number = 0; idx < cFColors.length; idx++) {
-                if (td.classList.contains(cFColors[idx])) {
-                    td.classList.remove(cFColors[idx]);
+            if (isActiveCF) {
+                for (let idx: number = 0; idx < cFColors.length; idx++) {
+                    if (td.classList.contains(cFColors[idx])) {
+                        td.classList.remove(cFColors[idx]);
+                        break;
+                    }
                 }
+                td.removeAttribute('style');
             }
-            let style: CellStyleModel = this.parent.getCellStyleValue(['backgroundColor', 'color'], [rIdx, cIdx]);
+            let cell: CellModel = getCell(rIdx, cIdx, this.parent.getActiveSheet());
+            let style: CellStyleModel = cell.style ? cell.style : {};
             this.parent.notify(applyCellFormat, <CellFormatArgs>{
                 style: style, rowIdx: rIdx, colIdx: cIdx
             });
         }
+    }
+
+    private hexToRgb(hex: string): { r: number, g: number, b: number } {
+        let result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
     }
 
     // tslint:disable-next-line:max-func-body-length
@@ -1356,27 +1395,28 @@ export class ConditionalFormatting {
         return type === 'Duplicate' ? false : true;
     }
 
-    private setFormat(td: HTMLElement, cFRule: ConditionalFormatModel): void {
-        if (!cFRule.format) {
-            cFRule.format = {};
+    private setFormat(style: CellStyleModel, cFRule: ConditionalFormatModel): CellStyleModel {
+        switch (cFRule.cFColor) {
+            case 'RedFT':
+                style.backgroundColor = '#ffc7ce';
+                style.color = '#9c0055';
+                break;
+            case 'YellowFT':
+                style.backgroundColor = '#ffeb9c';
+                style.color = '#9c6500';
+                break;
+            case 'GreenFT':
+                style.backgroundColor = '#c6efce';
+                style.color = '#006100';
+                break;
+            case 'RedF':
+                style.backgroundColor = '#ffc7ce';
+                break;
+            case 'RedT':
+                style.color = '#9c0055';
+                break;
         }
-        if (!cFRule.format.style) {
-            cFRule.format.style = {};
-        }
-        if (td.classList.contains('e-redft')) {
-            cFRule.format.style.backgroundColor = '#ffc7ce';
-            cFRule.format.style.color = '#9c0055';
-        } else if (td.classList.contains('e-yellowft')) {
-            cFRule.format.style.backgroundColor = '#ffeb9c';
-            cFRule.format.style.color = '#9c6500';
-        } else if (td.classList.contains('e-greenft')) {
-            cFRule.format.style.backgroundColor = '#c6efce';
-            cFRule.format.style.color = '#006100';
-        } else if (td.classList.contains('e-redf')) {
-            cFRule.format.style.backgroundColor = '#ffc7ce';
-        } else if (td.classList.contains('e-redt')) {
-            cFRule.format.style.color = '#9c0055';
-        }
+        return style;
     }
 
     /**

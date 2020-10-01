@@ -78,31 +78,24 @@ var RadioButton = /** @class */ (function (_super) {
      */
     RadioButton.prototype.destroy = function () {
         var _this = this;
-        if (sf.base.isBlazor() && this.isServerRendered) {
-            if (!this.disabled) {
-                this.unWireEvents();
-            }
+        var radioWrap = this.element.parentElement;
+        _super.prototype.destroy.call(this);
+        if (!this.disabled) {
+            this.unWireEvents();
+        }
+        if (this.tagName === 'INPUT') {
+            radioWrap.parentNode.insertBefore(this.element, radioWrap);
+            sf.base.detach(radioWrap);
+            this.element.checked = false;
+            ['name', 'value', 'disabled'].forEach(function (key) {
+                _this.element.removeAttribute(key);
+            });
         }
         else {
-            var radioWrap_1 = this.element.parentElement;
-            _super.prototype.destroy.call(this);
-            if (!this.disabled) {
-                this.unWireEvents();
-            }
-            if (this.tagName === 'INPUT') {
-                radioWrap_1.parentNode.insertBefore(this.element, radioWrap_1);
-                sf.base.detach(radioWrap_1);
-                this.element.checked = false;
-                ['name', 'value', 'disabled'].forEach(function (key) {
-                    _this.element.removeAttribute(key);
-                });
-            }
-            else {
-                ['role', 'aria-checked', 'class'].forEach(function (key) {
-                    radioWrap_1.removeAttribute(key);
-                });
-                radioWrap_1.innerHTML = '';
-            }
+            ['role', 'aria-checked', 'class'].forEach(function (key) {
+                radioWrap.removeAttribute(key);
+            });
+            radioWrap.innerHTML = '';
         }
     };
     RadioButton.prototype.focusHandler = function () {
@@ -271,9 +264,6 @@ var RadioButton = /** @class */ (function (_super) {
      * @private
      */
     RadioButton.prototype.preRender = function () {
-        if (sf.base.isBlazor() && this.isServerRendered) {
-            return;
-        }
         var element = this.element;
         this.formElement = sf.base.closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -298,15 +288,7 @@ var RadioButton = /** @class */ (function (_super) {
      * @private
      */
     RadioButton.prototype.render = function () {
-        if (sf.base.isBlazor() && this.isServerRendered) {
-            if (sf.base.isRippleEnabled) {
-                var rippleSpan = this.element.parentElement.getElementsByClassName(RIPPLE)[0];
-                sf.base.rippleEffect(rippleSpan, { duration: 400, isCenterRipple: true });
-            }
-        }
-        else {
-            this.initialize();
-        }
+        this.initialize();
         if (!this.disabled) {
             this.wireEvents();
         }
@@ -425,7 +407,5 @@ exports.RadioButton = RadioButton;
 return exports;
 
 });
-sfBlazor.modules["radiobutton"] = "buttons.RadioButton";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.radiobutton, () => {
+
     sf.buttons = sf.base.extend({}, sf.buttons, sfradiobutton({}));
-});

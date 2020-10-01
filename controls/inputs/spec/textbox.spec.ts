@@ -2881,4 +2881,25 @@ describe('TextBox ', () => {
             expect(inputObj.textboxWrapper.container.classList.contains('custom-class-two')).toBe(true);
         });   
     });
+    describe('EJ2-41857 - Outlined TextBox not supported Google Chrome autocompletes the input with the saved password', function () {
+        let inputObj: any;
+        beforeEach(function () {
+            let inputElement: HTMLElement = createElement('input', { id: 'textbox' });
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function () {
+            if (inputObj) {
+                inputObj.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Autofilled element wrapper class list', function () {
+            inputObj = new TextBox({
+                cssClass: 'e-outline e-autofill',
+            });
+            inputObj.appendTo('#textbox');
+            inputObj.animationHandler();            
+            expect(inputObj.textboxWrapper.container.classList.contains('e-valid-input')).toBe(true);
+        });
+    });
 })

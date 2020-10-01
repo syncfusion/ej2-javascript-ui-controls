@@ -5,8 +5,8 @@ import { getColumnWidth, isHiddenCol } from '../../workbook/base/column';
 import { contentLoaded, editOperation, getUpdateUsingRaf, IRowRenderer, removeAllChildren, SheetRenderArgs } from '../common/index';
 import { IRenderer, beforeContentLoaded, getColGroupWidth, virtualContentLoaded, setAriaOptions, dataBound } from '../common/index';
 import { CellRenderArgs, beforeHeaderLoaded, ICellRenderer, created, spreadsheetDestroyed, skipHiddenIdx } from '../common/index';
-import { checkMerge } from '../common/index';
-import { CellModel, SheetModel, ExtendedRange, getCell, isHiddenRow } from '../../workbook/index';
+import { checkMerge, forRefSelRender, initiateEdit } from '../common/index';
+import { CellModel, SheetModel, ExtendedRange, getCell, isHiddenRow, checkIsFormula } from '../../workbook/index';
 
 /**
  * Sheet module is used to render Sheet
@@ -184,6 +184,9 @@ export class SheetRender implements IRenderer {
             }
             setAriaOptions(this.parent.getMainContent() as HTMLElement, { busy: false });
             this.parent.trigger(dataBound, {});
+            if (this.parent.isEdit) {
+                this.parent.notify(initiateEdit, null);
+            }
             if (args.initLoad) {
                 let triggerEvent: boolean = true;
                 if (this.parent.scrollSettings.enableVirtualization) {
@@ -446,6 +449,10 @@ export class SheetRender implements IRenderer {
         if (this.parent.scrollSettings.enableVirtualization) {
             this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
         }
+        if (this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0] &&
+        checkIsFormula(this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0].textContent)) {
+        this.parent.notify(forRefSelRender, null);
+    }
         if (!this.parent.isOpen) {
             this.parent.hideSpinner();
         }

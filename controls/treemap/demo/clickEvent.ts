@@ -3,7 +3,7 @@ import { TreeMapHighlight, TreeMapSelection } from '../src/treemap/user-interact
 import { TreeMapTooltip } from '../src/treemap/user-interaction/tooltip';
 import { TreeMapLegend } from '../src/treemap/layout/legend';
 import { DrillDown } from '../demo/Data/Drilldown_Sample';
-import{ IClickEventArgs, ILoadedEventArgs, IResizeEventArgs } from '../src/treemap/model/interface';
+import{ IClickEventArgs } from '../src/treemap/model/interface';
 TreeMap.Inject(TreeMapTooltip, TreeMapHighlight, TreeMapSelection, TreeMapLegend);
 
 /**
@@ -43,21 +43,8 @@ let treemap: TreeMap = new TreeMap({
 			treemap.refresh();
 			count++;
           }
-    },
-    loaded : (args: ILoadedEventArgs) => {
-        alert(args.isResized);
-        
-      },
-      resize: (args: IResizeEventArgs) => 
-      {
-         alert(args);
-      },
+    }
 });
 treemap.appendTo('#container');
-
-document.getElementById('addMarker').onclick = () => {
-   
-    treemap.refresh(); 
-};
 
 

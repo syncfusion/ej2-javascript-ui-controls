@@ -392,10 +392,12 @@ export class PointerRenderer {
                     isClockWise ? (endAngle - startAngle) : (endAngle - startAngle - 360) :
                     isClockWise ? (endAngle - startAngle - 360) : (endAngle - startAngle);
                 element.style.animation = 'None';
-                element.setAttribute(
-                    'transform', 'rotate(' + linear(args.timeStamp, startAngle, sweepAngle, args.duration) + ',' +
-                    this.gauge.midPoint.x.toString() + ',' + this.gauge.midPoint.y.toString() + ')'
-                );
+                if (start !== end) {
+                    element.setAttribute(
+                        'transform', 'rotate(' + linear(args.timeStamp, startAngle, sweepAngle, args.duration) + ',' +
+                        this.gauge.midPoint.x.toString() + ',' + this.gauge.midPoint.y.toString() + ')'
+                    );
+                }
             },
             end: (model: AnimationOptions) => {
                 this.setPointerValue(axis, pointer, end);

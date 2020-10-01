@@ -280,24 +280,41 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     public updateDependentCell(cellRef: string): void {
         let family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
         let cell: string = this.cell;
+        if (cell !== this.emptyString) {
+            if (family.sheetNameToParentObject !== null) {
+                let token: string = family.parentObjectToToken.get(this.grid);
+                if (cell.indexOf(this.sheetToken) === -1) {
+                    cell = token + cell;
+                }
+                if (cellRef.indexOf(this.sheetToken) === -1) {
+                    cellRef = token + cellRef;
+                }
+            }
 
-        if (family.sheetNameToParentObject !== null) {
-            let token: string = family.parentObjectToToken.get(this.grid);
-            if (cell.indexOf(this.sheetToken) === -1) {
-                cell = token + cell;
+            if (this.getDependentCells().has(cellRef)) {
+                let formulaCells: string[] = this.getDependentCells().get(cellRef);
+                if (formulaCells.indexOf(cell) < 0) {
+                    formulaCells.push(cell);
+                }
+            } else {
+                this.getDependentCells().set(cellRef, [cell]);
             }
-            if (cellRef.indexOf(this.sheetToken) === -1) {
-                cellRef = token + cellRef;
-            }
+            this.addToFormulaDependentCells(cellRef);
         }
+    }
 
-        if (this.getDependentCells().has(cellRef)) {
-            let formulaCells: string[] = this.getDependentCells().get(cellRef);
-            if (formulaCells.indexOf(cell) < 0) {
-                formulaCells.push(cell);
-            }
-        } else {
-            this.getDependentCells().set(cellRef, [cell]);
+    private addToFormulaDependentCells(cellRef: string): void {
+        let cell1: string = this.cell;
+        let family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
+        if (family.sheetNameToParentObject != null && cell1.indexOf(this.sheetToken) === -1) {
+            let token: string = family.parentObjectToToken.get(this.grid);
+            cell1 = token + cell1;
+        }
+        if (!this.getDependentFormulaCells().has(cell1)) {
+            this.getDependentFormulaCells().set(cell1, new Map());
+            this.getDependentFormulaCells().get(cell1).set(cellRef, cellRef);
+        } else if (!(this.getDependentFormulaCells().get(cell1)).has(cellRef)) {
+            this.getDependentFormulaCells().get(cell1).set(cellRef, cellRef);
         }
     }
 
@@ -603,9 +620,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     }
 
     private arrayRemove(array: string[], value: string): string[] {
-        let index: number = null;
-        while (index !== -1) {
-            index = array.indexOf(value);
+        let index: number = array.indexOf(value);
+        if (index !== -1) {
             array.splice(index, 1);
         }
         return array;
@@ -1979,6 +1995,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             }
         }
         text = text.split(this.tempSheetPlaceHolder).join(this.sheetToken);
+        if (text.indexOf('!!') > -1) {
+            text = text.replace('!!', '!');
+            let textSplit: string[] = text.split('');
+            textSplit[1] = (parseInt(textSplit[1], 10) + 1).toString();
+            text = textSplit.join('');
+        }
         return text;
     }
 

@@ -9,6 +9,7 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * This chips property helps to render ChipList component.
+     * {% codeBlock src='chips/chips/index.md' %}{% endcodeBlock %}
      * @default []
      * @blazorType List<ChipListChip>
      */
@@ -16,30 +17,35 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * Specifies the text content for the chip.
+     * {% codeBlock src='chips/text/index.md' %}{% endcodeBlock %}
      * @default ''
      */
     text?: string;
 
     /**
      * Specifies the customized text value for the avatar in the chip.
+     * {% codeBlock src='chips/avatarText/index.md' %}{% endcodeBlock %}
      * @default ''
      */
     avatarText?: string;
 
     /**
      * Specifies the icon CSS class for the avatar in the chip.
+     * {% codeBlock src='chips/avatarIconCss/index.md' %}{% endcodeBlock %}
      * @default ''
      */
     avatarIconCss?: string;
 
     /**
      * Specifies the leading icon CSS class for the chip.
+     * {% codeBlock src='chips/leadingIconCss/index.md' %}{% endcodeBlock %}
      * @default ''
      */
     leadingIconCss?: string;
 
     /**
      * Specifies the trailing icon CSS class for the chip.
+     * {% codeBlock src='chips/trailingIconCss/index.md' %}{% endcodeBlock %}
      * @default ''
      */
     trailingIconCss?: string;
@@ -58,6 +64,7 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * Specifies the custom classes to be added to the chip element used to customize the ChipList component.
+     * {% codeBlock src='chips/cssClass/index.md' %}{% endcodeBlock %}
      * @default ''
      */
     cssClass?: string;
@@ -72,6 +79,7 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * Sets or gets the selected chip items in the chip list.
+     * {% codeBlock src='chips/selectedChips/index.md' %}{% endcodeBlock %}
      * @default []
      */
     selectedChips?: string[] | number[] | number;
@@ -88,12 +96,14 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * Enables or disables the delete functionality of a chip.
+     * {% codeBlock src='chips/enableDelete/index.md' %}{% endcodeBlock %}
      * @default false
      */
     enableDelete?: boolean;
 
     /**
      * Triggers when the component is created successfully.
+     * {% codeBlock src='chips/created/index.md' %}{% endcodeBlock %}
      * @event
      * @blazorProperty 'Created'
      */
@@ -101,6 +111,7 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * Triggers when a chip is clicked.
+     * {% codeBlock src='chips/click/index.md' %}{% endcodeBlock %}
      * @event
      * @blazorProperty 'OnClick'
      */
@@ -109,6 +120,7 @@ export interface ChipListModel extends ComponentModel{
     /**
      * Triggers before the click event of the chip is fired. 
      * This event can be used to prevent the further process and restrict the click action over a chip.
+     * {% codeBlock src='chips/beforeClick/index.md' %}{% endcodeBlock %}
      * @event
      * @blazorProperty 'OnBeforeClick'
      */
@@ -116,6 +128,7 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * Fires before removing the chip element.
+     * {% codeBlock src='chips/delete/index.md' %}{% endcodeBlock %}
      * @event
      * @blazorProperty 'OnDelete'
      */

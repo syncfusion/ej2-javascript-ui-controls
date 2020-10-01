@@ -342,6 +342,11 @@ export class Resize implements IAction {
         if ((e.target as HTMLElement).classList.contains('e-rhandler')) {
             if (!this.helper) {
                 if (this.getScrollBarWidth() === 0) {
+                    if (this.parent.allowGrouping) {
+                        for (let i: number = 0; i < this.parent.groupSettings.columns.length; i++) {
+                            this.widthService.setColumnWidth(new Column({ width: '30px' }), i);
+                        }
+                    }
                     for (let col of this.refreshColumnWidth()) {
                         this.widthService.setColumnWidth(col);
                     }

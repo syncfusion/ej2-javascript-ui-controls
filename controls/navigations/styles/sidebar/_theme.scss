@@ -1,6 +1,6 @@
 @include export-module('sidebar-theme') {
 
-  #{&}ejs-sidebar {
+  ejs-sidebar {
     display: block;
   }
 

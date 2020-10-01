@@ -90,7 +90,7 @@ export class Clipboard {
                     break;
                 }
                 col = grid.getColumnByIndex(cIdx);
-                // value = col.getParser() ? col.getParser()(cols[c]) : cols[c];
+                 value =  cols[c];
                 if (col.allowEditing && !col.isPrimaryKey && !col.template) {
                     // let args: BeforePasteEventArgs = {
                     //     column: col,
@@ -100,13 +100,11 @@ export class Clipboard {
                     // this.parent.trigger(events.beforePaste, args);
                     //rIdx = args.rowIndex;
                     //if (!args.cancel) {
-                        if (grid.editModule) {
-                            if (col.type === 'number') {
-                               // grid.editModule.updateCell(rIdx, col.field, parseInt(args.data as string, 10));
-                            } else {
-                                //grid.editModule.updateCell(rIdx, col.field, args.data);
-                            }
+                    if (grid.editModule) {
+                        {
+                            grid.dotNetRef.invokeMethodAsync("UpdateCell", rIdx, col.field, value);
                         }
+                    }
                     //}
                 }
                 cIdx++;
@@ -227,9 +225,11 @@ export class Clipboard {
 
     public copy(withHeader?: boolean): void {
         if (document.queryCommandSupported('copy')) {
+            let clipboardFocus: Element = document.activeElement;
             this.setCopyData(withHeader);
             document.execCommand('copy');
             this.clipBoardTextArea.blur();
+            (clipboardFocus as HTMLElement).focus();
         }
         if (this.isSelect) {
             window.getSelection().removeAllRanges();

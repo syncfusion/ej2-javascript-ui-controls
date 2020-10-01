@@ -4896,7 +4896,5 @@ exports.SparklineDataLabelSettings = SparklineDataLabelSettings;
 return exports;
 
 });
-sfBlazor.modules["sparkline"] = "charts.Sparkline";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.sparkline, () => {
+
     sf.charts = sf.base.extend({}, sf.charts, sfsparkline({}));
-});

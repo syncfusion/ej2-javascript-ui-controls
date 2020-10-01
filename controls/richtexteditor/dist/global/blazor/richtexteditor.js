@@ -9240,8 +9240,8 @@ var Lists = /** @class */ (function () {
         if (startNode === endNode && startNode.textContent === '') {
             if (startNode.closest('ul') || startNode.closest('ol')) {
                 var parentList = !sf.base.isNullOrUndefined(startNode.closest('ul')) ? startNode.closest('ul') : startNode.closest('ol');
-                if (parentList.firstElementChild === startNode && (parentList.children[1].tagName === 'OL' ||
-                    parentList.children[1].tagName === 'UL')) {
+                if (parentList.firstElementChild === startNode && !sf.base.isNullOrUndefined(parentList.children[1]) &&
+                    (parentList.children[1].tagName === 'OL' || parentList.children[1].tagName === 'UL')) {
                     if (parentList.tagName === parentList.children[1].tagName) {
                         while (parentList.children[1].lastChild) {
                             this.parent.domNode.insertAfter(parentList.children[1].lastChild, parentList.children[1]);
@@ -14955,6 +14955,7 @@ var PasteCleanup = /** @class */ (function () {
     PasteCleanup.prototype.popupClose = function (popupObj, uploadObj, imgElem, e) {
         var _this = this;
         this.parent.inputElement.contentEditable = 'true';
+        e.element = imgElem;
         this.parent.trigger(imageUploadSuccess, e, function (e) {
             if (!sf.base.isNullOrUndefined(_this.parent.insertImageSettings.path)) {
                 var url = _this.parent.insertImageSettings.path + e.file.name;
@@ -16906,13 +16907,13 @@ var Image = /** @class */ (function () {
         }
         switch (item.subCommand) {
             case 'JustifyLeft':
-                this.justifyImageLeft(args);
+                this.alignImage(args, 'JustifyLeft');
                 break;
             case 'JustifyCenter':
-                this.justifyImageCenter(args);
+                this.alignImage(args, 'JustifyCenter');
                 break;
             case 'JustifyRight':
-                this.justifyImageRight(args);
+                this.alignImage(args, 'JustifyRight');
                 break;
             case 'Inline':
                 this.inline(args);
@@ -17337,19 +17338,9 @@ var Image = /** @class */ (function () {
             e.args.item.subCommand : 'Inline';
         this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
     };
-    Image.prototype.justifyImageLeft = function (e) {
+    Image.prototype.alignImage = function (e, type) {
         var subCommand = (e.args.item) ?
-            e.args.item.subCommand : 'JustifyLeft';
-        this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
-    };
-    Image.prototype.justifyImageRight = function (e) {
-        var subCommand = (e.args.item) ?
-            e.args.item.subCommand : 'JustifyRight';
-        this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
-    };
-    Image.prototype.justifyImageCenter = function (e) {
-        var subCommand = (e.args.item) ?
-            e.args.item.subCommand : 'JustifyCenter';
+            e.args.item.subCommand : type;
         this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
     };
     Image.prototype.imagDialog = function (e) {
@@ -18121,6 +18112,7 @@ var Image = /** @class */ (function () {
         var _this = this;
         imageElement.style.opacity = '1';
         imageElement.classList.add(CLS_IMG_FOCUS);
+        e.element = imageElement;
         this.parent.trigger(imageUploadSuccess, e, function (e) {
             if (!sf.base.isNullOrUndefined(_this.parent.insertImageSettings.path)) {
                 var url = _this.parent.insertImageSettings.path + e.file.name;
@@ -18128,10 +18120,12 @@ var Image = /** @class */ (function () {
                 imageElement.setAttribute('alt', e.file.name);
             }
         });
-        this.popupObj.close();
+        if (this.popupObj) {
+            this.popupObj.close();
+            this.uploadObj.destroy();
+        }
         this.showImageQuickToolbar(args);
         this.resizeStart(dragEvent, imageElement);
-        this.uploadObj.destroy();
     };
     Image.prototype.imagePaste = function (args) {
         var _this = this;
@@ -20861,63 +20855,65 @@ var RichTextEditor = /** @class */ (function (_super) {
      * @return {void}
      */
     RichTextEditor.prototype.destroy = function () {
-        if (this.isDestroyed || this.element.offsetParent === null) {
+        if (this.isDestroyed || !this.isRendered) {
             return;
         }
-        if (this.isRendered) {
-            this.notify(destroy, {});
-            this.destroyDependentModules();
-            if (!sf.base.isNullOrUndefined(this.timeInterval)) {
-                clearInterval(this.timeInterval);
-                this.timeInterval = null;
+        if (this.element.offsetParent === null) {
+            this.toolbarModule.destroy();
+            return;
+        }
+        this.notify(destroy, {});
+        this.destroyDependentModules();
+        if (!sf.base.isNullOrUndefined(this.timeInterval)) {
+            clearInterval(this.timeInterval);
+            this.timeInterval = null;
+        }
+        this.unWireEvents();
+        if (this.originalElement.tagName === 'TEXTAREA') {
+            if (sf.base.isBlazor()) {
+                sf.base.detach(this.valueContainer);
+                this.valueContainer = this.element.querySelector('.e-blazor-hidden.e-control.e-richtexteditor');
             }
-            this.unWireEvents();
-            if (this.originalElement.tagName === 'TEXTAREA') {
-                if (sf.base.isBlazor()) {
-                    sf.base.detach(this.valueContainer);
-                    this.valueContainer = this.element.querySelector('.e-blazor-hidden.e-control.e-richtexteditor');
-                }
-                this.element.parentElement.insertBefore(this.valueContainer, this.element);
-                this.valueContainer.id = this.getID();
-                this.valueContainer.removeAttribute('name');
-                sf.base.detach(this.element);
-                if (this.originalElement.innerHTML.trim() !== '') {
-                    if (!sf.base.isBlazor()) {
-                        this.valueContainer.value = this.originalElement.innerHTML.trim();
-                        this.setProperties({ value: (!sf.base.isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
-                    }
-                }
-                else {
-                    this.valueContainer.value = !this.isBlazor() ? this.valueContainer.defaultValue : this.defaultResetValue;
-                }
-                this.element = this.valueContainer;
-                for (var i = 0; i < this.originalElement.classList.length; i++) {
-                    sf.base.addClass([this.element], this.originalElement.classList[i]);
-                }
-                sf.base.removeClass([this.element], CLS_RTE_HIDDEN);
-            }
-            else {
-                if (this.originalElement.innerHTML.trim() !== '') {
-                    this.element.innerHTML = this.originalElement.innerHTML.trim();
+            this.element.parentElement.insertBefore(this.valueContainer, this.element);
+            this.valueContainer.id = this.getID();
+            this.valueContainer.removeAttribute('name');
+            sf.base.detach(this.element);
+            if (this.originalElement.innerHTML.trim() !== '') {
+                if (!sf.base.isBlazor()) {
+                    this.valueContainer.value = this.originalElement.innerHTML.trim();
                     this.setProperties({ value: (!sf.base.isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
                 }
-                else {
-                    this.element.innerHTML = '';
-                }
             }
-            if (this.placeholder && this.placeHolderWrapper) {
-                this.placeHolderWrapper = null;
+            else {
+                this.valueContainer.value = !this.isBlazor() ? this.valueContainer.defaultValue : this.defaultResetValue;
             }
-            if (!sf.base.isNullOrUndefined(this.cssClass)) {
-                sf.base.removeClass([this.element], this.cssClass);
+            this.element = this.valueContainer;
+            for (var i = 0; i < this.originalElement.classList.length; i++) {
+                sf.base.addClass([this.element], this.originalElement.classList[i]);
             }
-            this.removeHtmlAttributes();
-            this.removeAttributes();
-            _super.prototype.destroy.call(this);
-            this.isRendered = false;
-            if (this.enablePersistence) {
-                window.localStorage.removeItem(this.getModuleName() + this.element.id);
+            sf.base.removeClass([this.element], CLS_RTE_HIDDEN);
+        }
+        else {
+            if (this.originalElement.innerHTML.trim() !== '') {
+                this.element.innerHTML = this.originalElement.innerHTML.trim();
+                this.setProperties({ value: (!sf.base.isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
             }
+            else {
+                this.element.innerHTML = '';
+            }
+        }
+        if (this.placeholder && this.placeHolderWrapper) {
+            this.placeHolderWrapper = null;
+        }
+        if (!sf.base.isNullOrUndefined(this.cssClass)) {
+            sf.base.removeClass([this.element], this.cssClass);
+        }
+        this.removeHtmlAttributes();
+        this.removeAttributes();
+        _super.prototype.destroy.call(this);
+        this.isRendered = false;
+        if (this.enablePersistence) {
+            window.localStorage.removeItem(this.getModuleName() + this.element.id);
         }
     };
     RichTextEditor.prototype.removeHtmlAttributes = function () {
@@ -22467,7 +22463,5 @@ exports.RendererFactory = RendererFactory;
 return exports;
 
 });
-sfBlazor.modules["richtexteditor"] = "richtexteditor.RichTextEditor";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.richtexteditor, () => {
+
     sf.richtexteditor = sf.base.extend({}, sf.richtexteditor, sfrichtexteditor({}));
-});

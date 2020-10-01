@@ -575,6 +575,7 @@ var BarcodeSVGRenderering = /** @__PURE__ @class */ (function () {
         rect.setAttribute('width', attribute.width.toString());
         rect.setAttribute('height', attribute.height.toString());
         rect.setAttribute('fill', attribute.color);
+        rect.setAttribute('style', 'shape-rendering: crispEdges');
         svg.appendChild(rect);
         return svg;
     };
@@ -3013,10 +3014,15 @@ function refreshCanvasBarcode(qrCodeGenerator, barcodeCanvas) {
     clearCanvas(qrCodeGenerator, barcodeCanvas);
 }
 /** @private */
-
+function triggerDownload(type, fileName, url) {
+    var anchorElement = document.createElement('a');
+    anchorElement.download = fileName + '.' + type.toLocaleLowerCase();
+    anchorElement.href = url;
+    anchorElement.click();
+}
 /** @private */
 function exportAsImage(exportType, fileName, element, isReturnBase64, code) {
-    var returnValue = this.imageExport(exportType, fileName, element, isReturnBase64, code);
+    var returnValue = imageExport(exportType, fileName, element, isReturnBase64, code);
     if (returnValue instanceof Promise) {
         returnValue.then(function (data) {
             return data;
@@ -3025,6 +3031,41 @@ function exportAsImage(exportType, fileName, element, isReturnBase64, code) {
     return returnValue;
 }
 /** @private */
+function imageExport(type, fileName, element, isReturnBase64, code) {
+    /* tslint:disable */
+    var promise = new Promise(function (resolve, reject) {
+        var canvas = element.children[0];
+        /* tslint:enable */
+        var serializer = 'XMLSerializer';
+        var canvasElement = document.createElement('canvas');
+        canvasElement.height = element.clientHeight;
+        canvasElement.width = element.clientWidth;
+        var context = canvasElement.getContext('2d');
+        var image = new Image();
+        image.onload = function () {
+            context.drawImage(image, 0, 0);
+            if (!isReturnBase64) {
+                triggerDownload(type, fileName, canvasElement.toDataURL('image/png').replace('image/png', 'image/octet-stream'));
+                resolve(null);
+            }
+            else {
+                var base64String = (type === 'JPG') ? canvasElement.toDataURL('image/jpg') :
+                    canvasElement.toDataURL('image/png');
+                resolve(base64String);
+            }
+        };
+        if (code.mode === 'Canvas') {
+            image.src = (type === 'JPG') ? canvas.toDataURL('image/jpg') : canvas.toDataURL('image/png');
+            canvasElement.height = element.clientHeight * 1.5;
+            canvasElement.width = element.clientWidth * 1.5;
+            context.scale(2 / 3, 2 / 3);
+        }
+        else {
+            image.src = window.URL.createObjectURL(new Blob([new window[serializer]().serializeToString(element.children[0])], { type: 'image/svg+xml' }));
+        }
+    });
+    return promise;
+}
 
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {

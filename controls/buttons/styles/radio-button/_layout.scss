@@ -8,7 +8,7 @@
   }
 
   // sass-lint:disable no-vendor-prefixes
-  #{&}.e-radio {
+  .e-radio {
     -webkit-appearance: none;
     height: 1px;
     opacity: 0;
@@ -197,8 +197,8 @@
     }
   }
 
-  .e-small #{&}.e-radio+label,
-  #{&}.e-radio+label.e-small {
+  .e-small .e-radio+label,
+  .e-radio+label.e-small {
 
     & .e-label {
       line-height: $radio-btn-small-line-height;
@@ -260,8 +260,8 @@
     }
 }
 
-  .e-bigger.e-small #{&}.e-radio+label,
-  #{&}.e-radio+label.e-bigger.e-small {
+  .e-bigger.e-small .e-radio+label,
+  .e-radio+label.e-bigger.e-small {
 
     & .e-label {
       line-height: $radio-btn-bigger-small-line-height;
@@ -325,8 +325,8 @@
     }
   }
 
-  .e-bigger #{&}.e-radio+label,
-  #{&}.e-radio+label.e-bigger {
+  .e-bigger .e-radio+label,
+  .e-radio+label.e-bigger {
 
     & .e-label {
       font-size: $radio-btn-bigger-font-size;

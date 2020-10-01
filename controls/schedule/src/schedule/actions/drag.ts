@@ -315,8 +315,8 @@ export class DragAndDrop extends ActionBase {
                 this.parent.crudModule.crudObj.isCrudAction = true;
                 this.parent.crudModule.crudObj.sourceEvent =
                     [this.parent.resourceBase.lastResourceLevel[parseInt(dragArgs.element.getAttribute('data-group-index'), 10)]];
-                this.parent.crudModule.crudObj.targetEvent =
-                    [this.parent.resourceBase.lastResourceLevel[parseInt(dragArgs.target.getAttribute('data-group-index'), 10)]];
+                let currentGroupIndex: number = parseInt(dragArgs.target.getAttribute('data-group-index'), 10) || this.actionObj.groupIndex;
+                this.parent.crudModule.crudObj.targetEvent = [this.parent.resourceBase.lastResourceLevel[currentGroupIndex]];
             }
             this.saveChangedData(dragEventArgs);
         });
@@ -558,9 +558,10 @@ export class DragAndDrop extends ActionBase {
             let record: { [key: string]: Object } = this.verticalEvent.isSpannedEvent(event, dayIndex, this.actionObj.groupIndex);
             let eStart: Date = record[this.verticalEvent.fields.startTime] as Date;
             let eEnd: Date = record[this.verticalEvent.fields.endTime] as Date;
-            let topValue: number = 0;
-            let appHeight: number = this.verticalEvent.getHeight(eStart, eEnd);
-            topValue = this.verticalEvent.getTopValue(eStart, dayIndex, this.actionObj.groupIndex);
+            let appHeight: number = this.parent.activeViewOptions.timeScale.enable ? this.verticalEvent.getHeight(eStart, eEnd) :
+                this.actionObj.element.offsetHeight;
+            let topValue: number = this.parent.activeViewOptions.timeScale.enable ?
+                this.verticalEvent.getTopValue(eStart, dayIndex, this.actionObj.groupIndex) : this.actionObj.element.offsetTop;
             this.actionObj.clone.style.top = formatUnit(topValue);
             this.actionObj.clone.style.height = formatUnit(appHeight);
         }

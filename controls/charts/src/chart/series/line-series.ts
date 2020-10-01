@@ -25,9 +25,10 @@ export class LineSeries extends LineBase {
         let isPolar: boolean = (series.chart && series.chart.chartAreaType === 'PolarRadar');
         let isDrop: boolean = (series.emptyPointSettings && series.emptyPointSettings.mode === 'Drop');
         let getCoordinate: Function = isPolar ? TransformToVisible : getPoint;
-        let visiblePoints: Points[] = this.enableComplexProperty(series);
+        let visiblePoints: Points[] = series.category === 'TrendLine' ? series.points : this.enableComplexProperty(series);
         for (let point of visiblePoints) {
             point.regions = [];
+            point.symbolLocations = [];
             if (isPolar && !(point.visible)) {
                 continue;
             }
@@ -39,7 +40,6 @@ export class LineSeries extends LineBase {
             } else {
                 prevPoint = isDrop ? prevPoint : null;
                 startPoint = isDrop ? startPoint : 'M';
-                point.symbolLocations = [];
             }
         }
         if (isPolar) {

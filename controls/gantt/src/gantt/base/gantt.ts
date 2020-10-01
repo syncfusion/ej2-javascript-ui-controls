@@ -1450,6 +1450,9 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     protected render(): void {
+        if ((<{ isReact?: boolean }>this).isReact) {
+            (<{ isReact?: boolean }>this.treeGrid.grid).isReact = true;
+        }
         createSpinner({ target: this.element }, this.createElement);
         this.trigger('load', {});
         this.element.classList.add(cls.root);
@@ -2112,6 +2115,7 @@ export class Gantt extends Component<HTMLElement>
         removeClass([this.element], cls.root);
         this.element.innerHTML = '';
         this.isTreeGridRendered = false;
+        this.resetTemplates();
     }
     /**
      * Method to get taskbarHeight.
@@ -3540,6 +3544,26 @@ export class Gantt extends Component<HTMLElement>
             let id: string = data.ganttProperties.taskId;
             id = data.level === 0 ? 'R' + id : 'T' + id;
             this.taskIds.push(id);
+        }
+    }
+    /**
+     * To render the react templates
+     *  @hidden
+     */
+    public renderTemplates(): void {
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) {
+            this.renderReactTemplates();
+        }
+    }
+    /**
+     * To reset the react templates
+     *  @hidden
+     */
+    public resetTemplates(): void {
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) {
+            this.clearTemplate();
         }
     }
 }

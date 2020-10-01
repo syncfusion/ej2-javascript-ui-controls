@@ -895,5 +895,38 @@ describe('CellStyle', () => {
                 }
             }
         });
+    });
+    it('NumberFormatGermanCulture', (done) => {
+        let book: Workbook = new Workbook({
+            worksheets: [
+                {
+                    name: 'CellStyle',
+                    rows: [
+                        { index: 1, cells: [{ index: 1, value: 20, style: { numberFormat: "A5" } }] },
+                        { index: 2, cells: [{ index: 1, value: 20, style: { numberFormat: "A3" } }] },
+                        { index: 3, cells: [{ index: 1, value: 20, style: { numberFormat: "P3" } }] },
+                        { index: 4, cells: [{ index: 1, value: 20, style: { numberFormat: "P2" } }] },
+                        { index: 5, cells: [{ index: 1, value: 20, style: { numberFormat: "C2" } }] },
+                        { index: 6, cells: [{ index: 1, value: 20, style: { numberFormat: "C" } }] },
+                        { index: 7, cells: [{ index: 1, value: 20, style: { numberFormat: "N" } }] },
+                        { index: 8, cells: [{ index: 1, value: 20, style: { numberFormat: "N2" } }] },
+                        { index: 9, cells: [{ index: 1, value: 20, style: { numberFormat: "N3" } }] },
+                        { index: 10, cells: [{ index: 1, value: 20, style: { numberFormat: "N4" } }] }
+                    ],
+                }]
+        }, 'xlsx', "de-DE");
+        book.saveAsBlob('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'NumberFormatGermanCulture.xlsx');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
     });    
 });

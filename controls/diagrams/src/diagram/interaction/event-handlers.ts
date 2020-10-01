@@ -10,7 +10,8 @@ import { Container } from '../core/containers/container';
 import { MarginModel } from '../core/appearance-model';
 import { Diagram } from '../diagram';
 import { Connector } from '../objects/connector';
-import { NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, PolygonDrawingTool, PolyLineDrawingTool } from './tool';
+import { NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool } from './tool';
+import { PolygonDrawingTool, PolyLineDrawingTool, FixedUserHandleTool } from './tool';
 import { Node, SwimLane } from '../objects/node';
 import { ConnectorModel } from '../objects/connector-model';
 import { PointPortModel } from '../objects/port-model';
@@ -32,6 +33,7 @@ import {
 } from './../utility/constraints-util';
 import { CommandModel } from '../diagram/keyboard-commands-model';
 import { updateTooltip } from '../objects/tooltip';
+import { DiagramTooltipModel } from '../objects/tooltip-model';
 import { PortVisibility, NodeConstraints, ConnectorConstraints, RealAction } from '../enum/enum';
 import { addTouchPointer, measureHtmlText, getAdornerLayerSvg } from '../utility/dom-util';
 import { TextElement } from '../core/elements/text-element';
@@ -60,6 +62,7 @@ import { DiagramHtmlElement } from '../core/elements/html-element';
 import { randomId } from '../index';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { isBlazor } from '@syncfusion/ej2-base';
+import { BlazorTooltip } from '../blazor-tooltip/blazor-Tooltip';
 
 
 /**
@@ -754,6 +757,11 @@ export class DiagramEventHandler {
                 if (this.diagram.selectedObject && this.diagram.selectedObject.helperObject) {
                     this.diagram.remove(this.diagram.selectedObject.helperObject);
                     this.diagram.selectedObject = { helperObject: undefined, actualObject: undefined };
+                    // EJ2-42605 - Annotation undo redo not working properly if the line routing is enabled committed by sivakumar sekar
+                    // committed to remove the diagram actions public method when line routing is enabled
+                    if ((this.diagram.diagramActions & DiagramAction.PublicMethod) && (this.diagram.constraints & DiagramConstraints.LineRouting)) {
+                        this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PublicMethod;
+                    }
                 }
                 this.blocked = false;
                 if (this.hoverElement) {
@@ -808,7 +816,7 @@ export class DiagramEventHandler {
             position: cloneBlazorObject(this.eventArgs.position), count: arg.count,
             actualObject: this.eventArgs.actualObject ? { selector: cloneBlazorObject(this.eventArgs.actualObject) } :
                 { diagram: cloneBlazorObject(this.diagram) },
-                button: arg.button
+            button: arg.button
         } as IBlazorClickEventArgs;
         if (this.eventArgs.source instanceof Node) {
             (arg as IBlazorClickEventArgs).element.selector.nodes = [];
@@ -964,7 +972,7 @@ export class DiagramEventHandler {
     }
     /** @private */
     public mouseWheel(evt: WheelEvent): void {
-        this.diagram.blazorActions = BlazorAction.interaction;
+        this.diagram.blazorActions |= BlazorAction.interaction;
         let up: boolean = (evt.wheelDelta > 0 || -40 * evt.detail > 0) ? true : false;
         let mousePosition: PointModel = this.getMousePosition(evt);
         this.diagram.tooltipObject.close();
@@ -1295,19 +1303,26 @@ export class DiagramEventHandler {
             }
             let offset: PointModel = getTooltipOffset(this.diagram, mousePosition, this.hoverElement);
             if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
-                this.diagram.tooltipObject.close();
+                (this.diagram.tooltipObject as Tooltip).close();
+                (this.diagram.tooltipObject as DiagramTooltipModel).openOn = (this.hoverElement.tooltip as DiagramTooltipModel).openOn;
                 this.diagram.tooltipObject.offsetX = offset.x;
                 this.diagram.tooltipObject.offsetY = offset.y;
-                this.diagram.tooltipObject.dataBind();
+                if (isBlazor()) {
+                    (this.diagram.tooltipObject as BlazorTooltip).open(this.diagram.element, {});
+                } else {
+                    (this.diagram.tooltipObject as Tooltip).dataBind();
+                }
             }
             if (canEnableToolTip(this.hoverElement, this.diagram) && this.hoverElement.tooltip.openOn === 'Auto') {
-                this.diagram.tooltipObject.open(this.diagram.element);
+                (this.diagram.tooltipObject as Tooltip).open(this.diagram.element);
             }
         }
     }
 
     private elementLeave(): void {
-        this.diagram.tooltipObject.close();
+       if (this.diagram.tooltipObject && (this.diagram.tooltipObject as DiagramTooltipModel).openOn !== 'Custom') {
+            this.diagram.tooltipObject.close();
+       }
     }
 
     private altKeyPressed(keyModifier: KeyModifiers): boolean {
@@ -1511,22 +1526,22 @@ export class DiagramEventHandler {
             let currentConnector: ConnectorModel;
             let nearNode: IElement;
             let i: number;
-            if ((wrapper &&  (obj as Node).ports &&  (obj as Node).ports.length && !checkPort(obj, wrapper) || !wrapper ||
-            !(obj as Node)) && objects && objects.length && (source instanceof Selector)) {
+            if ((wrapper && (obj as Node).ports && (obj as Node).ports.length && !checkPort(obj, wrapper) || !wrapper ||
+                !(obj as Node)) && objects && objects.length && (source instanceof Selector)) {
                 currentConnector = source.connectors[0];
                 for (i = objects.length - 1; i >= 0; i--) {
                     nearNode = objects[i];
-                    if ((nearNode instanceof Node) && currentConnector && currentConnector.connectionPadding ) {
+                    if ((nearNode instanceof Node) && currentConnector && currentConnector.connectionPadding) {
                         obj = nearNode;
                         wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, padding);
                         if (((currentConnector.constraints & ConnectorConstraints.ConnectToNearByPort) && (obj as Node) &&
-                        (obj as Node).ports && (obj as Node).ports.length && checkPort(obj, wrapper))) {
+                            (obj as Node).ports && (obj as Node).ports.length && checkPort(obj, wrapper))) {
                             break;
                         }
                         if ((nearNode instanceof Node) && currentConnector && currentConnector.connectionPadding
-                        && nearNode.wrapper.outerBounds.containsPoint(this.currentPosition) &&
-                        (currentConnector.constraints & ConnectorConstraints.ConnectToNearByNode) &&
-                        !(currentConnector.constraints & ConnectorConstraints.ConnectToNearByPort)) {
+                            && nearNode.wrapper.outerBounds.containsPoint(this.currentPosition) &&
+                            (currentConnector.constraints & ConnectorConstraints.ConnectToNearByNode) &&
+                            !(currentConnector.constraints & ConnectorConstraints.ConnectToNearByPort)) {
                             obj = nearNode;
                             wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, 0);
                             break;
@@ -1573,6 +1588,9 @@ export class DiagramEventHandler {
                 return new RotateTool(this.commandHandler);
             case 'LayoutAnimation':
                 return new ExpandTool(this.commandHandler);
+            case 'FixedUserHandle':
+                return new FixedUserHandleTool(this.commandHandler, true);
+
             case 'Hyperlink':
                 return new LabelTool(this.commandHandler);
             case 'ResizeSouthEast':

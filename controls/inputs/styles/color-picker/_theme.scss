@@ -119,7 +119,7 @@
     }
   }
 
-  & .e-color-picker .e-selected-value {
+  #{if(&, '&', '*')} .e-color-picker .e-selected-value {
     & .e-css.e-btn.e-flat {
       @if $skin-name == 'bootstrap4' {
         background-color: $cpicker-handler-tooltip-color;

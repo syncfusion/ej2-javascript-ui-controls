@@ -6,29 +6,29 @@
   }
 
   .e-date-wrapper:not(.e-filled) {
-    & .e-date-icon.e-icons {
+    #{if(&, '&', '*')} .e-date-icon.e-icons {
       @if $skin-name == 'material' or $skin-name == 'material-dark' {
         box-sizing: $datepicker-box-sizing;
       }
     }
   }
 
-  #{&}.e-datepicker {
+  .e-datepicker {
 
-    & .e-calendar {
+    #{if(&, '&', '*')} .e-calendar {
 
-      & .e-content table tbody tr.e-month-hide:last-child {
+      #{if(&, '&', '*')} .e-content table tbody tr.e-month-hide:last-child {
         display: $datepicker-othermonth-row;
 	}
     }
 
-    &.e-popup-wrapper {
+    #{if(&, '&', '*')}.e-popup-wrapper {
       border-radius: $datepicker-popup-border-radius;
       overflow-y: hidden;
       pointer-events: auto;
     }
 
-    &.e-date-modal {
+    #{if(&, '&', '*')}.e-date-modal {
       background-color: $datepicker-overlay;
       height: 100%;
       left: 0;
@@ -40,14 +40,14 @@
       z-index: 999;
 	}
 
-    & .e-model-header {
+    #{if(&, '&', '*')} .e-model-header {
       background-color: $datepicker-modal-header-bg;
       color: $datepicker-modal-header-color;
       cursor: default;
       display: $datepicker-modal-header-display;
       padding: 10px 10px 10px 15px;
 
-      & .e-model-year {
+      #{if(&, '&', '*')} .e-model-year {
         font-size: 14px;
         font-weight: 500;
         line-height: 32px;
@@ -55,8 +55,8 @@
     }
 }
 
-    & .e-model-month,
-    & .e-model-day {
+    #{if(&, '&', '*')} .e-model-month,
+    #{if(&, '&', '*')} .e-model-day {
       font-size: 20px;
       font-weight: 500;
       line-height: 32px;

@@ -33,95 +33,95 @@ $ddl-bigger-small-list-font-size: 14px !default;
     height: 36px;
   }
 
-  #{&}.e-popup.e-ddl .e-dropdownbase {
+  .e-popup.e-ddl .e-dropdownbase {
     min-height: 26px;
   }
 
-  .e-ddl#{&} {
-    &.e-popup {
+  .e-ddl {
+    #{if(&, '&', '*')}.e-popup {
       border: 0;
       box-shadow: 0 0 5px 0 $ddl-list-box-shadow-color;
-      margin-top: 1px;& .e-content.e-nodata {
+      margin-top: 1px;#{if(&, '&', '*')} .e-content.e-nodata {
         background-color: $bg-base-0;
-      }& .e-dropdownbase {
-        & .e-list-item {
-          & .e-highlight {
+      }#{if(&, '&', '*')} .e-dropdownbase {
+        #{if(&, '&', '*')} .e-list-item {
+          #{if(&, '&', '*')} .e-highlight {
             color: $header-font;
           }
         }
-      }& .e-input-group {
+      }#{if(&, '&', '*')} .e-input-group {
         display: flex;
         width: auto;
         @at-root {
-          & input {
+          #{if(&, '&', '*')} input {
             line-height: 15px;
           }
-        }& .e-clear-icon {
+        }#{if(&, '&', '*')} .e-clear-icon {
           border-radius: 20px;
           height: 20px;
           margin: 5px;
           min-width: 20px;
-        }& .e-clear-icon {
-          &::before {
+        }#{if(&, '&', '*')} .e-clear-icon {
+          #{if(&, '&', '*')}::before {
             font-size: 10px;
         }
       }
-      }& .e-filter-parent {
+      }#{if(&, '&', '*')} .e-filter-parent {
         border-left-width: 0;
-        border-right-width: 0;& .e-input-group.e-control-wrapper:hover:active {
+        border-right-width: 0;#{if(&, '&', '*')} .e-input-group.e-control-wrapper:hover:active {
           border-color: $border-fg;
         }
-      }.e-bigger & {
-        &.e-ddl-device.e-ddl-device-filter {
+      }.e-bigger #{if(&, '&', '*')} {
+        #{if(&, '&', '*')}.e-ddl-device.e-ddl-device-filter {
           margin-top: 0;
-        }& .e-list-item,
-        & .e-list-group-item,
-        & .e-fixed-head {
+        }#{if(&, '&', '*')} .e-list-item,
+        #{if(&, '&', '*')} .e-list-group-item,
+        #{if(&, '&', '*')} .e-fixed-head {
           font-size: 15px;
           line-height: 45px;
           padding-left: 0;
           text-indent: 16px;
         }
 
-        & .e-dd-group {
-          & .e-list-item {
+        #{if(&, '&', '*')} .e-dd-group {
+          #{if(&, '&', '*')} .e-list-item {
             padding-left: 4px;
           }
         }
 
-        & .e-input-group {
+        #{if(&, '&', '*')} .e-input-group {
           padding: 4px 0;
         }
 
-        & .e-input-group {
-          & input {
+        #{if(&, '&', '*')} .e-input-group {
+          #{if(&, '&', '*')} input {
             height: 46px;
           }
         }
         }
 
-      .e-bigger.e-small & {
-        & .e-list-item,
-        & .e-list-group-item,
-        & .e-fixed-head {
+      .e-bigger.e-small #{if(&, '&', '*')} {
+        #{if(&, '&', '*')} .e-list-item,
+        #{if(&, '&', '*')} .e-list-group-item,
+        #{if(&, '&', '*')} .e-fixed-head {
           font-size: 14px;
           line-height: 40px;
           padding-left: 0;
           text-indent: 16px;
         }
 
-        & .e-dd-group {
-          & .e-list-item {
+        #{if(&, '&', '*')} .e-dd-group {
+          #{if(&, '&', '*')} .e-list-item {
             padding-left: 4px;
           }
         }
 
-        & .e-input-group {
+        #{if(&, '&', '*')} .e-input-group {
           padding: 0;
         }
 
-        & .e-input-group {
-          & input {
+        #{if(&, '&', '*')} .e-input-group {
+          #{if(&, '&', '*')} input {
             height: 34px;
           }
         }

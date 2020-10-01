@@ -331,6 +331,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private isClearButtonClick: boolean;
     private isDocumentClick: boolean;
     private isFirstRender: boolean;
+    private hasTemplate: string;
     private isInitialized: boolean;
     private treeDataType: number;
     private oldValue: string[];
@@ -944,6 +945,8 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         this.oldValue = this.value;
         this.isInitialized = true;
+        this.hasTemplate = this.itemTemplate || this.headerTemplate || this.footerTemplate || this.actionFailureTemplate
+                            || this.noRecordsTemplate;
         this.renderComplete();
     }
 
@@ -1279,7 +1282,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private triggerChangeEvent(event?: MouseEvent | KeyboardEvent): void {
-        let isEqual: boolean = this.compareValues(this.oldValue, this.value);
+        let isEqual: boolean = this.ddtCompareValues(this.oldValue, this.value);
         if ((!isEqual || this.isChipDelete) && !this.removeValue) {
             let eventArgs: DdtChangeEventArgs = {
                 e: event,
@@ -1292,7 +1295,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
     }
 
-    private compareValues(oldValue: string[], newValue: string[]): boolean {
+    private ddtCompareValues(oldValue: string[], newValue: string[]): boolean {
         if (oldValue === null || oldValue.length === 0) {
             let isValid: boolean = oldValue === null ? ((newValue === oldValue) ? true : false) :
                 (oldValue.length === 0 ? (newValue === oldValue) : false);
@@ -1501,7 +1504,8 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             let remainElement: HTMLElement = this.createElement('span', { className: REMAIN_WRAPPER });
             let compiledString: Function = compile(remainContent);
             let totalCompiledString: Function = compile(this.l10n.getConstant('totalCountTemplate'));
-            remainElement.appendChild(compiledString({ 'count': this.value.length }, null, null, null, !this.isStringTemplate)[0]);
+            remainElement.appendChild(
+                compiledString({ 'count': this.value.length }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0]);
             this.overFlowWrapper.appendChild(remainElement);
             let remainSize: number = remainElement.offsetWidth;
             remove(remainElement);
@@ -1600,8 +1604,8 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         remainElement.innerHTML = '';
         remainElement.appendChild(
             (this.overFlowWrapper.firstChild && (this.overFlowWrapper.firstChild.nodeType === 3 || this.mode === 'Box')) ?
-                compiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0] :
-                totalCompiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0]);
+                compiledString({ 'count': remaining }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0] :
+                totalCompiledString({ 'count': remaining }, this, 'totalCountTemplate', null, !this.isStringTemplate)[0]);
         if (this.overFlowWrapper.firstChild && (this.overFlowWrapper.firstChild.nodeType === 3 || this.mode === 'Box')) {
             removeClass([this.overFlowWrapper], TOTAL_COUNT_WRAPPER);
         } else {
@@ -1773,7 +1777,8 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             let compiledString: Function;
             this.selectAllSpan.textContent = '';
             compiledString = compile(template);
-            for (let item of compiledString({}, null, null, null, !this.isStringTemplate)) {
+            let templateName: string = unSelect ? 'unSelectAllText' : 'selectAllText';
+            for (let item of compiledString({}, this, templateName, null, !this.isStringTemplate)) {
                 this.selectAllSpan.textContent = item.textContent;
             }
         } else {
@@ -2064,6 +2069,12 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 if (this.headerTemplate) { this.setHeaderTemplate(); }
                 if (this.footerTemplate) { this.setFooterTemplate(); }
                 this.isFirstRender = false;
+                // tslint:disable
+                if (this.hasTemplate && (this as any).portals) {
+                    // tslint:disable
+                    (this as any).portals = (this as any).portals.concat((this.treeObj as any).portals);
+                    this.renderReactTemplates();
+                }
             }
             if (!isCancelled) {
                 attributes(this.inputWrapper, { 'aria-expanded': 'true' });
@@ -2366,6 +2377,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     /* Triggers when the tree fields is changed dynamically */
     private setFields(): void {
         this.resetValue();
+        if (this.hasTemplate) {
+            this.updateTemplate();
+        }
         this.treeObj.fields = this.getTreeFields(this.fields);
         this.treeObj.dataBind();
     }
@@ -2760,8 +2774,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             addClass([this.header], HEADER);
         }
         compiledString = this.templateComplier(this.headerTemplate);
-        for (let item of compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate)) {
-            this.header.appendChild(item);
+        let tempArr: Element[] = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate, undefined, this.header);
+        if (tempArr) {
+            tempArr = Array.prototype.slice.call(tempArr);
+            append(tempArr, this.header);
         }
         this.ddtupdateBlazorTemplates(false, false, true, false);
         this.popupEle.insertBefore(this.header, this.checkAllParent ? this.checkAllParent : this.popupDiv);
@@ -2791,8 +2807,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             addClass([this.footer], FOOTER);
         }
         compiledString = this.templateComplier(this.footerTemplate);
-        for (let item of compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate)) {
-            this.footer.appendChild(item);
+        let tempArr: Element[] = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate, undefined, this.footer);
+        if (tempArr) {
+            tempArr = Array.prototype.slice.call(tempArr);
+            append(tempArr, this.footer);
         }
         this.ddtupdateBlazorTemplates(false, false, false, true);
         append([this.footer], this.popupEle);
@@ -2922,6 +2940,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private updateCheckBoxState(checkBox: boolean): void {
+        if (this.hasTemplate) {
+            this.updateTemplate();
+        }
         if (!this.wrapText) {
             this.updateOverflowWrapper(false);
         }
@@ -2942,6 +2963,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
 
     private updateTemplate(): void {
         if (this.popupObj) {
+            this.clearTemplate();
+            // tslint:disable
+            (this as any).portals = [];
             this.popupObj.destroy();
             if (this.isPopupOpen) {
                 this.hidePopup();
@@ -2965,9 +2989,12 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             let template: string = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
             let compiledString: Function;
             let templateId: string = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
+            let templatestring: string = actionFailure ? 'actionFailureTemplate' : 'noRecordsTemplate';
             compiledString = this.templateComplier(template);
-            for (let item of compiledString({}, null, null, templateId, this.isStringTemplate)) {
-                this.noRecord.appendChild(item);
+            let tempArr: Element[] = compiledString({}, this, templatestring, templateId, this.isStringTemplate, undefined, this.noRecord);
+            if (tempArr) {
+                tempArr = Array.prototype.slice.call(tempArr);
+                append(tempArr, this.noRecord);
             }
             this.ddtupdateBlazorTemplates(!actionFailure, actionFailure);
         } else {
@@ -3015,7 +3042,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private updateRecordTemplate(action?: boolean): void {
         if (this.treeItems && this.treeItems.length <= 0) {
             this.l10nUpdate(action);
-            this.updateTemplate();
+            if (this.hasTemplate) {
+                this.updateTemplate();
+            }
         }
     }
 
@@ -3180,7 +3209,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     this.updateTreeSettings(newProp);
                     break;
                 case 'sortOrder':
+                    if (this.hasTemplate) { this.updateTemplate(); }
                     this.treeObj.sortOrder = newProp.sortOrder;
+                    this.updateValue(this.value);
                     this.treeObj.dataBind();
                     break;
                 case 'showDropDownIcon': this.updateDropDownIconState(newProp.showDropDownIcon); break;
@@ -3203,6 +3234,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 case 'headerTemplate': this.updateTemplate(); break;
                 case 'footerTemplate': this.updateTemplate(); break;
                 case 'itemTemplate':
+                    this.updateTemplate();
                     this.treeObj.nodeTemplate = newProp.itemTemplate;
                     this.treeObj.dataBind();
                     break;
@@ -3254,6 +3286,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      */
     public destroy(): void {
         this.ddtresetBlazorTemplates( true, true, true, true);
+        this.clearTemplate();
         this.unWireEvents();
         this.setCssClass(null, this.cssClass);
         this.resetValue();

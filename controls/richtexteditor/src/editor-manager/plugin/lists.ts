@@ -111,8 +111,8 @@ export class Lists {
         if (startNode === endNode && startNode.textContent === '') {
             if (startNode.closest('ul') || startNode.closest('ol')) {
                 let parentList: HTMLElement = !isNOU(startNode.closest('ul')) ? startNode.closest('ul') : startNode.closest('ol');
-                if (parentList.firstElementChild === startNode && (parentList.children[1].tagName === 'OL' ||
-                parentList.children[1].tagName === 'UL')) {
+                if (parentList.firstElementChild === startNode && !isNOU(parentList.children[1]) &&
+                (parentList.children[1].tagName === 'OL' || parentList.children[1].tagName === 'UL')) {
                     if (parentList.tagName === parentList.children[1].tagName) {
                         while (parentList.children[1].lastChild) {
                             this.parent.domNode.insertAfter(parentList.children[1].lastChild as Element, parentList.children[1]);

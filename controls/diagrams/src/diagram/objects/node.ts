@@ -33,7 +33,8 @@ import { BpmnTaskModel, BpmnSubProcessModel, BpmnGatewayModel } from './node-mod
 import { ShapeModel, BasicShapeModel, FlowShapeModel, ImageModel, PathModel, BpmnShapeModel, BpmnDataObjectModel } from './node-model';
 import { TextModel, NativeModel, HtmlModel, DiagramShapeModel } from './node-model';
 import { LayoutModel } from '../layout/layout-base-model';
-import { checkPortRestriction, setUMLActivityDefaults, getUMLActivityShapes, updatePortEdges } from './../utility/diagram-util';
+import { checkPortRestriction, setUMLActivityDefaults, getUMLActivityShapes } from './../utility/diagram-util';
+import { updatePortEdges, initfixedUserHandlesSymbol } from './../utility/diagram-util';
 import { setSwimLaneDefaults } from './../utility/diagram-util';
 import { randomId, getFunction } from './../utility/base-util';
 import { NodeBase } from './node-base';
@@ -61,8 +62,10 @@ import { UserHandleModel } from '../interaction/selector-model';
 import { UserHandle } from '../interaction/selector';
 import { LayoutInfo } from '../diagram/layoutinfo';
 import { LayoutInfoModel } from '../diagram/layoutinfo-model';
-import { SymbolSizeModel} from './preview-model';
+import { SymbolSizeModel } from './preview-model';
 import { SymbolSize } from './preview';
+import { NodeFixedUserHandleModel } from './fixed-user-handle-model';
+import { NodeFixedUserHandle } from './fixed-user-handle';
 
 let getShapeType: Function = (obj: Shape): Object => {
     if (obj) {
@@ -2006,6 +2009,16 @@ export class Node extends NodeBase implements IElement {
     public isExpanded: boolean;
 
     /**
+     * Specifies the collection of the fixed user handle
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
+     * @default undefined
+     * @blazorType ObservableCollection<DiagramNodeFixedUserHandle>
+     */
+    @Collection<NodeFixedUserHandleModel>([], NodeFixedUserHandle)
+    public fixedUserHandles: NodeFixedUserHandleModel[];
+
+    /**
      * Defines the expanded state of a node
      * @default {}
      */
@@ -2457,8 +2470,8 @@ export class Node extends NodeBase implements IElement {
             case 'SwimLane':
                 this.annotations = [];
                 this.ports = [];
-                (content as GridPanel).cellStyle.fill = "none";
-                (content as GridPanel).cellStyle.strokeColor = "none";
+                (content as GridPanel).cellStyle.fill = 'none';
+                (content as GridPanel).cellStyle.strokeColor = 'none';
                 this.container = { type: 'Grid', orientation: (this.shape as SwimLaneModel).orientation };
                 content.id = this.id;
                 this.container.orientation = (this.shape as SwimLaneModel).orientation;
@@ -2488,11 +2501,11 @@ export class Node extends NodeBase implements IElement {
         }
         if ((!isBlazor() && (this.shape as BasicShape).shape === 'Rectangle' && !(this.shape as BasicShape).cornerRadius) ||
             ((isBlazor()) && ((this.shape as DiagramShape).basicShape === 'Rectangle'
-                && this.shape.type === "Basic" && !(this.shape as DiagramShape).cornerRadius))) {
+                && this.shape.type === 'Basic' && !(this.shape as DiagramShape).cornerRadius))) {
             content.isRectElement = true;
         }
         content.verticalAlignment = 'Stretch';
-        if ((this.shape instanceof Text) || (isBlazor() && this.shape.type === "Text")) {
+        if ((this.shape instanceof Text) || (isBlazor() && this.shape.type === 'Text')) {
             content.margin = (this.shape as Text).margin;
         }
         if (canShadow(this as NodeModel)) {
@@ -2502,8 +2515,8 @@ export class Node extends NodeBase implements IElement {
         }
         if ((this.shape.type !== 'Bpmn' || ((!isBlazor() && (this.shape as BpmnShape).shape === 'Message') || (isBlazor() && (this.shape as DiagramShape).bpmnShape === 'Message')) ||
             ((!isBlazor() && (this.shape as BpmnShape).shape === 'DataSource') || (isBlazor() && (this.shape as DiagramShape).bpmnShape === 'DataSource'))) && (
-                (this.shape.type !== 'UmlActivity' || ((!isBlazor() && (this.shape as UmlActivityShape).shape !== 'FinalNode') || 
-                (isBlazor() && (this.shape as DiagramShape).umlActivityShape !== 'FinalNode'))))) {
+                (this.shape.type !== 'UmlActivity' || ((!isBlazor() && (this.shape as UmlActivityShape).shape !== 'FinalNode') ||
+                    (isBlazor() && (this.shape as DiagramShape).umlActivityShape !== 'FinalNode'))))) {
             if (this.shape.type !== 'Text') {
                 content.style = this.style;
             }
@@ -2568,22 +2581,26 @@ export class Node extends NodeBase implements IElement {
 
     /** @private */
     public initPorts(accessibilityContent: Function | string, container: Container): void {
-        let canvas: Container = this.wrapper;
-        let port: DiagramElement;
-
         for (let i: number = 0; this.ports !== undefined, i < this.ports.length; i++) {
-            port = this.initPortWrapper(this.ports[i] as Port);
-            // tslint:disable-next-line:no-any
-            let wrapperContent: any;
-            let contentAccessibility: Function = getFunction(accessibilityContent);
-            if (contentAccessibility) {
-                wrapperContent = contentAccessibility(port, this);
-            }
-            port.description = wrapperContent ? wrapperContent : port.id;
-            port.inversedAlignment = canvas.inversedAlignment;
-            port.elementActions = port.elementActions | ElementAction.ElementIsPort;
-            container.children.push(port);
+            this.initPort(accessibilityContent, container, this.ports[i] as Port);
         }
+    }
+
+    /** @private */
+    public initPort(accessibilityContent: Function | string, container: Container, port: Port) : void {
+        let canvas: Container = this.wrapper;
+        let portWrapper: DiagramElement;
+        portWrapper = this.initPortWrapper(port);
+        // tslint:disable-next-line:no-any
+        let wrapperContent: any;
+        let contentAccessibility: Function = getFunction(accessibilityContent);
+        if (contentAccessibility) {
+            wrapperContent = contentAccessibility(portWrapper, this);
+        }
+        portWrapper.description = wrapperContent ? wrapperContent : portWrapper.id;
+        portWrapper.inversedAlignment = canvas.inversedAlignment;
+        portWrapper.elementActions = portWrapper.elementActions | ElementAction.ElementIsPort;
+        container.children.push(portWrapper);
     }
 
     private getIconOffet(layout: LayoutModel, icon: IconShape): PointModel {
@@ -2636,6 +2653,44 @@ export class Node extends NodeBase implements IElement {
             iconContainer.inversedAlignment = canvas.inversedAlignment;
             container.children.push(iconContainer);
         }
+    }
+
+    /** @private */
+    public initfixedUserHandles(fixedUserHandle: NodeFixedUserHandleModel): DiagramElement {
+        let canvas: Container = this.wrapper;
+        let offset: PointModel;
+        let fixedUserHandleContainer: Canvas;
+        fixedUserHandleContainer = new Canvas();
+        fixedUserHandleContainer.float = true;
+        let children: DiagramElement[] = [];
+        fixedUserHandle.id = fixedUserHandle.id || randomId();
+        fixedUserHandleContainer.id = this.id + '_' + fixedUserHandle.id;
+        fixedUserHandleContainer.children = children;
+        fixedUserHandleContainer.height = fixedUserHandle.height;
+        fixedUserHandleContainer.width = fixedUserHandle.width;
+        fixedUserHandleContainer.style.strokeColor = fixedUserHandle.handleStrokeColor;
+        fixedUserHandleContainer.style.fill = fixedUserHandle.fill;
+        fixedUserHandleContainer.style.strokeWidth = fixedUserHandle.handleStrokeWidth;
+        fixedUserHandleContainer.margin = fixedUserHandle.margin as Margin;
+        fixedUserHandleContainer.visible = fixedUserHandle.visibility;
+        fixedUserHandleContainer.cornerRadius = fixedUserHandle.cornerRadius;
+        fixedUserHandleContainer.horizontalAlignment = 'Center';
+        fixedUserHandleContainer.verticalAlignment = 'Center';
+        offset = this.getfixedUserHandleOffet(fixedUserHandle as NodeFixedUserHandle);
+        fixedUserHandleContainer.setOffsetWithRespectToBounds(offset.x, offset.y, 'Fraction');
+        fixedUserHandleContainer.relativeMode = 'Point';
+        let symbolIcon: DiagramElement = initfixedUserHandlesSymbol(fixedUserHandle, fixedUserHandleContainer);
+        fixedUserHandleContainer.children.push(symbolIcon);
+        fixedUserHandleContainer.description = fixedUserHandleContainer.id;
+        fixedUserHandleContainer.inversedAlignment = canvas.inversedAlignment;
+        return fixedUserHandleContainer;
+    }
+    private getfixedUserHandleOffet(fixedUserHandle: NodeFixedUserHandle): PointModel {
+        let x: number;
+        let y: number;
+        x = (fixedUserHandle as NodeFixedUserHandle).offset.x;
+        y = (fixedUserHandle as NodeFixedUserHandle).offset.y;
+        return { x, y };
     }
 
     /** @private */
@@ -3284,7 +3339,11 @@ export class Selector extends ChildProperty<Selector> implements IElement {
                 }
             }
         }
+        let isProtectedOnChange: string = 'isProtectedOnChange';
+        let diagramProtectPropertyChange: boolean = diagram[isProtectedOnChange];
+        diagram.protectPropertyChange(false);
         this.wrapper = container;
+        diagram.protectPropertyChange(diagramProtectPropertyChange);
         return container;
     }
 }

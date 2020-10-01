@@ -5,7 +5,7 @@
   }
 
   /*! Blazor column menu custom css */
-  .e-contextmenu-wrapper.e-sfcontextmenu.e-hide-menu {
+  .e-contextmenu-container.e-sfcontextmenu.e-hide-menu {
     visibility: hidden;
   }
 
@@ -144,30 +144,29 @@
       min-height: $grid-bigger-checkbox-filter-min-height;
     }
 
-    .e-filter-popup .e-dlg-content {
-      padding-bottom: 0;
-      padding-left: $grid-bigger-checkbox-content-padding-left;
+    .e-checkboxfilter {
+      & .e-dlg-content {
+        padding-left: $grid-bigger-checkbox-content-padding-left;
     }
 
-    .e-filter-popup {
       & .e-ftrchk,
       & .e-searchbox {
         padding-left: $grid-bigger-checkbox-padding-topbottom;
-          }
-    }
+        }
+      }
 
-    &.e-rtl .e-filter-popup .e-dlg-content {
-      padding-left: $grid-rtl-bigger-checkbox-content-padding-left;
-      padding-right: $grid-bigger-checkbox-content-padding-left;
-    }
+    &.e-rtl .e-checkboxfilter {
+      & .e-dlg-content {
+        padding-left: $grid-rtl-bigger-checkbox-content-padding-left;
+        padding-right: $grid-bigger-checkbox-content-padding-left;
+      }
 
-    &.e-rtl .e-filter-popup {
       & .e-ftrchk,
       & .e-searchbox {
         padding-left: 0;
         padding-right: $grid-bigger-checkbox-padding-topbottom;
-        }
-    }
+          }
+      }
 
     .e-filtermenudiv {
       margin: $grid-bigger-fltrdiv-margin;
@@ -1565,21 +1564,20 @@
       min-height: $grid-checkbox-filter-min-height;
     }
 
-    .e-filter-popup .e-searchbox {
+    .e-checkboxfilter .e-searchbox {
       display: block;
     }
 
-    .e-filter-popup .e-dlg-content {
-      padding-bottom: 0;
-      padding-left: $grid-checkbox-content-padding-left;
-    }
+    .e-checkboxfilter {
+      & .e-dlg-content {
+        padding-left: $grid-checkbox-content-padding-left;
+      }
 
-    .e-filter-popup {
       & .e-ftrchk,
       & .e-searchbox {
         padding-left: $grid-checkbox-padding-topbottom;
-        }
-    }
+          }
+      }
 
     .e-ftrchk {
       padding-bottom: $grid-checkbox-padding-topbottom;
@@ -2268,12 +2266,12 @@
         border-right: 0;
       }
 
-      .e-filter-popup .e-dlg-content {
-        padding-left: $grid-rtl-checkbox-content-padding-left;
-        padding-right: $grid-checkbox-content-padding-left;
+      .e-checkboxfilter {
+        & .e-dlg-content {
+          padding-left: $grid-rtl-checkbox-content-padding-left;
+          padding-right: $grid-checkbox-content-padding-left;
       }
 
-      .e-filter-popup {
         & .e-ftrchk,
         & .e-searchbox {
           padding-left: 0;

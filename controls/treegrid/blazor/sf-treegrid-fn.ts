@@ -1,6 +1,7 @@
 import { BlazorDotnetObject, EventHandler, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { BlazorTreeGridElement, ITreeGridOptions, Column } from './interface';
 import { Clipboard } from './clipboard';
+import { RowDD } from './rowdragdrop';
 import { CheckboxColumn } from './checkboxcolumn';
 
 /**
@@ -20,6 +21,7 @@ export class SfTreeGrid {
     public columnModel: Column[] = [];
     public copyHierarchyMode: string;
     public clipboardModule: Clipboard;
+    public rowDragAndDropModule: RowDD;
     public checkboxcolumnModule: CheckboxColumn;
 
     constructor(element: BlazorTreeGridElement, options: ITreeGridOptions, dotnetRef: BlazorDotnetObject) {
@@ -33,6 +35,7 @@ export class SfTreeGrid {
         this.content = this.element.querySelector('.e-content');
         this.footer = this.element.querySelector('.e-summarycontent');
         this.clipboardModule = new Clipboard(this);
+        this.rowDragAndDropModule = new RowDD(this);
         this.checkboxcolumnModule = new CheckboxColumn(dotnetRef, this);
         this.wireEvents();
     }

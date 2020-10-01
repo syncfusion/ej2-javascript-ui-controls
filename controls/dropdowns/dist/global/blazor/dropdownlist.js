@@ -1085,6 +1085,10 @@ var DropDownList = /** @class */ (function (_super) {
     };
     DropDownList.prototype.setValueTemplate = function () {
         var compiledString;
+        // tslint:disable-next-line
+        if (this.isReact) {
+            this.clearTemplate(['valueTemplate']);
+        }
         if (!this.valueTempElement) {
             this.valueTempElement = this.createElement('span', { className: dropDownListClasses.value });
             this.inputElement.parentElement.insertBefore(this.valueTempElement, this.inputElement);
@@ -1099,10 +1103,14 @@ var DropDownList = /** @class */ (function (_super) {
         else {
             compiledString = sf.base.compile(this.valueTemplate);
         }
-        for (var _i = 0, _a = compiledString(templateData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
-            var item = _a[_i];
-            this.valueTempElement.appendChild(item);
+        // tslint:disable-next-line
+        var valueCompTemp = compiledString(templateData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate, null, this.valueTempElement);
+        if (valueCompTemp && valueCompTemp.length > 0) {
+            for (var i = 0; i < valueCompTemp.length; i++) {
+                this.valueTempElement.appendChild(valueCompTemp[i]);
+            }
         }
+        this.renderReactTemplates();
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, true, true);
     };
     DropDownList.prototype.removeSelection = function () {
@@ -1403,6 +1411,7 @@ var DropDownList = /** @class */ (function (_super) {
                 query = (this.filterInput.value.trim() === '') ? null : query;
                 this.resetList(dataSource, fields, query);
             }
+            this.renderReactTemplates();
         }
     };
     DropDownList.prototype.setSearchBox = function (popupElement) {
@@ -1578,7 +1587,12 @@ var DropDownList = /** @class */ (function (_super) {
     };
     DropDownList.prototype.updateActionCompleteData = function (li, item, index) {
         if (this.getModuleName() !== 'autocomplete' && this.actionCompleteData.ulElement) {
-            this.actionCompleteData.ulElement.insertBefore(li.cloneNode(true), this.actionCompleteData.ulElement.childNodes[index]);
+            if (index != null) {
+                this.actionCompleteData.ulElement.insertBefore(li.cloneNode(true), this.actionCompleteData.ulElement.childNodes[index]);
+            }
+            else {
+                this.actionCompleteData.ulElement.appendChild(li.cloneNode(true));
+            }
             if (this.isFiltering() && this.actionCompleteData.list.indexOf(item) < 0) {
                 this.actionCompleteData.list.push(item);
             }
@@ -1719,6 +1733,7 @@ var DropDownList = /** @class */ (function (_super) {
                         _this.serverBlazorUpdateSelection();
                         _this.bindServerScrollEvent();
                         sf.base.addClass([_this.inputWrapper.container], [dropDownListClasses.iconAnimation]);
+                        _this.renderReactTemplates();
                         _this.popupObj.show(new sf.base.Animation(eventArgs.animation), (_this.zIndex === 1000) ? _this.element : null);
                     }
                     else {
@@ -1795,6 +1810,10 @@ var DropDownList = /** @class */ (function (_super) {
             close: function () {
                 if (!_this.isDocumentClick) {
                     _this.focusDropDown();
+                }
+                // tslint:disable-next-line
+                if (_this.isReact) {
+                    _this.clearTemplate(['headerTemplate', 'footerTemplate']);
                 }
                 var isResetItem = (_this.getModuleName() === 'autocomplete') ? true : false;
                 _this.DropDownBaseresetBlazorTemplates(isResetItem, isResetItem, true, true, false, true, true);
@@ -2205,9 +2224,12 @@ var DropDownList = /** @class */ (function (_super) {
         else {
             compiledString = sf.base.compile(this.footerTemplate);
         }
-        for (var _i = 0, _a = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
-            var item = _a[_i];
-            this.footer.appendChild(item);
+        // tslint:disable-next-line
+        var footerCompTemp = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate, null, this.footer);
+        if (footerCompTemp && footerCompTemp.length > 0) {
+            for (var i = 0; i < footerCompTemp.length; i++) {
+                this.footer.appendChild(footerCompTemp[i]);
+            }
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, false, true);
         sf.base.append([this.footer], popupEle);
@@ -2228,9 +2250,12 @@ var DropDownList = /** @class */ (function (_super) {
         else {
             compiledString = sf.base.compile(this.headerTemplate);
         }
-        for (var _i = 0, _a = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
-            var item = _a[_i];
-            this.header.appendChild(item);
+        // tslint:disable-next-line
+        var headerCompTemp = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate, null, this.header);
+        if (headerCompTemp && headerCompTemp.length) {
+            for (var i = 0; i < headerCompTemp.length; i++) {
+                this.header.appendChild(headerCompTemp[i]);
+            }
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, true, false);
         var contentEle = popupEle.querySelector('div.e-content');
@@ -2685,6 +2710,10 @@ var DropDownList = /** @class */ (function (_super) {
      */
     DropDownList.prototype.destroy = function () {
         this.isActive = false;
+        // tslint:disable-next-line
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         if (!this.isServerBlazor || (this.popupObj && document.body.contains(this.popupObj.element))) {
             this.hidePopup();
         }
@@ -2843,7 +2872,5 @@ exports.DropDownList = DropDownList;
 return exports;
 
 });
-sfBlazor.modules["dropdownlist"] = "dropdowns.DropDownList";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.dropdownlist, () => {
+
     sf.dropdowns = sf.base.extend({}, sf.dropdowns, sfdropdownlist({}));
-});

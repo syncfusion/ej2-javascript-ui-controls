@@ -2054,6 +2054,8 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
                     if (template) {
                         templateEle = _this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item, isLeafItem);
                         templateGroup.appendChild(templateEle);
+                        /* tslint:disable */
+                        _this.treemap.renderReactTemplates();
                     }
                     itemGroup.setAttribute('aria-label', item['name']);
                     itemGroup.setAttribute('tabindex', (_this.treemap.tabIndex + i + 2).toString());
@@ -2686,6 +2688,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                 resetBlazorTemplate(this.element.id + '_HeaderTemplate', 'HeaderTemplate');
             }
         }
+        this.clearTemplate();
         var containerWidth = this.element.clientWidth;
         var containerHeight = this.element.clientHeight;
         this.availableSize = new Size(stringToNumber(this.width, containerWidth) || containerWidth || 600, stringToNumber(this.height, containerHeight) || containerHeight || 450);
@@ -5307,6 +5310,7 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
         this.addEventListener();
     }
     /* tslint:disable:no-string-literal */
+    /* tslint:disable */
     TreeMapTooltip.prototype.renderTooltip = function (e) {
         var _this = this;
         var pageX;
@@ -5401,6 +5405,7 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
         }
         else {
             this.removeTooltip();
+            this.treemap.clearTemplate();
         }
     };
     TreeMapTooltip.prototype.addTooltip = function (tootipArgs, markerFill, tooltipEle, eventArgs) {
@@ -5431,9 +5436,11 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
             });
             this.svgTooltip.opacity = this.treemap.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
             this.svgTooltip.appendTo(tooltipEle);
+            this.treemap.renderReactTemplates();
         }
         else {
             this.removeTooltip();
+            this.treemap.clearTemplate();
         }
     };
     TreeMapTooltip.prototype.mouseUpHandler = function (e) {

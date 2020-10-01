@@ -30,7 +30,23 @@ export interface UnloadEventArgs extends BaseEventArgs {
      */
     documentName: string;
 }
-
+/**
+ * This event provide necessary information about button field.
+ */
+export interface ButtonFieldClickEventArgs extends BaseEventArgs {
+    /**
+     * specifies the form field value.
+     */
+    buttonFieldValue: string;
+    /**
+     * specifies the form field name.
+     */
+    buttonFieldName: string;
+    /**
+     * specifies the form field id.
+     */
+    id: string;
+}
 /**
  * This event arguments provides the necessary information about document load failed event.
  */

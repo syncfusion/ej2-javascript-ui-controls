@@ -6201,6 +6201,7 @@ var BulletChart = /** @class */ (function (_super) {
             var id = 'tooltipDiv' + this.element.id;
             var tooltipDiv = document.getElementById(id);
             if (tooltipDiv) {
+                this.clearTemplate();
                 sf.base.remove(tooltipDiv);
             }
             if (this.bulletTooltipModule) {
@@ -6227,6 +6228,7 @@ var BulletChart = /** @class */ (function (_super) {
         if (!this.isTouchEvent(e)) {
             var tooltipDiv = document.getElementById('.tooltipDiv' + this.element.id);
             if (tooltipDiv) {
+                this.clearTemplate();
                 sf.base.remove(tooltipDiv);
             }
         }
@@ -6249,6 +6251,7 @@ var BulletChart = /** @class */ (function (_super) {
      */
     BulletChart.prototype.bulletMouseDown = function (e) {
         if (this.isTouchEvent(e)) {
+            this.clearTemplate();
             sf.base.remove(document.getElementById(('tooltipDiv' + this.element.id)));
             var targetId = e.target.id;
             /* tslint:disable:no-string-literal */
@@ -6673,9 +6676,9 @@ var BulletTooltip = /** @class */ (function () {
             if (this.control.tooltip.template !== '' && this.control.tooltip.template != null) {
                 this.updateTemplateFn();
                 var elem = this.control.createElement('div', { id: this.control.element.id + 'parent_template' });
-                var templateElement = this.templateFn(blazorTooltipData, null, null, elem.id + '_blazorTemplate', '');
+                var templateElement = this.templateFn(blazorTooltipData, this.control, 'template', elem.id + '_blazorTemplate', '', null, elem);
                 while (templateElement && templateElement.length > 0) {
-                    if (sf.base.isBlazor()) {
+                    if (sf.base.isBlazor() || templateElement.length === 1) {
                         elem.appendChild(templateElement[0]);
                         templateElement = null;
                     }
@@ -6735,6 +6738,8 @@ var BulletTooltip = /** @class */ (function () {
                     document.getElementById(targetId).setAttribute('opacity', '0.6');
                 }
             }
+            // tslint:disable-next-line:no-any
+            this.control.renderReactTemplates();
         }
     };
     /**
@@ -7020,7 +7025,5 @@ exports.BulletChartLegend = BulletChartLegend;
 return exports;
 
 });
-sfBlazor.modules["bulletchart"] = "charts.BulletChart";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.bulletchart, () => {
+
     sf.charts = sf.base.extend({}, sf.charts, sfbulletchart({}));
-});

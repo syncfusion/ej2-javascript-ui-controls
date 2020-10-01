@@ -6,6 +6,7 @@ import { getScrollBarWidth, getUpdateUsingRaf } from '../base/util';
 import {
     scroll, contentReady, uiUpdate, onEmpty, headerRefreshed, textWrapRefresh, virtualScrollEdit, infiniteScrollHandler, closeFilterDialog
 } from '../base/constant';
+import { lazyLoadScrollHandler } from '../base/constant';
 import { ColumnWidthService } from '../services/width-controller';
 import { Grid } from '../base/grid';
 
@@ -157,6 +158,10 @@ export class Scroll implements IAction {
 
             if (!isNullOrUndefined(this.parent.infiniteScrollModule) && this.parent.enableInfiniteScrolling) {
                 this.parent.notify(infiniteScrollHandler, e);
+            }
+            if (this.parent.groupSettings.columns.length && this.parent.groupSettings.enableLazyLoading) {
+                let isDown: boolean = this.previousValues.top < this.parent.getContent().firstElementChild.scrollTop;
+                this.parent.notify(lazyLoadScrollHandler, { scrollDown: isDown });
             }
             this.parent.notify(virtualScrollEdit, {});
             let target: HTMLElement = (<HTMLElement>e.target);

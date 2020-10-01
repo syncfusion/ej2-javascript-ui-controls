@@ -2,13 +2,17 @@
 
 ## [Unreleased]
 
-## 18.2.59 (2020-09-21)
+## 18.3.35 (2020-10-01)
 
 ### ListView
 
+#### New Features
+
+- Provided support for rendering JsRender template in the ListView component.
+
 #### Bug Fixes
 
-- #293862 Issue with `Angular template throws console error` has been fixed.
+- `#288456` - The issue when `clicking the header of the ListView component` has been resolved.
 
 ## 18.2.48 (2020-08-04)
 

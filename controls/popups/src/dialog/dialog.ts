@@ -1136,7 +1136,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             } else if (this.content instanceof HTMLElement) {
                 this.contentEle.appendChild(this.content);
             } else {
-                this.setTemplate(this.content, this.contentEle);
+                this.setTemplate(this.content, this.contentEle, 'content');
             }
         }
         if (!isNullOrUndefined(this.headerContent)) {
@@ -1152,7 +1152,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
-    private setTemplate(template: string | HTMLElement, toElement: HTMLElement): void {
+    private setTemplate(template: string | HTMLElement, toElement: HTMLElement, prop: string): void {
         let templateFn: Function;
         let templateProps: string;
         let blazorContain: string[] = Object.keys(window) as string[];
@@ -1177,7 +1177,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             let isString: boolean = (isBlazor() &&
                 !this.isStringTemplate && (templateValue).indexOf('<div>Blazor') === 0) ?
                 this.isStringTemplate : true;
-            for (let item of templateFn({}, null, null, templateProps, isString)) {
+            for (let item of templateFn({}, this, prop, templateProps, isString)) {
                 fromElements.push(item);
             }
             append([].slice.call(fromElements), toElement);
@@ -1248,7 +1248,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         this.createHeaderContent();
         this.headerContent.appendChild(this.headerEle);
-        this.setTemplate(this.header, this.headerEle);
+        this.setTemplate(this.header, this.headerEle, 'header');
         attributes(this.element, { 'aria-labelledby': this.element.id + '_title' });
         this.element.insertBefore(this.headerContent, this.element.children[0]);
     }
@@ -1262,7 +1262,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             });
         }
         if (this.footerTemplate !== '' && !isNullOrUndefined(this.footerTemplate)) {
-            this.setTemplate(this.footerTemplate, this.ftrTemplateContent);
+            this.setTemplate(this.footerTemplate, this.ftrTemplateContent, 'footerTemplate');
         } else {
             this.ftrTemplateContent.innerHTML = this.buttonContent.join('');
         }
@@ -1621,6 +1621,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         } else {
             this.isDestroyed = true;
         }
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.clearTemplate(); }
     }
 
     /**
@@ -1736,6 +1738,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                  }
              });
         }
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.renderReactTemplates(); }
     }
     /**
      * Closes the dialog if it is in visible state.

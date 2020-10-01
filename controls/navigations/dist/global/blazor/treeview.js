@@ -735,10 +735,9 @@ var TreeView = /** @class */ (function (_super) {
         this.addActionClass(e, fields.expanded, EXPANDED);
         if (!sf.base.isNullOrUndefined(this.nodeTemplateFn)) {
             var textEle = e.item.querySelector('.' + LISTTEXT);
+            var dataId = e.item.getAttribute('data-uid');
             textEle.innerHTML = '';
-            var tempArr = this.nodeTemplateFn(e.curData, undefined, undefined, this.element.id + 'nodeTemplate', this.isStringTemplate);
-            tempArr = Array.prototype.slice.call(tempArr);
-            sf.base.append(tempArr, textEle);
+            this.renderNodeTemplate(e.curData, textEle, dataId);
         }
         var eventArgs = {
             node: e.item,
@@ -1290,6 +1289,7 @@ var TreeView = /** @class */ (function (_super) {
                 sf.base.addClass([firstNode], FOCUS);
                 this.updateIdAttr(null, firstNode);
             }
+            this.renderReactTemplates();
             this.hasPid = this.rootData[0] ? this.rootData[0].hasOwnProperty(this.fields.parentID) : false;
             this.doExpandAction();
         }
@@ -1475,6 +1475,7 @@ var TreeView = /** @class */ (function (_super) {
     };
     TreeView.prototype.expandNode = function (currLi, icon, loaded) {
         var _this = this;
+        this.renderReactTemplates();
         if (icon.classList.contains(LOAD)) {
             this.hideSpinner(icon);
         }
@@ -2633,8 +2634,15 @@ var TreeView = /** @class */ (function (_super) {
         var nodeData = this.getNodeData(currLi);
         return { cancel: false, isInteracted: sf.base.isNullOrUndefined(e) ? false : true, node: currLi, nodeData: nodeData, event: e };
     };
-    TreeView.prototype.destroyTemplate = function (nodeTemplate) {
-        this.clearTemplate(['nodeTemplate']);
+    TreeView.prototype.renderNodeTemplate = function (data, textEle, dataId) {
+        var tempArr = this.nodeTemplateFn(data, this, 'nodeTemplate' + dataId, this.element.id + 'nodeTemplate', this.isStringTemplate, undefined, textEle);
+        if (tempArr) {
+            tempArr = Array.prototype.slice.call(tempArr);
+            sf.base.append(tempArr, textEle);
+        }
+    };
+    TreeView.prototype.destroyTemplate = function (liEle) {
+        this.clearTemplate(['nodeTemplate' + liEle.getAttribute('data-uid')]);
     };
     TreeView.prototype.reRenderNodes = function () {
         this.updateListProp(this.fields);
@@ -2647,7 +2655,7 @@ var TreeView = /** @class */ (function (_super) {
             this.element.innerHTML = '';
         }
         if (!sf.base.isNullOrUndefined(this.nodeTemplateFn)) {
-            this.destroyTemplate(this.nodeTemplate);
+            this.clearTemplate();
         }
         this.setTouchClass();
         this.setProperties({ selectedNodes: [], checkedNodes: [], expandedNodes: [] }, true);
@@ -2690,6 +2698,9 @@ var TreeView = /** @class */ (function (_super) {
                 var inpWidth = textEle.offsetWidth + 5;
                 var style = 'width:' + inpWidth + 'px';
                 sf.base.addClass([liEle], EDITING);
+                if (!sf.base.isNullOrUndefined(_this.nodeTemplateFn)) {
+                    _this.destroyTemplate(liEle);
+                }
                 textEle.innerHTML = eventArgs.innerHtml;
                 var inpEle = sf.base.select('.' + TREEINPUT, textEle);
                 _this.inputObj = sf.inputs.Input.createInput({
@@ -2744,10 +2755,10 @@ var TreeView = /** @class */ (function (_super) {
         var newData = sf.base.setValue(this.editFields.text, newText, this.editData);
         if (!sf.base.isNullOrUndefined(this.nodeTemplateFn)) {
             txtEle.innerText = '';
-            var tempArr = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate', this.isStringTemplate);
-            tempArr = Array.prototype.slice.call(tempArr);
-            sf.base.append(tempArr, txtEle);
+            var dataId = liEle.getAttribute('data-uid');
+            this.renderNodeTemplate(newData, txtEle, dataId);
             this.updateBlazorTemplate();
+            this.renderReactTemplates();
         }
         else {
             txtEle.innerText = newText;
@@ -3513,6 +3524,9 @@ var TreeView = /** @class */ (function (_super) {
     TreeView.prototype.removeNode = function (node) {
         var dragParentUl = sf.base.closest(node, '.' + PARENTITEM);
         var dragParentLi = sf.base.closest(dragParentUl, '.' + LISTITEM);
+        if (!sf.base.isNullOrUndefined(this.nodeTemplateFn)) {
+            this.destroyTemplate(node);
+        }
         sf.base.detach(node);
         this.updateElement(dragParentUl, dragParentLi);
         this.updateInstance();
@@ -3934,6 +3948,7 @@ var TreeView = /** @class */ (function (_super) {
     };
     TreeView.prototype.triggerEvent = function () {
         this.updateTemplateForBlazor();
+        this.renderReactTemplates();
         var eventArgs = { data: this.treeData };
         this.trigger('dataSourceChanged', eventArgs);
     };
@@ -4483,6 +4498,7 @@ var TreeView = /** @class */ (function (_super) {
      */
     TreeView.prototype.destroy = function () {
         sf.base.resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
+        this.clearTemplate();
         this.element.removeAttribute('aria-activedescendant');
         this.element.removeAttribute('tabindex');
         this.unWireEvents();
@@ -5015,7 +5031,5 @@ exports.TreeView = TreeView;
 return exports;
 
 });
-sfBlazor.modules["treeview"] = "navigations.TreeView";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.treeview, () => {
+
     sf.navigations = sf.base.extend({}, sf.navigations, sftreeview({}));
-});

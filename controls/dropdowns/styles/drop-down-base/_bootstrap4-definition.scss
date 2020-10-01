@@ -72,7 +72,8 @@ $ddl-bigger-small-list-header-font-size: 14px !default;
   }
 
   .e-input-group.e-ddl .e-spinner-pane .e-spinner-inner .e-spin-bootstrap4 .e-path-circle,
-  .e-ddl.e-popup .e-filter-parent .e-spinner-pane .e-spinner-inner .e-spin-bootstrap4 .e-path-circle {
+  .e-ddl.e-popup .e-filter-parent .e-spinner-pane .e-spinner-inner .e-spin-bootstrap4 .e-path-circle,
+  .e-ddl.e-popup .e-spinner-pane .e-spinner-inner .e-spin-bootstrap4 .e-path-circle {
     stroke-width: 1px;
   }
 }

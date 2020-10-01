@@ -2774,7 +2774,7 @@ function createTemplate(childElement, pointIndex, content, chart, point, series,
     try {
         var blazor = 'Blazor';
         var tempObject = window[blazor] ? (dataLabelId ? point : { point: point }) : { chart: chart, series: series, point: point };
-        var elementData = templateFn ? templateFn(tempObject, null, null, dataLabelId ||
+        var elementData = templateFn ? templateFn(tempObject, chart, 'template', dataLabelId ||
             childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
         if (elementData.length) {
             templateElement = Array.prototype.slice.call(elementData);
@@ -2783,6 +2783,8 @@ function createTemplate(childElement, pointIndex, content, chart, point, series,
                 childElement.appendChild(templateElement[i]);
             }
         }
+        // tslint:disable-next-line:no-any
+        chart.renderReactTemplates();
     }
     catch (e) {
         return childElement;
@@ -9305,6 +9307,7 @@ var BaseTooltip = /** @class */ (function (_super) {
                 availableSize: chart.availableSize, duration: this.chart.tooltip.duration,
                 isCanvas: this.chart.enableCanvas, isTextWrap: chart.tooltip.enableTextWrap && chart.getModuleName() === 'chart',
                 blazorTemplate: { name: 'Template', parent: this.chart.tooltip },
+                controlInstance: this.chart,
                 tooltipRender: function () {
                     module.removeHighlight(module.control);
                     module.highlightPoints();
@@ -9334,6 +9337,8 @@ var BaseTooltip = /** @class */ (function (_super) {
                 this.svgTooltip.dataBind();
             }
         }
+        // tslint:disable-next-line:no-any
+        this.chart.renderReactTemplates();
     };
     BaseTooltip.prototype.findPalette = function () {
         var colors = [];
@@ -9424,6 +9429,8 @@ var BaseTooltip = /** @class */ (function (_super) {
         var _this = this;
         var tooltipElement = this.getElement(this.element.id + '_tooltip');
         this.stopAnimation();
+        // tslint:disable-next-line:no-any
+        this.chart.clearTemplate();
         if (tooltipElement && this.previousPoints.length > 0) {
             this.toolTipInterval = setTimeout(function () {
                 if (_this.svgTooltip) {
@@ -10711,7 +10718,5 @@ exports.Export = Export;
 return exports;
 
 });
-sfBlazor.modules["accumulationchart"] = "charts.AccumulationChart";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.accumulationchart, () => {
+
     sf.charts = sf.base.extend({}, sf.charts, sfaccumulationchart({}));
-});

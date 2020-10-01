@@ -9,9 +9,10 @@ import { CardSettings } from '../models/card-settings';
 import { DialogSettings } from '../models/dialog-settings';
 import { Columns } from '../models/columns';
 import { StackedHeaders } from '../models/stacked-headers';
+import { SortSettings } from '../models/sort-settings';
 import { CardSettingsModel, ColumnsModel, SwimlaneSettingsModel, StackedHeadersModel, DialogSettingsModel } from '../models/index';
 import { SortSettingsModel } from '../models/index';
-import { ActionEventArgs, CardClickEventArgs, CardRenderedEventArgs, DragEventArgs } from './interface';
+import { ActionEventArgs, CardClickEventArgs, CardRenderedEventArgs, DragEventArgs, ScrollPosition } from './interface';
 import { QueryCellInfoEventArgs, DialogEventArgs } from './interface';
 import { ReturnType, ConstraintType, CurrentAction } from './type';
 import { Action } from '../actions/action';
@@ -24,7 +25,6 @@ import { KanbanTouch } from '../actions/touch';
 import { LayoutRender } from './layout-render';
 import * as events from '../base/constant';
 import * as cls from './css-constant';
-import { SortSettings } from '../models/sort-settings';
 
 /**
  * The Kanban component is an efficient way to visually depict various stages of a process using cards with transparent workflows.
@@ -56,6 +56,8 @@ export class Kanban extends Component<HTMLElement> {
     public activeCardData: CardClickEventArgs;
     public localeObj: L10n;
     public swimlaneToggleArray: string[];
+    public scrollPosition: ScrollPosition;
+    public isInitialRender: boolean;
 
     // Kanban Options
 
@@ -345,6 +347,8 @@ export class Kanban extends Component<HTMLElement> {
             };
             this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
         }
+        this.scrollPosition = { content: { left: 0, top: 0 }, column: {} };
+        this.isInitialRender = true;
     }
 
     /**
@@ -575,6 +579,26 @@ export class Kanban extends Component<HTMLElement> {
     /**
      * @hidden
      */
+    public renderTemplates(): void {
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) {
+            this.renderReactTemplates();
+        }
+    }
+
+    /**
+     * @hidden
+     */
+    public resetTemplates(templates?: string[]): void {
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) {
+            this.clearTemplate(templates);
+        }
+    }
+
+    /**
+     * @hidden
+     */
     public isBlazorRender(): boolean {
         return isBlazor() && this.isServerRendered;
     }
@@ -646,7 +670,7 @@ export class Kanban extends Component<HTMLElement> {
     public getCardDetails(target: Element): { [key: string]: Object } | Object {
         let isNumeric: boolean = typeof (this.kanbanData[0] as { [key: string]: Object })[this.cardSettings.headerField] === 'number';
         let targetId: string | number = isNumeric ? parseInt(target.getAttribute('data-id'), 10) : target.getAttribute('data-id');
-        let cardObj: { [key: string]: Object } = this.kanbanData.filter((data: { [key: string]: Object }) =>
+        let cardObj: { [key: string]: Object } | Object = this.kanbanData.filter((data: { [key: string]: Object }) =>
             data[this.cardSettings.headerField] === targetId)[0] as { [key: string]: Object };
         return cardObj;
     }

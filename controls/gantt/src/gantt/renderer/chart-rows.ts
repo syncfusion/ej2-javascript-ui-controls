@@ -124,13 +124,13 @@ export class ChartRows {
      * @return {NodeList}
      * @private
      */
-    private getChildTaskbarNode(i: number): NodeList {
+    private getChildTaskbarNode(i: number, rootElement?: NodeList): NodeList {
         let childTaskbarNode: NodeList = null;
         let data: IGanttData = this.templateData;
         if (this.childTaskbarTemplateFunction) {
             childTaskbarNode = this.childTaskbarTemplateFunction(
                 extend({ index: i }, data), this.parent, 'TaskbarTemplate',
-                this.getTemplateID('TaskbarTemplate'), false);
+                this.getTemplateID('TaskbarTemplate'), false, undefined, rootElement[0]);
         } else {
             let labelString: string = '';
             if (this.taskLabelTemplateFunction) {
@@ -188,13 +188,13 @@ export class ChartRows {
      * @return {NodeList}
      * @private
      */
-    private getMilestoneNode(i: number): NodeList {
+    private getMilestoneNode(i: number, rootElement?: NodeList): NodeList {
         let milestoneNode: NodeList = null;
         let data: IGanttData = this.templateData;
         if (this.milestoneTemplateFunction) {
             milestoneNode = this.milestoneTemplateFunction(
                 extend({ index: i }, data), this.parent, 'MilestoneTemplate',
-                this.getTemplateID('MilestoneTemplate'), false);
+                this.getTemplateID('MilestoneTemplate'), false, undefined, rootElement[0]);
         } else {
             let template: string = '<div class="' + cls.traceMilestone + '" style="position:absolute;">' +
                 '<div class="' + cls.milestoneTop + ' ' + ((!data.ganttProperties.startDate && !data.ganttProperties.endDate) ?
@@ -362,13 +362,13 @@ export class ChartRows {
      * @return {NodeList}
      * @private
      */
-    private getParentTaskbarNode(i: number): NodeList {
+    private getParentTaskbarNode(i: number, rootElement?: NodeList): NodeList {
         let parentTaskbarNode: NodeList = null;
         let data: IGanttData = this.templateData;
         if (this.parentTaskbarTemplateFunction) {
             parentTaskbarNode = this.parentTaskbarTemplateFunction(
                 extend({ index: i }, data), this.parent, 'ParentTaskbarTemplate',
-                this.getTemplateID('ParentTaskbarTemplate'), false);
+                this.getTemplateID('ParentTaskbarTemplate'), false, undefined, rootElement[0]);
         } else {
             let labelString: string = '';
             if (this.taskLabelTemplateFunction) {
@@ -841,6 +841,7 @@ export class ChartRows {
                 }
             }
         }
+        this.parent.renderTemplates();
         this.updateTaskbarBlazorTemplate(true);
     }
 
@@ -863,7 +864,7 @@ export class ChartRows {
             taskbarContainerNode[0].appendChild([].slice.call(connectorLineLeftNode)[0]);
         }
         if (this.templateData.hasChildRecords) {
-            let parentTaskbarTemplateNode: NodeList = this.getParentTaskbarNode(i);
+            let parentTaskbarTemplateNode: NodeList = this.getParentTaskbarNode(i, taskbarContainerNode);
             if (!this.templateData.ganttProperties.isAutoSchedule) {
                 let manualTaskbar: NodeList = this.getManualTaskbar();
                 taskbarContainerNode[0].appendChild([].slice.call(manualTaskbar)[0]);
@@ -876,7 +877,7 @@ export class ChartRows {
                 taskBaselineTemplateNode = this.getTaskBaselineNode();
             }
         } else if (this.templateData.ganttProperties.isMilestone) {
-            let milestoneTemplateNode: NodeList = this.getMilestoneNode(i);
+            let milestoneTemplateNode: NodeList = this.getMilestoneNode(i, taskbarContainerNode);
             if (milestoneTemplateNode && milestoneTemplateNode.length > 0) {
                 taskbarContainerNode[0].appendChild([].slice.call(milestoneTemplateNode)[0]);
             }
@@ -896,7 +897,7 @@ export class ChartRows {
                         childTaskbarRightResizeNode = this.childTaskbarRightResizer();
                     }
                 }
-                let childTaskbarTemplateNode: NodeList = this.getChildTaskbarNode(i);
+                let childTaskbarTemplateNode: NodeList = this.getChildTaskbarNode(i, taskbarContainerNode);
                 if (childTaskbarLeftResizeNode) {
                     taskbarContainerNode[0].appendChild([].slice.call(childTaskbarLeftResizeNode)[0]);
                 }
@@ -1194,6 +1195,7 @@ export class ChartRows {
                 this.refreshRow(index, isValidateRange);
             }
             this.parent.ganttChartModule.updateLastRowBottomWidth();
+            this.parent.renderTemplates();
             this.updateTaskbarBlazorTemplate(true);
         }
     }

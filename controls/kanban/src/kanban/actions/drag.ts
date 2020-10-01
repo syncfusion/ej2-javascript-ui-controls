@@ -63,7 +63,7 @@ export class DragAndDrop {
         this.dragObj.targetCloneMulti = createElement('div', { className: cls.TARGET_MULTI_CLONE_CLASS });
         this.dragObj.targetClone = createElement('div', {
             className: cls.DROPPED_CLONE_CLASS,
-            styles: 'width:' + formatUnit(this.dragObj.element.offsetWidth) + ';height:' + formatUnit(this.dragObj.element.offsetHeight)
+            styles: 'width:100%;height:' + formatUnit(this.dragObj.element.offsetHeight)
         });
         this.dragObj.modifiedData = [];
         return this.dragObj.cloneElement;
@@ -76,7 +76,8 @@ export class DragAndDrop {
             let closestEle: Element = closest(this.dragObj.element, '.' + cls.CONTENT_ROW_CLASS);
             this.dragObj.selectedCards = [].slice.call(closestEle.querySelectorAll(className)) as HTMLElement[];
             (<HTMLElement[]>this.dragObj.selectedCards).forEach((element: HTMLElement) => {
-                this.dragObj.cardDetails.push(this.parent.getCardDetails(element) as { [key: string]: Object });
+                (<{ [key: string]: Object }[]>this.dragObj.cardDetails).push(this.parent.getCardDetails(element) as
+                    { [key: string]: Object });
             });
         } else {
             this.dragObj.cardDetails = [this.parent.getCardDetails(this.dragObj.element) as { [key: string]: Object }];
@@ -190,10 +191,6 @@ export class DragAndDrop {
             removeClass(tColumn, cls.TOGGLE_VISIBLE_CLASS);
         }
         this.parent.notify(events.contentReady, {});
-        let cloneCell: HTMLElement = closest(target, '.' + cls.CONTENT_CELLS_CLASS + ':not(.' + cls.COLLAPSED_CLASS + ')') as HTMLElement;
-        if (cloneCell) {
-            this.dragObj.targetClone.style.width = formatUnit((cloneCell.offsetWidth - 2) - events.cardSpace);
-        }
         let multiKeyTarget: Element = closest(target, '.' + cls.MULTI_COLUMN_KEY_CLASS);
         if (multiKeyTarget) {
             let columnKeys: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.MULTI_COLUMN_KEY_CLASS)).filter(
@@ -217,12 +214,11 @@ export class DragAndDrop {
             }
         }
         if (document.body.style.cursor === 'not-allowed') {
-            this.removeElement(this.dragObj.targetClone); this.multiCloneRemove();
+            this.removeElement(this.dragObj.targetClone);
+            this.multiCloneRemove();
         }
         this.updateScrollPosition(e);
-        let dragArgs: DragEventArgs = {
-            data: this.dragObj.cardDetails, event: e, element: this.dragObj.selectedCards
-        };
+        let dragArgs: DragEventArgs = { data: this.dragObj.cardDetails, event: e, element: this.dragObj.selectedCards };
         this.parent.trigger(events.drag, dragArgs);
     }
 
@@ -247,10 +243,7 @@ export class DragAndDrop {
         contentCell.style.borderStyle = 'none';
         this.removeElement(this.dragObj.targetClone);
         for (let key of keys) {
-            let colKey: HTMLElement = createElement('div', {
-                className: cls.MULTI_COLUMN_KEY_CLASS,
-                attrs: { 'data-key': key.trim() }
-            });
+            let colKey: HTMLElement = createElement('div', { className: cls.MULTI_COLUMN_KEY_CLASS, attrs: { 'data-key': key.trim() } });
             let text: HTMLElement = createElement('div', { className: 'e-text', innerHTML: key.trim() });
             contentCell.appendChild(this.dragObj.targetCloneMulti).appendChild(colKey).appendChild(text);
             colKey.style.lineHeight = colKey.style.height = formatUnit((offsetHeight / keys.length));
@@ -297,14 +290,14 @@ export class DragAndDrop {
                 });
             }
             if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') {
-                this.changeOrder(this.dragObj.modifiedData);
+                this.changeOrder(this.dragObj.modifiedData as { [key: string]: Object }[]);
             }
         }
         let dragArgs: DragEventArgs = { cancel: false, data: this.dragObj.modifiedData, event: e, element: this.dragObj.selectedCards };
         this.parent.trigger(events.dragStop, dragArgs, (dragEventArgs: DragEventArgs) => {
             if (!dragEventArgs.cancel) {
                 if (contentCell || columnKey) {
-                    this.parent.crudModule.updateCard(dragEventArgs.data as { [key: string]: Object } | { [key: string]: Object; }[]);
+                    this.parent.crudModule.updateCard(dragEventArgs.data as { [key: string]: Object } | { [key: string]: Object }[]);
                 }
             }
             this.removeElement(this.dragObj.draggedClone);
@@ -347,7 +340,7 @@ export class DragAndDrop {
                 crudData[this.parent.swimlaneSettings.keyField] = this.getColumnKey(prev);
             }
         }
-        this.dragObj.modifiedData.push(crudData);
+        (<{ [key: string]: Object }[]>this.dragObj.modifiedData).push(crudData);
     }
 
     private changeOrder(modifieddata: { [key: string]: object }[]): void {

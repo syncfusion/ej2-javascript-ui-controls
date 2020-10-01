@@ -1,7 +1,7 @@
 @include export-module('richtexteditor-theme') {
   /*! tab layout */
 
-  #{&}.e-richtexteditor {
+  .e-richtexteditor {
 
     .e-rte-toolbar {
       border: 1px solid $rte-border-color;
@@ -381,7 +381,7 @@
     z-index: 1000;
   }
 
-  &.e-disabled {
+  #{if(&, '&', '*')}.e-disabled {
     user-select: none;.e-rte-toolbar .e-toolbar-item {
       cursor: default;& .e-tbar-btn.e-icon-btn,
       & .e-dropdown-btn.e-btn ,
@@ -481,4 +481,9 @@
     }
   }
 
+  // Blazor styles start
+  .e-richtexteditor.e-rte-tb-expand .e-rte-content-border {
+    border-bottom: 0;
+  }
+  // Blazor styles end
 }

@@ -23,6 +23,7 @@ export class BarcodeSVGRenderering implements IBarcodeRenderer {
         rect.setAttribute('width', attribute.width.toString());
         rect.setAttribute('height', attribute.height.toString());
         rect.setAttribute('fill', attribute.color);
+        rect.setAttribute('style', 'shape-rendering: crispEdges');
         svg.appendChild(rect);
         return svg;
     }

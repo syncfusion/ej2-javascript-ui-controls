@@ -456,6 +456,10 @@ var filterSearchBegin = 'filtersearchbegin';
 var commandClick = 'commandClick';
 /** @hidden */
 var exportGroupCaption = 'exportGroupCaption';
+/** @hidden */
+var lazyLoadGroupExpand = 'lazyLoadGroupExpand';
+/** @hidden */
+var lazyLoadGroupCollapse = 'lazyLoadGroupCollapse';
 /**
  * Specifies grid internal events
  */
@@ -776,6 +780,12 @@ var pdfAggregateQueryCellInfo = 'pdfAggregateQueryCellInfo';
 /** @hidden */
 var excelAggregateQueryCellInfo = 'excelAggregateQueryCellInfo';
 /** @hidden */
+var setGroupCache = 'group-cache';
+/** @hidden */
+var lazyLoadScrollHandler = 'lazy-load-scroll-handler';
+/** @hidden */
+var groupCollapse = 'group-collapse';
+/** @hidden */
 var beforeCheckboxRenderer = 'beforeCheckboxRenderer';
 /** @hidden */
 var refreshHandlers = 'refreshResizeHandlers';
@@ -1002,6 +1012,9 @@ var Data = /** @class */ (function () {
     Data.prototype.groupQuery = function (query) {
         var gObj = this.parent;
         if (gObj.allowGrouping && gObj.groupSettings.columns.length) {
+            if (this.parent.groupSettings.enableLazyLoading) {
+                query.lazyLoad.push({ key: 'isLazyLoad', value: this.parent.groupSettings.enableLazyLoading });
+            }
             var columns = gObj.groupSettings.columns;
             for (var i = 0, len = columns.length; i < len; i++) {
                 var column = this.getColumnByField(columns[i]);
@@ -1450,14 +1463,47 @@ var Data = /** @class */ (function () {
  * @hidden
  */
 var Row = /** @class */ (function () {
-    function Row(options) {
+    function Row(options, parent) {
         sf.base.merge(this, options);
+        this.parent = parent;
     }
     Row.prototype.clone = function () {
         var row = new Row({});
         sf.base.merge(row, this);
         row.cells = this.cells.map(function (cell) { return cell.clone(); });
         return row;
+    };
+    /**
+     * Replaces the row data and grid refresh the particular row element only.
+     * @param  {Object} data - To update new data for the particular row.
+     * @return {void}
+     */
+    Row.prototype.setRowValue = function (data) {
+        var key = this.data[this.parent.getPrimaryKeyFieldNames()[0]];
+        this.parent.setRowData(key, data);
+    };
+    /**
+     * Replaces the given field value and refresh the particular cell element only.
+     * @param {string} field - Specifies the field name which you want to update.
+     * @param {string | number | boolean | Date} value - To update new value for the particular cell.
+     * @return {void}
+     */
+    Row.prototype.setCellValue = function (field, value) {
+        var isValDiff = !(this.data[field].toString() === value.toString());
+        if (isValDiff) {
+            var pKeyField = this.parent.getPrimaryKeyFieldNames()[0];
+            var key = this.data[pKeyField];
+            this.parent.setCellValue(key, field, value);
+            this.makechanges(pKeyField, this.data);
+        }
+        else {
+            return;
+        }
+    };
+    Row.prototype.makechanges = function (key, data) {
+        var gObj = this.parent;
+        var dataManager = gObj.getDataModule().dataManager;
+        dataManager.update(key, data);
     };
     return Row;
 }());
@@ -1644,6 +1690,7 @@ var RowRenderer = /** @class */ (function () {
             node.appendChild(cell);
         }
     };
+    // tslint:disable-next-line:max-func-body-length
     RowRenderer.prototype.refreshRow = function (row, columns, attributes$$1, rowTemplate, cloneNode, isEdit) {
         var tr = !sf.base.isNullOrUndefined(cloneNode) ? cloneNode : this.element.cloneNode();
         var rowArgs = { data: row.data };
@@ -1731,6 +1778,9 @@ var RowRenderer = /** @class */ (function () {
         }
         if (row.cssClass) {
             tr.classList.add(row.cssClass);
+        }
+        if (row.lazyLoadCssClass) {
+            tr.classList.add(row.lazyLoadCssClass);
         }
         var vFTable = this.parent.enableColumnVirtualization && this.parent.frozenColumns !== 0;
         if (!vFTable && this.parent.element.scrollHeight > this.parent.height && this.parent.aggregates.length) {
@@ -1858,7 +1908,7 @@ var RowModelGenerator = /** @class */ (function () {
         }
         this.refreshForeignKeyRow(options);
         var cells = this.ensureColumns();
-        var row = new Row(options);
+        var row = new Row(options, this.parent);
         row.cells = cells.concat(this.generateCells(options));
         return row;
     };
@@ -2138,6 +2188,7 @@ var GroupModelGenerator = /** @class */ (function (_super) {
     function GroupModelGenerator(parent) {
         var _this = _super.call(this, parent) || this;
         _this.rows = [];
+        /** @hidden */
         _this.index = 0;
         _this.parent = parent;
         _this.summaryModelGen = new GroupSummaryModelGenerator(parent);
@@ -2249,6 +2300,7 @@ var GroupModelGenerator = /** @class */ (function (_super) {
         cells.push.apply(cells, visibles);
         return cells;
     };
+    /** @hidden */
     GroupModelGenerator.prototype.generateCaptionRow = function (data, indent, parentID, childID, tIndex, parentUid) {
         var options = {};
         var records = 'records';
@@ -2258,7 +2310,7 @@ var GroupModelGenerator = /** @class */ (function (_super) {
             options.data.field = data.field;
         }
         options.isDataRow = false;
-        options.isExpand = !this.parent.isCollapseStateEnabled();
+        options.isExpand = !this.parent.groupSettings.enableLazyLoading && !this.parent.isCollapseStateEnabled();
         options.parentGid = parentID;
         options.childGid = childID;
         options.tIndex = tIndex;
@@ -2280,6 +2332,7 @@ var GroupModelGenerator = /** @class */ (function (_super) {
             sf.base.setValue('foreignKey', fkValue, row.data);
         }
     };
+    /** @hidden */
     GroupModelGenerator.prototype.generateDataRows = function (data, indent, childID, tIndex, parentUid) {
         var rows = [];
         var indexes = this.parent.getColumnIndexesInView();
@@ -2350,6 +2403,8 @@ var ContentRender = /** @class */ (function () {
         this.freezeRowElements = [];
         /** @hidden */
         this.currentInfo = {};
+        /** @hidden */
+        this.prevCurrentView = [];
         this.isLoaded = true;
         this.viewColIndexes = [];
         this.drop = function (e) {
@@ -2364,6 +2419,8 @@ var ContentRender = /** @class */ (function () {
         this.visibleFrozenRows = [];
         this.isAddRows = false;
         this.isInfiniteFreeze = false;
+        this.useGroupCache = false;
+        this.mutableData = false;
         this.rafCallback = function (args) {
             var arg = args;
             return function () {
@@ -2409,11 +2466,13 @@ var ContentRender = /** @class */ (function () {
         this.parent = parent;
         this.serviceLocator = serviceLocator;
         this.ariaService = this.serviceLocator.getService('ariaService');
+        this.mutableData = this.parent.getDataModule().isRemote();
         this.generator = this.getModelGenerator();
         if (this.parent.isDestroyed) {
             return;
         }
-        if (!this.parent.enableColumnVirtualization && !this.parent.enableVirtualization) {
+        if (!this.parent.enableColumnVirtualization && !this.parent.enableVirtualization
+            && !this.parent.groupSettings.enableLazyLoading) {
             this.parent.on(columnVisibilityChanged, this.setVisible, this);
         }
         this.parent.on(colGroupRefresh, this.colGroupRefresh, this);
@@ -2519,11 +2578,12 @@ var ContentRender = /** @class */ (function () {
             return;
         }
         var dataSource = this.currentMovableRows || gObj.currentViewData;
-        var frag = document.createDocumentFragment();
+        var isReact = gObj.isReact && !sf.base.isNullOrUndefined(gObj.rowTemplate);
+        var frag = isReact ? gObj.createElement('tbody') : document.createDocumentFragment();
         if (!this.initialPageRecords) {
             this.initialPageRecords = sf.base.extend([], dataSource);
         }
-        var hdrfrag = document.createDocumentFragment();
+        var hdrfrag = isReact ? gObj.createElement('tbody') : document.createDocumentFragment();
         var columns = gObj.getColumns();
         var tr;
         var hdrTbody;
@@ -2644,11 +2704,12 @@ var ContentRender = /** @class */ (function () {
             modelData = this.parent.contentModule.generateRows(dataSource, args);
         }
         else {
-            modelData = this.checkInfiniteCache(modelData, args);
-            if (!this.isAddRows) {
+            modelData = this.checkCache(modelData, args);
+            if (!this.isAddRows && !this.useGroupCache) {
                 modelData = this.generator.generateRows(dataSource, args);
             }
         }
+        this.setGroupCache(modelData, args);
         this.parent.notify(setInfiniteCache, { isInfiniteScroll: isInfiniteScroll, modelData: modelData, args: args });
         if (sf.base.isNullOrUndefined(modelData[0].cells[0])) {
             mCont.querySelector('tbody').innerHTML = '';
@@ -2674,6 +2735,10 @@ var ContentRender = /** @class */ (function () {
                 }
             }
             this.parent.destroyTemplate(['template'], templatetoclear);
+        }
+        if (this.parent.isReact && args.requestType !== 'infiniteScroll' && !args.isFrozen) {
+            this.parent.destroyTemplate(['template', 'rowTemplate', 'detailTemplate', 'captionTemplate', 'commandsTemplate']);
+            this.parent.renderTemplates();
         }
         if (this.parent.enableColumnVirtualization) {
             var cellMerge = new CellMergeRender(this.serviceLocator, this.parent);
@@ -2742,6 +2807,12 @@ var ContentRender = /** @class */ (function () {
         this.virtualFrozenHdrRefresh(hdrfrag, modelData, row, args, dataSource, columns);
         for (var i = startIndex, len = modelData.length; i < len; i++) {
             this.rows.push(modelData[i]);
+            if (this.parent.groupSettings.enableLazyLoading && !this.useGroupCache && this.parent.groupSettings.columns.length) {
+                this.setRowsInLazyGroup(modelData[i], i);
+                if (sf.base.isNullOrUndefined(modelData[i].indent)) {
+                    continue;
+                }
+            }
             this.setInfiniteVisibleRows(args, modelData[i]);
             if (isGroupAdaptive(gObj) && this.rows.length >= (gObj.pageSettings.pageSize) && blockLoad) {
                 break;
@@ -2761,8 +2832,17 @@ var ContentRender = /** @class */ (function () {
             }
             else {
                 var rowTemplateID = gObj.element.id + 'rowTemplate';
-                var elements = gObj.getRowTemplate()(sf.base.extend({ index: i }, dataSource[i]), gObj, 'rowTemplate', rowTemplateID);
-                if (elements[0].tagName === 'TBODY') {
+                var elements = void 0;
+                if (gObj.isReact) {
+                    var isHeader = gObj.frozenRows && i < gObj.frozenRows;
+                    var copied = sf.base.extend({ index: i }, dataSource[i]);
+                    gObj.getRowTemplate()(copied, gObj, 'rowTemplate', rowTemplateID, null, null, isHeader ? hdrfrag : frag);
+                    gObj.renderTemplates();
+                }
+                else {
+                    elements = gObj.getRowTemplate()(sf.base.extend({ index: i }, dataSource[i]), gObj, 'rowTemplate', rowTemplateID);
+                }
+                if (!gObj.isReact && elements[0].tagName === 'TBODY') {
                     for (var j = 0; j < elements.length; j++) {
                         var isTR = elements[j].nodeName.toLowerCase() === 'tr';
                         if (isTR || (elements[j].querySelectorAll && elements[j].querySelectorAll('tr').length)) {
@@ -2778,12 +2858,14 @@ var ContentRender = /** @class */ (function () {
                 }
                 else {
                     if (gObj.frozenRows && i < gObj.frozenRows) {
-                        tr = appendChildren(hdrfrag, elements);
+                        tr = !gObj.isReact ? appendChildren(hdrfrag, elements) : hdrfrag.lastElementChild;
                     }
                     else {
                         // frag.appendChild(tr);
-                        tr = appendChildren(frag, elements);
-                        trElement = tr.lastElementChild;
+                        if (!gObj.isReact) {
+                            tr = appendChildren(frag, elements);
+                        }
+                        trElement = gObj.isReact ? frag.lastElementChild : tr.lastElementChild;
                     }
                 }
                 var arg = { data: modelData[i].data, row: trElement ? trElement : tr };
@@ -2799,8 +2881,15 @@ var ContentRender = /** @class */ (function () {
             || (args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo && args.virtualInfo.sentinelInfo.axis === 'X')) {
             hdrTbody = frzCols ? gObj.getHeaderContent().querySelector(idx === 0 ? '.e-frozenheader'
                 : '.e-movableheader').querySelector('tbody') : gObj.getHeaderTable().querySelector('tbody');
-            hdrTbody.innerHTML = '';
-            hdrTbody.appendChild(hdrfrag);
+            if (isReact) {
+                var parentTable = hdrTbody.parentElement;
+                sf.base.remove(hdrTbody);
+                parentTable.appendChild(hdrfrag);
+            }
+            else {
+                hdrTbody.innerHTML = '';
+                hdrTbody.appendChild(hdrfrag);
+            }
         }
         if (!gObj.enableVirtualization && gObj.frozenRows && idx === 0 && cont.offsetHeight === Number(gObj.height)) {
             cont.style.height = (cont.offsetHeight - hdrTbody.offsetHeight) + 'px';
@@ -2821,7 +2910,12 @@ var ContentRender = /** @class */ (function () {
                 _this.tbody = _this.parent.createElement('tbody');
             }
             if (frzCols && !isVFTable && !_this.parent.enableInfiniteScrolling) {
-                _this.tbody.appendChild(frag);
+                if (isReact) {
+                    _this.tbody = frag;
+                }
+                else {
+                    _this.tbody.appendChild(frag);
+                }
                 if (_this.index === 0) {
                     _this.isLoaded = false;
                     fCont.querySelector('table').appendChild(_this.tbody);
@@ -2876,6 +2970,7 @@ var ContentRender = /** @class */ (function () {
                         }
                     }
                     else {
+                        _this.useGroupCache = false;
                         _this.appendContent(_this.tbody, frag, args);
                     }
                 }
@@ -2890,8 +2985,24 @@ var ContentRender = /** @class */ (function () {
         }, this.rafCallback(sf.base.extend({}, args)));
     };
     ContentRender.prototype.appendContent = function (tbody, frag, args) {
-        tbody.appendChild(frag);
-        this.getTable().appendChild(tbody);
+        var isReact = this.parent.isReact && !sf.base.isNullOrUndefined(this.parent.rowTemplate);
+        if (isReact) {
+            this.getTable().appendChild(frag);
+        }
+        else {
+            tbody.appendChild(frag);
+            this.getTable().appendChild(tbody);
+        }
+    };
+    ContentRender.prototype.setRowsInLazyGroup = function (row, index) {
+        if (this.parent.groupSettings.enableLazyLoading && !this.useGroupCache && this.parent.groupSettings.columns.length) {
+            this.parent.contentModule.maintainRows(row, index);
+        }
+    };
+    ContentRender.prototype.setGroupCache = function (data, args) {
+        if (!this.useGroupCache && this.parent.groupSettings.enableLazyLoading) {
+            this.parent.notify(setGroupCache, { args: args, data: data });
+        }
     };
     ContentRender.prototype.ensureFrozenHeaderRender = function (args) {
         return !((this.parent.enableVirtualization
@@ -2899,7 +3010,7 @@ var ContentRender = /** @class */ (function () {
             && this.parent.frozenRows && this.parent.infiniteScrollModule.requestType === 'delete'
             && this.parent.pageSettings.currentPage !== 1));
     };
-    ContentRender.prototype.checkInfiniteCache = function (modelData, args) {
+    ContentRender.prototype.checkCache = function (modelData, args) {
         if (this.parent.infiniteScrollSettings.enableCache && args.requestType === 'infiniteScroll') {
             var index = args.isFrozen ? 1 : 0;
             var frozenCols = this.parent.getFrozenColumns();
@@ -2913,6 +3024,12 @@ var ContentRender = /** @class */ (function () {
                 modelData = this.parent.pageSettings.currentPage === 1 ? data.slice(this.parent.frozenRows) : data;
             }
             return modelData;
+        }
+        if (this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length &&
+            (args.requestType === 'paging' || args.requestType === 'columnstate' || args.requestType === 'reorder')
+            && this.parent.contentModule.getGroupCache()[this.parent.pageSettings.currentPage]) {
+            this.useGroupCache = true;
+            return this.parent.contentModule.initialGroupRows(args.requestType === 'reorder');
         }
         return null;
     };
@@ -3300,6 +3417,150 @@ var ContentRender = /** @class */ (function () {
     };
     ContentRender.prototype.setRowObjects = function (rows) {
         this.rows = rows;
+    };
+    /** @hidden */
+    ContentRender.prototype.immutableModeRendering = function (args) {
+        var _this = this;
+        if (args === void 0) { args = {}; }
+        var gObj = this.parent;
+        gObj.hideSpinner();
+        var key = gObj.getPrimaryKeyFieldNames()[0];
+        var oldKeys = {};
+        var newKeys = {};
+        var newRowObjs = [];
+        var oldIndexes = {};
+        var oldRowObjs = gObj.getRowsObject().slice();
+        var batchChangeKeys = this.getBatchEditedRecords(key, oldRowObjs);
+        var newIndexes = {};
+        var hasBatch = Object.keys(batchChangeKeys).length !== 0;
+        if (gObj.getContent().querySelector('.e-emptyrow') || args.requestType === 'reorder'
+            || this.parent.groupSettings.columns.length) {
+            this.refreshContentRows(args);
+        }
+        else {
+            if (gObj.currentViewData.length === 0) {
+                return;
+            }
+            var oldRowElements = {};
+            var tbody = gObj.createElement('tbody');
+            var dataSource = gObj.currentViewData;
+            var trs = [].slice.call(this.getTable().querySelector('tbody').children);
+            if (this.prevCurrentView.length) {
+                var prevLen = this.prevCurrentView.length;
+                var currentLen = dataSource.length;
+                if (prevLen === currentLen) {
+                    for (var i = 0; i < currentLen; i++) {
+                        newKeys[dataSource[i][key]] = oldKeys[this.prevCurrentView[i][key]] = i;
+                        newIndexes[i] = dataSource[i][key];
+                        oldRowElements[oldRowObjs[i].uid] = trs[i];
+                        oldIndexes[i] = this.prevCurrentView[i][key];
+                    }
+                }
+                else {
+                    for (var i = 0; i < currentLen; i++) {
+                        newKeys[dataSource[i][key]] = i;
+                        newIndexes[i] = dataSource[i][key];
+                    }
+                    for (var i = 0; i < prevLen; i++) {
+                        oldRowElements[oldRowObjs[i].uid] = trs[i];
+                        oldKeys[this.prevCurrentView[i][key]] = i;
+                        oldIndexes[i] = this.prevCurrentView[i][key];
+                    }
+                }
+            }
+            for (var i = 0; i < dataSource.length; i++) {
+                var oldIndex = oldKeys[dataSource[i][key]];
+                if (!sf.base.isNullOrUndefined(oldIndex)) {
+                    var isEqual = false;
+                    if (this.mutableData) {
+                        isEqual = this.objectEqualityChecker(this.prevCurrentView[i], dataSource[i]);
+                    }
+                    var tr = oldRowElements[oldRowObjs[oldIndex].uid];
+                    newRowObjs.push(gObj.getRowsObject()[oldIndex]);
+                    if (this.rowElements[i] && this.rowElements[i].getAttribute('data-uid') === newRowObjs[i].uid
+                        && ((hasBatch && sf.base.isNullOrUndefined(batchChangeKeys[newIndexes[i]]))
+                            || (!hasBatch && (isEqual || this.prevCurrentView[i] === dataSource[i])))) {
+                        if (oldIndex !== i) {
+                            this.refreshImmutableContent(i, tr, newRowObjs[i]);
+                        }
+                        tbody.appendChild(tr);
+                        continue;
+                    }
+                    if ((hasBatch && !sf.base.isNullOrUndefined(batchChangeKeys[newIndexes[i]]))
+                        || (!this.mutableData && dataSource[i] !== this.prevCurrentView[oldIndex])
+                        || (this.mutableData && !isEqual)) {
+                        oldRowObjs[oldIndex].setRowValue(dataSource[i]);
+                    }
+                    tbody.appendChild(tr);
+                    this.refreshImmutableContent(i, tr, newRowObjs[i]);
+                }
+                else {
+                    var row = new RowRenderer(this.serviceLocator, null, gObj);
+                    var modelData = this.generator.generateRows([dataSource[i]]);
+                    newRowObjs.push(modelData[0]);
+                    var tr = row.render(modelData[0], gObj.getColumns());
+                    tbody.appendChild(tr);
+                    this.refreshImmutableContent(i, tr, newRowObjs[i]);
+                }
+            }
+            this.rows = newRowObjs;
+            this.rowElements = [].slice.call(tbody.children);
+            sf.base.remove(this.getTable().querySelector('tbody'));
+            this.getTable().appendChild(tbody);
+            this.parent.trigger(dataBound, {}, function () {
+                if (_this.parent.allowTextWrap) {
+                    _this.parent.notify(freezeRender, { case: 'textwrap' });
+                }
+            });
+            if (args) {
+                var action = (args.requestType || '').toLowerCase() + '-complete';
+                this.parent.notify(action, args);
+            }
+        }
+    };
+    ContentRender.prototype.objectEqualityChecker = function (old, next) {
+        var keys = Object.keys(old);
+        var isEqual = true;
+        for (var i = 0; i < keys.length; i++) {
+            if (old[keys[i]] !== next[keys[i]]) {
+                isEqual = false;
+                break;
+            }
+        }
+        return isEqual;
+    };
+    ContentRender.prototype.getBatchEditedRecords = function (primaryKey, rows) {
+        var keys = {};
+        var changes = this.parent.getBatchChanges();
+        var changedRecords = [];
+        var addedRecords = [];
+        if (Object.keys(changes).length) {
+            changedRecords = changes.changedRecords;
+            addedRecords = changes.addedRecords;
+        }
+        if (addedRecords.length) {
+            if (this.parent.editSettings.newRowPosition === 'Bottom') {
+                rows.splice(rows.length - 1, addedRecords.length);
+            }
+            else {
+                rows.splice(0, addedRecords.length);
+            }
+        }
+        for (var i = 0; i < changedRecords.length; i++) {
+            keys[changedRecords[i][primaryKey]] = i;
+        }
+        return keys;
+    };
+    ContentRender.prototype.refreshImmutableContent = function (index, tr, row) {
+        row.isAltRow = this.parent.enableAltRow ? index % 2 !== 0 : false;
+        row.isAltRow ? tr.classList.add('e-altrow') : tr.classList.remove('e-altrow');
+        tr.setAttribute('aria-rowindex', index.toString());
+        this.updateCellIndex(tr, index);
+    };
+    ContentRender.prototype.updateCellIndex = function (rowEle, index) {
+        for (var i = 0; i < rowEle.cells.length; i++) {
+            rowEle.cells[i].setAttribute('index', index.toString());
+        }
     };
     return ContentRender;
 }());
@@ -4036,6 +4297,7 @@ var CellRenderer = /** @class */ (function () {
         var _a;
         var result;
         if (cell.column.template) {
+            var isReactCompiler = this.parent.isReact && typeof (cell.column.template) !== 'string';
             var literals = ['index'];
             var dummyData = extendObjWithFn({}, data, (_a = {}, _a[foreignKeyData] = fData, _a.column = cell.column, _a));
             var templateID = this.parent.element.id + cell.column.uid;
@@ -4050,9 +4312,18 @@ var CellRenderer = /** @class */ (function () {
                 }
             }
             else {
-                result = cell.column.getColumnTemplate()(sf.base.extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
+                if (isReactCompiler) {
+                    var copied = { 'index': attributes$$1[literals[0]] };
+                    cell.column.getColumnTemplate()(sf.base.extend(copied, dummyData), this.parent, 'template', templateID, this.parent[str], null, node);
+                    this.parent.renderTemplates();
+                }
+                else {
+                    result = cell.column.getColumnTemplate()(sf.base.extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
+                }
             }
-            appendChildren(node, result);
+            if (!isReactCompiler) {
+                appendChildren(node, result);
+            }
             this.parent.notify('template-result', { template: result });
             result = null;
             node.setAttribute('aria-label', node.innerText + ' is template cell' + ' column header ' +
@@ -4101,13 +4372,38 @@ var CellRenderer = /** @class */ (function () {
      */
     CellRenderer.prototype.refreshTD = function (td, cell, data, attributes$$1) {
         var isEdit = this.parent.editSettings.mode === 'Batch' && td.classList.contains('e-editedbatchcell');
-        var node = this.refreshCell(cell, data, attributes$$1, isEdit);
-        td.innerHTML = '';
-        td.setAttribute('aria-label', node.getAttribute('aria-label'));
-        var elements = [].slice.call(node.childNodes);
-        for (var _i = 0, elements_1 = elements; _i < elements_1.length; _i++) {
-            var elem = elements_1[_i];
-            td.appendChild(elem);
+        if (this.parent.isReact) {
+            td.innerHTML = '';
+            var cellIndex = td.cellIndex;
+            var parentRow = td.parentElement;
+            sf.base.remove(td);
+            var newTD = this.refreshCell(cell, data, attributes$$1, isEdit);
+            this.cloneAttributes(newTD, td);
+            parentRow.cells.length !== cellIndex - 1 ? parentRow.insertBefore(newTD, parentRow.cells[cellIndex])
+                : parentRow.appendChild(newTD);
+        }
+        else {
+            var node = this.refreshCell(cell, data, attributes$$1, isEdit);
+            td.innerHTML = '';
+            td.setAttribute('aria-label', node.getAttribute('aria-label'));
+            var elements = [].slice.call(node.childNodes);
+            for (var _i = 0, elements_1 = elements; _i < elements_1.length; _i++) {
+                var elem = elements_1[_i];
+                td.appendChild(elem);
+            }
+        }
+    };
+    // tslint:disable-next-line:no-any
+    CellRenderer.prototype.cloneAttributes = function (target, source) {
+        // tslint:disable-next-line:no-any
+        var attrs = source.attributes;
+        // tslint:disable-next-line:no-any
+        var i = attrs.length;
+        // tslint:disable-next-line:no-any
+        var attr;
+        while (i--) {
+            attr = attrs[i];
+            target.setAttribute(attr.name, attr.value);
         }
     };
     CellRenderer.prototype.refreshCell = function (cell, data, attributes$$1, isEdit) {
@@ -4351,6 +4647,7 @@ var HeaderCellRenderer = /** @class */ (function (_super) {
     HeaderCellRenderer.prototype.clean = function (node) {
         node.innerHTML = '';
     };
+    /* tslint:disable-next-line:max-func-body-length */
     HeaderCellRenderer.prototype.prepareHeader = function (cell, node, fltrMenuEle) {
         var column = cell.column;
         var ariaAttr = {};
@@ -4425,9 +4722,18 @@ var HeaderCellRenderer = /** @class */ (function (_super) {
             var headerTempID = gridObj.element.id + column.uid + 'headerTemplate';
             var str = 'isStringTemplate';
             var col = sf.base.isBlazor() ? column.toJSON() : column;
-            result = column.getHeaderTemplate()(sf.base.extend({ 'index': colIndex }, col), gridObj, 'headerTemplate', headerTempID, this.parent[str]);
-            node.firstElementChild.innerHTML = '';
-            appendChildren(node.firstElementChild, result);
+            var isReactCompiler = this.parent.isReact && typeof (column.headerTemplate) !== 'string';
+            if (isReactCompiler) {
+                var copied = { 'index': colIndex };
+                node.firstElementChild.innerHTML = '';
+                column.getHeaderTemplate()(sf.base.extend(copied, col), gridObj, 'headerTemplate', headerTempID, this.parent[str], null, node.firstElementChild);
+                this.parent.renderTemplates();
+            }
+            else {
+                result = column.getHeaderTemplate()(sf.base.extend({ 'index': colIndex }, col), gridObj, 'headerTemplate', headerTempID, this.parent[str]);
+                node.firstElementChild.innerHTML = '';
+                appendChildren(node.firstElementChild, result);
+            }
         }
         this.ariaService.setOptions(node, ariaAttr);
         if (!sf.base.isNullOrUndefined(column.headerTextAlign) || !sf.base.isNullOrUndefined(column.textAlign)) {
@@ -4652,18 +4958,33 @@ var GroupCaptionCellRenderer = /** @class */ (function (_super) {
         var value = cell.isForeignKey ? fKeyValue : cell.column.enableGroupByFormat ? data.key :
             this.format(cell.column, cell.column.valueAccessor('key', data, cell.column));
         if (!sf.base.isNullOrUndefined(gObj.groupSettings.captionTemplate)) {
+            var isReactCompiler = this.parent.isReact && typeof (gObj.groupSettings.captionTemplate) !== 'string';
             if (sf.base.isBlazor()) {
                 var tempID = gObj.element.id + 'captionTemplate';
                 result = templateCompiler(gObj.groupSettings.captionTemplate)(data, null, null, tempID);
             }
             else {
-                result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
+                if (isReactCompiler) {
+                    var tempID = gObj.element.id + 'captionTemplate';
+                    templateCompiler(gObj.groupSettings.captionTemplate)(data, this.parent, 'captionTemplate', tempID, null, null, node);
+                    this.parent.renderTemplates();
+                }
+                else {
+                    result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
+                }
             }
-            appendChildren(node, result);
+            if (!isReactCompiler) {
+                appendChildren(node, result);
+            }
         }
         else {
-            node.innerHTML = cell.column.headerText + ': ' + value + ' - ' + data.count + ' ' +
-                (data.count < 2 ? this.localizer.getConstant('Item') : this.localizer.getConstant('Items'));
+            if (gObj.groupSettings.enableLazyLoading) {
+                node.innerHTML = cell.column.headerText + ': ' + value;
+            }
+            else {
+                node.innerHTML = cell.column.headerText + ': ' + value + ' - ' + data.count + ' ' +
+                    (data.count < 2 ? this.localizer.getConstant('Item') : this.localizer.getConstant('Items'));
+            }
         }
         node.setAttribute('colspan', cell.colSpan.toString());
         node.setAttribute('aria-label', node.innerHTML + ' is groupcaption cell');
@@ -5075,6 +5396,11 @@ var Render = /** @class */ (function () {
             else if (args.requestType === 'reorder' && _this.parent.dataSource && 'result' in _this.parent.dataSource) {
                 _this.contentRenderer.refreshContentRows(args);
             }
+            else if ((args.requestType === 'paging' || args.requestType === 'columnstate' || args.requestType === 'reorder')
+                && _this.parent.groupSettings.enableLazyLoading && _this.parent.groupSettings.columns.length
+                && _this.parent.contentModule.getGroupCache()[_this.parent.pageSettings.currentPage]) {
+                _this.contentRenderer.refreshContentRows(args);
+            }
             else {
                 _this.refreshDataManager(args);
             }
@@ -5332,6 +5658,7 @@ var Render = /** @class */ (function () {
         e.actionArgs = args;
         var isInfiniteDelete = this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache
             && (args.requestType === 'delete' || (args.requestType === 'save' && this.parent.infiniteScrollModule.requestType === 'add'));
+        // tslint:disable-next-line:max-func-body-length
         gObj.trigger(beforeDataBound, e, function (dataArgs) {
             if (dataArgs.cancel) {
                 return;
@@ -5352,6 +5679,7 @@ var Render = /** @class */ (function () {
             _this.parent.isEdit = false;
             _this.parent.notify(editReset, {});
             _this.parent.notify(tooltipDestroy, {});
+            _this.contentRenderer.prevCurrentView = _this.parent.currentViewData.slice();
             gObj.currentViewData = dataArgs.result;
             if (sf.base.isBlazor() && gObj.filterSettings.type === 'FilterBar'
                 && (sf.base.isNullOrUndefined(gObj.currentViewData) ||
@@ -5373,6 +5701,10 @@ var Render = /** @class */ (function () {
                 }
             }
             if (!len && dataArgs.count && gObj.allowPaging && args && args.requestType !== 'delete') {
+                if (_this.parent.groupSettings.enableLazyLoading
+                    && (args.requestType === 'grouping' || args.requestType === 'ungrouping')) {
+                    _this.parent.notify(groupComplete, args);
+                }
                 gObj.prevPageMoving = true;
                 gObj.pageSettings.totalRecordsCount = dataArgs.count;
                 if (args.requestType !== 'paging') {
@@ -5407,7 +5739,12 @@ var Render = /** @class */ (function () {
                     args.scrollTop = { top: _this.contentRenderer[content].scrollTop };
                 }
                 if (!isInfiniteDelete) {
-                    _this.contentRenderer.refreshContentRows(args);
+                    if (_this.parent.enableImmutableMode) {
+                        _this.contentRenderer.immutableModeRendering(args);
+                    }
+                    else {
+                        _this.contentRenderer.refreshContentRows(args);
+                    }
                 }
                 else {
                     _this.parent.notify(infiniteEditHandler, { e: args, result: e.result, count: e.count, agg: e.aggregates });
@@ -5730,8 +6067,12 @@ var ColumnWidthService = /** @class */ (function () {
             return sf.base.isNullOrUndefined(a.width) || a.width === 'auto';
         });
         if (collection.length) {
-            if (!sf.base.isNullOrUndefined(this.parent.width) && this.parent.width !== 'auto') {
+            if (!sf.base.isNullOrUndefined(this.parent.width) && this.parent.width !== 'auto' &&
+                typeof (this.parent.width) === 'string' && this.parent.width.indexOf('%') === -1) {
                 difference = (typeof this.parent.width === 'string' ? parseInt(this.parent.width, 10) : this.parent.width) - tWidth;
+            }
+            else {
+                difference = this.parent.element.getBoundingClientRect().width - tWidth;
             }
             var tmWidth = 0;
             for (var _i = 0, collection_1 = collection; _i < collection_1.length; _i++) {
@@ -5806,7 +6147,7 @@ var ColumnWidthService = /** @class */ (function () {
             headerCol.style.width = fWidth;
         }
         else if (headerCol && clear) {
-            headerCol.style.width = ' ';
+            headerCol.style.width = '';
         }
         var contentCol;
         if (frzCols && index >= frzCols) {
@@ -5826,7 +6167,7 @@ var ColumnWidthService = /** @class */ (function () {
             contentCol.style.width = fWidth;
         }
         else if (contentCol && clear) {
-            contentCol.style.width = ' ';
+            contentCol.style.width = '';
         }
         var edit = this.parent.element.querySelectorAll('.e-table.e-inline-edit');
         var editTableCol = [];
@@ -6857,8 +7198,8 @@ var HeaderFocus = /** @class */ (function (_super) {
         return info;
     };
     HeaderFocus.prototype.selector = function (row, cell) {
-        return (cell.visible && (cell.column.field !== undefined || cell.isTemplate)) || cell.column.type === 'checkbox' ||
-            cell.cellType === exports.CellType.StackedHeader;
+        return (cell.visible && (cell.column.field !== undefined || cell.isTemplate || !sf.base.isNullOrUndefined(cell.column.template))) ||
+            cell.column.type === 'checkbox' || cell.cellType === exports.CellType.StackedHeader;
     };
     HeaderFocus.prototype.jump = function (action, current) {
         var frozenSwap = this.parent.frozenColumns > 0 &&
@@ -9849,6 +10190,7 @@ var Selection = /** @class */ (function () {
         }
         this.isDragged = false;
     };
+    /* tslint:disable-next-line:max-func-body-length */
     Selection.prototype.onCellFocused = function (e) {
         if (this.parent.frozenRows && e.container.isHeader && e.byKey) {
             if (e.keyArgs.action === 'upArrow') {
@@ -9874,7 +10216,8 @@ var Selection = /** @class */ (function () {
         var clear = this.parent.getFrozenColumns() ? (((e.container.isHeader && e.element.tagName !== 'TD' && e.isJump) ||
             ((e.container.isContent || e.element.tagName === 'TD') && !(e.container.isSelectable || e.element.tagName === 'TD')))
             && !(e.byKey && e.keyArgs.action === 'space')) : ((e.container.isHeader && e.isJump) ||
-            (e.container.isContent && !e.container.isSelectable)) && !(e.byKey && e.keyArgs.action === 'space');
+            (e.container.isContent && !e.container.isSelectable)) && !(e.byKey && e.keyArgs.action === 'space')
+            && !(e.element.classList.contains('e-detailrowexpand') || e.element.classList.contains('e-detailrowcollapse'));
         var headerAction = (e.container.isHeader && e.element.tagName !== 'TD' && !sf.base.closest(e.element, '.e-rowcell'))
             && !(e.byKey && e.keyArgs.action === 'space');
         if (!e.byKey || clear) {
@@ -10163,7 +10506,7 @@ var Selection = /** @class */ (function () {
         this.isHeaderCheckboxClicked = false;
         var isInfinitecroll = this.parent.enableInfiniteScrolling && e.requestType === 'infiniteScroll';
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection && !isInfinitecroll) {
-            this.disableUI = true;
+            this.disableUI = !this.parent.enableImmutableMode;
             this.clearSelection();
             this.setCheckAllState();
             this.disableUI = false;
@@ -10561,6 +10904,10 @@ var Scroll = /** @class */ (function () {
             }
             if (!sf.base.isNullOrUndefined(_this.parent.infiniteScrollModule) && _this.parent.enableInfiniteScrolling) {
                 _this.parent.notify(infiniteScrollHandler, e);
+            }
+            if (_this.parent.groupSettings.columns.length && _this.parent.groupSettings.enableLazyLoading) {
+                var isDown = _this.previousValues.top < _this.parent.getContent().firstElementChild.scrollTop;
+                _this.parent.notify(lazyLoadScrollHandler, { scrollDown: isDown });
             }
             _this.parent.notify(virtualScrollEdit, {});
             var target = e.target;
@@ -11915,6 +12262,9 @@ var GroupSettings = /** @class */ (function (_super) {
     __decorate$1([
         sf.base.Property()
     ], GroupSettings.prototype, "captionTemplate", void 0);
+    __decorate$1([
+        sf.base.Property(false)
+    ], GroupSettings.prototype, "enableLazyLoading", void 0);
     return GroupSettings;
 }(sf.base.ChildProperty));
 /**
@@ -11986,6 +12336,7 @@ var Grid = /** @class */ (function (_super) {
         var _this = _super.call(this, options, element) || this;
         _this.isPreventScrollEvent = false;
         _this.inViewIndexes = [];
+        _this.keyA = false;
         _this.media = {};
         _this.componentRefresh = sf.base.Component.prototype.refresh;
         /** @hidden */
@@ -12013,6 +12364,8 @@ var Grid = /** @class */ (function (_super) {
         _this.mediaBindInstance = {};
         /** @hidden */
         _this.commandDelIndex = undefined;
+        /** @hidden */
+        _this.asyncTimeOut = 50;
         // enable/disable logger for MVC & Core
         _this.enableLogger = true;
         _this.needsID = true;
@@ -12163,6 +12516,12 @@ var Grid = /** @class */ (function (_super) {
         if (this.enableInfiniteScrolling) {
             modules.push({
                 member: 'infiniteScroll',
+                args: [this, this.serviceLocator]
+            });
+        }
+        if (this.groupSettings.enableLazyLoading) {
+            modules.push({
+                member: 'lazyLoadGroup',
                 args: [this, this.serviceLocator]
             });
         }
@@ -14688,6 +15047,10 @@ var Grid = /** @class */ (function (_super) {
             return sf.base.isNullOrUndefined(this.currentViewData.records) ?
                 this.currentViewData : this.currentViewData.records;
         }
+        if (this.groupSettings.enableLazyLoading) {
+            return this.currentViewData;
+        }
+        
         return (this.allowGrouping && this.groupSettings.columns.length && this.currentViewData.length && this.currentViewData.records) ?
             this.currentViewData.records : this.currentViewData;
     };
@@ -14873,12 +15236,25 @@ var Grid = /** @class */ (function (_super) {
     Grid.prototype.keyDownHandler = function (e) {
         if (e.altKey) {
             if (e.keyCode === 74) { //alt j
-                this.focusModule.focusHeader();
-                this.focusModule.addOutline();
+                if (this.keyA) { //alt A J
+                    this.notify(groupCollapse, { target: e.target, collapse: false });
+                    this.keyA = false;
+                }
+                else {
+                    this.focusModule.focusHeader();
+                    this.focusModule.addOutline();
+                }
             }
             if (e.keyCode === 87) { //alt w
                 this.focusModule.focusContent();
                 this.focusModule.addOutline();
+            }
+            if (e.keyCode === 65) { //alt A
+                this.keyA = true;
+            }
+            if (e.keyCode === 72 && this.keyA) { //alt A H
+                this.notify(groupCollapse, { target: e.target, collapse: true });
+                this.keyA = false;
             }
         }
     };
@@ -15452,7 +15828,6 @@ var Grid = /** @class */ (function (_super) {
      *To perform aggregate operation on a column.
      *@param  {AggregateColumnModel} summaryCol - Pass Aggregate Column details.
      *@param  {Object} summaryData - Pass JSON Array for which its field values to be calculated.
-     *
      * @deprecated
      */
     Grid.prototype.getSummaryValues = function (summaryCol, summaryData) {
@@ -15511,6 +15886,173 @@ var Grid = /** @class */ (function (_super) {
                 }
             }
         }
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.renderTemplates = function () {
+        var portals = 'portals';
+        this.notify('reactTemplateRender', this[portals]);
+        this.renderReactTemplates();
+    };
+    /**
+     * Apply the changes to the Grid without refreshing the rows.
+     * @param  {BatchChanges} changes - Defines changes to be updated.
+     * @return {void}
+     */
+    Grid.prototype.batchUpdate = function (changes) {
+        this.processRowChanges(changes);
+    };
+    /**
+     * Apply the changes to the Grid in one batch after 50ms without refreshing the rows.
+     * @param  {BatchChanges} changes - Defines changes to be updated.
+     * @return {void}
+     */
+    Grid.prototype.batchAsyncUpdate = function (changes) {
+        this.processBulkRowChanges(changes);
+    };
+    Grid.prototype.processBulkRowChanges = function (changes) {
+        var _this = this;
+        if (!this.dataToBeUpdated) {
+            this.dataToBeUpdated = Object.assign({ addedRecords: [], changedRecords: [], deletedRecords: [] }, changes);
+            setTimeout(function () {
+                _this.processRowChanges(_this.dataToBeUpdated);
+                _this.dataToBeUpdated = null;
+            }, this.asyncTimeOut);
+        }
+        else {
+            var loopstring = ['addedRecords', 'changedRecords', 'deletedRecords'];
+            var keyField = this.getPrimaryKeyFieldNames()[0];
+            for (var i = 0; i < loopstring.length; i++) {
+                if (changes[loopstring[i]]) {
+                    compareChanges(this, changes, loopstring[i], keyField);
+                }
+            }
+        }
+    };
+    Grid.prototype.processRowChanges = function (changes) {
+        var _this = this;
+        var keyField = this.getPrimaryKeyFieldNames()[0];
+        changes = Object.assign({ addedRecords: [], changedRecords: [], deletedRecords: [] }, changes);
+        var promise = this.getDataModule().saveChanges(changes, keyField, {}, this.getDataModule().generateQuery().requiresCount());
+        if (this.getDataModule().isRemote()) {
+            promise.then(function (e) {
+                _this.setNewData();
+            });
+        }
+        else {
+            this.setNewData();
+        }
+    };
+    Grid.prototype.setNewData = function () {
+        var _this = this;
+        var oldValues = JSON.parse(JSON.stringify(this.getCurrentViewRecords()));
+        var getData = this.getDataModule().getData({}, this.getDataModule().generateQuery().requiresCount());
+        getData.then(function (e) {
+            _this.bulkRefresh(e.result, oldValues, e.count);
+        });
+    };
+    Grid.prototype.deleteRowElement = function (row) {
+        var tr = this.getRowElementByUID(row.uid);
+        var index = parseInt(tr.getAttribute('aria-rowindex'), 10);
+        sf.base.remove(tr);
+        if (this.getFrozenColumns()) {
+            var mtr = this.getMovableRows()[index];
+            sf.base.remove(mtr);
+        }
+    };
+    Grid.prototype.bulkRefresh = function (result, oldValues, count) {
+        var _this = this;
+        var rowObj = this.getRowsObject();
+        var keyField = this.getPrimaryKeyFieldNames()[0];
+        var _loop_3 = function (i) {
+            if (!result.filter(function (e) { return e[keyField] === rowObj[i].data[keyField]; }).length) {
+                this_3.deleteRowElement(rowObj[i]);
+                rowObj.splice(i, 1);
+                i--;
+            }
+            out_i_1 = i;
+        };
+        var this_3 = this, out_i_1;
+        for (var i = 0; i < rowObj.length; i++) {
+            _loop_3(i);
+            i = out_i_1;
+        }
+        var _loop_4 = function (i) {
+            var isRowExist;
+            oldValues.filter(function (e) {
+                if (e[keyField] === result[i][keyField]) {
+                    if (e !== result[i]) {
+                        _this.setRowData(result[i][keyField], result[i]);
+                    }
+                    isRowExist = true;
+                }
+            });
+            if (!isRowExist) {
+                this_4.renderRowElement(result[i], i);
+            }
+        };
+        var this_4 = this;
+        for (var i = 0; i < result.length; i++) {
+            _loop_4(i);
+        }
+        this.currentViewData = result;
+        var rows = [].slice.call(this.getContentTable().querySelectorAll('.e-row'));
+        resetRowIndex(this, this.getRowsObject(), rows);
+        setRowElements(this);
+        if (this.allowPaging) {
+            this.notify(inBoundModelChanged, { module: 'pager', properties: { totalRecordsCount: count } });
+        }
+    };
+    Grid.prototype.renderRowElement = function (data, index) {
+        var row = new RowRenderer(this.serviceLocator, null, this);
+        var model = new RowModelGenerator(this);
+        var modelData = model.generateRows([data]);
+        var tr = row.render(modelData[0], this.getColumns());
+        var mTr;
+        var mTbody;
+        this.addRowObject(modelData[0], index);
+        var tbody = this.getContentTable().querySelector('tbody');
+        if (tbody.querySelector('.e-emptyrow')) {
+            var emptyRow = tbody.querySelector('.e-emptyrow');
+            emptyRow.parentNode.removeChild(emptyRow);
+            if (this.getFrozenColumns()) {
+                var moveTbody = this.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+                (moveTbody.firstElementChild).parentNode.removeChild(moveTbody.firstElementChild);
+            }
+        }
+        if (this.getFrozenColumns()) {
+            mTr = renderMovable(tr, this.getFrozenColumns(), this);
+            if (this.frozenRows && index < this.frozenRows) {
+                mTbody = this.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
+            }
+            else {
+                mTbody = this.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+            }
+            mTbody.appendChild(mTr);
+            if (this.height === 'auto') {
+                this.notify(frozenHeight, {});
+            }
+        }
+        if (this.frozenRows && index < this.frozenRows) {
+            tbody = this.getHeaderContent().querySelector('tbody');
+        }
+        else {
+            tbody = this.getContent().querySelector('tbody');
+        }
+        tbody = this.getContent().querySelector('tbody');
+        tbody.appendChild(tr);
+    };
+    Grid.prototype.addRowObject = function (row, index) {
+        var frzCols = this.getFrozenColumns();
+        if (frzCols) {
+            var mRows = this.getMovableRowsObject();
+            var mRow = row.clone();
+            mRow.cells = mRow.cells.slice(frzCols);
+            row.cells = row.cells.slice(0, frzCols);
+            mRows.splice(index, 1, mRow);
+        }
+        this.getRowsObject().splice(index, 1, row);
     };
     /**
      * @hidden
@@ -15624,6 +16166,9 @@ var Grid = /** @class */ (function (_super) {
     __decorate$1([
         sf.base.Property(false)
     ], Grid.prototype, "allowGrouping", void 0);
+    __decorate$1([
+        sf.base.Property(false)
+    ], Grid.prototype, "enableImmutableMode", void 0);
     __decorate$1([
         sf.base.Property(false)
     ], Grid.prototype, "showColumnMenu", void 0);
@@ -15924,6 +16469,12 @@ var Grid = /** @class */ (function (_super) {
     __decorate$1([
         sf.base.Event()
     ], Grid.prototype, "exportGroupCaption", void 0);
+    __decorate$1([
+        sf.base.Event()
+    ], Grid.prototype, "lazyLoadGroupExpand", void 0);
+    __decorate$1([
+        sf.base.Event()
+    ], Grid.prototype, "lazyLoadGroupCollapse", void 0);
     Grid = Grid_1 = __decorate$1([
         sf.base.NotifyPropertyChanges
     ], Grid);
@@ -17133,6 +17684,13 @@ function ensureFirstRow(row, rowTop) {
     return row && row.getBoundingClientRect().top < rowTop;
 }
 /** @hidden */
+function isRowEnteredInGrid(index, gObj) {
+    var rowHeight = gObj.getRowHeight();
+    var startIndex = gObj.getContent().firstElementChild.scrollTop / rowHeight;
+    var endIndex = startIndex + (gObj.getContent().firstElementChild.offsetHeight / rowHeight);
+    return index < endIndex && index > startIndex;
+}
+/** @hidden */
 function getEditedDataIndex(gObj, data) {
     var keyField = gObj.getPrimaryKeyFieldNames()[0];
     var dataIndex;
@@ -17176,6 +17734,46 @@ function ispercentageWidth(gObj) {
     return (gObj.width === 'auto' || typeof (gObj.width) === 'string' && gObj.width.indexOf('%') !== -1) && sf.base.Browser.info.name !== 'chrome'
         && !gObj.groupSettings.showGroupedColumn && gObj.groupSettings.columns.length
         && percentageCol && !undefinedWidthCol;
+}
+/** @hidden */
+function resetRowIndex(gObj, rows, rowElms, index) {
+    var startIndex = index ? index : 0;
+    for (var i = 0; i < rows.length; i++) {
+        if (rows[i].isDataRow) {
+            rows[i].index = startIndex;
+            rows[i].isAltRow = gObj.enableAltRow ? startIndex % 2 !== 0 : false;
+            rowElms[i].setAttribute('aria-rowindex', startIndex.toString());
+            rows[i].isAltRow ? rowElms[i].classList.add('e-altrow') : rowElms[i].classList.remove('e-altrow');
+            for (var j = 0; j < rowElms[i].cells.length; j++) {
+                rowElms[i].cells[j].setAttribute('index', startIndex.toString());
+            }
+            startIndex++;
+        }
+    }
+    if (!rows.length) {
+        gObj.renderModule.emptyRow(true);
+    }
+}
+/** @hidden */
+function compareChanges(gObj, changes, type, keyField) {
+    var newArray = gObj.dataToBeUpdated[type].concat(changes[type]).reduce(function (r, o) {
+        r[o[keyField]] = r[o[keyField]] === undefined ? o : Object.assign(r[o[keyField]], o);
+        return r;
+    }, {});
+    gObj.dataToBeUpdated[type] = Object.keys(newArray).map(function (k) { return newArray[k]; });
+}
+/** @hidden */
+function setRowElements(gObj) {
+    if (gObj.getFrozenColumns()) {
+        (gObj).contentModule.rowElements =
+            [].slice.call(gObj.element.querySelectorAll('.e-movableheader .e-row, .e-movablecontent .e-row'));
+        (gObj).contentModule.freezeRowElements =
+            [].slice.call(gObj.element.querySelectorAll('.e-frozenheader .e-row, .e-frozencontent .e-row'));
+    }
+    else {
+        (gObj).contentModule.rowElements =
+            [].slice.call(gObj.element.querySelectorAll('.e-row:not(.e-addedrow)'));
+    }
 }
 
 /* tslint:disable-next-line:max-line-length */
@@ -17427,6 +18025,10 @@ var CheckBoxFilterBase = /** @class */ (function () {
             if (filterTemplateCol.length && !sf.base.isNullOrUndefined(registeredTemplate) && registeredTemplate.filterItemTemplate) {
                 this.parent.destroyTemplate(['filterItemTemplate']);
             }
+            if (this.parent.isReact) {
+                this.parent.destroyTemplate(['filterItemTemplate']);
+                this.parent.renderTemplates();
+            }
             this.parent.notify(filterMenuClose, { field: this.options.field });
             this.dialogObj.destroy();
             this.unWireEvents();
@@ -17522,20 +18124,7 @@ var CheckBoxFilterBase = /** @class */ (function () {
                     fObj.operator = isNotEqual ? 'notequal' : 'equal';
                 }
                 if (value === '' || sf.base.isNullOrUndefined(value)) {
-                    if (this.options.type === 'string') {
-                        coll.push({
-                            field: defaults.field, ignoreAccent: defaults.ignoreAccent, matchCase: defaults.matchCase,
-                            operator: defaults.operator, predicate: defaults.predicate, value: ''
-                        });
-                    }
-                    coll.push({
-                        field: defaults.field,
-                        matchCase: defaults.matchCase, operator: defaults.operator, predicate: defaults.predicate, value: null
-                    });
-                    coll.push({
-                        field: defaults.field, matchCase: defaults.matchCase, operator: defaults.operator,
-                        predicate: defaults.predicate, value: undefined
-                    });
+                    coll = coll.concat(CheckBoxFilterBase.generateNullValuePredicates(defaults));
                 }
                 else {
                     coll.push(fObj);
@@ -17564,6 +18153,25 @@ var CheckBoxFilterBase = /** @class */ (function () {
         else {
             this.clearFilter();
         }
+    };
+    /** @hidden */
+    CheckBoxFilterBase.generateNullValuePredicates = function (defaults) {
+        var coll = [];
+        if (defaults.type === 'string') {
+            coll.push({
+                field: defaults.field, ignoreAccent: defaults.ignoreAccent, matchCase: defaults.matchCase,
+                operator: defaults.operator, predicate: defaults.predicate, value: ''
+            });
+        }
+        coll.push({
+            field: defaults.field,
+            matchCase: defaults.matchCase, operator: defaults.operator, predicate: defaults.predicate, value: null
+        });
+        coll.push({
+            field: defaults.field, matchCase: defaults.matchCase, operator: defaults.operator,
+            predicate: defaults.predicate, value: undefined
+        });
+        return coll;
     };
     CheckBoxFilterBase.prototype.initiateFilter = function (fColl) {
         var firstVal = fColl[0];
@@ -17911,7 +18519,15 @@ var CheckBoxFilterBase = /** @class */ (function () {
         sf.base.addClass([label], ['e-checkboxfiltertext']);
         if (this.options.template && data[this.options.column.field] !== this.getLocalizedLabel('SelectAll')) {
             label.innerHTML = '';
-            appendChildren(label, this.options.template(dummyData, this.parent, 'filterItemTemplate'));
+            var isReactCompiler = this.parent.isReact && this.options.column.filter
+                && typeof (this.options.column.filter.itemTemplate) !== 'string';
+            if (isReactCompiler) {
+                this.options.template(dummyData, this.parent, 'filterItemTemplate', null, null, null, label);
+                this.parent.renderTemplates();
+            }
+            else {
+                appendChildren(label, this.options.template(dummyData, this.parent, 'filterItemTemplate'));
+            }
         }
         return elem;
     };
@@ -18426,6 +19042,10 @@ var ExcelFilterBase = /** @class */ (function (_super) {
                 }
             }
         }
+        if (this.parent.isReact) {
+            this.parent.destroyTemplate(['filterTemplate']);
+            this.parent.renderTemplates();
+        }
         this.removeObjects([this.dropOptr, this.datePicker, this.dateTimePicker, this.actObj, this.numericTxtObj, this.dlgObj]);
         sf.base.remove(this.dlgDiv);
     };
@@ -18701,9 +19321,16 @@ var ExcelFilterBase = /** @class */ (function (_super) {
             if (isFilteredCol && elementId) {
                 data = this.getExcelFilterData(elementId, data, columnObj, predicates, fltrPredicates);
             }
+            var isReactCompiler = this.parent.isReact && typeof (this.options.column.filterTemplate) !== 'string';
             var tempID = this.parent.element.id + columnObj.uid + 'filterTemplate';
-            var element = this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
-            appendChildren(valueDiv, element);
+            if (isReactCompiler) {
+                this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate', tempID, null, null, valueDiv);
+                this.parent.renderTemplates();
+            }
+            else {
+                var element = this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
+                appendChildren(valueDiv, element);
+            }
             if (sf.base.isBlazor()) {
                 valueDiv.children[0].classList.add(elementId);
                 if (this.dlgDiv.querySelectorAll('.e-xlfl-value').length > 1) {
@@ -19877,10 +20504,24 @@ var Pager = /** @class */ (function (_super) {
      * @return {void}
      */
     Pager.prototype.destroy = function () {
-        _super.prototype.destroy.call(this);
-        this.containerModule.destroy();
-        this.pagerMessageModule.destroy();
-        this.element.innerHTML = '';
+        if (this.isReact && typeof (this.template) !== 'string') {
+            this.destroyTemplate(['template']);
+            this.renderReactTemplates();
+        }
+        else {
+            _super.prototype.destroy.call(this);
+            this.containerModule.destroy();
+            this.pagerMessageModule.destroy();
+            this.element.innerHTML = '';
+        }
+    };
+    /**
+     * Destroys the given template reference.
+     * @param {string[]} propertyNames - Defines the collection of template name.
+     */
+    //tslint:disable-next-line:no-any
+    Pager.prototype.destroyTemplate = function (propertyNames, index) {
+        this.clearTemplate(propertyNames, index);
     };
     /**
      * For internal use only - Get the module name.
@@ -20576,7 +21217,17 @@ var Page = /** @class */ (function () {
         this.isInitialLoad = true;
         this.parent.element.appendChild(this.element);
         this.parent.setGridPager(this.element);
-        this.pagerObj.appendTo(this.element);
+        var tempID = this.parent.element.id + 'pagerTemplate';
+        var template = this.parent.pagerTemplate || this.pageSettings.template;
+        if (this.parent.isReact && !sf.base.isNullOrUndefined(template) &&
+            typeof (template) !== 'string') {
+            this.pagerObj.isReact = true;
+            templateCompiler(template)({}, this.parent, 'pagerTemplate', tempID, null, null, this.element);
+            this.parent.renderTemplates();
+        }
+        else {
+            this.pagerObj.appendTo(this.element);
+        }
         this.isInitialLoad = false;
     };
     Page.prototype.enableAfterRender = function (e) {
@@ -20631,7 +21282,13 @@ var Page = /** @class */ (function () {
      */
     Page.prototype.destroy = function () {
         this.removeEventListener();
-        this.pagerDestroy();
+        if (this.parent.isReact && !this.pagerObj.element) {
+            this.parent.destroyTemplate(['pagerTemplate']);
+            this.parent.renderTemplates();
+        }
+        else {
+            this.pagerObj.destroy();
+        }
     };
     Page.prototype.pagerDestroy = function () {
         if (this.pagerObj && !this.pagerObj.isDestroyed) {
@@ -20689,6 +21346,7 @@ var FilterCellRenderer = /** @class */ (function (_super) {
      * @param  {Cell} cell
      * @param  {Object} data
      */
+    /* tslint:disable-next-line:max-func-body-length */
     FilterCellRenderer.prototype.render = function (cell, data) {
         var tr = this.parent.element.querySelector('.e-filterbar');
         var node = this.element.cloneNode();
@@ -20705,9 +21363,16 @@ var FilterCellRenderer = /** @class */ (function (_super) {
             var col = 'column';
             fltrData[col] = column;
             if (column.visible) {
+                var isReactCompiler = this.parent.isReact && typeof (column.filterTemplate) !== 'string';
                 var tempID = this.parent.element.id + column.uid + 'filterTemplate';
-                var element = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
-                appendChildren(node, element);
+                if (isReactCompiler) {
+                    column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID, null, null, node);
+                    this.parent.renderTemplates();
+                }
+                else {
+                    var element = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
+                    appendChildren(node, element);
+                }
             }
             else {
                 node.classList.add('e-hide');
@@ -21179,6 +21844,10 @@ var FilterMenuRenderer = /** @class */ (function () {
                 }
             }
         }
+        if (this.parent.isReact) {
+            this.parent.destroyTemplate(['filterTemplate']);
+            this.parent.renderTemplates();
+        }
         var elem = document.getElementById(this.dlgObj.element.id);
         if (this.dlgObj && !this.dlgObj.isDestroyed && elem) {
             var argument = { cancel: false, column: this.col, target: target, element: elem };
@@ -21280,10 +21949,17 @@ var FilterMenuRenderer = /** @class */ (function () {
             }
             var col = 'column';
             fltrData[col] = column;
+            var isReactCompiler = this.parent.isReact && typeof (column.filterTemplate) !== 'string';
             var tempID = this.parent.element.id + column.uid + 'filterTemplate';
-            var compElement = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
-            sf.base.updateBlazorTemplate(tempID, 'FilterTemplate', column);
-            appendChildren(valueDiv, compElement);
+            if (isReactCompiler) {
+                column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID, null, null, valueDiv);
+                this.parent.renderTemplates();
+            }
+            else {
+                var compElement = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
+                sf.base.updateBlazorTemplate(tempID, 'FilterTemplate', column);
+                appendChildren(valueDiv, compElement);
+            }
         }
         else {
             if (!sf.base.isNullOrUndefined(column.filter) && !sf.base.isNullOrUndefined(column.filter.ui)
@@ -22513,6 +23189,7 @@ var Filter = /** @class */ (function () {
             var dialog = parentsUntil(this.parent.element, 'e-dialog');
             var hasDialog = false;
             var popupEle = parentsUntil(target, 'e-popup');
+            var hasDialogClosed = this.parent.element.querySelector('.e-filter-popup');
             if (dialog && popupEle) {
                 hasDialog = dialog.id === popupEle.id;
             }
@@ -22522,7 +23199,7 @@ var Filter = /** @class */ (function () {
             else if (this.filterModule && (!parentsUntil(target, 'e-popup-wrapper')
                 && (!sf.base.closest(target, '.e-filter-item.e-menu-item'))) && !datepickerEle) {
                 if ((hasDialog && (!parentsUntil(target, 'e-filter-popup'))
-                    && (!parentsUntil(target, 'e-popup-flmenu'))) || (!popupEle)) {
+                    && (!parentsUntil(target, 'e-popup-flmenu'))) || (!popupEle && hasDialogClosed)) {
                     this.filterModule.isresetFocus = parentsUntil(target, 'e-grid') &&
                         parentsUntil(target, 'e-grid').id === this.parent.element.id;
                     this.filterModule.closeDialog(target);
@@ -22938,6 +23615,11 @@ var Resize = /** @class */ (function () {
         if (e.target.classList.contains('e-rhandler')) {
             if (!this.helper) {
                 if (this.getScrollBarWidth() === 0) {
+                    if (this.parent.allowGrouping) {
+                        for (var i = 0; i < this.parent.groupSettings.columns.length; i++) {
+                            this.widthService.setColumnWidth(new Column({ width: '30px' }), i);
+                        }
+                    }
                     for (var _i = 0, _a = this.refreshColumnWidth(); _i < _a.length; _i++) {
                         var col = _a[_i];
                         this.widthService.setColumnWidth(col);
@@ -24895,8 +25577,10 @@ var Group = /** @class */ (function () {
             var indent = trgt.parentElement.querySelectorAll('.e-indentcell').length;
             var expand = false;
             if (sf.base.isBlazor() && this.parent.isCollapseStateEnabled()) {
-                this.parent.notify('group-expand-collapse', { uid: trgt.parentElement.getAttribute('data-uid'),
-                    isExpand: trgt.classList.contains('e-recordpluscollapse') });
+                this.parent.notify('group-expand-collapse', {
+                    uid: trgt.parentElement.getAttribute('data-uid'),
+                    isExpand: trgt.classList.contains('e-recordpluscollapse')
+                });
                 return;
             }
             if (trgt.classList.contains('e-recordpluscollapse')) {
@@ -24907,6 +25591,9 @@ var Group = /** @class */ (function () {
                 if (isGroupAdaptive(gObj)) {
                     this.updateVirtualRows(gObj, target, expand, query, dataManager);
                 }
+                if (this.parent.groupSettings.enableLazyLoading) {
+                    this.parent.contentModule.captionExpand(trgt.parentElement);
+                }
             }
             else {
                 isHide = true;
@@ -24916,9 +25603,12 @@ var Group = /** @class */ (function () {
                 if (isGroupAdaptive(gObj)) {
                     this.updateVirtualRows(gObj, target, !isHide, query, dataManager);
                 }
+                if (this.parent.groupSettings.enableLazyLoading) {
+                    this.parent.contentModule.captionCollapse(trgt.parentElement);
+                }
             }
             this.aria.setExpand(trgt, expand);
-            if (!isGroupAdaptive(gObj)) {
+            if (!isGroupAdaptive(gObj) && !this.parent.groupSettings.enableLazyLoading) {
                 for (var i = 0, len = rows.length; i < len; i++) {
                     if (rows[i].querySelectorAll('td')[cellIdx] &&
                         rows[i].querySelectorAll('td')[cellIdx].classList.contains('e-indentcell') && rows) {
@@ -25380,6 +26070,9 @@ var Group = /** @class */ (function () {
                     this.updateButtonVisibility(this.groupSettings.showToggleButton, 'e-togglegroupbutton ');
                     this.parent.refreshHeader();
                     break;
+                case 'enableLazyLoading':
+                    this.parent.freezeRefresh();
+                    break;
             }
         }
     };
@@ -25486,6 +26179,9 @@ var Group = /** @class */ (function () {
         var rowData = this.groupGenerator.generateRows(aggregates, {});
         var summaryRows = this.parent.getRowsObject().filter(function (row) { return !row.isDataRow; });
         var updateSummaryRows = rowData.filter(function (data) { return !data.isDataRow; });
+        if (this.parent.isReact) {
+            this.parent.destroyTemplate(['groupFooterTemplate', 'groupCaptionTemplate', 'footerTemplate']);
+        }
         for (var i = 0; i < updateSummaryRows.length; i++) {
             var row = updateSummaryRows[i];
             var cells = row.cells.filter(function (cell) { return cell.isDataCell; });
@@ -25659,8 +26355,15 @@ var DetailRow = /** @class */ (function () {
                 detailRow.appendChild(detailCell);
                 tr.parentNode.insertBefore(detailRow, tr.nextSibling);
                 if (gObj.detailTemplate) {
+                    var isReactCompiler = this.parent.isReact && typeof (gObj.detailTemplate) !== 'string';
                     var detailTemplateID = gObj.element.id + 'detailTemplate';
-                    appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID));
+                    if (isReactCompiler) {
+                        gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID, null, null, detailCell);
+                        this.parent.renderTemplates();
+                    }
+                    else {
+                        appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID));
+                    }
                     if (sf.base.isBlazor()) {
                         sf.base.updateBlazorTemplate(detailTemplateID, 'DetailTemplate', gObj, false);
                     }
@@ -25940,6 +26643,9 @@ var Toolbar$1 = /** @class */ (function () {
         if (this.toolbar && !this.toolbar.isDestroyed) {
             if (!this.toolbar.element) {
                 this.parent.destroyTemplate(['toolbarTemplate']);
+                if (this.parent.isReact) {
+                    this.parent.renderTemplates();
+                }
             }
             else {
                 this.toolbar.destroy();
@@ -26001,7 +26707,15 @@ var Toolbar$1 = /** @class */ (function () {
                     sf.base.updateBlazorTemplate(this.parent.element.id + 'toolbarTemplate', 'ToolbarTemplate', this.parent);
                 }
                 else {
-                    appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate'));
+                    var isReactCompiler = this.parent.isReact && typeof (this.parent.toolbarTemplate) !== 'string';
+                    var ID = this.parent.element.id + 'toolbarTemplate';
+                    if (isReactCompiler) {
+                        templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate', ID, null, null, this.element);
+                        this.parent.renderTemplates();
+                    }
+                    else {
+                        appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate'));
+                    }
                 }
             }
         }
@@ -26558,7 +27272,16 @@ var SummaryCellRenderer = /** @class */ (function (_super) {
             var guid = 'guid';
             tempID = this.parent.element.id + column[guid] + tempObj.property;
         }
-        appendChildren(node, tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID));
+        var isReactCompiler = this.parent.isReact && column.footerTemplate ?
+            typeof (column.footerTemplate) !== 'string' : column.groupFooterTemplate ? typeof (column.groupFooterTemplate) !== 'string'
+            : column.groupCaptionTemplate ? typeof (column.groupCaptionTemplate) !== 'string' : false;
+        if (isReactCompiler) {
+            tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID, null, null, node);
+            this.parent.renderTemplates();
+        }
+        else {
+            appendChildren(node, tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID));
+        }
         return false;
     };
     SummaryCellRenderer.prototype.refreshWithAggregate = function (node, cell) {
@@ -26603,7 +27326,8 @@ var Aggregate = /** @class */ (function () {
         this.footerRenderer.renderPanel();
         this.footerRenderer.renderTable();
         var footerContent = this.footerRenderer.getPanel();
-        if (this.parent.element.scrollHeight >= this.parent.getHeight(this.parent.height) && footerContent) {
+        if (this.parent.element.scrollHeight >= this.parent.getHeight(this.parent.height)
+            && footerContent) {
             sf.base.addClass([footerContent], ['e-footerpadding']);
         }
         this.locator.register('footerRenderer', this.footerRenderer);
@@ -27451,8 +28175,14 @@ var VirtualContentRenderer = /** @class */ (function (_super) {
             sf.base.remove(tbody);
             target = null;
         }
-        target = this.parent.createElement('tbody');
-        target.appendChild(newChild);
+        var isReact = this.parent.isReact && !sf.base.isNullOrUndefined(this.parent.rowTemplate);
+        if (!isReact) {
+            target = this.parent.createElement('tbody');
+            target.appendChild(newChild);
+        }
+        else {
+            target = newChild;
+        }
         if (this.parent.frozenRows && e.requestType === 'virtualscroll' && this.parent.pageSettings.currentPage === 1) {
             for (var i = 0; i < this.parent.frozenRows; i++) {
                 target.children[0].remove();
@@ -28790,7 +29520,14 @@ var DialogEditRender = /** @class */ (function () {
         if (this.parent.editSettings.template) {
             var editTemplateID = this.parent.element.id + 'editSettingsTemplate';
             var dummyData = sf.base.extend({}, args.rowData, { isAdd: !this.isEdit }, true);
-            appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
+            var isReactCompiler = this.parent.isReact && typeof (this.parent.editSettings.template) !== 'string';
+            if (isReactCompiler) {
+                this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID, null, null, form);
+                this.parent.renderTemplates();
+            }
+            else {
+                appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
+            }
             var setRules = function () {
                 var columns = _this.parent.getColumns();
                 for (var i = 0; i < columns.length; i++) {
@@ -28977,15 +29714,15 @@ var EditRender = /** @class */ (function () {
         if (this.parent.editSettings.template) {
             return {};
         }
-        var _loop_1 = function (i, len) {
+        for (var i = 0, len = cols.length; i < len; i++) {
             var col = cols[i];
-            if (this_1.parent.editModule.checkColumnIsGrouped(col)) {
-                return "continue";
+            if (this.parent.editModule.checkColumnIsGrouped(col)) {
+                continue;
             }
             if (col.commands || col.commandsTemplate) {
                 var cells = void 0;
-                var cellRendererFact = this_1.serviceLocator.getService('cellRendererFactory');
-                var model = new RowModelGenerator(this_1.parent);
+                var cellRendererFact = this.serviceLocator.getService('cellRendererFactory');
+                var model = new RowModelGenerator(this.parent);
                 var cellRenderer = cellRendererFact.getCellRenderer(exports.CellType.CommandColumn);
                 cells = model.generateRows(args.rowData)[0].cells;
                 var cell = cells.filter(function (cell) { return cell.rowID; });
@@ -28993,20 +29730,25 @@ var EditRender = /** @class */ (function () {
                 var div = td.firstElementChild;
                 div.setAttribute('textAlign', td.getAttribute('textAlign'));
                 elements[col.uid] = div;
-                return "continue";
+                continue;
             }
             var value = (col.valueAccessor(col.field, args.rowData, col));
             var tArgs = { column: col, value: value, type: args.requestType, data: args.rowData };
             var temp = col.edit.create;
-            var input;
+            var input = void 0;
             if (col.editTemplate) {
-                input = this_1.parent.createElement('span', { attrs: { 'e-mappinguid': col.uid } });
-                var tempID = this_1.parent.element.id + col.uid + 'editTemplate';
+                input = this.parent.createElement('span', { attrs: { 'e-mappinguid': col.uid } });
+                var tempID = this.parent.element.id + col.uid + 'editTemplate';
                 var tempData = extendObjWithFn({}, args.rowData, { column: col });
-                var template_1 = col.getEditTemplate()(sf.base.extend({ 'index': args.rowIndex }, tempData), this_1.parent, 'editTemplate', tempID);
-                /* tslint:disable-next-line:no-any */
-                this_1.parent.isReact && this_1.parent.editSettings.mode === 'Batch' ?
-                    setTimeout(function () { appendChildren(input, template_1); }) : appendChildren(input, template_1);
+                var isReactCompiler = this.parent.isReact && typeof (col.editTemplate) !== 'string';
+                if (isReactCompiler) {
+                    col.getEditTemplate()(sf.base.extend({ 'index': args.rowIndex }, tempData), this.parent, 'editTemplate', tempID, null, null, input);
+                    this.parent.renderTemplates();
+                }
+                else {
+                    var template = col.getEditTemplate()(sf.base.extend({ 'index': args.rowIndex }, tempData), this.parent, 'editTemplate', tempID);
+                    appendChildren(input, template);
+                }
                 if (sf.base.isBlazor()) {
                     var setRules = function (ruleColumn) {
                         var column = ruleColumn;
@@ -29027,7 +29769,7 @@ var EditRender = /** @class */ (function () {
                     input = col.edit.create(tArgs);
                 }
                 if (typeof input === 'string') {
-                    var div = this_1.parent.createElement('div');
+                    var div = this.parent.createElement('div');
                     div.innerHTML = input;
                     input = div.firstChild;
                 }
@@ -29047,10 +29789,6 @@ var EditRender = /** @class */ (function () {
                 }
             }
             elements[col.uid] = input;
-        };
-        var this_1 = this;
-        for (var i = 0, len = cols.length; i < len; i++) {
-            _loop_1(i, len);
         }
         return elements;
     };
@@ -29766,8 +30504,10 @@ var NormalEdit = /** @class */ (function () {
                     _this.refreshRow(closeEditArgs.data);
                 }
             }
+            var isLazyLoad = gObj.groupSettings.enableLazyLoading && gObj.groupSettings.columns.length
+                && !gObj.getContentTable().querySelector('tr.e-emptyrow');
             if (!gObj.getContentTable().querySelector('tr.e-emptyrow') &&
-                !gObj.getContentTable().querySelector('tr.e-row')) {
+                !gObj.getContentTable().querySelector('tr.e-row') && !isLazyLoad) {
                 gObj.renderModule.emptyRow();
             }
             if (gObj.editSettings.mode !== 'Dialog') {
@@ -30055,7 +30795,7 @@ var BatchEdit = /** @class */ (function () {
     };
     BatchEdit.prototype.clickHandler = function (e) {
         if (!parentsUntil(e.target, this.parent.element.id + '_add', true)) {
-            if (this.parent.isEdit) {
+            if (this.parent.isEdit && sf.base.closest(this.form, 'td') !== sf.base.closest(e.target, 'td')) {
                 this.saveCell();
                 this.editNextValCell();
             }
@@ -30935,7 +31675,20 @@ var BatchEdit = /** @class */ (function () {
         else {
             rowcell = rowObj.cells;
         }
+        var parentElement;
+        var cellIndex;
+        if (this.parent.isReact) {
+            parentElement = td.parentElement;
+            cellIndex = td.cellIndex;
+        }
         cell.refreshTD(td, rowcell[this.getCellIdx(column.uid) - (this.getCellIdx(column.uid) >= frzCols ? frzCols : 0)], rowObj.changes, { 'index': this.getCellIdx(column.uid) });
+        if (this.parent.isReact) {
+            this.newReactTd = parentElement.cells[cellIndex];
+            parentElement.cells[cellIndex].classList.add('e-updatedtd');
+        }
+        else {
+            td.classList.add('e-updatedtd');
+        }
         td.classList.add('e-updatedtd');
         this.parent.notify(toolbarRefresh, {});
     };
@@ -31071,6 +31824,9 @@ var BatchEdit = /** @class */ (function () {
                 var rowObj = parentsUntil(cellSaveArgs.cell, 'e-movablecontent') ?
                     gObj.getMovableRowsObject()[_this.cellDetails.rowIndex] : gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
                 _this.refreshTD(cellSaveArgs.cell, column, rowObj, cellSaveArgs.value);
+                if (_this.parent.isReact) {
+                    cellSaveArgs.cell = _this.newReactTd;
+                }
             }
             sf.base.removeClass([tr], ['e-editedrow', 'e-batchrow']);
             sf.base.removeClass([cellSaveArgs.cell], ['e-editedbatchcell', 'e-boolcell']);
@@ -31850,10 +32606,16 @@ var Edit = /** @class */ (function () {
         var gObj = this.parent;
         if (gObj.editSettings.template) {
             this.parent.destroyTemplate(['editSettingsTemplate']);
+            if (this.parent.isReact) {
+                this.parent.renderTemplates();
+            }
         }
         cols = cols ? cols : this.parent.getVisibleColumns();
         if (cols.some(function (column) { return !sf.base.isNullOrUndefined(column.editTemplate); })) {
             this.parent.destroyTemplate(['editTemplate']);
+            if (this.parent.isReact) {
+                this.parent.renderTemplates();
+            }
         }
         for (var _i = 0, cols_1 = cols; _i < cols_1.length; _i++) {
             var col = cols_1[_i];
@@ -32933,9 +33695,16 @@ var ExportHelper = /** @class */ (function () {
         this.parent = parent;
     }
     ExportHelper.getQuery = function (parent, data) {
-        return data.isRemote() ?
-            data.generateQuery(true).requiresCount().take(parent.pageSettings.totalRecordsCount) :
-            data.generateQuery(true).requiresCount();
+        var query = data.generateQuery(true).requiresCount();
+        if (data.isRemote()) {
+            if (parent.groupSettings.enableLazyLoading && parent.groupSettings.columns.length) {
+                query.lazyLoad = [];
+            }
+            else {
+                query.take(parent.pageSettings.totalRecordsCount);
+            }
+        }
+        return query;
     };
     ExportHelper.prototype.getFData = function (value, column) {
         var foreignKeyData = getForeignData(column, {}, value, this.foreignKeyData[column.field])[0];
@@ -35587,7 +36356,14 @@ var CommandColumnRenderer = /** @class */ (function (_super) {
         node.appendChild(this.unbounDiv.cloneNode());
         node.setAttribute('aria-label', 'is Command column column header ' + cell.column.headerText);
         if (cell.column.commandsTemplate) {
-            appendChildren(node.firstElementChild, cell.column.getColumnTemplate()(data));
+            if (this.parent.isReact && typeof (cell.column.commandsTemplate) !== 'string') {
+                var tempID = this.parent + 'commandsTemplate';
+                cell.column.getColumnTemplate()(data, this.parent, 'commandsTemplate', tempID, null, null, node.firstElementChild);
+                this.parent.renderTemplates();
+            }
+            else {
+                appendChildren(node.firstElementChild, cell.column.getColumnTemplate()(data));
+            }
         }
         else {
             for (var _i = 0, _a = cell.commands; _i < _a.length; _i++) {
@@ -38374,7 +39150,7 @@ var InfiniteScroll = /** @class */ (function () {
                             sf.base.remove(movableRows[this.parent.frozenRows]);
                             this.createRow([this.parent.getMovableRowsObject()[this.parent.frozenRows - 1]], args, true, true);
                         }
-                        this.setRowElements();
+                        setRowElements(this.parent);
                     }
                 }
             }
@@ -38411,7 +39187,7 @@ var InfiniteScroll = /** @class */ (function () {
         }
         if (!this.parent.infiniteScrollSettings.enableCache && !isFrozenRows) {
             if (!this.parent.getFrozenColumns() || isMovable) {
-                this.setRowElements();
+                setRowElements(this.parent);
                 this.parent.contentModule.visibleRows = this.requestType === 'add'
                     ? row.concat(rows) : rows.concat(row);
             }
@@ -38459,23 +39235,7 @@ var InfiniteScroll = /** @class */ (function () {
             });
         }
         var startIndex = isAdd ? 1 : 0;
-        for (var i = 0; i < rows.length; i++) {
-            rows[i].index = startIndex;
-            rowElms[i].setAttribute('aria-rowindex', startIndex.toString());
-            this.resetCellIndex(rowElms[i].cells, startIndex);
-            startIndex++;
-        }
-        if (!rows.length) {
-            this.renderEmptyRow();
-        }
-    };
-    InfiniteScroll.prototype.renderEmptyRow = function () {
-        this.parent.renderModule.emptyRow(true);
-    };
-    InfiniteScroll.prototype.resetCellIndex = function (cells, index) {
-        for (var i = 0; i < cells.length; i++) {
-            cells[i].setAttribute('index', index.toString());
-        }
+        resetRowIndex(this.parent, rows, rowElms, startIndex);
     };
     InfiniteScroll.prototype.setDisplayNone = function (args) {
         if (this.parent.infiniteScrollSettings.enableCache) {
@@ -38822,7 +39582,7 @@ var InfiniteScroll = /** @class */ (function () {
                         this.parent.getFrozenVirtualContent().scrollTop = this.top;
                     }
                 }
-                this.setRowElements();
+                setRowElements(this.parent);
                 this.selectNewRow(e.tbody, e.args.startIndex);
                 this.pressedKey = undefined;
             }
@@ -39113,6 +39873,1205 @@ var InfiniteScroll = /** @class */ (function () {
         this.removeEventListener();
     };
     return InfiniteScroll;
+}());
+
+var __extends$30 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * GroupLazyLoadRenderer is used to perform lazy load grouping
+ * @hidden
+ */
+var GroupLazyLoadRenderer = /** @class */ (function (_super) {
+    __extends$30(GroupLazyLoadRenderer, _super);
+    function GroupLazyLoadRenderer(parent, locator) {
+        var _this = _super.call(this, parent, locator) || this;
+        _this.childCount = 0;
+        _this.scrollData = [];
+        _this.isFirstChildRow = false;
+        _this.groupCache = {};
+        _this.startIndexes = {};
+        _this.captionCounts = {};
+        _this.rowsByUid = {};
+        _this.objIdxByUid = {};
+        _this.initialGroupCaptions = {};
+        _this.requestType = ['paging', 'columnstate', 'reorder', 'cancel', 'save', 'beginEdit', 'add', 'delete'];
+        /** @hidden */
+        _this.cacheMode = true;
+        /** @hidden */
+        _this.cacheBlockSize = 5;
+        /** @hidden */
+        _this.ignoreAccent = _this.parent.allowFiltering ? _this.parent.filterSettings.ignoreAccent : false;
+        /** @hidden */
+        _this.allowCaseSensitive = false;
+        _this.locator = locator;
+        _this.groupGenerator = new GroupModelGenerator(_this.parent);
+        _this.summaryModelGen = new GroupSummaryModelGenerator(_this.parent);
+        _this.captionModelGen = new CaptionSummaryModelGenerator(_this.parent);
+        _this.rowRenderer = new RowRenderer(_this.locator, null, _this.parent);
+        _this.eventListener();
+        return _this;
+    }
+    GroupLazyLoadRenderer.prototype.eventListener = function () {
+        this.parent.addEventListener(actionBegin, this.actionBegin.bind(this));
+        this.parent.addEventListener(actionComplete, this.actionComplete.bind(this));
+        this.parent.on(initialEnd, this.setLazyLoadPageSize, this);
+        this.parent.on(setGroupCache, this.setCache, this);
+        this.parent.on(lazyLoadScrollHandler, this.scrollHandler, this);
+        this.parent.on(columnVisibilityChanged, this.setVisible, this);
+        this.parent.on(groupCollapse, this.collapseShortcut, this);
+    };
+    /** @hidden */
+    GroupLazyLoadRenderer.prototype.captionExpand = function (tr) {
+        var _this = this;
+        var page = this.parent.pageSettings.currentPage;
+        var rowsObject = this.groupCache[page];
+        var uid = tr.getAttribute('data-uid');
+        var oriIndex = this.getRowObjectIndexByUid(uid);
+        var isRowExist = rowsObject[oriIndex + 1] ? rowsObject[oriIndex].indent < rowsObject[oriIndex + 1].indent : false;
+        var data = rowsObject[oriIndex];
+        var key = this.getGroupKeysAndFields(oriIndex, rowsObject);
+        var e = { captionRowElement: tr, groupInfo: data, enableCaching: this.cacheMode, cancel: false };
+        this.parent.trigger(lazyLoadGroupExpand, e, function (args) {
+            if (args.cancel) {
+                return;
+            }
+            args.keys = key.keys;
+            args.fields = key.fields;
+            args.rowIndex = tr.rowIndex;
+            args.makeRequest = !args.enableCaching || !isRowExist;
+            if (!args.enableCaching && isRowExist) {
+                _this.clearCache([uid]);
+            }
+            args.skip = 0;
+            args.take = _this.pageSize;
+            data.isExpand = _this.rowsByUid[page][data.uid].isExpand = true;
+            _this.captionRowExpand(args);
+        });
+    };
+    /** @hidden */
+    GroupLazyLoadRenderer.prototype.captionCollapse = function (tr) {
+        var _this = this;
+        var cache = this.groupCache[this.parent.pageSettings.currentPage];
+        var rowIdx = tr.rowIndex;
+        var uid = tr.getAttribute('data-uid');
+        var captionIndex = this.getRowObjectIndexByUid(uid);
+        var e = {
+            captionRowElement: tr, groupInfo: cache[captionIndex], cancel: false
+        };
+        this.parent.trigger(lazyLoadGroupCollapse, e, function (args) {
+            if (args.cancel) {
+                return;
+            }
+            args.isExpand = false;
+            _this.removeRows(captionIndex, rowIdx);
+        });
+    };
+    /** @hidden */
+    GroupLazyLoadRenderer.prototype.setLazyLoadPageSize = function () {
+        var scrollEle = this.parent.getContent().firstElementChild;
+        var blockSize = Math.floor(scrollEle.offsetHeight / this.parent.getRowHeight()) - 1;
+        this.pageSize = this.pageSize ? this.pageSize : blockSize * 3;
+        this.blockSize = Math.ceil(this.pageSize / 2);
+    };
+    /** @hidden */
+    GroupLazyLoadRenderer.prototype.clearLazyGroupCache = function () {
+        this.clearCache();
+    };
+    GroupLazyLoadRenderer.prototype.clearCache = function (uids) {
+        uids = uids ? uids : this.getInitialCaptionIndexes();
+        var cache = this.groupCache[this.parent.pageSettings.currentPage];
+        if (uids.length) {
+            for (var i = 0; i < uids.length; i++) {
+                var capIdx = this.getRowObjectIndexByUid(uids[i]);
+                var capRow = cache[capIdx];
+                if (!capRow) {
+                    continue;
+                }
+                if (this.captionCounts[this.parent.pageSettings.currentPage][capRow.uid]) {
+                    for (var i_1 = capIdx + 1; i_1 < cache.length; i_1++) {
+                        if (cache[i_1].indent === capRow.indent || cache[i_1].indent < capRow.indent) {
+                            delete this.captionCounts[this.parent.pageSettings.currentPage][capRow.uid];
+                            break;
+                        }
+                        if (cache[i_1].isCaptionRow) {
+                            delete this.captionCounts[this.parent.pageSettings.currentPage][cache[i_1].uid];
+                        }
+                    }
+                }
+                if (capRow.isExpand) {
+                    var tr = this.parent.getRowElementByUID(capRow.uid);
+                    if (!tr) {
+                        return;
+                    }
+                    this.parent.groupModule.expandCollapseRows(tr.querySelector('.e-recordplusexpand'));
+                }
+                var child = this.getNextChilds(capIdx);
+                if (!child.length) {
+                    continue;
+                }
+                var subChild = [];
+                if (child[child.length - 1].isCaptionRow) {
+                    subChild = this.getChildRowsByParentIndex(cache.indexOf(child[child.length - 1]), false, false, null, true, true);
+                }
+                var start = cache.indexOf(child[0]);
+                var end = subChild.length ? cache.indexOf(subChild[subChild.length - 1]) : cache.indexOf(child[child.length - 1]);
+                cache.splice(start, end - (start - 1));
+                this.refreshCaches();
+            }
+        }
+    };
+    GroupLazyLoadRenderer.prototype.refreshCaches = function () {
+        var page = this.parent.pageSettings.currentPage;
+        var cache = this.groupCache[page];
+        this.rowsByUid = {};
+        this.objIdxByUid = {};
+        for (var i = 0; i < cache.length; i++) {
+            this.maintainRows(cache[i], i);
+        }
+    };
+    GroupLazyLoadRenderer.prototype.getInitialCaptionIndexes = function () {
+        var page = this.parent.pageSettings.currentPage;
+        var uids = [];
+        for (var i = 0; i < this.initialGroupCaptions[page].length; i++) {
+            uids.push(this.initialGroupCaptions[page][i].uid);
+        }
+        return uids;
+    };
+    /** @hidden */
+    GroupLazyLoadRenderer.prototype.getRowObjectIndexByUid = function (uid) {
+        return this.objIdxByUid[this.parent.pageSettings.currentPage][uid];
+    };
+    GroupLazyLoadRenderer.prototype.collapseShortcut = function (args) {
+        if (this.parent.groupSettings.columns.length &&
+            args.target && parentsUntil(args.target, 'e-content') && args.target.parentElement.tagName === 'TR') {
+            if (!args.collapse && parentsUntil(args.target, 'e-row')) {
+                return;
+            }
+            var row = args.target.parentElement;
+            var uid = row.getAttribute('data-uid');
+            if (args.collapse) {
+                var rowObj = this.getRowByUid(uid);
+                var capRow = this.getRowByUid(rowObj.parentUid);
+                if (capRow.isCaptionRow && capRow.isExpand) {
+                    var capEle = this.getRowElementByUid(rowObj.parentUid);
+                    this.parent.groupModule.expandCollapseRows(capEle.cells[rowObj.indent - 1]);
+                }
+            }
+            else {
+                var capRow = this.getRowByUid(uid);
+                if (capRow.isCaptionRow && !capRow.isExpand) {
+                    var capEle = this.getRowElementByUid(uid);
+                    this.parent.groupModule.expandCollapseRows(capEle.cells[capRow.indent]);
+                }
+            }
+        }
+    };
+    GroupLazyLoadRenderer.prototype.getRowByUid = function (uid) {
+        return this.rowsByUid[this.parent.pageSettings.currentPage][uid];
+    };
+    GroupLazyLoadRenderer.prototype.actionBegin = function (args) {
+        if (!args.cancel) {
+            if (!this.requestType.some(function (value) { return value === args.requestType; })) {
+                this.groupCache = {};
+                this.resetRowMaintenance();
+            }
+            if (args.requestType === 'reorder' && this.parent.groupSettings.columns.length) {
+                var keys = Object.keys(this.groupCache);
+                for (var j = 0; j < keys.length; j++) {
+                    var cache = this.groupCache[keys[j]];
+                    for (var i = 0; i < cache.length; i++) {
+                        if (cache[i].isCaptionRow && !this.captionModelGen.isEmpty()) {
+                            this.changeCaptionRow(cache[i], null, keys[j]);
+                        }
+                        if (cache[i].isDataRow) {
+                            var from = args.fromIndex + cache[i].indent;
+                            var to = args.toIndex + cache[i].indent;
+                            this.moveCells(cache[i].cells, from, to);
+                        }
+                    }
+                }
+            }
+            if (args.requestType === 'delete'
+                || (args.action === 'add' && args.requestType === 'save')) {
+                this.groupCache = {};
+                this.resetRowMaintenance();
+            }
+        }
+    };
+    GroupLazyLoadRenderer.prototype.actionComplete = function (args) {
+        if (!args.cancel && args.requestType !== 'columnstate' && args.requestType !== 'beginEdit'
+            && args.requestType !== 'delete' && args.requestType !== 'save' && args.requestType !== 'reorder') {
+            this.scrollReset();
+        }
+    };
+    GroupLazyLoadRenderer.prototype.resetRowMaintenance = function () {
+        this.startIndexes = {};
+        this.captionCounts = {};
+        this.rowsByUid = {};
+        this.objIdxByUid = {};
+        this.initialGroupCaptions = {};
+    };
+    GroupLazyLoadRenderer.prototype.moveCells = function (arr, from, to) {
+        if (from >= arr.length) {
+            var k = from - arr.length;
+            while ((k--) + 1) {
+                arr.push(undefined);
+            }
+        }
+        arr.splice(from, 0, arr.splice(to, 1)[0]);
+    };
+    GroupLazyLoadRenderer.prototype.removeRows = function (idx, trIdx) {
+        var page = this.parent.pageSettings.currentPage;
+        var rows = this.groupCache[page];
+        var trs = [].slice.call(this.parent.getContent().querySelectorAll('tr'));
+        var aggUid;
+        if (this.parent.aggregates.length) {
+            var agg = this.getAggregateByCaptionIndex(idx);
+            aggUid = agg.length ? agg[agg.length - 1].uid : undefined;
+        }
+        var indent = rows[idx].indent;
+        this.addClass(this.getNextChilds(idx));
+        rows[idx].isExpand = this.rowsByUid[page][rows[idx].uid].isExpand = false;
+        var capUid;
+        for (var i = idx + 1; i < rows.length; i++) {
+            if (rows[i].indent === indent || rows[i].indent < indent) {
+                capUid = rows[i].uid;
+                break;
+            }
+            if (rows[i].isCaptionRow && rows[i].isExpand) {
+                this.addClass(this.getNextChilds(i));
+            }
+        }
+        for (var i = trIdx + 1; i < trs.length; i++) {
+            if (trs[i].getAttribute('data-uid') === capUid) {
+                break;
+            }
+            else if (trs[i].getAttribute('data-uid') === aggUid) {
+                sf.base.remove(trs[i]);
+                break;
+            }
+            else {
+                sf.base.remove(trs[i]);
+            }
+        }
+    };
+    GroupLazyLoadRenderer.prototype.addClass = function (rows) {
+        var last = rows[this.blockSize];
+        if (last) {
+            last.lazyLoadCssClass = 'e-lazyload-middle-down';
+        }
+    };
+    GroupLazyLoadRenderer.prototype.getNextChilds = function (index, rowObjects) {
+        var group = this.groupCache[this.parent.pageSettings.currentPage];
+        var rows = rowObjects ? rowObjects : group;
+        var indent = group[index].indent + 1;
+        var childRows = [];
+        for (var i = rowObjects ? 0 : index + 1; i < rows.length; i++) {
+            if (rows[i].indent < indent) {
+                break;
+            }
+            if (rows[i].indent === indent) {
+                childRows.push(rows[i]);
+            }
+        }
+        return childRows;
+    };
+    GroupLazyLoadRenderer.prototype.lazyLoadHandler = function (args) {
+        this.setStartIndexes();
+        var tr = this.parent.getContent().querySelectorAll('tr')[args.index];
+        var uid = tr.getAttribute('data-uid');
+        var captionIndex = this.getRowObjectIndexByUid(uid);
+        var captionRow = this.groupCache[this.parent.pageSettings.currentPage][captionIndex];
+        var rows = args.isRowExist ? args.isScroll ? this.scrollData
+            : this.getChildRowsByParentIndex(captionIndex, true, true, null, true) : [];
+        this.scrollData = [];
+        if (!args.isRowExist) {
+            this.setRowIndexes(captionIndex, captionRow);
+            this.refreshCaptionRowCount(this.groupCache[this.parent.pageSettings.currentPage][captionIndex], args.count);
+            if (Object.keys(args.data).indexOf('GroupGuid') !== -1) {
+                for (var i = 0; i < args.data.length; i++) {
+                    var data = this.groupGenerator.generateCaptionRow(args.data[i], args.level, captionRow.parentGid, undefined, 0, captionRow.uid);
+                    rows.push(data);
+                    if (this.parent.aggregates.length) {
+                        rows = rows.concat((this.summaryModelGen.generateRows(args.data[i], { level: args.level + 1, parentUid: data.uid })));
+                    }
+                }
+            }
+            else {
+                this.groupGenerator.index = this.getStartIndex(captionIndex, args.isScroll);
+                rows = this.groupGenerator.generateDataRows(args.data, args.level, captionRow.parentGid, 0, captionRow.uid);
+            }
+        }
+        var trIdx = args.isScroll ? this.rowIndex : args.index;
+        var nxtChild = this.getNextChilds(captionIndex, rows);
+        var lastRow = !args.up ? this.hasLastChildRow(args.isScroll, args.count, nxtChild.length) : true;
+        if (!args.isRowExist && !lastRow) {
+            nxtChild[this.blockSize].lazyLoadCssClass = 'e-lazyload-middle-down';
+        }
+        if (!lastRow) {
+            nxtChild[nxtChild.length - 1].lazyLoadCssClass = 'e-not-lazyload-end';
+        }
+        var aggregates = !args.isScroll && !args.isRowExist ? this.getAggregateByCaptionIndex(captionIndex) : [];
+        if (!args.up) {
+            if (!args.isRowExist) {
+                this.refreshRowObjects(rows, args.isScroll ? this.rowObjectIndex : captionIndex);
+            }
+        }
+        this.render(trIdx, rows, lastRow, aggregates);
+        if (this.isFirstChildRow && !args.up) {
+            this.parent.getContent().firstElementChild.scrollTop = rows.length * this.parent.getRowHeight();
+        }
+        this.isFirstChildRow = false;
+        this.rowIndex = undefined;
+        this.rowObjectIndex = undefined;
+        this.childCount = 0;
+    };
+    GroupLazyLoadRenderer.prototype.setRowIndexes = function (capIdx, row) {
+        if (!this.captionCounts[this.parent.pageSettings.currentPage]) {
+            this.captionCounts[this.parent.pageSettings.currentPage] = {};
+        }
+        if (row.isCaptionRow) {
+            this.captionCounts[this.parent.pageSettings.currentPage][row.uid] = row.data.count;
+        }
+    };
+    GroupLazyLoadRenderer.prototype.getStartIndex = function (capIdx, isScroll) {
+        var page = this.parent.pageSettings.currentPage;
+        var cache = this.groupCache[page];
+        if (isScroll) {
+            return cache[this.rowObjectIndex].index + 1;
+        }
+        var count = 0;
+        var idx = 0;
+        var prevCapRow = this.getRowByUid(cache[capIdx].parentUid);
+        if (prevCapRow) {
+            idx = this.prevCaptionCount(prevCapRow);
+        }
+        if (cache[capIdx].indent > 0) {
+            for (var i = capIdx - 1; i >= 0; i--) {
+                if (cache[i].indent < cache[capIdx].indent) {
+                    break;
+                }
+                if (cache[i].isCaptionRow && cache[i].indent === cache[capIdx].indent) {
+                    count = count + cache[i].data.count;
+                }
+            }
+        }
+        var index = count + idx + this.startIndexes[page][cache[capIdx].parentGid];
+        return index;
+    };
+    GroupLazyLoadRenderer.prototype.prevCaptionCount = function (prevCapRow) {
+        var page = this.parent.pageSettings.currentPage;
+        var cache = this.groupCache[page];
+        var idx = 0;
+        for (var i = cache.indexOf(prevCapRow) - 1; i >= 0; i--) {
+            if (cache[i].indent === 0) {
+                break;
+            }
+            if (cache[i].indent < prevCapRow.indent) {
+                break;
+            }
+            if (cache[i].isCaptionRow && cache[i].indent === prevCapRow.indent) {
+                var count = this.captionCounts[page][cache[i].uid];
+                idx = idx + (count ? count : cache[i].data.count);
+            }
+        }
+        var capRow = this.getRowByUid(prevCapRow.parentUid);
+        if (capRow) {
+            idx = idx + this.prevCaptionCount(capRow);
+        }
+        return idx;
+    };
+    GroupLazyLoadRenderer.prototype.setStartIndexes = function () {
+        var cache = this.groupCache[this.parent.pageSettings.currentPage];
+        if (!this.startIndexes[this.parent.pageSettings.currentPage]) {
+            var indexes = [];
+            var idx = void 0;
+            for (var i = 0; i < cache.length; i++) {
+                if (cache[i].isCaptionRow) {
+                    !indexes.length ? indexes.push(0)
+                        : indexes.push(cache[idx].data.count + indexes[indexes.length - 1]);
+                    idx = i;
+                }
+            }
+            this.startIndexes[this.parent.pageSettings.currentPage] = indexes;
+        }
+    };
+    GroupLazyLoadRenderer.prototype.hasLastChildRow = function (isScroll, captionCount, rowCount) {
+        return isScroll ? captionCount === this.childCount + rowCount : captionCount === rowCount;
+    };
+    GroupLazyLoadRenderer.prototype.refreshCaptionRowCount = function (row, count) {
+        row.data.count = count;
+    };
+    GroupLazyLoadRenderer.prototype.render = function (trIdx, rows, hasLastChildRow, aggregates) {
+        var tr = this.parent.getContent().querySelectorAll('tr')[trIdx];
+        if (tr && aggregates.length) {
+            for (var i = aggregates.length - 1; i >= 0; i--) {
+                tr.insertAdjacentElement('afterend', this.rowRenderer.render(aggregates[i], this.parent.getColumns()));
+            }
+        }
+        if (tr && rows.length) {
+            for (var i = rows.length - 1; i >= 0; i--) {
+                if (this.confirmRowRendering(rows[i])) {
+                    tr.insertAdjacentElement('afterend', this.rowRenderer.render(rows[i], this.parent.getColumns()));
+                }
+            }
+        }
+    };
+    /** @hidden */
+    GroupLazyLoadRenderer.prototype.maintainRows = function (row, index) {
+        var page = this.parent.pageSettings.currentPage;
+        if (!this.rowsByUid[page]) {
+            this.rowsByUid[page] = {};
+            this.objIdxByUid[page] = {};
+        }
+        if (row.uid) {
+            this.rowsByUid[page][row.uid] = row;
+        }
+        this.objIdxByUid[page][row.uid] = index;
+    };
+    GroupLazyLoadRenderer.prototype.confirmRowRendering = function (row) {
+        var check = true;
+        if (sf.base.isNullOrUndefined(row.indent) && !row.isDataRow && !row.isCaptionRow) {
+            var cap = this.getRowByUid(row.parentUid);
+            if (cap.isCaptionRow && !cap.isExpand) {
+                check = false;
+            }
+        }
+        return check;
+    };
+    GroupLazyLoadRenderer.prototype.refreshRowObjects = function (newRows, index) {
+        var page = this.parent.pageSettings.currentPage;
+        var rowsObject = this.groupCache[page];
+        this.rowsByUid[page] = {};
+        this.objIdxByUid[page] = {};
+        var newRowsObject = [];
+        var k = 0;
+        for (var i = 0; i < rowsObject.length; i++) {
+            if (i === index) {
+                this.maintainRows(rowsObject[i], k);
+                newRowsObject.push(rowsObject[i]);
+                k++;
+                for (var j = 0; j < newRows.length; j++) {
+                    this.maintainRows(newRows[j], k);
+                    newRowsObject.push(newRows[j]);
+                    k++;
+                }
+            }
+            else {
+                this.maintainRows(rowsObject[i], k);
+                newRowsObject.push(rowsObject[i]);
+                k++;
+            }
+        }
+        this.groupCache[this.parent.pageSettings.currentPage] = sf.base.extend([], newRowsObject);
+        this.updateCurrentViewData();
+    };
+    GroupLazyLoadRenderer.prototype.getAggregateByCaptionIndex = function (index) {
+        var cache = this.groupCache[this.parent.pageSettings.currentPage];
+        var parent = cache[index];
+        var indent = parent.indent;
+        var uid = parent.uid;
+        var agg = [];
+        for (var i = index + 1; i < cache.length; i++) {
+            if (cache[i].indent === indent) {
+                break;
+            }
+            if (sf.base.isNullOrUndefined(cache[i].indent) && cache[i].parentUid === uid) {
+                agg.push(cache[i]);
+            }
+        }
+        return agg;
+    };
+    GroupLazyLoadRenderer.prototype.getChildRowsByParentIndex = function (index, deep, block, data, includeAgg, includeCollapseAgg) {
+        var cache = data ? data : this.groupCache[this.parent.pageSettings.currentPage];
+        var parentRow = cache[index];
+        var agg = [];
+        if (!parentRow.isCaptionRow || (parentRow.isCaptionRow && !parentRow.isExpand && !includeCollapseAgg)) {
+            return [];
+        }
+        if (includeAgg && this.parent.aggregates.length) {
+            agg = this.getAggregateByCaptionIndex(index);
+        }
+        var indent = parentRow.indent;
+        var uid = parentRow.uid;
+        var rows = [];
+        var count = 0;
+        for (var i = index + 1; i < cache.length; i++) {
+            if (cache[i].parentUid === uid) {
+                if (sf.base.isNullOrUndefined(cache[i].indent)) {
+                    continue;
+                }
+                count++;
+                rows.push(cache[i]);
+                if (deep && cache[i].isCaptionRow) {
+                    rows = rows.concat(this.getChildRowsByParentIndex(i, deep, block, data, includeAgg));
+                }
+                if (block && count === this.pageSize) {
+                    break;
+                }
+            }
+            if (cache[i].indent === indent) {
+                break;
+            }
+        }
+        return rows.concat(agg);
+    };
+    /** @hidden */
+    GroupLazyLoadRenderer.prototype.initialGroupRows = function (isReorder) {
+        var rows = [];
+        var cache = this.groupCache[this.parent.pageSettings.currentPage];
+        if (isReorder) {
+            return this.getRenderedRowsObject();
+        }
+        for (var i = 0; i < cache.length; i++) {
+            if (cache[i].indent === 0) {
+                rows.push(cache[i]);
+                rows = rows.concat(this.getChildRowsByParentIndex(i, true, true, cache, true));
+            }
+        }
+        return rows;
+    };
+    /** @hidden */
+    GroupLazyLoadRenderer.prototype.getRenderedRowsObject = function () {
+        var rows = [];
+        var trs = [].slice.call(this.parent.getContent().querySelectorAll('tr'));
+        for (var i = 0; i < trs.length; i++) {
+            rows.push(this.getRowByUid(trs[i].getAttribute('data-uid')));
+        }
+        return rows;
+    };
+    GroupLazyLoadRenderer.prototype.getCacheRowsOnDownScroll = function (index) {
+        var rows = [];
+        var rowsObject = this.groupCache[this.parent.pageSettings.currentPage];
+        var k = index;
+        for (var i = 0; i < this.pageSize; i++) {
+            if (!rowsObject[k] || rowsObject[k].indent < rowsObject[index].indent) {
+                break;
+            }
+            if (rowsObject[k].indent === rowsObject[index].indent) {
+                rows.push(rowsObject[k]);
+                if (rowsObject[k].isCaptionRow && rowsObject[k].isExpand) {
+                    rows = rows.concat(this.getChildRowsByParentIndex(k, true, true, null, true));
+                }
+            }
+            if (rowsObject[k].indent > rowsObject[index].indent || sf.base.isNullOrUndefined(rowsObject[k].indent)) {
+                i--;
+            }
+            k++;
+        }
+        return rows;
+    };
+    GroupLazyLoadRenderer.prototype.getCacheRowsOnUpScroll = function (start, end, index) {
+        var rows = [];
+        var rowsObject = this.groupCache[this.parent.pageSettings.currentPage];
+        var str = false;
+        for (var i = 0; i < rowsObject.length; i++) {
+            if (str && (!rowsObject[i] || rowsObject[i].indent < rowsObject[index].indent || rowsObject[i].uid === end)) {
+                break;
+            }
+            if (!str && rowsObject[i].uid === start) {
+                str = true;
+            }
+            if (str && rowsObject[i].indent === rowsObject[index].indent) {
+                rows.push(rowsObject[i]);
+                if (rowsObject[i].isCaptionRow && rowsObject[i].isExpand) {
+                    rows = rows.concat(this.getChildRowsByParentIndex(i, true, true, null, true));
+                }
+            }
+        }
+        return rows;
+    };
+    GroupLazyLoadRenderer.prototype.scrollHandler = function (e) {
+        if (this.parent.isDestroyed || this.childCount) {
+            return;
+        }
+        var downTrs = [].slice.call(this.parent.getContent().querySelectorAll('.e-lazyload-middle-down'));
+        var upTrs = [].slice.call(this.parent.getContent().querySelectorAll('.e-lazyload-middle-up'));
+        var endTrs = [].slice.call(this.parent.getContent().querySelectorAll('.e-not-lazyload-end'));
+        var tr;
+        var lazyLoadDown = false;
+        var lazyLoadUp = false;
+        var lazyLoadEnd = false;
+        if (e.scrollDown && downTrs.length) {
+            var result = this.findRowElements(downTrs);
+            tr = result.tr;
+            lazyLoadDown = result.entered;
+        }
+        if (!e.scrollDown && endTrs) {
+            for (var i = 0; i < endTrs.length; i++) {
+                var top_1 = endTrs[i].getBoundingClientRect().top;
+                var scrollHeight = this.parent.getContent().scrollHeight;
+                if (top_1 > 0 && top_1 < scrollHeight) {
+                    tr = endTrs[i];
+                    lazyLoadEnd = true;
+                    this.rowIndex = tr.rowIndex;
+                    break;
+                }
+            }
+        }
+        if (!e.scrollDown && upTrs.length && !lazyLoadEnd) {
+            var result = this.findRowElements(upTrs);
+            tr = result.tr;
+            lazyLoadUp = result.entered;
+        }
+        if (tr) {
+            if (lazyLoadDown && e.scrollDown && lazyLoadDown && tr) {
+                this.scrollDownHandler(tr);
+            }
+            if (!e.scrollDown && lazyLoadEnd && tr) {
+                this.scrollUpEndRowHandler(tr);
+            }
+            if (this.cacheMode && !e.scrollDown && !lazyLoadEnd && lazyLoadUp && tr) {
+                this.scrollUpHandler(tr);
+            }
+        }
+    };
+    GroupLazyLoadRenderer.prototype.scrollUpEndRowHandler = function (tr) {
+        var page = this.parent.pageSettings.currentPage;
+        var rows = this.groupCache[page];
+        var uid = tr.getAttribute('data-uid');
+        var index = this.rowObjectIndex = this.getRowObjectIndexByUid(uid);
+        var idx = index;
+        var childRow = rows[index];
+        var parentCapRow = this.getRowByUid(childRow.parentUid);
+        var capRowObjIdx = this.getRowObjectIndexByUid(parentCapRow.uid);
+        var captionRowEle = this.parent.getContent().querySelector('tr[data-uid=' + parentCapRow.uid + ']');
+        var capRowEleIndex = captionRowEle.rowIndex;
+        var child = this.getChildRowsByParentIndex(capRowObjIdx);
+        var childIdx = child.indexOf(childRow);
+        var currentPage = Math.ceil(childIdx / this.pageSize);
+        if (currentPage === 1) {
+            return;
+        }
+        this.childCount = currentPage * this.pageSize;
+        index = this.getCurrentBlockEndIndex(childRow, index);
+        if (this.childCount < parentCapRow.data.count) {
+            tr.classList.remove('e-not-lazyload-end');
+            childRow.lazyLoadCssClass = '';
+            var isRowExist = rows[index + 1] ? childRow.indent === rows[index + 1].indent : false;
+            this.scrollData = isRowExist ? this.getCacheRowsOnDownScroll(index + 1) : [];
+            var key = this.getGroupKeysAndFields(capRowObjIdx, rows);
+            var args = {
+                rowIndex: capRowEleIndex, makeRequest: !isRowExist, groupInfo: parentCapRow, fields: key.fields,
+                keys: key.keys, skip: this.childCount, take: this.pageSize, isScroll: true
+            };
+            if (this.cacheMode && this.childCount >= (this.pageSize * this.cacheBlockSize)) {
+                var child_1 = this.getChildRowsByParentIndex(capRowObjIdx);
+                var currenBlock = Math.ceil((child_1.indexOf(rows[idx]) / this.pageSize));
+                var removeBlock = currenBlock - (this.cacheBlockSize - 1);
+                this.removeBlock(uid, isRowExist, removeBlock, child_1);
+                args.cachedRowIndex = (removeBlock * this.pageSize);
+            }
+            this.captionRowExpand(args);
+        }
+        else {
+            this.childCount = 0;
+        }
+    };
+    GroupLazyLoadRenderer.prototype.scrollDownHandler = function (tr) {
+        var page = this.parent.pageSettings.currentPage;
+        var rows = this.groupCache[page];
+        var uid = tr.getAttribute('data-uid');
+        var index = this.getRowObjectIndexByUid(uid);
+        var idx = index;
+        var childRow = rows[index];
+        var parentCapRow = this.getRowByUid(childRow.parentUid);
+        var capRowObjIdx = this.getRowObjectIndexByUid(parentCapRow.uid);
+        var captionRowEle = this.getRowElementByUid(parentCapRow.uid);
+        var capRowEleIndex = captionRowEle.rowIndex;
+        var child = this.getChildRowsByParentIndex(capRowObjIdx);
+        var childIdx = child.indexOf(childRow);
+        var currentPage = Math.ceil(childIdx / this.pageSize);
+        this.childCount = currentPage * this.pageSize;
+        index = this.rowObjectIndex = this.getRowObjectIndexByUid(child[this.childCount - 1].uid);
+        var lastchild = rows[index];
+        var lastRow = this.getRowElementByUid(lastchild.uid);
+        this.rowIndex = lastRow.rowIndex;
+        index = this.getCurrentBlockEndIndex(lastchild, index);
+        if (this.childCount < parentCapRow.data.count) {
+            var isRowExist = rows[index + 1] ? childRow.indent === rows[index + 1].indent : false;
+            if (isRowExist && !sf.base.isNullOrUndefined(this.getRowElementByUid(rows[index + 1].uid))) {
+                this.childCount = 0;
+                return;
+            }
+            if (currentPage > 1 || !this.cacheMode) {
+                tr.classList.remove('e-lazyload-middle-down');
+                lastRow.classList.remove('e-not-lazyload-end');
+                lastchild.lazyLoadCssClass = '';
+            }
+            this.scrollData = isRowExist ? this.getCacheRowsOnDownScroll(this.rowObjectIndex + 1) : [];
+            var query = this.getGroupKeysAndFields(capRowObjIdx, rows);
+            var args = {
+                rowIndex: capRowEleIndex, makeRequest: !isRowExist, groupInfo: parentCapRow, fields: query.fields,
+                keys: query.keys, skip: this.childCount, take: this.pageSize, isScroll: true
+            };
+            if (this.cacheMode && (this.childCount - this.pageSize) >= (this.pageSize * this.cacheBlockSize)) {
+                var child_2 = this.getChildRowsByParentIndex(capRowObjIdx);
+                var currenBlock = Math.ceil((child_2.indexOf(rows[idx]) / this.pageSize)) - 1;
+                var removeBlock = (currenBlock - (this.cacheBlockSize - 1)) + 1;
+                this.removeBlock(uid, isRowExist, removeBlock, child_2, lastchild);
+                args.cachedRowIndex = (removeBlock * this.pageSize);
+            }
+            this.captionRowExpand(args);
+        }
+        else {
+            this.childCount = 0;
+        }
+    };
+    GroupLazyLoadRenderer.prototype.getCurrentBlockEndIndex = function (row, index) {
+        var page = this.parent.pageSettings.currentPage;
+        var rows = this.groupCache[page];
+        if (row.isCaptionRow) {
+            if (row.isExpand) {
+                var childCount = this.getChildRowsByParentIndex(index, true).length;
+                this.rowIndex = this.rowIndex + childCount;
+            }
+            var agg = this.getAggregateByCaptionIndex(index);
+            this.rowObjectIndex = this.rowObjectIndex + agg.length;
+            var idx = index;
+            for (var i = idx + 1; i < rows.length; i++) {
+                if (rows[i].indent === rows[index].indent || rows[i].indent < rows[index].indent) {
+                    index = idx;
+                    break;
+                }
+                else {
+                    idx++;
+                }
+            }
+        }
+        return index;
+    };
+    GroupLazyLoadRenderer.prototype.removeBlock = function (uid, isRowExist, removeBlock, child, lastchild) {
+        var page = this.parent.pageSettings.currentPage;
+        var rows = this.groupCache[page];
+        var uid1 = child[(((removeBlock + 1) * this.pageSize) - 1) - this.blockSize].uid;
+        var uid2 = child[(removeBlock * this.pageSize) - this.pageSize].uid;
+        var uid3 = child[(removeBlock * this.pageSize)].uid;
+        var firstIdx = this.getRowObjectIndexByUid(uid1);
+        rows[firstIdx].lazyLoadCssClass = 'e-lazyload-middle-up';
+        this.getRowElementByUid(uid1).classList.add('e-lazyload-middle-up');
+        if (lastchild) {
+            this.getRowElementByUid(uid3).classList.add('e-not-lazyload-first');
+            this.getRowByUid(uid3).lazyLoadCssClass = 'e-not-lazyload-first';
+            this.getRowByUid(uid2).lazyLoadCssClass = '';
+        }
+        if (isRowExist) {
+            this.removeTopRows(lastchild ? lastchild.uid : uid, uid2, uid3);
+        }
+        else {
+            this.uid1 = uid2;
+            this.uid2 = uid3;
+            this.uid3 = lastchild ? lastchild.uid : uid;
+        }
+    };
+    GroupLazyLoadRenderer.prototype.scrollUpHandler = function (tr) {
+        var page = this.parent.pageSettings.currentPage;
+        var rows = this.groupCache[page];
+        var uid = tr.getAttribute('data-uid');
+        var row = this.getRowByUid(uid);
+        var index = this.rowObjectIndex = this.getRowObjectIndexByUid(uid);
+        var parentCapRow = this.getRowByUid(row.parentUid);
+        var capRowObjIdx = this.rowIndex = this.getRowObjectIndexByUid(parentCapRow.uid);
+        var captionRowEle = this.parent.getRowElementByUID(parentCapRow.uid);
+        var capRowEleIndex = captionRowEle.rowIndex;
+        var child = this.getChildRowsByParentIndex(capRowObjIdx);
+        var childIdx = child.indexOf(rows[index]);
+        var currenBlock = Math.floor((childIdx / this.pageSize));
+        var idx = this.blockSize;
+        if ((this.blockSize * 2) > this.pageSize) {
+            idx = (this.blockSize * 2) - this.pageSize;
+            idx = this.blockSize - idx;
+        }
+        var start = child[(childIdx - (idx - 1)) - this.pageSize].uid;
+        var end = child[childIdx - (idx - 1)].uid;
+        this.scrollData = this.getCacheRowsOnUpScroll(start, end, index - (idx - 1));
+        this.isFirstChildRow = currenBlock > 1;
+        if (this.isFirstChildRow) {
+            this.scrollData[0].lazyLoadCssClass = 'e-not-lazyload-first';
+        }
+        this.getRowByUid(end).lazyLoadCssClass = '';
+        this.getRowElementByUid(end).classList.remove('e-not-lazyload-first');
+        var removeBlock = currenBlock + this.cacheBlockSize;
+        if (child.length !== parentCapRow.data.count && (removeBlock * this.pageSize > child.length)) {
+            this.isFirstChildRow = false;
+            this.scrollData[0].lazyLoadCssClass = '';
+            this.getRowElementByUid(end).classList.add('e-not-lazyload-first');
+            return;
+        }
+        var count = removeBlock * this.pageSize > parentCapRow.data.count
+            ? parentCapRow.data.count : removeBlock * this.pageSize;
+        var size = removeBlock * this.pageSize > parentCapRow.data.count
+            ? (this.pageSize - ((this.pageSize * removeBlock) - parentCapRow.data.count)) : this.pageSize;
+        var childRows = this.getChildRowsByParentIndex(rows.indexOf(child[count - 1]), true, false, null, true);
+        var uid1 = childRows.length ? childRows[childRows.length - 1].uid : child[(count - 1)].uid;
+        var uid2 = child[count - size].uid;
+        var uid3 = child[(count - size) - 1].uid;
+        var lastIdx = this.objIdxByUid[page][uid2] - idx;
+        if (rows[lastIdx].lazyLoadCssClass === 'e-lazyload-middle-down') {
+            var trEle = this.getRowElementByUid(rows[lastIdx].uid);
+            if (trEle) {
+                trEle.classList.add('e-lazyload-middle-down');
+            }
+        }
+        this.getRowByUid(uid1).lazyLoadCssClass = '';
+        this.getRowByUid(uid3).lazyLoadCssClass = 'e-not-lazyload-end';
+        this.getRowElementByUid(uid3).classList.add('e-not-lazyload-end');
+        this.removeBottomRows(uid1, uid2, uid3);
+        this.rowIndex = tr.rowIndex - idx;
+        tr.classList.length > 1 ? tr.classList.remove('e-lazyload-middle-up') : tr.removeAttribute('class');
+        if (!sf.base.isNullOrUndefined(this.getRowElementByUid(start))) {
+            this.childCount = 0;
+            this.scrollData = [];
+            return;
+        }
+        var key = this.getGroupKeysAndFields(this.getRowObjectIndexByUid(parentCapRow.uid), rows);
+        var args = {
+            rowIndex: capRowEleIndex, makeRequest: false, groupInfo: parentCapRow, fields: key.fields,
+            keys: key.keys, skip: this.childCount, take: this.pageSize, isScroll: true, scrollUp: true
+        };
+        this.captionRowExpand(args);
+    };
+    GroupLazyLoadRenderer.prototype.findRowElements = function (rows) {
+        var entered = false;
+        var tr;
+        for (var i = 0; i < rows.length; i++) {
+            var rowIdx = rows[i].rowIndex;
+            if (isRowEnteredInGrid(rowIdx, this.parent)) {
+                entered = true;
+                this.rowIndex = rowIdx;
+                tr = rows[i];
+                break;
+            }
+        }
+        return { entered: entered, tr: tr };
+    };
+    GroupLazyLoadRenderer.prototype.getRowElementByUid = function (uid) {
+        return this.parent.getContent().querySelector('tr[data-uid=' + uid + ']');
+    };
+    GroupLazyLoadRenderer.prototype.removeTopRows = function (uid1, uid2, uid3) {
+        var trs = [].slice.call(this.parent.getContent().querySelectorAll('tr'));
+        var page = this.parent.pageSettings.currentPage;
+        var start = false;
+        for (var i = 0; i < trs.length; i++) {
+            if (trs[i].getAttribute('data-uid') === uid3) {
+                var tr = this.parent.getContent().querySelector('tr[data-uid=' + uid1 + ']');
+                if (tr) {
+                    this.rowIndex = tr.rowIndex;
+                }
+                break;
+            }
+            if (trs[i].getAttribute('data-uid') === uid2) {
+                start = true;
+            }
+            if (start) {
+                sf.base.remove(trs[i]);
+            }
+        }
+    };
+    GroupLazyLoadRenderer.prototype.removeBottomRows = function (uid1, uid2, uid3) {
+        var trs = [].slice.call(this.parent.getContent().querySelectorAll('tr'));
+        var start = false;
+        for (var i = 0; i < trs.length; i++) {
+            if (trs[i].getAttribute('data-uid') === uid2) {
+                start = true;
+            }
+            if (start) {
+                sf.base.remove(trs[i]);
+                if (trs[i].getAttribute('data-uid') === uid1) {
+                    break;
+                }
+            }
+        }
+    };
+    GroupLazyLoadRenderer.prototype.setCache = function (e) {
+        var page = this.parent.pageSettings.currentPage;
+        this.groupCache[page] = this.initialGroupCaptions[page] = sf.base.extend([], e.data);
+    };
+    GroupLazyLoadRenderer.prototype.getGroupKeysAndFields = function (index, rowsObject) {
+        var fields = [];
+        var keys = [];
+        for (var i = index; i >= 0; i--) {
+            if (rowsObject[i].isCaptionRow && fields.indexOf(rowsObject[i].data.field) === -1
+                && (rowsObject[i].indent < rowsObject[index].indent || i === index)) {
+                fields.push(rowsObject[i].data.field);
+                keys.push(rowsObject[i].data.key);
+                if (rowsObject[i].indent === 0) {
+                    break;
+                }
+            }
+        }
+        return { fields: fields, keys: keys };
+    };
+    GroupLazyLoadRenderer.prototype.generateExpandPredicates = function (fields, values) {
+        var filterCols = [];
+        for (var i = 0; i < fields.length; i++) {
+            var column = this.parent.getColumnByField(fields[i]);
+            var value = values[i] === 'null' ? null : values[i];
+            var pred = {
+                field: fields[i], predicate: 'or', uid: column.uid, operator: 'equal', type: column.type,
+                matchCase: this.allowCaseSensitive, ignoreAccent: this.ignoreAccent
+            };
+            if (value === '' || sf.base.isNullOrUndefined(value)) {
+                filterCols = filterCols.concat(CheckBoxFilterBase.generateNullValuePredicates(pred));
+            }
+            else {
+                filterCols.push(sf.base.extend({}, { value: value }, pred));
+            }
+        }
+        return CheckBoxFilterBase.getPredicate(filterCols);
+    };
+    GroupLazyLoadRenderer.prototype.getPredicates = function (pred) {
+        var predicateList = [];
+        for (var _i = 0, _a = Object.keys(pred); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            predicateList.push(pred[prop]);
+        }
+        return predicateList;
+    };
+    GroupLazyLoadRenderer.prototype.captionRowExpand = function (args) {
+        var _this = this;
+        var captionRow = args.groupInfo;
+        var level = this.parent.groupSettings.columns.indexOf(captionRow.data.field) + 1;
+        var pred = this.generateExpandPredicates(args.fields, args.keys);
+        var predicateList = this.getPredicates(pred);
+        var lazyLoad = { level: level, skip: args.skip, take: args.take, where: predicateList };
+        if (args.makeRequest) {
+            var query = this.parent.renderModule.data.generateQuery(true);
+            if (!query.isCountRequired) {
+                query.isCountRequired = true;
+            }
+            query.lazyLoad.push({ key: 'onDemandGroupInfo', value: lazyLoad });
+            this.parent.showSpinner();
+            this.parent.renderModule.data.getData({}, query).then(function (e) {
+                _this.parent.hideSpinner();
+                if (e.result.length === 0) {
+                    return;
+                }
+                if (_this.cacheMode && _this.uid1 && _this.uid2) {
+                    _this.removeTopRows(_this.uid3, _this.uid1, _this.uid2);
+                    _this.uid1 = _this.uid2 = _this.uid3 = undefined;
+                }
+                _this.lazyLoadHandler({
+                    data: e.result, count: e.count, level: level, index: args.rowIndex,
+                    isRowExist: false, isScroll: args.isScroll, up: false, rowIndex: args.cachedRowIndex
+                });
+            })
+                .catch(function (e) { return _this.parent.renderModule.dataManagerFailure(e, { requestType: 'grouping' }); });
+        }
+        else {
+            this.lazyLoadHandler({
+                data: null, count: args.groupInfo.data.count, level: level, index: args.rowIndex,
+                isRowExist: true, isScroll: args.isScroll, up: args.scrollUp, rowIndex: args.cachedRowIndex
+            });
+        }
+    };
+    GroupLazyLoadRenderer.prototype.scrollReset = function (top) {
+        this.parent.getContent().firstElementChild.scrollTop = top ? this.parent.getContent().firstElementChild.scrollTop + top : 0;
+    };
+    GroupLazyLoadRenderer.prototype.updateCurrentViewData = function () {
+        var records = [];
+        this.getRows().filter(function (row) {
+            if (row.isDataRow) {
+                records[row.index] = row.data;
+            }
+        });
+        this.parent.currentViewData = records.length ? records : this.parent.currentViewData;
+    };
+    /** @hidden */
+    GroupLazyLoadRenderer.prototype.getGroupCache = function () {
+        return this.groupCache;
+    };
+    /** @hidden */
+    GroupLazyLoadRenderer.prototype.getRows = function () {
+        return this.groupCache[this.parent.pageSettings.currentPage] || [];
+    };
+    /** @hidden */
+    GroupLazyLoadRenderer.prototype.getRowElements = function () {
+        return [].slice.call(this.parent.getContent().querySelectorAll('.e-row'));
+    };
+    /** @hidden */
+    GroupLazyLoadRenderer.prototype.getRowByIndex = function (index) {
+        var tr = [].slice.call(this.parent.getContent().querySelectorAll('.e-row'));
+        var row;
+        for (var i = 0; !sf.base.isNullOrUndefined(index) && i < tr.length; i++) {
+            if (tr[i].getAttribute('aria-rowindex') === index.toString()) {
+                row = tr[i];
+                break;
+            }
+        }
+        return row;
+    };
+    /** @hidden */
+    GroupLazyLoadRenderer.prototype.setVisible = function (columns) {
+        var gObj = this.parent;
+        var rows = this.getRows();
+        var testRow;
+        rows.some(function (r) { if (r.isDataRow) {
+            testRow = r;
+        } return r.isDataRow; });
+        var contentrows = this.getRows().filter(function (row) { return !row.isDetailRow; });
+        for (var i = 0; i < columns.length; i++) {
+            var column = columns[i];
+            var idx = this.parent.getNormalizedColumnIndex(column.uid);
+            var colIdx = this.parent.getColumnIndexByUid(column.uid);
+            var displayVal = column.visible === true ? '' : 'none';
+            if (idx !== -1 && testRow && idx < testRow.cells.length) {
+                sf.base.setStyleAttribute(this.getColGroup().childNodes[idx], { 'display': displayVal });
+            }
+            this.setDisplayNone(gObj.getDataRows(), colIdx, displayVal, contentrows, idx);
+            if (!this.parent.invokedFromMedia && column.hideAtMedia) {
+                this.parent.updateMediaColumns(column);
+            }
+            this.parent.invokedFromMedia = false;
+        }
+    };
+    /** @hidden */
+    GroupLazyLoadRenderer.prototype.setDisplayNone = function (tr, idx, displayVal, rows, oriIdx) {
+        var trs = Object.keys(tr);
+        if (!this.parent.groupSettings.columns.length) {
+            for (var i = 0; i < trs.length; i++) {
+                var td = tr[trs[i]].querySelectorAll('td.e-rowcell')[idx];
+                if (tr[trs[i]].querySelectorAll('td.e-rowcell').length && td) {
+                    sf.base.setStyleAttribute(tr[trs[i]].querySelectorAll('td.e-rowcell')[idx], { 'display': displayVal });
+                    if (tr[trs[i]].querySelectorAll('td.e-rowcell')[idx].classList.contains('e-hide')) {
+                        sf.base.removeClass([tr[trs[i]].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);
+                    }
+                    rows[trs[i]].cells[idx].visible = displayVal === '' ? true : false;
+                }
+            }
+        }
+        else {
+            var keys = Object.keys(this.groupCache);
+            for (var j = 0; j < keys.length; j++) {
+                var uids = this.rowsByUid[keys[j]];
+                var idxs = Object.keys(uids);
+                for (var i = 0; i < idxs.length; i++) {
+                    var tr_1 = this.parent.getContent().querySelector('tr[data-uid=' + idxs[i] + ']');
+                    var row = uids[idxs[i]];
+                    if (row.isCaptionRow) {
+                        if (!this.captionModelGen.isEmpty()) {
+                            this.changeCaptionRow(row, tr_1, keys[j]);
+                        }
+                        else {
+                            row.cells[row.indent + 1].colSpan = displayVal === '' ? row.cells[row.indent + 1].colSpan + 1
+                                : row.cells[row.indent + 1].colSpan - 1;
+                            if (tr_1) {
+                                tr_1.cells[row.indent + 1].colSpan = row.cells[row.indent + 1].colSpan;
+                            }
+                        }
+                    }
+                    if (row.isDataRow) {
+                        this.showAndHideCells(tr_1, idx, displayVal, false);
+                        row.cells[oriIdx].visible = displayVal === '' ? true : false;
+                    }
+                    if (!row.isCaptionRow && !row.isDataRow && sf.base.isNullOrUndefined(row.indent)) {
+                        row.cells[oriIdx].visible = displayVal === '' ? true : false;
+                        row.visible = row.cells.some(function (cell) { return cell.isDataCell && cell.visible; });
+                        this.showAndHideCells(tr_1, idx, displayVal, true, row);
+                    }
+                }
+            }
+        }
+    };
+    GroupLazyLoadRenderer.prototype.changeCaptionRow = function (row, tr, index) {
+        var capRow = row;
+        var captionData = row.data;
+        var data = this.groupGenerator.generateCaptionRow(captionData, capRow.indent, capRow.parentGid, undefined, capRow.tIndex, capRow.parentUid);
+        data.uid = row.uid;
+        data.isExpand = row.isExpand;
+        data.lazyLoadCssClass = row.lazyLoadCssClass;
+        this.rowsByUid[index][row.uid] = data;
+        this.groupCache[index][this.objIdxByUid[index][row.uid]] = data;
+        if (tr) {
+            var tbody = this.parent.getContentTable().querySelector('tbody');
+            tbody.replaceChild(this.rowRenderer.render(data, this.parent.getColumns()), tr);
+        }
+    };
+    GroupLazyLoadRenderer.prototype.showAndHideCells = function (tr, idx, displayVal, isSummary, row) {
+        if (tr) {
+            var cls = isSummary ? 'td.e-summarycell' : 'td.e-rowcell';
+            sf.base.setStyleAttribute(tr.querySelectorAll(cls)[idx], { 'display': displayVal });
+            if (tr.querySelectorAll(cls)[idx].classList.contains('e-hide')) {
+                sf.base.removeClass([tr.querySelectorAll(cls)[idx]], ['e-hide']);
+            }
+            if (isSummary) {
+                if (row.visible && tr.classList.contains('e-hide')) {
+                    sf.base.removeClass([tr], ['e-hide']);
+                }
+                else if (!row.visible) {
+                    sf.base.addClass([tr], ['e-hide']);
+                }
+            }
+        }
+    };
+    return GroupLazyLoadRenderer;
+}(ContentRender));
+
+/**
+ * Group lazy load class
+ */
+var LazyLoadGroup = /** @class */ (function () {
+    /**
+     * Constructor for Grid group lazy load module
+     * @hidden
+     */
+    function LazyLoadGroup(parent, serviceLocator) {
+        this.parent = parent;
+        this.serviceLocator = serviceLocator;
+        this.addEventListener();
+    }
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    LazyLoadGroup.prototype.getModuleName = function () {
+        return 'lazyLoadGroup';
+    };
+    /**
+     * @hidden
+     */
+    LazyLoadGroup.prototype.addEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.on(initialLoad, this.instantiateRenderer, this);
+    };
+    /**
+     * @hidden
+     */
+    LazyLoadGroup.prototype.removeEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off(initialLoad, this.instantiateRenderer);
+    };
+    LazyLoadGroup.prototype.instantiateRenderer = function () {
+        if (this.parent.height === 'auto') {
+            this.parent.height = this.parent.pageSettings.pageSize * this.parent.getRowHeight();
+        }
+        var renderer = this.serviceLocator.getService('rendererFactory');
+        if (this.parent.groupSettings.enableLazyLoading) {
+            renderer.addRenderer(exports.RenderType.Content, new GroupLazyLoadRenderer(this.parent, this.serviceLocator));
+        }
+    };
+    /**
+     * @hidden
+     */
+    LazyLoadGroup.prototype.destroy = function () {
+        this.removeEventListener();
+    };
+    return LazyLoadGroup;
 }());
 
 /**
@@ -39446,7 +41405,7 @@ var MaskedTextBoxCellEdit = /** @class */ (function () {
  * Grid component exported items
  */
 
-Grid.Inject(Filter, Page, Selection, Sort, Group, Reorder, RowDD, DetailRow, Toolbar$1, Aggregate, Search, VirtualScroll, Edit, Resize, ExcelExport, PdfExport, CommandColumn, ContextMenu$1, Freeze, ColumnMenu, ColumnChooser, ForeignKey, BlazorAction, InfiniteScroll);
+Grid.Inject(Filter, Page, Selection, Sort, Group, Reorder, RowDD, DetailRow, Toolbar$1, Aggregate, Search, VirtualScroll, Edit, Resize, ExcelExport, PdfExport, CommandColumn, ContextMenu$1, Freeze, ColumnMenu, ColumnChooser, ForeignKey, BlazorAction, InfiniteScroll, LazyLoadGroup);
 
 exports.CheckBoxFilterBase = CheckBoxFilterBase;
 exports.ExcelFilterBase = ExcelFilterBase;
@@ -39527,10 +41486,14 @@ exports.applyBiggerTheme = applyBiggerTheme;
 exports.alignFrozenEditForm = alignFrozenEditForm;
 exports.ensureLastRow = ensureLastRow;
 exports.ensureFirstRow = ensureFirstRow;
+exports.isRowEnteredInGrid = isRowEnteredInGrid;
 exports.getEditedDataIndex = getEditedDataIndex;
 exports.eventPromise = eventPromise;
 exports.getStateEventArgument = getStateEventArgument;
 exports.ispercentageWidth = ispercentageWidth;
+exports.resetRowIndex = resetRowIndex;
+exports.compareChanges = compareChanges;
+exports.setRowElements = setRowElements;
 exports.created = created;
 exports.destroyed = destroyed;
 exports.load = load;
@@ -39590,6 +41553,8 @@ exports.filterBeforeOpen = filterBeforeOpen;
 exports.filterSearchBegin = filterSearchBegin;
 exports.commandClick = commandClick;
 exports.exportGroupCaption = exportGroupCaption;
+exports.lazyLoadGroupExpand = lazyLoadGroupExpand;
+exports.lazyLoadGroupCollapse = lazyLoadGroupCollapse;
 exports.initialLoad = initialLoad;
 exports.initialEnd = initialEnd;
 exports.dataReady = dataReady;
@@ -39748,6 +41713,9 @@ exports.getFilterBarOperator = getFilterBarOperator;
 exports.resetColumns = resetColumns;
 exports.pdfAggregateQueryCellInfo = pdfAggregateQueryCellInfo;
 exports.excelAggregateQueryCellInfo = excelAggregateQueryCellInfo;
+exports.setGroupCache = setGroupCache;
+exports.lazyLoadScrollHandler = lazyLoadScrollHandler;
+exports.groupCollapse = groupCollapse;
 exports.beforeCheckboxRenderer = beforeCheckboxRenderer;
 exports.refreshHandlers = refreshHandlers;
 exports.Data = Data;
@@ -39793,6 +41761,7 @@ exports.detailLists = detailLists;
 exports.gridObserver = gridObserver;
 exports.BlazorAction = BlazorAction;
 exports.InfiniteScroll = InfiniteScroll;
+exports.LazyLoadGroup = LazyLoadGroup;
 exports.Column = Column;
 exports.CommandColumnModel = CommandColumnModel;
 exports.Row = Row;
@@ -39834,6 +41803,7 @@ exports.MaskedTextBoxCellEdit = MaskedTextBoxCellEdit;
 exports.VirtualContentRenderer = VirtualContentRenderer;
 exports.VirtualHeaderRenderer = VirtualHeaderRenderer;
 exports.VirtualElementHandler = VirtualElementHandler;
+exports.GroupLazyLoadRenderer = GroupLazyLoadRenderer;
 exports.CellRendererFactory = CellRendererFactory;
 exports.ServiceLocator = ServiceLocator;
 exports.RowModelGenerator = RowModelGenerator;
@@ -39846,7 +41816,5 @@ exports.InterSectionObserver = InterSectionObserver;
 return exports;
 
 });
-sfBlazor.modules["grid"] = "grids.Grid";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.grid, () => {
+
     sf.grids = sf.base.extend({}, sf.grids, sfgrid({}));
-});

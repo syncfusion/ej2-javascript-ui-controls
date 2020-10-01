@@ -10,7 +10,7 @@
       color: $e-de-statusbar-separator-color;
     }
 
-    &:hover {
+    #{if(&, '&', '*')}:hover {
       box-shadow: none;
     }
   }
@@ -312,17 +312,17 @@
       padding: 0 1px;
       padding-bottom: 6px;
 
-      &:focus {
+      #{if(&, '&', '*')}:focus {
         padding: 0;
         padding-bottom: 6px;
       }
 
-      &:active {
+      #{if(&, '&', '*')}:active {
         padding: 0;
         padding-bottom: 6px;
       }
 
-      &:hover {
+      #{if(&, '&', '*')}:hover {
         padding: 0;
         padding-bottom: 6px;
       }
@@ -334,17 +334,17 @@
       padding: 0;
       padding-bottom: 6px;
 
-      &:focus {
+      #{if(&, '&', '*')}:focus {
         padding: 0;
         padding-bottom: 6px;
       }
 
-      &:active {
+      #{if(&, '&', '*')}:active {
         padding: 0;
         padding-bottom: 6px;
       }
 
-      &:hover {
+      #{if(&, '&', '*')}:hover {
         padding: 0;
         padding-bottom: 6px;
       }
@@ -355,17 +355,17 @@
       padding: 0 1px;
       padding-bottom: 6px;
 
-      &:focus {
+      #{if(&, '&', '*')}:focus {
         padding: 0;
         padding-bottom: 6px;
       }
 
-      &:active {
+      #{if(&, '&', '*')}:active {
         padding: 0;
         padding-bottom: 6px;
       }
 
-      &:hover {
+      #{if(&, '&', '*')}:hover {
         padding: 0;
         padding-bottom: 6px;
       }
@@ -459,7 +459,7 @@
         background-color: $de-prop-btn-bg-color;
         border-color: $de-prop-btn-border-color;
 
-        &:focus {
+        #{if(&, '&', '*')}:focus {
           background-color: $de-toggle-border-hover-color;
           @if $skin-name != 'bootstrap4' {
             border: 1px;
@@ -469,7 +469,7 @@
           outline-color: $de-toggle-bg-color;
         }
 
-        &:active,
+        #{if(&, '&', '*')}:active,
         .e-btn-toggle {
           background-color: $de-toggle-border-hover-color;
           @if $skin-name != 'bootstrap4' {
@@ -478,7 +478,7 @@
           border-color: $de-toggle-border-color;
         }
 
-        &:hover {
+        #{if(&, '&', '*')}:hover {
           background-color: $de-toggle-hover-color;
           @if $skin-name != 'bootstrap4' {
             border: 1px;
@@ -592,15 +592,15 @@
       min-height: 100%;
       min-width: 100%;
 
-      &:focus {
+      #{if(&, '&', '*')}:focus {
         box-shadow: none;
       }
 
-      &:active {
+      #{if(&, '&', '*')}:active {
         box-shadow: none;
       }
 
-      &:hover {
+      #{if(&, '&', '*')}:hover {
         box-shadow: none;
       }
     }
@@ -680,15 +680,15 @@
     box-shadow: none;
     height: $de-group-btn-hgt;
 
-    &:focus {
+    #{if(&, '&', '*')}:focus {
       box-shadow: none;
     }
 
-    &:active {
+    #{if(&, '&', '*')}:active {
       box-shadow: none;
     }
 
-    &:hover {
+    #{if(&, '&', '*')}:hover {
       box-shadow: none;
     }
   }
@@ -697,15 +697,15 @@
     box-shadow: none;
     height: $de-group-btn-hgt;
 
-    &:focus {
+    #{if(&, '&', '*')}:focus {
       box-shadow: none;
     }
 
-    &:active {
+    #{if(&, '&', '*')}:active {
       box-shadow: none;
     }
 
-    &:hover {
+    #{if(&, '&', '*')}:hover {
       box-shadow: none;
     }
   }
@@ -954,7 +954,7 @@
     outline-offset: 0;
     box-shadow: $de-toggle-btn-border !important;
     
-    &:hover {
+    #{if(&, '&', '*')}:hover {
       background-color: $de-toggle-bg-color !important;
       @if $skin-name == 'fabric' {
         border-color: $de-toggle-bg-color !important;
@@ -1487,17 +1487,17 @@
         padding: 0 1px;
         padding-bottom: 6px;
 
-        &:focus {
+        #{if(&, '&', '*')}:focus {
           padding: 0;
           padding-bottom: 6px;
         }
 
-        &:active {
+        #{if(&, '&', '*')}:active {
           padding: 0;
           padding-bottom: 6px;
         }
 
-        &:hover {
+        #{if(&, '&', '*')}:hover {
           padding: 0;
           padding-bottom: 6px;
         }
@@ -1509,17 +1509,17 @@
         padding: 0;
         padding-bottom: 6px;
 
-        &:focus {
+        #{if(&, '&', '*')}:focus {
           padding: 0;
           padding-bottom: 6px;
         }
 
-        &:active {
+        #{if(&, '&', '*')}:active {
           padding: 0;
           padding-bottom: 6px;
         }
 
-        &:hover {
+        #{if(&, '&', '*')}:hover {
           padding: 0;
           padding-bottom: 6px;
         }
@@ -1531,17 +1531,17 @@
         padding: 0 1px;
         padding-bottom: 6px;
 
-        &:focus {
+        #{if(&, '&', '*')}:focus {
           padding: 0;
           padding-bottom: 6px;
         }
 
-        &:active {
+        #{if(&, '&', '*')}:active {
           padding: 0;
           padding-bottom: 6px;
         }
 
-        &:hover {
+        #{if(&, '&', '*')}:hover {
           padding: 0;
           padding-bottom: 6px;
         }
@@ -1572,15 +1572,15 @@
         min-height: 100%;
         min-width: 100%;
 
-        &:focus {
+        #{if(&, '&', '*')}:focus {
           box-shadow: none;
         }
 
-        &:active {
+        #{if(&, '&', '*')}:active {
           box-shadow: none;
         }
 
-        &:hover {
+        #{if(&, '&', '*')}:hover {
           box-shadow: none;
         }
       }
@@ -1625,15 +1625,15 @@
       box-shadow: none;
       height: $de-group-btn-hgt-big;
 
-      &:focus {
+      #{if(&, '&', '*')}:focus {
         box-shadow: none;
       }
 
-      &:active {
+      #{if(&, '&', '*')}:active {
         box-shadow: none;
       }
 
-      &:hover {
+      #{if(&, '&', '*')}:hover {
         box-shadow: none;
       }
     }
@@ -1642,15 +1642,15 @@
       box-shadow: none;
       height: $de-group-btn-hgt-big;
 
-      &:focus {
+      #{if(&, '&', '*')}:focus {
         box-shadow: none;
       }
 
-      &:active {
+      #{if(&, '&', '*')}:active {
         box-shadow: none;
       }
 
-      &:hover {
+      #{if(&, '&', '*')}:hover {
         box-shadow: none;
       }
     }
@@ -1720,7 +1720,7 @@
       outline: $de-toggle-btn-outline;
       outline-offset: 0;
     
-      &:hover {
+      #{if(&, '&', '*')}:hover {
         background-color: $de-toggle-bg-color !important;
         @if $skin-name == 'fabric' {
           border-color: $de-toggle-bg-color !important;

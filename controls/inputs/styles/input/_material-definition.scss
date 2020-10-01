@@ -405,6 +405,11 @@ $outline-input-group-disabled-color: rgba($grey-light-font, .38) !default;
    }
  }
 
+@keyframes slideTopUp {
+  from {  transform: translate3d($zero-value, $zero-value, $zero-value) scale(1);}
+  to {  transform: translate3d($zero-value, $zero-value, $zero-value) scale(1);}
+}
+
 //Filled input configuration
 $filled-input-font-size: 14px !default;
 $bigger-filled-input-font-size: 16px !default;

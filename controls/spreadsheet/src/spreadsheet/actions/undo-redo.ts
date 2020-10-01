@@ -1,12 +1,12 @@
-import { Spreadsheet } from '../../spreadsheet/index';
+import { Spreadsheet, locale, deleteImage, createImageElement } from '../../spreadsheet/index';
 import { performUndoRedo, updateUndoRedoCollection, enableToolbarItems, ICellRenderer, completeAction } from '../common/index';
 import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction } from '../common/index';
 import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRedo } from '../common/index';
-import { selectRange, clearUndoRedoCollection } from '../common/index';
+import { selectRange, clearUndoRedoCollection, setMaxHgt, getMaxHgt, setRowEleHeight } from '../common/index';
 import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation } from '../../workbook/index';
 import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
 import { SheetModel, MergeArgs, setMerge, getRangeAddress } from '../../workbook/index';
-import { addClass } from '@syncfusion/ej2-base';
+import { addClass, L10n } from '@syncfusion/ej2-base';
 
 /**
  * UndoRedo module allows to perform undo redo functionalities.
@@ -58,6 +58,9 @@ export class UndoRedo {
                 address = this.parent.getAddressInfo(eventArgs.address).indices;
                 break;
             case 'beforeClear':
+                address = getRangeIndexes(eventArgs.range);
+                break;
+            case 'beforeInsertImage':
                 address = getRangeIndexes(eventArgs.range);
                 break;
         }
@@ -113,7 +116,14 @@ export class UndoRedo {
                     updateAction(undoRedoArgs, this.parent, !args.isUndo);
                     break;
                 case 'clearCF':
-                        updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                    break;
+                case 'insertImage':
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                    break;
+                case 'imageRefresh':
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                    break;
             }
             args.isUndo ? this.redoCollection.push(undoRedoArgs) : this.undoCollection.push(undoRedoArgs);
             if (this.undoCollection.length > this.undoRedoStep) {
@@ -134,7 +144,7 @@ export class UndoRedo {
 
     private updateUndoRedoCollection(options: { args: CollaborativeEditArgs, isPublic?: boolean }): void {
         let actionList: string[] = ['clipboard', 'format', 'sorting', 'cellSave', 'resize', 'resizeToFit', 'wrap', 'hideShow', 'replace',
-        'validation', 'merge', 'clear', 'conditionalFormat', 'clearCF'];
+            'validation', 'merge', 'clear', 'conditionalFormat', 'clearCF', 'insertImage', 'imageRefresh'];
         if ((options.args.action === 'insert' || options.args.action === 'delete') && options.args.eventArgs.modelType !== 'Sheet') {
             actionList.push(options.args.action);
         }
@@ -144,8 +154,8 @@ export class UndoRedo {
         }
         let eventArgs: UndoRedoEventArgs = options.args.eventArgs;
         if (action === 'clipboard' || action === 'sorting' || action === 'format' || action === 'cellSave' ||
-        action === 'wrap' || action === 'replace' || action === 'validation' || action === 'clear' || action === 'conditionalFormat' ||
-        action === 'clearCF') {
+            action === 'wrap' || action === 'replace' || action === 'validation' || action === 'clear' || action === 'conditionalFormat' ||
+            action === 'clearCF' || action === 'insertImage' || action === 'imageRefresh') {
             let beforeActionDetails: { beforeDetails: BeforeActionData } = { beforeDetails: { cellDetails: [] } };
             this.parent.notify(getBeforeActionData, beforeActionDetails);
             eventArgs.beforeActionData = beforeActionDetails.beforeDetails;
@@ -165,8 +175,15 @@ export class UndoRedo {
     }
 
     private updateUndoRedoIcons(): void {
-        this.parent.notify(enableToolbarItems, [{ items: [this.parent.element.id + '_undo'], enable: this.undoCollection.length > 0 }]);
-        this.parent.notify(enableToolbarItems, [{ items: [this.parent.element.id + '_redo'], enable: this.redoCollection.length > 0 }]);
+        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        this.parent.notify(enableToolbarItems, [{
+            tab: l10n.getConstant('Home'), items: [this.parent.element.id + '_undo']
+            , enable: this.undoCollection.length > 0
+        }]);
+        this.parent.notify(enableToolbarItems, [{
+            tab: l10n.getConstant('Home'), items: [this.parent.element.id + '_redo']
+            , enable: this.redoCollection.length > 0
+        }]);
     }
 
     private undoForClipboard(args: CollaborativeEditArgs): CollaborativeEditArgs {
@@ -178,22 +195,72 @@ export class UndoRedo {
         let copiedInfo: { [key: string]: Object } = eventArgs.copiedInfo;
         let actionData: BeforeActionData = eventArgs.beforeActionData;
         let isRefresh: boolean = this.checkRefreshNeeded(sheetIndex);
-        if (this.isUndo) {
-            if (copiedInfo.isCut) {
-                let cells: PreviousCellDetails[] = actionData.cutCellDetails;
-                this.updateCellDetails(
-                    cells, getSheet(this.parent, getSheetIndexFromId(this.parent, <number>copiedInfo.sId)),
-                    copiedInfo.range as number[], isRefresh);
+        let pictureElem: HTMLElement;
+        if (args.eventArgs.requestType === 'imagePaste') {
+            let copiedShapeInfo: { [key: string]: Object } = eventArgs.copiedShapeInfo;
+            if (this.isUndo) {
+                pictureElem = copiedShapeInfo.pictureElem as HTMLElement;
+                if (copiedShapeInfo.isCut) {
+                    this.parent.notify(deleteImage, {
+                        id: pictureElem.id, sheetIdx: eventArgs.pasteSheetIndex + 1
+                    });
+                    this.parent.notify(createImageElement, {
+                        options: {
+                            data: pictureElem.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'),
+                            height: copiedShapeInfo.height, width: copiedShapeInfo.width, imageId: pictureElem.id
+                        },
+                        range: copiedShapeInfo.copiedRange, isPublic: false, isUndoRedo: true
+                    });
+                } else {
+                    this.parent.notify(deleteImage, {
+                        id: eventArgs.pastedPictureElement.id, sheetIdx: eventArgs.pasteSheetIndex + 1
+                    });
+                }
+            } else {
+                if (copiedShapeInfo.isCut) {
+                    pictureElem = copiedShapeInfo.pictureElem as HTMLElement;
+                    this.parent.notify(deleteImage, {
+                        id: pictureElem.id, sheetIdx: copiedShapeInfo.sId
+                    });
+                    this.parent.notify(createImageElement, {
+                        options: {
+                            data: pictureElem.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'),
+                            height: copiedShapeInfo.height, width: copiedShapeInfo.width, imageId: pictureElem.id
+                        },
+                        range: copiedShapeInfo.pastedRange, isPublic: false, isUndoRedo: true
+                    });
+                } else {
+                    pictureElem = eventArgs.pastedPictureElement;
+                    this.parent.notify(createImageElement, {
+                        options: {
+                            data: pictureElem.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'),
+                            height: pictureElem.offsetHeight, width: pictureElem.offsetWidth, imageId: pictureElem.id
+                        },
+                        range: copiedShapeInfo.pastedRange, isPublic: false, isUndoRedo: true
+                    });
+                }
             }
-            this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh);
-            eventArgs.mergeCollection.forEach((mergeArgs: MergeArgs): void => {
-                mergeArgs.merge = !mergeArgs.merge; this.parent.notify(setMerge, mergeArgs); mergeArgs.merge = !mergeArgs.merge;
-            });
         } else {
-            updateAction(args, this.parent, copiedInfo.isCut as boolean);
-        }
-        if (isRefresh) {
-            this.parent.notify(selectRange, { indexes: range });
+            if (this.isUndo) {
+                if (copiedInfo.isCut) {
+                    let cells: PreviousCellDetails[] = actionData.cutCellDetails;
+                    this.updateCellDetails(
+                        cells, getSheet(this.parent, getSheetIndexFromId(this.parent, <number>copiedInfo.sId)),
+                        copiedInfo.range as number[], isRefresh);
+                }
+                this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh);
+                setMaxHgt(sheet, range[0], range[1], 20);
+                let hgt: number = getMaxHgt(sheet, range[0]);
+                setRowEleHeight(this.parent, sheet, hgt, range[0]);
+                eventArgs.mergeCollection.forEach((mergeArgs: MergeArgs): void => {
+                    mergeArgs.merge = !mergeArgs.merge; this.parent.notify(setMerge, mergeArgs); mergeArgs.merge = !mergeArgs.merge;
+                });
+            } else {
+                updateAction(args, this.parent, copiedInfo.isCut as boolean);
+            }
+            if (isRefresh) {
+                this.parent.notify(selectRange, { indexes: range });
+            }
         }
         return args;
     }
@@ -220,7 +287,7 @@ export class UndoRedo {
     private performOperation(args: CollaborativeEditArgs): CollaborativeEditArgs {
         let eventArgs: UndoRedoEventArgs = args.eventArgs;
         let address: string[] = (args.action === 'cellSave' || args.action === 'wrap' || args.action === 'replace') ?
-        eventArgs.address.split('!')
+            eventArgs.address.split('!')
             : eventArgs.range.split('!');
         let range: number[] = getRangeIndexes(address[1]);
         let sheetIndex: number = getSheetIndex(this.parent, address[0]);
@@ -229,6 +296,9 @@ export class UndoRedo {
         let isRefresh: boolean = this.checkRefreshNeeded(sheetIndex);
         if (this.isUndo) {
             this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh, args);
+            setMaxHgt(sheet, range[0], range[1], 20);
+            let hgt: number = getMaxHgt(sheet, range[0]);
+            setRowEleHeight(this.parent, sheet, hgt, range[0]);
         } else {
             updateAction(args, this.parent);
         }
@@ -246,7 +316,8 @@ export class UndoRedo {
                 cells.push({
                     rowIndex: i, colIndex: j, format: cell ? cell.format : null,
                     style: cell ? cell.style : null, value: cell ? cell.value : '', formula: cell ? cell.formula : '',
-                    wrap: cell && cell.wrap, rowSpan: cell && cell.rowSpan, colSpan: cell && cell.colSpan, hyperlink: cell && cell.hyperlink
+                    wrap: cell && cell.wrap, rowSpan: cell && cell.rowSpan, colSpan: cell && cell.colSpan,
+                    hyperlink: cell && cell.hyperlink, image: cell && cell.image
                 });
             }
         }

@@ -1,4 +1,4 @@
-import { Browser } from '@syncfusion/ej2-base';
+import { Browser, isBlazor } from '@syncfusion/ej2-base';
 import { PdfViewer, PdfViewerBase } from '../index';
 import { getDiagramElement } from '@syncfusion/ej2-drawings';
 
@@ -343,8 +343,10 @@ export class Magnification {
                     this.responsivePages();
                 }
             }
-            if (this.pdfViewer.toolbarModule) {
-                this.pdfViewer.toolbarModule.updateZoomButtons();
+            if (!isBlazor()) {
+                if (this.pdfViewer.toolbarModule) {
+                    this.pdfViewer.toolbarModule.updateZoomButtons();
+                }
             }
             if (!this.isInitialLoading) {
                 if (this.previousZoomFactor !== this.zoomFactor) {
@@ -353,8 +355,16 @@ export class Magnification {
                 }
             }
         }
-        if (this.pdfViewer.toolbarModule) {
-            this.pdfViewer.toolbarModule.updateZoomPercentage(this.zoomFactor);
+        if (!isBlazor()) {
+            if (this.pdfViewer.toolbarModule) {
+                this.pdfViewer.toolbarModule.updateZoomPercentage(this.zoomFactor);
+            }
+            if (!this.isInitialLoading) {
+                if (this.previousZoomFactor !== this.zoomFactor) {
+                    this.pdfViewer.zoomValue = this.zoomFactor * 100;
+                    this.pdfViewer.fireZoomChange();
+                }
+            }
         }
         if (Browser.isDevice && this.isPinchZoomed) {
             // tslint:disable-next-line:radix

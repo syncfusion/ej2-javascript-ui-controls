@@ -17435,8 +17435,8 @@ class DocumentHelper {
         }
         let color = this.owner.userColor;
         if (author !== this.owner.currentUser) {
-            if (this.authors.length === 0 && color !== '#b70f34') {
-                color = '#b70f34';
+            if (this.authors.length === 0 && color !== '#b5082e') {
+                color = '#b5082e'; //dark red
             }
             else {
                 color = this.generateRandomColor();
@@ -17449,12 +17449,15 @@ class DocumentHelper {
      * @private
      */
     generateRandomColor() {
-        let letters = '0123456789ABCDEF';
-        let color = '#';
-        for (let i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
-        }
-        return color;
+        let userColors = ['#b5082e',
+            '#2e97d3',
+            '#bb00ff',
+            '#f37e43',
+            '#03a60b',
+            '#881824',
+            '#e09a2b',
+            '#50565e']; //dark grey
+        return userColors[(this.authors.length % 8)];
     }
     /**
      * @private
@@ -31866,6 +31869,9 @@ class HtmlExport {
             if (block.hasOwnProperty('inlines')) {
                 string += this.serializeParagraph(block);
             }
+            else if (block.hasOwnProperty('blocks')) {
+                string += this.serializeSection(block);
+            }
             else {
                 string += this.closeList();
                 string += this.serializeTable(block);
@@ -32034,6 +32040,11 @@ class HtmlExport {
         let i = 0;
         while (paragraph.inlines.length > i) {
             inline = paragraph.inlines[i];
+            if (inline.hasOwnProperty('inlines')) {
+                blockStyle += this.serializeContentInlines(inline, blockStyle);
+                i++;
+                continue;
+            }
             if (inline.hasOwnProperty('imageString')) {
                 blockStyle += this.serializeImageContainer(inline);
             }
@@ -32084,6 +32095,10 @@ class HtmlExport {
             i++;
         }
         return blockStyle;
+    }
+    serializeContentInlines(inline, inlineStyle) {
+        inlineStyle += this.serializeInlines(inline, inlineStyle);
+        return inlineStyle;
     }
     // Serialize Span
     /**
@@ -72793,6 +72808,8 @@ class SfdtExport {
         this.nestedBlockContent = false;
         this.nestedBlockEnabled = false;
         this.blocks = [];
+        this.contentInline = [];
+        this.isContentControl = false;
         this.isBlockClosed = true;
         /**
          * @private
@@ -73255,7 +73272,7 @@ class SfdtExport {
         return (next instanceof BlockWidget && paragraphWidget.containerWidget.index === next.containerWidget.index) ? next : undefined;
     }
     writeInlines(paragraph, line, inlines) {
-        let contentInline = [];
+        this.contentInline = [];
         let lineWidget = line.clone();
         let isformField = false;
         let bidi = paragraph.paragraphFormat.bidi;
@@ -73264,29 +73281,6 @@ class SfdtExport {
         }
         for (let i = 0; i < lineWidget.children.length; i++) {
             let element = lineWidget.children[i];
-            if (element instanceof ContentControl) {
-                if (element.contentControlWidgetType === 'Block') {
-                    this.isBlockClosed = false;
-                    if (this.blockContent && element.type === 0) {
-                        this.nestedBlockContent = true;
-                        continue;
-                    }
-                    else if (this.nestedBlockContent && element.type === 1) {
-                        this.nestedBlockContent = false;
-                        continue;
-                    }
-                    this.blockContent = (element.type === 0) ? true : false;
-                    if (lineWidget.children[i - 1] instanceof ContentControl) {
-                        if (lineWidget.children[i - 1].contentControlWidgetType === 'Block') {
-                            this.blockContent = true;
-                        }
-                    }
-                    if (!this.blockContent) {
-                        this.isBlockClosed = true;
-                    }
-                    continue;
-                }
-            }
             if (this.isExport && this.checkboxOrDropdown) {
                 if (isformField && element instanceof TextElementBox) {
                     continue;
@@ -73298,50 +73292,9 @@ class SfdtExport {
             if (element instanceof ListTextElementBox) {
                 continue;
             }
-            if (element instanceof ContentControl) {
-                if (this.startContent && element.type === 0) {
-                    this.nestedContent = true;
-                    continue;
-                }
-                else if (this.startContent && this.nestedContent) {
-                    let inline = {};
-                    inline.inlines = contentInline;
-                    if (contentInline.length > 0) {
-                        let nestedContent = this.nestedContentProperty(lineWidget.children[i + 1], inline);
-                        inlines.push(nestedContent);
-                        contentInline = [];
-                    }
-                    if (this.multipleLineContent) {
-                        inline = inlines[inlines.length - 1];
-                        this.nestedContentProperty(lineWidget.children[i + 1], inline);
-                        this.multipleLineContent = false;
-                    }
-                    this.nestedContent = false;
-                    continue;
-                }
-                this.contentType = element.contentControlWidgetType;
-                this.startContent = (element.type === 0) ? true : false;
+            if (element instanceof ContentControl || this.startContent || this.blockContent) {
+                this.writeInlinesContentControl(element, line, inlines, i);
                 continue;
-            }
-            if (this.startContent && ((this.contentType !== 'Row') && (this.contentType !== 'Block') && (this.contentType !== 'Cell'))) {
-                if (this.multipleLineContent) {
-                    this.inlineContentControl(contentInline, element, lineWidget.children[i + 1], inlines);
-                    contentInline = [];
-                }
-                else {
-                    let contentinline = this.inlineContentControl(contentInline, element, lineWidget.children[i + 1]);
-                    if (!isNullOrUndefined(contentinline)) {
-                        if (this.nestedContent && this.multipleLineContent) {
-                            let inline = {};
-                            inline.inlines = contentInline;
-                            inlines.push(inline);
-                        }
-                        else {
-                            inlines.push(contentinline);
-                            contentInline = [];
-                        }
-                    }
-                }
             }
             else {
                 let inline = this.writeInline(element);
@@ -73355,7 +73308,7 @@ class SfdtExport {
             }
         }
     }
-    inlineContentControl(contentInline, element, nextElement, inlines) {
+    inlineContentControl(element, nextElement, inlines) {
         let inline = {};
         let nestedContentInline = [];
         if (!isNullOrUndefined(inlines)) {
@@ -73364,7 +73317,7 @@ class SfdtExport {
                 inline = this.inlineContentControls(element, inlines[inlines.length - 1].inlines);
                 let nestedContentinline = this.nestedContentProperty(nextElement, inlines[inlines.length - 1]);
                 if (!isNullOrUndefined(nestedContentinline)) {
-                    contentInline.push(inline);
+                    this.contentInline.push(inline);
                     nestedContentInline = [];
                 }
             }
@@ -73377,12 +73330,12 @@ class SfdtExport {
                 inline.inlines = this.inlineContentControls(element, undefined, nestedContentInline);
                 let nestedContentinline = this.nestedContentProperty(nextElement, inline);
                 if (!isNullOrUndefined(nestedContentinline) || this.multipleLineContent) {
-                    contentInline.push(inline);
+                    this.contentInline.push(inline);
                     nestedContentInline = [];
                 }
             }
             else {
-                inline.inlines = this.inlineContentControls(element, contentInline);
+                inline.inlines = this.inlineContentControls(element, this.contentInline);
             }
         }
         if (!isNullOrUndefined(nextElement)) {
@@ -73822,6 +73775,9 @@ class SfdtExport {
         return endParagraph;
     }
     writeLine(line, offset, inlines) {
+        this.contentInline = [];
+        let isContentStarted = false;
+        let contentControl = false;
         let isEnd = line === this.endLine;
         let lineWidget = line.clone();
         let bidi = line.paragraph.paragraphFormat.bidi;
@@ -73839,8 +73795,37 @@ class SfdtExport {
             let inline = undefined;
             length += element.length;
             started = length > offset;
+            if (element instanceof ContentControl) {
+                if (!started) {
+                    isContentStarted = element.type === 0 ? true : false;
+                }
+                contentControl = true;
+            }
+            if (element instanceof TextElementBox && element.hasOwnProperty('contentControlProperties') && started && !contentControl) {
+                isContentStarted = true;
+            }
+            if (element instanceof ContentControl) {
+                if (isContentStarted) {
+                    if (element.type === 1) {
+                        isContentStarted = false;
+                    }
+                }
+                if (contentControl) {
+                    if (element.type === 1) {
+                        contentControl = false;
+                    }
+                }
+            }
             ended = isEnd && length >= this.endOffset;
-            if (!started) {
+            if (!started || isContentStarted) {
+                continue;
+            }
+            if (element instanceof ContentControl || this.startContent || this.blockContent) {
+                if (ended) {
+                    this.startContent = false;
+                    break;
+                }
+                this.writeInlinesContentControl(element, line, inlines, j);
                 continue;
             }
             inline = this.writeInline(element);
@@ -73860,6 +73845,83 @@ class SfdtExport {
             }
             if (ended) {
                 break;
+            }
+        }
+    }
+    writeInlinesContentControl(element, lineWidget, inlines, i) {
+        if (element instanceof ContentControl) {
+            if (element.contentControlWidgetType === 'Block') {
+                this.isBlockClosed = false;
+                if (this.blockContent && element.type === 0) {
+                    this.nestedBlockContent = true;
+                    return true;
+                }
+                else if (this.nestedBlockContent && element.type === 1) {
+                    this.nestedBlockContent = false;
+                    return true;
+                }
+                this.blockContent = (element.type === 0) ? true : false;
+                if (lineWidget.children[i - 1] instanceof ContentControl) {
+                    if (lineWidget.children[i - 1].contentControlWidgetType === 'Block') {
+                        this.blockContent = true;
+                    }
+                }
+                if (!this.blockContent) {
+                    this.isBlockClosed = true;
+                }
+                return true;
+            }
+        }
+        if (element instanceof ContentControl) {
+            if (this.startContent && element.type === 0) {
+                this.nestedContent = true;
+                return true;
+            }
+            else if (this.startContent && this.nestedContent) {
+                let inline = {};
+                inline.inlines = this.contentInline;
+                if (this.contentInline.length > 0) {
+                    let nestedContent = this.nestedContentProperty(lineWidget.children[i + 1], inline);
+                    inlines.push(nestedContent);
+                    this.contentInline = [];
+                }
+                if (this.multipleLineContent) {
+                    inline = inlines[inlines.length - 1];
+                    this.nestedContentProperty(lineWidget.children[i + 1], inline);
+                    this.multipleLineContent = false;
+                }
+                this.nestedContent = false;
+                return true;
+            }
+            this.contentType = element.contentControlWidgetType;
+            this.startContent = (element.type === 0) ? true : false;
+            return true;
+        }
+        if (this.startContent && ((this.contentType === 'Inline'))) {
+            if (this.multipleLineContent) {
+                this.inlineContentControl(element, lineWidget.children[i + 1], inlines);
+                this.contentInline = [];
+            }
+            else {
+                let contentinline = this.inlineContentControl(element, lineWidget.children[i + 1]);
+                if (!isNullOrUndefined(contentinline)) {
+                    if (this.nestedContent && this.multipleLineContent) {
+                        let inline = {};
+                        inline.inlines = this.contentInline;
+                        inlines.push(inline);
+                    }
+                    else {
+                        inlines.push(contentinline);
+                        this.contentInline = [];
+                        return false;
+                    }
+                }
+            }
+        }
+        else {
+            let inline = this.writeInline(element);
+            if (!isNullOrUndefined(inline)) {
+                inlines.push(inline);
             }
         }
     }
@@ -85943,6 +86005,7 @@ class CommentView {
     }
     postReply() {
         let replyText = this.replyViewTextBox.value;
+        // tslint:disable-next-line:max-line-length
         this.cancelReply();
         this.updateReplyTextAreaHeight();
         this.owner.editorModule.replyComment(this.comment, replyText);
@@ -86031,6 +86094,7 @@ class CommentView {
     postComment() {
         let updatedText = this.textArea.value;
         this.commentText.innerText = updatedText;
+        // tslint:disable-next-line:max-line-length
         this.comment.text = updatedText;
         this.showCommentView();
         if (this.commentPane && this.commentPane.parentPane) {
@@ -86281,6 +86345,7 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
          * @private
          */
         this.imageResizerModule = undefined;
+        this.createdTriggered = false;
         /**
          * @private
          */
@@ -86831,8 +86896,9 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
             }
         }
         this.documentHelper.initializeComponents();
-        this.renderComplete();
         this.openBlank();
+        this.renderComplete();
+        this.createdTriggered = true;
     }
     /**
      * Get component name
@@ -87056,7 +87122,9 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
             this.editorModule.predictText();
         }
         let eventArgs = { source: isBlazor() ? null : this };
+        // if (this.createdTriggered) {
         this.trigger('selectionChange', eventArgs);
+        // }
     }
     /**
      * @private

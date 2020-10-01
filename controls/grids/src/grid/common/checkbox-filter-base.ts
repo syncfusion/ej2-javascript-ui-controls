@@ -323,6 +323,10 @@ export class CheckBoxFilterBase {
             if (filterTemplateCol.length && !isNullOrUndefined(registeredTemplate) && registeredTemplate.filterItemTemplate) {
                 this.parent.destroyTemplate(['filterItemTemplate']);
             }
+            if (this.parent.isReact) {
+                this.parent.destroyTemplate(['filterItemTemplate']);
+                this.parent.renderTemplates();
+            }
             this.parent.notify(events.filterMenuClose, { field: this.options.field });
             this.dialogObj.destroy();
             this.unWireEvents();
@@ -422,23 +426,7 @@ export class CheckBoxFilterBase {
                     fObj.operator = isNotEqual ? 'notequal' : 'equal';
                 }
                 if (value === '' || isNullOrUndefined(value)) {
-                    if (this.options.type === 'string') {
-                        coll.push(
-                            {
-                                field: defaults.field, ignoreAccent: defaults.ignoreAccent, matchCase: defaults.matchCase,
-                                operator: defaults.operator, predicate: defaults.predicate, value: ''
-                            });
-                    }
-                    coll.push(
-                        {
-                            field: defaults.field,
-                            matchCase: defaults.matchCase, operator: defaults.operator, predicate: defaults.predicate, value: null
-                        });
-                    coll.push(
-                        {
-                            field: defaults.field, matchCase: defaults.matchCase, operator: defaults.operator,
-                            predicate: defaults.predicate, value: undefined
-                        });
+                    coll = coll.concat(CheckBoxFilterBase.generateNullValuePredicates(defaults));
                 } else {
                     coll.push(fObj);
                 }
@@ -468,6 +456,34 @@ export class CheckBoxFilterBase {
         } else {
             this.clearFilter();
         }
+    }
+
+    /** @hidden */
+    public static generateNullValuePredicates(
+        defaults: {
+            predicate?: string, field?: string, type?: string, uid?: string
+            operator?: string, matchCase?: boolean, ignoreAccent?: boolean
+        }
+    ): PredicateModel[] {
+        let coll: PredicateModel[] = [];
+        if (defaults.type === 'string') {
+            coll.push(
+                {
+                    field: defaults.field, ignoreAccent: defaults.ignoreAccent, matchCase: defaults.matchCase,
+                    operator: defaults.operator, predicate: defaults.predicate, value: ''
+                });
+        }
+        coll.push(
+            {
+                field: defaults.field,
+                matchCase: defaults.matchCase, operator: defaults.operator, predicate: defaults.predicate, value: null
+            });
+        coll.push(
+            {
+                field: defaults.field, matchCase: defaults.matchCase, operator: defaults.operator,
+                predicate: defaults.predicate, value: undefined
+            });
+        return coll;
     }
 
     private initiateFilter(fColl: PredicateModel[]): void {
@@ -824,7 +840,14 @@ export class CheckBoxFilterBase {
         addClass([label], ['e-checkboxfiltertext']);
         if (this.options.template && data[this.options.column.field] !== this.getLocalizedLabel('SelectAll')) {
             label.innerHTML = '';
-            appendChildren(label, this.options.template(dummyData, this.parent, 'filterItemTemplate'));
+            let isReactCompiler: boolean = this.parent.isReact && this.options.column.filter
+                && typeof (this.options.column.filter.itemTemplate) !== 'string';
+            if (isReactCompiler) {
+                this.options.template(dummyData, this.parent, 'filterItemTemplate', null, null, null, label);
+                this.parent.renderTemplates();
+            } else {
+                appendChildren(label, this.options.template(dummyData, this.parent, 'filterItemTemplate'));
+            }
         }
         return elem;
     }

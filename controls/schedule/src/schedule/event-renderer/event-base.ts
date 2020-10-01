@@ -132,12 +132,10 @@ export class EventBase {
         eventData[fields.startTimezone] = eventData[fields.startTimezone] || eventData[fields.endTimezone];
         eventData[fields.endTimezone] = eventData[fields.endTimezone] || eventData[fields.startTimezone];
         if (this.parent.timezone) {
-            let startTz: string & number = <string & number>eventData[fields.startTimezone];
-            let endTz: string & number = <string & number>eventData[fields.endTimezone];
-            eventData[fields.startTime] =
-                this.parent.tzModule.convert(<Date>eventData[fields.startTime], <string & number>this.parent.timezone, startTz);
-            eventData[fields.endTime] =
-                this.parent.tzModule.convert(<Date>eventData[fields.endTime], <string & number>this.parent.timezone, endTz);
+            let startTz: string = eventData[fields.startTimezone] as string;
+            let endTz: string = eventData[fields.endTimezone] as string;
+            eventData[fields.startTime] = this.parent.tzModule.convert(<Date>eventData[fields.startTime], this.parent.timezone, startTz);
+            eventData[fields.endTime] = this.parent.tzModule.convert(<Date>eventData[fields.endTime], this.parent.timezone, endTz);
         }
     }
 
@@ -147,10 +145,8 @@ export class EventBase {
             return;
         }
         if (oldTimezone && this.parent.timezone) {
-            event[fields.startTime] = this.parent.tzModule.convert(
-                <Date>event[fields.startTime], <number & string>oldTimezone, <number & string>this.parent.timezone);
-            event[fields.endTime] = this.parent.tzModule.convert(
-                <Date>event[fields.endTime], <number & string>oldTimezone, <number & string>this.parent.timezone);
+            event[fields.startTime] = this.parent.tzModule.convert(<Date>event[fields.startTime], oldTimezone, this.parent.timezone);
+            event[fields.endTime] = this.parent.tzModule.convert(<Date>event[fields.endTime], oldTimezone, this.parent.timezone);
         } else if (!oldTimezone && this.parent.timezone) {
             event[fields.startTime] = this.parent.tzModule.add(<Date>event[fields.startTime], this.parent.timezone);
             event[fields.endTime] = this.parent.tzModule.add(<Date>event[fields.endTime], this.parent.timezone);
@@ -165,14 +161,13 @@ export class EventBase {
         if (event[fields.startTimezone] || event[fields.endTimezone]) {
             let startTimezone: string = <string>event[fields.startTimezone] || <string>event[fields.endTimezone];
             let endTimezone: string = <string>event[fields.endTimezone] || <string>event[fields.startTimezone];
-            let zone: number & string = <number & string>this.parent.timezone;
             if (isReverse) {
                 if (this.parent.timezone) {
                     event[fields.startTime] =
-                        this.parent.tzModule.convert(<Date>event[fields.startTime], <number & string>startTimezone, zone);
-                    event[fields.endTime] = this.parent.tzModule.convert(<Date>event[fields.endTime], <number & string>endTimezone, zone);
-                    event[fields.startTime] = this.parent.tzModule.remove(<Date>event[fields.startTime], zone);
-                    event[fields.endTime] = this.parent.tzModule.remove(<Date>event[fields.endTime], zone);
+                        this.parent.tzModule.convert(<Date>event[fields.startTime], startTimezone, this.parent.timezone);
+                    event[fields.endTime] = this.parent.tzModule.convert(<Date>event[fields.endTime], endTimezone, this.parent.timezone);
+                    event[fields.startTime] = this.parent.tzModule.remove(<Date>event[fields.startTime], this.parent.timezone);
+                    event[fields.endTime] = this.parent.tzModule.remove(<Date>event[fields.endTime], this.parent.timezone);
                 } else {
                     event[fields.startTime] = this.parent.tzModule.remove(<Date>event[fields.startTime], startTimezone);
                     event[fields.endTime] = this.parent.tzModule.remove(<Date>event[fields.endTime], endTimezone);
@@ -182,8 +177,8 @@ export class EventBase {
                 event[fields.endTime] = this.parent.tzModule.add(<Date>event[fields.endTime], endTimezone);
                 if (this.parent.timezone) {
                     event[fields.startTime] =
-                        this.parent.tzModule.convert(<Date>event[fields.startTime], <number & string>startTimezone, zone);
-                    event[fields.endTime] = this.parent.tzModule.convert(<Date>event[fields.endTime], <number & string>endTimezone, zone);
+                        this.parent.tzModule.convert(<Date>event[fields.startTime], startTimezone, this.parent.timezone);
+                    event[fields.endTime] = this.parent.tzModule.convert(<Date>event[fields.endTime], endTimezone, this.parent.timezone);
                 }
             }
         } else if (this.parent.timezone) {
@@ -1115,18 +1110,16 @@ export class EventBase {
         let firstDate: number = 0;
         let lastDate: number = dateRender.length;
         let filteredDates: Date[];
-        if ((dateRender[0] < this.parent.minDate) && dateRender[dateRender.length - 1] > this.parent.maxDate) {
+        if (dateRender[0] < this.parent.minDate && dateRender[dateRender.length - 1] > this.parent.maxDate) {
             for (let i: number = 0; i < dateRender.length; i++) {
-                if (dateRender[i].getTime() === this.parent.minDate.getTime()) {
+                if (util.resetTime(dateRender[i]).getTime() === util.resetTime(new Date(this.parent.minDate)).getTime()) {
                     firstDate = i;
                 }
-                if (dateRender[i].getTime() === this.parent.maxDate.getTime()) {
+                if (util.resetTime(dateRender[i]).getTime() === util.resetTime(new Date(this.parent.maxDate)).getTime()) {
                     lastDate = i;
                 }
             }
-            filteredDates = dateRender.filter((date: Date) => {
-                return ((date >= dateRender[firstDate]) && (date <= dateRender[lastDate]));
-            });
+            filteredDates = dateRender.filter((date: Date) => date >= dateRender[firstDate] && date <= dateRender[lastDate]);
         }
         return filteredDates;
     }

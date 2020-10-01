@@ -2096,7 +2096,7 @@ let Dialog = class Dialog extends Component {
                 this.contentEle.appendChild(this.content);
             }
             else {
-                this.setTemplate(this.content, this.contentEle);
+                this.setTemplate(this.content, this.contentEle, 'content');
             }
         }
         if (!isNullOrUndefined(this.headerContent)) {
@@ -2112,7 +2112,7 @@ let Dialog = class Dialog extends Component {
             this.setMaxHeight();
         }
     }
-    setTemplate(template, toElement) {
+    setTemplate(template, toElement, prop) {
         let templateFn;
         let templateProps;
         if (toElement.classList.contains(DLG_HEADER)) {
@@ -2140,7 +2140,7 @@ let Dialog = class Dialog extends Component {
             let isString = (isBlazor() &&
                 !this.isStringTemplate && (templateValue).indexOf('<div>Blazor') === 0) ?
                 this.isStringTemplate : true;
-            for (let item of templateFn({}, null, null, templateProps, isString)) {
+            for (let item of templateFn({}, this, prop, templateProps, isString)) {
                 fromElements.push(item);
             }
             append([].slice.call(fromElements), toElement);
@@ -2212,7 +2212,7 @@ let Dialog = class Dialog extends Component {
         }
         this.createHeaderContent();
         this.headerContent.appendChild(this.headerEle);
-        this.setTemplate(this.header, this.headerEle);
+        this.setTemplate(this.header, this.headerEle, 'header');
         attributes(this.element, { 'aria-labelledby': this.element.id + '_title' });
         this.element.insertBefore(this.headerContent, this.element.children[0]);
     }
@@ -2226,7 +2226,7 @@ let Dialog = class Dialog extends Component {
             });
         }
         if (this.footerTemplate !== '' && !isNullOrUndefined(this.footerTemplate)) {
-            this.setTemplate(this.footerTemplate, this.ftrTemplateContent);
+            this.setTemplate(this.footerTemplate, this.ftrTemplateContent, 'footerTemplate');
         }
         else {
             this.ftrTemplateContent.innerHTML = this.buttonContent.join('');
@@ -2644,6 +2644,10 @@ let Dialog = class Dialog extends Component {
         else {
             this.isDestroyed = true;
         }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
     }
     /**
      * Binding event to the element while widget creation
@@ -2761,6 +2765,10 @@ let Dialog = class Dialog extends Component {
                     this.isProtectedOnChange = prevOnChange;
                 }
             });
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     }
     /**
@@ -3286,6 +3294,7 @@ let Tooltip = class Tooltip extends Component {
     }
     closePopupHandler() {
         resetBlazorTemplate(this.element.id + 'content', 'Content');
+        this.clearTemplate(['content']);
         this.clear();
         this.trigger('afterClose', this.tooltipEventArgs);
     }
@@ -3450,7 +3459,11 @@ let Tooltip = class Tooltip extends Component {
                 }
                 else {
                     let templateFunction = compile(this.content);
-                    append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
+                    let tempArr = templateFunction({}, this, 'content', this.element.id + 'content', undefined, undefined, tooltipContent);
+                    if (tempArr) {
+                        append(tempArr, tooltipContent);
+                    }
+                    this.renderReactTemplates();
                     if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
                         this.isBlazorTemplate = true;
                         updateBlazorTemplate(this.element.id + 'content', 'Content', this);
@@ -3820,7 +3833,6 @@ let Tooltip = class Tooltip extends Component {
         }
     }
     popupHide(hideAnimation, target) {
-        this.clearTemplate();
         if (target) {
             this.restoreElement(target);
         }

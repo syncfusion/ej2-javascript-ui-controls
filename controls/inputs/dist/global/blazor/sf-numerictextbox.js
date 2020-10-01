@@ -34,6 +34,7 @@ var FOCUS = 'focus';
 var BLUR = 'blur';
 var KEY_PRESS = 'keypress';
 var KEY_DOWN = 'keydown';
+var PASTE = 'paste';
 var SfNumericTextBox = /** @class */ (function () {
     function SfNumericTextBox(wrapperElement, element, dotnetRef, options) {
         this.wrapperElement = wrapperElement;
@@ -48,6 +49,7 @@ var SfNumericTextBox = /** @class */ (function () {
         sf.base.EventHandler.add(this.element, BLUR, this.focusOutHandler, this);
         sf.base.EventHandler.add(this.element, KEY_PRESS, this.keyPressHandler, this);
         sf.base.EventHandler.add(this.element, KEY_DOWN, this.keyDownHandler, this);
+        sf.base.EventHandler.add(this.element, PASTE, this.pasteHandler, this);
     };
     SfNumericTextBox.prototype.keyPressHandler = function (event) {
         if (!this.options.enabled || this.options.readonly) {
@@ -77,6 +79,17 @@ var SfNumericTextBox = /** @class */ (function () {
         }
     };
     
+    SfNumericTextBox.prototype.pasteHandler = function (event) {
+        if (!(!this.options.enabled || this.options.readonly)) {
+            var pasteValue = event.clipboardData.getData('text/plain');
+            if (!this.numericRegex().test(pasteValue)) {
+                event.preventDefault();
+            }
+            else {
+                this.dotNetRef.invokeMethodAsync('InvokePasteHandler', pasteValue);
+            }
+        }
+    };
     SfNumericTextBox.prototype.keyDownHandler = function (event) {
         if (!this.options.readonly) {
             if (event.keyCode === ARROW_UP) {
@@ -126,8 +139,10 @@ var SfNumericTextBox = /** @class */ (function () {
     };
     SfNumericTextBox.prototype.focusHandler = function (event) {
         this.isFocused = true;
-        if (!sf.base.Browser.isDevice) {
-            sf.base.EventHandler.add(this.element, MOUSE_WHEEL, this.mouseWheel, this);
+        if (!(!this.options.enabled || this.options.readonly)) {
+            if (!sf.base.Browser.isDevice) {
+                sf.base.EventHandler.add(this.element, MOUSE_WHEEL, this.mouseWheel, this);
+            }
         }
     };
     SfNumericTextBox.prototype.focusOutHandler = function (event) {

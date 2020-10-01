@@ -2,34 +2,34 @@
   /*! component icons */
 
   .e-input-group-icon.e-date-icon,
-  &.e-control-wrapper .e-input-group-icon.e-date-icon {
+  #{if(&, '&', '*')}.e-control-wrapper .e-input-group-icon.e-date-icon {
     font-size: $datepicker-icon-font-size;
     margin: $datepicker-icon-normal-margin;
     outline: none;
 
-    &::before {
+    #{if(&, '&', '*')}::before {
       content: '\e960';
       font-family: 'e-icons';
   }
 
-    &:focus {
+    #{if(&, '&', '*')}:focus {
       background: $datepicker-icon-hover-color;
       border-radius: $datepicker-icon-border-radius;
 	}
 }
 
   .e-bigger .e-input-group-icon.e-date-icon,
-  &.e-control-wrapper.e-bigger .e-input-group-icon.e-date-icon,
-  &.e-bigger .e-control-wrapper .e-input-group-icon.e-date-icon {
+  #{if(&, '&', '*')}.e-control-wrapper.e-bigger .e-input-group-icon.e-date-icon,
+  #{if(&, '&', '*')}.e-bigger .e-control-wrapper .e-input-group-icon.e-date-icon {
     font-size: $datepicker-bigger-icon-font-size;
     margin: $datepicker-icon-bigger-margin;
 
-    &::before {
+    #{if(&, '&', '*')}::before {
       content: '\e960';
       font-family: 'e-icons';
   }
 
-    &:focus {
+    #{if(&, '&', '*')}:focus {
       background: $datepicker-icon-hover-color;
       border-radius: $datepicker-icon-border-radius;
 	}
@@ -37,15 +37,15 @@
 
   // mouse small icon
   .e-small .e-input-group-icon.e-date-icon,
-  &.e-control-wrapper.e-small .e-input-group-icon.e-date-icon,
-  &.e-small .e-control-wrapper .e-input-group-icon.e-date-icon {
+  #{if(&, '&', '*')}.e-control-wrapper.e-small .e-input-group-icon.e-date-icon,
+  #{if(&, '&', '*')}.e-small .e-control-wrapper .e-input-group-icon.e-date-icon {
     font-size: $datepicker-small-icon-font-size;
   }
 
   // Touch small icon
   .e-small.e-bigger .e-input-group-icon.e-date-icon,
-  &.e-control-wrapper.e-small.e-bigger .e-input-group-icon.e-date-icon,
-  &.e-small.e-bigger .e-control-wrapper .e-input-group-icon.e-date-icon {
+  #{if(&, '&', '*')}.e-control-wrapper.e-small.e-bigger .e-input-group-icon.e-date-icon,
+  #{if(&, '&', '*')}.e-small.e-bigger .e-control-wrapper .e-input-group-icon.e-date-icon {
     font-size: $datepicker-bigger-small-icon-font-size;
   }
 }

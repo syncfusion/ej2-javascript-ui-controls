@@ -1259,6 +1259,7 @@ var Render = /** @__PURE__ @class */ (function () {
         this.parent = parent;
         this.templateResult = null;
         this.parent.grid.on('template-result', this.columnTemplateResult, this);
+        this.parent.grid.on('reactTemplateRender', this.reactTemplateRender, this);
     }
     /**
      * Updated row elements for TreeGrid
@@ -1444,8 +1445,16 @@ var Render = /** @__PURE__ @class */ (function () {
     Render.prototype.columnTemplateResult = function (args) {
         this.templateResult = args.template;
     };
+    Render.prototype.reactTemplateRender = function (args) {
+        var renderReactTemplates = 'renderReactTemplates';
+        var portals = 'portals';
+        this.parent[portals] = args;
+        this.parent.notify('renderReactTemplate', this.parent[portals]);
+        this.parent[renderReactTemplates]();
+    };
     Render.prototype.destroy = function () {
         this.parent.grid.off('template-result', this.columnTemplateResult);
+        this.parent.grid.off('reactTemplateRender', this.reactTemplateRender);
     };
     return Render;
 }());
@@ -2781,6 +2790,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      */
     TreeGrid.prototype.render = function () {
         var _this = this;
+        if (this.isReact) {
+            this.grid.isReact = true;
+        }
         createSpinner({ target: this.element }, this.createElement);
         this.renderModule = new Render(this);
         this.dataModule = new DataManipulation(this);
@@ -2819,7 +2831,10 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         //tslint:disable-next-line:no-any
         this.grid[destroyTemplate] = function (args, index) {
             destroyTemplateFn.apply(_this.grid);
-            _this.clearTemplate(args, index);
+            var portals = 'portals';
+            if (!(_this.isReact && isNullOrUndefined(_this[portals]))) {
+                _this.clearTemplate(args, index);
+            }
         };
         if (isBlazor() && this.isServerRendered) {
             var fn_1 = function (args) { return _this.gridRendered(args, fn_1); };
@@ -7009,8 +7024,8 @@ var TreeVirtualRowModelGenerator = /** @__PURE__ @class */ (function (_super) {
         this.visualData = args.data;
     };
     TreeVirtualRowModelGenerator.prototype.generateRows = function (data, notifyArgs) {
-        if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
-            && this.parent.dataSource.dataSource.url !== '') {
+        if ((this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
+            && this.parent.dataSource.dataSource.url !== '') || isCountRequired(this.parent)) {
             return _super.prototype.generateRows.call(this, data, notifyArgs);
         }
         else {
@@ -7027,8 +7042,8 @@ var TreeVirtualRowModelGenerator = /** @__PURE__ @class */ (function (_super) {
     TreeVirtualRowModelGenerator.prototype.checkAndResetCache = function (action) {
         var clear = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'reorder',
             'save', 'delete'].some(function (value) { return action === value; });
-        if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
-            && this.parent.dataSource.dataSource.url !== '') {
+        if ((this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
+            && this.parent.dataSource.dataSource.url !== '') || isCountRequired(this.parent)) {
             var model = 'model';
             var currentPage = this[model].currentPage;
             if (clear) {
@@ -9828,7 +9843,7 @@ var VirtualTreeContentRenderer = /** @__PURE__ @class */ (function (_super) {
     VirtualTreeContentRenderer.prototype.eventListener = function (action) {
         var _this = this;
         if (!(this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
-            && this.parent.dataSource.dataSource.url !== '')) {
+            && this.parent.dataSource.dataSource.url !== '') || !isCountRequired(this.parent)) {
             this.parent[action]('data-ready', this.onDataReady, this);
             //this.parent[action]('refresh-virtual-block', this.refreshContentRows, this);
             this.fn = function () {
@@ -9851,7 +9866,7 @@ var VirtualTreeContentRenderer = /** @__PURE__ @class */ (function (_super) {
     VirtualTreeContentRenderer.prototype.onDataReady = function (e) {
         _super.prototype.onDataReady.call(this, e);
         if (!(this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
-            && this.parent.dataSource.dataSource.url !== '')) {
+            && this.parent.dataSource.dataSource.url !== '') || !isCountRequired(this.parent)) {
             if (!isNullOrUndefined(e.count)) {
                 this.totalRecords = e.count;
                 getValue('virtualEle', this).setVirtualHeight(this.parent.getRowHeight() * e.count, '100%');
@@ -9866,15 +9881,15 @@ var VirtualTreeContentRenderer = /** @__PURE__ @class */ (function (_super) {
     VirtualTreeContentRenderer.prototype.renderTable = function () {
         _super.prototype.renderTable.call(this);
         if (!(this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
-            && this.parent.dataSource.dataSource.url !== '')) {
+            && this.parent.dataSource.dataSource.url !== '') || !isCountRequired(this.parent)) {
             getValue('observer', this).options.debounceEvent = false;
             this.observers = new TreeInterSectionObserver(getValue('observer', this).element, getValue('observer', this).options);
             this.contents = this.getPanel().firstChild;
         }
     };
     VirtualTreeContentRenderer.prototype.getTranslateY = function (sTop, cHeight, info, isOnenter) {
-        if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
-            && this.parent.dataSource.dataSource.url !== '') {
+        if ((this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
+            && this.parent.dataSource.dataSource.url !== '') || isCountRequired(this.parent)) {
             if (this.isRemoteExpand) {
                 this.isRemoteExpand = false;
                 return this.preTranslate;
@@ -10031,8 +10046,8 @@ var VirtualTreeContentRenderer = /** @__PURE__ @class */ (function (_super) {
         }
     };
     VirtualTreeContentRenderer.prototype.appendContent = function (target, newChild, e) {
-        if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
-            && this.parent.dataSource.dataSource.url !== '') {
+        if ((this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
+            && this.parent.dataSource.dataSource.url !== '') || isCountRequired(this.parent)) {
             if (getValue('isExpandCollapse', e)) {
                 this.isRemoteExpand = true;
             }

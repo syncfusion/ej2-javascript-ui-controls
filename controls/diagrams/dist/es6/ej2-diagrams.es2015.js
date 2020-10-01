@@ -1,4 +1,4 @@
-import { Ajax, Browser, ChildProperty, Collection, CollectionFactory, Complex, ComplexFactory, Component, Draggable, Droppable, Event, EventHandler, L10n, Property, compile, createElement, getValue, isBlazor, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Ajax, Animation, Browser, ChildProperty, Collection, CollectionFactory, Complex, ComplexFactory, Component, Draggable, Droppable, Event, EventHandler, L10n, Property, addClass, append, attributes, compile, createElement, formatUnit, getValue, isBlazor, isNullOrUndefined, remove, removeClass, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Accordion, ContextMenu } from '@syncfusion/ej2-navigations';
@@ -1632,6 +1632,12 @@ var BlazorAction;
     BlazorAction[BlazorAction["expandNode"] = 2] = "expandNode";
     /** Enabled during the mouse interaction  */
     BlazorAction[BlazorAction["interaction"] = 4] = "interaction";
+    /** Enable when the group action start in history */
+    BlazorAction[BlazorAction["GroupingInProgress"] = 8] = "GroupingInProgress";
+    /** Enable when the group action start to clone another group node */
+    BlazorAction[BlazorAction["GroupClipboardInProcess"] = 16] = "GroupClipboardInProcess";
+    /** Enable when the clear the object to prevent the server update */
+    BlazorAction[BlazorAction["ClearObject"] = 32] = "ClearObject";
 })(BlazorAction || (BlazorAction = {}));
 /**
  * Constraints to define when a port has to be visible
@@ -2468,6 +2474,7 @@ var DiagramEvent;
     DiagramEvent[DiagramEvent["onDoBindingInit"] = 32] = "onDoBindingInit";
     DiagramEvent[DiagramEvent["keyUp"] = 33] = "keyUp";
     DiagramEvent[DiagramEvent["keyDown"] = 34] = "keyDown";
+    DiagramEvent[DiagramEvent["fixedUserHandleClick"] = 35] = "fixedUserHandleClick";
 })(DiagramEvent || (DiagramEvent = {}));
 /** Enables/Disables certain features of port connection
  * @aspNumberEnum
@@ -6736,6 +6743,917 @@ function getOppositeDirection(direction) {
     return 'auto';
 }
 
+/**
+ * Position library
+ */
+let elementRect;
+let popupRect;
+let element;
+let parentDocument;
+let fixedParent = false;
+/**
+ * @private
+ */
+
+/**
+ * @private
+ */
+function calculatePosition(currentElement, positionX, positionY, parentElement, targetValues) {
+    (positionY + positionX === 'topright') ? popupRect = undefined : popupRect = targetValues;
+    popupRect = targetValues;
+    fixedParent = parentElement ? true : false;
+    if (!currentElement) {
+        return { left: 0, top: 0 };
+    }
+    if (!positionX) {
+        positionX = 'left';
+    }
+    if (!positionY) {
+        positionY = 'top';
+    }
+    parentDocument = currentElement.ownerDocument;
+    element = currentElement;
+    let pos = { left: 0, top: 0 };
+    return updatePosition(positionX.toLowerCase(), positionY.toLowerCase(), pos);
+}
+/**
+ * @private
+ */
+function setPosx(value, pos) {
+    pos.left = value;
+}
+/**
+ * @private
+ */
+function setPosy(value, pos) {
+    pos.top = value;
+}
+/**
+ * @private
+ */
+function updatePosition(posX, posY, pos) {
+    elementRect = element.getBoundingClientRect();
+    switch (posY + posX) {
+        case 'topcenter':
+            setPosx(getElementHCenter(), pos);
+            setPosy(getElementTop(), pos);
+            break;
+        case 'topright':
+            setPosx(getElementRight(), pos);
+            setPosy(getElementTop(), pos);
+            break;
+        case 'centercenter':
+            setPosx(getElementHCenter(), pos);
+            setPosy(getElementVCenter(), pos);
+            break;
+        case 'centerright':
+            setPosx(getElementRight(), pos);
+            setPosy(getElementVCenter(), pos);
+            break;
+        case 'centerleft':
+            setPosx(getElementLeft(), pos);
+            setPosy(getElementVCenter(), pos);
+            break;
+        case 'bottomcenter':
+            setPosx(getElementHCenter(), pos);
+            setPosy(getElementBottom(), pos);
+            break;
+        case 'bottomright':
+            setPosx(getElementRight(), pos);
+            setPosy(getElementBottom(), pos);
+            break;
+        case 'bottomleft':
+            setPosx(getElementLeft(), pos);
+            setPosy(getElementBottom(), pos);
+            break;
+        default:
+        case 'topleft':
+            setPosx(getElementLeft(), pos);
+            setPosy(getElementTop(), pos);
+            break;
+    }
+    return pos;
+}
+/**
+ * @private
+ */
+function getBodyScrollTop() {
+    return parentDocument.documentElement.scrollTop || parentDocument.body.scrollTop;
+}
+/**
+ * @private
+ */
+function getBodyScrollLeft() {
+    return parentDocument.documentElement.scrollLeft || parentDocument.body.scrollLeft;
+}
+/**
+ * @private
+ */
+function getElementBottom() {
+    return fixedParent ? elementRect.bottom : elementRect.bottom + getBodyScrollTop();
+}
+/**
+ * @private
+ */
+function getElementVCenter() {
+    return getElementTop() + (elementRect.height / 2);
+}
+/**
+ * @private
+ */
+function getElementTop() {
+    return fixedParent ? elementRect.top : elementRect.top + getBodyScrollTop();
+}
+/**
+ * @private
+ */
+function getElementLeft() {
+    return elementRect.left + getBodyScrollLeft();
+}
+/**
+ * @private
+ */
+function getElementRight() {
+    return elementRect.right + getBodyScrollLeft() - (popupRect ? popupRect.width : 0);
+}
+/**
+ * @private
+ */
+function getElementHCenter() {
+    return getElementLeft() + (elementRect.width / 2);
+}
+
+/**
+ * Collision module.
+ */
+let parentDocument$1;
+let targetContainer;
+/**
+ * @private
+ */
+function fit(element, viewPortElement = null, axis = { X: false, Y: false }, position) {
+    if (!axis.Y && !axis.X) {
+        return { left: 0, top: 0 };
+    }
+    let elemData = element.getBoundingClientRect();
+    targetContainer = viewPortElement;
+    parentDocument$1 = element.ownerDocument;
+    if (!position) {
+        position = calculatePosition(element, 'left', 'top');
+    }
+    if (axis.X) {
+        let containerWidth = targetContainer ? getTargetContainerWidth() : getViewPortWidth();
+        let containerLeft = ContainerLeft();
+        let containerRight = ContainerRight();
+        let overLeft = containerLeft - position.left;
+        let overRight = position.left + elemData.width - containerRight;
+        if (elemData.width > containerWidth) {
+            if (overLeft > 0 && overRight <= 0) {
+                position.left = containerRight - elemData.width;
+            }
+            else if (overRight > 0 && overLeft <= 0) {
+                position.left = containerLeft;
+            }
+            else {
+                position.left = overLeft > overRight ? (containerRight - elemData.width) : containerLeft;
+            }
+        }
+        else if (overLeft > 0) {
+            position.left += overLeft;
+        }
+        else if (overRight > 0) {
+            position.left -= overRight;
+        }
+    }
+    if (axis.Y) {
+        let containerHeight = targetContainer ? getTargetContainerHeight() : getViewPortHeight();
+        let containerTop = ContainerTop();
+        let containerBottom = ContainerBottom();
+        let overTop = containerTop - position.top;
+        let overBottom = position.top + elemData.height - containerBottom;
+        if (elemData.height > containerHeight) {
+            if (overTop > 0 && overBottom <= 0) {
+                position.top = containerBottom - elemData.height;
+            }
+            else if (overBottom > 0 && overTop <= 0) {
+                position.top = containerTop;
+            }
+            else {
+                position.top = overTop > overBottom ? (containerBottom - elemData.height) : containerTop;
+            }
+        }
+        else if (overTop > 0) {
+            position.top += overTop;
+        }
+        else if (overBottom > 0) {
+            position.top -= overBottom;
+        }
+    }
+    return position;
+}
+/**
+ * @private
+ */
+function isCollide(element, viewPortElement = null, x, y) {
+    let elemOffset = calculatePosition(element, 'left', 'top');
+    if (x) {
+        elemOffset.left = x;
+    }
+    if (y) {
+        elemOffset.top = y;
+    }
+    let data = [];
+    targetContainer = viewPortElement;
+    parentDocument$1 = element.ownerDocument;
+    let elementRect = element.getBoundingClientRect();
+    let top = elemOffset.top;
+    let left = elemOffset.left;
+    let right = elemOffset.left + elementRect.width;
+    let bottom = elemOffset.top + elementRect.height;
+    let yAxis = topCollideCheck(top, bottom);
+    let xAxis = leftCollideCheck(left, right);
+    if (yAxis.topSide) {
+        data.push('top');
+    }
+    if (xAxis.rightSide) {
+        data.push('right');
+    }
+    if (xAxis.leftSide) {
+        data.push('left');
+    }
+    if (yAxis.bottomSide) {
+        data.push('bottom');
+    }
+    return data;
+}
+/**
+ * @private
+ */
+
+/**
+ * @private
+ */
+function leftCollideCheck(left, right) {
+    let leftSide = false;
+    let rightSide = false;
+    if (((left - getBodyScrollLeft$1()) < ContainerLeft())) {
+        leftSide = true;
+    }
+    if (right > ContainerRight()) {
+        rightSide = true;
+    }
+    return { leftSide: leftSide, rightSide: rightSide };
+}
+/**
+ * @private
+ */
+function topCollideCheck(top, bottom) {
+    let topSide = false;
+    let bottomSide = false;
+    if ((top - getBodyScrollTop$1()) < ContainerTop()) {
+        topSide = true;
+    }
+    if (bottom > ContainerBottom()) {
+        bottomSide = true;
+    }
+    return { topSide: topSide, bottomSide: bottomSide };
+}
+/**
+ * @private
+ */
+function getTargetContainerWidth() {
+    return targetContainer.getBoundingClientRect().width;
+}
+/**
+ * @private
+ */
+function getTargetContainerHeight() {
+    return targetContainer.getBoundingClientRect().height;
+}
+/**
+ * @private
+ */
+function getTargetContainerLeft() {
+    return targetContainer.getBoundingClientRect().left;
+}
+/**
+ * @private
+ */
+function getTargetContainerTop() {
+    return targetContainer.getBoundingClientRect().top;
+}
+/**
+ * @private
+ */
+function ContainerTop() {
+    if (targetContainer) {
+        return getTargetContainerTop();
+    }
+    return 0;
+}
+/**
+ * @private
+ */
+function ContainerLeft() {
+    if (targetContainer) {
+        return getTargetContainerLeft();
+    }
+    return 0;
+}
+/**
+ * @private
+ */
+function ContainerRight() {
+    if (targetContainer) {
+        return (getBodyScrollLeft$1() + getTargetContainerLeft() + getTargetContainerWidth());
+    }
+    return (getBodyScrollLeft$1() + getViewPortWidth());
+}
+/**
+ * @private
+ */
+function ContainerBottom() {
+    if (targetContainer) {
+        return (getBodyScrollTop$1() + getTargetContainerTop() + getTargetContainerHeight());
+    }
+    return (getBodyScrollTop$1() + getViewPortHeight());
+}
+/**
+ * @private
+ */
+function getBodyScrollTop$1() {
+    // if(targetContainer)
+    //     return targetContainer.scrollTop;
+    return parentDocument$1.documentElement.scrollTop || parentDocument$1.body.scrollTop;
+}
+/**
+ * @private
+ */
+function getBodyScrollLeft$1() {
+    // if(targetContainer)
+    //     return targetContainer.scrollLeft;
+    return parentDocument$1.documentElement.scrollLeft || parentDocument$1.body.scrollLeft;
+}
+/**
+ * @private
+ */
+function getViewPortHeight() {
+    return window.innerHeight;
+}
+/**
+ * @private
+ */
+function getViewPortWidth() {
+    let windowWidth = window.innerWidth;
+    let offsetWidth = (isNullOrUndefined(document.documentElement)) ? 0 : document.documentElement.offsetWidth;
+    return windowWidth - (windowWidth - offsetWidth);
+}
+
+var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ *  @private
+ */
+class BlazorAnimation extends ChildProperty {
+}
+__decorate$9([
+    Property({ effect: 'FadeIn', duration: 150, delay: 0 })
+], BlazorAnimation.prototype, "open", void 0);
+__decorate$9([
+    Property({ effect: 'FadeOut', duration: 150, delay: 0 })
+], BlazorAnimation.prototype, "close", void 0);
+const SHOW_POINTER_TIP_GAP = 0;
+const HIDE_POINTER_TIP_GAP = 8;
+const POINTER_ADJUST = 2;
+const DEVICE = 'e-bigger';
+const TOOLTIP_WRAP = 'e-tooltip-wrap';
+const CONTENT = 'e-tip-content';
+const ARROW_TIP = 'e-arrow-tip';
+const ARROW_TIP_OUTER = 'e-arrow-tip-outer';
+const ARROW_TIP_INNER = 'e-arrow-tip-inner';
+const TIP_BOTTOM = 'e-tip-bottom';
+const TIP_TOP = 'e-tip-top';
+const TIP_LEFT = 'e-tip-left';
+const TIP_RIGHT = 'e-tip-right';
+const POPUP_ROOT = 'e-popup';
+const POPUP_OPEN = 'e-popup-open';
+const POPUP_CLOSE = 'e-popup-close';
+const POPUP_LIB = 'e-lib';
+const HIDE_POPUP = 'e-hidden';
+const CLASSNAMES = {
+    ROOT: 'e-popup',
+    RTL: 'e-rtl',
+    OPEN: 'e-popup-open',
+    CLOSE: 'e-popup-close'
+};
+/**
+ *  @private
+ */
+class BlazorTooltip {
+    constructor(diagram) {
+        this.isBlazorTooltip = false;
+        this.contentEvent = null;
+        /** @private */
+        this.width = 'auto';
+        /** @private */
+        this.height = 'auto';
+        /** @private */
+        this.content = '';
+        /** @private */
+        this.target = '';
+        /** @private */
+        this.position = 'TopCenter';
+        /** @private */
+        this.offsetX = 0;
+        /** @private */
+        this.offsetY = 0;
+        /** @private */
+        this.tipPointerPosition = 'Auto';
+        /** @private */
+        this.openDelay = 0;
+        /** @private */
+        this.closeDelay = 0;
+        /** @private */
+        this.cssClass = '';
+        this.element = diagram;
+        this.tipClass = TIP_BOTTOM;
+        this.tooltipPositionX = 'Center';
+        this.tooltipPositionY = 'Top';
+        this.isHidden = true;
+        this.showTipPointer = true;
+    }
+    /**
+     *  @private
+     */
+    open(target, showAnimation, e) {
+        if (isNullOrUndefined(this.animation.open)) {
+            this.animation.open = this.element.tooltip && this.element.tooltip.animation &&
+                this.element.tooltip.animation.open;
+        }
+        this.showTooltip(target, showAnimation);
+    }
+    /**
+     *  @private
+     */
+    updateTooltip(target) {
+        if (this.tooltipEle) {
+            this.addDescribedBy(target, this.ctrlId + '_content');
+            this.renderContent(target);
+            this.reposition(target);
+            this.adjustArrow(target, this.position, this.tooltipPositionX, this.tooltipPositionY);
+        }
+    }
+    ;
+    formatPosition() {
+        if (this.position.indexOf('Top') === 0 || this.position.indexOf('Bottom') === 0) {
+            [this.tooltipPositionY, this.tooltipPositionX] = this.position.split(/(?=[A-Z])/);
+        }
+        else {
+            [this.tooltipPositionX, this.tooltipPositionY] = this.position.split(/(?=[A-Z])/);
+        }
+    }
+    /**
+     *  @private
+     */
+    destroy() {
+        //No code
+    }
+    /**
+     *  @private
+     */
+    close() {
+        if (this.tooltipEle) {
+            removeClass([this.tooltipEle], POPUP_CLOSE);
+            addClass([this.tooltipEle], POPUP_OPEN);
+            Animation.stop(this.tooltipEle);
+            let animationOptions;
+            let currentTooltip = this;
+            currentTooltip.isHidden = true;
+            if (this.animation.close) {
+                animationOptions = {
+                    name: this.animation.close.effect,
+                    duration: this.animation.close.duration || 0,
+                    delay: this.animation.close.delay || 0,
+                    timingFunction: 'easeOut'
+                };
+            }
+            if (!isNullOrUndefined(animationOptions)) {
+                animationOptions.end = () => {
+                    if (currentTooltip.isHidden) {
+                        remove(currentTooltip.tooltipEle);
+                        currentTooltip.tooltipEle = null;
+                    }
+                };
+                new Animation(animationOptions).animate(this.tooltipEle);
+            }
+            else {
+                removeClass([this.tooltipEle], CLASSNAMES.OPEN);
+                addClass([this.tooltipEle], CLASSNAMES.CLOSE);
+                remove(this.tooltipEle);
+                this.tooltipEle = null;
+            }
+        }
+    }
+    /**
+     *  @private
+     */
+    showTooltip(target, showAnimation, e) {
+        clearTimeout(this.showTimer);
+        clearTimeout(this.hideTimer);
+        this.tooltipEventArgs = {
+            type: e ? e.type : null, cancel: false, target: target, event: e ? e : null,
+            element: this.tooltipEle, isInteracted: !isNullOrUndefined(e)
+        };
+        const observeCallback = (beforeRenderArgs) => {
+            this.beforeRenderCallback(beforeRenderArgs, target, e, showAnimation);
+        };
+        this.element.trigger('beforeRender', this.tooltipEventArgs, observeCallback.bind(this));
+    }
+    beforeRenderCallback(beforeRenderArgs, target, e, showAnimation) {
+        this.formatPosition();
+        if (beforeRenderArgs.cancel) {
+            this.isHidden = true;
+            //  this.clear();
+        }
+        else {
+            this.isHidden = false;
+            if (isNullOrUndefined(this.tooltipEle)) {
+                this.ctrlId = this.element.element.id;
+                this.tooltipEle = createElement('div', {
+                    className: TOOLTIP_WRAP + ' ' + POPUP_ROOT + ' ' + POPUP_LIB, attrs: {
+                        role: 'tooltip', 'aria-hidden': 'false', 'id': this.ctrlId + '_content'
+                    }, styles: 'width:' +
+                        formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute; pointer-events:none;'
+                });
+                this.beforeRenderBlazor(target, this);
+                Animation.stop(this.tooltipEle);
+                this.afterRenderBlazor(target, e, showAnimation, this);
+            }
+            else {
+                if (target) {
+                    this.addDescribedBy(target, this.ctrlId + '_content');
+                    this.renderContent(target);
+                    Animation.stop(this.tooltipEle);
+                    this.reposition(target);
+                    this.afterRenderBlazor(target, e, showAnimation, this);
+                    this.adjustArrow(target, this.position, this.tooltipPositionX, this.tooltipPositionY);
+                }
+            }
+        }
+    }
+    afterRenderBlazor(target, e, showAnimation, ctrlObj) {
+        if (target) {
+            removeClass([ctrlObj.tooltipEle], POPUP_OPEN);
+            addClass([ctrlObj.tooltipEle], POPUP_CLOSE);
+            ctrlObj.tooltipEventArgs = {
+                type: e ? e.type : null, cancel: false, target: target, event: e ? e : null,
+                element: ctrlObj.tooltipEle, isInteracted: !isNullOrUndefined(e)
+            };
+            let animation;
+            if (this.animation.open) {
+                animation = {
+                    name: this.animation.open.effect,
+                    duration: this.animation.open.duration || 0,
+                    delay: this.animation.open.delay || 0,
+                    timingFunction: 'easeIn'
+                };
+            }
+            if (!isNullOrUndefined(animation)) {
+                animation.begin = () => {
+                    removeClass([ctrlObj.tooltipEle], CLASSNAMES.CLOSE);
+                    addClass([ctrlObj.tooltipEle], CLASSNAMES.OPEN);
+                };
+                animation.end = () => {
+                    this.element.trigger('open');
+                };
+                new Animation(animation).animate(this.tooltipEle);
+            }
+            else {
+                removeClass([ctrlObj.tooltipEle], POPUP_CLOSE);
+                addClass([ctrlObj.tooltipEle], POPUP_OPEN);
+            }
+        }
+    }
+    ;
+    setTipClass(position) {
+        if (position.indexOf('Right') === 0) {
+            this.tipClass = TIP_LEFT;
+        }
+        else if (position.indexOf('Bottom') === 0) {
+            this.tipClass = TIP_TOP;
+        }
+        else if (position.indexOf('Left') === 0) {
+            this.tipClass = TIP_RIGHT;
+        }
+        else {
+            this.tipClass = TIP_BOTTOM;
+        }
+    }
+    renderArrow() {
+        this.setTipClass(this.position);
+        let tip = createElement('div', { className: ARROW_TIP + ' ' + this.tipClass });
+        tip.appendChild(createElement('div', { className: ARROW_TIP_OUTER + ' ' + this.tipClass }));
+        tip.appendChild(createElement('div', { className: ARROW_TIP_INNER + ' ' + this.tipClass }));
+        this.tooltipEle.appendChild(tip);
+    }
+    getTooltipPosition(target) {
+        this.tooltipEle.style.display = 'block';
+        let pos = calculatePosition(target, this.tooltipPositionX, this.tooltipPositionY);
+        let offsetPos = this.calculateTooltipOffset(this.position);
+        let elePos = this.collisionFlipFit(target, pos.left + offsetPos.left, pos.top + offsetPos.top);
+        this.tooltipEle.style.display = '';
+        return elePos;
+    }
+    checkCollision(target, x, y) {
+        let elePos = {
+            left: x, top: y, position: this.position,
+            horizontal: this.tooltipPositionX, vertical: this.tooltipPositionY
+        };
+        let affectedPos = isCollide(this.tooltipEle, (this.target ? this.element.element : null), x, y);
+        if (affectedPos.length > 0) {
+            elePos.horizontal = affectedPos.indexOf('left') >= 0 ? 'Right' : affectedPos.indexOf('right') >= 0 ? 'Left' :
+                this.tooltipPositionX;
+            elePos.vertical = affectedPos.indexOf('top') >= 0 ? 'Bottom' : affectedPos.indexOf('bottom') >= 0 ? 'Top' :
+                this.tooltipPositionY;
+        }
+        return elePos;
+    }
+    collisionFlipFit(target, x, y) {
+        let elePos = this.checkCollision(target, x, y);
+        let newpos = elePos.position;
+        if (this.tooltipPositionY !== elePos.vertical) {
+            newpos = ((this.position.indexOf('Bottom') === 0 || this.position.indexOf('Top') === 0) ?
+                elePos.vertical + this.tooltipPositionX : this.tooltipPositionX + elePos.vertical);
+        }
+        if (this.tooltipPositionX !== elePos.horizontal) {
+            if (newpos.indexOf('Left') === 0) {
+                elePos.vertical = (newpos === 'LeftTop' || newpos === 'LeftCenter') ? 'Top' : 'Bottom';
+                newpos = (elePos.vertical + 'Left');
+            }
+            if (newpos.indexOf('Right') === 0) {
+                elePos.vertical = (newpos === 'RightTop' || newpos === 'RightCenter') ? 'Top' : 'Bottom';
+                newpos = (elePos.vertical + 'Right');
+            }
+            elePos.horizontal = this.tooltipPositionX;
+        }
+        this.tooltipEventArgs = {
+            type: null, cancel: false, target: target, event: null,
+            element: this.tooltipEle, collidedPosition: newpos
+        };
+        this.element.trigger('beforeCollision', this.tooltipEventArgs);
+        if (elePos.position !== newpos) {
+            let pos = calculatePosition(target, elePos.horizontal, elePos.vertical);
+            this.adjustArrow(target, newpos, elePos.horizontal, elePos.vertical);
+            let offsetPos = this.calculateTooltipOffset(newpos);
+            offsetPos.top -= (('TopBottom'.indexOf(this.position.split(/(?=[A-Z])/)[0]) !== -1) &&
+                ('TopBottom'.indexOf(newpos.split(/(?=[A-Z])/)[0]) !== -1)) ? (2 * this.offsetY) : 0;
+            offsetPos.left -= (('RightLeft'.indexOf(this.position.split(/(?=[A-Z])/)[0]) !== -1) &&
+                ('RightLeft'.indexOf(newpos.split(/(?=[A-Z])/)[0]) !== -1)) ? (2 * this.offsetX) : 0;
+            elePos.position = newpos;
+            elePos.left = pos.left + offsetPos.left;
+            elePos.top = pos.top + offsetPos.top;
+        }
+        else {
+            this.adjustArrow(target, newpos, elePos.horizontal, elePos.vertical);
+        }
+        let eleOffset = { left: elePos.left, top: elePos.top };
+        let left = fit(this.tooltipEle, (this.target ? this.element.element : null), { X: true, Y: false }, eleOffset).left;
+        this.tooltipEle.style.display = 'block';
+        if (this.showTipPointer && (newpos.indexOf('Bottom') === 0 || newpos.indexOf('Top') === 0)) {
+            let arrowEle = this.tooltipEle.querySelector('.' + ARROW_TIP);
+            let arrowleft = parseInt(arrowEle.style.left, 10) - (left - elePos.left);
+            if (arrowleft < 0) {
+                arrowleft = 0;
+            }
+            else if ((arrowleft + arrowEle.offsetWidth) > this.tooltipEle.clientWidth) {
+                arrowleft = this.tooltipEle.clientWidth - arrowEle.offsetWidth;
+            }
+            arrowEle.style.left = arrowleft.toString() + 'px';
+        }
+        this.tooltipEle.style.display = '';
+        eleOffset.left = left;
+        return eleOffset;
+    }
+    calculateTooltipOffset(position) {
+        let pos = { top: 0, left: 0 };
+        let tooltipEleWidth = this.tooltipEle.offsetWidth;
+        let tooltipEleHeight = this.tooltipEle.offsetHeight;
+        let arrowEle = this.tooltipEle.querySelector('.' + ARROW_TIP);
+        let tipWidth = arrowEle ? arrowEle.offsetWidth : 0;
+        let tipHeight = arrowEle ? arrowEle.offsetHeight : 0;
+        let tipAdjust = (this.showTipPointer ? SHOW_POINTER_TIP_GAP : HIDE_POINTER_TIP_GAP);
+        let tipHeightAdjust = (tipHeight / 2) + POINTER_ADJUST + (this.tooltipEle.offsetHeight - this.tooltipEle.clientHeight);
+        let tipWidthAdjust = (tipWidth / 2) + POINTER_ADJUST + (this.tooltipEle.offsetWidth - this.tooltipEle.clientWidth);
+        switch (position) {
+            case 'RightTop':
+                pos.left += tipWidth + tipAdjust;
+                pos.top -= tooltipEleHeight - tipHeightAdjust;
+                break;
+            case 'RightCenter':
+                pos.left += tipWidth + tipAdjust;
+                pos.top -= (tooltipEleHeight / 2);
+                break;
+            case 'RightBottom':
+                pos.left += tipWidth + tipAdjust;
+                pos.top -= (tipHeightAdjust);
+                break;
+            case 'BottomRight':
+                pos.top += (tipHeight + tipAdjust);
+                pos.left -= (tipWidthAdjust);
+                break;
+            case 'BottomCenter':
+                pos.top += (tipHeight + tipAdjust);
+                pos.left -= (tooltipEleWidth / 2);
+                break;
+            case 'BottomLeft':
+                pos.top += (tipHeight + tipAdjust);
+                pos.left -= (tooltipEleWidth - tipWidthAdjust);
+                break;
+            case 'LeftBottom':
+                pos.left -= (tipWidth + tooltipEleWidth + tipAdjust);
+                pos.top -= (tipHeightAdjust);
+                break;
+            case 'LeftCenter':
+                pos.left -= (tipWidth + tooltipEleWidth + tipAdjust);
+                pos.top -= (tooltipEleHeight / 2);
+                break;
+            case 'LeftTop':
+                pos.left -= (tipWidth + tooltipEleWidth + tipAdjust);
+                pos.top -= (tooltipEleHeight - tipHeightAdjust);
+                break;
+            case 'TopLeft':
+                pos.top -= (tooltipEleHeight + tipHeight + tipAdjust);
+                pos.left -= (tooltipEleWidth - tipWidthAdjust);
+                break;
+            case 'TopRight':
+                pos.top -= (tooltipEleHeight + tipHeight + tipAdjust);
+                pos.left -= (tipWidthAdjust);
+                break;
+            default:
+                pos.top -= (tooltipEleHeight + tipHeight + tipAdjust);
+                pos.left -= (tooltipEleWidth / 2);
+                break;
+        }
+        pos.left += this.offsetX;
+        pos.top += this.offsetY;
+        return pos;
+    }
+    reposition(target) {
+        let elePos = this.getTooltipPosition(target);
+        this.tooltipEle.style.left = elePos.left + 'px';
+        this.tooltipEle.style.top = elePos.top + 'px';
+    }
+    beforeRenderBlazor(target, ctrlObj) {
+        if (target) {
+            if (Browser.isDevice) {
+                addClass([ctrlObj.tooltipEle], DEVICE);
+            }
+            if (ctrlObj.width !== 'auto') {
+                ctrlObj.tooltipEle.style.maxWidth = formatUnit(ctrlObj.width);
+            }
+            ctrlObj.tooltipEle.appendChild(createElement('div', { className: CONTENT + ' ' + 'e-diagramTooltip-content' }));
+            document.body.appendChild(ctrlObj.tooltipEle);
+            addClass([ctrlObj.tooltipEle], POPUP_OPEN);
+            removeClass([ctrlObj.tooltipEle], HIDE_POPUP);
+            ctrlObj.addDescribedBy(target, ctrlObj.ctrlId + '_content');
+            ctrlObj.renderContent(target);
+            addClass([ctrlObj.tooltipEle], POPUP_OPEN);
+            if (this.showTipPointer) {
+                ctrlObj.renderArrow();
+            }
+            let elePos = this.getTooltipPosition(target);
+            this.tooltipEle.classList.remove(POPUP_LIB);
+            this.tooltipEle.style.left = elePos.left + 'px';
+            this.tooltipEle.style.top = elePos.top + 'px';
+            ctrlObj.reposition(target);
+            ctrlObj.adjustArrow(target, ctrlObj.position, ctrlObj.tooltipPositionX, ctrlObj.tooltipPositionY);
+        }
+    }
+    addDescribedBy(target, id) {
+        let describedby = (target.getAttribute('aria-describedby') || '').split(/\s+/);
+        if (describedby.indexOf(id) < 0) {
+            describedby.push(id);
+        }
+        attributes(target, { 'aria-describedby': describedby.join(' ').trim(), 'data-tooltip-id': id });
+    }
+    renderContent(target) {
+        let tooltipContent = this.tooltipEle.querySelector('.' + CONTENT);
+        if (this.cssClass) {
+            addClass([this.tooltipEle], this.cssClass.split(' '));
+        }
+        if (target && !isNullOrUndefined(target.getAttribute('title'))) {
+            target.setAttribute('data-content', target.getAttribute('title'));
+            target.removeAttribute('title');
+        }
+        if (!isNullOrUndefined(this.content)) {
+            if (this.isBlazorTooltip || !(false)) {
+                tooltipContent.innerHTML = '';
+                if (this.content instanceof HTMLElement) {
+                    tooltipContent.appendChild(this.content);
+                }
+                else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') < 0) {
+                    tooltipContent.innerHTML = this.content;
+                }
+                else {
+                    let templateFunction = compile(this.content);
+                    append(templateFunction({}, null, null, this.element.element.id + 'content'), tooltipContent);
+                    if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
+                        this.isBlazorTemplate = true;
+                        updateBlazorTemplate(this.element.element.id + 'content', 'Content', this);
+                    }
+                }
+            }
+        }
+        else {
+            if (target && !isNullOrUndefined(target.getAttribute('data-content'))) {
+                tooltipContent.innerHTML = target.getAttribute('data-content');
+            }
+        }
+    }
+    updateTipPosition(position) {
+        let selEle = this.tooltipEle.querySelectorAll('.' + ARROW_TIP + ',.' + ARROW_TIP_OUTER + ',.' + ARROW_TIP_INNER);
+        let removeList = [TIP_BOTTOM, TIP_TOP, TIP_LEFT, TIP_RIGHT];
+        removeClass(selEle, removeList);
+        this.setTipClass(position);
+        addClass(selEle, this.tipClass);
+    }
+    adjustArrow(target, position, tooltipPositionX, tooltipPositionY) {
+        if (!this.showTipPointer) {
+            return;
+        }
+        this.updateTipPosition(position);
+        let leftValue;
+        let topValue;
+        this.tooltipEle.style.display = 'block';
+        let tooltipWidth = this.tooltipEle.clientWidth;
+        let tooltipHeight = this.tooltipEle.clientHeight;
+        let arrowEle = this.tooltipEle.querySelector('.' + ARROW_TIP);
+        let arrowInnerELe = this.tooltipEle.querySelector('.' + ARROW_TIP_INNER);
+        let tipWidth = arrowEle.offsetWidth;
+        let tipHeight = arrowEle.offsetHeight;
+        this.tooltipEle.style.display = '';
+        if (this.tipClass === TIP_BOTTOM || this.tipClass === TIP_TOP) {
+            if (this.tipClass === TIP_BOTTOM) {
+                topValue = '99.9%';
+                // Arrow icon aligned -2px height from ArrowOuterTip div
+                arrowInnerELe.style.top = '-' + (tipHeight - 2) + 'px';
+            }
+            else {
+                topValue = -(tipHeight - 1) + 'px';
+                // Arrow icon aligned -6px height from ArrowOuterTip div
+                arrowInnerELe.style.top = '-' + (tipHeight - 6) + 'px';
+            }
+            if (target) {
+                let tipPosExclude = tooltipPositionX !== 'Center' || (tooltipWidth > target.offsetWidth);
+                if ((tipPosExclude && tooltipPositionX === 'Left') || (!tipPosExclude && this.tipPointerPosition === 'End')) {
+                    leftValue = (tooltipWidth - tipWidth - POINTER_ADJUST) + 'px';
+                }
+                else if ((tipPosExclude && tooltipPositionX === 'Right') || (!tipPosExclude && this.tipPointerPosition === 'Start')) {
+                    leftValue = POINTER_ADJUST + 'px';
+                }
+                else {
+                    leftValue = ((tooltipWidth / 2) - (tipWidth / 2)) + 'px';
+                }
+            }
+        }
+        else {
+            if (this.tipClass === TIP_RIGHT) {
+                leftValue = '99.9%';
+                // Arrow icon aligned -2px left from ArrowOuterTip div
+                arrowInnerELe.style.left = '-' + (tipWidth - 2) + 'px';
+            }
+            else {
+                leftValue = -(tipWidth - 1) + 'px';
+                // Arrow icon aligned -2px from ArrowOuterTip width
+                arrowInnerELe.style.left = (-(tipWidth) + (tipWidth - 2)) + 'px';
+            }
+            let tipPosExclude = tooltipPositionY !== 'Center' || (tooltipHeight > target.offsetHeight);
+            if ((tipPosExclude && tooltipPositionY === 'Top') || (!tipPosExclude && this.tipPointerPosition === 'End')) {
+                topValue = (tooltipHeight - tipHeight - POINTER_ADJUST) + 'px';
+            }
+            else if ((tipPosExclude && tooltipPositionY === 'Bottom') || (!tipPosExclude && this.tipPointerPosition === 'Start')) {
+                topValue = POINTER_ADJUST + 'px';
+            }
+            else {
+                topValue = ((tooltipHeight / 2) - (tipHeight / 2)) + 'px';
+            }
+        }
+        arrowEle.style.top = topValue;
+        arrowEle.style.left = leftValue;
+    }
+    /**
+     * Core method to return the component name.
+     * @private
+     */
+    getModuleName() {
+        return 'BlazorTooltip';
+    }
+}
+
 var __decorate$8 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -6778,15 +7696,22 @@ __decorate$8([
  * @param {Diagram} diagram
  */
 function initTooltip(diagram) {
-    let tooltipOption = new Tooltip;
-    tooltipOption = updateTooltipContent(diagram.tooltip, tooltipOption);
-    let tooltip = new Tooltip(tooltipOption);
-    tooltip.beforeCollision = beforeCollision;
-    tooltip.beforeOpen = beforeOpen;
-    tooltip.cssClass = 'e-diagram-tooltip';
-    tooltip.opensOn = 'custom';
-    tooltip.appendTo('#' + diagram.element.id);
-    tooltip.close();
+    let tooltip;
+    if (!isBlazor()) {
+        let tooltipOption = new Tooltip;
+        tooltipOption = updateTooltipContent(diagram.tooltip, tooltipOption);
+        tooltip = new Tooltip(tooltipOption);
+        tooltip.beforeCollision = beforeCollision;
+        tooltip.beforeOpen = beforeOpen;
+        tooltip.cssClass = 'e-diagram-tooltip';
+        tooltip.opensOn = 'custom';
+        tooltip.appendTo('#' + diagram.element.id);
+        tooltip.close();
+    }
+    else {
+        tooltip = new BlazorTooltip(diagram);
+        tooltip = updateTooltipContent(diagram.tooltip, tooltip);
+    }
     return tooltip;
 }
 function beforeOpen(args) {
@@ -6832,7 +7757,7 @@ function updateTooltipContent(tooltip, tooltipObject) {
     return tooltipObject;
 }
 
-var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$10 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -6843,10 +7768,10 @@ var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, 
  */
 class SymbolSize extends ChildProperty {
 }
-__decorate$9([
+__decorate$10([
     Property()
 ], SymbolSize.prototype, "width", void 0);
-__decorate$9([
+__decorate$10([
     Property()
 ], SymbolSize.prototype, "height", void 0);
 /**
@@ -6854,22 +7779,22 @@ __decorate$9([
  */
 class SymbolPaletteInfo extends ChildProperty {
 }
-__decorate$9([
+__decorate$10([
     Property()
 ], SymbolPaletteInfo.prototype, "width", void 0);
-__decorate$9([
+__decorate$10([
     Property()
 ], SymbolPaletteInfo.prototype, "height", void 0);
-__decorate$9([
+__decorate$10([
     Property()
 ], SymbolPaletteInfo.prototype, "fit", void 0);
-__decorate$9([
+__decorate$10([
     Property()
 ], SymbolPaletteInfo.prototype, "description", void 0);
-__decorate$9([
+__decorate$10([
     Property()
 ], SymbolPaletteInfo.prototype, "template", void 0);
-__decorate$9([
+__decorate$10([
     Property()
 ], SymbolPaletteInfo.prototype, "tooltip", void 0);
 
@@ -6961,6 +7886,80 @@ class DiagramHtmlElement extends DiagramElement {
         this.isDirt = true;
     }
 }
+
+var __decorate$11 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Specifies the behavior of fixedUserHandles
+ */
+/** @private */
+class FixedUserHandle extends ChildProperty {
+}
+__decorate$11([
+    Property('')
+], FixedUserHandle.prototype, "id", void 0);
+__decorate$11([
+    Property('transparent')
+], FixedUserHandle.prototype, "fill", void 0);
+__decorate$11([
+    Property('black')
+], FixedUserHandle.prototype, "iconStrokeColor", void 0);
+__decorate$11([
+    Property(0)
+], FixedUserHandle.prototype, "iconStrokeWidth", void 0);
+__decorate$11([
+    Property(true)
+], FixedUserHandle.prototype, "visibility", void 0);
+__decorate$11([
+    Property(10)
+], FixedUserHandle.prototype, "width", void 0);
+__decorate$11([
+    Property(10)
+], FixedUserHandle.prototype, "height", void 0);
+__decorate$11([
+    Property('transparent')
+], FixedUserHandle.prototype, "handleStrokeColor", void 0);
+__decorate$11([
+    Property(1)
+], FixedUserHandle.prototype, "handleStrokeWidth", void 0);
+__decorate$11([
+    Property('')
+], FixedUserHandle.prototype, "pathData", void 0);
+__decorate$11([
+    Property(0)
+], FixedUserHandle.prototype, "cornerRadius", void 0);
+__decorate$11([
+    Complex({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
+], FixedUserHandle.prototype, "padding", void 0);
+/**
+ * Defines the node Fixed User Handle
+ */
+class NodeFixedUserHandle extends FixedUserHandle {
+}
+__decorate$11([
+    Complex({ x: 0, y: 0 }, Point)
+], NodeFixedUserHandle.prototype, "offset", void 0);
+__decorate$11([
+    Complex({}, Margin)
+], NodeFixedUserHandle.prototype, "margin", void 0);
+/**
+ * Defines the connector Fixed User Handle
+ */
+class ConnectorFixedUserHandle extends FixedUserHandle {
+}
+__decorate$11([
+    Property(0.5)
+], ConnectorFixedUserHandle.prototype, "offset", void 0);
+__decorate$11([
+    Property('Center')
+], ConnectorFixedUserHandle.prototype, "alignment", void 0);
+__decorate$11([
+    Complex({ x: 0, y: 0 }, Point)
+], ConnectorFixedUserHandle.prototype, "displacement", void 0);
 
 var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -7532,6 +8531,9 @@ class Connector extends NodeBase {
         for (let i = 0; this.annotations !== undefined, i < this.annotations.length; i++) {
             container.children.push(this.getAnnotationElement(this.annotations[i], this.intermediatePoints, bounds, getDescription, diagram.element.id, diagram.annotationTemplate));
         }
+        for (let i = 0; this.fixedUserHandles !== undefined, i < this.fixedUserHandles.length; i++) {
+            container.children.push(this.getfixedUserHandle(this.fixedUserHandles[i], this.intermediatePoints, bounds));
+        }
         this.wrapper = container;
         return container;
     }
@@ -7679,6 +8681,27 @@ class Connector extends NodeBase {
             this.sourceDecorator.shape = 'Arrow';
         }
     }
+    /** @private */
+    getfixedUserHandle(fixedUserHandle, points, bounds) {
+        let fixedUserHandleContainer = new Canvas();
+        fixedUserHandleContainer.float = true;
+        let children = [];
+        fixedUserHandle.id = fixedUserHandle.id || randomId();
+        fixedUserHandleContainer.id = this.id + '_' + fixedUserHandle.id;
+        fixedUserHandleContainer.children = children;
+        fixedUserHandleContainer.visible = fixedUserHandle.visibility;
+        fixedUserHandleContainer.width = fixedUserHandle.width;
+        fixedUserHandleContainer.height = fixedUserHandle.height;
+        fixedUserHandleContainer.style.strokeWidth = fixedUserHandle.handleStrokeWidth;
+        fixedUserHandleContainer.style.fill = fixedUserHandle.fill;
+        fixedUserHandleContainer.style.strokeColor = fixedUserHandle.handleStrokeColor;
+        fixedUserHandleContainer.cornerRadius = fixedUserHandle.cornerRadius;
+        this.updateAnnotation(fixedUserHandle, points, bounds, fixedUserHandleContainer);
+        let symbolIcon = initfixedUserHandlesSymbol(fixedUserHandle, fixedUserHandleContainer);
+        fixedUserHandleContainer.children.push(symbolIcon);
+        fixedUserHandleContainer.description = fixedUserHandleContainer.id;
+        return fixedUserHandleContainer;
+    }
     getBpmnMessageFlow() {
         let segmentMessage = new PathElement();
         this.targetDecorator.shape = 'Arrow';
@@ -7761,13 +8784,13 @@ class Connector extends NodeBase {
         let vAlign;
         let offsetPoint;
         let pivotPoint = { x: 0, y: 0 };
-        if (!(textElement instanceof DiagramHtmlElement) && (!canRefresh)) {
+        if (!(textElement instanceof DiagramHtmlElement || DiagramElement) && (!canRefresh)) {
             textElement.refreshTextElement();
         }
         textElement.width = (annotation.width || bounds.width);
         getPointloop = getAnnotationPosition(points, annotation, bounds);
         newPoint = getPointloop.point;
-        if (annotation.segmentAngle) {
+        if (annotation instanceof PathAnnotation && annotation.segmentAngle) {
             textElement.rotateAngle = annotation.rotateAngle + getPointloop.angle;
             textElement.rotateAngle = (textElement.rotateAngle + 360) % 360;
         }
@@ -8190,6 +9213,9 @@ __decorate$6([
     Complex({}, Point)
 ], Connector.prototype, "targetPoint", void 0);
 __decorate$6([
+    Collection([], ConnectorFixedUserHandle)
+], Connector.prototype, "fixedUserHandles", void 0);
+__decorate$6([
     CollectionFactory(getSegmentType)
 ], Connector.prototype, "segments", void 0);
 __decorate$6([
@@ -8244,7 +9270,7 @@ __decorate$6([
     Property(null)
 ], Connector.prototype, "wrapper", void 0);
 
-var __decorate$10 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$12 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -8598,28 +9624,28 @@ class Ruler extends Component {
         //unWire Events
     }
 }
-__decorate$10([
+__decorate$12([
     Property(5)
 ], Ruler.prototype, "interval", void 0);
-__decorate$10([
+__decorate$12([
     Property(100)
 ], Ruler.prototype, "segmentWidth", void 0);
-__decorate$10([
+__decorate$12([
     Property('Horizontal')
 ], Ruler.prototype, "orientation", void 0);
-__decorate$10([
+__decorate$12([
     Property('RightOrBottom')
 ], Ruler.prototype, "tickAlignment", void 0);
-__decorate$10([
+__decorate$12([
     Property('red')
 ], Ruler.prototype, "markerColor", void 0);
-__decorate$10([
+__decorate$12([
     Property(25)
 ], Ruler.prototype, "thickness", void 0);
-__decorate$10([
+__decorate$12([
     Property(null)
 ], Ruler.prototype, "arrangeTick", void 0);
-__decorate$10([
+__decorate$12([
     Property(400)
 ], Ruler.prototype, "length", void 0);
 
@@ -8635,12 +9661,12 @@ __decorate$10([
  */
 function renderOverlapElement(diagram) {
     let rulerSize = getRulerSize(diagram);
-    let attributes = {
+    let attributes$$1 = {
         'id': diagram.element.id + '_overlapRuler',
         style: 'height:' + rulerSize.height + 'px;width:' + rulerSize.width + 'px;position:absolute;left:0;top:0',
         class: 'e-ruler-overlap'
     };
-    let overlap = createHtmlElement('div', attributes);
+    let overlap = createHtmlElement('div', attributes$$1);
     diagram.element.insertBefore(overlap, diagram.element.firstChild);
 }
 /**
@@ -8654,11 +9680,11 @@ function renderRuler(diagram, isHorizontal) {
     if (!div) {
         let style = 'height:' + (isHorizontal ? rulerSize.height : (rulerGeometry.height + 100)) + 'px;overflow:hidden;width:' +
             (isHorizontal ? (rulerGeometry.width + 100) : rulerSize.width) + 'px;position:absolute;font-size:11px;' + margin;
-        let attributes = {
+        let attributes$$1 = {
             'id': diagram.element.id + (isHorizontal ? '_hRuler' : '_vRuler'),
             style: style
         };
-        div = createHtmlElement('div', attributes);
+        div = createHtmlElement('div', attributes$$1);
     }
     diagram.element.insertBefore(div, diagram.element.firstChild);
     let diagramRuler = isHorizontal ? diagram.rulerSettings.horizontalRuler : diagram.rulerSettings.verticalRuler;
@@ -9115,7 +10141,7 @@ function avoidDrawSelector(rendererActions) {
     }
 }
 
-var __decorate$11 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$13 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -9169,61 +10195,61 @@ class UserHandle extends ChildProperty {
         return 'UserHandle';
     }
 }
-__decorate$11([
+__decorate$13([
     Property('')
 ], UserHandle.prototype, "name", void 0);
-__decorate$11([
+__decorate$13([
     Property('')
 ], UserHandle.prototype, "pathData", void 0);
-__decorate$11([
+__decorate$13([
     Property('')
 ], UserHandle.prototype, "content", void 0);
-__decorate$11([
+__decorate$13([
     Property('')
 ], UserHandle.prototype, "source", void 0);
-__decorate$11([
+__decorate$13([
     Property('#000000')
 ], UserHandle.prototype, "backgroundColor", void 0);
-__decorate$11([
+__decorate$13([
     Property('Top')
 ], UserHandle.prototype, "side", void 0);
-__decorate$11([
+__decorate$13([
     Property('')
 ], UserHandle.prototype, "borderColor", void 0);
-__decorate$11([
+__decorate$13([
     Property(0.5)
 ], UserHandle.prototype, "borderWidth", void 0);
-__decorate$11([
+__decorate$13([
     Property(25)
 ], UserHandle.prototype, "size", void 0);
-__decorate$11([
+__decorate$13([
     Property('white')
 ], UserHandle.prototype, "pathColor", void 0);
-__decorate$11([
+__decorate$13([
     Property(10)
 ], UserHandle.prototype, "displacement", void 0);
-__decorate$11([
+__decorate$13([
     Property(true)
 ], UserHandle.prototype, "visible", void 0);
-__decorate$11([
+__decorate$13([
     Property(0)
 ], UserHandle.prototype, "offset", void 0);
-__decorate$11([
+__decorate$13([
     Complex({}, Margin)
 ], UserHandle.prototype, "margin", void 0);
-__decorate$11([
+__decorate$13([
     Property('Center')
 ], UserHandle.prototype, "horizontalAlignment", void 0);
-__decorate$11([
+__decorate$13([
     Property('Center')
 ], UserHandle.prototype, "verticalAlignment", void 0);
-__decorate$11([
+__decorate$13([
     Property(false)
 ], UserHandle.prototype, "disableNodes", void 0);
-__decorate$11([
+__decorate$13([
     Property(false)
 ], UserHandle.prototype, "disableConnectors", void 0);
-__decorate$11([
+__decorate$13([
     Property('')
 ], UserHandle.prototype, "template", void 0);
 
@@ -9263,7 +10289,7 @@ let umlActivityShapes = {
     'Note': 'M20 12 L4 12 L4 22 L22 22 L22 14 L20 14 L20 12 L22 14 Z',
 };
 
-var __decorate$12 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$14 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -9274,10 +10300,10 @@ var __decorate$12 = (undefined && undefined.__decorate) || function (decorators,
  */
 class KeyGesture extends ChildProperty {
 }
-__decorate$12([
+__decorate$14([
     Property()
 ], KeyGesture.prototype, "key", void 0);
-__decorate$12([
+__decorate$14([
     Property()
 ], KeyGesture.prototype, "keyModifiers", void 0);
 /**
@@ -9292,19 +10318,19 @@ class Command extends ChildProperty {
         return 'Command';
     }
 }
-__decorate$12([
+__decorate$14([
     Property('')
 ], Command.prototype, "name", void 0);
-__decorate$12([
+__decorate$14([
     Property()
 ], Command.prototype, "canExecute", void 0);
-__decorate$12([
+__decorate$14([
     Property()
 ], Command.prototype, "execute", void 0);
-__decorate$12([
+__decorate$14([
     Complex({}, KeyGesture)
 ], Command.prototype, "gesture", void 0);
-__decorate$12([
+__decorate$14([
     Property('')
 ], Command.prototype, "parameter", void 0);
 /**
@@ -9312,7 +10338,7 @@ __decorate$12([
  */
 class CommandManager extends ChildProperty {
 }
-__decorate$12([
+__decorate$14([
     Collection([], Command)
 ], CommandManager.prototype, "commands", void 0);
 /**
@@ -9320,13 +10346,13 @@ __decorate$12([
  */
 class ContextMenuSettings extends ChildProperty {
 }
-__decorate$12([
+__decorate$14([
     Property()
 ], ContextMenuSettings.prototype, "show", void 0);
-__decorate$12([
+__decorate$14([
     Property()
 ], ContextMenuSettings.prototype, "showCustomMenuOnly", void 0);
-__decorate$12([
+__decorate$14([
     Property()
 ], ContextMenuSettings.prototype, "items", void 0);
 
@@ -12703,7 +13729,7 @@ function intersect3(lineUtil1, lineUtil2) {
     let na = (l2.x2 - l2.x1) * (l1.y1 - l2.y1) - (l2.y2 - l2.y1) * (l1.x1 - l2.x1);
     let nb = (l1.x2 - l1.x1) * (l1.y1 - l2.y1) - (l1.y2 - l1.y1) * (l1.x1 - l2.x1);
     /*( EJ2-42102 - Connector segments not update properly ) by sivakumar sekar - condition added to avoid bridging for
-     overlapping segments in the connectors and to validate whether the connector is intersecting over the other */
+    overlapping segments in the connectors and to validate whether the connector is intersecting over the other */
     if (d === 0 || ((lineUtil1.x1 === lineUtil2.x1 || lineUtil1.y1 === lineUtil2.y1) &&
         (lineUtil1.x2 === lineUtil2.x2 || lineUtil1.y2 === lineUtil2.y2) && ((na === 0 || nb === 0) && d > 0))) {
         return { enabled: false, intersectPt: point };
@@ -12755,7 +13781,7 @@ function getPoints(element, corners, padding) {
  * @param {PointModel} mousePosition
  * @param {NodeModel | ConnectorModel} node
  */
-function getTooltipOffset(diagram, mousePosition, node) {
+function getTooltipOffset(diagram, mousePosition, node, type) {
     let offset;
     let inheritTooltip = (node instanceof Node) ? (node.constraints & NodeConstraints.InheritTooltip)
         : (node.constraints & ConnectorConstraints.InheritTooltip);
@@ -12763,6 +13789,12 @@ function getTooltipOffset(diagram, mousePosition, node) {
         : (node.constraints & ConnectorConstraints.Tooltip);
     let isMouseBased = ((!inheritTooltip && objectTooltip ? node.tooltip.relativeMode
         : diagram.tooltip.relativeMode) === 'Mouse') ? true : false;
+    if (type === 'Mouse') {
+        isMouseBased = true;
+    }
+    else if (type === 'Object') {
+        isMouseBased = false;
+    }
     offset = tooltipOffset(node, mousePosition, diagram, isMouseBased);
     let rulerSize = getRulerSize(diagram);
     return { x: offset.x + rulerSize.width, y: offset.y + rulerSize.height };
@@ -12816,6 +13848,32 @@ function offsetPoint(mousePosition, bound, diagram, isMouseBased, x, y) {
     point.y = (isMouseBased ? mousePosition.y : bound.y) * scale + verticalOffset - y;
     return point;
 }
+/**
+ * Gets the fixed user handles symbol.
+ */
+/** @private */
+function initfixedUserHandlesSymbol(options, fixedUserHandleContainer) {
+    let fixedUserHandleContent;
+    fixedUserHandleContent = new PathElement();
+    fixedUserHandleContent.data = options.pathData;
+    fixedUserHandleContent.height =
+        options.height > 10 ? options.height - (options.padding.bottom + options.padding.top) : options.height;
+    fixedUserHandleContent.width =
+        options.width > 10 ? options.width - (options.padding.left + options.padding.right) : options.width;
+    fixedUserHandleContent.visible = fixedUserHandleContainer.visible;
+    fixedUserHandleContent.id = fixedUserHandleContainer.id + '_shape';
+    fixedUserHandleContent.inversedAlignment = false;
+    fixedUserHandleContent.horizontalAlignment = 'Center';
+    fixedUserHandleContent.verticalAlignment = 'Center';
+    fixedUserHandleContent.style = {
+        fill: options.iconStrokeColor, strokeColor: options.iconStrokeColor,
+        strokeWidth: options.iconStrokeWidth
+    };
+    fixedUserHandleContent.setOffsetWithRespectToBounds(0.5, 0.5, 'Fraction');
+    fixedUserHandleContent.relativeMode = 'Object';
+    fixedUserHandleContent.description = fixedUserHandleContainer.description || '';
+    return fixedUserHandleContent;
+}
 /** @private */
 function sort(objects, option) {
     let i = 0;
@@ -12848,7 +13906,7 @@ function getAnnotationPosition(pts, annotation, bound) {
     let angle;
     let getloop;
     let point;
-    getloop = getOffsetOfConnector(pts, annotation, bound);
+    getloop = getOffsetOfConnector(pts, annotation);
     angle = Point.findAngle(pts[getloop.index], pts[getloop.index + 1]);
     let alignednumber = getAlignedPosition(annotation);
     point = Point.transform(getloop.point, angle + 45, alignednumber);
@@ -12857,7 +13915,7 @@ function getAnnotationPosition(pts, annotation, bound) {
     return getloop;
 }
 /** @private */
-function getOffsetOfConnector(points, annotation, bounds) {
+function getOffsetOfConnector(points, annotation) {
     let length = 0;
     let offset = annotation.offset;
     let point;
@@ -12884,7 +13942,13 @@ function getOffsetOfConnector(points, annotation, bounds) {
 }
 /** @private */
 function getAlignedPosition(annotation) {
-    let cnst = annotation.content === undefined ? 10 : 0;
+    let cnst;
+    if ((annotation instanceof ConnectorFixedUserHandle)) {
+        cnst = 0;
+    }
+    else {
+        cnst = annotation.content === undefined ? 10 : 0;
+    }
     let state = 0;
     switch (annotation.alignment) {
         case 'Center':
@@ -13272,7 +14336,10 @@ function getConstructor(model, defaultObject) {
 /** @private */
 function deserialize(model, diagram) {
     diagram.enableServerDataBinding(false);
+    let blazorAction = diagram.blazorActions;
+    diagram.blazorActions = diagram.addConstraints(blazorAction, BlazorAction.ClearObject);
     diagram.clear();
+    diagram.blazorActions = diagram.removeConstraints(blazorAction, BlazorAction.ClearObject);
     diagram.protectPropertyChange(true);
     let map = diagram.dataSourceSettings.doBinding;
     let nodeTemp = diagram.setNodeTemplate;
@@ -13341,7 +14408,9 @@ function deserialize(model, diagram) {
     let component;
     for (let i = 0; i < diagram.views.length; i++) {
         component = diagram.views[diagram.views[i]];
+        diagram.blazorActions = diagram.addConstraints(blazorAction, BlazorAction.ClearObject);
         component.refresh();
+        diagram.blazorActions = diagram.removeConstraints(blazorAction, BlazorAction.ClearObject);
         if (component instanceof Diagram) {
             diagram.element.classList.add('e-diagram');
         }
@@ -13591,7 +14660,7 @@ function updateShape(node, actualObject, oldObject, diagram) {
             content = htmlContent;
             updateShapeContent(content, actualObject, diagram);
     }
-    if (node.shape.type === undefined || node.shape.type === oldObject.shape.type) {
+    if (node.shape.type === undefined || node.shape.type === oldObject.shape.type || (isBlazor() && node.shape.type === 'UmlActivity')) {
         updateContent(node, actualObject, diagram);
     }
     else {
@@ -13693,6 +14762,8 @@ function updateUmlActivityNode(actualObject, newValues) {
         if (actualObject instanceof Node) {
             actualObject.wrapper = getUMLFinalNode(actualObject);
         }
+    }
+    if (umlActivityShapeData) {
         actualObject.wrapper.children[0].data = umlActivityShapeData;
     }
 }
@@ -13833,7 +14904,7 @@ function getUserHandlePosition(selectorItem, handle, transform) {
     else if (selectorItem.connectors.length > 0) {
         let connector = selectorItem.connectors[0];
         let annotation = { offset: offset };
-        let connectorOffset = getOffsetOfConnector(connector.intermediatePoints, annotation, bounds);
+        let connectorOffset = getOffsetOfConnector(connector.intermediatePoints, annotation);
         let index = connectorOffset.index;
         point = connectorOffset.point;
         let getPointloop = getAnnotationPosition(connector.intermediatePoints, annotation, bounds);
@@ -13941,7 +15012,7 @@ function findObjectIndex(node, id, annotation) {
             return (i).toString();
         }
     }
-    return null;
+    return '-1';
 }
 /** @private */
 function getObjectFromCollection(obj, id) {
@@ -14126,7 +15197,9 @@ function getDropEventArguements(args, arg) {
         let object = cloneBlazorObject(args.source);
         let target = cloneBlazorObject(args.target);
         arg = {
-            element: connector ? { connector: object } : { node: object },
+            element: connector ? { connector: object.connectors[0],
+                connectorId: object.connectors[0].id }
+                : { node: object.nodes[0], nodeId: object.nodes[0].id },
             target: connector ? { connector: target } : { node: target },
             position: arg.position, cancel: arg.cancel
         };
@@ -14266,13 +15339,15 @@ let alignElement = (element, offsetX, offsetY, diagram, flip) => {
 let cloneSelectedObjects = (diagram) => {
     let nodes = diagram.selectedItems.nodes;
     let connectors = diagram.selectedItems.connectors;
-    diagram.protectPropertyChange(true);
+    let isProtectedOnChange = 'isProtectedOnChange';
     let isEnableServerDatabind = diagram.allowServerDataBinding;
+    let isProtectedOnChangeValue = diagram[isProtectedOnChange];
+    diagram.protectPropertyChange(true);
     diagram.allowServerDataBinding = false;
     diagram.selectedItems.nodes = [];
     diagram.selectedItems.connectors = [];
     diagram.allowServerDataBinding = isEnableServerDatabind;
-    diagram.protectPropertyChange(false);
+    diagram.protectPropertyChange(isProtectedOnChangeValue);
     let clonedSelectedItems = cloneObject(diagram.selectedItems);
     for (let i = 0; i < nodes.length; i++) {
         diagram.selectedItems.nodes.push(diagram.nameTable[nodes[i].id]);
@@ -14347,7 +15422,7 @@ function canMeasureDecoratorPath(objects) {
     return false;
 }
 
-var __decorate$13 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$15 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -14358,46 +15433,46 @@ var __decorate$13 = (undefined && undefined.__decorate) || function (decorators,
  */
 class IconShape extends ChildProperty {
 }
-__decorate$13([
+__decorate$15([
     Property('None')
 ], IconShape.prototype, "shape", void 0);
-__decorate$13([
+__decorate$15([
     Property('white')
 ], IconShape.prototype, "fill", void 0);
-__decorate$13([
+__decorate$15([
     Property('Auto')
 ], IconShape.prototype, "horizontalAlignment", void 0);
-__decorate$13([
+__decorate$15([
     Property('Auto')
 ], IconShape.prototype, "verticalAlignment", void 0);
-__decorate$13([
+__decorate$15([
     Property(10)
 ], IconShape.prototype, "width", void 0);
-__decorate$13([
+__decorate$15([
     Property(10)
 ], IconShape.prototype, "height", void 0);
-__decorate$13([
+__decorate$15([
     Complex({ x: 0.5, y: 1 }, Point)
 ], IconShape.prototype, "offset", void 0);
-__decorate$13([
+__decorate$15([
     Property('#1a1a1a')
 ], IconShape.prototype, "borderColor", void 0);
-__decorate$13([
+__decorate$15([
     Property(1)
 ], IconShape.prototype, "borderWidth", void 0);
-__decorate$13([
+__decorate$15([
     Complex({}, Margin)
 ], IconShape.prototype, "margin", void 0);
-__decorate$13([
+__decorate$15([
     Property('')
 ], IconShape.prototype, "pathData", void 0);
-__decorate$13([
+__decorate$15([
     Property('')
 ], IconShape.prototype, "content", void 0);
-__decorate$13([
+__decorate$15([
     Property(0)
 ], IconShape.prototype, "cornerRadius", void 0);
-__decorate$13([
+__decorate$15([
     Complex({ left: 2, right: 2, top: 2, bottom: 2 }, Margin)
 ], IconShape.prototype, "padding", void 0);
 
@@ -14689,13 +15764,13 @@ function getClassNodes(node, diagram, classifier, textWrap) {
         }
     }
     else {
-        let attributes = classifier.attributes;
-        if (attributes.length) {
+        let attributes$$1 = classifier.attributes;
+        if (attributes$$1.length) {
             let attributeText = '';
             addSeparator(node, diagram);
-            for (let i = 0; i < attributes.length; i++) {
+            for (let i = 0; i < attributes$$1.length; i++) {
                 let text;
-                let attribute = attributes[i];
+                let attribute = attributes$$1[i];
                 if (attribute.scope && (attribute).scope === 'Public') {
                     text = ' +';
                 }
@@ -14713,7 +15788,7 @@ function getClassNodes(node, diagram, classifier, textWrap) {
                         attributeText += text + ' ' + attribute.name + ' ' + ': ' + attribute.type;
                     }
                 }
-                if (i !== attributes.length) {
+                if (i !== attributes$$1.length) {
                     let style = getStyle(node, attribute);
                     let temp = new Node(diagram, 'nodes', {
                         id: randomId() + '_umlProperty', style: { fill: node.style.fill,
@@ -14736,7 +15811,7 @@ function getClassNodes(node, diagram, classifier, textWrap) {
                     diagram.UpdateBlazorDiagramModel(temp, 'Node');
                     node.children.push(temp.id);
                     attributeText = '';
-                    if (attribute.isSeparator && (i !== attributes.length - 1)) {
+                    if (attribute.isSeparator && (i !== attributes$$1.length - 1)) {
                         addSeparator(node, diagram);
                     }
                 }
@@ -14839,7 +15914,7 @@ function getStyle(stack, node) {
     return newStyle;
 }
 
-var __decorate$14 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$16 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -14851,31 +15926,31 @@ var __decorate$14 = (undefined && undefined.__decorate) || function (decorators,
  */
 class LayoutInfo extends ChildProperty {
 }
-__decorate$14([
+__decorate$16([
     Property('Horizontal')
 ], LayoutInfo.prototype, "orientation", void 0);
-__decorate$14([
+__decorate$16([
     Property('Center')
 ], LayoutInfo.prototype, "type", void 0);
-__decorate$14([
+__decorate$16([
     Property(undefined)
 ], LayoutInfo.prototype, "offset", void 0);
-__decorate$14([
+__decorate$16([
     Property(false)
 ], LayoutInfo.prototype, "enableRouting", void 0);
-__decorate$14([
+__decorate$16([
     Property([])
 ], LayoutInfo.prototype, "children", void 0);
-__decorate$14([
+__decorate$16([
     Property('')
 ], LayoutInfo.prototype, "assistants", void 0);
-__decorate$14([
+__decorate$16([
     Property('')
 ], LayoutInfo.prototype, "level", void 0);
-__decorate$14([
+__decorate$16([
     Property('')
 ], LayoutInfo.prototype, "hasSubTree", void 0);
-__decorate$14([
+__decorate$16([
     Property('')
 ], LayoutInfo.prototype, "rows", void 0);
 
@@ -15758,8 +16833,8 @@ class Node extends NodeBase {
             case 'SwimLane':
                 this.annotations = [];
                 this.ports = [];
-                content.cellStyle.fill = "none";
-                content.cellStyle.strokeColor = "none";
+                content.cellStyle.fill = 'none';
+                content.cellStyle.strokeColor = 'none';
                 this.container = { type: 'Grid', orientation: this.shape.orientation };
                 content.id = this.id;
                 this.container.orientation = this.shape.orientation;
@@ -15790,11 +16865,11 @@ class Node extends NodeBase {
         }
         if ((!isBlazor() && this.shape.shape === 'Rectangle' && !this.shape.cornerRadius) ||
             ((isBlazor()) && (this.shape.basicShape === 'Rectangle'
-                && this.shape.type === "Basic" && !this.shape.cornerRadius))) {
+                && this.shape.type === 'Basic' && !this.shape.cornerRadius))) {
             content.isRectElement = true;
         }
         content.verticalAlignment = 'Stretch';
-        if ((this.shape instanceof Text$1) || (isBlazor() && this.shape.type === "Text")) {
+        if ((this.shape instanceof Text$1) || (isBlazor() && this.shape.type === 'Text')) {
             content.margin = this.shape.margin;
         }
         if (canShadow(this)) {
@@ -15868,21 +16943,25 @@ class Node extends NodeBase {
     }
     /** @private */
     initPorts(accessibilityContent, container) {
-        let canvas = this.wrapper;
-        let port;
         for (let i = 0; this.ports !== undefined, i < this.ports.length; i++) {
-            port = this.initPortWrapper(this.ports[i]);
-            // tslint:disable-next-line:no-any
-            let wrapperContent;
-            let contentAccessibility = getFunction(accessibilityContent);
-            if (contentAccessibility) {
-                wrapperContent = contentAccessibility(port, this);
-            }
-            port.description = wrapperContent ? wrapperContent : port.id;
-            port.inversedAlignment = canvas.inversedAlignment;
-            port.elementActions = port.elementActions | ElementAction.ElementIsPort;
-            container.children.push(port);
+            this.initPort(accessibilityContent, container, this.ports[i]);
         }
+    }
+    /** @private */
+    initPort(accessibilityContent, container, port) {
+        let canvas = this.wrapper;
+        let portWrapper;
+        portWrapper = this.initPortWrapper(port);
+        // tslint:disable-next-line:no-any
+        let wrapperContent;
+        let contentAccessibility = getFunction(accessibilityContent);
+        if (contentAccessibility) {
+            wrapperContent = contentAccessibility(portWrapper, this);
+        }
+        portWrapper.description = wrapperContent ? wrapperContent : portWrapper.id;
+        portWrapper.inversedAlignment = canvas.inversedAlignment;
+        portWrapper.elementActions = portWrapper.elementActions | ElementAction.ElementIsPort;
+        container.children.push(portWrapper);
     }
     getIconOffet(layout, icon) {
         let x;
@@ -15937,6 +17016,43 @@ class Node extends NodeBase {
             iconContainer.inversedAlignment = canvas.inversedAlignment;
             container.children.push(iconContainer);
         }
+    }
+    /** @private */
+    initfixedUserHandles(fixedUserHandle) {
+        let canvas = this.wrapper;
+        let offset;
+        let fixedUserHandleContainer;
+        fixedUserHandleContainer = new Canvas();
+        fixedUserHandleContainer.float = true;
+        let children = [];
+        fixedUserHandle.id = fixedUserHandle.id || randomId();
+        fixedUserHandleContainer.id = this.id + '_' + fixedUserHandle.id;
+        fixedUserHandleContainer.children = children;
+        fixedUserHandleContainer.height = fixedUserHandle.height;
+        fixedUserHandleContainer.width = fixedUserHandle.width;
+        fixedUserHandleContainer.style.strokeColor = fixedUserHandle.handleStrokeColor;
+        fixedUserHandleContainer.style.fill = fixedUserHandle.fill;
+        fixedUserHandleContainer.style.strokeWidth = fixedUserHandle.handleStrokeWidth;
+        fixedUserHandleContainer.margin = fixedUserHandle.margin;
+        fixedUserHandleContainer.visible = fixedUserHandle.visibility;
+        fixedUserHandleContainer.cornerRadius = fixedUserHandle.cornerRadius;
+        fixedUserHandleContainer.horizontalAlignment = 'Center';
+        fixedUserHandleContainer.verticalAlignment = 'Center';
+        offset = this.getfixedUserHandleOffet(fixedUserHandle);
+        fixedUserHandleContainer.setOffsetWithRespectToBounds(offset.x, offset.y, 'Fraction');
+        fixedUserHandleContainer.relativeMode = 'Point';
+        let symbolIcon = initfixedUserHandlesSymbol(fixedUserHandle, fixedUserHandleContainer);
+        fixedUserHandleContainer.children.push(symbolIcon);
+        fixedUserHandleContainer.description = fixedUserHandleContainer.id;
+        fixedUserHandleContainer.inversedAlignment = canvas.inversedAlignment;
+        return fixedUserHandleContainer;
+    }
+    getfixedUserHandleOffet(fixedUserHandle) {
+        let x;
+        let y;
+        x = fixedUserHandle.offset.x;
+        y = fixedUserHandle.offset.y;
+        return { x, y };
     }
     /** @private */
     initAnnotations(accessibilityContent, container, diagramId, virtualize, annotationTemplate) {
@@ -16114,6 +17230,9 @@ __decorate$2([
 __decorate$2([
     Property(true)
 ], Node.prototype, "isExpanded", void 0);
+__decorate$2([
+    Collection([], NodeFixedUserHandle)
+], Node.prototype, "fixedUserHandles", void 0);
 __decorate$2([
     Complex({}, IconShape)
 ], Node.prototype, "expandIcon", void 0);
@@ -16393,7 +17512,11 @@ class Selector extends ChildProperty {
                 }
             }
         }
+        let isProtectedOnChange = 'isProtectedOnChange';
+        let diagramProtectPropertyChange = diagram[isProtectedOnChange];
+        diagram.protectPropertyChange(false);
         this.wrapper = container;
+        diagram.protectPropertyChange(diagramProtectPropertyChange);
         return container;
     }
 }
@@ -17075,6 +18198,7 @@ function getContent(element, isHtml, nodeObject) {
     let node = getElement(element);
     let content = '';
     let sentNode = {};
+    let propertyName;
     if (node instanceof Node) {
         sentNode = node;
         if (node.shape.type === 'Native') {
@@ -17096,6 +18220,7 @@ function getContent(element, isHtml, nodeObject) {
             content = 'diagramsf_node_template';
             sentNode = cloneBlazorObject(node);
         }
+        propertyName = "nodeTemplate";
     }
     else {
         sentNode = node;
@@ -17104,8 +18229,12 @@ function getContent(element, isHtml, nodeObject) {
             sentNode = cloneBlazorObject(node);
             content = 'diagramsf_annotation_template';
         }
+        propertyName = "annotationTemplate";
     }
     let item;
+    let diagramElement = document.getElementById(element.diagramId);
+    let instance = 'ej2_instances';
+    let diagram = diagramElement[instance][0];
     if (typeof element.content === 'string' && (!element.isTemplate || isBlazor())) {
         let template = document.getElementById(element.content);
         if (template) {
@@ -17114,7 +18243,7 @@ function getContent(element, isHtml, nodeObject) {
         else {
             let compiledString;
             compiledString = compile(element.content);
-            for (item of compiledString(sentNode, null, null, content)) {
+            for (item of compiledString(sentNode, diagram, propertyName, content)) {
                 div.appendChild(item);
             }
             //new
@@ -17125,7 +18254,7 @@ function getContent(element, isHtml, nodeObject) {
     }
     else if (element.isTemplate) {
         let compiledString;
-        compiledString = element.getNodeTemplate()(cloneObject(nodeObject), undefined, 'template', undefined, undefined, false);
+        compiledString = element.getNodeTemplate()(cloneObject(nodeObject), diagram, propertyName, undefined, undefined, false);
         for (let i = 0; i < compiledString.length; i++) {
             div.appendChild(compiledString[i]);
         }
@@ -17137,20 +18266,20 @@ function getContent(element, isHtml, nodeObject) {
         div : (isHtml ? div.cloneNode(true) : div.cloneNode(true));
 }
 /** @private */
-function setAttributeSvg(svg, attributes) {
-    let keys = Object.keys(attributes);
+function setAttributeSvg(svg, attributes$$1) {
+    let keys = Object.keys(attributes$$1);
     for (let i = 0; i < keys.length; i++) {
         if (keys[i] !== 'style') {
-            svg.setAttribute(keys[i], attributes[keys[i]]);
+            svg.setAttribute(keys[i], attributes$$1[keys[i]]);
         }
         else {
-            applyStyleAgainstCsp(svg, attributes[keys[i]]);
+            applyStyleAgainstCsp(svg, attributes$$1[keys[i]]);
         }
     }
 }
 /** @private */
-function applyStyleAgainstCsp(svg, attributes) {
-    let keys = attributes.split(';');
+function applyStyleAgainstCsp(svg, attributes$$1) {
+    let keys = attributes$$1.split(';');
     for (let i = 0; i < keys.length; i++) {
         let attribute = keys[i].split(':');
         if (attribute.length === 2) {
@@ -17159,14 +18288,14 @@ function applyStyleAgainstCsp(svg, attributes) {
     }
 }
 /** @private */
-function setAttributeHtml(element, attributes) {
-    let keys = Object.keys(attributes);
+function setAttributeHtml(element, attributes$$1) {
+    let keys = Object.keys(attributes$$1);
     for (let i = 0; i < keys.length; i++) {
         if (keys[i] !== 'style') {
-            element.setAttribute(keys[i], attributes[keys[i]]);
+            element.setAttribute(keys[i], attributes$$1[keys[i]]);
         }
         else {
-            applyStyleAgainstCsp(element, attributes[keys[i]]);
+            applyStyleAgainstCsp(element, attributes$$1[keys[i]]);
         }
     }
 }
@@ -17229,17 +18358,20 @@ function getTemplateContent(annotationcontent, annotation, annotationTemplate) {
     return annotationcontent;
 }
 /** @private */
-function createUserHandleTemplates(userHandleTemplate, template, selectedItems) {
+function createUserHandleTemplates(userHandleTemplate, template, selectedItems, diagramID) {
     let userHandleFn;
     let handle;
     let compiledString;
     let i;
     let div;
+    let diagramElement = document.getElementById(diagramID);
+    let instance = 'ej2_instances';
+    let diagram = diagramElement[instance][0];
     if (userHandleTemplate && template) {
         userHandleFn = templateCompiler(userHandleTemplate);
         for (handle of selectedItems.userHandles) {
             if (userHandleFn) {
-                compiledString = userHandleFn(cloneObject(handle), undefined, 'template', undefined, undefined, false);
+                compiledString = userHandleFn(cloneObject(handle), diagram, 'userHandleTemplate', undefined, undefined, false);
                 for (i = 0; i < compiledString.length; i++) {
                     let attr = {
                         'style': 'height: 100%; width: 100%; pointer-events: all',
@@ -17258,7 +18390,7 @@ function createUserHandleTemplates(userHandleTemplate, template, selectedItems) 
         for (handle of selectedItems.userHandles) {
             if (!handle.pathData && !handle.content && !handle.source) {
                 compiledString = compile(handle.content);
-                for (i = 0, a = compiledString(cloneBlazorObject(handle), null, null, content); i < a.length; i++) {
+                for (i = 0, a = compiledString(cloneBlazorObject(handle), diagram, 'userHandleTemplate', content); i < a.length; i++) {
                     let attr = {
                         'style': 'height: 100%; width: 100%; pointer-events: all',
                         'id': handle.name + '_template_hiddenUserHandle'
@@ -19013,7 +20145,7 @@ class SvgRenderer {
                 let canvasRenderer = new CanvasRenderer();
                 dashArray = canvasRenderer.parseDashArray(style.dashArray);
             }
-            if (style.gradient && style.gradient.type !== 'None') {
+            if (style.gradient && style.gradient.type !== 'None' && diagramId) {
                 let grd = this.renderGradient(style, svg, diagramId);
                 if (checkBrowserInfo()) {
                     fill = 'url(' + location.protocol + '//' + location.host + location.pathname + '#' + grd.id + ')';
@@ -19524,6 +20656,7 @@ class DiagramRenderer {
         options.fill = 'transparent';
         options.stroke = '#097F7F';
         options.strokeWidth = 1.2;
+        options.gradient = null;
         options.dashArray = '6,3';
         options.class = 'e-diagram-border';
         if (isSwimlane) {
@@ -20356,7 +21489,7 @@ class DiagramRenderer {
     }
 }
 
-var __decorate$15 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$17 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -20367,36 +21500,36 @@ var __decorate$15 = (undefined && undefined.__decorate) || function (decorators,
  */
 class Background extends ChildProperty {
 }
-__decorate$15([
+__decorate$17([
     Property('')
 ], Background.prototype, "source", void 0);
-__decorate$15([
+__decorate$17([
     Property('transparent')
 ], Background.prototype, "color", void 0);
-__decorate$15([
+__decorate$17([
     Property('None')
 ], Background.prototype, "scale", void 0);
-__decorate$15([
+__decorate$17([
     Property('None')
 ], Background.prototype, "align", void 0);
 class FitOptions extends ChildProperty {
 }
-__decorate$15([
+__decorate$17([
     Property('Page')
 ], FitOptions.prototype, "mode", void 0);
-__decorate$15([
+__decorate$17([
     Property('PageSettings')
 ], FitOptions.prototype, "region", void 0);
-__decorate$15([
+__decorate$17([
     Complex({ top: 25, bottom: 25, left: 25, right: 25 }, Margin)
 ], FitOptions.prototype, "margin", void 0);
-__decorate$15([
+__decorate$17([
     Property(false)
 ], FitOptions.prototype, "canZoomIn", void 0);
-__decorate$15([
+__decorate$17([
     Property(undefined)
 ], FitOptions.prototype, "customBounds", void 0);
-__decorate$15([
+__decorate$17([
     Property(false)
 ], FitOptions.prototype, "canFit", void 0);
 /**
@@ -20418,31 +21551,31 @@ __decorate$15([
  */
 class PageSettings extends ChildProperty {
 }
-__decorate$15([
+__decorate$17([
     Property(null)
 ], PageSettings.prototype, "width", void 0);
-__decorate$15([
+__decorate$17([
     Property(null)
 ], PageSettings.prototype, "height", void 0);
-__decorate$15([
+__decorate$17([
     Complex({}, Margin)
 ], PageSettings.prototype, "margin", void 0);
-__decorate$15([
+__decorate$17([
     Property('Landscape')
 ], PageSettings.prototype, "orientation", void 0);
-__decorate$15([
+__decorate$17([
     Property('Infinity')
 ], PageSettings.prototype, "boundaryConstraints", void 0);
-__decorate$15([
+__decorate$17([
     Complex({}, Background)
 ], PageSettings.prototype, "background", void 0);
-__decorate$15([
+__decorate$17([
     Property(false)
 ], PageSettings.prototype, "multiplePage", void 0);
-__decorate$15([
+__decorate$17([
     Property(false)
 ], PageSettings.prototype, "showPageBreaks", void 0);
-__decorate$15([
+__decorate$17([
     Complex({}, FitOptions)
 ], PageSettings.prototype, "fitOptions", void 0);
 /**
@@ -20450,40 +21583,40 @@ __decorate$15([
  */
 class ScrollSettings extends ChildProperty {
 }
-__decorate$15([
+__decorate$17([
     Property(0)
 ], ScrollSettings.prototype, "horizontalOffset", void 0);
-__decorate$15([
+__decorate$17([
     Property(0)
 ], ScrollSettings.prototype, "verticalOffset", void 0);
-__decorate$15([
+__decorate$17([
     Property(1)
 ], ScrollSettings.prototype, "currentZoom", void 0);
-__decorate$15([
+__decorate$17([
     Property(0)
 ], ScrollSettings.prototype, "viewPortWidth", void 0);
-__decorate$15([
+__decorate$17([
     Property(0)
 ], ScrollSettings.prototype, "viewPortHeight", void 0);
-__decorate$15([
+__decorate$17([
     Property(0.2)
 ], ScrollSettings.prototype, "minZoom", void 0);
-__decorate$15([
+__decorate$17([
     Property(30)
 ], ScrollSettings.prototype, "maxZoom", void 0);
-__decorate$15([
+__decorate$17([
     Property('Diagram')
 ], ScrollSettings.prototype, "scrollLimit", void 0);
-__decorate$15([
+__decorate$17([
     Property()
 ], ScrollSettings.prototype, "scrollableArea", void 0);
-__decorate$15([
+__decorate$17([
     Property(false)
 ], ScrollSettings.prototype, "canAutoScroll", void 0);
-__decorate$15([
+__decorate$17([
     Complex({ left: 15, right: 15, top: 15, bottom: 15 }, Margin)
 ], ScrollSettings.prototype, "autoScrollBorder", void 0);
-__decorate$15([
+__decorate$17([
     Complex({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
 ], ScrollSettings.prototype, "padding", void 0);
 
@@ -20503,7 +21636,7 @@ class ServiceLocator {
     }
 }
 
-var __decorate$16 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$18 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -20514,19 +21647,19 @@ var __decorate$16 = (undefined && undefined.__decorate) || function (decorators,
  */
 class Gridlines extends ChildProperty {
 }
-__decorate$16([
+__decorate$18([
     Property('lightgray')
 ], Gridlines.prototype, "lineColor", void 0);
-__decorate$16([
+__decorate$18([
     Property('')
 ], Gridlines.prototype, "lineDashArray", void 0);
-__decorate$16([
+__decorate$18([
     Property([1.25, 18.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75])
 ], Gridlines.prototype, "lineIntervals", void 0);
-__decorate$16([
+__decorate$18([
     Property([1, 19, 0.5, 19.5, 0.5, 19.5, 0.5, 19.5, 0.5, 19.5])
 ], Gridlines.prototype, "dotIntervals", void 0);
-__decorate$16([
+__decorate$18([
     Property([20])
 ], Gridlines.prototype, "snapIntervals", void 0);
 /**
@@ -20535,26 +21668,26 @@ __decorate$16([
  */
 class SnapSettings extends ChildProperty {
 }
-__decorate$16([
+__decorate$18([
     Complex({}, Gridlines)
 ], SnapSettings.prototype, "horizontalGridlines", void 0);
-__decorate$16([
+__decorate$18([
     Complex({}, Gridlines)
 ], SnapSettings.prototype, "verticalGridlines", void 0);
-__decorate$16([
+__decorate$18([
     Property(SnapConstraints.All)
 ], SnapSettings.prototype, "constraints", void 0);
-__decorate$16([
+__decorate$18([
     Property(5)
 ], SnapSettings.prototype, "snapAngle", void 0);
-__decorate$16([
+__decorate$18([
     Property('Lines')
 ], SnapSettings.prototype, "gridType", void 0);
-__decorate$16([
+__decorate$18([
     Property(5)
 ], SnapSettings.prototype, "snapObjectDistance", void 0);
 
-var __decorate$17 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$19 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -20565,25 +21698,25 @@ var __decorate$17 = (undefined && undefined.__decorate) || function (decorators,
  */
 class DiagramRuler extends ChildProperty {
 }
-__decorate$17([
+__decorate$19([
     Property(5)
 ], DiagramRuler.prototype, "interval", void 0);
-__decorate$17([
+__decorate$19([
     Property(100)
 ], DiagramRuler.prototype, "segmentWidth", void 0);
-__decorate$17([
+__decorate$19([
     Property('Horizontal')
 ], DiagramRuler.prototype, "orientation", void 0);
-__decorate$17([
+__decorate$19([
     Property('RightOrBottom')
 ], DiagramRuler.prototype, "tickAlignment", void 0);
-__decorate$17([
+__decorate$19([
     Property('red')
 ], DiagramRuler.prototype, "markerColor", void 0);
-__decorate$17([
+__decorate$19([
     Property(25)
 ], DiagramRuler.prototype, "thickness", void 0);
-__decorate$17([
+__decorate$19([
     Property(null)
 ], DiagramRuler.prototype, "arrangeTick", void 0);
 /**
@@ -20606,20 +21739,20 @@ __decorate$17([
  */
 class RulerSettings extends ChildProperty {
 }
-__decorate$17([
+__decorate$19([
     Property(false)
 ], RulerSettings.prototype, "showRulers", void 0);
-__decorate$17([
+__decorate$19([
     Property(true)
 ], RulerSettings.prototype, "dynamicGrid", void 0);
-__decorate$17([
+__decorate$19([
     Complex({ orientation: 'Horizontal' }, DiagramRuler)
 ], RulerSettings.prototype, "horizontalRuler", void 0);
-__decorate$17([
+__decorate$19([
     Complex({ orientation: 'Vertical' }, DiagramRuler)
 ], RulerSettings.prototype, "verticalRuler", void 0);
 
-var __decorate$19 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$21 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -20631,14 +21764,14 @@ var __decorate$19 = (undefined && undefined.__decorate) || function (decorators,
  */
 class DataMappingItems extends ChildProperty {
 }
-__decorate$19([
+__decorate$21([
     Property('')
 ], DataMappingItems.prototype, "property", void 0);
-__decorate$19([
+__decorate$21([
     Property('')
 ], DataMappingItems.prototype, "field", void 0);
 
-var __decorate$18 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$20 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -20675,81 +21808,81 @@ var __decorate$18 = (undefined && undefined.__decorate) || function (decorators,
  */
 class CrudAction extends ChildProperty {
 }
-__decorate$18([
+__decorate$20([
     Property('')
 ], CrudAction.prototype, "read", void 0);
-__decorate$18([
+__decorate$20([
     Property('')
 ], CrudAction.prototype, "create", void 0);
-__decorate$18([
+__decorate$20([
     Property('')
 ], CrudAction.prototype, "update", void 0);
-__decorate$18([
+__decorate$20([
     Property('')
 ], CrudAction.prototype, "destroy", void 0);
-__decorate$18([
+__decorate$20([
     Property()
 ], CrudAction.prototype, "customFields", void 0);
 class ConnectionDataSource extends ChildProperty {
 }
-__decorate$18([
+__decorate$20([
     Property('')
 ], ConnectionDataSource.prototype, "id", void 0);
-__decorate$18([
+__decorate$20([
     Property('')
 ], ConnectionDataSource.prototype, "sourceID", void 0);
-__decorate$18([
+__decorate$20([
     Property('')
 ], ConnectionDataSource.prototype, "targetID", void 0);
-__decorate$18([
+__decorate$20([
     Property(null)
 ], ConnectionDataSource.prototype, "sourcePointX", void 0);
-__decorate$18([
+__decorate$20([
     Property(null)
 ], ConnectionDataSource.prototype, "sourcePointY", void 0);
-__decorate$18([
+__decorate$20([
     Property(null)
 ], ConnectionDataSource.prototype, "targetPointX", void 0);
-__decorate$18([
+__decorate$20([
     Property(null)
 ], ConnectionDataSource.prototype, "targetPointY", void 0);
-__decorate$18([
+__decorate$20([
     Property(null)
 ], ConnectionDataSource.prototype, "dataManager", void 0);
-__decorate$18([
+__decorate$20([
     Complex({}, CrudAction)
 ], ConnectionDataSource.prototype, "crudAction", void 0);
 class DataSource extends ChildProperty {
 }
-__decorate$18([
+__decorate$20([
     Property('')
 ], DataSource.prototype, "id", void 0);
-__decorate$18([
+__decorate$20([
     Property(null)
 ], DataSource.prototype, "dataManager", void 0);
-__decorate$18([
+__decorate$20([
     Property(null)
 ], DataSource.prototype, "dataSource", void 0);
-__decorate$18([
+__decorate$20([
     Property('')
 ], DataSource.prototype, "root", void 0);
-__decorate$18([
+__decorate$20([
     Property('')
 ], DataSource.prototype, "parentId", void 0);
-__decorate$18([
+__decorate$20([
     Property()
 ], DataSource.prototype, "doBinding", void 0);
-__decorate$18([
+__decorate$20([
     Collection([], DataMappingItems)
 ], DataSource.prototype, "dataMapSettings", void 0);
-__decorate$18([
+__decorate$20([
     Complex({}, CrudAction)
 ], DataSource.prototype, "crudAction", void 0);
-__decorate$18([
+__decorate$20([
     Complex({}, ConnectionDataSource)
 ], DataSource.prototype, "connectionDataSource", void 0);
 
-var __decorate$20 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$22 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -20760,61 +21893,61 @@ var __decorate$20 = (undefined && undefined.__decorate) || function (decorators,
  */
 class Layout extends ChildProperty {
 }
-__decorate$20([
+__decorate$22([
     Property('')
 ], Layout.prototype, "fixedNode", void 0);
-__decorate$20([
+__decorate$22([
     Property(30)
 ], Layout.prototype, "horizontalSpacing", void 0);
-__decorate$20([
+__decorate$22([
     Property(30)
 ], Layout.prototype, "verticalSpacing", void 0);
-__decorate$20([
+__decorate$22([
     Property(30)
 ], Layout.prototype, "maxIteration", void 0);
-__decorate$20([
+__decorate$22([
     Property(40)
 ], Layout.prototype, "springFactor", void 0);
-__decorate$20([
+__decorate$22([
     Property(50)
 ], Layout.prototype, "springLength", void 0);
-__decorate$20([
+__decorate$22([
     Complex({ left: 50, top: 50, right: 0, bottom: 0 }, Margin)
 ], Layout.prototype, "margin", void 0);
-__decorate$20([
+__decorate$22([
     Property('Auto')
 ], Layout.prototype, "horizontalAlignment", void 0);
-__decorate$20([
+__decorate$22([
     Property('Auto')
 ], Layout.prototype, "verticalAlignment", void 0);
-__decorate$20([
+__decorate$22([
     Property('TopToBottom')
 ], Layout.prototype, "orientation", void 0);
-__decorate$20([
+__decorate$22([
     Property('Auto')
 ], Layout.prototype, "connectionDirection", void 0);
-__decorate$20([
+__decorate$22([
     Property('Default')
 ], Layout.prototype, "connectorSegments", void 0);
-__decorate$20([
+__decorate$22([
     Property('None')
 ], Layout.prototype, "type", void 0);
-__decorate$20([
+__decorate$22([
     Property()
 ], Layout.prototype, "getLayoutInfo", void 0);
-__decorate$20([
+__decorate$22([
     Property()
 ], Layout.prototype, "layoutInfo", void 0);
-__decorate$20([
+__decorate$22([
     Property()
 ], Layout.prototype, "getBranch", void 0);
-__decorate$20([
+__decorate$22([
     Property()
 ], Layout.prototype, "bounds", void 0);
-__decorate$20([
+__decorate$22([
     Property(true)
 ], Layout.prototype, "enableAnimation", void 0);
-__decorate$20([
+__decorate$22([
     Property('')
 ], Layout.prototype, "root", void 0);
 
@@ -20946,6 +22079,15 @@ function findToolToActivate(obj, wrapper, position, diagram, touchStart, touchMo
                 let id = wrapper.id.split(obj.id)[1];
                 if (id && id.match('^_icon')) {
                     return 'LayoutAnimation';
+                }
+            }
+            if (wrapper && wrapper.id) {
+                let userid;
+                for (let i = 0; i < obj.fixedUserHandles.length; i++) {
+                    userid = obj.fixedUserHandles[i].id;
+                    if (wrapper.id && (wrapper.id.indexOf(userid) > -1)) {
+                        return 'FixedUserHandle';
+                    }
                 }
             }
             if (canMove(obj) && wrapper instanceof TextElement && wrapper.hyperlink.link) {
@@ -21371,6 +22513,16 @@ class DeepDiffMapper {
                 if (diff.children) {
                     diff.children = cloneObject(selectedObject).children;
                 }
+                if (diff.ports && diff.ports.length) {
+                    for (var i = 0; i < diff.ports.length; i++) {
+                        if (newObject.ports[i].outEdges) {
+                            diff.ports[i].outEdges = newObject.ports[i].outEdges;
+                        }
+                        if (newObject.ports[i].inEdges) {
+                            diff.ports[i].inEdges = newObject.ports[i].inEdges;
+                        }
+                    }
+                }
                 return this.getDiagramObjects(diff, selectedObject.id, isNode, args, labelDrag, diagram);
             }
         }
@@ -21467,7 +22619,7 @@ class DeepDiffMapper {
     removeEmptyValues(frame) {
         let newObj = {};
         for (let prop of Object.keys(frame)) {
-            if (prop !== 'wrapper' && prop !== 'data') {
+            if (prop !== 'wrapper' && (prop !== 'data' || (prop === 'data' && !(frame[prop] instanceof Array)))) {
                 let obj = frame[prop];
                 let value = JSON.stringify(obj);
                 if (obj instanceof Array) {
@@ -21537,7 +22689,7 @@ class DeepDiffMapper {
             }
         }
         if (this.isArray(obj2)) {
-            for (let i = 0; i < obj2.length; i++) {
+            for (var i = obj2.length - 1; i >= 0; i--) {
                 if (!diff[arrayName]) {
                     diff[arrayName] = [];
                 }
@@ -21935,6 +23087,44 @@ class SelectTool extends ToolBase {
         }
     }
 }
+class FixedUserHandleTool extends ToolBase {
+    /**   @private  */
+    mouseUp(args) {
+        this.checkPropertyValue();
+        this.inAction = false;
+        let val = args.source;
+        let fixedUserHandle;
+        let iconId = args.sourceWrapper.id;
+        for (let i = 0; i < val.fixedUserHandles.length; i++) {
+            if (iconId.indexOf(val.fixedUserHandles[i].id) > -1) {
+                fixedUserHandle = val.fixedUserHandles[i];
+            }
+        }
+        if (isBlazor()) {
+            let element = getObjectType(args.source) === Connector ? { connector: args.source }
+                : { node: args.source };
+            let fixedUserHandles = getObjectType(args.source) === Connector ?
+                { connectorFixedUserHandle: fixedUserHandle }
+                : { nodeFixedUserHandle: fixedUserHandle };
+            let arg = {
+                fixedUserHandle: fixedUserHandles,
+                element: element
+            };
+            let trigger = DiagramEvent.fixedUserHandleClick;
+            this.commandHandler.triggerEvent(trigger, arg);
+            super.mouseUp(args);
+        }
+        else {
+            let arg = {
+                fixedUserHandle: fixedUserHandle,
+                element: args.source
+            };
+            let trigger = DiagramEvent.fixedUserHandleClick;
+            this.commandHandler.triggerEvent(trigger, arg);
+            super.mouseUp(args);
+        }
+    }
+}
 /**
  * Helps to edit the selected connectors
  */
@@ -21949,6 +23139,8 @@ class ConnectTool extends ToolBase {
         const _super = name => super[name];
         return __awaiter$1(this, void 0, void 0, function* () {
             if (isBlazor() && args && args.source) {
+                this.commandHandler.insertSelectedObjects();
+                this.commandHandler.insertBlazorConnector(args.source);
                 let selectorModel = args.source;
                 if (selectorModel.connectors) {
                     let connector = selectorModel.connectors[0];
@@ -21959,13 +23151,7 @@ class ConnectTool extends ToolBase {
                         newValue: { connectorTargetValue: { portId: undefined, nodeId: undefined } },
                         cancel: false, state: 'Changing', connectorEnd: this.endPoint
                     };
-                    let trigger = DiagramEvent.connectionChange;
-                    let temparg;
-                    temparg = (yield this.commandHandler.triggerEvent(trigger, arg)) || arg;
-                    this.tempArgs = temparg;
-                    if (arg.cancel || (temparg && temparg.cancel)) {
-                        this.canCancel = true;
-                    }
+                    this.tempArgs = arg;
                 }
             }
             this.inAction = true;
@@ -22004,13 +23190,24 @@ class ConnectTool extends ToolBase {
                 let trigger = DiagramEvent.connectionChange;
                 let temparg;
                 if (this.tempArgs && this.oldConnector) {
+                    this.commandHandler.updatePropertiesToBlazor(args, false);
                     this.tempArgs.state = 'Changed';
                     let nodeEndId = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
                     let portEndId = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
                     this.tempArgs.oldValue = this.endPoint === 'ConnectorSourceEnd' ?
                         { connectorSourceValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] } } :
                         { connectorTargetValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] } };
-                    temparg = (yield this.commandHandler.triggerEvent(trigger, this.tempArgs));
+                    temparg = {
+                        state: this.tempArgs.state, oldValue: this.tempArgs.oldValue,
+                        newValue: this.tempArgs.newValue, cancel: this.tempArgs.cancel, connectorEnd: this.tempArgs.connectorEnd
+                    };
+                    let diagram = 'diagram';
+                    let blazorInterop = 'sfBlazor';
+                    let blazor = 'Blazor';
+                    if (window && window[blazor] && this.commandHandler[diagram].connectionChange) {
+                        let eventObj = { 'EventName': 'connectionChange', args: JSON.stringify(this.tempArgs) };
+                        temparg = yield window[blazorInterop].updateBlazorDiagramEvents(eventObj, this.commandHandler[diagram]);
+                    }
                     if (temparg) {
                         this.commandHandler.updateConnectorValue(temparg);
                     }
@@ -22045,9 +23242,7 @@ class ConnectTool extends ToolBase {
                 let oldValues;
                 let connector;
                 if (args.source && args.source.connectors) {
-                    oldValues = {
-                        x: this.prevPosition.x, y: this.prevPosition.y
-                    };
+                    oldValues = { x: this.prevPosition.x, y: this.prevPosition.y };
                     connector = args.source.connectors[0];
                 }
                 let targetPortName;
@@ -22273,8 +23468,10 @@ class MoveTool extends ToolBase {
         if (this.objectType === 'Port') {
             this.portId = args.sourceWrapper.id;
         }
+        this.commandHandler.insertBlazorConnector(args.source);
         let oldValues;
         if (isBlazor()) {
+            this.commandHandler.insertSelectedObjects();
             this.startPosition = this.currentPosition = this.prevPosition = args.position;
             this.initialOffset = { x: 0, y: 0 };
             if (args.source) {
@@ -22297,21 +23494,32 @@ class MoveTool extends ToolBase {
             let oldValues;
             let newValues;
             if (isBlazor() && this.objectType !== 'Port') {
+                this.commandHandler.updatePropertiesToBlazor(args, false);
                 if (args.source) {
                     newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
                     oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
                 }
                 let arg = {
-                    source: cloneBlazorObject(args.source), state: 'Completed',
+                    state: 'Completed',
                     oldValue: cloneBlazorObject(this.tempArgs.oldValue), newValue: cloneBlazorObject(newValues),
                     target: cloneBlazorObject(this.currentTarget), targetPosition: cloneBlazorObject(this.currentPosition),
                     allowDrop: true, cancel: false
                 };
-                let blazorArgs = yield this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
+                let blazorArgs;
+                let diagram = 'diagram';
+                let blazorInterop = 'sfBlazor';
+                let blazor = 'Blazor';
+                if (window && window[blazor] && this.commandHandler[diagram].positionChange) {
+                    let eventObj = { 'EventName': 'positionChange', args: JSON.stringify(arg) };
+                    blazorArgs = yield window[blazorInterop].updateBlazorDiagramEvents(eventObj, this.commandHandler[diagram]);
+                }
                 if (blazorArgs && blazorArgs.cancel) {
+                    this.commandHandler.enableCloneObject(true);
+                    this.commandHandler.ismouseEvents(true);
                     this.canCancel = true;
                 }
                 if (this.canCancel) {
+                    this.commandHandler.insertBlazorObject(args.source);
                     let tx = this.tempArgs.oldValue.offsetX - args.source.wrapper.offsetX;
                     let ty = this.tempArgs.oldValue.offsetY - args.source.wrapper.offsetY;
                     this.commandHandler.dragSelectedObjects(tx, ty);
@@ -22341,9 +23549,9 @@ class MoveTool extends ToolBase {
                 object = this.commandHandler.renderContainerHelper(args.source) || args.source || this.commandHandler.renderContainerHelper(args.source);
                 if ((object.id === 'helper' && !obj.nodes[0].isLane && !obj.nodes[0].isPhase)
                     || (object.id !== 'helper')) {
-                    if (object.offsetX !== this.undoElement.offsetX || object.offsetY !== this.undoElement.offsetY ||
+                    if (((object instanceof Selector && object.width == this.undoElement.width && object.height == this.undoElement.height) || !(object instanceof Selector)) && (object.offsetX !== this.undoElement.offsetX || object.offsetY !== this.undoElement.offsetY ||
                         object.sourcePoint !== this.undoElement.sourcePoint
-                        || object.targetPoint !== this.undoElement.targetPoint) {
+                        || object.targetPoint !== this.undoElement.targetPoint)) {
                         if (args.source) {
                             newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
                             oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
@@ -22616,18 +23824,29 @@ class RotateTool extends ToolBase {
         return __awaiter$1(this, void 0, void 0, function* () {
             this.checkPropertyValue();
             if (isBlazor()) {
+                let diagram = 'diagram';
+                let blazorInterop = 'sfBlazor';
+                let blazor = 'Blazor';
+                this.commandHandler.updatePropertiesToBlazor(args, false);
                 let object;
                 object = this.commandHandler.renderContainerHelper(args.source) || args.source;
                 let oldValue = { rotateAngle: this.tempArgs.oldValue.rotateAngle };
                 let newValue = { rotateAngle: object.wrapper.rotateAngle };
                 let arg = {
-                    source: cloneBlazorObject(args.source), state: 'Completed', oldValue: oldValue, newValue: newValue, cancel: false
+                    state: 'Completed', oldValue: oldValue, newValue: newValue, cancel: false
                 };
-                let args1 = yield this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg);
-                if (args1 && args1.cancel) {
+                let blazorArgs;
+                if (window && window[blazor] && this.commandHandler[diagram].rotateChange) {
+                    let eventObj = { 'EventName': 'rotateChange', args: JSON.stringify(arg) };
+                    blazorArgs = yield window[blazorInterop].updateBlazorDiagramEvents(eventObj, this.commandHandler[diagram]);
+                }
+                if (blazorArgs && blazorArgs.cancel) {
+                    this.commandHandler.enableCloneObject(true);
+                    this.commandHandler.ismouseEvents(true);
                     this.canCancel = true;
                 }
                 if (this.canCancel) {
+                    this.commandHandler.insertBlazorObject(args.source);
                     this.commandHandler.rotatePropertyChnage(this.tempArgs.oldValue.rotateAngle);
                 }
             }
@@ -22726,6 +23945,7 @@ class ResizeTool extends ToolBase {
     mouseDown(args) {
         let oldValues;
         if (isBlazor()) {
+            this.commandHandler.insertSelectedObjects();
             this.startPosition = this.currentPosition = this.prevPosition = args.position;
             this.currentElement = args.source;
             this.initialBounds.x = args.source.wrapper.offsetX;
@@ -22766,6 +23986,10 @@ class ResizeTool extends ToolBase {
         const _super = name => super[name];
         return __awaiter$1(this, void 0, void 0, function* () {
             if (isBlazor()) {
+                let diagram = 'diagram';
+                let blazorInterop = 'sfBlazor';
+                let blazor = 'Blazor';
+                this.commandHandler.updatePropertiesToBlazor(args, false);
                 let obj = cloneObject(args.source);
                 let oldValues = {
                     width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height,
@@ -22773,11 +23997,18 @@ class ResizeTool extends ToolBase {
                 };
                 let arg = {
                     oldValue: this.tempArgs.oldValue, newValue: oldValues, cancel: false,
-                    source: cloneBlazorObject(args.source), state: 'Completed'
+                    state: 'Completed'
                 };
                 if (!this.canCancel) {
-                    let blazarArgs = yield this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg);
-                    if (blazarArgs && blazarArgs.cancel) {
+                    let blazorArgs;
+                    if (window && window[blazor] && this.commandHandler[diagram].sizeChange) {
+                        let eventObj = { 'EventName': 'sizeChange', args: JSON.stringify(arg) };
+                        blazorArgs = yield window[blazorInterop].updateBlazorDiagramEvents(eventObj, this.commandHandler[diagram]);
+                    }
+                    if (blazorArgs && blazorArgs.cancel) {
+                        this.commandHandler.enableCloneObject(true);
+                        this.commandHandler.ismouseEvents(true);
+                        this.commandHandler.insertBlazorObject(args.source);
                         let scaleWidth = this.tempArgs.oldValue.width / obj.wrapper.actualSize.width;
                         let scaleHeight = this.tempArgs.oldValue.height / obj.wrapper.actualSize.height;
                         this.commandHandler.scaleSelectedItems(scaleWidth, scaleHeight, this.getPivot(this.corner));
@@ -23091,9 +24322,14 @@ class TextDrawingTool extends ToolBase {
         if (!this.drawingNode) {
             let node = {
                 shape: { type: 'Text' }, offsetX: this.currentPosition.x, width: 30, height: 30,
-                style: { strokeDashArray: '2 2', fill: 'transparent' }, offsetY: this.currentPosition.y
+                // EJ2-42640-Text size is different if Text Node is created over another diagram commited by sivakumar sekar
+                // commanded style property and added it after the object is drawn
+                // style: { strokeDashArray: '2 2', fill: 'transparent' },
+                offsetY: this.currentPosition.y
             };
             this.drawingNode = this.commandHandler.drawObject(node);
+            this.drawingNode.style.strokeDashArray = '2 2';
+            this.drawingNode.style.fill = 'transparent';
         }
         else {
             this.drawingNode.style.strokeColor = 'black';
@@ -24936,6 +26172,11 @@ class DiagramEventHandler {
                 if (this.diagram.selectedObject && this.diagram.selectedObject.helperObject) {
                     this.diagram.remove(this.diagram.selectedObject.helperObject);
                     this.diagram.selectedObject = { helperObject: undefined, actualObject: undefined };
+                    // EJ2-42605 - Annotation undo redo not working properly if the line routing is enabled committed by sivakumar sekar
+                    // committed to remove the diagram actions public method when line routing is enabled
+                    if ((this.diagram.diagramActions & DiagramAction.PublicMethod) && (this.diagram.constraints & DiagramConstraints.LineRouting)) {
+                        this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PublicMethod;
+                    }
                 }
                 this.blocked = false;
                 if (this.hoverElement) {
@@ -25176,7 +26417,7 @@ class DiagramEventHandler {
     }
     /** @private */
     mouseWheel(evt) {
-        this.diagram.blazorActions = BlazorAction.interaction;
+        this.diagram.blazorActions |= BlazorAction.interaction;
         let up = (evt.wheelDelta > 0 || -40 * evt.detail > 0) ? true : false;
         let mousePosition = this.getMousePosition(evt);
         this.diagram.tooltipObject.close();
@@ -25504,9 +26745,15 @@ class DiagramEventHandler {
             let offset = getTooltipOffset(this.diagram, mousePosition, this.hoverElement);
             if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
                 this.diagram.tooltipObject.close();
+                this.diagram.tooltipObject.openOn = this.hoverElement.tooltip.openOn;
                 this.diagram.tooltipObject.offsetX = offset.x;
                 this.diagram.tooltipObject.offsetY = offset.y;
-                this.diagram.tooltipObject.dataBind();
+                if (isBlazor()) {
+                    this.diagram.tooltipObject.open(this.diagram.element, {});
+                }
+                else {
+                    this.diagram.tooltipObject.dataBind();
+                }
             }
             if (canEnableToolTip(this.hoverElement, this.diagram) && this.hoverElement.tooltip.openOn === 'Auto') {
                 this.diagram.tooltipObject.open(this.diagram.element);
@@ -25514,7 +26761,9 @@ class DiagramEventHandler {
         }
     }
     elementLeave() {
-        this.diagram.tooltipObject.close();
+        if (this.diagram.tooltipObject && this.diagram.tooltipObject.openOn !== 'Custom') {
+            this.diagram.tooltipObject.close();
+        }
     }
     altKeyPressed(keyModifier) {
         if (keyModifier & KeyModifiers.Alt) {
@@ -25774,6 +27023,8 @@ class DiagramEventHandler {
                 return new RotateTool(this.commandHandler);
             case 'LayoutAnimation':
                 return new ExpandTool(this.commandHandler);
+            case 'FixedUserHandle':
+                return new FixedUserHandleTool(this.commandHandler, true);
             case 'Hyperlink':
                 return new LabelTool(this.commandHandler);
             case 'ResizeSouthEast':
@@ -26517,7 +27768,7 @@ class ObjectFinder {
     }
 }
 
-var __decorate$21 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$23 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -26538,22 +27789,22 @@ class Layer extends ChildProperty {
         this.objects = [];
     }
 }
-__decorate$21([
+__decorate$23([
     Property('')
 ], Layer.prototype, "id", void 0);
-__decorate$21([
+__decorate$23([
     Property(true)
 ], Layer.prototype, "visible", void 0);
-__decorate$21([
+__decorate$23([
     Property(false)
 ], Layer.prototype, "lock", void 0);
-__decorate$21([
+__decorate$23([
     Property()
 ], Layer.prototype, "objects", void 0);
-__decorate$21([
+__decorate$23([
     Property()
 ], Layer.prototype, "addInfo", void 0);
-__decorate$21([
+__decorate$23([
     Property(-1)
 ], Layer.prototype, "zIndex", void 0);
 
@@ -26590,6 +27841,8 @@ class CommandHandler {
         this.isContainer = false;
         this.childTable = {};
         this.parentTable = {};
+        this.blazor = 'Blazor';
+        this.blazorInterop = 'sfBlazor';
         this.diagram = diagram;
     }
     /**   @private  */
@@ -26627,7 +27880,6 @@ class CommandHandler {
         if (isTooltipVisible) {
             this.diagram.tooltipObject.position = 'BottomCenter';
             this.diagram.tooltipObject.animation = { open: { delay: 0, duration: 0 } };
-            this.diagram.tooltip.actualRelativeMode = toolName === 'ConnectTool' ? 'Mouse' : 'Object';
             this.diagram.tooltipObject.openDelay = 0;
             this.diagram.tooltipObject.closeDelay = 0;
         }
@@ -26644,11 +27896,23 @@ class CommandHandler {
                 content = template ? template : content;
             }
         }
+        if (isBlazor() && isTooltipVisible) {
+            this.diagram.tooltipObject.close();
+        }
+        if (node.tooltip) {
+            this.diagram.tooltipObject.openOn = node.tooltip.openOn;
+        }
         this.diagram.tooltipObject.content = content;
-        let tooltipOffset = getTooltipOffset(this.diagram, { x: position.x, y: position.y }, node);
+        let tooltipOffset = getTooltipOffset(this.diagram, { x: position.x, y: position.y }, node, toolName ===
+            'ConnectTool' ? 'Mouse' : 'Object');
         this.diagram.tooltipObject.offsetX = tooltipOffset.x + (toolName === 'ConnectTool' ? 10 : 0);
         this.diagram.tooltipObject.offsetY = tooltipOffset.y + 10;
-        this.diagram.tooltipObject.dataBind();
+        if (isBlazor()) {
+            this.diagram.tooltipObject.updateTooltip(this.diagram.element);
+        }
+        else {
+            this.diagram.tooltipObject.dataBind();
+        }
         if (isTooltipVisible) {
             setTimeout(() => {
                 this.diagram.tooltipObject.open(this.diagram.element);
@@ -26683,6 +27947,9 @@ class CommandHandler {
      */
     updateConnectorValue(args) {
         if (args.cancel) {
+            this.enableCloneObject(true);
+            this.ismouseEvents(true);
+            this.insertBlazorObject(args.connector);
             let newChanges = {};
             let oldChanges = {};
             let connector = this.diagram.nameTable[args.connector.id];
@@ -26932,6 +28199,43 @@ class CommandHandler {
             }
         }
         return returnargs;
+    }
+    /**
+     * @private
+     */
+    insertBlazorObject(object, isNode) {
+        let node;
+        let connector;
+        if (object instanceof Selector) {
+            this.oldSelectedObjects = cloneSelectedObjects(this.diagram);
+            for (let i = 0; i < object.nodes.length; i++) {
+                node = this.diagram.getObject(object.nodes[i].id);
+                this.diagram.insertValue(cloneObject(node), true);
+            }
+            for (let i = 0; i < object.connectors.length; i++) {
+                connector = this.diagram.getObject(object.connectors[i].id);
+                this.diagram.insertValue(cloneObject(connector), false);
+            }
+        }
+        else {
+            object = this.diagram.getObject(object.id);
+            this.diagram.insertValue(cloneObject(object), (object instanceof Node) ? true : false);
+        }
+    }
+    /**
+     * @private
+     */
+    updatePropertiesToBlazor(args, labelDrag) {
+        this.enableCloneObject(false);
+        this.ismouseEvents(false);
+        this.getBlazorOldValues(args, labelDrag);
+        this.updateBlazorSelector();
+    }
+    /**
+     * @private
+     */
+    insertSelectedObjects() {
+        this.oldSelectedObjects = cloneSelectedObjects(this.diagram);
     }
     /**
      * @private
@@ -27434,14 +28738,13 @@ class CommandHandler {
         else {
             selectedItems = this.diagram.selectedItems.nodes;
         }
+        this.diagram.startGroupAction();
         for (let i = 0; i < selectedItems.length; i++) {
             let node = selectedItems[i];
-            let entry = {
-                type: 'UnGroup', undoObject: cloneObject(node),
-                redoObject: cloneObject(node), category: 'Internal'
-            };
-            if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
-                this.addHistoryEntry(entry);
+            let undoObject = cloneObject(node);
+            let childCollection = [];
+            for (let k = 0; k < node.children.length; k++) {
+                childCollection.push(node.children[k]);
             }
             if (node.children) {
                 if (node.ports && node.ports.length > 0) {
@@ -27459,15 +28762,50 @@ class CommandHandler {
                         this.diagram.addChild(parentNode, node.children[j]);
                     }
                 }
+                this.resetDependentConnectors(node.inEdges, true);
+                this.resetDependentConnectors(node.outEdges, false);
+                let entry = {
+                    type: 'UnGroup', undoObject: undoObject,
+                    redoObject: undoObject, category: 'Internal'
+                };
+                if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
+                    this.addHistoryEntry(entry);
+                }
                 if (node.parentId) {
                     this.diagram.deleteChild(node, parentNode);
                 }
             }
-            this.diagram.removeNode(node);
+            this.diagram.removeNode(node, childCollection);
             this.clearSelection();
         }
+        this.diagram.endGroupAction();
         this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.Group;
         this.diagram.protectPropertyChange(protectedChange);
+    }
+    resetDependentConnectors(edges, isInEdges) {
+        for (let i = 0; i < edges.length; i++) {
+            let newConnector = this.diagram.nameTable[edges[i]];
+            let undoObject = cloneObject(newConnector);
+            let newProp;
+            if (isInEdges) {
+                newConnector.targetID = '';
+                newConnector.targetPortID = '';
+                newProp = { targetID: newConnector.targetID, targetPortID: newConnector.targetPortID };
+            }
+            else {
+                newConnector.sourceID = '';
+                newConnector.sourcePortID = '';
+                newProp = { sourceID: newConnector.sourceID, sourcePortID: newConnector.sourcePortID };
+            }
+            this.diagram.connectorPropertyChange(newConnector, {}, newProp);
+            let entry = {
+                type: 'ConnectionChanged', undoObject: { connectors: [undoObject], nodes: [] },
+                redoObject: { connectors: [cloneObject(newConnector)], nodes: [] }, category: 'Internal'
+            };
+            if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
+                this.addHistoryEntry(entry);
+            }
+        }
     }
     /** @private */
     paste(obj) {
@@ -27700,6 +29038,8 @@ class CommandHandler {
         let oldID = [];
         children = children.concat(obj.children);
         let id = randomId();
+        let objectCollection = [];
+        this.diagram.blazorActions |= BlazorAction.GroupClipboardInProcess;
         if (this.clipboardData.childTable || obj.children.length > 0) {
             for (let i = 0; i < children.length; i++) {
                 let childObj;
@@ -27718,6 +29058,7 @@ class CommandHandler {
                         newObj = this.cloneNode(childObj, multiSelect, undefined, id);
                         oldID.push(childObj.id);
                         newChildren.push(newObj.id);
+                        objectCollection.push(newObj);
                     }
                 }
             }
@@ -27735,12 +29076,17 @@ class CommandHandler {
             }
             newObj = this.cloneConnector(connectorObj[k], multiSelect);
             newChildren.push(newObj.id);
+            objectCollection.push(newObj);
         }
         let parentObj = this.cloneNode(obj, multiSelect, newChildren);
+        objectCollection.push(parentObj);
         if (parentObj && parentObj.container && parentObj.shape && parentObj.shape.type === 'UmlClassifier') {
             this.diagram.updateDiagramObject(parentObj);
             parentObj.wrapper.measure(new Size());
         }
+        this.diagram.blazorActions &= ~BlazorAction.GroupClipboardInProcess;
+        this.diagram.isServerUpdate = false;
+        this.diagram.UpdateBlazorDiagramModelCollection(undefined, objectCollection, undefined, true);
         return parentObj;
     }
     /** @private */
@@ -27860,7 +29206,16 @@ class CommandHandler {
             let connector;
             for (let i = 0; i < obj.length; i++) {
                 connector = (getObjectType(obj[i]) === Connector);
-                connector ? argValue.connectors.push(cloneBlazorObject(obj[i])) : argValue.nodes.push(cloneBlazorObject(obj[i]));
+                if (connector) {
+                    // In Blazor web assembly, deserialize the object. Itb takes time. - Suganthi
+                    //argValue.connectors.push(cloneBlazorObject(obj[i]));
+                    argValue.connectorCollection.push(obj[i].id);
+                }
+                else {
+                    //argValue.nodes.push(cloneBlazorObject(obj[i]));
+                    argValue.nodeCollection.push(obj[i].id);
+                }
+                //connector ? argValue.connectors.push(cloneBlazorObject(obj[i])) : argValue.nodes.push(cloneBlazorObject(obj[i]));
             }
         }
     }
@@ -27876,6 +29231,10 @@ class CommandHandler {
             argOldValue.nodes = [];
             argNewValue.connectors = [];
             argNewValue.nodes = [];
+            argOldValue.nodeCollection = [];
+            argOldValue.connectorCollection = [];
+            argNewValue.nodeCollection = [];
+            argNewValue.connectorCollection = [];
             this.updateArgsObject(this.getSelectedObject(), arg, argNewValue);
             this.updateArgsObject(oldValue, arg, argOldValue);
             return arg;
@@ -27974,7 +29333,12 @@ class CommandHandler {
                     this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
                 }
                 else {
-                    let blazorArgs = yield this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+                    let blazorArgs;
+                    if (window && window[this.blazor] && this.diagram.selectionChange) {
+                        let eventObj = { 'EventName': 'selectionChange', args: JSON.stringify(arg) };
+                        blazorArgs = yield window[this.blazorInterop].updateBlazorDiagramEvents(eventObj, this.diagram);
+                    }
+                    // let blazorArgs: void | object = await this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
                     if (blazorArgs && blazorArgs.cancel) {
                         let selectedObjects = [];
                         if (blazorArgs.oldValue.nodes.length > 0) {
@@ -27985,10 +29349,12 @@ class CommandHandler {
                         }
                         if (selectedObjects) {
                             if (selectedObjects.length > 0) {
-                                this.diagram.select(selectedObjects);
+                                for (let i = 0; i < selectedObjects.length; i++) {
+                                    this.select(this.diagram.nameTable[selectedObjects[i].id], (i !== 0 && selectedObjects.length > 1) ? true : false);
+                                }
                             }
                             else {
-                                this.clearSelection(true, true);
+                                this.clearSelection();
                             }
                         }
                     }
@@ -28000,7 +29366,7 @@ class CommandHandler {
     }
     /** @private */
     updateBlazorSelector() {
-        if (isBlazor()) {
+        if (isBlazor() && this.oldSelectedObjects) {
             this.newSelectedObjects = cloneSelectedObjects(this.diagram);
             let result = this.deepDiffer.map(cloneObject(this.newSelectedObjects), this.oldSelectedObjects);
             let diffValue = this.deepDiffer.frameObject({}, result);
@@ -28019,6 +29385,8 @@ class CommandHandler {
                 let obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': { selectedItems: diff } };
                 window[blazorInterop].updateBlazorProperties(obj, this.diagram);
             }
+            this.oldSelectedObjects = undefined;
+            this.newSelectedObjects = undefined;
         }
     }
     /**
@@ -28243,8 +29611,14 @@ class CommandHandler {
                     if (isBlazor()) {
                         arg = this.updateSelectionChangeEventArgs(arg, [], objArray);
                         this.updateBlazorSelector();
+                        if (window && window[this.blazor] && this.diagram.selectionChange) {
+                            let eventObj = { 'EventName': 'selectionChange', args: JSON.stringify(arg) };
+                            window[this.blazorInterop].updateBlazorDiagramEvents(eventObj, this.diagram);
+                        }
                     }
-                    this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+                    else {
+                        this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+                    }
                 }
             }
         }
@@ -28375,6 +29749,58 @@ class CommandHandler {
             }
         }
         this.diagram.protectPropertyChange(false);
+        if (isBlazor()) {
+            this.getZIndexObjects();
+        }
+    }
+    getZIndexObjects() {
+        let element = [];
+        let i;
+        let j;
+        for (i = 0; i < this.diagram.nodes.length; i++) {
+            element.push(this.diagram.nodes[i]);
+        }
+        for (j = 0; j < this.diagram.connectors.length; j++) {
+            element.push(this.diagram.connectors[j]);
+        }
+        this.updateBlazorZIndex(element);
+    }
+    /**
+     * To update the zIndex in server side
+     */
+    updateBlazorZIndex(element) {
+        let blazorInterop = 'sfBlazor';
+        let blazor = 'Blazor';
+        let diagramobject = {};
+        let nodeObject = [];
+        let connectorObject = [];
+        let k;
+        if (element && element.length > 0) {
+            for (k = 0; k < element.length; k++) {
+                let elementObject = element[k];
+                if (elementObject instanceof Node) {
+                    nodeObject.push(this.getBlazorObject(elementObject));
+                }
+                else if (elementObject instanceof Connector) {
+                    connectorObject.push(this.getBlazorObject(elementObject));
+                }
+            }
+        }
+        diagramobject = {
+            nodes: nodeObject,
+            connectors: connectorObject
+        };
+        if (window && window[blazor]) {
+            let obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramobject };
+            window[blazorInterop].updateBlazorProperties(obj, this.diagram);
+        }
+    }
+    getBlazorObject(objectName) {
+        let object = {
+            sfIndex: getIndex(this.diagram, objectName.id),
+            zIndex: objectName.zIndex
+        };
+        return object;
     }
     //Checks whether the target is a child node.
     checkParentExist(target) {
@@ -28452,8 +29878,10 @@ class CommandHandler {
                             //Added @Dheepshiva to restrict the objects with lower zIndex
                             if (layer.objects[i] !== undefined &&
                                 (oldzIndexTable.indexOf(objectName) < oldzIndexTable.indexOf(layer.objects[i]))) {
-                                this.moveSvgNode(layer.objects[i], objectName);
-                                this.updateNativeNodeIndex(objectName);
+                                if (this.diagram.nameTable[layer.objects[i]].parentId === '') {
+                                    this.moveSvgNode(layer.objects[i], objectName);
+                                    this.updateNativeNodeIndex(objectName);
+                                }
                             }
                         }
                     }
@@ -28469,6 +29897,9 @@ class CommandHandler {
             }
         }
         this.diagram.protectPropertyChange(false);
+        if (isBlazor()) {
+            this.getZIndexObjects();
+        }
     }
     /** @private */
     sortByZIndex(nodeArray, sortID) {
@@ -28635,6 +30066,12 @@ class CommandHandler {
                     this.addHistoryEntry(historyEntry);
                 }
             }
+            if (isBlazor()) {
+                let elements = [];
+                elements.push(index);
+                elements.push(intersectArray[intersectArray.length - 1]);
+                this.updateBlazorZIndex(elements);
+            }
         }
         this.diagram.protectPropertyChange(false);
     }
@@ -28679,6 +30116,12 @@ class CommandHandler {
                     if (!(node.children && node.children.length > 0)) {
                         this.moveSvgNode(objectId, zIndexTable[intersectArray[intersectArray.length - 1].zIndex]);
                         this.updateNativeNodeIndex(objectId, zIndexTable[intersectArray[intersectArray.length - 1].zIndex]);
+                        if (isBlazor()) {
+                            let elements = [];
+                            elements.push(node);
+                            elements.push(intersectArray[intersectArray.length - 1]);
+                            this.updateBlazorZIndex(elements);
+                        }
                     }
                 }
                 else {
@@ -28795,7 +30238,7 @@ class CommandHandler {
                 window[blazorInterop].updateBlazorProperties(obj, this.diagram);
             }
         }
-        this.diagram.enableServerDataBinding(true);
+        //this.diagram.enableServerDataBinding(true);
         this.deepDiffer.newNodeObject = [];
         this.deepDiffer.newConnectorObject = [];
         this.diagramObject = [];
@@ -28804,7 +30247,9 @@ class CommandHandler {
     }
     /**   @private  */
     enableCloneObject(value) {
-        this.diagram.canEnableBlazorObject = value;
+        if ((!this.diagram.lineRoutingModule || !(this.diagram.constraints & DiagramConstraints.LineRouting))) {
+            this.diagram.canEnableBlazorObject = value;
+        }
     }
     /**   @private  */
     ismouseEvents(value) {
@@ -28837,7 +30282,9 @@ class CommandHandler {
         let diff = this.deepDiffer.removeEmptyValues(diffValue);
         diff = this.deepDiffer.changeSegments(diff, newObject);
         this.diagramObject = diff;
-        this.updateBlazorProperties();
+        if (!(this.diagram.blazorActions & BlazorAction.ClearObject)) {
+            this.updateBlazorProperties();
+        }
     }
     /* tslint:disable */
     /** @private */
@@ -28928,7 +30375,12 @@ class CommandHandler {
                             this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
                         }
                         else {
-                            let blazarArgs = yield this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+                            let blazarArgs;
+                            if (window && window[this.blazor] && this.diagram.selectionChange) {
+                                let eventObj = { 'EventName': 'selectionChange', args: JSON.stringify(arg) };
+                                blazarArgs = yield window[this.blazorInterop].updateBlazorDiagramEvents(eventObj, this.diagram);
+                            }
+                            // let blazarArgs: void | object = await this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
                             if (blazarArgs && blazarArgs.cancel && !isTriggered) {
                                 let selectNodes = [];
                                 if (blazarArgs.oldValue.nodes.length > 0) {
@@ -28938,7 +30390,9 @@ class CommandHandler {
                                     selectNodes = selectNodes.concat(blazarArgs.oldValue.connectors);
                                 }
                                 if (selectNodes) {
-                                    this.diagram.select(selectNodes);
+                                    for (let i = 0; i < selectNodes.length; i++) {
+                                        this.select(this.diagram.nameTable[selectNodes[i].id], (i != 0 && selectNodes.length > 1) ? true : false);
+                                    }
                                 }
                             }
                         }
@@ -29032,6 +30486,17 @@ class CommandHandler {
             if (wrapper) {
                 renderStackHighlighter(wrapper, isVertical, args.position, this.diagram, false, true);
             }
+        }
+    }
+    /** @private */
+    insertBlazorConnector(obj) {
+        if (obj instanceof Selector) {
+            for (let i = 0; i < obj.connectors.length; i++) {
+                this.diagram.insertBlazorConnector(obj.connectors[i]);
+            }
+        }
+        else {
+            this.diagram.insertBlazorConnector(obj);
         }
     }
     /** @private */
@@ -29995,7 +31460,7 @@ class CommandHandler {
                     newOffset = intersectingOffset;
                 }
                 else {
-                    let connectorOffset = getOffsetOfConnector(object.intermediatePoints, label, object.wrapper.bounds);
+                    let connectorOffset = getOffsetOfConnector(object.intermediatePoints, label);
                     newOffset = connectorOffset.point;
                 }
             }
@@ -30433,9 +31898,9 @@ class CommandHandler {
         if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation && this.diagram.organizationalChartModule) {
             this.diagram.organizationalChartModule.isAnimation = true;
         }
-        this.diagram.blazorActions = BlazorAction.expandNode;
+        this.diagram.blazorActions |= BlazorAction.expandNode;
         objects = this.diagram.doLayout();
-        this.diagram.blazorActions = BlazorAction.Default;
+        this.diagram.blazorActions &= ~BlazorAction.expandNode;
         this.diagram.preventNodesUpdate = preventNodesUpdate;
         this.diagram.preventConnectorsUpdate = false;
         if (this.diagram.layoutAnimateModule && this.diagram.organizationalChartModule) {
@@ -32153,7 +33618,7 @@ class SpatialSearch {
     }
 }
 
-var __decorate$22 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$24 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -32176,11 +33641,11 @@ var __decorate$22 = (undefined && undefined.__decorate) || function (decorators,
  */
 class SerializationSettings extends ChildProperty {
 }
-__decorate$22([
+__decorate$24([
     Property(false)
 ], SerializationSettings.prototype, "preventDefaults", void 0);
 
-var __decorate$23 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$25 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -32192,14 +33657,14 @@ var __decorate$23 = (undefined && undefined.__decorate) || function (decorators,
  */
 class CustomCursorAction extends ChildProperty {
 }
-__decorate$23([
+__decorate$25([
     Property('')
 ], CustomCursorAction.prototype, "action", void 0);
-__decorate$23([
+__decorate$25([
     Property('')
 ], CustomCursorAction.prototype, "cursor", void 0);
 
-var __decorate$24 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$26 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -32222,7 +33687,7 @@ var __decorate$24 = (undefined && undefined.__decorate) || function (decorators,
  */
 class DiagramSettings extends ChildProperty {
 }
-__decorate$24([
+__decorate$26([
     Property(true)
 ], DiagramSettings.prototype, "inversedAlignment", void 0);
 
@@ -32276,6 +33741,8 @@ class Diagram extends Component {
         /** @private */
         this.groupTable = {};
         /** @private */
+        this.blazorActions = BlazorAction.Default;
+        /** @private */
         this.activeLabel = { id: '', parentId: '', isGroup: false, text: undefined };
         /** @private */
         this.textEditing = false;
@@ -32296,6 +33763,9 @@ class Diagram extends Component {
         this.previousNodeCollection = [];
         this.previousConnectorCollection = [];
         this.crudDeleteNodes = [];
+        // Group update to server when BlazorAction is isGroupAction;
+        this.blazorAddorRemoveCollection = [];
+        this.blazorRemoveIndexCollection = [];
         this.diagramid = 88123;
         /** @private */
         this.selectedObject = { helperObject: undefined, actualObject: undefined };
@@ -32322,22 +33792,24 @@ class Diagram extends Component {
             if (child.shape && child.shape.type === 'SwimLane') {
                 setSwimLaneDefaults(child, node);
             }
+            if (canCloneObject) {
+                this.previousNodeCollection.push(cloneObject(node, undefined, undefined, true));
+            }
             if (this.nodeDefaults) {
-                if (canCloneObject) {
-                    this.previousNodeCollection.push(cloneObject(node, undefined, undefined, true));
-                }
                 updateDefaultValues(node, child, this.nodeDefaults);
             }
             this.updateAnnotationText(node.annotations);
         }
-        if (options && options.connectors && this.connectorDefaults) {
+        if (options && options.connectors) {
             for (let i = 0; options && options.connectors && i < options.connectors.length; i++) {
                 child = options.connectors[i];
                 node = this.connectors[i];
                 if (canCloneObject) {
                     this.previousConnectorCollection.push(cloneObject(node, undefined, undefined, true));
                 }
-                updateDefaultValues(node, child, this.connectorDefaults);
+                if (this.connectorDefaults) {
+                    updateDefaultValues(node, child, this.connectorDefaults);
+                }
                 this.updateAnnotationText(node.annotations);
             }
         }
@@ -32631,7 +34103,9 @@ class Diagram extends Component {
             }
             if (!refereshColelction && (this.canLogChange()) && (this.modelChanged(newProp, oldProp))) {
                 let entry = { type: 'PropertyChanged', undoObject: oldProp, redoObject: newProp, category: 'Internal' };
-                this.addHistoryEntry(entry);
+                if (this.historyManager) {
+                    this.addHistoryEntry(entry);
+                }
             }
             this.resetDiagramActions();
             if (refereshColelction) {
@@ -32765,6 +34239,10 @@ class Diagram extends Component {
      * Renders the diagram control with nodes and connectors
      */
     render() {
+        if (this.refreshing && this.dataSourceSettings.dataSource && !this.isLoading) {
+            this.nodes = [];
+            this.connectors = [];
+        }
         this.ignoreCollectionWatch = true;
         let domTable = 'domTable';
         window[domTable] = {};
@@ -32824,12 +34302,14 @@ class Diagram extends Component {
                     updateConnectorObject.push(cloneObject(obj, undefined, undefined, true));
                 }
                 this.commandHandler.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
-                let blazorInterop = 'sfBlazor';
-                let blazor = 'Blazor';
-                let diagramObject = { nodes: [], connectors: changeConnectors };
-                if (window && window[blazor]) {
-                    let obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
-                    window[blazorInterop].updateBlazorProperties(obj, this);
+                if (!(this.blazorActions & BlazorAction.ClearObject)) {
+                    let blazorInterop = 'sfBlazor';
+                    let blazor = 'Blazor';
+                    let diagramObject = { nodes: [], connectors: changeConnectors };
+                    if (window && window[blazor]) {
+                        let obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
+                        window[blazorInterop].updateBlazorProperties(obj, this);
+                    }
                 }
             }
         }
@@ -32874,7 +34354,7 @@ class Diagram extends Component {
         }
         this.initCommands();
         let hiddenUserHandleTemplate = document.getElementsByClassName(this.element.id + '_hiddenUserHandleTemplate');
-        createUserHandleTemplates(this.userHandleTemplate, hiddenUserHandleTemplate, this.selectedItems);
+        createUserHandleTemplates(this.userHandleTemplate, hiddenUserHandleTemplate, this.selectedItems, this.element.id);
         this.updateTemplate();
         this.isLoading = false;
         this.renderComplete();
@@ -32924,13 +34404,14 @@ class Diagram extends Component {
             if (htmlNode.shape.type === 'HTML' && htmlNode.shape.content instanceof HTMLElement) {
                 resetBlazorTemplate('diagramsf_node_template', 'NodeTemplate');
             }
-            else if (templateAnnotation && templateAnnotation.annotationType === 'Template') {
+            else if (templateAnnotation && templateAnnotation.annotationType === 'Template'
+                && templateAnnotation.content instanceof HTMLElement) {
                 resetBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate');
             }
         }
         for (let i = 0; i < this.connectors.length; i++) {
             path = this.connectors[i].annotations[0];
-            if (path && path.annotationType === 'Template') {
+            if (path && path.annotationType === 'Template' && path.content instanceof HTMLElement) {
                 resetBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate');
             }
         }
@@ -33005,6 +34486,12 @@ class Diagram extends Component {
             member: 'ConnectorEditingTool',
             args: []
         });
+        if (isBlazor()) {
+            modules.push({
+                member: 'BlazorTooltip',
+                args: []
+            });
+        }
         if (this.constraints & DiagramConstraints.UndoRedo) {
             modules.push({
                 member: 'UndoRedo',
@@ -33320,11 +34807,7 @@ class Diagram extends Component {
      * send the selected nodes or connectors back
      */
     sendToBack() {
-        let objectName = this.selectedItems.nodes.length ? this.selectedItems.nodes[0]
-            : this.selectedItems.connectors[0];
-        this.insertBlazorDiagramObjects(objectName);
         this.commandHandler.sendToBack();
-        this.commandHandler.getBlazorOldValues();
     }
     /**
      * set the active layer
@@ -33356,7 +34839,7 @@ class Diagram extends Component {
      * @deprecated
      */
     removeLayer(layerId) {
-        this.commandHandler.removeLayer(layerId);
+        this.commandHandler.removeLayer(layerId, isBlazor());
     }
     /**
      *  @private
@@ -33419,31 +34902,19 @@ class Diagram extends Component {
      * bring the selected nodes or connectors to front
      */
     bringToFront() {
-        let objectName = this.selectedItems.nodes.length ? this.selectedItems.nodes[0]
-            : this.selectedItems.connectors[0];
-        this.insertBlazorDiagramObjects(objectName);
         this.commandHandler.bringToFront();
-        this.commandHandler.getBlazorOldValues();
     }
     /**
      * send the selected nodes or connectors forward
      */
     moveForward() {
-        let objectName = this.selectedItems.nodes.length ? this.selectedItems.nodes[0]
-            : this.selectedItems.connectors[0];
-        this.insertBlazorDiagramObjects(objectName);
         this.commandHandler.sendForward();
-        this.commandHandler.getBlazorOldValues();
     }
     /**
      * send the selected nodes or connectors back
      */
     sendBackward() {
-        let objectName = this.selectedItems.nodes.length ? this.selectedItems.nodes[0]
-            : this.selectedItems.connectors[0];
-        this.insertBlazorDiagramObjects(objectName);
         this.commandHandler.sendBackward();
-        this.commandHandler.getBlazorOldValues();
     }
     /**
      * gets the node or connector having the given name
@@ -33602,7 +35073,8 @@ class Diagram extends Component {
         if (!(this.diagramActions & DiagramAction.ToolAction) && !(this.diagramActions & DiagramAction.DragUsingMouse)) {
             this.updateSelector();
         }
-        if (this.callBlazorModel && (!(this.blazorActions & BlazorAction.interaction))) {
+        if (this.callBlazorModel && (!(this.blazorActions & BlazorAction.interaction)) &&
+            (!(this.blazorActions & BlazorAction.GroupClipboardInProcess))) {
             this.commandHandler.getBlazorOldValues();
         }
     }
@@ -33657,7 +35129,8 @@ class Diagram extends Component {
         else {
             this.commandHandler.scale(obj, sx, sy, pivot, (obj.children ? obj : undefined));
         }
-        if (this.callBlazorModel && (!(this.blazorActions & BlazorAction.interaction))) {
+        if (this.callBlazorModel && (!(this.blazorActions & BlazorAction.interaction)) &&
+            (!(this.blazorActions & BlazorAction.GroupClipboardInProcess))) {
             this.commandHandler.getBlazorOldValues();
         }
         this.disableStackContainerPadding(obj.wrapper, true);
@@ -33852,6 +35325,7 @@ class Diagram extends Component {
         let oldValue = 'oldValue';
         let newValue = 'newValue';
         let type = 'type';
+        let entryType = 'entryType';
         let source = [];
         if (entry.category === 'Internal') {
             if (entry && entry.redoObject && ((entry.redoObject.nodes) instanceof Array) &&
@@ -33864,6 +35338,9 @@ class Diagram extends Component {
                 }
             }
             change[type] = entry.type;
+            if (isBlazor()) {
+                change[entryType] = entry.type;
+            }
             switch (entry.type) {
                 case 'PositionChanged':
                     change[oldValue] = {
@@ -33934,14 +35411,18 @@ class Diagram extends Component {
      */
     startGroupAction() {
         let entry = { type: 'StartGroup', category: 'Internal' };
-        this.addHistoryEntry(entry);
+        if (!(this.diagramActions & DiagramAction.UndoRedo)) {
+            this.addHistoryEntry(entry);
+        }
     }
     /**
      * Closes grouping the actions that will be undone/restored as a whole
      */
     endGroupAction() {
         let entry = { type: 'EndGroup', category: 'Internal' };
-        this.addHistoryEntry(entry);
+        if (!(this.diagramActions & DiagramAction.UndoRedo)) {
+            this.addHistoryEntry(entry);
+        }
     }
     /**
      * Restores the last action that is performed
@@ -34230,6 +35711,9 @@ class Diagram extends Component {
      * @param {NodeModel | ConnectorModel} obj - Defines the object for that tooltip has to be shown
      */
     showTooltip(obj) {
+        if (obj && obj.id && !obj.wrapper) {
+            obj = this.nameTable[obj.id];
+        }
         let bounds = getBounds(obj.wrapper);
         let position = { x: 0, y: 0 };
         let content = obj.tooltip.content ?
@@ -34268,7 +35752,36 @@ class Diagram extends Component {
      * @blazorArgsType obj|DiagramNode
      */
     addChildToGroup(group, child) {
-        this.addChild(group, child);
+        let severDataBind = this.allowServerDataBinding;
+        this.enableServerDataBinding(false);
+        let propChange = this.isProtectedOnChange;
+        this.protectPropertyChange(true);
+        group = this.getObject(group.id);
+        if (isBlazor()) {
+            this.insertValue(group, true);
+        }
+        let isHistoryAdded = (!(this.diagramActions & DiagramAction.UndoRedo) && !(this.diagramActions & DiagramAction.Group) &&
+            !(this.diagramActions & DiagramAction.PreventHistory));
+        if (isHistoryAdded) {
+            this.startGroupAction();
+        }
+        let id = this.addChild(group, child);
+        if (isHistoryAdded) {
+            let childTable = {};
+            childTable[id] = cloneObject(this.getObject(id));
+            let entry = {
+                type: 'AddChildToGroupNode', changeType: 'Insert', undoObject: cloneObject(group),
+                redoObject: cloneObject(group), category: 'Internal', objectId: id, childTable: childTable
+            };
+            this.addHistoryEntry(entry);
+            this.endGroupAction();
+        }
+        this.protectPropertyChange(propChange);
+        this.enableServerDataBinding(severDataBind);
+        this.updateSelector();
+        if (isBlazor() && isHistoryAdded) {
+            this.commandHandler.getBlazorOldValues();
+        }
     }
     /**
      * Will return the history stack values
@@ -34318,80 +35831,126 @@ class Diagram extends Component {
         return this.add(obj);
     }
     /** @private */
-    UpdateBlazorDiagramModelCollection(obj, copiedObject, multiSelectDelete) {
-        let blazorInterop = 'sfBlazor';
-        let updatedModel = cloneBlazorObject(obj);
-        let blazor = 'Blazor';
-        if (window && window[blazor] && (!this.isServerUpdate || multiSelectDelete)) {
-            this.isServerUpdate = true;
-            let removalIndexCollection = [];
-            let updatedModelCollection = [];
-            let connectorModelCollection = [];
-            let elements = [];
-            let removalIndex;
-            let tempNode = [];
-            let objectTypeCollection = [];
-            if (!copiedObject) {
-                if (!multiSelectDelete) {
-                    tempNode = this.commandHandler.getChildren(obj, elements);
-                }
-                else {
-                    tempNode = multiSelectDelete;
-                }
-                for (let i = 0; i < tempNode.length; i++) {
-                    updatedModel = cloneBlazorObject(tempNode[i]);
-                    updatedModelCollection.push(updatedModel);
-                    if (getObjectType(tempNode[i]) === Connector) {
-                        removalIndex = this.connectors.indexOf(tempNode[i]);
+    UpdateBlazorDiagramModelCollection(obj, copiedObject, multiSelectDelete, isBlazorGroupUpdate) {
+        if (!(this.blazorActions & BlazorAction.ClearObject)) {
+            let blazorInterop = 'sfBlazor';
+            let blazor = 'Blazor';
+            if (window && window[blazor]) {
+                let updatedModel;
+                let connectorModelCollection = [];
+                let updatedModelCollection = [];
+                let objectTypeCollection = [];
+                let removalIndexCollection = [];
+                if (isBlazorGroupUpdate && !copiedObject) {
+                    for (let i = 0; i < this.blazorAddorRemoveCollection.length; i++) {
+                        objectTypeCollection.push(getObjectType(this.blazorAddorRemoveCollection[i]) === Connector ? 'Connector' : 'Node');
+                        updatedModel = cloneBlazorObject(this.blazorAddorRemoveCollection[i]);
+                        updatedModelCollection.push(updatedModel);
+                        removalIndexCollection = this.blazorRemoveIndexCollection;
                     }
-                    else {
-                        removalIndex = this.nodes.indexOf(tempNode[i]);
-                    }
-                    removalIndexCollection.push(removalIndex);
-                    objectTypeCollection.push(getObjectType(tempNode[i]) === Connector ? 'Connector' : 'Node');
                 }
-                if (!multiSelectDelete) {
-                    updatedModelCollection.push(cloneBlazorObject(obj));
-                    removalIndexCollection.push(this.nodes.indexOf(obj));
-                    objectTypeCollection.push(getObjectType(obj) === Connector ? 'Connector' : 'Node');
+                else if ((!this.isServerUpdate || multiSelectDelete)) {
+                    this.isServerUpdate = true;
+                    let updatedModel = cloneBlazorObject(obj);
+                    let elements = [];
+                    let removalIndex;
+                    let tempNode = [];
+                    if (!copiedObject) {
+                        if (!multiSelectDelete) {
+                            tempNode = this.commandHandler.getChildren(obj, elements);
+                        }
+                        else {
+                            tempNode = multiSelectDelete;
+                        }
+                        for (let i = 0; i < tempNode.length; i++) {
+                            updatedModel = cloneBlazorObject(tempNode[i]);
+                            updatedModelCollection.push(updatedModel);
+                            if (getObjectType(tempNode[i]) === Connector) {
+                                removalIndex = this.connectors.indexOf(tempNode[i]);
+                            }
+                            else {
+                                removalIndex = this.nodes.indexOf(tempNode[i]);
+                            }
+                            removalIndexCollection.push(removalIndex);
+                            objectTypeCollection.push(getObjectType(tempNode[i]) === Connector ? 'Connector' : 'Node');
+                        }
+                        if (!multiSelectDelete) {
+                            updatedModelCollection.push(cloneBlazorObject(obj));
+                            removalIndexCollection.push(this.nodes.indexOf(obj));
+                            objectTypeCollection.push(getObjectType(obj) === Connector ? 'Connector' : 'Node');
+                        }
+                    }
+                    if (copiedObject && copiedObject.length > 0) {
+                        for (let i = 0; i < copiedObject.length; i++) {
+                            updatedModel = cloneBlazorObject(copiedObject[i]);
+                            let isNode = (copiedObject[i] instanceof Node) ? true : false;
+                            isNode ? updatedModelCollection.push(updatedModel) : connectorModelCollection.push(updatedModel);
+                            objectTypeCollection.push(getObjectType(copiedObject[i]) === Connector ? 'Connector' : 'Node');
+                        }
+                    }
+                    this.isServerUpdate = false;
+                }
+                let dgmObj = {
+                    'methodName': 'UpdateBlazorDiagramObjects',
+                    'diagramobj': {
+                        'nodeObj': JSON.stringify(updatedModelCollection),
+                        'ObjectType': objectTypeCollection,
+                        'removalIndex': copiedObject ? undefined : removalIndexCollection,
+                        'isMultipleObjects': true, 'annotationIndex': undefined,
+                        'connectorObj': JSON.stringify(connectorModelCollection)
+                    }
+                };
+                window[blazorInterop].updateBlazorProperties(dgmObj, this);
+                if (isBlazorGroupUpdate && !copiedObject) {
+                    this.blazorAddorRemoveCollection = [];
+                    this.blazorRemoveIndexCollection = [];
                 }
             }
-            if (copiedObject && copiedObject.length > 0) {
-                for (let i = 0; i < copiedObject.length; i++) {
-                    updatedModel = cloneBlazorObject(copiedObject[i]);
-                    let isNode = (copiedObject[i] instanceof Node) ? true : false;
-                    isNode ? updatedModelCollection.push(updatedModel) : connectorModelCollection.push(updatedModel);
-                    objectTypeCollection.push(getObjectType(copiedObject[i]) === Connector ? 'Connector' : 'Node');
-                }
-            }
-            let dgmObj = {
-                'methodName': 'UpdateBlazorDiagramObjects',
-                'diagramobj': {
-                    'nodeObj': JSON.stringify(updatedModelCollection),
-                    'ObjectType': objectTypeCollection,
-                    'removalIndex': copiedObject ? undefined : removalIndexCollection,
-                    'isMultipleObjects': true, 'annotationIndex': undefined,
-                    'connectorObj': JSON.stringify(connectorModelCollection)
-                }
-            };
-            window[blazorInterop].updateBlazorProperties(dgmObj, this);
         }
     }
     /**
      * @private
      */
     UpdateBlazorDiagramModel(obj, objectType, removalIndex, annotationNodeIndex) {
+        if (!(this.blazorActions & BlazorAction.GroupClipboardInProcess)) {
+            let blazorInterop = 'sfBlazor';
+            let blazor = 'Blazor';
+            if (window && window[blazor] && !this.isServerUpdate && !(this.diagramActions & DiagramAction.Clear)) {
+                let updatedModel = cloneBlazorObject(obj);
+                let dgmObj = {
+                    'methodName': 'UpdateBlazorDiagramObjects',
+                    'diagramobj': {
+                        'nodeObj': JSON.stringify(updatedModel),
+                        'ObjectType': objectType, 'removalIndex': removalIndex,
+                        'isMultipleObjects': false,
+                        'annotationIndex': annotationNodeIndex, 'connectorObj': undefined
+                    }
+                };
+                window[blazorInterop].updateBlazorProperties(dgmObj, this);
+            }
+        }
+    }
+    UpdateBlazorLabelOrPortObjects(obj, objectType, removalIndex, nodeIndex) {
         let blazorInterop = 'sfBlazor';
-        let updatedModel = cloneBlazorObject(obj);
         let blazor = 'Blazor';
-        if (window && window[blazor] && !this.isServerUpdate && !(this.diagramActions & DiagramAction.Clear)) {
+        if (window && window[blazor] && obj.length > 0 && !this.isServerUpdate && !(this.diagramActions & DiagramAction.Clear)) {
+            let updatedModelCollection = [];
+            let objectTypeCollection = [];
+            let nodeIndexCollection = [];
+            for (let i = 0; i < obj.length; i++) {
+                updatedModelCollection.push(cloneBlazorObject(obj[i]));
+                objectTypeCollection.push(objectType);
+                nodeIndexCollection.push(nodeIndex);
+            }
             let dgmObj = {
                 'methodName': 'UpdateBlazorDiagramObjects',
                 'diagramobj': {
-                    'nodeObj': JSON.stringify(updatedModel),
-                    'ObjectType': objectType, 'removalIndex': removalIndex,
-                    'isMultipleObjects': false,
-                    'annotationIndex': annotationNodeIndex, 'connectorObj': undefined
+                    'nodeObj': JSON.stringify(updatedModelCollection),
+                    'ObjectType': objectTypeCollection, 'removalIndex': removalIndex,
+                    'isMultipleObjects': true,
+                    'annotationIndex': nodeIndexCollection,
+                    'connectorObj': null,
+                    'portIndex': (objectType === 'Port') ? nodeIndexCollection : []
                 }
             };
             window[blazorInterop].updateBlazorProperties(dgmObj, this);
@@ -34434,6 +35993,17 @@ class Diagram extends Component {
                 if (edges[i] === id) {
                     edges.splice(i, 1);
                 }
+            }
+        }
+    }
+    /** @private */
+    insertBlazorConnector(obj) {
+        if (isBlazor() && (obj instanceof Connector)) {
+            if (obj.sourceID && this.nameTable[obj.sourceID]) {
+                this.insertValue(cloneObject(this.nameTable[obj.sourceID]), true);
+            }
+            if (obj.targetID && this.nameTable[obj.targetID]) {
+                this.insertValue(cloneObject(this.nameTable[obj.targetID]), true);
             }
         }
     }
@@ -34490,11 +36060,23 @@ class Diagram extends Component {
                     updateDefaultValues(newObj, obj, this.connectorDefaults);
                     this.connectors.push(newObj);
                     this.initObject(newObj);
-                    this.UpdateBlazorDiagramModel(newObj, "Connector");
+                    if ((this.blazorActions & BlazorAction.GroupingInProgress) && isBlazor()) {
+                        this.blazorAddorRemoveCollection.push(newObj);
+                    }
+                    else if (this.blazorAddorRemoveCollection.length > 0) {
+                        this.isServerUpdate = false;
+                        this.blazorAddorRemoveCollection.push(newObj);
+                        this.UpdateBlazorDiagramModelCollection(undefined, this.blazorAddorRemoveCollection, undefined, true);
+                        this.blazorAddorRemoveCollection = [];
+                    }
+                    else {
+                        this.UpdateBlazorDiagramModel(newObj, "Connector");
+                    }
                     if (obj.visible === false) {
                         this.updateElementVisibility(newObj.wrapper, newObj, obj.visible);
                     }
                     this.updateEdges(newObj);
+                    this.insertBlazorConnector(newObj);
                 }
                 else {
                     newObj = new Node(this, 'nodes', obj, true);
@@ -34504,8 +36086,19 @@ class Diagram extends Component {
                     newObj.status = 'New';
                     this.nodes.push(newObj);
                     this.initObject(newObj, layers, undefined, group);
+                    if (isBlazor() && (this.blazorActions & BlazorAction.GroupingInProgress)) {
+                        this.blazorAddorRemoveCollection.push(newObj);
+                    }
+                    else if (this.blazorAddorRemoveCollection.length > 0) {
+                        this.blazorAddorRemoveCollection.push(newObj);
+                        this.isServerUpdate = false;
+                        this.UpdateBlazorDiagramModelCollection(undefined, this.blazorAddorRemoveCollection, undefined, true);
+                        this.blazorAddorRemoveCollection = [];
+                    }
+                    else {
+                        this.UpdateBlazorDiagramModel(newObj, "Node");
+                    }
                     this.updateTemplate();
-                    this.UpdateBlazorDiagramModel(newObj, "Node");
                     if (this.bpmnModule) {
                         if (newObj.shape.annotations && newObj.shape.annotations.length !== 0) {
                             for (let obj of this.bpmnModule.getTextAnnotationConn(newObj)) {
@@ -34546,6 +36139,7 @@ class Diagram extends Component {
                     args.parentId = this.parentObject.id;
                 }
                 this.updateBlazorCollectionChange(newObj, true);
+                this.commandHandler.getBlazorOldValues();
                 if (isBlazor()) {
                     args = getCollectionChangeEventArguements(args, obj, 'Changed', 'Addition');
                 }
@@ -34788,6 +36382,7 @@ class Diagram extends Component {
         let groupAction = false;
         if (obj) {
             obj = this.nameTable[obj.id];
+            this.insertBlazorConnector(obj);
             if (obj && obj.shape && obj.shape.type === 'SwimLane') {
                 removeSwimLane(this, obj);
             }
@@ -34817,7 +36412,7 @@ class Diagram extends Component {
                         };
                         this.updateBlazorCollectionChange(obj, false);
                         if (!(this.diagramActions & DiagramAction.Clear)) {
-                            if (selectedItems.length > 0 && this.undoRedoModule && !this.layout.type) {
+                            if (obj.children && !obj.isLane && !obj.isPhase && obj.children.length > 0 && this.undoRedoModule && this.layout.type === 'None') {
                                 this.historyManager.startGroupAction();
                                 groupAction = true;
                             }
@@ -34831,7 +36426,8 @@ class Diagram extends Component {
                             }
                         }
                     }
-                    if (obj.children && !obj.isLane && !obj.isPhase) {
+                    if (obj.children && !obj.isLane && !obj.isPhase &&
+                        (!isBlazor() || !(this.diagramActions & DiagramAction.UndoRedo))) {
                         this.deleteGroup(obj);
                     }
                     if (obj.parentId) {
@@ -34861,7 +36457,18 @@ class Diagram extends Component {
                         }
                         index = this.nodes.indexOf(currentObj);
                         if (isBlazor() && (obj.id !== 'helper')) {
-                            this.UpdateBlazorDiagramModel(obj, "Node", index);
+                            if (this.blazorActions & BlazorAction.GroupingInProgress) {
+                                this.blazorAddorRemoveCollection.push(obj);
+                                this.blazorRemoveIndexCollection.splice(0, 0, index);
+                            }
+                            else if (this.blazorAddorRemoveCollection.length > 0) {
+                                this.blazorAddorRemoveCollection.push(obj);
+                                this.blazorRemoveIndexCollection.splice(0, 0, index);
+                                this.UpdateBlazorDiagramModelCollection(undefined, undefined, undefined, true);
+                            }
+                            else {
+                                this.UpdateBlazorDiagramModel(obj, "Node", index);
+                            }
                         }
                         if (index !== -1) {
                             this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
@@ -34912,6 +36519,7 @@ class Diagram extends Component {
                             };
                             if (isBlazor()) {
                                 args = getCollectionChangeEventArguements(args, obj, 'Changed', 'Removal');
+                                this.commandHandler.getBlazorOldValues();
                             }
                             if (obj.id !== 'helper') {
                                 this.triggerEvent(DiagramEvent.collectionChange, args);
@@ -34926,6 +36534,9 @@ class Diagram extends Component {
             if (this.undoRedoModule) {
                 this.historyManager.startGroupAction();
                 groupAction = true;
+            }
+            if (isBlazor() && selectedItems.length > 1) {
+                this.clearSelection();
             }
             for (let i = 0; i < selectedItems.length; i++) {
                 let node = selectedItems[i];
@@ -35070,6 +36681,7 @@ class Diagram extends Component {
                 }
             }
         }
+        return id;
     }
     /**
      * Clears all nodes and objects in the diagram
@@ -35133,7 +36745,7 @@ class Diagram extends Component {
             let minWidth = 90;
             let text;
             let bounds;
-            let attributes;
+            let attributes$$1;
             let x;
             let y;
             let textWrapper;
@@ -35213,20 +36825,20 @@ class Diagram extends Component {
                         x = ((((textWrapper.bounds.center.x + transform.tx) * transform.scale) - (bounds.width / 2) * scale) - 2.5);
                         y = ((((textWrapper.bounds.center.y + transform.ty) * transform.scale) - (bounds.height / 2) * scale) - 3);
                     }
-                    attributes = {
+                    attributes$$1 = {
                         'id': this.element.id + '_editTextBoxDiv', 'style': 'position: absolute' + ';left:' + x + 'px;top:' +
                             y + 'px;width:' + ((bounds.width + 1) * scale) + 'px;height:' + (bounds.height * scale) +
                             'px; containerName:' + node.id + ';'
                     };
-                    setAttributeHtml(textEditing, attributes);
-                    attributes = {
+                    setAttributeHtml(textEditing, attributes$$1);
+                    attributes$$1 = {
                         'id': this.element.id + '_editBox', 'style': 'width:' + ((bounds.width + 1) * scale) +
                             'px;height:' + (bounds.height * scale) + 'px;resize: none;outline: none;overflow: hidden;' +
                             ';font-family:' + style.fontFamily +
                             ';font-size:' + (style.fontSize * scale) + 'px;text-align:' +
                             (textWrapper.style.textAlign.toLocaleLowerCase()) + ';', 'class': 'e-diagram-text-edit'
                     };
-                    setAttributeHtml(textArea, attributes);
+                    setAttributeHtml(textArea, attributes$$1);
                     textArea.style.fontWeight = (style.bold) ? 'bold' : '';
                     textArea.style.fontStyle = (style.italic) ? 'italic' : '';
                     textArea.style.lineHeight = (style.fontSize * 1.2 + 'px;').toString();
@@ -35244,6 +36856,17 @@ class Diagram extends Component {
                 }
             }
         }
+    }
+    updateConnectorfixedUserHandles(connector) {
+        if (connector.fixedUserHandles.length) {
+            let fixedUserHandleWrapper;
+            for (let fixedUserHandle of connector.fixedUserHandles) {
+                fixedUserHandleWrapper = this.getWrapper(connector.wrapper, fixedUserHandle.id);
+                connector.updateAnnotation(fixedUserHandle, connector.intermediatePoints, connector.wrapper.bounds, fixedUserHandleWrapper);
+            }
+        }
+        connector.wrapper.measure(new Size(connector.wrapper.width, connector.wrapper.height));
+        connector.wrapper.arrange(connector.wrapper.desiredSize);
     }
     /* tslint:enable */
     updateNodeExpand(node, visibility) {
@@ -35370,6 +36993,7 @@ class Diagram extends Component {
                     connector.wrapper.measure(new Size(undefined, undefined));
                     connector.wrapper.arrange(connector.wrapper.desiredSize);
                     this.updateConnectorAnnotation(connector);
+                    this.updateConnectorfixedUserHandles(connector);
                     this.updateQuad(connector);
                     this.updateDiagramObject(connector, true);
                 }
@@ -35386,7 +37010,7 @@ class Diagram extends Component {
         if (update) {
             this.updateDiagramElementQuad();
         }
-        return ((this.blazorActions & BlazorAction.expandNode) ? layout : true);
+        return ((this.blazorActions & BlazorAction.expandNode) ? layout : isBlazor() ? null : true);
     }
     /**
      * Serializes the diagram control as a string
@@ -35494,6 +37118,14 @@ class Diagram extends Component {
      */
     addPorts(obj, ports) {
         this.protectPropertyChange(true);
+        let portCollection = [];
+        let isAddPortInServer = true;
+        if (isBlazor() && obj !== null && (obj.ports.length > 0 && !(this.diagramActions & DiagramAction.UndoRedo))) {
+            let index = Number(findObjectIndex(obj, ports[0].id, false));
+            if (index !== -1) {
+                isAddPortInServer = false;
+            }
+        }
         obj = this.nameTable[obj.id] || obj;
         let newObj;
         if (ports.length > 1) {
@@ -35502,9 +37134,12 @@ class Diagram extends Component {
         for (let i = 0; i < ports.length; i++) {
             newObj = new PointPort(obj, 'ports', ports[i], true);
             obj.ports.push(newObj);
+            if (isBlazor() && isAddPortInServer) {
+                portCollection.push(newObj);
+            }
             if (obj.children) {
                 let container = obj.wrapper;
-                obj.initPorts(this.getDescription, obj.wrapper.children[container.children.length - 1]);
+                obj.initPort(this.getDescription, obj.wrapper.children[container.children.length - 1], newObj);
             }
             else {
                 let canvas = obj.wrapper;
@@ -35520,6 +37155,9 @@ class Diagram extends Component {
         }
         if (ports.length > 1) {
             this.endGroupAction();
+        }
+        if (isBlazor() && isAddPortInServer) {
+            this.UpdateBlazorLabelOrPortObjects(portCollection, 'Port', undefined, this.nodes.indexOf(obj));
         }
         obj.wrapper.measure(new Size(obj.width, obj.height));
         obj.wrapper.arrange(obj.wrapper.desiredSize);
@@ -35555,6 +37193,14 @@ class Diagram extends Component {
      */
     addLabels(obj, labels) {
         this.protectPropertyChange(true);
+        let isAddLabelInServer = true;
+        let annotationCollection = [];
+        if (isBlazor() && obj != null && obj.annotations.length > 0 && !(this.diagramActions & DiagramAction.UndoRedo)) {
+            let index = Number(findObjectIndex(obj, labels[0].id, true));
+            if (index !== -1) {
+                isAddLabelInServer = false;
+            }
+        }
         obj = this.nameTable[obj.id] || obj;
         let canvas = obj.wrapper;
         let newObj;
@@ -35565,11 +37211,9 @@ class Diagram extends Component {
             if (obj instanceof Node) {
                 newObj = new ShapeAnnotation(obj, 'annotations', labels[i], true);
                 obj.annotations.push(newObj);
-                if (isBlazor()) {
-                    let selectedNode = cloneObject(obj);
-                    this.insertValue(selectedNode, (obj instanceof Node) ? true : false);
+                if (isBlazor() && isAddLabelInServer) {
+                    annotationCollection.push(newObj);
                 }
-                this.UpdateBlazorDiagramModel(newObj, 'NodeAnnotation', undefined, this.nodes.indexOf(obj));
                 if (obj.children) {
                     let node = obj;
                     for (let i = 0; i < node.wrapper.children.length; i++) {
@@ -35585,11 +37229,9 @@ class Diagram extends Component {
             }
             else if (obj instanceof Connector) {
                 newObj = new PathAnnotation(obj, 'annotations', labels[i], true);
-                this.UpdateBlazorDiagramModel(newObj, 'ConnectorAnnotation', undefined, this.connectors.indexOf(obj));
                 obj.annotations.push(newObj);
-                if (isBlazor()) {
-                    let selectedNode = cloneObject(obj);
-                    this.insertValue(selectedNode, (obj instanceof Node) ? true : false);
+                if (isBlazor() && isAddLabelInServer) {
+                    annotationCollection.push(newObj);
                 }
                 let segment = canvas.children[0];
                 let bounds = new Rect(segment.offsetX - segment.width / 2, segment.offsetY - segment.height / 2, segment.width, segment.height);
@@ -35605,6 +37247,9 @@ class Diagram extends Component {
         }
         if (labels.length > 1) {
             this.endGroupAction();
+        }
+        if (isBlazor() && isAddLabelInServer) {
+            this.UpdateBlazorLabelOrPortObjects(annotationCollection, (obj instanceof Node) ? 'NodeAnnotation' : 'ConnectorAnnotation', undefined, (obj instanceof Node) ? this.nodes.indexOf(obj) : this.connectors.indexOf(obj));
         }
         obj.wrapper.measure(new Size(canvas.width, canvas.height));
         obj.wrapper.arrange(canvas.desiredSize);
@@ -35693,7 +37338,24 @@ class Diagram extends Component {
      * Remove Labels at the run time
      */
     removeLabels(obj, labels) {
+        let isAddLabelInServer = true;
+        if (isBlazor() && obj !== null && !(this.diagramActions & DiagramAction.UndoRedo)) {
+            let index = (obj.annotations.length > 0) ? Number(findObjectIndex(obj, (labels[0]).id, true)) : -1;
+            if (index === -1) {
+                isAddLabelInServer = false;
+            }
+        }
         obj = this.nameTable[obj.id] || obj;
+        if (isBlazor() && isAddLabelInServer) {
+            let annotationCollection = [];
+            let removalIndexCollection = [];
+            for (let j = 0; j < labels.length; j++) {
+                let index = Number(findObjectIndex(obj, labels[j].id, true));
+                removalIndexCollection.push(index);
+                annotationCollection.push(labels[j]);
+            }
+            this.UpdateBlazorLabelOrPortObjects(annotationCollection, (obj instanceof Node) ? 'NodeAnnotation' : 'ConnectorAnnotation', removalIndexCollection, (obj instanceof Node) ? this.nodes.indexOf(obj) : this.connectors.indexOf(obj));
+        }
         if (labels.length > 1) {
             this.startGroupAction();
         }
@@ -35744,7 +37406,24 @@ class Diagram extends Component {
      * Remove Ports at the run time
      */
     removePorts(obj, ports) {
+        let isAddPortInServer = true;
+        if (isBlazor() && obj !== null && !(this.diagramActions & DiagramAction.UndoRedo)) {
+            let index = (obj.ports.length > 0) ? Number(findObjectIndex(obj, ports[0].id, false)) : -1;
+            if (index === -1) {
+                isAddPortInServer = false;
+            }
+        }
         obj = this.nameTable[obj.id] || obj;
+        if (isBlazor() && isAddPortInServer) {
+            let removalIndexCollection = [];
+            let portCollection = [];
+            for (let j = ports.length - 1; j >= 0; j--) {
+                let index = Number(findObjectIndex(obj, ports[j].id, false));
+                removalIndexCollection.push(index);
+                portCollection.push(ports[j]);
+            }
+            this.UpdateBlazorLabelOrPortObjects(portCollection, 'Port', removalIndexCollection, this.nodes.indexOf(obj));
+        }
         if (ports.length > 1) {
             this.startGroupAction();
         }
@@ -35833,11 +37512,11 @@ class Diagram extends Component {
     ;
     renderHiddenUserHandleTemplateLayer(bounds) {
         let element;
-        let attributes = {
+        let attributes$$1 = {
             'class': this.element.id + '_hiddenUserHandleTemplate',
             'style': 'width:' + bounds.width + 'px; height:' + bounds.height + 'px;' + 'visibility:hidden ;  overflow: hidden;'
         };
-        element = createHtmlElement('div', attributes);
+        element = createHtmlElement('div', attributes$$1);
         this.element.appendChild(element);
     }
     renderBackgroundLayer(bounds, commonStyle) {
@@ -35873,11 +37552,11 @@ class Diagram extends Component {
         setAttributeSvg(svgGridSvg, { 'style': commonStyle });
     }
     renderDiagramLayer(bounds, commonStyle) {
-        let attributes = {
+        let attributes$$1 = {
             'id': this.element.id + '_diagramLayer_div',
             'style': 'width:' + bounds.width + 'px; height:' + bounds.height + 'px;' + commonStyle
         };
-        this.diagramLayerDiv = createHtmlElement('div', attributes);
+        this.diagramLayerDiv = createHtmlElement('div', attributes$$1);
         if (this.mode === 'SVG') {
             let diagramSvg = this.createSvg(this.element.id + '_diagramLayer_svg', bounds.width, bounds.height);
             diagramSvg.style['pointer-events'] = 'none';
@@ -36121,13 +37800,15 @@ class Diagram extends Component {
             }
             this.commandHandler.getObjectChanges(previousNodeObject, updateNodeObject, changeNodes);
             this.commandHandler.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
-            let blazorInterop = 'sfBlazor';
-            let diagramObject = { nodes: changeNodes, connectors: changeConnectors };
-            let obj = {
-                'methodName': 'UpdateBlazorProperties',
-                'diagramobj': diagramObject
-            };
-            window[blazorInterop].updateBlazorProperties(obj, this);
+            if (!(this.blazorActions & BlazorAction.ClearObject)) {
+                let blazorInterop = 'sfBlazor';
+                let diagramObject = { nodes: changeNodes, connectors: changeConnectors };
+                let obj = {
+                    'methodName': 'UpdateBlazorProperties',
+                    'diagramobj': diagramObject
+                };
+                window[blazorInterop].updateBlazorProperties(obj, this);
+            }
         }
     }
     alignGroup(parents, tempTabel) {
@@ -36460,6 +38141,7 @@ class Diagram extends Component {
                 obj.wrapper.arrange(obj.wrapper.desiredSize);
                 if (obj instanceof Connector && obj.type === 'Bezier') {
                     this.updateConnectorAnnotation(obj);
+                    this.updateConnectorfixedUserHandles(obj);
                 }
                 for (let j = 0; j < obj.wrapper.children.length; j++) {
                     this.pathTable[obj.wrapper.children[j].data] = {};
@@ -36566,12 +38248,13 @@ class Diagram extends Component {
      * @private
      */
     updateGroupOffset(node, isUpdateSize) {
+        let isUpdateGroupToBlazor = false;
         if ((node.children && node.children.length > 0 && (!node.container)) || (node.processId)) {
             let node1 = this.nameTable[node.id];
             if (!(this.realActions & RealAction.PreventScale) && !(this.realActions & RealAction.PreventDrag)) {
                 if (node1.offsetX && ((this.realActions & RealAction.EnableGroupAction) ||
-                    (!(this.diagramActions & DiagramAction.ToolAction)
-                        && !(this.diagramActions & DiagramAction.PublicMethod)))) {
+                    ((!(this.diagramActions & DiagramAction.UndoRedo)) && (!(this.diagramActions & DiagramAction.ToolAction)
+                        && !(this.diagramActions & DiagramAction.PublicMethod))))) {
                     this.realActions |= RealAction.PreventScale;
                     let diffX = (node1.offsetX - node.wrapper.offsetX);
                     node1.offsetX = node.wrapper.offsetX;
@@ -36583,10 +38266,15 @@ class Diagram extends Component {
                     this.realActions &= ~RealAction.PreventScale;
                 }
                 else {
+                    if (isBlazor()) {
+                        this.insertValue(cloneObject(node1), true);
+                        isUpdateGroupToBlazor = true;
+                    }
                     node1.offsetX = node.wrapper.offsetX;
                 }
                 if (node1.offsetY && ((this.realActions & RealAction.EnableGroupAction) ||
-                    (!(this.diagramActions & DiagramAction.ToolAction)))) {
+                    ((!(this.diagramActions & DiagramAction.UndoRedo)) && (!(this.diagramActions & DiagramAction.ToolAction)
+                        && !(this.diagramActions & DiagramAction.PublicMethod))))) {
                     this.realActions |= RealAction.PreventScale;
                     let diffY = (node1.offsetY - node.wrapper.offsetY);
                     node1.offsetY = node.wrapper.offsetY;
@@ -36596,9 +38284,17 @@ class Diagram extends Component {
                     this.realActions &= ~RealAction.PreventScale;
                 }
                 else {
+                    if (isBlazor()) {
+                        this.insertValue(cloneObject(node1), true);
+                        isUpdateGroupToBlazor = true;
+                    }
                     node1.offsetY = node.wrapper.offsetY;
                 }
                 if (this.diagramActions) {
+                    if (isBlazor()) {
+                        this.insertValue(cloneObject(node1), true);
+                        isUpdateGroupToBlazor = true;
+                    }
                     node1.width = node.wrapper.actualSize.width;
                     node1.height = node.wrapper.actualSize.height;
                 }
@@ -36610,15 +38306,28 @@ class Diagram extends Component {
                     this.scaleObject(node, this.nameTable[node.id].width, true);
                 }
                 else {
+                    if (isBlazor()) {
+                        this.insertValue(cloneObject(this.nameTable[node.id]), true);
+                        isUpdateGroupToBlazor = true;
+                    }
                     this.nameTable[node.id].width = node.wrapper.actualSize.width;
                 }
                 if (this.nameTable[node.id].height !== undefined) {
                     this.scaleObject(node, this.nameTable[node.id].height, false);
                 }
                 else {
+                    if (isBlazor()) {
+                        this.insertValue(cloneObject(this.nameTable[node.id]), true);
+                        isUpdateGroupToBlazor = true;
+                    }
                     this.nameTable[node.id].height = node.wrapper.actualSize.height;
                 }
             }
+        }
+        if (isUpdateGroupToBlazor && !(this.diagramActions & DiagramAction.UndoRedo) &&
+            !(this.diagramActions & DiagramAction.ToolAction) &&
+            !(this.diagramActions & DiagramAction.PublicMethod)) {
+            this.commandHandler.getBlazorOldValues();
         }
     }
     initNode(obj, diagramId, group) {
@@ -36694,6 +38403,10 @@ class Diagram extends Component {
         obj.initAnnotations(this.getDescription, container, this.element.id, canVitualize(this) ? true : false, this.annotationTemplate);
         obj.initPorts(this.getDescription, container);
         obj.initIcons(this.getDescription, this.layout, container, diagramId);
+        for (let i = 0; obj.fixedUserHandles !== undefined, i < obj.fixedUserHandles.length; i++) {
+            let fixedUserHandles = obj.initfixedUserHandles(obj.fixedUserHandles[i]);
+            container.children.push(fixedUserHandles);
+        }
         if (obj.shape.type === 'SwimLane' && obj.wrapper && obj.wrapper.children.length > 0 &&
             obj.wrapper.children[0] instanceof GridPanel) {
             swimLaneMeasureAndArrange(obj);
@@ -36970,11 +38683,14 @@ class Diagram extends Component {
             if (rootNode.outEdges.length > 1) {
                 let isProtectedChange = this.isProtectedOnChange;
                 let connector = this.nameTable[rootNode.outEdges[1]];
+                let isAllowServerUpdate = this.allowServerDataBinding;
                 this.protectPropertyChange(false);
+                this.enableServerDataBinding(false);
                 this.preventDiagramUpdate = true;
                 connector.sourcePortID = rootNode.ports[1].id;
-                this.preventDiagramUpdate = false;
                 this.dataBind();
+                this.preventDiagramUpdate = false;
+                this.enableServerDataBinding(isAllowServerUpdate);
                 this.protectPropertyChange(isProtectedChange);
             }
         }
@@ -37616,6 +39332,9 @@ class Diagram extends Component {
         let selectorModel = this.selectedItems;
         let selectorConstraints = selectorModel.constraints;
         let rendererActions = this.diagramRenderer.rendererActions;
+        let innertemplate = document.getElementsByClassName('blazor-inner-template');
+        let i;
+        let div;
         this.diagramRenderer.rendererActions = this.currentSymbol ?
             this.addConstraints(rendererActions, RendererAction.DrawSelectorBorder) :
             this.removeConstraints(rendererActions, RendererAction.DrawSelectorBorder);
@@ -37683,15 +39402,27 @@ class Diagram extends Component {
             }
             if (!(selectorModel.annotation) && !this.currentSymbol) {
                 this.diagramRenderer.renderUserHandler(selectorModel, selectorElement, this.scroller.transform, diagramUserHandlelayer);
+                if (isBlazor() && innertemplate.length > 0) {
+                    for (i = 0; i < this.selectedItems.userHandles.length; i++) {
+                        let userHandle = this.selectedItems.userHandles[i];
+                        div = document.getElementById(userHandle.name + '_html_element');
+                        div.style.display = 'block';
+                    }
+                }
             }
         }
         this.isProtectedOnChange = isProtectedOnChangeValue;
     }
     /** @private */
     updateSelector() {
+        let severDataBind = this.allowServerDataBinding;
+        this.enableServerDataBinding(false);
         let size = new Size();
         let selector = this.selectedItems;
         let selectorConstraints = selector.constraints;
+        let innertemplate = document.getElementsByClassName('blazor-inner-template');
+        let i;
+        let div;
         if (!(this.diagramActions & DiagramAction.ToolAction) && this.selectedItems.nodes.length === 1) {
             this.selectedItems.rotateAngle = this.selectedItems.nodes[0].rotateAngle;
             this.selectedItems.wrapper.rotateAngle = this.selectedItems.nodes[0].rotateAngle;
@@ -37726,6 +39457,13 @@ class Diagram extends Component {
                 }
                 if ((this.selectedItems.constraints & SelectorConstraints.UserHandle) && (!(selector.annotation)) && !this.currentSymbol) {
                     this.diagramRenderer.renderUserHandler(selector, selectorEle, this.scroller.transform, diagramUserHandlelayer);
+                    if (isBlazor() && innertemplate.length > 0) {
+                        for (i = 0; i < this.selectedItems.userHandles.length; i++) {
+                            let userHandletemplate = this.selectedItems.userHandles[i];
+                            div = document.getElementById(userHandletemplate.name + '_html_element');
+                            div.style.display = 'block';
+                        }
+                    }
                 }
                 if (selector.annotation) {
                     this.renderSelectorForAnnotation(selector, selectorEle);
@@ -37762,6 +39500,7 @@ class Diagram extends Component {
                 }
             }
         }
+        this.enableServerDataBinding(severDataBind);
     }
     /** @private */
     renderSelectorForAnnotation(selectorModel, selectorElement) {
@@ -37804,6 +39543,9 @@ class Diagram extends Component {
     /** @private */
     clearSelectorLayer() {
         let adornerSvg = getAdornerLayerSvg(this.element.id);
+        let innertemplate = document.getElementsByClassName('blazor-inner-template');
+        let i;
+        let div;
         if (!this.currentSymbol) {
             let selectionRect = adornerSvg.getElementById(this.adornerLayer.id + '_selected_region');
             if (selectionRect) {
@@ -37816,10 +39558,20 @@ class Diagram extends Component {
                 child = childNodes[i - 1];
                 child.parentNode.removeChild(child);
             }
-            let templates = getUserHandleLayer(this.element.id).childNodes;
-            let i;
-            for (i = templates.length; i > 0; i--) {
-                templates[i - 1].parentNode.removeChild(templates[i - 1]);
+            if (isBlazor() && !(this.diagramActions & DiagramAction.DragUsingMouse) && innertemplate.length > 0) {
+                for (i = 0; i < this.selectedItems.userHandles.length; i++) {
+                    let template = this.selectedItems.userHandles[i];
+                    div = document.getElementById(template.name + '_html_element');
+                    div.style.display = 'none';
+                }
+            }
+            else {
+                if (!isBlazor()) {
+                    let templates = getUserHandleLayer(this.element.id).childNodes;
+                    for (i = templates.length; i > 0; i--) {
+                        templates[i - 1].parentNode.removeChild(templates[i - 1]);
+                    }
+                }
             }
         }
         else {
@@ -37886,6 +39638,8 @@ class Diagram extends Component {
     endEdit() {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.diagramActions & DiagramAction.TextEdit) {
+                let blazor = 'Blazor';
+                let blazorInterop = 'sfBlazor';
                 let oldValues;
                 let changedvalues;
                 let annotations = {};
@@ -37916,7 +39670,10 @@ class Diagram extends Component {
                         if (bpmnAnnotation) {
                             if (element.textContent !== text || text !== this.activeLabel.text) {
                                 if (isBlazor()) {
-                                    args = (yield this.triggerEvent(DiagramEvent.textEdit, args)) || args;
+                                    if (this.textEdit && window && window[blazor]) {
+                                        let eventObj = { 'EventName': 'textEdit', args: JSON.stringify(args) };
+                                        args = (yield window[blazorInterop].updateBlazorDiagramEvents(eventObj, this)) || args;
+                                    }
                                 }
                                 else {
                                     this.triggerEvent(DiagramEvent.textEdit, args);
@@ -37946,7 +39703,10 @@ class Diagram extends Component {
                         let deleteNode = this.eventHandler.isAddTextNode(node, true);
                         if (!deleteNode && (element.textContent !== text || text !== this.activeLabel.text)) {
                             if (isBlazor()) {
-                                args = (yield this.triggerEvent(DiagramEvent.textEdit, args)) || args;
+                                if (window && window[blazor] && this.textEdit) {
+                                    let eventObj = { 'EventName': 'textEdit', args: JSON.stringify(args) };
+                                    args = (yield window[blazorInterop].updateBlazorDiagramEvents(eventObj, this)) || args;
+                                }
                             }
                             else {
                                 this.triggerEvent(DiagramEvent.textEdit, args);
@@ -38072,19 +39832,19 @@ class Diagram extends Component {
     ;
     /* tslint:enable */
     getBlazorTextEditArgs(args) {
-        let element = getObjectType(args.element) === Connector ? { connector: cloneBlazorObject(args.element) }
-            : { node: cloneBlazorObject(args.element) };
+        let element = getObjectType(args.element) === Connector ? { connectorId: args.element.id }
+            : { nodeId: args.element.id };
         let annotation = {};
-        if (element.node) {
-            if (element.node.shape.type === 'Text') {
+        if (getObjectType(args.element) === Node) {
+            if (args.element.shape.type === 'Text') {
                 annotation.textNode = args.element.shape;
             }
             else {
-                annotation.nodeAnnotation = args.element.annotations[0];
+                annotation.annotationId = args.element.annotations[0].id;
             }
         }
         else {
-            annotation.connectorAnnotation = args.element.annotations[0];
+            annotation.annotationId = args.element.annotations[0].id;
         }
         args = {
             oldValue: args.oldValue,
@@ -38122,9 +39882,10 @@ class Diagram extends Component {
         }
     }
     /** @private */
-    removeNode(node) {
+    removeNode(node, childernCollection) {
         this.removeObjectsFromLayer(node);
         this.removeFromAQuad(this.nameTable[node.id]);
+        let groupElement = document.getElementById(node.id + '_groupElement');
         delete this.nameTable[node.id];
         if (node.children) {
             delete this.groupTable[node.id];
@@ -38136,8 +39897,25 @@ class Diagram extends Component {
                 }
             }
         }
-        this.UpdateBlazorDiagramModel(node, 'Node', (this.nodes.indexOf(node)));
         this.nodes.splice(this.nodes.indexOf(node), 1);
+        if (groupElement.children && groupElement.children.length > 0) {
+            let beforeElement = undefined;
+            for (let j = groupElement.children.length - 1; j >= 0; j--) {
+                let childElement = groupElement.children[j];
+                if (childernCollection.length > 0 && childernCollection.indexOf(childElement.id.split('_')[0]) !== -1) {
+                    if (!beforeElement) {
+                        groupElement.parentNode.insertBefore(childElement, groupElement);
+                    }
+                    else {
+                        groupElement.parentNode.insertBefore(childElement, beforeElement);
+                    }
+                    beforeElement = childElement;
+                }
+            }
+        }
+        if (groupElement) {
+            groupElement.parentNode.removeChild(groupElement);
+        }
     }
     /** @private */
     deleteGroup(node) {
@@ -38425,7 +40203,7 @@ class Diagram extends Component {
     /* tslint:disable */
     /** @private */
     nodePropertyChange(actualObject, oldObject, node, isLayout, rotate, propertyChange) {
-        if (this.canEnableBlazorObject) {
+        if (this.canEnableBlazorObject && actualObject.id != 'helper') {
             let node = cloneObject(actualObject);
             this.insertValue(node, true);
         }
@@ -38558,8 +40336,9 @@ class Diagram extends Component {
             this.updateMargin(actualObject, node);
             updateConnector$$1 = true;
         }
-        if (((node.shape !== undefined && node.shape.type === undefined) || node.width !== undefined
-            || node.height !== undefined || node.style !== undefined) && actualObject.shape.type === 'Bpmn' && this.bpmnModule) {
+        if ((((node.shape !== undefined && (node.shape.type === undefined)) || node.width !== undefined
+            || node.height !== undefined || node.style !== undefined) && actualObject.shape.type === 'Bpmn' && this.bpmnModule)
+            || (isBlazor() && node && node.shape && node.shape.type === 'Bpmn')) {
             update = true;
             updateConnector$$1 = true;
             this.bpmnModule.updateBPMN(node, oldObject, actualObject, this);
@@ -38626,6 +40405,22 @@ class Diagram extends Component {
                 this.commandHandler.expandNode(actualObject, this);
             }
             update = true;
+        }
+        if (node.fixedUserHandles !== undefined) {
+            let index;
+            let changedObject;
+            let actualfixedUserHandle;
+            for (let key of Object.keys(node.fixedUserHandles)) {
+                index = Number(key);
+                update = true;
+                if (node.fixedUserHandles[index]) {
+                    changedObject = node.fixedUserHandles[index];
+                }
+                actualfixedUserHandle = actualObject.fixedUserHandles[index];
+                if (actualfixedUserHandle) {
+                    this.updateNodefixedUserHandle(changedObject, actualfixedUserHandle, actualObject.wrapper, actualObject);
+                }
+            }
         }
         if (node.tooltip !== undefined) {
             this.updateTooltip(actualObject, node);
@@ -38939,6 +40734,7 @@ class Diagram extends Component {
                 actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
                 actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
                 this.updateConnectorAnnotation(actualObject);
+                this.updateConnectorfixedUserHandles(actualObject);
                 this.updateObject(actualObject, oldProp, newProp);
             } //work-around to update intersected connector bridging
         }
@@ -38953,6 +40749,7 @@ class Diagram extends Component {
             this.updateBridging();
         }
         this.updateAnnotations(newProp, actualObject);
+        this.updatefixedUserHandle(newProp, actualObject);
         actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
         actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
         if (existingBounds.equals(existingBounds, actualObject.wrapper.bounds) === false) {
@@ -39152,6 +40949,65 @@ class Diagram extends Component {
             }
         }
     }
+    updatefixedUserHandle(newProp, actualObject) {
+        if (newProp.fixedUserHandles !== undefined) {
+            let index;
+            let changedObject;
+            let actualAnnotation;
+            for (let key of Object.keys(newProp.fixedUserHandles)) {
+                index = Number(key);
+                changedObject = newProp.fixedUserHandles[key];
+                actualAnnotation = actualObject.fixedUserHandles[index];
+                this.updateConnectorfixedUserHandle(changedObject, actualAnnotation, actualObject.wrapper, actualObject);
+            }
+        }
+    }
+    /** @private */
+    updateConnectorfixedUserHandle(changedObject, actualfixedUserHandle, nodes, actualObject, canUpdateSize) {
+        let fixedUserHandleWrapper;
+        let isMeasure = false;
+        fixedUserHandleWrapper = this.getWrapper(nodes, actualfixedUserHandle.id);
+        if (fixedUserHandleWrapper !== undefined) {
+            if (changedObject.width !== undefined) {
+                fixedUserHandleWrapper.width = changedObject.width;
+                isMeasure = true;
+            }
+            if (changedObject.height !== undefined) {
+                fixedUserHandleWrapper.height = changedObject.height;
+                isMeasure = true;
+            }
+            if (actualfixedUserHandle instanceof ConnectorFixedUserHandle &&
+                (changedObject.offset !== undefined)) {
+                actualObject.updateAnnotation(actualfixedUserHandle, actualObject.intermediatePoints, actualObject.wrapper.bounds, fixedUserHandleWrapper);
+            }
+            if ((actualfixedUserHandle instanceof ConnectorFixedUserHandle) && changedObject.displacement) {
+                if (changedObject.displacement.x !== undefined ||
+                    changedObject.displacement.y !== undefined) {
+                    isMeasure = true;
+                }
+            }
+            if (changedObject.fill !== undefined) {
+                fixedUserHandleWrapper.style.fill = changedObject.fill;
+            }
+            if (changedObject.handleStrokeColor !== undefined) {
+                fixedUserHandleWrapper.style.strokeColor = changedObject.handleStrokeColor;
+            }
+            if (changedObject.handleStrokeWidth !== undefined) {
+                fixedUserHandleWrapper.style.strokeWidth = changedObject.handleStrokeWidth;
+            }
+            if (changedObject.visibility !== undefined) {
+                fixedUserHandleWrapper.visible = changedObject.visibility;
+            }
+            if (changedObject.cornerRadius !== undefined) {
+                fixedUserHandleWrapper.cornerRadius = changedObject.cornerRadius;
+            }
+            this.updatefixedUserHandleContent(changedObject, isMeasure, fixedUserHandleWrapper, actualObject, actualfixedUserHandle, nodes);
+            if (isMeasure === true) {
+                fixedUserHandleWrapper.measure(new Size(fixedUserHandleWrapper.width, fixedUserHandleWrapper.height));
+                fixedUserHandleWrapper.arrange(fixedUserHandleWrapper.desiredSize);
+            }
+        }
+    }
     /** @private */
     updateAnnotation(changedObject, actualAnnotation, nodes, actualObject, canUpdateSize) {
         let annotationWrapper;
@@ -39257,13 +41113,36 @@ class Diagram extends Component {
             // this.refresh(); this.refreshDiagramLayer();
         }
     }
+    updatefixedUserHandleContent(changedObject, isMeasure, fixedUserHandleWrapper, actualObject, fixedUserHandleAnnotation, nodes) {
+        if (changedObject !== undefined) {
+            this.updateConnectorfixedUserHandleWrapper(fixedUserHandleWrapper, actualObject, fixedUserHandleAnnotation, nodes);
+        }
+    }
+    updateConnectorfixedUserHandleWrapper(fixedUserHandleWrapper, actualObject, actualAnnotation, nodes) {
+        for (let elementId of this.views) {
+            removeElement(fixedUserHandleWrapper.id + '_groupElement', elementId);
+            removeElement(fixedUserHandleWrapper.id + '_html_element', elementId);
+        }
+        if (actualObject instanceof Connector) {
+            let canvas = actualObject.wrapper;
+            let segment = canvas.children[0];
+            let bounds = new Rect(segment.offsetX - segment.width / 2, segment.offsetY - segment.height / 2, segment.width, segment.height);
+            fixedUserHandleWrapper =
+                actualObject.getfixedUserHandle(actualObject.fixedUserHandles[actualObject.fixedUserHandles.length - 1], actualObject.intermediatePoints, bounds);
+        }
+        for (let i = 0; i < nodes.children.length; i++) {
+            if (fixedUserHandleWrapper.id === nodes.children[i].id) {
+                nodes.children.splice(i, 1, fixedUserHandleWrapper);
+            }
+        }
+    }
     updateAnnotationContent(changedObject, isMeasure, annotationWrapper, actualObject, actualAnnotation, nodes) {
         if (changedObject.content !== undefined) {
             if (annotationWrapper) {
                 isMeasure = true;
                 if (actualObject.shape.type === 'UmlActivity' &&
-                    ((isBlazor && actualObject.shape.umlActivityShape === 'StructuredNode') ||
-                        (!isBlazor && actualObject.shape.shape === 'StructuredNode'))) {
+                    ((isBlazor() && actualObject.shape.umlActivityShape === 'StructuredNode') ||
+                        (!isBlazor() && actualObject.shape.shape === 'StructuredNode'))) {
                     annotationWrapper.content = '<<' + changedObject.content + '>>';
                 }
                 else {
@@ -39298,6 +41177,82 @@ class Diagram extends Component {
         for (let i = 0; i < nodes.children.length; i++) {
             if (annotationWrapper.id === nodes.children[i].id) {
                 nodes.children.splice(i, 1, annotationWrapper);
+            }
+        }
+    }
+    /** @private */
+    updateNodefixedUserHandle(changedObject, actualfixedUserHandle, nodes, actualObject) {
+        let fixedUserHandleWrapper;
+        let isMeasure = false;
+        fixedUserHandleWrapper = this.getWrapper(nodes, actualfixedUserHandle.id);
+        if (fixedUserHandleWrapper !== undefined) {
+            if (changedObject.width !== undefined) {
+                fixedUserHandleWrapper.actualSize.width = changedObject.width;
+                isMeasure = true;
+            }
+            if (changedObject.height !== undefined) {
+                fixedUserHandleWrapper.height = changedObject.height;
+                isMeasure = true;
+            }
+            if (actualfixedUserHandle instanceof NodeFixedUserHandle &&
+                changedObject.offset !== undefined) {
+                let offset = changedObject.offset;
+                isMeasure = true;
+                let offsetX = offset.x !== undefined ? offset.x :
+                    actualfixedUserHandle.offset.x;
+                let offsetY = offset.y !== undefined ? offset.y :
+                    actualfixedUserHandle.offset.y;
+                fixedUserHandleWrapper.setOffsetWithRespectToBounds(offsetX, offsetY, 'Fraction');
+                fixedUserHandleWrapper.relativeMode = 'Point';
+            }
+            if (changedObject.margin !== undefined) {
+                isMeasure = true;
+                if (changedObject.margin.bottom !== undefined) {
+                    fixedUserHandleWrapper.margin.bottom = changedObject.margin.bottom;
+                }
+                if (changedObject.margin.top !== undefined) {
+                    fixedUserHandleWrapper.margin.top = changedObject.margin.top;
+                }
+                if (changedObject.margin.left !== undefined) {
+                    fixedUserHandleWrapper.margin.left = changedObject.margin.left;
+                }
+                if (changedObject.margin.right !== undefined) {
+                    fixedUserHandleWrapper.margin.right = changedObject.margin.right;
+                }
+            }
+            if (changedObject.visibility !== undefined) {
+                fixedUserHandleWrapper.visible = changedObject.visibility;
+            }
+            if (changedObject.fill !== undefined) {
+                fixedUserHandleWrapper.style.fill = changedObject.fill;
+            }
+            if (changedObject.handleStrokeColor !== undefined) {
+                fixedUserHandleWrapper.style.strokeColor = changedObject.handleStrokeColor;
+            }
+            if (changedObject.handleStrokeWidth !== undefined) {
+                fixedUserHandleWrapper.style.strokeWidth = changedObject.handleStrokeWidth;
+            }
+            if (changedObject.cornerRadius !== undefined) {
+                fixedUserHandleWrapper.cornerRadius = changedObject.cornerRadius;
+            }
+            this.updatefixedUserHandleWrapper(fixedUserHandleWrapper, actualObject, actualfixedUserHandle, nodes);
+            if (isMeasure === true) {
+                fixedUserHandleWrapper.measure(new Size(fixedUserHandleWrapper.width, fixedUserHandleWrapper.height));
+                fixedUserHandleWrapper.arrange(fixedUserHandleWrapper.desiredSize);
+            }
+        }
+    }
+    updatefixedUserHandleWrapper(fixedUserHandleWrapper, actualObject, actualAnnotation, nodes) {
+        for (let elementId of this.views) {
+            removeElement(fixedUserHandleWrapper.id + '_groupElement', elementId);
+            removeElement(fixedUserHandleWrapper.id + '_html_element', elementId);
+        }
+        if (actualObject instanceof Node) {
+            fixedUserHandleWrapper = actualObject.initfixedUserHandles(actualAnnotation);
+        }
+        for (let i = 0; i < nodes.children.length; i++) {
+            if (fixedUserHandleWrapper.id === nodes.children[i].id) {
+                nodes.children.splice(i, 1, fixedUserHandleWrapper);
             }
         }
     }
@@ -39435,6 +41390,9 @@ class Diagram extends Component {
         }
         if (node.tooltip.showTipPointer !== undefined) {
             actualObject.tooltip.showTipPointer = node.tooltip.showTipPointer;
+        }
+        if (node.tooltip.relativeMode !== undefined) {
+            actualObject.tooltip.relativeMode = node.tooltip.relativeMode;
         }
     }
     /** @private */
@@ -40203,6 +42161,22 @@ class Diagram extends Component {
         callback.onSuccess = (data) => {
         };
     }
+    getHiddenItems(args) {
+        let hiddenItems = [];
+        if (this.contextMenuModule) {
+            this.contextMenuModule.hiddenItems = [];
+            for (let item of args.items) {
+                this.contextMenuModule.ensureItems(item, args.event);
+                if (item.items && item.items.length) {
+                    for (let newItem of item.items) {
+                        this.contextMenuModule.ensureItems(newItem, args.event);
+                    }
+                }
+            }
+            return this.contextMenuModule.hiddenItems;
+        }
+        return hiddenItems;
+    }
 }
 __decorate([
     Property('100%')
@@ -40387,6 +42361,9 @@ __decorate([
 __decorate([
     Event()
 ], Diagram.prototype, "collectionChange", void 0);
+__decorate([
+    Event()
+], Diagram.prototype, "fixedUserHandleClick", void 0);
 __decorate([
     Event()
 ], Diagram.prototype, "onUserHandleMouseDown", void 0);
@@ -40824,7 +42801,8 @@ class PrintAndExport {
         let context = canvas.getContext('2d');
         context.translate(-region.x, -region.y);
         context.save();
-        context.fillStyle = this.diagram.pageSettings.background.color;
+        context.fillStyle = (this.diagram.pageSettings.background.color === 'transparent') ? 'white' :
+            this.diagram.pageSettings.background.color;
         region = mode === 'Content' ? pageBounds : region;
         context.fillRect(region.x, region.y, region.width, region.height);
         let bgImg = this.diagram.pageSettings.background;
@@ -41591,24 +43569,26 @@ class DiagramContextMenu {
     }
     render() {
         this.l10n = this.serviceLocator.getService('localization');
-        this.element = createHtmlElement('ul', { id: this.parent.element.id + '_contextMenu' });
-        this.parent.element.appendChild(this.element);
-        let target = '#' + this.parent.element.id;
-        this.contextMenu = new ContextMenu({
-            items: this.getMenuItems(),
-            enableRtl: this.parent.enableRtl,
-            enablePersistence: this.parent.enablePersistence,
-            locale: this.parent.locale,
-            target: target,
-            select: this.contextMenuItemClick.bind(this),
-            beforeOpen: this.contextMenuBeforeOpen.bind(this),
-            onOpen: this.contextMenuOpen.bind(this),
-            beforeItemRender: this.BeforeItemRender.bind(this),
-            onClose: this.contextMenuOnClose.bind(this),
-            cssClass: 'e-diagram-menu',
-            animationSettings: { effect: 'None' }
-        });
-        this.contextMenu.appendTo(this.element);
+        if (!isBlazor()) {
+            this.element = createHtmlElement('ul', { id: this.parent.element.id + '_contextMenu' });
+            this.parent.element.appendChild(this.element);
+            let target = '#' + this.parent.element.id;
+            this.contextMenu = new ContextMenu({
+                items: this.getMenuItems(),
+                enableRtl: this.parent.enableRtl,
+                enablePersistence: this.parent.enablePersistence,
+                locale: this.parent.locale,
+                target: target,
+                select: this.contextMenuItemClick.bind(this),
+                beforeOpen: this.contextMenuBeforeOpen.bind(this),
+                onOpen: this.contextMenuOpen.bind(this),
+                beforeItemRender: this.BeforeItemRender.bind(this),
+                onClose: this.contextMenuOnClose.bind(this),
+                cssClass: 'e-diagram-menu',
+                animationSettings: { effect: 'None' }
+            });
+            this.contextMenu.appendTo(this.element);
+        }
     }
     getMenuItems() {
         let menuItems = [];
@@ -41715,6 +43695,7 @@ class DiagramContextMenu {
         this.disableItems = [];
         this.isOpen = false;
     }
+    /** @private */
     ensureItems(item, event) {
         let key = this.getKeyFromId(item.id);
         let dItem = this.defaultItems[key];
@@ -41831,8 +43812,10 @@ class DiagramContextMenu {
      * @private
      */
     destroy() {
-        this.contextMenu.destroy();
-        remove(this.element);
+        if (!isBlazor()) {
+            this.contextMenu.destroy();
+            remove(this.element);
+        }
         this.removeEventListener();
     }
     getModuleName() {
@@ -43382,7 +45365,8 @@ class BpmnDiagrams {
             newShape.activity) {
             actualObject.wrapper.children[0] = this.getBPMNActivityShape(actualObject);
         }
-        else if (((isBlazor() && newShape.bpmnShape === 'Event') || newShape.shape === 'Event') &&
+        else if (((isBlazor() && newShape.bpmnShape === 'Event' ||
+            actualObject.shape.bpmnShape === 'Event') || newShape.shape === 'Event') &&
             newShape.event) {
             let shapeEvent = newShape.event;
             actualObject.wrapper.children[0] = this.getBPMNEventShape(actualObject, shapeEvent);
@@ -43406,6 +45390,7 @@ class BpmnDiagrams {
         else if (newShape.event !== undefined || (actualShape === 'Event' && sizeChanged)) {
             this.updateBPMNEvent(actualObject, changedProp, oldObject);
         }
+        actualObject.wrapper.children[0].id = actualObject.wrapper.children[0].id || elementWrapper.id;
         if (changedProp.style) {
             updateStyle(changedProp.style, elementWrapper instanceof Container ? ((!isBlazor() && actualObject.shape.shape === 'Activity' ||
                 (isBlazor() && actualObject.shape.bpmnShape === 'Activity'))) ?
@@ -46283,6 +48268,9 @@ class UndoRedo {
                 if (entry.type === 'EndGroup') {
                     endGroupActionCount++;
                     this.groupUndo = true;
+                    if (isBlazor()) {
+                        diagram.blazorActions |= BlazorAction.GroupingInProgress;
+                    }
                 }
                 else {
                     this.undoEntry(entry, diagram);
@@ -46404,6 +48392,9 @@ class UndoRedo {
         }
         diagram.protectPropertyChange(true);
         diagram.diagramActions |= DiagramAction.UndoRedo;
+        if (isBlazor() && entry.previous && entry.previous.type === 'StartGroup') {
+            diagram.blazorActions &= ~BlazorAction.GroupingInProgress;
+        }
         switch (entry.type) {
             case 'PositionChanged':
             case 'Align':
@@ -46424,9 +48415,19 @@ class UndoRedo {
                 this.recordPropertyChanged(entry, diagram, false);
                 break;
             case 'CollectionChanged':
+                if (entry && entry.next && entry.next.type === 'AddChildToGroupNode' && entry.next.changeType === 'Insert') {
+                    let group = diagram.getObject(entry.next.undoObject.id);
+                    diagram.insertValue(cloneObject(group), true);
+                }
                 entry.isUndo = true;
                 this.recordCollectionChanged(entry, diagram);
                 entry.isUndo = false;
+                if (entry && entry.next && entry.next.type === 'AddChildToGroupNode' && entry.next.changeType === 'Insert') {
+                    let group = diagram.getObject(entry.next.undoObject.id);
+                    group.wrapper.measure(new Size());
+                    group.wrapper.arrange(group.wrapper.desiredSize);
+                    diagram.updateDiagramObject(group);
+                }
                 break;
             case 'LabelCollectionChanged':
                 entry.isUndo = true;
@@ -46479,6 +48480,9 @@ class UndoRedo {
             case 'SendBackward':
             case 'BringToFront':
                 this.recordOrderCommandChanged(entry, diagram, false);
+                break;
+            case 'AddChildToGroupNode':
+                this.recordAddChildToGroupNode(entry, diagram, false);
                 break;
         }
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
@@ -46718,6 +48722,29 @@ class UndoRedo {
     recordPropertyChanged(entry, diagram, isRedo) {
         let redoObject = entry.redoObject;
         let undoObject = entry.undoObject;
+        if (isBlazor()) {
+            for (let prop of Object.keys(undoObject)) {
+                let obj;
+                switch (prop) {
+                    case 'nodes':
+                        for (let key of Object.keys(undoObject.nodes)) {
+                            if (diagram.canEnableBlazorObject) {
+                                obj = cloneObject(diagram.nodes[Number(key)]);
+                                diagram.insertValue(obj, true);
+                            }
+                        }
+                        break;
+                    case 'connectors':
+                        for (let key of Object.keys(undoObject.connectors)) {
+                            if (diagram.canEnableBlazorObject) {
+                                obj = cloneObject(diagram.connectors[Number(key)]);
+                                diagram.insertValue(obj, false);
+                            }
+                        }
+                        break;
+                }
+            }
+        }
         this.getProperty(diagram, (isRedo ? redoObject : undoObject));
         isRedo ? diagram.onPropertyChanged(redoObject, undoObject) : diagram.onPropertyChanged(undoObject, redoObject);
         diagram.diagramActions = diagram.diagramActions | DiagramAction.UndoRedo;
@@ -46727,6 +48754,13 @@ class UndoRedo {
         let undoObject = entry.undoObject;
         diagram.commandHandler.orderCommands(isRedo, (isRedo ? redoObject : undoObject), entry.type);
         diagram.diagramActions = diagram.diagramActions | DiagramAction.UndoRedo;
+    }
+    recordAddChildToGroupNode(entry, diagram, isRedo) {
+        let group = diagram.nameTable[entry.undoObject.id];
+        let child = diagram.nameTable[entry.objectId];
+        if (isRedo && entry.changeType === 'Insert') {
+            diagram.addChildToGroup(group, child.id);
+        }
     }
     recordSegmentChanged(obj, diagram) {
         let i = 0;
@@ -46865,6 +48899,12 @@ class UndoRedo {
     }
     recordConnectionChanged(obj, diagram) {
         let connector = obj.connectors[0];
+        if (connector.sourceID && diagram.nameTable[connector.sourceID]) {
+            diagram.insertValue(diagram.nameTable[connector.sourceID], true);
+        }
+        if (connector.targetID && diagram.nameTable[connector.targetID]) {
+            diagram.insertValue(diagram.nameTable[connector.targetID], true);
+        }
         this.connectionChanged(connector, diagram);
     }
     connectionChanged(obj, diagram, entry) {
@@ -47038,6 +49078,9 @@ class UndoRedo {
                 if (entry.type === 'StartGroup') {
                     startGroupActionCount++;
                     this.groupUndo = true;
+                    if (isBlazor()) {
+                        diagram.blazorActions |= BlazorAction.GroupingInProgress;
+                    }
                 }
                 else {
                     this.redoEntry(entry, diagram);
@@ -47056,7 +49099,7 @@ class UndoRedo {
                 };
                 if (isBlazor()) {
                     arg = {
-                        entryType: 'undo', oldValue: this.getHistoryChangeEvent(entry.redoObject, entry.blazorHistoryEntryType),
+                        entryType: 'redo', oldValue: this.getHistoryChangeEvent(entry.redoObject, entry.blazorHistoryEntryType),
                         newValue: this.getHistoryChangeEvent(entry.undoObject, entry.blazorHistoryEntryType)
                     };
                 }
@@ -47093,6 +49136,9 @@ class UndoRedo {
             }
         }
         diagram.protectPropertyChange(true);
+        if (isBlazor() && historyEntry.next && historyEntry.next.type === 'EndGroup') {
+            diagram.blazorActions &= ~BlazorAction.GroupingInProgress;
+        }
         switch (historyEntry.type) {
             case 'PositionChanged':
             case 'Align':
@@ -47160,6 +49206,9 @@ class UndoRedo {
             case 'SendBackward':
             case 'BringToFront':
                 this.recordOrderCommandChanged(historyEntry, diagram, true);
+                break;
+            case 'AddChildToGroupNode':
+                this.recordAddChildToGroupNode(historyEntry, diagram, true);
                 break;
         }
         diagram.protectPropertyChange(false);
@@ -52513,7 +54562,7 @@ class CrossReduction {
  * Diagram component exported items
  */
 
-var __decorate$25 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$27 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -52539,22 +54588,22 @@ class Palette extends ChildProperty {
         super(parent, propName, defaultValue, isArray);
     }
 }
-__decorate$25([
+__decorate$27([
     Property('')
 ], Palette.prototype, "id", void 0);
-__decorate$25([
+__decorate$27([
     Property()
 ], Palette.prototype, "height", void 0);
-__decorate$25([
+__decorate$27([
     Property(true)
 ], Palette.prototype, "expanded", void 0);
-__decorate$25([
+__decorate$27([
     Property('')
 ], Palette.prototype, "iconCss", void 0);
-__decorate$25([
+__decorate$27([
     Property('')
 ], Palette.prototype, "title", void 0);
-__decorate$25([
+__decorate$27([
     CollectionFactory(getObjectType$1)
 ], Palette.prototype, "symbols", void 0);
 /**
@@ -52562,10 +54611,10 @@ __decorate$25([
  */
 class SymbolDragSize extends ChildProperty {
 }
-__decorate$25([
+__decorate$27([
     Property()
 ], SymbolDragSize.prototype, "width", void 0);
-__decorate$25([
+__decorate$27([
     Property()
 ], SymbolDragSize.prototype, "height", void 0);
 /**
@@ -52573,13 +54622,13 @@ __decorate$25([
  */
 class SymbolPreview extends ChildProperty {
 }
-__decorate$25([
+__decorate$27([
     Property()
 ], SymbolPreview.prototype, "width", void 0);
-__decorate$25([
+__decorate$27([
     Property()
 ], SymbolPreview.prototype, "height", void 0);
-__decorate$25([
+__decorate$27([
     Complex({}, Point)
 ], SymbolPreview.prototype, "offset", void 0);
 /**
@@ -52671,7 +54720,7 @@ class SymbolPalette extends Component {
                     refresh = true;
                     break;
                 case 'enableSearch':
-                    if (newProp.enableSearch) {
+                    if (newProp.enableSearch && !isBlazor()) {
                         this.createTextbox();
                     }
                     else {
@@ -52684,18 +54733,24 @@ class SymbolPalette extends Component {
                 case 'palettes':
                     for (let i of Object.keys(newProp.palettes)) {
                         let index = Number(i);
-                        if (!this.accordionElement.items[index]) {
+                        if (!isBlazor() && !this.accordionElement.items[index]) {
                             this.accordionElement.items[index] = {
                                 header: newProp.palettes[index].title || '',
                                 expanded: newProp.palettes[index].expanded,
                                 iconCss: newProp.palettes[index].iconCss || ''
                             };
                         }
-                        if (newProp.palettes[index].iconCss !== undefined) {
-                            this.accordionElement.items[index].iconCss = newProp.palettes[index].iconCss || '';
-                            refresh = true;
+                        if (newProp.palettes[index].height) {
+                            let paletteDiv = document.getElementById(this.palettes[index].id + '_content');
+                            paletteDiv.style.height = newProp.palettes[index].height + 'px';
                         }
-                        if (newProp.palettes[index].expanded !== undefined) {
+                        if (newProp.palettes[index].iconCss !== undefined) {
+                            if (!isBlazor()) {
+                                this.accordionElement.items[index].iconCss = newProp.palettes[index].iconCss || '';
+                                refresh = true;
+                            }
+                        }
+                        if (newProp.palettes[index].expanded !== undefined && !isBlazor()) {
                             if (!this.palettes[index].isInteraction) {
                                 this.accordionElement.items[index].expanded = newProp.palettes[index].expanded;
                                 this.isExpand = true;
@@ -52707,23 +54762,30 @@ class SymbolPalette extends Component {
                                 this.isExpand = true;
                             }
                         }
+                        if (isBlazor() && newProp.palettes[index].symbols !== null) {
+                            refresh = true;
+                        }
                         if (isBlazor() && newProp.palettes[index].symbols === null) {
                             this.updateBlazorProperties(newProp);
                         }
                     }
                     break;
                 case 'enableAnimation':
-                    if (!this.enableAnimation) {
-                        this.accordionElement.animation = { expand: { duration: 0 }, collapse: { duration: 0 } };
-                    }
-                    else {
-                        this.accordionElement.animation = { expand: { duration: 400 }, collapse: { duration: 400 } };
+                    if (!isBlazor()) {
+                        if (!this.enableAnimation) {
+                            this.accordionElement.animation = { expand: { duration: 0 }, collapse: { duration: 0 } };
+                        }
+                        else {
+                            this.accordionElement.animation = { expand: { duration: 400 }, collapse: { duration: 400 } };
+                        }
                     }
                     break;
                 case 'expandMode':
-                    this.accordionElement.expandMode = this.expandMode;
-                    refresh = true;
-                    this.isExpandMode = true;
+                    if (!isBlazor()) {
+                        this.accordionElement.expandMode = this.expandMode;
+                        refresh = true;
+                        this.isExpandMode = true;
+                    }
                     break;
                 case 'allowDrag':
                     this.allowDrag = newProp.allowDrag;
@@ -52788,38 +54850,40 @@ class SymbolPalette extends Component {
         this.element.style.overflow = 'auto';
         this.element.style.height = this.height.toString();
         this.element.style.width = this.width.toString();
-        if (this.enableSearch) {
+        if (this.enableSearch && !isBlazor()) {
             this.createTextbox();
         }
         //create accordion element
-        let accordionDiv = createHtmlElement('div', { id: this.element.id + '_container' });
-        this.accordionElement = new Accordion({
-            expandMode: this.expandMode
-        });
-        if (!this.enableAnimation) {
-            this.accordionElement.animation = { expand: { duration: 0 }, collapse: { duration: 0 } };
-        }
-        this.accordionElement.created = () => {
-            this.checkOnRender = true;
-        };
-        this.accordionElement.expanded = (args) => {
-            let index = this.accordionElement.items.indexOf(args.item);
-            let isAllowDatabind = this.allowServerDataBinding;
-            this.allowServerDataBinding = false;
-            this.palettes[index].expanded = args.isExpanded;
-            this.palettes[index].isInteraction = true;
-            this.allowServerDataBinding = isAllowDatabind;
-        };
-        this.accordionElement.expanding = (args) => {
-            if (this.checkOnRender) {
-                let diagramArgs = { element: args.element, content: args.content, index: args.index, cancel: false,
-                    isExpanded: args.isExpanded, palette: this.palettes[args.index] };
-                let event = 'paletteExpanding';
-                this.trigger(event, diagramArgs);
-                args.cancel = diagramArgs.cancel;
+        if (!isBlazor()) {
+            let accordionDiv = createHtmlElement('div', { id: this.element.id + '_container' });
+            this.accordionElement = new Accordion({
+                expandMode: this.expandMode
+            });
+            if (!this.enableAnimation) {
+                this.accordionElement.animation = { expand: { duration: 0 }, collapse: { duration: 0 } };
             }
-        };
-        this.element.appendChild(accordionDiv);
+            this.accordionElement.created = () => {
+                this.checkOnRender = true;
+            };
+            this.accordionElement.expanded = (args) => {
+                let index = this.accordionElement.items.indexOf(args.item);
+                let isAllowDatabind = this.allowServerDataBinding;
+                this.allowServerDataBinding = false;
+                this.palettes[index].expanded = args.isExpanded;
+                this.palettes[index].isInteraction = true;
+                this.allowServerDataBinding = isAllowDatabind;
+            };
+            this.accordionElement.expanding = (args) => {
+                if (this.checkOnRender) {
+                    let diagramArgs = { element: args.element, content: args.content, index: args.index, cancel: false,
+                        isExpanded: args.isExpanded, palette: this.palettes[args.index] };
+                    let event = 'paletteExpanding';
+                    this.trigger(event, diagramArgs);
+                    args.cancel = diagramArgs.cancel;
+                }
+            };
+            this.element.appendChild(accordionDiv);
+        }
         let measureWindowElement = 'measureElement';
         if (window[measureWindowElement]) {
             window[measureWindowElement] = null;
@@ -52835,8 +54899,13 @@ class SymbolPalette extends Component {
         this.diagramRenderer = new DiagramRenderer(this.element.id, new SvgRenderer(), false);
         this.svgRenderer = new DiagramRenderer(this.element.id, new SvgRenderer(), true);
         this.updatePalettes();
-        this.accordionElement.appendTo('#' + this.element.id + '_container');
+        if (!isBlazor()) {
+            this.accordionElement.appendTo('#' + this.element.id + '_container');
+        }
         this.renderComplete();
+        if (isBlazor()) {
+            this.element.classList.remove('e-symbolpalette-hidden');
+        }
     }
     /**
      * To get Module name
@@ -52908,7 +54977,9 @@ class SymbolPalette extends Component {
             this.renderPalette(palette);
         }
         this.bulkChanges = {};
-        this.accordionElement.refresh();
+        if (!isBlazor()) {
+            this.accordionElement.refresh();
+        }
     }
     /**
      * @private
@@ -52917,7 +54988,9 @@ class SymbolPalette extends Component {
         for (let i = 0; i < this.palettes.length; i++) {
             if (this.palettes[i].id === paletteId) {
                 this.palettes.splice(i, 1);
-                this.accordionElement.items.splice(i, 1);
+                if (!isBlazor()) {
+                    this.accordionElement.items.splice(i, 1);
+                }
                 break;
             }
         }
@@ -52933,7 +55006,9 @@ class SymbolPalette extends Component {
         for (let i = 0; i < palettes.length; i++) {
             this.removePalette(palettes[i]);
         }
-        this.accordionElement.refresh();
+        if (!isBlazor()) {
+            this.accordionElement.refresh();
+        }
         this.allowServerDataBinding = isEnableServerDatabind;
     }
     //end region - protected methods
@@ -53030,17 +55105,27 @@ class SymbolPalette extends Component {
      * Method to create the palette
      */
     renderPalette(symbolGroup) {
-        let style = 'display:none;overflow:auto;';
+        let style = (isBlazor()) ? 'overflow:auto;' : 'display:none;overflow:auto;';
         if (symbolGroup.height) {
             style += 'height:' + symbolGroup.height + 'px';
         }
-        let paletteDiv = createHtmlElement('div', { 'id': symbolGroup.id, style: style, class: 'e-remove-palette' });
-        this.element.appendChild(paletteDiv);
-        let item = {
-            header: symbolGroup.title, expanded: symbolGroup.expanded,
-            content: '#' + symbolGroup.id, iconCss: symbolGroup.iconCss
-        };
-        this.accordionElement.items.push(item);
+        let paletteParentDiv = document.getElementById(symbolGroup.id);
+        let paletteDiv;
+        if (isBlazor() && paletteParentDiv != null) {
+            paletteDiv = createHtmlElement('div', { 'id': symbolGroup.id + '_content', style: style, class: 'e-remove-palette' });
+            paletteParentDiv.appendChild(paletteDiv);
+        }
+        else {
+            paletteDiv = createHtmlElement('div', { 'id': symbolGroup.id, style: style, class: 'e-remove-palette' });
+            this.element.appendChild(paletteDiv);
+        }
+        if (!isBlazor()) {
+            let item = {
+                header: symbolGroup.title, expanded: symbolGroup.expanded,
+                content: '#' + symbolGroup.id, iconCss: symbolGroup.iconCss
+            };
+            this.accordionElement.items.push(item);
+        }
         this.renderSymbols(symbolGroup, paletteDiv);
     }
     /**
@@ -53072,7 +55157,13 @@ class SymbolPalette extends Component {
                     this.childTable[obj.id] = obj;
                 }
                 else {
-                    let paletteDiv = document.getElementById(symbolPaletteGroup.id);
+                    let paletteDiv;
+                    if (isBlazor()) {
+                        paletteDiv = document.getElementById(symbolPaletteGroup.id + '_content');
+                    }
+                    else {
+                        paletteDiv = document.getElementById(symbolPaletteGroup.id);
+                    }
                     if (paletteDiv) {
                         paletteDiv.appendChild(this.getSymbolContainer(obj, paletteDiv));
                     }
@@ -53592,6 +55683,9 @@ class SymbolPalette extends Component {
                 if (element.classList.contains('e-clear-searchtext')) {
                     element.className = 'e-input-group-icon e-search e-icons';
                     document.getElementById('textEnter').value = '';
+                    if (isBlazor()) {
+                        document.getElementById(this.element.id + '_search_content').classList.add('e-symbolpalette-search-hidden');
+                    }
                     this.searchPalette('');
                 }
             }
@@ -53604,6 +55698,9 @@ class SymbolPalette extends Component {
                     this.oldObject = id;
                     evt.preventDefault();
                 }
+                else if (this.oldObject !== '') {
+                    this.oldObject = '';
+                }
             }
         }
     }
@@ -53612,6 +55709,14 @@ class SymbolPalette extends Component {
             let palette = this;
             let element = document.getElementById('iconSearch');
             element.className = 'e-input-group-icon e-clear-searchtext e-icons';
+            if (isBlazor() && evt.target instanceof HTMLInputElement) {
+                if (evt.target.value === '') {
+                    document.getElementById(this.element.id + '_search_content').classList.add('e-symbolpalette-search-hidden');
+                }
+                else {
+                    document.getElementById(this.element.id + '_search_content').classList.remove('e-symbolpalette-search-hidden');
+                }
+            }
             if (evt && (evt.key === 'Enter' || evt.keyCode === 13)) {
                 if (evt.target instanceof HTMLInputElement) {
                     this.searchPalette(evt.target.value);
@@ -53824,10 +55929,14 @@ class SymbolPalette extends Component {
         child.arrange(child.children[0].desiredSize);
     }
     refreshPalettes() {
-        this.accordionElement.items = [];
+        if (!isBlazor()) {
+            this.accordionElement.items = [];
+        }
         removeElementsByClass('e-remove-palette', this.element.id);
         this.updatePalettes();
-        this.accordionElement.dataBind();
+        if (!isBlazor()) {
+            this.accordionElement.dataBind();
+        }
     }
     updatePalettes() {
         for (let i = 0; i < this.palettes.length; i++) {
@@ -53891,7 +56000,7 @@ class SymbolPalette extends Component {
             symbolGroup = this.getFilterSymbol(symbolGroup);
         }
         //create a palette collection
-        if (!element) {
+        if (!element && !isBlazor()) {
             paletteDiv = this.createSearchPalette(paletteDiv);
             element = paletteDiv;
         }
@@ -53909,10 +56018,12 @@ class SymbolPalette extends Component {
         else {
             let element = document.getElementById('iconSearch');
             element.className = 'e-input-group-icon e-search e-icons';
-            this.accordionElement.removeItem(0);
-            let searchPalette = document.getElementById('SearchPalette');
-            if (searchPalette) {
-                searchPalette.remove();
+            if (!isBlazor()) {
+                this.accordionElement.removeItem(0);
+                let searchPalette = document.getElementById('SearchPalette');
+                if (searchPalette) {
+                    searchPalette.remove();
+                }
             }
         }
     }
@@ -53960,76 +56071,76 @@ class SymbolPalette extends Component {
         EventHandler.remove(document, keyDownEvent, this.keyDown);
     }
 }
-__decorate$25([
+__decorate$27([
     Property('S')
 ], SymbolPalette.prototype, "accessKey", void 0);
-__decorate$25([
+__decorate$27([
     Property('100%')
 ], SymbolPalette.prototype, "width", void 0);
-__decorate$25([
+__decorate$27([
     Property('100%')
 ], SymbolPalette.prototype, "height", void 0);
-__decorate$25([
+__decorate$27([
     Collection([], Palette)
 ], SymbolPalette.prototype, "palettes", void 0);
-__decorate$25([
+__decorate$27([
     Property()
 ], SymbolPalette.prototype, "getSymbolInfo", void 0);
-__decorate$25([
+__decorate$27([
     Property({ fit: true })
 ], SymbolPalette.prototype, "symbolInfo", void 0);
-__decorate$25([
+__decorate$27([
     Property()
 ], SymbolPalette.prototype, "filterSymbols", void 0);
-__decorate$25([
+__decorate$27([
     Property()
 ], SymbolPalette.prototype, "ignoreSymbolsOnSearch", void 0);
-__decorate$25([
+__decorate$27([
     Property()
 ], SymbolPalette.prototype, "getSymbolTemplate", void 0);
-__decorate$25([
+__decorate$27([
     Property()
 ], SymbolPalette.prototype, "symbolWidth", void 0);
-__decorate$25([
+__decorate$27([
     Property()
 ], SymbolPalette.prototype, "symbolHeight", void 0);
-__decorate$25([
+__decorate$27([
     Complex({ left: 10, right: 10, top: 10, bottom: 10 }, Margin)
 ], SymbolPalette.prototype, "symbolMargin", void 0);
-__decorate$25([
+__decorate$27([
     Property(true)
 ], SymbolPalette.prototype, "allowDrag", void 0);
-__decorate$25([
+__decorate$27([
     Complex({}, SymbolPreview)
 ], SymbolPalette.prototype, "symbolPreview", void 0);
-__decorate$25([
+__decorate$27([
     Complex({}, SymbolDragSize)
 ], SymbolPalette.prototype, "symbolDragSize", void 0);
-__decorate$25([
+__decorate$27([
     Property(false)
 ], SymbolPalette.prototype, "enableSearch", void 0);
-__decorate$25([
+__decorate$27([
     Property(true)
 ], SymbolPalette.prototype, "enableAnimation", void 0);
-__decorate$25([
+__decorate$27([
     Property('Multiple')
 ], SymbolPalette.prototype, "expandMode", void 0);
-__decorate$25([
+__decorate$27([
     Event()
 ], SymbolPalette.prototype, "paletteSelectionChange", void 0);
-__decorate$25([
+__decorate$27([
     Event()
 ], SymbolPalette.prototype, "paletteExpanding", void 0);
-__decorate$25([
+__decorate$27([
     Property()
 ], SymbolPalette.prototype, "getNodeDefaults", void 0);
-__decorate$25([
+__decorate$27([
     Property()
 ], SymbolPalette.prototype, "nodeDefaults", void 0);
-__decorate$25([
+__decorate$27([
     Property()
 ], SymbolPalette.prototype, "getConnectorDefaults", void 0);
-__decorate$25([
+__decorate$27([
     Property()
 ], SymbolPalette.prototype, "connectorDefaults", void 0);
 
@@ -54037,7 +56148,7 @@ __decorate$25([
  * Exported symbol palette files
  */
 
-var __decorate$26 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$28 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -54266,7 +56377,7 @@ class Overview extends Component {
             svg.setAttribute('height', String(eHeight));
             this.model.width = eWidth;
         }
-        let attributes;
+        let attributes$$1;
         if (!view.diagramLayerDiv) {
             view.diagramLayerDiv = createHtmlElement('div', {});
             let container = document.getElementById(this.element.id);
@@ -54275,11 +56386,11 @@ class Overview extends Component {
             view.diagramLayerDiv.appendChild(view.diagramLayer);
             view.canvas.appendChild(view.diagramLayerDiv);
         }
-        attributes = {
+        attributes$$1 = {
             'id': this.element.id + '_diagramLayer_div',
             'style': 'width:' + this.model.width + 'px; height:' + this.model.height + 'px;position:absolute;top:0px;left:0px'
         };
-        setAttributeHtml(view.diagramLayerDiv, attributes);
+        setAttributeHtml(view.diagramLayerDiv, attributes$$1);
         this.renderHtmlLayer(view.canvas);
         this.renderNativeLayer(view.canvas, view);
         this.addOverviewRectPanel(view);
@@ -54942,16 +57053,16 @@ class Overview extends Component {
         return 'Overview';
     }
 }
-__decorate$26([
+__decorate$28([
     Property('100%')
 ], Overview.prototype, "width", void 0);
-__decorate$26([
+__decorate$28([
     Property('100%')
 ], Overview.prototype, "height", void 0);
-__decorate$26([
+__decorate$28([
     Property('')
 ], Overview.prototype, "sourceID", void 0);
-__decorate$26([
+__decorate$28([
     Event()
 ], Overview.prototype, "created", void 0);
 
@@ -54963,5 +57074,5 @@ __decorate$26([
  * Diagram component exported items
  */
 
-export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, BlazorAction, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, DiagramGradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramShapeStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, getIndex, templateCompiler, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, getSpaceValue, getInterval, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, cloneSelectedObjects, updatePathElement, checkPort, findPath, findDistance, cloneBlazorObject, checkBrowserInfo, canMeasureDecoratorPath, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, DiagramShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, DiagramConnectorSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, DiagramConnectorShape, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, SymbolSize, SymbolPaletteInfo, UserHandle, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolDragSize, SymbolPreview, SymbolPalette, Ruler, Overview };
+export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, BlazorAction, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, DiagramGradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramShapeStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, getIndex, templateCompiler, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, getSpaceValue, getInterval, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, initfixedUserHandlesSymbol, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, cloneSelectedObjects, updatePathElement, checkPort, findPath, findDistance, cloneBlazorObject, checkBrowserInfo, canMeasureDecoratorPath, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, DiagramShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, DiagramConnectorSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, DiagramConnectorShape, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, SymbolSize, SymbolPaletteInfo, FixedUserHandle, NodeFixedUserHandle, ConnectorFixedUserHandle, UserHandle, ToolBase, SelectTool, FixedUserHandleTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, BlazorAnimation, BlazorTooltip, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolDragSize, SymbolPreview, SymbolPalette, Ruler, Overview };
 //# sourceMappingURL=ej2-diagrams.es2015.js.map

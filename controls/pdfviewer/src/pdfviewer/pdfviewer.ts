@@ -12,7 +12,7 @@ import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 // tslint:disable-next-line:max-line-length
-import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, SignatureMode } from './base/types';
+import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -23,7 +23,7 @@ import { FormFields } from './index';
 import { Print, CalibrationUnit } from './index';
 // tslint:disable-next-line:max-line-length
 import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';
-import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs } from './index';
+import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';
 // tslint:disable-next-line:max-line-length
 import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';
 // tslint:disable-next-line:max-line-length
@@ -2319,6 +2319,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableMultiLineOverlap: boolean;
 
     /**
+     * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     * @default false
+     */
+    @Property(false)
+    public isAnnotationToolbarOpen: boolean;
+
+    /**
      * Enables or disables the multi-page text markup annotation selection in UI.
      * @default false
      */
@@ -2568,18 +2575,18 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public zoomMode: ZoomMode;
 
     /**
+     * Specifies the signature mode in the PDF Viewer.
+     * @default Default
+     */
+    @Property('Default')
+    public signatureFitMode: SignatureFitMode;
+
+    /**
      * Specifies the print mode in the PDF Viewer.
      * @default Default
      */
     @Property('Default')
     public printMode: PrintMode;
-
-    /**
-     * Specifies the signature mode in the PDF Viewer.
-     * @default Default
-     */
-    @Property('Default')
-    public signatureMode: SignatureMode;
 
     /**
      * Sets the initial loading zoom value from 10 to 400 in PdfViewer Control.
@@ -2601,6 +2608,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(false)
     public isExtractText: boolean;
+
+    /**
+     * Maintain the selection of text markup annotation.
+     * @default false
+     */
+    @Property(false)
+    public isMaintainSelection: boolean;
 
     /**
      * Defines the settings of the PdfViewer toolbar.
@@ -2899,6 +2913,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public formFieldsModule: FormFields;
+    private isTextSelectionStarted: boolean = false;
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public _dotnetInstance: any;
     /**
      * Gets the bookmark view object of the pdf viewer.
      * @asptype BookmarkView
@@ -3284,6 +3304,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public downloadStart: EmitType<DownloadStartEventArgs>;
 
     /**
+     * Triggers an event when the button is clicked.
+     * @event
+     * @blazorProperty 'ButtonFieldClick'
+     */
+    @Event()
+    public buttonFieldClick: EmitType<ButtonFieldClickEventArgs>;
+
+    /**
      * Triggers an event when the download actions is finished.
      * @event
      * @blazorProperty 'DownloadEnd'
@@ -3410,6 +3438,20 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         let properties: string[] = Object.keys(newProp);
         for (let prop of properties) {
             switch (prop) {
+                case 'locale':
+                    // tslint:disable-next-line
+                    let data: any = window.sessionStorage.getItem(this.viewerBase.documentId + '_formfields');
+                    this.viewerBase.formfieldvalue = JSON.parse(data);
+                    // tslint:disable-next-line
+                    let annotCollection: any[] = this.annotationCollection;
+                    let filename: string = this.viewerBase.jsonDocumentId;
+                    super.refresh();
+                    this.load(this.viewerBase.loadedData, null);
+                    this.addAnnotation(annotCollection);
+                    this.viewerBase.loadedData = null;
+                    this.downloadFileName = filename;
+                    this.fileName = filename;
+                    break;
                 case 'enableToolbar':
                     this.notify('', { module: 'toolbar', enable: this.enableToolbar });
                     requireRefresh = true;
@@ -3723,8 +3765,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
         this.pageCount = 0;
         this.currentPageNumber = 0;
-        if (this.toolbarModule) {
-            this.toolbarModule.resetToolbar();
+        if (!isBlazor()) {
+            if (this.toolbarModule) {
+                this.toolbarModule.resetToolbar();
+            }
         }
         this.viewerBase.initiatePageRender(document, password);
     }
@@ -3798,7 +3842,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public destroy(): void {
         super.destroy();
         if (!isNullOrUndefined(this.element)) {
-            this.element.classList.remove('e-pdfviewer');
+            if (!this.refreshing) {
+                this.element.classList.remove('e-pdfviewer');
+            }
             this.element.innerHTML = '';
         }
         this.viewerBase.destroy();
@@ -3842,6 +3888,17 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             return null;
         }
     }
+    /**
+     * Perform to add annotations in the PDF Viewer
+     * @returns void
+     */
+    // tslint:disable-next-line
+    public addAnnotation(annotation: any): void {
+        if (this.viewerBase) {
+            this.viewerBase.addAnnotation(annotation);
+        }
+    }
+
 
     // tslint:disable-next-line
     /**
@@ -3882,17 +3939,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * Perform to add annotations in the PDF Viewer
-     * @returns void
-     */
-    // tslint:disable-next-line
-    public addAnnotation(annotation: any): void {
-        if (this.viewerBase) {
-            this.viewerBase.addAnnotation(annotation);
-        }
-    }
-
-    /**
      * To delete the annotation Collections in the PDF Document.
      * @returns void
      */
@@ -3927,6 +3973,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         let eventArgs: AjaxRequestInitiateEventArgs = { name: 'ajaxRequestInitiate', JsonData: JsonData };
         this.trigger('ajaxRequestInitiate', eventArgs);
     }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireButtonFieldClickEvent(value: string, fieldName: string, id: string): void {
+        let eventArgs: ButtonFieldClickEventArgs = { name: 'buttonFieldClicked', buttonFieldValue: value, buttonFieldName: fieldName, id: id };
+        this.trigger('buttonFieldClick', eventArgs);
+    }
 
     /**
      * @private
@@ -3935,6 +3989,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public fireDocumentLoad(pageData: any): void {
         let eventArgs: LoadEventArgs = { name: 'documentLoad', documentName: this.fileName, pageData: pageData };
         this.trigger('documentLoad', eventArgs);
+        if (isBlazor()) {
+            this._dotnetInstance.invokeMethodAsync('LoadDocument', null);
+        }
     }
 
     /**
@@ -3996,6 +4053,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         // tslint:disable-next-line:max-line-length
         let eventArgs: PageChangeEventArgs = { name: 'pageChange', documentName: this.fileName, currentPageNumber: this.currentPageNumber, previousPageNumber: previousPageNumber };
         this.trigger('pageChange', eventArgs);
+        if (isBlazor()) {
+            this._dotnetInstance.invokeMethodAsync('OnPageChanged', this.currentPageNumber);
+        }
     }
 
     /**
@@ -4050,6 +4110,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
         this.viewerBase.isAnnotationSelect = false;
         this.trigger('annotationAdd', eventArgs);
+        if (isBlazor()) {
+            this._dotnetInstance.invokeMethodAsync('AnnotationAdd', null);
+        }
     }
 
     /**
@@ -4179,6 +4242,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 }
                 annotation.fontStyle = fontStyle;
             }
+            this._dotnetInstance.invokeMethodAsync('AnnotationSelect', annotation.type);
         }
         this.trigger('annotationSelect', eventArgs);
     }
@@ -4197,6 +4261,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public fireTextSelectionStart(pageNumber: number): void {
+        this.isTextSelectionStarted = true;
         let eventArgs: TextSelectionStartEventArgs = { pageIndex: pageNumber };
         this.trigger('textSelectionStart', eventArgs);
     }
@@ -4206,8 +4271,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     // tslint:disable-next-line
     public fireTextSelectionEnd(pageNumber: number, text: string, bound: any[]): void {
-        let eventArgs: TextSelectionEndEventArgs = { pageIndex: pageNumber, textContent: text, textBounds: bound };
-        this.trigger('textSelectionEnd', eventArgs);
+        if (this.isTextSelectionStarted) {
+            let eventArgs: TextSelectionEndEventArgs = { pageIndex: pageNumber, textContent: text, textBounds: bound };
+            this.trigger('textSelectionEnd', eventArgs);
+            this.isTextSelectionStarted = false;
+        }
     }
 
     /**
@@ -4434,14 +4502,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     // tslint:disable-next-line
     public fireFormImportFailed(data: any, errorDetails: string): void {
         //tslint:disable-next-line:max-line-length
-        let eventArgs: ImportFailureEventArgs = {name: 'importFormFieldsfailed', importData: data, errorDetails: errorDetails, formFieldData: data };
+        let eventArgs: ImportFailureEventArgs = { name: 'importFormFieldsfailed', importData: data, errorDetails: errorDetails, formFieldData: data };
         this.trigger('importFailed', eventArgs);
     }
     /**
      * @private
      */
     // tslint:disable-next-line
-    public fireFormExportFailed(data: any, errorDetails: string) : void {
+    public fireFormExportFailed(data: any, errorDetails: string): void {
         //tslint:disable-next-line:max-line-length
         let eventArgs: ExportFailureEventArgs = { name: 'exportFormFieldsFailed', exportData: data, errorDetails: errorDetails, formFieldData: data };
         this.trigger('exportFailed', eventArgs);

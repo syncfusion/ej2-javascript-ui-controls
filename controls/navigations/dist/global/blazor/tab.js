@@ -195,6 +195,10 @@ var Tab = /** @class */ (function (_super) {
      */
     Tab.prototype.destroy = function () {
         var _this = this;
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         if (!sf.base.isNullOrUndefined(this.tbObj)) {
             this.tbObj.destroy();
         }
@@ -203,16 +207,6 @@ var Tab = /** @class */ (function (_super) {
             _this.element.removeAttribute(val);
         });
         this.expTemplateContent();
-        var subControls = this.element.querySelectorAll('.e-control');
-        [].slice.call(subControls).forEach(function (node) {
-            var instances = node.ej2_instances;
-            if (instances.length > 0) {
-                var instance = instances[0];
-                if (instance) {
-                    instance.destroy();
-                }
-            }
-        });
         if (!this.isTemplate) {
             while (this.element.firstElementChild) {
                 sf.base.remove(this.element.firstElementChild);
@@ -232,11 +226,19 @@ var Tab = /** @class */ (function (_super) {
      * Refresh the tab component
      */
     Tab.prototype.refresh = function () {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         if (!this.isServerRendered) {
             _super.prototype.refresh.call(this);
         }
         else if (this.isServerRendered && this.loadOn !== 'Dynamic') {
             this.setActiveBorder();
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     };
     /**
@@ -770,6 +772,10 @@ var Tab = /** @class */ (function (_super) {
         this.compileElement(tempEle, cnt, 'content', index);
         if (tempEle.childNodes.length !== 0) {
             ele.appendChild(tempEle);
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     };
     Tab.prototype.compileElement = function (ele, val, prop, index) {
@@ -1413,6 +1419,10 @@ var Tab = /** @class */ (function (_super) {
                 this.reRenderItems();
             }
             else {
+                // tslint:disable-next-line:no-any
+                if (this.isRect) {
+                    this.clearTemplate();
+                }
                 this.setItems(newProp.items);
                 if (this.templateEle.length > 0) {
                     this.expTemplateContent();
@@ -1474,6 +1484,10 @@ var Tab = /** @class */ (function (_super) {
         }
         else {
             this.addingTabContent(items, index);
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     };
     Tab.prototype.addingTabContent = function (items, index) {
@@ -1557,12 +1571,20 @@ var Tab = /** @class */ (function (_super) {
                     _this.interopAdaptor.invokeMethodAsync('OnRemoveItem', index);
                     return;
                 }
+                // tslint:disable-next-line:no-any
+                if (_this.isRect) {
+                    _this.clearTemplate([], index);
+                }
                 _this.tbObj.removeItems(index);
                 _this.items.splice(index, 1);
                 _this.itemIndexArray.splice(index, 1);
                 _this.refreshActiveBorder();
                 var cntTrg = sf.base.select('#' + CLS_CONTENT + _this.tabId + '_' + _this.extIndex(trg.id), sf.base.select('.' + CLS_CONTENT, _this.element));
                 if (!sf.base.isNullOrUndefined(cntTrg)) {
+                    // tslint:disable-next-line:no-any
+                    if (_this.isReact) {
+                        _this.clearTemplate();
+                    }
                     sf.base.detach(cntTrg);
                 }
                 _this.trigger('removed', tabRemovingArgs);
@@ -1910,7 +1932,5 @@ exports.Tab = Tab;
 return exports;
 
 });
-sfBlazor.modules["tab"] = "navigations.Tab";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.tab, () => {
+
     sf.navigations = sf.base.extend({}, sf.navigations, sftab({}));
-});

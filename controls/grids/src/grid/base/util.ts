@@ -1015,6 +1015,14 @@ export function ensureFirstRow(row: Element, rowTop: number): boolean {
 }
 
 /** @hidden */
+export function isRowEnteredInGrid(index: number, gObj: IGrid): boolean {
+    let rowHeight: number = gObj.getRowHeight();
+    let startIndex: number = gObj.getContent().firstElementChild.scrollTop / rowHeight;
+    let endIndex: number = startIndex + ((gObj.getContent().firstElementChild as HTMLElement).offsetHeight / rowHeight);
+    return index < endIndex && index > startIndex;
+}
+
+/** @hidden */
 export function getEditedDataIndex(gObj: IGrid, data: Object): number {
     let keyField: string = gObj.getPrimaryKeyFieldNames()[0];
     let dataIndex: number;
@@ -1060,4 +1068,48 @@ export function ispercentageWidth(gObj: IGrid): boolean {
     return (gObj.width === 'auto' || typeof (gObj.width) === 'string' && gObj.width.indexOf('%') !== -1) && Browser.info.name !== 'chrome'
         && !gObj.groupSettings.showGroupedColumn && gObj.groupSettings.columns.length
         && percentageCol && !undefinedWidthCol;
+}
+
+/** @hidden */
+export function resetRowIndex(gObj: IGrid, rows: Row<Column>[], rowElms: HTMLTableRowElement[], index?: number): void {
+    let startIndex: number = index ? index : 0;
+    for (let i: number = 0; i < rows.length; i++) {
+        if (rows[i].isDataRow) {
+            rows[i].index = startIndex;
+            rows[i].isAltRow = gObj.enableAltRow ? startIndex % 2 !== 0 : false;
+            rowElms[i].setAttribute('aria-rowindex', startIndex.toString());
+            rows[i].isAltRow ? rowElms[i].classList.add('e-altrow') : rowElms[i].classList.remove('e-altrow');
+            for (let j: number = 0; j < rowElms[i].cells.length; j++) {
+                rowElms[i].cells[j].setAttribute('index', startIndex.toString());
+            }
+            startIndex++;
+        }
+    }
+    if (!rows.length) {
+        gObj.renderModule.emptyRow(true);
+    }
+}
+
+/** @hidden */
+export function compareChanges(gObj: IGrid, changes: Object, type: string, keyField: string): void {
+    let newArray: Object[] = (<{ dataToBeUpdated?: Object }>gObj).dataToBeUpdated[type].concat(changes[type]).reduce(
+        (r: Object, o: Object) => {
+            r[o[keyField]] = r[o[keyField]] === undefined ? o : Object.assign(r[o[keyField]], o);
+            return r;
+        },
+        {});
+    (<{ dataToBeUpdated?: Object }>gObj).dataToBeUpdated[type] = Object.keys(newArray).map((k: string) => newArray[k]);
+}
+
+/** @hidden */
+export function setRowElements(gObj: IGrid): void {
+    if (gObj.getFrozenColumns()) {
+        (<{ rowElements?: Element[] }>(gObj).contentModule).rowElements =
+            [].slice.call(gObj.element.querySelectorAll('.e-movableheader .e-row, .e-movablecontent .e-row'));
+        (<{ freezeRowElements?: Element[] }>(gObj).contentModule).freezeRowElements =
+            [].slice.call(gObj.element.querySelectorAll('.e-frozenheader .e-row, .e-frozencontent .e-row'));
+    } else {
+        (<{ rowElements?: Element[] }>(gObj).contentModule).rowElements =
+            [].slice.call(gObj.element.querySelectorAll('.e-row:not(.e-addedrow)'));
+    }
 }

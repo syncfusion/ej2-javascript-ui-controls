@@ -586,7 +586,7 @@ export class DiagramRenderer {
         options.width *= transform.scale;
         options.height *= transform.scale;
         options.fill = 'transparent'; options.stroke = '#097F7F';
-        options.strokeWidth = 1.2;
+        options.strokeWidth = 1.2; options.gradient = null;
         options.dashArray = '6,3';
         options.class = 'e-diagram-border';
         if (isSwimlane) { options.class += ' e-diagram-lane'; }

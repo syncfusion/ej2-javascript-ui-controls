@@ -9152,8 +9152,8 @@ class Lists {
         if (startNode === endNode && startNode.textContent === '') {
             if (startNode.closest('ul') || startNode.closest('ol')) {
                 let parentList = !isNullOrUndefined(startNode.closest('ul')) ? startNode.closest('ul') : startNode.closest('ol');
-                if (parentList.firstElementChild === startNode && (parentList.children[1].tagName === 'OL' ||
-                    parentList.children[1].tagName === 'UL')) {
+                if (parentList.firstElementChild === startNode && !isNullOrUndefined(parentList.children[1]) &&
+                    (parentList.children[1].tagName === 'OL' || parentList.children[1].tagName === 'UL')) {
                     if (parentList.tagName === parentList.children[1].tagName) {
                         while (parentList.children[1].lastChild) {
                             this.parent.domNode.insertAfter(parentList.children[1].lastChild, parentList.children[1]);
@@ -14866,6 +14866,7 @@ class PasteCleanup {
     }
     popupClose(popupObj, uploadObj, imgElem, e) {
         this.parent.inputElement.contentEditable = 'true';
+        e.element = imgElem;
         this.parent.trigger(imageUploadSuccess, e, (e) => {
             if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
                 let url = this.parent.insertImageSettings.path + e.file.name;
@@ -16805,13 +16806,13 @@ class Image {
         }
         switch (item.subCommand) {
             case 'JustifyLeft':
-                this.justifyImageLeft(args);
+                this.alignImage(args, 'JustifyLeft');
                 break;
             case 'JustifyCenter':
-                this.justifyImageCenter(args);
+                this.alignImage(args, 'JustifyCenter');
                 break;
             case 'JustifyRight':
-                this.justifyImageRight(args);
+                this.alignImage(args, 'JustifyRight');
                 break;
             case 'Inline':
                 this.inline(args);
@@ -17232,19 +17233,9 @@ class Image {
             e.args.item.subCommand : 'Inline';
         this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
     }
-    justifyImageLeft(e) {
+    alignImage(e, type) {
         let subCommand = (e.args.item) ?
-            e.args.item.subCommand : 'JustifyLeft';
-        this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
-    }
-    justifyImageRight(e) {
-        let subCommand = (e.args.item) ?
-            e.args.item.subCommand : 'JustifyRight';
-        this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
-    }
-    justifyImageCenter(e) {
-        let subCommand = (e.args.item) ?
-            e.args.item.subCommand : 'JustifyCenter';
+            e.args.item.subCommand : type;
         this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
     }
     imagDialog(e) {
@@ -18009,6 +18000,7 @@ class Image {
     uploadSuccess(imageElement, dragEvent, args, e) {
         imageElement.style.opacity = '1';
         imageElement.classList.add(CLS_IMG_FOCUS);
+        e.element = imageElement;
         this.parent.trigger(imageUploadSuccess, e, (e) => {
             if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
                 let url = this.parent.insertImageSettings.path + e.file.name;
@@ -18016,10 +18008,12 @@ class Image {
                 imageElement.setAttribute('alt', e.file.name);
             }
         });
-        this.popupObj.close();
+        if (this.popupObj) {
+            this.popupObj.close();
+            this.uploadObj.destroy();
+        }
         this.showImageQuickToolbar(args);
         this.resizeStart(dragEvent, imageElement);
-        this.uploadObj.destroy();
     }
     imagePaste(args) {
         if (args.text.length === 0 && !isNullOrUndefined(args.file)) {
@@ -20607,63 +20601,65 @@ let RichTextEditor = class RichTextEditor extends Component {
      * @return {void}
      */
     destroy() {
-        if (this.isDestroyed || this.element.offsetParent === null) {
+        if (this.isDestroyed || !this.isRendered) {
             return;
         }
-        if (this.isRendered) {
-            this.notify(destroy, {});
-            this.destroyDependentModules();
-            if (!isNullOrUndefined(this.timeInterval)) {
-                clearInterval(this.timeInterval);
-                this.timeInterval = null;
+        if (this.element.offsetParent === null) {
+            this.toolbarModule.destroy();
+            return;
+        }
+        this.notify(destroy, {});
+        this.destroyDependentModules();
+        if (!isNullOrUndefined(this.timeInterval)) {
+            clearInterval(this.timeInterval);
+            this.timeInterval = null;
+        }
+        this.unWireEvents();
+        if (this.originalElement.tagName === 'TEXTAREA') {
+            if (isBlazor()) {
+                detach(this.valueContainer);
+                this.valueContainer = this.element.querySelector('.e-blazor-hidden.e-control.e-richtexteditor');
             }
-            this.unWireEvents();
-            if (this.originalElement.tagName === 'TEXTAREA') {
-                if (isBlazor()) {
-                    detach(this.valueContainer);
-                    this.valueContainer = this.element.querySelector('.e-blazor-hidden.e-control.e-richtexteditor');
-                }
-                this.element.parentElement.insertBefore(this.valueContainer, this.element);
-                this.valueContainer.id = this.getID();
-                this.valueContainer.removeAttribute('name');
-                detach(this.element);
-                if (this.originalElement.innerHTML.trim() !== '') {
-                    if (!isBlazor()) {
-                        this.valueContainer.value = this.originalElement.innerHTML.trim();
-                        this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
-                    }
-                }
-                else {
-                    this.valueContainer.value = !this.isBlazor() ? this.valueContainer.defaultValue : this.defaultResetValue;
-                }
-                this.element = this.valueContainer;
-                for (let i = 0; i < this.originalElement.classList.length; i++) {
-                    addClass([this.element], this.originalElement.classList[i]);
-                }
-                removeClass([this.element], CLS_RTE_HIDDEN);
-            }
-            else {
-                if (this.originalElement.innerHTML.trim() !== '') {
-                    this.element.innerHTML = this.originalElement.innerHTML.trim();
+            this.element.parentElement.insertBefore(this.valueContainer, this.element);
+            this.valueContainer.id = this.getID();
+            this.valueContainer.removeAttribute('name');
+            detach(this.element);
+            if (this.originalElement.innerHTML.trim() !== '') {
+                if (!isBlazor()) {
+                    this.valueContainer.value = this.originalElement.innerHTML.trim();
                     this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
                 }
-                else {
-                    this.element.innerHTML = '';
-                }
             }
-            if (this.placeholder && this.placeHolderWrapper) {
-                this.placeHolderWrapper = null;
+            else {
+                this.valueContainer.value = !this.isBlazor() ? this.valueContainer.defaultValue : this.defaultResetValue;
             }
-            if (!isNullOrUndefined(this.cssClass)) {
-                removeClass([this.element], this.cssClass);
+            this.element = this.valueContainer;
+            for (let i = 0; i < this.originalElement.classList.length; i++) {
+                addClass([this.element], this.originalElement.classList[i]);
             }
-            this.removeHtmlAttributes();
-            this.removeAttributes();
-            super.destroy();
-            this.isRendered = false;
-            if (this.enablePersistence) {
-                window.localStorage.removeItem(this.getModuleName() + this.element.id);
+            removeClass([this.element], CLS_RTE_HIDDEN);
+        }
+        else {
+            if (this.originalElement.innerHTML.trim() !== '') {
+                this.element.innerHTML = this.originalElement.innerHTML.trim();
+                this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
             }
+            else {
+                this.element.innerHTML = '';
+            }
+        }
+        if (this.placeholder && this.placeHolderWrapper) {
+            this.placeHolderWrapper = null;
+        }
+        if (!isNullOrUndefined(this.cssClass)) {
+            removeClass([this.element], this.cssClass);
+        }
+        this.removeHtmlAttributes();
+        this.removeAttributes();
+        super.destroy();
+        this.isRendered = false;
+        if (this.enablePersistence) {
+            window.localStorage.removeItem(this.getModuleName() + this.element.id);
         }
     }
     removeHtmlAttributes() {

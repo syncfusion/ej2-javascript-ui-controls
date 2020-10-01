@@ -27,6 +27,7 @@ import { ExpandCellRenderer } from '../renderer/expand-cell-renderer';
 import { HeaderIndentCellRenderer } from '../renderer/header-indent-renderer';
 import { DetailHeaderIndentCellRenderer } from '../renderer/detail-header-indent-renderer';
 import { DetailExpandCellRenderer } from '../renderer/detail-expand-cell-renderer';
+import { GroupLazyLoadRenderer } from '../renderer/group-lazy-load-renderer';
 import { AriaService } from '../services/aria-service';
 import { PredicateModel } from '../base/grid-model';
 import { RowDragDropRenderer } from './row-drag-drop-renderer';
@@ -173,6 +174,10 @@ export class Render {
                     this.parent.allowServerDataBinding = false;
                 }
             } else if (args.requestType === 'reorder' && this.parent.dataSource && 'result' in this.parent.dataSource ) {
+                this.contentRenderer.refreshContentRows(args);
+            } else if ((args.requestType === 'paging' || args.requestType === 'columnstate' || args.requestType === 'reorder')
+                && this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length
+                && (this.parent.contentModule as GroupLazyLoadRenderer).getGroupCache()[this.parent.pageSettings.currentPage]) {
                 this.contentRenderer.refreshContentRows(args);
             } else {
                 this.refreshDataManager(args);
@@ -441,6 +446,7 @@ export class Render {
         (<{ actionArgs?: NotifyArgs }>e).actionArgs = args;
         let isInfiniteDelete: boolean = this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache
             && (args.requestType === 'delete' || (args.requestType === 'save' && this.parent.infiniteScrollModule.requestType === 'add'));
+        // tslint:disable-next-line:max-func-body-length
         gObj.trigger(events.beforeDataBound, e, (dataArgs: ReturnType) => {
             if ((<{ cancel?: boolean }>dataArgs).cancel) {
                 return;
@@ -459,6 +465,7 @@ export class Render {
             this.parent.isEdit = false;
             this.parent.notify(events.editReset, {});
             this.parent.notify(events.tooltipDestroy, {});
+            this.contentRenderer.prevCurrentView = this.parent.currentViewData.slice();
             gObj.currentViewData = <Object[]>dataArgs.result;
             if (isBlazor() && gObj.filterSettings.type === 'FilterBar'
                 && (isNullOrUndefined(gObj.currentViewData) ||
@@ -480,6 +487,10 @@ export class Render {
                 }
             }
             if (!len && dataArgs.count && gObj.allowPaging && args && args.requestType !== 'delete' as Action) {
+                if (this.parent.groupSettings.enableLazyLoading
+                    && (args.requestType === 'grouping' || args.requestType === 'ungrouping')) {
+                    this.parent.notify(events.groupComplete, args);
+                }
                 gObj.prevPageMoving = true;
                 gObj.pageSettings.totalRecordsCount = dataArgs.count;
                 if (args.requestType !== 'paging' as Action) {
@@ -513,7 +524,11 @@ export class Render {
                     args.scrollTop = { top: this.contentRenderer[content].scrollTop };
                 }
                 if (!isInfiniteDelete) {
-                    this.contentRenderer.refreshContentRows(args);
+                    if (this.parent.enableImmutableMode) {
+                        this.contentRenderer.immutableModeRendering(args);
+                    } else {
+                        this.contentRenderer.refreshContentRows(args);
+                    }
                 } else {
                     this.parent.notify(events.infiniteEditHandler, { e: args, result: e.result, count: e.count, agg: e.aggregates });
                 }

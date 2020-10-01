@@ -548,7 +548,5 @@ exports.setSpinner = setSpinner;
 return exports;
 
 });
-sfBlazor.modules["spinner"] = "popups.Spinner";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.spinner, () => {
+
     sf.popups = sf.base.extend({}, sf.popups, sfspinner({}));
-});

@@ -1559,6 +1559,7 @@ var Annotations = /** @__PURE__ @class */ (function () {
         if (parentElement && element.childElementCount && !this.gauge.isBlazor) {
             parentElement.appendChild(element);
         }
+        this.gauge.renderReactTemplates();
     };
     /**
      * Method to create annotation template for circular gauge.
@@ -1585,8 +1586,8 @@ var Annotations = /** @__PURE__ @class */ (function () {
             var templateElement;
             if (!argsData.cancel) {
                 templateFn = getTemplateFunction(argsData.content, _this.gauge);
-                if (templateFn && (!_this.gauge.isBlazor ? templateFn(axis, null, null, _this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex).length : {})) {
-                    templateElement = Array.prototype.slice.call(templateFn(!_this.gauge.isBlazor ? axis : {}, null, null, _this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex));
+                if (templateFn && (!_this.gauge.isBlazor ? templateFn(axis, _this.gauge, argsData.content, _this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex).length : {})) {
+                    templateElement = Array.prototype.slice.call(templateFn(!_this.gauge.isBlazor ? axis : {}, _this.gauge, argsData.content, _this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex));
                     var length_1 = templateElement.length;
                     for (var i = 0; i < length_1; i++) {
                         childElement.appendChild(templateElement[i]);
@@ -1661,6 +1662,7 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
      */
     /* tslint:disable:no-string-literal */
     /* tslint:disable:max-func-body-length */
+    /* tslint:disable */
     GaugeTooltip.prototype.renderTooltip = function (e) {
         var _this = this;
         this.gaugeId = this.gauge.element.getAttribute('id');
@@ -1751,6 +1753,7 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
                 }
             };
             this.gauge.trigger(tooltipRender, tooltipArgs, pointerTooltip);
+            this.gauge.renderReactTemplates();
         }
         else if ((this.tooltip.type.indexOf('Range') > -1) && (target.id.indexOf('_Range_') >= 0) && (!this.gauge.isDrag) &&
             (target.id.indexOf(this.gaugeId) >= 0)) {
@@ -1827,6 +1830,7 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
                 }
             };
             this.gauge.trigger(tooltipRender, rangeTooltipArgs, rangeTooltip);
+            this.gauge.renderReactTemplates();
         }
         else if ((this.tooltip.type.indexOf('Annotation') > -1) && this.checkParentAnnotationId(target) && ((!this.gauge.isDrag)) &&
             (this.annotationTargetElement.id.indexOf(this.gaugeId) >= 0)) {
@@ -1882,9 +1886,11 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
                 }
             };
             this.gauge.trigger(tooltipRender, annotationTooltipArgs, annotationTooltip);
+            this.gauge.renderReactTemplates();
         }
         else {
             this.removeTooltip();
+            this.gauge.clearTemplate();
         }
     };
     
@@ -2733,8 +2739,10 @@ var PointerRenderer = /** @__PURE__ @class */ (function () {
                     isClockWise ? (endAngle - startAngle) : (endAngle - startAngle - 360) :
                     isClockWise ? (endAngle - startAngle - 360) : (endAngle - startAngle);
                 element.style.animation = 'None';
-                element.setAttribute('transform', 'rotate(' + linear(args.timeStamp, startAngle, sweepAngle, args.duration) + ',' +
-                    _this.gauge.midPoint.x.toString() + ',' + _this.gauge.midPoint.y.toString() + ')');
+                if (start !== end) {
+                    element.setAttribute('transform', 'rotate(' + linear(args.timeStamp, startAngle, sweepAngle, args.duration) + ',' +
+                        _this.gauge.midPoint.x.toString() + ',' + _this.gauge.midPoint.y.toString() + ')');
+                }
             },
             end: function (model) {
                 _this.setPointerValue(axis, pointer, end);
@@ -4931,6 +4939,7 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
                 remove(this.svgObject);
             }
         }
+        this.clearTemplate();
     };
     /**
      * To initialize the circular gauge private variable.
@@ -5078,7 +5087,6 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
                     setStyles(element, pointer.color, pointer.border);
                 }
                 if (enableAnimation) {
-                    pointer.currentValue = pointer.value;
                     _this.gaugeAxisLayoutPanel.pointerRenderer.performNeedleAnimation(element, pointer.currentValue, value, axis, pointer, pointerRadius, (pointerRadius - pointer.pointerWidth));
                 }
                 else {

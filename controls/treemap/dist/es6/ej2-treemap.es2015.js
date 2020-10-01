@@ -1959,6 +1959,8 @@ class LayoutPanel {
                     if (template) {
                         templateEle = this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item, isLeafItem);
                         templateGroup.appendChild(templateEle);
+                        /* tslint:disable */
+                        this.treemap.renderReactTemplates();
                     }
                     itemGroup.setAttribute('aria-label', item['name']);
                     itemGroup.setAttribute('tabindex', (this.treemap.tabIndex + i + 2).toString());
@@ -2563,6 +2565,7 @@ let TreeMap = class TreeMap extends Component {
                 resetBlazorTemplate(this.element.id + '_HeaderTemplate', 'HeaderTemplate');
             }
         }
+        this.clearTemplate();
         let containerWidth = this.element.clientWidth;
         let containerHeight = this.element.clientHeight;
         this.availableSize = new Size(stringToNumber(this.width, containerWidth) || containerWidth || 600, stringToNumber(this.height, containerHeight) || containerHeight || 450);
@@ -5155,6 +5158,7 @@ class TreeMapTooltip {
         this.addEventListener();
     }
     /* tslint:disable:no-string-literal */
+    /* tslint:disable */
     renderTooltip(e) {
         let pageX;
         let pageY;
@@ -5248,6 +5252,7 @@ class TreeMapTooltip {
         }
         else {
             this.removeTooltip();
+            this.treemap.clearTemplate();
         }
     }
     addTooltip(tootipArgs, markerFill, tooltipEle, eventArgs) {
@@ -5278,9 +5283,11 @@ class TreeMapTooltip {
             });
             this.svgTooltip.opacity = this.treemap.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
             this.svgTooltip.appendTo(tooltipEle);
+            this.treemap.renderReactTemplates();
         }
         else {
             this.removeTooltip();
+            this.treemap.clearTemplate();
         }
     }
     mouseUpHandler(e) {

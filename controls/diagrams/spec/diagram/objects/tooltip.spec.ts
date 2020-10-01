@@ -1204,7 +1204,6 @@ describe('Tool Tip mouse-swimlane', () => {
     });
 
 });
-
 describe('Connector tooltip does not update properly', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
@@ -1293,3 +1292,90 @@ describe('Connector tooltip does not update properly', () => {
     });
 
 });
+describe('Connector tooltip does not update properly', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram_tooltip' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: "node0",
+                offsetX: 200,
+                offsetY: 100,
+                width: 100,
+                height: 100,
+                style: { fill: 'yellow' }
+            },
+            {
+                id: "node1",
+                offsetX: 600,
+                offsetY: 100,
+                width: 100,
+                height: 100,
+                style: { fill: 'red' }
+            },
+        ];
+        let connectors: ConnectorModel[] = [
+            {
+                id: "connector1",
+                style: {
+                    strokeColor: '#6BA5D7',
+                    fill: '#6BA5D7',
+                    strokeWidth: 2
+                },
+                targetDecorator: {
+                    style: {
+                        fill: '#6BA5D7',
+                        strokeColor: '#6BA5D7'
+                    }
+                },
+                sourceID: "node0",
+                targetID: "node1",
+                type: 'Orthogonal',
+                tooltip: {
+                    content: "Connector1",
+                    relativeMode: "Mouse",
+                    position: "BottomLeft",
+                    showTipPointer: true,
+                    animation: { open: { effect: 'FadeZoomIn', delay: 0 }, close: { effect: 'FadeZoomOut', delay: 0 } }
+                },
+                constraints: ConnectorConstraints.Default | ConnectorConstraints.Tooltip & ~ConnectorConstraints.InheritTooltip
+            }
+        ];
+        function setTooltipTemplate(): string | HTMLElement {
+            let content: string = 'Custom Template';
+            let htmlElement: HTMLElement = document.getElementById('property');
+            return htmlElement;
+        }
+                diagram = new Diagram({
+                    width: '1000px', height: '1000px',
+                    nodes: nodes,connectors: connectors,
+                    selectedItems: { setTooltipTemplate: setTooltipTemplate },
+                    constraints: DiagramConstraints.Default | DiagramConstraints.Tooltip,
+                    tooltip: { content: 'Default Tooltip', position: 'LeftBottom', relativeMode: 'Mouse', animation: { open: { effect: 'FadeZoomIn', delay: 0 }, close: { effect: 'FadeZoomOut', delay: 0 } } }
+                });
+                diagram.appendTo('#diagram_tooltip');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('checking connector tooltip', (done: Function) => {
+        let diagramCanvas = document.getElementById("diagram_tooltipcontent");
+        mouseEvents.mouseDownEvent(diagramCanvas, 611, 107, false, false);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 711, 107, false, false);
+        mouseEvents.mouseUpEvent(diagramCanvas, 711, 107, false, false);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 450, 96, false, false);
+        expect(diagram.tooltip.relativeMode === 'Mouse').toBe(true);
+        done();  
+    });
+})

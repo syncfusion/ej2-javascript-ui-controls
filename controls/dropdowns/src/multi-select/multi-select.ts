@@ -775,6 +775,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     addClass([this.overAllWrapper], [iconAnimation]);
                 }
                 this.refreshPopup();
+                this.renderReactTemplates();
                 this.popupObj.show(eventArgs.animation, (this.zIndex === 1000) ? this.element : null);
                 attributes(this.inputElement, { 'aria-expanded': 'true' });
                 if (this.isFirstClick) {
@@ -2330,9 +2331,14 @@ export class MultiSelect extends DropDownBase implements IInput {
             } else {
                 compiledString = compile(this.valueTemplate);
             }
-            for (let item of compiledString(itemData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate)) {
-                chipContent.appendChild(item);
+            // tslint:disable-next-line
+            let valueCompTemp: any = compiledString(itemData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate, null, chipContent);
+            if (valueCompTemp && valueCompTemp.length > 0) {
+                for (let i: number = 0; i < valueCompTemp.length; i++) {
+                    chipContent.appendChild(valueCompTemp[i]);
+                }
             }
+            this.renderReactTemplates();
             this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false, false);
         } else if (this.enableHtmlSanitizer) {
             chipContent.innerText = data;
@@ -2520,9 +2526,12 @@ export class MultiSelect extends DropDownBase implements IInput {
         } else {
             compiledString = compile(this.headerTemplate);
         }
-        let elements: [Element] = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate);
-        for (let temp: number = 0; temp < elements.length; temp++) {
-            this.header.appendChild(elements[temp]);
+        // tslint:disable-next-line
+        let elements: any = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate, null, this.header);
+        if (elements && elements.length > 0) {
+            for (let temp: number = 0; temp < elements.length; temp++) {
+                this.header.appendChild(elements[temp]);
+            }
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, true, false);
         if (this.mode === 'CheckBox' && this.showSelectAll) {
@@ -2545,9 +2554,12 @@ export class MultiSelect extends DropDownBase implements IInput {
         } else {
             compiledString = compile(this.footerTemplate);
         }
-        let elements: [Element] = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate);
-        for (let temp: number = 0; temp < elements.length; temp++) {
-            this.footer.appendChild(elements[temp]);
+        // tslint:disable-next-line
+        let elements: any = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate, null, this.footer);
+        if (elements && elements.length > 0 ) {
+            for (let temp: number = 0; temp < elements.length; temp++) {
+                this.footer.appendChild(elements[temp]);
+            }
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, false, true);
         append([this.footer], this.popupWrapper);
@@ -3327,8 +3339,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                 overflowCountTemplate: '+${count} more..',
                 totalCountTemplate: '${count} selected'
             };
-            let l10n: L10n = new L10n(this.getLocaleName(), {}, this.locale);
+            let l10n: L10n = new L10n(this.getLocaleName(), l10nLocale, this.locale);
             if (l10n.getConstant('actionFailureTemplate') === '') {
+                l10n = new L10n('dropdowns', l10nLocale, this.locale);
+            }
+            if (l10n.getConstant('noRecordsTemplate') === '') {
                 l10n = new L10n('dropdowns', l10nLocale, this.locale);
             }
             let remainContent: string = l10n.getConstant('overflowCountTemplate');
@@ -3337,9 +3352,13 @@ export class MultiSelect extends DropDownBase implements IInput {
             });
             let compiledString: Function = compile(remainContent);
             let totalCompiledString: Function = compile(l10n.getConstant('totalCountTemplate'));
-            raminElement.appendChild(
-                compiledString({ 'count': this.value.length }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0]);
+            // tslint:disable-next-line
+            let remainCompildTemp: any = compiledString({ 'count': this.value.length }, this, 'overflowCountTemplate', null, !this.isStringTemplate, null, raminElement);
+            if (remainCompildTemp && remainCompildTemp.length > 0) {
+                raminElement.appendChild(remainCompildTemp[0]);
+            }
             this.viewWrapper.appendChild(raminElement);
+            this.renderReactTemplates();
             let remainSize: number = raminElement.offsetWidth;
             remove(raminElement);
             if (this.showDropDownIcon) {
@@ -3417,10 +3436,15 @@ export class MultiSelect extends DropDownBase implements IInput {
             viewWrapper.removeChild(viewWrapper.firstChild);
         }
         raminElement.innerHTML = '';
+        // tslint:disable-next-line
+        let remainTemp: any = compiledString(
+            { 'count': remaining }, this, 'overflowCountTemplate', null, !this.isStringTemplate, null, raminElement);
+        // tslint:disable-next-line
+        let totalTemp: any = totalCompiledString(
+            { 'count': remaining }, this, 'totalCountTemplate', null, !this.isStringTemplate, null, raminElement);
         raminElement.appendChild(
             (viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) ?
-            compiledString({ 'count': remaining }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0] :
-            totalCompiledString({ 'count': remaining }, this, 'totalCountTemplate', null, !this.isStringTemplate)[0]);
+            remainTemp && remainTemp[0] : totalTemp && totalTemp[0]);
         if (viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) {
             viewWrapper.classList.remove(TOTAL_COUNT_WRAPPER);
         } else {
@@ -4103,6 +4127,8 @@ export class MultiSelect extends DropDownBase implements IInput {
      * @return {void}
      */
     public destroy(): void {
+        // tslint:disable-next-line
+        if ((this as any).isReact) { this.clearTemplate(); }
         if (this.popupObj) {
             this.popupObj.hide();
         }

@@ -1495,7 +1495,5 @@ exports.DateTimePicker = DateTimePicker;
 return exports;
 
 });
-sfBlazor.modules["datetimepicker"] = "calendars.DateTimePicker";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.datetimepicker, () => {
+
     sf.calendars = sf.base.extend({}, sf.calendars, sfdatetimepicker({}));
-});

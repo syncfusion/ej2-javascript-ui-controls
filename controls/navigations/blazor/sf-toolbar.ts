@@ -12,6 +12,7 @@ type HTEle = HTMLElement;
 type ItmAlign = 'lefts' | 'centers' | 'rights';
 type ItemAlign = 'Left' | 'Center' | 'Right';
 
+const CLS_TOOLBAR: string = 'e-toolbar';
 const CLS_VERTICAL: string = 'e-vertical';
 const CLS_ITEMS: string = 'e-toolbar-items';
 const BZ_ITEMS: string = 'e-blazor-toolbar-items';
@@ -119,7 +120,7 @@ class SfToolbar {
         this.element.removeAttribute('style');
         ['aria-disabled', 'aria-orientation', 'aria-haspopup', 'role'].forEach((attrb: string): void =>
             this.element.removeAttribute(attrb));
-        removeClass([this.element], ['e-toolbar']);
+        removeClass([this.element], [CLS_TOOLBAR]);
     }
     private wireEvents(): void {
         EventHandler.add(this.element, 'click', this.clickHandler, this);
@@ -372,6 +373,7 @@ class SfToolbar {
         let isCloseIcon: boolean = clsList.contains(CLS_ICON_CLOSE);
         let popupNav: HTEle = <HTEle>closest(trgt, ('.' + CLS_TBARNAV));
         let trgParentDataIndex: number;
+        let id: string;
         if (!popupNav) {
             popupNav = trgt;
         }
@@ -388,8 +390,9 @@ class SfToolbar {
         }
         if (!isNOU(clst)) {
             trgParentDataIndex = parseInt(clst.getAttribute('data-index'), 10);
+            id = clst.id;
         }
-        this.dotNetRef.invokeMethodAsync('TriggerClickEvent', e, isPopupElement, isCloseIcon, trgParentDataIndex);
+        this.dotNetRef.invokeMethodAsync('TriggerClickEvent', e, isPopupElement, isCloseIcon, trgParentDataIndex, id);
     }
     private popupClickHandler(ele: HTMLElement, popupNav: HTMLElement, CLS_RTL: string): void {
         let popObj: Popup = this.popObj;
@@ -453,7 +456,7 @@ class SfToolbar {
         }
         for (let i: number = 0; i < items.length; i++) {
             let itemEleBlaDom: HTEle = this.element.querySelector('.' + BZ_ITEMS);
-            innerItem = itemEleBlaDom.querySelector('.' + CLS_ITEM + '[data-index="' + i + '"]');
+            innerItem = itemEleBlaDom.querySelector('.' + CLS_ITEM + '[id="' + items[i].id + '"]');
             if (!innerItem) {
                 continue;
             }
@@ -485,9 +488,15 @@ class SfToolbar {
         }
     }
     public serverItemsRefresh(): void {
-        let wrapBlaEleDom: HTEle = <HTEle>this.element.querySelector('.' + BZ_ITEMS);
+        let ele: HTEle = this.element;
+        let wrapBlaEleDom: HTEle = <HTEle>ele.querySelector('.' + BZ_ITEMS);
         if (wrapBlaEleDom.children.length > 0) {
-            this.itemsAlign(this.options.items, this.element.querySelector('.' + CLS_ITEMS));
+            let itemEleDom: HTEle = <HTEle>ele.querySelector('.' + CLS_ITEMS);
+            if (!itemEleDom && ele && ele.classList.contains(CLS_TOOLBAR) && ele.firstElementChild) {
+                itemEleDom = createElement('div', { className: CLS_ITEMS });
+                ele.insertBefore(itemEleDom, ele.firstElementChild);
+            }
+            this.itemsAlign(this.options.items, itemEleDom);
             this.renderLayout();
             this.refreshOverflow();
         }
@@ -1409,6 +1418,7 @@ let Toolbar: object = {
     serverItemsRerender(element: BlazorToolbarElement, items: ItemModel[]): void {
         if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.options.items = items;
+            element.blazor__instance.extendedOpen();
             element.blazor__instance.destroyMode();
             element.blazor__instance.resetServerItems();
             element.blazor__instance.serverItemsRefresh();

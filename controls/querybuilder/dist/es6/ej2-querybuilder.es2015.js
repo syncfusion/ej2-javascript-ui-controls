@@ -396,7 +396,13 @@ let QueryBuilder = class QueryBuilder extends Component {
             args.columns = this.columns;
             args.operators = this.getOperators(rule.field);
             args.operatorFields = { text: 'key', value: 'value' };
-            template = this.ruleTemplateFn(args, this, 'Template', templateID);
+            // tslint:disable
+            if (this.isReact) {
+                template = this.ruleTemplateFn(args, this, ruleElem.id, templateID);
+            }
+            else {
+                template = this.ruleTemplateFn(args, this, 'Template', templateID);
+            }
             elem = template[0];
             elem.className += ' e-rule-field';
         }
@@ -404,6 +410,9 @@ let QueryBuilder = class QueryBuilder extends Component {
             elem = this.ruleElem.querySelector('.e-rule-field').cloneNode(true);
         }
         ruleElem.appendChild(elem);
+        if (column && column.ruleTemplate) {
+            this.renderReactTemplates();
+        }
         return ruleElem;
     }
     addRuleElement(target, rule, column, action, parentId, isRuleTemplate) {
@@ -535,6 +544,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             let parentId = closest(element, '.e-rule-container').id;
             if (this.previousColumn && this.previousColumn.ruleTemplate) {
                 detach(element.closest('#' + parentId).querySelector('.e-rule-field'));
+                this.clearTemplate([parentId]);
             }
             if (column) {
                 let rule = { field: column.field, label: column.label, operator: operVal[0].value, value: '' };
@@ -2220,6 +2230,10 @@ let QueryBuilder = class QueryBuilder extends Component {
         this.unWireEvents();
         this.levelColl[this.element.id + '_group0'] = [0];
         this.element.innerHTML = '';
+        // tslint:disable
+        if (this.portals && this.portals.length) {
+            this.clearTemplate();
+        }
         classList(this.element, [], ['e-rtl', 'e-responsive', 'e-device']);
     }
     /**
@@ -2761,10 +2775,27 @@ let QueryBuilder = class QueryBuilder extends Component {
                     addClass([prevElem], 'e-prev-joined-rule');
                 }
             }
+            let elem = groupElem.parentElement.parentElement.parentElement;
+            let removeString = [];
+            // tslint:disable
+            if (this.isReact) {
+                let remRule = rule.rules[index];
+                let ruleElemColl = target.querySelectorAll('.e-rule-container');
+                if (remRule && remRule.rules) {
+                    for (let r = 0; r < remRule.rules.length; r++) {
+                        let column = this.getColumn(remRule.rules[r].field);
+                        if (column && column.ruleTemplate) {
+                            removeString.push(ruleElemColl[r].id);
+                        }
+                    }
+                }
+            }
+            detach(target);
+            if (removeString.length) {
+                this.clearTemplate(removeString);
+            }
             rule.rules.splice(index, 1);
             delete this.levelColl[args.groupID];
-            let elem = groupElem.parentElement.parentElement.parentElement;
-            detach(target);
             this.refreshLevelColl();
             this.disableRuleCondition(elem, rule);
             if (!this.isImportRules) {
@@ -2817,7 +2848,6 @@ let QueryBuilder = class QueryBuilder extends Component {
             if (column && column.template) {
                 this.templateDestroy(column, clnruleElem.querySelector('.e-template').id);
             }
-            rule.rules.splice(index, 1);
             if (!prevElem || prevElem.className.indexOf('e-rule-container') < 0) {
                 if (nextElem) {
                     removeClass([nextElem], 'e-joined-rule');
@@ -2829,6 +2859,10 @@ let QueryBuilder = class QueryBuilder extends Component {
                 }
             }
             detach(clnruleElem);
+            if (column && column.ruleTemplate) {
+                this.clearTemplate([ruleElem.id]);
+            }
+            rule.rules.splice(index, 1);
             if (!(rule.rules[0] && rule.rules[0].rules)) {
                 this.disableRuleCondition(groupElem, rule);
             }

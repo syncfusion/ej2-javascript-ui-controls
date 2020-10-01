@@ -1345,7 +1345,5 @@ exports.NumericTextBox = NumericTextBox;
 return exports;
 
 });
-sfBlazor.modules["numerictextbox"] = "inputs.NumericTextBox";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.numerictextbox, () => {
+
     sf.inputs = sf.base.extend({}, sf.inputs, sfnumerictextbox({}));
-});

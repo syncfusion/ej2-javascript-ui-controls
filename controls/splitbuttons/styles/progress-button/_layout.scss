@@ -297,8 +297,8 @@
       }
 }
 
-  &.e-bigger .e-progress-btn,
-  &.e-bigger.e-progress-btn {
+  #{if(&, '&', '*')}.e-bigger .e-progress-btn,
+  #{if(&, '&', '*')}.e-bigger.e-progress-btn {
     &.e-progress-active:not(.e-hide-spinner) {
       &.e-spin-left:not(.e-round) {
         .e-spinner {

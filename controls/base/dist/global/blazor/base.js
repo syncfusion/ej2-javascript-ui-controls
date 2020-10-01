@@ -7556,7 +7556,6 @@ var Draggable = /** @class */ (function (_super) {
                 element = intClosest;
             }
         }
-        /* istanbul ignore next */
         if (this.isReplaceDragEle) {
             element = this.currentStateCheck(evt.target, element);
         }
@@ -7899,7 +7898,6 @@ var Draggable = /** @class */ (function (_super) {
         }
         return ele;
     };
-    /* istanbul ignore next */
     Draggable.prototype.currentStateCheck = function (ele, oldEle) {
         var elem;
         if (!isNullOrUndefined(this.currentStateTarget) && this.currentStateTarget !== ele) {

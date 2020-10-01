@@ -385,6 +385,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
    * @returns void
    */
   public destroy(): void {
+    // tslint:disable-next-line:no-any
+    if ((this as any).isReact) { this.clearTemplate(); }
     let ele: HTEle = this.element;
     super.destroy();
     this.unwireEvents();
@@ -580,6 +582,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         this.expandItem(true, this.initExpand[i]);
       }
     }
+    // tslint:disable-next-line:no-any
+    if ((this as any).isReact) { this.renderReactTemplates(); }
   }
   private renderItems(): void {
     let ele: HTEle = this.element;
@@ -610,6 +614,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         });
       }
     }
+    // tslint:disable-next-line:no-any
+    if ((this as any).isReact) { this.renderReactTemplates(); }
   }
   private clickHandler(e: Event): void {
     let trgt: HTEle = <HTEle>e.target;
@@ -668,6 +674,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     } else {
       this.afterContentRender(trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem);
     }
+    // tslint:disable-next-line:no-any
+    if ((this as any).isReact) { this.renderReactTemplates(); }
   }
   private afterContentRender(
     trgt: HTEle, eventArgs: AccordionClickArgs, acrdnItem: HTEle, acrdnHdr: HTEle, acrdnCtn: HTEle, acrdnCtnItem: HTEle): void {
@@ -885,13 +893,18 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     }
     let tempArray: HTEle[];
     if (!isNOU(templateFn)) {
+      // tslint:disable-next-line:no-any
+      if ((this as any).isReact) { this.renderReactTemplates(); }
       let templateProps: string;
+      let templateName: string;
       if (ele.classList.contains(CLS_HEADERCTN)) {
         templateProps = this.element.id + index + '_header';
+        templateName = 'header';
       } else if (ele.classList.contains(CLS_CTENT)) {
         templateProps = this.element.id + index + '_content';
+        templateName = 'content';
       }
-      tempArray = templateFn({}, null, null, templateProps, this.isStringTemplate);
+      tempArray = templateFn({}, this, templateName, templateProps, this.isStringTemplate);
     }
     if (!isNOU(tempArray) && tempArray.length > 0 && !(isNOU(tempArray[0].tagName) && tempArray.length === 1)) {
       [].slice.call(tempArray).forEach((el: HTEle): void => {
@@ -922,6 +935,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     attributes(itemcnt, { 'aria-hidden': 'true' });
     let ctn: HTEle = this.createElement('div', { className: CLS_CTENT });
     if (this.dataSource.length > 0) {
+      // tslint:disable-next-line:no-any
+      if ((this as any).isReact) { this.renderReactTemplates(); }
       append(this.getItemTemplate()(this.dataSource[index], this, 'itemTemplate', this.element.id + '_itemTemplate', false), ctn);
       itemcnt.appendChild(ctn);
     } else {
@@ -1183,6 +1198,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         }
       });
     }
+    // tslint:disable-next-line:no-any
+    if ((this as any).isReact) { this.renderReactTemplates(); }
   }
   private expandedItemRefresh(ele: HTEle): void {
     let itemEle: HTEle[] = this.getItemElements();
@@ -1199,6 +1216,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
    * @deprecated
    */
   public removeItem(index: number): void {
+    // tslint:disable-next-line:no-any
+    if ((this as any).isReact) { this.clearTemplate(['headerTemplate', 'itemTemplate'], index); }
     let itemEle: HTEle[] = this.getItemElements();
     let ele: HTEle = <HTEle>itemEle[index];
     let items: Object[] = this.getItems();
@@ -1345,12 +1364,14 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     } else if (!isNOU(ctn)) {
       isExpand ? this.expand(ctn) : this.collapse(ctn);
     }
+    // tslint:disable-next-line:no-any
+    if ((this as any).isReact) { this.renderReactTemplates(); }
   }
   private destroyItems(): void {
     this.restoreContent(null);
-    [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM)).forEach((el: HTEle) => {
-      detach(el);
-    });
+    // tslint:disable-next-line:no-any
+    if ((this as any).isReact) { this.clearTemplate(); }
+    [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM)).forEach((el: HTEle) => { detach(el); });
   }
   private restoreContent(index: number): void {
     let ctnElePos: HTMLElement;

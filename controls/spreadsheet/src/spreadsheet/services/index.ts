@@ -3,4 +3,4 @@
  */
 export * from './dialog';
 export * from './action-events';
-export * from './shape';
+export * from './overlay';

@@ -1,5 +1,5 @@
 @include export-module('dropdowntree-material-dark-icons') {
-  #{&}.e-ddt {
+  .e-ddt {
     .e-ddt-icon::before {
       content: '\e969';
     }

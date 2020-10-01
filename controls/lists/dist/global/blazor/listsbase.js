@@ -542,10 +542,18 @@ exports.cssClass = {
             else {
                 var currentID = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
                 if (isHeader) {
-                    sf.base.append(compiledString(curItem, componentInstance, 'headerTemplate', currentID, !!curOpt.isStringTemplate), li);
+                    // tslint:disable-next-line
+                    var compiledElement = compiledString(curItem, componentInstance, 'headerTemplate', currentID, !!curOpt.isStringTemplate, null, li);
+                    if (compiledElement) {
+                        sf.base.append(compiledElement, li);
+                    }
                 }
                 else {
-                    sf.base.append(compiledString(curItem, componentInstance, 'template', currentID, !!curOpt.isStringTemplate), li);
+                    // tslint:disable-next-line
+                    var compiledElement = compiledString(curItem, componentInstance, 'template', currentID, !!curOpt.isStringTemplate, null, li);
+                    if (compiledElement) {
+                        sf.base.append(compiledElement, li);
+                    }
                 }
                 li.setAttribute('data-value', sf.base.isNullOrUndefined(value) ? 'null' : value);
                 li.setAttribute('role', 'option');
@@ -587,7 +595,11 @@ exports.cssClass = {
             var headerData = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
-            sf.base.append(compiledString(headerData, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), header);
+            // tslint:disable-next-line
+            var compiledElement = compiledString(headerData, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate, null, header);
+            if (compiledElement) {
+                sf.base.append(compiledElement, header);
+            }
         }
         return headerItems;
     }
@@ -598,7 +610,9 @@ exports.cssClass = {
             .substring(1);
     }
     ListBase.generateId = generateId;
-    function processSubChild(createElement, fieldData, fields, ds, options, element, level) {
+    function processSubChild(createElement, fieldData, fields, ds, 
+    // tslint:disable-next-line
+    options, element, level) {
         // Get SubList
         var subDS = fieldData[fields.child] || [];
         var hasChildren = fieldData[fields.hasChildren];
@@ -723,7 +737,7 @@ exports.cssClass = {
     /* tslint:disable:align */
     function generateLI(createElement, item, fieldData, 
     // tslint:disable-next-line
-    fields, className, options, prop, componentInstance) {
+    fields, className, options, componentInstance) {
         var curOpt = sf.base.extend({}, defaultListBaseOptions, options);
         var ariaAttributes = sf.base.extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
         var text = item;
@@ -755,11 +769,19 @@ exports.cssClass = {
         }
         if (grpLI && options && options.groupTemplate) {
             var compiledString = sf.base.compile(options.groupTemplate);
-            sf.base.append(compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
+            // tslint:disable-next-line
+            var compiledElement = compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate, null, li);
+            if (compiledElement) {
+                sf.base.append(compiledElement, li);
+            }
         }
         else if (!grpLI && options && options.template) {
             var compiledString = sf.base.compile(options.template);
-            sf.base.append(compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
+            // tslint:disable-next-line
+            var compiledElement = compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate, null, li);
+            if (compiledElement) {
+                sf.base.append(compiledElement, li);
+            }
         }
         else {
             var innerDiv = createElement('div', {
@@ -1260,5 +1282,4 @@ exports.moveTo = moveTo;
 return exports;
 
 });
-sfBlazor.modules["listsbase"] = "lists.getFieldValues";
 window.sf.lists = window.sf.base.extend({}, window.sf.lists, listsbase({}));

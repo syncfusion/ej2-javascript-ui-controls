@@ -61,7 +61,16 @@ export type PdfAnnotationType =
     /**
      * Ink - Represents the type as Ink.
      */
-    'Ink';
+    'Ink' |
+    /**
+     * SignatureText - Represents the signature as Text.
+     */
+    'SignatureText' |
+    /**
+     * SignatureImage - Represents the signature as Image.
+     */
+    'SignatureImage';
+
 
 
 /**

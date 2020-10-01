@@ -120,38 +120,30 @@ var CheckBox = /** @class */ (function (_super) {
     CheckBox.prototype.destroy = function () {
         var _this = this;
         var wrapper = this.getWrapper();
-        if (sf.base.isBlazor() && this.isServerRendered) {
+        _super.prototype.destroy.call(this);
+        if (this.wrapper) {
+            wrapper = this.wrapper;
             if (!this.disabled) {
-                this.wrapper = wrapper;
                 this.unWireEvents();
             }
-        }
-        else {
-            if (this.wrapper) {
-                wrapper = this.wrapper;
-                _super.prototype.destroy.call(this);
-                if (!this.disabled) {
-                    this.unWireEvents();
+            if (this.tagName === 'INPUT') {
+                if (this.getWrapper()) {
+                    wrapper.parentNode.insertBefore(this.element, wrapper);
                 }
-                if (this.tagName === 'INPUT') {
-                    if (this.getWrapper()) {
-                        wrapper.parentNode.insertBefore(this.element, wrapper);
-                    }
-                    sf.base.detach(wrapper);
-                    this.element.checked = false;
-                    if (this.indeterminate) {
-                        this.element.indeterminate = false;
-                    }
-                    ['name', 'value', 'disabled'].forEach(function (key) {
-                        _this.element.removeAttribute(key);
-                    });
+                sf.base.detach(wrapper);
+                this.element.checked = false;
+                if (this.indeterminate) {
+                    this.element.indeterminate = false;
                 }
-                else {
-                    ['role', 'aria-checked', 'class'].forEach(function (key) {
-                        wrapper.removeAttribute(key);
-                    });
-                    wrapper.innerHTML = '';
-                }
+                ['name', 'value', 'disabled'].forEach(function (key) {
+                    _this.element.removeAttribute(key);
+                });
+            }
+            else {
+                ['role', 'aria-checked', 'class'].forEach(function (key) {
+                    wrapper.removeAttribute(key);
+                });
+                wrapper.innerHTML = '';
             }
         }
     };
@@ -332,9 +324,6 @@ var CheckBox = /** @class */ (function (_super) {
      * @private
      */
     CheckBox.prototype.preRender = function () {
-        if (sf.base.isBlazor() && this.isServerRendered) {
-            return;
-        }
         var element = this.element;
         this.formElement = sf.base.closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -352,15 +341,8 @@ var CheckBox = /** @class */ (function (_super) {
      * @private
      */
     CheckBox.prototype.render = function () {
-        if (sf.base.isBlazor() && this.isServerRendered) {
-            if (sf.base.isRippleEnabled) {
-                sf.base.rippleEffect(this.getWrapper().getElementsByClassName(RIPPLE)[0], { duration: 400, isCenterRipple: true });
-            }
-        }
-        else {
-            this.initWrapper();
-            this.initialize();
-        }
+        this.initWrapper();
+        this.initialize();
         if (!this.disabled) {
             this.wireEvents();
         }
@@ -520,7 +502,5 @@ exports.CheckBox = CheckBox;
 return exports;
 
 });
-sfBlazor.modules["checkbox"] = "buttons.CheckBox";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.checkbox, () => {
+
     sf.buttons = sf.base.extend({}, sf.buttons, sfcheckbox({}));
-});

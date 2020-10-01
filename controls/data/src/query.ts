@@ -30,6 +30,8 @@ export class Query {
     /** @hidden */
     public params: ParamOption[];
     /** @hidden */
+    public lazyLoad: { key: string, value: object | boolean }[];
+    /** @hidden */
     public isCountRequired: boolean;
     /** @hidden */
     public dataManager: DataManager;
@@ -56,6 +58,7 @@ export class Query {
         this.subQuery = null;
         this.isChild = false;
         this.params = [];
+        this.lazyLoad = [];
         return this;
     }
 
@@ -139,6 +142,7 @@ export class Query {
         cloned.fKey = this.fKey;
         cloned.isCountRequired = this.isCountRequired;
         cloned.distincts = this.distincts.slice(0);
+        cloned.lazyLoad = this.lazyLoad.slice(0);
         return cloned;
     }
 

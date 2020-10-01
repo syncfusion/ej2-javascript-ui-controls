@@ -227,6 +227,7 @@ export class LayerPanel {
                         this.renderTileLayer(this, layer, layerIndex);
                     } else if (layer.key && layer.key.length > 1) {
                         let proxy: LayerPanel = this;
+                        let markerGroupElement : HTMLElement = document.getElementById(this.mapObject.element.id + '_Markers_Group');
                         let bing: BingMap = new BingMap(this.mapObject);
                         let bingType: string = layer.bingMapType === 'AerialWithLabel' ? 'AerialWithLabelsOnDemand' : layer.bingMapType;
                         let url: string = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + bingType;
@@ -249,6 +250,11 @@ export class LayerPanel {
                                 bing.maxZoom = maxZoom;
                             }
                             proxy.mapObject['bingMap'] = bing;
+                            if (this.mapObject.isBlazor) {
+                                if (!isNullOrUndefined(markerGroupElement)) {
+                                    removeElement(this.mapObject.element.id + '_Markers_Group');
+                                }
+                            }
                             proxy.renderTileLayer(proxy, layer, layerIndex, bing);
                             this.mapObject.arrangeTemplate();
                         };
@@ -327,7 +333,7 @@ export class LayerPanel {
         });
         this.currentLayer.rectBounds = this.rectBounds;
         if (isNullOrUndefined(this.mapObject.baseMapRectBounds) && this.currentLayer.isBaseLayer) {
-               this.mapObject.baseMapRectBounds = this.rectBounds;
+            this.mapObject.baseMapRectBounds = this.rectBounds;
         }
         let colors: string[] = shapeSettings.palette.length > 1 ? shapeSettings.palette : getShapeColor(this.mapObject.theme);
         let labelTemplateEle: HTMLElement = createElement('div', {
@@ -557,13 +563,11 @@ export class LayerPanel {
             this.layerObject.appendChild(element);
         });
         if (this.mapObject.markerModule) {
-            if (!isNullOrUndefined(this.mapObject.baseMapRectBounds)) {
             this.mapObject.markerModule.markerRender(
                 this.layerObject, layerIndex, (this.mapObject.isTileMap ? Math.floor(this.currentFactor)
                 : this.currentFactor),
                 null
             );
-            }
         }
         this.translateLayerElements(this.layerObject, layerIndex);
         this.layerGroup.appendChild(this.layerObject);
@@ -911,7 +915,7 @@ export class LayerPanel {
             }
             if (layer.layerType === 'OSM' || layer.layerType === 'Bing') {
                 for (let baseTile of proxTiles) {
-                    let subtile: Tile = extend(baseTile, {}, {}, true) as Tile;
+                    let subtile: Tile = extend({}, baseTile, {}, true) as Tile;
                     if (layer.layerType === 'Bing') {
                         subtile.src = bing.getBingMap(subtile, layer.key, layer.bingMapType, userLang, bing.imageUrl, bing.subDomains);
                     } else {

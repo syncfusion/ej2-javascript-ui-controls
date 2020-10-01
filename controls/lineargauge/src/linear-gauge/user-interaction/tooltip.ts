@@ -44,6 +44,7 @@ export class GaugeTooltip {
      * @param pointerElement 
      */
     /* tslint:disable:no-string-literal */
+     //tslint:disable
     public renderTooltip(e: PointerEvent): void {
         let pageX: number; let pageY: number;
         let target: Element; let touchArg: TouchEvent;
@@ -75,6 +76,7 @@ export class GaugeTooltip {
                 formatValue(this.currentPointer.currentValue, this.gauge).toString();
             tooltipEle = this.tooltipCreate(tooltipEle);
             this.tooltipRender(tooltipContent, target, tooltipEle, e, areaRect, pageX, pageY);
+            (this.gauge as any).renderReactTemplates();
         } else if (target.id.indexOf('Range') > -1 && this.gauge.tooltip.type.indexOf('Range') > -1) {
             this.pointerElement = target;
             let areaRect: ClientRect = this.gauge.element.getBoundingClientRect();
@@ -96,8 +98,10 @@ export class GaugeTooltip {
                 'Start : ' + startData + '<br>' + 'End : ' + endData;
             tooltipEle = this.tooltipCreate(tooltipEle);
             this.tooltipRender(tooltipContent, target, tooltipEle, e, areaRect, pageX, pageY);
+            (this.gauge as any).renderReactTemplates();
         } else {
             this.removeTooltip();
+            (this.gauge as any).clearTemplate();
         }
     }
 

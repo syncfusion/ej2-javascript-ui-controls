@@ -509,7 +509,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 element = intClosest;
             }
         }
-        /* istanbul ignore next */
         if (this.isReplaceDragEle) {
             element = this.currentStateCheck(evt.target as any, element);
         }
@@ -854,7 +853,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         }
         return ele;
     }
-    /* istanbul ignore next */
     private currentStateCheck(ele: HTMLElement, oldEle?: HTMLElement): HTMLElement {
         let elem: HTMLElement;
         if (!isNullOrUndefined(this.currentStateTarget) && this.currentStateTarget !== ele) {

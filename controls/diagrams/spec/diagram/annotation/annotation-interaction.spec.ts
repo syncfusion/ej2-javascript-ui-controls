@@ -7,7 +7,7 @@ import { NodeModel, PathModel, } from '../../../src/diagram/objects/node-model';
 import { Node } from '../../../src/diagram/objects/node';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { MouseEvents } from '../interaction/mouseevents.spec';
-import { AnnotationConstraints } from '../../../src/diagram/enum/enum';
+import { AnnotationConstraints, DiagramConstraints } from '../../../src/diagram/enum/enum';
 import { Selector } from '../../../src/diagram/objects/node';
 import { DiagramElement } from '../../../src/diagram/core/elements/diagram-element';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
@@ -1561,5 +1561,50 @@ describe('Diagram Control', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
 
+    });
+    describe('Annotation undo redo not working properly if the line routing is enabled', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement; let left: number; let top: number;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'templateAnnotationInteraction' });
+            document.body.appendChild(ele);
+            let node1: NodeModel = {
+                id: 'node1', width: 90, height: 40, annotations: [{ content: 'Start' }],
+                offsetX: 400, offsetY: 30, shape: { type: 'Flow', shape: 'Terminator' }
+            };
+            diagram = new Diagram({
+                width: 800, height: 500, nodes: [node1],constraints: DiagramConstraints.Default | DiagramConstraints.LineRouting,
+            });
+            diagram.appendTo('#templateAnnotationInteraction');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 1, 1);
+            left = diagram.element.offsetLeft; top = diagram.element.offsetTop;
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Annotation undo redo not working properly if the line routing is enabled', (done: Function) => {
+            let node: NodeModel = (diagram.nodes[0] as NodeModel);
+            expect(node.annotations[0].content === "Start").toBe(true);
+            node.annotations[0].content = "Node";
+            diagram.dataBind();
+            expect(node.annotations[0].content === "Node").toBe(true);
+            diagram.undo();
+            expect(node.annotations[0].content === "Start").toBe(true);
+            diagram.redo();
+            expect(node.annotations[0].content === "Node").toBe(true);
+            done();
+        });
     });
 });

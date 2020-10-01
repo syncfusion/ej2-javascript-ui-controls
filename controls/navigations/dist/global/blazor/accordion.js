@@ -149,6 +149,10 @@ var Accordion = /** @class */ (function (_super) {
      */
     Accordion.prototype.destroy = function () {
         var _this = this;
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         var ele = this.element;
         _super.prototype.destroy.call(this);
         this.unwireEvents();
@@ -348,6 +352,10 @@ var Accordion = /** @class */ (function (_super) {
                 this.expandItem(true, this.initExpand[i]);
             }
         }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     };
     Accordion.prototype.renderItems = function () {
         var _this = this;
@@ -379,6 +387,10 @@ var Accordion = /** @class */ (function (_super) {
                     }
                 });
             }
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     };
     Accordion.prototype.clickHandler = function (e) {
@@ -446,6 +458,10 @@ var Accordion = /** @class */ (function (_super) {
         }
         else {
             this.afterContentRender(trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem);
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     };
     Accordion.prototype.afterContentRender = function (trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem) {
@@ -674,14 +690,21 @@ var Accordion = /** @class */ (function (_super) {
         }
         var tempArray;
         if (!sf.base.isNullOrUndefined(templateFn)) {
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.renderReactTemplates();
+            }
             var templateProps = void 0;
+            var templateName = void 0;
             if (ele.classList.contains(CLS_HEADERCTN)) {
                 templateProps = this.element.id + index + '_header';
+                templateName = 'header';
             }
             else if (ele.classList.contains(CLS_CTENT)) {
                 templateProps = this.element.id + index + '_content';
+                templateName = 'content';
             }
-            tempArray = templateFn({}, null, null, templateProps, this.isStringTemplate);
+            tempArray = templateFn({}, this, templateName, templateProps, this.isStringTemplate);
         }
         if (!sf.base.isNullOrUndefined(tempArray) && tempArray.length > 0 && !(sf.base.isNullOrUndefined(tempArray[0].tagName) && tempArray.length === 1)) {
             [].slice.call(tempArray).forEach(function (el) {
@@ -713,6 +736,10 @@ var Accordion = /** @class */ (function (_super) {
         sf.base.attributes(itemcnt, { 'aria-hidden': 'true' });
         var ctn = this.createElement('div', { className: CLS_CTENT });
         if (this.dataSource.length > 0) {
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.renderReactTemplates();
+            }
             sf.base.append(this.getItemTemplate()(this.dataSource[index], this, 'itemTemplate', this.element.id + '_itemTemplate', false), ctn);
             itemcnt.appendChild(ctn);
         }
@@ -990,6 +1017,10 @@ var Accordion = /** @class */ (function (_super) {
                 }
             });
         }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     };
     Accordion.prototype.expandedItemRefresh = function (ele) {
         var _this = this;
@@ -1007,6 +1038,10 @@ var Accordion = /** @class */ (function (_super) {
      * @deprecated
      */
     Accordion.prototype.removeItem = function (index) {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate(['headerTemplate', 'itemTemplate'], index);
+        }
         var itemEle = this.getItemElements();
         var ele = itemEle[index];
         var items = this.getItems();
@@ -1172,12 +1207,18 @@ var Accordion = /** @class */ (function (_super) {
         else if (!sf.base.isNullOrUndefined(ctn)) {
             isExpand ? this.expand(ctn) : this.collapse(ctn);
         }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     };
     Accordion.prototype.destroyItems = function () {
         this.restoreContent(null);
-        [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM)).forEach(function (el) {
-            sf.base.detach(el);
-        });
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
+        [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM)).forEach(function (el) { sf.base.detach(el); });
     };
     Accordion.prototype.restoreContent = function (index) {
         var ctnElePos;
@@ -1369,7 +1410,5 @@ exports.Accordion = Accordion;
 return exports;
 
 });
-sfBlazor.modules["accordion"] = "navigations.Accordion";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.accordion, () => {
+
     sf.navigations = sf.base.extend({}, sf.navigations, sfaccordion({}));
-});

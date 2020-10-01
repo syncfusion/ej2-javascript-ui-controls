@@ -3859,6 +3859,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         _this.scaleTransform = 'transform .4s cubic-bezier(.25, .8, .25, 1)';
         _this.customAriaText = null;
         _this.drag = true;
+        _this.initialTooltip = true;
         return _this;
     }
     Slider.prototype.preRender = function () {
@@ -4332,24 +4333,27 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             value: this.value,
             text: ''
         };
-        if (isBlazor() && this.isServerRendered) {
-            args.text = this.formatContent(this.tooltipFormatInfo, false);
-        }
-        else {
-            this.setTooltipContent();
-            args.text = text = this.tooltipObj.content;
-        }
-        this.trigger('tooltipChange', args, function (observedArgs) {
-            _this.addTooltipClass(observedArgs.text);
-            if (text !== observedArgs.text) {
-                _this.customAriaText = observedArgs.text;
-                _this.tooltipObj.content = observedArgs.text;
-                _this.setAriaAttrValue(_this.firstHandle);
-                if (_this.type === 'Range') {
-                    _this.setAriaAttrValue(_this.secondHandle);
-                }
+        if (this.initialTooltip) {
+            this.initialTooltip = false;
+            if (isBlazor() && this.isServerRendered) {
+                args.text = this.formatContent(this.tooltipFormatInfo, false);
             }
-        });
+            else {
+                this.setTooltipContent();
+                args.text = text = this.tooltipObj.content;
+            }
+            this.trigger('tooltipChange', args, function (observedArgs) {
+                _this.addTooltipClass(observedArgs.text);
+                if (text !== observedArgs.text) {
+                    _this.customAriaText = observedArgs.text;
+                    _this.tooltipObj.content = observedArgs.text;
+                    _this.setAriaAttrValue(_this.firstHandle);
+                    if (_this.type === 'Range') {
+                        _this.setAriaAttrValue(_this.secondHandle);
+                    }
+                }
+            });
+        }
     };
     Slider.prototype.setTooltipContent = function () {
         var content;
@@ -5400,6 +5404,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             this.setProperties({ 'value': this.handleVal1 }, true);
             if (previous !== this.value) {
                 this.trigger(eventName, this.changeEventArgs(eventName, e));
+                this.initialTooltip = true;
                 this.setPreviousVal(eventName, this.value);
             }
             this.setAriaAttrValue(this.firstHandle);
@@ -5409,7 +5414,9 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             this.setProperties({ 'value': value }, true);
             if (previous.length === this.value.length
                 && this.value[0] !== previous[0] || this.value[1] !== previous[1]) {
+                this.initialTooltip = false;
                 this.trigger(eventName, this.changeEventArgs(eventName, e));
+                this.initialTooltip = true;
                 this.setPreviousVal(eventName, this.value);
             }
             this.setAriaAttrValue(this.getHandle());
@@ -5418,7 +5425,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
     };
     Slider.prototype.changeEventArgs = function (eventName, e) {
         var eventArgs;
-        if (this.tooltip.isVisible && this.tooltipObj) {
+        if (this.tooltip.isVisible && this.tooltipObj && this.initialTooltip) {
             if (!isBlazor() || !this.isServerRendered) {
                 this.tooltipValue();
             }
@@ -5791,6 +5798,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             this.rangeBar.style.transition = transition.rangeBar;
         }
         this.setHandlePosition(evt);
+        this.changeEvent('changed', evt);
         if (this.type !== 'Default') {
             this.setRangeBar();
         }
@@ -5881,6 +5889,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         this.handleFocusOut();
         this.firstHandle.classList.remove(classNames.sliderActiveHandle);
         if (this.type === 'Range') {
+            this.initialTooltip = false;
             this.secondHandle.classList.remove(classNames.sliderActiveHandle);
         }
         this.closeTooltip();
@@ -6004,7 +6013,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         return 1;
     };
     Slider.prototype.refreshTooltip = function (target) {
-        if (this.tooltip.isVisible && this.tooltipObj) {
+        if (this.tooltip.isVisible && this.tooltipObj && this.initialTooltip) {
             this.tooltipValue();
             if (target) {
                 this.tooltipObj.refresh(target);
@@ -8172,7 +8181,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             if (!enableDropText && dropTextArea) {
-                dropTextArea.remove();
+                remove(dropTextArea);
             }
         }
         else if (!isNullOrUndefined(this.uploaderOptions) && this.uploaderOptions.dropArea === undefined) {
@@ -8190,7 +8199,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             this.dropZoneElement = null;
             var dropTextArea = this.dropAreaWrapper.querySelector('.e-file-drop');
             if (dropTextArea) {
-                dropTextArea.remove();
+                remove(dropTextArea);
             }
         }
     };
@@ -8314,7 +8323,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         if (this.isForm) {
             EventHandler.remove(this.formElement, 'reset', this.resetForm);
         }
-        this.keyboardModule.destroy();
+        if (this.keyboardModule) {
+            this.keyboardModule.destroy();
+        }
     };
     Uploader.prototype.resetForm = function () {
         this.clearAll();
@@ -8761,7 +8772,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var _loop_4 = function (i) {
             // tslint:disable-next-line
             this_2.filesEntries[i].file(function (fileObj) {
-                if (_this.filesEntries) {
+                if (_this.filesEntries.length) {
                     var path = _this.filesEntries[i].fullPath;
                     files.push({ 'path': path, 'file': fileObj });
                     if (i === _this.filesEntries.length - 1) {
@@ -9062,9 +9073,13 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             var listItem = fileData_1[_i];
             var liElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
             this.uploadTemplateFn = this.templateComplier(this.template);
-            var fromElements = [].slice.call(this.uploadTemplateFn(listItem, this, 'template', this.element.id + 'Template', this.isStringTemplate));
+            // tslint:disable-next-line
+            var liTempCompiler = this.uploadTemplateFn(listItem, this, 'template', this.element.id + 'Template', this.isStringTemplate, null, liElement);
+            if (liTempCompiler) {
+                var fromElements = [].slice.call(liTempCompiler);
+                append(fromElements, liElement);
+            }
             var index = fileData.indexOf(listItem);
-            append(fromElements, liElement);
             var eventArgs = {
                 element: liElement,
                 fileInfo: listItem,
@@ -9082,6 +9097,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             this.listParent.appendChild(liElement);
             this.fileList.push(liElement);
         }
+        this.renderReactTemplates();
         updateBlazorTemplate(this.element.id + 'Template', 'Template', this, false);
     };
     Uploader.prototype.createParentUL = function () {
@@ -9261,9 +9277,13 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var result = this.mergeFileInfo(fileData, fileList);
         fileList.setAttribute('data-file-name', result.name);
         this.uploadTemplateFn = this.templateComplier(this.template);
-        var fromElements = [].slice.call(this.uploadTemplateFn(result, this, 'template', this.element.id + 'Template', this.isStringTemplate));
+        // tslint:disable-next-line
+        var liTempCompiler = this.uploadTemplateFn(result, this, 'template', this.element.id + 'Template', this.isStringTemplate, null, fileList);
+        if (liTempCompiler) {
+            var fromElements = [].slice.call(liTempCompiler);
+            append(fromElements, fileList);
+        }
         var index = this.listParent.querySelectorAll('li').length;
-        append(fromElements, fileList);
         if (!fileList.classList.contains(INVALID_FILE)) {
             this.createFormInput(fileData);
         }
@@ -9283,6 +9303,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         this.trigger('fileListRendering', eventsArgs);
         this.listParent.appendChild(fileList);
         this.fileList.push(fileList);
+        this.renderReactTemplates();
         updateBlazorTemplate(this.element.id + 'Template', 'Template', this, false);
     };
     /**
@@ -10417,6 +10438,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      */
     Uploader.prototype.destroy = function () {
         this.element.value = null;
+        this.clearTemplate();
         if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
             this.clearAll();
         }
@@ -13309,6 +13331,21 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             EventHandler.add(this.formElement, 'reset', this.resetForm, this);
         }
         this.bindClearEvent();
+        if (!isNullOrUndefined(this.textboxWrapper.container.querySelector('.e-float-text')) && this.floatLabelType === 'Auto'
+            && this.textboxWrapper.container.classList.contains('e-autofill') &&
+            this.textboxWrapper.container.classList.contains('e-outline')) {
+            EventHandler.add((this.textboxWrapper.container.querySelector('.e-float-text')), 'animationstart', this.animationHandler, this);
+        }
+    };
+    TextBox.prototype.animationHandler = function () {
+        this.textboxWrapper.container.classList.add('e-valid-input');
+        var label = this.textboxWrapper.container.querySelector('.e-float-text');
+        if (!isNullOrUndefined(label)) {
+            label.classList.add('e-label-top');
+            if (label.classList.contains('e-label-bottom')) {
+                label.classList.remove('e-label-bottom');
+            }
+        }
     };
     TextBox.prototype.resetValue = function (value) {
         var prevOnChange = this.isProtectedOnChange;
@@ -13433,6 +13470,11 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.respectiveElement, 'change', this.changeHandler);
         if (this.isForm) {
             EventHandler.remove(this.formElement, 'reset', this.resetForm);
+        }
+        if (!isNullOrUndefined(this.textboxWrapper.container.querySelector('.e-float-text')) && this.floatLabelType === 'Auto'
+            && this.textboxWrapper.container.classList.contains('e-outline') &&
+            this.textboxWrapper.container.classList.contains('e-autofill')) {
+            EventHandler.remove((this.textboxWrapper.container.querySelector('.e-float-text')), 'animationstart', this.animationHandler);
         }
     };
     /**

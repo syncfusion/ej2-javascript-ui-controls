@@ -1539,58 +1539,61 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @return {void}
      */
     public destroy(): void {
-        if (this.isDestroyed || this.element.offsetParent === null) { return; }
-        if (this.isRendered) {
-            this.notify(events.destroy, {});
-            this.destroyDependentModules();
-            if (!isNOU(this.timeInterval)) {
-                clearInterval(this.timeInterval);
-                this.timeInterval = null;
-            }
-            this.unWireEvents();
-            if (this.originalElement.tagName === 'TEXTAREA') {
-                if (isBlazor()) {
-                    detach(this.valueContainer);
-                    this.valueContainer = this.element.querySelector('.e-blazor-hidden.e-control.e-richtexteditor');
-                }
-                this.element.parentElement.insertBefore(this.valueContainer, this.element);
-                this.valueContainer.id = this.getID();
-                this.valueContainer.removeAttribute('name');
-                detach(this.element);
-                if (this.originalElement.innerHTML.trim() !== '') {
-                    if (!isBlazor()) {
-                        this.valueContainer.value = this.originalElement.innerHTML.trim();
-                        this.setProperties({ value: (!isNOU(this.initialValue) ? this.initialValue : null) }, true);
-                    }
-                } else {
-                    this.valueContainer.value = !this.isBlazor() ? this.valueContainer.defaultValue : this.defaultResetValue;
-                }
-                this.element = this.valueContainer;
-                for (let i: number = 0; i < this.originalElement.classList.length; i++) {
-                    addClass([this.element], this.originalElement.classList[i]);
-                }
-                removeClass([this.element], classes.CLS_RTE_HIDDEN);
-            } else {
-                if (this.originalElement.innerHTML.trim() !== '') {
-                    this.element.innerHTML = this.originalElement.innerHTML.trim();
-                    this.setProperties({ value: (!isNOU(this.initialValue) ? this.initialValue : null) }, true);
-                } else {
-                    this.element.innerHTML = '';
-                }
-            }
-            if (this.placeholder && this.placeHolderWrapper) {
-                this.placeHolderWrapper = null;
-            }
-            if (!isNOU(this.cssClass)) {
-                removeClass([this.element], this.cssClass);
-            }
-            this.removeHtmlAttributes();
-            this.removeAttributes();
-            super.destroy();
-            this.isRendered = false;
-            if (this.enablePersistence) { window.localStorage.removeItem(this.getModuleName() + this.element.id); }
+        if (this.isDestroyed || !this.isRendered) { return; }
+        if (this.element.offsetParent === null) {
+            this.toolbarModule.destroy();
+            return;
         }
+        this.notify(events.destroy, {});
+        this.destroyDependentModules();
+        if (!isNOU(this.timeInterval)) {
+            clearInterval(this.timeInterval);
+            this.timeInterval = null;
+        }
+        this.unWireEvents();
+        if (this.originalElement.tagName === 'TEXTAREA') {
+            if (isBlazor()) {
+                detach(this.valueContainer);
+                this.valueContainer = this.element.querySelector('.e-blazor-hidden.e-control.e-richtexteditor');
+            }
+            this.element.parentElement.insertBefore(this.valueContainer, this.element);
+            this.valueContainer.id = this.getID();
+            this.valueContainer.removeAttribute('name');
+            detach(this.element);
+            if (this.originalElement.innerHTML.trim() !== '') {
+                if (!isBlazor()) {
+                    this.valueContainer.value = this.originalElement.innerHTML.trim();
+                    this.setProperties({ value: (!isNOU(this.initialValue) ? this.initialValue : null) }, true);
+                }
+            } else {
+                this.valueContainer.value = !this.isBlazor() ? this.valueContainer.defaultValue : this.defaultResetValue;
+            }
+            this.element = this.valueContainer;
+            for (let i: number = 0; i < this.originalElement.classList.length; i++) {
+                addClass([this.element], this.originalElement.classList[i]);
+            }
+            removeClass([this.element], classes.CLS_RTE_HIDDEN);
+        } else {
+            if (this.originalElement.innerHTML.trim() !== '') {
+                this.element.innerHTML = this.originalElement.innerHTML.trim();
+                this.setProperties({ value: (!isNOU(this.initialValue) ? this.initialValue : null) }, true);
+            } else {
+                this.element.innerHTML = '';
+            }
+        }
+        if (this.placeholder && this.placeHolderWrapper) {
+            this.placeHolderWrapper = null;
+        }
+        if (!isNOU(this.cssClass)) {
+            removeClass([this.element], this.cssClass);
+        }
+        this.removeHtmlAttributes();
+        this.removeAttributes();
+        super.destroy();
+        this.isRendered = false;
+        if (this.enablePersistence) { window.localStorage.removeItem(this.getModuleName() + this.element.id); }
     }
+
 
     private removeHtmlAttributes(): void {
         if (this.htmlAttributes) {

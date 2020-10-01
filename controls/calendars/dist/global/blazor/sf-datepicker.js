@@ -3,9 +3,12 @@ window.sfBlazor.DatePicker = (function () {
 'use strict';
 
 var ROOT = 'e-datepicker';
-var POPUPWRAPPER = 'e-popup-wrapper';
+var POPUPDIMENSION = '240px';
+var HALFPOSITION = 2;
+var POPUP_CONTAINER = 'e-popup-wrapper';
 var POPUP = 'e-popup';
 var OVERFLOW = 'e-date-overflow';
+var TIME_OVERFLOW = 'e-time-overflow';
 var CONENT = 'e-content';
 var FOOTER_CONTAINER = 'e-footer-container';
 var INPUT_HANDLER = 'InputKeyActionHandle';
@@ -23,8 +26,8 @@ var OFFSETVALUE = 4;
 var OPENDURATION = 300;
 var INPUTCONTAINER = 'e-input-group';
 var SfDatePicker = /** @class */ (function () {
-    function SfDatePicker(wrapperElement, element, dotnetRef, options) {
-        this.wrapperElement = wrapperElement;
+    function SfDatePicker(containerElement, element, dotnetRef, options) {
+        this.containerElement = containerElement;
         this.element = element;
         this.options = options;
         this.element.blazor__instance = this;
@@ -65,7 +68,7 @@ var SfDatePicker = /** @class */ (function () {
     };
     SfDatePicker.prototype.inputKeyActionHandle = function (e) {
         var keyEventsArgs;
-        if (this.popupObj && this.popupObj.element.classList.contains(POPUP)) {
+        if (this.popupObj && this.popupObj.element.classList.contains(POPUP) && this.options.isDatePopup) {
             var focusedDate = this.tableBodyElement.querySelector('tr td.e-focused-date');
             var selectedDate = this.tableBodyElement.querySelector('tr td.' + SELECTED);
             this.tableBodyElement.focus();
@@ -97,13 +100,17 @@ var SfDatePicker = /** @class */ (function () {
         this.options = options;
         this.popupHolder = popupHolderEle;
         this.createCalendar(popupElement, options);
-        if (sf.base.Browser.isDevice) {
-            this.mobilePopupWrapper = sf.base.createElement('div', { className: 'e-datepick-mob-popup-wrap' });
-            document.body.appendChild(this.mobilePopupWrapper);
+        if (sf.base.Browser.isDevice && options.isDatePopup) {
+            this.mobilePopupContainer = sf.base.createElement('div', { className: 'e-datepick-mob-popup-wrap' });
+            document.body.appendChild(this.mobilePopupContainer);
         }
-        var appendToElement = openEventArgs.appendTo === 'model' ? this.mobilePopupWrapper : document.body;
-        appendToElement.appendChild(this.popupWrapper);
+        var appendToElement = openEventArgs.appendTo === 'model' && this.mobilePopupContainer ? this.mobilePopupContainer
+            : document.body;
+        appendToElement.appendChild(this.popupContainer);
         this.popupObj.refreshPosition(this.element);
+        if (!options.isDatePopup) {
+            this.setScrollPosition();
+        }
         var openAnimation = {
             name: 'FadeIn',
             duration: sf.base.Browser.isDevice ? 0 : OPENDURATION,
@@ -114,14 +121,14 @@ var SfDatePicker = /** @class */ (function () {
         else {
             this.popupObj.show(new sf.base.Animation(openAnimation), null);
         }
-        this.setOverlayIndex(this.mobilePopupWrapper, this.popupObj.element, this.modal, sf.base.Browser.isDevice);
+        this.setOverlayIndex(this.mobilePopupContainer, this.popupObj.element, this.modal, sf.base.Browser.isDevice);
         sf.base.EventHandler.add(document, MOUSE_TOUCH_EVENT, this.documentHandler, this);
     };
-    SfDatePicker.prototype.setOverlayIndex = function (popupWrapper, popupElement, modal, isDevice) {
-        if (isDevice && !sf.base.isNullOrUndefined(popupElement) && !sf.base.isNullOrUndefined(modal) && !sf.base.isNullOrUndefined(popupWrapper)) {
+    SfDatePicker.prototype.setOverlayIndex = function (popupContainer, popupElement, modal, isDevice) {
+        if (isDevice && !sf.base.isNullOrUndefined(popupElement) && !sf.base.isNullOrUndefined(modal) && !sf.base.isNullOrUndefined(popupContainer)) {
             var index = parseInt(popupElement.style.zIndex, 10) ? parseInt(popupElement.style.zIndex, 10) : 1000;
             modal.style.zIndex = (index - 1).toString();
-            popupWrapper.style.zIndex = index.toString();
+            popupContainer.style.zIndex = index.toString();
         }
     };
     SfDatePicker.prototype.closePopup = function (closeEventArgs, options) {
@@ -130,20 +137,28 @@ var SfDatePicker = /** @class */ (function () {
     };
     SfDatePicker.prototype.createCalendar = function (popupElement, options) {
         var _this = this;
-        this.popupWrapper = popupElement;
-        this.calendarElement = this.popupWrapper.firstElementChild;
+        this.popupContainer = popupElement;
+        this.calendarElement = this.popupContainer.firstElementChild;
         this.tableBodyElement = sf.base.select(TBODY, this.calendarElement);
-        this.contentElement = sf.base.select('.' + CONENT, this.calendarElement);
+        var modelClassName = '' + ROOT + ' e-date-modal';
+        var modelOverflow = ' ' + OVERFLOW;
+        if (!options.isDatePopup) {
+            modelClassName = 'e-datetimepicker e-time-modal';
+            modelOverflow = TIME_OVERFLOW;
+        }
+        else {
+            this.calendarElement.querySelector(TABLE + ' ' + TBODY).className = '';
+        }
         if (sf.base.Browser.isDevice) {
             this.modal = sf.base.createElement('div');
-            this.modal.className = '' + ROOT + ' e-date-modal';
-            document.body.className += ' ' + OVERFLOW;
+            this.modal.className = modelClassName;
+            document.body.className += modelOverflow;
             this.modal.style.display = 'block';
             document.body.appendChild(this.modal);
         }
-        this.calendarElement.querySelector(TABLE + ' ' + TBODY).className = '';
-        this.popupObj = new sf.popups.Popup(this.popupWrapper, {
-            relateTo: sf.base.Browser.isDevice ? document.body : this.wrapperElement,
+        this.popupObj = new sf.popups.Popup(this.popupContainer, {
+            width: options.isDatePopup ? 'auto' : this.setPopupWidth(this.options.width),
+            relateTo: sf.base.Browser.isDevice ? document.body : this.containerElement,
             position: sf.base.Browser.isDevice ? { X: 'center', Y: 'center' } : { X: 'left', Y: 'bottom' },
             offsetY: OFFSETVALUE,
             targetType: 'container',
@@ -151,7 +166,7 @@ var SfDatePicker = /** @class */ (function () {
             zIndex: options.zIndex,
             collision: sf.base.Browser.isDevice ? { X: 'fit', Y: 'fit' } : { X: 'flip', Y: 'flip' },
             open: function () {
-                if (document.activeElement !== _this.element) {
+                if (document.activeElement !== _this.element && options.isDatePopup) {
                     _this.defaultKeyConfigs = sf.base.extend(_this.defaultKeyConfigs, options.keyConfigs);
                     _this.calendarElement.children[1].firstElementChild.focus();
                     new sf.base.KeyboardEvents(_this.calendarElement.children[1].firstElementChild, {
@@ -159,14 +174,14 @@ var SfDatePicker = /** @class */ (function () {
                         keyAction: _this.CalendarKeyActionHandle.bind(_this),
                         keyConfigs: _this.defaultKeyConfigs
                     });
-                    new sf.base.KeyboardEvents(_this.wrapperElement.children[_this.index], {
+                    new sf.base.KeyboardEvents(_this.containerElement.children[_this.index], {
                         eventName: 'keydown',
                         keyAction: _this.CalendarKeyActionHandle.bind(_this),
                         keyConfigs: _this.defaultKeyConfigs
                     });
                 }
             }, close: function () {
-                _this.popupHolder.appendChild(_this.popupWrapper);
+                _this.popupHolder.appendChild(_this.popupContainer);
                 if (_this.popupObj) {
                     _this.popupObj.destroy();
                 }
@@ -178,6 +193,33 @@ var SfDatePicker = /** @class */ (function () {
                 }
             }
         });
+        if (!options.isDatePopup) {
+            this.popupObj.element.style.maxHeight = POPUPDIMENSION;
+        }
+    };
+    SfDatePicker.prototype.getPopupHeight = function () {
+        var height = parseInt(POPUPDIMENSION, 10);
+        var popupHeight = this.popupContainer.getBoundingClientRect().height;
+        return popupHeight > height ? height : popupHeight;
+    };
+    SfDatePicker.prototype.setScrollPosition = function () {
+        if ((this.popupContainer && this.popupContainer.querySelector('.e-navigation') || this.popupContainer.querySelector('.e-active'))
+            && !this.options.isDatePopup) {
+            var selectElement = this.popupContainer.querySelector('.e-navigation') || this.popupContainer.querySelector('.e-active');
+            this.findScrollTop(selectElement);
+        }
+    };
+    SfDatePicker.prototype.findScrollTop = function (element) {
+        var listHeight = this.getPopupHeight();
+        var nextEle = element.nextElementSibling;
+        var height = nextEle ? nextEle.offsetTop : element.offsetTop;
+        var liHeight = element.getBoundingClientRect().height;
+        if ((height + element.offsetTop) > listHeight) {
+            this.popupContainer.scrollTop = nextEle ? (height - (listHeight / HALFPOSITION + liHeight / HALFPOSITION)) : height;
+        }
+        else {
+            this.popupContainer.scrollTop = 0;
+        }
     };
     SfDatePicker.prototype.closeEventCallback = function (eventArgs) {
         var preventArgs = eventArgs;
@@ -191,9 +233,9 @@ var SfDatePicker = /** @class */ (function () {
         }
         if (sf.base.Browser.isDevice) {
             sf.base.removeClass([document.body], OVERFLOW);
-            if (!sf.base.isNullOrUndefined(this.mobilePopupWrapper)) {
-                this.mobilePopupWrapper.remove();
-                this.mobilePopupWrapper = null;
+            if (!sf.base.isNullOrUndefined(this.mobilePopupContainer)) {
+                this.mobilePopupContainer.remove();
+                this.mobilePopupContainer = null;
             }
         }
         sf.base.EventHandler.remove(document, MOUSE_TOUCH_EVENT, this.documentHandler);
@@ -202,19 +244,20 @@ var SfDatePicker = /** @class */ (function () {
         }
     };
     SfDatePicker.prototype.documentHandler = function (e) {
-        if ((!sf.base.isNullOrUndefined(this.popupObj) && (this.wrapperElement.contains(e.target) ||
+        if ((!sf.base.isNullOrUndefined(this.popupObj) && (this.containerElement.contains(e.target) ||
             (this.popupObj.element && this.popupObj.element.contains(e.target)))) && e.type !== 'touchstart') {
             e.preventDefault();
         }
         var dateValue = this.options.value ? this.options.value.toString() : null;
         var target = e.target;
-        if (!(sf.base.closest(target, '.' + ROOT + '.' + POPUPWRAPPER))
-            && !(sf.base.closest(target, '.' + INPUTCONTAINER) === this.wrapperElement)
+        if (!(sf.base.closest(target, '.' + ROOT + '.' + POPUP_CONTAINER))
+            && !sf.base.closest(target, '.' + 'e-datetimepicker' + '.' + POPUP_CONTAINER)
+            && !(sf.base.closest(target, '.' + INPUTCONTAINER) === this.containerElement)
             && (!target.classList.contains(DAY))) {
             this.dotNetRef.invokeMethodAsync(HIDE_POPUP, e);
             this.element.focus();
         }
-        else if (sf.base.closest(target, '.' + ROOT + '.' + POPUPWRAPPER)) {
+        else if (sf.base.closest(target, '.' + ROOT + '.' + POPUP_CONTAINER)) {
             if (target.classList.contains(DAY)
                 && !sf.base.isNullOrUndefined(e.target.parentElement)
                 && e.target.parentElement.classList.contains(SELECTED)
@@ -244,7 +287,7 @@ var SfDatePicker = /** @class */ (function () {
         return tempValue;
     };
     SfDatePicker.prototype.isCalendar = function () {
-        return this.popupWrapper && this.popupWrapper.classList.contains('' + POPUPWRAPPER);
+        return this.popupContainer && this.popupContainer.classList.contains('' + POPUP_CONTAINER);
     };
     SfDatePicker.prototype.CalendarKeyActionHandle = function (e) {
         switch (e.action) {
@@ -265,13 +308,34 @@ var SfDatePicker = /** @class */ (function () {
                 this.dotNetRef.invokeMethodAsync(HIDE_POPUP, e);
         }
     };
+    SfDatePicker.prototype.setWidth = function (width) {
+        if (typeof width === 'number') {
+            width = sf.base.formatUnit(width);
+        }
+        else if (typeof width === 'string') {
+            width = (width.match(/px|%|em/)) ? width : sf.base.formatUnit(width);
+        }
+        else {
+            width = '100%';
+        }
+        return width;
+    };
+    SfDatePicker.prototype.setPopupWidth = function (width) {
+        width = this.setWidth(width);
+        if (width.indexOf('%') > -1) {
+            var containerStyle = this.containerElement.getBoundingClientRect();
+            var inputWidth = containerStyle.width * parseFloat(width) / 100;
+            width = inputWidth.toString() + 'px';
+        }
+        return width;
+    };
     return SfDatePicker;
 }());
 // tslint:disable
 var DatePicker = {
-    initialize: function (wrapperElement, element, dotnetRef, options) {
+    initialize: function (containerElement, element, dotnetRef, options) {
         if (element) {
-            new SfDatePicker(wrapperElement, element, dotnetRef, options);
+            new SfDatePicker(containerElement, element, dotnetRef, options);
         }
         if (element && element.blazor__instance) {
             element.blazor__instance.initialize();
@@ -280,6 +344,11 @@ var DatePicker = {
     renderPopup: function (element, popupElement, popupHolderEle, openEventArgs, options) {
         if (element && element.blazor__instance && popupElement && popupHolderEle) {
             element.blazor__instance.renderPopup(popupElement, popupHolderEle, openEventArgs, options);
+        }
+    },
+    updateScrollPosition: function (element) {
+        if (element && element.blazor__instance) {
+            element.blazor__instance.setScrollPosition();
         }
     },
     // tslint:disable

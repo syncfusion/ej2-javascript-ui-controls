@@ -1171,6 +1171,13 @@ describe('DropDownTree control', () => {
             let chipElement_1 = ddtreeObj.element.parentElement.firstElementChild;
             let chips_3 = chipElement_1.querySelectorAll('.e-chips');
             expect(chips_3.length).toBe(0);
+            ddtreeObj.showCheckBox = true;
+            ddtreeObj.dataBind();
+            ddtreeObj.sortOrder = 'Descending';
+            ddtreeObj.dataBind();
+            expect(ddtreeObj.text).toBe('Australia');
+            expect(ddtreeObj.value.length).toBe(1);
+            expect(ddtreeObj.tree.querySelector("[data-uid='1']").querySelector('.e-checkbox-wrapper').getAttribute('aria-checked')).toBe('true');
         });
 
         /**

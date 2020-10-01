@@ -2817,6 +2817,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * @hidden
      */
     public renderPivotGrid(): void {
+        this.clearTemplate();
         if (this.currentView === 'Table') {
             /* tslint:disable-next-line */
             if (this.cellTemplate && isBlazor()) {

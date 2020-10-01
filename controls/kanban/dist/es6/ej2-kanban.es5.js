@@ -374,6 +374,45 @@ var StackedHeaders = /** @__PURE__ @class */ (function (_super) {
     return StackedHeaders;
 }(ChildProperty));
 
+var __extends$6 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Holds the configuration of sort settings in kanban board.
+ */
+var SortSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$6(SortSettings, _super);
+    function SortSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$6([
+        Property('DataSourceOrder')
+    ], SortSettings.prototype, "sortBy", void 0);
+    __decorate$6([
+        Property()
+    ], SortSettings.prototype, "field", void 0);
+    __decorate$6([
+        Property('Ascending')
+    ], SortSettings.prototype, "direction", void 0);
+    return SortSettings;
+}(ChildProperty));
+
 /**
  * Kanban CSS Constants
  */
@@ -1230,7 +1269,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         this.dragObj.targetCloneMulti = createElement('div', { className: TARGET_MULTI_CLONE_CLASS });
         this.dragObj.targetClone = createElement('div', {
             className: DROPPED_CLONE_CLASS,
-            styles: 'width:' + formatUnit(this.dragObj.element.offsetWidth) + ';height:' + formatUnit(this.dragObj.element.offsetHeight)
+            styles: 'width:100%;height:' + formatUnit(this.dragObj.element.offsetHeight)
         });
         this.dragObj.modifiedData = [];
         return this.dragObj.cloneElement;
@@ -1363,10 +1402,6 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
             removeClass(tColumn, TOGGLE_VISIBLE_CLASS);
         }
         this.parent.notify(contentReady, {});
-        var cloneCell = closest(target, '.' + CONTENT_CELLS_CLASS + ':not(.' + COLLAPSED_CLASS + ')');
-        if (cloneCell) {
-            this.dragObj.targetClone.style.width = formatUnit((cloneCell.offsetWidth - 2) - cardSpace);
-        }
         var multiKeyTarget = closest(target, '.' + MULTI_COLUMN_KEY_CLASS);
         if (multiKeyTarget) {
             var columnKeys = [].slice.call(this.parent.element.querySelectorAll('.' + MULTI_COLUMN_KEY_CLASS)).filter(function (element) { return _this.getColumnKey(element) === _this.getColumnKey(multiKeyTarget); });
@@ -1393,9 +1428,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
             this.multiCloneRemove();
         }
         this.updateScrollPosition(e);
-        var dragArgs = {
-            data: this.dragObj.cardDetails, event: e, element: this.dragObj.selectedCards
-        };
+        var dragArgs = { data: this.dragObj.cardDetails, event: e, element: this.dragObj.selectedCards };
         this.parent.trigger(drag, dragArgs);
     };
     DragAndDrop.prototype.removeElement = function (element) {
@@ -1419,10 +1452,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         this.removeElement(this.dragObj.targetClone);
         for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
             var key = keys_1[_i];
-            var colKey = createElement('div', {
-                className: MULTI_COLUMN_KEY_CLASS,
-                attrs: { 'data-key': key.trim() }
-            });
+            var colKey = createElement('div', { className: MULTI_COLUMN_KEY_CLASS, attrs: { 'data-key': key.trim() } });
             var text = createElement('div', { className: 'e-text', innerHTML: key.trim() });
             contentCell.appendChild(this.dragObj.targetCloneMulti).appendChild(colKey).appendChild(text);
             colKey.style.lineHeight = colKey.style.height = formatUnit((offsetHeight / keys.length));
@@ -1753,7 +1783,9 @@ var KanbanDialog = /** @__PURE__ @class */ (function () {
                     this.destroyComponents();
                     [].slice.call(form.childNodes).forEach(function (node) { return remove(node); });
                 }
-                append(this.parent.templateParser(this.parent.dialogSettings.template)(args), form);
+                var templateId = this.parent.element.id + '_dialogTemplate';
+                var dialogTemplate = this.parent.templateParser(this.parent.dialogSettings.template)(args, this.parent, 'template', templateId, false);
+                append(dialogTemplate, form);
             }
             else {
                 var dialogWrapper = createElement('div', { className: DIALOG_CONTENT_CONTAINER });
@@ -1824,7 +1856,8 @@ var KanbanDialog = /** @__PURE__ @class */ (function () {
         var element = createElement('input', { className: FIELD_CLASS, attrs: { 'name': field.key } });
         wrapper.appendChild(element);
         var controlObj;
-        var fieldValue = this.parent.activeCardData.data ? this.parent.activeCardData.data[field.key] : null;
+        var fieldValue = this.parent.activeCardData.data ?
+            this.parent.activeCardData.data[field.key] : null;
         switch (field.type) {
             case 'DropDown':
                 var dropDownOptions = void 0;
@@ -2383,7 +2416,8 @@ var KanbanTooltip = /** @__PURE__ @class */ (function () {
             position: 'BottomCenter',
             showTipPointer: true,
             target: '.' + TOOLTIP_TEXT_CLASS,
-            beforeRender: this.onBeforeRender.bind(this)
+            beforeRender: this.onBeforeRender.bind(this),
+            beforeClose: this.onBeforeClose.bind(this)
         });
         this.tooltipObj.appendTo(this.parent.element);
         this.tooltipObj.isStringTemplate = true;
@@ -2398,13 +2432,18 @@ var KanbanTooltip = /** @__PURE__ @class */ (function () {
             tooltipContent = createElement('div');
             var target = closest(args.target, '.' + CARD_CLASS);
             var data = this.parent.getCardDetails(target);
-            var tooltipTemplate = this.parent.templateParser(this.parent.tooltipTemplate)(data);
+            var templateId = this.parent.element.id + '_tooltipTemplate';
+            var tooltipTemplate = this.parent.templateParser(this.parent.tooltipTemplate)(data, this.parent, 'tooltipTemplate', templateId, false);
             append(tooltipTemplate, tooltipContent);
+            this.parent.renderTemplates();
         }
         else {
             tooltipContent = "<div class=\"e-card-header-caption\">" + args.target.innerText + "</div>";
         }
         this.tooltipObj.setProperties({ content: tooltipContent }, true);
+    };
+    KanbanTooltip.prototype.onBeforeClose = function () {
+        this.parent.resetTemplates(['tooltipTemplate']);
     };
     KanbanTooltip.prototype.destroy = function () {
         this.tooltipObj.destroy();
@@ -2638,7 +2677,7 @@ var MobileLayout = /** @__PURE__ @class */ (function () {
     return MobileLayout;
 }());
 
-var __extends$6 = (undefined && undefined.__extends) || (function () {
+var __extends$7 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -2655,7 +2694,7 @@ var __extends$6 = (undefined && undefined.__extends) || (function () {
  * Kanban layout rendering module
  */
 var LayoutRender = /** @__PURE__ @class */ (function (_super) {
-    __extends$6(LayoutRender, _super);
+    __extends$7(LayoutRender, _super);
     /**
      * Constructor for layout module
      */
@@ -2701,12 +2740,16 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             this.renderContent();
             this.renderCards();
             this.renderValidation();
+            this.parent.renderTemplates();
         }
         else {
             this.initializeSwimlaneTree();
         }
         this.parent.notify(contentReady, {});
         this.wireEvents();
+        if (this.parent.isInitialRender) {
+            this.parent.isInitialRender = false;
+        }
     };
     LayoutRender.prototype.renderHeader = function (header) {
         var headerWrap = createElement('div', { className: this.parent.swimlaneSettings.keyField ? SWIMLANE_CLASS : '' });
@@ -2750,7 +2793,8 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                         allowToggle: column.allowToggle, isExpanded: column.isExpanded, showItemCount: column.showItemCount, count: noOfCard
                     };
                     addClass([th_1], TEMPLATE_CLASS);
-                    var templateHeader = this_1.parent.templateParser(column.template)(templateArgs);
+                    var templateId = this_1.parent.element.id + '_columnTemplate';
+                    var templateHeader = this_1.parent.templateParser(column.template)(templateArgs, this_1.parent, 'template', templateId, false);
                     append(templateHeader, headerTitle);
                 }
                 else {
@@ -2897,7 +2941,8 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         if (this.parent.swimlaneSettings.template) {
             var templateArgs = extend({}, row, { count: cardCount }, true);
             addClass([td], TEMPLATE_CLASS);
-            var swimlaneTemplate = this.parent.templateParser(this.parent.swimlaneSettings.template)(templateArgs);
+            var templateId = this.parent.element.id + '_swimlaneTemplate';
+            var swimlaneTemplate = this.parent.templateParser(this.parent.swimlaneSettings.template)(templateArgs, this.parent, 'template', templateId, false);
             append(swimlaneTemplate, headerWrap);
         }
         else {
@@ -2954,7 +2999,8 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                         }
                         if (_this.parent.cardSettings.template) {
                             addClass([cardElement], TEMPLATE_CLASS);
-                            var cardTemplate = _this.parent.templateParser(_this.parent.cardSettings.template)(data);
+                            var templateId = _this.parent.element.id + '_cardTemplate';
+                            var cardTemplate = _this.parent.templateParser(_this.parent.cardSettings.template)(data, _this.parent, 'template', templateId, false);
                             append(cardTemplate, cardElement);
                         }
                         else {
@@ -3170,10 +3216,20 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                 node.style.paddingRight = formatUnit(paddingValue);
             }
         });
+        this.updateScrollPosition();
     };
     LayoutRender.prototype.onContentScroll = function (e) {
-        var header = this.parent.element.querySelector('.' + HEADER_CLASS + ' div');
-        header.scrollLeft = e.target.scrollLeft;
+        var target = e.target;
+        var header = this.parent.element.querySelector('.' + HEADER_CLASS);
+        [].slice.call(header.children).forEach(function (node) { node.scrollLeft = target.scrollLeft; });
+        this.parent.scrollPosition.content = { left: target.scrollLeft, top: target.scrollTop };
+    };
+    LayoutRender.prototype.onColumnScroll = function (e) {
+        var target = e.target;
+        if (target.offsetParent) {
+            var columnKey = target.offsetParent.getAttribute('data-key');
+            this.parent.scrollPosition.column[columnKey] = { left: target.scrollLeft, top: target.scrollTop };
+        }
     };
     LayoutRender.prototype.onAdaptiveScroll = function (e) {
         if (this.parent.touchModule.tabHold && !this.parent.touchModule.mobilePopup) {
@@ -3335,9 +3391,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             cards.setAttribute('aria-selected', 'false');
         }
         else {
-            cards.forEach(function (card) {
-                card.setAttribute('aria-selected', 'false');
-            });
+            cards.forEach(function (card) { card.setAttribute('aria-selected', 'false'); });
         }
     };
     LayoutRender.prototype.getColumnCards = function (data) {
@@ -3375,12 +3429,36 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         cards.forEach(function (card) { return remove(card); });
         this.renderCards();
     };
+    LayoutRender.prototype.updateScrollPosition = function () {
+        var _this = this;
+        var content = this.parent.element.querySelector('.' + CONTENT_CLASS);
+        if (content) {
+            content.scrollTo(this.parent.scrollPosition.content.left, this.parent.scrollPosition.content.top);
+        }
+        var cardWrapper = [].slice.call(this.parent.element.querySelectorAll('.' + CARD_WRAPPER_CLASS));
+        cardWrapper.forEach(function (wrapper) {
+            if (wrapper.offsetParent) {
+                var scrollData = _this.parent.scrollPosition.column[wrapper.offsetParent.getAttribute('data-key')];
+                if (scrollData) {
+                    wrapper.scrollTo(scrollData.left, scrollData.top);
+                }
+            }
+        });
+    };
     LayoutRender.prototype.wireEvents = function () {
+        var _this = this;
         EventHandler.add(this.parent.element, 'click', this.parent.actionModule.clickHandler, this.parent.actionModule);
         EventHandler.add(this.parent.element, 'dblclick', this.parent.actionModule.doubleClickHandler, this.parent.actionModule);
         EventHandler.add(document, Browser.touchStartEvent, this.documentClick, this);
         var content = this.parent.element.querySelector('.' + CONTENT_CLASS);
         EventHandler.add(content, 'scroll', this.onContentScroll, this);
+        var cardWrapper = [].slice.call(this.parent.element.querySelectorAll('.' + CARD_WRAPPER_CLASS));
+        cardWrapper.forEach(function (wrapper) {
+            if (_this.parent.isInitialRender && wrapper.offsetParent) {
+                _this.parent.scrollPosition.column[wrapper.offsetParent.getAttribute('data-key')] = { left: 0, top: 0 };
+            }
+            EventHandler.add(wrapper, 'scroll', _this.onColumnScroll, _this);
+        });
         if (this.parent.isAdaptive) {
             this.parent.touchModule.wireTouchEvents();
             content.scrollLeft = this.scrollLeft;
@@ -3388,6 +3466,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         this.wireDragEvent();
     };
     LayoutRender.prototype.unWireEvents = function () {
+        var _this = this;
         EventHandler.remove(this.parent.element, 'click', this.parent.actionModule.clickHandler);
         EventHandler.remove(this.parent.element, 'dblclick', this.parent.actionModule.doubleClickHandler);
         EventHandler.remove(document, Browser.touchStartEvent, this.documentClick);
@@ -3398,6 +3477,8 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                 this.unWireDragEvent();
             }
         }
+        var cardWrapper = [].slice.call(this.parent.element.querySelectorAll('.' + CARD_WRAPPER_CLASS));
+        cardWrapper.forEach(function (wrapper) { EventHandler.remove(wrapper, 'scroll', _this.onColumnScroll); });
         if (this.parent.isAdaptive) {
             this.parent.touchModule.unWireTouchEvents();
         }
@@ -3412,6 +3493,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         this.parent.dragAndDropModule.unWireDragEvents(this.parent.element.querySelector('.' + CONTENT_CLASS));
     };
     LayoutRender.prototype.destroy = function () {
+        this.parent.resetTemplates();
         this.parent.off(dataReady, this.initRender);
         this.parent.off(contentReady, this.scrollUiUpdate);
         this.unWireEvents();
@@ -3442,45 +3524,6 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
     };
     return LayoutRender;
 }(MobileLayout));
-
-var __extends$7 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Holds the configuration of sort settings in kanban board.
- */
-var SortSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$7(SortSettings, _super);
-    function SortSettings() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$6([
-        Property('DataSourceOrder')
-    ], SortSettings.prototype, "sortBy", void 0);
-    __decorate$6([
-        Property()
-    ], SortSettings.prototype, "field", void 0);
-    __decorate$6([
-        Property('Ascending')
-    ], SortSettings.prototype, "direction", void 0);
-    return SortSettings;
-}(ChildProperty));
 
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -3553,6 +3596,8 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
             };
             this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
         }
+        this.scrollPosition = { content: { left: 0, top: 0 }, column: {} };
+        this.isInitialRender = true;
     };
     /**
      * To provide the array of modules needed for control rendering
@@ -3787,6 +3832,24 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
         if (Browser.isDevice && isBlazor() && ref) {
             // tslint:disable-next-line
             ref.invokeMethodAsync('IsDevice', true, ((window.innerWidth * 80) / 100));
+        }
+    };
+    /**
+     * @hidden
+     */
+    Kanban.prototype.renderTemplates = function () {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
+    };
+    /**
+     * @hidden
+     */
+    Kanban.prototype.resetTemplates = function (templates) {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate(templates);
         }
     };
     /**

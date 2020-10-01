@@ -1,8 +1,8 @@
 @include export-module('inplaceeditor-layout') {
   /*! inplaceeditor layout */
 
-  .e-bigger #{&}.e-inplaceeditor,
-  #{&}.e-inplaceeditor.e-bigger {
+  .e-bigger .e-inplaceeditor,
+  .e-inplaceeditor.e-bigger {
 
     .e-editable-value-wrapper {
       padding: $editor-big-value-container-padding;
@@ -69,7 +69,7 @@
     }
   }
 
-  #{&}.e-inplaceeditor {
+  .e-inplaceeditor {
     display: inline-block;
     position: relative;
     width: auto;
@@ -188,10 +188,10 @@
     }
   }
 
-  .e-bigger #{&}.e-inplaceeditor,
-  #{&}.e-inplaceeditor.e-bigger,
-  .e-bigger #{&}.e-inplaceeditor-tip,
-  #{&}.e-inplaceeditor-tip.e-bigger {
+  .e-bigger .e-inplaceeditor,
+  .e-inplaceeditor.e-bigger,
+  .e-bigger .e-inplaceeditor-tip,
+  .e-inplaceeditor-tip.e-bigger {
     width: auto;
 
     .e-input-group+.e-editable-loading {
@@ -218,8 +218,8 @@
     }
   }
 
-  #{&}.e-inplaceeditor,
-  #{&}.e-inplaceeditor-tip {
+  .e-inplaceeditor,
+  .e-inplaceeditor-tip {
 
     .e-input-group+.e-editable-loading {
 
@@ -345,8 +345,8 @@
     }
   }
 
-  .e-bigger #{&}.e-inplaceeditor-tip,
-  #{&}.e-inplaceeditor-tip.e-bigger {
+  .e-bigger .e-inplaceeditor-tip,
+  .e-inplaceeditor-tip.e-bigger {
 
     &.e-tooltip-wrap {
 
@@ -379,7 +379,7 @@
     }
   }
 
-  #{&}.e-inplaceeditor-tip {
+  .e-inplaceeditor-tip {
     opacity: 1;
     width: auto;
 

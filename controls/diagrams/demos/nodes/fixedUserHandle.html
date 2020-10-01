@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+
+<head>
+    <title> Native </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+
+    <script data-main="fixedUserHandle" src="../../node_modules/requirejs/require.js"></script>
+
+    <script src="../require.config.js"></script>
+</head>
+
+<body>
+    <div id="diagram" style="width: 80%; float:left;"></div>
+    <div id="panel" style="width: 10%; float: right; height: 80%">
+        <div id="property1">
+            <p>
+                <b> Node FixedUserHandle Properties</b>
+            </p>
+
+            <table>
+                <tr>
+                    <td>
+                        Path Data:
+                    </td>
+                    <td>
+                        <select id="da">
+                            <option value="Path 1">Path 1</option>
+                            <option value="Path 2">Path 2</option>
+                            <option value="Path 3">Path 3</option>
+                            <option value="Path 4">Path 4</option>
+                            <option value="Path 5">Path 5</option>
+                            <option value="Path 6">Path 6</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td> Fill-Color</td>
+                    <td>
+                        <input type="text" id="fill">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Border-Color</td>
+                    <td>
+                        <input type="text" id="sColor">
+                    </td>
+                </tr>
+                <tr>
+                    <td>IconFill-Color</td>
+                    <td>
+                        <input type="text" id="iconfill">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Border-Width</td>
+                    <td>
+                        <input type="number" id="sWidth" min="0" max="10" step="1" value="2">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Corner-Radius</td>
+                    <td>
+                        <input type="number" id="r1" min="0" max="10" step="1" value="2">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Stroke-Width</td>
+                    <td>
+                        <input type="number" id="s1" min="0" max="10" step="1" value="2">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Width</td>
+                    <td>
+                        <input type="number" id="Width" min="0" max="100" step="1" value="20">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Height</td>
+                    <td>
+                        <input type="number" id="Height" min="0" max="100" step="1" value="20">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Offset-X</td>
+                    <td>
+                        <input type="number" id="offsetx" min="0" max="1" step="0.05" value="0.5">
+                    </td>
+                </tr>
+                <tr>
+                    <td> Offset-Y</td>
+                    <td>
+                        <input type="number" id="offsety" min="0" max="1" step="0.05" value="1">
+                    </td>
+                </tr>
+                <tr>
+                    <td>padding </td>
+                    <td>
+                        <input type="number" id="pad1" min="0" max="10" step="1" value="2">
+
+                    </td>
+                </tr>
+
+            </table>
+            <p>
+                <b>Connector FixedUserHandle Properties</b>
+            </p>
+            <table>
+                <tr>
+                    <td>
+                        Path Data:
+                    </td>
+                    <td>
+                        <select id="d2">
+                            <option value="Path 1">Path 1</option>
+                            <option value="Path 2">Path 2</option>
+                            <option value="Path 3">Path 3</option>
+                            <option value="Path 4">Path 4</option>
+                            <option value="Path 5">Path 5</option>
+                            <option value="Path 6">Path 6</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Connector-Alignment</td>
+                    <td>
+                        <select id="Align">
+                            <option value="Center">Center</option>
+                            <option value="Before">Before</option>
+                            <option value="After">After</option>
+
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Corner-Radius</td>
+                    <td>
+                        <input type="number" id="r2" min="0" max="10" step="1" value="2">
+                    </td>
+                </tr>
+                <tr>
+                    <td>padding </td>
+                    <td>
+                        <input type="number" id="pad2" min="0" max="10" step="1" value="2">
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>Displacement X-Connector</td>
+                    <td>
+                        <input type="number" id="displacement1" min="0" max="50" step="1" value="2">
+                    </td>
+                    <td>Displacement Y-Connector</td>
+                    <td>
+                        <input type="number" id="displacement2" min="0" max="50" step="1" value="2">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Border-Color</td>
+                    <td>
+                        <input type="text" id="sColor2">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Stroke-Width</td>
+                    <td>
+                        <input type="number" id="s2" min="0" max="10" step="1" value="2">
+                    </td>
+                </tr>
+                <tr>
+                    <td>fillicon-Color</td>
+                    <td>
+                        <input type="text" id="fill2">
+                    </td>
+                </tr>
+                <tr>
+                    <td>fill-Color</td>
+                    <td>
+                        <input type="text" id="fill3">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Border-Width</td>
+                    <td>
+                        <input type="number" id="sWidth2" min="0" max="10" step="1" value="2">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Width</td>
+                    <td>
+                        <input type="number" id="Width2" min="0" max="100" step="1" value="20">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Height</td>
+                    <td>
+                        <input type="number" id="Height2" min="0" max="100" step="1" value="20">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Connector-Offset</td>
+                    <td>
+                        <input type="number" id="offset" min="0" max="1" step="0.05" value="1">
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <style>
+        #diagram {
+            width: 800px;
+            height: 1000px;
+            float: left;
+        }
+
+        #panel {
+            width: 500px;
+            height: 1000px;
+            float: right;
+            padding-bottom: 10px;
+        }
+
+        #property1 {
+            width: 400px;
+            height: 350px;
+            float: right;
+        }
+
+        #property2 {
+            width: 400px;
+            height: 375px;
+            float: right;
+        }
+    </style>
+</body>
+
+</html>

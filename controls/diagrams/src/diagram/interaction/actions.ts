@@ -126,6 +126,13 @@ export function findToolToActivate(
                 let id: string = wrapper.id.split(obj.id)[1];
                 if (id && id.match('^_icon')) { return 'LayoutAnimation'; }
             }
+            if (wrapper && wrapper.id) {
+                let userid: string;
+                for (let i: number = 0; i < obj.fixedUserHandles.length; i++) {
+                    userid = obj.fixedUserHandles[i].id;
+                    if (wrapper.id && (wrapper.id.indexOf(userid) > -1)) { return 'FixedUserHandle'; }
+                }
+            }
             if (canMove(obj) && wrapper instanceof TextElement && wrapper.hyperlink.link) {
                 return 'Hyperlink';
             }
@@ -372,7 +379,7 @@ export function isSelected(diagram: Diagram, element: Object, firstLevel: boolea
 }
 
 /** @private */
-export type Actions = 'None' | 'Select' | 'Drag' | 'ResizeWest' | 'ConnectorSourceEnd' | 'ConnectorTargetEnd' |
+export type Actions = 'None' | 'Select' | 'Drag' | 'FixedUserHandle' | 'ResizeWest' | 'ConnectorSourceEnd' | 'ConnectorTargetEnd' |
     'ResizeEast' | 'ResizeSouth' | 'ResizeNorth' | 'ResizeSouthEast' |
     'ResizeSouthWest' | 'ResizeNorthEast' | 'ResizeNorthWest' | 'Rotate' | 'ConnectorEnd' | 'Custom' | 'Draw' | 'Pan' |
     'BezierSourceThumb' | 'BezierTargetThumb' | 'LayoutAnimation' | 'PinchZoom' | 'Hyperlink' | 'SegmentEnd' | 'OrthoThumb' |

@@ -116,6 +116,10 @@ export const filterSearchBegin: string = 'filtersearchbegin';
 export const commandClick: string = 'commandClick';
 /** @hidden */
 export const exportGroupCaption: string = 'exportGroupCaption';
+/** @hidden */
+export const lazyLoadGroupExpand: string = 'lazyLoadGroupExpand';
+/** @hidden */
+export const lazyLoadGroupCollapse: string = 'lazyLoadGroupCollapse';
 
 /**
  * Specifies grid internal events
@@ -436,6 +440,12 @@ export const resetColumns: string = 'reset-columns';
 export const pdfAggregateQueryCellInfo: string = 'pdfAggregateQueryCellInfo';
 /** @hidden */
 export const excelAggregateQueryCellInfo: string = 'excelAggregateQueryCellInfo';
+/** @hidden */
+export const setGroupCache: string = 'group-cache';
+/** @hidden */
+export const lazyLoadScrollHandler: string = 'lazy-load-scroll-handler';
+/** @hidden */
+export const groupCollapse: string = 'group-collapse';
 /** @hidden */
 export const beforeCheckboxRenderer: string = 'beforeCheckboxRenderer';
 /** @hidden */

@@ -2,7 +2,7 @@
 
   /*! field-list theme */
 
-  #{&}.e-pivotfieldlist {
+  .e-pivotfieldlist {
 
     .e-member-editor-dialog,
     .e-olap-editor-dialog {
@@ -40,15 +40,15 @@
     }
   }
 
-  &.e-rtl {
+  #{if(&, "&", "*")}.e-rtl {
 
     .e-select-table {
       padding: 8px 5px;
     }
   }
 
-  .e-bigger #{&}.e-pivotfieldlist,
-  .e-bigger#{&}.e-pivotfieldlist,
+  .e-bigger .e-pivotfieldlist,
+  .e-bigger.e-pivotfieldlist,
   .e-bigger .e-pivotfieldlist,
   .e-bigger.e-pivotfieldlist {
     .e-select-table {
@@ -61,7 +61,7 @@
     }
   }
 
-  #{&}.e-pivotfieldlist-wrapper {
+  .e-pivotfieldlist-wrapper {
     font-family: $field-list-font-family;
     font-size: $field-list-content-font-size;
     max-width: 700px;
@@ -1299,8 +1299,8 @@
   }
 
   // sass-lint:disable-all
-  .e-bigger #{&}.e-pivotfieldlist-wrapper,
-  .e-bigger#{&}.e-pivotfieldlist-wrapper,
+  .e-bigger .e-pivotfieldlist-wrapper,
+  .e-bigger.e-pivotfieldlist-wrapper,
   .e-bigger .e-pivotfieldlist-wrapper,
   .e-bigger.e-pivotfieldlist-wrapper {
     .e-field-table {

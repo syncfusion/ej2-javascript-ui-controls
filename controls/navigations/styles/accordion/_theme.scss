@@ -1,7 +1,7 @@
 @include export-module('accordion-theme') {
   /*! accordion theme */
   // sass-lint:disable no-vendor-prefixes
-  #{&}.e-accordion {
+  .e-accordion {
     -webkit-tap-highlight-color: $acrdn-tab-highlight-color;
     background: $acrdn-bg-color;
     border: $acrdn-border-size $acrdn-border-type $acrdn-default-border;

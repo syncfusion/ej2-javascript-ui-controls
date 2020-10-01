@@ -1,5 +1,5 @@
 @include export-module('dialog-bootstrap-icons') {
-  #{&}.e-dialog {
+  .e-dialog {
     .e-icon-dlg-close::before {
       content: '\e361';
       position: relative;

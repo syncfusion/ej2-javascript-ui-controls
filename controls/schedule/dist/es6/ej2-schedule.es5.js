@@ -1053,7 +1053,9 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
     };
     HeaderRenderer.prototype.calendarChange = function (args) {
         if (args.value.getTime() !== this.parent.selectedDate.getTime()) {
-            this.parent.changeDate(args.value);
+            var calendarDate = new Date(args.value);
+            calendarDate.setHours(new Date().getHours(), new Date().getMinutes(), new Date().getSeconds());
+            this.parent.changeDate(this.parent.getCurrentTime(calendarDate));
         }
         this.headerPopup.hide();
     };
@@ -1716,7 +1718,7 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
         if (this.parent.activeViewOptions.readonly || this.isPreventAction(e)) {
             return;
         }
-        var target = (e.target);
+        var target = e.target;
         if (closest(target, '.' + POPUP_WRAPPER_CLASS)) {
             if (target.classList.contains(QUICK_POPUP_EVENT_DETAILS_CLASS) ||
                 target.classList.contains(EVENT_CREATE_CLASS) ||
@@ -1729,6 +1731,13 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
             else if (target.classList.contains(SUBJECT_CLASS)) {
                 this.parent.element.querySelector('.' + EVENT_CREATE_CLASS).click();
                 e.preventDefault();
+            }
+            return;
+        }
+        if (target.classList.contains(RESOURCE_CELLS_CLASS) && target.classList.contains(RESOURCE_PARENT_CLASS)) {
+            var resourceIcon = target.querySelector('.' + RESOURCE_TREE_ICON_CLASS);
+            if (resourceIcon) {
+                resourceIcon.click();
             }
             return;
         }
@@ -2239,15 +2248,46 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
             this.parent.eventBase.removeSelectedAppointmentClass();
             return;
         }
+        if (target.classList.contains(RESOURCE_CELLS_CLASS) && this.parent.activeView.isTimelineView()
+            && this.parent.activeViewOptions.group.resources.length > 0) {
+            var index = parseInt(target.getAttribute('data-group-index'), 10);
+            var appSelector = "." + APPOINTMENT_CLASS + "[data-group-index=\"" + (isReverse ? index - 1 : index) + "\"]";
+            var appElements = [].slice.call(this.parent.element.querySelectorAll(appSelector));
+            if (appElements.length > 0) {
+                this.parent.eventBase.removeSelectedAppointmentClass();
+                var focusAppointment = isReverse ? appElements.slice(-1)[0] : appElements[0];
+                this.parent.eventBase.addSelectedAppointments([focusAppointment]);
+                focusAppointment.focus();
+                e.preventDefault();
+            }
+            else if (index + 1 === this.parent.resourceBase.lastResourceLevel.length) {
+                this.parent.element.focus();
+                e.preventDefault();
+            }
+            return;
+        }
         if (target.classList.contains(APPOINTMENT_CLASS)) {
-            var appointments = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CLASS));
+            var appElements = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CLASS));
+            if (this.parent.activeView.isTimelineView() && this.parent.activeViewOptions.group.resources.length > 0) {
+                var index = parseInt(target.getAttribute('data-group-index'), 10);
+                appElements = [].slice.call(this.parent.element.querySelectorAll("." + APPOINTMENT_CLASS + "[data-group-index=\"" + index + "\"]"));
+                var resCellSelector = "." + RESOURCE_CELLS_CLASS + "[data-group-index=\"" + (isReverse ? index : index + 1) + "\"]";
+                var resourceCell = this.parent.element.querySelector(resCellSelector);
+                if (resourceCell && (isReverse && target.getAttribute('data-guid') === appElements[0].getAttribute('data-guid') ||
+                    !isReverse && target.getAttribute('data-guid') === appElements.slice(-1)[0].getAttribute('data-guid'))) {
+                    this.parent.eventBase.removeSelectedAppointmentClass();
+                    resourceCell.focus();
+                    e.preventDefault();
+                    return;
+                }
+            }
             var selectedAppointments = this.parent.eventBase.getSelectedAppointments();
             if (selectedAppointments.length > 0) {
                 target = selectedAppointments[selectedAppointments.length - 1];
             }
             this.parent.eventBase.removeSelectedAppointmentClass();
-            if (!isReverse && target.getAttribute('data-guid') === appointments[appointments.length - 1].getAttribute('data-guid') ||
-                isReverse && target.getAttribute('data-guid') === appointments[0].getAttribute('data-guid')) {
+            if (!isReverse && target.getAttribute('data-guid') === appElements[appElements.length - 1].getAttribute('data-guid') ||
+                isReverse && target.getAttribute('data-guid') === appElements[0].getAttribute('data-guid')) {
                 return;
             }
             if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda') {
@@ -4216,10 +4256,8 @@ var EventBase = /** @__PURE__ @class */ (function () {
         if (this.parent.timezone) {
             var startTz = eventData[fields.startTimezone];
             var endTz = eventData[fields.endTimezone];
-            eventData[fields.startTime] =
-                this.parent.tzModule.convert(eventData[fields.startTime], this.parent.timezone, startTz);
-            eventData[fields.endTime] =
-                this.parent.tzModule.convert(eventData[fields.endTime], this.parent.timezone, endTz);
+            eventData[fields.startTime] = this.parent.tzModule.convert(eventData[fields.startTime], this.parent.timezone, startTz);
+            eventData[fields.endTime] = this.parent.tzModule.convert(eventData[fields.endTime], this.parent.timezone, endTz);
         }
     };
     EventBase.prototype.processTimezoneChange = function (event, oldTimezone) {
@@ -4246,14 +4284,13 @@ var EventBase = /** @__PURE__ @class */ (function () {
         if (event[fields.startTimezone] || event[fields.endTimezone]) {
             var startTimezone = event[fields.startTimezone] || event[fields.endTimezone];
             var endTimezone = event[fields.endTimezone] || event[fields.startTimezone];
-            var zone = this.parent.timezone;
             if (isReverse) {
                 if (this.parent.timezone) {
                     event[fields.startTime] =
-                        this.parent.tzModule.convert(event[fields.startTime], startTimezone, zone);
-                    event[fields.endTime] = this.parent.tzModule.convert(event[fields.endTime], endTimezone, zone);
-                    event[fields.startTime] = this.parent.tzModule.remove(event[fields.startTime], zone);
-                    event[fields.endTime] = this.parent.tzModule.remove(event[fields.endTime], zone);
+                        this.parent.tzModule.convert(event[fields.startTime], startTimezone, this.parent.timezone);
+                    event[fields.endTime] = this.parent.tzModule.convert(event[fields.endTime], endTimezone, this.parent.timezone);
+                    event[fields.startTime] = this.parent.tzModule.remove(event[fields.startTime], this.parent.timezone);
+                    event[fields.endTime] = this.parent.tzModule.remove(event[fields.endTime], this.parent.timezone);
                 }
                 else {
                     event[fields.startTime] = this.parent.tzModule.remove(event[fields.startTime], startTimezone);
@@ -4265,8 +4302,8 @@ var EventBase = /** @__PURE__ @class */ (function () {
                 event[fields.endTime] = this.parent.tzModule.add(event[fields.endTime], endTimezone);
                 if (this.parent.timezone) {
                     event[fields.startTime] =
-                        this.parent.tzModule.convert(event[fields.startTime], startTimezone, zone);
-                    event[fields.endTime] = this.parent.tzModule.convert(event[fields.endTime], endTimezone, zone);
+                        this.parent.tzModule.convert(event[fields.startTime], startTimezone, this.parent.timezone);
+                    event[fields.endTime] = this.parent.tzModule.convert(event[fields.endTime], endTimezone, this.parent.timezone);
                 }
             }
         }
@@ -5213,18 +5250,16 @@ var EventBase = /** @__PURE__ @class */ (function () {
         var firstDate = 0;
         var lastDate = dateRender.length;
         var filteredDates;
-        if ((dateRender[0] < this.parent.minDate) && dateRender[dateRender.length - 1] > this.parent.maxDate) {
+        if (dateRender[0] < this.parent.minDate && dateRender[dateRender.length - 1] > this.parent.maxDate) {
             for (var i = 0; i < dateRender.length; i++) {
-                if (dateRender[i].getTime() === this.parent.minDate.getTime()) {
+                if (resetTime(dateRender[i]).getTime() === resetTime(new Date(this.parent.minDate)).getTime()) {
                     firstDate = i;
                 }
-                if (dateRender[i].getTime() === this.parent.maxDate.getTime()) {
+                if (resetTime(dateRender[i]).getTime() === resetTime(new Date(this.parent.maxDate)).getTime()) {
                     lastDate = i;
                 }
             }
-            filteredDates = dateRender.filter(function (date) {
-                return ((date >= dateRender[firstDate]) && (date <= dateRender[lastDate]));
-            });
+            filteredDates = dateRender.filter(function (date) { return date >= dateRender[firstDate] && date <= dateRender[lastDate]; });
         }
         return filteredDates;
     };
@@ -8359,6 +8394,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             this.updateQuickPopupTemplates(target);
             return;
         }
+        this.parent.renderTemplates();
         var isEventPopup = this.quickPopup.element.querySelector('.' + EVENT_POPUP_CLASS);
         var popupType = this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo';
         var eventProp = {
@@ -8518,6 +8554,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                 resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
             }
         }
+        this.parent.resetTemplates();
     };
     QuickPopups.prototype.quickPopupClose = function () {
         this.resetQuickPopupTemplates();
@@ -8737,6 +8774,7 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
     function EventTooltip(parent) {
         this.parent = parent;
         this.tooltipObj = new Tooltip({
+            animation: { close: { effect: isBlazor() ? 'None' : 'FadeOut' } },
             content: 'No title',
             position: 'BottomRight',
             offsetY: 10,
@@ -8745,13 +8783,10 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
             cssClass: this.parent.cssClass + ' ' + EVENT_TOOLTIP_ROOT_CLASS,
             target: this.getTargets(),
             beforeRender: this.onBeforeRender.bind(this),
-            enableRtl: this.parent.enableRtl
+            enableRtl: this.parent.enableRtl,
+            beforeOpen: this.onBeforeOpen.bind(this),
+            beforeClose: this.onBeforeClose.bind(this)
         });
-        if (isBlazor()) {
-            this.tooltipObj.beforeOpen = this.onBeforeOpen.bind(this);
-            this.tooltipObj.beforeClose = this.onBeforeClose.bind(this);
-            this.tooltipObj.animation = { close: { effect: 'None' } };
-        }
         this.tooltipObj.appendTo(this.parent.element);
         this.tooltipObj.isStringTemplate = true;
     }
@@ -8766,24 +8801,25 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
         return targets.join(',');
     };
     EventTooltip.prototype.onBeforeOpen = function () {
-        if (this.parent.group.headerTooltipTemplate) {
+        if (isBlazor() && this.parent.group.headerTooltipTemplate) {
             var templateId = this.parent.element.id + '_headerTooltipTemplate';
             updateBlazorTemplate(templateId, 'HeaderTooltipTemplate', this.parent.group);
         }
-        if (this.parent.eventSettings.tooltipTemplate) {
+        if (isBlazor() && this.parent.eventSettings.tooltipTemplate) {
             var templateId = this.parent.element.id + '_tooltipTemplate';
             updateBlazorTemplate(templateId, 'TooltipTemplate', this.parent.eventSettings);
         }
     };
     EventTooltip.prototype.onBeforeClose = function () {
-        if (this.parent.group.headerTooltipTemplate) {
+        if (isBlazor() && this.parent.group.headerTooltipTemplate) {
             var templateId = this.parent.element.id + '_headerTooltipTemplate';
             resetBlazorTemplate(templateId, 'HeaderTooltipTemplate');
         }
-        if (this.parent.eventSettings.tooltipTemplate) {
+        if (isBlazor() && this.parent.eventSettings.tooltipTemplate) {
             var templateId = this.parent.element.id + '_tooltipTemplate';
             resetBlazorTemplate(templateId, 'TooltipTemplate');
         }
+        this.parent.resetTemplates();
     };
     // tslint:disable-next-line:max-func-body-length
     EventTooltip.prototype.onBeforeRender = function (args) {
@@ -8889,6 +8925,7 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
                 '<div class="e-all-day">' + tooltipTime + '</div></div>';
             this.setContent(content);
         }
+        this.parent.renderTemplates();
     };
     EventTooltip.prototype.setContent = function (content) {
         this.tooltipObj.setProperties({ content: content }, true);
@@ -10111,11 +10148,13 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         if (this.parent.editorTemplate) {
             updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
         }
+        this.parent.renderTemplates();
     };
     EventWindow.prototype.resetEditorTemplate = function () {
         if (this.parent.editorTemplate) {
             resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
         }
+        this.parent.resetTemplates();
     };
     EventWindow.prototype.refresh = function () {
         this.destroy();
@@ -10372,6 +10411,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         parentDiv.appendChild(recurrenceEditor);
         this.recurrenceEditor = this.renderRecurrenceEditor();
         this.recurrenceEditor.appendTo(recurrenceEditor);
+        this.updateMinMaxDateToEditor();
     };
     EventWindow.prototype.createDivElement = function (className) {
         return createElement('div', { className: className });
@@ -11095,6 +11135,17 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             firstDayOfWeek: this.parent.activeViewOptions.firstDayOfWeek,
             locale: this.parent.locale
         });
+    };
+    EventWindow.prototype.updateMinMaxDateToEditor = function () {
+        if (this.recurrenceEditor) {
+            var untilDate = this.recurrenceEditor.element.querySelector('.e-until-date');
+            if (untilDate) {
+                var untilObj = untilDate.ej2_instances[0];
+                untilObj.min = this.parent.minDate;
+                untilObj.max = this.parent.maxDate;
+                untilObj.dataBind();
+            }
+        }
     };
     EventWindow.prototype.updateRepeatLabel = function (repeatRule) {
         if (this.parent.isAdaptive && !this.repeatDialogObject) {
@@ -11896,7 +11947,7 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
     VirtualScroll.prototype.beforeInvoke = function (resWrap, conWrap, eventWrap, timeIndicator) {
         var _this = this;
         if (isBlazor()) {
-            clearTimeout(this.timeValue);
+            window.clearTimeout(this.timeValue);
             this.timeValue = window.setTimeout(function () { _this.triggerScrolling(); }, 250);
             this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
             this.previousTop = conWrap.scrollTop;
@@ -12063,6 +12114,7 @@ var Render = /** @__PURE__ @class */ (function () {
     };
     Render.prototype.initializeLayout = function (viewName) {
         if (this.parent.activeView) {
+            this.parent.resetTemplates();
             this.parent.activeView.removeEventListener();
             this.parent.activeView.destroy();
         }
@@ -12137,6 +12189,7 @@ var Render = /** @__PURE__ @class */ (function () {
         }
         this.updateHeader();
         this.parent.activeView.renderLayout(CURRENT_PANEL_CLASS);
+        this.parent.renderTemplates();
         if (this.parent.eventTooltip) {
             this.parent.eventTooltip.destroy();
             this.parent.eventTooltip = null;
@@ -13536,7 +13589,7 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         var rIndex;
         var resColl = this.resourceCollection;
         var tr = createElement('tr');
-        var td = createElement('td');
+        var td = createElement('td', { attrs: { tabindex: '0' } });
         for (var i = 0; i < resData.length; i++) {
             var ntd = td.cloneNode();
             rIndex = findIndexInData(resColl, 'name', resData[i].resource.name);
@@ -13569,6 +13622,7 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
             }
             this.parent.activeView.setResourceHeaderContent(ntd, resData[i], RESOURCE_TEXT_CLASS);
             ntd.setAttribute('data-group-index', resData[i].groupIndex.toString());
+            ntd.setAttribute('aria-label', resData[i].resourceData[resData[i].resource.textField] + ' resource');
             if (!this.parent.activeViewOptions.resourceHeaderTemplate) {
                 this.setMargin(ntd.querySelector('.' + RESOURCE_TEXT_CLASS), left);
             }
@@ -14125,7 +14179,9 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
                 if (!resTreeGroup[index]) {
                     resTreeGroup[index] = [];
                 }
-                resTreeGroup[index].push(resTree);
+                if (resTree.length > 0) {
+                    resTreeGroup[index].push(resTree);
+                }
                 return resTree;
             }
             return [];
@@ -14731,6 +14787,26 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             this.resetLayoutTemplates();
         }
     };
+    /**
+     * To render the react templates
+     *  @hidden
+     */
+    Schedule.prototype.renderTemplates = function () {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
+    };
+    /**
+     * To reset the react templates
+     *  @hidden
+     */
+    Schedule.prototype.resetTemplates = function () {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
+    };
     Schedule.prototype.initializeResources = function (isSetModel) {
         if (isSetModel === void 0) { isSetModel = false; }
         if (this.resources.length > 0) {
@@ -14776,6 +14852,9 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                 date = maxDate;
             }
             this.setScheduleProperties({ selectedDate: new Date('' + date), minDate: new Date('' + minDate), maxDate: new Date('' + maxDate) });
+            if (this.eventWindow) {
+                this.eventWindow.updateMinMaxDateToEditor();
+            }
         }
         else {
             throw Error('minDate should be equal or less than maxDate');
@@ -15117,12 +15196,12 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         return date.setHours(0, 0, 0, 0) === new Date('' + this.selectedDate).setHours(0, 0, 0, 0);
     };
     /** @hidden */
-    Schedule.prototype.getCurrentTime = function () {
+    Schedule.prototype.getCurrentTime = function (date) {
+        if (date === void 0) { date = new Date(); }
         if (this.timezone) {
-            var localOffset = new Date().getTimezoneOffset();
-            return this.tzModule.convert(new Date(), localOffset, this.timezone);
+            return this.tzModule.convert(date, this.tzModule.getLocalTimezoneName(), this.timezone);
         }
-        return new Date();
+        return date;
     };
     /** @hidden */
     Schedule.prototype.getNavigateView = function () {
@@ -15485,7 +15564,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     /** @hidden */
     Schedule.prototype.getAnnocementString = function (event, subject) {
         var resourceName;
-        if (this.quickPopup) {
+        if (this.quickPopup && this.activeViewOptions.group.resources.length > 0) {
             var constantText = '"s event - ';
             resourceName = this.quickPopup.getResourceText({ event: event }, 'event') + constantText;
         }
@@ -16516,6 +16595,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             this.scrollModule = null;
         }
         if (this.activeView) {
+            this.resetTemplates();
             this.activeView.removeEventListener();
             this.activeView.destroy();
             this.activeView = null;
@@ -17901,8 +17981,8 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
                 _this.parent.crudModule.crudObj.isCrudAction = true;
                 _this.parent.crudModule.crudObj.sourceEvent =
                     [_this.parent.resourceBase.lastResourceLevel[parseInt(dragArgs.element.getAttribute('data-group-index'), 10)]];
-                _this.parent.crudModule.crudObj.targetEvent =
-                    [_this.parent.resourceBase.lastResourceLevel[parseInt(dragArgs.target.getAttribute('data-group-index'), 10)]];
+                var currentGroupIndex = parseInt(dragArgs.target.getAttribute('data-group-index'), 10) || _this.actionObj.groupIndex;
+                _this.parent.crudModule.crudObj.targetEvent = [_this.parent.resourceBase.lastResourceLevel[currentGroupIndex]];
             }
             _this.saveChangedData(dragEventArgs);
         });
@@ -18146,9 +18226,10 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
             var record = this.verticalEvent.isSpannedEvent(event, dayIndex, this.actionObj.groupIndex);
             var eStart = record[this.verticalEvent.fields.startTime];
             var eEnd = record[this.verticalEvent.fields.endTime];
-            var topValue = 0;
-            var appHeight = this.verticalEvent.getHeight(eStart, eEnd);
-            topValue = this.verticalEvent.getTopValue(eStart, dayIndex, this.actionObj.groupIndex);
+            var appHeight = this.parent.activeViewOptions.timeScale.enable ? this.verticalEvent.getHeight(eStart, eEnd) :
+                this.actionObj.element.offsetHeight;
+            var topValue = this.parent.activeViewOptions.timeScale.enable ?
+                this.verticalEvent.getTopValue(eStart, dayIndex, this.actionObj.groupIndex) : this.actionObj.element.offsetTop;
             this.actionObj.clone.style.top = formatUnit(topValue);
             this.actionObj.clone.style.height = formatUnit(appHeight);
         }

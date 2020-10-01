@@ -2857,6 +2857,7 @@ export class Selection implements IAction {
         this.isDragged = false;
     }
 
+    /* tslint:disable-next-line:max-func-body-length */
     private onCellFocused(e: CellFocusArgs): void {
         if (this.parent.frozenRows && e.container.isHeader && e.byKey) {
             if (e.keyArgs.action === 'upArrow') {
@@ -2879,7 +2880,8 @@ export class Selection implements IAction {
         let clear: boolean = this.parent.getFrozenColumns() ? (((e.container.isHeader && e.element.tagName !== 'TD' && e.isJump) ||
             ((e.container.isContent || e.element.tagName === 'TD') && !(e.container.isSelectable || e.element.tagName === 'TD')))
             && !(e.byKey && e.keyArgs.action === 'space')) : ((e.container.isHeader && e.isJump) ||
-                (e.container.isContent && !e.container.isSelectable)) && !(e.byKey && e.keyArgs.action === 'space');
+                (e.container.isContent && !e.container.isSelectable)) && !(e.byKey && e.keyArgs.action === 'space')
+                 && !(e.element.classList.contains('e-detailrowexpand') || e.element.classList.contains('e-detailrowcollapse'));
         let headerAction: boolean = (e.container.isHeader && e.element.tagName !== 'TD' && !closest(e.element, '.e-rowcell'))
             && !(e.byKey && e.keyArgs.action === 'space');
         if (!e.byKey || clear) {
@@ -3167,7 +3169,7 @@ export class Selection implements IAction {
         this.isHeaderCheckboxClicked = false;
         let isInfinitecroll: boolean = this.parent.enableInfiniteScrolling && e.requestType === 'infiniteScroll';
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection && !isInfinitecroll) {
-            this.disableUI = true;
+            this.disableUI = !this.parent.enableImmutableMode;
             this.clearSelection();
             this.setCheckAllState();
             this.disableUI = false;

@@ -1,4 +1,4 @@
-import { extend, addClass, removeClass, setValue, isBlazor } from '@syncfusion/ej2-base';
+import { extend, addClass, removeClass, setValue, isBlazor, closest } from '@syncfusion/ej2-base';
 import { remove, classList, updateBlazorTemplate, blazorTemplates, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { isNullOrUndefined, KeyboardEventArgs, isUndefined } from '@syncfusion/ej2-base';
@@ -47,6 +47,7 @@ export class BatchEdit {
     private index: number;
     private field: string;
     private isAdd: boolean;
+    private newReactTd: Element;
 
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator, renderer?: EditRender) {
         this.parent = parent;
@@ -109,7 +110,7 @@ export class BatchEdit {
 
     protected clickHandler(e: MouseEvent): void {
         if (!parentsUntil(e.target as Element, this.parent.element.id + '_add', true)) {
-            if (this.parent.isEdit) {
+            if (this.parent.isEdit && closest(this.form, 'td') !== closest(e.target as Element, 'td')) {
                 this.saveCell();
                 this.editNextValCell();
             }
@@ -998,9 +999,21 @@ export class BatchEdit {
         } else {
             rowcell = rowObj.cells;
         }
+        let parentElement: HTMLTableRowElement;
+        let cellIndex: number;
+        if (this.parent.isReact) {
+            parentElement = td.parentElement as HTMLTableRowElement;
+            cellIndex = (td as HTMLTableCellElement).cellIndex;
+        }
         cell.refreshTD(
             td, rowcell[this.getCellIdx(column.uid) - (this.getCellIdx(column.uid) >= frzCols ? frzCols : 0)] as Cell<Column>,
             rowObj.changes, { 'index': this.getCellIdx(column.uid) });
+        if (this.parent.isReact) {
+            this.newReactTd = parentElement.cells[cellIndex];
+            parentElement.cells[cellIndex].classList.add('e-updatedtd');
+        } else {
+            td.classList.add('e-updatedtd');
+        }
         td.classList.add('e-updatedtd');
         this.parent.notify(events.toolbarRefresh, {});
     }
@@ -1137,6 +1150,9 @@ export class BatchEdit {
                 let rowObj: Row<Column> = parentsUntil(cellSaveArgs.cell, 'e-movablecontent') ?
                 gObj.getMovableRowsObject()[this.cellDetails.rowIndex] : gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
                 this.refreshTD(cellSaveArgs.cell, column, rowObj, cellSaveArgs.value);
+                if (this.parent.isReact) {
+                    cellSaveArgs.cell = this.newReactTd;
+                }
             }
             removeClass([tr], ['e-editedrow', 'e-batchrow']);
             removeClass([cellSaveArgs.cell], ['e-editedbatchcell', 'e-boolcell']);

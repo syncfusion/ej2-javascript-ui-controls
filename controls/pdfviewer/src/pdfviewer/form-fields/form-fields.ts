@@ -1,4 +1,4 @@
-import { PdfViewer, FormFieldModel, FormFieldType} from '../index';
+import { PdfViewer, FormFieldModel, FormFieldType } from '../index';
 import { PdfViewerBase } from '../index';
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
@@ -32,7 +32,9 @@ export class FormFields {
      */
     // tslint:disable-next-line
     public nonFillableFields: any = {};
-
+    private isSignatureRendered: boolean = false;
+    // tslint:disable-next-line
+    private signatureFieldCollection: any = [];
 
 
     /**
@@ -90,6 +92,99 @@ export class FormFields {
             }
         }
     }
+    public nextField(): void {
+        this.signatureFieldNavigate(true);
+    }
+    public previousField(): void {
+        this.signatureFieldNavigate(false);
+    }
+    private signatureFieldNavigate(nextSign: boolean): void {
+        let isNextSignField: boolean = nextSign;
+        // tslint:disable-next-line
+        let signatureFields: any[] = this.signatureFieldCollection;
+        if (signatureFields.length === 0) {
+            signatureFields = this.getSignField();
+        }
+        // tslint:disable-next-line
+        let currentField: any;
+        if (this.currentTarget) {
+            for (let i: number = 0; i < signatureFields.length; i++) {
+                currentField = signatureFields[i];
+                if (this.currentTarget.id === currentField.uniqueID) {
+                    this.currentTarget = document.getElementById(currentField.uniqueID);
+                    this.getSignatureIndex(i, signatureFields.length, isNextSignField);
+                    break;
+                }
+            }
+        }
+    }
+    private getSignatureIndex(currentSignatureIndex: number, signatureCount: number, isNextSign: boolean): void {
+        let signatureIndex: number = currentSignatureIndex;
+        if (isNextSign) {
+            signatureIndex++;
+        } else {
+            signatureIndex--;
+        }
+        if (signatureIndex < signatureCount && signatureIndex >= 0) {
+            this.renderSignatureField(signatureIndex);
+        }
+    }
+    private renderSignatureField(currentSignIndex: number): void {
+        let curSignIndex: number = currentSignIndex;
+        // tslint:disable-next-line
+        let signatureFields: any = this.signatureFieldCollection;
+        // tslint:disable-next-line
+        let currentField: any;
+        if (curSignIndex < signatureFields.length) {
+            for (let i: number = 0; i < signatureFields.length; i++) {
+                if (signatureFields[curSignIndex].uniqueID === signatureFields[i].uniqueID) {
+                    let isRender: boolean = this.pdfViewer.annotationModule.findRenderPageList(signatureFields[i].PageIndex);
+                    if (!isRender) {
+                        this.pdfViewer.navigation.goToPage(signatureFields[i].PageIndex);
+                    }
+                    this.currentTarget = document.getElementById(signatureFields[i].uniqueID);
+                    currentField = signatureFields[i];
+                    break;
+                }
+            }
+            if (this.currentTarget === null) {
+                this.pdfViewer.navigation.goToPage(currentField.PageIndex);
+                this.currentTarget = document.getElementById(currentField.uniqueID);
+            }
+            if (this.currentTarget) {
+                if (this.currentTarget.className === 'e-pdfviewer-signatureformFields signature') {
+                    document.getElementById(this.currentTarget.id).focus();
+                    this.pdfViewer.select([this.currentTarget.id], null);
+                } else if (this.currentTarget.className === 'e-pdfviewer-signatureformFields') {
+                    document.getElementById(this.currentTarget.id).focus();
+                    this.pdfViewerBase.signatureModule.showSignatureDialog(true);
+                }
+            }
+        }
+    }
+    // tslint:disable-next-line
+    private getSignField(): any[] {
+        // tslint:disable-next-line
+        let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
+        // tslint:disable-next-line
+        let currentData: any;
+        if (data !== null) {
+            // tslint:disable-next-line
+            let formFieldsData: any = JSON.parse(data);
+            if (this.currentTarget) {
+                for (let i: number = 0; i < formFieldsData.length; i++) {
+                    currentData = formFieldsData[i];
+                    if (currentData.Name === 'SignatureField') {
+                        // tslint:disable-next-line
+                        currentData['uniqueID'] = this.pdfViewer.element.id + 'input_' + currentData.PageIndex + '_' + i;
+                        this.signatureFieldCollection.push(formFieldsData[i]);
+                    }
+                }
+            }
+        }
+        return this.signatureFieldCollection;
+    }
+
     /**
      * @private
      */
@@ -105,9 +200,9 @@ export class FormFields {
                 // tslint:disable-next-line
                 let type: FormFieldType = currentData['Name'];
                 if (currentData.Name !== 'ink') {
-                // tslint:disable-next-line
-                let formFieldCollection: FormFieldModel = { name: this.retriveFieldName(currentData), id: this.pdfViewer.element.id + 'input_' + parseFloat(currentData['PageIndex']) + '_' + i, isReadOnly: false, type: type, value: this.retriveCurrentValue(currentData) };
-                this.pdfViewer.formFieldCollections.push(formFieldCollection);
+                    // tslint:disable-next-line
+                    let formFieldCollection: FormFieldModel = { name: this.retriveFieldName(currentData), id: this.pdfViewer.element.id + 'input_' + parseFloat(currentData['PageIndex']) + '_' + i, isReadOnly: false, type: type, value: this.retriveCurrentValue(currentData) };
+                    this.pdfViewer.formFieldCollections.push(formFieldCollection);
                 }
             }
         }
@@ -204,7 +299,7 @@ export class FormFields {
                         this.pdfViewerBase.validateForm = true;
                         this.nonFillableFields[currentData.FieldName] = currentData.Text;
                     } else {
-                        delete(this.nonFillableFields[currentData.FieldName]);
+                        delete (this.nonFillableFields[currentData.FieldName]);
                     }
                     datas[currentData.FieldName] = currentData.Text;
                 } else if (currentData.Name === 'RadioButton' && currentData.Selected) {
@@ -212,7 +307,7 @@ export class FormFields {
                         this.pdfViewerBase.validateForm = true;
                         this.nonFillableFields[currentData.GroupName] = currentData.Value;
                     } else {
-                        delete(this.nonFillableFields[currentData.GroupName]);
+                        delete (this.nonFillableFields[currentData.GroupName]);
                     }
                     datas[currentData.GroupName] = currentData.Value;
                 } else if (currentData.Name === 'CheckBox') {
@@ -225,7 +320,7 @@ export class FormFields {
                         this.pdfViewerBase.validateForm = true;
                         this.nonFillableFields[currentData.Text] = currentData.SelectedValue;
                     } else {
-                        delete(this.nonFillableFields[currentData.Text]);
+                        delete (this.nonFillableFields[currentData.Text]);
                     }
                     datas[currentData.Text] = currentData.SelectedValue;
                 } else if (currentData.Name === 'ListBox') {
@@ -242,12 +337,22 @@ export class FormFields {
                     // tslint:disable-next-line
                     let collectionData: any = processPathData(currentData.Value);
                     // tslint:disable-next-line
-                    let csData: any = splitArrayCollection(collectionData);
+                    let csData: any;
+                    if (currentData.Value && currentData.Value !== '' && (currentData.Value.split('base64,')[1] || collectionData.length === 0)) {
+                        csData = currentData.Value;
+                        if (currentData.fontFamily) {
+                            datas[currentData.FieldName + 'fontName'] = currentData.fontFamily;
+                        } else if (currentData.Value.split('base64,')[1]) {
+                            datas[currentData.FieldName + 'ImageData'] = true;
+                        }
+                    } else {
+                        csData = splitArrayCollection(collectionData);
+                    }
                     if (currentData.Value === null || currentData.Value === '') {
                         this.pdfViewerBase.validateForm = true;
                         this.nonFillableFields[currentData.FieldName] = JSON.stringify(csData);
                     } else {
-                        delete(this.nonFillableFields[currentData.FieldName]);
+                        delete (this.nonFillableFields[currentData.FieldName]);
                     }
                     datas[currentData.FieldName] = JSON.stringify(csData);
                     if (currentData.Bounds) {
@@ -256,7 +361,7 @@ export class FormFields {
                         // tslint:disable-next-line
                         let lineBounds: any = currentData.LineBounds;
                         // tslint:disable-next-line
-                        let bounds: any = { x: this.ConvertPointToPixel(lineBounds.X), y: this.ConvertPointToPixel(lineBounds.Y), width: this.ConvertPointToPixel(lineBounds.Width), height: this.ConvertPointToPixel(lineBounds.Height)};
+                        let bounds: any = { x: this.ConvertPointToPixel(lineBounds.X), y: this.ConvertPointToPixel(lineBounds.Y), width: this.ConvertPointToPixel(lineBounds.Width), height: this.ConvertPointToPixel(lineBounds.Height) };
                         datas[currentData.FieldName + 'bounds'] = JSON.stringify(bounds);
                     }
                 }
@@ -307,12 +412,14 @@ export class FormFields {
         } else if (currentTarget.className === 'e-pdfviewer-signatureformFields') {
             this.currentTarget = currentTarget;
             this.pdfViewerBase.signatureModule.showSignatureDialog(true);
+        } else if (currentTarget.className === 'e-pv-buttonItem' || currentTarget.type === 'button') {
+            this.pdfViewer.fireButtonFieldClickEvent(currentTarget.value, currentTarget.name, currentTarget.id);
         }
     }
     /**
      * @private
      */
-    public drawSignature(): void {
+    public drawSignature(signatureType?: string): void {
         let annot: PdfAnnotationBaseModel;
         // tslint:disable-next-line
         let bounds: any;
@@ -322,19 +429,39 @@ export class FormFields {
         let currentLeft: number = parseFloat(this.currentTarget.style.left) / zoomvalue;
         let currentTop: number = parseFloat(this.currentTarget.style.top) / zoomvalue;
         let currentPage: number = parseFloat(this.currentTarget.id.split('_')[1]);
-        // tslint:disable-next-line
-        if (this.pdfViewer.signatureMode === 'Default') {
-            // tslint:disable-next-line
-            let signatureBounds: any = this.checkSignatureWidth(this.pdfViewerBase.signatureModule.outputString);
-            bounds = { x: currentLeft + signatureBounds.left, y: currentTop + signatureBounds.top, width: signatureBounds.width, height: signatureBounds.height };
-        } else {
+        let signatureFontFamily: string;
+        let signatureFontSize: number;
+        if (signatureType === 'Type') {
             bounds = { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight };
+            annot = {
+                // tslint:disable-next-line:max-line-length
+                id: this.currentTarget.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: this.pdfViewerBase.signatureModule.outputString, modifiedDate: '',
+                shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: this.pdfViewerBase.signatureModule.fontName, fontSize: (bounds.height / 2)
+            };
+            signatureFontFamily = annot.fontFamily;
+            signatureFontSize = annot.fontSize;
+        } else if (signatureType === 'Image') {
+            bounds = { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight };
+            annot = {
+                // tslint:disable-next-line:max-line-length
+                id: this.currentTarget.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: this.pdfViewerBase.signatureModule.outputString, modifiedDate: '',
+                shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+            };
+        } else {
+            // tslint:disable-next-line
+            if (this.pdfViewer.signatureFitMode === 'Default') {
+                // tslint:disable-next-line
+                let signatureBounds: any = this.checkSignatureWidth(this.pdfViewerBase.signatureModule.outputString);
+                bounds = { x: currentLeft + signatureBounds.left, y: currentTop + signatureBounds.top, width: signatureBounds.width, height: signatureBounds.height };
+            } else {
+                bounds = { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight };
+            }
+            annot = {
+                // tslint:disable-next-line:max-line-length
+                id: this.currentTarget.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: this.pdfViewerBase.signatureModule.outputString, modifiedDate: '',
+                shapeAnnotationType: 'Path', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+            };
         }
-        annot = {
-            // tslint:disable-next-line:max-line-length
-            id: this.currentTarget.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: this.pdfViewerBase.signatureModule.outputString, modifiedDate: '',
-            shapeAnnotationType: 'Path', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
-        };
         this.pdfViewer.add(annot as PdfAnnotationBase);
         // tslint:disable-next-line
         let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentPage);
@@ -342,7 +469,7 @@ export class FormFields {
         this.pdfViewer.renderDrawing(canvass as any, currentPage);
         this.pdfViewerBase.signatureModule.showSignatureDialog(false);
         this.currentTarget.className = 'e-pdfviewer-signatureformFields signature';
-        this.updateDataInSession(this.currentTarget, annot.data, annot.bounds);
+        this.updateDataInSession(this.currentTarget, annot.data, annot.bounds, signatureFontFamily, signatureFontSize);
         this.currentTarget.style.pointerEvents = 'none';
     }
     private updateFormFieldsValue(event: MouseEvent): void {
@@ -462,19 +589,19 @@ export class FormFields {
         let currentWidth: number = parseFloat(this.currentTarget.style.width) / zoomvalue;
         // tslint:disable-next-line
         let currentHeight: number = parseFloat(this.currentTarget.style.height) / zoomvalue;
-        let currentLeftDiff : number = (650 - newdifferenceX) / 2;
-        let currentTopDiff : number = (300 - newdifferenceY) / 2;
+        let currentLeftDiff: number = (650 - newdifferenceX) / 2;
+        let currentTopDiff: number = (300 - newdifferenceY) / 2;
         currentLeftDiff = (currentLeftDiff / 650) * currentWidth;
-        currentTopDiff = (currentTopDiff  / 300) * currentHeight;
+        currentTopDiff = (currentTopDiff / 300) * currentHeight;
         currentWidth = currentWidth * ratioX;
         currentHeight = currentHeight * ratioY;
-        return { left : currentLeftDiff, top : currentTopDiff, width: currentWidth, height: currentHeight };
+        return { left: currentLeftDiff, top: currentTopDiff, width: currentWidth, height: currentHeight };
     }
     /**
      * @private
      */
     // tslint:disable-next-line
-    public updateDataInSession(target: any, signaturePath?: any, signatureBounds?: any): void {
+    public updateDataInSession(target: any, signaturePath?: any, signatureBounds?: any, signatureFontFamily?: string, signatureFontSize?: Number): void {
         this.pdfViewer.isDocumentEdited = true;
         // tslint:disable-next-line
         let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
@@ -490,6 +617,12 @@ export class FormFields {
                         currentData.Value = signaturePath;
                         if (signatureBounds) {
                             currentData.Bounds = signatureBounds;
+                        }
+                        if (signatureFontFamily) {
+                            currentData.fontFamily = signatureFontFamily;
+                            currentData.fontSize = signatureFontSize;
+                        } else {
+                            currentData.fontFamily = null;
                         }
                     } else {
                         currentData.Text = target.value;
@@ -554,7 +687,7 @@ export class FormFields {
             inputdiv.style.pointerEvents = 'none';
         } else if (currentData.IsSignatureField) {
             inputdiv.className = 'e-pdfviewer-signatureformFields';
-        } else {
+        } else if (currentData.Name !== 'Button') {
             inputdiv.className = 'e-pdfviewer-formFields';
         }
         inputdiv.id = this.pdfViewer.element.id + 'input_' + pageIndex + '_' + index;
@@ -591,15 +724,33 @@ export class FormFields {
                 currentField = this.createSignatureField(currentData, pageIndex, index, printContainer);
                 if (currentData.Value && currentData.Value !== '') {
                     this.renderExistingAnnnot(currentData, index, printContainer);
+                    this.isSignatureRendered = true;
                 }
                 break;
+            case 'Button':
+                currentField = this.createButtonField(currentData, pageIndex);
+                break;
             case 'ink':
-                if (currentData.Value && currentData.Value !== '') {
+                if (currentData.Value && currentData.Value !== '' && !this.isSignatureRendered) {
                     this.renderExistingAnnnot(currentData, index, printContainer);
                 }
                 break;
         }
         return currentField;
+    }
+    // tslint:disable-next-line
+    private createButtonField(data: any, pageIndex: number): any {
+        // tslint:disable-next-line
+        let inputField: any = document.createElement('input');
+        inputField.type = 'button';
+        inputField.classNme = 'e-pv-buttonItem';
+        if (data.Text !== '') {
+            inputField.value = data.Text;
+        } else {
+            inputField.value = '';
+        }
+        inputField.name = data.FieldName;
+        return inputField;
     }
     // tslint:disable-next-line
     private createTextBoxField(data: any, pageIndex: number, type: string): any {
@@ -709,7 +860,8 @@ export class FormFields {
     }
     // tslint:disable-next-line
     private applyDefaultColor(inputField: any): void {
-        if (inputField.style.backgroundColor === 'rgba(255, 255, 255, 0.2)' || inputField.style.backgroundColor === 'rgba(0, 0, 0, 0.2)') {
+        // tslint:disable-next-line:max-line-length
+        if (inputField.type !== 'button' && (inputField.style.backgroundColor === 'rgba(255, 255, 255, 0.2)' || inputField.style.backgroundColor === 'rgba(0, 0, 0, 0.2)')) {
             inputField.style.backgroundColor = 'rgba(0, 20, 200, 0.2)';
         }
         if (inputField.style.color === 'rgba(255, 255, 255, 0.2)') {
@@ -905,9 +1057,12 @@ export class FormFields {
         for (let m: number = 0; m < formFieldsData.length; m++) {
             // tslint:disable-next-line
             let currentData: any = formFieldsData[m];
-            if ((currentData.Name === 'ink' || currentData.Name === 'SignatureField') && currentData.FieldName === signData.FieldName && currentData.Value && currentData.Value !== '') {
+            // tslint:disable-next-line:max-line-length
+            if ((currentData.Name === 'ink' || currentData.Name === 'SignatureField' || currentData.Name === 'SignatureImage' || currentData.Name === 'SignatureText') && currentData.FieldName === signData.FieldName && currentData.Value && currentData.Value !== '') {
                 signData.Value = currentData.Value;
                 signData.Bounds = currentData.LineBounds;
+                signData.FontFamily = currentData.FontFamily;
+                signData.FontSize = currentData.FontSize;
                 this.isSignatureField = true;
                 break;
             }
@@ -972,11 +1127,30 @@ export class FormFields {
             // tslint:disable-next-line
             let currentPage: number = parseFloat(data['PageIndex']);
             let annot: PdfAnnotationBaseModel;
-            annot = {
-                // tslint:disable-next-line:max-line-length
-                id: this.pdfViewer.element.id + 'input_' + currentPage + '_' + index, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: currentPage, data: data.Value, modifiedDate: '',
-                shapeAnnotationType: 'Path', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
-            };
+            // tslint:disable-next-line
+            let collectionData: any = processPathData(data.Value);
+            // tslint:disable-next-line
+            if ((data.Value.split('base64,')[1])) {
+                annot = {
+                    // tslint:disable-next-line:max-line-length
+                    id: this.pdfViewer.element.id + 'input_' + currentPage + '_' + index, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: currentPage, data: data.Value, modifiedDate: '',
+                    shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                };
+            } else if (collectionData.length === 0) {
+                annot = {
+                    // tslint:disable-next-line:max-line-length
+                    id: this.pdfViewer.element.id + 'input_' + currentPage + '_' + index, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: currentPage, data: data.Value, modifiedDate: '',
+                    shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: data.FontFamily, fontSize: data.FontSize
+                };
+                annot.fontFamily = data.FontFamily ? data.FontFamily : data.fontFamily;
+                annot.fontSize = data.FontSize ? data.FontSize : data.fontSize;
+            } else {
+                annot = {
+                    // tslint:disable-next-line:max-line-length
+                    id: this.pdfViewer.element.id + 'input_' + currentPage + '_' + index, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: currentPage, data: data.Value, modifiedDate: '',
+                    shapeAnnotationType: 'Path', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                };
+            }
             this.pdfViewer.add(annot as PdfAnnotationBase);
             data.Bounds = annot.bounds;
             // tslint:disable-next-line

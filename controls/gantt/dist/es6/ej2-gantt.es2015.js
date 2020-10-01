@@ -1141,10 +1141,14 @@ class DateProcessor {
      * @private
      */
     calculateProjectDates(editArgs) {
+        let sDate = typeof this.parent.projectStartDate === 'string' ?
+            new Date(this.parent.projectStartDate) : this.parent.projectStartDate;
+        let eDate = typeof this.parent.projectEndDate === 'string' ?
+            new Date(this.parent.projectEndDate) : this.parent.projectEndDate;
         let projectStartDate = this.parent.timelineModule.isZooming && this.parent.cloneProjectStartDate
-            ? this.getDateFromFormat(this.parent.cloneProjectStartDate) : this.getDateFromFormat(this.parent.projectStartDate);
+            ? this.getDateFromFormat(this.parent.cloneProjectStartDate) : this.getDateFromFormat(sDate);
         let projectEndDate = this.parent.timelineModule.isZooming && this.parent.cloneProjectEndDate
-            ? this.getDateFromFormat(this.parent.cloneProjectEndDate) : this.getDateFromFormat(this.parent.projectEndDate);
+            ? this.getDateFromFormat(this.parent.cloneProjectEndDate) : this.getDateFromFormat(eDate);
         let minStartDate = null;
         let maxEndDate = null;
         let flatData = this.parent.flatData;
@@ -1726,7 +1730,7 @@ class TaskProcessor extends DateProcessor {
         let isMileStone = taskSettings.milestone ? data[taskSettings.milestone] ? true : false : false;
         let durationMapping = data[taskSettings.durationUnit] ? data[taskSettings.durationUnit] : '';
         this.parent.setRecordValue('durationUnit', this.validateDurationUnitMapping(durationMapping), ganttProperties, true);
-        let work = !isNullOrUndefined(data[taskSettings.work]) ? parseInt(data[taskSettings.work], 10) : 0;
+        let work = !isNullOrUndefined(data[taskSettings.work]) ? parseFloat(data[taskSettings.work]) : 0;
         this.parent.setRecordValue('workUnit', this.validateWorkUnitMapping(this.parent.workUnit), ganttProperties, true);
         let taskTypeMapping = data[taskSettings.type] ? data[taskSettings.type] : '';
         let tType = this.validateTaskTypeMapping(taskTypeMapping);
@@ -2210,12 +2214,13 @@ class TaskProcessor extends DateProcessor {
         }
     }
     setRecordDate(task, value, mapping) {
+        let tempDate = typeof value === 'string' ? new Date(value) : value;
         if (!isNullOrUndefined(value)) {
-            value = new Date(value.getTime());
+            value = new Date(tempDate.getTime());
         }
         this.parent.setRecordValue(mapping, value, task);
         if (!isNullOrUndefined(value)) {
-            value = new Date(value.getTime());
+            value = new Date(tempDate.getTime());
         }
         this.parent.setRecordValue('taskData.' + mapping, value, task);
     }
@@ -5580,6 +5585,12 @@ class GanttTreeGrid {
         this.parent.on('renderPanels', this.createContainer, this);
         this.parent.on('chartScroll', this.updateScrollTop, this);
         this.parent.on('destroy', this.destroy, this);
+        this.parent.treeGrid.on('renderReactTemplate', this.renderReactTemplate, this);
+    }
+    renderReactTemplate(args) {
+        let portals = 'portals';
+        this.parent[portals] = args;
+        this.parent.renderTemplates();
     }
     createContainer() {
         //let height: number = this.parent.ganttHeight - this.parent.toolbarModule.element.offsetHeight - 46;
@@ -6164,6 +6175,7 @@ class GanttTreeGrid {
         this.parent.off('renderPanels', this.createContainer);
         this.parent.off('chartScroll', this.updateScrollTop);
         this.parent.off('destroy', this.destroy);
+        this.parent.treeGrid.off('reactTemplateRender', this.renderReactTemplate);
     }
     destroy() {
         this.removeEventListener();
@@ -6747,11 +6759,11 @@ class ChartRows {
      * @return {NodeList}
      * @private
      */
-    getChildTaskbarNode(i) {
+    getChildTaskbarNode(i, rootElement) {
         let childTaskbarNode = null;
         let data = this.templateData;
         if (this.childTaskbarTemplateFunction) {
-            childTaskbarNode = this.childTaskbarTemplateFunction(extend({ index: i }, data), this.parent, 'TaskbarTemplate', this.getTemplateID('TaskbarTemplate'), false);
+            childTaskbarNode = this.childTaskbarTemplateFunction(extend({ index: i }, data), this.parent, 'TaskbarTemplate', this.getTemplateID('TaskbarTemplate'), false, undefined, rootElement[0]);
         }
         else {
             let labelString = '';
@@ -6805,11 +6817,11 @@ class ChartRows {
      * @return {NodeList}
      * @private
      */
-    getMilestoneNode(i) {
+    getMilestoneNode(i, rootElement) {
         let milestoneNode = null;
         let data = this.templateData;
         if (this.milestoneTemplateFunction) {
-            milestoneNode = this.milestoneTemplateFunction(extend({ index: i }, data), this.parent, 'MilestoneTemplate', this.getTemplateID('MilestoneTemplate'), false);
+            milestoneNode = this.milestoneTemplateFunction(extend({ index: i }, data), this.parent, 'MilestoneTemplate', this.getTemplateID('MilestoneTemplate'), false, undefined, rootElement[0]);
         }
         else {
             let template = '<div class="' + traceMilestone + '" style="position:absolute;">' +
@@ -6972,11 +6984,11 @@ class ChartRows {
      * @return {NodeList}
      * @private
      */
-    getParentTaskbarNode(i) {
+    getParentTaskbarNode(i, rootElement) {
         let parentTaskbarNode = null;
         let data = this.templateData;
         if (this.parentTaskbarTemplateFunction) {
-            parentTaskbarNode = this.parentTaskbarTemplateFunction(extend({ index: i }, data), this.parent, 'ParentTaskbarTemplate', this.getTemplateID('ParentTaskbarTemplate'), false);
+            parentTaskbarNode = this.parentTaskbarTemplateFunction(extend({ index: i }, data), this.parent, 'ParentTaskbarTemplate', this.getTemplateID('ParentTaskbarTemplate'), false, undefined, rootElement[0]);
         }
         else {
             let labelString = '';
@@ -7444,6 +7456,7 @@ class ChartRows {
                 }
             }
         }
+        this.parent.renderTemplates();
         this.updateTaskbarBlazorTemplate(true);
     }
     /**
@@ -7465,7 +7478,7 @@ class ChartRows {
             taskbarContainerNode[0].appendChild([].slice.call(connectorLineLeftNode)[0]);
         }
         if (this.templateData.hasChildRecords) {
-            let parentTaskbarTemplateNode = this.getParentTaskbarNode(i);
+            let parentTaskbarTemplateNode = this.getParentTaskbarNode(i, taskbarContainerNode);
             if (!this.templateData.ganttProperties.isAutoSchedule) {
                 let manualTaskbar = this.getManualTaskbar();
                 taskbarContainerNode[0].appendChild([].slice.call(manualTaskbar)[0]);
@@ -7479,7 +7492,7 @@ class ChartRows {
             }
         }
         else if (this.templateData.ganttProperties.isMilestone) {
-            let milestoneTemplateNode = this.getMilestoneNode(i);
+            let milestoneTemplateNode = this.getMilestoneNode(i, taskbarContainerNode);
             if (milestoneTemplateNode && milestoneTemplateNode.length > 0) {
                 taskbarContainerNode[0].appendChild([].slice.call(milestoneTemplateNode)[0]);
             }
@@ -7501,7 +7514,7 @@ class ChartRows {
                         childTaskbarRightResizeNode = this.childTaskbarRightResizer();
                     }
                 }
-                let childTaskbarTemplateNode = this.getChildTaskbarNode(i);
+                let childTaskbarTemplateNode = this.getChildTaskbarNode(i, taskbarContainerNode);
                 if (childTaskbarLeftResizeNode) {
                     taskbarContainerNode[0].appendChild([].slice.call(childTaskbarLeftResizeNode)[0]);
                 }
@@ -7795,6 +7808,7 @@ class ChartRows {
                 this.refreshRow(index, isValidateRange);
             }
             this.parent.ganttChartModule.updateLastRowBottomWidth();
+            this.parent.renderTemplates();
             this.updateTaskbarBlazorTemplate(true);
         }
     }
@@ -9636,6 +9650,7 @@ class Tooltip$1 {
                 this.currentTarget = args.target;
                 EventHandler.add(this.currentTarget, 'mousemove', this.mouseMoveHandler.bind(this));
             }
+            this.parent.renderTemplates();
             return callBackPromise;
         }
     }
@@ -10368,6 +10383,9 @@ let Gantt = class Gantt extends Component {
      * @private
      */
     render() {
+        if (this.isReact) {
+            this.treeGrid.grid.isReact = true;
+        }
         createSpinner({ target: this.element }, this.createElement);
         this.trigger('load', {});
         this.element.classList.add(root);
@@ -11035,6 +11053,7 @@ let Gantt = class Gantt extends Component {
         removeClass([this.element], root);
         this.element.innerHTML = '';
         this.isTreeGridRendered = false;
+        this.resetTemplates();
     }
     /**
      * Method to get taskbarHeight.
@@ -12446,6 +12465,26 @@ let Gantt = class Gantt extends Component {
             let id = data.ganttProperties.taskId;
             id = data.level === 0 ? 'R' + id : 'T' + id;
             this.taskIds.push(id);
+        }
+    }
+    /**
+     * To render the react templates
+     *  @hidden
+     */
+    renderTemplates() {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
+    }
+    /**
+     * To reset the react templates
+     *  @hidden
+     */
+    resetTemplates() {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
         }
     }
 };
@@ -15546,7 +15585,8 @@ class DialogEdit {
                 break;
             case 'stringedit':
                 let textBox = common;
-                if (column.field === ganttObj.columnMapping.duration) {
+                if (column.field === ganttObj.columnMapping.duration || column.field === ganttObj.columnMapping.startDate ||
+                    column.field === ganttObj.columnMapping.endDate) {
                     textBox.change = (args) => {
                         this.validateScheduleFields(args, column, ganttObj);
                     };
@@ -15667,13 +15707,18 @@ class DialogEdit {
         let columnName = getValue(ganttField, ganttObj.columnMapping);
         let col = ganttObj.columnByField[columnName];
         let tempValue;
+        let taskField = this.parent.taskFields;
         if (col.editType === 'stringedit') {
             let textBox = dialog.querySelector('#' + ganttId + columnName).ej2_instances[0];
             tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? col.edit.read() :
                 !isNullOrUndefined(col.valueAccessor) ? col.valueAccessor(columnName, ganttObj.editModule.dialogModule.editedRecord, col) :
                     this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
-            if (textBox.value !== tempValue.toString()) {
+            if (textBox.value !== tempValue.toString() && taskField.duration === columnName) {
                 textBox.value = tempValue;
+                textBox.dataBind();
+            }
+            else if (taskField.startDate === columnName || taskField.endDate === columnName) {
+                textBox.value = taskField.startDate === columnName ? ganttProp.startDate.toString() : ganttProp.endDate.toString();
                 textBox.dataBind();
             }
         }
@@ -15812,7 +15857,7 @@ class DialogEdit {
         if (taskSettings.startDate === columnName) {
             if (value !== '') {
                 let startDate = this.parent.dateValidationModule.getDateFromFormat(value);
-                startDate = this.parent.dateValidationModule.checkStartDate(startDate);
+                startDate = this.parent.dateValidationModule.checkStartDate(startDate, ganttProp);
                 this.parent.setRecordValue('startDate', startDate, ganttProp, true);
             }
             else {
@@ -17873,7 +17918,8 @@ class Edit$2 {
                         ganttObj.dataOperation.updateMappingData(ganttData, ganttPropByMapping[key]);
                     }
                     else {
-                        ganttObj.setRecordValue(ganttPropByMapping[key], data[key], ganttData.ganttProperties, true);
+                        let tempDate = typeof data[key] === 'string' ? new Date(data[key]) : data[key];
+                        ganttObj.setRecordValue(ganttPropByMapping[key], tempDate, ganttData.ganttProperties, true);
                         ganttObj.dataOperation.updateMappingData(ganttData, ganttPropByMapping[key]);
                     }
                 }
@@ -20163,15 +20209,15 @@ class Edit$2 {
                     let recordIndex1 = this.treeGridData.indexOf(droppedRec);
                     if (this.dropPosition === 'bottomSegment') {
                         if (!droppedRec.hasChildRecords) {
-                            if (this.parent.taskFields.parentID && this.parent.dataSource.length > 0) {
-                                this.parent.dataSource.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
+                            if (this.parent.taskFields.parentID && this.ganttData.length > 0) {
+                                this.ganttData.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
                             }
                             this.treeGridData.splice(recordIndex1 + 1, 0, this.draggedRecord);
                         }
                         else {
                             c = this.parent.editModule.getChildCount(droppedRec, 0);
-                            if (this.parent.taskFields.parentID && this.parent.dataSource.length > 0) {
-                                this.parent.dataSource.splice(recordIndex1 + c + 1, 0, this.draggedRecord.taskData);
+                            if (this.parent.taskFields.parentID && this.ganttData.length > 0) {
+                                this.ganttData.splice(recordIndex1 + c + 1, 0, this.draggedRecord.taskData);
                             }
                             this.treeGridData.splice(recordIndex1 + c + 1, 0, this.draggedRecord);
                         }
@@ -20246,8 +20292,8 @@ class Edit$2 {
         let proxy = this.parent;
         let tempData;
         let indx;
-        if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.json.length > 0) {
-            tempData = proxy.dataSource.dataSource.json;
+        if (this.parent.dataSource instanceof DataManager) {
+            tempData = getValue('dataOperation.dataArray', this.parent);
         }
         else {
             tempData = proxy.dataSource;
@@ -20295,8 +20341,8 @@ class Edit$2 {
         }
     }
     deleteDragRow() {
-        if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.json.length > 0) {
-            this.ganttData = this.parent.dataSource.dataSource.json;
+        if (this.parent.dataSource instanceof DataManager) {
+            this.ganttData = getValue('dataOperation.dataArray', this.parent);
         }
         else {
             this.ganttData = this.parent.dataSource;
@@ -20313,8 +20359,8 @@ class Edit$2 {
             childRec === 0) ? recordIndex1 + 1 :
             childRec + recordIndex1 + 1;
         if (this.dropPosition === 'middleSegment') {
-            if (obj.taskFields.parentID && this.parent.dataSource.length > 0) {
-                this.parent.dataSource.splice(childRecordsLength, 0, this.draggedRecord.taskData);
+            if (obj.taskFields.parentID && this.ganttData.length > 0) {
+                this.ganttData.splice(childRecordsLength, 0, this.draggedRecord.taskData);
             }
             this.treeGridData.splice(childRecordsLength, 0, this.draggedRecord);
             this.recordLevel();
@@ -20362,8 +20408,8 @@ class Edit$2 {
             count++;
             obj.flatData.splice(count, 0, currentRec);
             this.parent.ids.splice(count, 0, currentRec.ganttProperties.rowUniqueID.toString());
-            if (obj.taskFields.parentID && obj.dataSource.length > 0) {
-                obj.dataSource.splice(count, 0, currentRec.taskData);
+            if (obj.taskFields.parentID && this.ganttData.length > 0) {
+                this.ganttData.splice(count, 0, currentRec.taskData);
             }
             if (currentRec.hasChildRecords) {
                 count = this.updateChildRecord(currentRec, count);
@@ -20374,7 +20420,12 @@ class Edit$2 {
     removeRecords(record) {
         let obj = this.parent;
         let dataSource;
-        dataSource = this.parent.dataSource;
+        if (this.parent.dataSource instanceof DataManager) {
+            dataSource = getValue('dataOperation.dataArray', this.parent);
+        }
+        else {
+            dataSource = this.parent.dataSource;
+        }
         let delRow = record;
         let flatParent = this.parent.getParentTask(delRow.parentItem);
         if (delRow) {
@@ -20436,16 +20487,20 @@ class Edit$2 {
         for (let i = 0; i < record.childRecords.length; i++) {
             currentRec = record.childRecords[i];
             let data;
-            data = this.parent.dataSource.length > 0 ?
-                this.parent.dataSource : this.parent.currentViewData;
+            if (this.parent.dataSource instanceof DataManager) {
+                data = getValue('dataOperation.dataArray', this.parent);
+            }
+            else {
+                data = this.parent.dataSource;
+            }
             for (let i = 0; i < data.length; i++) {
                 if (data[i][this.parent.taskFields.id] === currentRec.taskData[this.parent.taskFields.id]) {
                     indx = i;
                 }
             }
             if (indx !== -1) {
-                if (obj.dataSource.length > 0) {
-                    obj.dataSource.splice(indx, 1);
+                if (data.length > 0) {
+                    data.splice(indx, 1);
                 }
                 this.treeGridData.splice(indx, 1);
             }
@@ -22895,6 +22950,9 @@ class RowDD$1 {
         if (ganttDragelem) {
             ganttDragelem.remove();
         }
+        let gridRow = closest(args.target, '.e-row');
+        let dropIndex = gridRow ? parseInt(gridRow.getAttribute('aria-rowindex'), 10) : args.dropIndex;
+        args.dropIndex = dropIndex;
         args.dropRecord = this.parent.currentViewData[args.dropIndex];
         this.parent.trigger('rowDrop', args);
         if (this.parent.viewType === 'ResourceView') {

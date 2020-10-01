@@ -1,12 +1,15 @@
 import { merge } from '@syncfusion/ej2-base';
 import { Cell } from './cell';
 import { IGrid } from '../base/interface';
+import { DataManager } from '@syncfusion/ej2-data';
 
 /**
  * Row
  * @hidden
  */
 export class Row<T> {
+
+    public parent?: IGrid;
 
     public uid: string;
 
@@ -54,6 +57,8 @@ export class Row<T> {
 
     public cssClass: string;
 
+    public lazyLoadCssClass: string;
+
     public foreignKeyData: Object;
 
     public isDetailRow: boolean;
@@ -62,8 +67,9 @@ export class Row<T> {
 
     public parentUid: string;
 
-    constructor(options: { [x: string]: Object }) {
+    constructor(options: { [x: string]: Object }, parent?: IGrid) {
         merge(this, options);
+        this.parent = parent;
     }
 
     public clone(): Row<T> {
@@ -72,4 +78,39 @@ export class Row<T> {
         row.cells = this.cells.map((cell: Cell<T>) => cell.clone());
         return row;
     }
+
+    /**
+     * Replaces the row data and grid refresh the particular row element only.
+     * @param  {Object} data - To update new data for the particular row.
+     * @return {void}
+     */
+    public setRowValue(data: Object): void {
+        let key: string | number = this.data[this.parent.getPrimaryKeyFieldNames()[0]];
+        this.parent.setRowData(key, data);
+    }
+
+    /**
+     * Replaces the given field value and refresh the particular cell element only.
+     * @param {string} field - Specifies the field name which you want to update.
+     * @param {string | number | boolean | Date} value - To update new value for the particular cell.
+     * @return {void}
+     */
+    public setCellValue(field: string, value: string | number | boolean | Date): void {
+        let isValDiff: boolean = !(this.data[field].toString() === value.toString());
+        if (isValDiff) {
+            let pKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
+            let key: string | number = this.data[pKeyField];
+            this.parent.setCellValue(key, field, value);
+            this.makechanges(pKeyField, this.data);
+        } else {
+            return;
+        }
+    }
+
+    private makechanges(key: string, data: Object): void {
+        let gObj: IGrid = this.parent;
+        let dataManager: DataManager = gObj.getDataModule().dataManager;
+        dataManager.update(key, data);
+    }
+
 }

@@ -406,6 +406,14 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public tooltipPlacement: TooltipPlacement;
 
     /**
+     * Control instance
+     * @default null.
+     * @private.
+     */
+    @Property(null)
+    public controlInstance: object;
+
+    /**
      * Triggers before each axis range is rendered.
      * @event
      * @private.
@@ -822,9 +830,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (!argsData.cancel) {
             let elem: Element = createElement('div', { id: this.element.id + 'parent_template' });
-            let templateElement: HTMLCollection = this.templateFn(this.data, this, 'tooltipTemplate', elem.id + '_blazorTemplate', '');
+            let templateElement: HTMLCollection = this.templateFn(
+                this.data, this.controlInstance, 'template', elem.id + '_blazorTemplate', ''
+            );
             while (templateElement && templateElement.length > 0) {
-                if (isBlazor()) {
+                if (isBlazor() || templateElement.length === 1) {
                     elem.appendChild(templateElement[0]);
                     templateElement = null;
                 } else {

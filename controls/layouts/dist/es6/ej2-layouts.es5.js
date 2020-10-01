@@ -1885,6 +1885,10 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         toElement.innerHTML = '';
         template = typeof (template) === 'string' ? this.sanitizeHelper(template) : template;
         this.templateCompile(toElement, template);
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     };
     // tslint:disable-next-line
     Splitter.prototype.templateCompile = function (ele, cnt) {
@@ -1935,7 +1939,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
                 templateFUN = templateFn({}, this, prop, this.element.id + 'content' + this.allPanes.length.toString(), true);
             }
         }
-        if (!isNullOrUndefined(templateFn) && templateFUN.length > 0) {
+        if (!isNullOrUndefined(templateFn) && templateFUN && templateFUN.length > 0) {
             [].slice.call(templateFUN).forEach(function (el) {
                 ele.appendChild(el);
             });
@@ -2041,6 +2045,10 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
                 this.allPanes = [];
             }
             this.restoreElem();
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.clearTemplate();
+            }
         }
     };
     Splitter.prototype.restoreElem = function () {
@@ -2324,6 +2332,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         _this.isBlazor = false;
         _this.isInlineRendering = false;
         _this.removeAllCalled = false;
+        _this.resizeHeight = false;
         setValue('mergePersistData', _this.mergePersistPanelData, _this);
         return _this;
     }
@@ -2383,6 +2392,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.updateDragArea();
         this.renderComplete();
         this.updateServerPanelData();
+        this.renderReactTemplates();
     };
     DashboardLayout.prototype.updateServerPanelData = function () {
         if (isBlazor() && this.isServerRendered) {
@@ -2410,6 +2420,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         }
         this.table.appendChild(tbody);
         this.element.appendChild(this.table);
+        this.renderReactTemplates();
     };
     DashboardLayout.prototype.initialize = function () {
         this.updateRowHeight();
@@ -2588,6 +2599,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                 var id = this.element.id + 'HeaderTemplate' + panelId;
                 this.renderTemplate(panelModel.header, headerTemplateElement, id, isStringTemplate, 'header');
                 this.panelContent.appendChild(headerTemplateElement);
+                this.renderReactTemplates();
                 updateBlazorTemplate(id, 'HeaderTemplate', panelModel);
             }
         }
@@ -2603,6 +2615,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                 var id = this.element.id + 'ContentTemplate' + panelId;
                 this.renderTemplate(panelModel.content, this.panelBody, id, isStringTemplate, 'content');
                 this.panelContent.appendChild(this.panelBody);
+                this.renderReactTemplates();
                 updateBlazorTemplate(id, 'ContentTemplate', panelModel);
             }
         }
@@ -2682,6 +2695,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.shadowEle.classList.add('e-holder');
         addClass([this.element], [preventSelect]);
         this.element.appendChild(this.shadowEle);
+        this.renderReactTemplates();
         this.elementX = parseFloat(el.style.left);
         this.elementY = parseFloat(el.style.top);
         this.elementWidth = el.offsetWidth;
@@ -3131,20 +3145,20 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
             var panelElement = document.getElementById(updatedPanel[i].id);
             if (panelElement) {
                 setStyleAttribute(panelElement, { 'width': '100%' });
-                panelElement.style.height = ' ' + (this.element.parentElement
-                    && this.element.parentElement.offsetWidth / this.cellAspectRatio) + 'px';
-                this.cellSize[1] = this.element.parentElement
-                    && (this.element.parentElement.offsetWidth / this.cellAspectRatio);
+                panelElement.style.height = ' ' + (this.cellSize[1] * updatedPanel[i].sizeY) + 'px';
+                this.resizeHeight = true;
                 if (this.addPanelCalled && this.isBlazor) {
                     var panelProp = this.getActualProperties(updatedPanel[i]);
                     panelProp.row = i;
                     panelProp.col = 0;
                     this.panelPropertyChange(updatedPanel[i], panelProp);
                     this.setPanelPosition(panelElement, i, 0);
+                    this.setMediaQueryPanelPosition(panelElement, i, 0);
                 }
                 else {
                     this.panelPropertyChange(updatedPanel[i], { row: i, col: 0 });
                     this.setPanelPosition(panelElement, updatedPanel[i].row, updatedPanel[i].col);
+                    this.setMediaQueryPanelPosition(panelElement, updatedPanel[i].row, updatedPanel[i].col);
                 }
                 this.setClasses(this.panelCollection);
                 this.checkDragging(this.dragCollection);
@@ -3214,6 +3228,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
             }
             cellElement.style.zIndex = '' + panel.zIndex;
             this.element.appendChild(cellElement);
+            this.renderReactTemplates();
         }
         var dashBoardCell = this.renderPanels(cellElement, panel, panel.id, isStringTemplate);
         this.panelCollection.push(dashBoardCell);
@@ -3240,6 +3255,25 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         var widthValue = this.getCellSize()[0];
         var left = col === 0 ? 0 : (((col) * ((widthValue) + this.cellSpacing[0])));
         var top = row === 0 ? 0 : (((row) * ((heightValue) + this.cellSpacing[1])));
+        setStyleAttribute(cellElement, { 'left': left + 'px', 'top': top + 'px' });
+    };
+    DashboardLayout.prototype.setMediaQueryPanelPosition = function (cellElement, row, col) {
+        if (!cellElement) {
+            return;
+        }
+        var widthValue = this.getCellSize()[0];
+        var heightValue = this.getCellSize()[1];
+        var top = 0; //= row === 0 ? 0 : (((row) * (parseInt(heightValue.toString(), 10) + this.cellSpacing[1])));
+        var left = 0;
+        if (this.resizeHeight && row !== 0) {
+            // top = 0;
+            for (var i = 1; i < this.panels.length; i++) {
+                top = top + (this.panels[i - 1].sizeY * this.cellSize[1]) + this.cellSpacing[1];
+                if (i === row) {
+                    break;
+                }
+            }
+        }
         setStyleAttribute(cellElement, { 'left': left + 'px', 'top': top + 'px' });
     };
     DashboardLayout.prototype.getRowColumn = function () {
@@ -3312,6 +3346,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                         addClass([cell], 'e-rtl');
                     }
                     this.element.appendChild(cell);
+                    this.renderReactTemplates();
                 }
                 if (this.checkMediaQuery() && j === cells.length - 1) {
                     this.checkMediaQuerySizing();
@@ -4316,6 +4351,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         addClass([this.element], [preventSelect]);
         addClass([args.element], [dragging]);
         this.element.appendChild(this.shadowEle);
+        this.renderReactTemplates();
         this.shadowEle = document.querySelector('.e-holder');
         this.shadowEle.style.height = (this.getCellInstance(args.element.id).sizeY * this.cellSize[1]) + 'px';
         this.shadowEle.style.width = (this.getCellInstance(args.element.id).sizeX * this.cellSize[0]) + 'px';
@@ -4524,6 +4560,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         }
         this.setClasses([cell]);
         if (this.allowFloating) {
+            this.mainElement = null;
             this.moveItemsUpwards();
         }
         this.updateOldRowColumn();
@@ -4578,6 +4615,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
             var id = this.element.id + 'HeaderTemplate' + panelInstance.id;
             this.renderTemplate(panelInstance.header, headerTemplateElement, id, true, 'header');
             this.panelContent.appendChild(headerTemplateElement);
+            this.renderReactTemplates();
         }
         else {
             if (cell.querySelector('.e-panel-header')) {
@@ -4596,6 +4634,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
             var id = this.element.id + 'ContentTemplate' + panelInstance.id;
             this.renderTemplate(panelInstance.content, this.panelBody, id, true, 'content');
             this.panelContent.appendChild(this.panelBody);
+            this.renderReactTemplates();
         }
         else {
             if (cell.querySelector('.e-panel-content')) {
@@ -4637,6 +4676,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.removeAllCalled = true;
         for (var i = 0; i < this.panelCollection.length; i++) {
             detach(this.panelCollection[i]);
+            this.clearTemplate();
         }
         this.removeAllPanel();
         this.updateServerPanelData();
@@ -4799,10 +4839,13 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         }
         this.removeAllPanel();
         _super.prototype.destroy.call(this);
+        this.clearTemplate();
+        this.renderReactTemplates();
     };
     DashboardLayout.prototype.removeAllPanel = function () {
         while (this.element.firstElementChild) {
             detach(this.element.firstElementChild);
+            this.clearTemplate();
         }
     };
     DashboardLayout.prototype.setEnableRtl = function () {
@@ -4860,7 +4903,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
      */
     DashboardLayout.prototype.onPropertyChanged = function (newProp, oldProp) {
         var _this = this;
-        if (newProp.panels && newProp.panels.length > 0) {
+        if (newProp.panels && newProp.panels.length > 0 && newProp.panels[0] instanceof Panel) {
             this.checkForIDValues(newProp.panels);
         }
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
@@ -4927,10 +4970,13 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                     this.setProperties({ allowPushing: newProp.allowPushing }, true);
                     break;
                 case 'panels':
-                    if (!newProp.columns && !this.restrictDynamicUpdate) {
+                    if (!newProp.columns && !this.restrictDynamicUpdate && newProp.panels[0] instanceof Panel) {
                         this.isRenderComplete = false;
                         this.updatePanelsDynamically(newProp.panels);
                         this.isRenderComplete = true;
+                    }
+                    else if (!(newProp.panels[0] instanceof Panel)) {
+                        this.updatePanelsDynamically(this.panels);
                     }
                     else {
                         this.restrictDynamicUpdate = false;

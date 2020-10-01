@@ -388,6 +388,21 @@ var TextBox = /** @class */ (function (_super) {
             sf.base.EventHandler.add(this.formElement, 'reset', this.resetForm, this);
         }
         this.bindClearEvent();
+        if (!sf.base.isNullOrUndefined(this.textboxWrapper.container.querySelector('.e-float-text')) && this.floatLabelType === 'Auto'
+            && this.textboxWrapper.container.classList.contains('e-autofill') &&
+            this.textboxWrapper.container.classList.contains('e-outline')) {
+            sf.base.EventHandler.add((this.textboxWrapper.container.querySelector('.e-float-text')), 'animationstart', this.animationHandler, this);
+        }
+    };
+    TextBox.prototype.animationHandler = function () {
+        this.textboxWrapper.container.classList.add('e-valid-input');
+        var label = this.textboxWrapper.container.querySelector('.e-float-text');
+        if (!sf.base.isNullOrUndefined(label)) {
+            label.classList.add('e-label-top');
+            if (label.classList.contains('e-label-bottom')) {
+                label.classList.remove('e-label-bottom');
+            }
+        }
     };
     TextBox.prototype.resetValue = function (value) {
         var prevOnChange = this.isProtectedOnChange;
@@ -512,6 +527,11 @@ var TextBox = /** @class */ (function (_super) {
         sf.base.EventHandler.remove(this.respectiveElement, 'change', this.changeHandler);
         if (this.isForm) {
             sf.base.EventHandler.remove(this.formElement, 'reset', this.resetForm);
+        }
+        if (!sf.base.isNullOrUndefined(this.textboxWrapper.container.querySelector('.e-float-text')) && this.floatLabelType === 'Auto'
+            && this.textboxWrapper.container.classList.contains('e-outline') &&
+            this.textboxWrapper.container.classList.contains('e-autofill')) {
+            sf.base.EventHandler.remove((this.textboxWrapper.container.querySelector('.e-float-text')), 'animationstart', this.animationHandler);
         }
     };
     /**
@@ -716,7 +736,5 @@ exports.TextBox = TextBox;
 return exports;
 
 });
-sfBlazor.modules["textbox"] = "inputs.TextBox";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.textbox, () => {
+
     sf.inputs = sf.base.extend({}, sf.inputs, sftextbox({}));
-});

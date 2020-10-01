@@ -94,6 +94,16 @@ import { isBlazor } from '@syncfusion/ej2-base';
                 if ((diff as any).children) {
                     (diff as any).children = (cloneObject(selectedObject) as any).children
                 }
+                if((diff as any).ports && (diff as any).ports.length){
+                    for(var i =0; i<(diff as any).ports.length;i++){
+                        if((newObject as Node).ports[i].outEdges){
+                            (diff as any).ports[i].outEdges = (newObject as Node).ports[i].outEdges
+                        } 
+                        if((newObject as Node).ports[i].inEdges){
+                            (diff as any).ports[i].inEdges = (newObject as Node).ports[i].inEdges
+                        }                  
+                    }               
+               }
                 return this.getDiagramObjects(diff, selectedObject.id, isNode, args, labelDrag,diagram);
             }
         }
@@ -188,7 +198,7 @@ import { isBlazor } from '@syncfusion/ej2-base';
     public removeEmptyValues(frame: object): object {
         let newObj: Object = {};
         for (let prop of Object.keys(frame)) {
-            if (prop !== 'wrapper' && prop !== 'data') {
+            if (prop !== 'wrapper' && (prop !== 'data' || (prop === 'data' && !(frame[prop] instanceof Array)))) {
                 let obj: any = frame[prop];
                 let value: string = JSON.stringify(obj);
                 if (obj instanceof Array) {
@@ -258,7 +268,7 @@ import { isBlazor } from '@syncfusion/ej2-base';
             }
         }
         if (this.isArray(obj2)) {
-            for (let i = 0; i < obj2.length; i++) {
+            for (var i = obj2.length - 1; i >= 0; i--) {
                 if (!diff[arrayName]) {
                     diff[arrayName] = [];
                 }

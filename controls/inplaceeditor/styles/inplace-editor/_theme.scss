@@ -1,7 +1,7 @@
 @include export-module('inplaceeditor-theme') {
   /*! inplaceeditor theme */
 
-  #{&}.e-inplaceeditor {
+  .e-inplaceeditor {
 
     .e-editable-value-wrapper {
 
@@ -54,8 +54,8 @@
     }
   }
 
-  #{&}.e-inplaceeditor,
-  #{&}.e-inplaceeditor-tip {
+  .e-inplaceeditor,
+  .e-inplaceeditor-tip {
 
     .e-editable-action-buttons {
 
@@ -120,7 +120,7 @@
     }
   }
 
-  #{&}.e-inplaceeditor-tip {
+  .e-inplaceeditor-tip {
 
     &.e-tooltip-wrap {
       background: $editor-tip-bg;

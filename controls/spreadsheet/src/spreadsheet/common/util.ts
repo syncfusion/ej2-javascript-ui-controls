@@ -1,11 +1,13 @@
 import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent } from '@syncfusion/ej2-base';
-import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions, IOffset, clearViewer } from './index';
+import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions } from './index';
+import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj } from './index';
 import { Spreadsheet } from '../base/index';
 import { SheetModel, getRowsHeight, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells } from '../../workbook/index';
 import { RangeModel, getRangeIndexes, Workbook, wrap, setRowHeight, insertModel, InsertDeleteModelArgs } from '../../workbook/index';
 import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, setMerge } from '../../workbook/index';
 import { ValidationModel, setValidation, removeValidation, clearCFRule, setCFRule, ConditionalFormatModel } from '../../workbook/index';
 import { removeSheetTab, rowHeightChanged, replace } from './index';
+import { getCellIndexes, getCell, getColumnWidth } from '../../workbook/index';
 
 /**
  * The function used to update Dom using requestAnimationFrame.
@@ -575,7 +577,8 @@ export function setWidthAndHeight(trgt: HTMLElement, value: number, isCol: boole
 /**
  * @hidden 
  */
-export function findMaxValue(table: HTMLElement, text: HTMLElement[], isCol: boolean, parent: Spreadsheet): number {
+export function findMaxValue(
+    table: HTMLElement, text: HTMLElement[], isCol: boolean, parent: Spreadsheet, prevData?: string, isWrap?: boolean): number {
     let myTableDiv: HTMLElement = parent.createElement('div', { className: parent.element.className, styles: 'display: block' });
     let myTable: HTMLElement = parent.createElement('table', {
         className: table.className + 'e-resizetable',
@@ -596,8 +599,15 @@ export function findMaxValue(table: HTMLElement, text: HTMLElement[], isCol: boo
     }
     myTableDiv.appendChild(myTable);
     document.body.appendChild(myTableDiv);
-    let offsetWidthValue: number = myTable.getBoundingClientRect().width;
-    let offsetHeightValue: number = myTable.getBoundingClientRect().height;
+    let offsetWidthValue: number;
+    let offsetHeightValue: number;
+    if (!isWrap) {
+        offsetHeightValue = myTable.getBoundingClientRect().height;
+        offsetWidthValue = myTable.getBoundingClientRect().width;
+    } else {
+        offsetHeightValue = parseInt(prevData, 10);
+        offsetWidthValue = parseInt(prevData, 10);
+    }
     document.body.removeChild(myTableDiv);
     if (isCol) {
         return Math.ceil(offsetWidthValue);
@@ -698,17 +708,22 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
                 spreadsheet.delete(
                     options.eventArgs.index, options.eventArgs.index + (options.eventArgs.model.length - 1), options.eventArgs.modelType);
             } else {
-                spreadsheet.notify(insertModel, <InsertDeleteModelArgs>{ model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
-                    spreadsheet.getActiveSheet(), start: options.eventArgs.index, end: options.eventArgs.index + (options.eventArgs.model
-                    .length - 1), modelType: options.eventArgs.modelType, isAction: false, checkCount: options.eventArgs.sheetCount,
-                    activeSheetIndex: options.eventArgs.activeSheetIndex });
+                spreadsheet.notify(insertModel, <InsertDeleteModelArgs>{
+                    model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
+                        spreadsheet.getActiveSheet(), start: options.eventArgs.index, end: options.eventArgs.index +
+                            (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType,
+                    isAction: false, checkCount: options.eventArgs.sheetCount,
+                    activeSheetIndex: options.eventArgs.activeSheetIndex
+                });
             }
             break;
         case 'delete':
             if (isRedo === false) {
-                spreadsheet.notify(insertModel, <InsertDeleteModelArgs>{ model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
-                    spreadsheet.getActiveSheet(), start: options.eventArgs.deletedModel, modelType: options.eventArgs.modelType,
-                    isAction: false, columnCellsModel: options.eventArgs.deletedCellsModel });
+                spreadsheet.notify(insertModel, <InsertDeleteModelArgs>{
+                    model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
+                        spreadsheet.getActiveSheet(), start: options.eventArgs.deletedModel, modelType: options.eventArgs.modelType,
+                    isAction: false, columnCellsModel: options.eventArgs.deletedCellsModel
+                });
             } else {
                 spreadsheet.delete(options.eventArgs.startIndex, options.eventArgs.endIndex, options.eventArgs.modelType);
             }
@@ -751,6 +766,41 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
                     oldRange: eventArgs.oldRange, selectedRange: eventArgs.selectedRange
                 });
             }
+            break;
+        case 'insertImage':
+            if (isRedo) {
+                spreadsheet.notify(createImageElement, {
+                    options: {
+                        data: options.eventArgs.imageData,
+                        height: options.eventArgs.imageHeight, width: options.eventArgs.imageWidth, imageId: options.eventArgs.id
+                    },
+                    range: options.eventArgs.range, isPublic: false, isUndoRedo: true
+                });
+            } else {
+                spreadsheet.notify(deleteImage, {
+                    id: options.eventArgs.id, sheetIdx: options.eventArgs.sheetIndex + 1, range: options.eventArgs.range
+                });
+            }
+            break;
+        case 'imageRefresh':
+            let element: HTMLElement = document.getElementById(options.eventArgs.id);
+            if (isRedo) {
+                options.eventArgs.isUndoRedo = true;
+                spreadsheet.notify(refreshImgCellObj, options.eventArgs);
+            } else {
+                spreadsheet.notify(refreshImgCellObj, {
+                    prevTop: options.eventArgs.currentTop, prevLeft: options.eventArgs.currentLeft,
+                    currentTop: options.eventArgs.prevTop, currentLeft: options.eventArgs.prevLeft, id: options.eventArgs.id,
+                    currentHeight: options.eventArgs.prevHeight, currentWidth: options.eventArgs.prevWidth, requestType: 'imageRefresh',
+                    prevHeight: options.eventArgs.currentHeight, prevWidth: options.eventArgs.currentWidth, isUndoRedo: true
+                });
+
+            }
+            element.style.height = isRedo ? options.eventArgs.currentHeight + 'px' : options.eventArgs.prevHeight + 'px';
+            element.style.width = isRedo ? options.eventArgs.currentWidth + 'px' : options.eventArgs.prevWidth + 'px';
+            element.style.top = isRedo ? options.eventArgs.currentTop + 'px' : options.eventArgs.prevTop + 'px';
+            element.style.left = isRedo ? options.eventArgs.currentLeft + 'px' : options.eventArgs.prevLeft + 'px';
+            break;
     }
 }
 
@@ -780,6 +830,21 @@ export function setRowEleHeight(
     parent: Spreadsheet, sheet: SheetModel, height: number, rowIdx: number, row?: HTMLElement,
     hRow?: HTMLElement, notifyRowHgtChange: boolean = true): void {
     let prevHgt: number = getRowHeight(sheet, rowIdx);
+    let edit: HTMLElement = parent.element.querySelector('.e-spreadsheet-edit');
+    if (edit && (edit.innerHTML.indexOf('\n') > -1)) {
+        let actCell: number[] = getCellIndexes(parent.getActiveSheet().activeCell);
+        let cell: CellModel = getCell(actCell[0], actCell[1], sheet); let i: number;
+        let splitVal: string[] = edit.innerHTML.split('\n');
+        let n: number = 0; let valLength: number = splitVal.length;
+        for (i = 0; i < valLength; i++) {
+            let lines: number = getLines(splitVal[i], getColumnWidth(sheet, actCell[1]), cell.style, parent.cellStyle);
+            if (lines === 0) {
+                lines = 1; // for empty new line
+            }
+            n = n + lines;
+        }
+        height = getTextHeight(parent, cell.style || parent.cellStyle, n) + 1;
+    }
     (row || parent.getRow(rowIdx)).style.height = `${height}px`;
     if (sheet.showHeaders) {
         (hRow || parent.getRow(rowIdx, parent.getRowHeaderTable())).style.height = `${height}px`;
@@ -794,7 +859,7 @@ export function setRowEleHeight(
 /** @hidden */
 export function getTextHeight(context: Workbook, style: CellStyleModel, lines: number = 1): number {
     let fontSize: string = (style && style.fontSize) || context.cellStyle.fontSize;
-    let fontSizePx: number = fontSize.indexOf('pt') > -1 ? parseInt(fontSize,  10) * 1.33 : parseInt(fontSize, 10);
+    let fontSizePx: number = fontSize.indexOf('pt') > -1 ? parseInt(fontSize, 10) * 1.33 : parseInt(fontSize, 10);
     return Math.ceil(fontSizePx * (style && style.fontFamily === 'Arial Black' ? 1.44 : 1.24) * lines);
 }
 

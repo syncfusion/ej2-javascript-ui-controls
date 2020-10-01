@@ -485,8 +485,10 @@ export class NormalEdit {
                         this.refreshRow(closeEditArgs.data);
                     }
                 }
+                let isLazyLoad: boolean = gObj.groupSettings.enableLazyLoading && gObj.groupSettings.columns.length
+                    && !gObj.getContentTable().querySelector('tr.e-emptyrow');
                 if (!gObj.getContentTable().querySelector('tr.e-emptyrow') &&
-                    !gObj.getContentTable().querySelector('tr.e-row')) {
+                    !gObj.getContentTable().querySelector('tr.e-row') && !isLazyLoad) {
                     gObj.renderModule.emptyRow();
                 }
                 if (gObj.editSettings.mode !== 'Dialog') {

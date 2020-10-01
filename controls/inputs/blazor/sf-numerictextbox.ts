@@ -33,6 +33,8 @@ const FOCUS: string = 'focus';
 const BLUR: string = 'blur';
 const KEY_PRESS: string = 'keypress';
 const KEY_DOWN: string = 'keydown';
+const PASTE: string = 'paste';
+const INVOKE_PASTE: string = 'InvokePasteHandler';
 class SfNumericTextBox {
     public element: BlazorNumericElement | HTMLInputElement;
     private wrapperElement: HTMLElement;
@@ -57,6 +59,7 @@ class SfNumericTextBox {
         EventHandler.add(this.element, BLUR, this.focusOutHandler, this);
         EventHandler.add(this.element, KEY_PRESS, this.keyPressHandler, this);
         EventHandler.add(this.element, KEY_DOWN, this.keyDownHandler, this);
+        EventHandler.add(this.element, PASTE, this.pasteHandler, this);
     }
     private keyPressHandler(event: KeyboardEvent): boolean {
         if (!this.options.enabled || this.options.readonly) { return true; }
@@ -80,6 +83,16 @@ class SfNumericTextBox {
             return true;
         }
     };
+    private pasteHandler(event: ClipboardEvent): void {
+        if (!(!this.options.enabled || this.options.readonly)) {
+            let pasteValue: string = event.clipboardData.getData('text/plain');
+            if (!this.numericRegex().test(pasteValue)) {
+                event.preventDefault();
+            } else {
+                this.dotNetRef.invokeMethodAsync('InvokePasteHandler', pasteValue);
+            }
+        }
+    }
     private keyDownHandler(event: KeyboardEvent): void {
         if (!this.options.readonly) {
             if (event.keyCode === ARROW_UP) {
@@ -124,8 +137,10 @@ class SfNumericTextBox {
     }
     private focusHandler(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {
         this.isFocused = true;
-        if (!Browser.isDevice) {
-            EventHandler.add(this.element, MOUSE_WHEEL, this.mouseWheel, this);
+        if (!(!this.options.enabled || this.options.readonly)) {
+            if (!Browser.isDevice) {
+                EventHandler.add(this.element, MOUSE_WHEEL, this.mouseWheel, this);
+            }
         }
     }
     private focusOutHandler(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {

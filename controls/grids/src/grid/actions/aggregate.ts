@@ -12,7 +12,7 @@ import { SummaryCellRenderer } from '../renderer/summary-cell-renderer';
 import { AggregateRowModel, ColumnModel } from '../models/models';
 import { AggregateColumn } from '../models/aggregate';
 import { GroupSummaryModelGenerator, CaptionSummaryModelGenerator } from '../services/summary-model-generator';
-import { Grid } from '../base';
+import { Grid } from '../base/grid';
 
 /**
  * Summary Action controller.
@@ -44,7 +44,8 @@ export class Aggregate implements IAction {
         this.footerRenderer.renderTable();
 
         let footerContent: Element = this.footerRenderer.getPanel();
-        if (this.parent.element.scrollHeight >= (this.parent as Grid).getHeight(this.parent.height) && footerContent) {
+        if (this.parent.element.scrollHeight >= (this.parent as Grid).getHeight(this.parent.height)
+         && footerContent) {
             addClass([footerContent], ['e-footerpadding']);
         }
 

@@ -1,11 +1,10 @@
 @include export-module('listbox-layout') {
   // sass-lint:disable no-vendor-prefixes
-  #{&}.e-listbox-wrapper {
+  .e-listbox-wrapper,
+  .e-listbox-container {
     -webkit-overflow-scrolling: touch;
-    border: $listview-border-size solid;
     cursor: pointer;
     display: block;
-    overflow: auto;
     position: relative;
     user-select: none;
     width: 100%;
@@ -278,7 +277,12 @@
     display: block;
   }
 
-  .e-listbox-wrapper.e-sortableclone {
+  .e-listbox-wrapper:not(.e-listbox-container) {
+    overflow: auto;
+  }
+
+  .e-listbox-wrapper.e-sortableclone,
+  .e-listbox-container.e-sortableclone {
     border-width: 0;
     overflow: visible;
 
@@ -311,7 +315,8 @@
     }
   }
 
-  #{&}.e-listboxtool-wrapper {
+  .e-listboxtool-wrapper,
+  .e-listboxtool-container {
     cursor: pointer;
     display: flex;
 
@@ -353,7 +358,8 @@
     }
   }
 
-  #{&}.e-rtl.e-listboxtool-wrapper {
+  .e-rtl.e-listboxtool-wrapper,
+  .e-rtl.e-listboxtool-container {
     &.e-right {
       .e-listbox-tool {
         margin-right: 15px;
@@ -367,8 +373,10 @@
     }
   }
 
-  .e-bigger #{&}.e-listbox-wrapper,
-  #{&}.e-listbox-wrapper.e-bigger {
+  .e-bigger .e-listbox-wrapper,
+  .e-listbox-wrapper.e-bigger,
+  .e-bigger .e-listbox-container,
+  .e-listbox-container.e-bigger {
     @if ($skin-name == 'bootstrap4') {
       font-size: 16px;
     }

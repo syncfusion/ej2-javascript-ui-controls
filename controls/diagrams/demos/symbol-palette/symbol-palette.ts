@@ -313,7 +313,10 @@ function setPaletteNodeDefaults(node: NodeModel): void {
     ];
     node.style.strokeColor = '#3A3A3A';
 }
-
+document.getElementById('expandMode').onclick = function () {
+    palette.expandMode = (palette.expandMode == 'Multiple') ? 'Single' : 'Multiple';
+    palette.dataBind();
+}
 document.getElementById('symbolsize').onchange = () => {
     let checked = (document.getElementById('symbolsize') as HTMLInputElement).checked;
     palette.symbolWidth = checked ? 80 : undefined;

@@ -7311,7 +7311,6 @@ let Draggable = Draggable_1 = class Draggable extends Base {
                 element = intClosest;
             }
         }
-        /* istanbul ignore next */
         if (this.isReplaceDragEle) {
             element = this.currentStateCheck(evt.target, element);
         }
@@ -7654,7 +7653,6 @@ let Draggable = Draggable_1 = class Draggable extends Base {
         }
         return ele;
     }
-    /* istanbul ignore next */
     currentStateCheck(ele, oldEle) {
         let elem;
         if (!isNullOrUndefined(this.currentStateTarget) && this.currentStateTarget !== ele) {

@@ -6,7 +6,7 @@ import { PagerDropDown } from '../../pager/pager-dropdown';
 import { ExternalMessage } from '../../pager/external-message';
 import { PageSettingsModel } from '../models/page-settings-model';
 import { IGrid, IAction, NotifyArgs } from '../base/interface';
-import { extend as gridExtend, getActualProperties, isActionPrevent } from '../base/util';
+import { extend as gridExtend, getActualProperties, isActionPrevent, templateCompiler } from '../base/util';
 import * as events from '../base/constant';
 import { PagerModel } from '../../pager';
 
@@ -244,7 +244,16 @@ export class Page implements IAction {
         this.isInitialLoad = true;
         this.parent.element.appendChild(this.element);
         this.parent.setGridPager(this.element);
-        this.pagerObj.appendTo(this.element);
+        let tempID: string = this.parent.element.id + 'pagerTemplate';
+        let template: string = this.parent.pagerTemplate || this.pageSettings.template;
+        if (this.parent.isReact && !isNullOrUndefined(template) &&
+            typeof (template) !== 'string') {
+            this.pagerObj.isReact = true;
+            templateCompiler(template)({}, this.parent, 'pagerTemplate', tempID, null, null, this.element);
+            this.parent.renderTemplates();
+        } else {
+            this.pagerObj.appendTo(this.element);
+        }
         this.isInitialLoad = false;
     }
 
@@ -298,7 +307,12 @@ export class Page implements IAction {
      */
     public destroy(): void {
         this.removeEventListener();
-        this.pagerDestroy();
+        if (this.parent.isReact && !this.pagerObj.element) {
+            this.parent.destroyTemplate(['pagerTemplate']);
+            this.parent.renderTemplates();
+        } else {
+            this.pagerObj.destroy();
+        }
     }
 
     private pagerDestroy(): void {

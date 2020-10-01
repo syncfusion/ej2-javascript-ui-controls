@@ -173,15 +173,7 @@ var Button = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Button.prototype.render = function () {
-        if (isBlazor() && this.isServerRendered) {
-            if (!this.disabled) {
-                this.wireEvents();
-            }
-            buttonObserver.notify('component-rendered', { id: this.element.id, instance: this });
-        }
-        else {
-            this.initialize();
-        }
+        this.initialize();
         this.removeRippleEffect = rippleEffect(this.element, { selector: '.' + cssClassName.BUTTON });
         this.renderComplete();
     };
@@ -256,29 +248,27 @@ var Button = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Button.prototype.destroy = function () {
-        if (!(isBlazor() && this.isServerRendered)) {
-            var span = void 0;
-            var classList = [cssClassName.PRIMARY, cssClassName.RTL, cssClassName.ICONBTN, 'e-success', 'e-info', 'e-danger',
-                'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger', 'e-active', 'e-round',
-                'e-top-icon-btn', 'e-bottom-icon-btn'];
-            if (this.cssClass) {
-                classList = classList.concat(this.cssClass.split(' '));
-            }
-            _super.prototype.destroy.call(this);
-            removeClass([this.element], classList);
-            if (!this.element.getAttribute('class')) {
-                this.element.removeAttribute('class');
-            }
-            if (this.disabled) {
-                this.element.removeAttribute('disabled');
-            }
-            if (this.content) {
-                this.element.innerHTML = this.element.innerHTML.replace(this.content, '');
-            }
-            span = this.element.querySelector('span.e-btn-icon');
-            if (span) {
-                detach(span);
-            }
+        var span;
+        var classList = [cssClassName.PRIMARY, cssClassName.RTL, cssClassName.ICONBTN, 'e-success', 'e-info', 'e-danger',
+            'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger', 'e-active', 'e-round',
+            'e-top-icon-btn', 'e-bottom-icon-btn'];
+        if (this.cssClass) {
+            classList = classList.concat(this.cssClass.split(' '));
+        }
+        _super.prototype.destroy.call(this);
+        removeClass([this.element], classList);
+        if (!this.element.getAttribute('class')) {
+            this.element.removeAttribute('class');
+        }
+        if (this.disabled) {
+            this.element.removeAttribute('disabled');
+        }
+        if (this.content) {
+            this.element.innerHTML = this.element.innerHTML.replace(this.content, '');
+        }
+        span = this.element.querySelector('span.e-btn-icon');
+        if (span) {
+            detach(span);
         }
         this.unWireEvents();
         if (isRippleEnabled) {
@@ -575,38 +565,30 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
     CheckBox.prototype.destroy = function () {
         var _this = this;
         var wrapper = this.getWrapper();
-        if (isBlazor() && this.isServerRendered) {
+        _super.prototype.destroy.call(this);
+        if (this.wrapper) {
+            wrapper = this.wrapper;
             if (!this.disabled) {
-                this.wrapper = wrapper;
                 this.unWireEvents();
             }
-        }
-        else {
-            if (this.wrapper) {
-                wrapper = this.wrapper;
-                _super.prototype.destroy.call(this);
-                if (!this.disabled) {
-                    this.unWireEvents();
+            if (this.tagName === 'INPUT') {
+                if (this.getWrapper()) {
+                    wrapper.parentNode.insertBefore(this.element, wrapper);
                 }
-                if (this.tagName === 'INPUT') {
-                    if (this.getWrapper()) {
-                        wrapper.parentNode.insertBefore(this.element, wrapper);
-                    }
-                    detach(wrapper);
-                    this.element.checked = false;
-                    if (this.indeterminate) {
-                        this.element.indeterminate = false;
-                    }
-                    ['name', 'value', 'disabled'].forEach(function (key) {
-                        _this.element.removeAttribute(key);
-                    });
+                detach(wrapper);
+                this.element.checked = false;
+                if (this.indeterminate) {
+                    this.element.indeterminate = false;
                 }
-                else {
-                    ['role', 'aria-checked', 'class'].forEach(function (key) {
-                        wrapper.removeAttribute(key);
-                    });
-                    wrapper.innerHTML = '';
-                }
+                ['name', 'value', 'disabled'].forEach(function (key) {
+                    _this.element.removeAttribute(key);
+                });
+            }
+            else {
+                ['role', 'aria-checked', 'class'].forEach(function (key) {
+                    wrapper.removeAttribute(key);
+                });
+                wrapper.innerHTML = '';
             }
         }
     };
@@ -787,9 +769,6 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     CheckBox.prototype.preRender = function () {
-        if (isBlazor() && this.isServerRendered) {
-            return;
-        }
         var element = this.element;
         this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -807,15 +786,8 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     CheckBox.prototype.render = function () {
-        if (isBlazor() && this.isServerRendered) {
-            if (isRippleEnabled) {
-                rippleEffect(this.getWrapper().getElementsByClassName(RIPPLE)[0], { duration: 400, isCenterRipple: true });
-            }
-        }
-        else {
-            this.initWrapper();
-            this.initialize();
-        }
+        this.initWrapper();
+        this.initialize();
         if (!this.disabled) {
             this.wireEvents();
         }
@@ -1046,31 +1018,24 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
      */
     RadioButton.prototype.destroy = function () {
         var _this = this;
-        if (isBlazor() && this.isServerRendered) {
-            if (!this.disabled) {
-                this.unWireEvents();
-            }
+        var radioWrap = this.element.parentElement;
+        _super.prototype.destroy.call(this);
+        if (!this.disabled) {
+            this.unWireEvents();
+        }
+        if (this.tagName === 'INPUT') {
+            radioWrap.parentNode.insertBefore(this.element, radioWrap);
+            detach(radioWrap);
+            this.element.checked = false;
+            ['name', 'value', 'disabled'].forEach(function (key) {
+                _this.element.removeAttribute(key);
+            });
         }
         else {
-            var radioWrap_1 = this.element.parentElement;
-            _super.prototype.destroy.call(this);
-            if (!this.disabled) {
-                this.unWireEvents();
-            }
-            if (this.tagName === 'INPUT') {
-                radioWrap_1.parentNode.insertBefore(this.element, radioWrap_1);
-                detach(radioWrap_1);
-                this.element.checked = false;
-                ['name', 'value', 'disabled'].forEach(function (key) {
-                    _this.element.removeAttribute(key);
-                });
-            }
-            else {
-                ['role', 'aria-checked', 'class'].forEach(function (key) {
-                    radioWrap_1.removeAttribute(key);
-                });
-                radioWrap_1.innerHTML = '';
-            }
+            ['role', 'aria-checked', 'class'].forEach(function (key) {
+                radioWrap.removeAttribute(key);
+            });
+            radioWrap.innerHTML = '';
         }
     };
     RadioButton.prototype.focusHandler = function () {
@@ -1239,9 +1204,6 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     RadioButton.prototype.preRender = function () {
-        if (isBlazor() && this.isServerRendered) {
-            return;
-        }
         var element = this.element;
         this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -1266,15 +1228,7 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     RadioButton.prototype.render = function () {
-        if (isBlazor() && this.isServerRendered) {
-            if (isRippleEnabled) {
-                var rippleSpan = this.element.parentElement.getElementsByClassName(RIPPLE$1)[0];
-                rippleEffect(rippleSpan, { duration: 400, isCenterRipple: true });
-            }
-        }
-        else {
-            this.initialize();
-        }
+        this.initialize();
         if (!this.disabled) {
             this.wireEvents();
         }
@@ -1477,18 +1431,11 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Switch.prototype.destroy = function () {
-        if (isBlazor() && this.isServerRendered) {
-            if (!this.disabled) {
-                this.unWireEvents();
-            }
+        _super.prototype.destroy.call(this);
+        if (!this.disabled) {
+            this.unWireEvents();
         }
-        else {
-            _super.prototype.destroy.call(this);
-            if (!this.disabled) {
-                this.unWireEvents();
-            }
-            destroy(this, this.getWrapper(), this.tagName);
-        }
+        destroy(this, this.getWrapper(), this.tagName);
     };
     Switch.prototype.focusHandler = function () {
         this.isFocused = true;
@@ -1622,9 +1569,6 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Switch.prototype.preRender = function () {
-        if (isBlazor() && this.isServerRendered) {
-            return;
-        }
         var element = this.element;
         this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -1635,15 +1579,8 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Switch.prototype.render = function () {
-        if (isBlazor() && this.isServerRendered) {
-            if (isRippleEnabled) {
-                rippleEffect(this.element.parentElement, { duration: 400, isCenterRipple: true });
-            }
-        }
-        else {
-            this.initWrapper();
-            this.initialize();
-        }
+        this.initWrapper();
+        this.initialize();
         if (!this.disabled) {
             this.wireEvents();
         }
@@ -2021,6 +1958,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
     /**
      * A function that finds chip based on given input.
      * @param  {number | HTMLElement } fields - We can pass index number or element of chip.
+     * {% codeBlock src='chips/find/index.md' %}{% endcodeBlock %}
      */
     ChipList.prototype.find = function (fields) {
         var chipData;
@@ -2042,6 +1980,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
      * Allows adding the chip item(s) by passing a single or array of string, number, or ChipModel values.
      * @param  {string[] | number[] | ChipModel[] | string | number | ChipModel} chipsData - We can pass array of string or
      *  array of number or array of chip model or string data or number data or chip model.
+     * {% codeBlock src='chips/add/index.md' %}{% endcodeBlock %}
      * @deprecated
      */
     ChipList.prototype.add = function (chipsData) {
@@ -2057,6 +1996,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
      * Allows selecting the chip item(s) by passing a single or array of string, number, or ChipModel values.
      * @param  {number | number[] | HTMLElement | HTMLElement[]} fields - We can pass number or array of number
      *  or chip element or array of chip element.
+     * {% codeBlock src='chips/select/index.md' %}{% endcodeBlock %}
      */
     ChipList.prototype.select = function (fields) {
         this.onSelect(fields, false);
@@ -2102,6 +2042,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
      * Allows removing the chip item(s) by passing a single or array of string, number, or ChipModel values.
      * @param  {number | number[] | HTMLElement | HTMLElement[]} fields - We can pass number or array of number
      *  or chip element or array of chip element.
+     * {% codeBlock src='chips/remove/index.md' %}{% endcodeBlock %}
      */
     ChipList.prototype.remove = function (fields) {
         var _this = this;
@@ -2125,6 +2066,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Returns the selected chip(s) data.
+     * {% codeBlock src='chips/getSelectedChips/index.md' %}{% endcodeBlock %}
      */
     ChipList.prototype.getSelectedChips = function () {
         var selectedChips;
@@ -2312,6 +2254,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Removes the component from the DOM and detaches all its related event handlers. Also, it removes the attributes and classes.
+     * {% codeBlock src='chips/destroy/index.md' %}{% endcodeBlock %}
      */
     ChipList.prototype.destroy = function () {
         removeClass([this.element], [classNames.chipSet, classNames.chip, classNames.rtl,

@@ -192,11 +192,15 @@ export class AxisRenderer extends Animations {
             clipId = 'url(#' + this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + '_' + pointer.type + 'ClipRect_' + i + ')';
             if (!(isNullOrUndefined(pointer.bounds))) {
                 pointerClipRectGroup = this.gauge.renderer.createGroup({
-                    'id': this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer_' + i,
-                    'clip-path': clipId
+                    'id': this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer_' + i
                 });
                 if (isNullOrUndefined(pointer.startValue)) {
                     pointer.startValue = axis.visibleRange.min;
+                }
+                if (pointer.animationDuration > 0 && !this.gauge.gaugeResized) {
+                    if (this.gauge.container.type === 'Thermometer' && pointer.startValue === 0) {
+                        pointerClipRectGroup.setAttribute('clip-path', clipId);
+                    }
                 }
                 this['draw' + pointer.type + 'Pointer'](axis, axisIndex, pointer, i, pointerClipRectGroup);
                 pointesGroup.appendChild(pointerClipRectGroup);

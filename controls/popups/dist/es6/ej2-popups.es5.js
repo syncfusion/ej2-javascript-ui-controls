@@ -2156,7 +2156,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                 this.contentEle.appendChild(this.content);
             }
             else {
-                this.setTemplate(this.content, this.contentEle);
+                this.setTemplate(this.content, this.contentEle, 'content');
             }
         }
         if (!isNullOrUndefined(this.headerContent)) {
@@ -2172,7 +2172,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             this.setMaxHeight();
         }
     };
-    Dialog.prototype.setTemplate = function (template, toElement) {
+    Dialog.prototype.setTemplate = function (template, toElement, prop) {
         var templateFn;
         var templateProps;
         if (toElement.classList.contains(DLG_HEADER)) {
@@ -2200,7 +2200,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             var isString = (isBlazor() &&
                 !this.isStringTemplate && (templateValue).indexOf('<div>Blazor') === 0) ?
                 this.isStringTemplate : true;
-            for (var _i = 0, _a = templateFn({}, null, null, templateProps, isString); _i < _a.length; _i++) {
+            for (var _i = 0, _a = templateFn({}, this, prop, templateProps, isString); _i < _a.length; _i++) {
                 var item = _a[_i];
                 fromElements.push(item);
             }
@@ -2274,7 +2274,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         }
         this.createHeaderContent();
         this.headerContent.appendChild(this.headerEle);
-        this.setTemplate(this.header, this.headerEle);
+        this.setTemplate(this.header, this.headerEle, 'header');
         attributes(this.element, { 'aria-labelledby': this.element.id + '_title' });
         this.element.insertBefore(this.headerContent, this.element.children[0]);
     };
@@ -2288,7 +2288,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             });
         }
         if (this.footerTemplate !== '' && !isNullOrUndefined(this.footerTemplate)) {
-            this.setTemplate(this.footerTemplate, this.ftrTemplateContent);
+            this.setTemplate(this.footerTemplate, this.ftrTemplateContent, 'footerTemplate');
         }
         else {
             this.ftrTemplateContent.innerHTML = this.buttonContent.join('');
@@ -2707,6 +2707,10 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         else {
             this.isDestroyed = true;
         }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
     };
     /**
      * Binding event to the element while widget creation
@@ -2825,6 +2829,10 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                     _this.isProtectedOnChange = prevOnChange;
                 }
             });
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     };
     /**
@@ -3373,6 +3381,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     };
     Tooltip.prototype.closePopupHandler = function () {
         resetBlazorTemplate(this.element.id + 'content', 'Content');
+        this.clearTemplate(['content']);
         this.clear();
         this.trigger('afterClose', this.tooltipEventArgs);
     };
@@ -3537,7 +3546,11 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                 }
                 else {
                     var templateFunction = compile(this.content);
-                    append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
+                    var tempArr = templateFunction({}, this, 'content', this.element.id + 'content', undefined, undefined, tooltipContent);
+                    if (tempArr) {
+                        append(tempArr, tooltipContent);
+                    }
+                    this.renderReactTemplates();
                     if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
                         this.isBlazorTemplate = true;
                         updateBlazorTemplate(this.element.id + 'content', 'Content', this);
@@ -3913,7 +3926,6 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     };
     Tooltip.prototype.popupHide = function (hideAnimation, target) {
         var _this = this;
-        this.clearTemplate();
         if (target) {
             this.restoreElement(target);
         }

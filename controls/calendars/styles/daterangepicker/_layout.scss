@@ -21,29 +21,29 @@
     width: 0;
   }
 
-  #{&}.e-daterangepicker,
-  .e-bigger.e-small #{&}.e-daterangepicker {
-    &.e-popup {
+  .e-daterangepicker,
+  .e-bigger.e-small .e-daterangepicker {
+    #{if(&, '&', '*')}.e-popup {
       border: $range-popup-border;
       border-radius: $range-popup-border-radius;
       box-shadow: $range-box-shadow;
       max-height: $range-max-height;
       max-width: $range-max-width;
 
-      &.e-daterange-day-header-lg {
+      #{if(&, '&', '*')}.e-daterange-day-header-lg {
         max-width: $range-lg-day-header-format-width;
-      }&.e-preset-wrapper {
+      }#{if(&, '&', '*')}.e-preset-wrapper {
         min-width: $range-preset-min-width;
 
-        & .e-presets {
+        #{if(&, '&', '*')} .e-presets {
           max-height: $range-value-none;
         }
-      }& .e-range-header {
+      }#{if(&, '&', '*')} .e-range-header {
         margin: $range-control-header-margin;
         width: $range-control-header-width;
 
-        & .e-start-label,
-        & .e-end-label {
+        #{if(&, '&', '*')} .e-start-label,
+        #{if(&, '&', '*')} .e-end-label {
           cursor: $range-cursor-default-style;
           display: $range-inline-block-style;
           font-size: $range-header-label-size;
@@ -54,12 +54,12 @@
           user-select: $range-browser-select-none;
           white-space: $range-text-nowrap;
           width: $range-start-end-label-width;
-        }& .e-change-icon {
+        }#{if(&, '&', '*')} .e-change-icon {
           font-size: $range-font-size;
           font-weight: $range-font-weight-bold;
           text-align: $range-align-center;
           width: $range-change-icon-width;
-        }& .e-day-span {
+        }#{if(&, '&', '*')} .e-day-span {
           direction: $range-direction-left;
           font-size: $range-calendar-small-font-size;
           height: $range-day-span-height;
@@ -67,149 +67,149 @@
           text-align: $range-align-center;
           user-select: $range-browser-select-none;
           width: $range-indicator-label-width;
-        }& .e-start-end {
+        }#{if(&, '&', '*')} .e-start-end {
           align-items: $range-align-center;
           display: $range-flex-style;
           height: $range-start-end-container-height;
         }
-      }& .e-separator {
+      }#{if(&, '&', '*')} .e-separator {
         height: $range-separator-height;
         margin: $range-separator-margin;
-      }& .e-calendar {
+      }#{if(&, '&', '*')} .e-calendar {
         border: $range-calendar-border;
         margin: $range-calendar-margin;
         padding: $range-calendar-popup-padding;
 
-        & .e-content table {
+        #{if(&, '&', '*')} .e-content table {
           padding: $range-calendar-normal-table-padding;
-        }& .e-header {
-          & .e-title {
+        }#{if(&, '&', '*')} .e-header {
+          #{if(&, '&', '*')} .e-title {
             cursor: $range-cursor-pointer-style;
             float: $range-float-none;
             font-weight: $range-font-weight-normal;
             line-height: $range-normal-nav-icon-height;
             margin-left: $range-value-zero;
             width: $range-control-header-width;
-          }&.e-month,
-          &.e-year,
-          &.e-decade {
+          }#{if(&, '&', '*')}.e-month,
+          #{if(&, '&', '*')}.e-year,
+          #{if(&, '&', '*')}.e-decade {
             padding: $range-calendar-header-padding;
-          }& .e-next {
+          }#{if(&, '&', '*')} .e-next {
             float: $range-float-right;
-          }& .e-prev {
+          }#{if(&, '&', '*')} .e-prev {
             float: $range-float-left;
-          }& .e-next,
-          & .e-prev {
+          }#{if(&, '&', '*')} .e-next,
+          #{if(&, '&', '*')} .e-prev {
             height: $range-normal-nav-icon-height;
             width: $range-normal-nav-icon-width;
-          }& .e-next span,
-          & .e-prev span {
+          }#{if(&, '&', '*')} .e-next span,
+          #{if(&, '&', '*')} .e-prev span {
             padding: $range-icon-normal-padding;
           }
-        }& .e-start-date.e-selected.e-range-hover {
+        }#{if(&, '&', '*')} .e-start-date.e-selected.e-range-hover {
           border-radius: $range-hover-start-radius;
-        }& .e-end-date.e-selected.e-range-hover {
+        }#{if(&, '&', '*')} .e-end-date.e-selected.e-range-hover {
           border-radius: $range-hover-end-radius;
-        }& .e-end-date.e-selected.e-range-hover span.e-day,
-        & .e-start-date.e-selected.e-range-hover span.e-day {
+        }#{if(&, '&', '*')} .e-end-date.e-selected.e-range-hover span.e-day,
+        #{if(&, '&', '*')} .e-start-date.e-selected.e-range-hover span.e-day {
           border: $range-calendar-hover-border;
         }
-      }& .e-footer {
+      }#{if(&, '&', '*')} .e-footer {
         align-items: $range-align-center;
         border-top: $range-border-value;
         clear: $range-float-clear;
         display: $range-flex-style;
         flex-direction: $range-flex-direction-row-reverse;
         height: $range-footer-height;
-      }& .e-footer .e-btn {
+      }#{if(&, '&', '*')} .e-footer .e-btn {
         font-weight: $range-btn-font-weight;
         height: $range-btn-normal-height;
         line-height: $range-btn-normal-line-height;
         overflow: $range-visibility-hidden;
         padding: $range-btn-padding;
         text-overflow: $range-text-overflow;
-      }& .e-footer .e-btn.e-apply {
+      }#{if(&, '&', '*')} .e-footer .e-btn.e-apply {
         margin: $range-normal-footer-margin;
-      }& .e-date-range-container {
+      }#{if(&, '&', '*')} .e-date-range-container {
         float: $range-float-left;
 
-        &.e-range-border {
+        #{if(&, '&', '*')}.e-range-border {
           border-right: $range-border-value;
         }
-      }& .e-calendar-container {
+      }#{if(&, '&', '*')} .e-calendar-container {
         display: $range-flex-style;
 
-        & .e-left-container,
-        & .e-right-container {
+        #{if(&, '&', '*')} .e-left-container,
+        #{if(&, '&', '*')} .e-right-container {
           float: $range-float-left;
-        }& .e-left-container {
+        }#{if(&, '&', '*')} .e-left-container {
           border-right: $range-border-value;
         }
-      }& .e-presets {
+      }#{if(&, '&', '*')} .e-presets {
         max-height: $range-presets-height;
         overflow: auto;
         width: $range-width-auto;
 
-        & .e-list-item {
+        #{if(&, '&', '*')} .e-list-item {
           border-radius: $range-list-border-radius;
           cursor: $range-cursor-pointer-style;
           line-height: $range-list-item-height;
           overflow: $range-visibility-hidden;
           padding: $range-list-item-padding;
           white-space: $range-text-nowrap;
-        }& .e-list-parent {
+        }#{if(&, '&', '*')} .e-list-parent {
           margin: $range-value-zero;
           max-width: $range-presets-width;
           padding: $range-value-zero;
-        }& .e-text-content {
+        }#{if(&, '&', '*')} .e-text-content {
           line-height: $range-list-item-line-height;
-        }& .e-ul {
+        }#{if(&, '&', '*')} .e-ul {
 
-          & li.e-list-item {
+          #{if(&, '&', '*')} li.e-list-item {
             font-size: $range-presets-normal-list-font-size;
             height: $range-preset-normal-list-height;
             line-height: $range-preset-normal-list-height;
           }
         }
-      }& .e-hide-range {
+      }#{if(&, '&', '*')} .e-hide-range {
         display: $range-display-none;
       }
-    }&.e-rtl {
-      & .e-date-range-container {
+    }#{if(&, '&', '*')}.e-rtl {
+      #{if(&, '&', '*')} .e-date-range-container {
         float: $range-float-right;
 
-        &.e-range-border {
+        #{if(&, '&', '*')}.e-range-border {
           border-left: $range-border-value;
           border-right: $range-value-zero;
-        }& .e-left-container {
+        }#{if(&, '&', '*')} .e-left-container {
           border-left: $range-border-value;
           border-right: $range-value-zero;
-        }& .e-calendar {
-          & .e-next {
+        }#{if(&, '&', '*')} .e-calendar {
+          #{if(&, '&', '*')} .e-next {
             float: $range-float-left;
-          }& .e-prev {
+          }#{if(&, '&', '*')} .e-prev {
             float: $range-float-right;
-          }& .e-start-date.e-selected.e-range-hover {
+          }#{if(&, '&', '*')} .e-start-date.e-selected.e-range-hover {
             border-radius: $range-hover-end-radius;
-          }& .e-end-date.e-selected.e-range-hover {
+          }#{if(&, '&', '*')} .e-end-date.e-selected.e-range-hover {
             border-radius: $range-hover-start-radius;
           }
         }
-      }& .e-footer {
+      }#{if(&, '&', '*')} .e-footer {
         flex-direction: $range-flex-direction-row;
         justify-content: $range-flex-justify-content;
 
-        & .e-btn.e-cancel {
+        #{if(&, '&', '*')} .e-btn.e-cancel {
           margin: $range-normal-rtl-footer-margin;
-        }& .e-btn.e-apply {
+        }#{if(&, '&', '*')} .e-btn.e-apply {
           margin-left: $range-value-zero;
         }
       }
     }
   }
 
-  .e-bigger #{&}.e-daterangepicker.e-range-modal,
-  &.e-device#{&}.e-daterangepicker.e-range-modal {
+  .e-bigger .e-daterangepicker.e-range-modal,
+  #{if(&, '&', '*')}.e-device.e-daterangepicker.e-range-modal {
     background-color: $range-overlay;
     height: 100%;
     left: 0;
@@ -221,36 +221,36 @@
     z-index: 999;
   }
 
-  .e-bigger.e-small #{&}.e-daterangepicker #{&}.e-calendar {
+  .e-bigger.e-small .e-daterangepicker #{&}.e-calendar {
     max-width: $calendar-bigger-small-max-width;
   }
 
   //bigger style
 
-  .e-bigger #{&}.e-daterangepicker,
-  &.e-bigger#{&}.e-daterangepicker,
-  &.e-device#{&}.e-daterangepicker {
-    &.e-popup {
-      &.e-preset-wrapper {
+  .e-bigger .e-daterangepicker,
+  #{if(&, '&', '*')}.e-bigger.e-daterangepicker,
+  #{if(&, '&', '*')}.e-device.e-daterangepicker {
+    #{if(&, '&', '*')}.e-popup {
+      #{if(&, '&', '*')}.e-preset-wrapper {
         max-width: $range-bigger-max-width;
         min-width: $range-width-auto;
 
-        & .e-presets {
+        #{if(&, '&', '*')} .e-presets {
           max-height: $range-value-none;
         }
-      }& .e-range-header {
+      }#{if(&, '&', '*')} .e-range-header {
         @if $skin-name == 'bootstrap4' {
           margin: $range-control-bigger-header-margin;
         }
         width: $range-control-header-width;
 
-        & .e-change-icon {
+        #{if(&, '&', '*')} .e-change-icon {
           @if $skin-name == 'bootstrap4' {
             font-size: $range-bigger-change-icon-size;
           }
         }
 
-        & .e-start-end {
+        #{if(&, '&', '*')} .e-start-end {
           align-items: $range-align-center;
           cursor: $range-cursor-pointer-style;
           display: $range-flex-style;
@@ -259,8 +259,8 @@
           user-select: $range-browser-select-none;
           width: $range-device-header-container-width;
 
-          & .e-start-btn,
-          & .e-end-btn {
+          #{if(&, '&', '*')} .e-start-btn,
+          #{if(&, '&', '*')} .e-end-btn {
             border: $range-btn-border-value;
             box-shadow: $range-box-shadow-none;
             font-size: $range-calendar-btn-font-size;
@@ -272,37 +272,37 @@
             padding: $range-sart-end-btn-padding;
             text-overflow: $range-text-overflow;
             width: $range-btn-width;
-          }& .e-end-btn {
+          }#{if(&, '&', '*')} .e-end-btn {
             border-left: $range-value-zero;
             border-radius: $range-btn-right-radius;
-          }& .e-start-btn {
+          }#{if(&, '&', '*')} .e-start-btn {
             border-radius: $range-btn-left-radius;
-          }& .e-start-btn:hover,
-          & .e-end-btn:hover:not([disabled]) {
+          }#{if(&, '&', '*')} .e-start-btn:hover,
+          #{if(&, '&', '*')} .e-end-btn:hover:not([disabled]) {
             box-shadow: $range-box-shadow-none;
-          }& .e-start-btn.e-active,
-          & .e-start-btn.e-active:active,
-          & .e-end-btn.e-active,
-          & .e-end-btn.e-active:active:not([disabled]),
-          & .e-start-btn.e-active:hover,
-          & .e-end-btn.e-active:hover {
+          }#{if(&, '&', '*')} .e-start-btn.e-active,
+          #{if(&, '&', '*')} .e-start-btn.e-active:active,
+          #{if(&, '&', '*')} .e-end-btn.e-active,
+          #{if(&, '&', '*')} .e-end-btn.e-active:active:not([disabled]),
+          #{if(&, '&', '*')} .e-start-btn.e-active:hover,
+          #{if(&, '&', '*')} .e-end-btn.e-active:hover {
             box-shadow: $range-box-shadow-none;
-          }& .e-start-btn,
-          & .e-end-btn {
+          }#{if(&, '&', '*')} .e-start-btn,
+          #{if(&, '&', '*')} .e-end-btn {
             max-width: $range-header-btn-bigger-max-width;
           }
         }
-      }& .e-presets {
+      }#{if(&, '&', '*')} .e-presets {
         max-height: $range-bigger-presets-height;
 
-        &.e-preset-wrapper {
+        #{if(&, '&', '*')}.e-preset-wrapper {
           max-height: $range-value-none;
         }
 
-        & ul {
+        #{if(&, '&', '*')} ul {
           max-width: $range-value-none;
 
-          & li.e-list-item {
+          #{if(&, '&', '*')} li.e-list-item {
             font-size: $range-presets-bigger-list-font-size;
             height: $range-preset-bigger-list-height;
             line-height: $range-preset-bigger-list-height;
@@ -310,66 +310,66 @@
           }
         }
       }
-    }& .e-calendar {
+    }#{if(&, '&', '*')} .e-calendar {
       max-width: $range-calendar-bigger-max;
       padding: $range-calendar-popup-padding;
 
-      & .e-content table {
+      #{if(&, '&', '*')} .e-content table {
         padding: $range-calendar-bigger-table-padding;
-      }& .e-header {
-        & .e-next,
-        & .e-prev {
+      }#{if(&, '&', '*')} .e-header {
+        #{if(&, '&', '*')} .e-next,
+        #{if(&, '&', '*')} .e-prev {
           height: $range-bigger-nav-icon-height;
           width: $range-bigger-nav-icon-width;
 
-          & span {
+          #{if(&, '&', '*')} span {
             padding: $range-icon-bigger-padding;
           }
         }
 
-        & .e-title {
+        #{if(&, '&', '*')} .e-title {
           cursor: $range-cursor-pointer-style;
           line-height: $range-bigger-nav-icon-height;
-        }&.e-month,
-        &.e-year,
-        &.e-decade {
+        }#{if(&, '&', '*')}.e-month,
+        #{if(&, '&', '*')}.e-year,
+        #{if(&, '&', '*')}.e-decade {
           padding: $range-e-bigger-header-padding;
         }
       }
-    }& .e-footer {
+    }#{if(&, '&', '*')} .e-footer {
       height: $range-bigger-footer-height;
 
-      & .e-btn {
+      #{if(&, '&', '*')} .e-btn {
         height: $range-btn-bigger-height;
         line-height: $range-btn-bigger-line-height;
         overflow: $range-visibility-hidden;
-      }& .e-btn.e-apply {
+      }#{if(&, '&', '*')} .e-btn.e-apply {
         margin: $range-bigger-footer-margin;
       }
-    }&.e-rtl.e-popup {
-      & .e-range-header .e-start-end {
-        & .e-end-btn {
+    }#{if(&, '&', '*')}.e-rtl.e-popup {
+      #{if(&, '&', '*')} .e-range-header .e-start-end {
+        #{if(&, '&', '*')} .e-end-btn {
           border: $range-btn-border-value;
           border-radius: $range-btn-left-radius;
           border-right: $range-value-zero;
-        }& .e-start-btn {
+        }#{if(&, '&', '*')} .e-start-btn {
           border-radius: $range-btn-right-radius;
         }
-      }& .e-footer {
-        &.e-btn.e-cancel {
+      }#{if(&, '&', '*')} .e-footer {
+        #{if(&, '&', '*')}.e-btn.e-cancel {
           margin: $range-bigger-rtl-footer-margin;
-        }& .e-btn.e-apply {
+        }#{if(&, '&', '*')} .e-btn.e-apply {
           margin-left: $range-value-zero;
         }
       }
-    }&.e-device {
-      &.e-popup {
+    }#{if(&, '&', '*')}.e-device {
+      #{if(&, '&', '*')}.e-popup {
         max-width: $range-device-max-width;
 
-        & .e-range-header {
+        #{if(&, '&', '*')} .e-range-header {
           margin: $range-device-control-header-margin;
 
-          & .e-day-span {
+          #{if(&, '&', '*')} .e-day-span {
             margin: $range-device-indicator-margin;
           }
         }
@@ -377,41 +377,41 @@
     }
   }
 
-  .e-small #{&}.e-daterangepicker,
-  &.e-small#{&}.e-daterangepicker {
-    &.e-popup {
-      & .e-range-header {
+  .e-small .e-daterangepicker,
+  #{if(&, '&', '*')}.e-small.e-daterangepicker {
+    #{if(&, '&', '*')}.e-popup {
+      #{if(&, '&', '*')} .e-range-header {
         margin: $range-control-small-header-margin;
 
-        & .e-start-label,
-        & .e-end-label {
+        #{if(&, '&', '*')} .e-start-label,
+        #{if(&, '&', '*')} .e-end-label {
           font-size: $range-small-header-label-size;
         }
 
-        & .e-change-icon {
+        #{if(&, '&', '*')} .e-change-icon {
           font-size: $range-small-font-size;
         }
 
-        & .e-start-end {
+        #{if(&, '&', '*')} .e-start-end {
           height: $range-start-end-container-small-height;
         }
 
-        & .e-day-span {
+        #{if(&, '&', '*')} .e-day-span {
           font-size: $range-calendar-mouse-small-font-size;
           margin: $range-indicator-small-margin;
         }
 
-        & .e-separator {
+        #{if(&, '&', '*')} .e-separator {
           margin: $range-separator-small-margin;
         }
       }
 
-      & .e-footer .e-btn.e-apply {
+      #{if(&, '&', '*')} .e-footer .e-btn.e-apply {
         margin: $range-small-footer-margin;
       }
 
-      &.e-preset-wrapper .e-presets .e-list-parent.e-ul {
-        & .e-list-item {
+      #{if(&, '&', '*')}.e-preset-wrapper .e-presets .e-list-parent.e-ul {
+        #{if(&, '&', '*')} .e-list-item {
           font-size: $range-presets-small-list-font-size;
           height: $range-preset-small-list-height;
           line-height: $range-preset-small-list-height;

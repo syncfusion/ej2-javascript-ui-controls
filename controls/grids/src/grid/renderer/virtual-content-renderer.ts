@@ -360,7 +360,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     // tslint:disable-next-line:max-func-body-length
-    public appendContent(target: HTMLElement, newChild: DocumentFragment, e: NotifyArgs): void {
+    public appendContent(target: HTMLElement, newChild: DocumentFragment | HTMLElement, e: NotifyArgs): void {
         // currentInfo value will be used if there are multiple dom updates happened due to mousewheel
         let colVFtable: boolean = this.parent.enableColumnVirtualization && this.parent.getFrozenColumns() !== 0;
         this.checkFirstBlockColIndexes(e);
@@ -419,8 +419,13 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             remove(tbody);
             target = null;
         }
-        target = this.parent.createElement('tbody');
-        target.appendChild(newChild);
+        let isReact: boolean = this.parent.isReact && !isNullOrUndefined(this.parent.rowTemplate);
+        if (!isReact) {
+            target = this.parent.createElement('tbody');
+            target.appendChild(newChild);
+        } else {
+            target = newChild as HTMLElement;
+        }
         if (this.parent.frozenRows && e.requestType === 'virtualscroll' && this.parent.pageSettings.currentPage === 1) {
             for (let i: number = 0; i < this.parent.frozenRows; i++) {
                 target.children[0].remove();

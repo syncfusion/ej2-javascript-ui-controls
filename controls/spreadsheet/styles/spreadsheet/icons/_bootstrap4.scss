@@ -92,6 +92,12 @@
         }
       }
 
+      & .e-image-icon {
+        &::before {
+          content: '\e776';
+        }
+      }
+
       & .e-merge-icon {
         &::before {
           content: '\e7b1';

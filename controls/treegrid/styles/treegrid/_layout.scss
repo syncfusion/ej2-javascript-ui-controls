@@ -177,7 +177,7 @@
 
     .e-errorelem::before {
       color: $error-elem-color;
-      content: '\e22a';
+      content: $error-elem-content;
       transform: rotate(180deg);
     }
 

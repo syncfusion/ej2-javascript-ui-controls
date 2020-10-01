@@ -167,11 +167,14 @@ export class Data implements IDataProcessor {
     protected groupQuery(query: Query): Query {
         let gObj: IGrid = this.parent;
         if (gObj.allowGrouping && gObj.groupSettings.columns.length) {
+            if (this.parent.groupSettings.enableLazyLoading) {
+                query.lazyLoad.push({ key: 'isLazyLoad', value: this.parent.groupSettings.enableLazyLoading });
+            }
             let columns: string[] = gObj.groupSettings.columns;
             for (let i: number = 0, len: number = columns.length; i < len; i++) {
                 let column: Column = this.getColumnByField(columns[i]);
                 if (!column) {
-                    this.parent.log('initial_action', {moduleName: 'group', columnName: columns[i]});
+                    this.parent.log('initial_action', { moduleName: 'group', columnName: columns[i] });
                 }
                 let isGrpFmt: boolean = column.enableGroupByFormat;
                 let format: string | NumberFormatOptions | DateFormatOptions = column.format;

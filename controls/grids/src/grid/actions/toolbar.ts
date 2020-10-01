@@ -77,6 +77,9 @@ export class Toolbar {
         if (this.toolbar && !this.toolbar.isDestroyed) {
             if (!this.toolbar.element) {
                 this.parent.destroyTemplate(['toolbarTemplate']);
+                if (this.parent.isReact) {
+                    this.parent.renderTemplates();
+                }
             } else {
                 this.toolbar.destroy();
             }
@@ -140,7 +143,14 @@ export class Toolbar {
                     this.toolbar.appendTo(this.element);
                     updateBlazorTemplate(this.parent.element.id + 'toolbarTemplate', 'ToolbarTemplate', this.parent);
                 } else {
-                    appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate'));
+                    let isReactCompiler: boolean = this.parent.isReact && typeof (this.parent.toolbarTemplate) !== 'string';
+                    let ID: string = this.parent.element.id + 'toolbarTemplate';
+                    if (isReactCompiler) {
+                        templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate', ID, null, null, this.element);
+                        this.parent.renderTemplates();
+                    } else {
+                        appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate'));
+                    }
                 }
             }
         } else {

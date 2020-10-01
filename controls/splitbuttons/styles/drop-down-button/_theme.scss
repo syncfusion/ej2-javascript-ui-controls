@@ -1,6 +1,6 @@
 @include export-module('drop-down-button-theme') {
   /*! drop-down button theme */
-  #{&}.e-dropdown-popup {
+  .e-dropdown-popup {
     background-color: $drop-down-btn-ul-bgcolor;
     color: $drop-down-btn-color;
 

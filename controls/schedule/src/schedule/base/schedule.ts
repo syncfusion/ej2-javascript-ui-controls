@@ -958,6 +958,28 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
+    /**
+     * To render the react templates
+     *  @hidden
+     */
+    public renderTemplates(): void {
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) {
+            this.renderReactTemplates();
+        }
+    }
+
+    /**
+     * To reset the react templates
+     *  @hidden
+     */
+    public resetTemplates(): void {
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) {
+            this.clearTemplate();
+        }
+    }
+
     private initializeResources(isSetModel: boolean = false): void {
         if (this.resources.length > 0) {
             this.resourceBase = new ResourceBase(this);
@@ -1002,6 +1024,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             }
             this.setScheduleProperties(
                 { selectedDate: new Date('' + date), minDate: new Date('' + minDate), maxDate: new Date('' + maxDate) });
+            if (this.eventWindow) {
+                this.eventWindow.updateMinMaxDateToEditor();
+            }
         } else {
             throw Error('minDate should be equal or less than maxDate');
         }
@@ -1345,12 +1370,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /** @hidden */
-    public getCurrentTime(): Date {
+    public getCurrentTime(date: Date = new Date()): Date {
         if (this.timezone) {
-            let localOffset: number & string = new Date().getTimezoneOffset() as number & string;
-            return this.tzModule.convert(new Date(), localOffset, this.timezone as number & string);
+            return this.tzModule.convert(date, this.tzModule.getLocalTimezoneName(), this.timezone);
         }
-        return new Date();
+        return date;
     }
 
     /** @hidden */
@@ -1740,7 +1764,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /** @hidden */
     public getAnnocementString(event: { [key: string]: Object }, subject?: string): string {
         let resourceName: string;
-        if (this.quickPopup) {
+        if (this.quickPopup && this.activeViewOptions.group.resources.length > 0) {
             const constantText: string = '"s event - ';
             resourceName = this.quickPopup.getResourceText({ event: event } as EventClickArgs, 'event') + constantText;
         }
@@ -2777,6 +2801,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.scrollModule = null;
         }
         if (this.activeView) {
+            this.resetTemplates();
             this.activeView.removeEventListener();
             this.activeView.destroy();
             this.activeView = null;

@@ -242,7 +242,7 @@ export class DataLabel {
                 if (eventargs.template !== '') {
                     templateFn = getTemplateFunction(eventargs.template);
                     let templateElement: Element = templateFn ? templateFn(!isNullOrUndefined(datasrcObj) ?
-                        datasrcObj : shapeData['properties'], null, null, this.maps.element.id + '_LabelTemplate', false) : document.createElement('div');
+                        datasrcObj : shapeData['properties'], this.maps, eventargs.template, this.maps.element.id + '_LabelTemplate', false) : document.createElement('div');
                     templateElement.innerHTML =  !templateFn ? eventargs.template : ''; 
                     labelElement = <HTMLElement>convertElementFromLabel(
                         templateElement, labelId, !isNullOrUndefined(datasrcObj) ? datasrcObj : shapeData['properties'], index, this.maps);
@@ -358,6 +358,7 @@ export class DataLabel {
                 });
                 if (labelTemplateElement.childElementCount > 0 && !this.maps.element.contains(labelTemplateElement)) {
                     document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(labelTemplateElement);
+                    (this.maps as any).renderReactTemplates();
                 }
             });
         }

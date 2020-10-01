@@ -30,6 +30,8 @@ export class Annotations {
                 updateBlazorTemplate(this.map.element.id + '_ContentTemplate_' + i, 'ContentTemplate', this.map.annotations[i]);
             }
         }
+         //tslint:disable
+         (this.map as any).renderReactTemplates();
     }
 
     /**
@@ -54,9 +56,9 @@ export class Annotations {
             let blazor: string = 'Blazor';
             templateFn = getTemplateFunction(argsData.content);
             if (templateFn && (!window[blazor] ? templateFn(
-                    this.map, null, null, this.map.element.id + '_ContentTemplate_' + annotationIndex).length : {})) {
+                    this.map, this.map, argsData.content, this.map.element.id + '_ContentTemplate_' + annotationIndex).length : {})) {
                 templateElement = Array.prototype.slice.call(templateFn(
-                    !window[blazor] ? this.map : {}, null, null, this.map.element.id + '_ContentTemplate_' + annotationIndex));
+                    !window[blazor] ? this.map : {}, this.map, argsData.content, this.map.element.id + '_ContentTemplate_' + annotationIndex));
                 let length: number = templateElement.length;
                 for (let i: number = 0; i < length; i++) {
                     childElement.appendChild(templateElement[i]);

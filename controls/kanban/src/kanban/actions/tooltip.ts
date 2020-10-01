@@ -24,7 +24,8 @@ export class KanbanTooltip {
             position: 'BottomCenter',
             showTipPointer: true,
             target: '.' + cls.TOOLTIP_TEXT_CLASS,
-            beforeRender: this.onBeforeRender.bind(this)
+            beforeRender: this.onBeforeRender.bind(this),
+            beforeClose: this.onBeforeClose.bind(this)
         });
         this.tooltipObj.appendTo(this.parent.element);
         this.tooltipObj.isStringTemplate = true;
@@ -40,12 +41,19 @@ export class KanbanTooltip {
             tooltipContent = createElement('div');
             let target: Element = closest(args.target, '.' + cls.CARD_CLASS);
             let data: { [key: string]: Object } = this.parent.getCardDetails(target) as { [key: string]: Object };
-            let tooltipTemplate: Element[] = this.parent.templateParser(this.parent.tooltipTemplate)(data);
+            let templateId: string = this.parent.element.id + '_tooltipTemplate';
+            let tooltipTemplate: Element[] = this.parent.templateParser(
+                this.parent.tooltipTemplate)(data, this.parent, 'tooltipTemplate', templateId, false);
             append(tooltipTemplate, tooltipContent);
+            this.parent.renderTemplates();
         } else {
             tooltipContent = `<div class="e-card-header-caption">${args.target.innerText}</div>`;
         }
         this.tooltipObj.setProperties({ content: tooltipContent }, true);
+    }
+
+    private onBeforeClose(): void {
+        this.parent.resetTemplates(['tooltipTemplate']);
     }
 
     public destroy(): void {

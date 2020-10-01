@@ -1,7 +1,7 @@
 import { append, createElement, formatUnit, EventHandler, addClass, remove, extend, Browser } from '@syncfusion/ej2-base';
 import { removeClass, closest } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
-import { CardRenderedEventArgs, QueryCellInfoEventArgs, HeaderArgs } from '../base/interface';
+import { CardRenderedEventArgs, QueryCellInfoEventArgs, HeaderArgs, ScrollOffset } from '../base/interface';
 import { ColumnsModel, StackedHeadersModel } from '../models/index';
 import { MobileLayout } from './mobile-layout';
 import * as events from '../base/constant';
@@ -63,11 +63,15 @@ export class LayoutRender extends MobileLayout {
             this.renderContent();
             this.renderCards();
             this.renderValidation();
+            this.parent.renderTemplates();
         } else {
             this.initializeSwimlaneTree();
         }
         this.parent.notify(events.contentReady, {});
         this.wireEvents();
+        if (this.parent.isInitialRender) {
+            this.parent.isInitialRender = false;
+        }
     }
 
     private renderHeader(header: HTMLElement): void {
@@ -112,7 +116,9 @@ export class LayoutRender extends MobileLayout {
                         allowToggle: column.allowToggle, isExpanded: column.isExpanded, showItemCount: column.showItemCount, count: noOfCard
                     };
                     addClass([th], cls.TEMPLATE_CLASS);
-                    let templateHeader: HTMLElement[] = this.parent.templateParser(column.template)(templateArgs);
+                    let templateId: string = this.parent.element.id + '_columnTemplate';
+                    let templateHeader: HTMLElement[] =
+                        this.parent.templateParser(column.template)(templateArgs, this.parent, 'template', templateId, false);
                     append(templateHeader, headerTitle);
                 } else {
                     let header: HTMLElement = createElement('div', { className: cls.HEADER_TEXT_CLASS, innerHTML: column.headerText });
@@ -249,7 +255,9 @@ export class LayoutRender extends MobileLayout {
         if (this.parent.swimlaneSettings.template) {
             let templateArgs: Object = extend({}, row, { count: cardCount }, true);
             addClass([td], cls.TEMPLATE_CLASS);
-            let swimlaneTemplate: HTMLElement[] = this.parent.templateParser(this.parent.swimlaneSettings.template)(templateArgs);
+            let templateId: string = this.parent.element.id + '_swimlaneTemplate';
+            let swimlaneTemplate: HTMLElement[] = this.parent.templateParser(
+                this.parent.swimlaneSettings.template)(templateArgs, this.parent, 'template', templateId, false);
             append(swimlaneTemplate, headerWrap);
         } else {
             headerWrap.appendChild(createElement('div', {
@@ -305,7 +313,9 @@ export class LayoutRender extends MobileLayout {
                         }
                         if (this.parent.cardSettings.template) {
                             addClass([cardElement], cls.TEMPLATE_CLASS);
-                            let cardTemplate: HTMLElement[] = this.parent.templateParser(this.parent.cardSettings.template)(data);
+                            let templateId: string = this.parent.element.id + '_cardTemplate';
+                            let cardTemplate: HTMLElement[] = this.parent.templateParser(
+                                this.parent.cardSettings.template)(data, this.parent, 'template', templateId, false);
                             append(cardTemplate, cardElement);
                         } else {
                             let tooltipClass: string = this.parent.enableTooltip ? ' ' + cls.TOOLTIP_TEXT_CLASS : '';
@@ -407,7 +417,7 @@ export class LayoutRender extends MobileLayout {
                         textField = 'Unassigned';
                         keyField = '';
                     } else {
-                       return;
+                        return;
                     }
                 }
                 kanbanRows.push({ keyField: keyField, textField: textField });
@@ -504,11 +514,22 @@ export class LayoutRender extends MobileLayout {
                 node.style.paddingRight = formatUnit(paddingValue);
             }
         });
+        this.updateScrollPosition();
     }
 
     private onContentScroll(e: Event): void {
-        let header: HTMLElement = this.parent.element.querySelector('.' + cls.HEADER_CLASS + ' div');
-        header.scrollLeft = (<HTMLElement>e.target).scrollLeft;
+        let target: HTMLElement = e.target as HTMLElement;
+        let header: HTMLElement = this.parent.element.querySelector('.' + cls.HEADER_CLASS) as HTMLElement;
+        [].slice.call(header.children).forEach((node: HTMLElement) => { node.scrollLeft = target.scrollLeft; });
+        this.parent.scrollPosition.content = { left: target.scrollLeft, top: target.scrollTop };
+    }
+
+    private onColumnScroll(e: Event): void {
+        let target: HTMLElement = e.target as HTMLElement;
+        if (target.offsetParent) {
+            let columnKey: string = target.offsetParent.getAttribute('data-key');
+            this.parent.scrollPosition.column[columnKey] = { left: target.scrollLeft, top: target.scrollTop };
+        }
     }
 
     private onAdaptiveScroll(e: Event): void {
@@ -664,9 +685,7 @@ export class LayoutRender extends MobileLayout {
         if (cards instanceof Element) {
             cards.setAttribute('aria-selected', 'false');
         } else {
-            cards.forEach((card: HTMLElement) => {
-                card.setAttribute('aria-selected', 'false');
-            });
+            cards.forEach((card: HTMLElement) => { card.setAttribute('aria-selected', 'false'); });
         }
     }
 
@@ -688,7 +707,7 @@ export class LayoutRender extends MobileLayout {
                 swimlaneData[row.keyField] = this.parent.kanbanData.filter((obj: { [key: string]: Object }) =>
                     this.columnKeys.indexOf(<string>obj[this.parent.keyField]) > -1 &&
                     ((!obj[this.parent.swimlaneSettings.keyField] && this.parent.swimlaneSettings.showUnassignedRow) ?
-                    '' : obj[this.parent.swimlaneSettings.keyField]) === row.keyField));
+                        '' : obj[this.parent.swimlaneSettings.keyField]) === row.keyField));
         }
         return swimlaneData;
     }
@@ -705,12 +724,35 @@ export class LayoutRender extends MobileLayout {
         this.renderCards();
     }
 
+    public updateScrollPosition(): void {
+        let content: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_CLASS) as HTMLElement;
+        if (content) {
+            content.scrollTo(this.parent.scrollPosition.content.left, this.parent.scrollPosition.content.top);
+        }
+        let cardWrapper: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_WRAPPER_CLASS));
+        cardWrapper.forEach((wrapper: HTMLElement) => {
+            if (wrapper.offsetParent) {
+                let scrollData: ScrollOffset = this.parent.scrollPosition.column[wrapper.offsetParent.getAttribute('data-key')];
+                if (scrollData) {
+                    wrapper.scrollTo(scrollData.left, scrollData.top);
+                }
+            }
+        });
+    }
+
     public wireEvents(): void {
         EventHandler.add(this.parent.element, 'click', this.parent.actionModule.clickHandler, this.parent.actionModule);
         EventHandler.add(this.parent.element, 'dblclick', this.parent.actionModule.doubleClickHandler, this.parent.actionModule);
         EventHandler.add(document, Browser.touchStartEvent, this.documentClick, this);
         let content: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_CLASS) as HTMLElement;
         EventHandler.add(content, 'scroll', this.onContentScroll, this);
+        let cardWrapper: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_WRAPPER_CLASS));
+        cardWrapper.forEach((wrapper: HTMLElement) => {
+            if (this.parent.isInitialRender && wrapper.offsetParent) {
+                this.parent.scrollPosition.column[wrapper.offsetParent.getAttribute('data-key')] = { left: 0, top: 0 };
+            }
+            EventHandler.add(wrapper, 'scroll', this.onColumnScroll, this);
+        });
         if (this.parent.isAdaptive) {
             this.parent.touchModule.wireTouchEvents();
             content.scrollLeft = this.scrollLeft;
@@ -729,6 +771,8 @@ export class LayoutRender extends MobileLayout {
                 this.unWireDragEvent();
             }
         }
+        let cardWrapper: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_WRAPPER_CLASS));
+        cardWrapper.forEach((wrapper: HTMLElement) => { EventHandler.remove(wrapper, 'scroll', this.onColumnScroll); });
         if (this.parent.isAdaptive) {
             this.parent.touchModule.unWireTouchEvents();
         }
@@ -746,6 +790,7 @@ export class LayoutRender extends MobileLayout {
     }
 
     public destroy(): void {
+        this.parent.resetTemplates();
         this.parent.off(events.dataReady, this.initRender);
         this.parent.off(events.contentReady, this.scrollUiUpdate);
         this.unWireEvents();

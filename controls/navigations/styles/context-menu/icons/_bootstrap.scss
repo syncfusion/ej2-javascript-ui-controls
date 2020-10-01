@@ -1,6 +1,7 @@
 @include export-module('context-menu-bootstrap-icons') {
   /*! contextmenu layout */
-  .e-contextmenu-wrapper {
+  .e-contextmenu-wrapper,
+  .e-contextmenu-container {
     @at-root {
       & ul {
         & .e-menu-item  {
@@ -20,7 +21,8 @@
     }
   }
 
-  .e-rtl.e-contextmenu-wrapper .e-menu-item {
+  .e-rtl.e-contextmenu-wrapper .e-menu-item,
+  .e-rtl.e-contextmenu-container .e-menu-item {
     & .e-caret {
       &::before {
         content: '\e990';

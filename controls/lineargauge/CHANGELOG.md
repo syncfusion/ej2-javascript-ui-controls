@@ -8,6 +8,18 @@
 
 ## [Unreleased]
 
+## 18.3.35 (2020-10-01)
+
+### LinearGauge
+
+#### New Features
+
+- `#289346` - A property `allowMargin` is exposed to render the gauge with space around the axis.
+
+#### Bug Fixes
+
+- Tooltip will now work properly in the Firefox browser.
+
 ## 18.2.44 (2020-07-07)
 
 ### LinearGauge

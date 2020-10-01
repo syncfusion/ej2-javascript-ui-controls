@@ -64,7 +64,7 @@ export function triggerDownload(type: string, fileName: string, url: string): vo
 /** @private */
 export function exportAsImage(exportType: string, fileName: string, element: Element, isReturnBase64: boolean,
                               code: BarcodeGenerator | QRCodeGenerator | DataMatrixGenerator): Promise<string> {
-    let returnValue: Promise<string> = this.imageExport(exportType, fileName, element, isReturnBase64, code);
+    let returnValue: Promise<string> = imageExport(exportType, fileName, element, isReturnBase64, code);
     if (returnValue instanceof Promise) {
         returnValue.then((data: string) => {
             return data;
@@ -89,7 +89,7 @@ export function imageExport(type: string, fileName: string, element: Element, is
         image.onload = () => {
             context.drawImage(image, 0, 0);
             if (!isReturnBase64) {
-                this.triggerDownload(
+                triggerDownload(
                     type, fileName, canvasElement.toDataURL('image/png').replace('image/png', 'image/octet-stream'));
                 resolve(null);
             } else {

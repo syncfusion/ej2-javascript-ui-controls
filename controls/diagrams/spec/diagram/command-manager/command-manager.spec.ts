@@ -361,6 +361,16 @@ describe('SendToBack exception', () => {
                 id: 'group',
                 children: ['rectangle1', 'rectangle2']
             },
+            {
+                id: "rectangle3",
+                offsetX: 300,
+                offsetY: 300,
+                width: 100,
+                height: 100,
+                annotations: [{
+                    content: 'rectangle3'
+                }]
+            },
         
         ];
         
@@ -380,6 +390,14 @@ describe('SendToBack exception', () => {
         diagram.select([diagram.nodes[2]]);
         diagram.sendToBack();
         zIndexAfterCall = diagram.nodes[2].zIndex;
+        expect(zIndexBeforeCall === zIndexAfterCall).toBe(true);
+        done();
+    });
+    it('Exception occurs when bringToFront method is called', (done: Function) => {
+        zIndexBeforeCall = diagram.nodes[3].zIndex;
+        diagram.select([diagram.nodes[3]]);
+        diagram.bringToFront();
+        zIndexAfterCall = diagram.nodes[3].zIndex;
         expect(zIndexBeforeCall === zIndexAfterCall).toBe(true);
         done();
     });

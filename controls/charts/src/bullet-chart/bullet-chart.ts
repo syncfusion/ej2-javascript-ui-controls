@@ -1303,6 +1303,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
             let id: string = 'tooltipDiv' + this.element.id;
             let tooltipDiv: Element = document.getElementById(id);
             if (tooltipDiv) {
+                this.clearTemplate();
                 remove(tooltipDiv);
             }
             if (this.bulletTooltipModule) {
@@ -1329,6 +1330,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         if (!this.isTouchEvent(e)) {
             let tooltipDiv: HTMLElement = document.getElementById('.tooltipDiv' + this.element.id);
             if (tooltipDiv) {
+                this.clearTemplate();
                 remove(tooltipDiv);
             }
         }
@@ -1352,6 +1354,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      */
     private bulletMouseDown(e: PointerEvent): void {
         if (this.isTouchEvent(e)) {
+            this.clearTemplate();
             remove(document.getElementById(('tooltipDiv' + this.element.id)));
             let targetId: string = (e.target as Element).id;
             /* tslint:disable:no-string-literal */

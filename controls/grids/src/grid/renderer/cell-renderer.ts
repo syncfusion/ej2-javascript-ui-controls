@@ -1,4 +1,4 @@
-import { L10n } from '@syncfusion/ej2-base';
+import { L10n, remove } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend, isBlazor, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { Cell } from '../models/cell';
@@ -56,6 +56,7 @@ export class CellRenderer implements ICellRenderer<Column> {
     public evaluate(node: Element, cell: Cell<Column>, data: Object, attributes?: Object, fData?: Object, isEdit?: boolean): boolean {
         let result: Element[];
         if (cell.column.template) {
+            let isReactCompiler: boolean = this.parent.isReact && typeof (cell.column.template) !== 'string';
             let literals: string[] = ['index'];
             let dummyData: Object = extendObjWithFn({}, data, { [foreignKeyData]: fData, column: cell.column });
             let templateID: string = this.parent.element.id + cell.column.uid;
@@ -71,10 +72,19 @@ export class CellRenderer implements ICellRenderer<Column> {
                     updateBlazorTemplate(templateID, 'Template', cell.column, false);
                 }
             } else {
-                result = cell.column.getColumnTemplate()(
-                    extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
+                if (isReactCompiler) {
+                    let copied: Object = { 'index': attributes[literals[0]] };
+                    cell.column.getColumnTemplate()(
+                        extend(copied, dummyData), this.parent, 'template', templateID, this.parent[str], null, node);
+                    this.parent.renderTemplates();
+                } else {
+                    result = cell.column.getColumnTemplate()(
+                        extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
+                }
             }
-            appendChildren(node, result);
+            if (!isReactCompiler) {
+                appendChildren(node, result);
+            }
             this.parent.notify('template-result', { template: result });
             result = null;
             node.setAttribute('aria-label', (<HTMLElement>node).innerText + ' is template cell' + ' column header ' +
@@ -125,12 +135,37 @@ export class CellRenderer implements ICellRenderer<Column> {
      */
     public refreshTD(td: Element, cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }): void {
         let isEdit: boolean = this.parent.editSettings.mode === 'Batch' && td.classList.contains('e-editedbatchcell');
-        let node: Element = this.refreshCell(cell, data, attributes, isEdit);
-        td.innerHTML = '';
-        td.setAttribute('aria-label', node.getAttribute('aria-label'));
-        let elements: Element[] = [].slice.call(node.childNodes);
-        for (let elem of elements) {
-            td.appendChild(elem);
+        if (this.parent.isReact) {
+            td.innerHTML = '';
+            let cellIndex: number = (td as HTMLTableCellElement).cellIndex;
+            let parentRow: HTMLTableRowElement = td.parentElement as HTMLTableRowElement;
+            remove(td);
+            let newTD: Element = this.refreshCell(cell, data, attributes, isEdit);
+            this.cloneAttributes(newTD, td);
+            parentRow.cells.length !== cellIndex - 1 ? parentRow.insertBefore(newTD, parentRow.cells[cellIndex])
+                : parentRow.appendChild(newTD);
+        } else {
+            let node: Element = this.refreshCell(cell, data, attributes, isEdit);
+            td.innerHTML = '';
+            td.setAttribute('aria-label', node.getAttribute('aria-label'));
+            let elements: Element[] = [].slice.call(node.childNodes);
+            for (let elem of elements) {
+                td.appendChild(elem);
+            }
+        }
+    }
+
+    // tslint:disable-next-line:no-any
+    private cloneAttributes(target: Element, source: any): void {
+        // tslint:disable-next-line:no-any
+        let attrs: any = source.attributes;
+        // tslint:disable-next-line:no-any
+        let i: any = attrs.length;
+        // tslint:disable-next-line:no-any
+        let attr: any;
+        while (i--) {
+            attr = attrs[i];
+            target.setAttribute(attr.name, attr.value);
         }
     }
 

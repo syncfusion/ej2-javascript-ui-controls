@@ -107,24 +107,26 @@ export class DiagramContextMenu {
 
     private render(): void {
         this.l10n = this.serviceLocator.getService<L10n>('localization');
-        this.element = createHtmlElement('ul', { id: this.parent.element.id + '_contextMenu' }) as HTMLUListElement;
-        this.parent.element.appendChild(this.element);
-        let target: string = '#' + this.parent.element.id;
-        this.contextMenu = new Menu({
-            items: this.getMenuItems(),
-            enableRtl: this.parent.enableRtl,
-            enablePersistence: this.parent.enablePersistence,
-            locale: this.parent.locale,
-            target: target,
-            select: this.contextMenuItemClick.bind(this),
-            beforeOpen: this.contextMenuBeforeOpen.bind(this),
-            onOpen: this.contextMenuOpen.bind(this),
-            beforeItemRender: this.BeforeItemRender.bind(this),
-            onClose: this.contextMenuOnClose.bind(this),
-            cssClass: 'e-diagram-menu',
-            animationSettings: { effect: 'None' }
-        });
-        this.contextMenu.appendTo(this.element);
+        if (!isBlazor()) {
+            this.element = createHtmlElement('ul', { id: this.parent.element.id + '_contextMenu' }) as HTMLUListElement;
+            this.parent.element.appendChild(this.element);
+            let target: string = '#' + this.parent.element.id;
+            this.contextMenu = new Menu({
+                items: this.getMenuItems(),
+                enableRtl: this.parent.enableRtl,
+                enablePersistence: this.parent.enablePersistence,
+                locale: this.parent.locale,
+                target: target,
+                select: this.contextMenuItemClick.bind(this),
+                beforeOpen: this.contextMenuBeforeOpen.bind(this),
+                onOpen: this.contextMenuOpen.bind(this),
+                beforeItemRender: this.BeforeItemRender.bind(this),
+                onClose: this.contextMenuOnClose.bind(this),
+                cssClass: 'e-diagram-menu',
+                animationSettings: { effect: 'None' }
+            });
+            this.contextMenu.appendTo(this.element);
+        }
     }
 
     private getMenuItems(): ContextMenuItemModel[] {
@@ -237,7 +239,8 @@ export class DiagramContextMenu {
         this.isOpen = false;
     }
 
-    private ensureItems(item: MenuItemModel, event?: Event): void {
+    /** @private */
+    public ensureItems(item: MenuItemModel, event?: Event): void {
         let key: string = this.getKeyFromId(item.id);
         let dItem: ContextMenuItemModel = this.defaultItems[key];
         if (this.getDefaultItems().indexOf(key) !== -1) {
@@ -352,8 +355,10 @@ export class DiagramContextMenu {
      * @private
      */
     public destroy(): void {
-        this.contextMenu.destroy();
-        remove(this.element);
+        if (!isBlazor()) {
+            this.contextMenu.destroy();
+            remove(this.element);
+        }
         this.removeEventListener();
     }
 

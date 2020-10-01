@@ -237,3 +237,34 @@ export const checkConditionalFormat: string = 'checkConditionalFormat';
 export const setCF: string = 'setCF';
 /** @hidden */
 export const clearViewer: string = 'clearViewer';
+/** @hidden */
+export const initiateFormulaReference: string = 'initiateFormulaReference';
+/** @hidden */
+export const initiateCur: string = 'initiateCur';
+/** @hidden */
+export const clearCellRef: string = 'clearCellRef';
+/** @hidden */
+export const editValue: string = 'editValue';
+/** @hidden */
+export const addressHandle: string = 'addressHandle';
+/** @hidden */
+export const initiateEdit: string = 'initiateEdit';
+/** @hidden */
+export const forRefSelRender: string = 'forRefSelRender';
+export const blankWorkbook: string = 'blankWorkbook';
+/** @hidden */
+export const insertImage: string = 'insertImage';
+/** @hidden */
+export const refreshImgElem: string = 'refreshImgElem';
+/** @hidden */
+export const refreshImgCellObj: string = 'refreshImgCellObj';
+/** @hidden */
+export const getRowIdxFromClientY: string = 'getRowIdxFromClientY';
+/** @hidden */
+export const getColIdxFromClientX: string = 'getColIdxFromClientX';
+/** @hidden */
+export const createImageElement: string = 'createImageElement';
+/** @hidden */
+export const deleteImage: string = 'deleteImage';
+/** @hidden */
+export const refreshImagePosition: string = 'refreshImagePosition';

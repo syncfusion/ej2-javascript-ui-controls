@@ -138,7 +138,7 @@ export class Action {
                     // tslint:disable-next-line
                     (this.parent as any).interopAdaptor.invokeMethodAsync('OpenDialog', 'Edit', args.data);
                 } else {
-                    this.parent.dialogModule.openDialog('Edit', args.data);
+                    this.parent.dialogModule.openDialog('Edit', args.data as { [key: string]: Object });
                 }
             }
         });

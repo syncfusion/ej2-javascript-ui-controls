@@ -1153,3 +1153,48 @@ describe('Diagram Control', () => {
         });
     });
 });
+
+describe('Add annotation template at run time', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramLabel' });
+        document.body.appendChild(ele);
+        let node: NodeModel = {
+            id: 'node',
+            width: 100, height: 100,
+            offsetX: 100, offsetY: 100,
+        };
+
+
+        diagram = new Diagram({ mode: 'SVG', width: 800, height: 500, nodes: [node] });
+        diagram.appendTo('#diagramLabel');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Add annotation template at run time', (done: Function) => {
+        let nodes: Node = diagram.nodes[0] as Node
+        let label: ShapeAnnotationModel[] =
+            [ {
+                id: "node_label", height: 60, width: 200,
+                constraints: AnnotationConstraints.Interaction,
+                template: '<div id="test-case" style="height:100%;width:100%;background:red;">'
+            }]
+        diagram.addLabels(nodes, label);
+        diagram.dataBind();
+        var text: any = document.getElementById("test-case");
+        expect(text !== undefined).toBe(true);
+        done();
+    });
+
+})

@@ -35,3 +35,4 @@ export * from './renderer/timepicker-edit-cell';
 export * from './renderer/toggleswitch-edit-cell';
 export * from './renderer/inputmask-edit-cell';
 export * from './renderer/virtual-content-renderer';
+export * from './renderer/group-lazy-load-renderer';

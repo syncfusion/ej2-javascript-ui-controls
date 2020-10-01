@@ -49,8 +49,11 @@ export class ColumnWidthService {
             return isNullOrUndefined(a.width) || a.width === 'auto';
         });
         if (collection.length) {
-            if (!isNullOrUndefined(this.parent.width) && this.parent.width !== 'auto') {
+            if (!isNullOrUndefined(this.parent.width) && this.parent.width !== 'auto' &&
+                typeof (this.parent.width) === 'string' && this.parent.width.indexOf('%') === -1) {
                 difference = (typeof this.parent.width === 'string' ? parseInt(this.parent.width, 10) : this.parent.width) - tWidth;
+            } else {
+                difference = this.parent.element.getBoundingClientRect().width - tWidth;
             }
             let tmWidth: number = 0;
             for (let cols of collection) {
@@ -124,7 +127,7 @@ export class ColumnWidthService {
         if (headerCol && !clear) {
             headerCol.style.width = fWidth;
         } else if (headerCol && clear) {
-            headerCol.style.width = ' ';
+            headerCol.style.width = '';
         }
         let contentCol: HTMLTableColElement;
         if (frzCols && index >= frzCols) {
@@ -141,7 +144,7 @@ export class ColumnWidthService {
         if (contentCol && !clear) {
             contentCol.style.width = fWidth;
         } else if (contentCol && clear) {
-            contentCol.style.width = ' ';
+            contentCol.style.width = '';
         }
         let edit: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-table.e-inline-edit');
         let editTableCol: HTMLTableColElement[] = [];

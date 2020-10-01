@@ -1,8 +1,8 @@
 @include export-module('richtexteditor-layout') {
   /*! tab layout */
 
-  .e-bigger #{&}.e-richtexteditor,
-  #{&}.e-richtexteditor.e-bigger {
+  .e-bigger .e-richtexteditor,
+  .e-richtexteditor.e-bigger {
 
     .e-rte-toolbar {
 
@@ -63,7 +63,7 @@
     }
   }
 
-  #{&}.e-richtexteditor {
+  .e-richtexteditor {
     color: $rte-content-color;
     display: block;
     position: relative;
@@ -457,7 +457,6 @@
 
     &.e-rte-tb-expand {
       &.e-rte-fixed-tb-expand {
-        overflow: hidden;
         transition: none;
       }
     }
@@ -771,7 +770,7 @@
     height: 1px;
   }
 
-  #{&}.e-richtexteditor {
+  .e-richtexteditor {
     .e-linkheader {
       font-family: $rte-font-family;
       font-size: 15px;
@@ -1115,9 +1114,9 @@
     }
   }
 
-  .e-bigger #{&}.e-richtexteditor,
-  #{&}.e-richtexteditor.e-bigger,
-  #{&}.e-richtexteditor {
+  .e-bigger .e-richtexteditor,
+  .e-richtexteditor.e-bigger,
+  .e-richtexteditor {
 
     & .e-rte-toolbar.e-toolbar.e-extended-toolbar .e-toolbar-items .e-toolbar-item,
     & .e-rte-toolbar.e-toolbar .e-toolbar-items .e-toolbar-item,
@@ -1177,8 +1176,8 @@
     }
   }
 
-  .e-bigger #{&}.e-richtexteditor,
-  #{&}.e-richtexteditor.e-bigger {
+  .e-bigger .e-richtexteditor,
+  .e-richtexteditor.e-bigger {
     & .e-rte-toolbar.e-toolbar.e-extended-toolbar .e-toolbar-items .e-toolbar-item,
     & .e-rte-toolbar.e-toolbar .e-toolbar-items .e-toolbar-item,
     & .e-rte-toolbar.e-toolbar.e-extended-toolbar .e-toolbar-extended .e-toolbar-item,
@@ -1337,4 +1336,35 @@
       padding-top: $rte-insert-dialog-label-padding-top;
     }
   }
+
+  // Blazor styles start
+  .e-rte-upload-popup.e-dialog .e-file-select-wrap {
+    display: none;
+  }
+
+  .e-rte-upload-popup.e-dialog .e-dlg-content {
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .e-hide.e-rte-quick-popup-hide {
+    display: none;
+  }
+
+  .e-rte-popup-hide {
+    display: none;
+  }
+
+  .e-rte-hide-visible {
+    visibility: hidden;
+  }
+
+  .e-rte-table-popup.e-dialog .e-dlg-content {
+    padding: 0;
+  }
+
+  .e-richtexteditor .e-rte-table-popup.e-popup-open.e-dialog .e-rte-tablecell {
+    margin: 0;
+  }
+  // Blazor styles end
 }

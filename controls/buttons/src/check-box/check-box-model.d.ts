@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';import { EmitType, Event, EventHandler, KeyboardEvents, isNullOrUndefined, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect, closest } from '@syncfusion/ej2-base';import { wrapperInitialize, rippleMouseHandler, ChangeEventArgs, setHiddenInput } from './../common/common';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';import { EmitType, Event, EventHandler, KeyboardEvents, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect, closest } from '@syncfusion/ej2-base';import { wrapperInitialize, rippleMouseHandler, ChangeEventArgs, setHiddenInput } from './../common/common';
 import {LabelPosition} from "./check-box";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -10,14 +10,12 @@ export interface CheckBoxModel extends ComponentModel{
     /**
      * Triggers when the CheckBox state has been changed by user interaction.
      * @event
-     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ChangeEventArgs>;
 
     /**
      * Triggers once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 

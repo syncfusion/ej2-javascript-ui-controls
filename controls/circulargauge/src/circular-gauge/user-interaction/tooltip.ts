@@ -50,6 +50,7 @@ export class GaugeTooltip {
      */
     /* tslint:disable:no-string-literal */
     /* tslint:disable:max-func-body-length */
+    /* tslint:disable */
     public renderTooltip(e: PointerEvent): void {
         this.gaugeId = this.gauge.element.getAttribute('id');
         let pageX: number; let pageY: number; let target: Element; let touchArg: TouchEvent;
@@ -143,6 +144,7 @@ export class GaugeTooltip {
                 }
             };
             this.gauge.trigger(tooltipRender, tooltipArgs, pointerTooltip);
+            (this.gauge as any).renderReactTemplates();
         } else if ((this.tooltip.type.indexOf('Range') > -1) && (target.id.indexOf('_Range_') >= 0) && (!this.gauge.isDrag) &&
                    (target.id.indexOf(this.gaugeId) >= 0)) {
             let rangeSvgRect: ClientRect = this.gauge.svgObject.getBoundingClientRect();
@@ -230,6 +232,7 @@ export class GaugeTooltip {
                 }
             };
             this.gauge.trigger(tooltipRender, rangeTooltipArgs, rangeTooltip);
+            (this.gauge as any).renderReactTemplates();
         } else if ((this.tooltip.type.indexOf('Annotation') > -1) && this.checkParentAnnotationId(target) && ((!this.gauge.isDrag)) &&
                    (this.annotationTargetElement.id.indexOf(this.gaugeId) >= 0)) {
             let annotationSvgRect: ClientRect = this.gauge.svgObject.getBoundingClientRect();
@@ -295,7 +298,11 @@ export class GaugeTooltip {
                 }
             };
             this.gauge.trigger(tooltipRender, annotationTooltipArgs, annotationTooltip);
-        } else { this.removeTooltip(); }
+            (this.gauge as any).renderReactTemplates();
+        } else { 
+            this.removeTooltip(); 
+            (this.gauge as any).clearTemplate();
+        }
     };
 
     /**

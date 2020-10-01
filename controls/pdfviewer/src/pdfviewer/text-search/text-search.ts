@@ -494,10 +494,14 @@ export class TextSearch {
                 }
             }
             if (!pageNumber) {
-                for (let j: number = 0; j < pageIndex; j++) {
-                    if (this.searchMatches[j]) {
-                        pageNumber = j;
-                        break;
+                if (pageIndex === 0)  {
+                    pageNumber = pageIndex;
+                } else {
+                    for (let j: number = 0; j < pageIndex; j++) {
+                        if (this.searchMatches[j]) {
+                            pageNumber = j;
+                            break;
+                        }
                     }
                 }
             }
@@ -806,7 +810,7 @@ export class TextSearch {
             for (let y: number = 0; y < noTileY; y++) {
                 let jsonObject: object;
                 // tslint:disable-next-line:max-line-length
-                jsonObject = { xCoordinate: 0, yCoordinate: 0, pageNumber: pageIndex, viewPortWidth: viewPortWidth, viewPortHeight: viewPortHeight, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, zoomFactor: proxy.pdfViewerBase.getZoomFactor(), tilecount: tileCount, action: 'RenderPdfPages', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId
+                jsonObject = { xCoordinate: 0, yCoordinate: 0, pageNumber: pageIndex, viewPortWidth: viewPortWidth, viewPortHeight: viewPortHeight, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, zoomFactor: proxy.pdfViewerBase.getZoomFactor(), tilecount: tileCount, action: 'Search', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId
                 , tileXCount: noTileX, tileYCount: noTileY };
                 if (this.pdfViewerBase.jsonDocumentId) {
                     // tslint:disable-next-line

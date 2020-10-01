@@ -106,7 +106,6 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
     /**
      * Triggers once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
@@ -130,14 +129,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
      * @private
      */
     public render(): void {
-        if (isBlazor() && this.isServerRendered) {
-            if (!this.disabled) {
-                this.wireEvents();
-            }
-            buttonObserver.notify('component-rendered', { id: this.element.id, instance: this });
-        } else {
-            this.initialize();
-        }
+        this.initialize();
         this.removeRippleEffect = rippleEffect(this.element, { selector: '.' + cssClassName.BUTTON });
         this.renderComplete();
     }
@@ -216,29 +208,27 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
      * @returns void
      */
     public destroy(): void {
-        if (!(isBlazor() && this.isServerRendered)) {
-            let span: Element;
-            let classList: string[] = [cssClassName.PRIMARY, cssClassName.RTL, cssClassName.ICONBTN, 'e-success', 'e-info', 'e-danger',
-                'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger', 'e-active', 'e-round',
-                'e-top-icon-btn', 'e-bottom-icon-btn'];
-            if (this.cssClass) {
-                classList = classList.concat(this.cssClass.split(' '));
-            }
-            super.destroy();
-            removeClass([this.element], classList);
-            if (!this.element.getAttribute('class')) {
-                this.element.removeAttribute('class');
-            }
-            if (this.disabled) {
-                this.element.removeAttribute('disabled');
-            }
-            if (this.content) {
-                this.element.innerHTML = this.element.innerHTML.replace(this.content, '');
-            }
-            span = this.element.querySelector('span.e-btn-icon');
-            if (span) {
-                detach(span);
-            }
+        let span: Element;
+        let classList: string[] = [cssClassName.PRIMARY, cssClassName.RTL, cssClassName.ICONBTN, 'e-success', 'e-info', 'e-danger',
+            'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger', 'e-active', 'e-round',
+            'e-top-icon-btn', 'e-bottom-icon-btn'];
+        if (this.cssClass) {
+            classList = classList.concat(this.cssClass.split(' '));
+        }
+        super.destroy();
+        removeClass([this.element], classList);
+        if (!this.element.getAttribute('class')) {
+            this.element.removeAttribute('class');
+        }
+        if (this.disabled) {
+            this.element.removeAttribute('disabled');
+        }
+        if (this.content) {
+            this.element.innerHTML = this.element.innerHTML.replace(this.content, '');
+        }
+        span = this.element.querySelector('span.e-btn-icon');
+        if (span) {
+            detach(span);
         }
         this.unWireEvents();
         if (isRippleEnabled) {

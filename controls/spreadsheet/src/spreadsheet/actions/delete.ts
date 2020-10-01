@@ -1,6 +1,7 @@
 import { Spreadsheet } from '../base/index';
-import { InsertDeleteEventArgs, beginAction, completeAction, skipHiddenIdx, refreshSheetTabs } from '../common/index';
-import { deleteAction } from '../../workbook/common/index';
+import { beginAction, completeAction, skipHiddenIdx, refreshSheetTabs, refreshImagePosition } from '../common/index';
+import { deleteAction, InsertDeleteEventArgs } from '../../workbook/common/index';
+import { SheetModel, CellModel, getCell } from '../../workbook/index';
 
 /**
  * The `Delete` module is used to delete cells, rows, columns and sheets from the spreadsheet.
@@ -28,9 +29,11 @@ export class Delete {
             if (!this.parent.scrollSettings.enableVirtualization || args.startIndex <= this.parent.viewport.bottomIndex) {
                 if (this.parent.scrollSettings.enableVirtualization) {
                     if (args.startIndex < this.parent.viewport.topIndex) { this.parent.viewport.topIndex -= args.model.length; }
-                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.topIndex === skipHiddenIdx(
-                        this.parent.getActiveSheet(), 0, true), rowIndex: this.parent.viewport.topIndex, refresh: 'Row',
-                        colIndex: this.parent.viewport.leftIndex });
+                    this.parent.renderModule.refreshUI({
+                        skipUpdateOnFirst: this.parent.viewport.topIndex === skipHiddenIdx(
+                            this.parent.getActiveSheet(), 0, true), rowIndex: this.parent.viewport.topIndex, refresh: 'Row',
+                        colIndex: this.parent.viewport.leftIndex
+                    });
                 } else {
                     this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, refresh: 'Row', rowIndex: args.startIndex, colIndex: 0 });
                 }
@@ -40,17 +43,40 @@ export class Delete {
             if (!this.parent.scrollSettings.enableVirtualization || args.startIndex <= this.parent.viewport.rightIndex) {
                 if (this.parent.scrollSettings.enableVirtualization) {
                     if (args.startIndex < this.parent.viewport.leftIndex) { this.parent.viewport.leftIndex -= args.model.length; }
-                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(
-                        this.parent.getActiveSheet(), 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, refresh: 'Column',
-                        colIndex: this.parent.viewport.leftIndex });
+                    this.parent.renderModule.refreshUI({
+                        skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(
+                            this.parent.getActiveSheet(), 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, refresh: 'Column',
+                        colIndex: this.parent.viewport.leftIndex
+                    });
                 } else {
-                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, refresh: 'Column', rowIndex: 0,
-                        colIndex: args.startIndex });
+                    this.parent.renderModule.refreshUI({
+                        skipUpdateOnFirst: true, refresh: 'Column', rowIndex: 0,
+                        colIndex: args.startIndex
+                    });
                 }
             }
             this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
         }
+        this.refreshImgElement(args.deletedModel.length, this.parent.activeSheetIndex, args.modelType, args.startIndex);
         if (isAction) { this.parent.notify(completeAction, { eventArgs: args, action: 'delete' }); }
+    }
+
+    private refreshImgElement(count: number, sheetIdx: number, modelType: string, index: number): void {
+        let sheet: SheetModel = this.parent.sheets[sheetIdx];
+        let cell: CellModel;
+        let address: number[] = [0, 0, sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
+        for (let i: number = 0; i <= address[2]; i++) {
+            for (let j: number = address[1]; j <= address[3]; j++) {
+                cell = getCell(i, j, sheet);
+                if (cell && cell.image && cell.image.length > 0) {
+                    if ((modelType === 'Row' && i >= index) || (modelType === 'Column' && j >= index)) {
+                        this.parent.notify(refreshImagePosition, {
+                            rowIdx: i, colIdx: j, sheetIdx: sheetIdx, type: modelType, count: count, status: 'delete'
+                        });
+                    }
+                }
+            }
+        }
     }
     private addEventListener(): void {
         this.parent.on(deleteAction, this.delete, this);

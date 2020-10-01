@@ -157,15 +157,7 @@ let Button = class Button extends Component {
      * @private
      */
     render() {
-        if (isBlazor() && this.isServerRendered) {
-            if (!this.disabled) {
-                this.wireEvents();
-            }
-            buttonObserver.notify('component-rendered', { id: this.element.id, instance: this });
-        }
-        else {
-            this.initialize();
-        }
+        this.initialize();
         this.removeRippleEffect = rippleEffect(this.element, { selector: '.' + cssClassName.BUTTON });
         this.renderComplete();
     }
@@ -240,29 +232,27 @@ let Button = class Button extends Component {
      * @returns void
      */
     destroy() {
-        if (!(isBlazor() && this.isServerRendered)) {
-            let span;
-            let classList = [cssClassName.PRIMARY, cssClassName.RTL, cssClassName.ICONBTN, 'e-success', 'e-info', 'e-danger',
-                'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger', 'e-active', 'e-round',
-                'e-top-icon-btn', 'e-bottom-icon-btn'];
-            if (this.cssClass) {
-                classList = classList.concat(this.cssClass.split(' '));
-            }
-            super.destroy();
-            removeClass([this.element], classList);
-            if (!this.element.getAttribute('class')) {
-                this.element.removeAttribute('class');
-            }
-            if (this.disabled) {
-                this.element.removeAttribute('disabled');
-            }
-            if (this.content) {
-                this.element.innerHTML = this.element.innerHTML.replace(this.content, '');
-            }
-            span = this.element.querySelector('span.e-btn-icon');
-            if (span) {
-                detach(span);
-            }
+        let span;
+        let classList = [cssClassName.PRIMARY, cssClassName.RTL, cssClassName.ICONBTN, 'e-success', 'e-info', 'e-danger',
+            'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger', 'e-active', 'e-round',
+            'e-top-icon-btn', 'e-bottom-icon-btn'];
+        if (this.cssClass) {
+            classList = classList.concat(this.cssClass.split(' '));
+        }
+        super.destroy();
+        removeClass([this.element], classList);
+        if (!this.element.getAttribute('class')) {
+            this.element.removeAttribute('class');
+        }
+        if (this.disabled) {
+            this.element.removeAttribute('disabled');
+        }
+        if (this.content) {
+            this.element.innerHTML = this.element.innerHTML.replace(this.content, '');
+        }
+        span = this.element.querySelector('span.e-btn-icon');
+        if (span) {
+            detach(span);
         }
         this.unWireEvents();
         if (isRippleEnabled) {
@@ -541,38 +531,30 @@ let CheckBox = class CheckBox extends Component {
      */
     destroy() {
         let wrapper = this.getWrapper();
-        if (isBlazor() && this.isServerRendered) {
+        super.destroy();
+        if (this.wrapper) {
+            wrapper = this.wrapper;
             if (!this.disabled) {
-                this.wrapper = wrapper;
                 this.unWireEvents();
             }
-        }
-        else {
-            if (this.wrapper) {
-                wrapper = this.wrapper;
-                super.destroy();
-                if (!this.disabled) {
-                    this.unWireEvents();
+            if (this.tagName === 'INPUT') {
+                if (this.getWrapper()) {
+                    wrapper.parentNode.insertBefore(this.element, wrapper);
                 }
-                if (this.tagName === 'INPUT') {
-                    if (this.getWrapper()) {
-                        wrapper.parentNode.insertBefore(this.element, wrapper);
-                    }
-                    detach(wrapper);
-                    this.element.checked = false;
-                    if (this.indeterminate) {
-                        this.element.indeterminate = false;
-                    }
-                    ['name', 'value', 'disabled'].forEach((key) => {
-                        this.element.removeAttribute(key);
-                    });
+                detach(wrapper);
+                this.element.checked = false;
+                if (this.indeterminate) {
+                    this.element.indeterminate = false;
                 }
-                else {
-                    ['role', 'aria-checked', 'class'].forEach((key) => {
-                        wrapper.removeAttribute(key);
-                    });
-                    wrapper.innerHTML = '';
-                }
+                ['name', 'value', 'disabled'].forEach((key) => {
+                    this.element.removeAttribute(key);
+                });
+            }
+            else {
+                ['role', 'aria-checked', 'class'].forEach((key) => {
+                    wrapper.removeAttribute(key);
+                });
+                wrapper.innerHTML = '';
             }
         }
     }
@@ -752,9 +734,6 @@ let CheckBox = class CheckBox extends Component {
      * @private
      */
     preRender() {
-        if (isBlazor() && this.isServerRendered) {
-            return;
-        }
         let element = this.element;
         this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -772,15 +751,8 @@ let CheckBox = class CheckBox extends Component {
      * @private
      */
     render() {
-        if (isBlazor() && this.isServerRendered) {
-            if (isRippleEnabled) {
-                rippleEffect(this.getWrapper().getElementsByClassName(RIPPLE)[0], { duration: 400, isCenterRipple: true });
-            }
-        }
-        else {
-            this.initWrapper();
-            this.initialize();
-        }
+        this.initWrapper();
+        this.initialize();
         if (!this.disabled) {
             this.wireEvents();
         }
@@ -993,31 +965,24 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
      * @returns void
      */
     destroy() {
-        if (isBlazor() && this.isServerRendered) {
-            if (!this.disabled) {
-                this.unWireEvents();
-            }
+        let radioWrap = this.element.parentElement;
+        super.destroy();
+        if (!this.disabled) {
+            this.unWireEvents();
+        }
+        if (this.tagName === 'INPUT') {
+            radioWrap.parentNode.insertBefore(this.element, radioWrap);
+            detach(radioWrap);
+            this.element.checked = false;
+            ['name', 'value', 'disabled'].forEach((key) => {
+                this.element.removeAttribute(key);
+            });
         }
         else {
-            let radioWrap = this.element.parentElement;
-            super.destroy();
-            if (!this.disabled) {
-                this.unWireEvents();
-            }
-            if (this.tagName === 'INPUT') {
-                radioWrap.parentNode.insertBefore(this.element, radioWrap);
-                detach(radioWrap);
-                this.element.checked = false;
-                ['name', 'value', 'disabled'].forEach((key) => {
-                    this.element.removeAttribute(key);
-                });
-            }
-            else {
-                ['role', 'aria-checked', 'class'].forEach((key) => {
-                    radioWrap.removeAttribute(key);
-                });
-                radioWrap.innerHTML = '';
-            }
+            ['role', 'aria-checked', 'class'].forEach((key) => {
+                radioWrap.removeAttribute(key);
+            });
+            radioWrap.innerHTML = '';
         }
     }
     focusHandler() {
@@ -1185,9 +1150,6 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
      * @private
      */
     preRender() {
-        if (isBlazor() && this.isServerRendered) {
-            return;
-        }
         let element = this.element;
         this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -1212,15 +1174,7 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
      * @private
      */
     render() {
-        if (isBlazor() && this.isServerRendered) {
-            if (isRippleEnabled) {
-                let rippleSpan = this.element.parentElement.getElementsByClassName(RIPPLE$1)[0];
-                rippleEffect(rippleSpan, { duration: 400, isCenterRipple: true });
-            }
-        }
-        else {
-            this.initialize();
-        }
+        this.initialize();
         if (!this.disabled) {
             this.wireEvents();
         }
@@ -1406,18 +1360,11 @@ let Switch = class Switch extends Component {
      * @returns void
      */
     destroy() {
-        if (isBlazor() && this.isServerRendered) {
-            if (!this.disabled) {
-                this.unWireEvents();
-            }
+        super.destroy();
+        if (!this.disabled) {
+            this.unWireEvents();
         }
-        else {
-            super.destroy();
-            if (!this.disabled) {
-                this.unWireEvents();
-            }
-            destroy(this, this.getWrapper(), this.tagName);
-        }
+        destroy(this, this.getWrapper(), this.tagName);
     }
     focusHandler() {
         this.isFocused = true;
@@ -1550,9 +1497,6 @@ let Switch = class Switch extends Component {
      * @private
      */
     preRender() {
-        if (isBlazor() && this.isServerRendered) {
-            return;
-        }
         let element = this.element;
         this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -1563,15 +1507,8 @@ let Switch = class Switch extends Component {
      * @private
      */
     render() {
-        if (isBlazor() && this.isServerRendered) {
-            if (isRippleEnabled) {
-                rippleEffect(this.element.parentElement, { duration: 400, isCenterRipple: true });
-            }
-        }
-        else {
-            this.initWrapper();
-            this.initialize();
-        }
+        this.initWrapper();
+        this.initialize();
         if (!this.disabled) {
             this.wireEvents();
         }
@@ -1933,6 +1870,7 @@ let ChipList = class ChipList extends Component {
     /**
      * A function that finds chip based on given input.
      * @param  {number | HTMLElement } fields - We can pass index number or element of chip.
+     * {% codeBlock src='chips/find/index.md' %}{% endcodeBlock %}
      */
     find(fields) {
         let chipData;
@@ -1954,6 +1892,7 @@ let ChipList = class ChipList extends Component {
      * Allows adding the chip item(s) by passing a single or array of string, number, or ChipModel values.
      * @param  {string[] | number[] | ChipModel[] | string | number | ChipModel} chipsData - We can pass array of string or
      *  array of number or array of chip model or string data or number data or chip model.
+     * {% codeBlock src='chips/add/index.md' %}{% endcodeBlock %}
      * @deprecated
      */
     add(chipsData) {
@@ -1968,6 +1907,7 @@ let ChipList = class ChipList extends Component {
      * Allows selecting the chip item(s) by passing a single or array of string, number, or ChipModel values.
      * @param  {number | number[] | HTMLElement | HTMLElement[]} fields - We can pass number or array of number
      *  or chip element or array of chip element.
+     * {% codeBlock src='chips/select/index.md' %}{% endcodeBlock %}
      */
     select(fields) {
         this.onSelect(fields, false);
@@ -2013,6 +1953,7 @@ let ChipList = class ChipList extends Component {
      * Allows removing the chip item(s) by passing a single or array of string, number, or ChipModel values.
      * @param  {number | number[] | HTMLElement | HTMLElement[]} fields - We can pass number or array of number
      *  or chip element or array of chip element.
+     * {% codeBlock src='chips/remove/index.md' %}{% endcodeBlock %}
      */
     remove(fields) {
         if (this.chipType()) {
@@ -2035,6 +1976,7 @@ let ChipList = class ChipList extends Component {
     }
     /**
      * Returns the selected chip(s) data.
+     * {% codeBlock src='chips/getSelectedChips/index.md' %}{% endcodeBlock %}
      */
     getSelectedChips() {
         let selectedChips;
@@ -2219,6 +2161,7 @@ let ChipList = class ChipList extends Component {
     }
     /**
      * Removes the component from the DOM and detaches all its related event handlers. Also, it removes the attributes and classes.
+     * {% codeBlock src='chips/destroy/index.md' %}{% endcodeBlock %}
      */
     destroy() {
         removeClass([this.element], [classNames.chipSet, classNames.chip, classNames.rtl,

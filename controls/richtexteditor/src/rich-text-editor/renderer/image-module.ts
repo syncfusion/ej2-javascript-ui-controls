@@ -1,7 +1,7 @@
 import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, select, isBlazor } from '@syncfusion/ej2-base';
 import { Browser, closest, removeClass, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import {
-    IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition,
+    IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition, ImageSuccessEventArgs,
     ImageDragEvent, ActionBeginEventArgs, ActionCompleteEventArgs, AfterImageDeleteEventArgs, ImageUploadingEventArgs
 } from '../base/interface';
 import { IRichTextEditor, IImageNotifyArgs, NotifyArgs, IShowPopupArgs, ResizeArgs } from '../base/interface';
@@ -642,13 +642,13 @@ export class Image {
         }
         switch (item.subCommand) {
             case 'JustifyLeft':
-                this.justifyImageLeft(args);
+                this.alignImage(args, 'JustifyLeft');
                 break;
             case 'JustifyCenter':
-                this.justifyImageCenter(args);
+                this.alignImage(args, 'JustifyCenter');
                 break;
             case 'JustifyRight':
-                this.justifyImageRight(args);
+                this.alignImage(args, 'JustifyRight');
                 break;
             case 'Inline':
                 this.inline(args);
@@ -1069,20 +1069,9 @@ export class Image {
             ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'Inline';
         this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
     }
-
-    private justifyImageLeft(e: IImageNotifyArgs): void {
+    private alignImage(e: IImageNotifyArgs, type: string): void {
         let subCommand: string = ((e.args as ClickEventArgs).item) ?
-            ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'JustifyLeft';
-        this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
-    }
-    private justifyImageRight(e: IImageNotifyArgs): void {
-        let subCommand: string = ((e.args as ClickEventArgs).item) ?
-            ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'JustifyRight';
-        this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
-    }
-    private justifyImageCenter(e: IImageNotifyArgs): void {
-        let subCommand: string = ((e.args as ClickEventArgs).item) ?
-            ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'JustifyCenter';
+        ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : type;
         this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
     }
     private imagDialog(e: IImageNotifyArgs): void {
@@ -1779,7 +1768,7 @@ export class Image {
                 };
                 setTimeout(() => { this.uploadFailure(imageElement, args, e); }, 900);
             },
-            success: (e: Object) => {
+            success: (e: ImageSuccessEventArgs) => {
                 isUploading = false;
                 this.parent.inputElement.contentEditable = 'true';
                 let args: IShowPopupArgs = {
@@ -1826,9 +1815,10 @@ export class Image {
     /**
      * Called when drop image upload was successful
      */
-    private uploadSuccess(imageElement: HTMLElement, dragEvent: DragEvent, args: IShowPopupArgs, e: Object): void {
+    private uploadSuccess(imageElement: HTMLElement, dragEvent: DragEvent, args: IShowPopupArgs, e: ImageSuccessEventArgs): void {
         imageElement.style.opacity = '1';
         imageElement.classList.add(classes.CLS_IMG_FOCUS);
+        e.element = imageElement;
         this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
             if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
                 let url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
@@ -1836,10 +1826,12 @@ export class Image {
                 imageElement.setAttribute('alt', (e as MetaData).file.name);
             }
         });
-        this.popupObj.close();
+        if (this.popupObj) {
+            this.popupObj.close();
+            this.uploadObj.destroy();
+        }
         this.showImageQuickToolbar(args);
         this.resizeStart((dragEvent as MouseEvent) as PointerEvent, imageElement);
-        this.uploadObj.destroy();
     }
 
     private imagePaste(args: NotifyArgs): void {

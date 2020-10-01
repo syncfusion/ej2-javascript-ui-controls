@@ -1,7 +1,7 @@
 @include export-module('toolbar-theme') {
   /*! toolbar theme */
   // sass-lint:disable no-vendor-prefixes
-  #{&}.e-toolbar {
+  .e-toolbar {
     -webkit-tap-highlight-color: $tbar-tab-highlight-color;
     background: $tbar-default-bg;
     border: $tbar-border-size $tbar-border-type $tbar-default-border;

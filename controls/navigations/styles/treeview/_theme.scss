@@ -30,8 +30,8 @@
   }
 }
 @include export-module('treeview-theme') {
-  .e-bigger #{&}.e-treeview,
-  #{&}.e-treeview.e-bigger {
+  .e-bigger .e-treeview,
+  .e-treeview.e-bigger {
 
     .e-list-text {
       font-size: $treeview-big-font-size;
@@ -63,7 +63,7 @@
   }
 }
 
-  #{&}.e-treeview {
+  .e-treeview {
     -webkit-tap-highlight-color: transparent;
 
     .e-text-content,

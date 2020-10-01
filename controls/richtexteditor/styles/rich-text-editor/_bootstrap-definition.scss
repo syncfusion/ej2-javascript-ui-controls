@@ -150,7 +150,7 @@ $rte-resize-handler-height: 15px;
 $rte-resize-handler-position: 0;
 
 @include export-module('richtexteditor-bootstrap') {
-  #{&}.e-richtexteditor {
+  .e-richtexteditor {
     & .e-rte-toolbar {
       &.e-extended-toolbar .e-toolbar-items .e-toolbar-item {
         & .e-rte-dropdown-btn.e-active.e-tbar-btn {
@@ -163,7 +163,7 @@ $rte-resize-handler-position: 0;
     }
   }
 
-  .e-bigger #{&}.e-richtexteditor {
+  .e-bigger .e-richtexteditor {
     & .e-rte-toolbar {
       &.e-extended-toolbar .e-toolbar-items .e-toolbar-item {
         & .e-tbar-btn.e-btn.e-control.e-dropdown-btn.e-rte-dropdown-btn.e-active {

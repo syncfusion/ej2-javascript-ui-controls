@@ -4,6 +4,7 @@ import { createElement, Browser, isNullOrUndefined, extend, remove } from '@sync
 import { TooltipSettingsModel, LayerSettings, MarkerSettingsModel, BubbleSettingsModel } from '../index';
 import { MapLocation, getMousePosition, Internalize, checkPropertyPath, getValueFromObject,
     formatValue, convertStringToValue } from '../utils/helper';
+import { click } from '../model/constants';
 /**
  * Map Tooltip
  */
@@ -26,10 +27,11 @@ export class MapsTooltip {
     }
     /* tslint:disable:no-string-literal */
     //tslint:disable:max-func-body-length
+    //tslint:disable
     public renderTooltip(e: PointerEvent): void {
         let pageX: number; let pageY: number;
         let target: Element; let touchArg: TouchEvent;
-        let tooltipArgs: ITooltipRenderEventArgs;
+        let tooltipArgs: ITooltipRenderEventArgs; let tooltipTemplateElement: HTMLElement;
         if (e.type.indexOf('touch') !== - 1) {
             this.isTouch = true;
             touchArg = <TouchEvent & PointerEvent>e;
@@ -227,10 +229,13 @@ export class MapsTooltip {
                                 fill: blazorArgs.fill
                             });
                         }
+                        let tooltipElement: HTMLElement = tooltipEle;
                         this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                        this.svgTooltip.appendTo(tooltipEle);
+                        this.svgTooltip.appendTo(tooltipElement);
+                        (this.maps as any).renderReactTemplates();
                     } else {
                         this.removeTooltip();
+                        (this.maps as any).clearTemplate();
                     }
                 });
             } else {
@@ -273,8 +278,17 @@ export class MapsTooltip {
                         }
                         this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                         this.svgTooltip.appendTo(tooltipEle);
+                        (this.maps as any).renderReactTemplates();
+                        tooltipTemplateElement = document.getElementById(this.maps.element.id + '_mapsTooltip');
+                        if (tooltipTemplateElement !== null && tooltipTemplateElement.innerHTML.indexOf('href') !== -1
+                            && tooltipTemplateElement.innerHTML.indexOf('</a>') !== -1) {
+                            let templateStyle : string = tooltipTemplateElement.getAttribute('style');
+                            templateStyle = templateStyle.replace('pointer-events: none;' , 'position-events:all;');
+                            tooltipTemplateElement.setAttribute('style', templateStyle);
+                        }
                     } else {
                         this.removeTooltip();
+                        (this.maps as any).clearTemplate();
                     }
                });
             }
@@ -290,10 +304,18 @@ export class MapsTooltip {
                 } as ITooltipRenderCompleteEventArgs);
             } else {
                 this.removeTooltip();
+                (this.maps as any).clearTemplate();
             }
         } else {
-            this.removeTooltip();
-          }
+            tooltipTemplateElement = document.getElementById(this.maps.element.id + '_mapsTooltip');
+            if (tooltipTemplateElement !== null && tooltipTemplateElement.innerHTML.indexOf('href') !== -1
+                && tooltipTemplateElement.innerHTML.indexOf('</a>') !== -1) {
+                this.maps.notify(click, this);
+            } else {
+                this.removeTooltip();
+                (this.maps as any).clearTemplate();
+            }
+        }
     }
 
     /**

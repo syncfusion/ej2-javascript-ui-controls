@@ -79,7 +79,10 @@ export class KanbanDialog {
                     this.destroyComponents();
                     [].slice.call(form.childNodes).forEach((node: HTMLElement) => remove(node));
                 }
-                append(this.parent.templateParser(this.parent.dialogSettings.template)(args), form);
+                let templateId: string = this.parent.element.id + '_dialogTemplate';
+                let dialogTemplate: HTMLElement[] = this.parent.templateParser(
+                    this.parent.dialogSettings.template)(args, this.parent, 'template', templateId, false);
+                append(dialogTemplate, form);
             } else {
                 let dialogWrapper: HTMLElement = createElement('div', { className: cls.DIALOG_CONTENT_CONTAINER });
                 form.appendChild(dialogWrapper);
@@ -151,7 +154,8 @@ export class KanbanDialog {
         let element: HTMLElement = createElement('input', { className: cls.FIELD_CLASS, attrs: { 'name': field.key } });
         wrapper.appendChild(element);
         let controlObj: DropDownList | NumericTextBox | TextBox;
-        let fieldValue: Object = this.parent.activeCardData.data ? this.parent.activeCardData.data[field.key] : null;
+        let fieldValue: Object = this.parent.activeCardData.data ?
+            (<{ [key: string]: Object }>this.parent.activeCardData.data)[field.key] : null;
         switch (field.type) {
             case 'DropDown':
                 let dropDownOptions: DropDownListModel;
@@ -227,7 +231,7 @@ export class KanbanDialog {
         this.parent.trigger(events.dialogClose, eventProp, (closeArgs: DialogEventArgs) => {
             args.cancel = closeArgs.cancel;
             if (!closeArgs.cancel) {
-                this.cardData = eventProp.data;
+                this.cardData = eventProp.data as { [key: string]: Object };
                 this.destroy();
             }
         });
@@ -319,11 +323,11 @@ export class KanbanDialog {
         if (!target.classList.contains('e-dialog-edit') && !target.classList.contains('e-dialog-add')) {
             this.dialogObj.hide();
             if (target.classList.contains('e-dialog-yes')) {
-                this.parent.crudModule.deleteCard(this.parent.activeCardData.data);
+                this.parent.crudModule.deleteCard(<{ [key: string]: Object }>this.parent.activeCardData.data);
             } else if (target.classList.contains('e-dialog-no')) {
-                this.openDialog('Edit', this.parent.activeCardData.data);
+                this.openDialog('Edit', this.parent.activeCardData.data as { [key: string]: Object });
             } else if (target.classList.contains('e-dialog-delete')) {
-                this.openDialog('Delete', this.parent.activeCardData.data);
+                this.openDialog('Delete', this.parent.activeCardData.data as { [key: string]: Object });
             }
         }
     }

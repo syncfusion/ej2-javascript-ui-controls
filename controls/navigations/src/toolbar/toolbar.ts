@@ -399,6 +399,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      * @returns void.
      */
     public destroy(): void {
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.clearTemplate(); }
         super.destroy();
         this.unwireEvents();
         this.tempId.forEach((ele: Str): void => {
@@ -408,17 +410,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         });
         if (isBlazor() && this.isServerRendered) {
             this.resetServerItems();
-        } else {
-            let subControls: NodeListOf<Element> = this.element.querySelectorAll('.e-control');
-            [].slice.call(subControls).forEach((node: HTMLElement): void => {
-                let instances: object[] = (node as EJ2Instance).ej2_instances;
-                if (instances) {
-                    let instance: Toolbar = instances[0] as Toolbar;
-                    if (instance) {
-                        instance.destroy();
-                    }
-                }
-            });
         }
         while (this.element.lastElementChild && !this.element.lastElementChild.classList.contains(BZ_ITEMS)) {
             this.element.removeChild(this.element.lastElementChild);
@@ -918,6 +909,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             } else {
                 itemEleDom.appendChild(innerItem);
             }
+            // tslint:disable-next-line:no-any
+            if ((this as any).isReact) { this.renderReactTemplates(); }
         }
     }
 
@@ -1810,6 +1803,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         itemsDiv.style.width = '';
         this.renderOverflowMode();
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.renderReactTemplates(); }
     }
     /**
      * Removes the items from the Toolbar. Acceptable arguments are index of item/HTMLElement/node list.
@@ -1848,6 +1843,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 indexAgn = this.tbarAlgEle[(this.items[eleIdx].align + 's').toLowerCase() as ItmAlign].indexOf(this.tbarEle[eleIdx]);
                 this.tbarAlgEle[(this.items[eleIdx].align + 's').toLowerCase() as ItmAlign].splice(indexAgn, 1);
             }
+            // tslint:disable-next-line:no-any
+            if ((this as any).isReact) { this.clearTemplate(); }
             detach(innerItems[index]);
             this.items.splice(eleIdx, 1);
             this.tbarEle.splice(eleIdx, 1);
@@ -2033,12 +2030,16 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private itemsRerender(newProp: ItemModel[]): void {
         this.items = this.tbarItemsCol;
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.clearTemplate(); }
         this.destroyMode();
         this.destroyItems();
         this.items = newProp;
         this.tbarItemsCol = this.items;
         this.renderItems();
         this.renderOverflowMode();
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.renderReactTemplates(); }
     }
     private resize(): void {
         let ele: HTEle = this.element;
@@ -2117,6 +2118,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                                 this.destroyMode();
                             }
                             let itemCol: HTEle[] = [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, tEle));
+                            // tslint:disable-next-line:no-any
+                            if ((this as any).isReact) { this.clearTemplate(); }
                             detach(itemCol[index]);
                             this.tbarEle.splice(index, 1);
                             this.addItems([this.items[index]], index);

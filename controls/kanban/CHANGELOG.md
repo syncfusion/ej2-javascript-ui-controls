@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 18.2.59 (2020-09-21)
+## 18.3.35 (2020-10-01)
+
+### Kanban
+
+- `#287430` - The issue with "Mismatch in the events argument type information" has been resolved.
+
+## 18.2.57 (2020-09-08)
 
 ### Kanban
 

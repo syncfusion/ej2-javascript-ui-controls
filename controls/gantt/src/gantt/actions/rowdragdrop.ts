@@ -1,7 +1,7 @@
 import { TreeGrid, RowDD as TreeGridRowDD } from '@syncfusion/ej2-treegrid';
 import { RowDragEventArgs } from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
-import { isNullOrUndefined, extend, classList, addClass, getValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, classList, addClass, getValue, closest } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { IGanttData, RowPosition } from '../base/common';
 import { RowDropEventArgs, IParent } from '../base/interface';
@@ -139,6 +139,9 @@ export class RowDD {
         if (ganttDragelem) {
             ganttDragelem.remove();
         }
+        let gridRow: Element = closest(args.target, '.e-row');
+        let dropIndex: number = gridRow ? parseInt(gridRow.getAttribute('aria-rowindex'), 10) : args.dropIndex;
+        args.dropIndex = dropIndex;
         args.dropRecord = this.parent.currentViewData[args.dropIndex];
         this.parent.trigger('rowDrop', args);
         if (this.parent.viewType === 'ResourceView') {

@@ -551,6 +551,12 @@ export class SfGrid {
             }
         }
 
+        //TODO: datepicker in dialog editing
+        if ((e.key == "Tab" || e.key == "shiftTab" || e.key == "Enter" || e.key == "shiftEnter") 
+            && (e.target as HTMLElement).classList.contains('e-datepicker')) {
+            (e.target as HTMLElement).blur();
+        }
+
         if (e.key == "Shift" || e.key == "Control" || e.key == "Alt") { 
             e.stopPropagation(); //dont let execute c# keydown handler for meta keys.
         }
@@ -561,6 +567,7 @@ export class SfGrid {
             this.clipboardModule.copy(true);
         }
         if (e.keyCode === 86 && e.ctrlKey && !this.options.isEdit) {
+            e.stopPropagation();
             this.clipboardModule.pasteHandler();
         }
 
@@ -592,7 +599,8 @@ export class SfGrid {
             e.preventDefault(); //prevent user select on shift pressing during selection
         }
         // e.button = 2 for right mouse button click
-        if ((e.button !== 2 && parentsUntil(<Element>e.target, 'e-headercell')) || parentsUntil(<Element>e.target, 'e-detailrowexpand') || parentsUntil(<Element>e.target, 'e-detailrowcollapse') || closest(<Element>e.target, ".e-groupdroparea") || closest(<Element>e.target, ".e-gridpopup")
+        if ((e.button !== 2 && parentsUntil(<Element>e.target, 'e-headercell')) || parentsUntil(<Element>e.target, 'e-detailrowexpand') || parentsUntil(<Element>e.target, 'e-detailrowcollapse')
+            || (<Element>e.target).classList.contains('e-content') || (<Element>e.target).classList.contains('e-headercontent') || closest(<Element>e.target, ".e-groupdroparea") || closest(<Element>e.target, ".e-gridpopup")
             || closest(<Element>e.target, ".e-summarycell") || closest(<Element>e.target, ".e-rhandler")
             || closest(<Element>e.target, ".e-filtermenudiv") || closest(<Element>e.target, ".e-filterbarcell")
             || closest(<Element>e.target, ".e-groupcaption")) {

@@ -1156,6 +1156,7 @@ class Render {
         this.parent = parent;
         this.templateResult = null;
         this.parent.grid.on('template-result', this.columnTemplateResult, this);
+        this.parent.grid.on('reactTemplateRender', this.reactTemplateRender, this);
     }
     /**
      * Updated row elements for TreeGrid
@@ -1341,8 +1342,16 @@ class Render {
     columnTemplateResult(args) {
         this.templateResult = args.template;
     }
+    reactTemplateRender(args) {
+        let renderReactTemplates = 'renderReactTemplates';
+        let portals = 'portals';
+        this.parent[portals] = args;
+        this.parent.notify('renderReactTemplate', this.parent[portals]);
+        this.parent[renderReactTemplates]();
+    }
     destroy() {
         this.parent.grid.off('template-result', this.columnTemplateResult);
+        this.parent.grid.off('reactTemplateRender', this.reactTemplateRender);
     }
 }
 
@@ -2574,6 +2583,9 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      * @private
      */
     render() {
+        if (this.isReact) {
+            this.grid.isReact = true;
+        }
         createSpinner({ target: this.element }, this.createElement);
         this.renderModule = new Render(this);
         this.dataModule = new DataManipulation(this);
@@ -2612,7 +2624,10 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         //tslint:disable-next-line:no-any
         this.grid[destroyTemplate] = (args, index) => {
             destroyTemplateFn.apply(this.grid);
-            this.clearTemplate(args, index);
+            let portals = 'portals';
+            if (!(this.isReact && isNullOrUndefined(this[portals]))) {
+                this.clearTemplate(args, index);
+            }
         };
         if (isBlazor() && this.isServerRendered) {
             let fn = (args) => this.gridRendered(args, fn);
@@ -6728,8 +6743,8 @@ class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
         this.visualData = args.data;
     }
     generateRows(data, notifyArgs) {
-        if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
-            && this.parent.dataSource.dataSource.url !== '') {
+        if ((this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
+            && this.parent.dataSource.dataSource.url !== '') || isCountRequired(this.parent)) {
             return super.generateRows(data, notifyArgs);
         }
         else {
@@ -6746,8 +6761,8 @@ class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
     checkAndResetCache(action) {
         let clear = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'reorder',
             'save', 'delete'].some((value) => action === value);
-        if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
-            && this.parent.dataSource.dataSource.url !== '') {
+        if ((this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
+            && this.parent.dataSource.dataSource.url !== '') || isCountRequired(this.parent)) {
             let model = 'model';
             let currentPage = this[model].currentPage;
             if (clear) {
@@ -9504,7 +9519,7 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
     }
     eventListener(action) {
         if (!(this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
-            && this.parent.dataSource.dataSource.url !== '')) {
+            && this.parent.dataSource.dataSource.url !== '') || !isCountRequired(this.parent)) {
             this.parent[action]('data-ready', this.onDataReady, this);
             //this.parent[action]('refresh-virtual-block', this.refreshContentRows, this);
             this.fn = () => {
@@ -9527,7 +9542,7 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
     onDataReady(e) {
         super.onDataReady(e);
         if (!(this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
-            && this.parent.dataSource.dataSource.url !== '')) {
+            && this.parent.dataSource.dataSource.url !== '') || !isCountRequired(this.parent)) {
             if (!isNullOrUndefined(e.count)) {
                 this.totalRecords = e.count;
                 getValue('virtualEle', this).setVirtualHeight(this.parent.getRowHeight() * e.count, '100%');
@@ -9542,15 +9557,15 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
     renderTable() {
         super.renderTable();
         if (!(this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
-            && this.parent.dataSource.dataSource.url !== '')) {
+            && this.parent.dataSource.dataSource.url !== '') || !isCountRequired(this.parent)) {
             getValue('observer', this).options.debounceEvent = false;
             this.observers = new TreeInterSectionObserver(getValue('observer', this).element, getValue('observer', this).options);
             this.contents = this.getPanel().firstChild;
         }
     }
     getTranslateY(sTop, cHeight, info, isOnenter) {
-        if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
-            && this.parent.dataSource.dataSource.url !== '') {
+        if ((this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
+            && this.parent.dataSource.dataSource.url !== '') || isCountRequired(this.parent)) {
             if (this.isRemoteExpand) {
                 this.isRemoteExpand = false;
                 return this.preTranslate;
@@ -9707,8 +9722,8 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
         }
     }
     appendContent(target, newChild, e) {
-        if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
-            && this.parent.dataSource.dataSource.url !== '') {
+        if ((this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
+            && this.parent.dataSource.dataSource.url !== '') || isCountRequired(this.parent)) {
             if (getValue('isExpandCollapse', e)) {
                 this.isRemoteExpand = true;
             }

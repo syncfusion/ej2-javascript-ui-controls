@@ -54,6 +54,8 @@ var SfTooltip = /** @class */ (function () {
         this.tooltipPositionY = 'Top';
         this.isContiniousOpen = false;
         this.isRestrictUpdate = false;
+        this.showTimer = 0;
+        this.hideTimer = 0;
         this.contentTargetValue = null;
         this.contentEvent = null;
         this.contentAnimation = null;
@@ -83,31 +85,48 @@ var SfTooltip = /** @class */ (function () {
             _b = this.properties.position.split(/(?=[A-Z])/), this.tooltipPositionX = _b[0], this.tooltipPositionY = _b[1];
         }
     };
+    SfTooltip.prototype.getTargetList = function (target) {
+        var targetElements = [];
+        if (target === null || target === '') {
+            targetElements.push(this.element);
+        }
+        else {
+            targetElements = [].slice.call(this.element.querySelectorAll(target));
+            if (targetElements && targetElements.length === 0) {
+                targetElements = [].slice.call(document.querySelectorAll(target));
+            }
+        }
+        return targetElements;
+    };
     SfTooltip.prototype.wireEvents = function (trigger) {
         var triggerList = this.getTriggerList(trigger);
+        var targetList = this.getTargetList(this.properties.target);
         for (var _i = 0, triggerList_1 = triggerList; _i < triggerList_1.length; _i++) {
             var opensOn = triggerList_1[_i];
-            if (opensOn === 'Custom') {
-                return;
-            }
-            if (opensOn === 'Focus') {
-                this.wireFocusEvents();
-            }
-            if (opensOn === 'Click') {
-                sf.base.EventHandler.add(this.element, sf.base.Browser.touchStartEvent, this.targetClick, this);
-            }
-            if (opensOn === 'Hover') {
-                if (sf.base.Browser.isDevice) {
-                    this.touchModule = new sf.base.Touch(this.element, {
-                        tapHoldThreshold: TAPHOLD_THRESHOLD,
-                        tapHold: this.tapHoldHandler.bind(this)
-                    });
-                    sf.base.EventHandler.add(this.element, sf.base.Browser.touchEndEvent, this.touchEndHandler, this);
+            for (var _a = 0, targetList_1 = targetList; _a < targetList_1.length; _a++) {
+                var target = targetList_1[_a];
+                if (opensOn === 'Custom') {
+                    return;
                 }
-                else {
-                    sf.base.EventHandler.add(this.element, 'mouseover', this.targetHover, this);
-                    if (!this.properties.isSticky) {
-                        sf.base.EventHandler.add(this.element, 'mouseleave', this.onMouseOut, this);
+                if (opensOn === 'Focus') {
+                    this.wireFocusEvents();
+                }
+                if (opensOn === 'Click') {
+                    sf.base.EventHandler.add(target, sf.base.Browser.touchStartEvent, this.targetClick, this);
+                }
+                if (opensOn === 'Hover') {
+                    if (sf.base.Browser.isDevice) {
+                        this.touchModule = new sf.base.Touch(target, {
+                            tapHoldThreshold: TAPHOLD_THRESHOLD,
+                            tapHold: this.tapHoldHandler.bind(this)
+                        });
+                        sf.base.EventHandler.add(target, sf.base.Browser.touchEndEvent, this.touchEndHandler, this);
+                    }
+                    else {
+                        sf.base.EventHandler.add(target, 'mouseover', this.targetHover, this);
+                        if (!this.properties.isSticky) {
+                            sf.base.EventHandler.add(target, 'mouseleave', this.onMouseOut, this);
+                        }
                     }
                 }
             }
@@ -125,8 +144,8 @@ var SfTooltip = /** @class */ (function () {
     SfTooltip.prototype.wireFocusEvents = function () {
         if (!sf.base.isNullOrUndefined(this.properties.target)) {
             var targetList = [].slice.call(this.element.querySelectorAll(this.properties.target));
-            for (var _i = 0, targetList_1 = targetList; _i < targetList_1.length; _i++) {
-                var target = targetList_1[_i];
+            for (var _i = 0, targetList_2 = targetList; _i < targetList_2.length; _i++) {
+                var target = targetList_2[_i];
                 sf.base.EventHandler.add(target, 'focus', this.targetHover, this);
             }
         }
@@ -148,28 +167,32 @@ var SfTooltip = /** @class */ (function () {
     };
     SfTooltip.prototype.unwireEvents = function (trigger) {
         var triggerList = this.getTriggerList(trigger);
+        var targetList = this.getTargetList(this.properties.target);
         for (var _i = 0, triggerList_2 = triggerList; _i < triggerList_2.length; _i++) {
             var opensOn = triggerList_2[_i];
-            if (opensOn === 'Custom') {
-                return;
-            }
-            if (opensOn === 'Focus') {
-                this.unwireFocusEvents();
-            }
-            if (opensOn === 'Click') {
-                sf.base.EventHandler.remove(this.element, sf.base.Browser.touchStartEvent, this.targetClick);
-            }
-            if (opensOn === 'Hover') {
-                if (sf.base.Browser.isDevice) {
-                    if (this.touchModule) {
-                        this.touchModule.destroy();
-                    }
-                    sf.base.EventHandler.remove(this.element, sf.base.Browser.touchEndEvent, this.touchEndHandler);
+            for (var _a = 0, targetList_3 = targetList; _a < targetList_3.length; _a++) {
+                var target = targetList_3[_a];
+                if (opensOn === 'Custom') {
+                    return;
                 }
-                else {
-                    sf.base.EventHandler.remove(this.element, 'mouseover', this.targetHover);
-                    if (!this.properties.isSticky) {
-                        sf.base.EventHandler.remove(this.element, 'mouseleave', this.onMouseOut);
+                if (opensOn === 'Focus') {
+                    this.unwireFocusEvents();
+                }
+                if (opensOn === 'Click') {
+                    sf.base.EventHandler.remove(target, sf.base.Browser.touchStartEvent, this.targetClick);
+                }
+                if (opensOn === 'Hover') {
+                    if (sf.base.Browser.isDevice) {
+                        if (this.touchModule) {
+                            this.touchModule.destroy();
+                        }
+                        sf.base.EventHandler.remove(target, sf.base.Browser.touchEndEvent, this.touchEndHandler);
+                    }
+                    else {
+                        sf.base.EventHandler.remove(target, 'mouseover', this.targetHover);
+                        if (!this.properties.isSticky) {
+                            sf.base.EventHandler.remove(target, 'mouseleave', this.onMouseOut);
+                        }
                     }
                 }
             }
@@ -182,8 +205,8 @@ var SfTooltip = /** @class */ (function () {
     SfTooltip.prototype.unwireFocusEvents = function () {
         if (!sf.base.isNullOrUndefined(this.properties.target)) {
             var targetList = [].slice.call(this.element.querySelectorAll(this.properties.target));
-            for (var _i = 0, targetList_2 = targetList; _i < targetList_2.length; _i++) {
-                var target = targetList_2[_i];
+            for (var _i = 0, targetList_4 = targetList; _i < targetList_4.length; _i++) {
+                var target = targetList_4[_i];
                 sf.base.EventHandler.remove(target, 'focus', this.targetHover);
             }
         }
@@ -275,15 +298,55 @@ var SfTooltip = /** @class */ (function () {
         }
         this.removeDescribedBy(target);
     };
+    SfTooltip.prototype.checkForOpen = function (opensOn, element, e) {
+        if (element == null || sf.base.isNullOrUndefined(e)) {
+            return false;
+        }
+        var target = this.properties.target ? sf.base.closest(e.target, this.properties.target) : this.element;
+        if (target == null) {
+            return false;
+        }
+        var isOpenable = true;
+        if (opensOn === 'Hover') {
+            isOpenable = target.matches(':hover');
+        }
+        else if (opensOn === 'Auto') {
+            isOpenable = (target.matches(':hover') || target.matches(':focus'));
+        }
+        else if (opensOn === 'Focus') {
+            isOpenable = target.matches(':focus');
+        }
+        else if (opensOn === 'Click') {
+            if (element === sf.base.closest(e.target, '.' + ROOT) &&
+                sf.base.getAttributeOrDefault(target, 'data-tooltip-id', null) === null) {
+                isOpenable = true;
+            }
+            else {
+                isOpenable = false;
+            }
+        }
+        else if (opensOn === 'Custom') {
+            if (sf.base.getAttributeOrDefault(target, 'data-tooltip-id', null) === null) {
+                isOpenable = true;
+            }
+            else {
+                isOpenable = false;
+            }
+        }
+        return isOpenable;
+    };
     SfTooltip.prototype.targetHover = function (e) {
+        if (!this.checkForOpen(this.properties.opensOn, this.element, e)) {
+            return;
+        }
         var target = this.properties.target ? sf.base.closest(e.target, this.properties.target) :
             this.element;
         if (sf.base.isNullOrUndefined(target) || sf.base.getAttributeOrDefault(target, 'data-tooltip-id', null) !== null) {
             return;
         }
         var targetList = [].slice.call(document.querySelectorAll('[data-tooltip-id= ' + this.ctrlId + '_content]'));
-        for (var _i = 0, targetList_3 = targetList; _i < targetList_3.length; _i++) {
-            var target_1 = targetList_3[_i];
+        for (var _i = 0, targetList_5 = targetList; _i < targetList_5.length; _i++) {
+            var target_1 = targetList_5[_i];
             this.restoreElement(target_1);
         }
         this.showTooltip(target, this.properties.animation.open, e);
@@ -292,18 +355,26 @@ var SfTooltip = /** @class */ (function () {
         return this.tooltipEle ? !this.tooltipEle.classList.contains(POPUP_OPEN) : true;
     };
     SfTooltip.prototype.showTooltip = function (target, showAnimation, e) {
-        this.isContiniousOpen = !sf.base.isNullOrUndefined(this.tooltipEle);
-        this.tooltipEventArgs = {
-            type: e ? e.type.toString() : null, cancel: false, target: this.getDomObject('target', target), event: e ? e : null,
-            hasText: this.hasText(), element: this.getDomObject('tooltipElement', this.tooltipEle),
-            isInteracted: !sf.base.isNullOrUndefined(e), name: 'beforeRender'
+        var _this = this;
+        clearTimeout(this.showTimer);
+        clearTimeout(this.hideTimer);
+        var show = function () {
+            _this.isContiniousOpen = !sf.base.isNullOrUndefined(_this.tooltipEle);
+            _this.tooltipEventArgs = {
+                type: e ? e.type.toString() : null, cancel: false, target: _this.getDomObject('target', target), event: e ? e : null,
+                hasText: _this.hasText(), element: _this.getDomObject('tooltipElement', _this.tooltipEle),
+                isInteracted: !sf.base.isNullOrUndefined(e), name: 'beforeRender',
+                left: e ? _this.getXYValue(e, 'x') : null,
+                top: e ? _this.getXYValue(e, 'y') : null
+            };
+            _this.contentTargetValue = target;
+            _this.contentEvent = e;
+            _this.contentAnimation = showAnimation;
+            _this.isRestrictUpdate = _this.element.eventList.beforeRender && !_this.isHidden();
+            _this.element.eventList.beforeRender ? _this.triggerEvent('TriggerBeforeRenderEvent', _this.tooltipEventArgs) :
+                _this.beforeRenderCallBack(false);
         };
-        this.contentTargetValue = target;
-        this.contentEvent = e;
-        this.contentAnimation = showAnimation;
-        this.isRestrictUpdate = this.element.eventList.beforeRender && !this.isHidden();
-        this.element.eventList.beforeRender ? this.triggerEvent('TriggerBeforeRenderEvent', this.tooltipEventArgs) :
-            this.beforeRenderCallBack(false);
+        this.showTimer = setTimeout(show, this.properties.openDelay);
     };
     SfTooltip.prototype.triggerEvent = function (eventName, args) {
         this.dotnetRef.invokeMethodAsync(eventName, JSON.stringify(args));
@@ -361,7 +432,7 @@ var SfTooltip = /** @class */ (function () {
         this.tooltipEventArgs = {
             type: null, cancel: false, target: this.getDomObject('target', target), event: null, isInteracted: false,
             hasText: this.hasText(), element: this.getDomObject('tooltipElement', this.tooltipEle),
-            collidedPosition: newpos, name: 'beforeCollision'
+            collidedPosition: newpos, name: 'beforeCollision', left: null, top: null
         };
         this.isRestrictUpdate = this.element.eventList.beforeCollision && !this.isHidden();
         if (this.element.eventList.beforeCollision) {
@@ -401,34 +472,53 @@ var SfTooltip = /** @class */ (function () {
         return eleOffset;
     };
     SfTooltip.prototype.hideTooltip = function (hideAnimation, e, targetElement) {
-        var target;
-        if (e) {
-            target = this.properties.target ? (targetElement || e.target) : this.element;
-        }
-        else {
-            target = document.querySelector('[data-tooltip-id= ' + this.ctrlId + '_content]');
-        }
-        this.tooltipEventArgs = {
-            type: e ? e.type.toString() : null, cancel: false, target: this.getDomObject('target', target), event: e ? e : null,
-            element: this.getDomObject('tooltipElement', this.tooltipEle), hasText: this.hasText(),
-            isInteracted: !sf.base.isNullOrUndefined(e), name: 'beforeClose', collidedPosition: null
+        var _this = this;
+        clearTimeout(this.hideTimer);
+        clearTimeout(this.showTimer);
+        var hide = function () {
+            if (_this.checkForOpen(_this.properties.opensOn, _this.element, e)) {
+                return;
+            }
+            var target;
+            if (e) {
+                target = _this.properties.target ? (targetElement || e.target) : _this.element;
+            }
+            else {
+                target = document.querySelector('[data-tooltip-id= ' + _this.ctrlId + '_content]');
+            }
+            _this.tooltipEventArgs = {
+                type: e ? e.type.toString() : null, cancel: false, target: _this.getDomObject('target', target), event: e ? e : null,
+                element: _this.getDomObject('tooltipElement', _this.tooltipEle), hasText: _this.hasText(),
+                isInteracted: !sf.base.isNullOrUndefined(e), name: 'beforeClose', collidedPosition: null,
+                left: e ? _this.getXYValue(e, 'x') : null,
+                top: e ? _this.getXYValue(e, 'y') : null
+            };
+            _this.beforeCloseTarget = target;
+            _this.beforeCloseAnimation = hideAnimation;
+            _this.isRestrictUpdate = _this.element.eventList.beforeClose && !_this.isHidden();
+            _this.element.eventList.beforeClose ? _this.triggerEvent('TriggerBeforeCloseEvent', _this.tooltipEventArgs) :
+                _this.beforeCloseCallBack(false);
         };
-        this.beforeCloseTarget = target;
-        this.beforeCloseAnimation = hideAnimation;
-        this.isRestrictUpdate = this.element.eventList.beforeClose && !this.isHidden();
-        this.element.eventList.beforeClose ? this.triggerEvent('TriggerBeforeCloseEvent', this.tooltipEventArgs) :
-            this.beforeCloseCallBack(false);
+        this.hideTimer = setTimeout(hide, this.properties.closeDelay);
     };
     SfTooltip.prototype.beforeCloseCallBack = function (cancel) {
         if (!cancel) {
-            this.popupHide(this.beforeCloseAnimation, this.beforeCloseTarget);
+            var proxy_1 = this;
+            var hide = function () {
+                proxy_1.popupHide(proxy_1.beforeCloseAnimation, proxy_1.beforeCloseTarget);
+            };
+            if (this.popupObj) {
+                this.popupHide(this.beforeCloseAnimation, this.beforeCloseTarget);
+            }
+            else {
+                setTimeout(hide, 200);
+            }
         }
         else {
             this.isPopupHidden = false;
         }
     };
     SfTooltip.prototype.popupHide = function (hideAnimation, target) {
-        var _this = this;
         if (target) {
             this.restoreElement(target);
         }
@@ -442,18 +532,8 @@ var SfTooltip = /** @class */ (function () {
         if (hideAnimation.effect === 'None') {
             closeAnimation = undefined;
         }
-        if (this.properties.closeDelay > 0) {
-            var hide = function () {
-                if (_this.popupObj) {
-                    _this.popupObj.hide(closeAnimation);
-                }
-            };
-            setTimeout(hide, this.properties.closeDelay);
-        }
-        else {
-            if (this.popupObj) {
-                this.popupObj.hide(closeAnimation);
-            }
+        if (this.popupObj) {
+            this.popupObj.hide(closeAnimation);
         }
     };
     SfTooltip.prototype.calculateTooltipOffset = function (position) {
@@ -744,16 +824,16 @@ var SfTooltip = /** @class */ (function () {
         sf.base.addClass([this.tooltipEle], POPUP_CLOSE);
         this.tooltipEventArgs = {
             type: this.contentEvent ? this.contentEvent.type.toString() : null, isInteracted: !sf.base.isNullOrUndefined(this.contentEvent),
-            hasText: this.hasText(), target: this.getDomObject('target', this.contentTargetValue),
-            name: 'beforeOpen', cancel: false, event: this.contentEvent ? this.contentEvent : null,
-            element: this.getDomObject('tooltipElement', this.tooltipEle)
+            hasText: this.hasText(), target: this.getDomObject('target', this.contentTargetValue), name: 'beforeOpen', cancel: false,
+            event: this.contentEvent ? this.contentEvent : null, element: this.getDomObject('tooltipElement', this.tooltipEle),
+            left: this.contentEvent ? this.getXYValue(this.contentEvent, 'x') : null, top: this.contentEvent ?
+                this.getXYValue(this.contentEvent, 'y') : null
         };
         this.isRestrictUpdate = this.element.eventList.beforeOpen && !this.isHidden();
         this.element.eventList.beforeOpen ? this.triggerEvent('TriggerBeforeOpenEvent', this.tooltipEventArgs) :
             this.beforeOpenCallBack(false);
     };
     SfTooltip.prototype.beforeOpenCallBack = function (cancel) {
-        var _this = this;
         if (cancel) {
             this.isPopupHidden = true;
             if (this.contentTargetValue) {
@@ -761,27 +841,17 @@ var SfTooltip = /** @class */ (function () {
             }
         }
         else {
-            var openAnimation_1 = {
+            var openAnimation = {
                 name: this.contentAnimation.effect,
                 duration: this.contentAnimation.duration,
                 delay: this.contentAnimation.delay,
                 timingFunction: 'easeOut'
             };
             if (this.contentAnimation.effect === 'None') {
-                openAnimation_1 = undefined;
+                openAnimation = undefined;
             }
-            if (this.properties.openDelay > 0) {
-                var show = function () {
-                    if (_this.popupObj) {
-                        _this.popupObj.show(openAnimation_1, _this.contentTargetValue);
-                    }
-                };
-                setTimeout(show, this.properties.openDelay);
-            }
-            else {
-                if (this.popupObj) {
-                    this.popupObj.show(openAnimation_1, this.contentTargetValue);
-                }
+            if (this.popupObj) {
+                this.popupObj.show(openAnimation, this.contentTargetValue);
             }
         }
         if (this.contentEvent) {
@@ -841,6 +911,21 @@ var SfTooltip = /** @class */ (function () {
     };
     SfTooltip.prototype.hasText = function () {
         return this.tooltipEle ? (this.tooltipEle.innerText.trim() === '' ? false : true) : false;
+    };
+    SfTooltip.prototype.getXYValue = function (e, direction) {
+        var touchList = e.changedTouches;
+        var value;
+        if (direction === 'x') {
+            value = touchList ? touchList[0].clientX : e.clientX;
+        }
+        else {
+            value = touchList ? touchList[0].clientY : e.clientY;
+        }
+        if (!value && e.type === 'focus' && e.target) {
+            var rect = e.target.getBoundingClientRect();
+            value = rect ? (direction === 'x' ? rect.left : rect.top) : null;
+        }
+        return Math.ceil(value);
     };
     SfTooltip.prototype.destroy = function () {
         if (this.tooltipEle) {
@@ -914,6 +999,17 @@ var Tooltip = {
         if (this.isValid(element)) {
             element.blazor__instance.destroy();
         }
+    },
+    refresh: function (element) {
+        if (!this.isValid(element)) {
+            return;
+        }
+        var blazInstance = element.blazor__instance;
+        if (!blazInstance.isPopupHidden) {
+            blazInstance.hideTooltip(blazInstance.properties.animation.close);
+        }
+        blazInstance.unwireEvents(blazInstance.properties.opensOn);
+        blazInstance.wireEvents(blazInstance.properties.opensOn);
     },
     refreshPosition: function (element, targetEle, targetProp) {
         if (!this.isValid(element)) {

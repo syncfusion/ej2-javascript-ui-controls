@@ -1,10 +1,12 @@
 /* tslint:disable-next-line:max-line-length */
-import { Workbook, getSheetName, getSheetIndex, getSheet, SheetModel, RowModel, CellModel, getSheetIndexByName } from '../base/index';
+import { Workbook, getSheetName, getSheetIndex, getSheet, SheetModel, RowModel, CellModel, getSheetIndexByName, getCell } from '../base/index';
 import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, getRangeIndexes } from '../common/index';
 import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonErrors, getAlphalabel } from '../../calculate/index';
 import { IFormulaColl } from '../../calculate/common/interface';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { DefineNameModel, getCellAddress,  getFormattedCellObject, isNumber } from '../common/index';
+import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula} from '../common/index';
+import { workbookEditOperation, getRangeAddress, InsertDeleteEventArgs, getRangeFromAddress, isCellReference } from '../common/index';
+
 
 /**
  * @hidden
@@ -13,7 +15,20 @@ import { DefineNameModel, getCellAddress,  getFormattedCellObject, isNumber } fr
 export class WorkbookFormula {
     private parent: Workbook;
     private calcID: number;
-
+    public uniqueOBracket: string = String.fromCharCode(129);
+    public uniqueCBracket: string = String.fromCharCode(130);
+    public uniqueCSeparator: string = String.fromCharCode(131);
+    public uniqueCOperator: string = String.fromCharCode(132);
+    public uniquePOperator: string = String.fromCharCode(133);
+    public uniqueSOperator: string = String.fromCharCode(134);
+    public uniqueMOperator: string = String.fromCharCode(135);
+    public uniqueDOperator: string = String.fromCharCode(136);
+    public uniqueModOperator: string = String.fromCharCode(137);
+    public uniqueConcateOperator: string = String.fromCharCode(138);
+    public uniqueEqualOperator: string = String.fromCharCode(139);
+    public uniqueExpOperator: string = String.fromCharCode(140);
+    public uniqueGTOperator: string = String.fromCharCode(141);
+    public uniqueLTOperator: string = String.fromCharCode(142);
     public calculateInstance: Calculate;
     private sheetInfo: { visibleName: string, sheet: string, index: number }[] = [];
     /**
@@ -85,8 +100,7 @@ export class WorkbookFormula {
                         collection.push(formulaInfo[i].category);
                     }
                 }
-                args.categoryCollection = collection;
-                break;
+                args.categoryCollection = collection; break;
             case 'dropDownSelectFormulas':
                 for (let i: number = 0; i < Array.from(formulas.values()).length; i++) {
                     if (args.selectCategory === formulaInfo[i].category) {
@@ -108,8 +122,7 @@ export class WorkbookFormula {
                 }
                 break;
             case 'unRegisterSheet':
-                this.unRegisterSheet(<number>args.sheetIndex, <number>args.sheetCount);
-                break;
+                this.unRegisterSheet(<number>args.sheetIndex, <number>args.sheetCount); break;
             case 'refreshCalculate':
                 args.value = this.autoCorrectFormula(<string>args.value);
                 this.refreshCalculate(
@@ -144,16 +157,15 @@ export class WorkbookFormula {
                 let length: number = this.sheetInfo.length;
                 for (let i: number = 0; i < length; i++) {
                     if (this.sheetInfo[i].index === (args.index as number)) {
-                        args.sheetName = this.sheetInfo[i].sheet;
-                        this.sheetInfo.splice(i, 1);
-                        break;
+                        args.sheetName = this.sheetInfo[i].sheet; this.sheetInfo.splice(i, 1); break;
                     }
                 }
+                this.calculateInstance.unregisterGridAsSheet((args.index as number - 1).toString(), args.index);
+                this.calculateInstance.tokenCount = this.calculateInstance.tokenCount - 1;
                 this.sheetDeletion(<string>args.sheetName, <number>args.index, <number>args.index);
                 break;
             case 'getReferenceError':
-                args.refError = this.referenceError();
-                break;
+                args.refError = this.referenceError(); break;
             case 'getAlpha':
                 args.col = getAlphalabel(<number>args.col);
                 break;
@@ -162,6 +174,14 @@ export class WorkbookFormula {
                 break;
             case 'computeExpression':
                 args.calcValue = this.calculateInstance.computeExpression(<string>args.formula);
+                break;
+            case 'registerGridInCalc':
+                this.calculateInstance.grid = <string>args.sheetID; break;
+            case 'refreshInsDelFormula':
+                this.refreshInsDelFormula(<InsertDeleteEventArgs>args.insertArgs);
+                break;
+            case 'refreshNamedRange':
+                this.refreshNamedRange(<InsertDeleteEventArgs>args.insertArgs, action);
                 break;
         }
     }
@@ -195,8 +215,7 @@ export class WorkbookFormula {
             let dependentCellRef: string[] = this.calculateInstance.getDependentCells().get(cellRef[i]);
             for (let j: number = 0; j < dependentCellRef.length; j++) {
                 fInfo = this.calculateInstance.getFormulaInfoTable().get(dependentCellRef[j]);
-                sheetId = getSheetIndexByName(
-                    this.parent, ('Sheet') + (parseInt(dependentCellRef[j].split('!')[1], 10) + 1), this.sheetInfo);
+                sheetId = parseInt(dependentCellRef[j].split('!')[1], 10) + 1;
                 if (!isNullOrUndefined(fInfo) && sheetId > -1) {
                     formulaVal = fInfo.formulaText;
                     if (formulaVal.toUpperCase().indexOf(delSheetName.toUpperCase()) > -1) {
@@ -208,12 +227,19 @@ export class WorkbookFormula {
                         this.calculateInstance.refresh(fInfo.getParsedFormula());
                     }
                 }
+                if (delSheetName.split('Sheet')[1] === cellRef[i].split('!')[1]) {
+                    this.calculateInstance.getFormulaInfoTable().delete(cellRef[i]);
+                    this.calculateInstance.clearFormulaDependentCells(cellRef[i]);
+                }
             }
         }
     }
     private removeSheetTokenIndex(value: string, index: number): string {
         let family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(this.calculateInstance.grid);
         family.sheetNameToToken.delete(index.toString());
+        family.sheetNameToParentObject.delete(index.toString());
+        family.parentObjectToToken.delete(index.toString());
+        family.tokenToParentObject.delete('!' + (index - 1).toString() + '!');
         return value;
     }
 
@@ -342,7 +368,7 @@ export class WorkbookFormula {
     }
 
     private refreshCalculate(rowIdx: number, colIdx: number, value: string, isFormula: boolean, sheetIdx: number): void {
-        if (!sheetIdx) {
+        if (sheetIdx === undefined) {
             sheetIdx = this.parent.activeSheetIndex;
         }
         let sheetName: string = getSheet(this.parent, sheetIdx).id + '';
@@ -399,12 +425,31 @@ export class WorkbookFormula {
 
     private initiateDefinedNames(): void {
         let definedNames: DefineNameModel[] = this.parent.definedNames;
-        let len: number = definedNames.length;
         let i: number = 0;
 
-        while (i < len) {
+        while (i < definedNames.length) {
             let definedname: DefineNameModel = definedNames[i];
-            this.addDefinedName(definedname, true);
+            let refersTo: string = this.parseSheetRef(definedname.refersTo);
+            let range: string = getRangeFromAddress(refersTo);
+            let cellRef: boolean = false;
+            range = range.split('$').join('');
+            range = range.split('=').join('');
+            if (range.indexOf(':') > -1) {
+                let rangeSplit: string[] = range.split(':');
+                if (isCellReference(rangeSplit[0]) && isCellReference(rangeSplit[1])) {
+                    cellRef = true;
+                }
+            } else if (range.indexOf(':') < 0) {
+                if (isCellReference(range)) {
+                    cellRef = true;
+                }
+            }
+            if (cellRef) {
+                this.addDefinedName(definedname, true);
+            } else {
+                this.removeDefinedName(definedname.name, definedname.scope);
+                i--;
+            }
             i++;
         }
     }
@@ -536,4 +581,291 @@ export class WorkbookFormula {
         args.Sum = formatedValues[0]; args.Avg = formatedValues[1];
         args.Min = formatedValues[2]; args.Max = formatedValues[3];
     }
+
+    private clearFormula(args: ClearFormulaArgs): void {
+        if (this.parent.activeSheetIndex === args.sheetIdx) {
+            args.rowIdx = (args.type === 'Row') ? (args.status === 'insert') ? (args.rowIdx >= args.startIdx)
+                ? args.rowIdx - args.count : args.rowIdx : args.rowIdx + args.count : args.rowIdx;
+            args.colIdx = (args.type === 'Column') ? (args.status === 'insert') ? (args.colIdx >= args.startIdx) ?
+                args.colIdx - args.count : args.colIdx : args.colIdx + args.count : args.colIdx;
+        }
+        let cellRef: string = '!' + args.sheetIdx + '!' + getAlphalabel((args.colIdx === -1 ?
+            (args.colIdx + 2) : (args.colIdx + 1))) + (args.rowIdx === -1 ? (args.rowIdx + 2) : (args.rowIdx + 1));
+        this.calculateInstance.getFormulaInfoTable().delete(cellRef);
+        this.calculateInstance.clearFormulaDependentCells(cellRef);
+    }
+
+    private refreshFormula(formulaValue: string, count: number, status: string, type: string, startIdx: number, sheetIdx: number): string {
+        let diff: number;
+        let diff1: number;
+        let val: string = formulaValue;
+        let nAlpha: string;
+        let range: number[] = [];
+        let actSheet: SheetModel = this.parent.getActiveSheet();
+        let deleteIdxs: number[] = [];
+        let i: number;
+        let splitFormula: string[] = [];
+        let fArg: string;
+        let ridx: number;
+        let hasREFVal: boolean = false;
+        let pVal: string;
+        if (checkIsFormula(val)) {
+            if (status === 'delete') {
+                for (i = 1; i <= count; i++) {
+                    deleteIdxs.push(startIdx + i); }
+            }
+            splitFormula = this.parseFormula(val);
+            for (i = 0; i < splitFormula.length; i++) {
+                fArg = splitFormula[i].trim();
+                if (this.calculateInstance.isCellReference(fArg)) {
+                    pVal = i && splitFormula[i - 1].trim();
+                    if (pVal && pVal[pVal.length - 1] === '!') {
+                        pVal = pVal.replace(/['!]/g, '');
+                        if (pVal !== actSheet.name) {
+                            continue;
+                        }
+                    } else if (parseInt(pVal, 10) === 0 && pVal[pVal.length - 1] === undefined) {
+                        if ((actSheet.id - 1) !== sheetIdx) { continue; }
+                    }
+                    range = getRangeIndexes(fArg);
+                    diff = (type === 'Column') ? (status === 'insert') ? range[3] + count : range[3] - count :
+                        (status === 'insert') ? range[2] + count : range[2] - count;
+                    diff1 = (type === 'Column') ? (status === 'insert') ? range[1] + count : range[1] - count :
+                        (status === 'insert') ? range[0] + count : range[0] - count;
+                    diff1 = (type === 'Column') ? (startIdx > range[1]) ? range[1] : diff1 : (startIdx > range[0]) ? range[0] : diff1;
+                    diff = (type === 'Column') ? (startIdx > range[3]) ? range[3] : diff : (startIdx > range[2]) ? range[2] : diff;
+                    if (diff1 > -1) {
+                        nAlpha = (type === 'Column') ? getRangeAddress([range[0], diff1, range[2], diff]).split(':')[0] :
+                            getRangeAddress([diff1, range[1], diff, range[3]]).split(':')[0];
+                    } else {
+                        nAlpha = '#REF!';
+                        hasREFVal = true;
+                    }
+                    if (status === 'delete') {
+                        ridx = parseInt(type === 'Row' ? fArg.replace(/[A-Z]/g, '') : (fArg.replace(/[0-9]/g, '')), 10);
+                        if (deleteIdxs.indexOf(ridx) > -1) {
+                            nAlpha = '#REF!';
+                            hasREFVal = true;
+                        }
+                    }
+                    splitFormula[i] = nAlpha;
+                }
+            }
+            val = '=' + splitFormula.join('');
+        }
+        return val;
+    }
+
+    private refreshInsDelFormula(args: InsertDeleteEventArgs): void {
+        let count: number;
+        let sheet: SheetModel;
+        let sheets: SheetModel[] = this.parent.sheets;
+        let sheetLen: number = sheets.length;
+        let address: number[];
+        let cell: CellModel;
+        let s: number;
+        let updatedFormulaVal: string;
+        for (s = 0; s < sheetLen; s++) {
+            count = args.model.length;
+            sheet = this.parent.sheets[s];
+            address = [0, 0, sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
+            for (let i: number = address[2]; i >= address[0]; i--) {
+                for (let j: number = address[1]; j <= address[3]; j++) {
+                    cell = getCell(i, j, sheet);
+                    if (cell && cell.formula && checkIsFormula(cell.formula)) {
+                        this.clearFormula({
+                            rowIdx: i, colIdx: j, sheetIdx: s, count: count, status: args.name,
+                            type: args.modelType, startIdx: args.startIndex
+                        });
+                        updatedFormulaVal = this.refreshFormula(cell.formula, count, args.name, args.modelType, args.startIndex, s);
+                        this.parent.notify(
+                            workbookEditOperation,
+                            {
+                                action: 'updateCellValue', address: [i, j, i,
+                                    j], value: updatedFormulaVal, sheetIndex: s
+                            });
+                    }
+                }
+            }
+        }
+    }
+
+    private parseFormula(formula: string): string[] {
+        let temp: string;
+        let str: string | number;
+        let len: number;
+        let i: number = 0;
+        let arr: string[] = [];
+        let formulaVal: string[] | string = [];
+        formulaVal = this.markSpecialChar(formula.replace('=', ''));
+        formulaVal = formulaVal.split(/\(|\)|=|\^|>|<|,|:|\+|-|\*|\/|%|&/g);
+        len = formulaVal.length;
+        while (i < len) {
+            temp = formulaVal[i];
+            if (!temp) {
+                i++;
+                continue;
+            }
+            if (temp.length === 1) {
+                arr.push(this.isUniqueChar(temp) ? this.getUniqueCharVal(temp) : temp);
+            } else {
+                str = temp[0];
+                if (temp.indexOf('!') > 0) {
+                    if (this.isUniqueChar(str)) {
+                        arr.push(this.getUniqueCharVal(str));
+                        temp = temp.substr(1);
+                    }
+                    str = temp.indexOf('!') + 1;
+                    arr.push(temp.substr(0, str));
+                    arr.push(temp.substr(str));
+                } else if (this.isUniqueChar(str)) {
+                    arr.push(this.getUniqueCharVal(str));
+                    arr.push(temp.substr(1));
+                } else {
+                    arr.push(temp);
+                }
+            }
+            i++;
+        }
+        return arr;
+    }
+    private getUniqueCharVal(formula: string): string {
+        switch (formula) {
+            case this.uniqueOBracket:
+                return '(';
+            case this.uniqueCBracket:
+                return ')';
+            case this.uniqueCSeparator:
+                return ',';
+            case this.uniqueCOperator:
+                return ':';
+            case this.uniquePOperator:
+                return '+';
+            case this.uniqueSOperator:
+                return '-';
+            case this.uniqueMOperator:
+                return '*';
+            case this.uniqueDOperator:
+                return '/';
+            case this.uniqueModOperator:
+                return '%';
+            case this.uniqueConcateOperator:
+                return '&';
+            case this.uniqueEqualOperator:
+                return '=';
+            case this.uniqueExpOperator:
+                return '^';
+            case this.uniqueGTOperator:
+                return '>';
+            case this.uniqueLTOperator:
+                return '<';
+        }
+        return '';
+    }
+    private isUniqueChar(formula: string | number): boolean {
+        let code: number = (formula as string).charCodeAt(formula as number);
+        return code >= 129 && code <= 142;
+    }
+
+    private markSpecialChar(formula: string): string {
+        formula = formula.replace(/\(/g, '(' + this.uniqueOBracket).replace(/\)/g, ')' + this.uniqueCBracket);
+        formula = formula.replace(/,/g, ',' + this.uniqueCSeparator).replace(/:/g, ':' + this.uniqueCOperator);
+        formula = formula.replace(/\+/g, '+' + this.uniquePOperator).replace(/-/g, '-' + this.uniqueSOperator);
+        formula = formula.replace(/\*/g, '*' + this.uniqueMOperator).replace(/\//g, '/' + this.uniqueDOperator);
+        formula = formula.replace(/&/g, '&' + this.uniqueConcateOperator);
+        formula = formula.replace(/=/g, '=' + this.uniqueEqualOperator);
+        formula = formula.replace(/\^/g, '^' + this.uniqueExpOperator);
+        formula = formula.replace(/>/g, '>' + this.uniqueGTOperator).replace(/</g, '<' + this.uniqueLTOperator);
+        return formula.replace(/%/g, '%' + this.uniqueModOperator);
+    }
+
+    private refreshNamedRange(args: InsertDeleteEventArgs, action: string): void {
+        let isChanged: boolean = false;
+        let modelDefinedNames: DefineNameModel[] = this.parent.definedNames;
+        let definedNames: DefineNameModel[] = Object.assign({}, modelDefinedNames);
+        let definedName: DefineNameModel;
+        let definedNameCnt: number = modelDefinedNames.length;
+        let range: string;
+        let rangeIndex: number[];
+        let count: number;
+        let startIndex: number;
+        let endIndex: number;
+        let newIndex: number[]; let newRange: string;
+        let sheetName: string;
+        let sheetIndex: number;
+        let sheet: SheetModel;
+        for (let idx: number = 0; idx < definedNameCnt; idx++) {
+            definedName = definedNames[idx];
+            range = definedNames[idx].refersTo.split('!')[1];
+            rangeIndex = getRangeIndexes(range);
+            sheetName = definedName.refersTo.split('!')[0].split('=')[1];
+            sheetIndex = getSheetIndex(this.parent, sheetName.replace(/'/g, ''));
+            sheet = getSheet(this.parent, sheetIndex);
+            if (sheetIndex === this.parent.activeSheetIndex) {
+                if (args.name === 'insert') {
+                    count = args.model.length;
+                    startIndex = args.index;
+                    endIndex = args.index + count;
+                    if (args.modelType === 'Row') { // for above the named range index
+                        if ((rangeIndex[0] >= endIndex) || (rangeIndex[0] >= startIndex && rangeIndex[2] >= endIndex)) {
+                            newIndex = [rangeIndex[0] + count, rangeIndex[1], rangeIndex[2] + count, rangeIndex[3]];
+                            isChanged = true;
+                        } else if ((rangeIndex[0] <= startIndex && rangeIndex[2] >= startIndex) || (rangeIndex[2] >= endIndex)) {
+                            newIndex = [rangeIndex[0], rangeIndex[1], rangeIndex[2] + count, rangeIndex[3]];
+                            isChanged = true;
+                        }
+                    } else if (args.modelType === 'Column') {
+                        if ((rangeIndex[1] >= endIndex) || (rangeIndex[1] >= startIndex && rangeIndex[3] >= endIndex)) {
+                            newIndex = [rangeIndex[0], rangeIndex[1] + count, rangeIndex[2], rangeIndex[3] + count];
+                            isChanged = true;
+                        } else if ((rangeIndex[1] <= startIndex && rangeIndex[3] >= startIndex) || (rangeIndex[3] >= endIndex)) {
+                            newIndex = [rangeIndex[0], rangeIndex[1], rangeIndex[2], rangeIndex[3] + count];
+                            isChanged = true;
+                        }
+                    }
+                } else {
+                    count = args.deletedModel.length;
+                    startIndex = args.startIndex;
+                    endIndex = args.endIndex;
+                    if (args.modelType === 'Row') { // for above the named range index
+                        if ((rangeIndex[0] >= endIndex) || (rangeIndex[0] >= startIndex && rangeIndex[2] >= endIndex)) {
+                            newIndex = [rangeIndex[0] - count, rangeIndex[1], rangeIndex[2] - count, rangeIndex[3]];
+                            isChanged = true;
+                        } else if ((rangeIndex[0] <= startIndex && rangeIndex[2] >= startIndex) || (rangeIndex[2] >= endIndex)) {
+                            newIndex = [rangeIndex[0], rangeIndex[1], rangeIndex[2] - count, rangeIndex[3]];
+                            isChanged = true;
+                        }
+                    } else if (args.modelType === 'Column') {
+                        if ((rangeIndex[1] >= endIndex) || (rangeIndex[1] >= startIndex && rangeIndex[3] >= endIndex)) {
+                            newIndex = [rangeIndex[0], rangeIndex[1] - count, rangeIndex[2], rangeIndex[3] - count];
+                            isChanged = true;
+                        } else if ((rangeIndex[1] <= startIndex && rangeIndex[3] >= startIndex) || (rangeIndex[3] >= endIndex)) {
+                            newIndex = [rangeIndex[0], rangeIndex[1], rangeIndex[2], rangeIndex[3] - count];
+                            isChanged = true;
+                        }
+                    }
+                }
+                if (isChanged) {
+                    newRange = getRangeAddress(newIndex);
+                    definedName.refersTo = sheetName + '!' + newRange;
+                    this.parent.removeDefinedName(definedName.name, definedName.scope);
+                    let eventArgs: { [key: string]: Object } = {
+                        action: 'addDefinedName', definedName: definedName, isAdded: false
+                    };
+                    this.parent.notify(workbookFormulaOperation, eventArgs);
+                }
+            }
+            modelDefinedNames = definedNames;
+        }
+    }
+}
+
+interface ClearFormulaArgs {
+    rowIdx: number;
+    colIdx: number;
+    sheetIdx: number;
+    count: number;
+    status: string;
+    type: string;
+    startIdx: number;
 }

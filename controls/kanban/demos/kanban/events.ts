@@ -62,16 +62,16 @@ function OnDataBound(): void {
     appendElement('Kanban <b>Data Bound</b> event called<hr>');
 }
 function OnCardRendered(args: CardRenderedEventArgs): void {
-    appendElement('Kanban Card ' + args.data.Id + ' - Rendered event called<hr>');
+    appendElement('Kanban Card ' + (args.data as { [key: string]: Object }).Id + ' - Rendered event called<hr>');
 }
 function onQueryCellInfo(args: QueryCellInfoEventArgs): void {
     appendElement('Kanban <b>Column Rendered</b> event called<hr>');
 }
 function OnCardClick(args: CardClickEventArgs): void {
-    appendElement('Kanban <b>Card ' + args.data.Id + ' Click</b> event called<hr>');
+    appendElement('Kanban <b>Card ' + (args.data as { [key: string]: Object }).Id + ' Click</b> event called<hr>');
 }
 function OnCardDoubleClick(args: CardClickEventArgs): void {
-    appendElement('Kanban <b>Card ' + args.data.Id + ' Double Click</b> event called<hr>');
+    appendElement('Kanban <b>Card ' + (args.data as { [key: string]: Object }).Id + ' Double Click</b> event called<hr>');
 }
 function OnDragStart(): void {
     appendElement('Kanban <b>Drag Start</b> event called<hr>');

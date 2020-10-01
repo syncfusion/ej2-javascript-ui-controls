@@ -91,6 +91,13 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public width: string;
 
     /**
+     * Enables or disables the gauge to be rendered to the complete width.
+     * @default true
+     */
+    @Property(true)
+    public allowMargin: boolean;
+
+    /**
      * Specifies the height of the linear gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full height of its parent element.
      * @default null
@@ -513,6 +520,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         if (!(isNullOrUndefined(this.svgObject)) && !isNullOrUndefined(this.svgObject.parentNode)) {
             remove(this.svgObject);
         }
+        this.clearTemplate();
     }
 
     /**
@@ -731,6 +739,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public renderContainer(): void {
         let width: number; let height: number; let x: number; let y: number;
         let options: PathOption;
+        let labelPadding: number = 20;
         let path: string = '';
         let topRadius: number; let bottomRadius: number;
         let fill: string = (this.container.backgroundColor !== 'transparent'
@@ -750,9 +759,14 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                 ((height + (bottomRadius * 2) - topRadius)) / 2 : height / 2));
             height = height;
         } else {
-            width = (this.container.height > 0) ? this.container.height :
-                ((this.actualRect.width / 2) - ((this.actualRect.width / 2) / 4)) * 2;
-            width = (this.container.type === 'Thermometer') ? width - (bottomRadius * 2) - topRadius : width;
+            if (this.allowMargin) {
+                width = (this.container.height > 0) ? this.container.height :
+                    ((this.actualRect.width / 2) - ((this.actualRect.width / 2) / 4)) * 2;
+                width = (this.container.type === 'Thermometer') ? width - (bottomRadius * 2) - topRadius : width;
+            } else {
+                width = this.actualRect.width - labelPadding;
+                width = (this.container.type === 'Thermometer') ? (this.actualRect.width - (bottomRadius * 2) - topRadius) : width;
+            }
             x = this.actualRect.x + ((this.actualRect.width / 2) - ((this.container.type === 'Thermometer') ?
                 (width - (bottomRadius * 2) + topRadius) / 2 : width / 2));
             y = (this.actualRect.y + ((this.actualRect.height / 2) - (this.container.width / 2))) + this.container.offset;

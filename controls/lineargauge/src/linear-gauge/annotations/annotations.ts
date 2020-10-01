@@ -19,6 +19,7 @@ export class Annotations {
     /**
      * To render annotation elements
      */
+     //tslint:disable
     public renderAnnotationElements(): void {
         let secondaryID: string = this.gauge.element.id + '_Secondary_Element';
         let annotationGroup: HTMLElement = createElement('div', { id: this.gauge.element.id + '_AnnotationsGroup' });
@@ -36,6 +37,7 @@ export class Annotations {
                 updateBlazorTemplate(this.gauge.element.id + '_ContentTemplate' + i, 'ContentTemplate', this.gauge.annotations[i]);
             }
         }
+        (this.gauge as any).renderReactTemplates();
     }
     /**
      * To create annotation elements
@@ -64,8 +66,8 @@ export class Annotations {
         this.gauge.trigger(annotationRender, argsData, (observerArgs: IAnnotationRenderEventArgs) => {
             if (!argsData.cancel) {
                 templateFn = getTemplateFunction(argsData.content);
-                if (templateFn && (!this.gauge.isBlazor ? templateFn(this.gauge, null, null, this.gauge.element.id + '_ContentTemplate' + annotationIndex).length : {})) {
-                    templateElement = Array.prototype.slice.call(templateFn(!this.gauge.isBlazor ? this.gauge : {}, null, null, this.gauge.element.id + '_ContentTemplate' + annotationIndex));
+                if (templateFn && (!this.gauge.isBlazor ? templateFn(this.gauge, this.gauge, argsData.content, this.gauge.element.id + '_ContentTemplate' + annotationIndex).length : {})) {
+                    templateElement = Array.prototype.slice.call(templateFn(!this.gauge.isBlazor ? this.gauge : {}, this.gauge, argsData.content, this.gauge.element.id + '_ContentTemplate' + annotationIndex));
                     let length: number = templateElement.length;
                     for (let i: number = 0; i < length; i++) {
                         childElement.appendChild(templateElement[i]);

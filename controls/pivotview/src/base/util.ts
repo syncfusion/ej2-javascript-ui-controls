@@ -767,11 +767,11 @@ export class PivotUtil {
             columns: excel.Columns,
             exportType: typeof excel.ExportType === 'string' ? excel.ExportType : undefined,
             includeHiddenColumn: excel.IncludeHiddenColumn,
-            theme: {
+            theme: !isNullOrUndefined(excel.Theme) ? {
                 header: this.formatExcelStyle(excel.Theme.Header),
                 record: this.formatExcelStyle(excel.Theme.Record),
                 caption: this.formatExcelStyle(excel.Theme.Caption)
-            },
+            } : undefined,
             fileName: excel.FileName,
             hierarchyExportMode: typeof excel.HierarchyExportMode === 'string' ? excel.HierarchyExportMode : undefined
         });

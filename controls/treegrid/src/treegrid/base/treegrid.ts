@@ -73,6 +73,7 @@ import { SortSettingsModel } from '../models/sort-settings-model';
 import { isHidden } from '../utils';
 
 
+
 /**
  * Represents the TreeGrid component.
  * ```html
@@ -1607,6 +1608,9 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
    * @private
    */
   protected render(): void {
+    if ((<{ isReact?: boolean }>this).isReact) {
+      (<{ isReact?: boolean }>this.grid).isReact = true;
+    }
     createSpinner({ target: this.element }, this.createElement);
     this.renderModule = new Render(this);
     this.dataModule = new DataManipulation(this);
@@ -1645,7 +1649,10 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     //tslint:disable-next-line:no-any
     this.grid[destroyTemplate] = (args: string[], index?: any) => {
         destroyTemplateFn.apply(this.grid);
-        this.clearTemplate(args, index);
+        let portals: string = 'portals';
+        if (!((<{ isReact?: boolean }>this).isReact && isNullOrUndefined(this[portals]))) {
+          this.clearTemplate(args, index);
+        }
     };
     if (isBlazor() && this.isServerRendered) {
       let fn: Function = (args: { grid: Grid, id: string }) => this.gridRendered(args, fn);
@@ -2772,7 +2779,7 @@ private getGridEditSettings(): GridEditModel {
         } else {
           this.grid.editModule.updateRow(index, data);
         }
-    }
+      }
   }
 
     /**
@@ -2970,7 +2977,7 @@ private getGridEditSettings(): GridEditModel {
           }
           return undefined;
         })[0];
- }
+  }
 
     /**
      * Gets the collection of column fields.     
@@ -3545,18 +3552,18 @@ private getGridEditSettings(): GridEditModel {
         }
       }
       if (this.isPixelHeight() && !row.cells[0].classList.contains('e-lastrowcell') ) {
-        let totalRows: HTMLTableRowElement[] = this.getRows();
-        let rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
-        totalRows = [].slice.call(rows);
-        for (let i: number = totalRows.length - 1; i > 0; i--) {
-          if (!isHidden(totalRows[i])) {
-            let table: Element = this.getContentTable();
-            let sHeight: number = table.scrollHeight;
-            let clientHeight: number = this.getContent().clientHeight;
-            this.lastRowBorder(totalRows[i], sHeight <= clientHeight);
-            break;
+          let totalRows: HTMLTableRowElement[] = this.getRows();
+          let rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
+          totalRows = [].slice.call(rows);
+          for (let i: number = totalRows.length - 1; i > 0; i--) {
+              if (!isHidden(totalRows[i])) {
+                  let table: Element = this.getContentTable();
+                  let sHeight: number = table.scrollHeight;
+                  let clientHeight: number = this.getContent().clientHeight;
+                  this.lastRowBorder(totalRows[i], sHeight <= clientHeight);
+                  break;
+              }
           }
-        }
       }
       this.notify('rowExpandCollapse', { detailrows: detailrows, action: displayAction, record: record, row: row });
       this.updateAltRow(gridRows);

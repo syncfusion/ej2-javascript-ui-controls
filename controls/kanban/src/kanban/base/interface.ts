@@ -28,7 +28,7 @@ export interface ActionEventArgs extends BaseEventArgs {
  */
 export interface CardClickEventArgs extends BaseEventArgs {
     /** Returns the object of the element which is currently being clicked or double clicked. */
-    data: { [key: string]: Object };
+    data: { [key: string]: Object } | Object;
     /** Defines the cancel option for the action taking place. */
     cancel?: boolean;
     /**
@@ -62,7 +62,7 @@ export interface QueryCellInfoEventArgs extends BaseEventArgs {
  */
 export interface CardRenderedEventArgs extends BaseEventArgs {
     /** Returns the object of the elements which is currently being rendered on the UI. */
-    data?: { [key: string]: Object };
+    data?: { [key: string]: Object } | Object;
     /** 
      * Returns the actual HTML element on which the required custom styling can be applied. 
      * @deprecated
@@ -82,7 +82,7 @@ export interface DragEventArgs extends BaseEventArgs {
      */
     element: HTMLElement | HTMLElement[];
     /** Returns the dragged event data. */
-    data: { [key: string]: Object }[];
+    data: { [key: string]: Object }[] | Object[];
     /** Returns the mouse event. */
     event: MouseEvent;
     /** Defines the cancel option. */
@@ -94,7 +94,7 @@ export interface DragEventArgs extends BaseEventArgs {
  */
 export interface DialogEventArgs extends BaseEventArgs {
     /** Returns the cell or event data. */
-    data: { [key: string]: Object };
+    data: { [key: string]: Object } | Object;
     /**
      * @deprecated
      * Returns the target element on which the popup is getting opened.
@@ -121,9 +121,9 @@ export interface DialogCloseEventArgs extends DialogEventArgs {
 
 /** @hidden */
 export interface SaveChanges {
-    addedRecords: { [key: string]: Object }[];
-    changedRecords: { [key: string]: Object }[];
-    deletedRecords: { [key: string]: Object }[];
+    addedRecords: { [key: string]: Object }[] | Object[];
+    changedRecords: { [key: string]: Object }[] | Object[];
+    deletedRecords: { [key: string]: Object }[] | Object[];
 }
 
 /** @hidden */
@@ -148,8 +148,8 @@ export interface DragArgs extends BaseEventArgs {
     pageX?: number;
     pageY?: number;
     navigationInterval?: number;
-    cardDetails?: { [key: string]: Object }[];
-    modifiedData?: { [key: string]: Object }[];
+    cardDetails?: { [key: string]: Object }[] | Object[];
+    modifiedData?: { [key: string]: Object }[] | Object[];
 }
 
 /** @hidden */
@@ -165,4 +165,16 @@ export interface DragEdges {
     right: boolean;
     top: boolean;
     bottom: boolean;
+}
+
+/** @hidden */
+export interface ScrollPosition {
+    content: ScrollOffset;
+    column: { [key: string]: ScrollOffset };
+}
+
+/** @hidden */
+export interface ScrollOffset {
+    left?: number;
+    top?: number;
 }

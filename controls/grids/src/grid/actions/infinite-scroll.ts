@@ -9,7 +9,7 @@ import { Column } from '../models/column';
 import { Row } from '../models/row';
 import * as events from '../base/constant';
 import { Grid } from '../base/grid';
-import { getScrollBarWidth, ensureLastRow, ensureFirstRow, getEditedDataIndex } from '../base/util';
+import { getScrollBarWidth, ensureLastRow, ensureFirstRow, getEditedDataIndex, resetRowIndex, setRowElements } from '../base/util';
 import { Action } from '../base/enum';
 
 /**
@@ -191,7 +191,7 @@ export class InfiniteScroll implements IAction {
                             remove(movableRows[this.parent.frozenRows]);
                             this.createRow([this.parent.getMovableRowsObject()[this.parent.frozenRows - 1]], args, true, true);
                         }
-                        this.setRowElements();
+                        setRowElements(this.parent);
                     }
                 }
             }
@@ -230,7 +230,7 @@ export class InfiniteScroll implements IAction {
         }
         if (!this.parent.infiniteScrollSettings.enableCache && !isFrozenRows) {
             if (!this.parent.getFrozenColumns() || isMovable) {
-                this.setRowElements();
+                setRowElements(this.parent);
                 (<{ visibleRows?: Row<Column>[] }>this.parent.contentModule).visibleRows = this.requestType === 'add'
                     ? row.concat(rows) : rows.concat(row);
             } else {
@@ -279,25 +279,7 @@ export class InfiniteScroll implements IAction {
             });
         }
         let startIndex: number = isAdd ? 1 : 0;
-        for (let i: number = 0; i < rows.length; i++) {
-            rows[i].index = startIndex;
-            rowElms[i].setAttribute('aria-rowindex', startIndex.toString());
-            this.resetCellIndex((<{ cells?: HTMLElement[] }>rowElms[i]).cells, startIndex);
-            startIndex++;
-        }
-        if (!rows.length) {
-            this.renderEmptyRow();
-        }
-    }
-
-    private renderEmptyRow(): void {
-        this.parent.renderModule.emptyRow(true);
-    }
-
-    private resetCellIndex(cells: HTMLElement[], index: number): void {
-        for (let i: number = 0; i < cells.length; i++) {
-            cells[i].setAttribute('index', index.toString());
-        }
+        resetRowIndex(this.parent, rows, rowElms as HTMLTableRowElement[], startIndex);
     }
 
     private setDisplayNone(args: { visible: string, index: number, isFreeze: boolean }): void {
@@ -666,7 +648,7 @@ export class InfiniteScroll implements IAction {
                         this.parent.getFrozenVirtualContent().scrollTop = this.top;
                     }
                 }
-                this.setRowElements();
+                setRowElements(this.parent);
                 this.selectNewRow(e.tbody, e.args.startIndex);
                 this.pressedKey = undefined;
             }

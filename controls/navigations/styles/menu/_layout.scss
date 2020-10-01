@@ -1,7 +1,8 @@
 @import '../context-menu/layout-mixin.scss';
 @include export-module('menu-layout') {
   /*! menu layout */
-  .e-menu-wrapper {
+  .e-menu-wrapper,
+  .e-menu-container {
     border: $menu-ul-border;
     border-radius: $cmenu-ul-border-radius;
     display: inline-block;
@@ -238,9 +239,14 @@
         overflow: auto;
       }
     }
+
+    &.e-contextmenu-container .e-menu-vscroll ul.e-ul {
+      width: inherit;
+    }
   }
 
-  .e-rtl.e-menu-wrapper ul {
+  .e-rtl.e-menu-wrapper ul,
+  .e-rtl.e-menu-container ul {
     & .e-menu-item {
       @include rtl-li-layout;
       text-align: right;
@@ -275,7 +281,9 @@
   }
 
   .e-bigger .e-menu-wrapper ul,
-  .e-bigger.e-menu-wrapper ul {
+  .e-bigger.e-menu-wrapper ul,
+  .e-bigger .e-menu-container ul,
+  .e-bigger.e-menu-container ul {
     font-size: $menu-bigger-font-size;
 
     & .e-menu-item {
@@ -350,7 +358,9 @@
   }
 
   .e-bigger .e-menu-wrapper,
-  .e-bigger.e-menu-wrapper {
+  .e-bigger.e-menu-wrapper,
+  .e-bigger .e-menu-container,
+  .e-bigger.e-menu-container {
     & .e-menu-hscroll.e-hscroll:not(.e-scroll-device) {
       padding: 0 $menu-bigger-hscroll-nav-size;
 
@@ -379,7 +389,9 @@
   }
 
   .e-bigger .e-rtl.e-menu-wrapper ul,
-  .e-bigger.e-rtl.e-menu-wrapper ul {
+  .e-bigger.e-rtl.e-menu-wrapper ul,
+  .e-bigger .e-rtl.e-menu-container ul,
+  .e-bigger.e-rtl.e-menu-container ul {
     & .e-menu-item {
       text-align: right;
 
@@ -430,7 +442,8 @@
     }
   }
 
-  .e-menu-wrapper.e-hamburger {
+  .e-menu-wrapper.e-hamburger,
+  .e-menu-container.e-hamburger {
     border: 0;
     display: block;
     position: relative;
@@ -552,7 +565,8 @@
     }
   }
 
-  .e-rtl.e-menu-wrapper.e-hamburger ul {
+  .e-rtl.e-menu-wrapper.e-hamburger ul,
+  .e-rtl.e-menu-container.e-hamburger ul {
     & .e-menu-item {
       & .e-menu-caret-icon {
         padding-left: 0;
@@ -572,7 +586,9 @@
   }
 
   .e-bigger .e-menu-wrapper.e-hamburger  ul,
-  .e-bigger.e-menu-wrapper.e-hamburger  ul {
+  .e-bigger.e-menu-wrapper.e-hamburger ul,
+  .e-bigger .e-menu-container.e-hamburger ul,
+  .e-bigger.e-menu-container.e-hamburger ul {
     & .e-ul {
       max-width: 100%;
 
@@ -585,7 +601,9 @@
   }
 
   .e-bigger .e-menu-wrapper.e-hamburger,
-  .e-bigger.e-menu-wrapper.e-hamburger {
+  .e-bigger.e-menu-wrapper.e-hamburger,
+  .e-bigger .e-menu-container.e-hamburger,
+  .e-bigger.e-menu-container.e-hamburger {
     & .e-menu-header {
       font-size: $menu-icon-bigger-font-size;
       height: $menu-bigger-li-height;
@@ -617,7 +635,9 @@
   }
 
   .e-bigger .e-rtl.e-menu-wrapper.e-hamburger,
-  .e-bigger.e-rtl.e-menu-wrapper.e-hamburger {
+  .e-bigger.e-rtl.e-menu-wrapper.e-hamburger,
+  .e-bigger .e-rtl.e-menu-container.e-hamburger,
+  .e-bigger.e-rtl.e-menu-container.e-hamburger {
     & ul.e-menu {
       & .e-menu-item {
         padding: 0;

@@ -1,13 +1,15 @@
 import { PdfViewer } from '../index';
 import { PdfViewerBase, IPageAnnotations } from '../index';
-import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { splitArrayCollection, processPathData, getPathString } from '@syncfusion/ej2-drawings';
-import { ColorPicker } from '@syncfusion/ej2-inputs';
+import { ColorPicker, TextBox } from '@syncfusion/ej2-inputs';
 import { cloneObject } from '../drawing/drawing-util';
 import { CheckBox } from '@syncfusion/ej2-buttons';
+import { Tab, SelectEventArgs } from '@syncfusion/ej2-navigations';
+import { Button } from '@syncfusion/ej2-buttons';
 
 /**
  * @hidden
@@ -22,6 +24,7 @@ export interface ISignAnnotation {
     id: string;
     data: string;
     signatureName: string;
+    fontFamily?: string;
 }
 /**
  * @hidden
@@ -67,6 +70,20 @@ export class Signature {
     /**
      * @private
      */
+    public fontName: string;
+    // tslint:disable-next-line
+    private fontsign: any = [];
+    // tslint:disable-next-line
+    private signfontStyle: any = [];
+    private signtypevalue: string;
+    private signfont: string;
+    private signHeight: string;
+    private signWidth: string;
+    private signaturetype: string;
+    private tabObj: Tab;
+    /**
+     * @private
+     */
     constructor(pdfViewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfViewer;
         this.pdfViewerBase = pdfViewerBase;
@@ -75,41 +92,71 @@ export class Signature {
      * @private
      */
     public createSignaturePanel(): void {
-        let elementID: string = this.pdfViewer.element.id;
-        let dialogDiv: HTMLElement = createElement('div', { id: elementID + '_signature_window', className: 'e-pv-signature-window' });
-        dialogDiv.style.display = 'block';
-        this.pdfViewerBase.pageContainer.appendChild(dialogDiv);
-        let appearanceTab: HTMLElement = this.createSignatureCanvas();
-        if (this.signatureDialog) {
-            this.signatureDialog.content = appearanceTab;
-        } else {
-            this.signatureDialog = new Dialog({
-                showCloseIcon: true, closeOnEscape: false, isModal: true, header: this.pdfViewer.localeObj.getConstant('Draw Signature'),
-                target: this.pdfViewer.element, content: appearanceTab, width: '750px', visible: true,
-                beforeClose: (): void => {
-                    this.clearSignatureCanvas();
-                    this.signatureDialog.destroy();
-                    this.signatureDialog = null;
-                    // tslint:disable-next-line
-                    let signatureWindow: any = document.getElementById(this.pdfViewer.element.id + '_signature_window');
-                    if (signatureWindow) {
-                        signatureWindow.remove();
+        if (!isBlazor()) {
+            let elementID: string = this.pdfViewer.element.id;
+            let dialogDiv: HTMLElement = createElement('div', { id: elementID + '_signature_window', className: 'e-pv-signature-window' });
+            dialogDiv.style.display = 'block';
+            this.pdfViewerBase.pageContainer.appendChild(dialogDiv);
+            let appearanceTab: HTMLElement = this.createSignatureCanvas();
+            if (this.signatureDialog) {
+                this.signatureDialog.content = appearanceTab;
+            } else {
+                this.signatureDialog = new Dialog({
+                    // tslint:disable-next-line:max-line-length
+                    showCloseIcon: true, closeOnEscape: false, isModal: true, header: this.pdfViewer.localeObj.getConstant('Draw Signature'),
+                    target: this.pdfViewer.element, content: appearanceTab, width: '750px', visible: true,
+                    beforeClose: (): void => {
+                        this.clearSignatureCanvas();
+                        this.signatureDialog.destroy();
+                        this.signatureDialog = null;
+                        if (this.tabObj) {
+                            this.tabObj.destroy();
+                        }
+                        // tslint:disable-next-line
+                        let signatureWindow: any = document.getElementById(this.pdfViewer.element.id + '_signature_window');
+                        if (signatureWindow) {
+                            signatureWindow.remove();
+                        }
                     }
+                });
+                this.signatureDialog.buttons = [
+                    // tslint:disable-next-line:max-line-length
+                    { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Clear'), disabled: true, cssClass: 'e-pv-clearbtn' }, click: this.clearSignatureCanvas.bind(this) },
+                    // tslint:disable-next-line:max-line-length
+                    { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Cancel') }, click: this.closeSignaturePanel.bind(this) },
+                    // tslint:disable-next-line:max-line-length
+                    { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Create'), isPrimary: true, disabled: true, cssClass: 'e-pv-createbtn' }, click: this.addSignatureInPage.bind(this) },
+                ];
+                this.signatureDialog.appendTo(dialogDiv);
+                this.signaturetype = 'Draw';
+            }
+        } else {
+            // tslint:disable-next-line
+            let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
+            if (canvas) {
+                if (!this.pdfViewerBase.pageContainer.querySelector('.e-pv-signature-window')) {
+                    let elementID: string = this.pdfViewer.element.id;
+                    // tslint:disable-next-line:max-line-length
+                    let dialogDiv: HTMLElement = createElement('div', { id: elementID + '_signature_window', className: 'e-pv-signature-window' });
+                    dialogDiv.style.display = 'block';
+                    this.pdfViewerBase.pageContainer.appendChild(dialogDiv);
+                    canvas.addEventListener('mousedown', this.signaturePanelMouseDown.bind(this));
+                    canvas.addEventListener('mousemove', this.signaturePanelMouseMove.bind(this));
+                    canvas.addEventListener('mouseup', this.signaturePanelMouseUp.bind(this));
+                    canvas.addEventListener('mouseleave', this.signaturePanelMouseUp.bind(this));
+                    canvas.addEventListener('touchstart', this.signaturePanelMouseDown.bind(this));
+                    canvas.addEventListener('touchmove', this.signaturePanelMouseMove.bind(this));
+                    canvas.addEventListener('touchend', this.signaturePanelMouseUp.bind(this));
                 }
-            });
-            this.signatureDialog.buttons = [
-                // tslint:disable-next-line:max-line-length
-                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Clear'), disabled: true, cssClass: 'e-pv-clearbtn' }, click: this.clearSignatureCanvas.bind(this) },
-                // tslint:disable-next-line:max-line-length
-                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Cancel') }, click: this.closeSignaturePanel.bind(this) },
-                // tslint:disable-next-line:max-line-length
-                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Create'), isPrimary: true, disabled: true, cssClass: 'e-pv-createbtn' }, click: this.addSignature.bind(this) },
-
-            ];
-            this.signatureDialog.appendTo(dialogDiv);
+                this.clearSignatureCanvas();
+            }
+            this.pdfViewer._dotnetInstance.invokeMethodAsync('OpenSignaturePanel');
         }
     }
-    private addSignature(): void {
+    /**
+     * @private
+     */
+    public addSignature(): void {
         let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
         let annot: PdfAnnotationBaseModel;
         if (this.pdfViewerBase.isToolbarSignClicked) {
@@ -139,7 +186,12 @@ export class Signature {
                 shapeAnnotationType: 'HandWrittenSignature', opacity: opacity, strokeColor: strokeColor, thickness: thickness, signatureName: annotationName,
             };
             // tslint:disable-next-line
-            let checkbox: any = document.getElementById('checkbox');
+            let checkbox: any;
+            if (isBlazor()) {
+                checkbox = document.getElementById(this.pdfViewer.element.id + '_signatureCheckBox');
+            } else {
+                checkbox = document.getElementById('checkbox');
+            }
             if (checkbox.checked) {
                 this.addSignatureCollection();
             }
@@ -151,7 +203,54 @@ export class Signature {
             this.hideSignaturePanel();
         }
     }
-
+    private addSignatureInPage(): void {
+        if (this.signaturetype === 'Draw') {
+            this.addSignature();
+        } else if (this.signaturetype === 'Type') {
+            this.typeAddSignature();
+        } else {
+            this.imageAddSignature();
+        }
+    }
+    private typeAddSignature(): void {
+        if (this.pdfViewerBase.isToolbarSignClicked) {
+            let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
+            // tslint:disable-next-line
+            let annot: any;
+            let annotationName: string = this.pdfViewer.annotation.createGUID();
+            this.pdfViewerBase.currentSignatureAnnot = null;
+            this.pdfViewerBase.isSignatureAdded = true;
+            let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
+            let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
+            let currentLeft: number = 0;
+            let currentTop: number = 0;
+            let currentHeight: number = parseFloat(this.signHeight);
+            let currentWidth: number = parseFloat(this.signWidth);
+            currentLeft = ((parseFloat(pageDiv.style.width) / 2) - (currentWidth / 2)) / zoomvalue;
+            currentTop = ((parseFloat(pageDiv.style.height) / 2) - (currentHeight / 2)) / zoomvalue;
+            let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
+            let inputValue: string = this.signtypevalue;
+            annot = {
+                // tslint:disable-next-line:max-line-length
+                id: 'Typesign' + this.pdfViewerBase.signatureCount, bounds: {
+                    left: currentLeft / zoomFactor, top: currentTop / zoomFactor, x: currentLeft / zoomFactor,
+                    // tslint:disable-next-line:max-line-length
+                    y: currentTop / zoomFactor, width: currentWidth, height: currentHeight
+                }, pageIndex: pageIndex, dynamicText: inputValue, shapeAnnotationType: 'TypeText',
+                fontFamily: this.signfont, signatureName: annotationName,
+            };
+            this.pdfViewerBase.currentSignatureAnnot = annot;
+            this.hideSignaturePanel();
+            this.pdfViewerBase.isToolbarSignClicked = false;
+        } else {
+            this.pdfViewer.formFieldsModule.drawSignature('Type');
+            this.hideSignaturePanel();
+        }
+    }
+    private imageAddSignature(): void {
+        this.pdfViewer.formFieldsModule.drawSignature('Image');
+        this.hideSignaturePanel();
+    }
     private hideSignaturePanel(): void {
         if (this.signatureDialog) {
             this.signatureDialog.hide();
@@ -200,7 +299,188 @@ export class Signature {
         // tslint:disable-next-line
         let checkBoxObj: any = new CheckBox({ label: 'Save signature', disabled: false, checked: false });
         checkBoxObj.appendTo(input);
-        return appearanceDiv;
+        if (!this.pdfViewerBase.isToolbarSignClicked) {
+            // tslint:disable-next-line
+            let typeDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'type_appearance', className: 'e-pv-signature-apperance' });
+            // tslint:disable-next-line
+            let inputText: any = document.createElement('input');
+            inputText.type = 'text';
+            inputText.id = this.pdfViewer.element.id + '_e-pv-Signtext-box';
+            typeDiv.appendChild(inputText);
+            // tslint:disable-next-line
+            let inputobj: any = new TextBox({
+                placeholder: 'Enter your name',
+                floatLabelType: 'Auto'
+            });
+            inputobj.appendTo(inputText);
+            // tslint:disable-next-line
+            let fontDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_font_appearance' });
+            fontDiv.style.width = '715px';
+            fontDiv.style.height = '270px';
+            fontDiv.style.border = '1px dotted #bdbdbd';
+            fontDiv.style.backgroundColor = 'white';
+            typeDiv.appendChild(fontDiv);
+            // tslint:disable-next-line
+            let tab: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'Signature_tab' });
+            let uploadDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'upload_appearance' });
+            uploadDiv.style.width = '715px';
+            uploadDiv.style.height = '335px';
+            uploadDiv.style.border = '1px dotted #bdbdbd';
+            uploadDiv.style.backgroundColor = 'white';
+            // tslint:disable-next-line
+            let button: any = document.createElement('div');
+            button.id = this.pdfViewer.element.id + '_e-pv-upload-button';
+            uploadDiv.appendChild(button);
+             // tslint:disable-next-line
+            let uploadButton: any = new Button({ cssClass: 'e-pv-sign-upload', content: 'BROWSE' });
+            uploadButton.appendTo(button);
+            uploadButton.element.style.position = 'absolute';
+            uploadButton.element.style.left = ((parseFloat(uploadDiv.style.width) / 2) - 50) + 'px';
+            uploadButton.element.style.top = parseFloat(uploadDiv.style.height) / 2 + 'px';
+            // tslint:disable-next-line:max-line-length
+            let uploadCanvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_signatureuploadCanvas_', className: 'e-pv-signature-uploadcanvas' }) as HTMLCanvasElement;
+            if (this.pdfViewer.element.offsetWidth > 750) {
+                uploadCanvas.width = 715;
+                uploadCanvas.style.width = '715px';
+            } else {
+                uploadCanvas.width = this.pdfViewer.element.offsetWidth - 35;
+                uploadCanvas.style.width = canvas.width + 'px';
+            }
+            uploadCanvas.height = 335;
+            uploadCanvas.style.height = '335px';
+            uploadCanvas.style.border = '1px dotted #bdbdbd';
+            uploadCanvas.style.backgroundColor = 'white';
+            uploadCanvas.style.zIndex = '0';
+            uploadDiv.appendChild(uploadCanvas);
+            this.signfontStyle = [{ FontName: 'Courier New' }, { FontName: 'Georgia' }, { FontName: 'Impact' }, { FontName: 'Segoe Print' },
+            { FontName: 'Segoe Script' }, { FontName: 'Symbol' }
+            ];
+            // tslint:disable-next-line
+            let fontSignature: any = [];
+            for (let i: number = 0; i < this.signfontStyle.length; i++) {
+                fontSignature[i] = document.createElement('div');
+                fontSignature[i].id = '_font_signature' + i + '';
+                fontSignature[i].classList.add('e-pv-font-sign');
+            }
+            this.fontsign = fontSignature;
+            // tslint:disable-next-line
+            let proxy: any = this;
+            // tslint:disable-next-line
+            this.tabObj = new Tab({
+                selected: (args: SelectEventArgs): void => {
+                    proxy.handleSelectEvent(args);
+                },
+                items: [
+                    {
+                        header: { 'text': 'DRAW' },
+                        content: appearanceDiv
+                    },
+                    {
+                        header: { 'text': 'TYPE' },
+                        content: typeDiv
+                    },
+                    {
+                        header: { 'text': 'UPLOAD' },
+                        content: uploadDiv
+                    }
+                ]
+            });
+            this.tabObj.appendTo(tab);
+            return tab;
+        } else {
+            return appearanceDiv;
+        }
+    }
+    private handleSelectEvent(e: SelectEventArgs): void {
+        this.clearSignatureCanvas();
+        // tslint:disable-next-line
+        if (e.selectedIndex === 0) {
+            this.signaturetype = 'Draw';
+        } else if (e.selectedIndex === 1) {
+            this.signaturetype = 'Type';
+            // tslint:disable-next-line
+            let textBox: any = document.getElementById(this.pdfViewer.element.id + '_e-pv-Signtext-box');
+            textBox.addEventListener('input', this.renderSignatureText.bind(this));
+            this.enableCreateButton(true);
+        } else if (e.selectedIndex === 2) {
+            this.signaturetype = 'Image';
+            this.enableCreateButton(true);
+            // tslint:disable-next-line
+            let signbutton: any = document.getElementById(this.pdfViewer.element.id + '_e-pv-upload-button');
+            signbutton.addEventListener('click', this.uploadSignatureImage.bind(this));
+        }
+    }
+    private uploadSignatureImage(): void {
+        // tslint:disable-next-line
+        let signImage: any = createElement('input', { id: this.pdfViewer.element.id + '_signElement', attrs: { 'type': 'file' } });
+        signImage.setAttribute('accept', '.jpg,.jpeg');
+        signImage.style.position = 'absolute';
+        signImage.style.left = '0px';
+        signImage.style.top = '0px';
+        signImage.style.visibility = 'hidden';
+        document.body.appendChild(signImage);
+        signImage.click();
+        signImage.addEventListener('change', this.addStampImage);
+        document.body.removeChild(signImage);
+    }
+    // tslint:disable-next-line
+    private addStampImage = (args: any): void => {
+        // tslint:disable-next-line
+        let proxy: any = this;
+        // tslint:disable-next-line
+        let upoadedFiles: any = args.target.files;
+        if (args.target.files[0] !== null) {
+            let uploadedFile: File = upoadedFiles[0];
+            if (uploadedFile.type.split('/')[0] === 'image') {
+                let reader: FileReader = new FileReader();
+                // tslint:disable-next-line
+                reader.onload = (e: any): void => {
+                     // tslint:disable-next-line
+                    let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureuploadCanvas_');
+                     // tslint:disable-next-line
+                    let context: any = canvas.getContext('2d');
+                    let image: HTMLImageElement = new Image();
+                    // tslint:disable-next-line
+                    let proxy: any = this;
+                    image.onload = (): void => {
+                        // tslint:disable-next-line
+                        let signbutton: any = document.getElementById(this.pdfViewer.element.id + '_e-pv-upload-button');
+                        signbutton.style.visibility = 'hidden';
+                        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                        proxy.enableCreateButton(false);
+                        this.outputString = image.src;
+                    };
+                    image.src = e.currentTarget.result;
+                };
+                reader.readAsDataURL(uploadedFile);
+            }
+        }
+    }
+    private renderSignatureText(): void {
+        // tslint:disable-next-line
+        let fontDiv: any = document.getElementById(this.pdfViewer.element.id + '_font_appearance');
+        // tslint:disable-next-line
+        let textBox: any = document.getElementById(this.pdfViewer.element.id + '_e-pv-Signtext-box');
+        for (let i: number = 0; i < this.signfontStyle.length; i++) {
+            this.fontsign[i].innerHTML = textBox.value;
+            this.fontsign[i].style.fontFamily = this.signfontStyle[i].FontName;
+            fontDiv.appendChild(this.fontsign[i]);
+        }
+        for (let i: number = 0; i < this.signfontStyle.length; i++) {
+            // tslint:disable-next-line
+            let clickSign: any = document.getElementById('_font_signature' + i + '');
+            clickSign.addEventListener('click', this.typeSignatureclick.bind(this));
+        }
+        this.enableClearbutton(false);
+    }
+    private typeSignatureclick(): void {
+        let eventTarget: HTMLElement = event.target as HTMLElement;
+        // tslint:disable-next-line
+        let createButton: any = document.getElementsByClassName('e-pv-createbtn')[0];
+        createButton.disabled = false;
+        eventTarget.style.borderColor = 'red';
+        this.outputString = eventTarget.textContent;
+        this.fontName = eventTarget.style.fontFamily;
     }
     private addSignatureCollection(): void {
         let minimumX: number = -1;
@@ -371,6 +651,9 @@ export class Signature {
         if (createbtn) {
             createbtn.disabled = isEnable;
         }
+        this.enableClearbutton(isEnable);
+    }
+    private enableClearbutton(isEnable: boolean): void {
         // tslint:disable-next-line
         let clearbtn: any = document.getElementsByClassName('e-pv-clearbtn')[0];
         if (clearbtn) {
@@ -440,19 +723,50 @@ export class Signature {
     private movePath(x: number, y: number): void {
         this.outputString += 'M' + x + ',' + y + ' ';
     }
-    private clearSignatureCanvas(): void {
+    /**
+     * @private
+     */
+    public clearSignatureCanvas(): void {
         this.outputString = '';
         this.newObject = [];
         // tslint:disable-next-line
         let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
         // tslint:disable-next-line
-        let context: any = canvas.getContext('2d');
-        context.clearRect(0, 0, canvas.width, canvas.height);
+        if (canvas) {
+            // tslint:disable-next-line
+            let context: any = canvas.getContext('2d');
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        }
+         // tslint:disable-next-line
+        let imageCanvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureuploadCanvas_');
+        if (imageCanvas) {
+            // tslint:disable-next-line
+            let context: any = imageCanvas.getContext('2d');
+            context.clearRect(0, 0, canvas.width, canvas.height);
+             // tslint:disable-next-line
+            let signbutton: any = document.getElementById(this.pdfViewer.element.id + '_e-pv-upload-button');
+            if (signbutton) {
+                signbutton.style.visibility = '';
+            }
+        }
+        // tslint:disable-next-line
+        let fontdiv: any = document.getElementById(this.pdfViewer.element.id + '_font_appearance');
+        // tslint:disable-next-line
+        let textbox: any = document.getElementById(this.pdfViewer.element.id + '_e-pv-Signtext-box');
+        if (fontdiv && textbox) {
+            textbox.value = '';
+            fontdiv.innerHTML = '';
+        }
         this.enableCreateButton(true);
     }
-    private closeSignaturePanel(): void {
+    /**
+     * @private
+     */
+    public closeSignaturePanel(): void {
         this.clearSignatureCanvas();
-        this.signatureDialog.hide();
+        if (!isBlazor()) {
+            this.signatureDialog.hide();
+        }
     }
     /**
      * @private

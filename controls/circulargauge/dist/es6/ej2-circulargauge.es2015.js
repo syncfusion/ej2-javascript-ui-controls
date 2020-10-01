@@ -1424,6 +1424,7 @@ class Annotations {
         if (parentElement && element.childElementCount && !this.gauge.isBlazor) {
             parentElement.appendChild(element);
         }
+        this.gauge.renderReactTemplates();
     }
     /**
      * Method to create annotation template for circular gauge.
@@ -1449,8 +1450,8 @@ class Annotations {
             let templateElement;
             if (!argsData.cancel) {
                 templateFn = getTemplateFunction(argsData.content, this.gauge);
-                if (templateFn && (!this.gauge.isBlazor ? templateFn(axis, null, null, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex).length : {})) {
-                    templateElement = Array.prototype.slice.call(templateFn(!this.gauge.isBlazor ? axis : {}, null, null, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex));
+                if (templateFn && (!this.gauge.isBlazor ? templateFn(axis, this.gauge, argsData.content, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex).length : {})) {
+                    templateElement = Array.prototype.slice.call(templateFn(!this.gauge.isBlazor ? axis : {}, this.gauge, argsData.content, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex));
                     let length = templateElement.length;
                     for (let i = 0; i < length; i++) {
                         childElement.appendChild(templateElement[i]);
@@ -1524,6 +1525,7 @@ class GaugeTooltip {
      */
     /* tslint:disable:no-string-literal */
     /* tslint:disable:max-func-body-length */
+    /* tslint:disable */
     renderTooltip(e) {
         this.gaugeId = this.gauge.element.getAttribute('id');
         let pageX;
@@ -1613,6 +1615,7 @@ class GaugeTooltip {
                 }
             };
             this.gauge.trigger(tooltipRender, tooltipArgs, pointerTooltip);
+            this.gauge.renderReactTemplates();
         }
         else if ((this.tooltip.type.indexOf('Range') > -1) && (target.id.indexOf('_Range_') >= 0) && (!this.gauge.isDrag) &&
             (target.id.indexOf(this.gaugeId) >= 0)) {
@@ -1689,6 +1692,7 @@ class GaugeTooltip {
                 }
             };
             this.gauge.trigger(tooltipRender, rangeTooltipArgs, rangeTooltip);
+            this.gauge.renderReactTemplates();
         }
         else if ((this.tooltip.type.indexOf('Annotation') > -1) && this.checkParentAnnotationId(target) && ((!this.gauge.isDrag)) &&
             (this.annotationTargetElement.id.indexOf(this.gaugeId) >= 0)) {
@@ -1744,9 +1748,11 @@ class GaugeTooltip {
                 }
             };
             this.gauge.trigger(tooltipRender, annotationTooltipArgs, annotationTooltip);
+            this.gauge.renderReactTemplates();
         }
         else {
             this.removeTooltip();
+            this.gauge.clearTemplate();
         }
     }
     ;
@@ -2588,8 +2594,10 @@ class PointerRenderer {
                     isClockWise ? (endAngle - startAngle) : (endAngle - startAngle - 360) :
                     isClockWise ? (endAngle - startAngle - 360) : (endAngle - startAngle);
                 element.style.animation = 'None';
-                element.setAttribute('transform', 'rotate(' + linear(args.timeStamp, startAngle, sweepAngle, args.duration) + ',' +
-                    this.gauge.midPoint.x.toString() + ',' + this.gauge.midPoint.y.toString() + ')');
+                if (start !== end) {
+                    element.setAttribute('transform', 'rotate(' + linear(args.timeStamp, startAngle, sweepAngle, args.duration) + ',' +
+                        this.gauge.midPoint.x.toString() + ',' + this.gauge.midPoint.y.toString() + ')');
+                }
             },
             end: (model) => {
                 this.setPointerValue(axis, pointer, end);
@@ -4668,6 +4676,7 @@ let CircularGauge = class CircularGauge extends Component {
                 remove(this.svgObject);
             }
         }
+        this.clearTemplate();
     }
     /**
      * To initialize the circular gauge private variable.
@@ -4813,7 +4822,6 @@ let CircularGauge = class CircularGauge extends Component {
                     setStyles(element, pointer.color, pointer.border);
                 }
                 if (enableAnimation) {
-                    pointer.currentValue = pointer.value;
                     this.gaugeAxisLayoutPanel.pointerRenderer.performNeedleAnimation(element, pointer.currentValue, value, axis, pointer, pointerRadius, (pointerRadius - pointer.pointerWidth));
                 }
                 else {

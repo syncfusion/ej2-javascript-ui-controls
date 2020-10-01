@@ -17,6 +17,7 @@ import { GroupModelGenerator } from '../services/group-model-generator';
 import { getScrollBarWidth, isGroupAdaptive } from '../base/util';
 import { Grid } from '../base/grid';
 import { VirtualFreezeRenderer } from './virtual-freeze-renderer';
+import { GroupLazyLoadRenderer } from './group-lazy-load-renderer';
 
 
 /**
@@ -37,6 +38,8 @@ export class ContentRender implements IRenderer {
     public prevInfo: VirtualInfo;
     /** @hidden */
     public currentInfo: VirtualInfo = {};
+    /** @hidden */
+    public prevCurrentView: Object[] = [];
     public colgroup: Element;
     private isLoaded: boolean = true;
     private tbody: HTMLElement;
@@ -57,6 +60,8 @@ export class ContentRender implements IRenderer {
     private currentMovableRows: Object[];
     private initialPageRecords: Object;
     private isInfiniteFreeze: boolean = false;
+    private useGroupCache: boolean = false;
+    private mutableData: boolean = false;
 
     private rafCallback: Function = (args: NotifyArgs) => {
         let arg: NotifyArgs = args;
@@ -111,9 +116,11 @@ export class ContentRender implements IRenderer {
         this.parent = parent;
         this.serviceLocator = serviceLocator;
         this.ariaService = this.serviceLocator.getService<AriaService>('ariaService');
+        this.mutableData = this.parent.getDataModule().isRemote();
         this.generator = this.getModelGenerator();
         if (this.parent.isDestroyed) { return; }
-        if (!this.parent.enableColumnVirtualization && !this.parent.enableVirtualization) {
+        if (!this.parent.enableColumnVirtualization && !this.parent.enableVirtualization
+            && !this.parent.groupSettings.enableLazyLoading) {
             this.parent.on(events.columnVisibilityChanged, this.setVisible, this);
         }
         this.parent.on(events.colGroupRefresh, this.colGroupRefresh, this);
@@ -219,11 +226,13 @@ export class ContentRender implements IRenderer {
         let gObj: IGrid = this.parent;
         if (gObj.currentViewData.length === 0) { return; }
         let dataSource: Object = this.currentMovableRows || gObj.currentViewData;
-        let frag: DocumentFragment = document.createDocumentFragment();
+        let isReact: boolean = gObj.isReact && !isNullOrUndefined(gObj.rowTemplate);
+        let frag: DocumentFragment | HTMLElement = isReact ? gObj.createElement('tbody') : document.createDocumentFragment();
         if (!this.initialPageRecords) {
             this.initialPageRecords = extend([], dataSource);
         }
-        let hdrfrag: DocumentFragment = document.createDocumentFragment(); let columns: Column[] = <Column[]>gObj.getColumns();
+        let hdrfrag: DocumentFragment = isReact ? gObj.createElement('tbody') : document.createDocumentFragment();
+        let columns: Column[] = <Column[]>gObj.getColumns();
         let tr: Element; let hdrTbody: HTMLElement; let frzCols: number = gObj.getFrozenColumns();
         let trElement: Element;
         let row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
@@ -339,11 +348,12 @@ export class ContentRender implements IRenderer {
             }
             modelData = (<{ generateRows?: Function }>(<Grid>this.parent).contentModule).generateRows(dataSource as Object[], args);
         } else {
-            modelData = this.checkInfiniteCache(modelData, args);
-            if (!this.isAddRows) {
+            modelData = this.checkCache(modelData, args);
+            if (!this.isAddRows && !this.useGroupCache) {
                 modelData = this.generator.generateRows(dataSource, args);
             }
         }
+        this.setGroupCache(modelData, args);
         this.parent.notify(events.setInfiniteCache, { isInfiniteScroll: isInfiniteScroll, modelData: modelData, args: args });
         if (isNullOrUndefined(modelData[0].cells[0])) {
             mCont.querySelector('tbody').innerHTML = '';
@@ -369,6 +379,10 @@ export class ContentRender implements IRenderer {
                 }
             }
             this.parent.destroyTemplate(['template'], templatetoclear);
+        }
+        if (this.parent.isReact && args.requestType !== 'infiniteScroll' && !args.isFrozen) {
+            this.parent.destroyTemplate(['template', 'rowTemplate', 'detailTemplate', 'captionTemplate', 'commandsTemplate']);
+            this.parent.renderTemplates();
         }
         if (this.parent.enableColumnVirtualization) {
             let cellMerge: CellMergeRender<Column> = new CellMergeRender(this.serviceLocator, this.parent);
@@ -435,6 +449,12 @@ export class ContentRender implements IRenderer {
         this.virtualFrozenHdrRefresh(hdrfrag, modelData, row, args, dataSource, columns);
         for (let i: number = startIndex, len: number = modelData.length; i < len; i++) {
             this.rows.push(modelData[i]);
+            if (this.parent.groupSettings.enableLazyLoading && !this.useGroupCache && this.parent.groupSettings.columns.length) {
+                this.setRowsInLazyGroup(modelData[i], i);
+                if (isNullOrUndefined(modelData[i].indent)) {
+                    continue;
+                }
+            }
             this.setInfiniteVisibleRows(args, modelData[i]);
             if (isGroupAdaptive(gObj) && this.rows.length >= (gObj.pageSettings.pageSize) && blockLoad) {
                 break;
@@ -452,8 +472,16 @@ export class ContentRender implements IRenderer {
                 }
             } else {
                 let rowTemplateID: string = gObj.element.id + 'rowTemplate';
-                let elements: NodeList = gObj.getRowTemplate()(extend({ index: i }, dataSource[i]), gObj, 'rowTemplate', rowTemplateID);
-                if ((elements[0] as Element).tagName === 'TBODY') {
+                let elements: NodeList;
+                if (gObj.isReact) {
+                    let isHeader: boolean = gObj.frozenRows && i < gObj.frozenRows;
+                    let copied: Object = extend({ index: i }, dataSource[i]);
+                    gObj.getRowTemplate()(copied, gObj, 'rowTemplate', rowTemplateID, null, null, isHeader ? hdrfrag : frag);
+                    gObj.renderTemplates();
+                } else {
+                    elements = gObj.getRowTemplate()(extend({ index: i }, dataSource[i]), gObj, 'rowTemplate', rowTemplateID);
+                }
+                if (!gObj.isReact && (elements[0] as Element).tagName === 'TBODY') {
                     for (let j: number = 0; j < elements.length; j++) {
                         let isTR: boolean = elements[j].nodeName.toLowerCase() === 'tr';
                         if (isTR || ((elements[j] as Element).querySelectorAll && (elements[j] as Element).querySelectorAll('tr').length)) {
@@ -468,11 +496,13 @@ export class ContentRender implements IRenderer {
                     }
                 } else {
                     if (gObj.frozenRows && i < gObj.frozenRows) {
-                        tr = appendChildren(hdrfrag, elements);
+                        tr = !gObj.isReact ? appendChildren(hdrfrag, elements) : hdrfrag.lastElementChild;
                     } else {
                         // frag.appendChild(tr);
-                        tr = appendChildren(frag, elements);
-                        trElement = tr.lastElementChild;
+                        if (!gObj.isReact) {
+                            tr = appendChildren(frag, elements);
+                        }
+                        trElement = gObj.isReact ? frag.lastElementChild : tr.lastElementChild;
                     }
                 }
                 let arg: RowDataBoundEventArgs = { data: modelData[i].data, row: trElement ? trElement : tr };
@@ -488,8 +518,14 @@ export class ContentRender implements IRenderer {
             || (args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo && args.virtualInfo.sentinelInfo.axis === 'X')) {
             hdrTbody = frzCols ? gObj.getHeaderContent().querySelector(idx === 0 ? '.e-frozenheader'
                 : '.e-movableheader').querySelector('tbody') : gObj.getHeaderTable().querySelector('tbody');
-            hdrTbody.innerHTML = '';
-            hdrTbody.appendChild(hdrfrag);
+            if (isReact) {
+                let parentTable: HTMLElement = hdrTbody.parentElement;
+                remove(hdrTbody);
+                parentTable.appendChild(hdrfrag);
+            } else {
+                hdrTbody.innerHTML = '';
+                hdrTbody.appendChild(hdrfrag);
+            }
         }
         if (!gObj.enableVirtualization && gObj.frozenRows && idx === 0 && cont.offsetHeight === Number(gObj.height)) {
             cont.style.height = (cont.offsetHeight - hdrTbody.offsetHeight) + 'px';
@@ -511,7 +547,11 @@ export class ContentRender implements IRenderer {
                     this.tbody = this.parent.createElement('tbody');
                 }
                 if (frzCols && !isVFTable && !this.parent.enableInfiniteScrolling) {
-                    this.tbody.appendChild(frag);
+                    if (isReact) {
+                        this.tbody = frag as HTMLElement;
+                    } else {
+                        this.tbody.appendChild(frag);
+                    }
                     if (this.index === 0) {
                         this.isLoaded = false;
                         fCont.querySelector('table').appendChild(this.tbody);
@@ -534,14 +574,14 @@ export class ContentRender implements IRenderer {
                     }
                     if (isVFTable) {
                         if (!args.renderMovableContent) {
-                            this.appendContent(fCont.querySelector('tbody'), frag, args);
+                            this.appendContent(fCont.querySelector('tbody'), frag as DocumentFragment, args);
                             if (this.parent.enableColumnVirtualization && args.requestType === 'virtualscroll'
                                 && mCont.scrollLeft > 0) {
                                 this.parent.setColumnIndexesInView(this.viewColIndexes);
                                 args.virtualInfo.columnIndexes = this.viewColIndexes;
                             }
                         } else {
-                            this.appendContent(mCont.querySelector('tbody'), frag, args);
+                            this.appendContent(mCont.querySelector('tbody'), frag as DocumentFragment, args);
                             if (args.virtualInfo && args.virtualInfo.direction !== 'right' && args.virtualInfo.direction !== 'left') {
                                 (fCont as HTMLElement).style.height = ((mCont.offsetHeight) - getScrollBarWidth()) + 'px';
                             }
@@ -561,7 +601,8 @@ export class ContentRender implements IRenderer {
                                 (fCont as HTMLElement).style.borderRightWidth = '1px';
                             }
                         } else {
-                            this.appendContent(this.tbody, frag, args);
+                            this.useGroupCache = false;
+                            this.appendContent(this.tbody, frag as DocumentFragment, args);
                         }
                     }
                 }
@@ -576,8 +617,25 @@ export class ContentRender implements IRenderer {
             this.rafCallback(extend({}, args)));
     }
     public appendContent(tbody: Element, frag: DocumentFragment, args: NotifyArgs): void {
-        tbody.appendChild(frag);
-        this.getTable().appendChild(tbody);
+        let isReact: boolean = this.parent.isReact && !isNullOrUndefined(this.parent.rowTemplate);
+        if (isReact) {
+            this.getTable().appendChild(frag);
+        } else {
+            tbody.appendChild(frag);
+            this.getTable().appendChild(tbody);
+        }
+    }
+
+    private setRowsInLazyGroup(row: Row<Column>, index: number): void {
+        if (this.parent.groupSettings.enableLazyLoading && !this.useGroupCache && this.parent.groupSettings.columns.length) {
+            (this.parent.contentModule as GroupLazyLoadRenderer).maintainRows(row, index);
+        }
+    }
+
+    private setGroupCache(data: Row<Column>[], args: NotifyArgs): void {
+        if (!this.useGroupCache && this.parent.groupSettings.enableLazyLoading) {
+            this.parent.notify(events.setGroupCache, { args: args, data: data });
+        }
     }
 
     private ensureFrozenHeaderRender(args: NotifyArgs): boolean {
@@ -587,7 +645,7 @@ export class ContentRender implements IRenderer {
                 && this.parent.pageSettings.currentPage !== 1));
     }
 
-    private checkInfiniteCache(modelData: Row<Column>[], args: InfiniteScrollArgs): Row<Column>[] {
+    private checkCache(modelData: Row<Column>[], args: InfiniteScrollArgs): Row<Column>[] {
         if (this.parent.infiniteScrollSettings.enableCache && args.requestType === 'infiniteScroll') {
             let index: number = args.isFrozen ? 1 : 0;
             let frozenCols: number = this.parent.getFrozenColumns();
@@ -601,6 +659,12 @@ export class ContentRender implements IRenderer {
                 modelData = this.parent.pageSettings.currentPage === 1 ? data.slice(this.parent.frozenRows) : data;
             }
             return modelData;
+        }
+        if (this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length &&
+            (args.requestType === 'paging' || args.requestType === 'columnstate' || args.requestType === 'reorder')
+            && (this.parent.contentModule as GroupLazyLoadRenderer).getGroupCache()[this.parent.pageSettings.currentPage]) {
+            this.useGroupCache = true;
+            return (this.parent.contentModule as GroupLazyLoadRenderer).initialGroupRows(args.requestType === 'reorder');
         }
         return null;
     }
@@ -1012,5 +1076,142 @@ export class ContentRender implements IRenderer {
 
     public setRowObjects(rows: Row<Column>[]): void {
         this.rows = rows;
+    }
+
+    /** @hidden */
+    public immutableModeRendering(args: NotifyArgs = {}): void {
+        let gObj: IGrid = this.parent;
+        gObj.hideSpinner();
+        let key: string = gObj.getPrimaryKeyFieldNames()[0];
+        let oldKeys: object = {}; let newKeys: object = {}; let newRowObjs: Row<Column>[] = [];
+        let oldIndexes: Object = {};
+        let oldRowObjs: Row<Column>[] = gObj.getRowsObject().slice();
+        let batchChangeKeys: Object = this.getBatchEditedRecords(key, oldRowObjs); let newIndexes: Object = {};
+        let hasBatch: boolean = Object.keys(batchChangeKeys).length !== 0;
+        if (gObj.getContent().querySelector('.e-emptyrow') || args.requestType === 'reorder'
+            || this.parent.groupSettings.columns.length) {
+            this.refreshContentRows(args);
+        } else {
+            if (gObj.currentViewData.length === 0) { return; }
+            let oldRowElements: Object = {};
+            let tbody: Element = gObj.createElement('tbody');
+            let dataSource: Object[] = gObj.currentViewData;
+            let trs: Element[] = [].slice.call(this.getTable().querySelector('tbody').children);
+            if (this.prevCurrentView.length) {
+                let prevLen: number = this.prevCurrentView.length;
+                let currentLen: number = dataSource.length;
+                if (prevLen === currentLen) {
+                    for (let i: number = 0; i < currentLen; i++) {
+                        newKeys[dataSource[i][key]] = oldKeys[this.prevCurrentView[i][key]] = i;
+                        newIndexes[i] = dataSource[i][key];
+                        oldRowElements[oldRowObjs[i].uid] = trs[i];
+                        oldIndexes[i] = this.prevCurrentView[i][key];
+                    }
+                } else {
+                    for (let i: number = 0; i < currentLen; i++) {
+                        newKeys[dataSource[i][key]] = i;
+                        newIndexes[i] = dataSource[i][key];
+                    }
+                    for (let i: number = 0; i < prevLen; i++) {
+                        oldRowElements[oldRowObjs[i].uid] = trs[i];
+                        oldKeys[this.prevCurrentView[i][key]] = i;
+                        oldIndexes[i] = this.prevCurrentView[i][key];
+                    }
+                }
+            }
+            for (let i: number = 0; i < dataSource.length; i++) {
+                let oldIndex: number = oldKeys[dataSource[i][key]];
+                if (!isNullOrUndefined(oldIndex)) {
+                    let isEqual: boolean = false;
+                    if (this.mutableData) {
+                        isEqual = this.objectEqualityChecker(this.prevCurrentView[i], dataSource[i]);
+                    }
+                    let tr: HTMLTableRowElement = oldRowElements[oldRowObjs[oldIndex].uid] as HTMLTableRowElement;
+                    newRowObjs.push(gObj.getRowsObject()[oldIndex]);
+                    if (this.rowElements[i] && this.rowElements[i].getAttribute('data-uid') === newRowObjs[i].uid
+                        && ((hasBatch && isNullOrUndefined(batchChangeKeys[newIndexes[i]]))
+                            || (!hasBatch && (isEqual || this.prevCurrentView[i] === dataSource[i])))) {
+                        if (oldIndex !== i) {
+                            this.refreshImmutableContent(i, tr, newRowObjs[i]);
+                        }
+                        tbody.appendChild(tr);
+                        continue;
+                    }
+                    if ((hasBatch && !isNullOrUndefined(batchChangeKeys[newIndexes[i]]))
+                        || (!this.mutableData && dataSource[i] !== this.prevCurrentView[oldIndex])
+                        || (this.mutableData && !isEqual)) {
+                        oldRowObjs[oldIndex].setRowValue(dataSource[i]);
+                    }
+                    tbody.appendChild(tr);
+                    this.refreshImmutableContent(i, tr, newRowObjs[i]);
+                } else {
+                    let row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, gObj);
+                    let modelData: Row<Column>[] = this.generator.generateRows([dataSource[i]]);
+                    newRowObjs.push(modelData[0]);
+                    let tr: HTMLTableRowElement = row.render(modelData[0], gObj.getColumns()) as HTMLTableRowElement;
+                    tbody.appendChild(tr);
+                    this.refreshImmutableContent(i, tr, newRowObjs[i]);
+                }
+            }
+            this.rows = newRowObjs;
+            this.rowElements = [].slice.call(tbody.children);
+            remove(this.getTable().querySelector('tbody'));
+            this.getTable().appendChild(tbody);
+            this.parent.trigger(events.dataBound, {}, () => {
+                if (this.parent.allowTextWrap) {
+                    this.parent.notify(events.freezeRender, { case: 'textwrap' });
+                }
+            });
+            if (args) {
+                let action: string = (args.requestType || '').toLowerCase() + '-complete';
+                this.parent.notify(action, args);
+            }
+        }
+    }
+
+    private objectEqualityChecker(old: Object, next: Object): boolean {
+        let keys: string[] = Object.keys(old);
+        let isEqual: boolean = true;
+        for (let i: number = 0; i < keys.length; i++) {
+            if (old[keys[i]] !== next[keys[i]]) {
+                isEqual = false; break;
+            }
+        }
+        return isEqual;
+    }
+
+    private getBatchEditedRecords(primaryKey: string, rows: Row<Column>[]): Object {
+        let keys: Object = {};
+        let changes: Object = (this.parent as Grid).getBatchChanges();
+        let changedRecords: Object[] = [];
+        let addedRecords: Object[] = [];
+        if (Object.keys(changes).length) {
+            changedRecords = (<{ changedRecords?: Object[] }>changes).changedRecords;
+            addedRecords = (<{ addedRecords?: Object[] }>changes).addedRecords;
+        }
+        if (addedRecords.length) {
+            if (this.parent.editSettings.newRowPosition === 'Bottom') {
+                rows.splice(rows.length - 1, addedRecords.length);
+            } else {
+                rows.splice(0, addedRecords.length);
+            }
+        }
+        for (let i: number = 0; i < changedRecords.length; i++) {
+            keys[changedRecords[i][primaryKey]] = i;
+        }
+        return keys;
+    }
+
+    private refreshImmutableContent(index: number, tr: HTMLTableRowElement, row: Row<Column>): void {
+        row.isAltRow = this.parent.enableAltRow ? index % 2 !== 0 : false;
+        row.isAltRow ? tr.classList.add('e-altrow') : tr.classList.remove('e-altrow');
+        tr.setAttribute('aria-rowindex', index.toString());
+        this.updateCellIndex(tr, index);
+    }
+
+    private updateCellIndex(rowEle: HTMLTableRowElement, index: number): void {
+        for (let i: number = 0; i < rowEle.cells.length; i++) {
+            rowEle.cells[i].setAttribute('index', index.toString());
+        }
     }
 }

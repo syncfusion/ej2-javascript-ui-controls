@@ -11,6 +11,7 @@ import { Node, SnapSettingsModel, DiagramElement, ShapeAnnotationModel, PointPor
 import { SnapConstraints, PortVisibility, PortConstraints, AnnotationConstraints } from '../../../src/diagram/enum/enum';
 import { MenuItemModel } from '@syncfusion/ej2-navigations';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
+import { GradientModel, LinearGradientModel,RadialGradientModel } from "../../../src/diagram/index"
 Diagram.Inject(UndoRedo, DiagramContextMenu, Snapping);
 /**
  * Groups Spec
@@ -349,11 +350,14 @@ describe('Group', () => {
             expect(diagram.nodes.length).toBe(8);
             expect((diagram.nameTable['group1'] as Node).children.length).toBe(2);
             let internalGroup = diagram.nameTable['group2'];
+            let groupElement: HTMLElement = document.getElementById(internalGroup.id + '_groupElement');
             expect((internalGroup as Node).parentId).toBe('group1');
             diagram.select([internalGroup]);
             diagram.unGroup();
             expect(diagram.nodes.length).toBe(7);
             expect((diagram.nameTable['group1'] as Node).children.length).toBe(1);
+            expect(document.getElementById(internalGroup.id)).toBeNull;
+            expect(groupElement).toBeNull;
             done();
         });
     });
@@ -1164,7 +1168,24 @@ describe('Group', () => {
     describe('Group width and height does not update', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let nodes: NodeModel[]
+        let nodes: NodeModel[];
+        let linearGradient: GradientModel | LinearGradientModel | RadialGradientModel;
+        linearGradient = {
+            x1: 0,
+            y1: 0,
+            x2: 50,
+            y2: 50,
+            stops: [{
+                color: 'white',
+                offset: 0
+            },
+            {
+                color: '#6BA5D7',
+                offset: 100
+            }
+            ],
+            type: 'Linear'
+        };
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -1205,6 +1226,95 @@ describe('Group', () => {
         diagram.addChildToGroup(diagram.nodes[2], diagram.nodes[3]);
         expect(diagram.nodes[2].height === 300 && diagram.nodes[2].width === 350 && diagram.nodes[2].offsetX === 225 && diagram.nodes[2].offsetY === 200 ).toBe(true);
         done();
+        });
+        it("When linear gradient is applied to a group", (done: Function) => {
+            // let node: any = diagram.select([diagram.nodes[2]]);
+            diagram.nodes[2].style = {
+                gradient: linearGradient
+            }
+            expect(diagram.nodes[2].style.gradient !== null).toBe(true);
+            done();
+        });
+    });
+    describe('Group width and height does not update', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;        
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram_group_AddChildToGroup' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 180,
+                    offsetY: 100,
+                },
+                { id: 'group', children: ['node1', 'con1'],},
+            ];
+            let connectors: ConnectorModel[] = [
+                {
+                    id: 'con1', sourcePoint: { x: 300, y: 100 }, targetPoint: { x: 450, y: 100 }
+                }];
+            diagram = new Diagram({
+                width: '1050px', height: '500px', nodes: nodes, connectors: connectors
+            });
+            diagram.appendTo('#diagram_group_AddChildToGroup');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it("Dragging issue - group have a one of conector as a child", (done: Function) => {
+            let mouseevents = new MouseEvents();
+            let diagramCanvas = document.getElementById(diagram.element.id+'content');
+            let group: Node =  diagram.getObject("group") as Node;
+            let oldOffsetX = group.offsetX; let oldOffsetY = group.offsetY;            
+            mouseevents.clickEvent(diagramCanvas, group.offsetX + diagram.element.offsetLeft, group.offsetY + diagram.element.offsetTop);
+            expect(diagram.selectedItems.nodes[0].id == 'group').toBe(true);
+            mouseevents.mouseDownEvent(diagramCanvas, group.offsetX + diagram.element.offsetLeft, group.offsetY + diagram.element.offsetTop);
+            mouseevents.mouseMoveEvent(diagramCanvas, group.offsetX + diagram.element.offsetLeft+500, group.offsetY + diagram.element.offsetTop+100);
+            mouseevents.mouseUpEvent(diagramCanvas, group.offsetX + diagram.element.offsetLeft+500+10, group.offsetY + diagram.element.offsetTop+100);
+            let newOffsetX = group.offsetX; let newOffsetY = group.offsetY;
+            expect(newOffsetX != oldOffsetX && newOffsetY != oldOffsetY).toBe(true);
+            diagram.clearSelection();
+            expect(diagram.selectedItems.nodes.length == 0).toBe(true);
+            diagram.undo();
+            expect(group.offsetX == oldOffsetX && group.offsetY == oldOffsetY).toBe(true);
+            diagram.redo();
+            expect(group.offsetX == newOffsetX && group.offsetY == newOffsetY).toBe(true);
+            done();       
+        });
+        it("AddChildToGroup method", (done: Function) => {
+            let group: Node =  diagram.getObject("group") as Node;
+            let node6: NodeModel = { id: 'node2', width: 80, height: 100, offsetX: 520, offsetY: 100 };
+            diagram.undo();
+            diagram.select([group]);
+            expect(diagram.selectedItems.nodes[0].id == 'group').toBe(true);
+            diagram.addChildToGroup(group, node6);
+            let node: Node = diagram.getObject('node2') as Node;
+            expect(diagram.nodes.length == 3 && node.parentId == 'group' && group.children.length == 3).toBe(true);
+            diagram.undo();
+            expect(group.children.length == 2 && diagram.nodes.length == 2).toBe(true);
+            diagram.redo();
+            node = diagram.getObject('node2') as Node;
+            expect(group.children.length == 3 && node.parentId == 'group' && diagram.nodes.length == 3).toBe(true);
+            done();
+        });
+        it("Remove method", (done: Function) => {
+            expect(diagram.nodes.length == 3).toBe(true);
+            let group: Node =  diagram.getObject("group") as Node;
+            diagram.remove(group);
+            expect(diagram.nodes.length == 0).toBe(true);
+            diagram.undo();
+            expect(diagram.nodes.length == 3).toBe(true);
+            diagram.redo();
+            expect(diagram.nodes.length == 0).toBe(true);
+            done();
         });
     });
 });

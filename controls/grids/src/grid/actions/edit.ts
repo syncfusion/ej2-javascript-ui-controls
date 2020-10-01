@@ -641,10 +641,16 @@ export class Edit implements IAction {
         let gObj: IGrid = this.parent;
         if (gObj.editSettings.template) {
             this.parent.destroyTemplate(['editSettingsTemplate']);
+            if (this.parent.isReact) {
+                this.parent.renderTemplates();
+            }
         }
         cols = cols ? cols : this.parent.getVisibleColumns() as Column[];
         if (cols.some((column: Column) => !isNullOrUndefined(column.editTemplate))) {
             this.parent.destroyTemplate(['editTemplate']);
+            if (this.parent.isReact) {
+                this.parent.renderTemplates();
+            }
         }
         for (let col of cols) {
             let temp: Function = col.edit.destroy as Function;

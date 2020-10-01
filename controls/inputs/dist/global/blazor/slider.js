@@ -216,6 +216,7 @@ var Slider = /** @class */ (function (_super) {
         _this.scaleTransform = 'transform .4s cubic-bezier(.25, .8, .25, 1)';
         _this.customAriaText = null;
         _this.drag = true;
+        _this.initialTooltip = true;
         return _this;
     }
     Slider.prototype.preRender = function () {
@@ -689,24 +690,27 @@ var Slider = /** @class */ (function (_super) {
             value: this.value,
             text: ''
         };
-        if (sf.base.isBlazor() && this.isServerRendered) {
-            args.text = this.formatContent(this.tooltipFormatInfo, false);
-        }
-        else {
-            this.setTooltipContent();
-            args.text = text = this.tooltipObj.content;
-        }
-        this.trigger('tooltipChange', args, function (observedArgs) {
-            _this.addTooltipClass(observedArgs.text);
-            if (text !== observedArgs.text) {
-                _this.customAriaText = observedArgs.text;
-                _this.tooltipObj.content = observedArgs.text;
-                _this.setAriaAttrValue(_this.firstHandle);
-                if (_this.type === 'Range') {
-                    _this.setAriaAttrValue(_this.secondHandle);
-                }
+        if (this.initialTooltip) {
+            this.initialTooltip = false;
+            if (sf.base.isBlazor() && this.isServerRendered) {
+                args.text = this.formatContent(this.tooltipFormatInfo, false);
             }
-        });
+            else {
+                this.setTooltipContent();
+                args.text = text = this.tooltipObj.content;
+            }
+            this.trigger('tooltipChange', args, function (observedArgs) {
+                _this.addTooltipClass(observedArgs.text);
+                if (text !== observedArgs.text) {
+                    _this.customAriaText = observedArgs.text;
+                    _this.tooltipObj.content = observedArgs.text;
+                    _this.setAriaAttrValue(_this.firstHandle);
+                    if (_this.type === 'Range') {
+                        _this.setAriaAttrValue(_this.secondHandle);
+                    }
+                }
+            });
+        }
     };
     Slider.prototype.setTooltipContent = function () {
         var content;
@@ -1757,6 +1761,7 @@ var Slider = /** @class */ (function (_super) {
             this.setProperties({ 'value': this.handleVal1 }, true);
             if (previous !== this.value) {
                 this.trigger(eventName, this.changeEventArgs(eventName, e));
+                this.initialTooltip = true;
                 this.setPreviousVal(eventName, this.value);
             }
             this.setAriaAttrValue(this.firstHandle);
@@ -1766,7 +1771,9 @@ var Slider = /** @class */ (function (_super) {
             this.setProperties({ 'value': value }, true);
             if (previous.length === this.value.length
                 && this.value[0] !== previous[0] || this.value[1] !== previous[1]) {
+                this.initialTooltip = false;
                 this.trigger(eventName, this.changeEventArgs(eventName, e));
+                this.initialTooltip = true;
                 this.setPreviousVal(eventName, this.value);
             }
             this.setAriaAttrValue(this.getHandle());
@@ -1775,7 +1782,7 @@ var Slider = /** @class */ (function (_super) {
     };
     Slider.prototype.changeEventArgs = function (eventName, e) {
         var eventArgs;
-        if (this.tooltip.isVisible && this.tooltipObj) {
+        if (this.tooltip.isVisible && this.tooltipObj && this.initialTooltip) {
             if (!sf.base.isBlazor() || !this.isServerRendered) {
                 this.tooltipValue();
             }
@@ -2148,6 +2155,7 @@ var Slider = /** @class */ (function (_super) {
             this.rangeBar.style.transition = transition.rangeBar;
         }
         this.setHandlePosition(evt);
+        this.changeEvent('changed', evt);
         if (this.type !== 'Default') {
             this.setRangeBar();
         }
@@ -2238,6 +2246,7 @@ var Slider = /** @class */ (function (_super) {
         this.handleFocusOut();
         this.firstHandle.classList.remove(classNames.sliderActiveHandle);
         if (this.type === 'Range') {
+            this.initialTooltip = false;
             this.secondHandle.classList.remove(classNames.sliderActiveHandle);
         }
         this.closeTooltip();
@@ -2361,7 +2370,7 @@ var Slider = /** @class */ (function (_super) {
         return 1;
     };
     Slider.prototype.refreshTooltip = function (target) {
-        if (this.tooltip.isVisible && this.tooltipObj) {
+        if (this.tooltip.isVisible && this.tooltipObj && this.initialTooltip) {
             this.tooltipValue();
             if (target) {
                 this.tooltipObj.refresh(target);
@@ -3097,7 +3106,5 @@ exports.Slider = Slider;
 return exports;
 
 });
-sfBlazor.modules["slider"] = "inputs.Slider";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.slider, () => {
+
     sf.inputs = sf.base.extend({}, sf.inputs, sfslider({}));
-});

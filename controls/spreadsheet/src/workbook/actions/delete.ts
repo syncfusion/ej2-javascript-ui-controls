@@ -1,6 +1,6 @@
-import { Workbook, RowModel, CellModel, getCell, setCell } from '../base/index';
+import { Workbook, RowModel, CellModel, getCell, setCell, getSheetIndex } from '../base/index';
 import { deleteModel, deleteAction, InsertDeleteModelArgs, updateUsedRange, ExtendedRange, MergeArgs } from '../../workbook/common/index';
-import { activeCellMergedRange, setMerge } from '../../workbook/common/index';
+import { activeCellMergedRange, setMerge, workbookFormulaOperation, InsertDeleteEventArgs } from '../../workbook/common/index';
 import { SheetModel } from '../../workbook/base/index';
 
 /**
@@ -24,6 +24,7 @@ export class WorkbookDelete {
             let temp: number = args.start; args.start = args.end; args.end = temp;
         }
         let deletedCells: RowModel[]; let mergeArgsCollection: MergeArgs[] = []; let count: number = (args.end - args.start) + 1;
+        let range: number[]; let prevCell: CellModel; let sheetIndex: number;
         if (args.modelType === 'Row') {
             args.model = <SheetModel>args.model;
             if (args.start > args.model.usedRange.rowIndex) { return; }
@@ -39,12 +40,12 @@ export class WorkbookDelete {
                         mergeArgs = { range: [args.start, i, args.start, i] };
                         this.parent.notify(activeCellMergedRange, mergeArgs); mergeArgs.range = mergeArgs.range as number[];
                         if (mergeArgs.range[2] <= args.end) {
-                            let prevCell: CellModel = getCell(mergeArgs.range[0], i, args.model);
+                            prevCell = getCell(mergeArgs.range[0], i, args.model);
                             if (prevCell && prevCell.rowSpan > 1) {
                                 if (prevCell.rowSpan - ((mergeArgs.range[2] - args.start) + 1) > 1) {
                                     setCell(
-                                    mergeArgs.range[0], i, args.model,
-                                    { colSpan: prevCell.rowSpan - ((mergeArgs.range[2] - args.start) + 1)  }, true);
+                                        mergeArgs.range[0], i, args.model,
+                                        { colSpan: prevCell.rowSpan - ((mergeArgs.range[2] - args.start) + 1) }, true);
                                 } else {
                                     delete args.model.rows[mergeArgs.range[0]].cells[i].rowSpan;
                                 }
@@ -73,8 +74,10 @@ export class WorkbookDelete {
                                     indexes[2] += ((cell.rowSpan - ((args.end - mergeArgs.range[0]) + 1)) - 1);
                                 }
                             }
-                            mergeArgsCollection.push(<MergeArgs>{ range: indexes, isAction: false, preventRefresh: true, merge: true,
-                                type: 'All', skipChecking: true });
+                            mergeArgsCollection.push(<MergeArgs>{
+                                range: indexes, isAction: false, preventRefresh: true, merge: true,
+                                type: 'All', skipChecking: true
+                            });
                         }
                     }
                     mergeArgs = null;
@@ -101,8 +104,8 @@ export class WorkbookDelete {
                             if (prevCell && prevCell.colSpan > 1) {
                                 if (prevCell.colSpan - ((mergeArgs.range[3] - args.start) + 1) > 1) {
                                     setCell(
-                                    i, mergeArgs.range[1], args.model,
-                                    { colSpan: prevCell.colSpan - ((mergeArgs.range[3] - args.start) + 1)  }, true);
+                                        i, mergeArgs.range[1], args.model,
+                                        { colSpan: prevCell.colSpan - ((mergeArgs.range[3] - args.start) + 1) }, true);
                                 } else {
                                     delete args.model.rows[i].cells[mergeArgs.range[1]].colSpan;
                                 }
@@ -131,8 +134,10 @@ export class WorkbookDelete {
                                     indexes[3] += ((cell.colSpan - ((args.end - mergeArgs.range[1]) + 1)) - 1);
                                 }
                             }
-                            mergeArgsCollection.push(<MergeArgs>{ range: indexes, isAction: false, preventRefresh: true, merge: true,
-                                type: 'All', skipChecking: true });
+                            mergeArgsCollection.push(<MergeArgs>{
+                                range: indexes, isAction: false, preventRefresh: true, merge: true,
+                                type: 'All', skipChecking: true
+                            });
                         }
                     }
                     deletedCells[i].cells = args.model.rows[i].cells.splice(args.start, count);
@@ -149,8 +154,26 @@ export class WorkbookDelete {
                 deletedModel.push({});
             }
             if (i === args.start) { deletedModel[0].index = args.start; }
+
         }
         mergeArgsCollection.forEach((merge: MergeArgs): void => { this.parent.notify(setMerge, merge); });
+        sheetIndex = getSheetIndex(this.parent, (args.model as SheetModel).name);
+        let insertArgs: { action: string, insertArgs: InsertDeleteEventArgs } = {
+            action: 'refreshNamedRange', insertArgs: {
+                startIndex: args.start, endIndex: args.end, modelType: args.modelType,
+                isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells,
+                activeSheetIndex: this.parent.activeSheetIndex, name: 'delete'
+            }
+        };
+        let eventArgs: { [key: string]: Object } = {
+            action: 'refreshInsDelFormula', insertArgs: {
+                model: deletedModel, startIndex: args.start, endIndex: args.end, modelType: args.modelType,
+                name: 'delete', activeSheetIndex:
+                    args.activeSheetIndex, sheetCount: this.parent.sheets.length
+            }
+        };
+        this.parent.notify(workbookFormulaOperation, insertArgs);
+        this.parent.notify(workbookFormulaOperation, eventArgs);
         this.parent.notify(deleteAction, {
             startIndex: args.start, endIndex: args.end, modelType: args.modelType,
             isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells,

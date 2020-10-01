@@ -1,6 +1,6 @@
 @include export-module('spreadsheet-theme') {
   /*! spreadsheet theme */
-  #{&}.e-spreadsheet {
+  .e-spreadsheet {
     & .e-findtool-dlg {
       border-bottom-color: $find-popup-border-color;
       border-color: $find-popup-border-color;
@@ -406,7 +406,8 @@
       }
     }
 
-    .e-copy-indicator div {
+    .e-copy-indicator div,
+    .e-formularef-indicator div {
       // sass-lint:disable-all
       &.e-top {
         background: url('https://ej2.syncfusion.com/products/images/spreadsheet/copy_indicator/t_b_#{$sheet-skin}.gif') repeat-x left top;
@@ -534,6 +535,56 @@
       & .e-dlg-error {
         color: $dlg-error-color;
       }
+    }
+  }
+
+  & .e-spreadsheet .e-sheet-panel:not(.e-rtl) {
+    & .e-cell.e-vborderright {
+      border-right: 1px dashed $vborder-selection;
+    }
+
+    & .e-cell.e-vborderbottom {
+      border-bottom: 1px dashed $vborder-selection;
+    }
+
+    & .e-cell.e-pborderright {
+      border-right: 1px dashed $pborder-selection;
+    }
+
+    & .e-cell.e-pborderbottom {
+      border-bottom: 1px dashed $pborder-selection;
+    }
+
+    & .e-cell.e-cborderright {
+      border-right: 1px dashed $cborder-selection;
+    }
+
+    & .e-cell.e-cborderbottom {
+      border-bottom: 1px dashed $cborder-selection;
+    }
+
+    & .e-cell.e-gborderright {
+      border-right: 1px dashed $gborder-selection;
+    }
+
+    & .e-cell.e-gborderbottom {
+      border-bottom: 1px dashed $gborder-selection;
+    }
+
+    & .e-cell.e-oborderright {
+      border-right: 1px dashed $oborder-selection;
+    }
+
+    & .e-cell.e-oborderbottom {
+      border-bottom: 1px dashed $oborder-selection;
+    }
+
+    & .e-cell.e-bborderright {
+      border-right: 1px dashed $bborder-selection;
+    }
+
+    & .e-cell.e-bborderbottom {
+      border-bottom: 1px dashed $bborder-selection;
     }
   }
 

@@ -248,4 +248,5 @@ describe('EJ2-42308: Resize handler height with auto wrap', () => {
         gridObj = actionComplete = null;
     });
 });
+
 });

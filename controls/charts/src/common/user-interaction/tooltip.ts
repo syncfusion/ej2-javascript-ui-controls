@@ -168,6 +168,7 @@ export class BaseTooltip extends ChartData {
                 availableSize: chart.availableSize, duration: this.chart.tooltip.duration,
                 isCanvas: this.chart.enableCanvas, isTextWrap: chart.tooltip.enableTextWrap && chart.getModuleName() === 'chart',
                 blazorTemplate: { name: 'Template', parent: this.chart.tooltip },
+                controlInstance: this.chart,
                 tooltipRender: () => {
                     module.removeHighlight(module.control);
                     module.highlightPoints();
@@ -197,6 +198,8 @@ export class BaseTooltip extends ChartData {
                 this.svgTooltip.dataBind();
             }
         }
+        // tslint:disable-next-line:no-any
+        (this.chart as any).renderReactTemplates();
     }
 
     private findPalette() : string[] {
@@ -295,6 +298,8 @@ export class BaseTooltip extends ChartData {
     public removeTooltip(duration: number): void {
         let tooltipElement: HTMLElement =  this.getElement(this.element.id + '_tooltip');
         this.stopAnimation();
+        // tslint:disable-next-line:no-any
+        (this.chart as any).clearTemplate();
         if (tooltipElement && this.previousPoints.length > 0) {
             this.toolTipInterval = setTimeout(
                 (): void => {

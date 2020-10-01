@@ -767,7 +767,5 @@ exports.getMaxZindex = getMaxZindex;
 return exports;
 
 });
-sfBlazor.modules["popup"] = "popups.Popup";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.popup, () => {
+
     sf.popups = sf.base.extend({}, sf.popups, sfpopup({}));
-});

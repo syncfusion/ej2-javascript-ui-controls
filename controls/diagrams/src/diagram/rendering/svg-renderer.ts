@@ -619,7 +619,7 @@ export class SvgRenderer implements IRenderer {
                 let canvasRenderer: CanvasRenderer = new CanvasRenderer();
                 dashArray = canvasRenderer.parseDashArray(style.dashArray);
             }
-            if (style.gradient && style.gradient.type !== 'None') {
+            if (style.gradient && style.gradient.type !== 'None' && diagramId) {
                 let grd: SVGElement = this.renderGradient(style, svg, diagramId);
                 if (checkBrowserInfo()) {
                     fill = 'url(' + location.protocol + '//' + location.host + location.pathname + '#' + grd.id + ')';

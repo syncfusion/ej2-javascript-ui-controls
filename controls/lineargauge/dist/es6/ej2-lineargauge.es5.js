@@ -1469,11 +1469,15 @@ var AxisRenderer = /** @__PURE__ @class */ (function (_super) {
             clipId = 'url(#' + this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + '_' + pointer.type + 'ClipRect_' + i + ')';
             if (!(isNullOrUndefined(pointer.bounds))) {
                 pointerClipRectGroup = this.gauge.renderer.createGroup({
-                    'id': this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer_' + i,
-                    'clip-path': clipId
+                    'id': this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer_' + i
                 });
                 if (isNullOrUndefined(pointer.startValue)) {
                     pointer.startValue = axis.visibleRange.min;
+                }
+                if (pointer.animationDuration > 0 && !this.gauge.gaugeResized) {
+                    if (this.gauge.container.type === 'Thermometer' && pointer.startValue === 0) {
+                        pointerClipRectGroup.setAttribute('clip-path', clipId);
+                    }
                 }
                 this['draw' + pointer.type + 'Pointer'](axis, axisIndex, pointer, i, pointerClipRectGroup);
                 pointesGroup.appendChild(pointerClipRectGroup);
@@ -2170,6 +2174,7 @@ var Annotations = /** @__PURE__ @class */ (function () {
     /**
      * To render annotation elements
      */
+    //tslint:disable
     Annotations.prototype.renderAnnotationElements = function () {
         var _this = this;
         var secondaryID = this.gauge.element.id + '_Secondary_Element';
@@ -2188,6 +2193,7 @@ var Annotations = /** @__PURE__ @class */ (function () {
                 updateBlazorTemplate(this.gauge.element.id + '_ContentTemplate' + i, 'ContentTemplate', this.gauge.annotations[i]);
             }
         }
+        this.gauge.renderReactTemplates();
     };
     /**
      * To create annotation elements
@@ -2220,8 +2226,8 @@ var Annotations = /** @__PURE__ @class */ (function () {
         this.gauge.trigger(annotationRender, argsData, function (observerArgs) {
             if (!argsData.cancel) {
                 templateFn = getTemplateFunction(argsData.content);
-                if (templateFn && (!_this.gauge.isBlazor ? templateFn(_this.gauge, null, null, _this.gauge.element.id + '_ContentTemplate' + annotationIndex).length : {})) {
-                    templateElement = Array.prototype.slice.call(templateFn(!_this.gauge.isBlazor ? _this.gauge : {}, null, null, _this.gauge.element.id + '_ContentTemplate' + annotationIndex));
+                if (templateFn && (!_this.gauge.isBlazor ? templateFn(_this.gauge, _this.gauge, argsData.content, _this.gauge.element.id + '_ContentTemplate' + annotationIndex).length : {})) {
+                    templateElement = Array.prototype.slice.call(templateFn(!_this.gauge.isBlazor ? _this.gauge : {}, _this.gauge, argsData.content, _this.gauge.element.id + '_ContentTemplate' + annotationIndex));
                     var length_1 = templateElement.length;
                     for (var i = 0; i < length_1; i++) {
                         childElement.appendChild(templateElement[i]);
@@ -2327,6 +2333,7 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
      * @param pointerElement
      */
     /* tslint:disable:no-string-literal */
+    //tslint:disable
     GaugeTooltip.prototype.renderTooltip = function (e) {
         var pageX;
         var pageY;
@@ -2361,6 +2368,7 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
                 formatValue(this.currentPointer.currentValue, this.gauge).toString();
             tooltipEle = this.tooltipCreate(tooltipEle);
             this.tooltipRender(tooltipContent, target, tooltipEle, e, areaRect, pageX, pageY);
+            this.gauge.renderReactTemplates();
         }
         else if (target.id.indexOf('Range') > -1 && this.gauge.tooltip.type.indexOf('Range') > -1) {
             this.pointerElement = target;
@@ -2383,9 +2391,11 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
                 'Start : ' + startData + '<br>' + 'End : ' + endData;
             tooltipEle = this.tooltipCreate(tooltipEle);
             this.tooltipRender(tooltipContent, target, tooltipEle, e, areaRect, pageX, pageY);
+            this.gauge.renderReactTemplates();
         }
         else {
             this.removeTooltip();
+            this.gauge.clearTemplate();
         }
     };
     GaugeTooltip.prototype.tooltipRender = function (tooltipContent, target, tooltipEle, e, areaRect, pageX, pageY) {
@@ -2983,6 +2993,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         if (!(isNullOrUndefined(this.svgObject)) && !isNullOrUndefined(this.svgObject.parentNode)) {
             remove(this.svgObject);
         }
+        this.clearTemplate();
     };
     /**
      * Method to calculate the size of the gauge
@@ -3162,6 +3173,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         var x;
         var y;
         var options;
+        var labelPadding = 20;
         var path = '';
         var topRadius;
         var bottomRadius;
@@ -3183,9 +3195,15 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
             height = height;
         }
         else {
-            width = (this.container.height > 0) ? this.container.height :
-                ((this.actualRect.width / 2) - ((this.actualRect.width / 2) / 4)) * 2;
-            width = (this.container.type === 'Thermometer') ? width - (bottomRadius * 2) - topRadius : width;
+            if (this.allowMargin) {
+                width = (this.container.height > 0) ? this.container.height :
+                    ((this.actualRect.width / 2) - ((this.actualRect.width / 2) / 4)) * 2;
+                width = (this.container.type === 'Thermometer') ? width - (bottomRadius * 2) - topRadius : width;
+            }
+            else {
+                width = this.actualRect.width - labelPadding;
+                width = (this.container.type === 'Thermometer') ? (this.actualRect.width - (bottomRadius * 2) - topRadius) : width;
+            }
             x = this.actualRect.x + ((this.actualRect.width / 2) - ((this.container.type === 'Thermometer') ?
                 (width - (bottomRadius * 2) + topRadius) / 2 : width / 2));
             y = (this.actualRect.y + ((this.actualRect.height / 2) - (this.container.width / 2))) + this.container.offset;
@@ -3799,6 +3817,9 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(null)
     ], LinearGauge.prototype, "width", void 0);
+    __decorate([
+        Property(true)
+    ], LinearGauge.prototype, "allowMargin", void 0);
     __decorate([
         Property(null)
     ], LinearGauge.prototype, "height", void 0);

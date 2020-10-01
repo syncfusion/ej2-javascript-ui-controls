@@ -75,7 +75,7 @@ export class Trendlines {
      * Defines the data point of trendline
      */
     private getDataPoint(
-        x: Object, y: Object, sourcePoint: Points, series: Series, index: number,
+        x: Object, y: Object, series: Series, index: number,
     ): Points {
         let trendPoint: Points = new Points();
         trendPoint.x = series.xAxis.valueType === 'DateTime' ? new Date(Number(x)) : x;
@@ -301,11 +301,11 @@ export class Trendlines {
         let x3: number = x3Log ? Math.log(x3Log) : 0;
         let y3Log: number = slopeInterceptLog.intercept + (slopeInterceptLog.slope *  x3);
         pts.push(
-            this.getDataPoint(x1Log, y1Log, points[0], series, pts.length));
+            this.getDataPoint(x1Log, y1Log, series, pts.length));
         pts.push(
-            this.getDataPoint(x2Log, y2Log, points[midPoint - 1], series, pts.length));
+            this.getDataPoint(x2Log, y2Log, series, pts.length));
         pts.push(
-            this.getDataPoint(x3Log, y3Log, points[points.length - 1], series, pts.length));
+            this.getDataPoint(x3Log, y3Log, series, pts.length));
         return pts;
     }
 
@@ -324,11 +324,11 @@ export class Trendlines {
         let x3: number = xValues[xValues.length - 1] + trendline.forwardForecast;
         let y3: number = slopeInterceptPower.intercept * Math.pow(x3, slopeInterceptPower.slope);
         pts.push(
-            this.getDataPoint(x1, y1, points[0], series, pts.length));
+            this.getDataPoint(x1, y1, series, pts.length));
         pts.push(
-            this.getDataPoint(x2, y2, points[midPoint - 1], series, pts.length));
+            this.getDataPoint(x2, y2, series, pts.length));
         pts.push(
-            this.getDataPoint(x3, y3, points[points.length - 1], series, pts.length));
+            this.getDataPoint(x3, y3, series, pts.length));
         return pts;
     }
 
@@ -426,7 +426,7 @@ export class Trendlines {
             if (y && !isNaN(y)) {
                 x = xValues[period - 1 + index];
                 pts.push(
-                    this.getDataPoint(x, y, points[period - 1 + index], series, pts.length));
+                    this.getDataPoint(x, y, series, pts.length));
             }
             index++;
         }
@@ -446,9 +446,9 @@ export class Trendlines {
         let x2Linear: number = xValues[max] + trendline.forwardForecast;
         let y2Linear: number = slopeInterceptLinear.slope * x2Linear + slopeInterceptLinear.intercept;
         pts.push(
-            this.getDataPoint(x1Linear, y1Linear, points[0], series, pts.length));
+            this.getDataPoint(x1Linear, y1Linear, series, pts.length));
         pts.push(
-            this.getDataPoint(x2Linear, y2Linear, points[points.length - 1], series, pts.length));
+            this.getDataPoint(x2Linear, y2Linear, series, pts.length));
         return pts;
     }
 
@@ -466,11 +466,11 @@ export class Trendlines {
         let x3: number = xValues[xValues.length - 1] + trendline.forwardForecast;
         let y3: number = slopeInterceptExp.intercept * Math.exp(slopeInterceptExp.slope * x3);
         ptsExp.push(
-            this.getDataPoint(x1, y1, points[0], series, ptsExp.length));
+            this.getDataPoint(x1, y1, series, ptsExp.length));
         ptsExp.push(
-            this.getDataPoint(x2, y2, points[midPoint - 1], series, ptsExp.length));
+            this.getDataPoint(x2, y2, series, ptsExp.length));
         ptsExp.push(
-            this.getDataPoint(x3, y3, points[points.length - 1], series, ptsExp.length));
+            this.getDataPoint(x3, y3, series, ptsExp.length));
         return ptsExp;
     }
 
@@ -489,18 +489,18 @@ export class Trendlines {
                 xValue = xValues[0] - trendline.backwardForecast;
                 yValue = this.getPolynomialYValue(polynomialSlopes, xValue);
                 pts.push(
-                    this.getDataPoint(xValue, yValue, points[0], series, pts.length));
+                    this.getDataPoint(xValue, yValue, series, pts.length));
             } else if (index === polynomialSlopes.length) {
                 xValue = xValues[points.length - 1] + trendline.forwardForecast;
                 yValue = this.getPolynomialYValue(polynomialSlopes, xValue);
                 pts.push(
-                    this.getDataPoint(xValue, yValue, points[points.length - 1], series, pts.length));
+                    this.getDataPoint(xValue, yValue, series, pts.length));
             } else {
                 x1 += (points.length + trendline.forwardForecast) / polynomialSlopes.length;
                 xValue = xValues[parseInt(x1.toString(), 10) - 1];
                 yValue = this.getPolynomialYValue(polynomialSlopes, xValue);
                 pts.push(
-                    this.getDataPoint(xValue, yValue, points[parseInt(x1.toString(), 10) - 1], series, pts.length));
+                    this.getDataPoint(xValue, yValue, series, pts.length));
             }
             index++;
         }

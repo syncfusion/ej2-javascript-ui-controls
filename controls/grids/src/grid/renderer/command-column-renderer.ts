@@ -38,7 +38,13 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
         node.appendChild(this.unbounDiv.cloneNode());
         (<HTMLElement>node).setAttribute('aria-label', 'is Command column column header ' + cell.column.headerText);
         if (cell.column.commandsTemplate) {
-            appendChildren(node.firstElementChild, cell.column.getColumnTemplate()(data));
+            if (this.parent.isReact && typeof (cell.column.commandsTemplate) !== 'string') {
+                let tempID: string = this.parent + 'commandsTemplate';
+                cell.column.getColumnTemplate()(data, this.parent, 'commandsTemplate', tempID, null, null, node.firstElementChild);
+                this.parent.renderTemplates();
+            } else {
+                appendChildren(node.firstElementChild, cell.column.getColumnTemplate()(data));
+            }
         } else {
             for (let command of cell.commands) {
                 node = this.renderButton(node, command, <number>attributes.index, command[uid]);

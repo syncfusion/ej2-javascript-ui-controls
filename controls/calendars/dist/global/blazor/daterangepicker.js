@@ -4237,7 +4237,5 @@ exports.DateRangePicker = DateRangePicker;
 return exports;
 
 });
-sfBlazor.modules["daterangepicker"] = "calendars.DateRangePicker";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.daterangepicker, () => {
+
     sf.calendars = sf.base.extend({}, sf.calendars, sfdaterangepicker({}));
-});

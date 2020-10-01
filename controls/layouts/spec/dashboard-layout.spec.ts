@@ -513,6 +513,24 @@ describe('GridLayout', () => {
             expect(gridLayOut.element.children[0].offsetHeight).toBe(gridLayOut.element.children[0].offsetHeight);
             // expect(gridLayOut.element.children[1].offsetHeight).toBe(gridLayOut.element.children[0].offsetHeight * 2);
         });
+
+        it('mobile resolution height customization', () => {
+            gridLayOut = new DashboardLayout({
+                cellAspectRatio: 1,
+                columns: 12,
+                cellSpacing: [5, 5],
+                allowResizing: true,            
+                panels: [
+                    { "id": 'first', "sizeX": 2, "sizeY": 1, "row": 0, "col": 1, "zIndex": 100 },
+                    { "id": 'second', "sizeX": 2, "sizeY": 2, "row": 2, "col": 2, "zIndex": 100 },
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            gridLayOut.checkMediaQuerySizing();
+            expect(gridLayOut.element.children[0].offsetHeight).toBe(gridLayOut.element.children[0].offsetHeight);
+            // expect(gridLayOut.element.children[1].offsetHeight).toBe(gridLayOut.element.children[0].offsetHeight * 2);
+        });
+
         it(' showGridLines test case', () => {
             gridLayOut = new DashboardLayout({
                 cellAspectRatio: 1,
@@ -5640,7 +5658,7 @@ describe('GridLayout', () => {
             }
             gridLayOut.addPanel(panel);
             expect((<any>gridLayOut).getCellInstance('four').col == 0).toBe(true);
-            expect((<any>gridLayOut).getCellInstance('four').row == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('four').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('one').col == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('one').row == 1).toBe(true);
             gridLayOut.destroy();
@@ -7818,4 +7836,5 @@ describe('Blazor dashboard layout testing', () => {
         gridLayOut.isServerRendered = false;
         expect(document.getElementById("1")).not.toBe(null);
     });
+
 });

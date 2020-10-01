@@ -5,7 +5,7 @@ import { createElement, remove, L10n, EmitType, Browser } from '@syncfusion/ej2-
 import { Query } from '@syncfusion/ej2-data';
 import { VerticalView } from '../../../src/schedule/renderer/vertical-view';
 import {
-    Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, ScheduleModel, TimelineViews, TimelineMonth, Timezone
+    Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, ScheduleModel, TimelineViews, TimelineMonth, Timezone, resetTime
 } from '../../../src/schedule/index';
 import * as util from '../util.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
@@ -397,7 +397,7 @@ describe('Schedule base module', () => {
             (schObj.element.querySelectorAll('.e-content.e-month tr:last-child td')[2] as HTMLElement).click();
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-content.e-month tr:last-child td:nth-last-child(5) span').innerHTML).toEqual('31');
-            expect(schObj.selectedDate).toEqual(new Date(2017, 9, 31));
+            expect(resetTime(new Date(+schObj.selectedDate))).toEqual(new Date(2017, 9, 31));
             expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollLeft).toEqual(5700);
             (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
             (calendarEle.querySelector('.e-day') as HTMLElement).click();
@@ -409,7 +409,7 @@ describe('Schedule base module', () => {
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-content.e-month tr:nth-last-child(4) td:nth-last-child(2) span').innerHTML)
                 .toEqual('17');
-            expect(schObj.selectedDate).toEqual(new Date(2017, 10, 17));
+            expect(resetTime(new Date(+schObj.selectedDate))).toEqual(new Date(2017, 10, 17));
             expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollLeft).toEqual(12900);
         });
 

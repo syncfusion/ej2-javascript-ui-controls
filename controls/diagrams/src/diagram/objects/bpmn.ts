@@ -1435,7 +1435,8 @@ export class BpmnDiagrams {
         } else if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'Activity') || newShape.shape === 'Activity') &&
             newShape.activity) {
             actualObject.wrapper.children[0] = this.getBPMNActivityShape(actualObject);
-        } else if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'Event') || newShape.shape === 'Event') &&
+        } else if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'Event' ||
+        (actualObject.shape as DiagramShapeModel).bpmnShape === 'Event') || newShape.shape === 'Event') &&
             newShape.event) {
             let shapeEvent: Object = newShape.event;
             actualObject.wrapper.children[0] = this.getBPMNEventShape(actualObject, shapeEvent);
@@ -1455,6 +1456,7 @@ export class BpmnDiagrams {
         } else if (newShape.event !== undefined || (actualShape === 'Event' && sizeChanged)) {
             this.updateBPMNEvent(actualObject, changedProp, oldObject);
         }
+        actualObject.wrapper.children[0].id = actualObject.wrapper.children[0].id || elementWrapper.id;
         if (changedProp.style) {
             updateStyle(
                 changedProp.style,

@@ -15,6 +15,7 @@ export interface IGridOptions {
     allowGrouping: boolean;
     groupCount: number;
     allowRowDragAndDrop: boolean;
+    enableAutoFill: boolean;
     hasDropTarget: boolean;
     showDropArea: boolean;
     groupReordering: boolean;

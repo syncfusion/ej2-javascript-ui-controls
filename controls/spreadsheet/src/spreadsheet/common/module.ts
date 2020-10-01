@@ -161,4 +161,7 @@ function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): v
     if (context.allowConditionalFormat) {
         modules.push({ member: 'conditionalFormatting', args: [context] });
     }
+    if (context.allowImage) {
+        modules.push({ member: 'spreadsheetImage', args: [context] });
+    }
 }

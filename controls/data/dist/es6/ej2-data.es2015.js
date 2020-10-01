@@ -31,6 +31,7 @@ class Query {
         this.subQuery = null;
         this.isChild = false;
         this.params = [];
+        this.lazyLoad = [];
         return this;
     }
     /**
@@ -101,6 +102,7 @@ class Query {
         cloned.fKey = this.fKey;
         cloned.isCountRequired = this.isCountRequired;
         cloned.distincts = this.distincts.slice(0);
+        cloned.lazyLoad = this.lazyLoad.slice(0);
         return cloned;
     }
     /**
@@ -703,7 +705,7 @@ class DataUtil {
      * @param  {number} level?
      * @param  {Object[]} groupDs?
      */
-    static group(jsonArray, field, aggregates, level, groupDs, format) {
+    static group(jsonArray, field, aggregates, level, groupDs, format, isLazyLoad) {
         level = level || 1;
         let jsonData = jsonArray;
         let guid = 'GroupGuid';
@@ -713,11 +715,11 @@ class DataUtil {
                     let indx = -1;
                     let temp = groupDs.filter((e) => { return e.key === jsonData[j].key; });
                     indx = groupDs.indexOf(temp[0]);
-                    jsonData[j].items = this.group(jsonData[j].items, field, aggregates, jsonData.level + 1, groupDs[indx].items, format);
+                    jsonData[j].items = this.group(jsonData[j].items, field, aggregates, jsonData.level + 1, groupDs[indx].items, format, isLazyLoad);
                     jsonData[j].count = groupDs[indx].count;
                 }
                 else {
-                    jsonData[j].items = this.group(jsonData[j].items, field, aggregates, jsonData.level + 1, null, format);
+                    jsonData[j].items = this.group(jsonData[j].items, field, aggregates, jsonData.level + 1, null, format, isLazyLoad);
                     jsonData[j].count = jsonData[j].items.length;
                 }
             }
@@ -750,7 +752,9 @@ class DataUtil {
                 }
             }
             grouped[val].count = !isNullOrUndefined(groupDs) ? grouped[val].count : grouped[val].count += 1;
-            grouped[val].items.push(jsonData[i]);
+            if (!isLazyLoad || (isLazyLoad && aggregates.length)) {
+                grouped[val].items.push(jsonData[i]);
+            }
         }
         if (aggregates && aggregates.length) {
             for (let i = 0; i < groupedArray.length; i++) {
@@ -772,6 +776,11 @@ class DataUtil {
                     }
                 }
                 groupedArray[i].aggregates = res;
+            }
+        }
+        if (isLazyLoad && groupedArray.length && aggregates.length) {
+            for (let i = 0; i < groupedArray.length; i++) {
+                groupedArray[i].items = [];
             }
         }
         return jsonData.length && groupedArray || jsonData;
@@ -2498,6 +2507,7 @@ DataUtil.dateParse = {
     }
 };
 
+const consts$1 = { GroupGuid: '{271bbba0-1ee7}' };
 /**
  * Adaptors are specific data source type aware interfaces that are used by DataManager to communicate with DataSource.
  * This is the base adaptor class that other adaptors can extend.
@@ -2563,9 +2573,26 @@ class JsonAdaptor extends Adaptor {
         let countFlg = true;
         let ret;
         let key;
+        let lazyLoad = {};
+        let keyCount = 0;
+        let group = [];
+        let page;
+        for (let i = 0; i < query.lazyLoad.length; i++) {
+            keyCount++;
+            lazyLoad[query.lazyLoad[i].key] = query.lazyLoad[i].value;
+        }
         let agg = {};
         for (let i = 0; i < query.queries.length; i++) {
             key = query.queries[i];
+            if ((key.fn === 'onPage' || key.fn === 'onGroup') && query.lazyLoad.length) {
+                if (key.fn === 'onGroup') {
+                    group.push(key.e);
+                }
+                if (key.fn === 'onPage') {
+                    page = key.e;
+                }
+                continue;
+            }
             ret = this[key.fn].call(this, result, key.e, query);
             if (key.fn === 'onAggregates') {
                 agg[key.e.field + ' - ' + key.e.type] = ret;
@@ -2580,6 +2607,14 @@ class JsonAdaptor extends Adaptor {
                 count = result.length;
             }
         }
+        if (keyCount) {
+            let args = {
+                query: query, lazyLoad: lazyLoad, result: result, group: group, page: page
+            };
+            let lazyLoadData = this.lazyLoadGroup(args);
+            result = lazyLoadData.result;
+            count = lazyLoadData.count;
+        }
         if (query.isCountRequired) {
             result = {
                 result: result,
@@ -2588,6 +2623,70 @@ class JsonAdaptor extends Adaptor {
             };
         }
         return result;
+    }
+    /**
+     * Perform lazy load grouping in JSON array based on the given query and lazy load details.
+     * @param  {LazyLoadGroupArgs} args
+     */
+    lazyLoadGroup(args) {
+        let count = 0;
+        let agg = this.getAggregate(args.query);
+        let result = args.result;
+        if (!isNullOrUndefined(args.lazyLoad.onDemandGroupInfo)) {
+            let req = args.lazyLoad.onDemandGroupInfo;
+            for (let i = req.where.length - 1; i >= 0; i--) {
+                result = this.onWhere(result, req.where[i]);
+            }
+            if (args.group.length !== req.level) {
+                let field = args.group[req.level].fieldName;
+                result = DataUtil.group(result, field, agg, null, null, args.group[0].comparer, true);
+            }
+            count = result.length;
+            let data = result;
+            result = result.slice(req.skip);
+            result = result.slice(0, req.take);
+            if (args.group.length !== req.level) {
+                this.formGroupResult(result, data);
+            }
+        }
+        else {
+            let field = args.group[0].fieldName;
+            result = DataUtil.group(result, field, agg, null, null, args.group[0].comparer, true);
+            count = result.length;
+            let data = result;
+            result = this.onPage(result, args.page, args.query);
+            this.formGroupResult(result, data);
+        }
+        return { result: result, count: count };
+    }
+    formGroupResult(result, data) {
+        if (result.length && data.length) {
+            let uid = 'GroupGuid';
+            let childLevel = 'childLevels';
+            let level = 'level';
+            let records = 'records';
+            result[uid] = data[uid];
+            result[childLevel] = data[childLevel];
+            result[level] = data[level];
+            result[records] = data[records];
+        }
+        return result;
+    }
+    /**
+     * Separate the aggregate query from the given queries
+     * @param  {Query} query
+     */
+    getAggregate(query) {
+        let aggQuery = Query.filterQueries(query.queries, 'onAggregates');
+        let agg = [];
+        if (aggQuery.length) {
+            let tmp;
+            for (let i = 0; i < aggQuery.length; i++) {
+                tmp = aggQuery[i].e;
+                agg.push({ type: tmp.type, field: DataUtil.getValue(tmp.field, query) });
+            }
+        }
+        return agg;
     }
     /**
      * Performs batch update in the JSON array which add, remove and update records.
@@ -2700,15 +2799,7 @@ class JsonAdaptor extends Adaptor {
         if (!ds || !ds.length) {
             return ds;
         }
-        let aggQuery = Query.filterQueries(query.queries, 'onAggregates');
-        let agg = [];
-        if (aggQuery.length) {
-            let tmp;
-            for (let i = 0; i < aggQuery.length; i++) {
-                tmp = aggQuery[i].e;
-                agg.push({ type: tmp.type, field: DataUtil.getValue(tmp.field, query) });
-            }
-        }
+        let agg = this.getAggregate(query);
         return DataUtil.group(ds, DataUtil.getValue(e.fieldName, query), agg, null, null, e.comparer);
     }
     /**
@@ -2843,6 +2934,7 @@ class UrlAdaptor extends Adaptor {
      * @param  {Object[]} hierarchyFilters?
      * @returns p
      */
+    // tslint:disable-next-line:max-func-body-length
     processQuery(dm, query, hierarchyFilters) {
         let queries = this.getQueryRequest(query);
         let singles = Query.filterQueryLists(query.queries, ['onSelect', 'onPage', 'onSkip', 'onTake', 'onRange']);
@@ -2910,6 +3002,11 @@ class UrlAdaptor extends Adaptor {
         this.getRequestQuery(options, query, singles, request, req);
         // Params
         DataUtil.callAdaptorFunction(this, 'addParams', { dm: dm, query: query, params: params, reqParams: req });
+        if (query.lazyLoad.length) {
+            for (let i = 0; i < query.lazyLoad.length; i++) {
+                req[query.lazyLoad[i].key] = query.lazyLoad[i].value;
+            }
+        }
         // cleanup
         let keys = Object.keys(req);
         for (let prop of keys) {
@@ -3014,8 +3111,60 @@ class UrlAdaptor extends Adaptor {
             args.count = data.count;
         }
         args.result = data && data.result ? data.result : data;
-        this.getAggregateResult(pvt, data, args, groupDs, query);
+        let isExpand = false;
+        if (Array.isArray(data.result) && data.result.length) {
+            let key = 'key';
+            let val = 'value';
+            let level = 'level';
+            if (!isNullOrUndefined(data.result[0][key])) {
+                args.result = this.formRemoteGroupedData(args.result, 1, pvt.groups.length - 1);
+            }
+            if (query.lazyLoad.length && pvt.groups.length) {
+                for (let i = 0; i < query.lazyLoad.length; i++) {
+                    if (query.lazyLoad[i][key] === 'onDemandGroupInfo') {
+                        let value = query.lazyLoad[i][val][level];
+                        if (pvt.groups.length === value) {
+                            isExpand = true;
+                        }
+                    }
+                }
+            }
+        }
+        if (!isExpand) {
+            this.getAggregateResult(pvt, data, args, groupDs, query);
+        }
         return DataUtil.isNull(args.count) ? args.result : { result: args.result, count: args.count, aggregates: args.aggregates };
+    }
+    formRemoteGroupedData(data, level, childLevel) {
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].items.length && Object.keys(data[i].items[0]).indexOf('key') > -1) {
+                this.formRemoteGroupedData(data[i].items, level + 1, childLevel - 1);
+            }
+        }
+        let uid = 'GroupGuid';
+        let childLvl = 'childLevels';
+        let lvl = 'level';
+        let records = 'records';
+        data[uid] = consts$1[uid];
+        data[lvl] = level;
+        data[childLvl] = childLevel;
+        data[records] = data[0].items.length ? this.getGroupedRecords(data, !isNullOrUndefined(data[0].items[records])) : [];
+        return data;
+    }
+    getGroupedRecords(data, hasRecords) {
+        let childGroupedRecords = [];
+        let records = 'records';
+        for (let i = 0; i < data.length; i++) {
+            if (!hasRecords) {
+                for (let j = 0; j < data[i].items.length; j++) {
+                    childGroupedRecords.push(data[i].items[j]);
+                }
+            }
+            else {
+                childGroupedRecords = childGroupedRecords.concat(data[i].items[records]);
+            }
+        }
+        return childGroupedRecords;
     }
     /**
      * Add the group query to the adaptor`s option.
@@ -3171,7 +3320,9 @@ class UrlAdaptor extends Adaptor {
             }
             args.aggregates = res;
         }
-        if (pvt && pvt.groups && pvt.groups.length) {
+        let key = 'key';
+        let isServerGrouping = Array.isArray(data.result) && data.result.length && !isNullOrUndefined(data.result[0][key]);
+        if (pvt && pvt.groups && pvt.groups.length && !isServerGrouping) {
             let groups = pvt.groups;
             for (let i = 0; i < groups.length; i++) {
                 let level = null;

@@ -125,7 +125,6 @@
     z-index: 1;
   }
 
-
   .e-de-ff-drpdwn-listview {
     margin-right: 12px;
     width: 100%;
@@ -859,17 +858,17 @@
         background-color: $de-style-dlg-btn-bg-color;
         border-color: $de-style-dlg-btn-border-color;
 
-        &:focus {
+        #{if(&, '&', '*')}:focus {
           background-color: $de-style-btn-bg-color;
           box-shadow: $de-toggle-btn-border;
         }
 
-        &:active {
+        #{if(&, '&', '*')}:active {
           background-color: $de-style-btn-bg-color;
           box-shadow: $de-toggle-btn-border;
         }
 
-        &:hover {
+        #{if(&, '&', '*')}:hover {
           background-color: $de-style-btn-bg-color;
           box-shadow: $de-toggle-btn-border;
         }
@@ -2973,11 +2972,11 @@
     //height: 26px;
     //width: 26px;
     border: none;
-    &:active {
+    #{if(&, '&', '*')}:active {
       background-color: $dialog-closeicon-btn-active-color;
       box-shadow: none;
     }
-    &:hover {
+    #{if(&, '&', '*')}:hover {
       background-color: $dialog-closeicon-btn-hover-color;
       box-shadow: none;
       color: $dialog-active-icon-color;

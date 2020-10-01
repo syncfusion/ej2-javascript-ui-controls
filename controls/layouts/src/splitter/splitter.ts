@@ -2154,6 +2154,8 @@ export class Splitter extends Component<HTMLElement> {
         toElement.innerHTML = '';
         template = typeof(template) === 'string' ? this.sanitizeHelper(template) : template;
         this.templateCompile(toElement, template);
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.renderReactTemplates(); }
     }
 
     // tslint:disable-next-line
@@ -2208,7 +2210,7 @@ export class Splitter extends Component<HTMLElement> {
                 templateFUN = templateFn({}, this, prop, this.element.id + 'content' + this.allPanes.length.toString(), true);
             }
         }
-        if (!isNullOrUndefined(templateFn) && templateFUN.length > 0) {
+        if (!isNullOrUndefined(templateFn) && templateFUN && templateFUN.length > 0) {
             [].slice.call(templateFUN).forEach((el: HTMLElement): void => {
                 ele.appendChild(el);
             });
@@ -2313,6 +2315,8 @@ export class Splitter extends Component<HTMLElement> {
                 this.allPanes = [];
             }
             this.restoreElem();
+            // tslint:disable-next-line:no-any
+            if ((this as any).isReact) { this.clearTemplate(); }
         }
     }
 

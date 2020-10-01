@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, rippleEffect, NotifyPropertyChanges, Property, closest } from '@syncfusion/ej2-base';import { addClass, getInstance, getUniqueID, isRippleEnabled, removeClass, attributes, isNullOrUndefined } from '@syncfusion/ej2-base';import { BaseEventArgs, detach, EmitType, Event, EventHandler, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { wrapperInitialize, rippleMouseHandler } from './../common/common';
+import { Component, INotifyPropertyChanged, rippleEffect, NotifyPropertyChanges, Property, closest } from '@syncfusion/ej2-base';import { addClass, getInstance, getUniqueID, isRippleEnabled, removeClass, attributes, isNullOrUndefined } from '@syncfusion/ej2-base';import { BaseEventArgs, detach, EmitType, Event, EventHandler, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { wrapperInitialize, rippleMouseHandler } from './../common/common';
 import {ChangeArgs,RadioLabelPosition} from "./radio-button";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -10,14 +10,12 @@ export interface RadioButtonModel extends ComponentModel{
     /**
      * Event trigger when the RadioButton state has been changed by user interaction.
      * @event
-     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ChangeArgs>;
 
     /**
      * Triggers once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 

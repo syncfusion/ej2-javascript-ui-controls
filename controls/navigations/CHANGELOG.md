@@ -2,13 +2,13 @@
 
 ## [Unreleased]
 
-## 18.2.55 (2020-08-25)
+## 18.3.35 (2020-10-01)
 
-### Context Menu
+### TreeView
 
 #### Bug Fixes
 
-- Issue with item selection has been fixed.
+- Standardized the spacing between two TreeView nodes in the Bootstrap4 theme.
 
 ## 18.2.54 (2020-08-18)
 
@@ -19,14 +19,6 @@
 - `#286992` - The issue with rendering the TreeView with hierarchical data source using the offline property has been resolved
 
 ## 18.2.47 (2020-07-28)
-
-### Menu
-
-#### Bug Fixes
-
-- An issue with 'showItemOnClick' option has been fixed.
-
-## 18.2.46 (2020-07-21)
 
 ### Tab
 

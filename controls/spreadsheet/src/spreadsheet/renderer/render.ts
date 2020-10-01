@@ -1,11 +1,11 @@
-import { initialLoad, ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, setAriaOptions } from '../common/index';
+import { initialLoad, ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, setAriaOptions, getSiblingsHeight } from '../common/index';
 import { SheetRender, RowRenderer, CellRenderer } from './index';
 import { Spreadsheet } from '../base/index';
 import { remove } from '@syncfusion/ej2-base';
 import { CellModel, SheetModel, getSheetName, getRowsHeight, getColumnsWidth } from '../../workbook/base/index';
 import { getCellAddress, getCellIndexes, workbookFormulaOperation } from '../../workbook/common/index';
 import { dataRefresh, RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound } from '../common/index';
-import { spreadsheetDestroyed, getSiblingsHeight } from '../common/index';
+import { spreadsheetDestroyed } from '../common/index';
 
 /**
  * Render module is used to render the spreadsheet

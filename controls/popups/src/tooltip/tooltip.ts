@@ -457,6 +457,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private closePopupHandler(): void {
         resetBlazorTemplate(this.element.id + 'content', 'Content');
+        this.clearTemplate(['content']);
         this.clear();
         this.trigger('afterClose', this.tooltipEventArgs);
     }
@@ -607,7 +608,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     tooltipContent.innerHTML = this.content;
                 } else {
                     let templateFunction: Function = compile(this.content);
-                    append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
+                    let tempArr: Element[] = templateFunction(
+                                                {}, this, 'content', this.element.id + 'content', undefined, undefined, tooltipContent);
+                    if (tempArr) {
+                        append(tempArr, tooltipContent);
+                    }
+                    this.renderReactTemplates();
                     if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
                         this.isBlazorTemplate = true;
                         updateBlazorTemplate(this.element.id + 'content', 'Content', this);
@@ -969,7 +975,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
     private popupHide(hideAnimation: TooltipAnimationSettings, target: HTMLElement): void {
-        this.clearTemplate();
         if (target) { this.restoreElement(target); }
         this.isHidden = true;
         let closeAnimation: Object = {

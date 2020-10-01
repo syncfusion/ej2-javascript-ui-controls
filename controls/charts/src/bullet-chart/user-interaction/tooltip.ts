@@ -116,9 +116,11 @@ export class BulletTooltip {
             if (this.control.tooltip.template !== '' && this.control.tooltip.template != null) {
                 this.updateTemplateFn();
                 let elem: Element = this.control.createElement('div', { id: this.control.element.id + 'parent_template' });
-                let templateElement: HTMLCollection = this.templateFn(blazorTooltipData, null, null, elem.id + '_blazorTemplate', '');
+                let templateElement: HTMLCollection = this.templateFn(
+                        blazorTooltipData, this.control, 'template', elem.id + '_blazorTemplate', '', null, elem
+                    );
                 while (templateElement && templateElement.length > 0) {
-                    if (isBlazor()) {
+                    if (isBlazor() || templateElement.length === 1) {
                         elem.appendChild(templateElement[0]);
                         templateElement = null;
                     } else {
@@ -177,6 +179,8 @@ export class BulletTooltip {
                     document.getElementById(targetId).setAttribute('opacity', '0.6');
                 }
             }
+            // tslint:disable-next-line:no-any
+            (this.control as any).renderReactTemplates();
         }
     }
 

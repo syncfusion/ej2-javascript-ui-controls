@@ -35,12 +35,12 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
             done();
         });
 
-        it('Sheets List icon testing', (done: Function) => {
-            helper.click('.e-sheets-list');
-            let popUpElem: HTMLElement = helper.getElement('.e-dropdown-popup.e-sheets-list')
-            expect(popUpElem.firstElementChild.childElementCount).toBe(2);
-            done();
-        });
+        // it('Sheets List icon testing', (done: Function) => {
+        //     helper.click('.e-sheets-list');
+        //     let popUpElem: HTMLElement = helper.getElement('.e-dropdown-popup.e-sheets-list')
+        //     expect(popUpElem.firstElementChild.childElementCount).toBe(2);
+        //     done();
+        // });
 
         it('Sheet rename testing', (done: Function) => {
             helper.triggerMouseAction('dblclick', null, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-items'), helper.getElementFromSpreadsheet('.e-sheet-tab .e-active .e-text-wrap'));

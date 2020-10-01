@@ -381,7 +381,13 @@ export class CanvasRenderer {
                 ctx.drawImage(image, x, y, width, height);
             }
         } else {
-            ctx.drawImage(image, x, y, width, height);
+            if (image.complete) {
+                ctx.drawImage(image, x, y, width, height);
+            } else {
+                image.onload = () => {
+                    ctx.drawImage(image, x, y, width, height);
+                };
+            }
         }
         ctx.closePath();
     }

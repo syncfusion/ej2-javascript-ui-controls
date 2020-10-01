@@ -31,6 +31,7 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
      * @param  {Cell} cell
      * @param  {Object} data         
      */
+    /* tslint:disable-next-line:max-func-body-length */
     public render(cell: Cell<Column>, data: Object): Element {
         let tr: Element = this.parent.element.querySelector('.e-filterbar');
         let node: Element = this.element.cloneNode() as Element;
@@ -45,9 +46,15 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
             let col: string = 'column';
             fltrData[col] = column;
             if (column.visible) {
+                let isReactCompiler: boolean = this.parent.isReact && typeof (column.filterTemplate) !== 'string';
                 let tempID: string = this.parent.element.id + column.uid + 'filterTemplate';
-                let element: Element[] = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
-                appendChildren(node, element);
+                if (isReactCompiler) {
+                    column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID, null, null, node);
+                    this.parent.renderTemplates();
+                } else {
+                    let element: Element[] = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
+                    appendChildren(node, element);
+                }
             } else { node.classList.add('e-hide'); }
         } else {
             if (column.type !== 'checkbox') {

@@ -1,12 +1,12 @@
 @include export-module('field-list-icons') {
   /*! field-list component icons */
-  #{&}.e-pivotfieldlist {
+  .e-pivotfieldlist {
     .e-select-table::before {
       content: '\e434';
     }
   }
 
-  #{&}.e-pivot-formatting-dialog {
+  .e-pivot-formatting-dialog {
     .e-format-delete-icon::before {
       content: '\ea7f';
     }
@@ -24,13 +24,13 @@
     }
   }
 
-  #{&}.e-level-options {
+  .e-level-options {
     .e-selected-level-icon::before {
       content: '\e614';
     }
   }
 
-  #{&}.e-pivot-calc-dialog-div {
+  .e-pivot-calc-dialog-div {
     .e-drag::before {
       content: '\e330';
     }
@@ -162,7 +162,7 @@
     // sass-lint:enable-all
   }
 
-  #{&}.e-pivotfieldlist-wrapper {
+  .e-pivotfieldlist-wrapper {
     .e-field-list-back-icon::before {
       content: '\e610';
     }

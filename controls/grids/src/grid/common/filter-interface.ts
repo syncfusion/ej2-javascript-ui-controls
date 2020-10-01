@@ -32,6 +32,8 @@ export interface IXLFilter extends Component<HTMLElement> {
     getColumnByField?: Function;
     dataSource?: Object[] | DataManager;
     getForeignKeyColumns?: Function;
+    isReact?: boolean;
+    renderTemplates?: Function;
 }
 
 /** @hidden */

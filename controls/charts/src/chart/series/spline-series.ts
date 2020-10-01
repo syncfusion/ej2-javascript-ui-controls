@@ -22,8 +22,8 @@ export class SplineSeries extends SplineBase {
         let firstPoint: Points = null;
         let direction: string = '';
         let startPoint: string = 'M';
-        let points: Points[] = []; let tempPoints: Points[] = [];
-        tempPoints = this.enableComplexProperty(series);
+        let points: Points[] = [];
+        let tempPoints: Points[] = series.category === 'TrendLine' ? series.points : this.enableComplexProperty(series);
         points = this.filterEmptyPoints(series, tempPoints);
         let previous: number;
         let getCoordinate: Function = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;

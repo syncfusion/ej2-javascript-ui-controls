@@ -2,27 +2,6 @@
 
 ## [Unreleased]
 
-## 18.2.58 (2020-09-15)
-
-### PDF Viewer
-
-#### Bug Fixes
-
-- `#F156838` - The exportSuccess event triggers properly if we export the form fields data using ExportFormFieldsAsObject method.
-
-## 18.2.57 (2020-09-08)
-
-### PDF Viewer
-
-#### New Features
-
-- `#283678` - Exposed the method for deleting the annotations.
-- `#289426` - Provided the support to import the annotations based on the annotationCollection.
-
-#### Bug Fixes
-
-- `#285509` - Now, the signature is loaded Properly in the PDF document.
-
 ## 18.2.56 (2020-09-01)
 
 ### PDF Viewer

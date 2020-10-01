@@ -1,5 +1,5 @@
 @include export-module('splitter-layout') {
-  #{&}.e-splitter {
+  .e-splitter {
 
     &.e-splitter-horizontal,
     &.e-splitter-vertical {
@@ -346,7 +346,7 @@
     }
   }
 
-  .e-bigger#{&}.e-splitter {
+  .e-bigger.e-splitter {
     .e-pane {
       font-size: $bigger-splitpane-font-size;
     }
@@ -378,13 +378,13 @@
     }
   }
 
-  .e-rtl #{&}.e-splitter {
+  .e-rtl .e-splitter {
     &.e-splitter-horizontal {
       flex-direction: row-reverse;
     }
   }
 
-  .e-bigger  #{&}.e-splitter {
+  .e-bigger  .e-splitter {
     .e-pane {
       font-size: $bigger-splitpane-font-size;
     }

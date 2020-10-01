@@ -6,11 +6,11 @@
   }
 
   .e-time-wrapper,
-  &.e-control-wrapper.e-time-wrapper {
+  #{if(&, '&', '*')}.e-control-wrapper.e-time-wrapper {
     // sass-lint:disable no-vendor-prefixes
     -webkit-tap-highlight-color: transparent;
 
-    & .e-time-icon.e-icons {
+    #{if(&, '&', '*')} .e-time-icon.e-icons {
       font-size: $timepicker-icon-normal-font-size;
       @if $skin-name == 'material' or $skin-name == 'material-dark' {
         min-height: $timepicker-normal-input-min-height;
@@ -19,16 +19,16 @@
 
     }
 
-    & .e-time-icon.e-icons.e-disabled {
+    #{if(&, '&', '*')} .e-time-icon.e-icons.e-disabled {
       pointer-events: none;
     }
 
-    & span {
+    #{if(&, '&', '*')} span {
       cursor: pointer;
     }
   }
 
-  #{&}.e-timepicker.e-time-modal {
+  .e-timepicker.e-time-modal {
     background-color: $timepicker-default-overlay;
     height: 100%;
     left: 0;
@@ -40,20 +40,20 @@
     z-index: 999;
 	}
 
-  #{&}.e-timepicker.e-popup {
+  .e-timepicker.e-popup {
     border-style: solid;
     border-width: 1px;
     overflow: auto;
 
-    & .e-content {
+    #{if(&, '&', '*')} .e-content {
       position: relative;
     }
 
-    & .e-list-parent.e-ul {
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
       margin: 0;
       padding: $timepicker-list-normal-padding 0;
 
-      & .e-list-item {
+      #{if(&, '&', '*')} .e-list-item {
         cursor: default;
         font-size: $timepicker-list-normal-font-size;
         overflow: hidden;
@@ -64,7 +64,7 @@
         width: 100%;
       }
 
-      & .e-list-item.e-hover {
+      #{if(&, '&', '*')} .e-list-item.e-hover {
         cursor: pointer;
       }
     }
@@ -72,8 +72,8 @@
 
   //normal styles
 
-  #{&}.e-timepicker.e-popup {
-    & .e-list-parent.e-ul .e-list-item {
+  .e-timepicker.e-popup {
+    #{if(&, '&', '*')} .e-list-parent.e-ul .e-list-item {
       line-height: $timepicker-list-normal-line-height;
       text-indent: $timepicker-list-normal-text-indent;
     }
@@ -81,11 +81,11 @@
 
   //bigger styles
   .e-bigger .e-time-wrapper,
-  &.e-bigger.e-time-wrapper,
-  &.e-bigger .e-control-wrapper .e-time-wrapper,
-  &.e-control-wrapper.e-bigger.e-time-wrapper {
+  #{if(&, '&', '*')}.e-bigger.e-time-wrapper,
+  #{if(&, '&', '*')}.e-bigger .e-control-wrapper .e-time-wrapper,
+  #{if(&, '&', '*')}.e-control-wrapper.e-bigger.e-time-wrapper {
 
-    & .e-time-icon.e-icons {
+    #{if(&, '&', '*')} .e-time-icon.e-icons {
       font-size: $timepicker-icon-bigger-font-size;
       @if $skin-name == 'material' or $skin-name == 'material-dark' {
         min-height: $timepicker-bigger-input-min-height;
@@ -94,13 +94,13 @@
     }
   }
 
-  .e-bigger #{&}.e-timepicker.e-popup,
-  &.e-bigger#{&}.e-timepicker.e-popup {
+  .e-bigger .e-timepicker.e-popup,
+  #{if(&, '&', '*')}.e-bigger.e-timepicker.e-popup {
 
-    & .e-list-parent.e-ul {
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
       padding: $timepicker-list-bigger-padding 0;
 
-      & .e-list-item {
+      #{if(&, '&', '*')} .e-list-item {
         font-size: $timepicker-list-bigger-font-size;
         line-height: $timepicker-list-bigger-line-height;
         text-indent: $timepicker-list-bigger-text-indent;
@@ -109,11 +109,11 @@
   }
 
   //mouse small size
-  .e-small #{&}.e-timepicker.e-popup,
-  &.e-small#{&}.e-timepicker.e-popup {
+  .e-small .e-timepicker.e-popup,
+  #{if(&, '&', '*')}.e-small.e-timepicker.e-popup {
 
-    & .e-list-parent.e-ul {
-      & .e-list-item {
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
+      #{if(&, '&', '*')} .e-list-item {
         font-size: $timepicker-list-small-font-size;
         line-height: $timepicker-list-small-line-height;
         text-indent: $timepicker-list-small-text-indent;
@@ -122,21 +122,21 @@
   }
 
   .e-small .e-time-wrapper,
-  &.e-small.e-time-wrapper,
-  &.e-small .e-control-wrapper.e-time-wrapper,
-  &.e-control-wrapper.e-small.e-time-wrapper {
+  #{if(&, '&', '*')}.e-small.e-time-wrapper,
+  #{if(&, '&', '*')}.e-small .e-control-wrapper.e-time-wrapper,
+  #{if(&, '&', '*')}.e-control-wrapper.e-small.e-time-wrapper {
 
-    & .e-time-icon.e-icons {
+    #{if(&, '&', '*')} .e-time-icon.e-icons {
       font-size: $timepicker-icon-small-font-size;
     }
   }
 
   //mouse small size
-  .e-small.e-bigger #{&}.e-timepicker.e-popup,
-  &.e-small.e-bigger#{&}.e-timepicker.e-popup {
+  .e-small.e-bigger .e-timepicker.e-popup,
+  #{if(&, '&', '*')}.e-small.e-bigger.e-timepicker.e-popup {
 
-    & .e-list-parent.e-ul {
-      & .e-list-item {
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
+      #{if(&, '&', '*')} .e-list-item {
         font-size: $timepicker-list-bigger-small-font-size;
         line-height: $timepicker-list-bigger-small-line-height;
         text-indent: $timepicker-list-bigger-small-text-indent;
@@ -145,11 +145,11 @@
   }
 
   .e-small.e-bigger .e-time-wrapper,
-  &.e-small.e-bigger.e-time-wrapper,
-  &.e-small.bigger .e-control-wrapper.e-time-wrapper,
-  &.e-control-wrapper.e-small.bigger.e-time-wrapper {
+  #{if(&, '&', '*')}.e-small.e-bigger.e-time-wrapper,
+  #{if(&, '&', '*')}.e-small.bigger .e-control-wrapper.e-time-wrapper,
+  #{if(&, '&', '*')}.e-control-wrapper.e-small.bigger.e-time-wrapper {
 
-    & .e-time-icon.e-icons {
+    #{if(&, '&', '*')} .e-time-icon.e-icons {
       font-size: $timepicker-icon-bigger-small-font-size;
     }
   }

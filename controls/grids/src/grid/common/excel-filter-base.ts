@@ -333,6 +333,10 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 }
             }
         }
+        if (this.parent.isReact) {
+            this.parent.destroyTemplate(['filterTemplate']);
+            this.parent.renderTemplates();
+        }
         this.removeObjects([this.dropOptr, this.datePicker, this.dateTimePicker, this.actObj, this.numericTxtObj, this.dlgObj]);
         remove(this.dlgDiv);
     }
@@ -649,9 +653,15 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             if (isFilteredCol && elementId) {
                 data = this.getExcelFilterData(elementId, data, columnObj, predicates, fltrPredicates);
             }
+            let isReactCompiler: boolean = this.parent.isReact && typeof (this.options.column.filterTemplate) !== 'string';
             let tempID: string = this.parent.element.id + columnObj.uid + 'filterTemplate';
-            let element: Element[] = (this.options.column as Column).getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
-            appendChildren(valueDiv, element);
+            if (isReactCompiler) {
+                (this.options.column as Column).getFilterTemplate()(data, this.parent, 'filterTemplate', tempID, null, null, valueDiv);
+                this.parent.renderTemplates();
+            } else {
+                let element: Element[] = (this.options.column as Column).getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
+                appendChildren(valueDiv, element);
+            }
             if (isBlazor()) {
                 valueDiv.children[0].classList.add(elementId);
                 if ((this.dlgDiv.querySelectorAll('.e-xlfl-value') as NodeList).length > 1) {

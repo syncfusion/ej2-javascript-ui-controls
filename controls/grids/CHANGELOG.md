@@ -2,17 +2,14 @@
 
 ## [Unreleased]
 
-## 18.2.59 (2020-09-21)
+## 18.3.35 (2020-10-01)
 
 ### Grid
 
-#### Bug Fixes
+#### New Features
 
-- `#283675` - Excel custom filtered value issue has been resolved.
-- `#291032` - String column Change event issue has been fixed.
-- `#291960` - resize handler height issue with auto wrap has been fixed.
-- `#293441` - Improved the Checkbox filter module with keyboard navigation.
-- `#287676` - Mouse position issue when row dragged, has been fixed.
+- `#279959, #278895` - Provided lazy load grouping support.
+- `#252918` - Provided immutable mode and methods support.
 
 ## 18.2.58 (2020-09-15)
 

@@ -458,7 +458,13 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             args.columns = this.columns;
             args.operators = this.getOperators(rule.field);
             args.operatorFields = { text: 'key', value: 'value' };
-            template = this.ruleTemplateFn(args, this, 'Template', templateID);
+            // tslint:disable
+            if (this.isReact) {
+                template = this.ruleTemplateFn(args, this, ruleElem.id, templateID);
+            }
+            else {
+                template = this.ruleTemplateFn(args, this, 'Template', templateID);
+            }
             elem = template[0];
             elem.className += ' e-rule-field';
         }
@@ -466,6 +472,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             elem = this.ruleElem.querySelector('.e-rule-field').cloneNode(true);
         }
         ruleElem.appendChild(elem);
+        if (column && column.ruleTemplate) {
+            this.renderReactTemplates();
+        }
         return ruleElem;
     };
     QueryBuilder.prototype.addRuleElement = function (target, rule, column, action, parentId, isRuleTemplate) {
@@ -598,6 +607,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             var parentId = closest(element, '.e-rule-container').id;
             if (this.previousColumn && this.previousColumn.ruleTemplate) {
                 detach(element.closest('#' + parentId).querySelector('.e-rule-field'));
+                this.clearTemplate([parentId]);
             }
             if (column) {
                 var rule_1 = { field: column.field, label: column.label, operator: operVal[0].value, value: '' };
@@ -2295,6 +2305,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         this.unWireEvents();
         this.levelColl[this.element.id + '_group0'] = [0];
         this.element.innerHTML = '';
+        // tslint:disable
+        if (this.portals && this.portals.length) {
+            this.clearTemplate();
+        }
         classList(this.element, [], ['e-rtl', 'e-responsive', 'e-device']);
     };
     /**
@@ -2839,10 +2853,27 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     addClass([prevElem], 'e-prev-joined-rule');
                 }
             }
+            var elem = groupElem.parentElement.parentElement.parentElement;
+            var removeString = [];
+            // tslint:disable
+            if (this.isReact) {
+                var remRule = rule.rules[index];
+                var ruleElemColl = target.querySelectorAll('.e-rule-container');
+                if (remRule && remRule.rules) {
+                    for (var r = 0; r < remRule.rules.length; r++) {
+                        var column = this.getColumn(remRule.rules[r].field);
+                        if (column && column.ruleTemplate) {
+                            removeString.push(ruleElemColl[r].id);
+                        }
+                    }
+                }
+            }
+            detach(target);
+            if (removeString.length) {
+                this.clearTemplate(removeString);
+            }
             rule.rules.splice(index, 1);
             delete this.levelColl[args.groupID];
-            var elem = groupElem.parentElement.parentElement.parentElement;
-            detach(target);
             this.refreshLevelColl();
             this.disableRuleCondition(elem, rule);
             if (!this.isImportRules) {
@@ -2896,7 +2927,6 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             if (column && column.template) {
                 this.templateDestroy(column, clnruleElem.querySelector('.e-template').id);
             }
-            rule.rules.splice(index, 1);
             if (!prevElem || prevElem.className.indexOf('e-rule-container') < 0) {
                 if (nextElem) {
                     removeClass([nextElem], 'e-joined-rule');
@@ -2908,6 +2938,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             detach(clnruleElem);
+            if (column && column.ruleTemplate) {
+                this.clearTemplate([ruleElem.id]);
+            }
+            rule.rules.splice(index, 1);
             if (!(rule.rules[0] && rule.rules[0].rules)) {
                 this.disableRuleCondition(groupElem, rule);
             }

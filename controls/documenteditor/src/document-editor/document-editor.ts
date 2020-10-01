@@ -230,6 +230,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public searchModule: Search;
+    private createdTriggered: boolean = false;
     /**
      * Default Paste Formatting Options
      * @default KeepSourceFormatting
@@ -895,8 +896,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         this.documentHelper.initializeComponents();
-        this.renderComplete();
         this.openBlank();
+        this.renderComplete();
+        this.createdTriggered = true;
     }
     /**
      * Get component name
@@ -1121,7 +1123,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.editorModule.predictText();
         }
         let eventArgs: SelectionChangeEventArgs = { source: isBlazor() ? null : this };
+        // if (this.createdTriggered) {
         this.trigger('selectionChange', eventArgs);
+        // }
     }
     /**
      * @private
@@ -1144,6 +1148,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         let eventArgs: FormFieldFillEventArgs = {};
         this.trigger('afterFieldFill', eventArgs);
     }
+
     /**
      * @private
      */
@@ -1804,7 +1809,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Inserted': 'Inserted',
         'Deleted': 'Deleted',
         'Move From': 'Move From',
-        'Move To' : 'Move To',
+        'Move To': 'Move To',
         'Changes': 'Changes',
         'Accept all': 'Accept all',
         'Reject all': 'Reject all',

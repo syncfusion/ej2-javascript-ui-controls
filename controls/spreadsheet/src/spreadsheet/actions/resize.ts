@@ -3,7 +3,7 @@ import { closest, EventHandler } from '@syncfusion/ej2-base';
 import { colWidthChanged, rowHeightChanged, beforeHeaderLoaded, contentLoaded, hideShow, getFilterRange } from '../common/index';
 import { findMaxValue, setResize, autoFit, HideShowEventArgs, completeAction, setAutoFit } from '../common/index';
 import { setRowHeight, isHiddenRow, SheetModel, getRowHeight, getColumnWidth, setColumn, isHiddenCol } from '../../workbook/base/index';
-import { getColumn, setRow } from '../../workbook/base/index';
+import { getColumn, setRow, getCell } from '../../workbook/base/index';
 import { getRangeIndexes, getSwapRange, CellStyleModel, getCellIndexes, setMerge, MergeArgs } from '../../workbook/common/index';
 
 /**
@@ -262,32 +262,38 @@ export class Resize {
         let headerRow: HTMLCollectionOf<HTMLTableRowElement> =
             headerTable.getElementsByTagName('tr') as HTMLCollectionOf<HTMLTableRowElement>;
         }
-        let headerText: HTMLElement;
+        let headerText: HTMLElement; let isWrap: boolean = false;
         if (isCol) {
             let rowLength: number = sheet.rows.length;
             for (let rowIdx: number = 0; rowIdx < rowLength; rowIdx++) {
                 if (sheet.rows[rowIdx] && sheet.rows[rowIdx].cells && sheet.rows[rowIdx].cells[idx]) {
-                    let td: HTMLElement = this.parent.createElement('td', {
-                        className: 'e-cell',
-                        innerHTML: this.parent.getDisplayText(sheet.rows[rowIdx].cells[idx])
-                    });
-                    if (sheet.rows[rowIdx].cells[idx].style) {
-                        let style: CellStyleModel = sheet.rows[rowIdx].cells[idx].style;
-                        if (style.fontFamily) {
-                            td.style.fontFamily = style.fontFamily;
+                        if (getCell(rowIdx, idx, sheet).wrap) {
+                            isWrap = true;
                         }
-                        if (style.fontSize) {
-                            td.style.fontSize = style.fontSize;
+                        let td: HTMLElement = this.parent.createElement('td', {
+                            className: 'e-cell',
+                            innerHTML: this.parent.getDisplayText(sheet.rows[rowIdx].cells[idx])
+                        });
+                        if (sheet.rows[rowIdx].cells[idx].style) {
+                            let style: CellStyleModel = sheet.rows[rowIdx].cells[idx].style;
+                            if (style.fontFamily) {
+                                td.style.fontFamily = style.fontFamily;
+                            }
+                            if (style.fontSize) {
+                                td.style.fontSize = style.fontSize;
+                            }
                         }
-                    }
-                    contentClone[index] = td;
-                    index++;
+                        contentClone[index] = td;
+                        index++;
                 }
             }
         } else {
             let colLength: number = sheet.rows[idx] && sheet.rows[idx].cells ? sheet.rows[idx].cells.length : 0;
             for (let colIdx: number = 0; colIdx < colLength; colIdx++) {
                 if (sheet.rows[idx] && sheet.rows[idx].cells[colIdx]) {
+                    if (getCell(idx, colIdx, sheet).wrap) {
+                        isWrap = true;
+                    }
                     let style: CellStyleModel = sheet.rows[idx].cells[colIdx].style;
                     let td: HTMLElement = this.parent.createElement('td', {
                         innerHTML: this.parent.getDisplayText(sheet.rows[idx].cells[colIdx])
@@ -306,7 +312,7 @@ export class Resize {
                 }
             }
         }
-        let contentFit: number = findMaxValue(contentTable, contentClone, isCol, this.parent);
+        let contentFit: number = findMaxValue(contentTable, contentClone, isCol, this.parent, prevData, isWrap);
         if (isCol) {
             contentFit = this.getFloatingElementWidth(contentFit, idx);
         }

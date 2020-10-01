@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, Browser, isBlazor } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { PdfViewer, PdfViewerBase } from '../index';
 
@@ -11,7 +11,10 @@ export class TextLayer {
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
     private notifyDialog: Dialog;
-    private isMessageBoxOpen: boolean;
+    /**
+     * @private
+     */
+    public isMessageBoxOpen: boolean;
     // tslint:disable-next-line
     private textBoundsArray: any[] = [];
     /**
@@ -466,36 +469,47 @@ export class TextLayer {
      */
     public createNotificationPopup(text: string): void {
         if (!this.isMessageBoxOpen) {
-            // tslint:disable-next-line:max-line-length
-            let popupElement: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_notify', className: 'e-pv-notification-popup' });
-            this.pdfViewerBase.viewerContainer.appendChild(popupElement);
-            this.notifyDialog = new Dialog({
-                showCloseIcon: true, closeOnEscape: false, isModal: true, header: this.pdfViewer.localeObj.getConstant('PdfViewer'),
-                buttons: [{
-                    buttonModel: { content: this.pdfViewer.localeObj.getConstant('OK'), isPrimary: true },
-                    click: this.closeNotification.bind(this)
-                }],
-                content: '<div class="e-pv-notification-popup-content" tabindex = "0">' + text + '</div>', target: this.pdfViewer.element,
-                beforeClose: (): void => {
-                    this.notifyDialog.destroy();
-                    if (this.pdfViewer.element) {
-                        try {
-                            this.pdfViewer.element.removeChild(popupElement);
-                        } catch (error) {
-                            popupElement.parentElement.removeChild(popupElement);
+            if (!isBlazor()) {
+                // tslint:disable-next-line:max-line-length
+                let popupElement: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_notify', className: 'e-pv-notification-popup' });
+                this.pdfViewerBase.viewerContainer.appendChild(popupElement);
+                this.notifyDialog = new Dialog({
+                    showCloseIcon: true, closeOnEscape: false, isModal: true, header: this.pdfViewer.localeObj.getConstant('PdfViewer'),
+                    buttons: [{
+                        buttonModel: { content: this.pdfViewer.localeObj.getConstant('OK'), isPrimary: true },
+                        click: this.closeNotification.bind(this)
+                    }],
+                    // tslint:disable-next-line:max-line-length
+                    content: '<div class="e-pv-notification-popup-content" tabindex = "0">' + text + '</div>', target: this.pdfViewer.element,
+                    beforeClose: (): void => {
+                        this.notifyDialog.destroy();
+                        if (this.pdfViewer.element) {
+                            try {
+                                this.pdfViewer.element.removeChild(popupElement);
+                            } catch (error) {
+                                popupElement.parentElement.removeChild(popupElement);
+                            }
                         }
+                        if (this.pdfViewer.textSearchModule) {
+                            this.pdfViewer.textSearch.isMessagePopupOpened = false;
+                        }
+                        this.isMessageBoxOpen = false;
                     }
-                    if (this.pdfViewer.textSearchModule) {
-                        this.pdfViewer.textSearch.isMessagePopupOpened = false;
-                    }
-                    this.isMessageBoxOpen = false;
+                });
+                if (this.pdfViewer.enableRtl) {
+                    this.notifyDialog.enableRtl = true;
                 }
-            });
-            if (this.pdfViewer.enableRtl) {
-                this.notifyDialog.enableRtl = true;
+                this.notifyDialog.appendTo(popupElement);
+                this.isMessageBoxOpen = true;
+            } else {
+                // tslint:disable-next-line
+                let notificationElement: any = document.getElementById(this.pdfViewer.element.id + '_notification_popup_content');
+                if (notificationElement) {
+                    notificationElement.textContent = text;
+                    notificationElement.innerHTML = text;
+                }
+                this.pdfViewer._dotnetInstance.invokeMethodAsync('OpenNotificationPopup');
             }
-            this.notifyDialog.appendTo(popupElement);
-            this.isMessageBoxOpen = true;
         }
     }
 

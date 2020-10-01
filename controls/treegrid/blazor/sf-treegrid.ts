@@ -14,9 +14,10 @@ let TreeGrid: Object = {
       new SfTreeGrid(element, options, dotnetRef);
     },
 
-    modelChanged(element: BlazorTreeGridElement, options: ITreeGridOptions, actionArgs: string): void {
-      element.blazor_instance.options = options;
-	  let args: Object = JSON.parse(actionArgs);
+    modelChanged(element: BlazorTreeGridElement, options: ITreeGridOptions): void {
+      if (!isNullOrUndefined(element.blazor_instance)) {
+        element.blazor_instance.options = options;
+      }
     },
 
     headerCheckbox(element: BlazorTreeGridElement, colIndex: number, options: ITreeGridOptions, dotnetRef: BlazorDotnetObject) {

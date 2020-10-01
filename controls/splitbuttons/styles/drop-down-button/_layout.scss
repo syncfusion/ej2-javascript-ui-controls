@@ -1,7 +1,7 @@
 @include export-module('drop-down-button-layout') {
   /*! drop-down button layout */
-  #{&}.e-dropdown-btn,
-  #{&}.e-dropdown-btn.e-btn {
+  .e-dropdown-btn,
+  .e-dropdown-btn.e-btn {
     @if $skin-name != 'bootstrap4' {
       box-shadow: none;
     }
@@ -39,7 +39,7 @@
     }
 
     &.e-small {
-      #{&}.e-dropdown-popup ul {
+      .e-dropdown-popup ul {
         padding: $drop-down-btn-ul-small-padding;
 
         & .e-item  {
@@ -54,8 +54,8 @@
     }
   }
 
-  .e-bigger #{&}.e-dropdown-btn,
-  .e-bigger#{&}.e-dropdown-btn {
+  .e-bigger .e-dropdown-btn,
+  .e-bigger.e-dropdown-btn {
     .e-btn-icon {
       font-size: $drop-down-btn-icon-font-size-bigger;
     }
@@ -77,7 +77,7 @@
     }
   }
 
-  #{&}.e-dropdown-popup {
+  .e-dropdown-popup {
     position: absolute;
 
     & ul {
@@ -155,7 +155,7 @@
     }
   }
 
-  .e-rtl#{&}.e-dropdown-popup .e-item {
+  .e-rtl.e-dropdown-popup .e-item {
     & .e-menu-icon {
       float: right;
       margin-left: $drop-down-btn-icon-margin-right;
@@ -163,8 +163,8 @@
     }
   }
 
-  &.e-bigger #{&}.e-dropdown-popup ul,
-  &.e-bigger#{&}.e-dropdown-popup ul {
+  #{if(&, '&', '*')}.e-bigger .e-dropdown-popup ul,
+  #{if(&, '&', '*')}.e-bigger.e-dropdown-popup ul {
     box-shadow: $drop-down-btn-parent-ul-box-shadow;
     font-size: $drop-down-btn-bigger-font-size;
     max-width: $drop-down-btn-bigger-max-width;

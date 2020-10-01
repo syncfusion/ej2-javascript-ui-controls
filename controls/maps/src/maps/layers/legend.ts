@@ -1232,6 +1232,10 @@ export class Legend {
             if ((legend.height || legend.width) && legend.mode !== 'Interactive') {
                 map.totalRect = totalRect;
             } else {
+                if((legend.height || legend.width) && legend.mode === 'Interactive')
+                {
+                    map.totalRect = totalRect;
+                }
                 map.mapAreaRect = totalRect;
             }
             this.translate = new Point(x, y);
