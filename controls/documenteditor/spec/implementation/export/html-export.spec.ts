@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, TextPosition, SfdtExport, HtmlExport, HelperMethods, TableWidget, ParagraphWidget, LineWidget } from '../../../src/index';
+import { Editor, TextPosition, SfdtExport, HtmlExport, HelperMethods, TableWidget, ParagraphWidget, LineWidget, SelectionCharacterFormat } from '../../../src/index';
 import { TestHelper } from '../../test-helper.spec';
 import { Selection } from '../../../src/index';
 
@@ -181,5 +181,41 @@ describe('Copy html tag', () => {
         editor.selection.copy();
         editor.editor.paste();
         expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0].characterFormat.allCaps).toBe(false);
+    });
+});
+
+describe('Copy Iamge validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableLocalPaste: false, isReadOnly: false, enableSfdtExport: true });
+        DocumentEditor.Inject(Editor, Selection, SfdtExport);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 500);
+    });
+
+    it('Copy Iamge validation', () => {
+        let imageString: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAIAAAADnC86AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADQSURBVFhH7ZbRDYQgDIYZ5UZhFEdxlBuFUUhY4N7vwWtTURJz5tem8GAbTYS0/eGjWsN7hJVSAuku3c2FuyF31BvqBNu90/mLmnSRjKDbMZULt2csz/kV8hRbVjSkSZkxRC0yKcbl+6FLhttSDIV5W6vYnKeZVWkR1WyFGbhIHrAbCzPhEcL1XCvqptYMd7xXExUXM4+pT3ENe53OP5yGqJ8kDDZGpIld6E730uFR/uuDs1J6OmolQDzcUeOslJ6OWgkQD3fUOCulJ6Ome4j9AGEu0k90WN54AAAAAElFTkSuQmCC';
+        editor.editor.insertImage(imageString,200,200);
+        editor.selection.selectAll();
+        let startPosition: TextPosition = editor.selection.start;
+        let endPosition: TextPosition = editor.selection.end;
+        let documentContent: any = editor.sfdtExportModule.write(startPosition.currentWidget, startPosition.offset, endPosition.currentWidget, endPosition.offset, true);
+        editor.editorModule.copiedData = JSON.stringify(documentContent);
+        let html: string = editor.selection.htmlWriter.writeHtml(documentContent);
+        let width: number = editor.selection.imageFormat.width;
+        expect(html.indexOf(width.toString())).not.toBe(-1);
     });
 });

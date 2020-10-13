@@ -5435,10 +5435,10 @@ class LayerPanel {
                     let imgElement = createElement('img');
                     imgElement.setAttribute('src', tile.src);
                     let child;
-                    if (document.getElementById('tile_' + id) && type === 'Pan') {
-                        removeElement('tile_' + id);
+                    if (document.getElementById(this.mapObject.element.id + '_tile_' + id) && type === 'Pan') {
+                        removeElement(this.mapObject.element.id + '_tile_' + id);
                     }
-                    child = createElement('div', { id: 'tile_' + id });
+                    child = createElement('div', { id: this.mapObject.element.id + '_tile_' + id });
                     child.style.position = 'absolute';
                     child.style.left = tile.left + 'px';
                     child.style.top = tile.top + 'px';
@@ -12777,7 +12777,7 @@ class ImageExport {
                     let imgxHttp = new XMLHttpRequest();
                     let imgTileLength = this.control.mapLayerPanel.tiles.length;
                     for (let i = 0; i <= imgTileLength + 1; i++) {
-                        let tile = document.getElementById('tile_' + (i - 1));
+                        let tile = document.getElementById(this.control.element.id + '_tile_' + (i - 1));
                         let exportTileImg = new Image();
                         exportTileImg.crossOrigin = 'Anonymous';
                         ctxt.fillStyle = this.control.background ? this.control.background : '#FFFFFF';
@@ -12918,7 +12918,7 @@ class PdfExport {
                 let xHttp = new XMLHttpRequest();
                 let tileLength = this.control.mapLayerPanel.tiles.length;
                 for (let i = 0; i <= tileLength + 1; i++) {
-                    let tile = document.getElementById('tile_' + (i - 1));
+                    let tile = document.getElementById(this.control.element.id + '_tile_' + (i - 1));
                     let tileImg = new Image();
                     tileImg.crossOrigin = 'Anonymous';
                     ctx.fillStyle = this.control.background ? this.control.background : '#FFFFFF';

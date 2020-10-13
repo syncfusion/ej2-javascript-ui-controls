@@ -11,11 +11,11 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { MouseEvents } from '../base/events.spec';
 import { unbindResizeEvents } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
-import { DateTime } from '../../../src/index' ;
+import { DateTime, Zoom, ScrollBar } from '../../../src/index' ;
 import { Logarithmic } from '../../../src/index';
 import { ILoadedEventArgs, IAxisLabelRenderEventArgs, IAxisLabelClickEventArgs } from '../../../src/chart/model/chart-interface';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-Chart.Inject(LineSeries, Category, ColumnSeries, DateTime, Logarithmic);
+Chart.Inject(LineSeries, Category, ColumnSeries, DateTime, Logarithmic, Zoom, ScrollBar);
 
 
 describe('Chart Control', () =>{
@@ -1568,6 +1568,88 @@ describe('Chart Control', () =>{
                 gridLineElement = document.getElementById('container_MinorGridLine_1_4');
                 path = gridLineElement.getAttribute("d");
                 expect(path === "M 43 296L 490 296 M 43 315L 490 315 " || path === "M 42 297L 490 297 M 42 317L 490 317 ").toBe(true);
+                done();
+            }
+            chartObj.refresh();
+        });
+    });
+    describe('Checking inversed axis labels with zooming', () => {
+        let chartContainer: HTMLElement;
+        let chartObj: Chart;
+        chartContainer = createElement('div', { id: 'container' });
+        chartContainer.style.width = '600px';
+        chartContainer.style.height = '400px';
+        beforeAll(() => {
+            document.body.appendChild(chartContainer);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        interval: 1,
+                        enableAutoIntervalOnZooming: false
+                    },
+                    primaryYAxis: {
+                        labelFormat: '{value}%',
+                        rangePadding: 'None',
+                        minimum: 0,
+                        maximum: 100,
+                        interval: 20,
+                        lineStyle: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        minorTickLines: { width: 0 },
+                        isInversed: true,
+                        enableAutoIntervalOnZooming: false,
+                        zoomFactor: 0.5
+                    },
+                    chartArea: {
+                        border: {
+                            width: 0
+                        }
+                    },
+                    series: [
+                        {
+                            type: 'Line',
+                            dataSource: [
+                                { x: 1, y: 21 }, { x: 2, y: 24 },
+                                { x: 3, y: 36 }, { x: 4, y: 38 },
+                                { x: 5, y: 54 }, { x: 6, y: 57 },
+                                { x: 7, y: 70 }
+                            ],
+                            xName: 'x', width: 2, marker: {
+                                visible: true,
+                                width: 10,
+                                height: 10
+                            },
+                            yName: 'y', name: 'Germany',
+                        },
+                    ],
+                    zoomSettings: {
+                        enableMouseWheelZooming: true,
+                        enablePinchZooming: true,
+                        enableSelectionZooming: true,
+                        mode: 'Y',
+                        enableScrollbar: true
+                    },
+                    title: 'Inflation - Consumer Price',
+                    tooltip: {
+                        enable: true
+                    },
+                    load: (args: ILoadedEventArgs) => {
+                        args.chart.zoomModule.isZoomed = true;
+                    }
+                }, '#container');
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            chartContainer.remove();
+        });
+        it('checking axis labels', (done: Function) => {
+            chartObj.loaded = () => {
+                let textElements: Element = document.getElementById('containerAxisLabels1');
+                expect(textElements.childElementCount === 3).toBe(true);
+                let text: Element = document.getElementById('container1_AxisLabel_0');
+                expect(text.innerHTML === '0%').toBe(true);
+                text = document.getElementById('container1_AxisLabel_2');
+                expect(text.innerHTML === '40%').toBe(true);
                 done();
             }
             chartObj.refresh();

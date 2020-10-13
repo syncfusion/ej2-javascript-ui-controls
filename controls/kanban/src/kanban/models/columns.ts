@@ -4,6 +4,7 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
  * Holds the configuration of columns in kanban board.
  */
 export class Columns extends ChildProperty<Columns> {
+
     /**
      * Defines the column keyField
      * @default null
@@ -21,7 +22,6 @@ export class Columns extends ChildProperty<Columns> {
     /**
      * Defines the column template
      * @default null
-     * @deprecated
      */
     @Property()
     public template: string;
@@ -44,8 +44,6 @@ export class Columns extends ChildProperty<Columns> {
      * Defines the minimum card count in column
      * @default null
      * @aspType int
-     * @blazorType int
-     * @isBlazorNullableType true
      */
     @Property()
     public minCount: number;
@@ -54,8 +52,6 @@ export class Columns extends ChildProperty<Columns> {
      * Defines the maximum card count in column
      * @default null
      * @aspType int
-     * @blazorType int
-     * @isBlazorNullableType true
      */
     @Property()
     public maxCount: number;

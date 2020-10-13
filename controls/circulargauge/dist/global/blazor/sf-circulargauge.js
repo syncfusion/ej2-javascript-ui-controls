@@ -103,7 +103,9 @@ var SfCircularGauge = /** @class */ (function () {
         var mouseX = (e.clientX - rect.left) - Math.max(svgRect.left - rect.left, 0);
         var tooltipGroup = document.getElementById(this.element.id + '_Tooltip');
         var tooltipGroupElement = document.getElementById(this.element.id + '_Tooltip_Group');
-        var parentTargetId = e.target.parentElement.id;
+        // tslint:disable-next-line
+        var parentElement = e.target.parentElement || e.target.parentNode;
+        var parentTargetId = parentElement.id;
         if (this.options.enableTooltip) {
             rect = {
                 // tslint:disable-next-line:max-line-length
@@ -328,8 +330,13 @@ var SfCircularGauge = /** @class */ (function () {
         var tempString = animationElement.id.replace(this.element.id, '').split('_Axis_')[1];
         axisIndex = +tempString[0];
         pointerIndex = +tempString[tempString.length - 1];
-        for (var j = 0; j < animationElement.childElementCount; j++) {
-            var animatedChildElements = animationElement.children[j];
+        var childCount = sf.base.Browser.isIE ? animationElement.childNodes.length : animationElement.childElementCount;
+        for (var j = 0; j < childCount; j++) {
+            // tslint:disable-next-line
+            var animatedChildElements = sf.base.Browser.isIE ? animationElement.childNodes[j] : animationElement.children[j];
+            if (animatedChildElements.nodeName === '#comment') {
+                continue;
+            }
             if (options.pointerType === 'RangeBar') {
                 this.animationRangeProcess(animatedChildElements, options, dotNetRef, axisIndex, pointerIndex);
             }
@@ -357,6 +364,7 @@ var CircularGauge = {
         var instance = new SfCircularGauge(element.id, element, options, dotnetRef, individualId);
         instance.render();
         this.getContainerSize(element.id, dotnetRef);
+        return sf.base.Browser.isIE;
     },
     getContainerSize: function (id, dotnetRef) {
         var elementBounds = document.getElementById(id);

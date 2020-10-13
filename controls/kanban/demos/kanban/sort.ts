@@ -28,7 +28,7 @@ kanbanObj.appendTo('#kanban');
 let sortBy: DropDownList = new DropDownList({
     width: '100%',
     change: changeSortOrder,
-    value: 'Datasource'
+    value: 'DataSourceOrder'
 });
 sortBy.appendTo('#sortBy');
 let field: DropDownList = new DropDownList({

@@ -13,7 +13,7 @@ import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader 
 import { Layout } from './layout';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, DocumentHelper } from './viewer';
 // tslint:disable-next-line:max-line-length
-import { HelperMethods, ErrorInfo, Point, SpecialCharacterInfo, SpaceCharacterInfo, WordSpellInfo, RevisionInfo } from '../editor/editor-helper';
+import { HelperMethods, ErrorInfo, Point, SpecialCharacterInfo, SpaceCharacterInfo, WordSpellInfo, RevisionInfo, BorderInfo } from '../editor/editor-helper';
 import { SearchWidgetInfo } from '../index';
 import { SelectionWidgetInfo } from '../selection';
 import { SpellChecker } from '../spell-check/spell-checker';
@@ -1267,13 +1267,26 @@ export class Renderer {
         // tslint:disable-next-line:max-line-length
         this.renderSingleBorder(border, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
         // }
-        border = TableCellWidget.getCellTopBorder(tableCell);
-        // if (!isNullOrUndefined(border )) { //Renders the cell top border.        
-        lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-        // tslint:disable-next-line:max-line-length
-        this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
-        // }
-
+        if (tableCell.updatedTopBorders && tableCell.updatedTopBorders.length > 0) {
+            let cellX: number = cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2;
+            let cellY: number = cellWidget.y - cellWidget.margin.top + lineWidth / 2;
+            for (let a: number = 0; a < tableCell.updatedTopBorders.length; a++) {
+                let borderInfo: BorderInfo = tableCell.updatedTopBorders[a];
+                border = borderInfo.border;
+                if (!isNullOrUndefined(border)) {
+                    lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
+                    this.renderSingleBorder(border, cellX, cellY, cellX + borderInfo.width, cellY, lineWidth);
+                    cellX = cellX + borderInfo.width;
+                }
+            }
+        } else {
+            border = TableCellWidget.getCellTopBorder(tableCell);
+            // if (!isNullOrUndefined(border )) { //Renders the cell top border.        
+            lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
+            // tslint:disable-next-line:max-line-length
+            this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
+            // }
+        }
         let isLastCell: boolean = false;
         if (!isBidiTable) {
             isLastCell = tableCell.cellIndex === tableCell.ownerRow.childWidgets.length - 1;
@@ -1317,7 +1330,8 @@ export class Renderer {
             // tslint:disable-next-line:max-line-length
             border = (tableCell.cellFormat.rowSpan > 1 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ?
                 //true part for vertically merged cells specifically.
-                tableCell.getBorderBasedOnPriority(tableCell.cellFormat.borders.bottom, TableCellWidget.getCellBottomBorder(tableCell))
+                // tslint:disable-next-line:max-line-length
+                tableCell.getBorderBasedOnPriority(tableCell.getBorderBasedOnPriority(tableCell.cellFormat.borders.bottom, tableCell.ownerRow.rowFormat.borders.bottom), tableCell.ownerTable.tableFormat.borders.bottom)
                 //false part for remaining cases that has been handled inside method. 
                 : TableCellWidget.getCellBottomBorder(tableCell);
             // if (!isNullOrUndefined(border )) {
@@ -1371,7 +1385,7 @@ export class Renderer {
             this.pageContext.closePath();
         }
         //Render foreground color
-        if (cellFormat.shading.hasValue('foregroundColor')) {
+        if (cellFormat.shading.hasValue('foregroundColor') && cellFormat.shading.textureStyle !== 'TextureNone') {
             this.pageContext.beginPath();
             if (cellFormat.shading.foregroundColor !== 'empty') {
                 this.pageContext.fillStyle = HelperMethods.getColor(cellFormat.shading.foregroundColor);

@@ -6013,7 +6013,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         return 1;
     };
     Slider.prototype.refreshTooltip = function (target) {
-        if (this.tooltip.isVisible && this.tooltipObj && this.initialTooltip) {
+        if (this.tooltip.isVisible && this.tooltipObj) {
             this.tooltipValue();
             if (target) {
                 this.tooltipObj.refresh(target);
@@ -8803,8 +8803,10 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 if (this.browserName !== 'msie' && this.browserName !== 'edge') {
                     this.element.files = files;
                 }
-                targetFiles = this.multiple ? this.sortFileList(files) : [files[0]];
-                this.renderSelectedFiles(args, targetFiles);
+                if (files.length > 0) {
+                    targetFiles = this.multiple ? this.sortFileList(files) : [files[0]];
+                    this.renderSelectedFiles(args, targetFiles);
+                }
             }
         }
         else {

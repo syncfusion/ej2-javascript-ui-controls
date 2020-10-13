@@ -1005,12 +1005,12 @@ export class Axis extends ChildProperty<Axis> {
      * @return {void}
      * @private
      */
-    public calculateVisibleRange(size: Size): void {
+    public calculateVisibleRange(chart: Chart): void {
         if (this.zoomFactor < 1 || this.zoomPosition > 0) {
             let baseRange: VisibleRangeModel = this.actualRange;
             let start: number;
             let end: number;
-            if (!this.isInversed) {
+            if (!this.isInversed || chart.zoomModule) {
                 start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
                 end = start + this.zoomFactor * this.actualRange.delta;
             } else {

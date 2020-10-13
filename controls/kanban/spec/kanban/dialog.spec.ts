@@ -181,102 +181,102 @@ describe('Dialog actions module', () => {
         });
     });
 
-    describe('Public method Editor', () => {
-        let kanbanObj: Kanban;
-        beforeAll((done: DoneFn) => {
-            let model: KanbanModel = {
-                dialogSettings: {
-                    fields: [
-                        { text: 'ID', key: 'Id', type: 'TextBox' },
-                        { key: 'Status', type: 'DropDown' },
-                        { key: 'Assignee', type: 'TextBox', validationRules: { required: true } },
-                        { key: 'Estimate', type: 'Numeric', validationRules: { range: [0, 1000] } },
-                        { key: 'Summary', type: 'TextBox', validationRules: { required: true } }
-                    ]
-                },
-            };
-            kanbanObj = util.createKanban(model, kanbanData, done);
-        });
+    // describe('Public method Editor', () => {
+    //     let kanbanObj: Kanban;
+    //     beforeAll((done: DoneFn) => {
+    //         let model: KanbanModel = {
+    //             dialogSettings: {
+    //                 fields: [
+    //                     { text: 'ID', key: 'Id', type: 'TextBox' },
+    //                     { key: 'Status', type: 'DropDown' },
+    //                     { key: 'Assignee', type: 'TextBox', validationRules: { required: true } },
+    //                     { key: 'Estimate', type: 'Numeric', validationRules: { range: [0, 1000] } },
+    //                     { key: 'Summary', type: 'TextBox', validationRules: { required: true } }
+    //                 ]
+    //             },
+    //         };
+    //         kanbanObj = util.createKanban(model, kanbanData, done);
+    //     });
 
-        afterAll(() => {
-            util.destroy(kanbanObj);
-        });
+    //     afterAll(() => {
+    //         util.destroy(kanbanObj);
+    //     });
 
-        it('openEditor add method testing', (done: DoneFn) => {
-            expect(kanbanObj.kanbanData.length).toBe(75);
-            kanbanObj.dataBound = () => {
-                expect(kanbanObj.kanbanData.length).toBe(76);
-                done();
-            };
-            kanbanObj.crudModule.addCard({ 'Id': 333, 'Status': 'Close', 'Summary': 'Check the cards', 'Assignee': 'Andrew Fuller' });
-        });
-        it('openEditor update method testing', (done: DoneFn) => {
-            expect(kanbanObj.kanbanData.length).toBe(76);
-            kanbanObj.dataBound = () => {
-                let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="2"]') as HTMLElement;
-                let data: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
-                let status: Object = data[kanbanObj.keyField];
-                expect(status).toBe('Close');
-                done();
-            };
-            kanbanObj.crudModule.updateCard({ 'Id': 2, 'Status': 'Close', 'Summary': 'Check the cards', 'Assignee': 'Andrew Fuller' });
-        });
-        it('openEditor delete method testing', (done: DoneFn) => {
-            kanbanObj.dataBound = () => {
-                expect(kanbanObj.kanbanData.length).toBe(75);
-                done();
-            };
-            kanbanObj.crudModule.deleteCard(8);
-        });
-    });
+    //     it('openEditor add method testing', (done: DoneFn) => {
+    //         expect(kanbanObj.kanbanData.length).toBe(75);
+    //         kanbanObj.dataBound = () => {
+    //             expect(kanbanObj.kanbanData.length).toBe(76);
+    //             done();
+    //         };
+    //         kanbanObj.crudModule.addCard({ 'Id': 333, 'Status': 'Close', 'Summary': 'Check the cards', 'Assignee': 'Andrew Fuller' });
+    //     });
+    //     it('openEditor update method testing', (done: DoneFn) => {
+    //         expect(kanbanObj.kanbanData.length).toBe(76);
+    //         kanbanObj.dataBound = () => {
+    //             let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="2"]') as HTMLElement;
+    //             let data: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
+    //             let status: Object = data[kanbanObj.keyField];
+    //             expect(status).toBe('Close');
+    //             done();
+    //         };
+    //         kanbanObj.crudModule.updateCard({ 'Id': 2, 'Status': 'Close', 'Summary': 'Check the cards', 'Assignee': 'Andrew Fuller' });
+    //     });
+    //     it('openEditor delete method testing', (done: DoneFn) => {
+    //         kanbanObj.dataBound = () => {
+    //             expect(kanbanObj.kanbanData.length).toBe(75);
+    //             done();
+    //         };
+    //         kanbanObj.crudModule.deleteCard(8);
+    //     });
+    // });
 
-    describe('Public method Editor using array value', () => {
-        let kanbanObj: Kanban;
-        beforeAll((done: DoneFn) => {
-            let model: KanbanModel = {
-                dialogSettings: {
-                    fields: [
-                        { text: 'ID', key: 'Id', type: 'TextBox' },
-                        { key: 'Status', type: 'DropDown' },
-                        { key: 'Assignee', type: 'TextBox', validationRules: { required: true } },
-                        { key: 'Estimate', type: 'Numeric', validationRules: { range: [0, 1000] } },
-                        { key: 'Summary', type: 'TextBox', validationRules: { required: true } }
-                    ]
-                },
-            };
-            kanbanObj = util.createKanban(model, kanbanData, done);
-        });
+    // describe('Public method Editor using array value', () => {
+    //     let kanbanObj: Kanban;
+    //     beforeAll((done: DoneFn) => {
+    //         let model: KanbanModel = {
+    //             dialogSettings: {
+    //                 fields: [
+    //                     { text: 'ID', key: 'Id', type: 'TextBox' },
+    //                     { key: 'Status', type: 'DropDown' },
+    //                     { key: 'Assignee', type: 'TextBox', validationRules: { required: true } },
+    //                     { key: 'Estimate', type: 'Numeric', validationRules: { range: [0, 1000] } },
+    //                     { key: 'Summary', type: 'TextBox', validationRules: { required: true } }
+    //                 ]
+    //             },
+    //         };
+    //         kanbanObj = util.createKanban(model, kanbanData, done);
+    //     });
 
-        afterAll(() => {
-            util.destroy(kanbanObj);
-        });
+    //     afterAll(() => {
+    //         util.destroy(kanbanObj);
+    //     });
 
-        it('openEditor add method testing', (done: DoneFn) => {
-            expect(kanbanObj.kanbanData.length).toBe(75);
-            kanbanObj.dataBound = () => {
-                expect(kanbanObj.kanbanData.length).toBe(76);
-                done();
-            };
-            kanbanObj.crudModule.addCard([{ 'Id': 334, 'Status': 'Close', 'Summary': 'Check the cards', 'Assignee': 'Andrew Fuller' }]);
-        });
-        it('openEditor update method testing', (done: DoneFn) => {
-            kanbanObj.dataBound = () => {
-                let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="6"]') as HTMLElement;
-                let data: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
-                let status: Object = data[kanbanObj.keyField];
-                expect(status).toBe('Open');
-                done();
-            };
-            kanbanObj.crudModule.updateCard([{ 'Id': 6, 'Status': 'Open', 'Summary': 'Check the cards', 'Assignee': 'Andrew Fuller' }]);
-        });
-        it('openEditor delete method testing', (done: DoneFn) => {
-            kanbanObj.dataBound = () => {
-                expect(kanbanObj.kanbanData.length).toBe(74);
-                done();
-            };
-            kanbanObj.crudModule.deleteCard([{ 'Id': 5 }, { 'Id': 13 }]);
-        });
-    });
+    //     it('openEditor add method testing', (done: DoneFn) => {
+    //         expect(kanbanObj.kanbanData.length).toBe(75);
+    //         kanbanObj.dataBound = () => {
+    //             expect(kanbanObj.kanbanData.length).toBe(76);
+    //             done();
+    //         };
+    //         kanbanObj.crudModule.addCard([{ 'Id': 334, 'Status': 'Close', 'Summary': 'Check the cards', 'Assignee': 'Andrew Fuller' }]);
+    //     });
+    //     it('openEditor update method testing', (done: DoneFn) => {
+    //         kanbanObj.dataBound = () => {
+    //             let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="6"]') as HTMLElement;
+    //             let data: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
+    //             let status: Object = data[kanbanObj.keyField];
+    //             expect(status).toBe('Open');
+    //             done();
+    //         };
+    //         kanbanObj.crudModule.updateCard([{ 'Id': 6, 'Status': 'Open', 'Summary': 'Check the cards', 'Assignee': 'Andrew Fuller' }]);
+    //     });
+    //     it('openEditor delete method testing', (done: DoneFn) => {
+    //         kanbanObj.dataBound = () => {
+    //             expect(kanbanObj.kanbanData.length).toBe(74);
+    //             done();
+    //         };
+    //         kanbanObj.crudModule.deleteCard([{ 'Id': 5 }, { 'Id': 13 }]);
+    //     });
+    // });
 
     describe('Public method Editor with cancel events', () => {
         let kanbanObj: Kanban;

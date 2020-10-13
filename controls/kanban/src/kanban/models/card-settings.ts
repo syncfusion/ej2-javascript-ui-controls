@@ -30,7 +30,6 @@ export class CardSettings extends ChildProperty<CardSettings> {
 
     /**
      * Defines the card content labels
-     * @deprecated
      * @default null
      */
     @Property()
@@ -38,7 +37,6 @@ export class CardSettings extends ChildProperty<CardSettings> {
 
     /**
      * Defines the card color
-     * @deprecated
      * @default null
      */
     @Property()
@@ -46,7 +44,6 @@ export class CardSettings extends ChildProperty<CardSettings> {
 
     /**
      * Defines the card icons
-     * @deprecated
      * @default null
      */
     @Property()
@@ -55,7 +52,6 @@ export class CardSettings extends ChildProperty<CardSettings> {
     /**
      * Defines the card template
      * @default null
-     * @deprecated
      */
     @Property()
     public template: string;

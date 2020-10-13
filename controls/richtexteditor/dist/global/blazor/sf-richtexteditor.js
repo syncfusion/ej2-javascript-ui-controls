@@ -99,7 +99,7 @@ var CLS_POPUP_OPEN = 'e-popup-open';
 var CLS_IMG_RESIZE = 'e-img-resize';
 var CLS_DROPAREA = 'e-droparea';
 var CLS_IMG_INNER = 'e-img-inner';
-var CLS_UPLOAD_FILES = 'e-upload-files';
+
 var CLS_RTE_DIALOG_UPLOAD = 'e-rte-dialog-upload';
 var CLS_RTE_RES_CNT = 'e-rte-resize';
 
@@ -159,7 +159,7 @@ var linkToolbarAction = 'link-toolbar-action';
 
 
 var insertLink = 'insertLink';
-
+var unLink = 'unLink';
 
 
 
@@ -1891,6 +1891,7 @@ var Link = /** @class */ (function () {
     Link.prototype.addEventListener = function () {
         this.parent.observer.on(destroy, this.destroy, this);
         this.parent.observer.on(keyDown, this.onKeyDown, this);
+        this.parent.observer.on(unLink, this.removeLink, this);
         this.parent.observer.on(insertLink, this.linkDialog, this);
         this.parent.observer.on(linkToolbarAction, this.onToolbarAction, this);
         this.parent.observer.on(iframeMouseDown, this.onIframeMouseDown, this);
@@ -1900,6 +1901,7 @@ var Link = /** @class */ (function () {
     Link.prototype.removeEventListener = function () {
         this.parent.observer.off(destroy, this.destroy);
         this.parent.observer.off(keyDown, this.onKeyDown);
+        this.parent.observer.off(unLink, this.removeLink);
         this.parent.observer.off(insertLink, this.linkDialog);
         this.parent.observer.off(linkToolbarAction, this.onToolbarAction);
         this.parent.observer.off(iframeMouseDown, this.onIframeMouseDown);
@@ -3262,7 +3264,7 @@ var Image = /** @class */ (function () {
         }
         this.parent.observer.notify(selectRange, { range: range });
     };
-    Image.prototype.imageDropInitialized = function () {
+    Image.prototype.imageDropInitialized = function (isStream) {
         var e = this.imageDragArgs;
         if (this.parent.element.querySelector('.' + CLS_IMG_RESIZE)) {
             sf.base.detach(this.imgResizeDiv);
@@ -3278,7 +3280,7 @@ var Image = /** @class */ (function () {
         var allowedTypes = this.parent.insertImageSettings.allowedTypes;
         for (var i = 0; i < allowedTypes.length; i++) {
             if (imgType.toLocaleLowerCase() === allowedTypes[i].toLowerCase()) {
-                if (this.parent.insertImageSettings.saveUrl) {
+                if (this.parent.insertImageSettings.saveUrl || isStream) {
                     this.onSelect(this.dropFiles);
                 }
                 else {
@@ -3326,8 +3328,6 @@ var Image = /** @class */ (function () {
         var _this = this;
         var proxy = this;
         var range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.getDocument());
-        var parentElement = sf.base.createElement('ul', { className: CLS_UPLOAD_FILES });
-        this.parent.element.appendChild(parentElement);
         var validFiles = {
             name: '',
             size: 0,
@@ -3370,6 +3370,12 @@ var Image = /** @class */ (function () {
             args: this.imageDragArgs, type: 'Images', isNotify: undefined, elements: this.droppedImage
         });
         this.resizeStart(this.imageDragArgs, this.droppedImage);
+    };
+    Image.prototype.dropUploadChange = function (url, isStream) {
+        if (isStream) {
+            this.droppedImage.src = url;
+            this.droppedImage.style.opacity = '1';
+        }
     };
     Image.prototype.imagePaste = function (args) {
         var _this = this;
@@ -4089,6 +4095,10 @@ var Image = /** @class */ (function () {
             this.inputUrl.setAttribute('disabled', 'true');
         }
     };
+    Image.prototype.imageUploadChange = function (url, isStream) {
+        this.modifiedUrl = url;
+        this.isStreamUrl = isStream;
+    };
     Image.prototype.removing = function () {
         this.inputUrl.removeAttribute('disabled');
         if (this.uploadUrl) {
@@ -4106,6 +4116,10 @@ var Image = /** @class */ (function () {
     Image.prototype.insertImageUrl = function () {
         this.inputUrl = this.parent.element.querySelector('.e-rte-img-dialog .e-img-url');
         var url = this.inputUrl.value;
+        if (this.isStreamUrl && this.modifiedUrl !== '') {
+            this.uploadUrl.url = this.modifiedUrl;
+            this.modifiedUrl = '';
+        }
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
         }
@@ -11594,6 +11608,11 @@ var HtmlEditor = /** @class */ (function () {
                         member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
                     });
                     break;
+                case 'RemoveLink':
+                    this.parent.observer.notify(unLink, {
+                        member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                    });
+                    break;
                 case 'Print':
                     this.parent.print();
                     break;
@@ -12726,9 +12745,9 @@ var PasteCleanup = /** @class */ (function () {
         sf.base.addClass([popupObj.element], [CLS_POPUP_OPEN, CLS_RTE_UPLOAD_POPUP]);
         var timeOut = fileList.size > 1000000 ? 300 : 100;
         setTimeout(function () { _this.refreshPopup(imgElem, popupObj); }, timeOut);
-        var rawFile;
         var beforeUploadArgs;
-        var uploadObj = new sf.inputs.Uploader({
+        this.rawFile = undefined;
+        this.uploadObj = new sf.inputs.Uploader({
             asyncSettings: {
                 saveUrl: this.parent.insertImageSettings.saveUrl
             },
@@ -12736,27 +12755,27 @@ var PasteCleanup = /** @class */ (function () {
             dropArea: this.parent.inputElement,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             success: function (e) {
-                setTimeout(function () { _this.popupClose(popupObj, uploadObj, imgElem, e); }, 900);
+                setTimeout(function () { _this.popupClose(popupObj, imgElem, e); }, 900);
             },
             uploading: function (e) {
                 _this.parent.inputElement.contentEditable = 'false';
             },
             beforeUpload: function (args) {
                 beforeUploadArgs = JSON.parse(JSON.stringify(args));
-                beforeUploadArgs.filesData = rawFile;
+                beforeUploadArgs.filesData = _this.rawFile;
                 // @ts-ignore-start
                 _this.parent.dotNetRef.invokeMethodAsync(beforeUpload, args).then(function (beforeUploadArgs) {
                     if (beforeUploadArgs.cancel) {
                         return;
                     }
                     /* tslint:disable */
-                    _this.uploadObj.uploadFiles(rawFile, null);
+                    _this.uploadObj.uploadFiles(_this.rawFile, null);
                     /* tslint:enable */
                     // @ts-ignore-end
                 });
             },
             failure: function (e) {
-                setTimeout(function () { _this.uploadFailure(imgElem, uploadObj, popupObj, e); }, 900);
+                setTimeout(function () { _this.uploadFailure(imgElem, popupObj, e); }, 900);
             },
             canceling: function () {
                 _this.parent.inputElement.contentEditable = 'true';
@@ -12768,7 +12787,7 @@ var PasteCleanup = /** @class */ (function () {
             },
             selected: function (e) {
                 e.cancel = true;
-                rawFile = e.filesData;
+                _this.rawFile = e.filesData;
             },
             removing: function () {
                 _this.parent.inputElement.contentEditable = 'true';
@@ -12779,7 +12798,7 @@ var PasteCleanup = /** @class */ (function () {
                 popupObj.close();
             }
         });
-        uploadObj.appendTo(popupObj.element.childNodes[0]);
+        this.uploadObj.appendTo(popupObj.element.childNodes[0]);
         /* tslint:disable */
         var fileData = [{
                 name: fileList.name,
@@ -12789,23 +12808,24 @@ var PasteCleanup = /** @class */ (function () {
                 validationMessages: { minSize: '', maxSize: '' },
                 statusCode: '1'
             }];
-        uploadObj.createFileList(fileData);
-        uploadObj.filesData.push(fileData[0]);
+        this.uploadObj.createFileList(fileData);
+        this.uploadObj.filesData.push(fileData[0]);
         /* tslint:enable */
-        uploadObj.upload(fileData);
+        this.uploadObj.upload(fileData);
         popupObj.element.getElementsByClassName(CLS_FILE_SELECT_WRAP)[0].style.display = 'none';
         sf.base.detach(popupObj.element.querySelector('.' + CLS_RTE_DIALOG_UPLOAD + ' .' + CLS_FILE_SELECT_WRAP));
     };
-    PasteCleanup.prototype.uploadFailure = function (imgElem, uploadObj, popupObj, e) {
+    PasteCleanup.prototype.uploadFailure = function (imgElem, popupObj, e) {
         this.parent.inputElement.contentEditable = 'true';
         sf.base.detach(imgElem);
         if (popupObj) {
             popupObj.close();
         }
         this.parent.dotNetRef.invokeMethodAsync(pasteImageUploadFailed, e);
-        uploadObj.destroy();
+        this.uploadObj.destroy();
+        this.uploadObj = undefined;
     };
-    PasteCleanup.prototype.popupClose = function (popupObj, uploadObj, imgElem, e) {
+    PasteCleanup.prototype.popupClose = function (popupObj, imgElem, e) {
         var _this = this;
         this.parent.inputElement.contentEditable = 'true';
         // @ts-ignore-start
@@ -12819,7 +12839,8 @@ var PasteCleanup = /** @class */ (function () {
         });
         popupObj.close();
         imgElem.style.opacity = '1';
-        uploadObj.destroy();
+        this.uploadObj.destroy();
+        this.uploadObj = undefined;
     };
     PasteCleanup.prototype.refreshPopup = function (imageElement, popupObj) {
         var imgPosition = this.parent.iframeSettings.enable ? this.parent.element.offsetTop +
@@ -15544,6 +15565,9 @@ var SfRichTextEditor = /** @class */ (function () {
         this.updateContentElements();
         this.inputElement = this.getEditPanel();
         this.valueContainer = this.element.querySelector('textarea');
+        if (this.readonly) {
+            this.setReadOnly(true);
+        }
         this.setHeight(this.height);
         this.setWidth(this.width);
         // setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
@@ -15698,6 +15722,12 @@ var SfRichTextEditor = /** @class */ (function () {
     };
     SfRichTextEditor.prototype.getPanel = function () {
         return this.contentPanel;
+    };
+    SfRichTextEditor.prototype.saveSelection = function () {
+        this.formatter.editorManager.nodeSelection.save(this.getRange(), this.getDocument());
+    };
+    SfRichTextEditor.prototype.restoreSelection = function () {
+        this.formatter.editorManager.nodeSelection.restore();
     };
     SfRichTextEditor.prototype.getEditPanel = function () {
         var editNode;
@@ -16422,6 +16452,12 @@ var SfRichTextEditor = /** @class */ (function () {
     SfRichTextEditor.prototype.imageUploadComplete = function (base64Str, altText) {
         this.imageModule.imageUploadComplete(base64Str, altText);
     };
+    SfRichTextEditor.prototype.imageUploadChange = function (url, isStream) {
+        this.imageModule.imageUploadChange(url, isStream);
+    };
+    SfRichTextEditor.prototype.dropUploadChange = function (url, isStream) {
+        this.imageModule.dropUploadChange(url, isStream);
+    };
     SfRichTextEditor.prototype.insertImage = function () {
         this.imageModule.insertImageUrl();
     };
@@ -16444,8 +16480,8 @@ var SfRichTextEditor = /** @class */ (function () {
     SfRichTextEditor.prototype.pasteContent = function (pasteOption) {
         this.pasteCleanupModule.selectFormatting(pasteOption);
     };
-    SfRichTextEditor.prototype.imageDropInitialized = function () {
-        this.imageModule.imageDropInitialized();
+    SfRichTextEditor.prototype.imageDropInitialized = function (isStream) {
+        this.imageModule.imageDropInitialized(isStream);
     };
     SfRichTextEditor.prototype.preventEditable = function () {
         this.inputElement.contentEditable = 'false';
@@ -17058,6 +17094,12 @@ var RichTextEditor = {
     imageUploadComplete: function (element, base64Str, altText) {
         element.blazor__instance.imageUploadComplete(base64Str, altText);
     },
+    imageUploadChange: function (element, url, isStream) {
+        element.blazor__instance.imageUploadChange(url, isStream);
+    },
+    dropUploadChange: function (element, url, isStream) {
+        element.blazor__instance.dropUploadChange(url, isStream);
+    },
     insertImage: function (element) {
         element.blazor__instance.insertImage();
     },
@@ -17082,8 +17124,8 @@ var RichTextEditor = {
     pasteContent: function (element, pasteOption) {
         element.blazor__instance.pasteContent(pasteOption);
     },
-    imageDropInitialized: function (element) {
-        element.blazor__instance.imageDropInitialized();
+    imageDropInitialized: function (element, isStream) {
+        element.blazor__instance.imageDropInitialized(isStream);
     },
     preventEditable: function (element) {
         element.blazor__instance.preventEditable();
@@ -17153,6 +17195,15 @@ var RichTextEditor = {
     },
     insertImageLink: function (element, url, target) {
         return element.blazor__instance.insertImageLink(url, target);
+    },
+    updateContentHeight: function (element) {
+        return element.blazor__instance.setContentHeight();
+    },
+    saveSelection: function (element) {
+        element.blazor__instance.saveSelection();
+    },
+    restoreSelection: function (element) {
+        element.blazor__instance.restoreSelection();
     }
 };
 

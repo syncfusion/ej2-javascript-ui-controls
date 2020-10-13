@@ -1,7 +1,7 @@
 import {
     PdfViewer, PdfViewerBase, IPageAnnotations, IPoint, AnnotationType as AnnotType, ICommentsCollection, IReviewCollection
 } from '../..';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ColorPicker } from '@syncfusion/ej2-inputs';
 import { PointModel } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
@@ -172,6 +172,7 @@ export class FreeTextAnnotation {
      */
     public textAlign: string;
     private defaultText: string;
+    private isReadonly: boolean = false;
     /**
      * @private
      */
@@ -202,7 +203,10 @@ export class FreeTextAnnotation {
         this.pdfViewer.freeTextSettings.fontColor : '#000';
         this.inputBoxElement.style.overflow = 'hidden';
         this.inputBoxElement.style.wordBreak = 'break-all';
-        this.inputBoxElement.addEventListener('focusout', this.onFocusOutInputBox.bind(this));
+        this.inputBoxElement.readOnly = this.isReadonly;
+        if (!isBlazor()) {
+            this.inputBoxElement.addEventListener('focusout', this.onFocusOutInputBox.bind(this));
+        }
         this.inputBoxElement.addEventListener('keydown', this.onKeyDownInputBox.bind(this));
         this.inputBoxElement.addEventListener('mouseup', this.onMouseUpInputBox.bind(this));
 
@@ -227,6 +231,8 @@ export class FreeTextAnnotation {
         this.fontFamily = this.pdfViewer.freeTextSettings.fontFamily ? this.pdfViewer.freeTextSettings.fontFamily : 'Helvetica';
         this.textAlign = this.pdfViewer.freeTextSettings.textAlignment ? this.pdfViewer.freeTextSettings.textAlignment : 'Left';
         this.defaultText = this.pdfViewer.freeTextSettings.defaultText ? this.pdfViewer.freeTextSettings.defaultText : 'Type here';
+        // tslint:disable-next-line:max-line-length
+        this.isReadonly = this.pdfViewer.freeTextSettings.isLock ? this.pdfViewer.freeTextSettings.isLock : this.pdfViewer.annotationSettings.isLock ? this.pdfViewer.annotationSettings.isLock : false;
         if (this.pdfViewer.freeTextSettings.fontStyle === 1) {
             this.isBold = true;
         } else if (this.pdfViewer.freeTextSettings.fontStyle === 2) {
@@ -633,6 +639,7 @@ export class FreeTextAnnotation {
                 this.pdfViewer.annotation.addAction(pageIndex, null, annot as PdfAnnotationBase, 'Addition', '', annot as PdfAnnotationBase, annot);
                 this.pdfViewer.renderSelector((annot as PdfAnnotationBaseModel).pageIndex);
                 this.pdfViewer.clearSelection(annot.pageIndex);
+                this.pdfViewer.isDocumentEdited = true;
                 this.selectedAnnotation = annotation;
             }
             this.isInuptBoxInFocus = false;
@@ -765,10 +772,7 @@ export class FreeTextAnnotation {
         this.inputBoxElement.style.boxSizing = 'border-box';
         this.inputBoxElement.style.left = ((currentPosition.x)) + 'px';
         this.inputBoxElement.style.top = ((currentPosition.y)) + 'px';
-        this.inputBoxElement.style.height = (this.defaultHeight * zoomFactor) + 'px';
-        this.inputBoxElement.style.width = (this.defautWidth * zoomFactor) + 'px';
-        this.inputBoxElement.style.borderWidth = (this.borderWidth * zoomFactor) + 'px';
-        this.inputBoxElement.style.fontSize = (this.fontSize * zoomFactor) + 'px';
+        this.applyFreetextStyles(zoomFactor);
         if (this.isBold) {
             this.inputBoxElement.style.fontWeight = 'bold';
         } else {
@@ -856,6 +860,13 @@ export class FreeTextAnnotation {
         if (this.isNewFreeTextAnnot === true || this.inputBoxElement.value === this.defaultText) {
             this.inputBoxElement.select();
         }
+    }
+    private applyFreetextStyles(zoomFactor: number): void {
+        this.inputBoxElement.style.height = (this.defaultHeight * zoomFactor) + 'px';
+        this.inputBoxElement.style.width = (this.defautWidth * zoomFactor) + 'px';
+        this.inputBoxElement.style.borderWidth = (this.borderWidth * zoomFactor) + 'px';
+        this.inputBoxElement.style.fontSize = (this.fontSize * zoomFactor) + 'px';
+        this.inputBoxElement.readOnly = this.isReadonly;
     }
     /**
      * @private

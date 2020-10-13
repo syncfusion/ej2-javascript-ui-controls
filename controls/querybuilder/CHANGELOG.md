@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.40 (2020-10-13)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with 'getValues' method is fixed.
+
 ## 18.2.57 (2020-09-08)
 
 ### QueryBuilder

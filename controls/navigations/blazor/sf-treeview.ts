@@ -866,7 +866,7 @@ class SfTreeView {
         args.element.parentElement.style.height = currentHeight + 'px';
     }
 
-    private expandAction(currLi: Element, e: TapEventArgs | KeyboardEventArgs): void {
+    public expandAction(currLi: Element, e: TapEventArgs | KeyboardEventArgs): void {
         this.expandArgs = this.getExpandEvent(currLi, e);
         let isLoaded: boolean = false;
         isLoaded = currLi.querySelector('ul') != null;
@@ -874,7 +874,7 @@ class SfTreeView {
         this.dotNetRef.invokeMethodAsync('TriggerNodeExpandingEvent', this.expandArgs, isLoaded);
     }
 
-    private collapseAction(currLi: Element, e: TapEventArgs | KeyboardEventArgs): void {
+    public collapseAction(currLi: Element, e: TapEventArgs | KeyboardEventArgs): void {
         this.expandArgs = this.getExpandEvent(currLi, e);
         let start: number = 0;
         let end: number = 0;
@@ -1010,6 +1010,8 @@ class SfTreeView {
                     liEle.style.height = EMPTY;
                 }
             });
+        } else if (li.querySelector(".e-icon-expandable")) {
+            li.querySelector(".e-icon-expandable").remove();
         }
     }
 
@@ -1487,6 +1489,16 @@ class SfTreeView {
         setTimeout(() => { liEle.scrollIntoView(true); }, 450);
     }
 
+    public nodeCollapse(id: string): void {
+        let liElement: Element = this.element.querySelector('[data-uid="' + id + '"]');
+        this.collapseAction(liElement, null);
+    }
+
+    public nodeExpand(id: string): void {
+        let liElement: Element = this.element.querySelector('[data-uid="' + id + '"]');
+        this.expandAction(liElement, null);
+    }
+    
     public KeyActionHandler(e: KeyboardEventArgs, nodeId: string): void {
         this.updateList();
         let focusedNode: Element;
@@ -1664,6 +1676,18 @@ let TreeView: object = {
         element.blazor__instance.unWireEvents();
         element.blazor__instance.wireEvents();
     },
+    collapseAction(element: BlazorTreeViewElement, nodeId: string): void {
+        if (this.valid(element)) {
+            let currentLi = element.querySelector('[data-uid="' + nodeId + '"]');
+            element.blazor__instance.collapseAction(currentLi, null);
+        }
+    },
+    expandAction(element: BlazorTreeViewElement, nodeId: string): void {
+        if (this.valid(element)) {
+            let currentLi = element.querySelector('[data-uid="' + nodeId + '"]');
+            element.blazor__instance.expandAction(currentLi, null);
+        }
+    },
     expandedNode(element: BlazorTreeViewElement, args: NodeExpandEventArgs): void {
         if (this.valid(element)) {
             element.blazor__instance.expandedNode(args);
@@ -1727,6 +1751,16 @@ let TreeView: object = {
     ensureVisible: function ensureVisible(element: BlazorTreeViewElement, node: string): void {
         if (this.valid(element)) {
             element.blazor__instance.ensureVisible(node);
+        }
+    },
+    nodeCollapse: function nodeCollapse(element: BlazorTreeViewElement, id: string) {
+        if (this.valid(element)) {
+            element.blazor__instance.nodeCollapse(id);
+        }
+    },
+    nodeExpand: function nodeCollapse(element:BlazorTreeViewElement, id:string) {
+        if (this.valid(element)) {
+            element.blazor__instance.nodeExpand(id);
         }
     }
 };

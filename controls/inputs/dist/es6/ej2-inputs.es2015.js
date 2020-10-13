@@ -5908,7 +5908,7 @@ let Slider = class Slider extends Component {
         return 1;
     }
     refreshTooltip(target) {
-        if (this.tooltip.isVisible && this.tooltipObj && this.initialTooltip) {
+        if (this.tooltip.isVisible && this.tooltipObj) {
             this.tooltipValue();
             if (target) {
                 this.tooltipObj.refresh(target);
@@ -8614,8 +8614,10 @@ let Uploader = class Uploader extends Component {
                 if (this.browserName !== 'msie' && this.browserName !== 'edge') {
                     this.element.files = files;
                 }
-                targetFiles = this.multiple ? this.sortFileList(files) : [files[0]];
-                this.renderSelectedFiles(args, targetFiles);
+                if (files.length > 0) {
+                    targetFiles = this.multiple ? this.sortFileList(files) : [files[0]];
+                    this.renderSelectedFiles(args, targetFiles);
+                }
             }
         }
         else {

@@ -2443,7 +2443,11 @@ private getGridEditSettings(): GridEditModel {
         gridColumn.field =  treeGridColumn.field = <string>this.columns[i];
       } else {
         for (let prop of Object.keys(column[i])) {
-          gridColumn[prop] = treeGridColumn[prop] = column[i][prop];
+          if (i === this.treeColumnIndex && prop === 'template') {
+            treeGridColumn[prop] = column[i][prop];
+          } else {
+            gridColumn[prop] = treeGridColumn[prop] = column[i][prop];
+          }
         }
       }
       if (column[i].columns) {
@@ -2543,7 +2547,7 @@ private getGridEditSettings(): GridEditModel {
           }
           break;
         case 'expandStateMapping':
-          this.refresh();
+          this.grid.refresh();
           break;
         case 'gridLines':
           this.grid.gridLines = this.gridLines; break;
@@ -2590,7 +2594,7 @@ private getGridEditSettings(): GridEditModel {
           this.grid.textWrapSettings = getActualProperties(this.textWrapSettings); break;
         case 'allowTextWrap':
           this.grid.allowTextWrap = getActualProperties(this.allowTextWrap);
-          this.refresh(); break;
+          this.grid.refresh(); break;
         case 'contextMenuItems':
           this.grid.contextMenuItems = this.getContextMenu(); break;
         case 'showColumnChooser':
@@ -2607,7 +2611,7 @@ private getGridEditSettings(): GridEditModel {
           this.grid.editSettings = this.getGridEditSettings(); break;
       }
       if (requireRefresh) {
-        this.refresh();
+        this.grid.refresh();
       }
     }
   }
@@ -3085,9 +3089,15 @@ private getGridEditSettings(): GridEditModel {
   }
 
   private updateColumnModel(column?: GridColumn[]): ColumnModel[] {
+    let temp: string;
+    let field: string;
+    let gridColumns: GridColumn[] = isNullOrUndefined(column) ? this.grid.getColumns() : column;
+    if (!isNullOrUndefined(gridColumns[this.treeColumnIndex].template)) {
+      temp = gridColumns[this.treeColumnIndex].template;
+      field = gridColumns[this.treeColumnIndex].field;
+    }
     this.columnModel = [];
     let stackedHeader: boolean = false;
-    let gridColumns: GridColumn[] = isNullOrUndefined(column) ? this.grid.getColumns() : column;
     let gridColumn: ColumnModel;
     for (let i: number = 0; i < gridColumns.length; i++) {
       gridColumn = {};
@@ -3097,6 +3107,9 @@ private getGridEditSettings(): GridEditModel {
         }
       }
       this.columnModel.push(new Column(gridColumn));
+      if (field === this.columnModel[i].field && (!isNullOrUndefined(temp) && temp !== '')) {
+        this.columnModel[i].template = temp;
+      }
     }
     if (!isBlazor() || !this.isServerRendered) {
       let merge: string = 'deepMerge';
@@ -3247,8 +3260,11 @@ private getGridEditSettings(): GridEditModel {
      * Refreshes the TreeGrid header and content.
      */
     public refresh(): void {
+      this.convertTreeData(this.dataSource);
+      this.grid.dataSource = !(this.dataSource instanceof DataManager) ?
+                this.flatData : new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
       this.grid.refresh();
-  }
+    }
 
   /** 
    * Get the records of checked rows.
@@ -3626,7 +3642,7 @@ private getGridEditSettings(): GridEditModel {
           }
         }
         this.isExpandRefresh = true;
-        this.refresh();
+        this.grid.refresh();
         this.trigger(events.expanded, expandingArgs);
       });
   }

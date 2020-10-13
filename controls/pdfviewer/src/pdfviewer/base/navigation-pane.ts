@@ -223,10 +223,15 @@ export class NavigationPane {
                 // tslint:disable-next-line
                 toolbarHeight = parseFloat(window.getComputedStyle(toolbarContainer)['height']) + 1;
             }
-            // tslint:disable-next-line:max-line-length
+            if (!this.pdfViewer.enableToolbar) {
+                toolbarHeight = 0;
+            }
             sideToolbarElement.style.top = toolbarHeight + 'px';
             sideToolbarContent.style.top = toolbarHeight + 'px';
             splitterElement.style.top = toolbarHeight + 'px';
+            sideToolbarElement.style.height = this.getSideToolbarHeight(toolbarHeight);
+            sideToolbarContent.style.height = this.getSideToolbarHeight(toolbarHeight);
+            splitterElement.style.height = this.getSideToolbarHeight(toolbarHeight);
         } else {
             let splitterElement: HTMLElement = this.pdfViewerBase.getElement('_sideBarToolbarSplitter');
             let toolbarContainer: HTMLElement = this.pdfViewerBase.getElement('_toolbarContainer');
@@ -240,6 +245,11 @@ export class NavigationPane {
             this.sideBarContentContainer.style.top = toolbarHeight + 'px';
             splitterElement.style.top = toolbarHeight + 'px';
         }
+    }
+
+    private getSideToolbarHeight(toolbarHeight: number): string {
+        let height: number = this.pdfViewer.element.getBoundingClientRect().height;
+        return (height !== 0) ? height - toolbarHeight + 'px' : '';
     }
 
     private createCommentPanel(): void {
@@ -508,8 +518,12 @@ export class NavigationPane {
     }
 
     private enableSearchItems(isEnable: boolean): void {
-        this.toolbar.enableItems(this.pdfViewerBase.getElement('_prev_occurrence').parentElement, isEnable);
-        this.toolbar.enableItems(this.pdfViewerBase.getElement('_next_occurrence').parentElement, isEnable);
+        if (!isBlazor()) {
+            this.toolbar.enableItems(this.pdfViewerBase.getElement('_prev_occurrence').parentElement, isEnable);
+            this.toolbar.enableItems(this.pdfViewerBase.getElement('_next_occurrence').parentElement, isEnable);
+        } else {
+            this.pdfViewer._dotnetInstance.invokeMethodAsync('EnableSearchItems', isEnable);
+        }
     }
 
     private initiateBookmarks(): void {
@@ -536,7 +550,9 @@ export class NavigationPane {
      */
     public goBackToToolbar(): void {
         this.isNavigationToolbarVisible = false;
-        this.pdfViewer.textSearchModule.cancelTextSearch();
+        if (isBlazor() && !Browser.isDevice || !isBlazor()) {
+            this.pdfViewer.textSearchModule.cancelTextSearch();
+        }
         this.searchInput = null;
         if (this.pdfViewer.bookmarkViewModule.childNavigateCount !== 0) {
             this.pdfViewer.bookmarkViewModule.bookmarkList.back();
@@ -558,8 +574,12 @@ export class NavigationPane {
             }
             this.pdfViewerBase.viewerContainer.style.display = 'block';
             this.isBookmarkListOpen = false;
-            if (!this.pdfViewer.toolbar.annotationToolbarModule.isMobileAnnotEnabled) {
-                this.pdfViewer.toolbarModule.showToolbar(true);
+            if (!isBlazor()) {
+                if (!this.pdfViewer.toolbar.annotationToolbarModule.isMobileAnnotEnabled) {
+                    this.pdfViewer.toolbarModule.showToolbar(true);
+                    this.pdfViewerBase.onWindowResize();
+                }
+            } else {
                 this.pdfViewerBase.onWindowResize();
             }
         }
@@ -568,6 +588,9 @@ export class NavigationPane {
     private setSearchInputWidth(): void {
         let searchInputParent: HTMLElement = this.searchInput.parentElement;
         let padding: string = window.getComputedStyle(searchInputParent.parentElement, null).getPropertyValue('padding-left');
+        if (isBlazor() && Browser.isDevice) {
+            this.toolbarElement = this.pdfViewerBase.getElement('_navigationToolbar');
+        }
         // tslint:disable-next-line:max-line-length
         let width: number = this.toolbarElement.clientWidth - this.getParentElementSearchBox('_backward').clientWidth
             - this.getParentElementSearchBox('_search_box-icon').clientWidth - this.getParentElementSearchBox('_prev_occurrence').clientWidth

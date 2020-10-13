@@ -460,14 +460,31 @@ export class SheetRender implements IRenderer {
     }
 
     private checkRowMerge(indexes: number[], range: number[], cell: Element, model: CellModel, firstcell?: Element): void {
-        if (this.parent.scrollSettings.enableVirtualization && cell && indexes[0] === this.parent.viewport.topIndex &&
+        if (this.parent.scrollSettings.enableVirtualization && cell &&
             (!isNullOrUndefined(model.rowSpan) || !isNullOrUndefined(model.colSpan))) {
-            if (model.rowSpan < 0) {
-                this.parent.notify(checkMerge, <CellRenderArgs>{ td: cell, rowIdx: indexes[0], colIdx: indexes[1], isRow: true });
+            if (indexes[0] === this.parent.viewport.topIndex) {
+                if (model.rowSpan < 0) {
+                    this.parent.notify(checkMerge, <CellRenderArgs>{ td: cell, rowIdx: indexes[0], colIdx: indexes[1], isRow: true });
+                    if (this.parent.viewport.topIndex >= range[0]) {
+                        this.refreshPrevMerge(range[2] + 1, indexes[1]);
+                    }
+                }
+                if (firstcell && ((firstcell as HTMLTableCellElement).colSpan || (firstcell as HTMLTableCellElement).rowSpan)) {
+                    this.cellRenderer.refresh(indexes[0] + (range[2] - range[0]) + 1, indexes[1], null, firstcell);
+                }
+            } else if (model.rowSpan > 1) {
+                let prevTopIdx: number = range[2] + 1;
+                if (indexes[0] + model.rowSpan > prevTopIdx && indexes[0] < prevTopIdx) {
+                    this.refreshPrevMerge(prevTopIdx, indexes[1]);
+                }
             }
-            if (firstcell && ((firstcell as HTMLTableCellElement).colSpan || (firstcell as HTMLTableCellElement).rowSpan)) {
-                this.cellRenderer.refresh(indexes[0] + (range[2] - range[0]) + 1, indexes[1], null, firstcell);
-            }
+        }
+    }
+
+    private refreshPrevMerge(prevTopIdx: number, colIndex: number): void {
+        let td: HTMLTableCellElement = this.parent.getCell(prevTopIdx, colIndex, this.parent.getRow(0)) as HTMLTableCellElement;
+        if (td && td.rowSpan > 1) {
+            this.cellRenderer.refresh(prevTopIdx, colIndex, null, td);
         }
     }
 

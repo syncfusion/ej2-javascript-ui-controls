@@ -130,6 +130,10 @@ var DashboardLayout = /** @class */ (function (_super) {
         _this.isBlazor = false;
         _this.isInlineRendering = false;
         _this.removeAllCalled = false;
+        // to check whether removePanel is executed in mobile device
+        _this.isPanelRemoved = false;
+        // to maintain sizeY in mobile device
+        _this.panelsSizeY = 0;
         _this.resizeHeight = false;
         sf.base.setValue('mergePersistData', _this.mergePersistPanelData, _this);
         return _this;
@@ -367,11 +371,15 @@ var DashboardLayout = /** @class */ (function (_super) {
     DashboardLayout.prototype.renderTemplate = function (content, appendElement, type, isStringTemplate, prop) {
         var templateFn = this.templateParser(content);
         var templateElements = [];
-        for (var _i = 0, _a = templateFn({}, this, prop, type, isStringTemplate); _i < _a.length; _i++) {
-            var item = _a[_i];
-            templateElements.push(item);
+        // tslint:disable-next-line
+        var compilerFn = templateFn({}, this, prop, type, isStringTemplate, null, appendElement);
+        if (compilerFn) {
+            for (var _i = 0, compilerFn_1 = compilerFn; _i < compilerFn_1.length; _i++) {
+                var item = compilerFn_1[_i];
+                templateElements.push(item);
+            }
+            sf.base.append([].slice.call(templateElements), appendElement);
         }
-        sf.base.append([].slice.call(templateElements), appendElement);
     };
     DashboardLayout.prototype.renderPanels = function (cellElement, panelModel, panelId, isStringTemplate) {
         if (!this.isBlazor) {
@@ -868,6 +876,7 @@ var DashboardLayout = /** @class */ (function (_super) {
     };
     
     DashboardLayout.prototype.refresh = function () {
+        this.panelsSizeY = 0;
         this.updateDragArea();
         if (this.checkMediaQuery()) {
             this.checkMediaQuerySizing();
@@ -937,13 +946,28 @@ var DashboardLayout = /** @class */ (function (_super) {
     };
     DashboardLayout.prototype.checkMediaQuerySizing = function () {
         sf.base.addClass([this.element], [responsive]);
-        var updatedPanel = this.sortPanels();
+        var updatedPanel;
+        if (this.isPanelRemoved && this.panels) {
+            updatedPanel = this.panels;
+        }
+        else {
+            updatedPanel = this.sortPanels();
+        }
         this.updatedRows = updatedPanel.length;
         for (var i = 0; i < updatedPanel.length; i++) {
             var panelElement = document.getElementById(updatedPanel[i].id);
+            // tslint:disable-next-line
+            var updatedHeight = void 0;
             if (panelElement) {
                 sf.base.setStyleAttribute(panelElement, { 'width': '100%' });
-                panelElement.style.height = ' ' + (this.cellSize[1] * updatedPanel[i].sizeY) + 'px';
+                panelElement.style.height = ' ' + ((this.element.parentElement
+                    && this.element.parentElement.offsetWidth / this.cellAspectRatio) * updatedPanel[i].sizeY) + 'px';
+                if (updatedPanel[i].sizeY > 1) {
+                    updatedHeight = ((this.element.parentElement
+                        && this.element.parentElement.offsetWidth / this.cellAspectRatio) * updatedPanel[i].sizeY) +
+                        parseInt((Math.round(updatedPanel[i].sizeY / 2) * this.cellSpacing[1]).toString(), 0);
+                    panelElement.style.height = '' + updatedHeight + 'px';
+                }
                 this.resizeHeight = true;
                 if (this.addPanelCalled && this.isBlazor) {
                     var panelProp = this.getActualProperties(updatedPanel[i]);
@@ -951,12 +975,11 @@ var DashboardLayout = /** @class */ (function (_super) {
                     panelProp.col = 0;
                     this.panelPropertyChange(updatedPanel[i], panelProp);
                     this.setPanelPosition(panelElement, i, 0);
-                    this.setMediaQueryPanelPosition(panelElement, i, 0);
                 }
                 else {
                     this.panelPropertyChange(updatedPanel[i], { row: i, col: 0 });
                     this.setPanelPosition(panelElement, updatedPanel[i].row, updatedPanel[i].col);
-                    this.setMediaQueryPanelPosition(panelElement, updatedPanel[i].row, updatedPanel[i].col);
+                    this.panelsSizeY = this.panelsSizeY + updatedPanel[i].sizeY;
                 }
                 this.setClasses(this.panelCollection);
                 this.checkDragging(this.dragCollection);
@@ -1053,24 +1076,8 @@ var DashboardLayout = /** @class */ (function (_super) {
         var widthValue = this.getCellSize()[0];
         var left = col === 0 ? 0 : (((col) * ((widthValue) + this.cellSpacing[0])));
         var top = row === 0 ? 0 : (((row) * ((heightValue) + this.cellSpacing[1])));
-        sf.base.setStyleAttribute(cellElement, { 'left': left + 'px', 'top': top + 'px' });
-    };
-    DashboardLayout.prototype.setMediaQueryPanelPosition = function (cellElement, row, col) {
-        if (!cellElement) {
-            return;
-        }
-        var widthValue = this.getCellSize()[0];
-        var heightValue = this.getCellSize()[1];
-        var top = 0; //= row === 0 ? 0 : (((row) * (parseInt(heightValue.toString(), 10) + this.cellSpacing[1])));
-        var left = 0;
-        if (this.resizeHeight && row !== 0) {
-            // top = 0;
-            for (var i = 1; i < this.panels.length; i++) {
-                top = top + (this.panels[i - 1].sizeY * this.cellSize[1]) + this.cellSpacing[1];
-                if (i === row) {
-                    break;
-                }
-            }
+        if (this.checkMediaQuery()) {
+            top = row === 0 ? 0 : ((this.panelsSizeY) * ((heightValue) + this.cellSpacing[1]));
         }
         sf.base.setStyleAttribute(cellElement, { 'left': left + 'px', 'top': top + 'px' });
     };
@@ -2307,6 +2314,7 @@ var DashboardLayout = /** @class */ (function (_super) {
      * @deprecated
      */
     DashboardLayout.prototype.addPanel = function (panel) {
+        this.panelsSizeY = 0;
         this.allowServerDataBinding = false;
         this.maxCol();
         if (!panel.minSizeX) {
@@ -2384,6 +2392,7 @@ var DashboardLayout = /** @class */ (function (_super) {
      * @deprecated
      */
     DashboardLayout.prototype.updatePanel = function (panel) {
+        this.panelsSizeY = 0;
         if (!panel.id) {
             return;
         }
@@ -2443,6 +2452,9 @@ var DashboardLayout = /** @class */ (function (_super) {
         this.setHeightAndWidth(cell, panelInstance);
         this.setPanelPosition(cell, panelInstance.row, panelInstance.col);
         this.updatePanelLayout(cell, panelInstance);
+        if (this.checkMediaQuery()) {
+            this.checkMediaQuerySizing();
+        }
         this.mainElement = null;
         this.updatePanels();
         this.updateCloneArrayObject();
@@ -2503,6 +2515,7 @@ var DashboardLayout = /** @class */ (function (_super) {
      */
     DashboardLayout.prototype.removePanel = function (id) {
         var _this = this;
+        this.panelsSizeY = 0;
         this.panelsInitialModel = this.cloneModels(this.panels);
         var removedPanel;
         for (var i = 0; i < this.panelCollection.length; i++) {
@@ -2519,6 +2532,11 @@ var DashboardLayout = /** @class */ (function (_super) {
             }
         }
         this.updatePanels();
+        if (this.checkMediaQuery()) {
+            this.isPanelRemoved = true;
+            this.checkMediaQuerySizing();
+            this.isPanelRemoved = false;
+        }
         this.updateServerPanelData();
         this.gridPanelCollection.forEach(function (item) {
             if (item.id === id) {
@@ -2674,6 +2692,9 @@ var DashboardLayout = /** @class */ (function (_super) {
         }
         this.isBlazor = false;
         this.initialize();
+        if (this.checkMediaQuery()) {
+            this.refresh();
+        }
         this.isBlazor = (sf.base.isBlazor() && this.isServerRendered);
         if (this.showGridLines) {
             this.initGridLines();

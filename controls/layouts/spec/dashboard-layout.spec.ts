@@ -7748,6 +7748,47 @@ describe('GridLayout', () => {
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
 });
+//mobile resolution remove panel
+ describe('mobile resolution remove panel', () => {
+            let gridLayOut: any;
+           let ele: HTMLElement;
+             let defaultUserAgent= navigator.userAgent;
+            beforeEach((done: Function) => {
+                Browser.userAgent="Mozilla/5.0 (Linux; Android 8.0; Pixel 2 Build/OPD3.170816.012) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Mobile Safari/537.36";
+                done();
+                 ele = createElement('div', { id: 'gridlayout', className: 'e-control e-lib e-dashboardlayout' });
+        let parentEle: HTMLElement = createElement('div', { id: 'container' });
+        parentEle.style.width = '1264px';
+        parentEle.appendChild(ele);
+        document.body.appendChild(parentEle);
+        setStyle(ele, { 'position': 'relative' });
+            });
+        it('mobile resolution remove panel', () => {
+            gridLayOut = new DashboardLayout({
+                cellAspectRatio: 1,
+                columns: 12,
+                cellSpacing: [5, 5],
+                allowResizing: true,            
+                panels: [
+                    { "id": 'first', "sizeX": 2, "sizeY": 1, "row": 0, "col": 1, "zIndex": 100 },
+                    { "id": 'second', "sizeX": 2, "sizeY": 2, "row": 2, "col": 2, "zIndex": 100 },
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            gridLayOut.checkMediaQuery = function()
+            {
+            return true;
+            };
+            gridLayOut.removePanel('second');
+             });
+            afterEach(() => {
+                Browser.userAgent = defaultUserAgent;
+                if (gridLayOut) {
+            gridLayOut.destroy();
+            detach(ele);
+        }
+            });
+        });
 describe('Blazor dashboard layout testing', () => {
     let gridLayOut: any;
     let ele: HTMLElement;

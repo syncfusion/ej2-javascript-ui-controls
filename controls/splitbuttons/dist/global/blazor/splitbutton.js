@@ -947,7 +947,5 @@ exports.Deferred = Deferred;
 return exports;
 
 });
-sfBlazor.modules["splitbutton"] = "splitbuttons.SplitButton";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.splitbutton, () => {
+
     sf.splitbuttons = sf.base.extend({}, sf.splitbuttons, sfsplitbutton({}));
-});

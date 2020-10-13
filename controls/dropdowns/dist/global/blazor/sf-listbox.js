@@ -14,11 +14,13 @@ var DOT = '.';
 var PLACEHOLDER = 'e-placeholder';
 var SPAN = 'span';
 var BADGE = 'e-list-badge';
+var PREVENT = 'e-drag-prevent';
 var KEYDOWN = 'keydown';
 var SORTABLE = 'sortable';
 var UP = 38;
 var DOWN = 40;
 var KEYA = 65;
+var SPACEKEY = 32;
 /**
  * Client side scripts for SfListBox
  */
@@ -30,11 +32,13 @@ var SfListBox = /** @class */ (function () {
         this.allowDragAndDrop = allowDragDrop;
         this.element.blazor__instance = this;
         sf.base.EventHandler.add(this.element, KEYDOWN, this.keyDownHandler, this);
-        if (this.scopeElement && !sf.base.isNullOrUndefined(this.scopeElement.blazor__instance) && !this.scopeElement.blazor__instance.scope) {
-            this.scope = sf.base.getUniqueID(COMBINED);
-            this.scopeElement.blazor__instance.scope = this.scope;
+        if (!sf.base.isNullOrUndefined(this.scopeElement.blazor__instance) && !this.scopeElement.blazor__instance.scope) {
+            if (this.scopeElement !== this.element) {
+                this.scope = sf.base.getUniqueID(COMBINED);
+                this.scopeElement.blazor__instance.scope = this.scope;
+                this.scopeElement.blazor__instance.initializeDraggable();
+            }
             this.initializeDraggable();
-            this.scopeElement.blazor__instance.initializeDraggable();
         }
     }
     SfListBox.prototype.initializeDraggable = function () {
@@ -46,6 +50,7 @@ var SfListBox = /** @class */ (function () {
         new sf.lists.Sortable(ul, {
             scope: this.scope,
             itemClass: LISTITEM,
+            beforeDragStart: this.triggerBeforeDragStart.bind(this),
             dragStart: this.triggerDragStart.bind(this),
             beforeDrop: this.dragEnd.bind(this),
             placeHolder: function () { return sf.base.createElement(SPAN, { className: PLACEHOLDER }); },
@@ -65,6 +70,9 @@ var SfListBox = /** @class */ (function () {
             }
         });
     };
+    SfListBox.prototype.triggerBeforeDragStart = function (args) {
+        args.cancel = args.target.classList.contains(PREVENT);
+    };
     SfListBox.prototype.triggerDragStart = function (args) {
         args.bindEvents(args.dragElement);
     };
@@ -72,7 +80,7 @@ var SfListBox = /** @class */ (function () {
         var list;
         var scopedListBox = false;
         var sameListBox = false;
-        if (this.scopeElement) {
+        if (this.element !== this.scopeElement) {
             list = sf.base.closest(args.target, HASH + this.scopeElement.id);
         }
         if (list) {
@@ -105,12 +113,12 @@ var SfListBox = /** @class */ (function () {
                 }
                 index = e.keyCode === UP ? index - 1 : index + 1;
                 if (index < 0 || index > list.length - 1) {
-                    index = e.keyCode === UP ? list.length - 1 : 0;
+                    return;
                 }
                 list[index].focus();
             }
         }
-        else if (e.keyCode === KEYA && e.ctrlKey) {
+        else if ((e.keyCode === KEYA && e.ctrlKey) || e.keyCode === SPACEKEY) {
             e.preventDefault();
         }
     };

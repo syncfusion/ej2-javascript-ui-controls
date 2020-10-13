@@ -8,7 +8,7 @@ import { WParagraphFormat, WCharacterFormat, WSectionFormat, WBorder, WBorders }
 import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 import { Dictionary } from '../../base/dictionary';
 // tslint:disable-next-line:max-line-length
-import { ElementInfo, HelperMethods, Point, WidthInfo, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo } from '../editor/editor-helper';
+import { ElementInfo, HelperMethods, Point, WidthInfo, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, BorderInfo } from '../editor/editor-helper';
 import { HeaderFooterType, TabLeader } from '../../base/types';
 import { TextPosition } from '..';
 import { ChartComponent } from '@syncfusion/ej2-office-chart';
@@ -1402,6 +1402,7 @@ export class TableWidget extends BlockWidget {
             row.rowFormat.gridBeforeWidth *= factor;
             for (let j: number = 0; j < row.childWidgets.length; j++) {
                 (row.childWidgets[j] as TableCellWidget).cellFormat.cellWidth *= factor;
+                (row.childWidgets[j] as TableCellWidget).cellFormat.preferredWidth *= factor;
             }
         }
     }
@@ -1648,8 +1649,8 @@ export class TableWidget extends BlockWidget {
                     }
                     else {
                         // tslint:disable-next-line:max-line-length
-                        cellWidth = this.getCellWidth(rowSpannedCell.cellFormat.preferredWidth, rowSpannedCell.cellFormat.preferredWidthType, tableWidth, rowSpannedCell);
                         sizeInfo = rowSpannedCell.getCellSizeInfo(isAutoFit);
+                        cellWidth = this.getCellWidth(rowSpannedCell.cellFormat.preferredWidth, rowSpannedCell.cellFormat.preferredWidthType, tableWidth, rowSpannedCell);
                         // If the table gird alone calculated then column index of the rowspanned cell will be directly taken. 
                         // tslint:disable-next-line:max-line-length
                         // If the gird calculation is done from the UI level operations such as resizing then table holder will have the columns at that time we can get the column index from the table holder.
@@ -1686,8 +1687,8 @@ export class TableWidget extends BlockWidget {
                         rowSpannedCells.splice(insertIndex, 0, cell);
                     }
                 }
-                cellWidth = this.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, tableWidth, cell);
                 sizeInfo = cell.getCellSizeInfo(isAutoFit);
+                cellWidth = this.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, tableWidth, cell);
                 this.tableHolder.addColumns(columnSpan, columnSpan += cell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth);
                 if (j === row.childWidgets.length - 1 && rowFormat.gridAfterWidth > 0) {
                     cellWidth = this.getCellWidth(rowFormat.gridAfterWidth, 'Point', tableWidth, null);
@@ -2459,6 +2460,10 @@ export class TableCellWidget extends BlockWidget {
     /**
      * @private
      */
+    public updatedTopBorders: BorderInfo[] = [];
+    /**
+     * @private
+     */
     get ownerColumn(): WColumn {
         return this.ownerTable.tableHolder.columns[this.columnIndex];
     }
@@ -2801,8 +2806,7 @@ export class TableCellWidget extends BlockWidget {
             return this.cellFormat.preferredWidth;
             //if table has preferred width value and cell preferred width is auto, considered cell width.
         } else if (this.cellFormat.preferredWidth === 0 && this.cellFormat.preferredWidthType === 'Auto'
-            && this.cellFormat.cellWidth !== 0 && this.ownerTable &&
-            this.ownerTable.tableFormat.preferredWidthType !== 'Auto') {
+            && this.cellFormat.cellWidth !== 0) {
             return this.cellFormat.cellWidth;
         }
         defaultWidth = this.leftMargin + this.rightMargin + this.getLeftBorderWidth() + this.getRightBorderWidth() + this.getCellSpacing();

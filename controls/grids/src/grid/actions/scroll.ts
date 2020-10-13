@@ -145,6 +145,8 @@ export class Scroll implements IAction {
     private setScrollLeft(): void {
         if (this.parent.frozenColumns) {
             (<HTMLElement>(<Grid>this.parent).headerModule.getMovableHeader()).scrollLeft = this.previousValues.left;
+        } else {
+            (<HTMLElement>(<Grid>this.parent).getHeaderContent().querySelector('.e-headercontent')).scrollLeft = this.previousValues.left;
         }
     }
 

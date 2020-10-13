@@ -969,7 +969,7 @@ var Tab = /** @class */ (function (_super) {
         else if (this.heightAdjustMode === 'Fill') {
             sf.base.addClass([this.element], [CLS_FILL]);
             sf.base.setStyleAttribute(this.element, { 'height': '100%' });
-            sf.base.setStyleAttribute(this.cntEle, { 'height': '100%' });
+            sf.base.setStyleAttribute(this.cntEle, { 'height': (this.element.offsetHeight - hdrEle.offsetHeight) + 'px' });
         }
         else if (this.heightAdjustMode === 'Auto') {
             if (this.isTemplate === true) {

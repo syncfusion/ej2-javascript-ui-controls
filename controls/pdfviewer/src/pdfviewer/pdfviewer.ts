@@ -36,7 +36,7 @@ import { SelectorModel } from './drawing/selector-model';
 import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';
 import { renderAdornerLayer } from './drawing/dom-util';
 import { ThumbnailClickEventArgs } from './index';
-import { ValidateFormFieldsArgs, BookmarkClickEventArgs } from './base';
+import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs } from './base';
 // tslint:disable-next-line:max-line-length
 import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 import { ContextMenuSettingsModel } from './pdfviewer-model';
@@ -1579,6 +1579,12 @@ export class InkAnnotationSettings extends ChildProperty<InkAnnotationSettings> 
      */
     @Property(['None'])
     public allowedInteractions: AllowedInteraction[];
+    /**
+     * specifies the custom data of the annotation
+     */
+    @Property(null)
+    public customData: object;
+
 }
 /**
  * The `stickyNotesSettings` module is used to provide the properties to sticky notes annotation.
@@ -3171,6 +3177,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public annotationSelect: EmitType<AnnotationSelectEventArgs>;
 
     /**
+     * Triggers when an annotation is unselected over the page of the PDF document. 
+     * @event
+     * @blazorProperty 'AnnotationUnSelect'
+     */
+    @Event()
+    public annotationUnSelect: EmitType<AnnotationUnSelectEventArgs>;
+
+    /**
      * Triggers an event when the annotation is double click.
      * @event
      * @blazorProperty 'OnAnnotationDoubleClick'
@@ -3748,7 +3762,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Free Text': 'Free Text',
         'Import Failed': 'Invalid JSON file type or file name; please select a valid JSON file',
         'File not found': 'Imported JSON file is not found in the desired location',
-        'Export Failed': 'Export annotations action has failed; please ensure annotations are added properly'
+        'Export Failed': 'Export annotations action has failed; please ensure annotations are added properly',
+        'of': 'of '
     };
 
     /**
@@ -4248,6 +4263,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     *  @private
+     */
+    // tslint:disable-next-line
+    public fireAnnotationUnSelect(id: string, pageNumber: number, annotation: any): void {
+        // tslint:disable-next-line:max-line-length
+        let eventArgs: AnnotationUnSelectEventArgs = { name: 'annotationUnSelect', annotationId: id, pageIndex: pageNumber, annotation: annotation };
+        this.trigger('annotationUnSelect', eventArgs);
+    }
+
+    /**
      * @private
      */
     // tslint:disable-next-line
@@ -4568,11 +4593,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     // tslint:disable-next-line:max-line-length
     public select(objArray: string[], currentSelector?: AnnotationSelectorSettingsModel, multipleSelection?: boolean, preventUpdate?: boolean): void {
         let annotationSelect: number = this.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage;
+        // tslint:disable-next-line
+        let annotation: any = this.selectedItems.annotations[0];
         if (annotationSelect) {
             this.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotationSelection(annotationSelect, true);
         }
         if (!multipleSelection) {
             if (this.viewerBase.activeElements && this.viewerBase.activeElements.activePageID >= 0) {
+                if (annotation) {
+                    this.fireAnnotationUnSelect(annotation.annotName, annotation.pageIndex, annotation);
+                }
                 this.clearSelection(this.viewerBase.activeElements.activePageID);
             }
         }

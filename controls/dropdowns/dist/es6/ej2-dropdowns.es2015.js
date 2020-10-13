@@ -8475,6 +8475,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
      */
     constructor(option, element) {
         super(option, element);
+        this.clearIconWidth = 0;
         this.isValidKey = false;
         this.selectAllEventData = [];
         this.selectAllEventEle = [];
@@ -10311,7 +10312,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                         this.notify('selectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
                         overAllHeight -= this.selectAllHeight;
                     }
-                    else if (this.mode === 'CheckBox' && !this.showSelectAll && (!this.headerTemplate || !this.footerTemplate)) {
+                    else if (this.mode === 'CheckBox' && !this.showSelectAll && (!this.headerTemplate && !this.footerTemplate)) {
                         this.notify('selectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
                         overAllHeight = parseInt(this.popupHeight, 10);
                     }
@@ -10655,7 +10656,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         if (!isNullOrUndefined(this.value)) {
             for (let index = 0; !isNullOrUndefined(this.value[index]); index++) {
                 let listValue = this.findListElement(this.mainList, 'li', 'data-value', this.value[index]);
-                if (isNullOrUndefined(listValue) && !this.allowCustomValue) {
+                if (!(isBlazor() && this.isServerRendered) && isNullOrUndefined(listValue) && !this.allowCustomValue) {
                     this.value.splice(index, 1);
                 }
                 if (this.listData) {
@@ -10829,6 +10830,10 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                     this.mainData.push(data);
                     this.remoteCustomValue = false;
                     this.addValue(value, text, e);
+                    if (isBlazor() && this.isServerRendered) {
+                        this.checkPlaceholderSize();
+                        this.makeTextBoxEmpty();
+                    }
                 }
             });
         }
@@ -10837,8 +10842,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.addValue(value, text, e);
         }
         if (isBlazor() && this.isServerRendered && this.value && this.list &&
-            this.value.length === this.list.querySelectorAll('li.e-list-item').length ||
-            this.value.length === this.maximumSelectionLength) {
+            (this.value.length === this.list.querySelectorAll('li.e-list-item').length ||
+                this.value.length === this.maximumSelectionLength)) {
             this.updatedataValueItems(e);
             this.checkPlaceholderSize();
         }
@@ -11281,9 +11286,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             let remainSize = raminElement.offsetWidth;
             remove(raminElement);
             if (this.showDropDownIcon) {
-                downIconWidth = this.dropIcon.offsetWidth +
-                    parseInt(window.getComputedStyle(this.dropIcon).marginRight, 10);
+                downIconWidth = this.dropIcon.offsetWidth + parseInt(window.getComputedStyle(this.dropIcon).marginRight, 10);
             }
+            this.checkClearIconWidth();
             if (!isNullOrUndefined(this.value)) {
                 for (let index = 0; !isNullOrUndefined(this.value[index]); index++) {
                     data += (index === 0) ? '' : this.delimiterChar + ' ';
@@ -11296,7 +11301,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                     overAllContainer = this.componentWrapper.offsetWidth -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingLeft, 10) -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingRight, 10);
-                    if ((wrapperleng + downIconWidth) > overAllContainer) {
+                    if ((wrapperleng + downIconWidth + this.clearIconWidth) > overAllContainer) {
                         if (tempData !== undefined && tempData !== '') {
                             temp = tempData;
                             index = tempIndex + 1;
@@ -11304,7 +11309,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                         this.updateWrapperText(this.viewWrapper, temp);
                         remaining = this.value.length - index;
                         wrapperleng = this.viewWrapper.offsetWidth;
-                        while (((wrapperleng + remainSize + downIconWidth) > overAllContainer) && wrapperleng !== 0
+                        while (((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) > overAllContainer) && wrapperleng !== 0
                             && this.viewWrapper.innerHTML !== '') {
                             let textArr = this.viewWrapper.innerHTML.split(this.delimiterChar);
                             textArr.pop();
@@ -11327,7 +11332,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                 }
             }
             if (remaining > 0) {
-                let totalWidth = overAllContainer - downIconWidth;
+                let totalWidth = overAllContainer - downIconWidth - this.clearIconWidth;
                 this.viewWrapper.appendChild(this.updateRemainTemplate(raminElement, this.viewWrapper, remaining, compiledString, totalCompiledString, totalWidth));
                 this.updateRemainWidth(this.viewWrapper, totalWidth);
                 this.updateRemainingText(raminElement, downIconWidth, remaining, compiledString, totalCompiledString);
@@ -11336,6 +11341,11 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         else {
             this.viewWrapper.innerHTML = '';
             this.viewWrapper.style.display = 'none';
+        }
+    }
+    checkClearIconWidth() {
+        if (this.showClearButton) {
+            this.clearIconWidth = this.overAllClear.offsetWidth;
         }
     }
     updateRemainWidth(viewWrapper, totalWidth) {
@@ -12698,7 +12708,7 @@ class CheckBoxSelection {
     }
     getFocus(e) {
         this.parent.overAllWrapper.classList.remove(FOCUS$1);
-        if (this.parent.keyAction && e.value !== 'clear') {
+        if (this.parent.keyAction && e.value !== 'clear' && e.value !== 'focus') {
             this.parent.keyAction = false;
             return;
         }

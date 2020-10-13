@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.40 (2020-10-13)
+
+### In-place Editor
+
+#### Bug Fixes
+
+`#292832` - The issue with Validation is not working when template has more then two input elements" has been resolved.
+
 ## 18.2.59 (2020-09-21)
 
 ### In-place Editor

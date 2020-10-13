@@ -211,7 +211,17 @@ var Query = /** @__PURE__ @class */ (function () {
      * @param  {string|Function} comparer - Defines the sort direction or custom sort comparer function.
      */
     Query.prototype.sortBy = function (fieldName, comparer, isFromGroup) {
-        var order = 'ascending';
+        return this.sortByForeignKey(fieldName, comparer, isFromGroup);
+    };
+    /**
+     * Sort the data with given sort criteria.
+     * By default, sort direction is ascending.
+     * @param  {string|string[]} fieldName - Defines the single or collection of column fields.
+     * @param  {string|Function} comparer - Defines the sort direction or custom sort comparer function.
+     * @param  {string} direction - Defines the sort direction .
+     */
+    Query.prototype.sortByForeignKey = function (fieldName, comparer, isFromGroup, direction) {
+        var order = !isNullOrUndefined(direction) ? direction : 'ascending';
         var sorts;
         var temp;
         if (typeof fieldName === 'string' && DataUtil.endsWith(fieldName.toLowerCase(), ' desc')) {

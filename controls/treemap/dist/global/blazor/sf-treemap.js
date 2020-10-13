@@ -91,19 +91,26 @@ var Treemap = {
             elementWidth = elementRect.width;
             elementHeight = elementRect.height;
         }
-        return { width: elementWidth, height: elementHeight };
+        return { width: elementWidth, height: elementHeight, isIE: sf.base.Browser.isIE };
     },
     setElementAttribute: function (dotNetRef, legendItems, items, fill, opacity, borderColor, borderWidth, type, blazorElement) {
         for (var j = 0; j < items.length; j++) {
             var element = document.getElementById(items[j] + RECTPATH);
-            if (element != null) {
-                if (type === SELECTION && element.classList.contains(TREEMAPHIGHLIGHT)) {
-                    element.classList.remove(TREEMAPHIGHLIGHT);
+            if (element !== null) {
+                var elementClass = element.getAttribute('class');
+                var attribute;
+                if (sf.base.isNullOrUndefined(elementClass)) {
+                    attribute = document.createAttribute('class');
+                    elementClass = '';
                 }
-                if (!element.classList.contains(TREEMAPSELECTION)) {
+                if (type === SELECTION && elementClass === TREEMAPHIGHLIGHT) {
+                    element.setAttribute('class', '');
+                    elementClass = '';
+                }
+                if (elementClass !== TREEMAPSELECTION) {
                     for (var i = 0; i < legendItems.length; i++) {
                         var legendElement = document.getElementById(legendItems[i]);
-                        if (legendElement != null) {
+                        if (legendElement !== null) {
                             legendElement.setAttribute('fill', fill);
                             legendElement.setAttribute('opacity', opacity);
                             legendElement.setAttribute('stroke', borderColor);
@@ -114,11 +121,13 @@ var Treemap = {
                     element.setAttribute('opacity', opacity);
                     element.setAttribute('stroke', borderColor);
                     element.setAttribute('stroke-width', borderWidth);
-                    if (type === HIGHLIGHT || type === LEGENDHIGHLIGHT) {
-                        element.classList.add(TREEMAPHIGHLIGHT);
+                    elementClass = (type === HIGHLIGHT || type === LEGENDHIGHLIGHT) ? TREEMAPHIGHLIGHT : TREEMAPSELECTION;
+                    if (!sf.base.isNullOrUndefined(attribute) && sf.base.isNullOrUndefined(element.getAttribute('class'))) {
+                        attribute.value = elementClass;
+                        element.setAttributeNode(attribute);
                     }
                     else {
-                        element.classList.add(TREEMAPSELECTION);
+                        element.setAttribute('class', elementClass);
                     }
                     var contentText = blazorElement.blazor__instance.getElementId(items[j] + TEXT);
                     if (type === SELECTION) {
@@ -135,8 +144,9 @@ var Treemap = {
         for (var j = 0; j < items.length; j++) {
             var element = document.getElementById(items[j] + RECTPATH);
             if (element != null) {
-                if (type === HIGHLIGHT && !element.classList.contains(TREEMAPSELECTION) ||
-                    type === SELECTION && element.classList.contains(TREEMAPSELECTION)) {
+                var elementClass = element.getAttribute('class');
+                if (type === HIGHLIGHT && elementClass !== TREEMAPSELECTION ||
+                    type === SELECTION && elementClass === TREEMAPSELECTION) {
                     for (var i = 0; i < legendItems.length; i++) {
                         var legendElement = document.getElementById(legendItems[i]);
                         if (legendElement != null) {
@@ -150,12 +160,7 @@ var Treemap = {
                     element.setAttribute('opacity', opacity[j]);
                     element.setAttribute('stroke', borderColor[j]);
                     element.setAttribute('stroke-width', borderWidth[j]);
-                    if (type === HIGHLIGHT) {
-                        element.classList.remove(TREEMAPHIGHLIGHT);
-                    }
-                    else {
-                        element.classList.remove(TREEMAPSELECTION);
-                    }
+                    element.setAttribute('class', '');
                 }
             }
         }

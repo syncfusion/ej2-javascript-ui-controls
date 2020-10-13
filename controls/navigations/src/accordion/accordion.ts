@@ -873,7 +873,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     let templateFn: Function;
     let temString: Str;
     try {
-      if (document.querySelectorAll(value).length) {
+      if (document.querySelectorAll(value).length && value !== 'Button') {
         let eleVal: HTEle = <HTEle>document.querySelector(value);
         temString = eleVal.outerHTML.trim();
         ele.appendChild(eleVal);

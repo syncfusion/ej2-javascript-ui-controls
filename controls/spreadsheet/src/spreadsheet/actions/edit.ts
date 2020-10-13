@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../index';
-import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined } from '@syncfusion/ej2-base';
+import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress } from '../../workbook/common/address';
 import { keyDown, editOperation, clearCopy, mouseDown, selectionComplete, enableToolbarItems, completeAction } from '../common/event';
 import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage } from '../common/index';
@@ -7,10 +7,10 @@ import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wra
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell } from '../../workbook/base/index';
 import { getSheetNameFromAddress, getSheet } from '../../workbook/base/index';
 import { RefreshValueArgs } from '../integrations/index';
-import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert } from '../common/index';
+import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit } from '../common/index';
 import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula } from '../../workbook/index';
 import { checkConditionalFormat, initiateFormulaReference, initiateCur, clearCellRef, addressHandle } from '../common/event';
-import { editValue, initiateEdit, forRefSelRender } from '../common/event';
+import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit } from '../common/event';
 
 /**
  * The `Protect-Sheet` module is used to handle the Protecting functionalities in Spreadsheet.
@@ -126,6 +126,14 @@ export class Edit {
                 if (!this.isEdit) {
                     this.isNewValueEdit = <boolean>args.isNewValueEdit;
                     this.startEdit(<string>args.address, <string>args.value, <boolean>args.refreshCurPos);
+                } else {
+                    let isEdit: boolean = false;
+                    let arg: FormulaBarEdit = { isEdit: isEdit };
+                    this.parent.notify(isFormulaBarEdit, arg);
+                    if (arg.isEdit) {
+                        this.isNewValueEdit = <boolean>args.isNewValueEdit;
+                        this.startEdit(<string>args.address, <string>args.value, <boolean>args.refreshCurPos);
+                    }
                 }
                 break;
             case 'endEdit':
@@ -535,22 +543,24 @@ export class Edit {
             sheet = getSheet(this.parent, sheetIdx);
             this.isNewValueEdit = false;
         }
-        let range: number[] = getRangeIndexes(addr);
-        let rowIdx: number = range[0];
-        let colIdx: number = range[1];
-        let cellElem: HTMLElement = this.parent.getCell(rowIdx, colIdx);
-        let cellPosition: { top: number, left: number } = getCellPosition(sheet, range);
+        if (addr) {
+            let range: number[] = getRangeIndexes(addr);
+            let rowIdx: number = range[0];
+            let colIdx: number = range[1];
+            let cellElem: HTMLElement = this.parent.getCell(rowIdx, colIdx);
+            let cellPosition: { top: number, left: number } = getCellPosition(sheet, range);
 
-        this.editCellData = {
-            addr: addr,
-            fullAddr: getSheetName(this.parent, sheetIdx) + '!' + addr,
-            rowIndex: rowIdx,
-            colIndex: colIdx,
-            sheetIndex: sheetIdx,
-            element: cellElem,
-            value: value || '',
-            position: cellPosition
-        };
+            this.editCellData = {
+                addr: addr,
+                fullAddr: getSheetName(this.parent, sheetIdx) + '!' + addr,
+                rowIndex: rowIdx,
+                colIndex: colIdx,
+                sheetIndex: sheetIdx,
+                element: cellElem,
+                value: value || '',
+                position: cellPosition
+            };
+        }
     }
 
     private initiateEditor(refreshCurPos: boolean): void {
@@ -585,28 +595,38 @@ export class Edit {
 
     private positionEditor(): void {
         let tdElem: HTMLElement = this.editCellData.element;
-        tdElem.classList.add('e-ss-edited');
+        let isEdit: boolean = false; let cellEle: HTMLTableCellElement;
+        let arg: FormulaBarEdit = { isEdit: isEdit };
+        this.parent.notify(isFormulaBarEdit, arg);
+        if (arg.isEdit && isNullOrUndefined(tdElem)) {
+            cellEle = this.parent.getCell(this.editCellData.rowIndex, this.editCellData.colIndex) as HTMLTableCellElement;
+            tdElem = cellEle;
+            this.editCellData.element = cellEle;
+        }
+        if (tdElem) {
+            tdElem.classList.add('e-ss-edited');
 
-        let cell: CellModel = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
-        let left: number = this.editCellData.position.left + 1;
-        let top: number = this.editCellData.position.top + 1;
-        let minHeight: number = this.parent.getRow(this.editCellData.rowIndex).offsetHeight - 3;
-        let minWidth: number = this.editCellData.element.offsetWidth - 3;
-        let mainContElement: HTMLElement = <HTMLElement>this.parent.getMainContent();
-        let editWidth: number = mainContElement.offsetWidth - left - 28;
-        // let editHeight: number = mainContElement.offsetHeight - top - 28;
-        let inlineStyles: string = 'display:block;top:' + top + 'px;' + (this.parent.enableRtl ? 'right:' : 'left:') + left + 'px;' +
-            'min-width:' + minWidth + 'px;max-width:' + editWidth + 'px;' + ((cell && cell.wrap) ? 'height:' + 'auto;' : '') +
-            ((cell && cell.wrap) ? ('width:' + minWidth + 'px;') : '') + 'min-height:' + minHeight + 'px;';
-        inlineStyles += tdElem.style.cssText;
-        this.editorElem.setAttribute('style', inlineStyles);
-        (this.parent.element.querySelector('.e-active-cell') as HTMLElement).style.height =
-        (this.editCellData.element.offsetHeight + 2) + 'px'; // we using edit div height as auto , while editing div enlarges and 
-        // hide active cell bottom border for that we increasing 2px height to active cell.
-        if (tdElem.classList.contains('e-right-align')) {
-            this.editorElem.classList.add('e-right-align');
-        } else if (tdElem.classList.contains('e-center-align')) {
-            this.editorElem.classList.add('e-center-align');
+            let cell: CellModel = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
+            let left: number = this.editCellData.position.left + 1;
+            let top: number = this.editCellData.position.top + 1;
+            let minHeight: number = this.parent.getRow(this.editCellData.rowIndex).offsetHeight - 3;
+            let minWidth: number = this.editCellData.element.offsetWidth - 3;
+            let mainContElement: HTMLElement = <HTMLElement>this.parent.getMainContent();
+            let editWidth: number = mainContElement.offsetWidth - left - 28;
+            // let editHeight: number = mainContElement.offsetHeight - top - 28;
+            let inlineStyles: string = 'display:block;top:' + top + 'px;' + (this.parent.enableRtl ? 'right:' : 'left:') + left + 'px;' +
+                'min-width:' + minWidth + 'px;max-width:' + editWidth + 'px;' + ((cell && cell.wrap) ? 'height:' + 'auto;' : '') +
+                ((cell && cell.wrap) ? ('width:' + minWidth + 'px;') : '') + 'min-height:' + minHeight + 'px;';
+            inlineStyles += tdElem.style.cssText;
+            this.editorElem.setAttribute('style', inlineStyles);
+            (this.parent.element.querySelector('.e-active-cell') as HTMLElement).style.height =
+                (this.editCellData.element.offsetHeight + 2) + 'px'; // we using edit div height as auto , while editing div enlarges and 
+            // hide active cell bottom border for that we increasing 2px height to active cell.
+            if (tdElem.classList.contains('e-right-align')) {
+                this.editorElem.classList.add('e-right-align');
+            } else if (tdElem.classList.contains('e-center-align')) {
+                this.editorElem.classList.add('e-center-align');
+            }
         }
     }
 
@@ -775,10 +795,12 @@ export class Edit {
             if (checkIsFormula(this.editorElem.textContent)) {
                 this.parent.notify(clearCellRef, null);
             }
-            this.editCellData.element.classList.remove('e-ss-edited');
-            this.editorElem.textContent = '';
-            this.editorElem.removeAttribute('style');
-            this.editorElem.classList.remove('e-right-align');
+            if (this.editCellData.element) {
+                this.editCellData.element.classList.remove('e-ss-edited');
+                this.editorElem.textContent = '';
+                this.editorElem.removeAttribute('style');
+                this.editorElem.classList.remove('e-right-align');
+            }
         }
         this.editCellData = {};
         this.parent.isEdit = this.isEdit = false;

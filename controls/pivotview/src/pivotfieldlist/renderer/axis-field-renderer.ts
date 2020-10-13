@@ -4,6 +4,7 @@ import * as events from '../../common/base/constant';
 import { PivotButtonArgs } from '../../common/base/interface';
 import { PivotButton } from '../../common/actions/pivot-button';
 import { IFieldOptions } from '../../base/engine';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Module to render Axis Fields
@@ -30,6 +31,9 @@ export class AxisFieldRenderer {
         this.createPivotButtons();
     }
     private createPivotButtons(): void {
+        if (isNullOrUndefined(this.parent.dataSourceSettings.dataSource) && isNullOrUndefined(this.parent.dataSourceSettings.url)) {
+            this.parent.setProperties({ dataSourceSettings: { columns: [], rows: [], values: [], filters: [] } }, true);
+        }
         let rows: IFieldOptions[] = this.parent.dataSourceSettings.rows;
         let columns: IFieldOptions[] = this.parent.dataSourceSettings.columns;
         let values: IFieldOptions[] = this.parent.dataSourceSettings.values;

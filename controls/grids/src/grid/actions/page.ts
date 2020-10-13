@@ -6,7 +6,7 @@ import { PagerDropDown } from '../../pager/pager-dropdown';
 import { ExternalMessage } from '../../pager/external-message';
 import { PageSettingsModel } from '../models/page-settings-model';
 import { IGrid, IAction, NotifyArgs } from '../base/interface';
-import { extend as gridExtend, getActualProperties, isActionPrevent, templateCompiler } from '../base/util';
+import { extend as gridExtend, getActualProperties, isActionPrevent } from '../base/util';
 import * as events from '../base/constant';
 import { PagerModel } from '../../pager';
 
@@ -19,6 +19,7 @@ export class Page implements IAction {
     private pageSettings: PageSettingsModel;
     private isForceCancel: boolean;
     private isInitialLoad: boolean;
+    private isInitialRender: boolean = true;
 
     //Module declarations
     private parent: IGrid;
@@ -31,7 +32,8 @@ export class Page implements IAction {
         ready: Function,
         updateLayout: Function,
         complete: Function,
-        keyPress: Function
+        keyPress: Function,
+        created: Function
     };
 
     /**
@@ -78,6 +80,8 @@ export class Page implements IAction {
             },
             ['parentObj', 'propName']);
         this.pagerObj = new Pager(pagerObj);
+        this.pagerObj.hasParent = true;
+        this.pagerObj.on('pager-refresh', this.renderReactPagerTemplate, this);
         this.pagerObj.allowServerDataBinding = false;
     }
 
@@ -244,16 +248,8 @@ export class Page implements IAction {
         this.isInitialLoad = true;
         this.parent.element.appendChild(this.element);
         this.parent.setGridPager(this.element);
-        let tempID: string = this.parent.element.id + 'pagerTemplate';
-        let template: string = this.parent.pagerTemplate || this.pageSettings.template;
-        if (this.parent.isReact && !isNullOrUndefined(template) &&
-            typeof (template) !== 'string') {
-            this.pagerObj.isReact = true;
-            templateCompiler(template)({}, this.parent, 'pagerTemplate', tempID, null, null, this.element);
-            this.parent.renderTemplates();
-        } else {
-            this.pagerObj.appendTo(this.element);
-        }
+        this.pagerObj.isReact = this.parent.isReact;
+        this.pagerObj.appendTo(this.element);
         this.isInitialLoad = false;
     }
 
@@ -261,8 +257,13 @@ export class Page implements IAction {
         if (e.module === this.getModuleName() && e.enable) {
             this.render();
             this.appendToElement();
+            if (this.isReactTemplate()) {
+                this.pagerObj.updateTotalPages();
+                this.created();
+            }
         }
     }
+
     /**
      * @hidden
      */
@@ -274,9 +275,11 @@ export class Page implements IAction {
             complete: this.onActionComplete,
             updateLayout: this.enableAfterRender,
             inboundChange: this.onPropertyChanged,
-            keyPress: this.keyPressHandler
+            keyPress: this.keyPressHandler,
+            created: this.created
         };
         if (this.parent.isDestroyed) { return; }
+        this.parent.addEventListener('created', this.handlers.created.bind(this));
         this.parent.on(events.initialLoad, this.handlers.load, this);
         this.parent.on(events.initialEnd, this.handlers.end, this); //For initial rendering
         this.parent.on(events.dataReady, this.handlers.ready, this);
@@ -286,11 +289,40 @@ export class Page implements IAction {
         this.parent.on(events.keyPressed, this.handlers.keyPress, this);
     }
 
+    private created(): void {
+        if (this.isInitialRender && this.isReactTemplate()) {
+            this.isInitialRender = false;
+            this.renderReactPagerTemplate();
+        }
+    }
+
+    private isReactTemplate(): boolean {
+        return this.parent.isReact && this.pagerObj.template && typeof (this.pagerObj.template) !== 'string';
+    }
+
+    private renderReactPagerTemplate(): void {
+        if (!this.isInitialRender && this.isReactTemplate()) {
+            this.parent.destroyTemplate(['pagerTemplate']);
+            this.element.classList.add('e-pagertemplate');
+            this.pagerObj.compile(this.pagerObj.template);
+            let page: PageSettingsModel = this.parent.pageSettings;
+            let data: Object = {
+                currentPage: page.currentPage, pageSize: page.pageSize, pageCount: page.pageCount,
+                totalRecordsCount: page.totalRecordsCount, totalPages: this.pagerObj.totalPages
+            };
+            let tempId: string = this.parent.id + '_pagertemplate';
+            this.pagerObj.templateFn(data, this.parent, 'pagerTemplate', tempId, null, null, this.pagerObj.element);
+            this.parent.renderTemplates();
+        }
+    }
+
     /**
      * @hidden
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
+        this.parent.removeEventListener('created', this.handlers.created);
+        this.parent.off('pager-refresh', this.renderReactPagerTemplate);
         this.parent.off(events.initialLoad, this.handlers.load);
         this.parent.off(events.initialEnd, this.handlers.end); //For initial rendering
         this.parent.off(events.dataReady, this.handlers.ready);
@@ -307,12 +339,10 @@ export class Page implements IAction {
      */
     public destroy(): void {
         this.removeEventListener();
-        if (this.parent.isReact && !this.pagerObj.element) {
+        if (this.isReactTemplate()) {
             this.parent.destroyTemplate(['pagerTemplate']);
-            this.parent.renderTemplates();
-        } else {
-            this.pagerObj.destroy();
         }
+        this.pagerObj.destroy();
     }
 
     private pagerDestroy(): void {

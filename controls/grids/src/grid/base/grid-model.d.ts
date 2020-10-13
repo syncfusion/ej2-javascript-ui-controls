@@ -1212,7 +1212,8 @@ export interface GridModel extends ComponentModel{
     headerCellInfo?: EmitType<HeaderCellInfoEventArgs>;
 
     /**
-     * Triggers when Grid actions such as sorting, filtering, paging, grouping etc., starts. 
+     * Triggers when Grid actions such as sorting, filtering, paging, grouping etc., starts.
+     * {% codeBlock src='grid/actionBegin/index.md' %}{% endcodeBlock %}
      * @event
      * @blazorProperty 'OnActionBegin'
      */

@@ -611,6 +611,250 @@ describe('Delete Validation ', () => {
     //     (editorModule.getOwnerWidth(block);
     // });
 });
+describe('ctrl backspace word removal', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('when selection is empty is false', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('sync fusion');
+        editor.selection.selectAll();
+        editor.editor.handleCtrlBackKey();
+        let line: LineWidget = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
+        let intext: TextElementBox = (line.children[0] as TextElementBox)
+        expect(intext.text).toBe('sync fusion');
+    });
+    it('when selection is empty is true', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('sync fusion');
+        editor.editor.handleCtrlBackKey();
+        editor.editorModule.handleBackKey();
+        let line: LineWidget = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
+        let intext: TextElementBox = (line.children[0] as TextElementBox)
+        expect(intext.text).toBe('sync');
+    });
+    it('undo behaviour when selection is empty is true', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('sync fusion');
+        editor.editor.handleCtrlBackKey();
+        editor.editorModule.handleBackKey();
+        let line: LineWidget = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
+        let intext: TextElementBox = (line.children[0] as TextElementBox)
+        editor.editorHistory.undo();
+        editor.editorHistory.undo();
+        line = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
+        intext = (line.children[2] as TextElementBox)
+        expect(intext.text).toBe('fusion');
+    });
+    it('Redo behaviour when selection is empty is true', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('sync fusion');
+        editor.editor.handleCtrlBackKey();
+        editor.editorModule.handleBackKey();
+        let line: LineWidget = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
+        let intext: TextElementBox = (line.children[0] as TextElementBox)
+        editor.editorHistory.undo();
+        editor.editorHistory.undo();
+        line = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
+        editor.editorHistory.redo();
+        editor.editorHistory.redo();
+        intext = (line.children[0] as TextElementBox)
+        expect(intext.text).toBe('sync');
+    });
+});
+describe('ctrl backspace word removal validation on mutliple paragraph', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    it('word removal on paragraph by using ctrl back space', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('sync fusion');
+        editor.editorModule.onEnter();
+        editor.editorModule.insertText('sync fusion');
+        editor.editorModule.onEnter();
+        editor.editorModule.insertText('sync fusion');
+        editor.selection.selectAll();
+        editor.editor.handleCtrlBackKey();
+        let line: LineWidget = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
+        let intext: TextElementBox = (line.children[0] as TextElementBox)
+        expect(intext.text).toBe('sync fusion');
+    });
+});
+describe('ctrl backspace word removal validation user selection', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    it('word removal by using ctrl back space by user desired selection', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('sync fusion');
+        editor.selection.handleLeftKey();
+        editor.selection.handleLeftKey();
+        for (let incre = 0; incre < 6; incre++) {
+            editor.selection.handleShiftLeftKey();
+        }
+        editor.editor.handleCtrlBackKey();
+        let line: LineWidget = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
+        let intext: TextElementBox = (line.children[0] as TextElementBox)
+        expect(intext.text).toBe('c fusion');
+        editor.editorHistory.undo();
+        line = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
+        intext = (line.children[0] as TextElementBox)
+        expect(intext.text).toBe('syn');
+        intext = (line.children[1] as TextElementBox)
+        expect(intext.text).toBe('c fusion');
+        editor.editorHistory.redo();
+        intext = (line.children[0] as TextElementBox)
+        expect(intext.text).toBe('c fusion');
+    });
+});
+describe('Ctrl Delete word removal', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('when selection is empty is false', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('sync fusion');
+        editor.selection.selectAll();
+        editor.editor.handleCtrlDelete();
+        let line: LineWidget = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
+        let intext: TextElementBox = (line.children[0] as TextElementBox)
+        expect(intext.text).toBe(' fusion');
+    });
+    it('undo behaviour when selection is empty is false', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('sync fusion');
+        editor.selection.selectAll();
+        editor.editor.handleCtrlDelete();
+        let line: LineWidget = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
+        let intext: TextElementBox = (line.children[0] as TextElementBox)
+        editor.editorHistory.undo();
+        line = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
+        intext = (line.children[0] as TextElementBox);
+        expect(intext.text).toBe('sync');
+    });
+    it('when selection is empty is true', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('sync fusion');
+        editor.editor.handleCtrlDelete();
+        let line: LineWidget = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
+        let intext: TextElementBox = (line.children[0] as TextElementBox)
+        expect(intext.text).toBe('sync fusion');
+    });
+    it('undo behaviour when selection is empty is true', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('sync fusion');
+        editor.editor.handleCtrlDelete();
+        let line: LineWidget = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
+        let intext: TextElementBox = (line.children[0] as TextElementBox);
+        editor.editorHistory.undo();
+        expect(intext.text).toBe('sync fusion');
+    });
+});
+describe('ctrl delete word removal validation on mutliple paragraph', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    it('word removal on paragraph by using ctrl delete', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('sync fusion');
+        editor.editorModule.onEnter();
+        editor.editorModule.insertText('sync fusion');
+        editor.editorModule.onEnter();
+        editor.editorModule.insertText('sync fusion');
+        editor.selection.selectAll();
+        editor.editor.handleCtrlDelete();
+        let line: LineWidget = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
+        let intext: TextElementBox = (line.children[0] as TextElementBox)
+        expect(intext.text).toBe(' fusion');
+    });
+});
+describe('ctrl delete word removal validation user selection', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    it('word removal by using ctrl delete by user desired selection', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('sync fusion');
+        editor.selection.handleLeftKey();
+        editor.selection.handleLeftKey();
+        for (let incre = 0; incre < 6; incre++) {
+            editor.selection.handleShiftLeftKey();
+        }
+        editor.editor.handleCtrlDelete();
+        let line: LineWidget = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
+        expect((line.children[0] as TextElementBox).text).toBe('syn fusion');
+    });
+});
 describe('Delete Validation ', () => {
     let editor: DocumentEditor;
     let editorModule: Editor;

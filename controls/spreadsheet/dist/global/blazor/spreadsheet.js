@@ -828,7 +828,7 @@ var WorkbookNumberFormat = /** @class */ (function () {
             return '';
         }
         if (!sf.base.isNullOrUndefined(args.value.toString().split(this.decimalSep)[1])) {
-            args.value = parseFloat('1' + this.decimalSep + args.value.split(this.decimalSep)[1]) || args.value;
+            args.value = parseFloat('1' + this.decimalSep + args.value.toString().split(this.decimalSep)[1]) || args.value;
         }
         var time = intToDate(args.value);
         var code = (args.format === '' || args.format === 'General') ? getFormatFromType('Time')
@@ -1489,6 +1489,8 @@ var formulaBar = 'formulaBar';
 var sheetTabs = 'sheetTabs';
 /** @hidden */
 var refreshSheetTabs = 'refreshSheetTabs';
+/** @hidden */
+var isFormulaBarEdit = 'isFormulaBarEdit';
 /** @hidden */
 var dataRefresh = 'dataRefresh';
 /** @hidden */
@@ -17041,6 +17043,15 @@ var Edit = /** @class */ (function () {
                     this.isNewValueEdit = args.isNewValueEdit;
                     this.startEdit(args.address, args.value, args.refreshCurPos);
                 }
+                else {
+                    var isEdit = false;
+                    var arg = { isEdit: isEdit };
+                    this.parent.notify(isFormulaBarEdit, arg);
+                    if (arg.isEdit) {
+                        this.isNewValueEdit = args.isNewValueEdit;
+                        this.startEdit(args.address, args.value, args.refreshCurPos);
+                    }
+                }
                 break;
             case 'endEdit':
                 if (this.isEdit) {
@@ -17460,21 +17471,23 @@ var Edit = /** @class */ (function () {
             sheet = getSheet(this.parent, sheetIdx);
             this.isNewValueEdit = false;
         }
-        var range = getRangeIndexes(addr);
-        var rowIdx = range[0];
-        var colIdx = range[1];
-        var cellElem = this.parent.getCell(rowIdx, colIdx);
-        var cellPosition = getCellPosition(sheet, range);
-        this.editCellData = {
-            addr: addr,
-            fullAddr: getSheetName(this.parent, sheetIdx) + '!' + addr,
-            rowIndex: rowIdx,
-            colIndex: colIdx,
-            sheetIndex: sheetIdx,
-            element: cellElem,
-            value: value || '',
-            position: cellPosition
-        };
+        if (addr) {
+            var range = getRangeIndexes(addr);
+            var rowIdx = range[0];
+            var colIdx = range[1];
+            var cellElem = this.parent.getCell(rowIdx, colIdx);
+            var cellPosition = getCellPosition(sheet, range);
+            this.editCellData = {
+                addr: addr,
+                fullAddr: getSheetName(this.parent, sheetIdx) + '!' + addr,
+                rowIndex: rowIdx,
+                colIndex: colIdx,
+                sheetIndex: sheetIdx,
+                element: cellElem,
+                value: value || '',
+                position: cellPosition
+            };
+        }
     };
     Edit.prototype.initiateEditor = function (refreshCurPos) {
         var _this = this;
@@ -17514,28 +17527,39 @@ var Edit = /** @class */ (function () {
     };
     Edit.prototype.positionEditor = function () {
         var tdElem = this.editCellData.element;
-        tdElem.classList.add('e-ss-edited');
-        var cell = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
-        var left = this.editCellData.position.left + 1;
-        var top = this.editCellData.position.top + 1;
-        var minHeight = this.parent.getRow(this.editCellData.rowIndex).offsetHeight - 3;
-        var minWidth = this.editCellData.element.offsetWidth - 3;
-        var mainContElement = this.parent.getMainContent();
-        var editWidth = mainContElement.offsetWidth - left - 28;
-        // let editHeight: number = mainContElement.offsetHeight - top - 28;
-        var inlineStyles = 'display:block;top:' + top + 'px;' + (this.parent.enableRtl ? 'right:' : 'left:') + left + 'px;' +
-            'min-width:' + minWidth + 'px;max-width:' + editWidth + 'px;' + ((cell && cell.wrap) ? 'height:' + 'auto;' : '') +
-            ((cell && cell.wrap) ? ('width:' + minWidth + 'px;') : '') + 'min-height:' + minHeight + 'px;';
-        inlineStyles += tdElem.style.cssText;
-        this.editorElem.setAttribute('style', inlineStyles);
-        this.parent.element.querySelector('.e-active-cell').style.height =
-            (this.editCellData.element.offsetHeight + 2) + 'px'; // we using edit div height as auto , while editing div enlarges and 
-        // hide active cell bottom border for that we increasing 2px height to active cell.
-        if (tdElem.classList.contains('e-right-align')) {
-            this.editorElem.classList.add('e-right-align');
+        var isEdit = false;
+        var cellEle;
+        var arg = { isEdit: isEdit };
+        this.parent.notify(isFormulaBarEdit, arg);
+        if (arg.isEdit && sf.base.isNullOrUndefined(tdElem)) {
+            cellEle = this.parent.getCell(this.editCellData.rowIndex, this.editCellData.colIndex);
+            tdElem = cellEle;
+            this.editCellData.element = cellEle;
         }
-        else if (tdElem.classList.contains('e-center-align')) {
-            this.editorElem.classList.add('e-center-align');
+        if (tdElem) {
+            tdElem.classList.add('e-ss-edited');
+            var cell = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
+            var left = this.editCellData.position.left + 1;
+            var top_1 = this.editCellData.position.top + 1;
+            var minHeight = this.parent.getRow(this.editCellData.rowIndex).offsetHeight - 3;
+            var minWidth = this.editCellData.element.offsetWidth - 3;
+            var mainContElement = this.parent.getMainContent();
+            var editWidth = mainContElement.offsetWidth - left - 28;
+            // let editHeight: number = mainContElement.offsetHeight - top - 28;
+            var inlineStyles = 'display:block;top:' + top_1 + 'px;' + (this.parent.enableRtl ? 'right:' : 'left:') + left + 'px;' +
+                'min-width:' + minWidth + 'px;max-width:' + editWidth + 'px;' + ((cell && cell.wrap) ? 'height:' + 'auto;' : '') +
+                ((cell && cell.wrap) ? ('width:' + minWidth + 'px;') : '') + 'min-height:' + minHeight + 'px;';
+            inlineStyles += tdElem.style.cssText;
+            this.editorElem.setAttribute('style', inlineStyles);
+            this.parent.element.querySelector('.e-active-cell').style.height =
+                (this.editCellData.element.offsetHeight + 2) + 'px'; // we using edit div height as auto , while editing div enlarges and 
+            // hide active cell bottom border for that we increasing 2px height to active cell.
+            if (tdElem.classList.contains('e-right-align')) {
+                this.editorElem.classList.add('e-right-align');
+            }
+            else if (tdElem.classList.contains('e-center-align')) {
+                this.editorElem.classList.add('e-center-align');
+            }
         }
     };
     Edit.prototype.updateEditedValue = function (tdRefresh) {
@@ -17710,10 +17734,12 @@ var Edit = /** @class */ (function () {
             if (checkIsFormula(this.editorElem.textContent)) {
                 this.parent.notify(clearCellRef, null);
             }
-            this.editCellData.element.classList.remove('e-ss-edited');
-            this.editorElem.textContent = '';
-            this.editorElem.removeAttribute('style');
-            this.editorElem.classList.remove('e-right-align');
+            if (this.editCellData.element) {
+                this.editCellData.element.classList.remove('e-ss-edited');
+                this.editorElem.textContent = '';
+                this.editorElem.removeAttribute('style');
+                this.editorElem.classList.remove('e-right-align');
+            }
         }
         this.editCellData = {};
         this.parent.isEdit = this.isEdit = false;
@@ -18741,6 +18767,13 @@ var Scroll = /** @class */ (function () {
             }
             this.topIndex = scrollArgs.prev.idx;
             this.prevScroll.scrollTop = top;
+        }
+        var isEdit = false;
+        var args = { isEdit: isEdit };
+        this.parent.notify(isFormulaBarEdit, args);
+        if (args.isEdit) {
+            var textArea = this.parent.element.querySelector('.e-formula-bar');
+            textArea.focus();
         }
     };
     Scroll.prototype.updateNonVirtualRows = function () {
@@ -22484,7 +22517,7 @@ var WrapText = /** @class */ (function () {
                         }
                         if (displayText) {
                             if (args.wrap) {
-                                if (ele.classList.contains('e-alt-unwrap')) {
+                                if (ele && ele.classList.contains('e-alt-unwrap')) {
                                     ele.classList.remove('e-alt-unwrap');
                                 }
                                 var lines = void 0;
@@ -28944,6 +28977,7 @@ var FormulaBar = /** @class */ (function () {
     function FormulaBar(parent) {
         this.categoryCollection = [];
         this.formulaCollection = [];
+        this.isGoto = false;
         this.parent = parent;
         this.addEventListener();
     }
@@ -29138,7 +29172,7 @@ var FormulaBar = /** @class */ (function () {
                     }
                     var formulaInp = document.getElementById(_this.parent.element.id + '_formula_input');
                     formulaInp.value = value;
-                    if (!sf.base.isNullOrUndefined(value) && !_this.parent.isEdit) {
+                    if (!sf.base.isNullOrUndefined(value)) {
                         _this.parent.notify(editOperation, { action: 'refreshEditor', value: formulaInp.value, refreshEditorElem: true });
                     }
                     if (_this.parent.isEdit) {
@@ -29179,6 +29213,15 @@ var FormulaBar = /** @class */ (function () {
             element.disabled = false;
         }
     };
+    FormulaBar.prototype.formulaBarScrollEdit = function () {
+        var index = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+        var viewportIndexes = getCellIndexes(this.parent.getActiveSheet().topLeftCell);
+        if (index[0] < viewportIndexes[0]) {
+            this.parent.goTo(this.parent.getActiveSheet().selectedRange);
+            this.isGoto = true;
+        }
+        this.parent.notify(editOperation, { action: 'startEdit', refreshCurPos: false });
+    };
     FormulaBar.prototype.formulaBarClickHandler = function (e) {
         var _this = this;
         var target = e.target;
@@ -29187,7 +29230,7 @@ var FormulaBar = /** @class */ (function () {
         }
         else if (target.classList.contains('e-formula-bar')) {
             if (!this.parent.isEdit && !this.parent.getActiveSheet().isProtected) {
-                this.parent.notify(editOperation, { action: 'startEdit', refreshCurPos: false });
+                this.formulaBarScrollEdit();
             }
             else if (this.parent.getActiveSheet().isProtected) {
                 this.parent.notify(editAlert, null);
@@ -29410,6 +29453,7 @@ var FormulaBar = /** @class */ (function () {
         this.parent.on(mouseUpAfterSelection, this.UpdateValueAfterMouseUp, this);
         this.parent.on(formulaBarOperation, this.editOperationHandler, this);
         this.parent.on(enableFormulaInput, this.disabletextarea, this);
+        this.parent.on(isFormulaBarEdit, this.isFormulaBarEdit, this);
     };
     FormulaBar.prototype.destroy = function () {
         this.removeEventListener();
@@ -29432,6 +29476,7 @@ var FormulaBar = /** @class */ (function () {
             this.parent.off(mouseUpAfterSelection, this.UpdateValueAfterMouseUp);
             this.parent.off(formulaBarOperation, this.editOperationHandler);
             this.parent.off(enableFormulaInput, this.disabletextarea);
+            this.parent.off(isFormulaBarEdit, this.isFormulaBarEdit);
         }
     };
     FormulaBar.prototype.editOperationHandler = function (args) {
@@ -29443,6 +29488,15 @@ var FormulaBar = /** @class */ (function () {
             case 'getPosition':
                 args.position = this.getFormulaBar().getBoundingClientRect();
                 break;
+        }
+    };
+    FormulaBar.prototype.isFormulaBarEdit = function (args) {
+        var edit = this.parent.isEdit;
+        if (edit && this.isGoto) {
+            args.isEdit = true;
+        }
+        else {
+            args.isEdit = false;
         }
     };
     FormulaBar.prototype.getFormulaBar = function () {
@@ -33612,14 +33666,31 @@ var SheetRender = /** @class */ (function () {
         setAriaOptions(this.parent.getMainContent(), { busy: false });
     };
     SheetRender.prototype.checkRowMerge = function (indexes, range, cell, model, firstcell) {
-        if (this.parent.scrollSettings.enableVirtualization && cell && indexes[0] === this.parent.viewport.topIndex &&
+        if (this.parent.scrollSettings.enableVirtualization && cell &&
             (!sf.base.isNullOrUndefined(model.rowSpan) || !sf.base.isNullOrUndefined(model.colSpan))) {
-            if (model.rowSpan < 0) {
-                this.parent.notify(checkMerge, { td: cell, rowIdx: indexes[0], colIdx: indexes[1], isRow: true });
+            if (indexes[0] === this.parent.viewport.topIndex) {
+                if (model.rowSpan < 0) {
+                    this.parent.notify(checkMerge, { td: cell, rowIdx: indexes[0], colIdx: indexes[1], isRow: true });
+                    if (this.parent.viewport.topIndex >= range[0]) {
+                        this.refreshPrevMerge(range[2] + 1, indexes[1]);
+                    }
+                }
+                if (firstcell && (firstcell.colSpan || firstcell.rowSpan)) {
+                    this.cellRenderer.refresh(indexes[0] + (range[2] - range[0]) + 1, indexes[1], null, firstcell);
+                }
             }
-            if (firstcell && (firstcell.colSpan || firstcell.rowSpan)) {
-                this.cellRenderer.refresh(indexes[0] + (range[2] - range[0]) + 1, indexes[1], null, firstcell);
+            else if (model.rowSpan > 1) {
+                var prevTopIdx = range[2] + 1;
+                if (indexes[0] + model.rowSpan > prevTopIdx && indexes[0] < prevTopIdx) {
+                    this.refreshPrevMerge(prevTopIdx, indexes[1]);
+                }
             }
+        }
+    };
+    SheetRender.prototype.refreshPrevMerge = function (prevTopIdx, colIndex) {
+        var td = this.parent.getCell(prevTopIdx, colIndex, this.parent.getRow(0));
+        if (td && td.rowSpan > 1) {
+            this.cellRenderer.refresh(prevTopIdx, colIndex, null, td);
         }
     };
     SheetRender.prototype.checkColMerge = function (indexes, range, cell, model, firstcell) {
@@ -34221,6 +34292,7 @@ var Render = /** @class */ (function () {
         this.parent.serviceLocator.getService('sheet').renderPanel();
     };
     Render.prototype.refreshUI = function (args, address, initLoad) {
+        var _this = this;
         var sheetModule = this.parent.serviceLocator.getService('sheet');
         var sheet = this.parent.getActiveSheet();
         var sheetName = getSheetName(this.parent);
@@ -34279,6 +34351,12 @@ var Render = /** @class */ (function () {
                     break;
                 case 'Row':
                     sheetModule.refreshRowContent({ cells: values, indexes: indexes, skipUpdateOnFirst: args.skipUpdateOnFirst });
+                    var isEdit = false;
+                    var arg = { isEdit: isEdit };
+                    _this.parent.notify(isFormulaBarEdit, arg);
+                    if (arg.isEdit) {
+                        _this.parent.notify(editOperation, { action: 'startEdit', refreshCurPos: false });
+                    }
                     break;
                 case 'Column':
                     sheetModule.refreshColumnContent({ cells: values, indexes: indexes, skipUpdateOnFirst: args.skipUpdateOnFirst });
@@ -34750,7 +34828,7 @@ var Spreadsheet = /** @class */ (function (_super) {
             bottomIndex: 0, rightIndex: 0
         };
         _this.needsID = true;
-        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink, WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation, ProtectSheet, FindAndReplace, WorkbookFindAndReplace, Merge, WorkbookMerge, SpreadsheetImage, ConditionalFormatting, WorkbookImage, WorkbookConditionalFormat);
+        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink, WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation, ProtectSheet, WorkbookProtectSheet, FindAndReplace, WorkbookFindAndReplace, Merge, WorkbookMerge, SpreadsheetImage, ConditionalFormatting, WorkbookImage, WorkbookConditionalFormat);
         if (element) {
             _this.appendTo(element);
         }
@@ -35687,52 +35765,54 @@ var Spreadsheet = /** @class */ (function (_super) {
     /** @hidden */
     Spreadsheet.prototype.refreshNode = function (td, args) {
         var value;
-        var spanElem = td.querySelector('#' + this.element.id + '_currency');
-        var alignClass = 'e-right-align';
-        if (args) {
-            args.result = sf.base.isNullOrUndefined(args.result) ? '' : args.result.toString();
-            if (spanElem) {
-                sf.base.detach(spanElem);
-            }
-            if (args.type === 'Accounting' && isNumber(args.value)) {
-                if (td.querySelector('a')) {
-                    td.querySelector('a').textContent = args.result.split(args.curSymbol).join('');
+        if (td) {
+            var spanElem = td.querySelector('#' + this.element.id + '_currency');
+            var alignClass = 'e-right-align';
+            if (args) {
+                args.result = sf.base.isNullOrUndefined(args.result) ? '' : args.result.toString();
+                if (spanElem) {
+                    sf.base.detach(spanElem);
+                }
+                if (args.type === 'Accounting' && isNumber(args.value)) {
+                    if (td.querySelector('a')) {
+                        td.querySelector('a').textContent = args.result.split(args.curSymbol).join('');
+                    }
+                    else {
+                        td.innerHTML = '';
+                    }
+                    td.appendChild(this.createElement('span', {
+                        id: this.element.id + '_currency',
+                        innerHTML: "" + args.curSymbol,
+                        styles: 'float: left'
+                    }));
+                    if (!td.querySelector('a')) {
+                        td.innerHTML += args.result.split(args.curSymbol).join('');
+                    }
+                    td.classList.add(alignClass);
+                    return;
                 }
                 else {
-                    td.innerHTML = '';
+                    if (args.result && (args.result.toLowerCase() === 'true' || args.result.toLowerCase() === 'false')) {
+                        args.result = args.result.toUpperCase();
+                        alignClass = 'e-center-align';
+                        args.isRightAlign = true; // Re-use this to center align the cell.
+                    }
+                    value = args.result;
                 }
-                td.appendChild(this.createElement('span', {
-                    id: this.element.id + '_currency',
-                    innerHTML: "" + args.curSymbol,
-                    styles: 'float: left'
-                }));
-                if (!td.querySelector('a')) {
-                    td.innerHTML += args.result.split(args.curSymbol).join('');
+                args.isRightAlign ? td.classList.add(alignClass) : td.classList.remove(alignClass);
+            }
+            value = !sf.base.isNullOrUndefined(value) ? value : '';
+            if (!sf.base.isNullOrUndefined(td)) {
+                var node = td.lastChild;
+                if (td.querySelector('.e-hyperlink')) {
+                    node = td.querySelector('.e-hyperlink').lastChild;
                 }
-                td.classList.add(alignClass);
-                return;
-            }
-            else {
-                if (args.result && (args.result.toLowerCase() === 'true' || args.result.toLowerCase() === 'false')) {
-                    args.result = args.result.toUpperCase();
-                    alignClass = 'e-center-align';
-                    args.isRightAlign = true; // Re-use this to center align the cell.
+                if (node && (node.nodeType === 3 || node.nodeType === 1)) {
+                    node.nodeValue = value;
                 }
-                value = args.result;
-            }
-            args.isRightAlign ? td.classList.add(alignClass) : td.classList.remove(alignClass);
-        }
-        value = !sf.base.isNullOrUndefined(value) ? value : '';
-        if (!sf.base.isNullOrUndefined(td)) {
-            var node = td.lastChild;
-            if (td.querySelector('.e-hyperlink')) {
-                node = td.querySelector('.e-hyperlink').lastChild;
-            }
-            if (node && (node.nodeType === 3 || node.nodeType === 1)) {
-                node.nodeValue = value;
-            }
-            else {
-                td.appendChild(document.createTextNode(value));
+                else {
+                    td.appendChild(document.createTextNode(value));
+                }
             }
         }
     };
@@ -36323,7 +36403,7 @@ var Spreadsheet = /** @class */ (function (_super) {
  * Export Spreadsheet modules
  */
 
-Spreadsheet.Inject(Clipboard, Edit, KeyboardNavigation, KeyboardShortcut, CollaborativeEditing, Selection, ContextMenu$1, FormulaBar, Ribbon$$1, Save, Open, SheetTabs, DataBind, AllModule, BasicModule, CellFormat, NumberFormat, Formula, Image);
+Spreadsheet.Inject(Clipboard, Edit, KeyboardNavigation, KeyboardShortcut, CollaborativeEditing, Selection, ContextMenu$1, FormulaBar, Ribbon$$1, Save, Open, SheetTabs, DataBind, AllModule, BasicModule, CellFormat, NumberFormat, Formula);
 
 exports.Workbook = Workbook;
 exports.Range = Range;
@@ -36511,6 +36591,7 @@ exports.ribbon = ribbon;
 exports.formulaBar = formulaBar;
 exports.sheetTabs = sheetTabs;
 exports.refreshSheetTabs = refreshSheetTabs;
+exports.isFormulaBarEdit = isFormulaBarEdit;
 exports.dataRefresh = dataRefresh;
 exports.initialLoad = initialLoad;
 exports.contentLoaded = contentLoaded;
@@ -36740,7 +36821,5 @@ exports.BasicFormulas = BasicFormulas;
 return exports;
 
 });
-sfBlazor.libs.push("spreadsheet")
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.spreadsheet, () => {
+
     sf.spreadsheet = sf.spreadsheet({});
-});

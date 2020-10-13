@@ -4599,4 +4599,29 @@ describe('rowdeselect checking with persist selection and ResetOnRowClick', () =
             gridObj = null;
         });
     });
+    describe('EJ2-42056 - initial selection with persistSelection enabled', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    selectedRowIndex: 1,
+                    selectionSettings: { persistSelection: true },
+                    columns: [
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'CustomerID' },
+                        { field: 'EmployeeID', headerText: 'Employee ID' }
+						],
+                    height: 700,
+                }, done);
+        });
+        it('checking initial selection ', (done: Function) => {
+            expect(gridObj.getSelectedRows().length).toBe(1);
+            done();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

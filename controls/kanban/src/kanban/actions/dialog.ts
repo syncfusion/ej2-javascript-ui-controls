@@ -3,7 +3,7 @@ import { DropDownList, DropDownListModel } from '@syncfusion/ej2-dropdowns';
 import { FormValidator, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { Dialog, DialogModel, BeforeOpenEventArgs, ButtonPropsModel, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
 import { Kanban } from '../base/kanban';
-import { DialogEventArgs, EJ2Instance } from '../base/interface';
+import { CardClickEventArgs, DialogEventArgs, EJ2Instance } from '../base/interface';
 import { CurrentAction } from '../base/type';
 import { DialogFieldsModel } from '../models/index';
 import * as events from '../base/constant';
@@ -227,6 +227,7 @@ export class KanbanDialog {
                 cardObj[columnName] = value;
             }
         }
+        cardObj = extend(this.parent.activeCardData.data, cardObj) as { [key: string]: Object };
         let eventProp: DialogEventArgs = { data: cardObj, cancel: false, element: this.element, requestType: this.action };
         this.parent.trigger(events.dialogClose, eventProp, (closeArgs: DialogEventArgs) => {
             args.cancel = closeArgs.cancel;
@@ -313,7 +314,13 @@ export class KanbanDialog {
             (target.classList.contains('e-dialog-edit') || target.classList.contains('e-dialog-add'))) {
             this.dialogObj.hide();
             if (target.classList.contains('e-dialog-edit')) {
-                this.parent.crudModule.updateCard(this.cardData);
+                let activeCard: CardClickEventArgs = this.parent.activeCardData;
+                let updateIndex: number;
+                if ((<{ [key: string]: Object }>activeCard.data)[this.parent.keyField] === this.cardData[this.parent.keyField]
+                    && activeCard.element) {
+                    updateIndex = [].slice.call(activeCard.element.parentElement.children).indexOf(activeCard.element);
+                }
+                this.parent.crudModule.updateCard(this.cardData, updateIndex);
             }
             if (target.classList.contains('e-dialog-add')) {
                 this.parent.crudModule.addCard(this.cardData);

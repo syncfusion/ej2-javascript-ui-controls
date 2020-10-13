@@ -2179,6 +2179,9 @@ let MenuBase = class MenuBase extends Component {
                                 }
                                 this.isClosed = true;
                                 this.keyType = 'click';
+                                if (this.showItemOnClick) {
+                                    this.setLISelected(cli);
+                                }
                                 this.closeMenu(culIdx + 1, e);
                                 if (this.showItemOnClick) {
                                     this.setLISelected(cli);
@@ -5798,7 +5801,7 @@ let Accordion = class Accordion extends Component {
         let templateFn;
         let temString;
         try {
-            if (document.querySelectorAll(value).length) {
+            if (document.querySelectorAll(value).length && value !== 'Button') {
                 let eleVal = document.querySelector(value);
                 temString = eleVal.outerHTML.trim();
                 ele.appendChild(eleVal);
@@ -7804,7 +7807,7 @@ let Tab = class Tab extends Component {
         else if (this.heightAdjustMode === 'Fill') {
             addClass([this.element], [CLS_FILL]);
             setStyleAttribute(this.element, { 'height': '100%' });
-            setStyleAttribute(this.cntEle, { 'height': '100%' });
+            setStyleAttribute(this.cntEle, { 'height': (this.element.offsetHeight - hdrEle.offsetHeight) + 'px' });
         }
         else if (this.heightAdjustMode === 'Auto') {
             if (this.isTemplate === true) {

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 18.3.40 (2020-10-13)
+
+### Context Menu
+
+#### Bug Fixes
+
+- Issue with item selection has been fixed.
+
+#### Bug Fixes
+
+- `#I292579` - An issue with when we set the `heightAujustMode` as Fill it makes container height too high has been resolved.
+
 ## 18.3.35 (2020-10-01)
 
 ### TreeView

@@ -1,4 +1,4 @@
-import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { PdfViewer, PdfViewerBase, AjaxHandler, TileRenderingSettingsModel } from '../index';
 import { DocumentTextCollectionSettingsModel, RectangleBoundsModel } from '../pdfviewer-model';
@@ -1040,6 +1040,11 @@ export class TextSearch {
      * @private
      */
     public searchButtonClick(element: HTMLElement, inputElement: HTMLElement): void {
+        if (isBlazor() && Browser.isDevice) {
+            let searchElement: HTMLElement = this.pdfViewerBase.getElement('_search_box-icon');
+            element = searchElement.children[0].children[0] as HTMLElement;
+            inputElement = this.pdfViewerBase.getElement('_search_input');
+        }
         if (element.classList.contains('e-pv-search-icon')) {
             this.initiateTextSearch(inputElement);
         } else if (element.classList.contains('e-pv-search-close')) {
@@ -1050,6 +1055,11 @@ export class TextSearch {
     }
 
     private updateSearchInputIcon(isEnable: boolean): void {
+        if (isBlazor()) {
+            if (this.searchBtn && Browser.isDevice) {
+                this.searchBtn = this.pdfViewerBase.getElement('_search_box-icon').children[0].children[0] as HTMLElement;
+            }
+        }
         if (this.searchBtn) {
             if (isEnable) {
                 this.searchBtn.classList.remove('e-pv-search-close');

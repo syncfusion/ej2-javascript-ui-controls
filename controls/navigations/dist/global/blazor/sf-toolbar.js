@@ -70,27 +70,10 @@ var SfToolbar = /** @class */ (function () {
         this.options = options;
     }
     SfToolbar.prototype.destroy = function () {
-        var _this = this;
         this.unwireEvents();
-        this.resetServerItems();
-        for (var _i = 0, _a = [].slice.call(this.element.children); _i < _a.length; _i++) {
-            var elem = _a[_i];
-            if (!elem.classList.contains(BZ_ITEMS)) {
-                this.element.removeChild(elem);
-            }
-        }
         this.clearProperty();
         this.popObj = null;
         this.tbarAlign = null;
-        sf.base.removeClass([this.element], 'e-toolpop');
-        if (this.options.cssClass) {
-            sf.base.removeClass([this.element], this.options.cssClass.split(' '));
-        }
-        this.element.removeAttribute('style');
-        ['aria-disabled', 'aria-orientation', 'aria-haspopup', 'role'].forEach(function (attrb) {
-            return _this.element.removeAttribute(attrb);
-        });
-        sf.base.removeClass([this.element], [CLS_TOOLBAR]);
     };
     SfToolbar.prototype.wireEvents = function () {
         sf.base.EventHandler.add(this.element, 'click', this.clickHandler, this);

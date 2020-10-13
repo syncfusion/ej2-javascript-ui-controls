@@ -14065,8 +14065,39 @@ class XhtmlValidation {
             this.ImageTags();
             this.removeTags();
             this.RemoveUnsupported();
+            this.parent.inputElement.innerHTML = this.selfEncloseValidation(this.parent.inputElement.innerHTML);
             this.parent.setProperties({ value: this.parent.inputElement.innerHTML }, true);
         }
+    }
+    /**
+     * @deprecated
+     */
+    selfEncloseValidation(currentValue) {
+        currentValue = currentValue.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/&nbsp;/gi, ' ').replace(/ /g, ' ');
+        let valueTemp;
+        let valueDupe = [];
+        let valueOriginal = [];
+        let imgRegexp = [/<img(.*?)>/gi, /<area(.*?)>/gi, /<base(.*?)>/gi, /<col (.*?)>/gi, /<embed(.*?)>/gi,
+            /<input(.*?)>/gi, /<link(.*?)>/gi, /<meta(.*?)>/gi, /<param(.*?)>/gi, /<source(.*?)>/gi,
+            /<track(.*?)>/gi, /<wbr(.*?)>/gi];
+        for (let j = 0; j < imgRegexp.length; j++) {
+            valueTemp = imgRegexp[j].exec(currentValue);
+            while ((valueTemp) !== null) {
+                valueDupe.push(valueTemp[0].toString());
+                valueTemp = imgRegexp[j].exec(currentValue);
+            }
+            valueOriginal = valueDupe.slice(0);
+            for (let i = 0; i < valueDupe.length; i++) {
+                if (valueDupe[i].indexOf('/') === -1 || valueDupe[i].lastIndexOf('/') !== valueDupe[i].length - 2) {
+                    valueDupe[i] = valueDupe[i].substr(0, valueDupe[i].length - 1) + ' /' +
+                        valueDupe[i].substr(valueDupe[i].length - 1, valueDupe[i].length);
+                }
+            }
+            for (let g = 0; g <= valueDupe.length - 1; g++) {
+                currentValue = currentValue.replace(valueOriginal[g], valueDupe[g]);
+            }
+        }
+        return currentValue;
     }
     AddRootElement() {
         if ((this.parent.inputElement.childNodes.length === 1 && this.parent.inputElement.firstChild.nodeName !== 'DIV') ||
@@ -14416,6 +14447,11 @@ class HtmlEditor {
                     break;
                 case 'CreateLink':
                     this.parent.notify(insertLink, {
+                        member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                    });
+                    break;
+                case 'RemoveLink':
+                    this.parent.notify(unLink, {
                         member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
                     });
                     break;
@@ -21272,6 +21308,17 @@ let RichTextEditor = class RichTextEditor extends Component {
      */
     getHtml() {
         return this.value;
+    }
+    /**
+     * Retrieves the Rich Text Editor's XHTML validated HTML content when `enableXhtml` property is enabled.
+     * @public
+     */
+    getXhtml() {
+        let currentValue = this.value;
+        if (this.enableXhtml) {
+            currentValue = this.htmlEditorModule.xhtmlValidation.selfEncloseValidation(currentValue);
+        }
+        return currentValue;
     }
     /**
      * Shows the source HTML/MD markup.

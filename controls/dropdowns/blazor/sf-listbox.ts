@@ -1,5 +1,5 @@
 import { BlazorDotnetObject, closest, EventHandler, select, selectAll, createElement, getUniqueID } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, getComponent, BlazorDragEventArgs } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, getComponent } from '@syncfusion/ej2-base';
 import { Sortable } from '@syncfusion/ej2-lists';
 import { getZindexPartial } from '@syncfusion/ej2-popups';
 
@@ -15,11 +15,13 @@ const DOT: string = '.';
 const PLACEHOLDER: string = 'e-placeholder';
 const SPAN: string = 'span';
 const BADGE: string = 'e-list-badge';
+const PREVENT: string = 'e-drag-prevent';
 const KEYDOWN: string = 'keydown';
 const SORTABLE: string = 'sortable';
 const UP: number = 38;
 const DOWN: number = 40;
 const KEYA: number = 65;
+const SPACEKEY: number = 32;
 
 /**
  * Client side scripts for SfListBox
@@ -38,9 +40,12 @@ class SfListBox {
         this.allowDragAndDrop = allowDragDrop;
         this.element.blazor__instance = this;
         EventHandler.add(this.element, KEYDOWN, this.keyDownHandler, this);
-        if (this.scopeElement && !isNullOrUndefined(this.scopeElement.blazor__instance) && !this.scopeElement.blazor__instance.scope) {
-            this.scope = getUniqueID(COMBINED); this.scopeElement.blazor__instance.scope = this.scope;
-            this.initializeDraggable(); this.scopeElement.blazor__instance.initializeDraggable();
+        if (!isNullOrUndefined(this.scopeElement.blazor__instance) && !this.scopeElement.blazor__instance.scope) {
+            if (this.scopeElement !== this.element) {
+                this.scope = getUniqueID(COMBINED); this.scopeElement.blazor__instance.scope = this.scope;
+                this.scopeElement.blazor__instance.initializeDraggable();
+            }
+            this.initializeDraggable();
         }
     }
     private initializeDraggable(): void {
@@ -49,6 +54,7 @@ class SfListBox {
         new Sortable(ul, {
             scope: this.scope,
             itemClass: LISTITEM,
+            beforeDragStart: this.triggerBeforeDragStart.bind(this),
             dragStart: this.triggerDragStart.bind(this),
             beforeDrop: this.dragEnd.bind(this),
             placeHolder: (): HTMLElement => createElement(SPAN, { className: PLACEHOLDER }),
@@ -68,12 +74,15 @@ class SfListBox {
             }
         });
     }
-    private triggerDragStart(args: BlazorDragEventArgs): void {
+    private triggerBeforeDragStart(args: DragAndDropEventArgs): void {
+        args.cancel = args.target.classList.contains(PREVENT);
+    }
+    private triggerDragStart(args: DragAndDropEventArgs): void {
         args.bindEvents(args.dragElement);
     }
-    private dragEnd(args: DropEventArgs): void {
+    private dragEnd(args: DragAndDropEventArgs): void {
         let list: Element; let scopedListBox: boolean = false; let sameListBox: boolean = false;
-        if (this.scopeElement) { list = closest(args.target, HASH + this.scopeElement.id); }
+        if (this.element !== this.scopeElement) { list = closest(args.target, HASH + this.scopeElement.id); }
         if (list) {
             scopedListBox = true;
         } else {
@@ -96,12 +105,10 @@ class SfListBox {
                 let index: number = list.indexOf(target);
                 if (index < 0) { return; }
                 index = e.keyCode === UP ? index - 1 : index + 1;
-                if (index < 0 || index > list.length - 1) {
-                    index = e.keyCode === UP ? list.length - 1 : 0;
-                }
+                if (index < 0 || index > list.length - 1) { return; }
                 list[index].focus();
             }
-        } else if (e.keyCode === KEYA && e.ctrlKey) {
+        } else if ((e.keyCode === KEYA && e.ctrlKey) || e.keyCode === SPACEKEY) {
             e.preventDefault();
         }
     }
@@ -119,12 +126,14 @@ interface BlazorListBoxElement extends HTMLElement {
     blazor__instance: SfListBox;
 }
 
-interface DropEventArgs {
+interface DragAndDropEventArgs {
     previousIndex: number;
     currentIndex: number;
     droppedElement: Element;
     target: Element;
     cancel: boolean;
+    bindEvents: Function;
+    dragElement: HTMLElement;
 }
 
 // tslint:disable-next-line:variable-name

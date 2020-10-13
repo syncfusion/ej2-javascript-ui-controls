@@ -5,7 +5,7 @@ import { remove } from '@syncfusion/ej2-base';
 import { CellModel, SheetModel, getSheetName, getRowsHeight, getColumnsWidth } from '../../workbook/base/index';
 import { getCellAddress, getCellIndexes, workbookFormulaOperation } from '../../workbook/common/index';
 import { dataRefresh, RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound } from '../common/index';
-import { spreadsheetDestroyed } from '../common/index';
+import { spreadsheetDestroyed, isFormulaBarEdit, editOperation, FormulaBarEdit } from '../common/index';
 
 /**
  * Render module is used to render the spreadsheet
@@ -120,6 +120,12 @@ export class Render {
                     break;
                 case 'Row':
                     sheetModule.refreshRowContent({ cells: values, indexes: indexes, skipUpdateOnFirst: args.skipUpdateOnFirst });
+                    let isEdit: boolean = false;
+                    let arg: FormulaBarEdit = { isEdit: isEdit };
+                    this.parent.notify(isFormulaBarEdit, arg);
+                    if (arg.isEdit) {
+                        this.parent.notify(editOperation, { action: 'startEdit', refreshCurPos: false });
+                    }
                     break;
                 case 'Column':
                     sheetModule.refreshColumnContent({ cells: values, indexes: indexes, skipUpdateOnFirst: args.skipUpdateOnFirst });

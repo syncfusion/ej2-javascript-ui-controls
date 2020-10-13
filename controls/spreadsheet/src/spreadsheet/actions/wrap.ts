@@ -74,7 +74,7 @@ export class WrapText {
                         }
                         if (displayText) {
                             if (args.wrap) {
-                                if (ele.classList.contains('e-alt-unwrap')) {
+                                if (ele && ele.classList.contains('e-alt-unwrap')) {
                                     ele.classList.remove('e-alt-unwrap');
                                 }
                                 let lines: number; let n: number = 0; let p: number;

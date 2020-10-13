@@ -1,6 +1,6 @@
 import { DataUtil } from './util';
 import { DataManager } from './manager';
-import { NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
+import { NumberFormatOptions, DateFormatOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * Query class is used to build query which is used by the DataManager to communicate with datasource.
  */
@@ -259,7 +259,18 @@ export class Query {
      * @param  {string|Function} comparer - Defines the sort direction or custom sort comparer function.     
      */
     public sortBy(fieldName: string | string[], comparer?: string | Function, isFromGroup?: boolean): Query {
-        let order: string = 'ascending';
+        return this.sortByForeignKey(fieldName, comparer, isFromGroup);
+    }
+
+    /**
+     * Sort the data with given sort criteria.
+     * By default, sort direction is ascending.
+     * @param  {string|string[]} fieldName - Defines the single or collection of column fields.
+     * @param  {string|Function} comparer - Defines the sort direction or custom sort comparer function.
+     * @param  {string} direction - Defines the sort direction .  
+     */
+    public sortByForeignKey(fieldName: string | string[], comparer?: string | Function, isFromGroup?: boolean, direction?: string): Query {
+        let order: string = !isNullOrUndefined(direction) ? direction : 'ascending';
         let sorts: Object[];
         let temp: string | string[];
 

@@ -17,6 +17,7 @@ var ELEMENT = 'e-dropdown-btn';
 var MOUSEDOWN = 'mousedown touchstart';
 var KEYDOWN = 'keydown';
 var CLICK = 'click';
+var SCROLL = 'scroll';
 var ESC = 27;
 var UP = 38;
 var DOWN = 40;
@@ -31,19 +32,30 @@ var SfDropDownButton = /** @class */ (function () {
         this.dotNetRef = dotnetRef;
         this.popup = popup;
         this.element.blazor__instance = this;
+        this.addScrollEvents(true);
     }
-    SfDropDownButton.prototype.calculatePosition = function (blankIcon) {
-        var btnOffset = this.element.getBoundingClientRect();
-        var left = btnOffset.left + pageXOffset;
-        var top = btnOffset.bottom + pageYOffset;
+    SfDropDownButton.prototype.openPopup = function (blankIcon) {
         this.popup.style.visibility = HIDDEN;
         document.body.appendChild(this.popup);
         if (blankIcon) {
             sf.splitbuttons.setBlankIconStyle(this.popup);
         }
         this.popup.classList.remove(TRANSPARENT);
-        var popupOffset = this.popup.getBoundingClientRect();
         var zIndex = sf.popups.getZindexPartial(this.element);
+        this.setPosition();
+        sf.base.EventHandler.remove(document, MOUSEDOWN, this.mouseDownHandler);
+        this.addEventListener();
+        this.popup.style.zIndex = zIndex + EMPTY;
+        this.popup.style.visibility = EMPTY;
+        if (this.popup.firstElementChild) {
+            this.popup.firstElementChild.focus();
+        }
+    };
+    SfDropDownButton.prototype.setPosition = function () {
+        var btnOffset = this.element.getBoundingClientRect();
+        var left = btnOffset.left + pageXOffset;
+        var top = btnOffset.bottom + pageYOffset;
+        var popupOffset = this.popup.getBoundingClientRect();
         if (btnOffset.bottom + popupOffset.height > document.documentElement.clientHeight) {
             if (top - btnOffset.height - popupOffset.height > document.documentElement.clientTop) {
                 top = top - btnOffset.height - popupOffset.height;
@@ -54,17 +66,8 @@ var SfDropDownButton = /** @class */ (function () {
                 left = (left + btnOffset.width) - popupOffset.width;
             }
         }
-        left = Math.ceil(left);
-        top = Math.ceil(top);
-        sf.base.EventHandler.remove(document, MOUSEDOWN, this.mouseDownHandler);
-        this.addEventListener();
-        this.popup.style.left = left + PIXEL;
-        this.popup.style.top = top + PIXEL;
-        this.popup.style.zIndex = zIndex + EMPTY;
-        this.popup.style.visibility = EMPTY;
-        if (this.popup.firstElementChild) {
-            this.popup.firstElementChild.focus();
-        }
+        this.popup.style.left = Math.ceil(left) + PIXEL;
+        this.popup.style.top = Math.ceil(top) + PIXEL;
     };
     SfDropDownButton.prototype.mouseDownHandler = function (e) {
         if (this.popup.parentElement) {
@@ -135,6 +138,16 @@ var SfDropDownButton = /** @class */ (function () {
             this.getElement().focus();
         }
     };
+    SfDropDownButton.prototype.scrollHandler = function (e) {
+        if (!this.popup || !document.getElementById(this.popup.id)) {
+            var ddb = this.getDropDownButton();
+            if (!ddb || !document.getElementById(ddb.id)) {
+                sf.base.EventHandler.remove(e.target, SCROLL, this.scrollHandler);
+            }
+            return;
+        }
+        this.setPosition();
+    };
     SfDropDownButton.prototype.addEventListener = function (setFocus) {
         sf.base.EventHandler.add(document, MOUSEDOWN, this.mouseDownHandler, this);
         sf.base.EventHandler.add(this.popup, CLICK, this.clickHandler, this);
@@ -149,16 +162,28 @@ var SfDropDownButton = /** @class */ (function () {
         if (this.popup.parentElement) {
             sf.base.EventHandler.remove(this.popup, CLICK, this.clickHandler);
             sf.base.EventHandler.remove(this.popup, KEYDOWN, this.keydownHandler);
-            if (reposition && this.element.parentElement) {
-                this.element.appendChild(this.popup);
+            if (reposition) {
+                var ddb = this.getDropDownButton();
+                if (ddb && document.getElementById(ddb.id)) {
+                    this.addScrollEvents(false);
+                    this.element.appendChild(this.popup);
+                }
             }
+        }
+    };
+    SfDropDownButton.prototype.addScrollEvents = function (add) {
+        var elements = sf.popups.getScrollableParent(this.element);
+        for (var _i = 0, elements_1 = elements; _i < elements_1.length; _i++) {
+            var element = elements_1[_i];
+            add ? sf.base.EventHandler.add(element, SCROLL, this.scrollHandler, this) :
+                sf.base.EventHandler.remove(element, SCROLL, this.scrollHandler);
         }
     };
     return SfDropDownButton;
 }());
 // tslint:disable-next-line:variable-name
 var DropDownButton = {
-    calculatePosition: function (element, popup, dotnetRef, blankIcon) {
+    openPopup: function (element, popup, dotnetRef, blankIcon) {
         if (!sf.base.isNullOrUndefined(element)) {
             if (sf.base.isNullOrUndefined(element.blazor__instance)) {
                 new SfDropDownButton(element, popup, dotnetRef);
@@ -166,7 +191,7 @@ var DropDownButton = {
             else {
                 element.blazor__instance.popup = popup;
             }
-            element.blazor__instance.calculatePosition(blankIcon);
+            element.blazor__instance.openPopup(blankIcon);
         }
     },
     addEventListener: function (element) {

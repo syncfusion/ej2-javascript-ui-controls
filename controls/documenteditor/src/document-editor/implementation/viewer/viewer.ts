@@ -1277,6 +1277,10 @@ export class DocumentHelper {
         let key: number = event.which || event.keyCode;
         this.triggerElementsOnLoading = false;
         let ctrl: boolean = (event.ctrlKey || event.metaKey) ? true : ((key === 17) ? true : false); // ctrl detection
+        let alt: boolean = event.altKey ? event.altKey : ((key === 18) ? true : false); // alt key detection
+        if (Browser.isIE && alt && ctrl) {
+            ctrl = false;
+        }
         if (ctrl && event.key === 'v' || ctrl && event.key === 'a') {
             return;
         }
@@ -1289,7 +1293,7 @@ export class DocumentHelper {
                 char = event.key;
             }
             // tslint:disable-next-line:max-line-length
-            if (char !== ' ' && char !== '\r' && char !== '\b' && char !== '\u001B' && !this.owner.isReadOnlyMode && event.ctrlKey === false) {
+            if (char !== ' ' && char !== '\r' && char !== '\b' && char !== '\u001B' && !this.owner.isReadOnlyMode && !ctrl) {
                 this.owner.editorModule.handleTextInput(char);
             } else if (char === ' ') {
                 this.triggerSpellCheck = true;
@@ -1408,7 +1412,7 @@ export class DocumentHelper {
      */
     public updateFocus = (): void => {
         if (this.selection && !(this.isMobileDevice && this.owner.isReadOnly)) {
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice && !Browser.isIE) {
                 this.iframe.focus();
             }
             this.editableDiv.focus();
@@ -3353,8 +3357,10 @@ export abstract class LayoutViewer {
                             leftIndent = leftIndent - HelperMethods.convertPointToPixel(block.leftIndent);
                             rightIndent = leftIndent;
                         }
-                        // tslint:disable-next-line:max-line-length
-                        leftIndent = (block.tableFormat.horizontalPositionAbs === 'Left') ? block.tableFormat.horizontalPosition : leftIndent;
+                        if (!block.isInsideTable) {
+                            // tslint:disable-next-line:max-line-length
+                            leftIndent = (block.tableFormat.horizontalPositionAbs === 'Left') ? block.tableFormat.horizontalPosition : leftIndent;
+                        }
                         this.documentHelper.tableLefts.push(leftIndent);
                     }
                 }
@@ -3754,16 +3760,7 @@ export class PageLayoutViewer extends LayoutViewer {
             yPos = this.documentHelper.pages[this.documentHelper.pages.length - 1].boundingRectangle.bottom + this.pageGap;
         }
         let page: Page = new Page(this.documentHelper);
-        //page.viewer = this;
-        // tslint:disable-next-line:max-line-length
-        let pageWidth: number = !isNullOrUndefined(section.sectionFormat) ? HelperMethods.convertPointToPixel(section.sectionFormat.pageWidth) : 816;
-        // tslint:disable-next-line:max-line-length
-        let pageHeight: number = !isNullOrUndefined(section.sectionFormat) ? HelperMethods.convertPointToPixel(section.sectionFormat.pageHeight) : 1056;
-        let xPos: number = (this.documentHelper.visibleBounds.width - pageWidth * this.documentHelper.zoomFactor) / 2;
-        if (xPos < this.pageLeft) {
-            xPos = this.pageLeft;
-        }
-        page.boundingRectangle = new Rect(xPos, yPos, pageWidth, pageHeight);
+        this.updatePageBoundingRectange(section, page, yPos);
         if (isNullOrUndefined(index)) {
             this.documentHelper.pages.push(page);
         } else {
@@ -3775,6 +3772,21 @@ export class PageLayoutViewer extends LayoutViewer {
         this.documentHelper.layout.layoutHeaderFooter(section, viewer, page);
         this.updateClientArea(section.sectionFormat, page);
         return page;
+    }
+    /**
+     * @private
+     */
+    public updatePageBoundingRectange(section: BodyWidget, page: Page, yPos: number): void {
+        //page.viewer = this;
+        // tslint:disable-next-line:max-line-length
+        let pageWidth: number = !isNullOrUndefined(section.sectionFormat) ? HelperMethods.convertPointToPixel(section.sectionFormat.pageWidth) : 816;
+        // tslint:disable-next-line:max-line-length
+        let pageHeight: number = !isNullOrUndefined(section.sectionFormat) ? HelperMethods.convertPointToPixel(section.sectionFormat.pageHeight) : 1056;
+        let xPos: number = (this.documentHelper.visibleBounds.width - pageWidth * this.documentHelper.zoomFactor) / 2;
+        if (xPos < this.pageLeft) {
+            xPos = this.pageLeft;
+        }
+        page.boundingRectangle = new Rect(xPos, yPos, pageWidth, pageHeight);
     }
     /**
      * Fired when page fit type changed.

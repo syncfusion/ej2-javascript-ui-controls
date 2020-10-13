@@ -668,6 +668,8 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
         addClass([this.valueWrap], [classes.OPEN]);
         this.setProperties({ enableEditMode: true }, true);
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.renderReactTemplates(); }
     }
 
     private renderAndOpen(): void {
@@ -981,6 +983,8 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                 this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
             }
         }
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.clearTemplate(); }
     }
     private destroyComponents(): void {
         if (this.showButtons) {
@@ -1131,41 +1135,41 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private enableEditor(val: boolean): void {
         (val) ? this.renderEditor() : this.cancelHandler();
     }
-    private checkValidation(fromSubmit: boolean, isValidate?: boolean): void {
-        let proxy : this = this;
+    private checkValidation(fromSubmit : boolean , isValidate?: boolean): void {
         let args: ValidateEventArgs;
         if (this.validationRules) {
             let rules: string[] = Object.keys(this.validationRules);
-            let rulesIndex : number = 0;
-            let count: number = 0;
+            let templateCount : number = Object.keys(this.validationRules).length;
+            let templateIndex : number = 0;
+            let status : boolean = true;
+            let validationLength : number =  Object.keys(this.validationRules[rules[0]]).length;
+            validationLength = 'validateHidden' in this.validationRules[rules[0]] ? validationLength - 1 : validationLength;
+            let count : number = 0;
             this.formValidate = new FormValidator(this.formEle as HTMLFormElement, {
                 rules: this.validationRules,
                 validationComplete: (e: FormEventArgs) => {
-                    count = count + 1;
-                    args = {
-                        errorMessage: e.message,
-                        data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
-                    };
-                    this.trigger('validating', args, (validateArgs: ValidateEventArgs) => {
-                        if (e.status === 'failure') {
-                            e.errorElement.innerText = validateArgs.errorMessage;
-                            this.toggleErrorClass(true);
-                        } else {
-                            this.toggleErrorClass(false);
-                        }
-                        let validationLength: number = Object.keys(this.validationRules[rules[rulesIndex]]).length;
-                        validationLength = 'validateHidden' in this.validationRules[rules[rulesIndex]]
-                         ? validationLength - 1 : validationLength;
-                        if (!isNOU(fromSubmit) && fromSubmit && (validationLength === count || e.status === 'failure')) {
-                            rulesIndex++;
-                            if (this.template === '' || count - 1 === rulesIndex) {
-                                fromSubmit = false;
-                                this.afterValidation(isValidate);
+                        count = count + 1;
+                        args = {
+                            errorMessage: e.message,
+                            data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
+                        };
+                        this.trigger('validating', args, (validateArgs: ValidateEventArgs) => {
+                            if (e.status === 'failure') {
+                                status = false;
+                                e.errorElement.innerText = validateArgs.errorMessage;
+                                this.toggleErrorClass(true);
+                            } else {
+                                this.toggleErrorClass(false);
                             }
-                            count = 0;
-                            rulesIndex = 0;
-                        }
-                    });
+                            if (!isNOU(fromSubmit) && fromSubmit && (validationLength === count || e.status === 'failure')) {
+                                templateIndex = templateIndex + 1;
+                                if (templateIndex === templateCount && status) {
+                                    fromSubmit = false;
+                                    this.afterValidation(isValidate);
+                                }
+                                count = 0;
+                            }
+                        });
                 },
                 customPlacement: (inputElement: HTMLElement, errorElement: HTMLElement) => {
                     if (this.formEle) {
@@ -1192,7 +1196,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         } else {
             this.afterValidation(isValidate);
         }
+
     }
+
     private afterValidation(isValidate: boolean): void {
         if (!this.formEle.classList.contains(classes.ERROR) && isValidate) {
             this.loadSpinner('validate');
@@ -1498,6 +1504,8 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.element.removeChild(this.element.firstElementChild);
         }
         if (!(isBlazor() && this.isServerRendered)) { super.destroy(); }
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.clearTemplate(); }
     }
     /**
      * Get the properties to be maintained in the persisted state.

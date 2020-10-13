@@ -18,6 +18,7 @@ import { NotifyArgs, ImageUploadingEventArgs } from '../../src/rich-text-editor/
  */
 export class PasteCleanup {
     private currentArgs: Object;
+    private rawFile: FileInfo[];
     private uploadObj: Uploader;
     private currentValue: string;
     private preRTEHeight: string;
@@ -239,9 +240,9 @@ export class PasteCleanup {
         addClass([popupObj.element], [CLS_POPUP_OPEN, CLS_RTE_UPLOAD_POPUP]);
         let timeOut: number = fileList.size > 1000000 ? 300 : 100;
         setTimeout(() => { this.refreshPopup(imgElem as HTMLElement, popupObj); }, timeOut);
-        let rawFile: FileInfo[];
         let beforeUploadArgs: ImageUploadingEventArgs;
-        let uploadObj: Uploader = new Uploader({
+        this.rawFile = undefined;
+        this.uploadObj = new Uploader({
             asyncSettings: {
                 saveUrl: this.parent.insertImageSettings.saveUrl
             },
@@ -249,25 +250,25 @@ export class PasteCleanup {
             dropArea: this.parent.inputElement,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             success: (e: object) => {
-                setTimeout(() => { this.popupClose(popupObj, uploadObj, imgElem, e); }, 900);
+                setTimeout(() => { this.popupClose(popupObj, imgElem, e); }, 900);
             },
             uploading: (e: UploadingEventArgs) => {
                 this.parent.inputElement.contentEditable = 'false';
             },
             beforeUpload: (args: BeforeUploadEventArgs) => {
                 beforeUploadArgs = JSON.parse(JSON.stringify(args));
-                beforeUploadArgs.filesData = rawFile;
+                beforeUploadArgs.filesData = this.rawFile;
                 // @ts-ignore-start
                 this.parent.dotNetRef.invokeMethodAsync(events.beforeUpload, args).then((beforeUploadArgs: ImageUploadingEventArgs) => {
                     if (beforeUploadArgs.cancel) { return; }
                     /* tslint:disable */
-                    (this.uploadObj as any).uploadFiles(rawFile, null);
+                    (this.uploadObj as any).uploadFiles(this.rawFile, null);
                     /* tslint:enable */
                     // @ts-ignore-end
                 });
             },
             failure: (e: Object) => {
-                setTimeout(() => { this.uploadFailure(imgElem, uploadObj, popupObj, e); }, 900);
+                setTimeout(() => { this.uploadFailure(imgElem, popupObj, e); }, 900);
             },
             canceling: () => {
                 this.parent.inputElement.contentEditable = 'true';
@@ -279,7 +280,7 @@ export class PasteCleanup {
             },
             selected: (e: SelectedEventArgs) => {
                 e.cancel = true;
-                rawFile = e.filesData;
+                this.rawFile = e.filesData;
             },
             removing: () => {
                 this.parent.inputElement.contentEditable = 'true';
@@ -290,7 +291,7 @@ export class PasteCleanup {
                 popupObj.close();
             }
         });
-        uploadObj.appendTo(popupObj.element.childNodes[0] as HTMLElement);
+        this.uploadObj.appendTo(popupObj.element.childNodes[0] as HTMLElement);
         /* tslint:disable */
         let fileData: any = [{
             name: fileList.name,
@@ -300,23 +301,24 @@ export class PasteCleanup {
             validationMessages: { minSize: '', maxSize: '' },
             statusCode: '1'
         }];
-        (uploadObj as any).createFileList(fileData);
-        (uploadObj as any).filesData.push(fileData[0]);
+        (this.uploadObj as any).createFileList(fileData);
+        (this.uploadObj as any).filesData.push(fileData[0]);
         /* tslint:enable */
-        uploadObj.upload(fileData);
+        this.uploadObj.upload(fileData);
         (popupObj.element.getElementsByClassName(classes.CLS_FILE_SELECT_WRAP)[0] as HTMLElement).style.display = 'none';
         detach(popupObj.element.querySelector('.' + CLS_RTE_DIALOG_UPLOAD + ' .' + classes.CLS_FILE_SELECT_WRAP) as HTMLElement);
     }
-    private uploadFailure(imgElem: Element, uploadObj: Uploader, popupObj: Popup, e: Object): void {
+    private uploadFailure(imgElem: Element, popupObj: Popup, e: Object): void {
         this.parent.inputElement.contentEditable = 'true';
         detach(imgElem);
         if (popupObj) {
             popupObj.close();
         }
         this.parent.dotNetRef.invokeMethodAsync(events.pasteImageUploadFailed, e);
-        uploadObj.destroy();
+        this.uploadObj.destroy();
+        this.uploadObj = undefined;
     }
-    private popupClose(popupObj: Popup, uploadObj: Uploader, imgElem: Element, e: Object): void {
+    private popupClose(popupObj: Popup, imgElem: Element, e: Object): void {
         this.parent.inputElement.contentEditable = 'true';
         // @ts-ignore-start
         this.parent.dotNetRef.invokeMethodAsync(events.pasteImageUploadSuccess, e).then((beforeUploadArgs: ImageUploadingEventArgs) => {
@@ -329,7 +331,8 @@ export class PasteCleanup {
         });
         popupObj.close();
         (imgElem as HTMLElement).style.opacity = '1';
-        uploadObj.destroy();
+        this.uploadObj.destroy();
+        this.uploadObj = undefined;
     }
     private refreshPopup(imageElement: HTMLElement, popupObj: Popup): void {
         let imgPosition: number = this.parent.iframeSettings.enable ? this.parent.element.offsetTop +

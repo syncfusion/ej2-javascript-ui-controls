@@ -103,7 +103,10 @@ export class Toolbar {
         if (!isBlazor()) {
             toolbarDiv = this.createToolbar(width);
         } else {
-            toolbarDiv =  this.pdfViewer.element.querySelector('.e-pv-toolbar');
+            if (!Browser.isDevice) {
+                toolbarDiv = this.pdfViewer.element.querySelector('.e-pv-toolbar');
+                this.toolbarElement = toolbarDiv;
+            }
         }
         // tslint:disable-next-line
         let isIE: boolean = !!(document as any).documentMode;
@@ -130,10 +133,17 @@ export class Toolbar {
         } else {
             if (!Browser.isDevice) {
                 this.annotationToolbarModule = new AnnotationToolbar(this.pdfViewer, this.pdfViewerBase, this);
+                this.initialEnableItems();
                 this.pdfViewerBase.navigationPane.adjustPane();
             }
         }
         return toolbarDiv;
+    }
+    private InitializeMobileToolbarInBlazor(): void {
+        let toolbarDiv: HTMLElement;
+        toolbarDiv = this.pdfViewer.element.querySelector('.e-pv-mobile-toolbar');
+        this.createFileElement(toolbarDiv);
+        this.wireEvent();
     }
     /**
      * Shows /hides the toolbar in the PdfViewer
@@ -652,7 +662,7 @@ export class Toolbar {
             if (this.pdfViewerBase.pageCount > 0) {
                 this.currentPageBox.min = 1;
             }
-            this.totalPageItem.textContent = 'of ' + this.pdfViewerBase.pageCount.toString();
+            this.totalPageItem.textContent = this.pdfViewer.localeObj.getConstant('of') + this.pdfViewerBase.pageCount.toString();
         }
     }
 
@@ -1003,19 +1013,25 @@ export class Toolbar {
     }
 
     private createFileElement(toolbarElement: HTMLElement): void {
-        if (!isBlazor()) {
-            // tslint:disable-next-line:max-line-length
-            this.fileInputElement = createElement('input', { id: this.pdfViewer.element.id + '_fileUploadElement', styles: 'position:fixed; left:-100em', attrs: { 'type': 'file' } });
-            this.fileInputElement.setAttribute('accept', '.pdf');
-            this.fileInputElement.setAttribute('aria-label', 'file upload element');
-        } else {
-            this.fileInputElement = this.pdfViewer.element.querySelector('.e-pv-fileupload-element');
+        if (toolbarElement) {
+            if (!isBlazor()) {
+                // tslint:disable-next-line:max-line-length
+                this.fileInputElement = createElement('input', { id: this.pdfViewer.element.id + '_fileUploadElement', styles: 'position:fixed; left:-100em', attrs: { 'type': 'file' } });
+                this.fileInputElement.setAttribute('accept', '.pdf');
+                this.fileInputElement.setAttribute('aria-label', 'file upload element');
+            } else {
+                this.fileInputElement = this.pdfViewer.element.querySelector('.e-pv-fileupload-element');
+            }
+            if (toolbarElement) {
+                toolbarElement.appendChild(this.fileInputElement);
+            }
         }
-        toolbarElement.appendChild(this.fileInputElement);
     }
 
     private wireEvent(): void {
-        this.fileInputElement.addEventListener('change', this.loadDocument);
+        if (this.fileInputElement) {
+            this.fileInputElement.addEventListener('change', this.loadDocument);
+        }
         if (!isBlazor()) {
             if (!Browser.isDevice) {
                 this.toolbarElement.addEventListener('mouseup', this.toolbarOnMouseup.bind(this));
@@ -1029,7 +1045,9 @@ export class Toolbar {
     }
 
     private unWireEvent(): void {
-        this.fileInputElement.removeEventListener('change', this.loadDocument);
+        if (this.fileInputElement) {
+            this.fileInputElement.removeEventListener('change', this.loadDocument);
+        }
         if (!Browser.isDevice) {
             this.toolbarElement.removeEventListener('mouseup', this.toolbarOnMouseup.bind(this));
             this.currentPageBoxElement.removeEventListener('focusout', this.textBoxFocusOut);
@@ -1095,7 +1113,9 @@ export class Toolbar {
     private handleOpenIconClick(args: ClickEventArgs): void {
         this.fileInputElement.click();
         if (Browser.isDevice) {
-            (args.originalEvent.target as HTMLElement).blur();
+            if (!isBlazor()) {
+                (args.originalEvent.target as HTMLElement).blur();
+            }
             this.pdfViewerBase.focusViewerContainer();
         }
     }
@@ -1393,13 +1413,17 @@ export class Toolbar {
                 this.isTextSearchBoxDisplayed = !this.isTextSearchBoxDisplayed;
                 this.pdfViewer.textSearchModule.showSearchBox(this.isTextSearchBoxDisplayed);
                 if (this.isTextSearchBoxDisplayed) {
-                    this.selectItem(this.textSearchItem);
+                    if (!isBlazor()) {
+                        this.selectItem(this.textSearchItem);
+                    }
                     // tslint:disable-next-line:max-line-length
                     let searchInputElement: HTMLInputElement = document.getElementById(this.pdfViewer.element.id + '_search_input') as HTMLInputElement;
                     searchInputElement.select();
                     searchInputElement.focus();
                 } else {
-                    this.deSelectItem(this.textSearchItem);
+                    if (!isBlazor()) {
+                        this.deSelectItem(this.textSearchItem);
+                    }
                 }
             }
         } else {
@@ -1458,25 +1482,27 @@ export class Toolbar {
         } else {
             this.showNavigationToolbar(false);
         }
-        if (this.isPrintBtnVisible) {
-            this.showPrintOption(true);
-        } else {
-            this.showPrintOption(false);
-        }
-        if (this.isDownloadBtnVisible) {
-            this.showDownloadOption(true);
-        } else {
-            this.showDownloadOption(false);
-        }
-        if (this.isSearchBtnVisible) {
-            this.showSearchOption(true);
-        } else {
-            this.showSearchOption(false);
-        }
-        if (this.isCommentBtnVisible) {
-            this.showCommentOption(true);
-        } else {
-            this.showCommentOption(false);
+        if (!isBlazor()) {
+            if (this.isPrintBtnVisible) {
+                this.showPrintOption(true);
+            } else {
+                this.showPrintOption(false);
+            }
+            if (this.isDownloadBtnVisible) {
+                this.showDownloadOption(true);
+            } else {
+                this.showDownloadOption(false);
+            }
+            if (this.isSearchBtnVisible) {
+                this.showSearchOption(true);
+            } else {
+                this.showSearchOption(false);
+            }
+            if (this.isCommentBtnVisible) {
+                this.showCommentOption(true);
+            } else {
+                this.showCommentOption(false);
+            }
         }
     }
 

@@ -21,6 +21,7 @@ export class Action {
     private selectedCardsElement: Element[];
     private selectedCardsData: object[];
     public hideColumnKeys: string[];
+
     /**
      * Constructor for action module
      * @private
@@ -80,12 +81,7 @@ export class Action {
             newData[this.parent.swimlaneSettings.keyField] =
                 closest(target, '.' + cls.CONTENT_ROW_CLASS).previousElementSibling.getAttribute('data-key');
         }
-        if (this.parent.isBlazorRender()) {
-            // tslint:disable-next-line
-            (this.parent as any).interopAdaptor.invokeMethodAsync('OpenDialog', 'Add', newData);
-        } else {
-            this.parent.openDialog('Add', newData);
-        }
+        this.parent.openDialog('Add', newData);
     }
 
     public doubleClickHandler(e: MouseEvent): void {
@@ -118,9 +114,7 @@ export class Action {
                 let cell: Element = closest(target, '.' + cls.CONTENT_CELLS_CLASS);
                 if (this.parent.allowKeyboard) {
                     let element: HTMLElement[] = [].slice.call(cell.querySelectorAll('.' + cls.CARD_CLASS));
-                    element.forEach((e: HTMLElement): void => {
-                        e.setAttribute('tabindex', '0');
-                    });
+                    element.forEach((e: HTMLElement): void => { e.setAttribute('tabindex', '0'); });
                     this.parent.keyboardModule.addRemoveTabIndex('Remove');
                 }
             }
@@ -134,12 +128,7 @@ export class Action {
         let args: CardClickEventArgs = { data: cardDoubleClickObj, element: target, cancel: false, event: e };
         this.parent.trigger(events.cardDoubleClick, args, (doubleClickArgs: CardClickEventArgs) => {
             if (!doubleClickArgs.cancel) {
-                if (this.parent.isBlazorRender()) {
-                    // tslint:disable-next-line
-                    (this.parent as any).interopAdaptor.invokeMethodAsync('OpenDialog', 'Edit', args.data);
-                } else {
-                    this.parent.dialogModule.openDialog('Edit', args.data as { [key: string]: Object });
-                }
+                this.parent.dialogModule.openDialog('Edit', args.data as { [key: string]: Object });
             }
         });
     }
@@ -170,9 +159,7 @@ export class Action {
                 target.setAttribute('aria-expanded', isCollapsed.toString());
                 tgtRow.setAttribute('aria-expanded', isCollapsed.toString());
                 let rows: HTMLElement[] = [].slice.call(tgtRow.querySelectorAll('.' + cls.CONTENT_CELLS_CLASS));
-                rows.forEach((cell: HTMLElement) => {
-                    cell.setAttribute('tabindex', tabIndex);
-                });
+                rows.forEach((cell: HTMLElement) => { cell.setAttribute('tabindex', tabIndex); });
                 this.parent.notify(events.contentReady, {});
                 this.parent.trigger(events.actionComplete, { target: headerTarget, requestType: 'rowExpandCollapse' });
             }
@@ -248,16 +235,12 @@ export class Action {
     }
 
     public cardSelection(target: Element, isCtrl: boolean, isShift: boolean): void {
-        if (!target) {
-            return;
-        }
+        if (!target) { return; }
         let cards: HTMLElement[] = this.parent.getSelectedCards();
         if (this.parent.cardSettings.selectionType !== 'None') {
             let contentRow: HTMLTableRowElement = closest(target, '.' + cls.CONTENT_ROW_CLASS) as HTMLTableRowElement;
             let index: number = !isNullOrUndefined(this.lastSelectionRow) ? this.lastSelectionRow.rowIndex : contentRow.rowIndex;
-            if (index !== contentRow.rowIndex && (isCtrl || isShift) && this.parent.cardSettings.selectionType === 'Multiple') {
-                return;
-            }
+            if (index !== contentRow.rowIndex && (isCtrl || isShift) && this.parent.cardSettings.selectionType === 'Multiple') { return; }
             if (cards.length !== 0 && (!isCtrl || this.parent.cardSettings.selectionType === 'Single')) {
                 removeClass(cards, cls.CARD_SELECTION_CLASS);
                 this.parent.layoutModule.disableAttributeSelection(cards);

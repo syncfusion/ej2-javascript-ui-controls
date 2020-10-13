@@ -19,6 +19,8 @@ import { IToolbarItemModel, OffsetPosition, IImageCommandsArgs, ActionBeginEvent
 export class Image {
     private rteId: string;
     private dropFiles: FileList;
+    private modifiedUrl: string;
+    private isStreamUrl: boolean;
     private pageX: number = null;
     private pageY: number = null;
     private deletedImg: Node[] = [];
@@ -184,7 +186,7 @@ export class Image {
         }
         this.parent.observer.notify(events.selectRange, { range: range });
     }
-    public imageDropInitialized(): void {
+    public imageDropInitialized(isStream: boolean): void {
         let e: ImageDragEvent = this.imageDragArgs;
         if (this.parent.element.querySelector('.' + classes.CLS_IMG_RESIZE)) {
             detach(this.imgResizeDiv);
@@ -200,7 +202,7 @@ export class Image {
         let allowedTypes: string[] = this.parent.insertImageSettings.allowedTypes as string[];
         for (let i: number = 0; i < allowedTypes.length; i++) {
             if (imgType.toLocaleLowerCase() === allowedTypes[i].toLowerCase()) {
-                if (this.parent.insertImageSettings.saveUrl) {
+                if (this.parent.insertImageSettings.saveUrl || isStream) {
                     this.onSelect(this.dropFiles);
                 } else {
                     let args: NotifyArgs = { text: '', file: imgFiles[0] };
@@ -243,8 +245,6 @@ export class Image {
     private onSelect(dropFiles: FileList): void {
         let proxy: Image = this;
         let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.getDocument());
-        let parentElement: HTMLElement = createElement('ul', { className: classes.CLS_UPLOAD_FILES });
-        this.parent.element.appendChild(parentElement);
         let validFiles: FileInfo = {
             name: '',
             size: 0,
@@ -287,6 +287,12 @@ export class Image {
             args: this.imageDragArgs as MouseEvent, type: 'Images', isNotify: undefined, elements: this.droppedImage
         });
         this.resizeStart((this.imageDragArgs as MouseEvent) as PointerEvent, this.droppedImage);
+    }
+    public dropUploadChange(url: string, isStream: boolean): void {
+        if (isStream) {
+            this.droppedImage.src = url;
+            this.droppedImage.style.opacity = '1';
+        }
     }
     private imagePaste(args: NotifyArgs): void {
         if (args.text.length === 0 && !isNOU((args as NotifyArgs).file)) {
@@ -973,6 +979,10 @@ export class Image {
             this.inputUrl.setAttribute('disabled', 'true');
         }
     }
+    public imageUploadChange(url: string, isStream: boolean): void {
+        this.modifiedUrl = url;
+        this.isStreamUrl = isStream;
+    }
     public removing(): void {
         this.inputUrl.removeAttribute('disabled');
         if (this.uploadUrl) { this.uploadUrl.url = ''; }
@@ -987,6 +997,10 @@ export class Image {
     public insertImageUrl(): void {
         this.inputUrl = this.parent.element.querySelector('.e-rte-img-dialog .e-img-url');
         let url: string = this.inputUrl.value;
+        if (this.isStreamUrl && this.modifiedUrl !== '') {
+            this.uploadUrl.url = this.modifiedUrl;
+            this.modifiedUrl = '';
+        }
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
         }

@@ -14156,8 +14156,39 @@ var XhtmlValidation = /** @__PURE__ @class */ (function () {
             this.ImageTags();
             this.removeTags();
             this.RemoveUnsupported();
+            this.parent.inputElement.innerHTML = this.selfEncloseValidation(this.parent.inputElement.innerHTML);
             this.parent.setProperties({ value: this.parent.inputElement.innerHTML }, true);
         }
+    };
+    /**
+     * @deprecated
+     */
+    XhtmlValidation.prototype.selfEncloseValidation = function (currentValue) {
+        currentValue = currentValue.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/&nbsp;/gi, ' ').replace(/ /g, ' ');
+        var valueTemp;
+        var valueDupe = [];
+        var valueOriginal = [];
+        var imgRegexp = [/<img(.*?)>/gi, /<area(.*?)>/gi, /<base(.*?)>/gi, /<col (.*?)>/gi, /<embed(.*?)>/gi,
+            /<input(.*?)>/gi, /<link(.*?)>/gi, /<meta(.*?)>/gi, /<param(.*?)>/gi, /<source(.*?)>/gi,
+            /<track(.*?)>/gi, /<wbr(.*?)>/gi];
+        for (var j = 0; j < imgRegexp.length; j++) {
+            valueTemp = imgRegexp[j].exec(currentValue);
+            while ((valueTemp) !== null) {
+                valueDupe.push(valueTemp[0].toString());
+                valueTemp = imgRegexp[j].exec(currentValue);
+            }
+            valueOriginal = valueDupe.slice(0);
+            for (var i = 0; i < valueDupe.length; i++) {
+                if (valueDupe[i].indexOf('/') === -1 || valueDupe[i].lastIndexOf('/') !== valueDupe[i].length - 2) {
+                    valueDupe[i] = valueDupe[i].substr(0, valueDupe[i].length - 1) + ' /' +
+                        valueDupe[i].substr(valueDupe[i].length - 1, valueDupe[i].length);
+                }
+            }
+            for (var g = 0; g <= valueDupe.length - 1; g++) {
+                currentValue = currentValue.replace(valueOriginal[g], valueDupe[g]);
+            }
+        }
+        return currentValue;
     };
     XhtmlValidation.prototype.AddRootElement = function () {
         if ((this.parent.inputElement.childNodes.length === 1 && this.parent.inputElement.firstChild.nodeName !== 'DIV') ||
@@ -14508,6 +14539,11 @@ var HtmlEditor = /** @__PURE__ @class */ (function () {
                     break;
                 case 'CreateLink':
                     this.parent.notify(insertLink, {
+                        member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                    });
+                    break;
+                case 'RemoveLink':
+                    this.parent.notify(unLink, {
                         member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
                     });
                     break;
@@ -21535,6 +21571,17 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
      */
     RichTextEditor.prototype.getHtml = function () {
         return this.value;
+    };
+    /**
+     * Retrieves the Rich Text Editor's XHTML validated HTML content when `enableXhtml` property is enabled.
+     * @public
+     */
+    RichTextEditor.prototype.getXhtml = function () {
+        var currentValue = this.value;
+        if (this.enableXhtml) {
+            currentValue = this.htmlEditorModule.xhtmlValidation.selfEncloseValidation(currentValue);
+        }
+        return currentValue;
     };
     /**
      * Shows the source HTML/MD markup.

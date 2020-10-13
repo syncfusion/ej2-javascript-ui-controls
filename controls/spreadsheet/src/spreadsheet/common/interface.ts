@@ -55,6 +55,13 @@ export interface StyleType {
 /**
  * @hidden
  */
+export interface FormulaBarEdit {
+    isEdit: boolean;
+}
+
+/**
+ * @hidden
+ */
 export interface IViewport {
     rowCount: number;
     colCount: number;

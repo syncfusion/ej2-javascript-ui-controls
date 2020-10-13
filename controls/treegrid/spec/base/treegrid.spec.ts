@@ -1311,6 +1311,48 @@ describe('TreeGrid base module', () => {
     });
   });
 
+  describe('Refresh', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Above' },
+  
+            treeColumnIndex: 1,
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+              columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+              { field: 'taskName', headerText: 'Task Name' },
+              { field: 'progress', headerText: 'Progress' },
+              { field: 'duration', headerText: 'Duration' },
+              { field: 'startDate', headerText: 'Start Date' }
+              ]
+        },
+        done
+      );
+    });
+      
+    it('refresh method', (done: Function) => {
+      let count=10;
+      actionComplete = (args?: Object): void => {
+       expect((gridObj.getRows()[0].getElementsByClassName('e-rowcell')[2] as HTMLElement).innerText== "11").toBeTruthy();
+       expect((gridObj.getRows()[0].getElementsByClassName('e-rowcell')[3] as HTMLElement).innerText== "10").toBeTruthy();
+       done();
+      };
+      gridObj.grid.actionComplete = actionComplete;
+      gridObj.dataSource[0].duration =count++;
+      gridObj.dataSource[0].progress = count++
+      if(gridObj != undefined) {
+        gridObj.refresh();
+       };
+     });
+    
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 
   it('memory leak', () => {
     profile.sample();

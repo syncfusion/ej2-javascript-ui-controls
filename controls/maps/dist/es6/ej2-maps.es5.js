@@ -5676,10 +5676,10 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                     var imgElement = createElement('img');
                     imgElement.setAttribute('src', tile.src);
                     var child = void 0;
-                    if (document.getElementById('tile_' + id) && type === 'Pan') {
-                        removeElement('tile_' + id);
+                    if (document.getElementById(_this.mapObject.element.id + '_tile_' + id) && type === 'Pan') {
+                        removeElement(_this.mapObject.element.id + '_tile_' + id);
                     }
-                    child = createElement('div', { id: 'tile_' + id });
+                    child = createElement('div', { id: _this.mapObject.element.id + '_tile_' + id });
                     child.style.position = 'absolute';
                     child.style.left = tile.left + 'px';
                     child.style.top = tile.top + 'px';
@@ -13110,7 +13110,7 @@ var ImageExport = /** @__PURE__ @class */ (function () {
                     var imgxHttp = new XMLHttpRequest();
                     var imgTileLength_1 = _this.control.mapLayerPanel.tiles.length;
                     var _loop_1 = function (i) {
-                        var tile = document.getElementById('tile_' + (i - 1));
+                        var tile = document.getElementById(_this.control.element.id + '_tile_' + (i - 1));
                         var exportTileImg = new Image();
                         exportTileImg.crossOrigin = 'Anonymous';
                         ctxt_1.fillStyle = _this.control.background ? _this.control.background : '#FFFFFF';
@@ -13256,7 +13256,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
                 var xHttp = new XMLHttpRequest();
                 var tileLength_1 = _this.control.mapLayerPanel.tiles.length;
                 var _loop_1 = function (i) {
-                    var tile = document.getElementById('tile_' + (i - 1));
+                    var tile = document.getElementById(_this.control.element.id + '_tile_' + (i - 1));
                     var tileImg = new Image();
                     tileImg.crossOrigin = 'Anonymous';
                     ctx.fillStyle = _this.control.background ? _this.control.background : '#FFFFFF';

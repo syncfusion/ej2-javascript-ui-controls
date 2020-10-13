@@ -96,7 +96,7 @@ export class RowDD {
             if (tObj.isLocalData) {
                 tObj.flatData = this.orderToIndex(tObj.flatData);
             }
-            this.parent.refresh();
+            this.parent.grid.refresh();
         } else {
             return;
         }
@@ -543,7 +543,7 @@ export class RowDD {
                 if (tObj.isLocalData) {
                     tObj.flatData = this.orderToIndex(tObj.flatData);
                 }
-                tObj.refresh();
+                tObj.grid.refresh();
                 if (!isNullOrUndefined(tObj.getHeaderContent().querySelector('.e-firstrow-border'))) {
                     tObj.getHeaderContent().querySelector('.e-firstrow-border').remove();
                 }
@@ -599,10 +599,10 @@ export class RowDD {
                     }
                 }
             }
-            tObj.refresh();
-            srcControl.refresh();
+            tObj.grid.refresh();
+            srcControl.grid.refresh();
             if ((<ITreeData[]>srcControl.grid.dataSource).length > 1) {
-               srcControl.refresh();
+               srcControl.grid.refresh();
                if (!isNullOrUndefined(srcControl.getHeaderContent().querySelector('.e-firstrow-border'))) {
                    srcControl.getHeaderContent().querySelector('.e-firstrow-border').remove();
                }
@@ -613,8 +613,8 @@ export class RowDD {
         }
         if (isCountRequired(this.parent)) {
             srcControl = (<EJ2Intance>dropElement).ej2_instances[0];
-            tObj.refresh();
-            srcControl.refresh();
+            tObj.grid.refresh();
+            srcControl.grid.refresh();
         }
     }
 

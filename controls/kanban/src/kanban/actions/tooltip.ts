@@ -5,11 +5,16 @@ import * as cls from '../base/css-constant';
 
 /**
  * Tooltip for Kanban board
+ * @hidden
  */
 export class KanbanTooltip {
     private parent: Kanban;
     public tooltipObj: Tooltip;
 
+    /**
+     * Constructor for tooltip module
+     * @private
+     */
     constructor(parent: Kanban) {
         this.parent = parent;
         this.renderTooltip();

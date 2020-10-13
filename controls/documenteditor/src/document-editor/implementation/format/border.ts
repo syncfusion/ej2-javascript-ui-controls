@@ -49,6 +49,10 @@ export class WBorder {
     set hasNoneStyle(value: boolean) {
         this.setPropertyValue('hasNoneStyle', value);
     }
+    get isBorderDefined(): boolean {
+        return (this.lineStyle !== 'None' ||
+            (this.hasNoneStyle && this.hasValue('hasNoneStyle')));
+    }
     constructor(node?: WBorders) {
         this.ownerBase = node;
     }

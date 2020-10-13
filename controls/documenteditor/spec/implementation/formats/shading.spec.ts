@@ -8,7 +8,7 @@ describe('Shading Validation Testing', () => {
         let foregroundColor: string = shading.foregroundColor;
         let backgroundColor: string = shading.backgroundColor;
         let textureStyle: string = shading.textureStyle;
-        expect(backgroundColor).toBe('#ffffff');
+        expect(backgroundColor).toBe('empty');
     });
     it('Set Value  Testing', () => {
         let shading: WShading = new WShading();

@@ -227,9 +227,10 @@ export class Editor {
         fieldBegin.line = line;
         paragraph.childWidgets.push(line);
         this.documentHelper.fields.push(fieldBegin);
-        let widgets: BlockWidget[] = [];
-        widgets.push(paragraph);
-        this.pasteContentsInternal(widgets);
+        let section: BodyWidget = new BodyWidget();
+        section.sectionFormat = new WSectionFormat(section);
+        section.childWidgets.push(paragraph);
+        this.pasteContentsInternal([section], false);
         this.isInsertField = false;
     }
 
@@ -1074,6 +1075,14 @@ export class Editor {
         if (ctrl && !shift && !alt) {
             this.documentHelper.isControlPressed = true;
             switch (key) {
+                case 8:
+                    event.preventDefault();
+                    this.handleCtrlBackKey();
+                    break;
+                case 46:
+                    event.preventDefault();
+                    this.handleCtrlDelete();
+                    break;
                 case 9:
                     event.preventDefault();
                     if (this.owner.acceptTab) {
@@ -1374,7 +1383,52 @@ export class Editor {
         }
         this.selection.checkForCursorVisibility();
     }
-
+    /**
+     * Handles Control back key.
+     * @private
+     */
+    public handleCtrlBackKey(): void {
+        let start: TextPosition = this.selection.start;
+        let end: TextPosition = this.selection.end;
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
+            if (!this.selection.isForward) {
+                start = end;
+            }
+            if (this.selection.isEmpty) {
+                this.selection.handleControlShiftLeftKey();
+                this.owner.editorModule.onBackSpace();
+                /* tslint:disable:max-line-length */
+            } else if (((isNullOrUndefined(start.paragraph.previousRenderedWidget) || start.paragraph.previousRenderedWidget instanceof TableWidget)
+                && start.offset === 0)) {
+                return;
+            } else {
+                this.selection.handleLeftKey();
+                this.selection.handleControlShiftLeftKey();
+                this.owner.editorModule.onBackSpace();
+            }
+        }
+    }
+    /**
+     * Handles Ctrl delete
+     * @private
+     */
+    public handleCtrlDelete(): void {
+        if ((!this.owner.isReadOnlyMode && this.canEditContentControl) || this.selection.isInlineFormFillMode()) {
+            if (!this.selection.isEmpty) {
+                this.selection.handleLeftKey();
+                this.selection.handleControlShiftRightKey();
+                let selectedText: string = this.selection.text;
+                let checkSpace: boolean = HelperMethods.endsWith(selectedText);
+                if (checkSpace) {
+                    this.selection.handleShiftLeftKey();
+                }
+                this.owner.editorModule.delete();
+            } else {
+                this.selection.handleControlShiftRightKey();
+                this.owner.editorModule.delete();
+            }
+        }
+    }
     /**
      * @private
      */
@@ -3927,8 +3981,8 @@ export class Editor {
             delete blck.paragraphFormat.listFormat.isUpdated;
         }
     }
-    private getBlocks(pasteContent: any): BlockWidget[] {
-        let widgets: BlockWidget[] = [];
+    private getBlocks(pasteContent: any): BodyWidget[] {
+        let widgets: BodyWidget[] = [];
         if (typeof (pasteContent) === 'string') {
             let startParagraph: ParagraphWidget = this.selection.start.paragraph;
             if (!this.selection.isForward) {
@@ -3942,6 +3996,10 @@ export class Editor {
             } else {
                 arr = txt.split('\r');
             }
+            let widget: BlockWidget[] = [];
+            let bodyWidget: BodyWidget = new BodyWidget();
+            bodyWidget.sectionFormat = new WSectionFormat(bodyWidget);
+            bodyWidget.childWidgets = widget;
             for (let i: number = 0; i < arr.length; i++) {
                 if (i === arr.length - 1 && arr[i].length === 0) {
                     continue;
@@ -3971,8 +4029,10 @@ export class Editor {
                     textElement.line = line;
                 }
                 paragraph.childWidgets.push(line);
-                widgets.push(paragraph);
+                paragraph.containerWidget = bodyWidget;
+                widget.push(paragraph);
             }
+            widgets.push(bodyWidget);
         } else {
             this.viewer.owner.parser.addCustomStyles(pasteContent);
             for (let i: number = 0; i < pasteContent.sections.length; i++) {
@@ -4021,7 +4081,11 @@ export class Editor {
                     }
                     this.documentHelper.owner.sfdtExportModule.copyWithTrackChange = false;
                 }
-                parser.parseBody(pasteContent.sections[i].blocks, widgets);
+                let bodyWidget: BodyWidget = new BodyWidget();
+                bodyWidget.sectionFormat = new WSectionFormat(bodyWidget);
+                parser.parseSectionFormat(pasteContent.sections[i].sectionFormat, bodyWidget.sectionFormat);
+                widgets.push(bodyWidget);
+                parser.parseBody(pasteContent.sections[i].blocks, bodyWidget.childWidgets as BlockWidget[]);
                 parser.isPaste = false;
             }
         }
@@ -4032,25 +4096,28 @@ export class Editor {
         return widgets;
 
     }
-    private applyMergeFormat(widgets: BlockWidget[]): void {
+    private applyMergeFormat(bodyWidgets: BodyWidget[]): void {
         let startParagraph: ParagraphWidget = this.selection.start.paragraph;
         let currentInline: ElementInfo = this.selection.start.currentWidget.getInline(this.selection.start.offset, 0);
         let element: ElementBox = this.selection.getPreviousValidElement(currentInline.element);
         let insertFormat: WCharacterFormat = element ? element.characterFormat :
             this.copyInsertFormat(startParagraph.characterFormat, false);
         let insertParaFormat: WParagraphFormat = this.documentHelper.selection.copySelectionParagraphFormat();
-        for (let i: number = 0; i < widgets.length; i++) {
-            let widget: BlockWidget = widgets[i];
-            if (widget instanceof ParagraphWidget) {
-                widget.paragraphFormat.copyFormat(insertParaFormat);
-                this.applyFormatInternal(widget, insertFormat);
-            } else {
-                for (let j: number = 0; j < widget.childWidgets.length; j++) {
-                    let row: TableRowWidget = widget.childWidgets[j] as TableRowWidget;
-                    for (let k: number = 0; k < row.childWidgets.length; k++) {
-                        let cell: TableCellWidget = row.childWidgets[k] as TableCellWidget;
-                        for (let l: number = 0; l < cell.childWidgets.length; l++) {
-                            this.applyFormatInternal(cell.childWidgets[l] as BlockWidget, insertFormat);
+        for (let k: number = 0; k < bodyWidgets.length; k++) {
+            let widgets: BlockWidget[] = bodyWidgets[k].childWidgets as BlockWidget[];
+            for (let i: number = 0; i < widgets.length; i++) {
+                let widget: BlockWidget = widgets[i];
+                if (widget instanceof ParagraphWidget) {
+                    widget.paragraphFormat.copyFormat(insertParaFormat);
+                    this.applyFormatInternal(widget, insertFormat);
+                } else {
+                    for (let j: number = 0; j < widget.childWidgets.length; j++) {
+                        let row: TableRowWidget = widget.childWidgets[j] as TableRowWidget;
+                        for (let k: number = 0; k < row.childWidgets.length; k++) {
+                            let cell: TableCellWidget = row.childWidgets[k] as TableCellWidget;
+                            for (let l: number = 0; l < cell.childWidgets.length; l++) {
+                                this.applyFormatInternal(cell.childWidgets[l] as BlockWidget, insertFormat);
+                            }
                         }
                     }
                 }
@@ -4138,11 +4205,11 @@ export class Editor {
             }
         }
 
-        this.pasteContentsInternal(this.getBlocks(content), currentFormat);
+        this.pasteContentsInternal(this.getBlocks(content), true, currentFormat);
         this.isInsertField = false;
     }
-    private pasteContentsInternal(widgets: BlockWidget[], currentFormat?: WParagraphFormat): void {
-        this.isPaste = true;
+    private pasteContentsInternal(widgets: BodyWidget[], isPaste: boolean, currentFormat?: WParagraphFormat): void {
+        this.isPaste = isPaste;
         /* tslint:enable:no-any */
         let selection: Selection = this.documentHelper.selection;
         let isRemoved: boolean = true;
@@ -4176,7 +4243,7 @@ export class Editor {
         this.isPaste = false;
     }
     /* tslint:disable:no-any */
-    private pasteContent(widgets: BlockWidget[], currentFormat?: WParagraphFormat): void {
+    private pasteContent(widgets: BodyWidget[], currentFormat?: WParagraphFormat): void {
         /* tslint:enable:no-any */
         this.documentHelper.owner.isShiftingEnabled = true;
         let insertPosition: string = '';
@@ -4213,48 +4280,80 @@ export class Editor {
         this.documentHelper.owner.isPastingContent = false;
         this.documentHelper.selection.fireSelectionChanged(true);
     }
-    private pasteCopiedData(widgets: BlockWidget[], currentFormat?: WParagraphFormat): void {
+    private pasteCopiedData(bodyWidget: BodyWidget[], currentFormat?: WParagraphFormat): void {
         if (this.documentHelper.layout.isBidiReLayout) {
             this.documentHelper.layout.isBidiReLayout = false;
         }
-        for (let j: number = 0; j < widgets.length; j++) {
-            let widget: BlockWidget = widgets[j];
-            if (widget instanceof ParagraphWidget && widget.childWidgets.length === 0) {
-                widget.childWidgets[0] = new LineWidget(widget as ParagraphWidget);
+        if (this.isPaste && this.isSectionEmpty(this.selection)) {
+            this.selection.start.paragraph.bodyWidget.sectionFormat.copyFormat(bodyWidget[0].sectionFormat);
+            if (this.owner.viewer instanceof PageLayoutViewer) {
+                let page: Page = this.selection.start.paragraph.bodyWidget.page;
+                this.owner.viewer.updatePageBoundingRectange(this.selection.start.paragraph.bodyWidget, page, page.boundingRectangle.y);
+                this.owner.viewer.updateClientArea(this.selection.start.paragraph.bodyWidget.sectionFormat, page);
             }
-            if (widget instanceof ParagraphWidget && !isNullOrUndefined(currentFormat)) {
-                widget.paragraphFormat.copyFormat(currentFormat);
-                let insertFormat: WCharacterFormat = this.copyInsertFormat(this.selection.start.paragraph.characterFormat, false);
-                widget.characterFormat.mergeFormat(insertFormat);
-            }
-            if (j === widgets.length - 1 && widget instanceof ParagraphWidget) {
-                let newParagraph: ParagraphWidget = widget as ParagraphWidget;
-                if (newParagraph.childWidgets.length > 0
-                    && (newParagraph.childWidgets[0] as LineWidget).children.length > 0) {
-                    let insertPosition: TextPosition = this.selection.start;
-                    if ((insertPosition.paragraph.paragraphFormat.textAlignment === 'Center'
-                        || insertPosition.paragraph.paragraphFormat.textAlignment === 'Right') &&
-                        insertPosition.paragraph.paragraphFormat.listFormat.listId === -1) {
-                        insertPosition.paragraph.x = this.owner.viewer.clientActiveArea.x;
+        }
+        for (let k: number = 0; k < bodyWidget.length; k++) {
+            let widgets: BlockWidget[] = bodyWidget[k].childWidgets as BlockWidget[];
+            for (let j: number = 0; j < widgets.length; j++) {
+                let widget: BlockWidget = widgets[j];
+                if (widget instanceof ParagraphWidget && widget.childWidgets.length === 0) {
+                    widget.childWidgets[0] = new LineWidget(widget as ParagraphWidget);
+                }
+                if (widget instanceof ParagraphWidget && !isNullOrUndefined(currentFormat)) {
+                    widget.paragraphFormat.copyFormat(currentFormat);
+                    let insertFormat: WCharacterFormat = this.copyInsertFormat(this.selection.start.paragraph.characterFormat, false);
+                    widget.characterFormat.mergeFormat(insertFormat);
+                }
+                if (j === widgets.length - 1 && widget instanceof ParagraphWidget) {
+                    let newParagraph: ParagraphWidget = widget as ParagraphWidget;
+                    if (newParagraph.childWidgets.length > 0
+                        && (newParagraph.childWidgets[0] as LineWidget).children.length > 0) {
+                        let insertPosition: TextPosition = this.selection.start;
+                        if ((insertPosition.paragraph.paragraphFormat.textAlignment === 'Center'
+                            || insertPosition.paragraph.paragraphFormat.textAlignment === 'Right') &&
+                            insertPosition.paragraph.paragraphFormat.listFormat.listId === -1) {
+                            insertPosition.paragraph.x = this.owner.viewer.clientActiveArea.x;
+                        }
+                        this.insertElement((newParagraph.childWidgets[0] as LineWidget).children, newParagraph.paragraphFormat);
                     }
-                    this.insertElement((newParagraph.childWidgets[0] as LineWidget).children, newParagraph.paragraphFormat);
-                }
-            } else if (widget instanceof BlockWidget) {
-                let startParagraph: ParagraphWidget = this.selection.start.paragraph;
-                if (widget instanceof TableWidget && startParagraph.isInsideTable) {
-                    let table: TableWidget = widget as TableWidget;
-                    //Handled to resize table based on parent cell width.
-                    let clientWidth: number = startParagraph.getContainerWidth();
-                    table.fitCellsToClientArea(clientWidth);
-                }
-                if (widget instanceof TableWidget && startParagraph.isEmpty()
-                    && startParagraph.previousWidget instanceof TableWidget) {
-                    this.insertTableRows(widget as TableWidget, startParagraph.previousWidget as TableWidget);
-                } else {
-                    this.insertBlockInternal(widget);
+                } else if (widget instanceof BlockWidget) {
+                    let startParagraph: ParagraphWidget = this.selection.start.paragraph;
+                    if (widget instanceof TableWidget && startParagraph.isInsideTable) {
+                        let table: TableWidget = widget as TableWidget;
+                        //Handled to resize table based on parent cell width.
+                        let clientWidth: number = startParagraph.getContainerWidth();
+                        table.fitCellsToClientArea(clientWidth);
+                    }
+                    if (widget instanceof TableWidget && startParagraph.isEmpty()
+                        && startParagraph.previousWidget instanceof TableWidget) {
+                        this.insertTableRows(widget as TableWidget, startParagraph.previousWidget as TableWidget);
+                    } else {
+                        this.insertBlockInternal(widget);
+                    }
                 }
             }
         }
+    }
+    private isSectionEmpty(selection: Selection): boolean {
+        let startParagraph: ParagraphWidget = selection.start.paragraph;
+        if (startParagraph) {
+            if (startParagraph.isInsideTable || startParagraph.isInHeaderFooter ||
+                startParagraph !== selection.end.paragraph) {
+                return false;
+            }
+            let bodyWidget: BodyWidget = startParagraph.bodyWidget;
+            if (bodyWidget) {
+                let page: Page = bodyWidget.page;
+                if (page) {
+                    if ((isNullOrUndefined(page.previousPage) || page.previousPage.sectionIndex !== page.sectionIndex)
+                        && isNullOrUndefined(page.nextPage) && startParagraph.isEmpty() &&
+                        bodyWidget.childWidgets.length === 1) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
     /**
      * Insert Table on undo
@@ -9102,9 +9201,9 @@ export class Editor {
             endLineWidget = paragraph.lastChild as LineWidget;
             endOffset = this.documentHelper.selection.getLineLength(paragraph.lastChild as LineWidget);
         }
-         // If previous widget is splitted paragraph, combine paragraph widget.
-         let block: BlockWidget = paragraph.previousRenderedWidget ?
-         paragraph.previousRenderedWidget.combineWidget(this.documentHelper.viewer) as BlockWidget : undefined;
+        // If previous widget is splitted paragraph, combine paragraph widget.
+        let block: BlockWidget = paragraph.previousRenderedWidget ?
+            paragraph.previousRenderedWidget.combineWidget(this.documentHelper.viewer) as BlockWidget : undefined;
 
         if (startOffset > paragraphStart && start.currentWidget === paragraph.lastChild &&
             startOffset === lastLinelength && (paragraph === end.paragraph && end.offset === startOffset + 1 ||
@@ -12719,10 +12818,11 @@ export class Editor {
         line.children.push(fieldEnd);
         fieldBegin.line = line;
         paragraph.childWidgets.push(line);
-        let widgets: BlockWidget[] = [];
-        widgets.push(paragraph);
         this.documentHelper.fields.push(fieldBegin);
-        this.pasteContentsInternal(widgets);
+        let bodyWidget: BodyWidget = new BodyWidget();
+        bodyWidget.sectionFormat = new WSectionFormat(bodyWidget);
+        bodyWidget.childWidgets.push(paragraph);
+        this.pasteContentsInternal([bodyWidget], false);
     }
     /**
      * Insert Bookmark at current selection range
@@ -13906,7 +14006,10 @@ export class Editor {
 
         this.setPositionForCurrentIndex(this.selection.start, initialStart);
         this.selection.end.setPositionInternal(this.selection.start);
-        this.pasteContentsInternal(widgets);
+        let bodyWidget: BodyWidget = new BodyWidget();
+        bodyWidget.sectionFormat = new WSectionFormat(bodyWidget);
+        bodyWidget.childWidgets = widgets;
+        this.pasteContentsInternal([bodyWidget], false);
         this.isInsertingTOC = false;
         this.updatePageRef();
         if (this.editorHistory) {

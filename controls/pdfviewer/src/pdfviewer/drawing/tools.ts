@@ -387,6 +387,8 @@ export class SelectTool extends ToolBase {
         if (!isLock) {
             // tslint:disable-next-line
             let currentSelctor: any;
+            // tslint:disable-next-line
+            let annotation: any = this.commandHandler.selectedItems.annotations[0];
             if ((args.source as PdfAnnotationBaseModel) && (args as PdfAnnotationBaseModel).annotationSelectorSettings !== null) {
                 currentSelctor = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
             } else {
@@ -406,6 +408,9 @@ export class SelectTool extends ToolBase {
                 if (object) {
                     this.commandHandler.select([(object as PdfAnnotationBaseModel).id], currentSelctor);
                     this.commandHandler.viewerBase.isAnnotationMouseDown = true;
+                }
+                if (selectedObject.annotations.length === 0 && annotation && annotation.shapeAnnotationType !== 'Stamp') {
+                    this.commandHandler.fireAnnotationUnSelect(annotation.annotName, annotation.pageIndex, annotation);
                 }
             }
         }

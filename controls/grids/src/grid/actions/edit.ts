@@ -560,7 +560,13 @@ export class Edit implements IAction {
                         value = (column.edit.read as Function)(elements[k], value);
                     }
                     value = gObj.editModule.getValueFromType(column, value) as string;
-                    DataUtil.setValue(column.field, value, editedData);
+                    if (elements[k].type === 'radio') {
+                        if (elements[k].checked) {
+                            DataUtil.setValue(column.field, value, editedData);
+                        }
+                    } else {
+                        DataUtil.setValue(column.field, value, editedData);
+                    }
                 }
             }
             return editedData;

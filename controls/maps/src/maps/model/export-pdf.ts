@@ -73,7 +73,7 @@ export class PdfExport {
                 let xHttp: XMLHttpRequest = new XMLHttpRequest();
                 let tileLength: number = this.control.mapLayerPanel.tiles.length;
                 for (let i: number = 0; i <= tileLength + 1; i++) {
-                    let tile: HTMLElement = document.getElementById('tile_' + (i - 1));
+                    let tile: HTMLElement = document.getElementById(this.control.element.id + '_tile_' + (i - 1));
                     let tileImg: HTMLImageElement = new Image();
                     tileImg.crossOrigin = 'Anonymous';
                     ctx.fillStyle = this.control.background ? this.control.background : '#FFFFFF';

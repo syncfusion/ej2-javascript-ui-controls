@@ -1054,14 +1054,25 @@ class Data {
                     fn = !this.isRemote() ? col.sortComparer.bind(col) : columns[i].direction;
                 }
                 if (gObj.groupSettings.columns.indexOf(columns[i].field) === -1) {
-                    query.sortBy(col.field, fn);
+                    if (col.isForeignColumn() || col.sortComparer) {
+                        query.sortByForeignKey(col.field, fn, undefined, columns[i].direction.toLowerCase());
+                    }
+                    else {
+                        query.sortBy(col.field, fn);
+                    }
                 }
                 else {
                     sortGrp.push({ direction: fn, field: col.field });
                 }
             }
             for (let i = 0, len = sortGrp.length; i < len; i++) {
-                query.sortBy(sortGrp[i].field, sortGrp[i].direction);
+                if (typeof sortGrp[i].direction === 'string') {
+                    query.sortBy(sortGrp[i].field, sortGrp[i].direction);
+                }
+                else {
+                    let col = this.getColumnByField(sortGrp[i].field);
+                    query.sortByForeignKey(sortGrp[i].field, sortGrp[i].direction, undefined, col.getSortDirection().toLowerCase());
+                }
             }
         }
         return query;
@@ -2132,9 +2143,9 @@ class GroupModelGenerator extends RowModelGenerator {
         if (this.parent.groupSettings.columns.length === 0) {
             return super.generateRows(data, args);
         }
-        let isInfiniteScroll = this.parent.enableInfiniteScrolling && args.requestType === 'infiniteScroll';
+        this.isInfiniteScroll = (args.requestType === 'infiniteScroll');
         this.rows = [];
-        this.index = this.parent.enableVirtualization || isInfiniteScroll ? args.startIndex : 0;
+        this.index = this.parent.enableVirtualization || this.isInfiniteScroll ? args.startIndex : 0;
         for (let i = 0, len = data.length; i < len; i++) {
             this.getGroupedRecords(0, data[i], data.level, i, undefined, this.rows.length);
         }
@@ -2145,7 +2156,7 @@ class GroupModelGenerator extends RowModelGenerator {
         return this.rows;
     }
     getGroupedRecords(index, data, raw, parentid, childId, tIndex, parentUid) {
-        let isRenderCaption = this.parent.enableInfiniteScrolling && this.prevKey === data.key;
+        let isRenderCaption = this.isInfiniteScroll && this.prevKey === data.key;
         let level = raw;
         if (isNullOrUndefined(data.items)) {
             if (isNullOrUndefined(data.GroupGuid)) {
@@ -5398,6 +5409,7 @@ class Render {
         e.actionArgs = args;
         let isInfiniteDelete = this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache
             && (args.requestType === 'delete' || (args.requestType === 'save' && this.parent.infiniteScrollModule.requestType === 'add'));
+        this.parent.getDataModule().isQueryInvokedFromData = false;
         // tslint:disable-next-line:max-func-body-length
         gObj.trigger(beforeDataBound, e, (dataArgs) => {
             if (dataArgs.cancel) {
@@ -7672,7 +7684,11 @@ class Selection {
         this.isRowSelected = this.selectedRowIndexes.length && true;
     }
     updatePersistCollection(selectedRow, chkState) {
-        if (this.parent.isPersistSelection && !isNullOrUndefined(selectedRow)) {
+        if ((this.parent.isPersistSelection || this.parent.selectionSettings.persistSelection &&
+            this.parent.getPrimaryKeyFieldNames().length > 0) && !isNullOrUndefined(selectedRow)) {
+            if (!this.parent.isPersistSelection) {
+                this.ensureCheckboxFieldSelection();
+            }
             let rowObj = this.getRowObj(selectedRow);
             let pKey = rowObj.data ? rowObj.data[this.primaryKey] : null;
             if (pKey === null) {
@@ -10498,6 +10514,9 @@ class Scroll {
     setScrollLeft() {
         if (this.parent.frozenColumns) {
             this.parent.headerModule.getMovableHeader().scrollLeft = this.previousValues.left;
+        }
+        else {
+            this.parent.getHeaderContent().querySelector('.e-headercontent').scrollLeft = this.previousValues.left;
         }
     }
     onContentScroll(scrollTarget) {
@@ -13793,6 +13812,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Starts edit the selected row. At least one row must be selected before invoking this method.
      * `editSettings.allowEditing` should be true.
+     * {% codeBlock src='grid/startEdit/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     startEdit() {
@@ -13848,6 +13868,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Saves the cell that is currently edited. It does not save the value to the DataSource.
+     * {% codeBlock src='grid/saveCell/index.md' %}{% endcodeBlock %}
      */
     saveCell() {
         if (this.editModule) {
@@ -13869,6 +13890,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * To update the specified row by given values without changing into edited state.
      * @param {number} index Defines the row index.
      * @param {Object} data Defines the data object to be updated.
+     * {% codeBlock src='grid/updateRow/index.md' %}{% endcodeBlock %}
      */
     updateRow(index, data) {
         if (this.editModule) {
@@ -14909,6 +14931,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Ungroups a column by column name.
      * @param  {string} columnName - Defines the column name to ungroup.
+     * {% codeBlock src='grid/ungroupColumn/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     ungroupColumn(columnName) {
@@ -19795,6 +19818,8 @@ let Pager = class Pager extends Component {
      */
     constructor(options, element) {
         super(options, element);
+        /** @hidden */
+        this.hasParent = false;
     }
     /**
      * To provide the array of modules needed for component rendering
@@ -19854,7 +19879,13 @@ let Pager = class Pager extends Component {
      */
     render() {
         if (this.template) {
-            this.pagerTemplate();
+            if (this.isReactTemplate()) {
+                this.on('pager-refresh', this.pagerTemplate, this);
+                this.notify('pager-refresh', {});
+            }
+            else {
+                this.pagerTemplate();
+            }
         }
         else {
             this.initLocalization();
@@ -19891,14 +19922,16 @@ let Pager = class Pager extends Component {
      * @return {void}
      */
     destroy() {
-        if (this.isReact && typeof (this.template) !== 'string') {
-            this.destroyTemplate(['template']);
-            this.renderReactTemplates();
+        if (this.isReactTemplate()) {
+            this.off('pager-refresh', this.pagerTemplate);
+            if (!this.hasParent) {
+                this.destroyTemplate(['template']);
+            }
         }
-        else {
-            super.destroy();
-            this.containerModule.destroy();
-            this.pagerMessageModule.destroy();
+        super.destroy();
+        this.containerModule.destroy();
+        this.pagerMessageModule.destroy();
+        if (!this.isReactTemplate()) {
             this.element.innerHTML = '';
         }
     }
@@ -20052,6 +20085,9 @@ let Pager = class Pager extends Component {
         }
     }
     pagerTemplate() {
+        if (this.isReactTemplate() && this.hasParent) {
+            return;
+        }
         let result;
         this.element.classList.add('e-pagertemplate');
         this.compile(this.template);
@@ -20060,9 +20096,15 @@ let Pager = class Pager extends Component {
             totalRecordsCount: this.totalRecordsCount, totalPages: this.totalPages
         };
         let tempId = this.element.parentElement.id + '_template';
-        result = isBlazor() ? this.getPagerTemplate()(data, this, 'template', tempId, this.isStringTemplate) :
-            this.getPagerTemplate()(data);
-        appendChildren(this.element, result);
+        if (this.isReactTemplate()) {
+            this.getPagerTemplate()(data, this, 'template', tempId, null, null, this.element);
+            this.renderReactTemplates();
+        }
+        else {
+            result = isBlazor() ? this.getPagerTemplate()(data, this, 'template', tempId, this.isStringTemplate) :
+                this.getPagerTemplate()(data);
+            appendChildren(this.element, result);
+        }
     }
     /** @hidden */
     updateTotalPages() {
@@ -20073,6 +20115,7 @@ let Pager = class Pager extends Component {
     getPagerTemplate() {
         return this.templateFn;
     }
+    /** @hidden */
     compile(template) {
         if (template) {
             try {
@@ -20092,15 +20135,24 @@ let Pager = class Pager extends Component {
      */
     refresh() {
         if (this.template) {
-            this.element.innerHTML = '';
-            this.updateTotalPages();
-            this.pagerTemplate();
+            if (this.isReactTemplate()) {
+                this.updateTotalPages();
+                this.notify('pager-refresh', {});
+            }
+            else {
+                this.element.innerHTML = '';
+                this.updateTotalPages();
+                this.pagerTemplate();
+            }
         }
         else {
             this.updateRTL();
             this.containerModule.refresh();
             if (this.enablePagerMessage) {
                 this.pagerMessageModule.refresh();
+            }
+            if (this.pagerdropdownModule) {
+                this.pagerdropdownModule.refresh();
             }
             if (this.enableExternalMessage && this.externalMessageModule) {
                 this.externalMessageModule.refresh();
@@ -20168,6 +20220,9 @@ let Pager = class Pager extends Component {
                 element.setAttribute('aria-label', element.getAttribute('title'));
             }
         }
+    }
+    isReactTemplate() {
+        return this.isReact && this.template && typeof (this.template) !== 'string';
     }
 };
 __decorate$5([
@@ -20280,8 +20335,7 @@ class PagerDropDown {
     onChange(e) {
         if (this.dropDownListObject.value === this.pagerModule.getLocalizedLabel('All')) {
             this.pagerModule.pageSize = this.pagerModule.totalRecordsCount;
-            this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerAllDropDown') :
-                this.pagerModule.getLocalizedLabel('pagerAllDropDown');
+            this.refresh();
             e.value = this.pagerModule.pageSize;
             if (document.getElementsByClassName('e-popup-open e-alldrop').length) {
                 document.getElementsByClassName('e-popup-open e-alldrop')[0].style.display = 'none';
@@ -20290,12 +20344,21 @@ class PagerDropDown {
         else {
             this.pagerModule.pageSize = parseInt(this.dropDownListObject.value, 10);
             if (this.pagerCons.innerHTML !== this.pagerModule.getLocalizedLabel('pagerDropDown')) {
-                this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerDropDown') :
-                    this.pagerModule.getLocalizedLabel('pagerDropDown');
+                this.refresh();
             }
         }
         this.pagerModule.dataBind();
         this.pagerModule.trigger('dropDownChanged', { pageSize: parseInt(this.dropDownListObject.value, 10) });
+    }
+    refresh() {
+        if (this.pagerModule.pageSize === this.pagerModule.totalRecordsCount) {
+            this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerAllDropDown') :
+                this.pagerModule.getLocalizedLabel('pagerAllDropDown');
+        }
+        else {
+            this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerDropDown') :
+                this.pagerModule.getLocalizedLabel('pagerDropDown');
+        }
     }
     beforeValueChange(prop) {
         if (typeof prop.newProp.value === 'number') {
@@ -20411,6 +20474,7 @@ class Page {
      * @hidden
      */
     constructor(parent, pageSettings) {
+        this.isInitialRender = true;
         Pager.Inject(ExternalMessage, PagerDropDown);
         this.parent = parent;
         this.pageSettings = pageSettings;
@@ -20444,6 +20508,8 @@ class Page {
             created: this.addAriaAttr.bind(this)
         }, ['parentObj', 'propName']);
         this.pagerObj = new Pager(pagerObj);
+        this.pagerObj.hasParent = true;
+        this.pagerObj.on('pager-refresh', this.renderReactPagerTemplate, this);
         this.pagerObj.allowServerDataBinding = false;
     }
     onSelect(e) {
@@ -20599,23 +20665,18 @@ class Page {
         this.isInitialLoad = true;
         this.parent.element.appendChild(this.element);
         this.parent.setGridPager(this.element);
-        let tempID = this.parent.element.id + 'pagerTemplate';
-        let template = this.parent.pagerTemplate || this.pageSettings.template;
-        if (this.parent.isReact && !isNullOrUndefined(template) &&
-            typeof (template) !== 'string') {
-            this.pagerObj.isReact = true;
-            templateCompiler(template)({}, this.parent, 'pagerTemplate', tempID, null, null, this.element);
-            this.parent.renderTemplates();
-        }
-        else {
-            this.pagerObj.appendTo(this.element);
-        }
+        this.pagerObj.isReact = this.parent.isReact;
+        this.pagerObj.appendTo(this.element);
         this.isInitialLoad = false;
     }
     enableAfterRender(e) {
         if (e.module === this.getModuleName() && e.enable) {
             this.render();
             this.appendToElement();
+            if (this.isReactTemplate()) {
+                this.pagerObj.updateTotalPages();
+                this.created();
+            }
         }
     }
     /**
@@ -20629,11 +20690,13 @@ class Page {
             complete: this.onActionComplete,
             updateLayout: this.enableAfterRender,
             inboundChange: this.onPropertyChanged,
-            keyPress: this.keyPressHandler
+            keyPress: this.keyPressHandler,
+            created: this.created
         };
         if (this.parent.isDestroyed) {
             return;
         }
+        this.parent.addEventListener('created', this.handlers.created.bind(this));
         this.parent.on(initialLoad, this.handlers.load, this);
         this.parent.on(initialEnd, this.handlers.end, this); //For initial rendering
         this.parent.on(dataReady, this.handlers.ready, this);
@@ -20642,6 +20705,30 @@ class Page {
         this.parent.on(inBoundModelChanged, this.handlers.inboundChange, this);
         this.parent.on(keyPressed, this.handlers.keyPress, this);
     }
+    created() {
+        if (this.isInitialRender && this.isReactTemplate()) {
+            this.isInitialRender = false;
+            this.renderReactPagerTemplate();
+        }
+    }
+    isReactTemplate() {
+        return this.parent.isReact && this.pagerObj.template && typeof (this.pagerObj.template) !== 'string';
+    }
+    renderReactPagerTemplate() {
+        if (!this.isInitialRender && this.isReactTemplate()) {
+            this.parent.destroyTemplate(['pagerTemplate']);
+            this.element.classList.add('e-pagertemplate');
+            this.pagerObj.compile(this.pagerObj.template);
+            let page = this.parent.pageSettings;
+            let data = {
+                currentPage: page.currentPage, pageSize: page.pageSize, pageCount: page.pageCount,
+                totalRecordsCount: page.totalRecordsCount, totalPages: this.pagerObj.totalPages
+            };
+            let tempId = this.parent.id + '_pagertemplate';
+            this.pagerObj.templateFn(data, this.parent, 'pagerTemplate', tempId, null, null, this.pagerObj.element);
+            this.parent.renderTemplates();
+        }
+    }
     /**
      * @hidden
      */
@@ -20649,6 +20736,8 @@ class Page {
         if (this.parent.isDestroyed) {
             return;
         }
+        this.parent.removeEventListener('created', this.handlers.created);
+        this.parent.off('pager-refresh', this.renderReactPagerTemplate);
         this.parent.off(initialLoad, this.handlers.load);
         this.parent.off(initialEnd, this.handlers.end); //For initial rendering
         this.parent.off(dataReady, this.handlers.ready);
@@ -20664,13 +20753,10 @@ class Page {
      */
     destroy() {
         this.removeEventListener();
-        if (this.parent.isReact && !this.pagerObj.element) {
+        if (this.isReactTemplate()) {
             this.parent.destroyTemplate(['pagerTemplate']);
-            this.parent.renderTemplates();
         }
-        else {
-            this.pagerObj.destroy();
-        }
+        this.pagerObj.destroy();
     }
     pagerDestroy() {
         if (this.pagerObj && !this.pagerObj.isDestroyed) {
@@ -20841,7 +20927,7 @@ class FilterCellRenderer extends CellRenderer {
             id: cell.column.uid
         });
         innerDIV.querySelector('span').appendChild(fbicon);
-        let operators = 'equal';
+        let operators = (column.filter && column.filter.operator) ? column.filter.operator : 'equal';
         if (!isNullOrUndefined(gObj.filterModule.operators[column.field])) {
             operators = gObj.filterModule.operators[column.field];
         }
@@ -29615,7 +29701,7 @@ class NormalEdit {
         }
     }
     editFailure(e) {
-        this.parent.trigger(actionFailure, ((isBlazor() && e instanceof Array) ? e[0] : e));
+        this.parent.trigger(actionFailure, ((isBlazor() && e instanceof Array) ? e[0] : { error: e }));
         this.parent.hideSpinner();
         this.parent.log('actionfailure', { error: e });
     }
@@ -31669,7 +31755,14 @@ class Edit {
                         value = column.edit.read(elements[k], value);
                     }
                     value = gObj.editModule.getValueFromType(column, value);
-                    DataUtil.setValue(column.field, value, editedData);
+                    if (elements[k].type === 'radio') {
+                        if (elements[k].checked) {
+                            DataUtil.setValue(column.field, value, editedData);
+                        }
+                    }
+                    else {
+                        DataUtil.setValue(column.field, value, editedData);
+                    }
                 }
             }
             return editedData;
@@ -38895,7 +38988,7 @@ class GroupLazyLoadRenderer extends ContentRender {
         this.initialGroupCaptions = {};
         this.requestType = ['paging', 'columnstate', 'reorder', 'cancel', 'save', 'beginEdit', 'add', 'delete'];
         /** @hidden */
-        this.cacheMode = true;
+        this.cacheMode = false;
         /** @hidden */
         this.cacheBlockSize = 5;
         /** @hidden */
@@ -38927,7 +39020,7 @@ class GroupLazyLoadRenderer extends ContentRender {
         let isRowExist = rowsObject[oriIndex + 1] ? rowsObject[oriIndex].indent < rowsObject[oriIndex + 1].indent : false;
         let data = rowsObject[oriIndex];
         let key = this.getGroupKeysAndFields(oriIndex, rowsObject);
-        let e = { captionRowElement: tr, groupInfo: data, enableCaching: this.cacheMode, cancel: false };
+        let e = { captionRowElement: tr, groupInfo: data, enableCaching: true, cancel: false };
         this.parent.trigger(lazyLoadGroupExpand, e, (args) => {
             if (args.cancel) {
                 return;

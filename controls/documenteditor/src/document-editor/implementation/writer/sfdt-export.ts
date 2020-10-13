@@ -673,9 +673,9 @@ export class SfdtExport {
         } else if (element instanceof TextElementBox) {
             // replacing the no break hyphen character by '-'
             if (element.text.indexOf('\u001e') !== -1) {
-                inline.text = element.text.replace('\u001e', '-');
+                inline.text = element.text.replace(/\u001e/g, '-');
             } else if (element.text.indexOf('\u001f') !== -1) {
-                inline.text = element.text.replace('\u001f', '');
+                inline.text = element.text.replace(/\u001f/g, '');
             } else if (element.revisions.length !== 0) {
                 if (!this.isExport && this.owner.enableTrackChanges) {
                     this.copyWithTrackChange = true;

@@ -80,6 +80,12 @@ let RichTextEditor: object = {
     imageUploadComplete(element: BlazorRteElement, base64Str: string, altText: string): void {
         element.blazor__instance.imageUploadComplete(base64Str, altText);
     },
+    imageUploadChange(element: BlazorRteElement, url: string, isStream: boolean): void {
+        element.blazor__instance.imageUploadChange(url, isStream);
+    },
+    dropUploadChange(element: BlazorRteElement, url: string, isStream: boolean): void {
+        element.blazor__instance.dropUploadChange(url, isStream);
+    },
     insertImage(element: BlazorRteElement): void {
         element.blazor__instance.insertImage();
     },
@@ -104,8 +110,8 @@ let RichTextEditor: object = {
     pasteContent(element: BlazorRteElement, pasteOption: string): void {
         element.blazor__instance.pasteContent(pasteOption);
     },
-    imageDropInitialized(element: BlazorRteElement): void {
-        element.blazor__instance.imageDropInitialized();
+    imageDropInitialized(element: BlazorRteElement, isStream: boolean): void {
+        element.blazor__instance.imageDropInitialized(isStream);
     },
     preventEditable(element: BlazorRteElement): void {
         element.blazor__instance.preventEditable();
@@ -178,6 +184,15 @@ let RichTextEditor: object = {
     },
     insertImageLink(element: BlazorRteElement, url: string, target: string): void {
         return element.blazor__instance.insertImageLink(url, target);
+    },
+    updateContentHeight(element: BlazorRteElement): void {
+        return element.blazor__instance.setContentHeight();
+    },
+    saveSelection(element: BlazorRteElement): void {
+        element.blazor__instance.saveSelection();
+    },
+    restoreSelection(element: BlazorRteElement): void {
+        element.blazor__instance.restoreSelection();
     }
 };
 export default RichTextEditor;

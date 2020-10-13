@@ -12,6 +12,7 @@ let kanbanOptions: KanbanModel = {
     columns: [
         { headerText: 'Backlog', keyField: 'Open' },
         { headerText: 'In Progress', keyField: 'InProgress' },
+        { headerText: 'Review', keyField: 'Review' },
         { headerText: 'Testing', keyField: 'Testing' },
         { headerText: 'Done', keyField: 'Close' }
     ],

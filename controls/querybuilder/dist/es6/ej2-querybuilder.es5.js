@@ -1364,7 +1364,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var original = {};
         var result = [];
         var value;
-        var fieldColl;
+        var fieldColl = [];
         if (this.separator.length > 0) {
             fieldColl = field.split(this.separator);
         }

@@ -1,17 +1,20 @@
 import { extend } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
-import { Kanban } from '../base/kanban';
+import { Kanban } from './kanban';
+import { ActionEventArgs, SaveChanges } from './interface';
 import { ReturnType } from './type';
-import * as events from '../base/constant';
+import * as events from './constant';
 
 /**
- * data module is used to generate query and data source.
+ * Kanban data module
  * @hidden
  */
 export class Data {
     private parent: Kanban;
+    private kanbanData: DataManager;
     public dataManager: DataManager;
     private query: Query;
+    private keyField: string;
 
     /**
      * Constructor for data module
@@ -19,6 +22,7 @@ export class Data {
      */
     constructor(parent: Kanban) {
         this.parent = parent;
+        this.keyField = this.parent.cardSettings.headerField;
         this.initDataManager(parent.dataSource, parent.query);
         this.refreshDataManager();
     }
@@ -31,6 +35,7 @@ export class Data {
     private initDataManager(dataSource: Object | DataManager, query: Query): void {
         this.dataManager = dataSource instanceof DataManager ? <DataManager>dataSource : new DataManager(dataSource);
         this.query = query instanceof Query ? query : new Query();
+        this.kanbanData = new DataManager(this.parent.kanbanData);
     }
 
     /**
@@ -38,7 +43,7 @@ export class Data {
      * @return {void}
      * @private
      */
-    public generateQuery(): Query {
+    public getQuery(): Query {
         return this.query.clone();
     }
 
@@ -53,12 +58,26 @@ export class Data {
     }
 
     /**
-     * The function is used to send the request and get response form datamanager
+     * The function used to get the table name from the given Query
+     * @return {string}
+     * @private
+     */
+    private getTable(): string {
+        if (this.parent.query) {
+            let query: Query = this.getQuery();
+            return query.fromTable;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * The function is used to send the request and get response from datamanager
      * @return {void}
      * @private
      */
-    public refreshDataManager(): void {
-        let dataManager: Promise<Object> = this.getData(this.generateQuery());
+    private refreshDataManager(): void {
+        let dataManager: Promise<Object> = this.getData(this.getQuery());
         dataManager.then((e: ReturnType) => this.dataManagerSuccess(e)).catch((e: ReturnType) => this.dataManagerFailure(e));
     }
 
@@ -71,6 +90,7 @@ export class Data {
         if (this.parent.isDestroyed) { return; }
         this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
             let resultData: Object[] = extend([], args.result, null, true) as Object[];
+            this.kanbanData.saveChanges({ addedRecords: resultData, changedRecords: [], deletedRecords: [] });
             this.parent.kanbanData = resultData;
             this.parent.notify(events.dataReady, { processedData: resultData });
             this.parent.trigger(events.dataBound, null, () => this.parent.hideSpinner());
@@ -82,9 +102,93 @@ export class Data {
      * @return {void}
      * @private
      */
-    private dataManagerFailure(e: { result: Object[] }): void {
+    private dataManagerFailure(e: ReturnType): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.trigger(events.actionFailure, { error: e }, () => this.parent.hideSpinner());
     }
 
+    /**
+     * The function is used to perform the insert, update, delete and batch actions in datamanager
+     * @return {void}
+     * @private
+     */
+    public updateDataManager(updateType: string, params: SaveChanges, type: string, data: { [key: string]: Object }, index?: number): void {
+        this.parent.showSpinner();
+        let promise: Promise<Object>;
+        switch (updateType) {
+            case 'insert':
+                promise = this.dataManager.insert(data, this.getTable(), this.getQuery()) as Promise<Object>;
+                break;
+            case 'update':
+                promise = this.dataManager.update(this.keyField, data, this.getTable(), this.getQuery()) as Promise<Object>;
+                break;
+            case 'delete':
+                promise = this.dataManager.remove(this.keyField, data, this.getTable(), this.getQuery()) as Promise<Object>;
+                break;
+            case 'batch':
+                promise = this.dataManager.saveChanges(params, this.keyField, this.getTable(), this.getQuery()) as Promise<Object>;
+                break;
+        }
+        let actionArgs: ActionEventArgs = {
+            requestType: type, cancel: false, addedRecords: params.addedRecords,
+            changedRecords: params.changedRecords, deletedRecords: params.deletedRecords
+        };
+        if (this.dataManager.dataSource.offline) {
+            this.parent.trigger(events.actionComplete, actionArgs, (offlineArgs: ActionEventArgs) => {
+                if (!offlineArgs.cancel) {
+                    this.refreshUI(offlineArgs, index);
+                }
+            });
+        } else {
+            promise.then((e: ReturnType) => {
+                if (this.parent.isDestroyed) { return; }
+                this.parent.trigger(events.actionComplete, actionArgs, (onlineArgs: ActionEventArgs) => {
+                    if (!onlineArgs.cancel) {
+                        this.refreshUI(onlineArgs, index);
+                    }
+                });
+            }).catch((e: ReturnType) => {
+                this.dataManagerFailure(e);
+            });
+        }
+    }
+
+    /**
+     * The function is used to refresh the UI once the datamanager action is completed
+     * @return {void}
+     * @private
+     */
+    private refreshUI(args: ActionEventArgs, index: number): void {
+        this.parent.resetTemplates();
+        this.kanbanData.saveChanges({ addedRecords: args.addedRecords, changedRecords: args.changedRecords,
+            deletedRecords: args.deletedRecords });
+        this.parent.kanbanData = this.kanbanData.dataSource.json;
+        let field: string;
+        if (this.parent.sortSettings.sortBy === 'DataSourceOrder') {
+            field = this.parent.cardSettings.headerField;
+        } else if (this.parent.sortSettings.sortBy === 'Custom') {
+            field = this.parent.sortSettings.field;
+        }
+        if (this.parent.sortSettings.sortBy !== 'Index') {
+            this.parent.kanbanData = this.parent.layoutModule.sortOrder(field, this.parent.sortSettings.direction, this.parent.kanbanData);
+        }
+        args.addedRecords.forEach((data: { [key: string]: Object }) => {
+            this.parent.layoutModule.renderCardBasedOnIndex(data);
+        });
+        args.changedRecords.forEach((data: { [key: string]: Object }) => {
+            this.parent.layoutModule.removeCard(data);
+            this.parent.layoutModule.renderCardBasedOnIndex(data, index);
+            if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index'
+            && this.parent.sortSettings.direction === 'Descending' && index > 0) {
+                --index;
+            }
+        });
+        args.deletedRecords.forEach((data: { [key: string]: Object }) => {
+            this.parent.layoutModule.removeCard(data);
+        });
+        this.parent.kanbanData = this.kanbanData.dataSource.json;
+        this.parent.layoutModule.refresh();
+        this.parent.renderTemplates();
+        this.parent.trigger(events.dataBound, null, () => this.parent.hideSpinner());
+    }
 }

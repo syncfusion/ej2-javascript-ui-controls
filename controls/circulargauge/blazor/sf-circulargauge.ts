@@ -109,7 +109,9 @@ class SfCircularGauge {
         let mouseX: number = (e.clientX - rect.left) - Math.max(svgRect.left - rect.left, 0);
         let tooltipGroup: Element = document.getElementById(this.element.id + '_Tooltip');
         let tooltipGroupElement: Element = document.getElementById(this.element.id + '_Tooltip_Group');
-        let parentTargetId: string = (e.target as HTMLElement).parentElement.id;
+        // tslint:disable-next-line
+        let parentElement: any = (e.target as HTMLElement).parentElement || (e.target as HTMLElement).parentNode;
+        let parentTargetId: string = parentElement.id;
         if (this.options.enableTooltip) {
             rect = {
                 // tslint:disable-next-line:max-line-length
@@ -320,8 +322,13 @@ class SfCircularGauge {
         let tempString: string = animationElement.id.replace(this.element.id, '').split('_Axis_')[1];
         axisIndex = +tempString[0];
         pointerIndex = +tempString[tempString.length - 1];
-        for (let j: number = 0; j < animationElement.childElementCount; j++) {
-            let animatedChildElements: Element = animationElement.children[j];
+        let childCount: number = Browser.isIE ? animationElement.childNodes.length : animationElement.childElementCount;
+        for (let j: number = 0; j < childCount; j++) {
+            // tslint:disable-next-line
+            let animatedChildElements: any = Browser.isIE ? animationElement.childNodes[j] : animationElement.children[j];
+            if (animatedChildElements.nodeName === '#comment') {
+                continue;
+            }
             if (options.pointerType === 'RangeBar') {
                 this.animationRangeProcess(animatedChildElements, options, dotNetRef, axisIndex, pointerIndex);
             } else {
@@ -393,10 +400,11 @@ interface BlazorCircularGaugeElement extends HTMLElement {
 
 // tslint:disable
 let CircularGauge: object = {
-    initialize(element: BlazorCircularGaugeElement, options: ICircularGaugeOptions, dotnetRef: BlazorDotnetObject, individualId: string): void {
+    initialize(element: BlazorCircularGaugeElement, options: ICircularGaugeOptions, dotnetRef: BlazorDotnetObject, individualId: string): boolean {
         let instance: SfCircularGauge = new SfCircularGauge(element.id, element, options, dotnetRef, individualId);
         instance.render();
         this.getContainerSize(element.id, dotnetRef);
+        return (Browser.isIE as boolean);
     },
     getContainerSize(id: string, dotnetRef: BlazorDotnetObject): void {
         let elementBounds: Element = document.getElementById(id);

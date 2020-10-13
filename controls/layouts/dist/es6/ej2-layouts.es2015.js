@@ -2284,6 +2284,10 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.isBlazor = false;
         this.isInlineRendering = false;
         this.removeAllCalled = false;
+        // to check whether removePanel is executed in mobile device
+        this.isPanelRemoved = false;
+        // to maintain sizeY in mobile device
+        this.panelsSizeY = 0;
         this.resizeHeight = false;
         setValue('mergePersistData', this.mergePersistPanelData, this);
     }
@@ -2520,10 +2524,14 @@ let DashboardLayout = class DashboardLayout extends Component {
     renderTemplate(content, appendElement, type, isStringTemplate, prop) {
         let templateFn = this.templateParser(content);
         let templateElements = [];
-        for (let item of templateFn({}, this, prop, type, isStringTemplate)) {
-            templateElements.push(item);
+        // tslint:disable-next-line
+        let compilerFn = templateFn({}, this, prop, type, isStringTemplate, null, appendElement);
+        if (compilerFn) {
+            for (let item of compilerFn) {
+                templateElements.push(item);
+            }
+            append([].slice.call(templateElements), appendElement);
         }
-        append([].slice.call(templateElements), appendElement);
     }
     renderPanels(cellElement, panelModel, panelId, isStringTemplate) {
         if (!this.isBlazor) {
@@ -3020,6 +3028,7 @@ let DashboardLayout = class DashboardLayout extends Component {
     }
     ;
     refresh() {
+        this.panelsSizeY = 0;
         this.updateDragArea();
         if (this.checkMediaQuery()) {
             this.checkMediaQuerySizing();
@@ -3082,13 +3091,28 @@ let DashboardLayout = class DashboardLayout extends Component {
     }
     checkMediaQuerySizing() {
         addClass([this.element], [responsive]);
-        let updatedPanel = this.sortPanels();
+        let updatedPanel;
+        if (this.isPanelRemoved && this.panels) {
+            updatedPanel = this.panels;
+        }
+        else {
+            updatedPanel = this.sortPanels();
+        }
         this.updatedRows = updatedPanel.length;
         for (let i = 0; i < updatedPanel.length; i++) {
             let panelElement = document.getElementById(updatedPanel[i].id);
+            // tslint:disable-next-line
+            let updatedHeight;
             if (panelElement) {
                 setStyleAttribute(panelElement, { 'width': '100%' });
-                panelElement.style.height = ' ' + (this.cellSize[1] * updatedPanel[i].sizeY) + 'px';
+                panelElement.style.height = ' ' + ((this.element.parentElement
+                    && this.element.parentElement.offsetWidth / this.cellAspectRatio) * updatedPanel[i].sizeY) + 'px';
+                if (updatedPanel[i].sizeY > 1) {
+                    updatedHeight = ((this.element.parentElement
+                        && this.element.parentElement.offsetWidth / this.cellAspectRatio) * updatedPanel[i].sizeY) +
+                        parseInt((Math.round(updatedPanel[i].sizeY / 2) * this.cellSpacing[1]).toString(), 0);
+                    panelElement.style.height = '' + updatedHeight + 'px';
+                }
                 this.resizeHeight = true;
                 if (this.addPanelCalled && this.isBlazor) {
                     let panelProp = this.getActualProperties(updatedPanel[i]);
@@ -3096,12 +3120,11 @@ let DashboardLayout = class DashboardLayout extends Component {
                     panelProp.col = 0;
                     this.panelPropertyChange(updatedPanel[i], panelProp);
                     this.setPanelPosition(panelElement, i, 0);
-                    this.setMediaQueryPanelPosition(panelElement, i, 0);
                 }
                 else {
                     this.panelPropertyChange(updatedPanel[i], { row: i, col: 0 });
                     this.setPanelPosition(panelElement, updatedPanel[i].row, updatedPanel[i].col);
-                    this.setMediaQueryPanelPosition(panelElement, updatedPanel[i].row, updatedPanel[i].col);
+                    this.panelsSizeY = this.panelsSizeY + updatedPanel[i].sizeY;
                 }
                 this.setClasses(this.panelCollection);
                 this.checkDragging(this.dragCollection);
@@ -3198,24 +3221,8 @@ let DashboardLayout = class DashboardLayout extends Component {
         let widthValue = this.getCellSize()[0];
         let left = col === 0 ? 0 : (((col) * ((widthValue) + this.cellSpacing[0])));
         let top = row === 0 ? 0 : (((row) * ((heightValue) + this.cellSpacing[1])));
-        setStyleAttribute(cellElement, { 'left': left + 'px', 'top': top + 'px' });
-    }
-    setMediaQueryPanelPosition(cellElement, row, col) {
-        if (!cellElement) {
-            return;
-        }
-        let widthValue = this.getCellSize()[0];
-        let heightValue = this.getCellSize()[1];
-        let top = 0; //= row === 0 ? 0 : (((row) * (parseInt(heightValue.toString(), 10) + this.cellSpacing[1])));
-        let left = 0;
-        if (this.resizeHeight && row !== 0) {
-            // top = 0;
-            for (let i = 1; i < this.panels.length; i++) {
-                top = top + (this.panels[i - 1].sizeY * this.cellSize[1]) + this.cellSpacing[1];
-                if (i === row) {
-                    break;
-                }
-            }
+        if (this.checkMediaQuery()) {
+            top = row === 0 ? 0 : ((this.panelsSizeY) * ((heightValue) + this.cellSpacing[1]));
         }
         setStyleAttribute(cellElement, { 'left': left + 'px', 'top': top + 'px' });
     }
@@ -4436,6 +4443,7 @@ let DashboardLayout = class DashboardLayout extends Component {
      * @deprecated
      */
     addPanel(panel) {
+        this.panelsSizeY = 0;
         this.allowServerDataBinding = false;
         this.maxCol();
         if (!panel.minSizeX) {
@@ -4513,6 +4521,7 @@ let DashboardLayout = class DashboardLayout extends Component {
      * @deprecated
      */
     updatePanel(panel) {
+        this.panelsSizeY = 0;
         if (!panel.id) {
             return;
         }
@@ -4572,6 +4581,9 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.setHeightAndWidth(cell, panelInstance);
         this.setPanelPosition(cell, panelInstance.row, panelInstance.col);
         this.updatePanelLayout(cell, panelInstance);
+        if (this.checkMediaQuery()) {
+            this.checkMediaQuerySizing();
+        }
         this.mainElement = null;
         this.updatePanels();
         this.updateCloneArrayObject();
@@ -4631,6 +4643,7 @@ let DashboardLayout = class DashboardLayout extends Component {
      * @returns void
      */
     removePanel(id) {
+        this.panelsSizeY = 0;
         this.panelsInitialModel = this.cloneModels(this.panels);
         let removedPanel;
         for (let i = 0; i < this.panelCollection.length; i++) {
@@ -4647,6 +4660,11 @@ let DashboardLayout = class DashboardLayout extends Component {
             }
         }
         this.updatePanels();
+        if (this.checkMediaQuery()) {
+            this.isPanelRemoved = true;
+            this.checkMediaQuerySizing();
+            this.isPanelRemoved = false;
+        }
         this.updateServerPanelData();
         this.gridPanelCollection.forEach((item) => {
             if (item.id === id) {
@@ -4802,6 +4820,9 @@ let DashboardLayout = class DashboardLayout extends Component {
         }
         this.isBlazor = false;
         this.initialize();
+        if (this.checkMediaQuery()) {
+            this.refresh();
+        }
         this.isBlazor = (isBlazor() && this.isServerRendered);
         if (this.showGridLines) {
             this.initGridLines();

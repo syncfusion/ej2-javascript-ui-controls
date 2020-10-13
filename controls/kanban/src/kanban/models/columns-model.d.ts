@@ -20,7 +20,6 @@ export interface ColumnsModel {
     /**
      * Defines the column template
      * @default null
-     * @deprecated
      */
     template?: string;
 
@@ -40,8 +39,6 @@ export interface ColumnsModel {
      * Defines the minimum card count in column
      * @default null
      * @aspType int
-     * @blazorType int
-     * @isBlazorNullableType true
      */
     minCount?: number;
 
@@ -49,8 +46,6 @@ export interface ColumnsModel {
      * Defines the maximum card count in column
      * @default null
      * @aspType int
-     * @blazorType int
-     * @isBlazorNullableType true
      */
     maxCount?: number;
 

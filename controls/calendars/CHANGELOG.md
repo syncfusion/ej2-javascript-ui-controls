@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.40 (2020-10-13)
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#288129` - Issue with "values cannot be chosen while updating UTC time as start date and end date" has been resolved.
+
 ## 18.2.44 (2020-07-07)
 
 ### DatePicker

@@ -64,7 +64,7 @@ export class WShading {
         let value: Object = undefined;
         switch (property) {
             case 'backgroundColor':
-                value = '#ffffff';
+                value = 'empty';
                 break;
             case 'foregroundColor':
                 value = 'empty';

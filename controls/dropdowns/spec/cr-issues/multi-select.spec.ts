@@ -2118,4 +2118,52 @@ describe('MultiSelect', () => {
             expect((<any>listObj).ulElement.querySelectorAll('li').length).toBe(9);
         });
     });
+    describe('EJ2-42380', () => {
+        let listObj: any;
+        let checkObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+            checkObj = new CheckBoxSelection();
+            checkObj.destroy();
+        });
+        it('Selection is not made using spacebar, if we close and reopen the popup again using arrow keys', () => {
+            let data: { [key: string]: Object }[] = [
+                { Name: 'Australia', Code: 'AU' },
+                { Name: 'Bermuda', Code: 'BM' },
+                { Name: 'United States', Code: 'US' }
+            ];
+            listObj = new MultiSelect({
+                dataSource: data,
+                mode: 'CheckBox',
+                fields: { text: 'Name', value: 'Code' }, allowFiltering: true,
+                filtering: function (e) {
+                    let query: Query = new Query().select(['Name', 'text']);
+                    query = (e.text !== '') ? query.where('Name', 'startswith', e.text, true) : query;
+                    e.updateData(data, query);
+                }
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            keyboardEventArgs.keyCode = 40;
+            listObj.onKeyDown(keyboardEventArgs);
+            keyboardEventArgs.keyCode = 32;
+            listObj.onKeyDown(keyboardEventArgs);
+            keyboardEventArgs.keyCode = 9;
+            listObj.onKeyDown(keyboardEventArgs);
+            (<any>listObj).inputElement.blur();
+            (<any>listObj).onBlur();
+            listObj.showPopup();
+            keyboardEventArgs.keyCode = 40;
+            listObj.onKeyDown(keyboardEventArgs);
+            keyboardEventArgs.keyCode = 32;
+            expect((<any>listObj).value[0]).toBe("AU");
+        });
+    });
 });

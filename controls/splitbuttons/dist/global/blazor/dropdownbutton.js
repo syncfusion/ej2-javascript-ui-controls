@@ -562,7 +562,5 @@ exports.DropDownButton = DropDownButton;
 return exports;
 
 });
-sfBlazor.modules["dropdownbutton"] = "splitbuttons.DropDownButton";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.dropdownbutton, () => {
+
     sf.splitbuttons = sf.base.extend({}, sf.splitbuttons, sfdropdownbutton({}));
-});

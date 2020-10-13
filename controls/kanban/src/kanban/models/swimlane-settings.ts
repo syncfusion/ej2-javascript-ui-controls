@@ -44,7 +44,6 @@ export class SwimlaneSettings extends ChildProperty<SwimlaneSettings> {
     /**
      * Defines the swimlane row template
      * @default null
-     * @deprecated
      */
     @Property()
     public template: string;
@@ -61,7 +60,6 @@ export class SwimlaneSettings extends ChildProperty<SwimlaneSettings> {
     /**
      * Enable or disable unassigned swimlane group
      * @default true
-     * @deprecated
      */
     @Property(true)
     public showUnassignedRow: boolean;

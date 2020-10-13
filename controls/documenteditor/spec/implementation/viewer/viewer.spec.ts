@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, Page, HelperMethods, DocumentHelper } from '../../../src/index';
+import { Editor, Page, HelperMethods, DocumentHelper, ParagraphWidget, LineWidget, TextElementBox } from '../../../src/index';
 import { TestHelper } from '../../test-helper.spec';
 import { Selection } from '../../../src/index';
 import { EditorHistory } from '../../../src/document-editor/implementation/editor-history/editor-history';
@@ -664,5 +664,13 @@ describe('Author color Validation for different authors', () => {
         expect(documentHelper.authors.get(documentHelper.authors.keys[8])).toBe(colors[0]);
         expect(documentHelper.authors.get(documentHelper.authors.keys[9])).toBe(colors[1]);
         expect(documentHelper.authors.get(documentHelper.authors.keys[10])).toBe(colors[2]);
+    });
+    it('Polish char validation', () => {
+        editor.openBlank();
+        let event: any = { keyCode: 18, preventDefault: function () { }, ctrlKey: false, shiftKey: false, altKey: true, which: 0 };
+        editor.documentHelper.onKeyDownInternal(event);
+        let event1: any = { keyCode: 263, preventDefault: function () { }, ctrlKey: false, shiftKey: false, altKey: false, which: 0 };
+        editor.documentHelper.onKeyPressInternal(event1);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('ć');
     });
 });

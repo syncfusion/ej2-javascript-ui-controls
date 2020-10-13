@@ -1781,7 +1781,7 @@ let Tooltip = class Tooltip extends Component {
                 location.y = (symbolLocation.y < 0 ? 0 : symbolLocation.y) + clipY + markerHeight;
             }
             if (location.y + height + this.arrowPadding > boundsY + bounds.height) {
-                location.y = (symbolLocation.y > bounds.height ? bounds.height : symbolLocation.y)
+                location.y = (symbolLocation.y < bounds.height ? bounds.height : symbolLocation.y)
                     + clipY - this.elementSize.height - (2 * this.padding) - this.arrowPadding - markerHeight;
             }
             tipLocation.x = width / 2;

@@ -456,6 +456,9 @@ var SfTab = /** @class */ (function () {
     };
     SfTab.prototype.setActive = function (value) {
         this.tbItem = sf.base.selectAll('.' + CLS_TB_ITEM, this.getTabHeader());
+        if (sf.base.isNullOrUndefined(this.hdrEle)) {
+            this.hdrEle = this.getTabHeader();
+        }
         var trg = this.hdrEle.querySelector('.' + CLS_TB_ITEM + '[data-index="' + value + '"]');
         if (!trg || value < 0 || isNaN(value) || this.tbItem.length === 0) {
             return;

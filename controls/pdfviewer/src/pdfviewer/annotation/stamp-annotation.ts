@@ -222,7 +222,7 @@ export class StampAnnotation {
                                     if (isImport) {
                                         currentLocation = proxy.calculateImagePosition(position, false, false);
                                     } else {
-                                        currentLocation = proxy.calculateImagePosition(position);
+                                        currentLocation = proxy.calculateImagePosition(position, true);
                                     }
                                     // tslint:disable-next-line:max-line-length
                                     annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : proxy.pdfViewer.customStampSettings.annotationSettings;

@@ -105,7 +105,8 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
             dragTarget: `.${this.itemClass}`,
             enableTapHold: true,
             tapHoldThreshold: 200,
-            queryPositionInfo: this.queryPositionInfo
+            queryPositionInfo: this.queryPositionInfo,
+            distance: 5
         });
     }
     private getPlaceHolder(target: HTMLElement, instance: Sortable): HTMLElement {

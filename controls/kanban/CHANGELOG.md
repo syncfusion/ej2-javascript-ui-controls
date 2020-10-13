@@ -2,9 +2,19 @@
 
 ## [Unreleased]
 
+## 18.3.40 (2020-10-13)
+
+### Kanban
+
+#### New Features
+
+- `#288864` - We had improved the performance while loading a huge number of cards and now dragging cards only be refreshed instead of whole cards.
+
 ## 18.3.35 (2020-10-01)
 
 ### Kanban
+
+#### Bug Fixes
 
 - `#287430` - The issue with "Mismatch in the events argument type information" has been resolved.
 

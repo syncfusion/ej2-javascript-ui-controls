@@ -2796,7 +2796,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         return 1;
     }
     private refreshTooltip(target: HTMLElement): void {
-        if (this.tooltip.isVisible && this.tooltipObj && this.initialTooltip) {
+        if (this.tooltip.isVisible && this.tooltipObj) {
             this.tooltipValue();
             if (target) {
                 this.tooltipObj.refresh(target);

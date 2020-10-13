@@ -2109,8 +2109,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 if (this.browserName !== 'msie' && this.browserName !== 'edge') {
                     this.element.files = files;
                 }
-                targetFiles = this.multiple ? this.sortFileList(files) : [files[0]];
-                this.renderSelectedFiles(args, targetFiles);
+                if (files.length > 0) {
+                    targetFiles = this.multiple ? this.sortFileList(files) : [files[0]];
+                    this.renderSelectedFiles(args, targetFiles);
+                }
             }
         } else {
             targetFiles = [].slice.call((<HTMLInputElement>args.target).files);

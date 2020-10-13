@@ -518,6 +518,98 @@ describe('Sparkline Column and WinLoss series spec', () => {
             sparkline.appendTo('#' + id);
         });
     });
+    describe('Customer issue [I264262]: Column series with rangePadding', () => {
+        let element: Element;
+        let sparkline: Sparkline;
+        let id: string = 'container';
+        let ele: Element;
+        let rect: Rect;
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '200px';
+            (element as HTMLDivElement).style.height = '200px';
+            document.body.appendChild(element);
+            sparkline = new Sparkline({
+                rangePadding: "Normal",
+                height: "80px",
+                width: '150px',
+                type: "Column",
+                valueType: "Category",
+                dataLabelSettings: {
+                    visible: ["All"]
+                },
+                padding: { bottom: 20, top: 20 },
+
+                xName: "xval",
+                yName: "yval",
+                dataSource: [
+                    { xval: "number one", yval: 423 },
+                    { xval: "two", yval: 380 },
+                    { xval: "three", yval: 431 }
+                ],
+                axisSettings: {
+                    lineSettings: { visible: true }
+                },
+                tooltipSettings: {
+                    visible: true,
+                }
+            });
+        });
+        afterAll(() => {
+            sparkline.destroy();
+            removeElement(id);
+        });
+        it('01.Sparkline Column point with normal range padding', () => {
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                args.sparkline.loaded = () => { /* null function */ };
+                ele = getIdElement(id + '_sparkline_column_0');
+                rect = getRect(ele);
+                expect(rect.x === 5).toBe(true);
+                expect(rect.y === 32).toBe(true);
+                expect(rect.width === 46).toBe(true);
+                expect(rect.height === 28).toBe(true);
+                ele = getIdElement(id + '_sparkline_column_1');
+                rect = getRect(ele);
+                expect(rect.x === 52).toBe(true);
+                expect(rect.y === 50).toBe(true);
+                expect(rect.width === 45).toBe(true);
+                expect(rect.height === 10).toBe(true);
+                ele = getIdElement(id + '_sparkline_column_2');
+                rect = getRect(ele);
+                expect(rect.x === 98).toBe(true);
+                expect(rect.y === 29).toBe(true);
+                expect(rect.width === 46).toBe(true);
+                expect(rect.height === 31).toBe(true);
+            };
+            sparkline.appendTo('#' + id);
+        });
+        it('02.Sparkline Column point with additional range padding', () => {
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                args.sparkline.loaded = () => { /* null function */ };
+                ele = getIdElement(id + '_sparkline_column_0');
+                rect = getRect(ele);
+                expect(rect.x === 5).toBe(true);
+                expect(rect.y === 34).toBe(true);
+                expect(rect.width === 46).toBe(true);
+                expect(rect.height === 26).toBe(true);
+                ele = getIdElement(id + '_sparkline_column_1');
+                rect = getRect(ele);
+                expect(rect.x === 52).toBe(true);
+                expect(rect.y === 47).toBe(true);
+                expect(rect.width === 45).toBe(true);
+                expect(rect.height === 13).toBe(true);
+                ele = getIdElement(id + '_sparkline_column_2');
+                rect = getRect(ele);
+                expect(rect.x === 98).toBe(true);
+                expect(rect.y === 32).toBe(true);
+                expect(rect.width === 46).toBe(true);
+                expect(rect.height === 28).toBe(true);
+            };
+            sparkline.rangePadding = 'Additional';
+            sparkline.refresh();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

@@ -2025,6 +2025,8 @@ export class StickyNotesAnnotation {
         }
         if (storeCommentObject) {
             let annotationCommentObject: IPageAnnotations[] = JSON.parse(storeCommentObject);
+            // tslint:disable-next-line
+            let annotation: any = this.pdfViewer.selectedItems.annotations[0];
             // tslint:disable-next-line:max-line-length
             let index: number = this.pdfViewer.annotationModule.
                 getPageCollection(annotationCommentObject, (pageNumber - 1));
@@ -2034,6 +2036,9 @@ export class StickyNotesAnnotation {
                 for (let i: number = 0; i < pageCollections.length; i++) {
                     let currentSelector: AnnotationSelectorSettingsModel = pageCollections[i].annotationSelectorSettings;
                     if (pageCollections[i].annotName === id) {
+                        if (annotation) {
+                            this.pdfViewer.fireAnnotationUnSelect(annotation.annotName, annotation.pageIndex, annotation);
+                        }
                         this.pdfViewer.clearSelection(pageNumber - 1);
                         if (type === 'textMarkup') {
                             // tslint:disable-next-line:max-line-length

@@ -4450,7 +4450,8 @@ let Sortable = Sortable_1 = class Sortable extends Base {
             dragTarget: `.${this.itemClass}`,
             enableTapHold: true,
             tapHoldThreshold: 200,
-            queryPositionInfo: this.queryPositionInfo
+            queryPositionInfo: this.queryPositionInfo,
+            distance: 5
         });
     }
     getPlaceHolder(target, instance) {

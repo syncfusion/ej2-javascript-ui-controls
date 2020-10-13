@@ -4502,8 +4502,8 @@ function getRandomId() {
 function compile$$1(templateString, helper) {
     var compiler = engineObj.compile(templateString, helper);
     //tslint:disable-next-line
-    return function (data, component, propName, templateId, isStringTemplate, index) {
-        var result = compiler(data, component, propName);
+    return function (data, component, propName, templateId, isStringTemplate, index, element) {
+        var result = compiler(data, component, propName, element);
         var blazorTemplateId = 'BlazorTemplateId';
         if (isBlazor() && !isStringTemplate) {
             var randomId = getRandomId();
@@ -7211,6 +7211,10 @@ var Component = /** @__PURE__ @class */ (function (_super) {
         }
     };
     //tslint:disable-next-line
+    Component.prototype.renderReactTemplates = function () {
+        //No Code
+    };
+    //tslint:disable-next-line
     Component.prototype.clearTemplate = function (templateName, index) {
         //No Code
     };
@@ -7552,6 +7556,7 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
                 element = intClosest;
             }
         }
+        /* istanbul ignore next */
         if (this.isReplaceDragEle) {
             element = this.currentStateCheck(evt.target, element);
         }
@@ -7592,8 +7597,8 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
             }
             this.getScrollableValues();
             var posValue = this.getProcessedPositionValue({
-                top: (pos.top - this.diffY) + 'px',
-                left: (pos.left - this.diffX) + 'px'
+                top: (pos.top - this.diffY - this.parentScrollY) + 'px',
+                left: (pos.left - this.diffX - this.parentScrollX) + 'px'
             });
             this.dragElePosition = { top: pos.top, left: pos.left };
             setStyleAttribute(dragTargetElement, this.getDragPosition({ position: 'absolute', left: posValue.left, top: posValue.top }));
@@ -7747,8 +7752,8 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
             draEleLeft = (left - iLeft) < 0 ? this.dragElePosition.left : (left - iLeft);
         }
         else {
-            draEleTop = top - iTop;
-            draEleLeft = left - iLeft;
+            draEleTop = top - iTop - this.parentScrollY;
+            draEleLeft = left - iLeft - this.parentScrollX;
         }
         var dragValue = this.getProcessedPositionValue({ top: draEleTop + 'px', left: draEleLeft + 'px' });
         setStyleAttribute(helperElement, this.getDragPosition(dragValue));
@@ -7894,6 +7899,7 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
         }
         return ele;
     };
+    /* istanbul ignore next */
     Draggable.prototype.currentStateCheck = function (ele, oldEle) {
         var elem;
         if (!isNullOrUndefined(this.currentStateTarget) && this.currentStateTarget !== ele) {

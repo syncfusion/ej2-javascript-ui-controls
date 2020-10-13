@@ -401,6 +401,11 @@ export class TrackChangesPane {
         if (this.userDropDownButton) {
             this.userDropDownButton.destroy();
         }
+        if (this.menuDropDownButton) {
+            this.menuDropDownButton.destroy();
+            this.menuDropDownButton = undefined;
+        }
+        
         if (this.viewTypeDropDownButton) {
             this.viewTypeDropDownButton.destroy();
         }

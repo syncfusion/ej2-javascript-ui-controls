@@ -15,7 +15,6 @@ export interface KanbanDialogModel {
     /**
      * Specifies the animation settings of the dialog component.
      * The animation effect can be applied on open and close the dialog with duration and delay.
-     * @blazorType Syncfusion.Blazor.Popups.DialogAnimationSettings
      * @default { effect: 'Fade', duration: 400, delay:0 }
      */
     animationSettings?: AnimationSettingsModel;
@@ -44,7 +43,6 @@ export interface KanbanDialogModel {
     /**
      * Specifies the height of the dialog component.
      * @default 'auto'
-     * @blazorType string
      */
     height?: string | number;
 
@@ -60,7 +58,6 @@ export interface KanbanDialogModel {
     /**
      * Specify the min-height of the dialog component.
      * @default ''
-     * @blazorType string
      */
     minHeight?: string | number;
 
@@ -69,7 +66,6 @@ export interface KanbanDialogModel {
      * The position can be represented with pre-configured positions or specific X and Y values.
      * * `X value`: left, center, right, or offset value.
      * * `Y value`: top, center, bottom, or offset value.
-     * @blazorType Syncfusion.Blazor.Popups.DialogPositionData
      * @default { X:'center', Y:'center'}
      */
     position?: PositionDataModel;
@@ -84,14 +80,12 @@ export interface KanbanDialogModel {
      * Specifies the target element in which to display the dialog.
      * The default value is null, which refers the `document.body` element.
      * @default null
-     * @blazorType string
      */
     target?: HTMLElement | string;
 
     /**
      * Specifies the width of the dialog. 
      * @default 350
-     * @blazorType string
      */
     width?: string | number;
 

@@ -38,7 +38,6 @@ export interface SwimlaneSettingsModel {
     /**
      * Defines the swimlane row template
      * @default null
-     * @deprecated
      */
     template?: string;
 
@@ -53,7 +52,6 @@ export interface SwimlaneSettingsModel {
     /**
      * Enable or disable unassigned swimlane group
      * @default true
-     * @deprecated
      */
     showUnassignedRow?: boolean;
 

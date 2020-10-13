@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, closest, compile, createElement, detach, extend, formatUnit, isBlazor, isNullOrUndefined, remove, removeClass, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, closest, compile, createElement, detach, extend, formatUnit, isNullOrUndefined, remove, removeClass } from '@syncfusion/ej2-base';
 import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
@@ -53,7 +53,7 @@ const cardSpace = 16;
 const toggleWidth = 50;
 
 /**
- * data module is used to generate query and data source.
+ * Kanban data module
  * @hidden
  */
 class Data {
@@ -63,6 +63,7 @@ class Data {
      */
     constructor(parent) {
         this.parent = parent;
+        this.keyField = this.parent.cardSettings.headerField;
         this.initDataManager(parent.dataSource, parent.query);
         this.refreshDataManager();
     }
@@ -74,13 +75,14 @@ class Data {
     initDataManager(dataSource, query) {
         this.dataManager = dataSource instanceof DataManager ? dataSource : new DataManager(dataSource);
         this.query = query instanceof Query ? query : new Query();
+        this.kanbanData = new DataManager(this.parent.kanbanData);
     }
     /**
      * The function used to generate updated Query from schedule model
      * @return {void}
      * @private
      */
-    generateQuery() {
+    getQuery() {
         return this.query.clone();
     }
     /**
@@ -93,12 +95,26 @@ class Data {
         return this.dataManager.executeQuery(query);
     }
     /**
-     * The function is used to send the request and get response form datamanager
+     * The function used to get the table name from the given Query
+     * @return {string}
+     * @private
+     */
+    getTable() {
+        if (this.parent.query) {
+            let query = this.getQuery();
+            return query.fromTable;
+        }
+        else {
+            return null;
+        }
+    }
+    /**
+     * The function is used to send the request and get response from datamanager
      * @return {void}
      * @private
      */
     refreshDataManager() {
-        let dataManager = this.getData(this.generateQuery());
+        let dataManager = this.getData(this.getQuery());
         dataManager.then((e) => this.dataManagerSuccess(e)).catch((e) => this.dataManagerFailure(e));
     }
     /**
@@ -112,6 +128,7 @@ class Data {
         }
         this.parent.trigger(dataBinding, e, (args) => {
             let resultData = extend([], args.result, null, true);
+            this.kanbanData.saveChanges({ addedRecords: resultData, changedRecords: [], deletedRecords: [] });
             this.parent.kanbanData = resultData;
             this.parent.notify(dataReady, { processedData: resultData });
             this.parent.trigger(dataBound, null, () => this.parent.hideSpinner());
@@ -127,6 +144,93 @@ class Data {
             return;
         }
         this.parent.trigger(actionFailure, { error: e }, () => this.parent.hideSpinner());
+    }
+    /**
+     * The function is used to perform the insert, update, delete and batch actions in datamanager
+     * @return {void}
+     * @private
+     */
+    updateDataManager(updateType, params, type, data, index) {
+        this.parent.showSpinner();
+        let promise;
+        switch (updateType) {
+            case 'insert':
+                promise = this.dataManager.insert(data, this.getTable(), this.getQuery());
+                break;
+            case 'update':
+                promise = this.dataManager.update(this.keyField, data, this.getTable(), this.getQuery());
+                break;
+            case 'delete':
+                promise = this.dataManager.remove(this.keyField, data, this.getTable(), this.getQuery());
+                break;
+            case 'batch':
+                promise = this.dataManager.saveChanges(params, this.keyField, this.getTable(), this.getQuery());
+                break;
+        }
+        let actionArgs = {
+            requestType: type, cancel: false, addedRecords: params.addedRecords,
+            changedRecords: params.changedRecords, deletedRecords: params.deletedRecords
+        };
+        if (this.dataManager.dataSource.offline) {
+            this.parent.trigger(actionComplete, actionArgs, (offlineArgs) => {
+                if (!offlineArgs.cancel) {
+                    this.refreshUI(offlineArgs, index);
+                }
+            });
+        }
+        else {
+            promise.then((e) => {
+                if (this.parent.isDestroyed) {
+                    return;
+                }
+                this.parent.trigger(actionComplete, actionArgs, (onlineArgs) => {
+                    if (!onlineArgs.cancel) {
+                        this.refreshUI(onlineArgs, index);
+                    }
+                });
+            }).catch((e) => {
+                this.dataManagerFailure(e);
+            });
+        }
+    }
+    /**
+     * The function is used to refresh the UI once the datamanager action is completed
+     * @return {void}
+     * @private
+     */
+    refreshUI(args, index) {
+        this.parent.resetTemplates();
+        this.kanbanData.saveChanges({ addedRecords: args.addedRecords, changedRecords: args.changedRecords,
+            deletedRecords: args.deletedRecords });
+        this.parent.kanbanData = this.kanbanData.dataSource.json;
+        let field;
+        if (this.parent.sortSettings.sortBy === 'DataSourceOrder') {
+            field = this.parent.cardSettings.headerField;
+        }
+        else if (this.parent.sortSettings.sortBy === 'Custom') {
+            field = this.parent.sortSettings.field;
+        }
+        if (this.parent.sortSettings.sortBy !== 'Index') {
+            this.parent.kanbanData = this.parent.layoutModule.sortOrder(field, this.parent.sortSettings.direction, this.parent.kanbanData);
+        }
+        args.addedRecords.forEach((data) => {
+            this.parent.layoutModule.renderCardBasedOnIndex(data);
+        });
+        args.changedRecords.forEach((data) => {
+            this.parent.layoutModule.removeCard(data);
+            this.parent.layoutModule.renderCardBasedOnIndex(data, index);
+            if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index'
+                && this.parent.sortSettings.direction === 'Descending' && index > 0) {
+                --index;
+            }
+        });
+        args.deletedRecords.forEach((data) => {
+            this.parent.layoutModule.removeCard(data);
+        });
+        this.parent.kanbanData = this.kanbanData.dataSource.json;
+        this.parent.layoutModule.refresh();
+        this.parent.renderTemplates();
+        this.parent.trigger(dataBound, null, () => this.parent.hideSpinner());
     }
 }
 
@@ -554,13 +658,7 @@ class Action {
             newData[this.parent.swimlaneSettings.keyField] =
                 closest(target, '.' + CONTENT_ROW_CLASS).previousElementSibling.getAttribute('data-key');
         }
-        if (this.parent.isBlazorRender()) {
-            // tslint:disable-next-line
-            this.parent.interopAdaptor.invokeMethodAsync('OpenDialog', 'Add', newData);
-        }
-        else {
-            this.parent.openDialog('Add', newData);
-        }
+        this.parent.openDialog('Add', newData);
     }
     doubleClickHandler(e) {
         let target = closest(e.target, '.' + CARD_CLASS);
@@ -592,9 +690,7 @@ class Action {
                 let cell = closest(target, '.' + CONTENT_CELLS_CLASS);
                 if (this.parent.allowKeyboard) {
                     let element = [].slice.call(cell.querySelectorAll('.' + CARD_CLASS));
-                    element.forEach((e) => {
-                        e.setAttribute('tabindex', '0');
-                    });
+                    element.forEach((e) => { e.setAttribute('tabindex', '0'); });
                     this.parent.keyboardModule.addRemoveTabIndex('Remove');
                 }
             }
@@ -607,13 +703,7 @@ class Action {
         let args = { data: cardDoubleClickObj, element: target, cancel: false, event: e };
         this.parent.trigger(cardDoubleClick, args, (doubleClickArgs) => {
             if (!doubleClickArgs.cancel) {
-                if (this.parent.isBlazorRender()) {
-                    // tslint:disable-next-line
-                    this.parent.interopAdaptor.invokeMethodAsync('OpenDialog', 'Edit', args.data);
-                }
-                else {
-                    this.parent.dialogModule.openDialog('Edit', args.data);
-                }
+                this.parent.dialogModule.openDialog('Edit', args.data);
             }
         });
     }
@@ -644,9 +734,7 @@ class Action {
                 target.setAttribute('aria-expanded', isCollapsed.toString());
                 tgtRow.setAttribute('aria-expanded', isCollapsed.toString());
                 let rows = [].slice.call(tgtRow.querySelectorAll('.' + CONTENT_CELLS_CLASS));
-                rows.forEach((cell) => {
-                    cell.setAttribute('tabindex', tabIndex);
-                });
+                rows.forEach((cell) => { cell.setAttribute('tabindex', tabIndex); });
                 this.parent.notify(contentReady, {});
                 this.parent.trigger(actionComplete, { target: headerTarget, requestType: 'rowExpandCollapse' });
             }
@@ -819,52 +907,16 @@ class Action {
 }
 
 /**
- * Kanban CRUD operations
+ * Kanban CRUD module
+ * @hidden
  */
 class Crud {
+    /**
+     * Constructor for CRUD module
+     * @private
+     */
     constructor(parent) {
         this.parent = parent;
-        this.keyField = this.parent.cardSettings.headerField;
-    }
-    getQuery() {
-        return this.parent.dataModule.generateQuery();
-    }
-    getTable() {
-        if (this.parent.query) {
-            let query = this.parent.query.clone();
-            return query.fromTable;
-        }
-        return null;
-    }
-    refreshData(args) {
-        let actionArgs = {
-            requestType: args.requestType, cancel: false, addedRecords: args.addedRecords,
-            changedRecords: args.changedRecords, deletedRecords: args.deletedRecords
-        };
-        if (this.parent.dataModule.dataManager.dataSource.offline) {
-            this.parent.trigger(actionComplete, actionArgs, (offlineArgs) => {
-                if (!offlineArgs.cancel) {
-                    this.parent.dataModule.refreshDataManager();
-                }
-            });
-        }
-        else {
-            args.promise.then((e) => {
-                if (this.parent.isDestroyed) {
-                    return;
-                }
-                this.parent.trigger(actionComplete, actionArgs, (onlineArgs) => {
-                    if (!onlineArgs.cancel) {
-                        this.parent.dataModule.refreshDataManager();
-                    }
-                });
-            }).catch((e) => {
-                if (this.parent.isDestroyed) {
-                    return;
-                }
-                this.parent.trigger(actionFailure, { error: e });
-            });
-        }
     }
     addCard(cardData) {
         let args = {
@@ -873,196 +925,90 @@ class Crud {
         };
         this.parent.trigger(actionBegin, args, (addArgs) => {
             if (!addArgs.cancel) {
-                this.parent.showSpinner();
-                let promise = null;
                 let modifiedData = [];
                 if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') {
                     cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
-                    if (!this.parent.isBlazorRender()) {
-                        modifiedData = this.priorityOrder(modifiedData, addArgs);
-                    }
+                    modifiedData = this.priorityOrder(modifiedData, addArgs);
                 }
                 let addedRecords = (cardData instanceof Array) ? cardData : [cardData];
                 let changedRecords = (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') ? modifiedData : [];
                 let editParms = { addedRecords: addedRecords, changedRecords: changedRecords, deletedRecords: [] };
-                if (cardData instanceof Array || modifiedData.length > 0) {
-                    if (!this.parent.isBlazorRender()) {
-                        promise = this.parent.dataModule.dataManager.saveChanges(editParms, this.keyField, this.getTable(), this.getQuery());
-                    }
-                    else {
-                        // tslint:disable-next-line
-                        this.parent.interopAdaptor.invokeMethodAsync('AddCards', { AddedRecords: addedRecords, ChangedRecords: changedRecords }, this.keyField);
-                    }
-                }
-                else {
-                    if (!this.parent.isBlazorRender()) {
-                        promise = this.parent.dataModule.dataManager.insert(cardData, this.getTable(), this.getQuery());
-                    }
-                    else {
-                        // tslint:disable-next-line
-                        this.parent.interopAdaptor.invokeMethodAsync('AddCard', { Record: cardData });
-                    }
-                }
-                if (!this.parent.isBlazorRender()) {
-                    let crudArgs = {
-                        requestType: 'cardCreated', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
-                        changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
-                    };
-                    this.refreshData(crudArgs);
-                }
+                let type = (cardData instanceof Array || modifiedData.length > 0) ? 'batch' : 'insert';
+                this.parent.dataModule.updateDataManager(type, editParms, 'cardCreated', cardData);
             }
         });
     }
-    updateCard(cardData) {
+    updateCard(cardData, index) {
         let args = {
             requestType: 'cardChange', cancel: false, addedRecords: [],
             changedRecords: (cardData instanceof Array) ? cardData : [cardData], deletedRecords: []
         };
         this.parent.trigger(actionBegin, args, (updateArgs) => {
             if (!updateArgs.cancel) {
-                this.parent.showSpinner();
-                let promise = null;
                 if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') {
                     let modifiedData = [];
                     cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
-                    if (!this.parent.isBlazorRender()) {
-                        cardData = this.priorityOrder(modifiedData, updateArgs);
-                    }
+                    cardData = this.priorityOrder(modifiedData, updateArgs, index);
                 }
                 let editParms = {
                     addedRecords: [], changedRecords: (cardData instanceof Array) ? cardData : [cardData], deletedRecords: []
                 };
-                if (cardData instanceof Array) {
-                    if (!this.parent.isBlazorRender()) {
-                        promise = this.parent.dataModule.dataManager.saveChanges(editParms, this.keyField, this.getTable(), this.getQuery());
-                    }
-                    else {
-                        // tslint:disable-next-line
-                        this.parent.interopAdaptor.invokeMethodAsync('UpdateCards', { ChangedRecords: cardData }, this.keyField);
-                    }
-                }
-                else {
-                    if (!this.parent.isBlazorRender()) {
-                        promise = this.parent.dataModule.dataManager.update(this.keyField, cardData, this.getTable(), this.getQuery());
-                    }
-                    else {
-                        // tslint:disable-next-line
-                        this.parent.interopAdaptor.invokeMethodAsync('UpdateCard', this.keyField, { Record: cardData });
-                    }
-                }
-                if (!this.parent.isBlazorRender()) {
-                    let crudArgs = {
-                        requestType: 'cardChanged', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
-                        changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
-                    };
-                    this.refreshData(crudArgs);
-                }
+                let type = (cardData instanceof Array) ? 'batch' : 'update';
+                this.parent.dataModule.updateDataManager(type, editParms, 'cardChanged', cardData, index);
             }
         });
     }
     deleteCard(cardData) {
         let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
         if (typeof cardData === 'string' || typeof cardData === 'number') {
-            editParms.deletedRecords = this.parent.kanbanData.filter((data) => data[this.keyField] === cardData);
+            editParms.deletedRecords = this.parent.kanbanData.filter((data) => data[this.parent.cardSettings.headerField] === cardData);
         }
         else {
             editParms.deletedRecords = (cardData instanceof Array) ? cardData : [cardData];
         }
         let args = {
-            requestType: 'cardRemove', cancel: false, addedRecords: [],
-            changedRecords: [], deletedRecords: editParms.deletedRecords
+            requestType: 'cardRemove', cancel: false, addedRecords: [], changedRecords: [], deletedRecords: editParms.deletedRecords
         };
         this.parent.trigger(actionBegin, args, (deleteArgs) => {
             if (!deleteArgs.cancel) {
-                this.parent.showSpinner();
-                let promise = null;
-                if (!this.parent.isBlazorRender()) {
-                    if (editParms.deletedRecords.length > 1) {
-                        promise = this.parent.dataModule.dataManager.saveChanges(editParms, this.keyField, this.getTable(), this.getQuery());
-                    }
-                    else {
-                        promise = this.parent.dataModule.dataManager.remove(this.keyField, editParms.deletedRecords[0], this.getTable(), this.getQuery());
-                    }
-                    let crudArgs = {
-                        requestType: 'cardRemoved', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
-                        changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
-                    };
-                    this.refreshData(crudArgs);
-                }
-                else {
-                    if (cardData instanceof Array) {
-                        // tslint:disable-next-line
-                        this.parent.interopAdaptor.invokeMethodAsync('DeleteCards', { DeletedRecords: cardData }, this.keyField);
-                    }
-                    else {
-                        // tslint:disable-next-line
-                        this.parent.interopAdaptor.invokeMethodAsync('DeleteCard', this.keyField, { Record: cardData });
-                    }
-                }
+                let type = (editParms.deletedRecords.length > 1) ? 'batch' : 'delete';
+                let cardData = editParms.deletedRecords;
+                this.parent.dataModule.updateDataManager(type, editParms, 'cardRemoved', cardData[0]);
             }
         });
     }
-    priorityOrder(cardData, args) {
+    priorityOrder(cardData, args, index) {
         let cardsId = cardData.map((obj) => obj[this.parent.cardSettings.headerField]);
+        let num = cardData[cardData.length - 1][this.parent.sortSettings.field];
         let allModifiedKeys = cardData.map((obj) => obj[this.parent.keyField]);
         let modifiedKey = allModifiedKeys.filter((key, index) => allModifiedKeys.indexOf(key) === index).sort();
         let columnAllDatas;
         let finalData = [];
         for (let columnKey of modifiedKey) {
             let keyData = cardData.filter((cardObj) => cardObj[this.parent.keyField] === columnKey);
-            columnAllDatas = this.parent.getColumnData(columnKey);
-            if (this.parent.sortSettings.direction === 'Descending') {
-                columnAllDatas = this.removeData(columnAllDatas, keyData);
-            }
-            let customOrder = 1;
-            let initialOrder;
+            columnAllDatas = this.parent.layoutModule.columnData[columnKey];
             for (let data of keyData) {
-                let order;
-                if (data[this.parent.sortSettings.field]) {
-                    order = data[this.parent.sortSettings.field];
-                }
-                else if (args.requestType !== 'cardChange') {
-                    if (customOrder === 1) {
-                        initialOrder = columnAllDatas.slice(-1)[0][this.parent.sortSettings.field];
-                    }
-                    order = data[this.parent.sortSettings.field] = (customOrder > 1 ? initialOrder :
-                        columnAllDatas.slice(-1)[0][this.parent.sortSettings.field]) + customOrder;
-                    customOrder++;
-                }
                 if (this.parent.swimlaneSettings.keyField) {
                     let swimlaneDatas = this.parent.getSwimlaneData(data[this.parent.swimlaneSettings.keyField]);
                     columnAllDatas = this.parent.getColumnData(columnKey, swimlaneDatas);
-                    if (this.parent.sortSettings.direction === 'Descending') {
-                        columnAllDatas = this.removeData(columnAllDatas, keyData);
-                    }
                 }
-                let count = [];
-                for (let j = 0; j < columnAllDatas.length; j++) {
-                    if (columnAllDatas[j][this.parent.sortSettings.field] === order) {
-                        count.push(j + 1);
-                        break;
-                    }
-                }
-                if (args.requestType === 'cardChange') {
-                    finalData.push(data);
-                }
-                let finalCardsId = finalData.map((obj) => obj[this.parent.cardSettings.headerField]);
+            }
+            keyData.forEach((key) => finalData.push(key));
+            if (!isNullOrUndefined(index)) {
                 if (this.parent.sortSettings.direction === 'Ascending') {
-                    for (let i = count[0]; i <= columnAllDatas.length; i++) {
-                        let dataObj = columnAllDatas[i - 1];
-                        let index = cardsId.indexOf(dataObj[this.parent.cardSettings.headerField]);
-                        if (index === -1 && order >= dataObj[this.parent.sortSettings.field]) {
-                            dataObj[this.parent.sortSettings.field] = ++order;
-                            let isData = finalCardsId.indexOf(dataObj[this.parent.cardSettings.headerField]);
-                            (isData === -1) ? finalData.push(dataObj) : finalData[isData] = dataObj;
+                    for (let i = index; i < columnAllDatas.length; i++) {
+                        if (cardsId.indexOf(columnAllDatas[i][this.parent.cardSettings.headerField]) === -1) {
+                            columnAllDatas[i][this.parent.sortSettings.field] = ++num;
+                            finalData.push(columnAllDatas[i]);
                         }
                     }
                 }
                 else {
-                    for (let i = count[0]; i > 0; i--) {
-                        let dataObj = columnAllDatas[i - 1];
-                        dataObj[this.parent.sortSettings.field] = ++order;
-                        finalData.push(dataObj);
+                    for (let i = index - 1; i >= 0; i--) {
+                        if (cardsId.indexOf(columnAllDatas[i][this.parent.cardSettings.headerField]) === -1) {
+                            columnAllDatas[i][this.parent.sortSettings.field] = ++num;
+                            finalData.push(columnAllDatas[i]);
+                        }
                     }
                 }
             }
@@ -1091,8 +1037,7 @@ class DragAndDrop {
     constructor(parent) {
         this.parent = parent;
         this.dragObj = {
-            element: null, cloneElement: null, instance: null,
-            targetClone: null, draggedClone: null, targetCloneMulti: null,
+            element: null, cloneElement: null, instance: null, targetClone: null, draggedClone: null, targetCloneMulti: null,
             selectedCards: [], pageX: 0, pageY: 0, navigationInterval: null, cardDetails: [], modifiedData: []
         };
         this.dragEdges = { left: false, right: false, top: false, bottom: false };
@@ -1162,9 +1107,6 @@ class DragAndDrop {
                 this.dragObj.cloneElement = null;
                 this.dragObj.targetCloneMulti = null;
                 return;
-            }
-            if (this.parent.isBlazorRender()) {
-                e.bindEvents(e.dragElement);
             }
             if (this.dragObj.element.classList.contains(CARD_SELECTION_CLASS)) {
                 this.dragObj.selectedCards.forEach((element) => { this.draggedClone(element); });
@@ -1340,6 +1282,10 @@ class DragAndDrop {
     dragStop(e) {
         let contentCell = closest(this.dragObj.targetClone, '.' + CONTENT_CELLS_CLASS);
         let columnKey;
+        let dropIndex;
+        if (this.dragObj.targetClone.parentElement) {
+            dropIndex = [].slice.call(this.dragObj.targetClone.parentElement.children).indexOf(this.dragObj.targetClone);
+        }
         if (this.parent.element.querySelector('.' + TARGET_MULTI_CLONE_CLASS)) {
             columnKey = closest(e.target, '.' + MULTI_COLUMN_KEY_CLASS);
         }
@@ -1356,9 +1302,7 @@ class DragAndDrop {
                 this.updateDroppedData(this.dragObj.selectedCards, cardStatus, contentCell);
             }
             else {
-                this.dragObj.selectedCards.forEach((element) => {
-                    this.updateDroppedData(element, cardStatus, contentCell);
-                });
+                this.dragObj.selectedCards.forEach((element) => { this.updateDroppedData(element, cardStatus, contentCell); });
             }
             if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') {
                 this.changeOrder(this.dragObj.modifiedData);
@@ -1366,20 +1310,13 @@ class DragAndDrop {
         }
         let dragArgs = { cancel: false, data: this.dragObj.modifiedData, event: e, element: this.dragObj.selectedCards };
         this.parent.trigger(dragStop, dragArgs, (dragEventArgs) => {
-            if (!dragEventArgs.cancel) {
-                if (contentCell || columnKey) {
-                    this.parent.crudModule.updateCard(dragEventArgs.data);
-                }
-            }
             this.removeElement(this.dragObj.draggedClone);
             this.removeElement(this.dragObj.targetClone);
             this.removeElement(this.dragObj.cloneElement);
             let dragMultiClone = [].slice.call(this.parent.element.querySelectorAll('.' + DRAGGED_CLONE_CLASS));
-            dragMultiClone.forEach((clone) => remove(clone));
-            if (this.parent.isBlazorRender()) {
-                this.dragObj.element.style.removeProperty('width');
-                this.multiCloneRemove();
-            }
+            dragMultiClone.forEach((clone) => { remove(clone); });
+            this.dragObj.element.style.removeProperty('width');
+            this.multiCloneRemove();
             removeClass([this.dragObj.element], DRAGGED_CARD_CLASS);
             clearInterval(this.dragObj.navigationInterval);
             this.dragObj.navigationInterval = null;
@@ -1389,6 +1326,14 @@ class DragAndDrop {
             let className = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + ')';
             let cells = [].slice.call(this.parent.element.querySelectorAll(className + ' .' + CONTENT_CELLS_CLASS));
             cells.forEach((cell) => removeClass([cell], DROPPING_CLASS));
+            if (!dragEventArgs.cancel) {
+                if (contentCell || columnKey) {
+                    let updateCard = dragEventArgs.data instanceof Array &&
+                        dragEventArgs.data.length > 1 ? dragEventArgs.data :
+                        dragEventArgs.data[0];
+                    this.parent.crudModule.updateCard(updateCard, dropIndex);
+                }
+            }
             if (this.parent.isAdaptive) {
                 this.parent.touchModule.tabHold = false;
             }
@@ -1783,6 +1728,7 @@ class KanbanDialog {
                 cardObj[columnName] = value;
             }
         }
+        cardObj = extend(this.parent.activeCardData.data, cardObj);
         let eventProp = { data: cardObj, cancel: false, element: this.element, requestType: this.action };
         this.parent.trigger(dialogClose, eventProp, (closeArgs) => {
             args.cancel = closeArgs.cancel;
@@ -1865,7 +1811,13 @@ class KanbanDialog {
             (target.classList.contains('e-dialog-edit') || target.classList.contains('e-dialog-add'))) {
             this.dialogObj.hide();
             if (target.classList.contains('e-dialog-edit')) {
-                this.parent.crudModule.updateCard(this.cardData);
+                let activeCard = this.parent.activeCardData;
+                let updateIndex;
+                if (activeCard.data[this.parent.keyField] === this.cardData[this.parent.keyField]
+                    && activeCard.element) {
+                    updateIndex = [].slice.call(activeCard.element.parentElement.children).indexOf(activeCard.element);
+                }
+                this.parent.crudModule.updateCard(this.cardData, updateIndex);
             }
             if (target.classList.contains('e-dialog-add')) {
                 this.parent.crudModule.addCard(this.cardData);
@@ -1959,7 +1911,7 @@ class KanbanDialog {
 }
 
 /**
- * Drag and Drop module is used to perform card actions.
+ * Kanban keyboard module
  * @hidden
  */
 class Keyboard {
@@ -2089,9 +2041,7 @@ class Keyboard {
         this.addRemoveTabIndex('Remove');
         element.focus();
         let card = [].slice.call(closest(element, '.' + CONTENT_CELLS_CLASS).querySelectorAll('.' + CARD_CLASS));
-        card.forEach((element) => {
-            element.setAttribute('tabindex', '0');
-        });
+        card.forEach((element) => { element.setAttribute('tabindex', '0'); });
     }
     processLeftRightArrow(e) {
         if (document.activeElement.classList.contains(CONTENT_CELLS_CLASS)) {
@@ -2159,9 +2109,7 @@ class Keyboard {
     }
     cardTabIndexRemove() {
         let cards = [].slice.call(this.parent.element.querySelectorAll('.' + CARD_CLASS));
-        cards.forEach((card) => {
-            card.setAttribute('tabindex', '-1');
-        });
+        cards.forEach((card) => { card.setAttribute('tabindex', '-1'); });
         let addButton = [].slice.call(this.parent.element.querySelectorAll('.' + SHOW_ADD_BUTTON));
         addButton.forEach((add) => {
             add.setAttribute('tabindex', '-1');
@@ -2190,9 +2138,7 @@ class Keyboard {
             this.addRemoveTabIndex('Remove');
             if (cards.length > 0) {
                 element.querySelector('.' + CARD_CLASS).focus();
-                cards.forEach((element) => {
-                    element.setAttribute('tabindex', '0');
-                });
+                cards.forEach((element) => { element.setAttribute('tabindex', '0'); });
             }
             if (element.querySelector('.' + SHOW_ADD_BUTTON)) {
                 element.querySelector('.' + SHOW_ADD_BUTTON).setAttribute('tabindex', '0');
@@ -2213,33 +2159,16 @@ class Keyboard {
         let attribute = action === 'Add' ? '0' : '-1';
         let headerIcon = [].slice.call(this.parent.element.querySelectorAll('.' + HEADER_ICON_CLASS));
         if (headerIcon.length > 0) {
-            headerIcon.forEach((element) => {
-                element.setAttribute('tabindex', attribute);
-            });
+            headerIcon.forEach((element) => { element.setAttribute('tabindex', attribute); });
         }
         let swimlaneIcon = [].slice.call(this.parent.element.querySelectorAll('.' + SWIMLANE_ROW_EXPAND_CLASS));
         if (swimlaneIcon.length > 0) {
-            swimlaneIcon.forEach((element) => {
-                element.setAttribute('tabindex', attribute);
-            });
+            swimlaneIcon.forEach((element) => { element.setAttribute('tabindex', attribute); });
         }
         let className = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + ') .' + CONTENT_CELLS_CLASS;
         let contentCell = [].slice.call(this.parent.element.querySelectorAll(className));
-        contentCell.forEach((element) => {
-            element.setAttribute('tabindex', attribute);
-        });
+        contentCell.forEach((element) => { element.setAttribute('tabindex', attribute); });
     }
-    /**
-     * Get module name.
-     */
-    getModuleName() {
-        return 'keyboard';
-    }
-    /**
-     * To destroy the keyboard module.
-     * @return {void}
-     * @private
-     */
     destroy() {
         this.keyboardModule.destroy();
     }
@@ -2247,8 +2176,13 @@ class Keyboard {
 
 /**
  * Tooltip for Kanban board
+ * @hidden
  */
 class KanbanTooltip {
+    /**
+     * Constructor for tooltip module
+     * @private
+     */
     constructor(parent) {
         this.parent = parent;
         this.renderTooltip();
@@ -2299,11 +2233,13 @@ class KanbanTooltip {
 }
 
 /**
- * kanban touch module
+ * Kanban touch module
+ * @hidden
  */
 class KanbanTouch {
     /**
      * Constructor for touch module
+     * @private
      */
     constructor(parent) {
         this.parent = parent;
@@ -2413,64 +2349,51 @@ class KanbanTouch {
 
 /**
  * Kanban mobile layout rendering module
+ * @hidden
  */
 class MobileLayout {
     /**
      * Constructor for mobile layout module
+     * @private
      */
     constructor(parent) {
         this.parent = parent;
     }
     renderSwimlaneHeader() {
-        let toolbarWrapper;
-        if (this.parent.isBlazorRender()) {
-            toolbarWrapper = this.parent.element.querySelector('.' + SWIMLANE_HEADER_CLASS);
-        }
-        else {
-            toolbarWrapper = createElement('div', { className: SWIMLANE_HEADER_CLASS });
-            toolbarWrapper.innerHTML = '<div class="' + SWIMLANE_HEADER_TOOLBAR_CLASS + '"><div class="' + TOOLBAR_MENU_CLASS +
+        let toolbarWrapper = createElement('div', {
+            className: SWIMLANE_HEADER_CLASS,
+            innerHTML: '<div class="' + SWIMLANE_HEADER_TOOLBAR_CLASS + '"><div class="' + TOOLBAR_MENU_CLASS +
                 '"><div class="e-icons ' + TOOLBAR_MENU_ICON_CLASS + '"></div></div><div class="' + TOOLBAR_LEVEL_TITLE_CLASS +
-                '"><div class="' + TOOLBAR_SWIMLANE_NAME_CLASS + '"></div></div></div>';
-            this.parent.element.appendChild(toolbarWrapper);
-        }
+                '"><div class="' + TOOLBAR_SWIMLANE_NAME_CLASS + '"></div></div></div>'
+        });
+        this.parent.element.appendChild(toolbarWrapper);
         EventHandler.add(toolbarWrapper.querySelector('.' + TOOLBAR_MENU_ICON_CLASS), 'click', this.menuClick, this);
     }
     renderSwimlaneTree() {
-        let treeWrapper;
         let height = this.parent.element.querySelector('.' + SWIMLANE_HEADER_CLASS).offsetHeight;
         let treeHeight = window.innerHeight - height;
-        if (!this.parent.isBlazorRender()) {
-            this.popupOverlay = createElement('div', { className: SWIMLANE_OVERLAY_CLASS, styles: 'height: ' + treeHeight + 'px;' });
-            let wrapper = createElement('div', { className: SWIMLANE_CONTENT_CLASS, styles: 'top:' + height + 'px;' });
-            treeWrapper = createElement('div', {
-                className: SWIMLANE_RESOURCE_CLASS + ' e-popup-close',
-                styles: 'height: ' + treeHeight + 'px;'
-            });
-            wrapper.appendChild(treeWrapper);
-            wrapper.appendChild(this.popupOverlay);
-            this.parent.element.appendChild(wrapper);
-            let swimlaneTree = createElement('div', { className: SWIMLANE_TREE_CLASS });
-            treeWrapper.appendChild(swimlaneTree);
-            this.treeViewObj = new TreeView({
-                cssClass: this.parent.cssClass,
-                enableRtl: this.parent.enableRtl,
-                fields: {
-                    dataSource: this.parent.layoutModule.kanbanRows,
-                    id: 'keyField',
-                    text: 'textField'
-                },
-                nodeTemplate: this.parent.swimlaneSettings.template,
-                nodeClicked: this.treeSwimlaneClick.bind(this)
-            });
-            this.treeViewObj.appendTo(swimlaneTree);
-        }
-        else {
-            this.popupOverlay = this.parent.element.querySelector('.' + SWIMLANE_CONTENT_CLASS + ' .' + SWIMLANE_OVERLAY_CLASS);
-            setStyleAttribute(this.parent.element.querySelector('.' + SWIMLANE_OVERLAY_CLASS), { 'height': treeHeight + 'px' });
-            setStyleAttribute(this.parent.element.querySelector('.' + SWIMLANE_CONTENT_CLASS), { 'top': height + 'px' });
-            treeWrapper = this.parent.element.querySelector('.' + SWIMLANE_RESOURCE_CLASS);
-            setStyleAttribute(treeWrapper, { 'height': treeHeight + 'px' });
-        }
+        this.popupOverlay = createElement('div', { className: SWIMLANE_OVERLAY_CLASS, styles: 'height: ' + treeHeight + 'px;' });
+        let wrapper = createElement('div', { className: SWIMLANE_CONTENT_CLASS, styles: 'top:' + height + 'px;' });
+        let treeWrapper = createElement('div', {
+            className: SWIMLANE_RESOURCE_CLASS + ' e-popup-close', styles: 'height: ' + treeHeight + 'px;'
+        });
+        wrapper.appendChild(treeWrapper);
+        wrapper.appendChild(this.popupOverlay);
+        this.parent.element.appendChild(wrapper);
+        let swimlaneTree = createElement('div', { className: SWIMLANE_TREE_CLASS });
+        treeWrapper.appendChild(swimlaneTree);
+        this.treeViewObj = new TreeView({
+            cssClass: this.parent.cssClass,
+            enableRtl: this.parent.enableRtl,
+            fields: {
+                dataSource: this.parent.layoutModule.kanbanRows,
+                id: 'keyField',
+                text: 'textField'
+            },
+            nodeTemplate: this.parent.swimlaneSettings.template,
+            nodeClicked: this.treeSwimlaneClick.bind(this)
+        });
+        this.treeViewObj.appendTo(swimlaneTree);
         let popupObj = {
             targetType: 'relative',
             actionOnScroll: 'none',
@@ -2480,9 +2403,7 @@ class MobileLayout {
             showAnimation: { name: 'SlideLeftIn', duration: 500 },
             viewPortElement: this.parent.element.querySelector('.' + CONTENT_CLASS)
         };
-        if (!this.parent.isBlazorRender()) {
-            popupObj.content = this.treeViewObj.element;
-        }
+        popupObj.content = this.treeViewObj.element;
         this.treePopup = new Popup(treeWrapper, popupObj);
     }
     menuClick(event) {
@@ -2491,11 +2412,9 @@ class MobileLayout {
             removeClass([this.popupOverlay], 'e-enable');
         }
         else {
-            if (!this.parent.isBlazorRender()) {
-                let treeNodes = [].slice.call(this.treeViewObj.element.querySelectorAll('.e-list-item'));
-                removeClass(treeNodes, 'e-active');
-                addClass([treeNodes[this.parent.layoutModule.swimlaneIndex]], 'e-active');
-            }
+            let treeNodes = [].slice.call(this.treeViewObj.element.querySelectorAll('.e-list-item'));
+            removeClass(treeNodes, 'e-active');
+            addClass([treeNodes[this.parent.layoutModule.swimlaneIndex]], 'e-active');
             this.treePopup.show();
             addClass([this.popupOverlay], 'e-enable');
         }
@@ -2508,9 +2427,6 @@ class MobileLayout {
         this.parent.notify(dataReady, { processedData: this.parent.kanbanData });
         args.event.preventDefault();
     }
-    /**
-     * @hidden
-     */
     hidePopup() {
         this.treePopup.hide();
         removeClass([this.popupOverlay], 'e-enable');
@@ -2522,10 +2438,12 @@ class MobileLayout {
 
 /**
  * Kanban layout rendering module
+ * @hidden
  */
 class LayoutRender extends MobileLayout {
     /**
      * Constructor for layout module
+     * @private
      */
     constructor(parent) {
         super(parent);
@@ -2539,40 +2457,31 @@ class LayoutRender extends MobileLayout {
         this.parent.on(contentReady, this.scrollUiUpdate, this);
     }
     initRender() {
-        if (!this.parent.isBlazorRender()) {
-            if (this.parent.columns.length === 0) {
-                return;
-            }
-            this.columnData = this.getColumnCards();
-            this.kanbanRows = this.getRows();
-            this.swimlaneData = this.getSwimlaneCards();
+        if (this.parent.columns.length === 0) {
+            return;
         }
+        this.columnData = this.getColumnCards();
+        this.kanbanRows = this.getRows();
+        this.swimlaneData = this.getSwimlaneCards();
         if (this.parent.isAdaptive) {
             let parent = this.parent.element.querySelector('.' + CONTENT_CLASS);
             if (parent) {
                 this.scrollLeft = parent.scrollLeft;
             }
         }
-        if (!this.parent.isBlazorRender()) {
-            this.destroy();
-            this.parent.on(dataReady, this.initRender, this);
-            this.parent.on(contentReady, this.scrollUiUpdate, this);
-        }
+        this.destroy();
+        this.parent.on(dataReady, this.initRender, this);
+        this.parent.on(contentReady, this.scrollUiUpdate, this);
         if (this.parent.isAdaptive && this.parent.swimlaneSettings.keyField && this.parent.kanbanData.length !== 0) {
             this.renderSwimlaneHeader();
         }
-        if (!this.parent.isBlazorRender()) {
-            let header = createElement('div', { className: HEADER_CLASS });
-            this.parent.element.appendChild(header);
-            this.renderHeader(header);
-            this.renderContent();
-            this.renderCards();
-            this.renderValidation();
-            this.parent.renderTemplates();
-        }
-        else {
-            this.initializeSwimlaneTree();
-        }
+        let header = createElement('div', { className: HEADER_CLASS });
+        this.parent.element.appendChild(header);
+        this.renderHeader(header);
+        this.renderContent();
+        this.renderCards();
+        this.renderValidation();
+        this.parent.renderTemplates();
         this.parent.notify(contentReady, {});
         this.wireEvents();
         if (this.parent.isInitialRender) {
@@ -2718,29 +2627,20 @@ class LayoutRender extends MobileLayout {
     }
     initializeSwimlaneTree() {
         if (this.parent.swimlaneSettings.keyField && this.parent.isAdaptive && this.parent.kanbanData.length !== 0) {
-            if (!this.parent.isBlazorRender()) {
-                this.swimlaneRow = [this.kanbanRows[this.swimlaneIndex]];
-                this.renderSwimlaneTree();
-                this.parent.element.querySelector('.' + TOOLBAR_SWIMLANE_NAME_CLASS).innerHTML = this.swimlaneRow[0].textField;
-            }
-            else {
-                this.renderSwimlaneTree();
-            }
+            this.swimlaneRow = [this.kanbanRows[this.swimlaneIndex]];
+            this.renderSwimlaneTree();
+            this.parent.element.querySelector('.' + TOOLBAR_SWIMLANE_NAME_CLASS).innerHTML = this.swimlaneRow[0].textField;
         }
     }
     renderSwimlaneRow(tBody, row, isCollapsed) {
         let name = CONTENT_ROW_CLASS + ' ' + SWIMLANE_ROW_CLASS;
         let className = isCollapsed ? ' ' + COLLAPSED_CLASS : '';
         let tr = createElement('tr', {
-            className: name + className, attrs: {
-                'data-key': row.keyField,
-                'aria-expanded': (!isCollapsed).toString()
-            }
+            className: name + className, attrs: { 'data-key': row.keyField, 'aria-expanded': (!isCollapsed).toString() }
         });
         let col = this.parent.columns.length - this.parent.actionModule.hideColumnKeys.length;
         let td = createElement('td', {
-            className: CONTENT_CELLS_CLASS,
-            attrs: { 'data-role': 'kanban-column', 'colspan': col.toString() }
+            className: CONTENT_CELLS_CLASS, attrs: { 'data-role': 'kanban-column', 'colspan': col.toString() }
         });
         let swimlaneHeader = createElement('div', { className: SWIMLANE_HEADER_CLASS });
         td.appendChild(swimlaneHeader);
@@ -2802,66 +2702,10 @@ class LayoutRender extends MobileLayout {
                     for (let data of columnData) {
                         let cardText = data[this.parent.cardSettings.headerField];
                         let cardIndex = this.parent.actionModule.selectionArray.indexOf(cardText);
-                        let className = cardIndex === -1 ? '' : ' ' + CARD_SELECTION_CLASS;
-                        let cardElement = createElement('div', {
-                            className: CARD_CLASS + className,
-                            attrs: {
-                                'data-id': data[this.parent.cardSettings.headerField], 'data-key': data[this.parent.keyField],
-                                'aria-selected': 'false', 'tabindex': '-1'
-                            }
-                        });
+                        let cardElement = this.renderCard(data);
                         if (cardIndex !== -1) {
                             cardElement.setAttribute('aria-selected', 'true');
-                        }
-                        if (this.parent.cardSettings.template) {
-                            addClass([cardElement], TEMPLATE_CLASS);
-                            let templateId = this.parent.element.id + '_cardTemplate';
-                            let cardTemplate = this.parent.templateParser(this.parent.cardSettings.template)(data, this.parent, 'template', templateId, false);
-                            append(cardTemplate, cardElement);
-                        }
-                        else {
-                            let tooltipClass = this.parent.enableTooltip ? ' ' + TOOLTIP_TEXT_CLASS : '';
-                            if (this.parent.cardSettings.showHeader) {
-                                let cardHeader = createElement('div', { className: CARD_HEADER_CLASS });
-                                let cardCaption = createElement('div', { className: CARD_HEADER_TEXT_CLASS });
-                                let cardText = createElement('div', {
-                                    className: CARD_HEADER_TITLE_CLASS + tooltipClass,
-                                    innerHTML: data[this.parent.cardSettings.headerField] || ''
-                                });
-                                cardHeader.appendChild(cardCaption);
-                                cardCaption.appendChild(cardText);
-                                cardElement.appendChild(cardHeader);
-                            }
-                            let cardContent = createElement('div', {
-                                className: CARD_CONTENT_CLASS + tooltipClass,
-                                innerHTML: data[this.parent.cardSettings.contentField] || ''
-                            });
-                            cardElement.appendChild(cardContent);
-                            if (this.parent.cardSettings.tagsField && data[this.parent.cardSettings.tagsField]) {
-                                let cardTags = createElement('div', { className: CARD_TAGS_CLASS });
-                                let tags = data[this.parent.cardSettings.tagsField].toString().split(',');
-                                for (let tag of tags) {
-                                    cardTags.appendChild(createElement('div', {
-                                        className: CARD_TAG_CLASS + ' ' + CARD_LABEL_CLASS,
-                                        innerHTML: tag
-                                    }));
-                                }
-                                cardElement.appendChild(cardTags);
-                            }
-                            if (this.parent.cardSettings.grabberField && data[this.parent.cardSettings.grabberField]) {
-                                addClass([cardElement], CARD_COLOR_CLASS);
-                                cardElement.style.borderLeftColor = data[this.parent.cardSettings.grabberField];
-                            }
-                            if (this.parent.cardSettings.footerCssField) {
-                                let cardFields = createElement('div', { className: CARD_FOOTER_CLASS });
-                                let keys = data[this.parent.cardSettings.footerCssField].split(',');
-                                for (let key of keys) {
-                                    cardFields.appendChild(createElement('div', {
-                                        className: key.trim() + ' ' + CARD_FOOTER_CSS_CLASS
-                                    }));
-                                }
-                                cardElement.appendChild(cardFields);
-                            }
+                            addClass([cardElement], CARD_SELECTION_CLASS);
                         }
                         let args = { data: data, element: cardElement, cancel: false };
                         this.parent.trigger(cardRendered, args, (cardArgs) => {
@@ -2882,6 +2726,65 @@ class LayoutRender extends MobileLayout {
         if (!this.parent.swimlaneSettings.showEmptyRow && (this.parent.kanbanData.length === 0 && !this.parent.showEmptyColumn)) {
             removeTrs.forEach((tr) => remove(tr));
         }
+    }
+    renderCard(data) {
+        let cardElement = createElement('div', {
+            className: CARD_CLASS,
+            attrs: {
+                'data-id': data[this.parent.cardSettings.headerField], 'data-key': data[this.parent.keyField],
+                'aria-selected': 'false', 'tabindex': '-1'
+            }
+        });
+        if (this.parent.cardSettings.template) {
+            addClass([cardElement], TEMPLATE_CLASS);
+            let templateId = this.parent.element.id + '_cardTemplate';
+            let cardTemplate = this.parent.templateParser(this.parent.cardSettings.template)(data, this.parent, 'template', templateId, false);
+            append(cardTemplate, cardElement);
+        }
+        else {
+            let tooltipClass = this.parent.enableTooltip ? ' ' + TOOLTIP_TEXT_CLASS : '';
+            if (this.parent.cardSettings.showHeader) {
+                let cardHeader = createElement('div', { className: CARD_HEADER_CLASS });
+                let cardCaption = createElement('div', { className: CARD_HEADER_TEXT_CLASS });
+                let cardText = createElement('div', {
+                    className: CARD_HEADER_TITLE_CLASS + tooltipClass,
+                    innerHTML: data[this.parent.cardSettings.headerField] || ''
+                });
+                cardHeader.appendChild(cardCaption);
+                cardCaption.appendChild(cardText);
+                cardElement.appendChild(cardHeader);
+            }
+            let cardContent = createElement('div', {
+                className: CARD_CONTENT_CLASS + tooltipClass,
+                innerHTML: data[this.parent.cardSettings.contentField] || ''
+            });
+            cardElement.appendChild(cardContent);
+            if (this.parent.cardSettings.tagsField && data[this.parent.cardSettings.tagsField]) {
+                let cardTags = createElement('div', { className: CARD_TAGS_CLASS });
+                let tags = data[this.parent.cardSettings.tagsField].toString().split(',');
+                for (let tag of tags) {
+                    cardTags.appendChild(createElement('div', {
+                        className: CARD_TAG_CLASS + ' ' + CARD_LABEL_CLASS, innerHTML: tag
+                    }));
+                }
+                cardElement.appendChild(cardTags);
+            }
+            if (this.parent.cardSettings.grabberField && data[this.parent.cardSettings.grabberField]) {
+                addClass([cardElement], CARD_COLOR_CLASS);
+                cardElement.style.borderLeftColor = data[this.parent.cardSettings.grabberField];
+            }
+            if (this.parent.cardSettings.footerCssField) {
+                let cardFields = createElement('div', { className: CARD_FOOTER_CLASS });
+                let keys = data[this.parent.cardSettings.footerCssField].split(',');
+                for (let key of keys) {
+                    cardFields.appendChild(createElement('div', {
+                        className: key.trim() + ' ' + CARD_FOOTER_CSS_CLASS
+                    }));
+                }
+                cardElement.appendChild(cardFields);
+            }
+        }
+        return cardElement;
     }
     renderColGroup(table) {
         let colGroup = createElement('colgroup');
@@ -2927,7 +2830,7 @@ class LayoutRender extends MobileLayout {
             kanbanRows.sort((firstRow, secondRow) => {
                 let first = firstRow.textField.toLowerCase();
                 let second = secondRow.textField.toLowerCase();
-                return (first > second) ? 1 : ((second > first) ? -1 : 0);
+                return (first > second) ? 1 : (second > first) ? -1 : 0;
             });
             if (this.parent.swimlaneSettings.sortDirection === 'Descending') {
                 kanbanRows.reverse();
@@ -3100,6 +3003,15 @@ class LayoutRender extends MobileLayout {
             }
         });
     }
+    refreshValidation() {
+        let validations = [].slice.call(this.parent.element.querySelectorAll('.' + LIMITS_CLASS));
+        validations.forEach((node) => { remove(node); });
+        let minClass = [].slice.call(this.parent.element.querySelectorAll('.' + MIN_COLOR_CLASS));
+        removeClass(minClass, MIN_COUNT_CLASS);
+        let maxClass = [].slice.call(this.parent.element.querySelectorAll('.' + MAX_COLOR_CLASS));
+        removeClass(maxClass, MAX_COLOR_CLASS);
+        this.renderValidation();
+    }
     getColumnData(columnValue, dataSource = this.parent.kanbanData) {
         let cardData = [];
         let columnKeys = columnValue.split(',');
@@ -3133,12 +3045,9 @@ class LayoutRender extends MobileLayout {
         return cardData;
     }
     sortOrder(key, direction, cardData) {
-        let isNumeric;
+        let isNumeric = true;
         if (this.parent.kanbanData.length > 0) {
             isNumeric = typeof this.parent.kanbanData[0][key] === 'number';
-        }
-        else {
-            isNumeric = true;
         }
         if (!isNumeric && this.parent.sortSettings.sortBy === 'Index') {
             return cardData;
@@ -3211,6 +3120,30 @@ class LayoutRender extends MobileLayout {
         cards.forEach((card) => remove(card));
         this.renderCards();
     }
+    refresh() {
+        this.columnData = this.getColumnCards();
+        this.parent.columns.forEach((column) => {
+            if (column.showItemCount) {
+                let countSelector = `.${HEADER_CELLS_CLASS}[data-key="${column.keyField}"] .${CARD_ITEM_COUNT_CLASS}`;
+                let itemCount = this.parent.element.querySelector(countSelector);
+                if (itemCount) {
+                    itemCount.innerHTML = `- ${this.columnData[column.keyField].length} ${this.parent.localeObj.getConstant('items')}`;
+                }
+            }
+        });
+        if (this.parent.swimlaneSettings.keyField) {
+            this.swimlaneData = this.getSwimlaneCards();
+            let swimlaneRows = [].slice.call(this.parent.element.querySelectorAll(`.${SWIMLANE_ROW_CLASS}`));
+            swimlaneRows.forEach((swimlane) => {
+                let swimlaneKey = swimlane.getAttribute('data-key');
+                let itemCount = swimlane.querySelector(`.${CARD_ITEM_COUNT_CLASS}`);
+                if (itemCount) {
+                    itemCount.innerHTML = `- ${this.swimlaneData[swimlaneKey].length} ${this.parent.localeObj.getConstant('items')}`;
+                }
+            });
+        }
+        this.refreshValidation();
+    }
     updateScrollPosition() {
         let content = this.parent.element.querySelector('.' + CONTENT_CLASS);
         if (content) {
@@ -3225,6 +3158,62 @@ class LayoutRender extends MobileLayout {
                 }
             }
         });
+    }
+    renderCardBasedOnIndex(data, index) {
+        let key = data[this.parent.keyField];
+        let cardRow = this.parent.element.querySelector('.e-content-row:not(.e-swimlane-row)');
+        if (this.parent.swimlaneSettings.keyField) {
+            let rowSelector = `.e-content-row.e-swimlane-row[data-key="${data[this.parent.swimlaneSettings.keyField]}"]`;
+            cardRow = this.parent.element.querySelector(rowSelector).nextElementSibling;
+        }
+        if (this.parent.sortSettings.sortBy === 'DataSourceOrder' && !isNullOrUndefined(index) ||
+            this.parent.sortSettings.sortBy === 'Custom') {
+            if (isNullOrUndefined(this.parent.swimlaneSettings.keyField)) {
+                index = this.parent.getColumnData(key, this.parent.kanbanData).findIndex((data) => data[this.parent.cardSettings.headerField] === data[this.parent.cardSettings.headerField]);
+            }
+            else {
+                let swimlaneDatas = this.parent.getSwimlaneData(data[this.parent.swimlaneSettings.keyField]);
+                index = this.parent.getColumnData(key, swimlaneDatas).findIndex((data) => data[this.parent.cardSettings.headerField] === data[this.parent.cardSettings.headerField]);
+            }
+        }
+        else if (this.parent.sortSettings.sortBy === 'Index' && this.parent.sortSettings.field
+            && this.parent.sortSettings.direction === 'Ascending') {
+            index = data[this.parent.sortSettings.field] - 1;
+        }
+        if (cardRow) {
+            let td = [].slice.call(cardRow.children).filter((e) => e.getAttribute('data-key').replace(/\s/g, '').split(',').indexOf(key) !== -1)[0];
+            let cardWrapper = td.querySelector('.' + CARD_WRAPPER_CLASS);
+            let cardElement = this.renderCard(data);
+            if (this.parent.allowDragAndDrop) {
+                addClass([cardElement], DRAGGABLE_CLASS);
+            }
+            let args = { data: data, element: cardElement, cancel: false };
+            this.parent.trigger(cardRendered, args, (cardArgs) => {
+                if (!cardArgs.cancel) {
+                    if (isNullOrUndefined(index) || cardWrapper.children.length === 0) {
+                        cardWrapper.appendChild(cardElement);
+                    }
+                    else if (this.parent.sortSettings.sortBy === 'DataSourceOrder') {
+                        if (index === 0) {
+                            cardWrapper.children[index].insertAdjacentElement('beforebegin', cardElement);
+                        }
+                        else {
+                            cardWrapper.children[index - 1].insertAdjacentElement('afterend', cardElement);
+                        }
+                    }
+                    else {
+                        cardWrapper.insertBefore(cardElement, cardWrapper.childNodes[index]);
+                    }
+                }
+            });
+        }
+    }
+    removeCard(data) {
+        let cardKey = data[this.parent.cardSettings.headerField];
+        let cardElement = this.parent.element.querySelector(`.${CARD_CLASS}[data-id="${cardKey}"]`);
+        if (cardElement) {
+            remove(cardElement);
+        }
     }
     wireEvents() {
         EventHandler.add(this.parent.element, 'click', this.parent.actionModule.clickHandler, this.parent.actionModule);
@@ -3341,25 +3330,23 @@ let Kanban = class Kanban extends Component {
             this.swimlaneToggleArray = [];
         }
         this.activeCardData = { data: null, element: null };
-        if (!this.isBlazorRender()) {
-            let defaultLocale = {
-                items: 'items',
-                min: 'Min',
-                max: 'Max',
-                cardsSelected: 'Cards Selected',
-                addTitle: 'Add New Card',
-                editTitle: 'Edit Card Details',
-                deleteTitle: 'Delete Card',
-                deleteContent: 'Are you sure you want to delete this card?',
-                save: 'Save',
-                delete: 'Delete',
-                cancel: 'Cancel',
-                yes: 'Yes',
-                no: 'No',
-                close: 'Close'
-            };
-            this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
-        }
+        let defaultLocale = {
+            items: 'items',
+            min: 'Min',
+            max: 'Max',
+            cardsSelected: 'Cards Selected',
+            addTitle: 'Add New Card',
+            editTitle: 'Edit Card Details',
+            deleteTitle: 'Delete Card',
+            deleteContent: 'Are you sure you want to delete this card?',
+            save: 'Save',
+            delete: 'Delete',
+            cancel: 'Cancel',
+            yes: 'Yes',
+            no: 'No',
+            close: 'Close'
+        };
+        this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
         this.scrollPosition = { content: { left: 0, top: 0 }, column: {} };
         this.isInitialRender = true;
     }
@@ -3391,27 +3378,25 @@ let Kanban = class Kanban extends Component {
      * @private
      */
     render() {
-        if (!this.isBlazorRender()) {
-            let addClasses = [ROOT_CLASS];
-            let removeClasses = [];
-            if (this.enableRtl) {
-                addClasses.push(RTL_CLASS);
-            }
-            else {
-                removeClasses.push(RTL_CLASS);
-            }
-            if (this.isAdaptive) {
-                addClasses.push(DEVICE_CLASS);
-            }
-            else {
-                removeClasses.push(DEVICE_CLASS);
-            }
-            if (this.cssClass) {
-                addClasses.push(this.cssClass);
-            }
-            this.element.setAttribute('role', 'main');
-            classList(this.element, addClasses, removeClasses);
+        let addClasses = [ROOT_CLASS];
+        let removeClasses = [];
+        if (this.enableRtl) {
+            addClasses.push(RTL_CLASS);
         }
+        else {
+            removeClasses.push(RTL_CLASS);
+        }
+        if (this.isAdaptive) {
+            addClasses.push(DEVICE_CLASS);
+        }
+        else {
+            removeClasses.push(DEVICE_CLASS);
+        }
+        if (this.cssClass) {
+            addClasses.push(this.cssClass);
+        }
+        this.element.setAttribute('role', 'main');
+        classList(this.element, addClasses, removeClasses);
         this.element.style.width = formatUnit(this.width);
         this.element.style.height = formatUnit(this.height);
         createSpinner({ target: this.element });
@@ -3435,9 +3420,7 @@ let Kanban = class Kanban extends Component {
                     break;
                 case 'enableRtl':
                 case 'locale':
-                    if (!this.isBlazorRender()) {
-                        this.refresh();
-                    }
+                    this.refresh();
                     break;
                 case 'width':
                     this.element.style.width = formatUnit(newProp.width);
@@ -3451,18 +3434,11 @@ let Kanban = class Kanban extends Component {
                     break;
                 case 'dataSource':
                 case 'query':
-                    if (!this.isBlazorRender()) {
-                        this.dataModule = new Data(this);
-                    }
+                    this.dataModule = new Data(this);
                     break;
                 case 'columns':
                 case 'constraintType':
-                    if (!this.isBlazorRender()) {
-                        this.notify(dataReady, { processedData: this.kanbanData });
-                    }
-                    else {
-                        this.notifyChange();
-                    }
+                    this.notify(dataReady, { processedData: this.kanbanData });
                     break;
                 case 'swimlaneSettings':
                     this.onSwimlaneSettingsPropertyChanged(newProp.swimlaneSettings, oldProp.swimlaneSettings);
@@ -3485,9 +3461,7 @@ let Kanban = class Kanban extends Component {
                     }
                     if (newProp.enableTooltip) {
                         this.tooltipModule = new KanbanTooltip(this);
-                        if (!this.isBlazorRender()) {
-                            this.layoutModule.refreshCards();
-                        }
+                        this.layoutModule.refreshCards();
                     }
                     break;
                 case 'dialogSettings':
@@ -3505,12 +3479,7 @@ let Kanban = class Kanban extends Component {
                     }
                     break;
                 case 'stackedHeaders':
-                    if (!this.isBlazorRender()) {
-                        this.layoutModule.refreshHeaders();
-                    }
-                    else {
-                        this.notifyChange();
-                    }
+                    this.layoutModule.refreshHeaders();
                     break;
                 case 'sortSettings':
                     this.notify(dataReady, { processedData: this.kanbanData });
@@ -3529,12 +3498,7 @@ let Kanban = class Kanban extends Component {
                 case 'showItemCount':
                 case 'template':
                 case 'sortDirection':
-                    if (!this.isBlazorRender()) {
-                        this.notify(dataReady, { processedData: this.kanbanData });
-                    }
-                    else {
-                        this.notifyChange();
-                    }
+                    this.notify(dataReady, { processedData: this.kanbanData });
                     break;
             }
         }
@@ -3549,12 +3513,7 @@ let Kanban = class Kanban extends Component {
                 case 'tagsField':
                 case 'grabberField':
                 case 'footerCssField':
-                    if (!this.isBlazorRender()) {
-                        this.layoutModule.refreshCards();
-                    }
-                    else {
-                        this.notifyChange();
-                    }
+                    this.layoutModule.refreshCards();
                     break;
                 case 'selectionType':
                     let cards = this.getSelectedCards();
@@ -3567,9 +3526,7 @@ let Kanban = class Kanban extends Component {
         }
     }
     initializeModules() {
-        if (!this.isBlazorRender()) {
-            this.dataModule = new Data(this);
-        }
+        this.dataModule = new Data(this);
         this.layoutModule = new LayoutRender(this);
         if (this.allowKeyboard) {
             this.keyboardModule = new Keyboard(this);
@@ -3585,59 +3542,19 @@ let Kanban = class Kanban extends Component {
             this.touchModule = new KanbanTouch(this);
         }
     }
-    notifyChange() {
-        // tslint:disable-next-line
-        this.interopAdaptor.invokeMethodAsync('PropertyChanged');
-    }
-    isDevice(ref) {
-        if (Browser.isDevice && isBlazor() && ref) {
-            // tslint:disable-next-line
-            ref.invokeMethodAsync('IsDevice', true, ((window.innerWidth * 80) / 100));
-        }
-    }
-    /**
-     * @hidden
-     */
+    /** @hidden */
     renderTemplates() {
         // tslint:disable-next-line:no-any
         if (this.isReact) {
             this.renderReactTemplates();
         }
     }
-    /**
-     * @hidden
-     */
+    /** @hidden */
     resetTemplates(templates) {
         // tslint:disable-next-line:no-any
         if (this.isReact) {
             this.clearTemplate(templates);
         }
-    }
-    /**
-     * @hidden
-     */
-    isBlazorRender() {
-        return isBlazor() && this.isServerRendered;
-    }
-    /**
-     * @hidden
-     */
-    updateDataSource(data) {
-        this.kanbanData = data.Result;
-    }
-    /**
-     * @hidden
-     */
-    hideDeviceMenu() {
-        this.layoutModule.hidePopup();
-    }
-    /**
-     * @hidden
-     */
-    dataReady(data) {
-        this.kanbanData = data.Result;
-        this.hideSpinner();
-        this.notify(dataReady, { processedData: {} });
     }
     destroyModules() {
         if (this.layoutModule) {
@@ -3674,7 +3591,6 @@ let Kanban = class Kanban extends Component {
     }
     /**
      * Returns the card details based on card ID from the board.
-     * @deprecated
      * @method getCardDetails
      * @param {Element} target Accepts the card element to get the details.
      * @returns {{[key: string]: Object}}
@@ -3687,7 +3603,6 @@ let Kanban = class Kanban extends Component {
     }
     /**
      * Returns the column data based on column key input.
-     * @deprecated
      * @method getColumnData
      * @param {string} columnKey Accepts the column key to get the objects.
      * @returns {Object[]}
@@ -3697,7 +3612,6 @@ let Kanban = class Kanban extends Component {
     }
     /**
      * Returns the swimlane column data based on swimlane keyField input.
-     * @deprecated
      * @method getSwimlaneData
      * @param {string} keyField Accepts the swimlane keyField to get the objects.
      * @returns {Object[]}
@@ -3731,7 +3645,6 @@ let Kanban = class Kanban extends Component {
     }
     /**
      * To manually open the dialog.
-     * @deprecated
      * @method openDialog
      * @param {CurrentAction} action Defines the action for which the dialog needs to be opened such as either for new card creation or
      *  editing of existing cards. The applicable action names are `Add` and `Edit`.
@@ -3743,7 +3656,6 @@ let Kanban = class Kanban extends Component {
     }
     /**
      * To manually close the dialog.
-     * @deprecated
      * @method closeDialog
      * @returns {void}
      */
@@ -3784,7 +3696,6 @@ let Kanban = class Kanban extends Component {
     }
     /**
      * Add the column to Kanban board dynamically based on the provided column options and index in the argument list.
-     * @deprecated
      * @method addColumn
      * @param {ColumnsModel} columnOptions Defines the properties to new column that are going to be added in the board.
      * @param {number} index Defines the index of column to add the new column.
@@ -3795,7 +3706,6 @@ let Kanban = class Kanban extends Component {
     }
     /**
      * Deletes the column based on the provided index value.
-     * @deprecated
      * @method deleteColumn
      * @param {number} index Defines the index of column to delete the existing column from Kanban board.
      * @returns {void}
@@ -3805,7 +3715,6 @@ let Kanban = class Kanban extends Component {
     }
     /**
      * Shows the column from hidden based on the provided key in the columns.
-     * @deprecated
      * @method showColumn
      * @param {string} key Accepts the hidden column key name to be shown from the hidden state in board.
      * @returns {void}
@@ -3815,7 +3724,6 @@ let Kanban = class Kanban extends Component {
     }
     /**
      * Hides the column from Kanban board based on the provided key in the columns.
-     * @deprecated
      * @method hideColumn
      * @param {string} key Accepts the visible column key name to be hidden from the board.
      * @returns {void}
@@ -3830,17 +3738,13 @@ let Kanban = class Kanban extends Component {
      */
     destroy() {
         this.destroyModules();
-        if (!this.isBlazorRender()) {
-            [].slice.call(this.element.childNodes).forEach((node) => detach(node));
-        }
+        [].slice.call(this.element.childNodes).forEach((node) => { detach(node); });
         let removeClasses = [ROOT_CLASS];
         if (this.cssClass) {
             removeClasses = removeClasses.concat(this.cssClass.split(' '));
         }
         removeClass([this.element], removeClasses);
-        if (!this.isBlazorRender()) {
-            super.destroy();
-        }
+        super.destroy();
     }
 };
 __decorate([

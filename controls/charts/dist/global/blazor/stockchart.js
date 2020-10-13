@@ -952,7 +952,7 @@ var Double = /** @class */ (function () {
         if (this.chart.chartAreaType === 'Cartesian') {
             var isLazyLoad = sf.base.isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
             if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-                axis.calculateVisibleRange(size);
+                axis.calculateVisibleRange(this.chart);
                 axis.calculateAxisRange(size, this.chart);
                 axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
                     this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
@@ -1740,12 +1740,12 @@ var Axis = /** @class */ (function (_super) {
      * @return {void}
      * @private
      */
-    Axis.prototype.calculateVisibleRange = function (size) {
+    Axis.prototype.calculateVisibleRange = function (chart) {
         if (this.zoomFactor < 1 || this.zoomPosition > 0) {
             var baseRange = this.actualRange;
             var start = void 0;
             var end = void 0;
-            if (!this.isInversed) {
+            if (!this.isInversed || chart.zoomModule) {
                 start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
                 end = start + this.zoomFactor * this.actualRange.delta;
             }
@@ -14484,7 +14484,7 @@ var DateTime = /** @class */ (function (_super) {
         };
         var isLazyLoad = sf.base.isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
         if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-            axis.calculateVisibleRange(size);
+            axis.calculateVisibleRange(this.chart);
             axis.calculateAxisRange(size, this.chart);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateDateTimeNiceInterval(axis, size, axis.visibleRange.min, axis.visibleRange.max)
@@ -14867,7 +14867,7 @@ var Logarithmic = /** @class */ (function (_super) {
         };
         var isLazyLoad = sf.base.isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
         if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-            axis.calculateVisibleRange(size);
+            axis.calculateVisibleRange(this.chart);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateLogNiceInterval(axis.doubleRange.delta, size, axis)
                 : axis.visibleRange.interval;

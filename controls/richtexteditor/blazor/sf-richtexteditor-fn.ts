@@ -187,6 +187,7 @@ export class SfRichTextEditor {
         this.updateContentElements();
         this.inputElement = this.getEditPanel() as HTMLElement;
         this.valueContainer = this.element.querySelector('textarea');
+        if (this.readonly) { this.setReadOnly(true); }
         this.setHeight(this.height);
         this.setWidth(this.width);
         // setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
@@ -335,6 +336,12 @@ export class SfRichTextEditor {
     }
     public getPanel(): Element {
         return this.contentPanel;
+    }
+    public saveSelection(): void {
+        this.formatter.editorManager.nodeSelection.save(this.getRange(), this.getDocument());
+    }
+    public restoreSelection(): void {
+        this.formatter.editorManager.nodeSelection.restore();
     }
     public getEditPanel(): Element {
         let editNode: Element;
@@ -1038,6 +1045,12 @@ export class SfRichTextEditor {
     public imageUploadComplete(base64Str: string, altText: string): void {
         this.imageModule.imageUploadComplete(base64Str, altText);
     }
+    public imageUploadChange(url: string, isStream: boolean): void {
+        this.imageModule.imageUploadChange(url, isStream);
+    }
+    public dropUploadChange(url: string, isStream: boolean): void {
+        this.imageModule.dropUploadChange(url, isStream);
+    }
     public insertImage(): void {
         this.imageModule.insertImageUrl();
     }
@@ -1060,8 +1073,8 @@ export class SfRichTextEditor {
     public pasteContent(pasteOption: string): void {
         this.pasteCleanupModule.selectFormatting(pasteOption);
     }
-    public imageDropInitialized(): void {
-        this.imageModule.imageDropInitialized();
+    public imageDropInitialized(isStream: boolean): void {
+        this.imageModule.imageDropInitialized(isStream);
     }
     public preventEditable(): void {
         this.inputElement.contentEditable = 'false';

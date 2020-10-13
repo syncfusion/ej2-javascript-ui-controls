@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.40 (2020-10-13)
+
+### SplitButton
+
+#### Bug Fixes
+
+- Warning message has been resolved.
+
 ## 18.1.43 (2020-04-07)
 
 ### SplitButton

@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, closest, compile, createElement, detach, extend, formatUnit, isBlazor, isNullOrUndefined, remove, removeClass, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, closest, compile, createElement, detach, extend, formatUnit, isNullOrUndefined, remove, removeClass } from '@syncfusion/ej2-base';
 import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
@@ -53,7 +53,7 @@ var cardSpace = 16;
 var toggleWidth = 50;
 
 /**
- * data module is used to generate query and data source.
+ * Kanban data module
  * @hidden
  */
 var Data = /** @__PURE__ @class */ (function () {
@@ -63,6 +63,7 @@ var Data = /** @__PURE__ @class */ (function () {
      */
     function Data(parent) {
         this.parent = parent;
+        this.keyField = this.parent.cardSettings.headerField;
         this.initDataManager(parent.dataSource, parent.query);
         this.refreshDataManager();
     }
@@ -74,13 +75,14 @@ var Data = /** @__PURE__ @class */ (function () {
     Data.prototype.initDataManager = function (dataSource, query) {
         this.dataManager = dataSource instanceof DataManager ? dataSource : new DataManager(dataSource);
         this.query = query instanceof Query ? query : new Query();
+        this.kanbanData = new DataManager(this.parent.kanbanData);
     };
     /**
      * The function used to generate updated Query from schedule model
      * @return {void}
      * @private
      */
-    Data.prototype.generateQuery = function () {
+    Data.prototype.getQuery = function () {
         return this.query.clone();
     };
     /**
@@ -93,13 +95,27 @@ var Data = /** @__PURE__ @class */ (function () {
         return this.dataManager.executeQuery(query);
     };
     /**
-     * The function is used to send the request and get response form datamanager
+     * The function used to get the table name from the given Query
+     * @return {string}
+     * @private
+     */
+    Data.prototype.getTable = function () {
+        if (this.parent.query) {
+            var query = this.getQuery();
+            return query.fromTable;
+        }
+        else {
+            return null;
+        }
+    };
+    /**
+     * The function is used to send the request and get response from datamanager
      * @return {void}
      * @private
      */
     Data.prototype.refreshDataManager = function () {
         var _this = this;
-        var dataManager = this.getData(this.generateQuery());
+        var dataManager = this.getData(this.getQuery());
         dataManager.then(function (e) { return _this.dataManagerSuccess(e); }).catch(function (e) { return _this.dataManagerFailure(e); });
     };
     /**
@@ -114,6 +130,7 @@ var Data = /** @__PURE__ @class */ (function () {
         }
         this.parent.trigger(dataBinding, e, function (args) {
             var resultData = extend([], args.result, null, true);
+            _this.kanbanData.saveChanges({ addedRecords: resultData, changedRecords: [], deletedRecords: [] });
             _this.parent.kanbanData = resultData;
             _this.parent.notify(dataReady, { processedData: resultData });
             _this.parent.trigger(dataBound, null, function () { return _this.parent.hideSpinner(); });
@@ -130,6 +147,95 @@ var Data = /** @__PURE__ @class */ (function () {
             return;
         }
         this.parent.trigger(actionFailure, { error: e }, function () { return _this.parent.hideSpinner(); });
+    };
+    /**
+     * The function is used to perform the insert, update, delete and batch actions in datamanager
+     * @return {void}
+     * @private
+     */
+    Data.prototype.updateDataManager = function (updateType, params, type, data, index) {
+        var _this = this;
+        this.parent.showSpinner();
+        var promise;
+        switch (updateType) {
+            case 'insert':
+                promise = this.dataManager.insert(data, this.getTable(), this.getQuery());
+                break;
+            case 'update':
+                promise = this.dataManager.update(this.keyField, data, this.getTable(), this.getQuery());
+                break;
+            case 'delete':
+                promise = this.dataManager.remove(this.keyField, data, this.getTable(), this.getQuery());
+                break;
+            case 'batch':
+                promise = this.dataManager.saveChanges(params, this.keyField, this.getTable(), this.getQuery());
+                break;
+        }
+        var actionArgs = {
+            requestType: type, cancel: false, addedRecords: params.addedRecords,
+            changedRecords: params.changedRecords, deletedRecords: params.deletedRecords
+        };
+        if (this.dataManager.dataSource.offline) {
+            this.parent.trigger(actionComplete, actionArgs, function (offlineArgs) {
+                if (!offlineArgs.cancel) {
+                    _this.refreshUI(offlineArgs, index);
+                }
+            });
+        }
+        else {
+            promise.then(function (e) {
+                if (_this.parent.isDestroyed) {
+                    return;
+                }
+                _this.parent.trigger(actionComplete, actionArgs, function (onlineArgs) {
+                    if (!onlineArgs.cancel) {
+                        _this.refreshUI(onlineArgs, index);
+                    }
+                });
+            }).catch(function (e) {
+                _this.dataManagerFailure(e);
+            });
+        }
+    };
+    /**
+     * The function is used to refresh the UI once the datamanager action is completed
+     * @return {void}
+     * @private
+     */
+    Data.prototype.refreshUI = function (args, index) {
+        var _this = this;
+        this.parent.resetTemplates();
+        this.kanbanData.saveChanges({ addedRecords: args.addedRecords, changedRecords: args.changedRecords,
+            deletedRecords: args.deletedRecords });
+        this.parent.kanbanData = this.kanbanData.dataSource.json;
+        var field;
+        if (this.parent.sortSettings.sortBy === 'DataSourceOrder') {
+            field = this.parent.cardSettings.headerField;
+        }
+        else if (this.parent.sortSettings.sortBy === 'Custom') {
+            field = this.parent.sortSettings.field;
+        }
+        if (this.parent.sortSettings.sortBy !== 'Index') {
+            this.parent.kanbanData = this.parent.layoutModule.sortOrder(field, this.parent.sortSettings.direction, this.parent.kanbanData);
+        }
+        args.addedRecords.forEach(function (data) {
+            _this.parent.layoutModule.renderCardBasedOnIndex(data);
+        });
+        args.changedRecords.forEach(function (data) {
+            _this.parent.layoutModule.removeCard(data);
+            _this.parent.layoutModule.renderCardBasedOnIndex(data, index);
+            if (_this.parent.sortSettings.field && _this.parent.sortSettings.sortBy === 'Index'
+                && _this.parent.sortSettings.direction === 'Descending' && index > 0) {
+                --index;
+            }
+        });
+        args.deletedRecords.forEach(function (data) {
+            _this.parent.layoutModule.removeCard(data);
+        });
+        this.parent.kanbanData = this.kanbanData.dataSource.json;
+        this.parent.layoutModule.refresh();
+        this.parent.renderTemplates();
+        this.parent.trigger(dataBound, null, function () { return _this.parent.hideSpinner(); });
     };
     return Data;
 }());
@@ -667,13 +773,7 @@ var Action = /** @__PURE__ @class */ (function () {
             newData[this.parent.swimlaneSettings.keyField] =
                 closest(target, '.' + CONTENT_ROW_CLASS).previousElementSibling.getAttribute('data-key');
         }
-        if (this.parent.isBlazorRender()) {
-            // tslint:disable-next-line
-            this.parent.interopAdaptor.invokeMethodAsync('OpenDialog', 'Add', newData);
-        }
-        else {
-            this.parent.openDialog('Add', newData);
-        }
+        this.parent.openDialog('Add', newData);
     };
     Action.prototype.doubleClickHandler = function (e) {
         var target = closest(e.target, '.' + CARD_CLASS);
@@ -706,9 +806,7 @@ var Action = /** @__PURE__ @class */ (function () {
                 var cell = closest(target, '.' + CONTENT_CELLS_CLASS);
                 if (_this.parent.allowKeyboard) {
                     var element = [].slice.call(cell.querySelectorAll('.' + CARD_CLASS));
-                    element.forEach(function (e) {
-                        e.setAttribute('tabindex', '0');
-                    });
+                    element.forEach(function (e) { e.setAttribute('tabindex', '0'); });
                     _this.parent.keyboardModule.addRemoveTabIndex('Remove');
                 }
             }
@@ -722,13 +820,7 @@ var Action = /** @__PURE__ @class */ (function () {
         var args = { data: cardDoubleClickObj, element: target, cancel: false, event: e };
         this.parent.trigger(cardDoubleClick, args, function (doubleClickArgs) {
             if (!doubleClickArgs.cancel) {
-                if (_this.parent.isBlazorRender()) {
-                    // tslint:disable-next-line
-                    _this.parent.interopAdaptor.invokeMethodAsync('OpenDialog', 'Edit', args.data);
-                }
-                else {
-                    _this.parent.dialogModule.openDialog('Edit', args.data);
-                }
+                _this.parent.dialogModule.openDialog('Edit', args.data);
             }
         });
     };
@@ -760,9 +852,7 @@ var Action = /** @__PURE__ @class */ (function () {
                 target.setAttribute('aria-expanded', isCollapsed.toString());
                 tgtRow.setAttribute('aria-expanded', isCollapsed.toString());
                 var rows = [].slice.call(tgtRow.querySelectorAll('.' + CONTENT_CELLS_CLASS));
-                rows.forEach(function (cell) {
-                    cell.setAttribute('tabindex', tabIndex_1);
-                });
+                rows.forEach(function (cell) { cell.setAttribute('tabindex', tabIndex_1); });
                 _this.parent.notify(contentReady, {});
                 _this.parent.trigger(actionComplete, { target: headerTarget, requestType: 'rowExpandCollapse' });
             }
@@ -941,54 +1031,17 @@ var Action = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * Kanban CRUD operations
+ * Kanban CRUD module
+ * @hidden
  */
 var Crud = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for CRUD module
+     * @private
+     */
     function Crud(parent) {
         this.parent = parent;
-        this.keyField = this.parent.cardSettings.headerField;
     }
-    Crud.prototype.getQuery = function () {
-        return this.parent.dataModule.generateQuery();
-    };
-    Crud.prototype.getTable = function () {
-        if (this.parent.query) {
-            var query = this.parent.query.clone();
-            return query.fromTable;
-        }
-        return null;
-    };
-    Crud.prototype.refreshData = function (args) {
-        var _this = this;
-        var actionArgs = {
-            requestType: args.requestType, cancel: false, addedRecords: args.addedRecords,
-            changedRecords: args.changedRecords, deletedRecords: args.deletedRecords
-        };
-        if (this.parent.dataModule.dataManager.dataSource.offline) {
-            this.parent.trigger(actionComplete, actionArgs, function (offlineArgs) {
-                if (!offlineArgs.cancel) {
-                    _this.parent.dataModule.refreshDataManager();
-                }
-            });
-        }
-        else {
-            args.promise.then(function (e) {
-                if (_this.parent.isDestroyed) {
-                    return;
-                }
-                _this.parent.trigger(actionComplete, actionArgs, function (onlineArgs) {
-                    if (!onlineArgs.cancel) {
-                        _this.parent.dataModule.refreshDataManager();
-                    }
-                });
-            }).catch(function (e) {
-                if (_this.parent.isDestroyed) {
-                    return;
-                }
-                _this.parent.trigger(actionFailure, { error: e });
-            });
-        }
-    };
     Crud.prototype.addCard = function (cardData) {
         var _this = this;
         var args = {
@@ -997,47 +1050,20 @@ var Crud = /** @__PURE__ @class */ (function () {
         };
         this.parent.trigger(actionBegin, args, function (addArgs) {
             if (!addArgs.cancel) {
-                _this.parent.showSpinner();
-                var promise = null;
                 var modifiedData = [];
                 if (_this.parent.sortSettings.field && _this.parent.sortSettings.sortBy === 'Index') {
                     cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
-                    if (!_this.parent.isBlazorRender()) {
-                        modifiedData = _this.priorityOrder(modifiedData, addArgs);
-                    }
+                    modifiedData = _this.priorityOrder(modifiedData, addArgs);
                 }
                 var addedRecords = (cardData instanceof Array) ? cardData : [cardData];
                 var changedRecords = (_this.parent.sortSettings.field && _this.parent.sortSettings.sortBy === 'Index') ? modifiedData : [];
                 var editParms = { addedRecords: addedRecords, changedRecords: changedRecords, deletedRecords: [] };
-                if (cardData instanceof Array || modifiedData.length > 0) {
-                    if (!_this.parent.isBlazorRender()) {
-                        promise = _this.parent.dataModule.dataManager.saveChanges(editParms, _this.keyField, _this.getTable(), _this.getQuery());
-                    }
-                    else {
-                        // tslint:disable-next-line
-                        _this.parent.interopAdaptor.invokeMethodAsync('AddCards', { AddedRecords: addedRecords, ChangedRecords: changedRecords }, _this.keyField);
-                    }
-                }
-                else {
-                    if (!_this.parent.isBlazorRender()) {
-                        promise = _this.parent.dataModule.dataManager.insert(cardData, _this.getTable(), _this.getQuery());
-                    }
-                    else {
-                        // tslint:disable-next-line
-                        _this.parent.interopAdaptor.invokeMethodAsync('AddCard', { Record: cardData });
-                    }
-                }
-                if (!_this.parent.isBlazorRender()) {
-                    var crudArgs = {
-                        requestType: 'cardCreated', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
-                        changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
-                    };
-                    _this.refreshData(crudArgs);
-                }
+                var type = (cardData instanceof Array || modifiedData.length > 0) ? 'batch' : 'insert';
+                _this.parent.dataModule.updateDataManager(type, editParms, 'cardCreated', cardData);
             }
         });
     };
-    Crud.prototype.updateCard = function (cardData) {
+    Crud.prototype.updateCard = function (cardData, index) {
         var _this = this;
         var args = {
             requestType: 'cardChange', cancel: false, addedRecords: [],
@@ -1045,43 +1071,16 @@ var Crud = /** @__PURE__ @class */ (function () {
         };
         this.parent.trigger(actionBegin, args, function (updateArgs) {
             if (!updateArgs.cancel) {
-                _this.parent.showSpinner();
-                var promise = null;
                 if (_this.parent.sortSettings.field && _this.parent.sortSettings.sortBy === 'Index') {
                     var modifiedData = [];
                     cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
-                    if (!_this.parent.isBlazorRender()) {
-                        cardData = _this.priorityOrder(modifiedData, updateArgs);
-                    }
+                    cardData = _this.priorityOrder(modifiedData, updateArgs, index);
                 }
                 var editParms = {
                     addedRecords: [], changedRecords: (cardData instanceof Array) ? cardData : [cardData], deletedRecords: []
                 };
-                if (cardData instanceof Array) {
-                    if (!_this.parent.isBlazorRender()) {
-                        promise = _this.parent.dataModule.dataManager.saveChanges(editParms, _this.keyField, _this.getTable(), _this.getQuery());
-                    }
-                    else {
-                        // tslint:disable-next-line
-                        _this.parent.interopAdaptor.invokeMethodAsync('UpdateCards', { ChangedRecords: cardData }, _this.keyField);
-                    }
-                }
-                else {
-                    if (!_this.parent.isBlazorRender()) {
-                        promise = _this.parent.dataModule.dataManager.update(_this.keyField, cardData, _this.getTable(), _this.getQuery());
-                    }
-                    else {
-                        // tslint:disable-next-line
-                        _this.parent.interopAdaptor.invokeMethodAsync('UpdateCard', _this.keyField, { Record: cardData });
-                    }
-                }
-                if (!_this.parent.isBlazorRender()) {
-                    var crudArgs = {
-                        requestType: 'cardChanged', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
-                        changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
-                    };
-                    _this.refreshData(crudArgs);
-                }
+                var type = (cardData instanceof Array) ? 'batch' : 'update';
+                _this.parent.dataModule.updateDataManager(type, editParms, 'cardChanged', cardData, index);
             }
         });
     };
@@ -1090,109 +1089,59 @@ var Crud = /** @__PURE__ @class */ (function () {
         var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
         if (typeof cardData === 'string' || typeof cardData === 'number') {
             editParms.deletedRecords = this.parent.kanbanData.filter(function (data) {
-                return data[_this.keyField] === cardData;
+                return data[_this.parent.cardSettings.headerField] === cardData;
             });
         }
         else {
             editParms.deletedRecords = (cardData instanceof Array) ? cardData : [cardData];
         }
         var args = {
-            requestType: 'cardRemove', cancel: false, addedRecords: [],
-            changedRecords: [], deletedRecords: editParms.deletedRecords
+            requestType: 'cardRemove', cancel: false, addedRecords: [], changedRecords: [], deletedRecords: editParms.deletedRecords
         };
         this.parent.trigger(actionBegin, args, function (deleteArgs) {
             if (!deleteArgs.cancel) {
-                _this.parent.showSpinner();
-                var promise = null;
-                if (!_this.parent.isBlazorRender()) {
-                    if (editParms.deletedRecords.length > 1) {
-                        promise = _this.parent.dataModule.dataManager.saveChanges(editParms, _this.keyField, _this.getTable(), _this.getQuery());
-                    }
-                    else {
-                        promise = _this.parent.dataModule.dataManager.remove(_this.keyField, editParms.deletedRecords[0], _this.getTable(), _this.getQuery());
-                    }
-                    var crudArgs = {
-                        requestType: 'cardRemoved', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
-                        changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
-                    };
-                    _this.refreshData(crudArgs);
-                }
-                else {
-                    if (cardData instanceof Array) {
-                        // tslint:disable-next-line
-                        _this.parent.interopAdaptor.invokeMethodAsync('DeleteCards', { DeletedRecords: cardData }, _this.keyField);
-                    }
-                    else {
-                        // tslint:disable-next-line
-                        _this.parent.interopAdaptor.invokeMethodAsync('DeleteCard', _this.keyField, { Record: cardData });
-                    }
-                }
+                var type = (editParms.deletedRecords.length > 1) ? 'batch' : 'delete';
+                var cardData_1 = editParms.deletedRecords;
+                _this.parent.dataModule.updateDataManager(type, editParms, 'cardRemoved', cardData_1[0]);
             }
         });
     };
-    Crud.prototype.priorityOrder = function (cardData, args) {
+    Crud.prototype.priorityOrder = function (cardData, args, index) {
         var _this = this;
         var cardsId = cardData.map(function (obj) { return obj[_this.parent.cardSettings.headerField]; });
+        var num = cardData[cardData.length - 1][this.parent.sortSettings.field];
         var allModifiedKeys = cardData.map(function (obj) { return obj[_this.parent.keyField]; });
         var modifiedKey = allModifiedKeys.filter(function (key, index) { return allModifiedKeys.indexOf(key) === index; }).sort();
         var columnAllDatas;
         var finalData = [];
         var _loop_1 = function (columnKey) {
-            var keyData = cardData.filter(function (cardObj) { return cardObj[_this.parent.keyField] === columnKey; });
-            columnAllDatas = this_1.parent.getColumnData(columnKey);
-            if (this_1.parent.sortSettings.direction === 'Descending') {
-                columnAllDatas = this_1.removeData(columnAllDatas, keyData);
-            }
-            var customOrder = 1;
-            var initialOrder = void 0;
+            var keyData = cardData.filter(function (cardObj) {
+                return cardObj[_this.parent.keyField] === columnKey;
+            });
+            columnAllDatas = this_1.parent.layoutModule.columnData[columnKey];
             for (var _i = 0, _a = keyData; _i < _a.length; _i++) {
                 var data = _a[_i];
-                var order = void 0;
-                if (data[this_1.parent.sortSettings.field]) {
-                    order = data[this_1.parent.sortSettings.field];
-                }
-                else if (args.requestType !== 'cardChange') {
-                    if (customOrder === 1) {
-                        initialOrder = columnAllDatas.slice(-1)[0][this_1.parent.sortSettings.field];
-                    }
-                    order = data[this_1.parent.sortSettings.field] = (customOrder > 1 ? initialOrder :
-                        columnAllDatas.slice(-1)[0][this_1.parent.sortSettings.field]) + customOrder;
-                    customOrder++;
-                }
                 if (this_1.parent.swimlaneSettings.keyField) {
                     var swimlaneDatas = this_1.parent.getSwimlaneData(data[this_1.parent.swimlaneSettings.keyField]);
                     columnAllDatas = this_1.parent.getColumnData(columnKey, swimlaneDatas);
-                    if (this_1.parent.sortSettings.direction === 'Descending') {
-                        columnAllDatas = this_1.removeData(columnAllDatas, keyData);
-                    }
                 }
-                var count = [];
-                for (var j = 0; j < columnAllDatas.length; j++) {
-                    if (columnAllDatas[j][this_1.parent.sortSettings.field] === order) {
-                        count.push(j + 1);
-                        break;
-                    }
-                }
-                if (args.requestType === 'cardChange') {
-                    finalData.push(data);
-                }
-                var finalCardsId = finalData.map(function (obj) { return obj[_this.parent.cardSettings.headerField]; });
+            }
+            keyData.forEach(function (key) { return finalData.push(key); });
+            if (!isNullOrUndefined(index)) {
                 if (this_1.parent.sortSettings.direction === 'Ascending') {
-                    for (var i = count[0]; i <= columnAllDatas.length; i++) {
-                        var dataObj = columnAllDatas[i - 1];
-                        var index = cardsId.indexOf(dataObj[this_1.parent.cardSettings.headerField]);
-                        if (index === -1 && order >= dataObj[this_1.parent.sortSettings.field]) {
-                            dataObj[this_1.parent.sortSettings.field] = ++order;
-                            var isData = finalCardsId.indexOf(dataObj[this_1.parent.cardSettings.headerField]);
-                            (isData === -1) ? finalData.push(dataObj) : finalData[isData] = dataObj;
+                    for (var i = index; i < columnAllDatas.length; i++) {
+                        if (cardsId.indexOf(columnAllDatas[i][this_1.parent.cardSettings.headerField]) === -1) {
+                            columnAllDatas[i][this_1.parent.sortSettings.field] = ++num;
+                            finalData.push(columnAllDatas[i]);
                         }
                     }
                 }
                 else {
-                    for (var i = count[0]; i > 0; i--) {
-                        var dataObj = columnAllDatas[i - 1];
-                        dataObj[this_1.parent.sortSettings.field] = ++order;
-                        finalData.push(dataObj);
+                    for (var i = index - 1; i >= 0; i--) {
+                        if (cardsId.indexOf(columnAllDatas[i][this_1.parent.cardSettings.headerField]) === -1) {
+                            columnAllDatas[i][this_1.parent.sortSettings.field] = ++num;
+                            finalData.push(columnAllDatas[i]);
+                        }
                     }
                 }
             }
@@ -1227,8 +1176,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
     function DragAndDrop(parent) {
         this.parent = parent;
         this.dragObj = {
-            element: null, cloneElement: null, instance: null,
-            targetClone: null, draggedClone: null, targetCloneMulti: null,
+            element: null, cloneElement: null, instance: null, targetClone: null, draggedClone: null, targetCloneMulti: null,
             selectedCards: [], pageX: 0, pageY: 0, navigationInterval: null, cardDetails: [], modifiedData: []
         };
         this.dragEdges = { left: false, right: false, top: false, bottom: false };
@@ -1299,9 +1247,6 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                 _this.dragObj.cloneElement = null;
                 _this.dragObj.targetCloneMulti = null;
                 return;
-            }
-            if (_this.parent.isBlazorRender()) {
-                e.bindEvents(e.dragElement);
             }
             if (_this.dragObj.element.classList.contains(CARD_SELECTION_CLASS)) {
                 _this.dragObj.selectedCards.forEach(function (element) { _this.draggedClone(element); });
@@ -1480,6 +1425,10 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         var _this = this;
         var contentCell = closest(this.dragObj.targetClone, '.' + CONTENT_CELLS_CLASS);
         var columnKey;
+        var dropIndex;
+        if (this.dragObj.targetClone.parentElement) {
+            dropIndex = [].slice.call(this.dragObj.targetClone.parentElement.children).indexOf(this.dragObj.targetClone);
+        }
         if (this.parent.element.querySelector('.' + TARGET_MULTI_CLONE_CLASS)) {
             columnKey = closest(e.target, '.' + MULTI_COLUMN_KEY_CLASS);
         }
@@ -1496,9 +1445,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                 this.updateDroppedData(this.dragObj.selectedCards, cardStatus_1, contentCell);
             }
             else {
-                this.dragObj.selectedCards.forEach(function (element) {
-                    _this.updateDroppedData(element, cardStatus_1, contentCell);
-                });
+                this.dragObj.selectedCards.forEach(function (element) { _this.updateDroppedData(element, cardStatus_1, contentCell); });
             }
             if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') {
                 this.changeOrder(this.dragObj.modifiedData);
@@ -1506,20 +1453,13 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         }
         var dragArgs = { cancel: false, data: this.dragObj.modifiedData, event: e, element: this.dragObj.selectedCards };
         this.parent.trigger(dragStop, dragArgs, function (dragEventArgs) {
-            if (!dragEventArgs.cancel) {
-                if (contentCell || columnKey) {
-                    _this.parent.crudModule.updateCard(dragEventArgs.data);
-                }
-            }
             _this.removeElement(_this.dragObj.draggedClone);
             _this.removeElement(_this.dragObj.targetClone);
             _this.removeElement(_this.dragObj.cloneElement);
             var dragMultiClone = [].slice.call(_this.parent.element.querySelectorAll('.' + DRAGGED_CLONE_CLASS));
-            dragMultiClone.forEach(function (clone) { return remove(clone); });
-            if (_this.parent.isBlazorRender()) {
-                _this.dragObj.element.style.removeProperty('width');
-                _this.multiCloneRemove();
-            }
+            dragMultiClone.forEach(function (clone) { remove(clone); });
+            _this.dragObj.element.style.removeProperty('width');
+            _this.multiCloneRemove();
             removeClass([_this.dragObj.element], DRAGGED_CARD_CLASS);
             clearInterval(_this.dragObj.navigationInterval);
             _this.dragObj.navigationInterval = null;
@@ -1529,6 +1469,14 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
             var className = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + ')';
             var cells = [].slice.call(_this.parent.element.querySelectorAll(className + ' .' + CONTENT_CELLS_CLASS));
             cells.forEach(function (cell) { return removeClass([cell], DROPPING_CLASS); });
+            if (!dragEventArgs.cancel) {
+                if (contentCell || columnKey) {
+                    var updateCard = dragEventArgs.data instanceof Array &&
+                        dragEventArgs.data.length > 1 ? dragEventArgs.data :
+                        dragEventArgs.data[0];
+                    _this.parent.crudModule.updateCard(updateCard, dropIndex);
+                }
+            }
             if (_this.parent.isAdaptive) {
                 _this.parent.touchModule.tabHold = false;
             }
@@ -1930,6 +1878,7 @@ var KanbanDialog = /** @__PURE__ @class */ (function () {
                 cardObj[columnName] = value;
             }
         }
+        cardObj = extend(this.parent.activeCardData.data, cardObj);
         var eventProp = { data: cardObj, cancel: false, element: this.element, requestType: this.action };
         this.parent.trigger(dialogClose, eventProp, function (closeArgs) {
             args.cancel = closeArgs.cancel;
@@ -2014,7 +1963,13 @@ var KanbanDialog = /** @__PURE__ @class */ (function () {
             (target.classList.contains('e-dialog-edit') || target.classList.contains('e-dialog-add'))) {
             this.dialogObj.hide();
             if (target.classList.contains('e-dialog-edit')) {
-                this.parent.crudModule.updateCard(this.cardData);
+                var activeCard = this.parent.activeCardData;
+                var updateIndex = void 0;
+                if (activeCard.data[this.parent.keyField] === this.cardData[this.parent.keyField]
+                    && activeCard.element) {
+                    updateIndex = [].slice.call(activeCard.element.parentElement.children).indexOf(activeCard.element);
+                }
+                this.parent.crudModule.updateCard(this.cardData, updateIndex);
             }
             if (target.classList.contains('e-dialog-add')) {
                 this.parent.crudModule.addCard(this.cardData);
@@ -2111,7 +2066,7 @@ var KanbanDialog = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * Drag and Drop module is used to perform card actions.
+ * Kanban keyboard module
  * @hidden
  */
 var Keyboard = /** @__PURE__ @class */ (function () {
@@ -2242,9 +2197,7 @@ var Keyboard = /** @__PURE__ @class */ (function () {
         this.addRemoveTabIndex('Remove');
         element.focus();
         var card = [].slice.call(closest(element, '.' + CONTENT_CELLS_CLASS).querySelectorAll('.' + CARD_CLASS));
-        card.forEach(function (element) {
-            element.setAttribute('tabindex', '0');
-        });
+        card.forEach(function (element) { element.setAttribute('tabindex', '0'); });
     };
     Keyboard.prototype.processLeftRightArrow = function (e) {
         if (document.activeElement.classList.contains(CONTENT_CELLS_CLASS)) {
@@ -2312,9 +2265,7 @@ var Keyboard = /** @__PURE__ @class */ (function () {
     };
     Keyboard.prototype.cardTabIndexRemove = function () {
         var cards = [].slice.call(this.parent.element.querySelectorAll('.' + CARD_CLASS));
-        cards.forEach(function (card) {
-            card.setAttribute('tabindex', '-1');
-        });
+        cards.forEach(function (card) { card.setAttribute('tabindex', '-1'); });
         var addButton = [].slice.call(this.parent.element.querySelectorAll('.' + SHOW_ADD_BUTTON));
         addButton.forEach(function (add) {
             add.setAttribute('tabindex', '-1');
@@ -2343,9 +2294,7 @@ var Keyboard = /** @__PURE__ @class */ (function () {
             this.addRemoveTabIndex('Remove');
             if (cards.length > 0) {
                 element.querySelector('.' + CARD_CLASS).focus();
-                cards.forEach(function (element) {
-                    element.setAttribute('tabindex', '0');
-                });
+                cards.forEach(function (element) { element.setAttribute('tabindex', '0'); });
             }
             if (element.querySelector('.' + SHOW_ADD_BUTTON)) {
                 element.querySelector('.' + SHOW_ADD_BUTTON).setAttribute('tabindex', '0');
@@ -2366,33 +2315,16 @@ var Keyboard = /** @__PURE__ @class */ (function () {
         var attribute = action === 'Add' ? '0' : '-1';
         var headerIcon = [].slice.call(this.parent.element.querySelectorAll('.' + HEADER_ICON_CLASS));
         if (headerIcon.length > 0) {
-            headerIcon.forEach(function (element) {
-                element.setAttribute('tabindex', attribute);
-            });
+            headerIcon.forEach(function (element) { element.setAttribute('tabindex', attribute); });
         }
         var swimlaneIcon = [].slice.call(this.parent.element.querySelectorAll('.' + SWIMLANE_ROW_EXPAND_CLASS));
         if (swimlaneIcon.length > 0) {
-            swimlaneIcon.forEach(function (element) {
-                element.setAttribute('tabindex', attribute);
-            });
+            swimlaneIcon.forEach(function (element) { element.setAttribute('tabindex', attribute); });
         }
         var className = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + ') .' + CONTENT_CELLS_CLASS;
         var contentCell = [].slice.call(this.parent.element.querySelectorAll(className));
-        contentCell.forEach(function (element) {
-            element.setAttribute('tabindex', attribute);
-        });
+        contentCell.forEach(function (element) { element.setAttribute('tabindex', attribute); });
     };
-    /**
-     * Get module name.
-     */
-    Keyboard.prototype.getModuleName = function () {
-        return 'keyboard';
-    };
-    /**
-     * To destroy the keyboard module.
-     * @return {void}
-     * @private
-     */
     Keyboard.prototype.destroy = function () {
         this.keyboardModule.destroy();
     };
@@ -2401,8 +2333,13 @@ var Keyboard = /** @__PURE__ @class */ (function () {
 
 /**
  * Tooltip for Kanban board
+ * @hidden
  */
 var KanbanTooltip = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for tooltip module
+     * @private
+     */
     function KanbanTooltip(parent) {
         this.parent = parent;
         this.renderTooltip();
@@ -2454,11 +2391,13 @@ var KanbanTooltip = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * kanban touch module
+ * Kanban touch module
+ * @hidden
  */
 var KanbanTouch = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for touch module
+     * @private
      */
     function KanbanTouch(parent) {
         this.parent = parent;
@@ -2569,64 +2508,51 @@ var KanbanTouch = /** @__PURE__ @class */ (function () {
 
 /**
  * Kanban mobile layout rendering module
+ * @hidden
  */
 var MobileLayout = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for mobile layout module
+     * @private
      */
     function MobileLayout(parent) {
         this.parent = parent;
     }
     MobileLayout.prototype.renderSwimlaneHeader = function () {
-        var toolbarWrapper;
-        if (this.parent.isBlazorRender()) {
-            toolbarWrapper = this.parent.element.querySelector('.' + SWIMLANE_HEADER_CLASS);
-        }
-        else {
-            toolbarWrapper = createElement('div', { className: SWIMLANE_HEADER_CLASS });
-            toolbarWrapper.innerHTML = '<div class="' + SWIMLANE_HEADER_TOOLBAR_CLASS + '"><div class="' + TOOLBAR_MENU_CLASS +
+        var toolbarWrapper = createElement('div', {
+            className: SWIMLANE_HEADER_CLASS,
+            innerHTML: '<div class="' + SWIMLANE_HEADER_TOOLBAR_CLASS + '"><div class="' + TOOLBAR_MENU_CLASS +
                 '"><div class="e-icons ' + TOOLBAR_MENU_ICON_CLASS + '"></div></div><div class="' + TOOLBAR_LEVEL_TITLE_CLASS +
-                '"><div class="' + TOOLBAR_SWIMLANE_NAME_CLASS + '"></div></div></div>';
-            this.parent.element.appendChild(toolbarWrapper);
-        }
+                '"><div class="' + TOOLBAR_SWIMLANE_NAME_CLASS + '"></div></div></div>'
+        });
+        this.parent.element.appendChild(toolbarWrapper);
         EventHandler.add(toolbarWrapper.querySelector('.' + TOOLBAR_MENU_ICON_CLASS), 'click', this.menuClick, this);
     };
     MobileLayout.prototype.renderSwimlaneTree = function () {
-        var treeWrapper;
         var height = this.parent.element.querySelector('.' + SWIMLANE_HEADER_CLASS).offsetHeight;
         var treeHeight = window.innerHeight - height;
-        if (!this.parent.isBlazorRender()) {
-            this.popupOverlay = createElement('div', { className: SWIMLANE_OVERLAY_CLASS, styles: 'height: ' + treeHeight + 'px;' });
-            var wrapper = createElement('div', { className: SWIMLANE_CONTENT_CLASS, styles: 'top:' + height + 'px;' });
-            treeWrapper = createElement('div', {
-                className: SWIMLANE_RESOURCE_CLASS + ' e-popup-close',
-                styles: 'height: ' + treeHeight + 'px;'
-            });
-            wrapper.appendChild(treeWrapper);
-            wrapper.appendChild(this.popupOverlay);
-            this.parent.element.appendChild(wrapper);
-            var swimlaneTree = createElement('div', { className: SWIMLANE_TREE_CLASS });
-            treeWrapper.appendChild(swimlaneTree);
-            this.treeViewObj = new TreeView({
-                cssClass: this.parent.cssClass,
-                enableRtl: this.parent.enableRtl,
-                fields: {
-                    dataSource: this.parent.layoutModule.kanbanRows,
-                    id: 'keyField',
-                    text: 'textField'
-                },
-                nodeTemplate: this.parent.swimlaneSettings.template,
-                nodeClicked: this.treeSwimlaneClick.bind(this)
-            });
-            this.treeViewObj.appendTo(swimlaneTree);
-        }
-        else {
-            this.popupOverlay = this.parent.element.querySelector('.' + SWIMLANE_CONTENT_CLASS + ' .' + SWIMLANE_OVERLAY_CLASS);
-            setStyleAttribute(this.parent.element.querySelector('.' + SWIMLANE_OVERLAY_CLASS), { 'height': treeHeight + 'px' });
-            setStyleAttribute(this.parent.element.querySelector('.' + SWIMLANE_CONTENT_CLASS), { 'top': height + 'px' });
-            treeWrapper = this.parent.element.querySelector('.' + SWIMLANE_RESOURCE_CLASS);
-            setStyleAttribute(treeWrapper, { 'height': treeHeight + 'px' });
-        }
+        this.popupOverlay = createElement('div', { className: SWIMLANE_OVERLAY_CLASS, styles: 'height: ' + treeHeight + 'px;' });
+        var wrapper = createElement('div', { className: SWIMLANE_CONTENT_CLASS, styles: 'top:' + height + 'px;' });
+        var treeWrapper = createElement('div', {
+            className: SWIMLANE_RESOURCE_CLASS + ' e-popup-close', styles: 'height: ' + treeHeight + 'px;'
+        });
+        wrapper.appendChild(treeWrapper);
+        wrapper.appendChild(this.popupOverlay);
+        this.parent.element.appendChild(wrapper);
+        var swimlaneTree = createElement('div', { className: SWIMLANE_TREE_CLASS });
+        treeWrapper.appendChild(swimlaneTree);
+        this.treeViewObj = new TreeView({
+            cssClass: this.parent.cssClass,
+            enableRtl: this.parent.enableRtl,
+            fields: {
+                dataSource: this.parent.layoutModule.kanbanRows,
+                id: 'keyField',
+                text: 'textField'
+            },
+            nodeTemplate: this.parent.swimlaneSettings.template,
+            nodeClicked: this.treeSwimlaneClick.bind(this)
+        });
+        this.treeViewObj.appendTo(swimlaneTree);
         var popupObj = {
             targetType: 'relative',
             actionOnScroll: 'none',
@@ -2636,9 +2562,7 @@ var MobileLayout = /** @__PURE__ @class */ (function () {
             showAnimation: { name: 'SlideLeftIn', duration: 500 },
             viewPortElement: this.parent.element.querySelector('.' + CONTENT_CLASS)
         };
-        if (!this.parent.isBlazorRender()) {
-            popupObj.content = this.treeViewObj.element;
-        }
+        popupObj.content = this.treeViewObj.element;
         this.treePopup = new Popup(treeWrapper, popupObj);
     };
     MobileLayout.prototype.menuClick = function (event) {
@@ -2647,11 +2571,9 @@ var MobileLayout = /** @__PURE__ @class */ (function () {
             removeClass([this.popupOverlay], 'e-enable');
         }
         else {
-            if (!this.parent.isBlazorRender()) {
-                var treeNodes = [].slice.call(this.treeViewObj.element.querySelectorAll('.e-list-item'));
-                removeClass(treeNodes, 'e-active');
-                addClass([treeNodes[this.parent.layoutModule.swimlaneIndex]], 'e-active');
-            }
+            var treeNodes = [].slice.call(this.treeViewObj.element.querySelectorAll('.e-list-item'));
+            removeClass(treeNodes, 'e-active');
+            addClass([treeNodes[this.parent.layoutModule.swimlaneIndex]], 'e-active');
             this.treePopup.show();
             addClass([this.popupOverlay], 'e-enable');
         }
@@ -2664,9 +2586,6 @@ var MobileLayout = /** @__PURE__ @class */ (function () {
         this.parent.notify(dataReady, { processedData: this.parent.kanbanData });
         args.event.preventDefault();
     };
-    /**
-     * @hidden
-     */
     MobileLayout.prototype.hidePopup = function () {
         this.treePopup.hide();
         removeClass([this.popupOverlay], 'e-enable');
@@ -2692,11 +2611,13 @@ var __extends$7 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * Kanban layout rendering module
+ * @hidden
  */
 var LayoutRender = /** @__PURE__ @class */ (function (_super) {
     __extends$7(LayoutRender, _super);
     /**
      * Constructor for layout module
+     * @private
      */
     function LayoutRender(parent) {
         var _this = _super.call(this, parent) || this;
@@ -2711,40 +2632,31 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     LayoutRender.prototype.initRender = function () {
-        if (!this.parent.isBlazorRender()) {
-            if (this.parent.columns.length === 0) {
-                return;
-            }
-            this.columnData = this.getColumnCards();
-            this.kanbanRows = this.getRows();
-            this.swimlaneData = this.getSwimlaneCards();
+        if (this.parent.columns.length === 0) {
+            return;
         }
+        this.columnData = this.getColumnCards();
+        this.kanbanRows = this.getRows();
+        this.swimlaneData = this.getSwimlaneCards();
         if (this.parent.isAdaptive) {
             var parent_1 = this.parent.element.querySelector('.' + CONTENT_CLASS);
             if (parent_1) {
                 this.scrollLeft = parent_1.scrollLeft;
             }
         }
-        if (!this.parent.isBlazorRender()) {
-            this.destroy();
-            this.parent.on(dataReady, this.initRender, this);
-            this.parent.on(contentReady, this.scrollUiUpdate, this);
-        }
+        this.destroy();
+        this.parent.on(dataReady, this.initRender, this);
+        this.parent.on(contentReady, this.scrollUiUpdate, this);
         if (this.parent.isAdaptive && this.parent.swimlaneSettings.keyField && this.parent.kanbanData.length !== 0) {
             this.renderSwimlaneHeader();
         }
-        if (!this.parent.isBlazorRender()) {
-            var header = createElement('div', { className: HEADER_CLASS });
-            this.parent.element.appendChild(header);
-            this.renderHeader(header);
-            this.renderContent();
-            this.renderCards();
-            this.renderValidation();
-            this.parent.renderTemplates();
-        }
-        else {
-            this.initializeSwimlaneTree();
-        }
+        var header = createElement('div', { className: HEADER_CLASS });
+        this.parent.element.appendChild(header);
+        this.renderHeader(header);
+        this.renderContent();
+        this.renderCards();
+        this.renderValidation();
+        this.parent.renderTemplates();
         this.parent.notify(contentReady, {});
         this.wireEvents();
         if (this.parent.isInitialRender) {
@@ -2901,29 +2813,20 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
     };
     LayoutRender.prototype.initializeSwimlaneTree = function () {
         if (this.parent.swimlaneSettings.keyField && this.parent.isAdaptive && this.parent.kanbanData.length !== 0) {
-            if (!this.parent.isBlazorRender()) {
-                this.swimlaneRow = [this.kanbanRows[this.swimlaneIndex]];
-                this.renderSwimlaneTree();
-                this.parent.element.querySelector('.' + TOOLBAR_SWIMLANE_NAME_CLASS).innerHTML = this.swimlaneRow[0].textField;
-            }
-            else {
-                this.renderSwimlaneTree();
-            }
+            this.swimlaneRow = [this.kanbanRows[this.swimlaneIndex]];
+            this.renderSwimlaneTree();
+            this.parent.element.querySelector('.' + TOOLBAR_SWIMLANE_NAME_CLASS).innerHTML = this.swimlaneRow[0].textField;
         }
     };
     LayoutRender.prototype.renderSwimlaneRow = function (tBody, row, isCollapsed) {
         var name = CONTENT_ROW_CLASS + ' ' + SWIMLANE_ROW_CLASS;
         var className = isCollapsed ? ' ' + COLLAPSED_CLASS : '';
         var tr = createElement('tr', {
-            className: name + className, attrs: {
-                'data-key': row.keyField,
-                'aria-expanded': (!isCollapsed).toString()
-            }
+            className: name + className, attrs: { 'data-key': row.keyField, 'aria-expanded': (!isCollapsed).toString() }
         });
         var col = this.parent.columns.length - this.parent.actionModule.hideColumnKeys.length;
         var td = createElement('td', {
-            className: CONTENT_CELLS_CLASS,
-            attrs: { 'data-role': 'kanban-column', 'colspan': col.toString() }
+            className: CONTENT_CELLS_CLASS, attrs: { 'data-role': 'kanban-column', 'colspan': col.toString() }
         });
         var swimlaneHeader = createElement('div', { className: SWIMLANE_HEADER_CLASS });
         td.appendChild(swimlaneHeader);
@@ -2986,68 +2889,10 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                     var _loop_4 = function (data) {
                         var cardText = data[_this.parent.cardSettings.headerField];
                         var cardIndex = _this.parent.actionModule.selectionArray.indexOf(cardText);
-                        var className = cardIndex === -1 ? '' : ' ' + CARD_SELECTION_CLASS;
-                        var cardElement = createElement('div', {
-                            className: CARD_CLASS + className,
-                            attrs: {
-                                'data-id': data[_this.parent.cardSettings.headerField], 'data-key': data[_this.parent.keyField],
-                                'aria-selected': 'false', 'tabindex': '-1'
-                            }
-                        });
+                        var cardElement = _this.renderCard(data);
                         if (cardIndex !== -1) {
                             cardElement.setAttribute('aria-selected', 'true');
-                        }
-                        if (_this.parent.cardSettings.template) {
-                            addClass([cardElement], TEMPLATE_CLASS);
-                            var templateId = _this.parent.element.id + '_cardTemplate';
-                            var cardTemplate = _this.parent.templateParser(_this.parent.cardSettings.template)(data, _this.parent, 'template', templateId, false);
-                            append(cardTemplate, cardElement);
-                        }
-                        else {
-                            var tooltipClass = _this.parent.enableTooltip ? ' ' + TOOLTIP_TEXT_CLASS : '';
-                            if (_this.parent.cardSettings.showHeader) {
-                                var cardHeader = createElement('div', { className: CARD_HEADER_CLASS });
-                                var cardCaption = createElement('div', { className: CARD_HEADER_TEXT_CLASS });
-                                var cardText_1 = createElement('div', {
-                                    className: CARD_HEADER_TITLE_CLASS + tooltipClass,
-                                    innerHTML: data[_this.parent.cardSettings.headerField] || ''
-                                });
-                                cardHeader.appendChild(cardCaption);
-                                cardCaption.appendChild(cardText_1);
-                                cardElement.appendChild(cardHeader);
-                            }
-                            var cardContent = createElement('div', {
-                                className: CARD_CONTENT_CLASS + tooltipClass,
-                                innerHTML: data[_this.parent.cardSettings.contentField] || ''
-                            });
-                            cardElement.appendChild(cardContent);
-                            if (_this.parent.cardSettings.tagsField && data[_this.parent.cardSettings.tagsField]) {
-                                var cardTags = createElement('div', { className: CARD_TAGS_CLASS });
-                                var tags = data[_this.parent.cardSettings.tagsField].toString().split(',');
-                                for (var _i = 0, tags_1 = tags; _i < tags_1.length; _i++) {
-                                    var tag = tags_1[_i];
-                                    cardTags.appendChild(createElement('div', {
-                                        className: CARD_TAG_CLASS + ' ' + CARD_LABEL_CLASS,
-                                        innerHTML: tag
-                                    }));
-                                }
-                                cardElement.appendChild(cardTags);
-                            }
-                            if (_this.parent.cardSettings.grabberField && data[_this.parent.cardSettings.grabberField]) {
-                                addClass([cardElement], CARD_COLOR_CLASS);
-                                cardElement.style.borderLeftColor = data[_this.parent.cardSettings.grabberField];
-                            }
-                            if (_this.parent.cardSettings.footerCssField) {
-                                var cardFields = createElement('div', { className: CARD_FOOTER_CLASS });
-                                var keys = data[_this.parent.cardSettings.footerCssField].split(',');
-                                for (var _a = 0, keys_1 = keys; _a < keys_1.length; _a++) {
-                                    var key = keys_1[_a];
-                                    cardFields.appendChild(createElement('div', {
-                                        className: key.trim() + ' ' + CARD_FOOTER_CSS_CLASS
-                                    }));
-                                }
-                                cardElement.appendChild(cardFields);
-                            }
+                            addClass([cardElement], CARD_SELECTION_CLASS);
                         }
                         var args = { data: data, element: cardElement, cancel: false };
                         _this.parent.trigger(cardRendered, args, function (cardArgs) {
@@ -3076,6 +2921,67 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         if (!this.parent.swimlaneSettings.showEmptyRow && (this.parent.kanbanData.length === 0 && !this.parent.showEmptyColumn)) {
             removeTrs.forEach(function (tr) { return remove(tr); });
         }
+    };
+    LayoutRender.prototype.renderCard = function (data) {
+        var cardElement = createElement('div', {
+            className: CARD_CLASS,
+            attrs: {
+                'data-id': data[this.parent.cardSettings.headerField], 'data-key': data[this.parent.keyField],
+                'aria-selected': 'false', 'tabindex': '-1'
+            }
+        });
+        if (this.parent.cardSettings.template) {
+            addClass([cardElement], TEMPLATE_CLASS);
+            var templateId = this.parent.element.id + '_cardTemplate';
+            var cardTemplate = this.parent.templateParser(this.parent.cardSettings.template)(data, this.parent, 'template', templateId, false);
+            append(cardTemplate, cardElement);
+        }
+        else {
+            var tooltipClass = this.parent.enableTooltip ? ' ' + TOOLTIP_TEXT_CLASS : '';
+            if (this.parent.cardSettings.showHeader) {
+                var cardHeader = createElement('div', { className: CARD_HEADER_CLASS });
+                var cardCaption = createElement('div', { className: CARD_HEADER_TEXT_CLASS });
+                var cardText = createElement('div', {
+                    className: CARD_HEADER_TITLE_CLASS + tooltipClass,
+                    innerHTML: data[this.parent.cardSettings.headerField] || ''
+                });
+                cardHeader.appendChild(cardCaption);
+                cardCaption.appendChild(cardText);
+                cardElement.appendChild(cardHeader);
+            }
+            var cardContent = createElement('div', {
+                className: CARD_CONTENT_CLASS + tooltipClass,
+                innerHTML: data[this.parent.cardSettings.contentField] || ''
+            });
+            cardElement.appendChild(cardContent);
+            if (this.parent.cardSettings.tagsField && data[this.parent.cardSettings.tagsField]) {
+                var cardTags = createElement('div', { className: CARD_TAGS_CLASS });
+                var tags = data[this.parent.cardSettings.tagsField].toString().split(',');
+                for (var _i = 0, tags_1 = tags; _i < tags_1.length; _i++) {
+                    var tag = tags_1[_i];
+                    cardTags.appendChild(createElement('div', {
+                        className: CARD_TAG_CLASS + ' ' + CARD_LABEL_CLASS, innerHTML: tag
+                    }));
+                }
+                cardElement.appendChild(cardTags);
+            }
+            if (this.parent.cardSettings.grabberField && data[this.parent.cardSettings.grabberField]) {
+                addClass([cardElement], CARD_COLOR_CLASS);
+                cardElement.style.borderLeftColor = data[this.parent.cardSettings.grabberField];
+            }
+            if (this.parent.cardSettings.footerCssField) {
+                var cardFields = createElement('div', { className: CARD_FOOTER_CLASS });
+                var keys = data[this.parent.cardSettings.footerCssField].split(',');
+                for (var _a = 0, keys_1 = keys; _a < keys_1.length; _a++) {
+                    var key = keys_1[_a];
+                    cardFields.appendChild(createElement('div', {
+                        className: key.trim() + ' ' + CARD_FOOTER_CSS_CLASS
+                    }));
+                }
+                cardElement.appendChild(cardFields);
+            }
+        }
+        return cardElement;
     };
     LayoutRender.prototype.renderColGroup = function (table) {
         var _this = this;
@@ -3125,7 +3031,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             kanbanRows.sort(function (firstRow, secondRow) {
                 var first = firstRow.textField.toLowerCase();
                 var second = secondRow.textField.toLowerCase();
-                return (first > second) ? 1 : ((second > first) ? -1 : 0);
+                return (first > second) ? 1 : (second > first) ? -1 : 0;
             });
             if (this.parent.swimlaneSettings.sortDirection === 'Descending') {
                 kanbanRows.reverse();
@@ -3306,6 +3212,15 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             }
         });
     };
+    LayoutRender.prototype.refreshValidation = function () {
+        var validations = [].slice.call(this.parent.element.querySelectorAll('.' + LIMITS_CLASS));
+        validations.forEach(function (node) { remove(node); });
+        var minClass = [].slice.call(this.parent.element.querySelectorAll('.' + MIN_COLOR_CLASS));
+        removeClass(minClass, MIN_COUNT_CLASS);
+        var maxClass = [].slice.call(this.parent.element.querySelectorAll('.' + MAX_COLOR_CLASS));
+        removeClass(maxClass, MAX_COLOR_CLASS);
+        this.renderValidation();
+    };
     LayoutRender.prototype.getColumnData = function (columnValue, dataSource) {
         var _this = this;
         if (dataSource === void 0) { dataSource = this.parent.kanbanData; }
@@ -3345,12 +3260,9 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         return cardData;
     };
     LayoutRender.prototype.sortOrder = function (key, direction, cardData) {
-        var isNumeric;
+        var isNumeric = true;
         if (this.parent.kanbanData.length > 0) {
             isNumeric = typeof this.parent.kanbanData[0][key] === 'number';
-        }
-        else {
-            isNumeric = true;
         }
         if (!isNumeric && this.parent.sortSettings.sortBy === 'Index') {
             return cardData;
@@ -3429,6 +3341,31 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         cards.forEach(function (card) { return remove(card); });
         this.renderCards();
     };
+    LayoutRender.prototype.refresh = function () {
+        var _this = this;
+        this.columnData = this.getColumnCards();
+        this.parent.columns.forEach(function (column) {
+            if (column.showItemCount) {
+                var countSelector = "." + HEADER_CELLS_CLASS + "[data-key=\"" + column.keyField + "\"] ." + CARD_ITEM_COUNT_CLASS;
+                var itemCount = _this.parent.element.querySelector(countSelector);
+                if (itemCount) {
+                    itemCount.innerHTML = "- " + _this.columnData[column.keyField].length + " " + _this.parent.localeObj.getConstant('items');
+                }
+            }
+        });
+        if (this.parent.swimlaneSettings.keyField) {
+            this.swimlaneData = this.getSwimlaneCards();
+            var swimlaneRows = [].slice.call(this.parent.element.querySelectorAll("." + SWIMLANE_ROW_CLASS));
+            swimlaneRows.forEach(function (swimlane) {
+                var swimlaneKey = swimlane.getAttribute('data-key');
+                var itemCount = swimlane.querySelector("." + CARD_ITEM_COUNT_CLASS);
+                if (itemCount) {
+                    itemCount.innerHTML = "- " + _this.swimlaneData[swimlaneKey].length + " " + _this.parent.localeObj.getConstant('items');
+                }
+            });
+        }
+        this.refreshValidation();
+    };
     LayoutRender.prototype.updateScrollPosition = function () {
         var _this = this;
         var content = this.parent.element.querySelector('.' + CONTENT_CLASS);
@@ -3444,6 +3381,69 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         });
+    };
+    LayoutRender.prototype.renderCardBasedOnIndex = function (data, index) {
+        var _this = this;
+        var key = data[this.parent.keyField];
+        var cardRow = this.parent.element.querySelector('.e-content-row:not(.e-swimlane-row)');
+        if (this.parent.swimlaneSettings.keyField) {
+            var rowSelector = ".e-content-row.e-swimlane-row[data-key=\"" + data[this.parent.swimlaneSettings.keyField] + "\"]";
+            cardRow = this.parent.element.querySelector(rowSelector).nextElementSibling;
+        }
+        if (this.parent.sortSettings.sortBy === 'DataSourceOrder' && !isNullOrUndefined(index) ||
+            this.parent.sortSettings.sortBy === 'Custom') {
+            if (isNullOrUndefined(this.parent.swimlaneSettings.keyField)) {
+                index = this.parent.getColumnData(key, this.parent.kanbanData).findIndex(function (data) {
+                    return data[_this.parent.cardSettings.headerField] === data[_this.parent.cardSettings.headerField];
+                });
+            }
+            else {
+                var swimlaneDatas = this.parent.getSwimlaneData(data[this.parent.swimlaneSettings.keyField]);
+                index = this.parent.getColumnData(key, swimlaneDatas).findIndex(function (data) {
+                    return data[_this.parent.cardSettings.headerField] === data[_this.parent.cardSettings.headerField];
+                });
+            }
+        }
+        else if (this.parent.sortSettings.sortBy === 'Index' && this.parent.sortSettings.field
+            && this.parent.sortSettings.direction === 'Ascending') {
+            index = data[this.parent.sortSettings.field] - 1;
+        }
+        if (cardRow) {
+            var td = [].slice.call(cardRow.children).filter(function (e) {
+                return e.getAttribute('data-key').replace(/\s/g, '').split(',').indexOf(key) !== -1;
+            })[0];
+            var cardWrapper_2 = td.querySelector('.' + CARD_WRAPPER_CLASS);
+            var cardElement_1 = this.renderCard(data);
+            if (this.parent.allowDragAndDrop) {
+                addClass([cardElement_1], DRAGGABLE_CLASS);
+            }
+            var args = { data: data, element: cardElement_1, cancel: false };
+            this.parent.trigger(cardRendered, args, function (cardArgs) {
+                if (!cardArgs.cancel) {
+                    if (isNullOrUndefined(index) || cardWrapper_2.children.length === 0) {
+                        cardWrapper_2.appendChild(cardElement_1);
+                    }
+                    else if (_this.parent.sortSettings.sortBy === 'DataSourceOrder') {
+                        if (index === 0) {
+                            cardWrapper_2.children[index].insertAdjacentElement('beforebegin', cardElement_1);
+                        }
+                        else {
+                            cardWrapper_2.children[index - 1].insertAdjacentElement('afterend', cardElement_1);
+                        }
+                    }
+                    else {
+                        cardWrapper_2.insertBefore(cardElement_1, cardWrapper_2.childNodes[index]);
+                    }
+                }
+            });
+        }
+    };
+    LayoutRender.prototype.removeCard = function (data) {
+        var cardKey = data[this.parent.cardSettings.headerField];
+        var cardElement = this.parent.element.querySelector("." + CARD_CLASS + "[data-id=\"" + cardKey + "\"]");
+        if (cardElement) {
+            remove(cardElement);
+        }
     };
     LayoutRender.prototype.wireEvents = function () {
         var _this = this;
@@ -3577,25 +3577,23 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
             this.swimlaneToggleArray = [];
         }
         this.activeCardData = { data: null, element: null };
-        if (!this.isBlazorRender()) {
-            var defaultLocale = {
-                items: 'items',
-                min: 'Min',
-                max: 'Max',
-                cardsSelected: 'Cards Selected',
-                addTitle: 'Add New Card',
-                editTitle: 'Edit Card Details',
-                deleteTitle: 'Delete Card',
-                deleteContent: 'Are you sure you want to delete this card?',
-                save: 'Save',
-                delete: 'Delete',
-                cancel: 'Cancel',
-                yes: 'Yes',
-                no: 'No',
-                close: 'Close'
-            };
-            this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
-        }
+        var defaultLocale = {
+            items: 'items',
+            min: 'Min',
+            max: 'Max',
+            cardsSelected: 'Cards Selected',
+            addTitle: 'Add New Card',
+            editTitle: 'Edit Card Details',
+            deleteTitle: 'Delete Card',
+            deleteContent: 'Are you sure you want to delete this card?',
+            save: 'Save',
+            delete: 'Delete',
+            cancel: 'Cancel',
+            yes: 'Yes',
+            no: 'No',
+            close: 'Close'
+        };
+        this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
         this.scrollPosition = { content: { left: 0, top: 0 }, column: {} };
         this.isInitialRender = true;
     };
@@ -3627,27 +3625,25 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Kanban.prototype.render = function () {
-        if (!this.isBlazorRender()) {
-            var addClasses = [ROOT_CLASS];
-            var removeClasses = [];
-            if (this.enableRtl) {
-                addClasses.push(RTL_CLASS);
-            }
-            else {
-                removeClasses.push(RTL_CLASS);
-            }
-            if (this.isAdaptive) {
-                addClasses.push(DEVICE_CLASS);
-            }
-            else {
-                removeClasses.push(DEVICE_CLASS);
-            }
-            if (this.cssClass) {
-                addClasses.push(this.cssClass);
-            }
-            this.element.setAttribute('role', 'main');
-            classList(this.element, addClasses, removeClasses);
+        var addClasses = [ROOT_CLASS];
+        var removeClasses = [];
+        if (this.enableRtl) {
+            addClasses.push(RTL_CLASS);
         }
+        else {
+            removeClasses.push(RTL_CLASS);
+        }
+        if (this.isAdaptive) {
+            addClasses.push(DEVICE_CLASS);
+        }
+        else {
+            removeClasses.push(DEVICE_CLASS);
+        }
+        if (this.cssClass) {
+            addClasses.push(this.cssClass);
+        }
+        this.element.setAttribute('role', 'main');
+        classList(this.element, addClasses, removeClasses);
         this.element.style.width = formatUnit(this.width);
         this.element.style.height = formatUnit(this.height);
         createSpinner({ target: this.element });
@@ -3672,9 +3668,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'enableRtl':
                 case 'locale':
-                    if (!this.isBlazorRender()) {
-                        this.refresh();
-                    }
+                    this.refresh();
                     break;
                 case 'width':
                     this.element.style.width = formatUnit(newProp.width);
@@ -3688,18 +3682,11 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'dataSource':
                 case 'query':
-                    if (!this.isBlazorRender()) {
-                        this.dataModule = new Data(this);
-                    }
+                    this.dataModule = new Data(this);
                     break;
                 case 'columns':
                 case 'constraintType':
-                    if (!this.isBlazorRender()) {
-                        this.notify(dataReady, { processedData: this.kanbanData });
-                    }
-                    else {
-                        this.notifyChange();
-                    }
+                    this.notify(dataReady, { processedData: this.kanbanData });
                     break;
                 case 'swimlaneSettings':
                     this.onSwimlaneSettingsPropertyChanged(newProp.swimlaneSettings, oldProp.swimlaneSettings);
@@ -3722,9 +3709,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
                     }
                     if (newProp.enableTooltip) {
                         this.tooltipModule = new KanbanTooltip(this);
-                        if (!this.isBlazorRender()) {
-                            this.layoutModule.refreshCards();
-                        }
+                        this.layoutModule.refreshCards();
                     }
                     break;
                 case 'dialogSettings':
@@ -3742,12 +3727,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'stackedHeaders':
-                    if (!this.isBlazorRender()) {
-                        this.layoutModule.refreshHeaders();
-                    }
-                    else {
-                        this.notifyChange();
-                    }
+                    this.layoutModule.refreshHeaders();
                     break;
                 case 'sortSettings':
                     this.notify(dataReady, { processedData: this.kanbanData });
@@ -3767,12 +3747,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
                 case 'showItemCount':
                 case 'template':
                 case 'sortDirection':
-                    if (!this.isBlazorRender()) {
-                        this.notify(dataReady, { processedData: this.kanbanData });
-                    }
-                    else {
-                        this.notifyChange();
-                    }
+                    this.notify(dataReady, { processedData: this.kanbanData });
                     break;
             }
         }
@@ -3788,12 +3763,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
                 case 'tagsField':
                 case 'grabberField':
                 case 'footerCssField':
-                    if (!this.isBlazorRender()) {
-                        this.layoutModule.refreshCards();
-                    }
-                    else {
-                        this.notifyChange();
-                    }
+                    this.layoutModule.refreshCards();
                     break;
                 case 'selectionType':
                     var cards = this.getSelectedCards();
@@ -3806,9 +3776,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Kanban.prototype.initializeModules = function () {
-        if (!this.isBlazorRender()) {
-            this.dataModule = new Data(this);
-        }
+        this.dataModule = new Data(this);
         this.layoutModule = new LayoutRender(this);
         if (this.allowKeyboard) {
             this.keyboardModule = new Keyboard(this);
@@ -3824,59 +3792,19 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
             this.touchModule = new KanbanTouch(this);
         }
     };
-    Kanban.prototype.notifyChange = function () {
-        // tslint:disable-next-line
-        this.interopAdaptor.invokeMethodAsync('PropertyChanged');
-    };
-    Kanban.prototype.isDevice = function (ref) {
-        if (Browser.isDevice && isBlazor() && ref) {
-            // tslint:disable-next-line
-            ref.invokeMethodAsync('IsDevice', true, ((window.innerWidth * 80) / 100));
-        }
-    };
-    /**
-     * @hidden
-     */
+    /** @hidden */
     Kanban.prototype.renderTemplates = function () {
         // tslint:disable-next-line:no-any
         if (this.isReact) {
             this.renderReactTemplates();
         }
     };
-    /**
-     * @hidden
-     */
+    /** @hidden */
     Kanban.prototype.resetTemplates = function (templates) {
         // tslint:disable-next-line:no-any
         if (this.isReact) {
             this.clearTemplate(templates);
         }
-    };
-    /**
-     * @hidden
-     */
-    Kanban.prototype.isBlazorRender = function () {
-        return isBlazor() && this.isServerRendered;
-    };
-    /**
-     * @hidden
-     */
-    Kanban.prototype.updateDataSource = function (data) {
-        this.kanbanData = data.Result;
-    };
-    /**
-     * @hidden
-     */
-    Kanban.prototype.hideDeviceMenu = function () {
-        this.layoutModule.hidePopup();
-    };
-    /**
-     * @hidden
-     */
-    Kanban.prototype.dataReady = function (data) {
-        this.kanbanData = data.Result;
-        this.hideSpinner();
-        this.notify(dataReady, { processedData: {} });
     };
     Kanban.prototype.destroyModules = function () {
         if (this.layoutModule) {
@@ -3913,7 +3841,6 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Returns the card details based on card ID from the board.
-     * @deprecated
      * @method getCardDetails
      * @param {Element} target Accepts the card element to get the details.
      * @returns {{[key: string]: Object}}
@@ -3929,7 +3856,6 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Returns the column data based on column key input.
-     * @deprecated
      * @method getColumnData
      * @param {string} columnKey Accepts the column key to get the objects.
      * @returns {Object[]}
@@ -3939,7 +3865,6 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Returns the swimlane column data based on swimlane keyField input.
-     * @deprecated
      * @method getSwimlaneData
      * @param {string} keyField Accepts the swimlane keyField to get the objects.
      * @returns {Object[]}
@@ -3973,7 +3898,6 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To manually open the dialog.
-     * @deprecated
      * @method openDialog
      * @param {CurrentAction} action Defines the action for which the dialog needs to be opened such as either for new card creation or
      *  editing of existing cards. The applicable action names are `Add` and `Edit`.
@@ -3985,7 +3909,6 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To manually close the dialog.
-     * @deprecated
      * @method closeDialog
      * @returns {void}
      */
@@ -4026,7 +3949,6 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Add the column to Kanban board dynamically based on the provided column options and index in the argument list.
-     * @deprecated
      * @method addColumn
      * @param {ColumnsModel} columnOptions Defines the properties to new column that are going to be added in the board.
      * @param {number} index Defines the index of column to add the new column.
@@ -4037,7 +3959,6 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Deletes the column based on the provided index value.
-     * @deprecated
      * @method deleteColumn
      * @param {number} index Defines the index of column to delete the existing column from Kanban board.
      * @returns {void}
@@ -4047,7 +3968,6 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Shows the column from hidden based on the provided key in the columns.
-     * @deprecated
      * @method showColumn
      * @param {string} key Accepts the hidden column key name to be shown from the hidden state in board.
      * @returns {void}
@@ -4057,7 +3977,6 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Hides the column from Kanban board based on the provided key in the columns.
-     * @deprecated
      * @method hideColumn
      * @param {string} key Accepts the visible column key name to be hidden from the board.
      * @returns {void}
@@ -4072,17 +3991,13 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
      */
     Kanban.prototype.destroy = function () {
         this.destroyModules();
-        if (!this.isBlazorRender()) {
-            [].slice.call(this.element.childNodes).forEach(function (node) { return detach(node); });
-        }
+        [].slice.call(this.element.childNodes).forEach(function (node) { detach(node); });
         var removeClasses = [ROOT_CLASS];
         if (this.cssClass) {
             removeClasses = removeClasses.concat(this.cssClass.split(' '));
         }
         removeClass([this.element], removeClasses);
-        if (!this.isBlazorRender()) {
-            _super.prototype.destroy.call(this);
-        }
+        _super.prototype.destroy.call(this);
     };
     __decorate([
         Property()

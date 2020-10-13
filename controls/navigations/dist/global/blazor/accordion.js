@@ -667,7 +667,7 @@ var Accordion = /** @class */ (function (_super) {
         var templateFn;
         var temString;
         try {
-            if (document.querySelectorAll(value).length) {
+            if (document.querySelectorAll(value).length && value !== 'Button') {
                 var eleVal = document.querySelector(value);
                 temString = eleVal.outerHTML.trim();
                 ele.appendChild(eleVal);

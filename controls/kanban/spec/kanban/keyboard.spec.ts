@@ -49,7 +49,6 @@ describe('Keyboard module', () => {
         it('ensure module name', () => {
             keyModule = kanbanObj.keyboardModule;
             kanbanObj.element.focus();
-            expect(keyModule.getModuleName()).toEqual('keyboard');
         });
 
         it('first card selection testing', () => {

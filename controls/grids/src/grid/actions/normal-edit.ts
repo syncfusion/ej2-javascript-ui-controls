@@ -404,7 +404,7 @@ export class NormalEdit {
     }
 
     private editFailure(e: ReturnType): void {
-        this.parent.trigger(events.actionFailure, ((isBlazor() && e instanceof Array) ? e[0] : e));
+        this.parent.trigger(events.actionFailure, ((isBlazor() && e instanceof Array) ? e[0] : { error: e }));
         this.parent.hideSpinner();
         this.parent.log('actionfailure', { error: e });
     }

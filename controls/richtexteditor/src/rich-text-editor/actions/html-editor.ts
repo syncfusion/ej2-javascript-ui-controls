@@ -32,7 +32,7 @@ export class HtmlEditor {
     private nodeSelectionObj: NodeSelection;
     private rangeCollection: Range[] = [];
     private saveSelection: NodeSelection;
-    private xhtmlValidation: XhtmlValidation;
+    public xhtmlValidation: XhtmlValidation;
 
     constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -262,6 +262,11 @@ export class HtmlEditor {
                     break;
                 case 'CreateLink':
                     this.parent.notify(events.insertLink, {
+                        member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                    });
+                    break;
+                case 'RemoveLink':
+                    this.parent.notify(events.unLink, {
                         member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
                     });
                     break;

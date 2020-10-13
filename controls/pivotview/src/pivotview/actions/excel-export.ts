@@ -146,7 +146,7 @@ export class ExcelExport {
             }
             workSheets.push({ columns: columns, rows: rows });
         }
-        let book: Workbook = new Workbook({ worksheets: workSheets }, type === 'Excel' ? 'xlsx' : 'csv');
+        let book: Workbook = new Workbook({ worksheets: workSheets }, type === 'Excel' ? 'xlsx' : 'csv', undefined, (this.parent as any).currencyCode);
         book.save(fileName + (type === 'Excel' ? '.xlsx' : '.csv'));
     }
 

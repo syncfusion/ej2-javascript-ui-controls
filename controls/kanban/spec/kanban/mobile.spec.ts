@@ -115,7 +115,7 @@ describe('Kanban mobile testing', () => {
             Browser.userAgent = androidUserAgent;
             let model: KanbanModel = {
                 cardSettings: {
-                    selectionType: "Multiple"
+                    selectionType: 'Multiple'
                 }
             };
             kanbanObj = util.createKanban(model, kanbanData, done);
@@ -127,19 +127,19 @@ describe('Kanban mobile testing', () => {
 
         it('checking adaptive rendering or not', () => {
             expect(kanbanObj.isAdaptive).toEqual(true);
-            expect(kanbanObj.cardSettings.selectionType).toEqual("Multiple");
+            expect(kanbanObj.cardSettings.selectionType).toEqual('Multiple');
             let appElements: HTMLElement = kanbanObj.element.querySelector('.e-card');
             (kanbanObj.touchModule as any).tapHoldHandler({ originalEvent: { target: appElements, type: 'touchstart' } });
         });
 
         it('rendering the quick popup wrapper content', () => {
             let appElements: HTMLElement = kanbanObj.element.querySelector('.e-card');
-            expect(kanbanObj.cardSettings.selectionType).toEqual("Multiple");
+            expect(kanbanObj.cardSettings.selectionType).toEqual('Multiple');
             expect(appElements.classList.contains('e-selection')).toBe(true);
             let eventPopup: HTMLElement = document.body.querySelector('.e-mobile-popup-wrapper') as HTMLElement;
             expect(eventPopup).not.toBeNull();
             expect(document.body.querySelector('.e-mobile-popup-wrapper').childElementCount).toEqual(2);
-            expect(kanbanObj.element.querySelector('.e-card').getAttribute("data-id")).toEqual(eventPopup.innerText);
+            expect(kanbanObj.element.querySelector('.e-card').getAttribute('data-id')).toEqual(eventPopup.innerText);
         });
         it('checking after close click', () => {
             let eventPopup: HTMLElement = document.body.querySelector('.e-mobile-popup-wrapper') as HTMLElement;
@@ -180,7 +180,7 @@ describe('Kanban mobile testing', () => {
         });
         it('checking after close click', () => {
             expect(kanbanObj.isAdaptive).toEqual(true);
-            expect(kanbanObj.cardSettings.selectionType).toEqual("Multiple");
+            expect(kanbanObj.cardSettings.selectionType).toEqual('Multiple');
             let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="3"]') as HTMLElement;
             expect(element.classList.contains('e-selection')).toBe(true);
         });
@@ -195,7 +195,7 @@ describe('Kanban mobile testing', () => {
             Browser.userAgent = androidUserAgent;
             let model: KanbanModel = {
                 cardSettings: {
-                    selectionType: "Multiple"
+                    selectionType: 'Multiple'
                 }
             };
             kanbanObj = util.createKanban(model, kanbanData, done);
@@ -206,7 +206,7 @@ describe('Kanban mobile testing', () => {
         });
         it('checking after close click', () => {
             expect(kanbanObj.isAdaptive).toEqual(true);
-            expect(kanbanObj.cardSettings.selectionType).toEqual("Multiple");
+            expect(kanbanObj.cardSettings.selectionType).toEqual('Multiple');
             let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="3"]') as HTMLElement;
             util.triggerMouseEvent(element, 'click');
         });
@@ -214,7 +214,8 @@ describe('Kanban mobile testing', () => {
             let appElement: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="1"]') as HTMLElement;
             (kanbanObj.touchModule as any).tapHoldHandler({ originalEvent: { target: appElement, type: 'touchstart' } });
 
-        }); it('checking after close click', () => {
+        });
+        it('checking after close click', () => {
             let appElement: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="1"]') as HTMLElement;
             expect(appElement.classList.contains('e-selection')).toBe(true);
         });
@@ -228,7 +229,7 @@ describe('Kanban mobile testing', () => {
         });
         it('checking adaptive rendering or not', () => {
             expect(kanbanObj.isAdaptive).toEqual(true);
-            expect(kanbanObj.cardSettings.selectionType).toEqual("Multiple");
+            expect(kanbanObj.cardSettings.selectionType).toEqual('Multiple');
             let appElements: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="1"]');
             (kanbanObj.touchModule as any).tapHoldHandler({ originalEvent: { target: appElements, type: 'touchstart' } });
         });
@@ -260,7 +261,7 @@ describe('Kanban mobile testing', () => {
             Browser.userAgent = androidUserAgent;
             let model: KanbanModel = {
                 cardSettings: {
-                    selectionType: "Multiple"
+                    selectionType: 'Multiple'
                 }
             };
             kanbanObj = util.createKanban(model, kanbanData, done);
@@ -271,7 +272,7 @@ describe('Kanban mobile testing', () => {
         });
         it('checking adaptive rendering or not', () => {
             expect(kanbanObj.isAdaptive).toEqual(true);
-            expect(kanbanObj.cardSettings.selectionType).toEqual("Multiple");
+            expect(kanbanObj.cardSettings.selectionType).toEqual('Multiple');
             let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="3"]') as HTMLElement;
             util.triggerMouseEvent(element, 'click');
         });

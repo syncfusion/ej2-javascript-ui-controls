@@ -1,4 +1,4 @@
-import { BlazorDotnetObject, EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { BlazorDotnetObject, EventHandler, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 
 const SELECTION: string = 'Selection';
 const HIGHLIGHT: string = 'Highlight';
@@ -103,19 +103,26 @@ let Treemap: object = {
             elementWidth = elementRect.width;
             elementHeight = elementRect.height;
         }
-        return { width: elementWidth, height: elementHeight };
+        return { width: elementWidth, height: elementHeight, isIE: Browser.isIE };
     },
-    setElementAttribute (dotNetRef: BlazorDotnetObject, legendItems: any, items: any, fill: string, opacity: string, borderColor: string, borderWidth: string, type: string, blazorElement: BlazorTreemapElement): void {
+    setElementAttribute(dotNetRef: BlazorDotnetObject, legendItems: any, items: any, fill: string, opacity: string, borderColor: string, borderWidth: string, type: string, blazorElement: BlazorTreemapElement): void {
         for (let j: number = 0; j < items.length; j++) {
             let element: HTMLElement = document.getElementById(items[j] + RECTPATH);
-            if (element != null) {
-                if (type === SELECTION && element.classList.contains(TREEMAPHIGHLIGHT)) {
-                    element.classList.remove(TREEMAPHIGHLIGHT);
+            if (element !== null) {
+                var elementClass = element.getAttribute('class');
+                var attribute;
+                if (isNullOrUndefined(elementClass)) {
+                    attribute = document.createAttribute('class');
+                    elementClass = '';
                 }
-                if (!element.classList.contains(TREEMAPSELECTION)) {
+                if (type === SELECTION && elementClass === TREEMAPHIGHLIGHT) {
+                    element.setAttribute('class', '')
+                    elementClass = '';
+                }
+                if (elementClass !== TREEMAPSELECTION) {
                     for (let i: number = 0; i < legendItems.length; i++) {
                         let legendElement: HTMLElement = document.getElementById(legendItems[i]);
-                        if (legendElement != null) {
+                        if (legendElement !== null) {
                             legendElement.setAttribute('fill', fill);
                             legendElement.setAttribute('opacity', opacity);
                             legendElement.setAttribute('stroke', borderColor);
@@ -126,15 +133,19 @@ let Treemap: object = {
                     element.setAttribute('opacity', opacity);
                     element.setAttribute('stroke', borderColor);
                     element.setAttribute('stroke-width', borderWidth);
-                    if (type === HIGHLIGHT || type === LEGENDHIGHLIGHT) {
-                        element.classList.add(TREEMAPHIGHLIGHT);
-                    } else {
-                        element.classList.add(TREEMAPSELECTION);
+                    elementClass = (type === HIGHLIGHT || type === LEGENDHIGHLIGHT) ? TREEMAPHIGHLIGHT : TREEMAPSELECTION;
+                    if (!isNullOrUndefined(attribute) && isNullOrUndefined(element.getAttribute('class'))) {
+                        attribute.value = elementClass;
+                        element.setAttributeNode(attribute);
                     }
-                    let contentText: string = blazorElement.blazor__instance.getElementId(items[j] + TEXT);
+                    else {
+                        element.setAttribute('class', elementClass)
+                    }
+                    var contentText = blazorElement.blazor__instance.getElementId(items[j] + TEXT);
                     if (type === SELECTION) {
                         dotNetRef.invokeMethodAsync('TriggerItemSelect', contentText);
-                    } else if (type === HIGHLIGHT) {
+                    }
+                    else if (type === HIGHLIGHT) {
                         dotNetRef.invokeMethodAsync('TriggerItemHighlight');
                     }
                 }
@@ -145,8 +156,9 @@ let Treemap: object = {
         for (let j: number = 0; j < items.length; j++) {
             let element: HTMLElement = document.getElementById(items[j] + RECTPATH);
             if (element != null) {
-                if (type === HIGHLIGHT && !element.classList.contains(TREEMAPSELECTION) ||
-                    type === SELECTION && element.classList.contains(TREEMAPSELECTION)) {
+                var elementClass = element.getAttribute('class');
+                if (type === HIGHLIGHT && elementClass !== TREEMAPSELECTION ||
+                    type === SELECTION && elementClass === TREEMAPSELECTION) {
                     for (let i: number = 0; i < legendItems.length; i++) {
                         let legendElement: HTMLElement = document.getElementById(legendItems[i]);
                         if (legendElement != null) {
@@ -160,11 +172,7 @@ let Treemap: object = {
                     element.setAttribute('opacity', opacity[j]);
                     element.setAttribute('stroke', borderColor[j]);
                     element.setAttribute('stroke-width', borderWidth[j]);
-                    if (type === HIGHLIGHT) {
-                        element.classList.remove(TREEMAPHIGHLIGHT);
-                    } else {
-                        element.classList.remove(TREEMAPSELECTION);
-                    }
+                    element.setAttribute('class', '');
                 }
             }
         }

@@ -890,7 +890,7 @@ var SfSplitter = /** @class */ (function () {
             this.collapsePane(e);
         }
         else {
-            this.dotNetRef.invokeMethodAsync(ONCOLLAPSED_EVENT, {
+            this.dotNetRef.invokeMethodAsync(ONCOLLAPSED_EVENT, -1, {
                 event: this.getMouseEvtArgs(e),
                 index: [this.getPreviousPaneIndex(), this.getNextPaneIndex()],
                 cancel: false,
@@ -1289,7 +1289,7 @@ var SfSplitter = /** @class */ (function () {
             }
             var event_1 = { target: targetEle };
             this.splitterDetails(event_1);
-            this.dotNetRef.invokeMethodAsync(ONCOLLAPSED_EVENT, {
+            this.dotNetRef.invokeMethodAsync(ONCOLLAPSED_EVENT, index, {
                 index: [this.getPreviousPaneIndex(), this.getNextPaneIndex()],
                 cancel: false
             });
@@ -1452,33 +1452,49 @@ var SfSplitter = /** @class */ (function () {
 var Splitter = {
     initialize: function (element, options, dotnetRef) {
         new SfSplitter(element, options, dotnetRef);
-        element.blazor__instance.initialize();
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.initialize();
+        }
     },
     collapse: function (element, index) {
-        element.blazor__instance.collapse(index);
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.collapse(index);
+        }
     },
     expand: function (element, index) {
-        element.blazor__instance.expand(index);
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.expand(index);
+        }
     },
     resizeEvent: function (element, e) {
-        element.blazor__instance.resizeEvent(e);
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.resizeEvent(e);
+        }
     },
     onCollapseEvent: function (element, event) {
-        element.blazor__instance.onCollapseEvent(event);
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.onCollapseEvent(event);
+        }
     },
-    collapseMethodEvent: function (element, event) {
-        element.blazor__instance.collapseMethodEvent(event.index[0], event);
+    collapseMethodEvent: function (element, event, index) {
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.collapseMethodEvent(index, event);
+        }
     },
     onExpandEvent: function (element, event) {
-        element.blazor__instance.onExpandEvent(event);
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.onExpandEvent(event);
+        }
     },
     destroy: function (element) {
-        if (element) {
+        if (!sf.base.isNullOrUndefined(element)) {
             element.blazor__instance.destroy();
         }
     },
     propertyChanged: function (splitObj, changedArgs) {
-        splitObj.element.blazor__instance.propertyChanged(splitObj, changedArgs);
+        if (!sf.base.isNullOrUndefined(splitObj.element)) {
+            splitObj.element.blazor__instance.propertyChanged(splitObj, changedArgs);
+        }
     }
 };
 

@@ -1,4 +1,8 @@
 @include export-module('document-editor-container-theme') {
+  .e-de-toolbar {
+    height: 100%;
+  }
+
   .e-de-statusbar-pageweb {
     background-color: $de-ctnr-bg-clr;
     border: 0;

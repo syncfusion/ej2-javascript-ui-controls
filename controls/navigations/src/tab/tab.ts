@@ -1211,7 +1211,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         } else if (this.heightAdjustMode === 'Fill') {
             addClass([this.element], [CLS_FILL]);
             setStyle(this.element, { 'height': '100%' });
-            setStyle(this.cntEle, { 'height': '100%' });
+            setStyle(this.cntEle, { 'height': (this.element.offsetHeight - hdrEle.offsetHeight) + 'px' });
         } else if (this.heightAdjustMode === 'Auto') {
             if (this.isTemplate === true) {
                 let cnt: HTEle[] = selectAll('.' + CLS_CONTENT + ' > .' + CLS_ITEM, this.element);

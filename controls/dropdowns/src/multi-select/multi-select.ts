@@ -92,6 +92,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private backCommand: boolean;
     private keyAction: boolean;
     private isSelectAll: boolean;
+    private clearIconWidth: number = 0;
 
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
@@ -2438,7 +2439,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     if (this.mode === 'CheckBox' && this.showSelectAll) {
                         this.notify('selectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
                         overAllHeight -= this.selectAllHeight;
-                    } else if (this.mode === 'CheckBox' && !this.showSelectAll && (!this.headerTemplate || !this.footerTemplate)) {
+                    } else if (this.mode === 'CheckBox' && !this.showSelectAll && (!this.headerTemplate && !this.footerTemplate)) {
                         this.notify('selectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
                         overAllHeight = parseInt(<string>this.popupHeight, 10);
                     } else if (this.mode === 'CheckBox' && !this.showSelectAll) {
@@ -2764,7 +2765,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!isNullOrUndefined(this.value)) {
             for (let index: number = 0; !isNullOrUndefined(this.value[index]); index++) {
                 let listValue: HTMLElement = this.findListElement(this.mainList, 'li', 'data-value', this.value[index]);
-                if (isNullOrUndefined(listValue) && !this.allowCustomValue) {
+                if (!(isBlazor() && this.isServerRendered) && isNullOrUndefined(listValue) && !this.allowCustomValue) {
                     this.value.splice(index, 1);
                 }
                 if (this.listData) {
@@ -2930,6 +2931,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                     (this.mainData as { [key: string]: object }[]).push(data as { [key: string]: object });
                     this.remoteCustomValue = false;
                     this.addValue(value, text, e);
+                    if (isBlazor() && this.isServerRendered) {
+                        this.checkPlaceholderSize();
+                        this.makeTextBoxEmpty();
+                    }
                 }
             });
         } else {
@@ -2937,8 +2942,8 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.addValue(value, text, e);
         }
         if (isBlazor() && this.isServerRendered && this.value && this.list &&
-            this.value.length === this.list.querySelectorAll('li.e-list-item').length ||
-            this.value.length === this.maximumSelectionLength) {
+            (this.value.length === this.list.querySelectorAll('li.e-list-item').length ||
+            this.value.length === this.maximumSelectionLength)) {
             this.updatedataValueItems(e);
             this.checkPlaceholderSize();
         }
@@ -3362,9 +3367,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             let remainSize: number = raminElement.offsetWidth;
             remove(raminElement);
             if (this.showDropDownIcon) {
-                downIconWidth = this.dropIcon.offsetWidth +
-                    parseInt(window.getComputedStyle(this.dropIcon).marginRight, 10);
+                downIconWidth = this.dropIcon.offsetWidth + parseInt(window.getComputedStyle(this.dropIcon).marginRight, 10);
             }
+            this.checkClearIconWidth();
             if (!isNullOrUndefined(this.value)) {
                 for (let index: number = 0; !isNullOrUndefined(this.value[index]); index++) {
                     data += (index === 0) ? '' : this.delimiterChar + ' ';
@@ -3377,7 +3382,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     overAllContainer = this.componentWrapper.offsetWidth -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingLeft, 10) -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingRight, 10);
-                    if ((wrapperleng + downIconWidth) > overAllContainer) {
+                    if ((wrapperleng + downIconWidth + this.clearIconWidth) > overAllContainer) {
                         if (tempData !== undefined && tempData !== '') {
                             temp = tempData;
                             index = tempIndex + 1;
@@ -3385,7 +3390,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.updateWrapperText(this.viewWrapper, temp);
                         remaining = this.value.length - index;
                         wrapperleng = this.viewWrapper.offsetWidth;
-                        while (((wrapperleng + remainSize + downIconWidth) > overAllContainer) && wrapperleng !== 0
+                        while (((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) > overAllContainer) && wrapperleng !== 0
                             && this.viewWrapper.innerHTML !== '') {
                             let textArr: string[] = this.viewWrapper.innerHTML.split(this.delimiterChar);
                             textArr.pop();
@@ -3406,7 +3411,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
             }
             if (remaining > 0) {
-                let totalWidth: number = overAllContainer - downIconWidth;
+                let totalWidth: number = overAllContainer - downIconWidth - this.clearIconWidth;
                 this.viewWrapper.appendChild(
                     this.updateRemainTemplate( raminElement, this.viewWrapper, remaining, compiledString, totalCompiledString, totalWidth)
                 );
@@ -3416,6 +3421,11 @@ export class MultiSelect extends DropDownBase implements IInput {
         } else {
             this.viewWrapper.innerHTML = '';
             this.viewWrapper.style.display = 'none';
+        }
+    }
+    private checkClearIconWidth(): void {
+        if (this.showClearButton) {
+            this.clearIconWidth = this.overAllClear.offsetWidth;
         }
     }
     private updateRemainWidth(viewWrapper: HTMLElement, totalWidth: number): void {

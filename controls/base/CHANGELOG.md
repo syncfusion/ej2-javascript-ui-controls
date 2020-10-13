@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.40 (2020-10-13)
+
+### Common
+
+#### Bug Fixes
+
+- `F158279` - Resolved `Draggable` element jumps out of the view while scrolling.
+
 ## 17.4.51 (2020-02-25)
 
 ### Common

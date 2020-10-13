@@ -771,7 +771,7 @@ export class Layout {
             } else if (text === '\f' && this.viewer instanceof PageLayoutViewer) {
                 if (isNullOrUndefined(element.nextNode)) {
                     this.moveToNextPage(this.viewer, element.line, true);
-                } else {
+                } else if (!isNullOrUndefined(element.line.nextLine)) {
                     this.moveToNextPage(this.viewer, element.line.nextLine, false);
                 }
             }
@@ -3398,7 +3398,7 @@ export class Layout {
                 let rowSpanWidgetEndIndex: number = currentRowWidgetIndex + rowSpan - 1 - (rowWidget.index - cellWidget.rowIndex);
                 if (!isInitialLayout && (viewer.clientArea.bottom < cellWidget.y + cellWidget.height + cellWidget.margin.bottom
                     || rowSpanWidgetEndIndex >= currentRowWidgetIndex + 1) && (rowCollection.length === 1
-                    || rowCollection.length >= 1 && rowWidget === rowCollection[rowCollection.length - 1])) {
+                        || rowCollection.length >= 1 && rowWidget === rowCollection[rowCollection.length - 1])) {
                     this.splitSpannedCellWidget(cellWidget, tableCollection, rowCollection, viewer);
                 }
                 let spanEndRowWidget: TableRowWidget = rowWidget;
@@ -3691,7 +3691,7 @@ export class Layout {
                         // tslint:disable-next-line:max-line-length
                         let splittedTable: TableWidget = this.getSplittedWidgetForTable(bottom - cellWidget.margin.bottom, tableCol, tableWidget);
                         if (isNullOrUndefined(splittedTable) &&
-                           !((tableWidget.childWidgets[0] as TableRowWidget).rowFormat.allowBreakAcrossPages)) {
+                            !((tableWidget.childWidgets[0] as TableRowWidget).rowFormat.allowBreakAcrossPages)) {
                             splittedTable = tableWidget;
                         }
                         if (!isNullOrUndefined(splittedTable)) {
@@ -4712,6 +4712,32 @@ export class Layout {
         this.updateWidgetsToTable(tableWidget, rows, row);
         return rows[rows.length - 1];
     }
+    // tslint:disable-next-line:max-line-length
+    private getAdjacentRowCell(cell: TableCellWidget, cellStartPos: number, cellEndPos: number, rowIndex: number): TableCellWidget[] {
+        let adjCells: TableCellWidget[] = [];
+        let adjRow: TableRowWidget = cell.ownerRow.ownerTable.childWidgets[rowIndex] as TableRowWidget;
+        if (adjRow) {
+            for (let i: number = 0; i < adjRow.childWidgets.length; i++) {
+                let adjCell: TableCellWidget = adjRow.childWidgets[i] as TableCellWidget;
+                let adjCellStartPos: number = adjCell.x;
+                let adjCellEndPos: number = adjCellStartPos + adjCell.width;
+                // tslint:disable-next-line:max-line-length
+                if ((HelperMethods.round(adjCellEndPos, 2) > HelperMethods.round(cellStartPos, 2) && HelperMethods.round(adjCellEndPos, 2) <= HelperMethods.round(cellEndPos, 2))
+                    || (HelperMethods.round(adjCellStartPos, 2) >= HelperMethods.round(cellStartPos, 2) && HelperMethods.round(adjCellStartPos, 2) < HelperMethods.round(cellEndPos, 2))
+                    // tslint:disable-next-line:max-line-length
+                    || (HelperMethods.round(adjCellStartPos, 2) <= HelperMethods.round(cellStartPos, 2) && HelperMethods.round(adjCellEndPos, 2) >= HelperMethods.round(cellEndPos, 2))) {
+                    //Skipped adding the Horizontal merge start cell multiple times.
+                    if (adjCells.indexOf(adjCell) === -1) {
+                        adjCells.push(adjCell);
+                    }
+                }
+                if (HelperMethods.round(adjCellEndPos, 2) >= HelperMethods.round(cellEndPos, 2)) {
+                    break;
+                }
+            }
+        }
+        return adjCells;
+    }
     /**
      * @param area
      * @param row
@@ -4856,6 +4882,7 @@ export class Layout {
     private layoutCell(cell: TableCellWidget, maxCellMarginTop: number, maxCellMarginBottom: number, owner: Widget): void {
         let viewer: LayoutViewer = this.viewer;
         this.addTableCellWidget(cell, viewer.clientActiveArea, maxCellMarginTop, maxCellMarginBottom) as TableCellWidget;
+        this.updateTopBorders(cell);
         viewer.updateClientAreaForCell(cell, true);
         if (cell.childWidgets.length === 0) {
             let paragraphWidget: ParagraphWidget = new ParagraphWidget();
@@ -4875,6 +4902,63 @@ export class Layout {
         }
         this.updateWidgetToRow(cell);
         viewer.updateClientAreaForCell(cell, false);
+    }
+
+    private updateTopBorders(cell: TableCellWidget): void {
+        cell.updatedTopBorders = [];
+        if (cell.ownerTable.tableFormat.cellSpacing === 0) {
+            let cellTopBorder: WBorder = cell.cellFormat.borders.top;
+            let cellStartPos: number = cell.x;
+            let cellEndPos: number = cell.x + cell.width + cell.margin.left + cell.margin.right;
+            let adjCells: TableCellWidget[] = this.getAdjacentRowCell(cell, cell.x, cell.x + cell.width, cell.rowIndex - 1);
+            for (let j: number = 0; j < adjCells.length; j++) {
+                let adjCell: TableCellWidget = adjCells[j];
+                let prevCellBottomBorder: WBorder = adjCell.cellFormat.borders.bottom;
+                if (!prevCellBottomBorder.isBorderDefined || (prevCellBottomBorder.isBorderDefined
+                    && prevCellBottomBorder.lineStyle === 'None' && prevCellBottomBorder.lineWidth === 0 &&
+                    prevCellBottomBorder.hasValue('color'))) {
+                    prevCellBottomBorder = adjCell.ownerRow.rowFormat.borders.horizontal;
+                }
+                if (!prevCellBottomBorder.isBorderDefined) {
+                    prevCellBottomBorder = adjCell.ownerRow.ownerTable.tableFormat.borders.horizontal;
+                }
+                let border: WBorder;
+                if (cellTopBorder.lineStyle === 'None' || cellTopBorder.lineStyle === 'Cleared') {
+                    border = prevCellBottomBorder;
+                } else if (prevCellBottomBorder.lineStyle === 'Cleared' || prevCellBottomBorder.lineStyle === 'None') {
+                    border = cellTopBorder;
+                } else {
+                    border = cell.getBorderBasedOnPriority(cellTopBorder, prevCellBottomBorder);
+                }
+                if (border) {
+                    let adjCellStartPos: number = adjCell.x;
+                    let adjCellEndPos: number = adjCell.x + adjCell.width + adjCell.margin.left + adjCell.margin.right;
+                    let width: number = 0;
+                    // tslint:disable-next-line:max-line-length
+                    if (HelperMethods.round(adjCellEndPos, 2) === HelperMethods.round(cellEndPos, 2) && HelperMethods.round(adjCellStartPos, 2) === HelperMethods.round(cellStartPos, 2)) {
+                        width = cellEndPos - cellStartPos;
+                        // tslint:disable-next-line:max-line-length
+                    } else if (HelperMethods.round(adjCellStartPos, 2) >= HelperMethods.round(cellStartPos, 2) && HelperMethods.round(adjCellEndPos, 2) >= HelperMethods.round(cellEndPos, 2)) {
+                        width = cellEndPos - adjCellStartPos;
+                        // tslint:disable-next-line:max-line-length
+                    } else if (HelperMethods.round(adjCellStartPos, 2) >= HelperMethods.round(cellStartPos, 2) && HelperMethods.round(adjCellEndPos, 2) <= HelperMethods.round(cellEndPos, 2)) {
+                        width = adjCellEndPos - adjCellStartPos;
+                        // tslint:disable-next-line:max-line-length
+                    } else if (HelperMethods.round(adjCellStartPos, 2) <= HelperMethods.round(cellStartPos, 2) && HelperMethods.round(adjCellEndPos, 2) <= HelperMethods.round(cellEndPos, 2)) {
+                        width = adjCellEndPos - cellStartPos;
+                        // tslint:disable-next-line:max-line-length
+                    } else if (HelperMethods.round(adjCellStartPos, 2) <= HelperMethods.round(cellStartPos, 2) && HelperMethods.round(adjCellEndPos, 2) >= HelperMethods.round(cellEndPos, 2)) {
+                        width = cellEndPos - cellStartPos;
+                    } else {
+                        width = cellEndPos - cellStartPos;
+                    }
+                    if (width < 0) {
+                        width = 0;
+                    }
+                    cell.updatedTopBorders.push({ border: border, width: width });
+                }
+            }
+        }
     }
 
     //endregion cell
@@ -4991,7 +5075,7 @@ export class Layout {
         }
     }
     private shiftWidgetsForPara(paragraph: ParagraphWidget, viewer: LayoutViewer): void {
-        if (paragraph.height > viewer.clientArea.height) {
+        if (paragraph.height > (viewer.clientArea.height + viewer.clientArea.y)) {
             return;
         }
         let prevBodyObj: BodyWidgetInfo = this.getBodyWidgetOfPreviousBlock(paragraph, 0);

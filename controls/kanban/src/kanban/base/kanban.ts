@@ -1,5 +1,5 @@
 import { Component, ModuleDeclaration, NotifyPropertyChanges, Property, Complex, Collection, detach } from '@syncfusion/ej2-base';
-import { addClass, classList, removeClass, compile, formatUnit, L10n, Browser, Event, EmitType, isBlazor } from '@syncfusion/ej2-base';
+import { addClass, classList, removeClass, compile, formatUnit, L10n, Browser, Event, EmitType } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Data } from './data';
@@ -105,7 +105,6 @@ export class Kanban extends Component<HTMLElement> {
      * Defines the external [`query`](http://ej2.syncfusion.com/documentation/data/api-query.html)
      * that will be executed along with the data processing.
      * @default null
-     * @blazorType Syncfusion.EJ2.Blazor.Data.Query
      */
     @Property()
     public query: Query;
@@ -194,7 +193,6 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Enable or disable the columns when empty dataSource.
-     * @deprecated
      * @default false
      */
     @Property(false)
@@ -203,14 +201,12 @@ export class Kanban extends Component<HTMLElement> {
     /**
      * Enables or disables the persisting component's state between page reloads. 
      * If enabled, columns, dataSource properties will be persisted in kanban.
-     * @deprecated
      */
     @Property(false)
     public enablePersistence: boolean;
 
     /**
      * Defines the template content to card’s tooltip. The property works by enabling the ‘enableTooltip’ property.
-     * @deprecated
      * @default null
      */
     @Property()
@@ -294,7 +290,6 @@ export class Kanban extends Component<HTMLElement> {
      */
     @Event()
     public dragStop: EmitType<DragEventArgs>;
-
     /**
      * Triggers before the dialog opens.
      * @event
@@ -304,7 +299,6 @@ export class Kanban extends Component<HTMLElement> {
     /**
      * Triggers before the dialog closes.
      * @event
-     * @blazorType DialogCloseEventArgs
      */
     @Event()
     public dialogClose: EmitType<DialogEventArgs>;
@@ -328,25 +322,23 @@ export class Kanban extends Component<HTMLElement> {
             this.swimlaneToggleArray = [];
         }
         this.activeCardData = { data: null, element: null };
-        if (!this.isBlazorRender()) {
-            let defaultLocale: Object = {
-                items: 'items',
-                min: 'Min',
-                max: 'Max',
-                cardsSelected: 'Cards Selected',
-                addTitle: 'Add New Card',
-                editTitle: 'Edit Card Details',
-                deleteTitle: 'Delete Card',
-                deleteContent: 'Are you sure you want to delete this card?',
-                save: 'Save',
-                delete: 'Delete',
-                cancel: 'Cancel',
-                yes: 'Yes',
-                no: 'No',
-                close: 'Close'
-            };
-            this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
-        }
+        let defaultLocale: Object = {
+            items: 'items',
+            min: 'Min',
+            max: 'Max',
+            cardsSelected: 'Cards Selected',
+            addTitle: 'Add New Card',
+            editTitle: 'Edit Card Details',
+            deleteTitle: 'Delete Card',
+            deleteContent: 'Are you sure you want to delete this card?',
+            save: 'Save',
+            delete: 'Delete',
+            cancel: 'Cancel',
+            yes: 'Yes',
+            no: 'No',
+            close: 'Close'
+        };
+        this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
         this.scrollPosition = { content: { left: 0, top: 0 }, column: {} };
         this.isInitialRender = true;
     }
@@ -382,25 +374,23 @@ export class Kanban extends Component<HTMLElement> {
      * @private
      */
     public render(): void {
-        if (!this.isBlazorRender()) {
-            let addClasses: string[] = [cls.ROOT_CLASS];
-            let removeClasses: string[] = [];
-            if (this.enableRtl) {
-                addClasses.push(cls.RTL_CLASS);
-            } else {
-                removeClasses.push(cls.RTL_CLASS);
-            }
-            if (this.isAdaptive) {
-                addClasses.push(cls.DEVICE_CLASS);
-            } else {
-                removeClasses.push(cls.DEVICE_CLASS);
-            }
-            if (this.cssClass) {
-                addClasses.push(this.cssClass);
-            }
-            this.element.setAttribute('role', 'main');
-            classList(this.element, addClasses, removeClasses);
+        let addClasses: string[] = [cls.ROOT_CLASS];
+        let removeClasses: string[] = [];
+        if (this.enableRtl) {
+            addClasses.push(cls.RTL_CLASS);
+        } else {
+            removeClasses.push(cls.RTL_CLASS);
         }
+        if (this.isAdaptive) {
+            addClasses.push(cls.DEVICE_CLASS);
+        } else {
+            removeClasses.push(cls.DEVICE_CLASS);
+        }
+        if (this.cssClass) {
+            addClasses.push(this.cssClass);
+        }
+        this.element.setAttribute('role', 'main');
+        classList(this.element, addClasses, removeClasses);
         this.element.style.width = formatUnit(this.width);
         this.element.style.height = formatUnit(this.height);
         createSpinner({ target: this.element });
@@ -421,7 +411,7 @@ export class Kanban extends Component<HTMLElement> {
                     break;
                 case 'enableRtl':
                 case 'locale':
-                    if (!this.isBlazorRender()) { this.refresh(); }
+                    this.refresh();
                     break;
                 case 'width':
                     this.element.style.width = formatUnit(newProp.width);
@@ -435,15 +425,11 @@ export class Kanban extends Component<HTMLElement> {
                     break;
                 case 'dataSource':
                 case 'query':
-                    if (!this.isBlazorRender()) { this.dataModule = new Data(this); }
+                    this.dataModule = new Data(this);
                     break;
                 case 'columns':
                 case 'constraintType':
-                    if (!this.isBlazorRender()) {
-                        this.notify(events.dataReady, { processedData: this.kanbanData });
-                    } else {
-                        this.notifyChange();
-                    }
+                    this.notify(events.dataReady, { processedData: this.kanbanData });
                     break;
                 case 'swimlaneSettings':
                     this.onSwimlaneSettingsPropertyChanged(newProp.swimlaneSettings, oldProp.swimlaneSettings);
@@ -465,7 +451,7 @@ export class Kanban extends Component<HTMLElement> {
                     }
                     if (newProp.enableTooltip) {
                         this.tooltipModule = new KanbanTooltip(this);
-                        if (!this.isBlazorRender()) { this.layoutModule.refreshCards(); }
+                        this.layoutModule.refreshCards();
                     }
                     break;
                 case 'dialogSettings':
@@ -483,11 +469,7 @@ export class Kanban extends Component<HTMLElement> {
                     }
                     break;
                 case 'stackedHeaders':
-                    if (!this.isBlazorRender()) {
-                        this.layoutModule.refreshHeaders();
-                    } else {
-                        this.notifyChange();
-                    }
+                    this.layoutModule.refreshHeaders();
                     break;
                 case 'sortSettings':
                     this.notify(events.dataReady, { processedData: this.kanbanData });
@@ -507,11 +489,7 @@ export class Kanban extends Component<HTMLElement> {
                 case 'showItemCount':
                 case 'template':
                 case 'sortDirection':
-                    if (!this.isBlazorRender()) {
-                        this.notify(events.dataReady, { processedData: this.kanbanData });
-                    } else {
-                        this.notifyChange();
-                    }
+                    this.notify(events.dataReady, { processedData: this.kanbanData });
                     break;
             }
         }
@@ -527,11 +505,7 @@ export class Kanban extends Component<HTMLElement> {
                 case 'tagsField':
                 case 'grabberField':
                 case 'footerCssField':
-                    if (!this.isBlazorRender()) {
-                        this.layoutModule.refreshCards();
-                    } else {
-                        this.notifyChange();
-                    }
+                    this.layoutModule.refreshCards();
                     break;
                 case 'selectionType':
                     let cards: HTMLElement[] = this.getSelectedCards();
@@ -545,9 +519,7 @@ export class Kanban extends Component<HTMLElement> {
     }
 
     private initializeModules(): void {
-        if (!this.isBlazorRender()) {
-            this.dataModule = new Data(this);
-        }
+        this.dataModule = new Data(this);
         this.layoutModule = new LayoutRender(this);
         if (this.allowKeyboard) {
             this.keyboardModule = new Keyboard(this);
@@ -564,21 +536,7 @@ export class Kanban extends Component<HTMLElement> {
         }
     }
 
-    private notifyChange(): void {
-        // tslint:disable-next-line
-        (this as any).interopAdaptor.invokeMethodAsync('PropertyChanged');
-    }
-
-    private isDevice(ref?: object): void {
-        if (Browser.isDevice && isBlazor() && ref) {
-            // tslint:disable-next-line
-            (ref as any).invokeMethodAsync('IsDevice', true, ((window.innerWidth * 80) / 100));
-        }
-    }
-
-    /**
-     * @hidden
-     */
+    /** @hidden */
     public renderTemplates(): void {
         // tslint:disable-next-line:no-any
         if ((this as any).isReact) {
@@ -586,44 +544,12 @@ export class Kanban extends Component<HTMLElement> {
         }
     }
 
-    /**
-     * @hidden
-     */
+    /** @hidden */
     public resetTemplates(templates?: string[]): void {
         // tslint:disable-next-line:no-any
         if ((this as any).isReact) {
             this.clearTemplate(templates);
         }
-    }
-
-    /**
-     * @hidden
-     */
-    public isBlazorRender(): boolean {
-        return isBlazor() && this.isServerRendered;
-    }
-
-    /**
-     * @hidden
-     */
-    public updateDataSource(data: { [key: string]: Object[] }): void {
-        this.kanbanData = data.Result;
-    }
-
-    /**
-     * @hidden
-     */
-    public hideDeviceMenu(): void {
-        this.layoutModule.hidePopup();
-    }
-
-    /**
-     * @hidden
-     */
-    public dataReady(data: { [key: string]: Object[] }): void {
-        this.kanbanData = data.Result;
-        this.hideSpinner();
-        this.notify(events.dataReady, { processedData: {} });
     }
 
     private destroyModules(): void {
@@ -662,7 +588,6 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Returns the card details based on card ID from the board.
-     * @deprecated
      * @method getCardDetails
      * @param {Element} target Accepts the card element to get the details.
      * @returns {{[key: string]: Object}}
@@ -677,7 +602,6 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Returns the column data based on column key input.
-     * @deprecated
      * @method getColumnData
      * @param {string} columnKey Accepts the column key to get the objects.
      * @returns {Object[]}
@@ -688,7 +612,6 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Returns the swimlane column data based on swimlane keyField input.
-     * @deprecated
      * @method getSwimlaneData
      * @param {string} keyField Accepts the swimlane keyField to get the objects.
      * @returns {Object[]}
@@ -726,7 +649,6 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * To manually open the dialog.
-     * @deprecated
      * @method openDialog
      * @param {CurrentAction} action Defines the action for which the dialog needs to be opened such as either for new card creation or
      *  editing of existing cards. The applicable action names are `Add` and `Edit`.
@@ -739,7 +661,6 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * To manually close the dialog.
-     * @deprecated
      * @method closeDialog
      * @returns {void}
      */
@@ -784,7 +705,6 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Add the column to Kanban board dynamically based on the provided column options and index in the argument list.
-     * @deprecated
      * @method addColumn
      * @param {ColumnsModel} columnOptions Defines the properties to new column that are going to be added in the board.
      * @param {number} index Defines the index of column to add the new column.
@@ -796,7 +716,6 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Deletes the column based on the provided index value.
-     * @deprecated
      * @method deleteColumn
      * @param {number} index Defines the index of column to delete the existing column from Kanban board.
      * @returns {void}
@@ -807,7 +726,6 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Shows the column from hidden based on the provided key in the columns.
-     * @deprecated
      * @method showColumn
      * @param {string} key Accepts the hidden column key name to be shown from the hidden state in board.
      * @returns {void}
@@ -818,7 +736,6 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Hides the column from Kanban board based on the provided key in the columns.
-     * @deprecated
      * @method hideColumn
      * @param {string} key Accepts the visible column key name to be hidden from the board.
      * @returns {void}
@@ -834,13 +751,13 @@ export class Kanban extends Component<HTMLElement> {
      */
     public destroy(): void {
         this.destroyModules();
-        if (!this.isBlazorRender()) { [].slice.call(this.element.childNodes).forEach((node: HTMLElement) => detach(node)); }
+        [].slice.call(this.element.childNodes).forEach((node: HTMLElement) => { detach(node); });
         let removeClasses: string[] = [cls.ROOT_CLASS];
         if (this.cssClass) {
             removeClasses = removeClasses.concat(this.cssClass.split(' '));
         }
         removeClass([this.element], removeClasses);
-        if (!this.isBlazorRender()) { super.destroy(); }
+        super.destroy();
     }
 
 }

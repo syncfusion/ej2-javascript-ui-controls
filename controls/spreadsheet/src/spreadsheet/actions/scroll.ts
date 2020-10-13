@@ -3,6 +3,7 @@ import { Spreadsheet } from '../base/index';
 import { contentLoaded, spreadsheetDestroyed, onVerticalScroll, onHorizontalScroll, getScrollBarWidth, IScrollArgs } from '../common/index';
 import { IOffset, onContentScroll, deInitProperties, setScrollEvent, skipHiddenIdx } from '../common/index';
 import { SheetModel, getRowHeight, getColumnWidth, getCellAddress } from '../../workbook/index';
+import { isFormulaBarEdit, FormulaBarEdit } from '../common/index';
 
 /**
  * The `Scroll` module is used to handle scrolling behavior.
@@ -61,6 +62,13 @@ export class Scroll {
                 this.updateNonVirtualRows();
             }
             this.topIndex = scrollArgs.prev.idx; this.prevScroll.scrollTop = top;
+        }
+        let isEdit: boolean = false;
+        let args: FormulaBarEdit = {isEdit: isEdit};
+        this.parent.notify(isFormulaBarEdit, args);
+        if (args.isEdit) {
+            let textArea: HTMLTextAreaElement = this.parent.element.querySelector('.e-formula-bar');
+            textArea.focus();
         }
     }
 

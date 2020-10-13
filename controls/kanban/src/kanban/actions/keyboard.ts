@@ -1,9 +1,9 @@
-import { KeyboardEvents, KeyboardEventArgs, addClass, removeClass, classList, closest } from '@syncfusion/ej2-base';
+import { KeyboardEvents, KeyboardEventArgs, addClass, removeClass, closest } from '@syncfusion/ej2-base';
 import { Kanban } from '../base';
 import * as cls from '../base/css-constant';
 
 /**
- * Drag and Drop module is used to perform card actions.
+ * Kanban keyboard module
  * @hidden
  */
 export class Keyboard {
@@ -28,6 +28,7 @@ export class Keyboard {
         escape: '27',
         space: '32'
     };
+
     /**
      * Constructor for keyboard module
      * @private
@@ -137,9 +138,7 @@ export class Keyboard {
         this.addRemoveTabIndex('Remove');
         (element as HTMLElement).focus();
         let card: HTMLElement[] = [].slice.call(closest(element, '.' + cls.CONTENT_CELLS_CLASS).querySelectorAll('.' + cls.CARD_CLASS));
-        card.forEach((element: HTMLElement) => {
-            element.setAttribute('tabindex', '0');
-        });
+        card.forEach((element: HTMLElement) => { element.setAttribute('tabindex', '0'); });
     }
 
     private processLeftRightArrow(e: KeyboardEventArgs): void {
@@ -206,9 +205,7 @@ export class Keyboard {
 
     public cardTabIndexRemove(): void {
         let cards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS));
-        cards.forEach((card: HTMLElement) => {
-            card.setAttribute('tabindex', '-1');
-        });
+        cards.forEach((card: HTMLElement) => { card.setAttribute('tabindex', '-1'); });
         let addButton: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.SHOW_ADD_BUTTON));
         addButton.forEach((add: HTMLElement) => {
             add.setAttribute('tabindex', '-1');
@@ -238,9 +235,7 @@ export class Keyboard {
             this.addRemoveTabIndex('Remove');
             if (cards.length > 0) {
                 (element.querySelector('.' + cls.CARD_CLASS) as HTMLElement).focus();
-                cards.forEach((element: HTMLElement) => {
-                    element.setAttribute('tabindex', '0');
-                });
+                cards.forEach((element: HTMLElement) => { element.setAttribute('tabindex', '0'); });
             }
             if (element.querySelector('.' + cls.SHOW_ADD_BUTTON)) {
                 element.querySelector('.' + cls.SHOW_ADD_BUTTON).setAttribute('tabindex', '0');
@@ -262,36 +257,19 @@ export class Keyboard {
         let attribute: string = action === 'Add' ? '0' : '-1';
         let headerIcon: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.HEADER_ICON_CLASS));
         if (headerIcon.length > 0) {
-            headerIcon.forEach((element: HTMLElement) => {
-                element.setAttribute('tabindex', attribute);
-            });
+            headerIcon.forEach((element: HTMLElement) => { element.setAttribute('tabindex', attribute); });
         }
         let swimlaneIcon: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.SWIMLANE_ROW_EXPAND_CLASS));
         if (swimlaneIcon.length > 0) {
-            swimlaneIcon.forEach((element: HTMLElement) => {
-                element.setAttribute('tabindex', attribute);
-            });
+            swimlaneIcon.forEach((element: HTMLElement) => { element.setAttribute('tabindex', attribute); });
         }
         let className: string = '.' + cls.CONTENT_ROW_CLASS + ':not(.' + cls.SWIMLANE_ROW_CLASS + ') .' + cls.CONTENT_CELLS_CLASS;
         let contentCell: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(className));
-        contentCell.forEach((element: HTMLElement) => {
-            element.setAttribute('tabindex', attribute);
-        });
+        contentCell.forEach((element: HTMLElement) => { element.setAttribute('tabindex', attribute); });
     }
 
-    /**
-     * Get module name.
-     */
-    protected getModuleName(): string {
-        return 'keyboard';
-    }
-
-    /**
-     * To destroy the keyboard module. 
-     * @return {void}
-     * @private
-     */
     public destroy(): void {
         this.keyboardModule.destroy();
     }
+
 }

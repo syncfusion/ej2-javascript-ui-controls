@@ -6230,7 +6230,8 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             }) : null;
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             inputValue = startDate + ' ' + this.separator + ' ' + endDate;
-            range = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            range = (Math.round(Math.abs((this.removeTimeValueFromDate(this.startValue).getTime() -
+                this.removeTimeValueFromDate(this.endValue).getTime()) / (1000 * 60 * 60 * 24))) + 1);
         }
         else {
             inputValue = '';
@@ -6471,8 +6472,9 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         if ((!isNullOrUndefined(this.startValue) && isNullOrUndefined(this.endValue)) ||
             (this.isMobile && this.endButton.element.classList.contains(ACTIVE$1))) {
             if ((!isNullOrUndefined(this.minDays) && this.minDays > 0) || (!isNullOrUndefined(this.maxDays) && this.maxDays > 0)) {
-                let minDate = new Date(new Date(+this.startValue).setDate(this.startValue.getDate() + (this.minDays - 1)));
-                let maxDate = new Date(new Date(+this.startValue).setDate(this.startValue.getDate() + (this.maxDays - 1)));
+                let startValueSelected = this.removeTimeValueFromDate(this.startValue);
+                let minDate = new Date(new Date(+startValueSelected).setDate(startValueSelected.getDate() + (this.minDays - 1)));
+                let maxDate = new Date(new Date(+startValueSelected).setDate(startValueSelected.getDate() + (this.maxDays - 1)));
                 minDate = (!isNullOrUndefined(this.minDays) && this.minDays > 0) ? minDate : null;
                 maxDate = (!isNullOrUndefined(this.maxDays) && this.maxDays > 0) ? maxDate : null;
                 if (this.currentView() === 'Year') {
@@ -6488,11 +6490,12 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                 for (let ele of tdCells) {
                     if (!ele.classList.contains(STARTDATE) && !ele.classList.contains(WEEKNUMBER$2)) {
                         let eleDate = this.getIdValue(null, ele);
+                        eleDate = this.removeTimeValueFromDate(eleDate);
                         if (!isNullOrUndefined(minDate) && +eleDate === +minDate && ele.classList.contains(DISABLED$2)) {
                             minDate.setDate(minDate.getDate() + 1);
                         }
                         if (!ele.classList.contains(DISABLED$2)) {
-                            if (+eleDate <= +this.startValue) {
+                            if (+eleDate <= +startValueSelected) {
                                 continue;
                             }
                             if (!isNullOrUndefined(minDate) && +eleDate < +minDate) {
@@ -6544,6 +6547,10 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             this.isMaxDaysClicked = false;
         }
     }
+    removeTimeValueFromDate(value) {
+        let dateValue = new Date(value.getFullYear(), value.getMonth(), value.getDate());
+        return dateValue;
+    }
     removeClassDisabled() {
         let tdCells;
         tdCells = this.popupObj.element.querySelectorAll('.' + CALENDAR + ' td' + '.' + DATEDISABLED);
@@ -6579,7 +6586,8 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     updateHeader() {
         let format = { type: 'date', skeleton: isBlazor() ? 'D' : 'yMMMd' };
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
-            let range = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            let range = (Math.round(Math.abs((this.removeTimeValueFromDate(this.startValue).getTime() -
+                this.removeTimeValueFromDate(this.endValue).getTime()) / (1000 * 60 * 60 * 24))) + 1);
             if (!isNullOrUndefined(this.disabledDayCnt)) {
                 range = range - this.disabledDayCnt;
                 this.disabledDayCnt = null;
@@ -6858,7 +6866,8 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     }
     validateMinMaxDays() {
         if (!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) {
-            let range = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            let range = (Math.round(Math.abs((this.removeTimeValueFromDate(this.startValue).getTime() -
+                this.removeTimeValueFromDate(this.endValue).getTime()) / (1000 * 60 * 60 * 24))) + 1);
             if ((!isNullOrUndefined(this.minDays) && this.minDays > 0) && !(range >= this.minDays)) {
                 if (this.strictMode) {
                     let date = new Date(+this.startValue);
@@ -8366,7 +8375,8 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     getSelectedRange() {
         let range;
         if (!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) {
-            range = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            range = (Math.round(Math.abs((this.removeTimeValueFromDate(this.startValue).getTime() -
+                this.removeTimeValueFromDate(this.endValue).getTime()) / (1000 * 60 * 60 * 24))) + 1);
             this.disabledDateRender();
             if (!isNullOrUndefined(this.disabledDayCnt)) {
                 range = range - this.disabledDayCnt;

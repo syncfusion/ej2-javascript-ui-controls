@@ -139,7 +139,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @hidden
      * @deprecated
      */
-
     public pasteCleanupModule: PasteCleanup;
 
     /**
@@ -2182,6 +2181,19 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public getHtml(): string {
         return this.value;
     }
+
+    /**
+     * Retrieves the Rich Text Editor's XHTML validated HTML content when `enableXhtml` property is enabled.
+     * @public
+     */
+    public getXhtml(): string {
+        let currentValue: string = this.value;
+        if (this.enableXhtml) {
+            currentValue = this.htmlEditorModule.xhtmlValidation.selfEncloseValidation(currentValue);
+        }
+        return currentValue;
+    }
+
     /**
      * Shows the source HTML/MD markup.
      * @public

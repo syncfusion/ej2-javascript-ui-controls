@@ -728,6 +728,24 @@ export interface AnnotationSelectEventArgs extends BaseEventArgs {
 
 
 }
+/**
+ * This event arguments provides the necessary information about annotation UnSelect event.
+ */
+export interface AnnotationUnSelectEventArgs extends BaseEventArgs {
+    /**
+     * Defines the id of the annotation unselected in the page of the PDF document.
+     */
+    annotationId: string;
+    /**
+     * Defines the page number in which the annotation is unselected.
+     */
+    pageIndex: number;
+    /**
+     * Defines the annotation unselected in the PDF document.
+     */
+    // tslint:disable-next-line
+    annotation: any;
+}
 
 /**
  * This event arguments provides the necessary information about annotation double click event.

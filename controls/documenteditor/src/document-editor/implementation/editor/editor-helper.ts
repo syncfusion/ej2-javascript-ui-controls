@@ -4,6 +4,7 @@ import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults } from '
 import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType } from '../../base/types';
 import { Widget, FieldElementBox } from '../viewer/page';
 import { Dictionary } from '../..';
+import { WBorder } from '../format';
 /** 
  * @private
  */
@@ -142,10 +143,10 @@ export class HelperMethods {
     }
     public static isVeryDark(backColor: string): boolean {
         let backgroundColor: string = backColor.substring(1);
-        let r : number = parseInt(backgroundColor.substr(0, 2), 16);
-        let g : number = parseInt(backgroundColor.substr(2, 2), 16);
-        let b : number = parseInt(backgroundColor.substr(4, 2), 16);
-        let contrast : number = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+        let r: number = parseInt(backgroundColor.substr(0, 2), 16);
+        let g: number = parseInt(backgroundColor.substr(2, 2), 16);
+        let b: number = parseInt(backgroundColor.substr(4, 2), 16);
+        let contrast: number = ((r * 299) + (g * 587) + (b * 114)) / 1000;
         return contrast <= 60;
     }
     public static getColor(color: string): string {
@@ -992,4 +993,12 @@ export interface DropDownFormFieldInfo {
      */
     helpText: string;
 
+}
+
+/**
+ * @private
+ */
+export interface BorderInfo {
+    border: WBorder;
+    width: number;
 }

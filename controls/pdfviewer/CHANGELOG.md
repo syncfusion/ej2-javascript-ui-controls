@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 18.3.40 (2020-10-13)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#294255`, `#294257` - Annotation Property Change event is now triggering properly.
+- `#294232`, `#294239`, `#294231` - Edit Annotation method is now working properly.
+
+### PDF Viewer
+
+#### New Features
+
+- `#F158073`, `#291648` - Exposed the annotation UnSelect event in PDF Viewer.
+
 ## 18.2.56 (2020-09-01)
 
 ### PDF Viewer

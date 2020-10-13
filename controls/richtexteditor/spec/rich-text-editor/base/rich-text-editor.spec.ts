@@ -1609,6 +1609,23 @@ describe('RTE base module', () => {
         });
     });
 
+    describe('RTE - getXHTML Public Methods', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                enableXhtml: true,
+                value: `<head><base href="https://www.w3schools.com/" target="_blank"></head><p><b>Description: with space</b></p><br><p>hello</p><hr><p>hey</p><br/><p>Are you fine</p><img src="workplace.jpg" alt="Workplace" usemap="#workmap" width="400" height="379"><area shape="rect" coords="34,44,270,350" alt="Computer" href="computer.htm"><base href="https://www.w3schools.com/" target="_blank"><embed type="image/jpg" src="pic_trulli.jpg" width="300" height="200"><input type="submit" value="Submit"><link rel="stylesheet" href="styles.css"><object title = "Test Object." classid = "java.class"><param name = "audio" value = "music.wav" /><param name = "width" value = "600" /><param name = "height" value = "400" /></object><video width="320" height="240" controls><source src="forrest_gump.mp4" type="video/mp4"><source src="forrest_gump.ogg" type="video/ogg"><track src="fgsubtitles_en.vtt" kind="subtitles" srclang="en" label="English"><track src="fgsubtitles_no.vtt" kind="subtitles" srclang="no" label="Norwegian"></video><p>This is a veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryvery<wbr>longwordthatwillbreakatspecific<wbr>placeswhenthebrowserwindowisresized.</p><table><colgroup><col span="2" style="background-color:red"><col style="background-color:yellow"></colgroup><tr><th>ISBN</th><th>Title</th><th>Price</th></tr><tr><td>3476896</td><td>My first HTML</td><td>$53</td></tr></table>`
+            });
+            done();
+        });
+        it('getHtml method', () => {
+            expect(rteObj.getXhtml()).toBe(`<div><base href="https://www.w3schools.com/" /><p><b>Description: with space</b></p><p><br/></p><p>hello</p><hr/><p>hey</p><p><br/></p><p>Are you fine</p><p><img src="workplace.jpg" alt="Workplace" usemap="#workmap" width="400" height="379" class="e-rte-image e-imginline" /></p><area shape="rect" coords="34,44,270,350" alt="Computer" href="computer.htm" /><base href="https://www.w3schools.com/" /><p><embed type="image/jpg" src="pic_trulli.jpg" width="300" height="200" /><input type="submit" value="Submit" /></p><link rel="stylesheet" href="styles.css" /><p><object title="Test Object." classid="java.class"><param name="audio" value="music.wav" /><param name="width" value="600" /><param name="height" value="400" /></object><video width="320" height="240" controls=""><source src="forrest_gump.mp4" type="video/mp4" /><source src="forrest_gump.ogg" type="video/ogg" /><track src="fgsubtitles_en.vtt" kind="subtitles" srclang="en" label="English" /><track src="fgsubtitles_no.vtt" kind="subtitles" srclang="no" label="Norwegian" /></video></p><p>This is a veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryvery<wbr />longwordthatwillbreakatspecific<wbr />placeswhenthebrowserwindowisresized.</p><table><colgroup><col span="2" style="background-color:red" /><col style="background-color:yellow" /></colgroup><tbody><tr><th>ISBN</th><th>Title</th><th>Price</th></tr><tr><td>3476896</td><td>My first HTML</td><td>$53</td></tr></tbody></table></div>`);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
     describe("enable/disable ToolbarItem public method testing", () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;

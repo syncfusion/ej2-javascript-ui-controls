@@ -982,6 +982,9 @@ var SfTreeView = /** @class */ (function () {
                 }
             });
         }
+        else if (li.querySelector(".e-icon-expandable")) {
+            li.querySelector(".e-icon-expandable").remove();
+        }
     };
     SfTreeView.prototype.setHeight = function (currli, ul) {
         ul.style.display = BLOCK;
@@ -1447,6 +1450,14 @@ var SfTreeView = /** @class */ (function () {
         this.dotNetRef.invokeMethodAsync('UpdateExpandedNode', parentNodeId);
         setTimeout(function () { liEle.scrollIntoView(true); }, 450);
     };
+    SfTreeView.prototype.nodeCollapse = function (id) {
+        var liElement = this.element.querySelector('[data-uid="' + id + '"]');
+        this.collapseAction(liElement, null);
+    };
+    SfTreeView.prototype.nodeExpand = function (id) {
+        var liElement = this.element.querySelector('[data-uid="' + id + '"]');
+        this.expandAction(liElement, null);
+    };
     SfTreeView.prototype.KeyActionHandler = function (e, nodeId) {
         this.updateList();
         var focusedNode;
@@ -1523,6 +1534,18 @@ var TreeView = {
         element.blazor__instance.unWireEvents();
         element.blazor__instance.wireEvents();
     },
+    collapseAction: function (element, nodeId) {
+        if (this.valid(element)) {
+            var currentLi = element.querySelector('[data-uid="' + nodeId + '"]');
+            element.blazor__instance.collapseAction(currentLi, null);
+        }
+    },
+    expandAction: function (element, nodeId) {
+        if (this.valid(element)) {
+            var currentLi = element.querySelector('[data-uid="' + nodeId + '"]');
+            element.blazor__instance.expandAction(currentLi, null);
+        }
+    },
     expandedNode: function (element, args) {
         if (this.valid(element)) {
             element.blazor__instance.expandedNode(args);
@@ -1586,6 +1609,16 @@ var TreeView = {
     ensureVisible: function ensureVisible(element, node) {
         if (this.valid(element)) {
             element.blazor__instance.ensureVisible(node);
+        }
+    },
+    nodeCollapse: function nodeCollapse(element, id) {
+        if (this.valid(element)) {
+            element.blazor__instance.nodeCollapse(id);
+        }
+    },
+    nodeExpand: function nodeCollapse(element, id) {
+        if (this.valid(element)) {
+            element.blazor__instance.nodeExpand(id);
         }
     }
 };

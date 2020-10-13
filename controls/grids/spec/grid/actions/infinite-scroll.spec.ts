@@ -1323,3 +1323,54 @@ describe('Infinite scroll normal mode with edit feature teating => ', () => {
         gridObj = null;
     });
 });
+
+describe('EJ2-42591-Infinite scroll with grouping => ', () => {
+    let gridObj: Grid;
+    let actionComplete: (e?: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: [{ 'FIELD2': '10001', 'FIELD1': 'Test' }, { 'FIELD2': '10002', 'FIELD1': 'Test' }],
+                enableInfiniteScrolling: true,
+                allowGrouping: true,
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', isPrimaryKey: true, width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                ]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+    it('Grouping the FIELD1 column',(done: Function)  => {
+        actionComplete = function (args) {
+            expect(gridObj.element.querySelectorAll('.e-groupcaption').length).toBe(1);
+            gridObj.actionComplete=null;
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.groupColumn('FIELD1');
+    });
+    it('unGrouping the FIELD1 column',(done: Function) => {
+        actionComplete = function (args) {
+            expect(gridObj.element.querySelectorAll('.e-groupcaption').length).toBe(0);
+            gridObj.actionComplete=null;
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.ungroupColumn('FIELD1');
+    });
+    it('Grouping the FIELD1 column',(done: Function) => {
+        actionComplete = function (args) {
+            expect(gridObj.element.querySelectorAll('.e-groupcaption').length).toBe(1);
+            gridObj.actionComplete=null;
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.groupColumn('FIELD1');
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

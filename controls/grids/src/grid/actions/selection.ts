@@ -655,7 +655,11 @@ export class Selection implements IAction {
     }
 
     private updatePersistCollection(selectedRow: Element, chkState: boolean): void {
-        if (this.parent.isPersistSelection && !isNullOrUndefined(selectedRow)) {
+        if ((this.parent.isPersistSelection || this.parent.selectionSettings.persistSelection &&
+            this.parent.getPrimaryKeyFieldNames().length > 0) && !isNullOrUndefined(selectedRow)) {
+            if (!this.parent.isPersistSelection) {
+                this.ensureCheckboxFieldSelection();
+            }
             let rowObj: Row<Column> = this.getRowObj(selectedRow);
             let pKey: string = rowObj.data ? rowObj.data[this.primaryKey] : null;
             if (pKey === null) { return; }

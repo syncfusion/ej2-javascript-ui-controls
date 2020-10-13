@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.40 (2020-10-13)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#292453` - Treegrid refresh method works fine after updating the data.
+
 ## 18.3.35 (2020-10-01)
 
 ### TreeGrid

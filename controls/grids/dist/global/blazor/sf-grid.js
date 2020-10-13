@@ -3842,7 +3842,7 @@ var Selection = /** @class */ (function () {
         this.isDragged = false;
         this.prevStartDIndex = undefined;
         this.prevEndIndex = undefined;
-        if (this.parent.options.editMode == "Batch" && this.parent.options.enableAutoFill) {
+        if (this.parent.options.editMode == "Batch" && this.parent.options.enableAutoFill && this.parent.options.frozenColumns === 0 && this.parent.options.frozenRows === 0) {
             if (!sf.base.isNullOrUndefined(this.endRowIndex) && !sf.base.isNullOrUndefined(this.endColIndex) && !this.isAutoFillSel && this.isInitialSelect) {
                 this.parent.dotNetRef.invokeMethodAsync("ClearSelection");
                 var updateAFPos = this.updateAutofillPosition(this.endColIndex, this.endRowIndex, true);

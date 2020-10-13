@@ -1721,7 +1721,17 @@
   .e-float-input.e-rtl label.e-float-text,
   .e-float-input.e-control-wrapper.e-rtl label.e-float-text,
   .e-rtl .e-float-input label.e-float-text,
-  .e-rtl .e-float-input.e-control-wrapper label.e-float-text {
+  .e-rtl .e-float-input.e-control-wrapper label.e-float-text,
+  .e-rtl label.e-float-text,
+  .e-rtl .e-float-input.e-control-wrapper  label.e-float-text,
+  .e-rtl.e-float-input:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-rtl .e-float-input:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-rtl.e-float-input.e-control-wrapper:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-rtl .e-float-input.e-control-wrapper:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-rtl.e-float-input textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-rtl.e-float-input.e-control-wrapper textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-rtl .e-float-input textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-rtl .e-float-input.e-control-wrapper textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     right: $zero-value;
     transform-origin: right top;
   }

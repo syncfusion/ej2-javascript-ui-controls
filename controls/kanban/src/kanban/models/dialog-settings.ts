@@ -6,9 +6,9 @@ import { KanbanDialogModel } from './kanban-dialog-model';
  * Holds the configuration of editor settings.
  */
 export class DialogSettings extends ChildProperty<DialogSettings> {
+
     /**
      * Defines the dialog template
-     * @deprecated
      * @default null
      */
     @Property()
@@ -16,7 +16,6 @@ export class DialogSettings extends ChildProperty<DialogSettings> {
 
     /**
      * Defines the dialog fields
-     * @deprecated
      * @default []
      */
     @Property([])
@@ -28,4 +27,5 @@ export class DialogSettings extends ChildProperty<DialogSettings> {
      */
     @Property(null)
     public model: KanbanDialogModel;
+
 }

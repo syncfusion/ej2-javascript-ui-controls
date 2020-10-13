@@ -207,13 +207,21 @@ export class Data implements IDataProcessor {
                     fn = !this.isRemote() ? (col.sortComparer as Function).bind(col) : columns[i].direction;
                 }
                 if (gObj.groupSettings.columns.indexOf(columns[i].field) === -1) {
-                    query.sortBy(col.field, fn);
+                    if (col.isForeignColumn() || col.sortComparer) {
+                        query.sortByForeignKey(col.field, fn, undefined, columns[i].direction.toLowerCase());
+                    } else {
+                    query.sortBy(col.field, fn); }
                 } else {
                     sortGrp.push({ direction: <SortDirection>fn, field: col.field });
                 }
             }
             for (let i: number = 0, len: number = sortGrp.length; i < len; i++) {
-                query.sortBy(sortGrp[i].field, sortGrp[i].direction);
+                if (typeof sortGrp[i].direction === 'string') {
+                    query.sortBy(sortGrp[i].field, sortGrp[i].direction);
+                } else {
+                    let col: Column = this.getColumnByField(sortGrp[i].field);
+                    query.sortByForeignKey(sortGrp[i].field, sortGrp[i].direction, undefined, col.getSortDirection().toLowerCase());
+                 }
             }
         }
         return query;

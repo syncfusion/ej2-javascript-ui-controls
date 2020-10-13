@@ -1053,14 +1053,25 @@ var Data = /** @class */ (function () {
                     fn = !this.isRemote() ? col.sortComparer.bind(col) : columns[i].direction;
                 }
                 if (gObj.groupSettings.columns.indexOf(columns[i].field) === -1) {
-                    query.sortBy(col.field, fn);
+                    if (col.isForeignColumn() || col.sortComparer) {
+                        query.sortByForeignKey(col.field, fn, undefined, columns[i].direction.toLowerCase());
+                    }
+                    else {
+                        query.sortBy(col.field, fn);
+                    }
                 }
                 else {
                     sortGrp.push({ direction: fn, field: col.field });
                 }
             }
             for (var i = 0, len = sortGrp.length; i < len; i++) {
-                query.sortBy(sortGrp[i].field, sortGrp[i].direction);
+                if (typeof sortGrp[i].direction === 'string') {
+                    query.sortBy(sortGrp[i].field, sortGrp[i].direction);
+                }
+                else {
+                    var col = this.getColumnByField(sortGrp[i].field);
+                    query.sortByForeignKey(sortGrp[i].field, sortGrp[i].direction, undefined, col.getSortDirection().toLowerCase());
+                }
             }
         }
         return query;
@@ -2199,9 +2210,9 @@ var GroupModelGenerator = /** @class */ (function (_super) {
         if (this.parent.groupSettings.columns.length === 0) {
             return _super.prototype.generateRows.call(this, data, args);
         }
-        var isInfiniteScroll = this.parent.enableInfiniteScrolling && args.requestType === 'infiniteScroll';
+        this.isInfiniteScroll = (args.requestType === 'infiniteScroll');
         this.rows = [];
-        this.index = this.parent.enableVirtualization || isInfiniteScroll ? args.startIndex : 0;
+        this.index = this.parent.enableVirtualization || this.isInfiniteScroll ? args.startIndex : 0;
         for (var i = 0, len = data.length; i < len; i++) {
             this.getGroupedRecords(0, data[i], data.level, i, undefined, this.rows.length);
         }
@@ -2213,7 +2224,7 @@ var GroupModelGenerator = /** @class */ (function (_super) {
     };
     GroupModelGenerator.prototype.getGroupedRecords = function (index, data, raw, parentid, childId, tIndex, parentUid) {
         var _a;
-        var isRenderCaption = this.parent.enableInfiniteScrolling && this.prevKey === data.key;
+        var isRenderCaption = this.isInfiniteScroll && this.prevKey === data.key;
         var level = raw;
         if (sf.base.isNullOrUndefined(data.items)) {
             if (sf.base.isNullOrUndefined(data.GroupGuid)) {
@@ -5658,6 +5669,7 @@ var Render = /** @class */ (function () {
         e.actionArgs = args;
         var isInfiniteDelete = this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache
             && (args.requestType === 'delete' || (args.requestType === 'save' && this.parent.infiniteScrollModule.requestType === 'add'));
+        this.parent.getDataModule().isQueryInvokedFromData = false;
         // tslint:disable-next-line:max-func-body-length
         gObj.trigger(beforeDataBound, e, function (dataArgs) {
             if (dataArgs.cancel) {
@@ -8043,7 +8055,11 @@ var Selection = /** @class */ (function () {
     };
     Selection.prototype.updatePersistCollection = function (selectedRow, chkState) {
         var _this = this;
-        if (this.parent.isPersistSelection && !sf.base.isNullOrUndefined(selectedRow)) {
+        if ((this.parent.isPersistSelection || this.parent.selectionSettings.persistSelection &&
+            this.parent.getPrimaryKeyFieldNames().length > 0) && !sf.base.isNullOrUndefined(selectedRow)) {
+            if (!this.parent.isPersistSelection) {
+                this.ensureCheckboxFieldSelection();
+            }
             var rowObj = this.getRowObj(selectedRow);
             var pKey_1 = rowObj.data ? rowObj.data[this.primaryKey] : null;
             if (pKey_1 === null) {
@@ -10892,6 +10908,9 @@ var Scroll = /** @class */ (function () {
     Scroll.prototype.setScrollLeft = function () {
         if (this.parent.frozenColumns) {
             this.parent.headerModule.getMovableHeader().scrollLeft = this.previousValues.left;
+        }
+        else {
+            this.parent.getHeaderContent().querySelector('.e-headercontent').scrollLeft = this.previousValues.left;
         }
     };
     Scroll.prototype.onContentScroll = function (scrollTarget) {
@@ -14310,6 +14329,7 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Starts edit the selected row. At least one row must be selected before invoking this method.
      * `editSettings.allowEditing` should be true.
+     * {% codeBlock src='grid/startEdit/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     Grid.prototype.startEdit = function () {
@@ -14365,6 +14385,7 @@ var Grid = /** @class */ (function (_super) {
     };
     /**
      * Saves the cell that is currently edited. It does not save the value to the DataSource.
+     * {% codeBlock src='grid/saveCell/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.saveCell = function () {
         if (this.editModule) {
@@ -14386,6 +14407,7 @@ var Grid = /** @class */ (function (_super) {
      * To update the specified row by given values without changing into edited state.
      * @param {number} index Defines the row index.
      * @param {Object} data Defines the data object to be updated.
+     * {% codeBlock src='grid/updateRow/index.md' %}{% endcodeBlock %}
      */
     Grid.prototype.updateRow = function (index, data) {
         if (this.editModule) {
@@ -15438,6 +15460,7 @@ var Grid = /** @class */ (function (_super) {
     /**
      * Ungroups a column by column name.
      * @param  {string} columnName - Defines the column name to ungroup.
+     * {% codeBlock src='grid/ungroupColumn/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     Grid.prototype.ungroupColumn = function (columnName) {
@@ -20407,7 +20430,10 @@ var Pager = /** @class */ (function (_super) {
      * @hidden
      */
     function Pager(options, element) {
-        return _super.call(this, options, element) || this;
+        var _this = _super.call(this, options, element) || this;
+        /** @hidden */
+        _this.hasParent = false;
+        return _this;
     }
     /**
      * To provide the array of modules needed for component rendering
@@ -20467,7 +20493,13 @@ var Pager = /** @class */ (function (_super) {
      */
     Pager.prototype.render = function () {
         if (this.template) {
-            this.pagerTemplate();
+            if (this.isReactTemplate()) {
+                this.on('pager-refresh', this.pagerTemplate, this);
+                this.notify('pager-refresh', {});
+            }
+            else {
+                this.pagerTemplate();
+            }
         }
         else {
             this.initLocalization();
@@ -20504,14 +20536,16 @@ var Pager = /** @class */ (function (_super) {
      * @return {void}
      */
     Pager.prototype.destroy = function () {
-        if (this.isReact && typeof (this.template) !== 'string') {
-            this.destroyTemplate(['template']);
-            this.renderReactTemplates();
+        if (this.isReactTemplate()) {
+            this.off('pager-refresh', this.pagerTemplate);
+            if (!this.hasParent) {
+                this.destroyTemplate(['template']);
+            }
         }
-        else {
-            _super.prototype.destroy.call(this);
-            this.containerModule.destroy();
-            this.pagerMessageModule.destroy();
+        _super.prototype.destroy.call(this);
+        this.containerModule.destroy();
+        this.pagerMessageModule.destroy();
+        if (!this.isReactTemplate()) {
             this.element.innerHTML = '';
         }
     };
@@ -20666,6 +20700,9 @@ var Pager = /** @class */ (function (_super) {
         }
     };
     Pager.prototype.pagerTemplate = function () {
+        if (this.isReactTemplate() && this.hasParent) {
+            return;
+        }
         var result;
         this.element.classList.add('e-pagertemplate');
         this.compile(this.template);
@@ -20674,9 +20711,15 @@ var Pager = /** @class */ (function (_super) {
             totalRecordsCount: this.totalRecordsCount, totalPages: this.totalPages
         };
         var tempId = this.element.parentElement.id + '_template';
-        result = sf.base.isBlazor() ? this.getPagerTemplate()(data, this, 'template', tempId, this.isStringTemplate) :
-            this.getPagerTemplate()(data);
-        appendChildren(this.element, result);
+        if (this.isReactTemplate()) {
+            this.getPagerTemplate()(data, this, 'template', tempId, null, null, this.element);
+            this.renderReactTemplates();
+        }
+        else {
+            result = sf.base.isBlazor() ? this.getPagerTemplate()(data, this, 'template', tempId, this.isStringTemplate) :
+                this.getPagerTemplate()(data);
+            appendChildren(this.element, result);
+        }
     };
     /** @hidden */
     Pager.prototype.updateTotalPages = function () {
@@ -20687,6 +20730,7 @@ var Pager = /** @class */ (function (_super) {
     Pager.prototype.getPagerTemplate = function () {
         return this.templateFn;
     };
+    /** @hidden */
     Pager.prototype.compile = function (template) {
         if (template) {
             try {
@@ -20706,15 +20750,24 @@ var Pager = /** @class */ (function (_super) {
      */
     Pager.prototype.refresh = function () {
         if (this.template) {
-            this.element.innerHTML = '';
-            this.updateTotalPages();
-            this.pagerTemplate();
+            if (this.isReactTemplate()) {
+                this.updateTotalPages();
+                this.notify('pager-refresh', {});
+            }
+            else {
+                this.element.innerHTML = '';
+                this.updateTotalPages();
+                this.pagerTemplate();
+            }
         }
         else {
             this.updateRTL();
             this.containerModule.refresh();
             if (this.enablePagerMessage) {
                 this.pagerMessageModule.refresh();
+            }
+            if (this.pagerdropdownModule) {
+                this.pagerdropdownModule.refresh();
             }
             if (this.enableExternalMessage && this.externalMessageModule) {
                 this.externalMessageModule.refresh();
@@ -20782,6 +20835,9 @@ var Pager = /** @class */ (function (_super) {
                 element.setAttribute('aria-label', element.getAttribute('title'));
             }
         }
+    };
+    Pager.prototype.isReactTemplate = function () {
+        return this.isReact && this.template && typeof (this.template) !== 'string';
     };
     __decorate$5([
         sf.base.Property(false)
@@ -20895,8 +20951,7 @@ var PagerDropDown = /** @class */ (function () {
     PagerDropDown.prototype.onChange = function (e) {
         if (this.dropDownListObject.value === this.pagerModule.getLocalizedLabel('All')) {
             this.pagerModule.pageSize = this.pagerModule.totalRecordsCount;
-            this.pagerCons.innerHTML = sf.base.isBlazor() ? this.pagerModule.getLocalizedLabel('PagerAllDropDown') :
-                this.pagerModule.getLocalizedLabel('pagerAllDropDown');
+            this.refresh();
             e.value = this.pagerModule.pageSize;
             if (document.getElementsByClassName('e-popup-open e-alldrop').length) {
                 document.getElementsByClassName('e-popup-open e-alldrop')[0].style.display = 'none';
@@ -20905,12 +20960,21 @@ var PagerDropDown = /** @class */ (function () {
         else {
             this.pagerModule.pageSize = parseInt(this.dropDownListObject.value, 10);
             if (this.pagerCons.innerHTML !== this.pagerModule.getLocalizedLabel('pagerDropDown')) {
-                this.pagerCons.innerHTML = sf.base.isBlazor() ? this.pagerModule.getLocalizedLabel('PagerDropDown') :
-                    this.pagerModule.getLocalizedLabel('pagerDropDown');
+                this.refresh();
             }
         }
         this.pagerModule.dataBind();
         this.pagerModule.trigger('dropDownChanged', { pageSize: parseInt(this.dropDownListObject.value, 10) });
+    };
+    PagerDropDown.prototype.refresh = function () {
+        if (this.pagerModule.pageSize === this.pagerModule.totalRecordsCount) {
+            this.pagerCons.innerHTML = sf.base.isBlazor() ? this.pagerModule.getLocalizedLabel('PagerAllDropDown') :
+                this.pagerModule.getLocalizedLabel('pagerAllDropDown');
+        }
+        else {
+            this.pagerCons.innerHTML = sf.base.isBlazor() ? this.pagerModule.getLocalizedLabel('PagerDropDown') :
+                this.pagerModule.getLocalizedLabel('pagerDropDown');
+        }
     };
     PagerDropDown.prototype.beforeValueChange = function (prop) {
         if (typeof prop.newProp.value === 'number') {
@@ -21028,6 +21092,7 @@ var Page = /** @class */ (function () {
      * @hidden
      */
     function Page(parent, pageSettings) {
+        this.isInitialRender = true;
         Pager.Inject(ExternalMessage, PagerDropDown);
         this.parent = parent;
         this.pageSettings = pageSettings;
@@ -21061,6 +21126,8 @@ var Page = /** @class */ (function () {
             created: this.addAriaAttr.bind(this)
         }, ['parentObj', 'propName']);
         this.pagerObj = new Pager(pagerObj);
+        this.pagerObj.hasParent = true;
+        this.pagerObj.on('pager-refresh', this.renderReactPagerTemplate, this);
         this.pagerObj.allowServerDataBinding = false;
     };
     Page.prototype.onSelect = function (e) {
@@ -21217,23 +21284,18 @@ var Page = /** @class */ (function () {
         this.isInitialLoad = true;
         this.parent.element.appendChild(this.element);
         this.parent.setGridPager(this.element);
-        var tempID = this.parent.element.id + 'pagerTemplate';
-        var template = this.parent.pagerTemplate || this.pageSettings.template;
-        if (this.parent.isReact && !sf.base.isNullOrUndefined(template) &&
-            typeof (template) !== 'string') {
-            this.pagerObj.isReact = true;
-            templateCompiler(template)({}, this.parent, 'pagerTemplate', tempID, null, null, this.element);
-            this.parent.renderTemplates();
-        }
-        else {
-            this.pagerObj.appendTo(this.element);
-        }
+        this.pagerObj.isReact = this.parent.isReact;
+        this.pagerObj.appendTo(this.element);
         this.isInitialLoad = false;
     };
     Page.prototype.enableAfterRender = function (e) {
         if (e.module === this.getModuleName() && e.enable) {
             this.render();
             this.appendToElement();
+            if (this.isReactTemplate()) {
+                this.pagerObj.updateTotalPages();
+                this.created();
+            }
         }
     };
     /**
@@ -21247,11 +21309,13 @@ var Page = /** @class */ (function () {
             complete: this.onActionComplete,
             updateLayout: this.enableAfterRender,
             inboundChange: this.onPropertyChanged,
-            keyPress: this.keyPressHandler
+            keyPress: this.keyPressHandler,
+            created: this.created
         };
         if (this.parent.isDestroyed) {
             return;
         }
+        this.parent.addEventListener('created', this.handlers.created.bind(this));
         this.parent.on(initialLoad, this.handlers.load, this);
         this.parent.on(initialEnd, this.handlers.end, this); //For initial rendering
         this.parent.on(dataReady, this.handlers.ready, this);
@@ -21260,6 +21324,30 @@ var Page = /** @class */ (function () {
         this.parent.on(inBoundModelChanged, this.handlers.inboundChange, this);
         this.parent.on(keyPressed, this.handlers.keyPress, this);
     };
+    Page.prototype.created = function () {
+        if (this.isInitialRender && this.isReactTemplate()) {
+            this.isInitialRender = false;
+            this.renderReactPagerTemplate();
+        }
+    };
+    Page.prototype.isReactTemplate = function () {
+        return this.parent.isReact && this.pagerObj.template && typeof (this.pagerObj.template) !== 'string';
+    };
+    Page.prototype.renderReactPagerTemplate = function () {
+        if (!this.isInitialRender && this.isReactTemplate()) {
+            this.parent.destroyTemplate(['pagerTemplate']);
+            this.element.classList.add('e-pagertemplate');
+            this.pagerObj.compile(this.pagerObj.template);
+            var page = this.parent.pageSettings;
+            var data = {
+                currentPage: page.currentPage, pageSize: page.pageSize, pageCount: page.pageCount,
+                totalRecordsCount: page.totalRecordsCount, totalPages: this.pagerObj.totalPages
+            };
+            var tempId = this.parent.id + '_pagertemplate';
+            this.pagerObj.templateFn(data, this.parent, 'pagerTemplate', tempId, null, null, this.pagerObj.element);
+            this.parent.renderTemplates();
+        }
+    };
     /**
      * @hidden
      */
@@ -21267,6 +21355,8 @@ var Page = /** @class */ (function () {
         if (this.parent.isDestroyed) {
             return;
         }
+        this.parent.removeEventListener('created', this.handlers.created);
+        this.parent.off('pager-refresh', this.renderReactPagerTemplate);
         this.parent.off(initialLoad, this.handlers.load);
         this.parent.off(initialEnd, this.handlers.end); //For initial rendering
         this.parent.off(dataReady, this.handlers.ready);
@@ -21282,13 +21372,10 @@ var Page = /** @class */ (function () {
      */
     Page.prototype.destroy = function () {
         this.removeEventListener();
-        if (this.parent.isReact && !this.pagerObj.element) {
+        if (this.isReactTemplate()) {
             this.parent.destroyTemplate(['pagerTemplate']);
-            this.parent.renderTemplates();
         }
-        else {
-            this.pagerObj.destroy();
-        }
+        this.pagerObj.destroy();
     };
     Page.prototype.pagerDestroy = function () {
         if (this.pagerObj && !this.pagerObj.isDestroyed) {
@@ -21475,7 +21562,7 @@ var FilterCellRenderer = /** @class */ (function (_super) {
             id: cell.column.uid
         });
         innerDIV.querySelector('span').appendChild(fbicon);
-        var operators = 'equal';
+        var operators = (column.filter && column.filter.operator) ? column.filter.operator : 'equal';
         if (!sf.base.isNullOrUndefined(gObj.filterModule.operators[column.field])) {
             operators = gObj.filterModule.operators[column.field];
         }
@@ -30421,7 +30508,7 @@ var NormalEdit = /** @class */ (function () {
         }
     };
     NormalEdit.prototype.editFailure = function (e) {
-        this.parent.trigger(actionFailure, ((sf.base.isBlazor() && e instanceof Array) ? e[0] : e));
+        this.parent.trigger(actionFailure, ((sf.base.isBlazor() && e instanceof Array) ? e[0] : { error: e }));
         this.parent.hideSpinner();
         this.parent.log('actionfailure', { error: e });
     };
@@ -32528,7 +32615,14 @@ var Edit = /** @class */ (function () {
                         value = column.edit.read(elements[k], value);
                     }
                     value = gObj.editModule.getValueFromType(column, value);
-                    sf.data.DataUtil.setValue(column.field, value, editedData);
+                    if (elements[k].type === 'radio') {
+                        if (elements[k].checked) {
+                            sf.data.DataUtil.setValue(column.field, value, editedData);
+                        }
+                    }
+                    else {
+                        sf.data.DataUtil.setValue(column.field, value, editedData);
+                    }
                 }
             }
             return editedData;
@@ -39907,7 +40001,7 @@ var GroupLazyLoadRenderer = /** @class */ (function (_super) {
         _this.initialGroupCaptions = {};
         _this.requestType = ['paging', 'columnstate', 'reorder', 'cancel', 'save', 'beginEdit', 'add', 'delete'];
         /** @hidden */
-        _this.cacheMode = true;
+        _this.cacheMode = false;
         /** @hidden */
         _this.cacheBlockSize = 5;
         /** @hidden */
@@ -39941,7 +40035,7 @@ var GroupLazyLoadRenderer = /** @class */ (function (_super) {
         var isRowExist = rowsObject[oriIndex + 1] ? rowsObject[oriIndex].indent < rowsObject[oriIndex + 1].indent : false;
         var data = rowsObject[oriIndex];
         var key = this.getGroupKeysAndFields(oriIndex, rowsObject);
-        var e = { captionRowElement: tr, groupInfo: data, enableCaching: this.cacheMode, cancel: false };
+        var e = { captionRowElement: tr, groupInfo: data, enableCaching: true, cancel: false };
         this.parent.trigger(lazyLoadGroupExpand, e, function (args) {
             if (args.cancel) {
                 return;

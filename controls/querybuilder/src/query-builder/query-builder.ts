@@ -1475,7 +1475,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * @returns object[].
      */
     public getValues(field: string): object[] {
-        let original: object = {}; let result: object[] = []; let value: string; let fieldColl: string[];
+        let original: object = {}; let result: object[] = []; let value: string; let fieldColl: string[] = [];
         if (this.separator.length > 0) {
             fieldColl = field.split(this.separator);
         }

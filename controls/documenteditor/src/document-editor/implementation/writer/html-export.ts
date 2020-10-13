@@ -347,9 +347,9 @@ export class HtmlExport {
         }
         let width: number = HelperMethods.convertPointToPixel(image.width);
         let height: number = HelperMethods.convertPointToPixel(image.height);
-        tagAttributes.push('width="', width.toString() + '"');
-        tagAttributes.push('height="', height.toString() + '"');
-        tagAttributes.push('src="', imageSource + '"');
+        tagAttributes.push('width="' + width.toString() + '"');
+        tagAttributes.push('height="' + height.toString() + '"');
+        tagAttributes.push('src="' + imageSource + '"');
         imageStyle += this.createAttributesTag('img', tagAttributes);
         imageStyle += (this.endTag('img'));
         return imageStyle.toString();
@@ -834,7 +834,7 @@ export class HtmlExport {
             }
             //}
             if (!isNullOrUndefined(table.tableFormat.leftIndent) && table.tableFormat.leftIndent !== 0) {
-                tagAttributes.push('left-indent="' + (table.tableFormat.leftIndent.toString() + 'pt;' ) + '"');
+                tagAttributes.push('left-indent="' + (table.tableFormat.leftIndent.toString() + 'pt;') + '"');
             }
             if (!isNullOrUndefined(table.tableFormat.cellSpacing) && table.tableFormat.cellSpacing > 0) {
                 tagAttributes.push('cellspacing="' + (((table.tableFormat.cellSpacing * 72) / 96) * 2).toString() + '"');

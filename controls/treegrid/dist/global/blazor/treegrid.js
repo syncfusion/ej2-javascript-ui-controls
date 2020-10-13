@@ -1422,6 +1422,13 @@ var Render = /** @class */ (function () {
         }
     };
     Render.prototype.updateTreeCell = function (args, cellElement, container) {
+        var treeColumn = this.parent.columns[this.parent.treeColumnIndex];
+        var templateFn = 'templateFn';
+        if (treeColumn.field === args.column.field && !sf.base.isNullOrUndefined(treeColumn.template)) {
+            args.column.template = treeColumn.template;
+            args.column[templateFn] = sf.grids.templateCompiler(args.column.template);
+            args.cell.classList.add('e-templatecell');
+        }
         var textContent = args.cell.querySelector('.e-treecell') != null ?
             args.cell.querySelector('.e-treecell').innerHTML : args.cell.innerHTML;
         if (typeof (args.column.template) === 'object' && this.templateResult) {
@@ -1431,8 +1438,31 @@ var Render = /** @class */ (function () {
         }
         else if (args.cell.classList.contains('e-templatecell')) {
             var len = args.cell.children.length;
-            for (var i = 0; i < len; len = args.cell.children.length) {
-                cellElement.appendChild(args.cell.children[i]);
+            var tempID = this.parent.element.id + args.column.uid;
+            if (treeColumn.field === args.column.field && !sf.base.isNullOrUndefined(treeColumn.template)) {
+                var portals = 'portals';
+                var renderReactTemplates = 'renderReactTemplates';
+                if (this.parent.isReact) {
+                    args.column[templateFn](args.data, this.parent, 'template', tempID, null, null, cellElement);
+                    if (sf.base.isNullOrUndefined(this.parent.grid[portals])) {
+                        this.parent.grid[portals] = this.parent[portals];
+                    }
+                    this.parent[renderReactTemplates]();
+                }
+                else {
+                    var str = 'isStringTemplate';
+                    var result = void 0;
+                    result = args.column[templateFn](sf.grids.extend({ 'index': '' }, args.data), this.parent, 'template', tempID, this.parent[str]);
+                    sf.grids.appendChildren(cellElement, result);
+                }
+                delete args.column.template;
+                delete args.column[templateFn];
+                args.cell.innerHTML = '';
+            }
+            else {
+                for (var i = 0; i < len; len = args.cell.children.length) {
+                    cellElement.appendChild(args.cell.children[i]);
+                }
             }
         }
         else {
@@ -3646,7 +3676,12 @@ var TreeGrid = /** @class */ (function (_super) {
             else {
                 for (var _i = 0, _a = Object.keys(column[i]); _i < _a.length; _i++) {
                     var prop = _a[_i];
-                    gridColumn[prop] = treeGridColumn[prop] = column[i][prop];
+                    if (i === this.treeColumnIndex && prop === 'template') {
+                        treeGridColumn[prop] = column[i][prop];
+                    }
+                    else {
+                        gridColumn[prop] = treeGridColumn[prop] = column[i][prop];
+                    }
                 }
             }
             if (column[i].columns) {
@@ -3764,7 +3799,7 @@ var TreeGrid = /** @class */ (function (_super) {
                     }
                     break;
                 case 'expandStateMapping':
-                    this.refresh();
+                    this.grid.refresh();
                     break;
                 case 'gridLines':
                     this.grid.gridLines = this.gridLines;
@@ -3828,7 +3863,7 @@ var TreeGrid = /** @class */ (function (_super) {
                     break;
                 case 'allowTextWrap':
                     this.grid.allowTextWrap = sf.grids.getActualProperties(this.allowTextWrap);
-                    this.refresh();
+                    this.grid.refresh();
                     break;
                 case 'contextMenuItems':
                     this.grid.contextMenuItems = this.getContextMenu();
@@ -3851,7 +3886,7 @@ var TreeGrid = /** @class */ (function (_super) {
                     break;
             }
             if (requireRefresh) {
-                this.refresh();
+                this.grid.refresh();
             }
         }
     };
@@ -4297,9 +4332,15 @@ var TreeGrid = /** @class */ (function (_super) {
         }
     };
     TreeGrid.prototype.updateColumnModel = function (column) {
+        var temp;
+        var field;
+        var gridColumns = sf.base.isNullOrUndefined(column) ? this.grid.getColumns() : column;
+        if (!sf.base.isNullOrUndefined(gridColumns[this.treeColumnIndex].template)) {
+            temp = gridColumns[this.treeColumnIndex].template;
+            field = gridColumns[this.treeColumnIndex].field;
+        }
         this.columnModel = [];
         var stackedHeader = false;
-        var gridColumns = sf.base.isNullOrUndefined(column) ? this.grid.getColumns() : column;
         var gridColumn;
         for (var i = 0; i < gridColumns.length; i++) {
             gridColumn = {};
@@ -4310,6 +4351,9 @@ var TreeGrid = /** @class */ (function (_super) {
                 }
             }
             this.columnModel.push(new Column(gridColumn));
+            if (field === this.columnModel[i].field && (!sf.base.isNullOrUndefined(temp) && temp !== '')) {
+                this.columnModel[i].template = temp;
+            }
         }
         if (!sf.base.isBlazor() || !this.isServerRendered) {
             var merge$$1 = 'deepMerge';
@@ -4449,6 +4493,9 @@ var TreeGrid = /** @class */ (function (_super) {
      * Refreshes the TreeGrid header and content.
      */
     TreeGrid.prototype.refresh = function () {
+        this.convertTreeData(this.dataSource);
+        this.grid.dataSource = !(this.dataSource instanceof sf.data.DataManager) ?
+            this.flatData : new sf.data.DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
         this.grid.refresh();
     };
     /**
@@ -4830,7 +4877,7 @@ var TreeGrid = /** @class */ (function (_super) {
                 }
             }
             _this.isExpandRefresh = true;
-            _this.refresh();
+            _this.grid.refresh();
             _this.trigger(expanded, expandingArgs);
         });
     };
@@ -6018,7 +6065,7 @@ var RowDD$1 = /** @class */ (function () {
             if (tObj.isLocalData) {
                 tObj.flatData = this.orderToIndex(tObj.flatData);
             }
-            this.parent.refresh();
+            this.parent.grid.refresh();
         }
         else {
             return;
@@ -6458,7 +6505,7 @@ var RowDD$1 = /** @class */ (function () {
                     if (tObj.isLocalData) {
                         tObj.flatData = this.orderToIndex(tObj.flatData);
                     }
-                    tObj.refresh();
+                    tObj.grid.refresh();
                     if (!sf.base.isNullOrUndefined(tObj.getHeaderContent().querySelector('.e-firstrow-border'))) {
                         tObj.getHeaderContent().querySelector('.e-firstrow-border').remove();
                     }
@@ -6513,10 +6560,10 @@ var RowDD$1 = /** @class */ (function () {
                     }
                 }
             }
-            tObj.refresh();
-            srcControl.refresh();
+            tObj.grid.refresh();
+            srcControl.grid.refresh();
             if (srcControl.grid.dataSource.length > 1) {
-                srcControl.refresh();
+                srcControl.grid.refresh();
                 if (!sf.base.isNullOrUndefined(srcControl.getHeaderContent().querySelector('.e-firstrow-border'))) {
                     srcControl.getHeaderContent().querySelector('.e-firstrow-border').remove();
                 }
@@ -6527,8 +6574,8 @@ var RowDD$1 = /** @class */ (function () {
         }
         if (isCountRequired(this.parent)) {
             srcControl = dropElement.ej2_instances[0];
-            tObj.refresh();
-            srcControl.refresh();
+            tObj.grid.refresh();
+            srcControl.grid.refresh();
         }
     };
     RowDD$$1.prototype.getTargetIdx = function (targetRow) {

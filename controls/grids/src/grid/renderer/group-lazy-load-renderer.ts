@@ -58,7 +58,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
     /** @hidden */
     public pageSize: number;
     /** @hidden */
-    public cacheMode: boolean = true;
+    public cacheMode: boolean = false;
     /** @hidden */
     public cacheBlockSize: number = 5;
     /** @hidden */
@@ -85,7 +85,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         let isRowExist: boolean = rowsObject[oriIndex + 1] ? rowsObject[oriIndex].indent < rowsObject[oriIndex + 1].indent : false;
         let data: Row<Column> = rowsObject[oriIndex];
         let key: { fields: string[], keys: string[] } = this.getGroupKeysAndFields(oriIndex, rowsObject);
-        let e: LazyLoadGroupArgs = { captionRowElement: tr, groupInfo: data, enableCaching: this.cacheMode, cancel: false };
+        let e: LazyLoadGroupArgs = { captionRowElement: tr, groupInfo: data, enableCaching: true, cancel: false };
         this.parent.trigger(events.lazyLoadGroupExpand, e, (args: LazyLoadGroupArgs) => {
             if (args.cancel) {
                 return;

@@ -423,6 +423,10 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
         addClass([this.valueWrap], [OPEN]);
         this.setProperties({ enableEditMode: true }, true);
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     }
     renderAndOpen() {
         this.renderControl(this.inlineWrapper);
@@ -766,6 +770,10 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                 this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
             }
         }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
     }
     destroyComponents() {
         if (this.showButtons) {
@@ -926,7 +934,11 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         let args;
         if (this.validationRules) {
             let rules = Object.keys(this.validationRules);
-            let rulesIndex = 0;
+            let templateCount = Object.keys(this.validationRules).length;
+            let templateIndex = 0;
+            let status = true;
+            let validationLength = Object.keys(this.validationRules[rules[0]]).length;
+            validationLength = 'validateHidden' in this.validationRules[rules[0]] ? validationLength - 1 : validationLength;
             let count = 0;
             this.formValidate = new FormValidator(this.formEle, {
                 rules: this.validationRules,
@@ -938,23 +950,20 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                     };
                     this.trigger('validating', args, (validateArgs) => {
                         if (e.status === 'failure') {
+                            status = false;
                             e.errorElement.innerText = validateArgs.errorMessage;
                             this.toggleErrorClass(true);
                         }
                         else {
                             this.toggleErrorClass(false);
                         }
-                        let validationLength = Object.keys(this.validationRules[rules[rulesIndex]]).length;
-                        validationLength = 'validateHidden' in this.validationRules[rules[rulesIndex]]
-                            ? validationLength - 1 : validationLength;
                         if (!isNullOrUndefined(fromSubmit) && fromSubmit && (validationLength === count || e.status === 'failure')) {
-                            rulesIndex++;
-                            if (this.template === '' || count - 1 === rulesIndex) {
+                            templateIndex = templateIndex + 1;
+                            if (templateIndex === templateCount && status) {
                                 fromSubmit = false;
                                 this.afterValidation(isValidate);
                             }
                             count = 0;
-                            rulesIndex = 0;
                         }
                     });
                 },
@@ -1315,6 +1324,10 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
         if (!(isBlazor() && this.isServerRendered)) {
             super.destroy();
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
         }
     }
     /**

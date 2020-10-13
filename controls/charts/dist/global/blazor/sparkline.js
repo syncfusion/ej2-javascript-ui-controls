@@ -1380,7 +1380,7 @@ var Double = /** @class */ (function () {
         if (this.chart.chartAreaType === 'Cartesian') {
             var isLazyLoad = sf.base.isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
             if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-                axis.calculateVisibleRange(size);
+                axis.calculateVisibleRange(this.chart);
                 axis.calculateAxisRange(size, this.chart);
                 axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
                     this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
@@ -2167,12 +2167,12 @@ var Axis = /** @class */ (function (_super) {
      * @return {void}
      * @private
      */
-    Axis.prototype.calculateVisibleRange = function (size) {
+    Axis.prototype.calculateVisibleRange = function (chart) {
         if (this.zoomFactor < 1 || this.zoomPosition > 0) {
             var baseRange = this.actualRange;
             var start = void 0;
             var end = void 0;
-            if (!this.isInversed) {
+            if (!this.isInversed || chart.zoomModule) {
                 start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
                 end = start + this.zoomFactor * this.actualRange.delta;
             }
@@ -3963,20 +3963,9 @@ var SparklineRenderer = /** @class */ (function () {
                     };
                 }
                 else {
-                    if (y === min && model.rangePadding === 'Additional' || y === max && model.rangePadding === 'Additional') {
-                        min -= interVal + padding.top;
-                        max += interVal + padding.top;
-                        unitX = maxX - minX;
-                        unitY = max - min;
-                        unitX = (unitX === 0) ? 1 : unitX;
-                        unitY = (unitY === 0) ? 1 : unitY;
-                        this.unitX = unitX;
-                        this.unitY = unitY;
-                        this.min = min;
-                    }
-                    else if (y === min && model.rangePadding === 'Normal' || y === max && model.rangePadding === 'Normal') {
-                        min -= interVal;
-                        max += interVal;
+                    if (i === 0 && model.rangePadding !== 'None') {
+                        min -= model.rangePadding === 'Additional' ? (interVal + padding.top) : interVal;
+                        max += model.rangePadding === 'Additional' ? (interVal + padding.top) : interVal;
                         unitX = maxX - minX;
                         unitY = max - min;
                         unitX = (unitX === 0) ? 1 : unitX;

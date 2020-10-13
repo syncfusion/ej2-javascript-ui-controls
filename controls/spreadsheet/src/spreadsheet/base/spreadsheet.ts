@@ -44,6 +44,7 @@ import { WorkbookDataValidation, WorkbookConditionalFormat, WorkbookFindAndRepla
 import { FindAllArgs, findAllValues, ClearOptions, ConditionalFormatModel, ImageModel } from './../../workbook/common/index';
 import { ConditionalFormatting } from '../actions/conditional-formatting';
 import { WorkbookImage } from '../../workbook/integrations/index';
+import { WorkbookProtectSheet } from '../../workbook/actions/index';
 /**
  * Represents the Spreadsheet component. 
  * ```html
@@ -659,8 +660,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat,
             WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink,
             WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation,
-            ProtectSheet, FindAndReplace, WorkbookFindAndReplace, Merge, WorkbookMerge, SpreadsheetImage, ConditionalFormatting,
-            WorkbookImage, WorkbookConditionalFormat
+            ProtectSheet, WorkbookProtectSheet, FindAndReplace, WorkbookFindAndReplace, Merge, WorkbookMerge, SpreadsheetImage,
+            ConditionalFormatting, WorkbookImage, WorkbookConditionalFormat
         );
         if (element) {
             this.appendTo(element);
@@ -1591,52 +1592,53 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /** @hidden */
     public refreshNode(td: Element, args?: RefreshValueArgs): void {
         let value: string;
-        let spanElem: Element = td.querySelector('#' + this.element.id + '_currency');
-        let alignClass: string = 'e-right-align';
-        if (args) {
-            args.result = isNullOrUndefined(args.result) ? '' : args.result.toString();
-            if (spanElem) { detach(spanElem); }
-            if (args.type === 'Accounting' && isNumber(args.value)) {
-                if (td.querySelector('a')) {
-                    td.querySelector('a').textContent = args.result.split(args.curSymbol).join('');
+        if (td) {
+            let spanElem: Element = td.querySelector('#' + this.element.id + '_currency');
+            let alignClass: string = 'e-right-align';
+            if (args) {
+                args.result = isNullOrUndefined(args.result) ? '' : args.result.toString();
+                if (spanElem) { detach(spanElem); }
+                if (args.type === 'Accounting' && isNumber(args.value)) {
+                    if (td.querySelector('a')) {
+                        td.querySelector('a').textContent = args.result.split(args.curSymbol).join('');
+                    } else {
+                        td.innerHTML = '';
+                    }
+                    td.appendChild(this.createElement('span', {
+                        id: this.element.id + '_currency',
+                        innerHTML: `${args.curSymbol}`,
+                        styles: 'float: left'
+                    }));
+                    if (!td.querySelector('a')) {
+                        td.innerHTML += args.result.split(args.curSymbol).join('');
+                    }
+                    td.classList.add(alignClass);
+                    return;
                 } else {
-                    td.innerHTML = '';
+                    if (args.result && (args.result.toLowerCase() === 'true' || args.result.toLowerCase() === 'false')) {
+                        args.result = args.result.toUpperCase();
+                        alignClass = 'e-center-align';
+                        args.isRightAlign = true; // Re-use this to center align the cell.
+                    }
+                    value = args.result;
                 }
-                td.appendChild(this.createElement('span', {
-                    id: this.element.id + '_currency',
-                    innerHTML: `${args.curSymbol}`,
-                    styles: 'float: left'
-                }));
-                if (!td.querySelector('a')) {
-                    td.innerHTML += args.result.split(args.curSymbol).join('');
-                }
-                td.classList.add(alignClass);
-                return;
-            } else {
-                if (args.result && (args.result.toLowerCase() === 'true' || args.result.toLowerCase() === 'false')) {
-                    args.result = args.result.toUpperCase();
-                    alignClass = 'e-center-align';
-                    args.isRightAlign = true; // Re-use this to center align the cell.
-                }
-                value = args.result;
+                args.isRightAlign ? td.classList.add(alignClass) : td.classList.remove(alignClass);
             }
-            args.isRightAlign ? td.classList.add(alignClass) : td.classList.remove(alignClass);
-        }
-        value = !isNullOrUndefined(value) ? value : '';
-        if (!isNullOrUndefined(td)) {
-            let node: Node = td.lastChild;
-            if (td.querySelector('.e-hyperlink')) {
-                node = td.querySelector('.e-hyperlink').lastChild;
-            }
-            if (node && (node.nodeType === 3 || node.nodeType === 1)) {
-                node.nodeValue = value;
+            value = !isNullOrUndefined(value) ? value : '';
+            if (!isNullOrUndefined(td)) {
+                let node: Node = td.lastChild;
+                if (td.querySelector('.e-hyperlink')) {
+                    node = td.querySelector('.e-hyperlink').lastChild;
+                }
+                if (node && (node.nodeType === 3 || node.nodeType === 1)) {
+                    node.nodeValue = value;
 
-            } else {
-                td.appendChild(document.createTextNode(value));
+                } else {
+                    td.appendChild(document.createTextNode(value));
+                }
             }
         }
     }
-
     /** @hidden */
     public calculateHeight(style: CellStyleModel, lines: number = 1, borderWidth: number = 1): number {
         let fontSize: string = (style && style.fontSize) || this.cellStyle.fontSize;

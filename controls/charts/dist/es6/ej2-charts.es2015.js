@@ -854,7 +854,7 @@ class Double {
         if (this.chart.chartAreaType === 'Cartesian') {
             let isLazyLoad = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
             if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-                axis.calculateVisibleRange(size);
+                axis.calculateVisibleRange(this.chart);
                 axis.calculateAxisRange(size, this.chart);
                 axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
                     this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
@@ -1542,12 +1542,12 @@ class Axis extends ChildProperty {
      * @return {void}
      * @private
      */
-    calculateVisibleRange(size) {
+    calculateVisibleRange(chart) {
         if (this.zoomFactor < 1 || this.zoomPosition > 0) {
             let baseRange = this.actualRange;
             let start;
             let end;
-            if (!this.isInversed) {
+            if (!this.isInversed || chart.zoomModule) {
                 start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
                 end = start + this.zoomFactor * this.actualRange.delta;
             }
@@ -10708,7 +10708,7 @@ class DateTime extends NiceInterval {
         };
         let isLazyLoad = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
         if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-            axis.calculateVisibleRange(size);
+            axis.calculateVisibleRange(this.chart);
             axis.calculateAxisRange(size, this.chart);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateDateTimeNiceInterval(axis, size, axis.visibleRange.min, axis.visibleRange.max)
@@ -11061,7 +11061,7 @@ class Logarithmic extends Double {
         };
         let isLazyLoad = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
         if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-            axis.calculateVisibleRange(size);
+            axis.calculateVisibleRange(this.chart);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateLogNiceInterval(axis.doubleRange.delta, size, axis)
                 : axis.visibleRange.interval;
@@ -30312,7 +30312,7 @@ class RangeSeries extends NiceInterval {
         let yName = (series && series.yName) || control.yName;
         while (i < len) {
             point = new DataPoint(getValue(xName, viewData[i]), getValue(yName, viewData[i]));
-            point.yValue = +point.y;
+            point.yValue = control.isBlazor ? (isNullOrUndefined(point.y) ? 0 : +point.y) : +point.y;
             if (control.valueType === 'DateTime') {
                 let dateParser = control.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
                 let dateFormatter = control.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
@@ -30320,7 +30320,7 @@ class RangeSeries extends NiceInterval {
                 point.xValue = control.isBlazor ? Date.parse(point.x.toString()) : Date.parse(dateParser(dateFormatter(point.x)));
             }
             else {
-                point.xValue = +point.x;
+                point.xValue = control.isBlazor ? (isNullOrUndefined(point.x) ? 0 : +point.x) : +point.x;
             }
             if (series) {
                 series.points.push(point);
@@ -43195,20 +43195,9 @@ class SparklineRenderer {
                     };
                 }
                 else {
-                    if (y === min && model.rangePadding === 'Additional' || y === max && model.rangePadding === 'Additional') {
-                        min -= interVal + padding.top;
-                        max += interVal + padding.top;
-                        unitX = maxX - minX;
-                        unitY = max - min;
-                        unitX = (unitX === 0) ? 1 : unitX;
-                        unitY = (unitY === 0) ? 1 : unitY;
-                        this.unitX = unitX;
-                        this.unitY = unitY;
-                        this.min = min;
-                    }
-                    else if (y === min && model.rangePadding === 'Normal' || y === max && model.rangePadding === 'Normal') {
-                        min -= interVal;
-                        max += interVal;
+                    if (i === 0 && model.rangePadding !== 'None') {
+                        min -= model.rangePadding === 'Additional' ? (interVal + padding.top) : interVal;
+                        max += model.rangePadding === 'Additional' ? (interVal + padding.top) : interVal;
                         unitX = maxX - minX;
                         unitY = max - min;
                         unitX = (unitX === 0) ? 1 : unitX;

@@ -27,6 +27,7 @@ export class Link {
     protected addEventListener(): void {
         this.parent.observer.on(events.destroy, this.destroy, this);
         this.parent.observer.on(events.keyDown, this.onKeyDown, this);
+        this.parent.observer.on(events.unLink, this.removeLink, this);
         this.parent.observer.on(events.insertLink, this.linkDialog, this);
         this.parent.observer.on(events.linkToolbarAction, this.onToolbarAction, this);
         this.parent.observer.on(events.iframeMouseDown, this.onIframeMouseDown, this);
@@ -36,6 +37,7 @@ export class Link {
     protected removeEventListener(): void {
         this.parent.observer.off(events.destroy, this.destroy);
         this.parent.observer.off(events.keyDown, this.onKeyDown);
+        this.parent.observer.off(events.unLink, this.removeLink);
         this.parent.observer.off(events.insertLink, this.linkDialog);
         this.parent.observer.off(events.linkToolbarAction, this.onToolbarAction);
         this.parent.observer.off(events.iframeMouseDown, this.onIframeMouseDown);

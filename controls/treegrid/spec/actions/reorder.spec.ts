@@ -292,7 +292,6 @@ describe('Stacked data Reorder', () => {
       expect(columns[6].field).toBe('unitPrice');
       expect(columns[7].field).toBe('price');
       expect(TreeGridObj.getRows()[0].getElementsByClassName('e-rowcell')[3].querySelector(".e-icons"));
-     
         };
    TreeGridObj.actionComplete = actionComplete;
    TreeGridObj.reorderColumns( "orderName","orderID");

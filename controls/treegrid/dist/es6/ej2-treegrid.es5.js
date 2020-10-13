@@ -1,5 +1,5 @@
 import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, compile, createElement, extend, getElement, getEnumValue, getValue, isBlazor, isNullOrUndefined, merge, removeClass, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import { Aggregate, CellType, Clipboard, ColumnChooser, ColumnMenu, CommandColumn, ContextMenu, DetailRow, Edit, ExcelExport, Filter, Freeze, Grid, InterSectionObserver, Page, PdfExport, Print, RenderType, Reorder, Resize, RowDD, RowDropSettings, Scroll, Sort, Toolbar, VirtualContentRenderer, VirtualRowModelGenerator, VirtualScroll, appendChildren, calculateAggregate, getActualProperties, getObject, getUid, gridObserver, iterateArrayOrObject, parentsUntil } from '@syncfusion/ej2-grids';
+import { Aggregate, CellType, Clipboard, ColumnChooser, ColumnMenu, CommandColumn, ContextMenu, DetailRow, Edit, ExcelExport, Filter, Freeze, Grid, InterSectionObserver, Page, PdfExport, Print, RenderType, Reorder, Resize, RowDD, RowDropSettings, Scroll, Sort, Toolbar, VirtualContentRenderer, VirtualRowModelGenerator, VirtualScroll, appendChildren, calculateAggregate, extend as extend$1, getActualProperties, getObject, getUid, gridObserver, iterateArrayOrObject, parentsUntil, templateCompiler } from '@syncfusion/ej2-grids';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { CacheAdaptor, DataManager, DataUtil, Deferred, JsonAdaptor, ODataAdaptor, Predicate, Query, RemoteSaveAdaptor, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
@@ -1424,6 +1424,13 @@ var Render = /** @__PURE__ @class */ (function () {
         }
     };
     Render.prototype.updateTreeCell = function (args, cellElement, container) {
+        var treeColumn = this.parent.columns[this.parent.treeColumnIndex];
+        var templateFn = 'templateFn';
+        if (treeColumn.field === args.column.field && !isNullOrUndefined(treeColumn.template)) {
+            args.column.template = treeColumn.template;
+            args.column[templateFn] = templateCompiler(args.column.template);
+            args.cell.classList.add('e-templatecell');
+        }
         var textContent = args.cell.querySelector('.e-treecell') != null ?
             args.cell.querySelector('.e-treecell').innerHTML : args.cell.innerHTML;
         if (typeof (args.column.template) === 'object' && this.templateResult) {
@@ -1433,8 +1440,31 @@ var Render = /** @__PURE__ @class */ (function () {
         }
         else if (args.cell.classList.contains('e-templatecell')) {
             var len = args.cell.children.length;
-            for (var i = 0; i < len; len = args.cell.children.length) {
-                cellElement.appendChild(args.cell.children[i]);
+            var tempID = this.parent.element.id + args.column.uid;
+            if (treeColumn.field === args.column.field && !isNullOrUndefined(treeColumn.template)) {
+                var portals = 'portals';
+                var renderReactTemplates = 'renderReactTemplates';
+                if (this.parent.isReact) {
+                    args.column[templateFn](args.data, this.parent, 'template', tempID, null, null, cellElement);
+                    if (isNullOrUndefined(this.parent.grid[portals])) {
+                        this.parent.grid[portals] = this.parent[portals];
+                    }
+                    this.parent[renderReactTemplates]();
+                }
+                else {
+                    var str = 'isStringTemplate';
+                    var result = void 0;
+                    result = args.column[templateFn](extend$1({ 'index': '' }, args.data), this.parent, 'template', tempID, this.parent[str]);
+                    appendChildren(cellElement, result);
+                }
+                delete args.column.template;
+                delete args.column[templateFn];
+                args.cell.innerHTML = '';
+            }
+            else {
+                for (var i = 0; i < len; len = args.cell.children.length) {
+                    cellElement.appendChild(args.cell.children[i]);
+                }
             }
         }
         else {
@@ -3648,7 +3678,12 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             else {
                 for (var _i = 0, _a = Object.keys(column[i]); _i < _a.length; _i++) {
                     var prop = _a[_i];
-                    gridColumn[prop] = treeGridColumn[prop] = column[i][prop];
+                    if (i === this.treeColumnIndex && prop === 'template') {
+                        treeGridColumn[prop] = column[i][prop];
+                    }
+                    else {
+                        gridColumn[prop] = treeGridColumn[prop] = column[i][prop];
+                    }
                 }
             }
             if (column[i].columns) {
@@ -3766,7 +3801,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'expandStateMapping':
-                    this.refresh();
+                    this.grid.refresh();
                     break;
                 case 'gridLines':
                     this.grid.gridLines = this.gridLines;
@@ -3830,7 +3865,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'allowTextWrap':
                     this.grid.allowTextWrap = getActualProperties(this.allowTextWrap);
-                    this.refresh();
+                    this.grid.refresh();
                     break;
                 case 'contextMenuItems':
                     this.grid.contextMenuItems = this.getContextMenu();
@@ -3853,7 +3888,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                     break;
             }
             if (requireRefresh) {
-                this.refresh();
+                this.grid.refresh();
             }
         }
     };
@@ -4299,9 +4334,15 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TreeGrid.prototype.updateColumnModel = function (column) {
+        var temp;
+        var field;
+        var gridColumns = isNullOrUndefined(column) ? this.grid.getColumns() : column;
+        if (!isNullOrUndefined(gridColumns[this.treeColumnIndex].template)) {
+            temp = gridColumns[this.treeColumnIndex].template;
+            field = gridColumns[this.treeColumnIndex].field;
+        }
         this.columnModel = [];
         var stackedHeader = false;
-        var gridColumns = isNullOrUndefined(column) ? this.grid.getColumns() : column;
         var gridColumn;
         for (var i = 0; i < gridColumns.length; i++) {
             gridColumn = {};
@@ -4312,6 +4353,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             this.columnModel.push(new Column(gridColumn));
+            if (field === this.columnModel[i].field && (!isNullOrUndefined(temp) && temp !== '')) {
+                this.columnModel[i].template = temp;
+            }
         }
         if (!isBlazor() || !this.isServerRendered) {
             var merge$$1 = 'deepMerge';
@@ -4451,6 +4495,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * Refreshes the TreeGrid header and content.
      */
     TreeGrid.prototype.refresh = function () {
+        this.convertTreeData(this.dataSource);
+        this.grid.dataSource = !(this.dataSource instanceof DataManager) ?
+            this.flatData : new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
         this.grid.refresh();
     };
     /**
@@ -4832,7 +4879,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             _this.isExpandRefresh = true;
-            _this.refresh();
+            _this.grid.refresh();
             _this.trigger(expanded, expandingArgs);
         });
     };
@@ -6020,7 +6067,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
             if (tObj.isLocalData) {
                 tObj.flatData = this.orderToIndex(tObj.flatData);
             }
-            this.parent.refresh();
+            this.parent.grid.refresh();
         }
         else {
             return;
@@ -6460,7 +6507,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
                     if (tObj.isLocalData) {
                         tObj.flatData = this.orderToIndex(tObj.flatData);
                     }
-                    tObj.refresh();
+                    tObj.grid.refresh();
                     if (!isNullOrUndefined(tObj.getHeaderContent().querySelector('.e-firstrow-border'))) {
                         tObj.getHeaderContent().querySelector('.e-firstrow-border').remove();
                     }
@@ -6515,10 +6562,10 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
                     }
                 }
             }
-            tObj.refresh();
-            srcControl.refresh();
+            tObj.grid.refresh();
+            srcControl.grid.refresh();
             if (srcControl.grid.dataSource.length > 1) {
-                srcControl.refresh();
+                srcControl.grid.refresh();
                 if (!isNullOrUndefined(srcControl.getHeaderContent().querySelector('.e-firstrow-border'))) {
                     srcControl.getHeaderContent().querySelector('.e-firstrow-border').remove();
                 }
@@ -6529,8 +6576,8 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
         }
         if (isCountRequired(this.parent)) {
             srcControl = dropElement.ej2_instances[0];
-            tObj.refresh();
-            srcControl.refresh();
+            tObj.grid.refresh();
+            srcControl.grid.refresh();
         }
     };
     RowDD$$1.prototype.getTargetIdx = function (targetRow) {

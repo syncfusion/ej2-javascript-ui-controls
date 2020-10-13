@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 18.3.40 (2020-10-13)
+
+### Maps
+
+#### Bug Fixes
+
+- `#292757` - The multiple tile maps in a single page will now work properly.
+
 ## 18.3.35 (2020-10-01)
 
 ### Maps

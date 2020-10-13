@@ -1,3 +1,5 @@
+[![coverage](http://ej2.syncfusion.com/badges/ej2-base/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-base)
+
 # ej2-base
 
 A common package of Essential JS 2 which contains base libraries, methods and class definitions.

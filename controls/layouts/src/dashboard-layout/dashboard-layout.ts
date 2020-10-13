@@ -280,6 +280,10 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     private isBlazor: boolean = false;
     private isInlineRendering: boolean = false;
     private removeAllCalled: boolean = false;
+    // to check whether removePanel is executed in mobile device
+    private isPanelRemoved: boolean = false;
+    // to maintain sizeY in mobile device
+    private panelsSizeY: number = 0;
     private resizeHeight: boolean = false;
 
     /**
@@ -700,10 +704,14 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     protected renderTemplate(content: string, appendElement: HTMLElement, type: string, isStringTemplate: boolean, prop: string): void {
         let templateFn: Function = this.templateParser(content);
         let templateElements: HTMLElement[] = [];
-        for (let item of templateFn({}, this, prop, type, isStringTemplate)) {
+        // tslint:disable-next-line
+        let compilerFn: any = templateFn({}, this, prop, type, isStringTemplate, null, appendElement);
+        if (compilerFn) {
+        for (let item of compilerFn) {
             templateElements.push(item);
         }
         append([].slice.call(templateElements), appendElement);
+        }
     }
 
     protected renderPanels(cellElement: HTMLElement, panelModel: PanelModel, panelId: string, isStringTemplate: boolean): HTMLElement {
@@ -1204,6 +1212,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     };
 
     public refresh(): void {
+        this.panelsSizeY = 0;
         this.updateDragArea();
         if (this.checkMediaQuery()) {
             this.checkMediaQuerySizing();
@@ -1269,13 +1278,27 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     protected checkMediaQuerySizing(): void {
         addClass([this.element], [responsive]);
-        let updatedPanel: PanelModel[] = this.sortPanels();
+        let updatedPanel: PanelModel[];
+        if (this.isPanelRemoved && this.panels) {
+             updatedPanel = this.panels;
+       } else {
+             updatedPanel = this.sortPanels();
+       }
         this.updatedRows = updatedPanel.length;
         for (let i: number = 0; i < updatedPanel.length; i++) {
             let panelElement: HTMLElement = document.getElementById(updatedPanel[i].id);
+            // tslint:disable-next-line
+            let updatedHeight : any;
             if (panelElement) {
                 setStyle(<HTMLElement>panelElement, { 'width': '100%' });
-                (<HTMLElement>panelElement).style.height = ' ' + (<number>this.cellSize[1] * updatedPanel[i].sizeY) + 'px';
+                (<HTMLElement>panelElement).style.height = ' ' + ((this.element.parentElement
+                    && this.element.parentElement.offsetWidth / this.cellAspectRatio) * updatedPanel[i].sizeY) + 'px';
+                if (updatedPanel[i].sizeY > 1) {
+                    updatedHeight = ((this.element.parentElement
+                        && this.element.parentElement.offsetWidth / this.cellAspectRatio) * updatedPanel[i].sizeY) +
+                        parseInt((Math.round(updatedPanel[i].sizeY / 2) * this.cellSpacing[1]).toString(), 0);
+                    (<HTMLElement>panelElement).style.height = '' + updatedHeight + 'px';
+                }
                 this.resizeHeight = true;
                 if (this.addPanelCalled && this.isBlazor) {
                     let panelProp: PanelModel = this.getActualProperties(updatedPanel[i]);
@@ -1283,11 +1306,10 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                     panelProp.col = 0;
                     this.panelPropertyChange(updatedPanel[i], panelProp);
                     this.setPanelPosition(<HTMLElement>panelElement, i, 0);
-                    this.setMediaQueryPanelPosition(<HTMLElement>panelElement, i, 0);
                 } else {
                     this.panelPropertyChange(updatedPanel[i], { row: i, col: 0 });
                     this.setPanelPosition(<HTMLElement>panelElement, updatedPanel[i].row, updatedPanel[i].col);
-                    this.setMediaQueryPanelPosition(<HTMLElement>panelElement, updatedPanel[i].row, updatedPanel[i].col);
+                    this.panelsSizeY = this.panelsSizeY + updatedPanel[i].sizeY;
                 }
                 this.setClasses(this.panelCollection);
                 this.checkDragging(this.dragCollection);
@@ -1381,26 +1403,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         let widthValue: number | string = this.getCellSize()[0];
         let left: number = col === 0 ? 0 : (((col) * ((widthValue) + this.cellSpacing[0])));
         let top: number = row === 0 ? 0 : (((row) * ((heightValue) + this.cellSpacing[1])));
-        setStyle(cellElement, { 'left': left + 'px', 'top': top + 'px' });
-    }
-
-    protected setMediaQueryPanelPosition(cellElement: HTMLElement, row: number, col: number): void {
-        if (!cellElement) {
-            return;
-        }
-        let widthValue: number | string = this.getCellSize()[0];
-        let heightValue: number | string = this.getCellSize()[1];
-        let top: number = 0; //= row === 0 ? 0 : (((row) * (parseInt(heightValue.toString(), 10) + this.cellSpacing[1])));
-        let left: number = 0;
-        if (this.resizeHeight && row !== 0) {
-            // top = 0;
-            for (let i: number = 1; i < this.panels.length; i++) {
-                top = top + (this.panels[i - 1].sizeY * <number>this.cellSize[1]) + this.cellSpacing[1];
-                if (i === row) {
-                    break;
-                }
-            }
-        }
+        if (this.checkMediaQuery()) {
+           top = row === 0 ? 0 : ((this.panelsSizeY) * ((heightValue) + this.cellSpacing[1]));
+         }
         setStyle(cellElement, { 'left': left + 'px', 'top': top + 'px' });
     }
 
@@ -2612,6 +2617,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * @deprecated
      */
     public addPanel(panel: PanelModel): void {
+        this.panelsSizeY = 0;
         this.allowServerDataBinding = false;
         this.maxCol();
         if (!panel.minSizeX) {
@@ -2685,6 +2691,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * @deprecated
      */
     public updatePanel(panel: PanelModel): void {
+        this.panelsSizeY = 0;
         if (!panel.id) {
             return;
         }
@@ -2742,6 +2749,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.setHeightAndWidth(cell, panelInstance);
         this.setPanelPosition(cell, panelInstance.row, panelInstance.col);
         this.updatePanelLayout(cell, panelInstance);
+        if (this.checkMediaQuery()) { this.checkMediaQuerySizing(); }
         this.mainElement = null;
         this.updatePanels();
         this.updateCloneArrayObject();
@@ -2810,6 +2818,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * @returns void
      */
     public removePanel(id: string): void {
+        this.panelsSizeY = 0;
         this.panelsInitialModel = this.cloneModels(this.panels);
         let removedPanel: PanelModel;
         for (let i: number = 0; i < this.panelCollection.length; i++) {
@@ -2826,6 +2835,11 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             }
         }
         this.updatePanels();
+        if (this.checkMediaQuery()) {
+           this.isPanelRemoved = true;
+           this.checkMediaQuerySizing();
+           this.isPanelRemoved = false;
+        }
         this.updateServerPanelData();
         this.gridPanelCollection.forEach((item: HTMLElement) => {
             if (item.id === id) {
@@ -2991,6 +3005,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         if (this.table) { this.table.remove(); }
         this.isBlazor = false;
         this.initialize();
+        if (this.checkMediaQuery()) {
+         this.refresh();
+        }
         this.isBlazor = (isBlazor() && this.isServerRendered);
         if (this.showGridLines) {
             this.initGridLines();

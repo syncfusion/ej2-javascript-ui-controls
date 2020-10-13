@@ -2370,7 +2370,7 @@ var Slider = /** @class */ (function (_super) {
         return 1;
     };
     Slider.prototype.refreshTooltip = function (target) {
-        if (this.tooltip.isVisible && this.tooltipObj && this.initialTooltip) {
+        if (this.tooltip.isVisible && this.tooltipObj) {
             this.tooltipValue();
             if (target) {
                 this.tooltipObj.refresh(target);

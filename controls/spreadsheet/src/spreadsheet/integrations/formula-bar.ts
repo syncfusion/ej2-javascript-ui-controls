@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
 import { formulaBar, locale, selectionComplete, enableFormulaInput, DialogBeforeOpenEventArgs } from '../common/index';
 import { mouseUpAfterSelection, click } from '../common/index';
-import { getRangeIndexes, getRangeFromAddress, getCellAddress } from './../../workbook/common/address';
+import { getRangeIndexes, getRangeFromAddress, getCellAddress, getCellIndexes } from './../../workbook/common/address';
 import { CellModel, getSheetName, getTypeFromFormat, getSheet, SheetModel, checkIsFormula } from '../../workbook/index';
 import { updateSelectedRange, getSheetNameFromAddress, getSheetIndex, DefineNameModel } from '../../workbook/index';
 import { ComboBox, ChangeEventArgs, DropDownList, SelectEventArgs as DdlSelectArgs } from '@syncfusion/ej2-dropdowns';
@@ -13,6 +13,7 @@ import { intToDate } from '../../workbook/common/math';
 import { Dialog } from '../services/dialog';
 import { SelectEventArgs, ListView } from '@syncfusion/ej2-lists';
 import { workbookFormulaOperation } from '../../workbook/common/event';
+import { isFormulaBarEdit } from '../common/event';
 
 /**
  * Represents Formula bar for Spreadsheet.
@@ -26,6 +27,7 @@ export class FormulaBar {
     private categoryList: DropDownList;
     private formulaList: ListView;
     private dialog: Dialog;
+    private isGoto: boolean = false;
     constructor(parent: Spreadsheet) {
         this.parent = parent;
         this.addEventListener();
@@ -220,7 +222,7 @@ export class FormulaBar {
                     let formulaInp: HTMLTextAreaElement =
                         (<HTMLTextAreaElement>document.getElementById(this.parent.element.id + '_formula_input'));
                     formulaInp.value = value;
-                    if (!isNullOrUndefined(value) && !this.parent.isEdit) {
+                    if (!isNullOrUndefined(value)) {
                         this.parent.notify(
                             editOperation, { action: 'refreshEditor', value: formulaInp.value, refreshEditorElem: true });
                     }
@@ -257,13 +259,22 @@ export class FormulaBar {
           element.disabled = true;
         } else { element.disabled = false; }
     }
+    private formulaBarScrollEdit(): void {
+        let index: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+        let viewportIndexes: number[] = getCellIndexes(this.parent.getActiveSheet().topLeftCell);
+        if (index[0] < viewportIndexes[0]) {
+            this.parent.goTo(this.parent.getActiveSheet().selectedRange);
+            this.isGoto = true;
+        }
+        this.parent.notify(editOperation, { action: 'startEdit', refreshCurPos: false });
+    }
     private formulaBarClickHandler(e: MouseEvent & TouchEvent): void {
         let target: HTMLElement = e.target as HTMLElement;
         if (target.classList.contains('e-drop-icon') && closest(target, '.e-formula-bar-panel')) {
             this.toggleFormulaBar(target);
         } else if (target.classList.contains('e-formula-bar')) {
             if (!this.parent.isEdit && !this.parent.getActiveSheet().isProtected) {
-                this.parent.notify(editOperation, { action: 'startEdit', refreshCurPos: false });
+                this.formulaBarScrollEdit();
             } else if (this.parent.getActiveSheet().isProtected) {
                 this.parent.notify(editAlert, null);
             }
@@ -481,6 +492,7 @@ export class FormulaBar {
         this.parent.on(mouseUpAfterSelection, this.UpdateValueAfterMouseUp, this);
         this.parent.on(formulaBarOperation, this.editOperationHandler, this);
         this.parent.on(enableFormulaInput, this.disabletextarea, this);
+        this.parent.on(isFormulaBarEdit, this.isFormulaBarEdit, this);
     }
     public destroy(): void {
         this.removeEventListener();
@@ -502,6 +514,7 @@ export class FormulaBar {
             this.parent.off(mouseUpAfterSelection, this.UpdateValueAfterMouseUp);
             this.parent.off(formulaBarOperation, this.editOperationHandler);
             this.parent.off(enableFormulaInput, this.disabletextarea);
+            this.parent.off(isFormulaBarEdit, this.isFormulaBarEdit);
         }
     }
 
@@ -514,6 +527,15 @@ export class FormulaBar {
             case 'getPosition':
                 args.position = this.getFormulaBar().getBoundingClientRect();
                 break;
+        }
+    }
+
+    private isFormulaBarEdit(args: { [key: string]: Object }): void {
+        let edit: boolean = this.parent.isEdit;
+        if (edit && this.isGoto) {
+            args.isEdit = true;
+        } else {
+            args.isEdit = false;
         }
     }
 

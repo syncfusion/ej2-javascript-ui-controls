@@ -304,8 +304,7 @@ export class WorkbookNumberFormat {
             return '';
         }
         if (!isNullOrUndefined(args.value.toString().split(this.decimalSep)[1])) {
-            args.value = parseFloat('1' + this.decimalSep + (args.value as string).split(this.decimalSep)[1]) || args.value;
-        }
+            args.value = parseFloat('1' + this.decimalSep + args.value.toString().split(this.decimalSep)[1]) || args.value;        }
         let time: Date = intToDate(args.value as number);
         let code: string = (args.format === '' || args.format === 'General') ? getFormatFromType('Time')
             : args.format.toString();

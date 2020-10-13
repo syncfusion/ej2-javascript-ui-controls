@@ -4525,7 +4525,8 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
             dragTarget: "." + this.itemClass,
             enableTapHold: true,
             tapHoldThreshold: 200,
-            queryPositionInfo: this.queryPositionInfo
+            queryPositionInfo: this.queryPositionInfo,
+            distance: 5
         });
     };
     Sortable.prototype.getPlaceHolder = function (target, instance) {

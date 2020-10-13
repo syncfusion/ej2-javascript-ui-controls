@@ -897,6 +897,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             if (this.documentEditor) {
                 this.documentEditor.resize();
             }
+            if (this.toolbarModule) {
+                this.toolbarModule.toolbar.refreshOverflow();
+            }
         }
     }
     /**

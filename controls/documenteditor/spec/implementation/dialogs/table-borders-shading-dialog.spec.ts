@@ -920,7 +920,7 @@ describe('Border and shading dialog applying testing to table testing with histo
     });
     it('Apply table properties style testing', () => {
         editor.editorHistory.undo();
-        expect(editor.selection.tableFormat.table.tableFormat.shading.backgroundColor).toBe('#ffffff');
+        expect(editor.selection.tableFormat.table.tableFormat.shading.backgroundColor).toBe('empty');
     });
     it('Apply table properties style testing', () => {
         editor.editorHistory.redo();
@@ -969,7 +969,7 @@ describe('Border and shading dialog applying testing to table testing with histo
     });
     it('Apply cell properties line style testing', () => {
         editor.editorHistory.undo();
-        expect(editor.selection.start.paragraph.associatedCell.cellFormat.shading.backgroundColor).toBe('#ffffff');
+        expect(editor.selection.start.paragraph.associatedCell.cellFormat.shading.backgroundColor).toBe('empty');
     });
     it('Apply cell properties line style testing', () => {
         editor.editorHistory.redo();

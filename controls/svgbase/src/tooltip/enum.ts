@@ -9,7 +9,7 @@
  * * verticalLine - Renders a verticalLine.
  * * pentagon- Renders a pentagon.
  * * invertedTriangle - Renders a invertedTriangle.
- * * image - Renders a image.
+ * * image - Renders a image
  */
 export type TooltipShape =
 /** Render a circle. */

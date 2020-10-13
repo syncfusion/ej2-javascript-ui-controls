@@ -2155,6 +2155,15 @@ export class Drawing {
         if (node.borderStyle !== undefined) {
             actualObject.borderStyle = node.borderStyle;
         }
+        if (node.author !== undefined) {
+            actualObject.author = node.author;
+        }
+        if (node.modifiedDate !== undefined) {
+            actualObject.modifiedDate = node.modifiedDate;
+        }
+        if (node.subject !== undefined) {
+            actualObject.subject = node.subject;
+        }
         if (node.vertexPoints !== undefined) {
             actualObject.vertexPoints = node.vertexPoints;
             (this.pdfViewer.nameTable as any)[actualObject.id].vertexPoints = node.vertexPoints;

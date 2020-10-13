@@ -968,10 +968,10 @@ export class LayerPanel {
                     let imgElement: HTMLElement = createElement('img');
                     imgElement.setAttribute('src', tile.src);
                     let child: HTMLElement;
-                    if (document.getElementById('tile_' + id) && type === 'Pan') {
-                        removeElement('tile_' + id);
+                    if (document.getElementById(this.mapObject.element.id + '_tile_' + id) && type === 'Pan') {
+                        removeElement(this.mapObject.element.id + '_tile_' + id);
                     }
-                    child = createElement('div', { id: 'tile_' + id });
+                    child = createElement('div', { id: this.mapObject.element.id + '_tile_' + id });
                     child.style.position = 'absolute';
                     child.style.left = tile.left + 'px';
                     child.style.top = tile.top + 'px';

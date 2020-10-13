@@ -86,7 +86,7 @@ export class ImageExport {
                     let imgxHttp: XMLHttpRequest = new XMLHttpRequest();
                     let imgTileLength: number = this.control.mapLayerPanel.tiles.length;
                     for (let i: number = 0; i <= imgTileLength + 1; i++) {
-                        let tile: HTMLElement = document.getElementById('tile_' + (i - 1));
+                        let tile: HTMLElement = document.getElementById(this.control.element.id + '_tile_' + (i - 1));
                         let exportTileImg: HTMLImageElement = new Image();
                         exportTileImg.crossOrigin = 'Anonymous';
                         ctxt.fillStyle = this.control.background ? this.control.background : '#FFFFFF';

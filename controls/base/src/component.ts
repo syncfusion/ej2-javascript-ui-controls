@@ -306,6 +306,11 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     }
 
     //tslint:disable-next-line
+    protected renderReactTemplates(): void {
+        //No Code
+    }
+
+    //tslint:disable-next-line
     protected clearTemplate(templateName?: string[], index?: any): void {
         //No Code
     }

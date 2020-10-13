@@ -9,7 +9,6 @@ export type ReturnType = { result: Object[], count: number, aggregates?: Object 
 
 /**
  * Defines types to be used as CurrentAction.
- * @deprecated
  */
 export type CurrentAction = 'Add' | 'Edit' | 'Delete';
 
@@ -25,7 +24,6 @@ export type SortDirection = 'Ascending' | 'Descending';
 
 /**
  * Defines types to be used as SortOrder.
- * @deprecated
  */
 export type SortOrderBy = 'DataSourceOrder' | 'Index' | 'Custom';
 
@@ -37,4 +35,4 @@ export type ConstraintType = 'Column' | 'Swimlane';
 /**
  * Defines types used to specifies the Dialog Field Type.
  */
-export type DialogFieldType = 'TextBox'| 'DropDown' | 'Numeric' | 'TextArea';
+export type DialogFieldType = 'TextBox' | 'DropDown' | 'Numeric' | 'TextArea';

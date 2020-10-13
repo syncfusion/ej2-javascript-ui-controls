@@ -1149,7 +1149,7 @@ export class MeasureAnnotation {
         let area: number = this.getArea(points, values.factor) * values.ratio;
         if (values.unit === 'ft_in') {
             // tslint:disable-next-line
-           let calculateValue: any = Math.round(area * 100) / 100;
+           let calculateValue: any = Math.round(area * 2 * 100) / 100;
            if (calculateValue >= 12) {
                 calculateValue = (Math.round(calculateValue / 12 * 100) / 100).toString();
                 calculateValue =  calculateValue.split('.');
@@ -1203,7 +1203,7 @@ export class MeasureAnnotation {
         let volume: number = area * ((depth * this.convertUnitToPoint(values.unit)) * values.factor) * values.ratio;
         if (values.unit === 'ft_in') {
             // tslint:disable-next-line
-           let calculateValue: any = Math.round(volume * 100) / 100;
+            let calculateValue: any = Math.round(volume * 2 * 100) / 100;
            if (calculateValue >= 12) {
                 calculateValue = (Math.round(calculateValue / 12 * 100) / 100).toString();
                 calculateValue = calculateValue.split('.');

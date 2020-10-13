@@ -217,6 +217,7 @@ var MultiSelect = /** @class */ (function (_super) {
      */
     function MultiSelect(option, element) {
         var _this = _super.call(this, option, element) || this;
+        _this.clearIconWidth = 0;
         _this.isValidKey = false;
         _this.selectAllEventData = [];
         _this.selectAllEventEle = [];
@@ -2061,7 +2062,7 @@ var MultiSelect = /** @class */ (function (_super) {
                         _this.notify('selectAll', { module: 'CheckBoxSelection', enable: _this.mode === 'CheckBox' });
                         overAllHeight -= _this.selectAllHeight;
                     }
-                    else if (_this.mode === 'CheckBox' && !_this.showSelectAll && (!_this.headerTemplate || !_this.footerTemplate)) {
+                    else if (_this.mode === 'CheckBox' && !_this.showSelectAll && (!_this.headerTemplate && !_this.footerTemplate)) {
                         _this.notify('selectAll', { module: 'CheckBoxSelection', enable: _this.mode === 'CheckBox' });
                         overAllHeight = parseInt(_this.popupHeight, 10);
                     }
@@ -2407,7 +2408,7 @@ var MultiSelect = /** @class */ (function (_super) {
         if (!sf.base.isNullOrUndefined(this.value)) {
             for (var index = 0; !sf.base.isNullOrUndefined(this.value[index]); index++) {
                 var listValue = this.findListElement(this.mainList, 'li', 'data-value', this.value[index]);
-                if (sf.base.isNullOrUndefined(listValue) && !this.allowCustomValue) {
+                if (!(sf.base.isBlazor() && this.isServerRendered) && sf.base.isNullOrUndefined(listValue) && !this.allowCustomValue) {
                     this.value.splice(index, 1);
                 }
                 if (this.listData) {
@@ -2582,6 +2583,10 @@ var MultiSelect = /** @class */ (function (_super) {
                     _this.mainData.push(data_1);
                     _this.remoteCustomValue = false;
                     _this.addValue(value, text, e);
+                    if (sf.base.isBlazor() && _this.isServerRendered) {
+                        _this.checkPlaceholderSize();
+                        _this.makeTextBoxEmpty();
+                    }
                 }
             });
         }
@@ -2590,8 +2595,8 @@ var MultiSelect = /** @class */ (function (_super) {
             this.addValue(value, text, e);
         }
         if (sf.base.isBlazor() && this.isServerRendered && this.value && this.list &&
-            this.value.length === this.list.querySelectorAll('li.e-list-item').length ||
-            this.value.length === this.maximumSelectionLength) {
+            (this.value.length === this.list.querySelectorAll('li.e-list-item').length ||
+                this.value.length === this.maximumSelectionLength)) {
             this.updatedataValueItems(e);
             this.checkPlaceholderSize();
         }
@@ -3034,9 +3039,9 @@ var MultiSelect = /** @class */ (function (_super) {
             var remainSize = raminElement.offsetWidth;
             sf.base.remove(raminElement);
             if (this.showDropDownIcon) {
-                downIconWidth = this.dropIcon.offsetWidth +
-                    parseInt(window.getComputedStyle(this.dropIcon).marginRight, 10);
+                downIconWidth = this.dropIcon.offsetWidth + parseInt(window.getComputedStyle(this.dropIcon).marginRight, 10);
             }
+            this.checkClearIconWidth();
             if (!sf.base.isNullOrUndefined(this.value)) {
                 for (var index = 0; !sf.base.isNullOrUndefined(this.value[index]); index++) {
                     data += (index === 0) ? '' : this.delimiterChar + ' ';
@@ -3049,7 +3054,7 @@ var MultiSelect = /** @class */ (function (_super) {
                     overAllContainer = this.componentWrapper.offsetWidth -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingLeft, 10) -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingRight, 10);
-                    if ((wrapperleng + downIconWidth) > overAllContainer) {
+                    if ((wrapperleng + downIconWidth + this.clearIconWidth) > overAllContainer) {
                         if (tempData !== undefined && tempData !== '') {
                             temp = tempData;
                             index = tempIndex + 1;
@@ -3057,7 +3062,7 @@ var MultiSelect = /** @class */ (function (_super) {
                         this.updateWrapperText(this.viewWrapper, temp);
                         remaining = this.value.length - index;
                         wrapperleng = this.viewWrapper.offsetWidth;
-                        while (((wrapperleng + remainSize + downIconWidth) > overAllContainer) && wrapperleng !== 0
+                        while (((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) > overAllContainer) && wrapperleng !== 0
                             && this.viewWrapper.innerHTML !== '') {
                             var textArr = this.viewWrapper.innerHTML.split(this.delimiterChar);
                             textArr.pop();
@@ -3080,7 +3085,7 @@ var MultiSelect = /** @class */ (function (_super) {
                 }
             }
             if (remaining > 0) {
-                var totalWidth = overAllContainer - downIconWidth;
+                var totalWidth = overAllContainer - downIconWidth - this.clearIconWidth;
                 this.viewWrapper.appendChild(this.updateRemainTemplate(raminElement, this.viewWrapper, remaining, compiledString, totalCompiledString, totalWidth));
                 this.updateRemainWidth(this.viewWrapper, totalWidth);
                 this.updateRemainingText(raminElement, downIconWidth, remaining, compiledString, totalCompiledString);
@@ -3089,6 +3094,11 @@ var MultiSelect = /** @class */ (function (_super) {
         else {
             this.viewWrapper.innerHTML = '';
             this.viewWrapper.style.display = 'none';
+        }
+    };
+    MultiSelect.prototype.checkClearIconWidth = function () {
+        if (this.showClearButton) {
+            this.clearIconWidth = this.overAllClear.offsetWidth;
         }
     };
     MultiSelect.prototype.updateRemainWidth = function (viewWrapper, totalWidth) {
@@ -4458,7 +4468,7 @@ var CheckBoxSelection = /** @class */ (function () {
     };
     CheckBoxSelection.prototype.getFocus = function (e) {
         this.parent.overAllWrapper.classList.remove(FOCUS$1);
-        if (this.parent.keyAction && e.value !== 'clear') {
+        if (this.parent.keyAction && e.value !== 'clear' && e.value !== 'focus') {
             this.parent.keyAction = false;
             return;
         }

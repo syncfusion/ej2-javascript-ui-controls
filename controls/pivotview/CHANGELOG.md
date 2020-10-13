@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.40 (2020-10-13)
+
+### Pivot Table
+
+#### New Features
+
+- `#F156978` - Provided additional cell information for cell template event.
+
 ## 18.2.56 (2020-09-01)
 
 ### Pivot Table

@@ -1,5 +1,5 @@
 import { BlazorDotnetObject, EventHandler, isNullOrUndefined as isNOU, Browser } from '@syncfusion/ej2-base';
-import { addClass, removeClass, closest, formatUnit, createElement, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
+import { addClass, closest, formatUnit, createElement, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
 
 const LEFT: string = 'Left';
 const RIGHT: string = 'Right';
@@ -11,7 +11,6 @@ const CLOSE: string = 'e-close';
 const OPEN: string = 'e-open';
 const ROOT: string = 'e-sidebar';
 const CONTROL: string = 'e-control';
-const CONTEXTBACKDROP: string = 'e-backdrop';
 const CONTEXT: string = 'e-sidebar-context';
 const DEFAULTBACKDROP: string = 'e-sidebar-overlay';
 const SIDEBARABSOLUTE: string = 'e-sidebar-absolute';
@@ -133,24 +132,21 @@ class SfSidebar {
     public createBackDrop(property: ISidebar): void {
         this.resetProperty(property);
         if (this.showBackdrop && this.isOpen) {
+            this.modal = createElement('div');
+            this.modal.className = DEFAULTBACKDROP;
+            this.modal.style.display = 'block';
             if (this.target) {
                 let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') || this.targetElement;
-                addClass([sibling], CONTEXTBACKDROP);
-            } else if (!this.modal) {
-                this.modal = createElement('div');
-                this.modal.className = DEFAULTBACKDROP;
-                this.modal.style.display = 'block';
+                sibling.appendChild(this.modal);
+            } else {
                 document.body.appendChild(this.modal);
             }
         }
     }
 
     private destroyBackDrop(): void {
-        let sibling: HTMLElement = (<HTMLElement>document.querySelector('.e-main-content')) || this.targetElement;
         if (this.showBackdrop) {
-            if (this.target && sibling) {
-                removeClass([sibling], CONTEXTBACKDROP);
-            } else if (this.modal) {
+            if (this.modal) {
                 this.modal.style.display = 'none';
                 this.modal.outerHTML = '';
                 this.modal = null;
@@ -266,7 +262,6 @@ class SfSidebar {
 
     private resetProperty(property: ISidebar): void {
         if (!isNOU(property)) {
-            this.target = property.Target;
             this.isOpen = property.IsOpen;
             this.enableGestures = property.EnableGestures;
             this.showBackdrop = property.ShowBackdrop;

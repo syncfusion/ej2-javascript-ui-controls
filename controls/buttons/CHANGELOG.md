@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.40 (2020-10-13)
+
+### Button
+
+#### Bug Fixes
+
+- Warning message has been resolved.
+
 ## 18.2.58 (2020-09-15)
 
 ### CheckBox

@@ -148,5 +148,4 @@ exports.Item = Item;
 return exports;
 
 });
-sfBlazor.modules["splitbuttonsbase"] = "splitbuttons.getModel";
 window.sf.splitbuttons = window.sf.base.extend({}, window.sf.splitbuttons, splitbuttonsbase({}));

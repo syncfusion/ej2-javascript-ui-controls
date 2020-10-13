@@ -155,7 +155,7 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
             id: cell.column.uid
         });
         innerDIV.querySelector('span').appendChild(fbicon);
-        let operators: string = 'equal';
+        let operators: string = (column.filter && column.filter.operator) ? column.filter.operator as string : 'equal';
         if (!isNullOrUndefined(gObj.filterModule.operators[column.field])) {
             operators = gObj.filterModule.operators[column.field];
         }

@@ -10,7 +10,7 @@ import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 import { Workbook } from '@syncfusion/ej2-excel-export';
 import { PdfBorders, PdfColor, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfPageOrientation, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfVerticalAlignment, PointF, RectangleF } from '@syncfusion/ej2-pdf-export';
-import { AccumulationChart, AccumulationDataLabel, AccumulationLegend, AccumulationTooltip, AreaSeries, BarSeries, BubbleSeries, Category, Chart, ColumnSeries, Crosshair, Export, FunnelSeries, Legend, LineSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiLevelLabel, ParetoSeries, PieSeries, PolarSeries, PyramidSeries, RadarSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries, ScrollBar, Selection as Selection$1, SplineAreaSeries, SplineSeries, StackingAreaSeries, StackingBarSeries, StackingColumnSeries, StepAreaSeries, StepLineSeries, Tooltip as Tooltip$1, Zoom } from '@syncfusion/ej2-charts';
+import { AccumulationChart, AccumulationDataLabel, AccumulationLegend, AccumulationTooltip, AreaSeries, BarSeries, BubbleSeries, Category, Chart, ColumnSeries, Crosshair, Export, FunnelSeries, Legend, LineSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiLevelLabel, ParetoSeries, PieSeries, PolarSeries, PyramidSeries, RadarSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries, ScrollBar, Selection as Selection$1, SplineAreaSeries, SplineSeries, StackingAreaSeries, StackingBarSeries, StackingColumnSeries, StepAreaSeries, StepLineSeries, StripLine, Tooltip as Tooltip$1, Zoom } from '@syncfusion/ej2-charts';
 
 /**
  * This is a file to perform common utility for OLAP and Relational datasource
@@ -5273,7 +5273,7 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
             actualText: commonValue,
             dateText: commonValue
         };
-        if (this.formatFields[fieldName] && value) {
+        if (this.formatFields[fieldName] && !isNullOrUndefined(value)) {
             try {
                 var formatField = (this.formatFields[fieldName].properties ?
                     this.formatFields[fieldName].properties : this.formatFields[fieldName]);
@@ -6895,7 +6895,9 @@ var Render = /** @__PURE__ @class */ (function () {
         }
         this.parent.isScrolling = false;
         this.setFocusOnLastCell();
-        this.parent.renderReactTemplates();
+        if (!isNullOrUndefined(this.parent.renderReactTemplates)) {
+            this.parent.renderReactTemplates();
+        }
         this.parent.notify(contentReady, {});
     };
     Render.prototype.setFocusOnLastCell = function () {
@@ -7695,7 +7697,7 @@ var Render = /** @__PURE__ @class */ (function () {
                 /* tslint:disable-next-line */
                 if (!(window && isBlazor())) {
                     /* tslint:disable-next-line */
-                    var element = this.parent.getCellTemplate()({ targetCell: tCell }, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate', null, null, tCell);
+                    var element = this.parent.getCellTemplate()({ targetCell: tCell, cellInfo: cell }, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate', null, null, tCell);
                     if (element && element !== '' && element.length > 0) {
                         if (this.parent.enableHtmlSanitizer) {
                             this.parent.appendHtml(tCell, SanitizeHtmlHelper.sanitize(element[0].outerHTML));
@@ -11863,7 +11865,7 @@ var ExcelExport$1 = /** @__PURE__ @class */ (function () {
             }
             workSheets.push({ columns: columns, rows: rows });
         }
-        var book = new Workbook({ worksheets: workSheets }, type === 'Excel' ? 'xlsx' : 'csv');
+        var book = new Workbook({ worksheets: workSheets }, type === 'Excel' ? 'xlsx' : 'csv', undefined, this.parent.currencyCode);
         book.save(fileName + (type === 'Excel' ? '.xlsx' : '.csv'));
     };
     /**
@@ -14415,7 +14417,7 @@ var PivotChart = /** @__PURE__ @class */ (function () {
                 }));
                 this.parent.toolbarModule.isMultiAxisChange = false;
             }
-            Chart.Inject(ColumnSeries, StackingColumnSeries, RangeColumnSeries, BarSeries, StackingBarSeries, ScatterSeries, BubbleSeries, LineSeries, StepLineSeries, SplineSeries, SplineAreaSeries, MultiColoredLineSeries, PolarSeries, RadarSeries, AreaSeries, RangeAreaSeries, StackingAreaSeries, StepAreaSeries, MultiColoredAreaSeries, ParetoSeries, Legend, Tooltip$1, Category, MultiLevelLabel, ScrollBar, Zoom, Export, Crosshair, Selection$1);
+            Chart.Inject(ColumnSeries, StackingColumnSeries, RangeColumnSeries, BarSeries, StackingBarSeries, ScatterSeries, BubbleSeries, LineSeries, StepLineSeries, SplineSeries, SplineAreaSeries, MultiColoredLineSeries, PolarSeries, RadarSeries, AreaSeries, RangeAreaSeries, StackingAreaSeries, StepAreaSeries, MultiColoredAreaSeries, ParetoSeries, Legend, Tooltip$1, Category, MultiLevelLabel, ScrollBar, Zoom, Export, Crosshair, Selection$1, StripLine);
             AccumulationChart.Inject(PieSeries, FunnelSeries, PyramidSeries, AccumulationDataLabel, AccumulationLegend, AccumulationTooltip, Export);
             if (this.accumulationType.indexOf(type) > -1) {
                 this.parent.chart = new AccumulationChart({
@@ -24125,7 +24127,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             }
         }
         /* tslint:disable */
-        if (ele) {
+        if (ele && !isNullOrUndefined(this.pivotValues) && this.pivotValues.length > 0) {
             var colIndex_1 = Number(ele.getAttribute('aria-colindex'));
             var rowIndex_1 = Number(ele.getAttribute('index'));
             var colSpan_1 = Number(ele.getAttribute('aria-colspan'));
@@ -24828,6 +24830,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             if (!isNullOrUndefined(this.hyperlinkSettings.headerText)) {
+                var headerDelimiter = this.dataSourceSettings.valueSortSettings.headerDelimiter ? this.dataSourceSettings.valueSortSettings.headerDelimiter : '.';
                 for (var i = 0; i < pivotValues.length; i++) {
                     for (var j = 1; (pivotValues[i] && j < pivotValues[i].length); j++) {
                         if (pivotValues[i][j].axis === 'value') {
@@ -24837,10 +24840,10 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                                 i : (this.dataType === 'pivot' ?
                                 this.engineModule.headerContent.length - 1 : this.olapEngineModule.headerContent.length - 1));
                             var jlen = (this.dataSourceSettings.valueAxis === 'row' ? 0 : j);
-                            if ((pivotValues[colIndex[label.split('.').length - 1]] &&
-                                pivotValues[colIndex[label.split('.').length - 1]][j] &&
-                                pivotValues[colIndex[label.split('.').length - 1]][j].
-                                    valueSort && pivotValues[colIndex[label.split('.').length - 1]][j].
+                            if ((pivotValues[colIndex[label.split(headerDelimiter).length - 1]] &&
+                                pivotValues[colIndex[label.split(headerDelimiter).length - 1]][j] &&
+                                pivotValues[colIndex[label.split(headerDelimiter).length - 1]][j].
+                                    valueSort && pivotValues[colIndex[label.split(headerDelimiter).length - 1]][j].
                                 valueSort[label])) {
                                 for (var _i = 0, colIndex_2 = colIndex; _i < colIndex_2.length; _i++) {
                                     var index = colIndex_2[_i];
@@ -28484,6 +28487,9 @@ var AxisFieldRenderer = /** @__PURE__ @class */ (function () {
         this.createPivotButtons();
     };
     AxisFieldRenderer.prototype.createPivotButtons = function () {
+        if (isNullOrUndefined(this.parent.dataSourceSettings.dataSource) && isNullOrUndefined(this.parent.dataSourceSettings.url)) {
+            this.parent.setProperties({ dataSourceSettings: { columns: [], rows: [], values: [], filters: [] } }, true);
+        }
         var rows = this.parent.dataSourceSettings.rows;
         var columns = this.parent.dataSourceSettings.columns;
         var values = this.parent.dataSourceSettings.values;

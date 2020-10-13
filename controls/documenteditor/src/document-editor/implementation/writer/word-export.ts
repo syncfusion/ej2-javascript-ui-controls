@@ -3110,21 +3110,22 @@ export class WordExport {
         writer.writeEndElement();
         writer.writeStartElement('a', 'ln', this.aNamespace);
         writer.writeAttributeString(undefined, 'w', undefined, '12700');
-        writer.writeStartElement('a', 'solidFill', this.aNamespace);
-        writer.writeStartElement('a', 'srgbClr', this.aNamespace);
         if (shape.lineFormat.lineFormatType !== 'None') {
-            writer.writeAttributeString(undefined, 'val', undefined, '000000');
+            writer.writeStartElement('a', 'solidFill', this.aNamespace);
+            writer.writeStartElement('a', 'srgbClr', this.aNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, shape.lineFormat.color);
+            writer.writeEndElement();
+            writer.writeEndElement();
+            writer.writeStartElement('a', 'round', this.aNamespace);
+            writer.writeEndElement();
+            writer.writeStartElement('a', 'headEnd', this.aNamespace);
+            writer.writeEndElement();
+            writer.writeStartElement('a', 'tailEnd', this.aNamespace);
+            writer.writeEndElement();
         } else {
-            writer.writeAttributeString(undefined, 'val', undefined, 'FFFFFF');
+            writer.writeStartElement('a', 'noFill', this.aNamespace);
+            writer.writeEndElement();
         }
-        writer.writeEndElement();
-        writer.writeEndElement();
-        writer.writeStartElement('a', 'round', this.aNamespace);
-        writer.writeEndElement();
-        writer.writeStartElement('a', 'headEnd', this.aNamespace);
-        writer.writeEndElement();
-        writer.writeStartElement('a', 'tailEnd', this.aNamespace);
-        writer.writeEndElement();
         writer.writeEndElement();
         writer.writeEndElement();
         if (val === 'Rectangle' || val === 'RoundedRectangle') {
@@ -3530,7 +3531,7 @@ export class WordExport {
             writer.writeStartElement('w', 'p', this.wNamespace);
             writer.writeEndElement(); //end of P
             writer.writeEndElement(); //end of table cell 'tc'  
-            increment ++;
+            increment++;
         }
         this.blockOwner = owner;
     }

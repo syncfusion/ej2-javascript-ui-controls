@@ -4,8 +4,10 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { Kanban } from '../base/kanban';
 import { EJ2Instance } from '../base/interface';
 import * as cls from '../base/css-constant';
+
 /**
- * kanban touch module
+ * Kanban touch module
+ * @hidden
  */
 export class KanbanTouch {
     public mobilePopup: Popup;
@@ -13,8 +15,10 @@ export class KanbanTouch {
     private parent: Kanban;
     private touchObj: Touch;
     public tabHold: boolean;
+
     /**
      * Constructor for touch module
+     * @private
      */
     constructor(parent: Kanban) {
         this.parent = parent;

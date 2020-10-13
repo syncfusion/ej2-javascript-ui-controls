@@ -509,6 +509,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 element = intClosest;
             }
         }
+        /* istanbul ignore next */
         if (this.isReplaceDragEle) {
             element = this.currentStateCheck(evt.target as any, element);
         }
@@ -548,8 +549,8 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             }
             this.getScrollableValues();
             let posValue: DragPosition = this.getProcessedPositionValue({
-                top: (pos.top - this.diffY) + 'px',
-                left: (pos.left - this.diffX) + 'px'
+                top: (pos.top - this.diffY - this.parentScrollY) + 'px',
+                left: (pos.left - this.diffX - this.parentScrollX) + 'px'
             });
             this.dragElePosition = { top: pos.top, left: pos.left };
             setStyleAttribute(dragTargetElement, this.getDragPosition({ position: 'absolute', left: posValue.left, top: posValue.top }));
@@ -702,8 +703,8 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             draEleTop = (top - iTop) < 0 ? this.dragLimit.top : (top - iTop);
             draEleLeft = (left - iLeft) < 0 ? this.dragElePosition.left : (left - iLeft);
         } else {
-            draEleTop = top - iTop;
-            draEleLeft = left - iLeft;
+            draEleTop = top - iTop - this.parentScrollY;
+            draEleLeft = left - iLeft - this.parentScrollX;
         }
 
         let dragValue: DragPosition = this.getProcessedPositionValue({ top: draEleTop + 'px', left: draEleLeft + 'px' });
@@ -853,6 +854,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         }
         return ele;
     }
+    /* istanbul ignore next */
     private currentStateCheck(ele: HTMLElement, oldEle?: HTMLElement): HTMLElement {
         let elem: HTMLElement;
         if (!isNullOrUndefined(this.currentStateTarget) && this.currentStateTarget !== ele) {

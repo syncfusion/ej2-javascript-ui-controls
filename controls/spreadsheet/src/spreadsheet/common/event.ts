@@ -10,6 +10,8 @@ export const sheetTabs: string = 'sheetTabs';
 /** @hidden */
 export const refreshSheetTabs: string = 'refreshSheetTabs';
 /** @hidden */
+export const isFormulaBarEdit: string = 'isFormulaBarEdit';
+/** @hidden */
 export const dataRefresh: string = 'dataRefresh';
 /** @hidden */
 export const initialLoad: string = 'initialLoad';

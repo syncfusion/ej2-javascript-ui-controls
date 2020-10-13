@@ -5263,7 +5263,7 @@ var PivotEngine = /** @class */ (function () {
             actualText: commonValue,
             dateText: commonValue
         };
-        if (this.formatFields[fieldName] && value) {
+        if (this.formatFields[fieldName] && !sf.base.isNullOrUndefined(value)) {
             try {
                 var formatField = (this.formatFields[fieldName].properties ?
                     this.formatFields[fieldName].properties : this.formatFields[fieldName]);
@@ -6885,7 +6885,9 @@ var Render = /** @class */ (function () {
         }
         this.parent.isScrolling = false;
         this.setFocusOnLastCell();
-        this.parent.renderReactTemplates();
+        if (!sf.base.isNullOrUndefined(this.parent.renderReactTemplates)) {
+            this.parent.renderReactTemplates();
+        }
         this.parent.notify(contentReady, {});
     };
     Render.prototype.setFocusOnLastCell = function () {
@@ -7685,7 +7687,7 @@ var Render = /** @class */ (function () {
                 /* tslint:disable-next-line */
                 if (!(window && sf.base.isBlazor())) {
                     /* tslint:disable-next-line */
-                    var element = this.parent.getCellTemplate()({ targetCell: tCell }, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate', null, null, tCell);
+                    var element = this.parent.getCellTemplate()({ targetCell: tCell, cellInfo: cell }, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate', null, null, tCell);
                     if (element && element !== '' && element.length > 0) {
                         if (this.parent.enableHtmlSanitizer) {
                             this.parent.appendHtml(tCell, sf.base.SanitizeHtmlHelper.sanitize(element[0].outerHTML));
@@ -11853,7 +11855,7 @@ var ExcelExport$1 = /** @class */ (function () {
             }
             workSheets.push({ columns: columns, rows: rows });
         }
-        var book = new sf.excelexport.Workbook({ worksheets: workSheets }, type === 'Excel' ? 'xlsx' : 'csv');
+        var book = new sf.excelexport.Workbook({ worksheets: workSheets }, type === 'Excel' ? 'xlsx' : 'csv', undefined, this.parent.currencyCode);
         book.save(fileName + (type === 'Excel' ? '.xlsx' : '.csv'));
     };
     /**
@@ -14405,7 +14407,7 @@ var PivotChart = /** @class */ (function () {
                 }));
                 this.parent.toolbarModule.isMultiAxisChange = false;
             }
-            sf.charts.Chart.Inject(sf.charts.ColumnSeries, sf.charts.StackingColumnSeries, sf.charts.RangeColumnSeries, sf.charts.BarSeries, sf.charts.StackingBarSeries, sf.charts.ScatterSeries, sf.charts.BubbleSeries, sf.charts.LineSeries, sf.charts.StepLineSeries, sf.charts.SplineSeries, sf.charts.SplineAreaSeries, sf.charts.MultiColoredLineSeries, sf.charts.PolarSeries, sf.charts.RadarSeries, sf.charts.AreaSeries, sf.charts.RangeAreaSeries, sf.charts.StackingAreaSeries, sf.charts.StepAreaSeries, sf.charts.MultiColoredAreaSeries, sf.charts.ParetoSeries, sf.charts.Legend, sf.charts.Tooltip, sf.charts.Category, sf.charts.MultiLevelLabel, sf.charts.ScrollBar, sf.charts.Zoom, sf.charts.Export, sf.charts.Crosshair, sf.charts.Selection);
+            sf.charts.Chart.Inject(sf.charts.ColumnSeries, sf.charts.StackingColumnSeries, sf.charts.RangeColumnSeries, sf.charts.BarSeries, sf.charts.StackingBarSeries, sf.charts.ScatterSeries, sf.charts.BubbleSeries, sf.charts.LineSeries, sf.charts.StepLineSeries, sf.charts.SplineSeries, sf.charts.SplineAreaSeries, sf.charts.MultiColoredLineSeries, sf.charts.PolarSeries, sf.charts.RadarSeries, sf.charts.AreaSeries, sf.charts.RangeAreaSeries, sf.charts.StackingAreaSeries, sf.charts.StepAreaSeries, sf.charts.MultiColoredAreaSeries, sf.charts.ParetoSeries, sf.charts.Legend, sf.charts.Tooltip, sf.charts.Category, sf.charts.MultiLevelLabel, sf.charts.ScrollBar, sf.charts.Zoom, sf.charts.Export, sf.charts.Crosshair, sf.charts.Selection, sf.charts.StripLine);
             sf.charts.AccumulationChart.Inject(sf.charts.PieSeries, sf.charts.FunnelSeries, sf.charts.PyramidSeries, sf.charts.AccumulationDataLabel, sf.charts.AccumulationLegend, sf.charts.AccumulationTooltip, sf.charts.Export);
             if (this.accumulationType.indexOf(type) > -1) {
                 this.parent.chart = new sf.charts.AccumulationChart({
@@ -24115,7 +24117,7 @@ var PivotView = /** @class */ (function (_super) {
             }
         }
         /* tslint:disable */
-        if (ele) {
+        if (ele && !sf.base.isNullOrUndefined(this.pivotValues) && this.pivotValues.length > 0) {
             var colIndex_1 = Number(ele.getAttribute('aria-colindex'));
             var rowIndex_1 = Number(ele.getAttribute('index'));
             var colSpan_1 = Number(ele.getAttribute('aria-colspan'));
@@ -24818,6 +24820,7 @@ var PivotView = /** @class */ (function (_super) {
                 }
             }
             if (!sf.base.isNullOrUndefined(this.hyperlinkSettings.headerText)) {
+                var headerDelimiter = this.dataSourceSettings.valueSortSettings.headerDelimiter ? this.dataSourceSettings.valueSortSettings.headerDelimiter : '.';
                 for (var i = 0; i < pivotValues.length; i++) {
                     for (var j = 1; (pivotValues[i] && j < pivotValues[i].length); j++) {
                         if (pivotValues[i][j].axis === 'value') {
@@ -24827,10 +24830,10 @@ var PivotView = /** @class */ (function (_super) {
                                 i : (this.dataType === 'pivot' ?
                                 this.engineModule.headerContent.length - 1 : this.olapEngineModule.headerContent.length - 1));
                             var jlen = (this.dataSourceSettings.valueAxis === 'row' ? 0 : j);
-                            if ((pivotValues[colIndex[label.split('.').length - 1]] &&
-                                pivotValues[colIndex[label.split('.').length - 1]][j] &&
-                                pivotValues[colIndex[label.split('.').length - 1]][j].
-                                    valueSort && pivotValues[colIndex[label.split('.').length - 1]][j].
+                            if ((pivotValues[colIndex[label.split(headerDelimiter).length - 1]] &&
+                                pivotValues[colIndex[label.split(headerDelimiter).length - 1]][j] &&
+                                pivotValues[colIndex[label.split(headerDelimiter).length - 1]][j].
+                                    valueSort && pivotValues[colIndex[label.split(headerDelimiter).length - 1]][j].
                                 valueSort[label])) {
                                 for (var _i = 0, colIndex_2 = colIndex; _i < colIndex_2.length; _i++) {
                                     var index = colIndex_2[_i];
@@ -28474,6 +28477,9 @@ var AxisFieldRenderer = /** @class */ (function () {
         this.createPivotButtons();
     };
     AxisFieldRenderer.prototype.createPivotButtons = function () {
+        if (sf.base.isNullOrUndefined(this.parent.dataSourceSettings.dataSource) && sf.base.isNullOrUndefined(this.parent.dataSourceSettings.url)) {
+            this.parent.setProperties({ dataSourceSettings: { columns: [], rows: [], values: [], filters: [] } }, true);
+        }
         var rows = this.parent.dataSourceSettings.rows;
         var columns = this.parent.dataSourceSettings.columns;
         var values = this.parent.dataSourceSettings.values;

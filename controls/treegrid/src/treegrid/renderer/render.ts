@@ -1,5 +1,6 @@
 import { TreeGrid } from '..';
 import { QueryCellInfoEventArgs, IGrid, RowDataBoundEventArgs, getObject, appendChildren } from '@syncfusion/ej2-grids';
+import { templateCompiler, extend } from '@syncfusion/ej2-grids';
 import { addClass, createElement, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { ITreeData } from '../base/interface';
 import * as events from '../base/constant';
@@ -172,6 +173,13 @@ export class Render {
             }
     }
     private updateTreeCell(args: QueryCellInfoEventArgs, cellElement: HTMLElement, container: Element): void {
+        let treeColumn: Column = this.parent.columns[this.parent.treeColumnIndex] as Column;
+        let templateFn: string = 'templateFn';
+        if (treeColumn.field === args.column.field && !isNullOrUndefined(treeColumn.template)) {
+            args.column.template = treeColumn.template;
+            args.column[templateFn] = templateCompiler(args.column.template);
+            args.cell.classList.add('e-templatecell');
+        }
         let textContent: string = args.cell.querySelector('.e-treecell') != null ?
         args.cell.querySelector('.e-treecell').innerHTML : args.cell.innerHTML;
         if ( typeof(args.column.template) === 'object' && this.templateResult ) {
@@ -180,8 +188,30 @@ export class Render {
             args.cell.innerHTML = '';
         } else if (args.cell.classList.contains('e-templatecell')) {
             let len: number = args.cell.children.length;
-            for (let i: number = 0; i < len; len = args.cell.children.length) {
-                 cellElement.appendChild(args.cell.children[i]);
+            let tempID: string = this.parent.element.id + args.column.uid;
+            if (treeColumn.field === args.column.field && !isNullOrUndefined(treeColumn.template)) {
+                let portals: string = 'portals';
+                let renderReactTemplates: string = 'renderReactTemplates';
+                if ((<{ isReact?: boolean }>this.parent).isReact) {
+                    args.column[templateFn](args.data, this.parent, 'template', tempID, null, null, cellElement);
+                    if (isNullOrUndefined(this.parent.grid[portals])) {
+                        this.parent.grid[portals] = this.parent[portals];
+                    }
+                    this.parent[renderReactTemplates]();
+                } else {
+                    let str: string = 'isStringTemplate';
+                    let result: Element[];
+                    result = args.column[templateFn](
+                        extend({ 'index': '' }, args.data), this.parent, 'template', tempID, this.parent[str]);
+                    appendChildren(cellElement, result);
+                }
+                delete args.column.template;
+                delete args.column[templateFn];
+                args.cell.innerHTML = '';
+            } else {
+                for (let i: number = 0; i < len; len = args.cell.children.length) {
+                    cellElement.appendChild(args.cell.children[i]);
+                }
             }
         } else {
             cellElement.innerHTML = textContent;

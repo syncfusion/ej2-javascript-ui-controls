@@ -4258,7 +4258,7 @@ export class PivotEngine {
             actualText: commonValue,
             dateText: commonValue
         };
-        if (this.formatFields[fieldName] && value) {
+        if (this.formatFields[fieldName] && !isNullOrUndefined(value)) {
             try {
                 let formatField: IFormatSettings = ((<{ [key: string]: Object }>this.formatFields[fieldName]).properties ?
                     (<{ [key: string]: Object }>this.formatFields[fieldName]).properties : this.formatFields[fieldName]);

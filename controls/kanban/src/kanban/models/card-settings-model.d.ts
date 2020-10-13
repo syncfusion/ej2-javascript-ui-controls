@@ -25,21 +25,18 @@ export interface CardSettingsModel {
 
     /**
      * Defines the card content labels
-     * @deprecated
      * @default null
      */
     tagsField?: string;
 
     /**
      * Defines the card color
-     * @deprecated
      * @default null
      */
     grabberField?: string;
 
     /**
      * Defines the card icons
-     * @deprecated
      * @default null
      */
     footerCssField?: string;
@@ -47,7 +44,6 @@ export interface CardSettingsModel {
     /**
      * Defines the card template
      * @default null
-     * @deprecated
      */
     template?: string;
 

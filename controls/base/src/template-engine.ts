@@ -32,8 +32,8 @@ export interface ITemplateEngine {
 export function compile(templateString: string, helper?: Object): (data: Object | JSON, component?: any, propName?: any) => NodeList {
     let compiler: Function = engineObj.compile(templateString, helper);
     //tslint:disable-next-line
-    return (data: Object, component?: any, propName?: any, templateId?: any, isStringTemplate?: boolean, index?: number): NodeList => {
-        let result: object = compiler(data, component, propName);
+    return (data: Object, component?: any, propName?: any, templateId?: any, isStringTemplate?: boolean, index?: number, element?: any): NodeList => {
+        let result: object = compiler(data, component, propName, element);
         let blazor: string = 'Blazor'; let blazorTemplateId: string = 'BlazorTemplateId';
         if (isBlazor() && !isStringTemplate) {
             let randomId: string = getRandomId();

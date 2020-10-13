@@ -5346,6 +5346,10 @@ export class Selection {
             //Removed the height condition check to handle the vertically merged cells.
             let childWidget: IWidget = widget.childWidgets[i];
             if (childWidget instanceof TableRowWidget && (childWidget as TableRowWidget).y <= point.y) {
+                if (childWidget.rowFormat.heightType === 'Exactly' &&
+                    (childWidget.y + HelperMethods.convertPointToPixel(childWidget.rowFormat.height) < point.y)) {
+                    continue;
+                }
                 lineWidget = this.getLineWidgetRowWidget((childWidget as TableRowWidget), point);
                 let cellWidget: TableCellWidget = undefined;
                 if (!isNullOrUndefined(lineWidget) && lineWidget.paragraph.containerWidget instanceof TableCellWidget) {

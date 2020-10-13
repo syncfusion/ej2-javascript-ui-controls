@@ -31,10 +31,7 @@ export interface CardClickEventArgs extends BaseEventArgs {
     data: { [key: string]: Object } | Object;
     /** Defines the cancel option for the action taking place. */
     cancel?: boolean;
-    /**
-     * Returns the actual HTML element on which the required custom styling can be applied.
-     * @blazorType CellDOM
-     */
+    /** Returns the actual HTML element on which the required custom styling can be applied. */
     element: Element;
     /** Defines the type of the event. */
     event?: Event | MouseEvent | KeyboardEvent;
@@ -46,10 +43,7 @@ export interface CardClickEventArgs extends BaseEventArgs {
 export interface QueryCellInfoEventArgs extends BaseEventArgs {
     /** Returns the object of the elements which is currently being rendered on the UI. */
     data?: HeaderArgs[];
-    /**
-     * Returns the actual HTML element on which the required custom styling can be applied.
-     * @deprecated
-     */
+    /** Returns the actual HTML element on which the required custom styling can be applied. */
     element: Element;
     /** Defines the cancel option for the action taking place. */
     cancel: boolean;
@@ -63,10 +57,7 @@ export interface QueryCellInfoEventArgs extends BaseEventArgs {
 export interface CardRenderedEventArgs extends BaseEventArgs {
     /** Returns the object of the elements which is currently being rendered on the UI. */
     data?: { [key: string]: Object } | Object;
-    /** 
-     * Returns the actual HTML element on which the required custom styling can be applied. 
-     * @deprecated
-     */
+    /** Returns the actual HTML element on which the required custom styling can be applied. */
     element: Element;
     /** Defines the cancel option for the action taking place. */
     cancel: boolean;
@@ -76,10 +67,7 @@ export interface CardRenderedEventArgs extends BaseEventArgs {
  * Provides information about a Drag, Drag Start/End event.
  */
 export interface DragEventArgs extends BaseEventArgs {
-    /**
-     * Returns the drag element.
-     * @blazorType CellDOM
-     */
+    /** Returns the drag element. */
     element: HTMLElement | HTMLElement[];
     /** Returns the dragged event data. */
     data: { [key: string]: Object }[] | Object[];
@@ -95,15 +83,9 @@ export interface DragEventArgs extends BaseEventArgs {
 export interface DialogEventArgs extends BaseEventArgs {
     /** Returns the cell or event data. */
     data: { [key: string]: Object } | Object;
-    /**
-     * @deprecated
-     * Returns the target element on which the popup is getting opened.
-     */
+    /** Returns the target element on which the popup is getting opened. */
     target?: Element;
-    /**
-     * @deprecated
-     * Returns the popup wrapper element.
-     */
+    /** Returns the popup wrapper element. */
     element?: Element;
     /** Defines the cancel option. */
     cancel?: boolean;
@@ -124,11 +106,6 @@ export interface SaveChanges {
     addedRecords: { [key: string]: Object }[] | Object[];
     changedRecords: { [key: string]: Object }[] | Object[];
     deletedRecords: { [key: string]: Object }[] | Object[];
-}
-
-/** @hidden */
-export interface CrudArgs extends ActionEventArgs {
-    promise?: Promise<Object>;
 }
 
 /** @hidden */

@@ -226,6 +226,11 @@ export class HtmlEditor {
                         member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
                     });
                     break;
+                case 'RemoveLink':
+                    this.parent.observer.notify(events.unLink, {
+                        member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                    });
+                    break;
                 case 'Print':
                     this.parent.print();
                     break;

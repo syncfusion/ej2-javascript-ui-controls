@@ -448,6 +448,9 @@ class SfTab {
     }
     private setActive(value: number): void {
         this.tbItem = selectAll('.' + CLS_TB_ITEM, this.getTabHeader());
+        if (isNOU(this.hdrEle)) {
+            this.hdrEle = this.getTabHeader();
+        }
         let trg: HTMLElement = this.hdrEle.querySelector('.' + CLS_TB_ITEM + '[data-index="' + value + '"]');
         if (!trg || value < 0 || isNaN(value) || this.tbItem.length === 0) { return; }
         this.options.selectedItem = value;

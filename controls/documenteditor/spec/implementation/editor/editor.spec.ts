@@ -38,7 +38,7 @@ describe('Auto fit command ', () => {
         editor.editor.autoFitTable('FitToContents');
         let table: TableWidget = editor.selection.start.paragraph.associatedCell.ownerTable;
         expect(table.tableFormat.allowAutoFit).toBe(true);
-        expect(table.tableHolder.getTotalWidth(0)).toBeLessThan(25);
+        expect(table.tableHolder.getTotalWidth(0)).toBeGreaterThan(25);
         expect(table.tableHolder.getTotalWidth(0)).toBeGreaterThan(20);
     });
     it('Insert text in table', () => {
@@ -49,7 +49,7 @@ describe('Auto fit command ', () => {
     it('Undo operation after insert text ', () => {
         editor.editorHistory.undo();
         let table: TableWidget = editor.selection.start.paragraph.associatedCell.ownerTable;
-        expect(table.tableHolder.getTotalWidth(0)).toBeLessThan(25);
+        expect(table.tableHolder.getTotalWidth(0)).toBeGreaterThan(25);
         expect(table.tableHolder.getTotalWidth(0)).toBeGreaterThan(20);
         editor.editorHistory.redo();
         table = editor.selection.start.paragraph.associatedCell.ownerTable;
@@ -67,7 +67,7 @@ describe('Auto fit command ', () => {
         editor.editorHistory.undo();
         let table: TableWidget = editor.selection.start.paragraph.associatedCell.ownerTable;
         expect(table.tableFormat.allowAutoFit).toBe(true);
-        expect(table.tableHolder.getTotalWidth(0)).toBeLessThan(75);
+        expect(table.tableHolder.getTotalWidth(0)).toBeGreaterThan(75);
         expect(table.tableHolder.getTotalWidth(0)).toBeGreaterThan(67);
 
     });

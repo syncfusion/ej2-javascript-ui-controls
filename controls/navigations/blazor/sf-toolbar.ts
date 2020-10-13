@@ -104,23 +104,9 @@ class SfToolbar {
     }
     public destroy(): void {
         this.unwireEvents();
-        this.resetServerItems();
-        for (let elem of [].slice.call(this.element.children)) {
-            if (!elem.classList.contains(BZ_ITEMS)) {
-                this.element.removeChild(elem);
-            }
-        }
         this.clearProperty();
         this.popObj = null;
         this.tbarAlign = null;
-        removeClass([this.element], 'e-toolpop');
-        if (this.options.cssClass) {
-            removeClass([this.element], this.options.cssClass.split(' '));
-        }
-        this.element.removeAttribute('style');
-        ['aria-disabled', 'aria-orientation', 'aria-haspopup', 'role'].forEach((attrb: string): void =>
-            this.element.removeAttribute(attrb));
-        removeClass([this.element], [CLS_TOOLBAR]);
     }
     private wireEvents(): void {
         EventHandler.add(this.element, 'click', this.clickHandler, this);

@@ -98,14 +98,14 @@ export class RangeSeries extends NiceInterval {
         let yName: string = (series && series.yName) || control.yName;
         while (i < len) {
             point = new DataPoint(getValue(xName, viewData[i]), getValue(yName, viewData[i]));
-            point.yValue = +point.y;
+            point.yValue = control.isBlazor ? (isNullOrUndefined(point.y) ? 0 : +point.y) : +point.y;
             if (control.valueType === 'DateTime') {
                 let dateParser: Function = control.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
                 let dateFormatter: Function = control.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
                 point.x = new Date( DataUtil.parse.parseJson({ val: point.x }).val );
                 point.xValue = control.isBlazor ? Date.parse(point.x.toString()) : Date.parse(dateParser(dateFormatter(point.x)));
             } else {
-                point.xValue = +point.x;
+                point.xValue = control.isBlazor ? (isNullOrUndefined(point.x) ? 0 : +point.x) : +point.x;
             }
             if (series) {
                 series.points.push(point);

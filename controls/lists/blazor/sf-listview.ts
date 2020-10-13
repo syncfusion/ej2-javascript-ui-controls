@@ -478,11 +478,12 @@ class SfListView {
             for (let i: number = 0; i < liElementCount; i++) {
                 let checkIcon: Element = liCollection[i].querySelector('.' + CHECKBOXICON);
                 if (checkIcon) {
-                    if (isChecked && !checkIcon.classList.contains(CHECKED)) {
+                    if (isChecked) {
                         this.checkItem(liCollection[i]);
                     } else if (checkIcon.classList.contains(CHECKED)) { this.uncheckItem(liCollection[i]); }
                 }
             }
+            this.removeFocus();
         }
     }
     public checkItem(item: HTMLElement | Element): void {
@@ -492,6 +493,7 @@ class SfListView {
     public getCheckData(item: HTMLElement | Element, isCheck: boolean): void {
         let liItem: HTMLElement = <HTMLElement>this.curUlElement.querySelector('[data-uid=\'' + item.id + '\']');
         isCheck ? this.checkItem(liItem) : this.uncheckItem(liItem);
+        liItem.classList.remove(FOCUSED);
     }
 
     private spaceKeyHandler(e: KeyboardEventArgs): void {

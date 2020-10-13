@@ -6307,7 +6307,8 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             }) : null;
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             inputValue = startDate + ' ' + this.separator + ' ' + endDate;
-            range = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            range = (Math.round(Math.abs((this.removeTimeValueFromDate(this.startValue).getTime() -
+                this.removeTimeValueFromDate(this.endValue).getTime()) / (1000 * 60 * 60 * 24))) + 1);
         }
         else {
             inputValue = '';
@@ -6552,8 +6553,9 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         if ((!isNullOrUndefined(this.startValue) && isNullOrUndefined(this.endValue)) ||
             (this.isMobile && this.endButton.element.classList.contains(ACTIVE$1))) {
             if ((!isNullOrUndefined(this.minDays) && this.minDays > 0) || (!isNullOrUndefined(this.maxDays) && this.maxDays > 0)) {
-                var minDate = new Date(new Date(+this.startValue).setDate(this.startValue.getDate() + (this.minDays - 1)));
-                var maxDate = new Date(new Date(+this.startValue).setDate(this.startValue.getDate() + (this.maxDays - 1)));
+                var startValueSelected = this.removeTimeValueFromDate(this.startValue);
+                var minDate = new Date(new Date(+startValueSelected).setDate(startValueSelected.getDate() + (this.minDays - 1)));
+                var maxDate = new Date(new Date(+startValueSelected).setDate(startValueSelected.getDate() + (this.maxDays - 1)));
                 minDate = (!isNullOrUndefined(this.minDays) && this.minDays > 0) ? minDate : null;
                 maxDate = (!isNullOrUndefined(this.maxDays) && this.maxDays > 0) ? maxDate : null;
                 if (this.currentView() === 'Year') {
@@ -6570,11 +6572,12 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     var ele = tdCells_6[_i];
                     if (!ele.classList.contains(STARTDATE) && !ele.classList.contains(WEEKNUMBER$2)) {
                         var eleDate = this.getIdValue(null, ele);
+                        eleDate = this.removeTimeValueFromDate(eleDate);
                         if (!isNullOrUndefined(minDate) && +eleDate === +minDate && ele.classList.contains(DISABLED$2)) {
                             minDate.setDate(minDate.getDate() + 1);
                         }
                         if (!ele.classList.contains(DISABLED$2)) {
-                            if (+eleDate <= +this.startValue) {
+                            if (+eleDate <= +startValueSelected) {
                                 continue;
                             }
                             if (!isNullOrUndefined(minDate) && +eleDate < +minDate) {
@@ -6626,6 +6629,10 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             this.isMaxDaysClicked = false;
         }
     };
+    DateRangePicker.prototype.removeTimeValueFromDate = function (value) {
+        var dateValue = new Date(value.getFullYear(), value.getMonth(), value.getDate());
+        return dateValue;
+    };
     DateRangePicker.prototype.removeClassDisabled = function () {
         var tdCells;
         tdCells = this.popupObj.element.querySelectorAll('.' + CALENDAR + ' td' + '.' + DATEDISABLED);
@@ -6662,7 +6669,8 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     DateRangePicker.prototype.updateHeader = function () {
         var format = { type: 'date', skeleton: isBlazor() ? 'D' : 'yMMMd' };
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
-            var range = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            var range = (Math.round(Math.abs((this.removeTimeValueFromDate(this.startValue).getTime() -
+                this.removeTimeValueFromDate(this.endValue).getTime()) / (1000 * 60 * 60 * 24))) + 1);
             if (!isNullOrUndefined(this.disabledDayCnt)) {
                 range = range - this.disabledDayCnt;
                 this.disabledDayCnt = null;
@@ -6943,7 +6951,8 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     };
     DateRangePicker.prototype.validateMinMaxDays = function () {
         if (!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) {
-            var range = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            var range = (Math.round(Math.abs((this.removeTimeValueFromDate(this.startValue).getTime() -
+                this.removeTimeValueFromDate(this.endValue).getTime()) / (1000 * 60 * 60 * 24))) + 1);
             if ((!isNullOrUndefined(this.minDays) && this.minDays > 0) && !(range >= this.minDays)) {
                 if (this.strictMode) {
                     var date = new Date(+this.startValue);
@@ -8453,7 +8462,8 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     DateRangePicker.prototype.getSelectedRange = function () {
         var range;
         if (!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) {
-            range = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            range = (Math.round(Math.abs((this.removeTimeValueFromDate(this.startValue).getTime() -
+                this.removeTimeValueFromDate(this.endValue).getTime()) / (1000 * 60 * 60 * 24))) + 1);
             this.disabledDateRender();
             if (!isNullOrUndefined(this.disabledDayCnt)) {
                 range = range - this.disabledDayCnt;

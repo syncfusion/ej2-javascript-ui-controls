@@ -4157,7 +4157,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             }
         }
         /* tslint:disable */
-        if (ele) {
+        if (ele && !isNullOrUndefined(this.pivotValues) && this.pivotValues.length > 0) {
             let colIndex: number = Number(ele.getAttribute('aria-colindex'));
             let rowIndex: number = Number(ele.getAttribute('index'));
             let colSpan: number = Number(ele.getAttribute('aria-colspan'));
@@ -4845,6 +4845,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 }
             }
             if (!isNullOrUndefined(this.hyperlinkSettings.headerText)) {
+                let headerDelimiter: string = this.dataSourceSettings.valueSortSettings.headerDelimiter ? this.dataSourceSettings.valueSortSettings.headerDelimiter : '.';
                 for (let i: number = 0; i < pivotValues.length; i++) {
                     for (let j: number = 1; (pivotValues[i] && j < pivotValues[i].length); j++) {
                         if ((pivotValues[i][j] as IAxisSet).axis === 'value') {
@@ -4854,10 +4855,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                                 i : (this.dataType === 'pivot' ?
                                     this.engineModule.headerContent.length - 1 : this.olapEngineModule.headerContent.length - 1));
                             let jlen: number = (this.dataSourceSettings.valueAxis === 'row' ? 0 : j);
-                            if ((pivotValues[colIndex[label.split('.').length - 1]] &&
-                                (pivotValues[colIndex[label.split('.').length - 1]][j] as IAxisSet) &&
-                                (pivotValues[colIndex[label.split('.').length - 1]][j] as IAxisSet).
-                                    valueSort && (pivotValues[colIndex[label.split('.').length - 1]][j] as IAxisSet).
+                            if ((pivotValues[colIndex[label.split(headerDelimiter).length - 1]] &&
+                                (pivotValues[colIndex[label.split(headerDelimiter).length - 1]][j] as IAxisSet) &&
+                                (pivotValues[colIndex[label.split(headerDelimiter).length - 1]][j] as IAxisSet).
+                                    valueSort && (pivotValues[colIndex[label.split(headerDelimiter).length - 1]][j] as IAxisSet).
                                         valueSort[label])) {
                                 for (let index of colIndex) {
                                     if ((pivotValues[index][j] as IAxisSet) &&

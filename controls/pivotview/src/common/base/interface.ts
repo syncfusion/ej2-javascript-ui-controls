@@ -753,6 +753,8 @@ export interface PdfBorder {
 export interface CellTemplateArgs {
     /** Defines the cell element */
     targetCell?: HTMLElement;
+    /** Defines the cell Information */
+    cellInfo?: IAxisSet
 }
 
 /**

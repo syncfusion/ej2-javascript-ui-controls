@@ -509,7 +509,7 @@ var SfListView = /** @class */ (function () {
             for (var i = 0; i < liElementCount; i++) {
                 var checkIcon = liCollection[i].querySelector('.' + CHECKBOXICON);
                 if (checkIcon) {
-                    if (isChecked && !checkIcon.classList.contains(CHECKED)) {
+                    if (isChecked) {
                         this.checkItem(liCollection[i]);
                     }
                     else if (checkIcon.classList.contains(CHECKED)) {
@@ -517,6 +517,7 @@ var SfListView = /** @class */ (function () {
                     }
                 }
             }
+            this.removeFocus();
         }
     };
     SfListView.prototype.checkItem = function (item) {
@@ -525,6 +526,7 @@ var SfListView = /** @class */ (function () {
     SfListView.prototype.getCheckData = function (item, isCheck) {
         var liItem = this.curUlElement.querySelector('[data-uid=\'' + item.id + '\']');
         isCheck ? this.checkItem(liItem) : this.uncheckItem(liItem);
+        liItem.classList.remove(FOCUSED);
     };
     SfListView.prototype.spaceKeyHandler = function (e) {
         e.preventDefault();

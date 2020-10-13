@@ -1,4 +1,4 @@
-import { createElement, L10n, isNullOrUndefined, EventHandler, classList } from '@syncfusion/ej2-base';
+import { createElement, L10n, isNullOrUndefined, EventHandler, classList, Browser } from '@syncfusion/ej2-base';
 import { Toolbar as EJ2Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DocumentEditorContainer } from '../document-editor-container';
@@ -123,7 +123,7 @@ export class Toolbar {
         }
         let toolbarContainer: HTMLElement = this.container.toolbarContainer;
         let toolbarWrapper: HTMLElement = createElement('div', { className: 'e-de-tlbr-wrapper' });
-        let toolbarTarget: HTMLElement = createElement('div', { className: 'e-de-toolbar', styles: 'height:100%' });
+        let toolbarTarget: HTMLElement = createElement('div', { className: 'e-de-toolbar'});
         this.initToolbarItems();
         toolbarWrapper.appendChild(toolbarTarget);
         toolbarContainer.appendChild(toolbarWrapper);
@@ -166,10 +166,8 @@ export class Toolbar {
                 iconCss: 'e-icons e-de-ctnr-image',
                 select: this.onDropDownButtonSelect.bind(this),
             };
-            if (isNullOrUndefined(this.imgDropDwn)) {
-                this.imgDropDwn = new DropDownButton(items, imageButton as HTMLButtonElement);
+            this.imgDropDwn = new DropDownButton(items, imageButton as HTMLButtonElement);
             }
-        }
 
         if (this.toolbarItems.indexOf('Break') >= 0) {
             let breakButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-break-splitbutton')[0].firstChild as HTMLElement;
@@ -181,16 +179,16 @@ export class Toolbar {
                 iconCss: 'e-icons e-de-ctnr-break',
                 select: this.onDropDownButtonSelect.bind(this),
             };
-            if (isNullOrUndefined(this.breakDropDwn)) {
-                this.breakDropDwn = new DropDownButton(items, breakButton as HTMLButtonElement);
+            this.breakDropDwn = new DropDownButton(items, breakButton as HTMLButtonElement);
             }
-        }
 
 
         this.filePicker = createElement('input', {
             attrs: { type: 'file', accept: '.doc,.docx,.rtf,.txt,.htm,.html,.sfdt' }, className: 'e-de-ctnr-file-picker'
         }) as HTMLInputElement;
-
+        if (Browser.isIE) {
+            document.body.appendChild(this.filePicker);
+        }
         this.imagePicker = createElement('input', {
             attrs: { type: 'file', accept: '.jpg,.jpeg,.png,.bmp' }, className: 'e-de-ctnr-file-picker'
         }) as HTMLInputElement;
@@ -211,10 +209,8 @@ export class Toolbar {
                 cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                 select: this.onDropDownButtonSelect.bind(this)
             };
-            if (isNullOrUndefined(this.restrictDropDwn)) {
-                this.restrictDropDwn = new DropDownButton(items, restrictEditing as HTMLButtonElement);
+            this.restrictDropDwn = new DropDownButton(items, restrictEditing as HTMLButtonElement);
             }
-        }
         if (this.toolbarItems.indexOf('FormFields') >= 0) {
             let breakButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-formfields')[0].firstChild as HTMLElement;
             let items: DropDownButtonModel = {
@@ -225,11 +221,9 @@ export class Toolbar {
                 cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                 select: this.onDropDownButtonSelect.bind(this),
             };
-            if (isNullOrUndefined(this.formFieldDropDown)) {
-                this.formFieldDropDown = new DropDownButton(items, breakButton as HTMLButtonElement);
+            this.formFieldDropDown = new DropDownButton(items, breakButton as HTMLButtonElement);
             }
         }
-    }
 
     private showHidePropertiesPane(): void {
         let paneDiv: HTMLElement = document.getElementsByClassName('e-de-ctnr-properties-pane-btn')[0] as HTMLButtonElement;

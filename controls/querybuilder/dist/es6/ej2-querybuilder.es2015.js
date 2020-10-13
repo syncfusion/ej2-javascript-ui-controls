@@ -1296,7 +1296,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         let original = {};
         let result = [];
         let value;
-        let fieldColl;
+        let fieldColl = [];
         if (this.separator.length > 0) {
             fieldColl = field.split(this.separator);
         }

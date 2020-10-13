@@ -32,7 +32,10 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     //Internal variables     
     /*** @hidden */
     public totalPages: number;
-    private templateFn: Function;
+    /** @hidden */
+    public templateFn: Function;
+    /** @hidden */
+    public hasParent: boolean = false;
     /*** @hidden */
     public previousPageNo: number;
     private defaultConstants: Object;
@@ -233,7 +236,12 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
      */
     protected render(): void {
         if (this.template) {
-            this.pagerTemplate();
+            if (this.isReactTemplate()) {
+                this.on('pager-refresh', this.pagerTemplate, this);
+                this.notify('pager-refresh', {});
+            } else {
+                this.pagerTemplate();
+            }
         } else {
             this.initLocalization();
             this.updateRTL();
@@ -271,13 +279,16 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
      * @return {void}
      */
     public destroy(): void {
-        if (this.isReact && typeof (this.template) !== 'string') {
-            this.destroyTemplate(['template']);
-            this.renderReactTemplates();
-        } else {
-            super.destroy();
-            this.containerModule.destroy();
-            this.pagerMessageModule.destroy();
+        if (this.isReactTemplate()) {
+            this.off('pager-refresh', this.pagerTemplate);
+            if (!this.hasParent) {
+                this.destroyTemplate(['template']);
+            }
+        }
+        super.destroy();
+        this.containerModule.destroy();
+        this.pagerMessageModule.destroy();
+        if (!this.isReactTemplate()) {
             this.element.innerHTML = '';
         }
     }
@@ -437,6 +448,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     private pagerTemplate(): void {
+        if (this.isReactTemplate() && this.hasParent) { return; }
         let result: Element[];
         this.element.classList.add('e-pagertemplate');
         this.compile(this.template);
@@ -445,9 +457,14 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             totalRecordsCount: this.totalRecordsCount, totalPages: this.totalPages
         };
         let tempId: string = this.element.parentElement.id + '_template';
-        result = isBlazor() ? this.getPagerTemplate()(data, this, 'template', tempId, this.isStringTemplate) as Element[] :
-                    this.getPagerTemplate()(data);
-        appendChildren(this.element, result);
+        if (this.isReactTemplate()) {
+            this.getPagerTemplate()(data, this, 'template', tempId, null, null, this.element);
+            this.renderReactTemplates();
+        } else {
+            result = isBlazor() ? this.getPagerTemplate()(data, this, 'template', tempId, this.isStringTemplate) as Element[] :
+                this.getPagerTemplate()(data);
+            appendChildren(this.element, result);
+        }
     }
 
     /** @hidden */
@@ -461,7 +478,8 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         return this.templateFn;
     }
 
-    private compile(template: string): Function {
+    /** @hidden */
+    public compile(template: string): Function {
         if (template) {
             let e: Object;
             try {
@@ -481,14 +499,22 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public refresh(): void {
         if (this.template) {
-            this.element.innerHTML = '';
-            this.updateTotalPages();
-            this.pagerTemplate();
+            if (this.isReactTemplate()) {
+                this.updateTotalPages();
+                this.notify('pager-refresh', {});
+            } else {
+                this.element.innerHTML = '';
+                this.updateTotalPages();
+                this.pagerTemplate();
+            }
         } else {
             this.updateRTL();
             this.containerModule.refresh();
             if (this.enablePagerMessage) {
                 this.pagerMessageModule.refresh();
+            }
+            if (this.pagerdropdownModule) {
+                this.pagerdropdownModule.refresh();
             }
             if (this.enableExternalMessage && this.externalMessageModule) {
                 this.externalMessageModule.refresh();
@@ -567,4 +593,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         }
     }
 
+    private isReactTemplate(): boolean {
+      return this.isReact && this.template && typeof (this.template) !== 'string';
+    }
 }

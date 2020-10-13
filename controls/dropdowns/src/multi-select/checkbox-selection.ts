@@ -442,7 +442,7 @@ export class CheckBoxSelection {
     }
     private getFocus(e: IUpdateListArgs): void {
         this.parent.overAllWrapper.classList.remove(FOCUS);
-        if (this.parent.keyAction && e.value !== 'clear') {
+        if (this.parent.keyAction && e.value !== 'clear' && e.value !== 'focus') {
             this.parent.keyAction = false;
             return;
         }

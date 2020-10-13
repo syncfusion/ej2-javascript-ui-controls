@@ -23,7 +23,6 @@ export class SfTreeGrid {
     public clipboardModule: Clipboard;
     public rowDragAndDropModule: RowDD;
     public checkboxcolumnModule: CheckboxColumn;
-
     constructor(element: BlazorTreeGridElement, options: ITreeGridOptions, dotnetRef: BlazorDotnetObject) {
         this.element = element;
         this.element.blazor_instance = this;

@@ -1666,7 +1666,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /* tslint:disable */
     /** 
-     * Triggers when Grid actions such as sorting, filtering, paging, grouping etc., starts. 
+     * Triggers when Grid actions such as sorting, filtering, paging, grouping etc., starts.
+     * {% codeBlock src='grid/actionBegin/index.md' %}{% endcodeBlock %}
      * @event
      * @blazorProperty 'OnActionBegin'
      */
@@ -4226,6 +4227,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Starts edit the selected row. At least one row must be selected before invoking this method.
      * `editSettings.allowEditing` should be true.
+     * {% codeBlock src='grid/startEdit/index.md' %}{% endcodeBlock %}
      * @return {void}
      */
     public startEdit(): void {
@@ -4287,6 +4289,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Saves the cell that is currently edited. It does not save the value to the DataSource.
+     * {% codeBlock src='grid/saveCell/index.md' %}{% endcodeBlock %}
      */
     public saveCell(): void {
         if (this.editModule) {
@@ -4310,6 +4313,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * To update the specified row by given values without changing into edited state.
      * @param {number} index Defines the row index.
      * @param {Object} data Defines the data object to be updated.
+     * {% codeBlock src='grid/updateRow/index.md' %}{% endcodeBlock %}
      */
     public updateRow(index: number, data: Object): void {
         if (this.editModule) {
@@ -5394,7 +5398,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /** 
      * Ungroups a column by column name. 
-     * @param  {string} columnName - Defines the column name to ungroup.  
+     * @param  {string} columnName - Defines the column name to ungroup.
+     * {% codeBlock src='grid/ungroupColumn/index.md' %}{% endcodeBlock %}  
      * @return {void} 
      */
     public ungroupColumn(columnName: string): void {

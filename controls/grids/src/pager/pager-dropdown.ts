@@ -83,8 +83,7 @@ export class PagerDropDown {
     private onChange(e: ChangeEventArgs): void {
         if (this.dropDownListObject.value === this.pagerModule.getLocalizedLabel('All')) {
             this.pagerModule.pageSize = this.pagerModule.totalRecordsCount;
-            this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerAllDropDown') :
-            this.pagerModule.getLocalizedLabel('pagerAllDropDown');
+            this.refresh();
             e.value = this.pagerModule.pageSize;
             if (document.getElementsByClassName('e-popup-open e-alldrop').length) {
                 (<HTMLElement>document.getElementsByClassName('e-popup-open e-alldrop')[0]).style.display = 'none';
@@ -92,12 +91,20 @@ export class PagerDropDown {
         } else {
             this.pagerModule.pageSize = parseInt(this.dropDownListObject.value as string, 10);
             if (this.pagerCons.innerHTML !== this.pagerModule.getLocalizedLabel('pagerDropDown')) {
-                this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerDropDown') :
-                this.pagerModule.getLocalizedLabel('pagerDropDown');
+                this.refresh();
             }
         }
         this.pagerModule.dataBind();
         this.pagerModule.trigger('dropDownChanged', { pageSize: parseInt(this.dropDownListObject.value as string, 10) });
+    }
+    public refresh(): void {
+        if (this.pagerModule.pageSize === this.pagerModule.totalRecordsCount) {
+            this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerAllDropDown') :
+                this.pagerModule.getLocalizedLabel('pagerAllDropDown');
+        } else {
+            this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerDropDown') :
+                this.pagerModule.getLocalizedLabel('pagerDropDown');
+        }
     }
 
     private beforeValueChange(prop: IPager): void {

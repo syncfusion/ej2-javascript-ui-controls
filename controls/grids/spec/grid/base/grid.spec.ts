@@ -1542,4 +1542,33 @@ describe('Grid base module', () => {
             gridObj = null;
             gridObj.recordClick = null;
         });
+        describe('EJ2-42713-Updating Query dynamically issue', () => {
+            let gridObj: Grid;
+            beforeAll((done: Function) => {
+                gridObj = createGrid(
+                    {
+                        dataSource: data,
+                        query : new Query().addParams('ManufacturingLineIdFilter', '1'),
+                        columns: [
+                            { headerText: 'OrderID', field: 'OrderID' },
+                            { headerText: 'CustomerID', field: 'CustomerID' },
+                            { headerText: 'Freight', field: 'Freight' },
+                            { headerText: 'EmployeeID', field: 'EmployeeID' }
+                        ],
+                    }, done);
+            });
+            it('checking refresh action', (done: Function) => {
+                let actionComplete = (args: any) => {
+                    expect(args.requestType).toBe('refresh');
+                    done();
+                }
+                gridObj.actionComplete = actionComplete;
+                gridObj.query = new Query().addParams('ManufacturingLineIdFilter', '2');
+            });
+            afterAll(() => {
+                destroy(gridObj);
+                gridObj = null;
+                gridObj.actionComplete = null;
+            });
+        });
     });

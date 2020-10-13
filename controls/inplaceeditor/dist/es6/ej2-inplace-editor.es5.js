@@ -459,6 +459,10 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         }
         addClass([this.valueWrap], [OPEN]);
         this.setProperties({ enableEditMode: true }, true);
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     };
     InPlaceEditor.prototype.renderAndOpen = function () {
         this.renderControl(this.inlineWrapper);
@@ -803,6 +807,10 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
                 this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
             }
         }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
     };
     InPlaceEditor.prototype.destroyComponents = function () {
         if (this.showButtons) {
@@ -964,8 +972,12 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         var args;
         if (this.validationRules) {
-            var rules_1 = Object.keys(this.validationRules);
-            var rulesIndex_1 = 0;
+            var rules = Object.keys(this.validationRules);
+            var templateCount_1 = Object.keys(this.validationRules).length;
+            var templateIndex_1 = 0;
+            var status_1 = true;
+            var validationLength_1 = Object.keys(this.validationRules[rules[0]]).length;
+            validationLength_1 = 'validateHidden' in this.validationRules[rules[0]] ? validationLength_1 - 1 : validationLength_1;
             var count_1 = 0;
             this.formValidate = new FormValidator(this.formEle, {
                 rules: this.validationRules,
@@ -977,23 +989,20 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
                     };
                     _this.trigger('validating', args, function (validateArgs) {
                         if (e.status === 'failure') {
+                            status_1 = false;
                             e.errorElement.innerText = validateArgs.errorMessage;
                             _this.toggleErrorClass(true);
                         }
                         else {
                             _this.toggleErrorClass(false);
                         }
-                        var validationLength = Object.keys(_this.validationRules[rules_1[rulesIndex_1]]).length;
-                        validationLength = 'validateHidden' in _this.validationRules[rules_1[rulesIndex_1]]
-                            ? validationLength - 1 : validationLength;
-                        if (!isNullOrUndefined(fromSubmit) && fromSubmit && (validationLength === count_1 || e.status === 'failure')) {
-                            rulesIndex_1++;
-                            if (_this.template === '' || count_1 - 1 === rulesIndex_1) {
+                        if (!isNullOrUndefined(fromSubmit) && fromSubmit && (validationLength_1 === count_1 || e.status === 'failure')) {
+                            templateIndex_1 = templateIndex_1 + 1;
+                            if (templateIndex_1 === templateCount_1 && status_1) {
                                 fromSubmit = false;
                                 _this.afterValidation(isValidate);
                             }
                             count_1 = 0;
-                            rulesIndex_1 = 0;
                         }
                     });
                 },
@@ -1357,6 +1366,10 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         }
         if (!(isBlazor() && this.isServerRendered)) {
             _super.prototype.destroy.call(this);
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
         }
     };
     /**
