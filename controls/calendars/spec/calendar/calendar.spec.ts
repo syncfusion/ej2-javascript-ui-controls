@@ -4545,4 +4545,45 @@ describe(' Islamic Calendar', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+    describe('EJ2-42421- isInteracted property is false when clicking on the today button in Calendar component', () => {
+        let calendar: any;
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+        };
+        let mouseEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+        };
+        beforeAll(() => {
+            let ele: HTMLElement = createElement('div', { id: 'calendar' });
+            document.body.appendChild(ele);
+        });
+        afterAll(() => {
+            if (calendar) {
+                calendar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Mouse click', function () {
+            calendar = new Calendar({
+            });
+            calendar.appendTo('#calendar');
+            var element: HTMLElement = calendar.todayElement;
+            mouseEventArgs.target = element;
+            calendar.todayButtonClick(mouseEventArgs);
+            expect(calendar.changedArgs.isInteracted).toBe(true);
+            expect(calendar.changedArgs.event).not.toBe(null);
+        });
+        it('keyboard select', function () {
+            calendar = new Calendar({
+            });
+            calendar.appendTo('#calendar');
+            var element: HTMLElement = calendar.todayElement;
+            element.focus();
+            keyEventArgs.target = element;
+            keyEventArgs.action = 'select';
+            calendar.keyActionHandle(keyEventArgs);
+            expect(calendar.changedArgs.isInteracted).toBe(true);
+            expect(calendar.changedArgs.event).not.toBe(null);
+        });
+    });
 });

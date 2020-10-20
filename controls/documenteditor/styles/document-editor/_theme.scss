@@ -2837,6 +2837,15 @@
     border-left: 2px solid $de-cmt-selection-rslv;
   }
 
+  .e-de-lock-mark {
+    cursor: default;
+    color: #000;
+    font-size: 13px;
+    height:13px;
+    pointer-events: all;
+    width: 13px;
+  }
+
   .e-de-cmt-mark {
     cursor: default;
     color: #000;

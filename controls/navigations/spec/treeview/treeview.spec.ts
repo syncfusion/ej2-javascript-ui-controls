@@ -338,6 +338,8 @@ describe('TreeView control', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function() {
                     let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    tapEvent.tapCount = 1;
+                    treeObj.touchClickObj.tap(tapEvent);
                     tapEvent.tapCount = 2;
                     mouseEventArgs.target = li[0].querySelector('.e-list-text');
                     expect(li[0].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(true);
@@ -437,6 +439,8 @@ describe('TreeView control', () => {
                     expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                     expect(li[0].childElementCount).toBe(1);
                     expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+                    tapEvent.tapCount = 1;
+                    treeObj.touchExpandObj.tap(tapEvent);
                     tapEvent.tapCount = 2;
                     treeObj.touchExpandObj.tap(tapEvent);
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -462,6 +466,8 @@ describe('TreeView control', () => {
                     expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                     expect(li[0].childElementCount).toBe(1);
                     expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+                    tapEvent.tapCount = 1;
+                    treeObj.touchExpandObj.tap(tapEvent);
                     tapEvent.tapCount = 2;
                     tapEvent.originalEvent.which = 3;
                     treeObj.touchExpandObj.tap(tapEvent);
@@ -482,6 +488,9 @@ describe('TreeView control', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function() {
                     let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    tapEvent.tapCount = 1;
+                    mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                    treeObj.touchExpandObj.tap(tapEvent);
                     tapEvent.tapCount = 2;
                     mouseEventArgs.target = li[0].querySelector('.e-list-text');
                     expect(li[0].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(true);
@@ -514,6 +523,10 @@ describe('TreeView control', () => {
                     expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                     expect(li[0].childElementCount).toBe(1);
                     expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+                    tapEvent.tapCount = 1;
+                    mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                    treeObj.touchExpandObj.tap(tapEvent);
+                    treeObj.touchEditObj.tap(tapEvent);
                     tapEvent.tapCount = 2;
                     mouseEventArgs.target = li[0].querySelector('.e-list-text');
                     treeObj.touchExpandObj.tap(tapEvent);
@@ -530,10 +543,20 @@ describe('TreeView control', () => {
                         (li[0].querySelector('.e-input') as HTMLInputElement).blur();
                         expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
                         expect((li[0].querySelector('.e-list-text') as HTMLElement).childNodes[0].nodeValue).toBe('Music node');
+                        tapEvent.tapCount = 1;
+                        mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                        treeObj.touchExpandObj.tap(tapEvent);
+                        treeObj.touchEditObj.tap(tapEvent);
+                        tapEvent.tapCount = 2;
                         mouseEventArgs.target = li[0].querySelector('.e-list-item');
                         treeObj.touchExpandObj.tap(tapEvent);
                         treeObj.touchEditObj.tap(tapEvent);
                         expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+                        tapEvent.tapCount = 1;
+                        mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                        treeObj.touchExpandObj.tap(tapEvent);
+                        treeObj.touchEditObj.tap(tapEvent);
+                        tapEvent.tapCount = 2;
                         mouseEventArgs.target = li[0].querySelector('.e-list-text');
                         treeObj.touchExpandObj.tap(tapEvent);
                         treeObj.touchEditObj.tap(tapEvent);
@@ -545,6 +568,11 @@ describe('TreeView control', () => {
                             expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
                             expect((li[0].querySelector('.e-list-text') as HTMLElement).childNodes[0].nodeValue).toBe('Music');
                             let nli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                            tapEvent.tapCount = 1;
+                            mouseEventArgs.target = nli[1].querySelector('.e-list-text');
+                        treeObj.touchExpandObj.tap(tapEvent);
+                        treeObj.touchEditObj.tap(tapEvent);
+                        tapEvent.tapCount = 2;
                             mouseEventArgs.target = nli[1].querySelector('.e-list-text');
                             treeObj.touchExpandObj.tap(tapEvent);
                             treeObj.touchEditObj.tap(tapEvent);
@@ -553,6 +581,11 @@ describe('TreeView control', () => {
                             (nli[1].querySelector('.e-input') as HTMLInputElement).blur();
                             expect(nli[1].querySelector('.e-list-text').childElementCount).toBe(0);
                             expect((nli[1].querySelector('.e-list-text') as HTMLElement).childNodes[0].nodeValue).toBe('Gouttes.mp31');
+                            tapEvent.tapCount = 1;
+                            mouseEventArgs.target = nli[1].querySelector('.e-list-text');
+                        treeObj.touchExpandObj.tap(tapEvent);
+                        treeObj.touchEditObj.tap(tapEvent);
+                        tapEvent.tapCount = 2;
                             mouseEventArgs.target = nli[1].querySelector('.e-list-text');
                             treeObj.touchExpandObj.tap(tapEvent);
                             treeObj.touchEditObj.tap(tapEvent);
@@ -1375,6 +1408,10 @@ describe('TreeView control', () => {
                     expect(txt[1].querySelector('b')).not.toBe(null);
                     expect(txt[1].querySelector('i')).toBe(null);
                     let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    tapEvent.tapCount = 1;
+                    mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                    treeObj.touchExpandObj.tap(tapEvent);
+                    treeObj.touchEditObj.tap(tapEvent);
                     tapEvent.tapCount = 2;
                     mouseEventArgs.target = li[0].querySelector('.e-list-text');
                     treeObj.touchExpandObj.tap(tapEvent);
@@ -1905,6 +1942,10 @@ describe('TreeView control', () => {
                 expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                 expect(li[0].childElementCount).toBe(1);
                 expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+                tapEvent.tapCount = 1;
+                mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                treeObj.touchExpandObj.tap(tapEvent);
+                treeObj.touchEditObj.tap(tapEvent);
                 tapEvent.tapCount = 2;
                 mouseEventArgs.target = li[0].querySelector('.e-list-text');
                 treeObj.touchExpandObj.tap(tapEvent);
@@ -2178,6 +2219,8 @@ describe('TreeView control', () => {
                 expect((li[12].querySelector('.e-icons') as Element).classList.contains('e-icon-collapsible')).toBe(false);
                 expect(li[12].childElementCount).toBe(1);
                 expect(treeObj.expandedNodes.length).toBe(1);
+                tapEvent.tapCount = 1;
+                treeObj.touchExpandObj.tap(tapEvent);
                 tapEvent.tapCount = 2;
                 treeObj.touchExpandObj.tap(tapEvent);
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -3075,6 +3118,8 @@ describe('TreeView control', () => {
                 expect(i).toEqual(0);
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                 mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                tapEvent.tapCount = 1;
+                treeObj.touchEditObj.tap(tapEvent);
                 tapEvent.tapCount = 2;
                 expect(li[0].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(true);
                 expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
@@ -3111,6 +3156,8 @@ describe('TreeView control', () => {
                 expect(j).toEqual(0);
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                 mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                tapEvent.tapCount = 1;
+                treeObj.touchEditObj.tap(tapEvent);
                 tapEvent.tapCount = 2;
                 expect(li[0].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(true);
                 expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
@@ -3153,6 +3200,8 @@ describe('TreeView control', () => {
                 expect(j).toEqual(0);
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                 mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                tapEvent.tapCount = 1;
+                treeObj.touchEditObj.tap(tapEvent);
                 tapEvent.tapCount = 2;
                 treeObj.touchEditObj.tap(tapEvent);
                 expect(li[0].querySelector('.e-list-text').childElementCount).toBe(1);
@@ -3163,6 +3212,8 @@ describe('TreeView control', () => {
                 expect((li[0].querySelector('.e-list-text') as HTMLElement).childNodes[0].nodeValue).toBe('Music');
                 expect(j).toEqual(0);
                 mouseEventArgs.target = li[1].querySelector('.e-list-text');
+                tapEvent.tapCount = 1;
+                treeObj.touchEditObj.tap(tapEvent);
                 tapEvent.tapCount = 2;
                 treeObj.touchEditObj.tap(tapEvent);
                 expect(li[1].querySelector('.e-list-text').childElementCount).toBe(1);
@@ -5183,6 +5234,9 @@ describe('TreeView control', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function() {
                     let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    tapEvent.tapCount = 1;
+                    mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                    treeObj.touchExpandObj.tap(tapEvent);
                     tapEvent.tapCount = 2;
                     mouseEventArgs.target = li[0].querySelector('.e-list-text');
                     expect(li[0].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(true);
@@ -5215,6 +5269,10 @@ describe('TreeView control', () => {
                     expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                     expect(li[0].childElementCount).toBe(1);
                     expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+                    tapEvent.tapCount = 1;
+                    mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                    treeObj.touchExpandObj.tap(tapEvent);
+                    treeObj.touchEditObj.tap(tapEvent);
                     tapEvent.tapCount = 2;
                     mouseEventArgs.target = li[0].querySelector('.e-list-text');
                     treeObj.touchExpandObj.tap(tapEvent);
@@ -5231,10 +5289,20 @@ describe('TreeView control', () => {
                         (li[0].querySelector('.e-input') as HTMLInputElement).blur();
                         expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
                         expect((li[0].querySelector('.e-list-text') as HTMLElement).childNodes[0].nodeValue).toBe('Music node');
+                        tapEvent.tapCount = 1;
+                        mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                        treeObj.touchExpandObj.tap(tapEvent);
+                        treeObj.touchEditObj.tap(tapEvent);
+                        tapEvent.tapCount = 2;
                         mouseEventArgs.target = li[0].querySelector('.e-list-item');
                         treeObj.touchExpandObj.tap(tapEvent);
                         treeObj.touchEditObj.tap(tapEvent);
                         expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+                        tapEvent.tapCount = 1;
+                        mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                        treeObj.touchExpandObj.tap(tapEvent);
+                        treeObj.touchEditObj.tap(tapEvent);
+                        tapEvent.tapCount = 2;
                         mouseEventArgs.target = li[0].querySelector('.e-list-text');
                         treeObj.touchExpandObj.tap(tapEvent);
                         treeObj.touchEditObj.tap(tapEvent);
@@ -5246,6 +5314,11 @@ describe('TreeView control', () => {
                             expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
                             expect((li[0].querySelector('.e-list-text') as HTMLElement).childNodes[0].nodeValue).toBe('Music');
                             let nli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                            tapEvent.tapCount = 1;
+                            mouseEventArgs.target = nli[1].querySelector('.e-list-text');
+                            treeObj.touchExpandObj.tap(tapEvent);
+                            treeObj.touchEditObj.tap(tapEvent);
+                            tapEvent.tapCount = 2;
                             mouseEventArgs.target = nli[1].querySelector('.e-list-text');
                             treeObj.touchExpandObj.tap(tapEvent);
                             treeObj.touchEditObj.tap(tapEvent);
@@ -5254,6 +5327,11 @@ describe('TreeView control', () => {
                             (nli[1].querySelector('.e-input') as HTMLInputElement).blur();
                             expect(nli[1].querySelector('.e-list-text').childElementCount).toBe(0);
                             expect((nli[1].querySelector('.e-list-text') as HTMLElement).childNodes[0].nodeValue).toBe('Gouttes.mp31');
+                            tapEvent.tapCount = 1;
+                            mouseEventArgs.target = nli[1].querySelector('.e-list-text');
+                            treeObj.touchExpandObj.tap(tapEvent);
+                            treeObj.touchEditObj.tap(tapEvent);
+                            tapEvent.tapCount = 2;
                             mouseEventArgs.target = nli[1].querySelector('.e-list-text');
                             treeObj.touchExpandObj.tap(tapEvent);
                             treeObj.touchEditObj.tap(tapEvent);
@@ -6040,6 +6118,10 @@ describe('TreeView control', () => {
                     expect(txt[1].querySelector('b')).not.toBe(null);
                     expect(txt[1].querySelector('i')).toBe(null);
                     let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    tapEvent.tapCount = 1;
+                    mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                    treeObj.touchExpandObj.tap(tapEvent);
+                    treeObj.touchEditObj.tap(tapEvent);
                     tapEvent.tapCount = 2;
                     mouseEventArgs.target = li[0].querySelector('.e-list-text');
                     treeObj.touchExpandObj.tap(tapEvent);
@@ -6053,6 +6135,11 @@ describe('TreeView control', () => {
                         (li[0].querySelector('.e-input') as HTMLInputElement).blur();
                         expect(li[0].querySelector('.e-list-text').childElementCount).toBe(1);
                         expect((li[0].querySelector('.e-list-text') as HTMLElement).textContent).toBe('Music node');
+                        tapEvent.tapCount = 1;
+                        mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                        treeObj.touchExpandObj.tap(tapEvent);
+                        treeObj.touchEditObj.tap(tapEvent);
+                        tapEvent.tapCount = 2;
                         mouseEventArgs.target = li[0].querySelector('.e-list-text');
                         treeObj.touchExpandObj.tap(tapEvent);
                         treeObj.touchEditObj.tap(tapEvent);
@@ -6634,6 +6721,10 @@ describe('TreeView control', () => {
                 expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                 expect(li[0].childElementCount).toBe(1);
                 expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+                tapEvent.tapCount = 1;
+                mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                treeObj.touchExpandObj.tap(tapEvent);
+                treeObj.touchEditObj.tap(tapEvent);
                 tapEvent.tapCount = 2;
                 mouseEventArgs.target = li[0].querySelector('.e-list-text');
                 treeObj.touchExpandObj.tap(tapEvent);
@@ -6953,6 +7044,8 @@ describe('TreeView control', () => {
                 expect((li[12].querySelector('.e-icons') as Element).classList.contains('e-icon-collapsible')).toBe(false);
                 expect(li[12].childElementCount).toBe(1);
                 expect(treeObj.expandedNodes.length).toBe(1);
+                tapEvent.tapCount = 1;
+                treeObj.touchExpandObj.tap(tapEvent);
                 tapEvent.tapCount = 2;
                 treeObj.touchExpandObj.tap(tapEvent);
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7536,6 +7629,8 @@ describe('TreeView control', () => {
                 expect(i).toEqual(0);
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                 mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                tapEvent.tapCount = 1;
+                treeObj.touchEditObj.tap(tapEvent);
                 tapEvent.tapCount = 2;
                 expect(li[0].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(true);
                 expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
@@ -7553,6 +7648,9 @@ describe('TreeView control', () => {
                 expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
                 expect((li[0].querySelector('.e-list-text') as HTMLElement).childNodes[0].nodeValue).toBe('Music node');
                 expect(i).toEqual(1);
+                tapEvent.tapCount = 1;
+                treeObj.touchEditObj.tap(tapEvent);
+                tapEvent.tapCount = 2;
                 treeObj.touchEditObj.tap(tapEvent);
                 expect((li[0].querySelector('.e-input') as HTMLInputElement).value).toBe('Music node');
                 (li[0].querySelector('.e-input') as HTMLInputElement).value = 'Music';
@@ -7572,6 +7670,8 @@ describe('TreeView control', () => {
                 expect(j).toEqual(0);
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                 mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                tapEvent.tapCount = 1;
+                treeObj.touchEditObj.tap(tapEvent);
                 tapEvent.tapCount = 2;
                 expect(li[0].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(true);
                 expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
@@ -9439,6 +9539,10 @@ describe('TreeView control', () => {
                     expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                     expect(li[0].childElementCount).toBe(1);
                     expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+                    tapEvent.tapCount = 1;
+                    mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                    treeObj.touchExpandObj.tap(tapEvent);
+                    treeObj.touchEditObj.tap(tapEvent);
                     tapEvent.tapCount = 2;
                     mouseEventArgs.target = li[0].querySelector('.e-list-text');
                     treeObj.touchExpandObj.tap(tapEvent);
@@ -9810,6 +9914,10 @@ describe('TreeView control', () => {
                     expect(txt[1].querySelector('b')).not.toBe(null);
                     expect(txt[1].querySelector('i')).toBe(null);
                     let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    tapEvent.tapCount = 1;
+                    mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                    treeObj.touchExpandObj.tap(tapEvent);
+                    treeObj.touchEditObj.tap(tapEvent);
                     tapEvent.tapCount = 2;
                     mouseEventArgs.target = li[0].querySelector('.e-list-text');
                     treeObj.touchExpandObj.tap(tapEvent);
@@ -9836,6 +9944,11 @@ describe('TreeView control', () => {
                             expect(li[0].querySelector('.e-list-text').childElementCount).toBe(1);
                             expect((li[0].querySelector('.e-list-text') as HTMLElement).textContent).toBe('Music node');
                             let nli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                            tapEvent.tapCount = 1;
+                            mouseEventArgs.target = nli[2].querySelector('.e-list-text');
+                            treeObj.touchExpandObj.tap(tapEvent);
+                            treeObj.touchEditObj.tap(tapEvent);
+                            tapEvent.tapCount = 2;
                             mouseEventArgs.target = nli[2].querySelector('.e-list-text');
                             treeObj.touchExpandObj.tap(tapEvent);
                             treeObj.touchEditObj.tap(tapEvent);
@@ -9853,6 +9966,11 @@ describe('TreeView control', () => {
                                 setTimeout(function () {
                                     expect(nli[2].querySelector('.e-list-text').childElementCount).toBe(1);
                                     expect((nli[2].querySelector('.e-list-text') as HTMLElement).textContent).toBe('Downloads1');
+                                    tapEvent.tapCount = 1;
+                                    mouseEventArgs.target = nli[2].querySelector('.e-list-text');
+                                    treeObj.touchExpandObj.tap(tapEvent);
+                                    treeObj.touchEditObj.tap(tapEvent);
+                                    tapEvent.tapCount = 2;
                                     mouseEventArgs.target = nli[2].querySelector('.e-list-text');
                                     treeObj.touchExpandObj.tap(tapEvent);
                                     treeObj.touchEditObj.tap(tapEvent);
@@ -9868,6 +9986,11 @@ describe('TreeView control', () => {
                                     setTimeout(function () {
                                         expect(nli[2].querySelector('.e-list-text').childElementCount).toBe(1);
                                         expect((nli[2].querySelector('.e-list-text') as HTMLElement).textContent).toBe('Downloads');
+                                        tapEvent.tapCount = 1;
+                                        mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                                        treeObj.touchExpandObj.tap(tapEvent);
+                                        treeObj.touchEditObj.tap(tapEvent);
+                                        tapEvent.tapCount = 2;
                                         mouseEventArgs.target = li[0].querySelector('.e-list-text');
                                         treeObj.touchExpandObj.tap(tapEvent);
                                         treeObj.touchEditObj.tap(tapEvent);
@@ -9944,6 +10067,9 @@ describe('TreeView control', () => {
                     expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                     expect(li[0].childElementCount).toBe(1);
                     expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+                    tapEvent.tapCount = 1;
+                    mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                    treeObj.touchExpandObj.tap(tapEvent);
                     tapEvent.tapCount = 2;
                     mouseEventArgs.target = li[0].querySelector('.e-list-text');
                     treeObj.touchExpandObj.tap(tapEvent);
@@ -9954,6 +10080,9 @@ describe('TreeView control', () => {
                         expect(treeObj.getTreeData('01')[0].nodeChild[0].nodeText).toBe('Gouttes.mp3');
                         done();
                     }, 450);
+                    tapEvent.tapCount = 1;
+                    mouseEventArgs.target = li[1].querySelector('.e-list-text');
+                    treeObj.touchExpandObj.tap(tapEvent);
                     tapEvent.tapCount = 2;
                     mouseEventArgs.target = li[1].querySelector('.e-list-text');
                     treeObj.touchExpandObj.tap(tapEvent);
@@ -10367,6 +10496,10 @@ describe('TreeView control', () => {
                 expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                 expect(li[0].childElementCount).toBe(1);
                 expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+                tapEvent.tapCount = 1;
+                mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                treeObj.touchExpandObj.tap(tapEvent);
+                treeObj.touchEditObj.tap(tapEvent);
                 tapEvent.tapCount = 2;
                 mouseEventArgs.target = li[0].querySelector('.e-list-text');
                 treeObj.touchExpandObj.tap(tapEvent);
@@ -10718,6 +10851,8 @@ describe('TreeView control', () => {
             it('nodeEditing and nodeEdited events are triggered', (done: Function) => {
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                 mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                tapEvent.tapCount = 1;
+                treeObj.touchEditObj.tap(tapEvent);
                 tapEvent.tapCount = 2;
                 expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
                 treeObj.touchEditObj.tap(tapEvent);
@@ -12305,6 +12440,10 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                 expect(li[0].classList.contains('e-active')).toBe(true);
                 mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                tapEvent.tapCount = 1;
+                treeObj.touchExpandObj.tap(tapEvent);
+                tapEvent.tapCount = 2;
+                treeObj.touchExpandObj.tap(tapEvent);
                 tapEvent.tapCount = 2;
                 treeObj.touchExpandObj.tap(tapEvent);
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -12322,6 +12461,10 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                 expect(li[0].classList.contains('e-active')).toBe(true);
                 mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                tapEvent.tapCount = 1;
+                treeObj.touchExpandObj.tap(tapEvent);
+                tapEvent.tapCount = 2;
+                treeObj.touchExpandObj.tap(tapEvent);
                 tapEvent.tapCount = 2;
                 treeObj.touchExpandObj.tap(tapEvent);
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -12376,6 +12519,9 @@ describe('Drag and drop with different TreeView functionality testing with empty
         it('Remote data testing', (done: Function) => {        
             let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
             expect(li[0].classList.contains('e-active')).toBe(true);
+            tapEvent.tapCount = 1;
+            mouseEventArgs.target = li[1].querySelector('.e-list-text');
+            treeObj.touchExpandObj.tap(tapEvent);
             tapEvent.tapCount = 2;
             mouseEventArgs.target = li[1].querySelector('.e-list-text');
             treeObj.touchExpandObj.tap(tapEvent);
@@ -12779,6 +12925,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 },'#tree1');
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    tapEvent.tapCount = 1;
+                    treeObj.touchClickObj.tap(tapEvent);
                     tapEvent.tapCount = 2;
                     mouseEventArgs.target = li[0].querySelector('.e-list-text');
                     expect(li[0].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(true);
@@ -12950,6 +13098,9 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 },'#tree1');
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    tapEvent.tapCount = 1;
+                    mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                    treeObj.touchClickObj.tap(tapEvent);
                     tapEvent.tapCount = 2;
                     mouseEventArgs.target = li[0].querySelector('.e-list-text');
                     expect(li[0].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(true);
@@ -13245,6 +13396,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
         });
         it('functionality testing', (done: Function) => {
             expect(treeObj.getTreeData().length).toBe(25);
+            tapEvent.tapCount = 1;
+            treeObj.touchExpandObj.tap(tapEvent);
             tapEvent.tapCount = 2;
             let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
             mouseEventArgs.target = li[0].querySelector('.e-list-text');
@@ -13530,6 +13683,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
             treeObj.disableNodes(['1', '2']);
             expect(li[0].classList.contains('e-disable')).toBe(true);
             mouseEventArgs.target = li[0].querySelector('.e-list-text');
+            tapEvent.tapCount = 1;
+            treeObj.touchExpandObj.tap(tapEvent);
             tapEvent.tapCount = 2;
             treeObj.touchExpandObj.tap(tapEvent);
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -13546,6 +13701,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
             treeObj.disableNodes(['1', '2']);
             expect(li[0].classList.contains('e-disable')).toBe(true);
             mouseEventArgs.target = li[0].querySelector('.e-list-text');
+            tapEvent.tapCount = 1;
+            treeObj.touchExpandObj.tap(tapEvent);
             tapEvent.tapCount = 2;
             treeObj.touchExpandObj.tap(tapEvent);
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -13600,6 +13757,9 @@ describe('Drag and drop with different TreeView functionality testing with empty
             let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
             treeObj.disableNodes(['01', '02-01']);
             expect(li[0].classList.contains('e-disable')).toBe(true);
+            tapEvent.tapCount = 1;
+            mouseEventArgs.target = li[1].querySelector('.e-list-text');
+            treeObj.touchExpandObj.tap(tapEvent);
             tapEvent.tapCount = 2;
             mouseEventArgs.target = li[1].querySelector('.e-list-text');
             treeObj.touchExpandObj.tap(tapEvent);
@@ -14257,7 +14417,6 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 jasmine.Ajax.uninstall();
             });
             it('Add a single node to target li', (done: Function) => {
-                debugger
                 let data: object = { nodeId: 'a12', nodeText: 'Santa maria' };
                 expect(j).toEqual(0);
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
@@ -14888,6 +15047,8 @@ describe('Remote data binding with loadOnDemand with tableName fieldName', () =>
         expect(treeObj.element.querySelectorAll('li').length).toBe(3);
         let newli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
         mouseEventArgs.target = newli[0].querySelector('.e-list-text');
+        tapEvent.tapCount = 1;
+        treeObj.touchExpandObj.tap(tapEvent);
         tapEvent.tapCount = 2;
         treeObj.touchExpandObj.tap(tapEvent);
         this.request = jasmine.Ajax.requests.mostRecent();
@@ -14898,6 +15059,8 @@ describe('Remote data binding with loadOnDemand with tableName fieldName', () =>
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(function () {
             mouseEventArgs.target = newli[1].querySelector('.e-list-text');
+            tapEvent.tapCount = 1;
+            treeObj.touchExpandObj.tap(tapEvent);
             tapEvent.tapCount = 2;
             treeObj.touchExpandObj.tap(tapEvent);
             this.request = jasmine.Ajax.requests.mostRecent();
@@ -15068,6 +15231,8 @@ describe('Remote data binding testing with data from different table', () => {
         expect(treeObj.element.querySelectorAll('li').length).toBe(5);
         expect(treeObj.element.querySelector('.e-list-text').innerHTML).toBe('Nancy');
         let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+        tapEvent.tapCount = 1;
+        treeObj.touchExpandObj.tap(tapEvent);
         tapEvent.tapCount = 2;
         mouseEventArgs.target = li[0].querySelector('.e-list-text');
         treeObj.touchClickObj.tap(tapEvent);
@@ -15085,6 +15250,8 @@ describe('Remote data binding testing with data from different table', () => {
         expect(treeObj.element.querySelectorAll('li').length).toBe(5);
         expect(treeObj.element.querySelector('.e-list-text').innerHTML).toBe('Nancy');
         let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+        tapEvent.tapCount = 1;
+        treeObj.touchExpandObj.tap(tapEvent);
         tapEvent.tapCount = 2;
         mouseEventArgs.target = li[0].querySelector('.e-list-text');
         expect(li[0].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(true);

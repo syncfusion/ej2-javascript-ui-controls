@@ -40,6 +40,7 @@ describe('New Document - Create and Apply Style', () => {
         }, 1000);
     });
     it('Character Style', () => {
+console.log('Character Style');
         editor.openBlank();
         let styleJson: string = '{"type":"Character","name":"Style1","basedOn":"Default Paragraph Font","characterFormat":{"fontFamily":"Algerian"}}'
         let style: WStyle = editor.editorModule.createStyleIn(styleJson) as WStyle;
@@ -52,6 +53,7 @@ describe('New Document - Create and Apply Style', () => {
         expect(editor.selection.characterFormat.fontFamily).toBe("Algerian");
     });
     it('Paragraph Style', () => {
+console.log('Paragraph Style');
         editor.openBlank();
         let styleJson: string = '{"type":"Paragraph","name":"Style3","basedOn":"Normal","next":"Normal","characterFormat":{"bold":true,"italic":true,"underline":"Single","fontSize":24.0,"fontFamily":"Monotype Corsiva"}}'
         let style: WStyle = editor.editorModule.createStyleIn(styleJson) as WStyle;
@@ -76,6 +78,7 @@ describe('New Document - Create and Apply Style', () => {
         expect(editor.selection.characterFormat.fontColor).toBe("empty");
     });
     it('Paragraph-Character-Linked Style', () => {
+console.log('Paragraph-Character-Linked Style');
         editor.openBlank();
         let styleJson: string = '{"type":"Paragraph","name":"Style2","basedOn":"Normal","next":"Normal","link":"Style2 Char","characterFormat":{"bold":true,"italic":true,"underline":"Single","fontSize":24.0}}'
         let style: WStyle = editor.editorModule.createStyleIn(styleJson) as WStyle;
@@ -100,6 +103,7 @@ describe('New Document - Create and Apply Style', () => {
         expect(editor.selection.characterFormat.fontColor).toBe("empty");
     });
     it('Remove inline style', () => {
+console.log('Remove inline style');
         editor.openBlank();
         editor.editorModule.insertText('Adfff');
         editor.selection.handleShiftHomeKey();

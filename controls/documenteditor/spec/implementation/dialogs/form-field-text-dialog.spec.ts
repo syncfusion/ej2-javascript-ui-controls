@@ -37,6 +37,7 @@ describe('Form field Text dialog', () => {
         }, 2000);
     });
     it('Insert Form field Text Value updates', () => {
+console.log('Insert Form field Text Value updates');
         editor.editorModule.insertFormField('Text');
         (dialog as any).typeDropDown.value = 'Date';
         (dialog as any).defaultTextInput.value = '3/20/2020';
@@ -60,6 +61,7 @@ describe('Form field Text dialog', () => {
         expect(fieldData.helpText).toBe('testsync');
     });
     it('Load Values - Form field Text Dialog', () => {
+console.log('Load Values - Form field Text Dialog');
         editor.editorModule.insertFormField('Text');
         editor.selection.selectAll();
         dialog.loadTextDialog();
@@ -76,6 +78,7 @@ describe('Form field Text dialog', () => {
         expect(fieldData.enabled).toBe((dialog as any).fillInEnable.checked);
     });
     it('Valid Date format - Form field Text Dialog', () => {
+console.log('Valid Date format - Form field Text Dialog');
         editor.editorModule.insertFormField('Text');
         editor.selection.selectAll();
         (dialog as any).defaultTextInput.value = '3/20/2020';
@@ -84,6 +87,7 @@ describe('Form field Text dialog', () => {
         expect(dialog.isValidDateFormat()).toBe(false);
     });
     it('Change Type DropDown - Form field Text Dialog', () => {
+console.log('Change Type DropDown - Form field Text Dialog');
         editor.editorModule.insertFormField('Text');
         let event: any = {};
         event.value = 'Number';
@@ -106,6 +110,7 @@ describe('Form field Text dialog', () => {
         expect((dialog as any).textFormatDropDown.dataSource[0]).toBe('Uppercase');
     });
     it('Change Type DropDown isinteracted - Form field Text Dialog', () => {
+console.log('Change Type DropDown isinteracted - Form field Text Dialog');
         editor.editorModule.insertFormField('Text');
         let event: any = {};
         (dialog as any).defaultTextInput.value = 'Sync';

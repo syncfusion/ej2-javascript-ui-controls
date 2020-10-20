@@ -35,23 +35,28 @@ describe('Select list text and delete validation', () => {
         }, 1000);
     });
     it('Select list Text validation', () => {
+console.log('Select list Text validation');
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         expect(editor.selection.contextType).toBe('List');
     });
     it(' Delete after List Text', () => {
+console.log(' Delete after List Text');
         editor.editor.delete();
         expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
     });
     it('undo after delete list Text', () => {
+console.log('undo after delete list Text');
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.getList()).not.toBe(undefined);
     });
     it('redo after delete list Text', () => {
+console.log('redo after delete list Text');
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
     });
     it(' undo operation after Align Center left in empty selection and multiple undo operation', () => {
+console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -87,24 +92,29 @@ describe('Select list text and backspace validation', () => {
         }, 1000);
     });
     it('Select list Text validation', () => {
+console.log('Select list Text validation');
         editor.selection.moveDown();
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         expect(editor.selection.contextType).toBe('List');
     });
     it(' backspace after List Text', () => {
+console.log(' backspace after List Text');
         editor.editor.onBackSpace();
         expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
     });
     it('undo after backspace list Text', () => {
+console.log('undo after backspace list Text');
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.getList()).not.toBe(undefined);
     });
     it('redo after backspace list Text', () => {
+console.log('redo after backspace list Text');
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
     });
     it(' undo operation after backspace list Text and multiple undo,redo operation', () => {
+console.log(' undo operation after backspace list Text and multiple undo,redo operation');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -140,6 +150,7 @@ describe('Enter in between the list paragraph', () => {
         }, 1000);
     });
     it('OnEnter in between the list paragraph', () => {
+console.log('OnEnter in between the list paragraph');
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
@@ -148,18 +159,22 @@ describe('Enter in between the list paragraph', () => {
         expect(editor.selection.paragraphFormat.getList()).not.toBe(undefined);
     });
     it('validation previous paragraph contains list', () => {
+console.log('validation previous paragraph contains list');
         let paragraph: ParagraphWidget = editor.selection.start.paragraph.previousWidget as ParagraphWidget;
         expect(paragraph.paragraphFormat.listFormat.listId).not.toBe(-1);
     });
     it('undo after enter list Text', () => {
+console.log('undo after enter list Text');
         editor.editorHistory.undo();
         expect(editor.selection.start.isAtParagraphEnd).toBe(false);
     });
     it('redo after backspace list Text', () => {
+console.log('redo after backspace list Text');
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.getList()).not.toBe(undefined);
     });
     it(' undo operation after backspace list Text and multiple undo,redo operation', () => {
+console.log(' undo operation after backspace list Text and multiple undo,redo operation');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -194,6 +209,7 @@ describe('Enter at last row of table with allowrowacross pages is false', () => 
         }, 1000);
     });
     it('OnEnter at end of last row with row spanned cell', () => {
+console.log('OnEnter at end of last row with row spanned cell');
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
         editor.editor.onEnter();
@@ -201,12 +217,15 @@ describe('Enter at last row of table with allowrowacross pages is false', () => 
         expect(editor.selection.rowFormat.allowBreakAcrossPages).toBe(false);
     });
     it('undo after OnEnter at end of last row with row spanned cell', () => {
+console.log('undo after OnEnter at end of last row with row spanned cell');
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
     });
     it('redo after OnEnter at end of last row with row spanned cell', () => {
+console.log('redo after OnEnter at end of last row with row spanned cell');
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
     it(' undo operation after OnEnter at end of last row with row spanned cell and multiple undo,redo operation', () => {
+console.log(' undo operation after OnEnter at end of last row with row spanned cell and multiple undo,redo operation');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();

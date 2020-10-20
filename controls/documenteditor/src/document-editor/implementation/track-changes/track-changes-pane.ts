@@ -409,6 +409,10 @@ export class TrackChangesPane {
         if (this.viewTypeDropDownButton) {
             this.viewTypeDropDownButton.destroy();
         }
+        if(this.menuDropDownButton){
+            this.menuDropDownButton.destroy();
+            this.menuDropDownButton = undefined;
+        }
         if (this.userDropDown) {
             this.userDropDown = undefined;
         }

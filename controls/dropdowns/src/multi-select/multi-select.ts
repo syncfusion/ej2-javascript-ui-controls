@@ -1,6 +1,6 @@
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
 import { DropDownBase, SelectEventArgs, dropDownBaseClasses, PopupEventArgs, FilteringEventArgs } from '../drop-down-base/drop-down-base';
-import { ResultData, FocusEventArgs, BeforeOpenEventArgs, FilterType, FieldSettings } from '../drop-down-base/drop-down-base';
+import { FocusEventArgs, BeforeOpenEventArgs, FilterType, FieldSettings } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
@@ -956,18 +956,12 @@ export class MultiSelect extends DropDownBase implements IInput {
                     'data-value',
                     proxy.value[i]);
                 if (!checkEle) {
-                    valuecheck.push(proxy.value[i] as string);
+                    this.value.splice(i, 1);
+                    i -= 1;
                 }
             }
         }
-        if (valuecheck.length > 0 && this.dataSource instanceof DataManager && !isNullOrUndefined(this.value)) {
-            (this.dataSource as DataManager).executeQuery(this.getForQuery(valuecheck)).then((e: Object) => {
-                proxy.addItem((e as ResultData).result, list.length);
-                proxy.updateActionList(ulElement, list, e);
-            });
-        } else {
-            this.updateActionList(ulElement, list, e);
-        }
+        this.updateActionList(ulElement, list, e);
         if (isBlazor() && this.isServerRendered && this.allowFiltering && this.mode === 'CheckBox') {
             this.removeFocus();
         }
@@ -2764,17 +2758,23 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.hiddenElement.innerHTML = '';
         if (!isNullOrUndefined(this.value)) {
             for (let index: number = 0; !isNullOrUndefined(this.value[index]); index++) {
-                let listValue: HTMLElement = this.findListElement(this.mainList, 'li', 'data-value', this.value[index]);
+                let listValue: Element = this.findListElement(
+                    ((!isNullOrUndefined(this.mainList)) ? this.mainList : this.ulElement),
+                    'li',
+                    'data-value',
+                    this.value[index]);
                 if (!(isBlazor() && this.isServerRendered) && isNullOrUndefined(listValue) && !this.allowCustomValue) {
                     this.value.splice(index, 1);
-                }
-                if (this.listData) {
-                    temp = this.getTextByValue(this.value[index]);
+                    index -= 1;
                 } else {
-                    temp = <string>this.value[index];
+                    if (this.listData) {
+                        temp = this.getTextByValue(this.value[index]);
+                    } else {
+                        temp = <string>this.value[index];
+                    }
+                    data += temp + delimiterChar + ' ';
+                    text.push(temp);
                 }
-                data += temp + delimiterChar + ' ';
-                text.push(temp);
                 this.hiddenElement.innerHTML += '<option selected value ="' + this.value[index] + '">' + index + '</option>';
             }
         }
@@ -3810,6 +3810,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         oldProp: string[] | boolean[] | number[],
         prop: string): void {
         if (!this.list) {
+            this.onLoadSelect();
+        } else if ((this.dataSource instanceof DataManager) && (!this.listData || !(this.mainList && this.mainData))) {
             this.onLoadSelect();
         } else if (!this.inputFocus) {
             if (prop === 'text') {

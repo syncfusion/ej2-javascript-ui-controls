@@ -649,10 +649,11 @@ var DropDownTree = /** @class */ (function (_super) {
                 element: this.element
             };
             this.trigger('change', eventArgs);
+            this.oldValue = this.value;
         }
     };
     DropDownTree.prototype.ddtCompareValues = function (oldValue, newValue) {
-        if (oldValue === null || oldValue.length === 0) {
+        if (oldValue === null || newValue === null) {
             var isValid = oldValue === null ? ((newValue === oldValue) ? true : false) :
                 (oldValue.length === 0 ? (newValue === oldValue) : false);
             return isValid;
@@ -828,7 +829,10 @@ var DropDownTree = /** @class */ (function (_super) {
     DropDownTree.prototype.resetValueHandler = function (e) {
         var formElement = sf.base.closest(this.inputWrapper, 'form');
         if (formElement && e.target === formElement) {
+            this.isDynamicChange = true;
+            this.setProperties({ value: null }, true);
             this.resetValue(true);
+            this.isDynamicChange = false;
         }
     };
     DropDownTree.prototype.getAriaAttributes = function () {
@@ -1996,7 +2000,7 @@ var DropDownTree = /** @class */ (function (_super) {
     };
     DropDownTree.prototype.setMultiSelect = function () {
         if (this.showCheckBox && !this.isDynamicChange) {
-            this.setMultiSelectValue(this.treeObj.checkedNodes);
+            this.setMultiSelectValue(this.treeObj.checkedNodes.slice());
         }
         else {
             var ddtValue = this.allowMultiSelection ? (this.showCheckBox ? this.treeObj.checkedNodes
@@ -2251,9 +2255,11 @@ var DropDownTree = /** @class */ (function (_super) {
     };
     DropDownTree.prototype.resetValue = function (isDynamicChange) {
         sf.inputs.Input.setValue(null, this.inputEle, this.floatLabelType);
-        this.oldValue = this.value;
+        if (!isDynamicChange) {
+            this.oldValue = this.value;
+            this.setProperties({ value: [] }, true);
+        }
         this.dataValue = null;
-        this.setProperties({ value: [] }, true);
         this.setProperties({ text: null }, true);
         this.selectedData = [];
         sf.base.setValue('selectedNodes', [], this.treeObj);
@@ -2271,11 +2277,14 @@ var DropDownTree = /** @class */ (function (_super) {
         }
         if ((this.allowMultiSelection || this.showCheckBox) && this.chipWrapper) {
             this.chipCollection.innerHTML = '';
+            if (!this.wrapText) {
+                this.updateOverflowWrapper(true);
+            }
             this.ensurePlaceHolder();
         }
     };
     DropDownTree.prototype.clearCheckAll = function () {
-        if (this.showSelectAll && this.value.length === 0) {
+        if (this.showSelectAll && this.value && this.value.length === 0) {
             this.setLocale(false);
         }
     };
@@ -2468,6 +2477,7 @@ var DropDownTree = /** @class */ (function (_super) {
         }
     };
     DropDownTree.prototype.updateValue = function (value) {
+        this.isDynamicChange = true;
         if (sf.base.isNullOrUndefined(value) || value.length === 0) {
             this.resetValue(true);
         }
@@ -2479,6 +2489,7 @@ var DropDownTree = /** @class */ (function (_super) {
             }
         }
         this.updateHiddenValue();
+        this.isDynamicChange = false;
     };
     DropDownTree.prototype.updateText = function (text) {
         if (sf.base.isNullOrUndefined(text)) {
@@ -2573,6 +2584,7 @@ var DropDownTree = /** @class */ (function (_super) {
                     this.updateFilterPlaceHolder();
                     break;
                 case 'value':
+                    this.oldValue = oldProp.value;
                     this.updateValue(newProp.value);
                     break;
                 case 'text':

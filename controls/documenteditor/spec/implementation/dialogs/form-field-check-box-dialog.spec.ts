@@ -37,6 +37,7 @@ describe('Form field CheckBox dialog', () => {
         }, 2000);
     });
     it('Insert Form field Checkbox Dialog', () => {
+console.log('Insert Form field Checkbox Dialog');
         editor.editorModule.insertFormField('CheckBox');
         (dialog as any).checkedButton.checked = true;
         (dialog as any).exactButton.checked = true;
@@ -56,6 +57,7 @@ describe('Form field CheckBox dialog', () => {
         expect(fieldData.enabled).toBe(false);
     });
     it('Load Values - Form field Checkbox Dialog', () => {
+console.log('Load Values - Form field Checkbox Dialog');
         editor.editorModule.insertFormField('CheckBox');
         editor.selection.selectAll();
         dialog.loadCheckBoxDialog();
@@ -71,6 +73,7 @@ describe('Form field CheckBox dialog', () => {
         expect(fieldData.enabled).toBe((dialog as any).checBoxEnableElement.checked);
     });
     it('Change Bidrirectional - Form field Checkbox Dialog', () => {
+console.log('Change Bidrirectional - Form field Checkbox Dialog');
         (dialog as any).exactButton.checked = true;
         let event: any = {};
         event.value = 'exact';
@@ -82,6 +85,7 @@ describe('Form field CheckBox dialog', () => {
         expect((dialog as any).exactButton.checked).toBe(true);
     });
     it('Change Bidrirect - Form field Checkbox Dialog', () => {
+console.log('Change Bidrirect - Form field Checkbox Dialog');
         (dialog as any).checkedButton.checked = true;
         let event: any = {};
         event.value = 'check';

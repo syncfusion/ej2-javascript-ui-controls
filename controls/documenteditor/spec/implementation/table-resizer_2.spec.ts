@@ -35,6 +35,7 @@ describe('Nested Table Row Resizing validation and After merge cell resize cell 
         }, 1000);
     });
     it('Nested Table Row Resizing validation', () => {
+console.log('Nested Table Row Resizing validation');
         documentHelper = editor.documentHelper;
         editor.editor.insertTable(2, 2);
         editor.editor.insertTable(2, 2);
@@ -47,6 +48,7 @@ describe('Nested Table Row Resizing validation and After merge cell resize cell 
         expect(editor.editorModule.tableResize.resizerPosition).toBe(0);
     });
     it('After merge cell resize cell at middle validation', () => {
+console.log('After merge cell resize cell at middle validation');
         documentHelper = editor.documentHelper;
         editor.openBlank();
         editor.editor.insertTable(2, 2);
@@ -92,6 +94,7 @@ describe('After resize cell validation without selection', () => {
         }, 1000);
     });
     it('Resize without selection', () => {
+console.log('Resize without selection');
         documentHelper = editor.documentHelper;
         editor.openBlank();
         editor.editor.insertTable(2, 2);
@@ -107,6 +110,7 @@ describe('After resize cell validation without selection', () => {
         expect(((editor.selection.tableFormat.table.childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).cellFormat.cellWidth).toBe(468);
     });
     it('Resize without selection and merge cell in first column', () => {
+console.log('Resize without selection and merge cell in first column');
         documentHelper = editor.documentHelper;
         editor.openBlank();
         editor.editor.insertTable(2, 2);
@@ -150,6 +154,7 @@ describe('After resize cell validation with selection', () => {
         }, 1000);
     });
     it('Resize with selection', () => {
+console.log('Resize with selection');
         documentHelper = editor.documentHelper;
         editor.openBlank();
         editor.editor.insertTable(2, 2);
@@ -190,6 +195,7 @@ describe('Table Column resizing validation with selection', () => {
         }, 1000);
     });
     it('Resize Table Row', () => {
+console.log('Resize Table Row');
         editor.editor.insertTable(2, 2);
         let event: any = { offsetX: 557, offsetY: 134, preventDefault: function () { }, ctrlKey: false, which: 1 };
         editor.documentHelper.onMouseDownInternal(event);
@@ -238,6 +244,7 @@ describe('Table Column resizing validation with selection', () => {
         }, 1000);
     });
     it('Resize Table column with left column selection ', () => {
+console.log('Resize Table column with left column selection ');
         editor.editor.insertTable(2, 2);
         editor.selection.handleShiftDownKey();
         let event: any = { offsetX: 631, offsetY: 142, preventDefault: function () { }, ctrlKey: false, which: 1 };
@@ -258,6 +265,7 @@ describe('Table Column resizing validation with selection', () => {
         expect(((editor.selection.tableFormat.table.childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).cellFormat.cellWidth).toBeGreaterThan(234);
     });
     it('Resize Table column with right column selection ', () => {
+console.log('Resize Table column with right column selection ');
         editor.editor.insertTable(2, 2);
         editor.selection.handleRightKey();
         editor.selection.handleShiftDownKey();

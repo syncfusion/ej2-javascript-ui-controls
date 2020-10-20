@@ -18282,6 +18282,7 @@ describe('Document Layout behaviour validation', () => {
         }, 1000);
     });
     it('Paragraph and table layouting validation', () => {
+console.log('Paragraph and table layouting validation');
         editor.open(getJson());
     });
 });
@@ -18308,6 +18309,7 @@ describe('Tab Character width calculation', () => {
         }, 1000);
     });
     it('Layout tab character left alignmen', () => {
+console.log('Layout tab character left alignmen');
         let section: BodyWidget = new BodyWidget();
         section.index = 0;
         section.sectionFormat = new WSectionFormat(section);
@@ -18356,6 +18358,7 @@ describe('Tab Character width calculation', () => {
         expect(textElement.width + tabElement.width).toBe(HelperMethods.convertPointToPixel(tabStop.position));
     });
     it('Layout tab character center alignmen', () => {
+console.log('Layout tab character center alignmen');
         let section: BodyWidget = new BodyWidget();
         section.index = 0;
         section.sectionFormat = new WSectionFormat(section);
@@ -18406,6 +18409,7 @@ describe('Tab Character width calculation', () => {
         expect(textElement.width + tabElement.width + currentElement.width / 2).toBe(HelperMethods.convertPointToPixel(tabStop.position));
     });
     it('Layout tab character Right alignmen', () => {
+console.log('Layout tab character Right alignmen');
         let section: BodyWidget = new BodyWidget();
         section.index = 0;
         section.sectionFormat = new WSectionFormat(section);

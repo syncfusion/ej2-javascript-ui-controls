@@ -30,22 +30,27 @@ describe('Selection API', () => {
         }, 750);
     });
     it('isTable Selected false', () => {
+console.log('isTable Selected false');
         expect(editor.selection.isTableSelected()).toBe(false);
     });
     it('isTableSelected API inside table', () => {
+console.log('isTableSelected API inside table');
         editor.editor.insertTable(2, 2);
         expect(editor.selection.isTableSelected()).toBe(false);
     });
     it('IsTableSelected API by selecting single column', () => {
+console.log('IsTableSelected API by selecting single column');
         editor.selection.selectColumn();
         expect(editor.selection.isTableSelected()).toBe(false);
     });
     it('IsTableSelected API by selecting single row', () => {
+console.log('IsTableSelected API by selecting single row');
         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
         editor.selection.selectRow();
         expect(editor.selection.isTableSelected()).toBe(false);
     });
     it('IsTableSelected API by selecting whole table', () => {
+console.log('IsTableSelected API by selecting whole table');
         editor.selection.selectTable();
         expect(editor.selection.isTableSelected()).toBe(true);
     });
@@ -74,6 +79,7 @@ describe('Para mark selection validation', () => {
         }, 750);
     });
     it('using shift home key', () => {
+console.log('using shift home key');
         editor.editorModule.insertText('sample');
         editor.selection.handleShiftHomeKey();
         editor.selection.characterFormat.bold = true;
@@ -103,6 +109,7 @@ describe('Bookmarks API validation', () => {
         }, 750);
     });
     it('selection at start of bookmark', () => {
+console.log('selection at start of bookmark');
         editor.editorModule.insertText('sample');
         editor.selection.selectAll();
         editor.editor.insertBookmark('s');
@@ -110,6 +117,7 @@ describe('Bookmarks API validation', () => {
         expect(editor.selection.bookmarks.length).toBe(0);
     });
     it('selection at end of bookmark', () => {
+console.log('selection at end of bookmark');
         editor.selection.handleEndKey();
         expect(editor.selection.bookmarks.length).toBe(0);
     });

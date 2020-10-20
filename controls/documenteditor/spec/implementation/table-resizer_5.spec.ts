@@ -36,6 +36,7 @@ describe('Table column resizing validation after merge cell', () => {
         }, 1000);
     });
     it('resizer position at 1', () => {
+console.log('resizer position at 1');
         let prevPrefferedWidth: number = editor.selection.start.paragraph.associatedCell.cellFormat.preferredWidth;
         editor.editor.tableResize.resizerPosition = 1;
         editor.editor.tableResize.currentResizingTable = editor.selection.start.paragraph.associatedCell.ownerTable;
@@ -72,6 +73,7 @@ describe('Table column resizing validation after merge cell decrease width', () 
         }, 1000);
     });
     it('resizer position at 1  decrease width', () => {
+console.log('resizer position at 1  decrease width');
         let prevPrefferedWidth: number = editor.selection.start.paragraph.associatedCell.cellFormat.preferredWidth;
         editor.editor.tableResize.resizerPosition = 1;
         editor.editor.tableResize.currentResizingTable = editor.selection.start.paragraph.associatedCell.ownerTable;
@@ -109,6 +111,7 @@ describe('Table column resizing validation after merge cell with selection', () 
         }, 1000);
     });
     it('resizer position at 1 with selection', () => {
+console.log('resizer position at 1 with selection');
         let prevPrefferedWidth: number = editor.selection.start.paragraph.associatedCell.cellFormat.preferredWidth;
         editor.editor.tableResize.resizerPosition = 1;
         editor.editor.tableResize.currentResizingTable = editor.selection.start.paragraph.associatedCell.ownerTable;
@@ -123,6 +126,7 @@ describe('Table column resizing validation after merge cell with selection', () 
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.preferredWidth).toBeCloseTo(prevPrefferedWidth + 20);
     });
     it('restrict table resizer in protected document', () => {
+console.log('restrict table resizer in protected document');
         editor.openBlank();
         editor.editor.insertText('Hello world');
         editor.selection.extendToWordStart();

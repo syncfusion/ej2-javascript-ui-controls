@@ -1643,7 +1643,10 @@ let QueryBuilder = class QueryBuilder extends Component {
                 }
                 else {
                     if (operator !== 'in' && operator !== 'notin') {
-                        ruleValElem.style.width = '200px';
+                        addClass([ruleValElem], 'e-custom-value');
+                    }
+                    else {
+                        removeClass([ruleValElem], 'e-custom-value');
                     }
                 }
                 for (let i = 0; i < length; i++) {
@@ -3732,9 +3735,15 @@ let QueryBuilder = class QueryBuilder extends Component {
             this.parser.push(['Right', ')']);
             return 1;
         }
+        //Boolean
+        if (/^(true|false)/.exec(sqlString)) {
+            matchValue = /^(true|false)/.exec(sqlString)[0];
+            this.parser.push(['String', matchValue]);
+            return matchValue.length;
+        }
         //Literals
-        if (/^`?([a-z_][a-z0-9_.]{0,}(\:(number|float|string|date|boolean))?)`?/i.exec(sqlString)) {
-            matchValue = /^`?([a-z_][a-z0-9_.]{0,}(\:(number|float|string|date|boolean))?)`?/i.exec(sqlString)[1];
+        if (/^`?([a-z_][a-z0-9_.\[\]\(\)]{0,}(\:(number|float|string|date|boolean))?)`?/i.exec(sqlString)) {
+            matchValue = /^`?([a-z_][a-z0-9_.\[\]\(\)]{0,}(\:(number|float|string|date|boolean))?)`?/i.exec(sqlString)[1];
             this.parser.push(['Literal', matchValue]);
             return matchValue.length;
         }

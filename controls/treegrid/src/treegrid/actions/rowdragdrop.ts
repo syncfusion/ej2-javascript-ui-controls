@@ -151,7 +151,8 @@ export class RowDD {
                         draggedRecord.taskData[tObj.childMapping] = [];
                 }
                 if (draggedRecord.hasOwnProperty(tObj.childMapping) &&
-                    ((draggedRecord[tObj.childMapping]) as ITreeData[]).length && !this.isDraggedWithChild) {
+                    ((draggedRecord[tObj.childMapping]) as ITreeData[]).length && !this.isDraggedWithChild &&
+                    !isNullOrUndefined(tObj.parentIdMapping)) {
                         let childData: ITreeData[] = (draggedRecord[tObj.childMapping]) as ITreeData[];
                         for (let j: number = 0; j < childData.length; j++) {
                             if (dragRecords.indexOf(childData[j]) === -1) {
@@ -647,6 +648,7 @@ export class RowDD {
                 let record: ITreeData = (tObj.getCurrentViewRecords()[rowIndex] as ITreeData);
                 this.getParentData(record);
             } else {
+                args.dropIndex = args.dropIndex === args.fromIndex ? this.getTargetIdx(args.target.parentElement) : args.dropIndex;
                 this.droppedRecord = tObj.getCurrentViewRecords()[args.dropIndex];
             }
             let dragRecords: ITreeData[] = [];

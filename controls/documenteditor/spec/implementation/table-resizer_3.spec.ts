@@ -44,6 +44,7 @@ describe('Table Cell Resizing With Final Cell Selection testing', () => {
         }, 1000);
     });
     it('Resize Table Cell in Final Row Drag Value Testing ', () => {
+console.log('Resize Table Cell in Final Row Drag Value Testing ');
         editor.editor.insertTable(2, 3);
         let startPosition: TextPosition = getTextPosition(editor, '0;0;0;1;1;0;0;0');
         let endPosition: TextPosition = getTextPosition(editor, '0;0;0;1;1;0;0;1');
@@ -61,6 +62,7 @@ describe('Table Cell Resizing With Final Cell Selection testing', () => {
         editor.editorHistory.redo();
     });
     it('Resize Table Cell With Selection table cell Spacing Resizing Testing ', () => {
+console.log('Resize Table Cell With Selection table cell Spacing Resizing Testing ');
         editor.editor.insertTable(3, 3);
         let table: TableWidget = editor.selection.start.paragraph.associatedCell.ownerTable;
         table.tableFormat.cellSpacing = 10;
@@ -108,6 +110,7 @@ describe('Cell Width Restricting on cell Resizing testing', () => {
         }, 1000);
     });
     it('Resize Table Without Selection on Zero index Testing', () => {
+console.log('Resize Table Without Selection on Zero index Testing');
         editor.editor.insertTable(2, 3);
         let event: any = { offsetX: 320, offsetY: 126, preventDefault: function () { }, ctrlKey: false, which: 1 };
         editor.documentHelper.onMouseDownInternal(event);
@@ -123,6 +126,7 @@ describe('Cell Width Restricting on cell Resizing testing', () => {
         editor.editorHistory.redo();
     });
     it('Resize table without selection on middle index testing', () => {
+console.log('Resize table without selection on middle index testing');
         editor.editor.insertTable(3, 3);
         let event: any = { offsetX: 736, offsetY: 145, preventDefault: function () { }, ctrlKey: false, which: 1 };
         editor.documentHelper.onMouseDownInternal(event);
@@ -166,6 +170,7 @@ describe('Cell Width Restricting on cell Resizing With Selection testing', () =>
         }, 1000);
     });
     it('Resize Table With Selection on Zero index Testing', () => {
+console.log('Resize Table With Selection on Zero index Testing');
         editor.editor.insertTable(2, 3);
         let startPosition: TextPosition = getTextPosition(editor, '0;0;0;0;0;0;0;0');
         let endPosition: TextPosition = getTextPosition(editor, '0;0;0;0;1;0;0;1');
@@ -864,6 +869,7 @@ describe('Table Cell resizing testing at cell resizer position at 0 with selecti
         }, 1000);
     });
     it('Table with leftindent > 0 and selection in first column test resizer at position 0', () => {
+console.log('Table with leftindent > 0 and selection in first column test resizer at position 0');
         editor.open(getJson());
         documentHelper = editor.documentHelper;
         editor.selection.handleShiftDownKey();
@@ -882,6 +888,7 @@ describe('Table Cell resizing testing at cell resizer position at 0 with selecti
         editor.editorHistory.redo();
     });
     it('Table with leftindent > 0 and selection in first column test resizer at position 0', () => {
+console.log('Table with leftindent > 0 and selection in first column test resizer at position 0');
         editor.open(getJson());
         documentHelper = editor.documentHelper;
         editor.selection.handleShiftDownKey();

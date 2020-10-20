@@ -29,11 +29,11 @@ import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, Tabl
 import { SpellChecker } from './implementation/spell-check/spell-checker';
 import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';
 // tslint:disable-next-line:max-line-length
-import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel } from './document-editor-model';
+import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel, CollaborativeEditingSettingsModel } from './document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper } from './index';
 import { PasteOptions } from './index';
 // tslint:disable-next-line:max-line-length
-import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo } from './implementation/index';
+import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs } from './implementation/index';
 import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';
 import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';
 import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs } from './base';
@@ -66,6 +66,12 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      */
     @Property({ shadingColor: '#cfcfcf', applyShading: true, selectionColor: '#cccccc', formFillingMode: 'Popup' })
     public formFieldSettings: FormFieldSettingsModel;
+
+    /**
+     * Collaborative editing settings.
+     */
+    @Property({ roomName: '', editableRegionColor: '#22b24b', lockedRegionColor: '#f44336' })
+    public collaborativeEditingSettings: CollaborativeEditingSettingsModel;
 }
 
 /**
@@ -231,6 +237,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public searchModule: Search;
     private createdTriggered: boolean = false;
+    /**
+     * Collaborative editing module
+     */
+    public collaborativeEditingModule: CollaborativeEditing;
     /**
      * Default Paste Formatting Options
      * @default KeepSourceFormatting
@@ -510,6 +520,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     @Property(false)
     public enableLocalPaste: boolean;
     /**
+     * Enable partial lock and edit module.
+     * @default false
+     */
+    @Property(false)
+    public enableLockAndEdit: boolean;
+    /**
      * Defines the settings for DocumentEditor customization.
      * @default {}
      */
@@ -519,7 +535,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Defines the settings of the DocumentEditor services
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
+    @Property({ systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing', canLock: 'CanLock', getPendingActions: 'GetPendingActions' })
     public serverActionSettings: ServerActionSettingsModel;
 
     /**
@@ -687,12 +703,17 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     @Event()
     public afterFormFieldFill: EmitType<FormFieldFillEventArgs>;
     /**
+     * Triggers when the document editor collaborative actions (such as LockContent, SaveContent, UnlockContent) gets completed. 
+     * @event
+     */
+    @Event()
+    public actionComplete: EmitType<CollaborativeEditingEventArgs>;
+    /**
      * Triggers when user interaction prevented in content control.
      * @event
      */
     @Event()
     public contentControl: EmitType<Object>;
-
     /**
      * @private
      */
@@ -951,6 +972,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     if (this.selection && this.documentHelper.isDocumentProtected) {
                         this.selection.highlightEditRegion();
                     }
+                    this.viewer.updateScrollBars();
                     break;
                 case 'pageGap':
                 case 'pageOutline':
@@ -968,6 +990,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     if (this.viewer) {
                         this.documentHelper.showComments(model.showComments);
                     }
+                    this.viewer.updateScrollBars();
                     break;
                 case 'enableRtl':
                     this.localizeDialogs(model.enableRtl);
@@ -980,7 +1003,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     this.viewer.updateScrollBars();
                     break;
                 case 'showRevisions':
-                    if (this.viewer) {
+                    if (this.isReadOnly || this.documentHelper.isDocumentProtected) {
+                        this.showRevisions = false;
+                        this.documentHelper.showRevisions(false);
+                    } else if (this.viewer) {
                         this.documentHelper.showRevisions(model.showRevisions);
                     }
                     this.viewer.updateScrollBars();
@@ -1105,6 +1131,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public fireContentChange(): void {
+        if (this.enableLockAndEdit && this.collaborativeEditingModule) {
+            this.collaborativeEditingModule.saveContent();
+        }
         let eventArgs: ContentChangeEventArgs = { source: isBlazor() ? null : this };
         this.trigger('contentChange', eventArgs);
     }
@@ -1112,6 +1141,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public fireDocumentChange(): void {
+        if (this.enableLockAndEdit && this.enableEditor) {
+            this.editor.enforceProtection('', false, true);
+        }
         let eventArgs: DocumentChangeEventArgs = { source: isBlazor() ? null : this };
         this.trigger('documentChange', eventArgs);
     }
@@ -1315,6 +1347,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     //tslint:disable: max-func-body-length
     protected requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
+
+        if (this.enableLockAndEdit) {
+            modules.push({
+                member: 'CollaborativeEditing', args: [this]
+            });
+        }
         if (this.enablePrint) {
             modules.push({
                 member: 'Print', args: []
@@ -1820,7 +1858,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'View': 'View',
         'Insertion': 'Insertion',
         'Deletion': 'Deletion',
-        'All caps': 'All caps'
+        'All caps': 'All caps',
+        'This region is locked by': 'This region is locked by',
+        'Lock': 'Lock',
+        'Unlock': 'Unlock',
+        'Already locked': 'Selected or part of region is already locked by another user'
     };
     // Public Implementation Starts
     /**
@@ -2440,6 +2482,20 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
      */
     @Property('RestrictEditing')
     public restrictEditing: string;
+
+    /**
+     * Specifies the server action name to lock selected region. 
+     * @default 'CanLock'
+     */
+    @Property('CanLock')
+    public canLock: string;
+
+    /**
+     * Specified the server action name to pull pending actions. 
+     * @default 'GetPendingActions'
+     */
+    @Property('GetPendingActions')
+    public getPendingActions: string;
 }
 
 /**
@@ -2482,6 +2538,35 @@ export class FormFieldSettings extends ChildProperty<FormFieldSettings> {
     public formattingExceptions: FormattingExceptions[];
 }
 
+/**
+ * Collaborative editing settings.
+ */
+export class CollaborativeEditingSettings extends ChildProperty<CollaborativeEditingSettings> {
+    /**
+     * Get or set collaborative editing room name.
+     * @default ''
+     */
+    @Property('')
+    public roomName: string;
+
+    /**
+     * Get or set editable region color.
+     */
+    @Property('#22b24b')
+    public editableRegionColor: string;
+
+    /**
+     * Get or set locked region color.
+     */
+    @Property('#f44336')
+    public lockedRegionColor: string;
+
+    /**
+     * Get or set timeout for syncing content in milliseconds.
+     */
+    @Property(3000)
+    public saveTimeout: number;
+}
 
 
 /**
@@ -2495,7 +2580,3 @@ export class ContainerServerActionSettings extends ServerActionSettings {
     @Property('Import')
     public import: string;
 }
-
-
-
-

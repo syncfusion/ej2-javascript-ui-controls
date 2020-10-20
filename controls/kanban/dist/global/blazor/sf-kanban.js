@@ -208,6 +208,10 @@ var DragAndDrop = /** @class */ (function () {
     DragAndDrop.prototype.dragStop = function (e) {
         var contentCell = sf.base.closest(this.dragObj.targetClone, '.' + CONTENT_CELLS_CLASS);
         var columnKey;
+        var dropIndex;
+        if (this.dragObj.targetClone.parentElement) {
+            dropIndex = [].slice.call(this.dragObj.targetClone.parentElement.children).indexOf(this.dragObj.targetClone);
+        }
         if (this.parent.element.querySelector('.' + TARGET_MULTI_CLONE_CLASS)) {
             columnKey = sf.base.closest(e.target, '.' + MULTI_COLUMN_KEY_CLASS);
         }
@@ -235,7 +239,7 @@ var DragAndDrop = /** @class */ (function () {
                     cardId_1.push(element.getAttribute('data-id'));
                 });
             }
-            this.parent.dotNetRef.invokeMethodAsync('DragStop', cardId_1, cardStatus, swimData);
+            this.parent.dotNetRef.invokeMethodAsync('DragStop', cardId_1, cardStatus, swimData, dropIndex);
         }
         this.removeElement(this.dragObj.draggedClone);
         this.removeElement(this.dragObj.targetClone);

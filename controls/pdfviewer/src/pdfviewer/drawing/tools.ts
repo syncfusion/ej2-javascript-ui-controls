@@ -387,8 +387,6 @@ export class SelectTool extends ToolBase {
         if (!isLock) {
             // tslint:disable-next-line
             let currentSelctor: any;
-            // tslint:disable-next-line
-            let annotation: any = this.commandHandler.selectedItems.annotations[0];
             if ((args.source as PdfAnnotationBaseModel) && (args as PdfAnnotationBaseModel).annotationSelectorSettings !== null) {
                 currentSelctor = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
             } else {
@@ -396,21 +394,25 @@ export class SelectTool extends ToolBase {
             }
             if (this.commandHandler) {
                 let selectedObject: SelectorModel = this.commandHandler.selectedItems;
-                let currentSource: PdfAnnotationBaseModel = args.source as PdfAnnotationBaseModel;
-                if ((selectedObject.annotations.length) && args.info && !args.info.ctrlKey
+                if (selectedObject) {
                     // tslint:disable-next-line
-                    && this.commandHandler.annotationModule && this.commandHandler.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus === false) {
-                    this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
-                    // tslint:disable-next-line:max-line-length
-                } else if (args.info && args.info.ctrlKey && ((currentSource && currentSource.shapeAnnotationType === 'FreeText') || (this.commandHandler.selectedItems.annotations[0] && this.commandHandler.selectedItems.annotations[0].shapeAnnotationType === 'FreeText'))) {
-                    this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
-                }
-                if (object) {
-                    this.commandHandler.select([(object as PdfAnnotationBaseModel).id], currentSelctor);
-                    this.commandHandler.viewerBase.isAnnotationMouseDown = true;
-                }
-                if (selectedObject.annotations.length === 0 && annotation && annotation.shapeAnnotationType !== 'Stamp') {
-                    this.commandHandler.fireAnnotationUnSelect(annotation.annotName, annotation.pageIndex, annotation);
+                    let annotation: any = this.commandHandler.selectedItems.annotations[0];
+                    let currentSource: PdfAnnotationBaseModel = args.source as PdfAnnotationBaseModel;
+                    if ((selectedObject.annotations.length) && args.info && !args.info.ctrlKey
+                        // tslint:disable-next-line
+                        && this.commandHandler.annotationModule && this.commandHandler.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus === false) {
+                        this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+                        // tslint:disable-next-line:max-line-length
+                    } else if (args.info && args.info.ctrlKey && ((currentSource && currentSource.shapeAnnotationType === 'FreeText') || (this.commandHandler.selectedItems.annotations[0] && this.commandHandler.selectedItems.annotations[0].shapeAnnotationType === 'FreeText'))) {
+                        this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+                    }
+                    if (object) {
+                        this.commandHandler.select([(object as PdfAnnotationBaseModel).id], currentSelctor);
+                        this.commandHandler.viewerBase.isAnnotationMouseDown = true;
+                    }
+                    if (selectedObject.annotations.length === 0 && annotation && annotation.shapeAnnotationType !== 'Stamp') {
+                        this.commandHandler.fireAnnotationUnSelect(annotation.annotName, annotation.pageIndex, annotation);
+                    }
                 }
             }
         }

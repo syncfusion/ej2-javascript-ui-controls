@@ -299,6 +299,7 @@ describe('Text Search module testing', () => {
         }, 1000);
     });
     it('field end validation testing', () => {
+console.log('field end validation testing');
         editor.open(getJson());
         let optionsPane = editor.optionsPaneModule;
         editor.showOptionsPane();
@@ -330,6 +331,7 @@ describe('Get text search item hierarchical index', () => {
         }, 1000);
     });
     it('field end validation testing', () => {
+console.log('field end validation testing');
         editor.open(getJson());
         let optionsPane = editor.optionsPaneModule;
         editor.showOptionsPane();

@@ -123,7 +123,7 @@ export class Toolbar {
         }
         let toolbarContainer: HTMLElement = this.container.toolbarContainer;
         let toolbarWrapper: HTMLElement = createElement('div', { className: 'e-de-tlbr-wrapper' });
-        let toolbarTarget: HTMLElement = createElement('div', { className: 'e-de-toolbar'});
+        let toolbarTarget: HTMLElement = createElement('div', { className: 'e-de-toolbar' });
         this.initToolbarItems();
         toolbarWrapper.appendChild(toolbarTarget);
         toolbarContainer.appendChild(toolbarWrapper);
@@ -167,7 +167,7 @@ export class Toolbar {
                 select: this.onDropDownButtonSelect.bind(this),
             };
             this.imgDropDwn = new DropDownButton(items, imageButton as HTMLButtonElement);
-            }
+        }
 
         if (this.toolbarItems.indexOf('Break') >= 0) {
             let breakButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-break-splitbutton')[0].firstChild as HTMLElement;
@@ -180,7 +180,7 @@ export class Toolbar {
                 select: this.onDropDownButtonSelect.bind(this),
             };
             this.breakDropDwn = new DropDownButton(items, breakButton as HTMLButtonElement);
-            }
+        }
 
 
         this.filePicker = createElement('input', {
@@ -210,7 +210,7 @@ export class Toolbar {
                 select: this.onDropDownButtonSelect.bind(this)
             };
             this.restrictDropDwn = new DropDownButton(items, restrictEditing as HTMLButtonElement);
-            }
+        }
         if (this.toolbarItems.indexOf('FormFields') >= 0) {
             let breakButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-formfields')[0].firstChild as HTMLElement;
             let items: DropDownButtonModel = {
@@ -222,8 +222,8 @@ export class Toolbar {
                 select: this.onDropDownButtonSelect.bind(this),
             };
             this.formFieldDropDown = new DropDownButton(items, breakButton as HTMLButtonElement);
-            }
         }
+    }
 
     private showHidePropertiesPane(): void {
         let paneDiv: HTMLElement = document.getElementsByClassName('e-de-ctnr-properties-pane-btn')[0] as HTMLButtonElement;
@@ -649,6 +649,15 @@ export class Toolbar {
     /**
      * @private
      */
+    public enableDisableFormField(enable: boolean): void {
+        let ele: HTMLElement = document.getElementById('container_toolbar_form_fields');
+        if (!isNullOrUndefined(ele)) {
+            this.toolbar.enableItems(ele.parentElement, enable);
+        }
+    }
+    /**
+     * @private
+     */
     public enableDisableInsertComment(enable: boolean): void {
         this.isCommentEditing = !enable;
         let id: string = this.container.element.id + TOOLBAR_ID;
@@ -711,11 +720,17 @@ export class Toolbar {
                 this.toolbar.enableItems(element.parentElement, enable);
             }
         }
+        if (!isNullOrUndefined(this.documentEditor)) {
+            this.enableDisableFormField(!this.documentEditor.enableHeaderAndFooter && enable && !this.documentEditor.isReadOnlyMode);
+        }
         if (!isProtectedContent || this.container.showPropertiesPane) {
             if (isProtectedContent) {
                 enable = this.container.showPropertiesPane;
             }
             classList(this.propertiesPaneButton.element.parentElement, !enable ? ['e-de-overlay'] : [], !enable ? [] : ['e-de-overlay']);
+        }
+        if (this.documentEditor.isReadOnly || this.documentEditor.documentHelper.isDocumentProtected) {
+            this.documentEditor.showRevisions = false;
         }
         if (enable || (this.documentEditor.documentHelper.isDocumentProtected &&
             this.documentEditor.documentHelper.protectionType === 'FormFieldsOnly')) {

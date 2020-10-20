@@ -1215,6 +1215,32 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return text;
     }
 
+    /** @hidden */
+    public getCellFrom(range: string): string {
+            let cellRange: string = '';
+            let cells: string[] = range.indexOf(':') > -1 ? range.split(':') : [range];
+            //this.getCellsFromArgs(range);
+            let last: number = cells.length - 1;
+            let r1: number = this.rowIndex(cells[0]);
+            let x: number;
+            if (r1 === this.rowIndex(cells[last])) {
+                let c1: number = this.colIndex(cells[0]);
+                let c2: number = this.colIndex(cells[last]);
+                let c: number = this.colIndex(this.cell);
+                if (c >= c1 && c <= c2) {
+                    cellRange = getAlphalabel(c).toString() + r1.toString();
+                }
+            } else if (this.colIndex(cells[0]) === this.colIndex(cells[last])) {
+                x = this.colIndex(cells[0]);
+                let r2: number = this.rowIndex(cells[last]);
+                let r: number = this.rowIndex(this.cell);
+                if (r >= r1 && r <= r2) {
+                    cellRange = getAlphalabel(x).toString() + r.toString();
+                }
+            }
+            return cellRange;
+        }
+
     /* tslint:disable-next-line:max-func-body-length */
     private computeValue(pFormula: string): string {
         try {
@@ -1257,7 +1283,33 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         s = s + pFormula[i];
                         i = i + 1;
                     }
-                    s = sheet + s;
+                    if (i < pFormula.length && pFormula[i] === ':') {
+                        s = s + pFormula[i];
+                        i = i + 1;
+                        if (i < pFormula.length && pFormula[i] === this.sheetToken) {
+                            s = s + pFormula[i];
+                            i = i + 1;
+                            while (i < pFormula.length && pFormula[i] !== this.sheetToken) {
+                                s = s + pFormula[i];
+                                i = i + 1;
+                            }
+                        }
+                        while (i < pFormula.length) {
+                            if (this.isUpperChar(pFormula[i])) {
+                                s = s + pFormula[i];
+                                i = i + 1;
+                            }
+                        }
+                        while (i < pFormula.length) {
+                            if (this.isDigit(pFormula[i])) {
+                                s = s + pFormula[i];
+                                i = i + 1;
+                            }
+                        }
+                        s = sheet + this.getCellFrom(s);
+                    } else {
+                        s = sheet + s;
+                    }
                     textName = this.getParentObjectCellValue(s).toString();
                     if (typeof textName === 'string' && this.getErrorStrings().indexOf(textName) > -1) {
                         return textName;
@@ -2024,7 +2076,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             }
             if (j === val.length) {
                 val = val.toLowerCase();
-                return this.getErrorStrings()[CommonErrors.name];
+                return val === '' ? this.getErrorStrings()[CommonErrors.value] : this.getErrorStrings()[CommonErrors.name];
             } else {
                 row = this.rowIndex(val);
                 col = this.colIndex(val);

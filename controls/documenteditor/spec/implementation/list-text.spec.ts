@@ -37,6 +37,7 @@ describe('Text insert validation of selection context type is List Text with und
         }, 1000);
     });
     it('Text Insert at list text', () => {
+console.log('Text Insert at list text');
         editor.openBlank();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
@@ -48,15 +49,18 @@ describe('Text insert validation of selection context type is List Text with und
         expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
     });
     it('undo after Text Insert at list text', () => {
+console.log('undo after Text Insert at list text');
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.getList()).not.toBe(undefined);
         expect(editor.selection.paragraphFormat.listText).toBe('1.');
     });
     it('redo after Text Insert at list text', () => {
+console.log('redo after Text Insert at list text');
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
     });
     it('Multiple undo and redo after Text Insert at list text', () => {
+console.log('Multiple undo and redo after Text Insert at list text');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -95,6 +99,7 @@ describe('Backspace validation of selection context type is List Text with undo 
         }, 1000);
     });
     it('Backspace at list text', () => {
+console.log('Backspace at list text');
         editor.openBlank();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
@@ -106,15 +111,18 @@ describe('Backspace validation of selection context type is List Text with undo 
         expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
     });
     it('undo after Backspace at list text', () => {
+console.log('undo after Backspace at list text');
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.getList()).not.toBe(undefined);
         expect(editor.selection.paragraphFormat.listText).toBe('1.');
     });
     it('redo after Backspace at list text', () => {
+console.log('redo after Backspace at list text');
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
     });
     it('Multiple undo and redo after Backspace at list text', () => {
+console.log('Multiple undo and redo after Backspace at list text');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -153,6 +161,7 @@ describe('Delete validation of selection context type is List Text with undo and
         }, 1000);
     });
     it('Delete at list text', () => {
+console.log('Delete at list text');
         editor.openBlank();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
@@ -164,15 +173,18 @@ describe('Delete validation of selection context type is List Text with undo and
         expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
     });
     it('undo after Delete at list text', () => {
+console.log('undo after Delete at list text');
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.getList()).not.toBe(undefined);
         expect(editor.selection.paragraphFormat.listText).toBe('1.');
     });
     it('redo after Delete at list text', () => {
+console.log('redo after Delete at list text');
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
     });
     it('Multiple undo and redo after Delete at list text', () => {
+console.log('Multiple undo and redo after Delete at list text');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -211,6 +223,7 @@ describe('Apply Character Format -bold validation of selection context type is L
         }, 1000);
     });
     it('Bold Apply validation', () => {
+console.log('Bold Apply validation');
         editor.openBlank();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
@@ -222,14 +235,17 @@ describe('Apply Character Format -bold validation of selection context type is L
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.bold).toBe(true);
     });
     it('undo after bold apply at list text', () => {
+console.log('undo after bold apply at list text');
         editor.editorHistory.undo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.bold).toBe(false);
     });
     it('redo after bold apply at list text', () => {
+console.log('redo after bold apply at list text');
         editor.editorHistory.redo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.bold).toBe(true);
     });
     it('Multiple undo and redo after bold at list text', () => {
+console.log('Multiple undo and redo after bold at list text');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -268,6 +284,7 @@ describe('Apply Character Format -Italic validation of selection context type is
         }, 1000);
     });
     it('italic Apply validation', () => {
+console.log('italic Apply validation');
         editor.openBlank();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
@@ -279,14 +296,17 @@ describe('Apply Character Format -Italic validation of selection context type is
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.italic).toBe(true);
     });
     it('undo after italic apply at list text', () => {
+console.log('undo after italic apply at list text');
         editor.editorHistory.undo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.italic).toBe(false);
     });
     it('redo after italic apply at list text', () => {
+console.log('redo after italic apply at list text');
         editor.editorHistory.redo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.italic).toBe(true);
     });
     it('Multiple undo and redo after italic at list text', () => {
+console.log('Multiple undo and redo after italic at list text');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -325,6 +345,7 @@ describe('Apply Character Format -Underline validation of selection context type
         }, 1000);
     });
     it('Underline Apply validation', () => {
+console.log('Underline Apply validation');
         editor.openBlank();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
@@ -336,14 +357,17 @@ describe('Apply Character Format -Underline validation of selection context type
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.underline).toBe('Single');
     });
     it('undo after Underline apply at list text', () => {
+console.log('undo after Underline apply at list text');
         editor.editorHistory.undo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.underline).toBe('None');
     });
     it('redo after Underline apply at list text', () => {
+console.log('redo after Underline apply at list text');
         editor.editorHistory.redo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.underline).toBe('Single');
     });
     it('Multiple undo and redo after Underline at list text', () => {
+console.log('Multiple undo and redo after Underline at list text');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -382,6 +406,7 @@ describe('Apply Character Format -Strikethrough validation of selection context 
         }, 1000);
     });
     it('Strikethrough Apply validation', () => {
+console.log('Strikethrough Apply validation');
         editor.openBlank();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
@@ -393,14 +418,17 @@ describe('Apply Character Format -Strikethrough validation of selection context 
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.strikethrough).toBe('SingleStrike');
     });
     it('undo after Strikethrough apply at list text', () => {
+console.log('undo after Strikethrough apply at list text');
         editor.editorHistory.undo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.strikethrough).toBe('None');
     });
     it('redo after Strikethrough apply at list text', () => {
+console.log('redo after Strikethrough apply at list text');
         editor.editorHistory.redo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.strikethrough).toBe('SingleStrike');
     });
     it('Multiple undo and redo after Strikethrough at list text', () => {
+console.log('Multiple undo and redo after Strikethrough at list text');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -439,6 +467,7 @@ describe('Apply Character Format -BaselineAlignment validation of selection cont
         }, 1000);
     });
     it('BaselineAlignment Apply validation', () => {
+console.log('BaselineAlignment Apply validation');
         editor.openBlank();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
@@ -450,14 +479,17 @@ describe('Apply Character Format -BaselineAlignment validation of selection cont
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.baselineAlignment).toBe('Superscript');
     });
     it('undo after BaselineAlignment apply at list text', () => {
+console.log('undo after BaselineAlignment apply at list text');
         editor.editorHistory.undo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.baselineAlignment).toBe('Normal');
     });
     it('redo after BaselineAlignment apply at list text', () => {
+console.log('redo after BaselineAlignment apply at list text');
         editor.editorHistory.redo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.baselineAlignment).toBe('Superscript');
     });
     it('Multiple undo and redo after BaselineAlignment at list text', () => {
+console.log('Multiple undo and redo after BaselineAlignment at list text');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -496,6 +528,7 @@ describe('Apply Character Format -Fontsize validation of selection context type 
         }, 1000);
     });
     it('FontSize Apply validation', () => {
+console.log('FontSize Apply validation');
         editor.openBlank();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
@@ -507,14 +540,17 @@ describe('Apply Character Format -Fontsize validation of selection context type 
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontSize).toBe(20);
     });
     it('undo after FontSize apply at list text', () => {
+console.log('undo after FontSize apply at list text');
         editor.editorHistory.undo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontSize).toBe(11);
     });
     it('redo after FontSize apply at list text', () => {
+console.log('redo after FontSize apply at list text');
         editor.editorHistory.redo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontSize).toBe(20);
     });
     it('Multiple undo and redo after FontSize at list text', () => {
+console.log('Multiple undo and redo after FontSize at list text');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -554,6 +590,7 @@ describe('Apply Character Format -FontFamily validation of selection context typ
         }, 1000);
     });
     it('FontFamily Apply validation', () => {
+console.log('FontFamily Apply validation');
         editor.openBlank();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
@@ -565,14 +602,17 @@ describe('Apply Character Format -FontFamily validation of selection context typ
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontFamily).toBe('Arial');
     });
     it('undo after FontSize apply at list text', () => {
+console.log('undo after FontSize apply at list text');
         editor.editorHistory.undo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontFamily).toBe('Calibri');
     });
     it('redo after FontSize apply at list text', () => {
+console.log('redo after FontSize apply at list text');
         editor.editorHistory.redo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontFamily).toBe('Arial');
     });
     it('Multiple undo and redo after FontSize at list text', () => {
+console.log('Multiple undo and redo after FontSize at list text');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -611,6 +651,7 @@ describe('Apply Character Format -FontColor validation of selection context type
         }, 1000);
     });
     it('Fontcolor Apply validation', () => {
+console.log('Fontcolor Apply validation');
         editor.openBlank();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
@@ -622,14 +663,17 @@ describe('Apply Character Format -FontColor validation of selection context type
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('Pink');
     });
     it('undo after FontColor apply at list text', () => {
+console.log('undo after FontColor apply at list text');
         editor.editorHistory.undo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('empty');
     });
     it('redo after FontColor apply at list text', () => {
+console.log('redo after FontColor apply at list text');
         editor.editorHistory.redo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('Pink');
     });
     it('Multiple undo and redo after FontColor at list text', () => {
+console.log('Multiple undo and redo after FontColor at list text');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -668,6 +712,7 @@ describe('Apply Character Format -FontColor validation of selection context type
         }, 1000);
     });
     it('Fontcolor Apply validation', () => {
+console.log('Fontcolor Apply validation');
         editor.openBlank();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
@@ -679,14 +724,17 @@ describe('Apply Character Format -FontColor validation of selection context type
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('Pink');
     });
     it('undo after FontColor apply at list text', () => {
+console.log('undo after FontColor apply at list text');
         editor.editorHistory.undo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('empty');
     });
     it('redo after FontColor apply at list text', () => {
+console.log('redo after FontColor apply at list text');
         editor.editorHistory.redo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('Pink');
     });
     it('Multiple undo and redo after FontColor at list text', () => {
+console.log('Multiple undo and redo after FontColor at list text');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -725,6 +773,7 @@ describe('Apply Character Format -Highlight Color validation of selection contex
         }, 1000);
     });
     it('Fontcolor Apply validation', () => {
+console.log('Fontcolor Apply validation');
         editor.openBlank();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
@@ -736,14 +785,17 @@ describe('Apply Character Format -Highlight Color validation of selection contex
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.highlightColor).toBe('Yellow');
     });
     it('undo after FontColor apply at list text', () => {
+console.log('undo after FontColor apply at list text');
         editor.editorHistory.undo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.highlightColor).toBe('NoColor');
     });
     it('redo after FontColor apply at list text', () => {
+console.log('redo after FontColor apply at list text');
         editor.editorHistory.redo();
         expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.highlightColor).toBe('Yellow');
     });
     it('Multiple undo and redo after FontColor at list text', () => {
+console.log('Multiple undo and redo after FontColor at list text');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -782,6 +834,7 @@ describe('Restart Numbering with undo and redo', () => {
         }, 1000);
     });
     it('Restart Numbering Apply validation', () => {
+console.log('Restart Numbering Apply validation');
         editor.openBlank();
         editor.editorModule.insertText('I');
         editor.editorModule.insertText(')');
@@ -800,16 +853,19 @@ describe('Restart Numbering with undo and redo', () => {
         expect(editor.selection.paragraphFormat.listText).toBe('I)');
     });
     it('undo after Restart Numbering apply at list text', () => {
+console.log('undo after Restart Numbering apply at list text');
         editor.editorHistory.undo();
         editor.selection.handleUpKey();
         // expect(editor.selection.paragraphFormat.listText).toBe('IV)');
     });
     it('redo after Restart Numbering apply at list text', () => {
+console.log('redo after Restart Numbering apply at list text');
         editor.editorHistory.redo();
         editor.selection.handleUpKey();
         expect(editor.selection.paragraphFormat.listText).toBe('II)');
     });
     it('Multiple undo and redo after Restart Numbering at list text', () => {
+console.log('Multiple undo and redo after Restart Numbering at list text');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -849,6 +905,7 @@ describe('Restart Numbering at level number 1', () => {
         }, 1000);
     });
     it('Restart Numbering Apply validation', () => {
+console.log('Restart Numbering Apply validation');
         editor.openBlank();
         editor.editorModule.insertText('I');
         editor.editorModule.insertText(')');
@@ -865,14 +922,17 @@ describe('Restart Numbering at level number 1', () => {
         expect(editor.selection.paragraphFormat.listText).toBe('a.');
     });
     it('undo after Restart Numbering apply at list text', () => {
+console.log('undo after Restart Numbering apply at list text');
         editor.editorHistory.undo();
         // expect(editor.selection.paragraphFormat.listText).toBe('II.');
     });
     it('redo after Restart Numbering apply at list text', () => {
+console.log('redo after Restart Numbering apply at list text');
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.listText).toBe('a.');
     });
     it('Multiple undo and redo after Restart Numbering at list text', () => {
+console.log('Multiple undo and redo after Restart Numbering at list text');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -911,6 +971,7 @@ describe('Continue Numbering validation with same level pattern with undo and re
         }, 1000);
     });
     it('Restart Numbering Apply validation', () => {
+console.log('Restart Numbering Apply validation');
         editor.openBlank();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
@@ -932,14 +993,17 @@ describe('Continue Numbering validation with same level pattern with undo and re
         // expect(editor.selection.paragraphFormat.listText).toBe('3.');
     });
     it('undo after Continue Numbering apply at list text', () => {
+console.log('undo after Continue Numbering apply at list text');
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listText).toBe('1.');
     });
     it('redo after Continue Numbering apply at list text', () => {
+console.log('redo after Continue Numbering apply at list text');
         editor.editorHistory.redo();
         // expect(editor.selection.paragraphFormat.listText).toBe('3.');
     });
     it('Multiple undo and redo after Continue Numbering at list text', () => {
+console.log('Multiple undo and redo after Continue Numbering at list text');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -977,6 +1041,7 @@ describe('Continue Numbering at level number 1', () => {
         }, 1000);
     });
     it('Continue Numbering Apply validation', () => {
+console.log('Continue Numbering Apply validation');
         editor.openBlank();
         editor.editorModule.insertText('I');
         editor.editorModule.insertText(')');
@@ -991,14 +1056,17 @@ describe('Continue Numbering at level number 1', () => {
         // expect(editor.selection.paragraphFormat.listText).toBe('II)');
     });
     it('undo after Continue Numbering apply at list text', () => {
+console.log('undo after Continue Numbering apply at list text');
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listText).toBe('a.');
     });
     it('redo after Continue Numbering apply at list text', () => {
+console.log('redo after Continue Numbering apply at list text');
         editor.editorHistory.redo();
         // expect(editor.selection.paragraphFormat.listText).toBe('II)');
     });
     it('Multiple undo and redo after Continue Numbering at list text', () => {
+console.log('Multiple undo and redo after Continue Numbering at list text');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -1036,6 +1104,7 @@ describe('Continue Numbering at level number 1', () => {
         }, 1000);
     });
     it('Continue Numbering Apply validation', () => {
+console.log('Continue Numbering Apply validation');
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
@@ -1077,6 +1146,7 @@ describe('Continue Numbering validation with different level pattern with undo a
         }, 1000);
     });
     it('Restart Numbering Apply validation', () => {
+console.log('Restart Numbering Apply validation');
         editor.openBlank();
         editor.editorModule.insertText('a');
         editor.editorModule.insertText('.');
@@ -1098,14 +1168,17 @@ describe('Continue Numbering validation with different level pattern with undo a
         // expect(editor.selection.paragraphFormat.listText).toBe('c.');
     });
     it('undo after Continue Numbering apply at list text', () => {
+console.log('undo after Continue Numbering apply at list text');
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listText).toBe('A.');
     });
     it('redo after Continue Numbering apply at list text', () => {
+console.log('redo after Continue Numbering apply at list text');
         editor.editorHistory.redo();
         // expect(editor.selection.paragraphFormat.listText).toBe('c.');
     });
     it('Multiple undo and redo after Continue Numbering at list text', () => {
+console.log('Multiple undo and redo after Continue Numbering at list text');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -1144,6 +1217,7 @@ describe('without history Restart Numbering and continue numbering validation', 
         }, 1000);
     });
     it('Restart Numbering Apply validation', () => {
+console.log('Restart Numbering Apply validation');
         editor.openBlank();
         editor.editorModule.insertText('I');
         editor.editorModule.insertText(')');
@@ -1159,6 +1233,7 @@ describe('without history Restart Numbering and continue numbering validation', 
         expect(editor.selection.paragraphFormat.listText).toBe('I)');
     });
     it('Continue numbering without history Apply validation', () => {
+console.log('Continue numbering without history Apply validation');
         editor.editor.applyContinueNumbering();
         //    expect(editor.selection.paragraphFormat.listText).toBe('III)');
     });
@@ -1187,6 +1262,7 @@ describe('List continue numbering validation', () => {
         editor = undefined;
     });
     it('Check list number', () => {
+console.log('Check list number');
         editor.openBlank();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
@@ -1235,6 +1311,7 @@ describe('Character retrieval validation', () => {
         }, 1000);
     });
     it('Font family at list text validation', () => {
+console.log('Font family at list text validation');
         editor.openBlank();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
@@ -1248,6 +1325,7 @@ describe('Character retrieval validation', () => {
         expect(editor.selection.characterFormat.fontFamily).toBe('Arial');
     });
     it('Font size validation', () => {
+console.log('Font size validation');
        
         editor.selection.characterFormat.fontSize=12;
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
@@ -1255,6 +1333,7 @@ describe('Character retrieval validation', () => {
         expect(editor.selection.characterFormat.fontSize).toBe(12);
     });
     it('Bold validation', () => {
+console.log('Bold validation');
         
         editor.selection.characterFormat.bold=true;
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
@@ -1293,6 +1372,7 @@ describe('List text format validation in loaded document', () => {
         }, 1000);
     });
     it('italic apply validation', () => {
+console.log('italic apply validation');
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         expect(editor.selection.characterFormat.italic).toBe(true);
@@ -1301,6 +1381,7 @@ describe('List text format validation in loaded document', () => {
         expect(editor.selection.characterFormat.italic).toBe(false);
     });
     it('bold apply validation', () => {
+console.log('bold apply validation');
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         expect(editor.selection.characterFormat.bold).toBe(false);
@@ -1337,6 +1418,7 @@ describe('Continue Numbering public API validation', () => {
         }, 1000);
     });
     it('Continue Numbering public API validation', () => {
+console.log('Continue Numbering public API validation');
         editor.openBlank();
         editor.editorModule.insertText('Adventure');
         editor.editorModule.applyBulletOrNumbering('%1.', 'Arabic', 'Verdana');

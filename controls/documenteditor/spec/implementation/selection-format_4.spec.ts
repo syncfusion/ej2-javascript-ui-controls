@@ -34,9 +34,11 @@ describe('Selection Character format Bidi validation', () => {
         }, 1000);
     });
     it('For normal text', () => {
+console.log('For normal text');
         expect(editor.selection.characterFormat.bidi).toBe(false);
     });
     it('For Rtl text with Bidi property validation', () => {
+console.log('For Rtl text with Bidi property validation');
         editor.selection.handleControlRightKey();
         expect(editor.selection.characterFormat.bidi).toBe(true);
         expect(editor.selection.characterFormat.boldBidi).toBe(true);
@@ -45,6 +47,7 @@ describe('Selection Character format Bidi validation', () => {
         // expect(editor.selection.characterFormat.bidi).toBe(true);
     });
     it('For combine text', () => {
+console.log('For combine text');
         editor.selection.handleShiftHomeKey();
         expect(editor.selection.characterFormat.bidi).toBe(undefined);
     });
@@ -77,18 +80,22 @@ describe('Selection Paragraph format Bidi validation', () => {
         }, 1000);
     });
     it('For normal text with paragraph bidi true', () => {
+console.log('For normal text with paragraph bidi true');
         editor.selection.handleDownKey();
         expect(editor.selection.paragraphFormat.bidi).toBe(true);
     });
     it('For Rtl text with Bidi true', () => {
+console.log('For Rtl text with Bidi true');
         editor.selection.handleDownKey();
         expect(editor.selection.paragraphFormat.bidi).toBe(true);
     });
     it('For Rtl text with Bidi false', () => {
+console.log('For Rtl text with Bidi false');
         editor.selection.handleDownKey();
         expect(editor.selection.paragraphFormat.bidi).toBe(false);
     });
     it('For combine paragraph', () => {
+console.log('For combine paragraph');
         editor.selection.handleRightKey();
         editor.selection.handleShiftUpKey();
         expect(editor.selection.paragraphFormat.bidi).toBe(undefined);
@@ -123,6 +130,7 @@ describe('Selection Table format Bidi validation', () => {
         }, 1000);
     });
     it('For table with bidi false', () => {
+console.log('For table with bidi false');
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
@@ -130,12 +138,14 @@ describe('Selection Table format Bidi validation', () => {
         expect(editor.selection.tableFormat.bidi).toBe(false);
     });
     it('For table with bidi true', () => {
+console.log('For table with bidi true');
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
         expect(editor.selection.tableFormat.bidi).toBe(true);
     });
     it('For combine Table', () => {
+console.log('For combine Table');
         editor.selection.handleShiftUpKey();
         editor.selection.handleShiftUpKey();
         editor.selection.handleShiftUpKey();
@@ -170,6 +180,7 @@ describe('Selection Table format Bidi validation in table empty selection', () =
         }, 1000);
     });
     it('For table with bidi true', () => {
+console.log('For table with bidi true');
         editor.editor.insertTable(2, 2);
         editor.editor.insertText('سشةحمث');
         editor.selection.handleTabKey(true, false);
@@ -182,14 +193,17 @@ describe('Selection Table format Bidi validation in table empty selection', () =
         expect(editor.selection.tableFormat.bidi).toBe(true);
     });
     it('undo after bidi for tabl format is true', () => {
+console.log('undo after bidi for tabl format is true');
         editor.editorHistory.undo();
         expect(editor.selection.tableFormat.bidi).toBe(false);
     });
     it('redo after bidi for tabl format is true', () => {
+console.log('redo after bidi for tabl format is true');
         editor.editorHistory.redo();
         expect(editor.selection.tableFormat.bidi).toBe(true);
     });
     it('Multiple undo and redo after bidi for tabl format is true', () => {
+console.log('Multiple undo and redo after bidi for tabl format is true');
         for (let i: number = 0; i < 5; i++) {
             editor.editorHistory.undo();
             editor.editorHistory.redo();
@@ -226,6 +240,7 @@ describe('Selection Table format Bidi validation in table with non empty selecti
         }, 1000);
     });
     it('For table with bidi true', () => {
+console.log('For table with bidi true');
         editor.editor.insertTable(2, 2);
         editor.editor.insertText('سشةحمث');
         editor.selection.handleTabKey(true, false);
@@ -239,14 +254,17 @@ describe('Selection Table format Bidi validation in table with non empty selecti
         expect(editor.selection.tableFormat.bidi).toBe(true);
     });
     it('undo after bidi for tabl format is true', () => {
+console.log('undo after bidi for tabl format is true');
         editor.editorHistory.undo();
         expect(editor.selection.tableFormat.bidi).toBe(false);
     });
     it('redo after bidi for tabl format is true', () => {
+console.log('redo after bidi for tabl format is true');
         editor.editorHistory.redo();
         expect(editor.selection.tableFormat.bidi).toBe(true);
     });
     it('Multiple undo and redo after bidi for tabl format is true', () => {
+console.log('Multiple undo and redo after bidi for tabl format is true');
         for (let i: number = 0; i < 5; i++) {
             editor.editorHistory.undo();
             editor.editorHistory.redo();

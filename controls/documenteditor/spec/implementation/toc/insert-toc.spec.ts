@@ -47,6 +47,7 @@ describe('Insert Toc (hyperlink,page number,right alignment)', () => {
         }, 1000);
     });
     it('Field element', () => {
+console.log('Field element');
         editor.openBlank();
         editor.open(JSON.stringify(getJson()));
         editor.editorModule.insertTableOfContents(tocSettings);
@@ -54,6 +55,7 @@ describe('Insert Toc (hyperlink,page number,right alignment)', () => {
         expect(field instanceof FieldElementBox).toBe(true);
     });
     it('Filed code', () => {
+console.log('Filed code');
         editor.openBlank();
         editor.open(JSON.stringify(getJson()));
         editor.editorModule.insertTableOfContents(tocSettings);
@@ -61,6 +63,7 @@ describe('Insert Toc (hyperlink,page number,right alignment)', () => {
         expect((field.nextNode as TextElementBox).text.toLowerCase()).toBe('toc \\o "1-3" \\h \\z');
     });
     it('paragraph style', () => {
+console.log('paragraph style');
         editor.openBlank();
         editor.open(JSON.stringify(getJson()));
         editor.editorModule.insertTableOfContents(tocSettings);
@@ -68,6 +71,7 @@ describe('Insert Toc (hyperlink,page number,right alignment)', () => {
         expect(paragraph.paragraphFormat.baseStyle.name).toBe('Toc1');
     });
     it('Right Tab', () => {
+console.log('Right Tab');
         editor.openBlank();
         editor.open(JSON.stringify(getJson()));
         editor.editorModule.insertTableOfContents(tocSettings);
@@ -75,6 +79,7 @@ describe('Insert Toc (hyperlink,page number,right alignment)', () => {
         expect(paragraph.paragraphFormat.tabs.length).toBe(1);
     });
     it('Hyperlink style', () => {
+console.log('Hyperlink style');
         editor.openBlank();
         editor.open(JSON.stringify(getJson()));
         editor.editorModule.insertTableOfContents(tocSettings);
@@ -82,6 +87,7 @@ describe('Insert Toc (hyperlink,page number,right alignment)', () => {
         expect(text.text).toBe('First heading');
     });
     it('Toc styles', () => {
+console.log('Toc styles');
         editor.openBlank();
         editor.open(JSON.stringify(getJson()));
         editor.editorModule.insertTableOfContents(tocSettings);
@@ -118,6 +124,7 @@ describe('Insert Toc - page number and right alignment', () => {
         }, 1000);
     });
     it('Widgets to be paste', () => {
+console.log('Widgets to be paste');
         editor.openBlank();
         editor.open(JSON.stringify(getJson()));
         let tocSettings: TableOfContentsSettings =

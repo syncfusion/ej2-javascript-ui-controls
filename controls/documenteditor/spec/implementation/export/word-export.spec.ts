@@ -40,9 +40,11 @@ describe('Restrict editing export validation', () => {
         }, 1000);
     });
     it('Formatting and protection type validation', () => {
+console.log('Formatting and protection type validation');
         expect(() => { editor.wordExportModule.save(editor.documentHelper, 'RestrictEditing'); }).not.toThrowError();
     });
     it('Permstart and end in paragraph validation', () => {
+console.log('Permstart and end in paragraph validation');
         json = editor.sfdtExportModule.write();
         (editor.wordExportModule as any).setDocument(json);
         (editor.wordExportModule as any).section = (editor.wordExportModule as any).document.sections[0];
@@ -83,9 +85,11 @@ describe('Format word export validation', () => {
         }, 1000);
     });
     it('Formatting and no protection type validation', () => {
+console.log('Formatting and no protection type validation');
         expect(() => { editor.wordExportModule.save(editor.documentHelper, 'Format'); }).not.toThrowError();
     });
     it('Formatting tag validation validation', () => {
+console.log('Formatting tag validation validation');
         json = editor.sfdtExportModule.write();
         (editor.wordExportModule as any).setDocument(json);
 
@@ -123,6 +127,7 @@ describe('Paragraph format outline export validation', () => {
         }, 1000);
     });
     it('export validation', () => {
+console.log('export validation');
         expect(() => { editor.save('ParagraphFormat', 'Docx'); }).not.toThrowError();
     });
 
@@ -156,6 +161,7 @@ describe('FormField Validation for word export', () => {
         }, 1000);
     });
     it('word export validation', () => {
+console.log('word export validation');
         expect(() => { editor.save('FormField', 'Docx'); }).not.toThrowError();
     });
 
@@ -189,6 +195,7 @@ describe('AllCaps Validation for word export', () => {
         }, 1000);
     });
     it('word export validation', () => {
+console.log('word export validation');
         expect(() => { editor.save('AllCaps', 'Docx'); }).not.toThrowError();
     });
 

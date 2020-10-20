@@ -41,12 +41,15 @@ describe('Paragraph Dialog Test Case Validation', function () {
         }, 2000);
     });
     it('Load Paragaraph Dialog testing', function () {
+console.log('Load Paragaraph Dialog testing');
         dialog.loadParagraphDialog();
     });
     it('On Insert Button testing', function () {
+console.log('On Insert Button testing');
         dialog.applyParagraphFormat();
     });
     it('On Cancel Button testing', function () {
+console.log('On Cancel Button testing');
         dialog.closeParagraphDialog();
     });
 });
@@ -80,17 +83,20 @@ describe('Load Paragraph Format Dialog Test Case Validation', function () {
         }, 2000);
     });
     it('Load Paragraph Format Index 0 testing', function () {
+console.log('Load Paragraph Format Index 0 testing');
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.textAlignment = 'Center';
         dialog.loadParagraphDialog();
     });
     it('Load Paragraph Format Index 1 testing', function () {
+console.log('Load Paragraph Format Index 1 testing');
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.textAlignment = 'Left';
         selectionParaFormat.lineSpacingType = 'AtLeast';
         dialog.loadParagraphDialog();
     });
     it('Apply Paragraph format', () => {
+console.log('Apply Paragraph format');
         editor.openBlank();
         editor.editorModule.insertText('Syncfusion software');
         editor.editorModule.onEnter();
@@ -141,12 +147,14 @@ describe('Paragraph Format Dialog Load Test Case Validation', function () {
         }, 2000);
     });
     it('Load Paragraph Format Index 2 testing', function () {
+console.log('Load Paragraph Format Index 2 testing');
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.textAlignment = 'Right';
         selectionParaFormat.lineSpacingType = 'Exactly';
         dialog.loadParagraphDialog();
     });
     it('Load Paragraph Format Index 3 testing', function () {
+console.log('Load Paragraph Format Index 3 testing');
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.textAlignment = 'Justify';
         selectionParaFormat.lineSpacingType = 'Multiple';
@@ -182,11 +190,13 @@ describe('Apply Paragraph Format Dialog Test Case Validation', function () {
         }, 2000);
     });
     it('Apply Paragraph Format Index 0 testing', function () {
+console.log('Apply Paragraph Format Index 0 testing');
         let align: any = (dialog as any).alignment;
         align.index = 0;
         dialog.applyParagraphFormat();
     });
     it('Apply Paragraph Format Index 1 testing', function () {
+console.log('Apply Paragraph Format Index 1 testing');
         let align: any = (dialog as any).alignment;
         align.index = 1;
         let lineSpace: any = (dialog as any).lineSpacing;
@@ -222,6 +232,7 @@ describe('Paragraph Format Apply Dialog Test Case Validation', function () {
         }, 2000);
     });
     it('Apply Paragraph Format Index 2 testing', function () {
+console.log('Apply Paragraph Format Index 2 testing');
         let align: any = (dialog as any).alignment;
         align.index = 2;
         let lineSpace: any = (dialog as any).lineSpacing;
@@ -229,6 +240,7 @@ describe('Paragraph Format Apply Dialog Test Case Validation', function () {
         dialog.applyParagraphFormat();
     });
     it('Apply Paragraph Format Index 3 testing', function () {
+console.log('Apply Paragraph Format Index 3 testing');
         let align: any = (dialog as any).alignment;
         align.index = 3;
         let lineSpace: any = (dialog as any).lineSpacing;
@@ -236,6 +248,7 @@ describe('Paragraph Format Apply Dialog Test Case Validation', function () {
         dialog.applyParagraphFormat();
     });
     it('Apply Paragraph Format Destory testing', function () {
+console.log('Apply Paragraph Format Destory testing');
         (dialog as any).target = createElement('div');
         dialog.destroy();
     });
@@ -274,10 +287,12 @@ describe('Paragraph Format Dialog Test Case Validation', function () {
         }, 2000);
     });
     it('Paragraph Dialog Show testing', function () {
+console.log('Paragraph Dialog Show testing');
         (dialog as any).target = undefined;
         dialog.show();
     });
     it('Load Paragraph Dialog Using Context Menu testing', function () {
+console.log('Load Paragraph Dialog Using Context Menu testing');
         menu.handleContextMenuItem('container_contextmenu_paragraph_dialog');
     });
 });
@@ -311,6 +326,7 @@ describe('Dialog Test Case using event Validation', function () {
         }, 2000);
     });
     it('Load Paragraph Index 0 testing', function () {
+console.log('Load Paragraph Index 0 testing');
         let changeEvent: any;
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         (dialog as any).special.index = 0;
@@ -318,6 +334,7 @@ describe('Dialog Test Case using event Validation', function () {
         dialog.changeByValue(changeEvent);
     });
     it('Load Paragraph Format Index 0 else testing', function () {
+console.log('Load Paragraph Format Index 0 else testing');
         let changeEvent: any;
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = 25;
@@ -356,6 +373,7 @@ describe('Dialog Test Case using event second Validation', function () {
         }, 2000);
     });
     it('Load Paragraph Format Index 1 else testing', function () {
+console.log('Load Paragraph Format Index 1 else testing');
         let changeEvent: any;
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = undefined;
@@ -363,6 +381,7 @@ describe('Dialog Test Case using event second Validation', function () {
         dialog.changeByValue(changeEvent);
     });
     it('Load Paragraph Format Index 1 else testing', function () {
+console.log('Load Paragraph Format Index 1 else testing');
         let changeEvent: any;
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = -2;
@@ -370,6 +389,7 @@ describe('Dialog Test Case using event second Validation', function () {
         dialog.changeByValue(changeEvent);
     });
     it('Load Paragraph Index 1 testing', function () {
+console.log('Load Paragraph Index 1 testing');
         let changeEvent: any;
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = 0;
@@ -407,6 +427,7 @@ describe('Dialog Test Case using event third Validation', function () {
         }, 2000);
     });
     it('Load Paragraph Format Index 1 else testing', function () {
+console.log('Load Paragraph Format Index 1 else testing');
         let changeEvent: any;
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = undefined;
@@ -414,6 +435,7 @@ describe('Dialog Test Case using event third Validation', function () {
         dialog.changeByValue(changeEvent);
     });
     it('Load Paragraph Format Index 1 else testing', function () {
+console.log('Load Paragraph Format Index 1 else testing');
         let changeEvent: any;
         changeEvent = { preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         changeEvent.target = (dialog as any).alignment;
@@ -424,6 +446,7 @@ describe('Dialog Test Case using event third Validation', function () {
         dialog.changeByValue(changeEvent);
     });
     it('Load Paragraph Index 1 testing', function () {
+console.log('Load Paragraph Index 1 testing');
         let changeEvent: any;
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = 0;
@@ -461,6 +484,7 @@ describe('Dialog Test Case using event third Validation', function () {
         }, 2000);
     });
     it('Load Paragraph Format Index 1 else testing', function () {
+console.log('Load Paragraph Format Index 1 else testing');
         let changeEvent: any;
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = 48;
@@ -468,6 +492,7 @@ describe('Dialog Test Case using event third Validation', function () {
         dialog.changeByValue(changeEvent);
     });
     it('Load Paragraph Format Index 2 else testing', function () {
+console.log('Load Paragraph Format Index 2 else testing');
         let changeEvent: any;
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = 48;
@@ -503,9 +528,11 @@ describe('Paragraph Format show and destroy Test Case Validation', function () {
         }, 2000);
     });
     it('Apply Paragraph Format Index 2 testing', function () {
+console.log('Apply Paragraph Format Index 2 testing');
         dialog.show();
     });
     it('Apply Paragraph Format Destory testing', function () {
+console.log('Apply Paragraph Format Destory testing');
         (dialog as any).target = createElement('div');
         document.body.appendChild((dialog as any).target);
         dialog.destroy();
@@ -539,16 +566,19 @@ describe('Paragraph format change by space Test Case Validation', function () {
         }, 2000);
     });
     it('Apply Paragraph Format Index 0 testing', function () {
+console.log('Apply Paragraph Format Index 0 testing');
         let changeEvent: any;
         (dialog as any).lineSpacing.index = 0;
         dialog.changeBySpacing(changeEvent);
     });
     it('Apply Paragraph Format Index 1 testing', function () {
+console.log('Apply Paragraph Format Index 1 testing');
         let changeEvent: any;
         (dialog as any).lineSpacing.index = 1;
         dialog.changeBySpacing(changeEvent);
     });
     it('Apply Paragraph Format Index 1 testing', function () {
+console.log('Apply Paragraph Format Index 1 testing');
         let changeEvent: any;
         (dialog as any).lineSpacing.index = 2;
         dialog.changeBySpacing(changeEvent);
@@ -582,6 +612,7 @@ describe('Paragraph format-before spacing Applying validation via dialog in empt
         }, 2000);
     });
     it('Before spacing applying validation', function () {
+console.log('Before spacing applying validation');
         editor.editor.insertText('Sample');
         let height = editor.selection.start.paragraph.height;
         dialog.show();
@@ -593,15 +624,18 @@ describe('Paragraph format-before spacing Applying validation via dialog in empt
     });
 
     it('After before spacing via paragraph dialog-undo validation', function () {
+console.log('After before spacing via paragraph dialog-undo validation');
         editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.height).toBeLessThan(48);
     });
     it('After before spacing via paragraph dialog-Redo validation', function () {
+console.log('After before spacing via paragraph dialog-Redo validation');
         editor.editorHistory.redo();
         expect(editor.selection.start.paragraph.height).toBeGreaterThan(48);
     });
 
     it('After before spacing via paragraph dialog-Multiple undo and redo validation', function () {
+console.log('After before spacing via paragraph dialog-Multiple undo and redo validation');
 
         for (let i: number = 0; i < 5; i++) {
             editor.editorHistory.undo();
@@ -640,6 +674,7 @@ describe('Paragraph format-before spacing and left Indent Applying validation vi
         }, 2000);
     });
     it('Before spacing applying validation', function () {
+console.log('Before spacing applying validation');
         editor.editor.insertText('Sample');
         let height = editor.selection.start.paragraph.height;
         dialog.show();
@@ -652,14 +687,17 @@ describe('Paragraph format-before spacing and left Indent Applying validation vi
     });
 
     it('After left indent via paragraph dialog-undo validation', function () {
+console.log('After left indent via paragraph dialog-undo validation');
         editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.x).toBe(96);
     });
     it('After left indent via paragraph dialog-Redo validation', function () {
+console.log('After left indent via paragraph dialog-Redo validation');
         editor.editorHistory.redo();
         expect(editor.selection.start.paragraph.x).not.toBe(96);
     });
     it('After left indent via paragraph dialog-Multiple undo and redo validation', function () {
+console.log('After left indent via paragraph dialog-Multiple undo and redo validation');
 
         for (let i: number = 0; i < 5; i++) {
             editor.editorHistory.undo();
@@ -698,6 +736,7 @@ describe('Paragraph format-after spacing and left Indent Applying validation via
         }, 2000);
     });
     it('after spacing applying validation', function () {
+console.log('after spacing applying validation');
         editor.editor.insertText('Sample');
         let height = editor.selection.start.paragraph.height;
         dialog.show();
@@ -712,14 +751,17 @@ describe('Paragraph format-after spacing and left Indent Applying validation via
     });
 
     it('After after spacing via paragraph dialog- undo validation', function () {
+console.log('After after spacing via paragraph dialog- undo validation');
         editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.height).toBeLessThan(48);
     });
     it('After after spacing via paragraph dialog- Redo validation', function () {
+console.log('After after spacing via paragraph dialog- Redo validation');
         editor.editorHistory.redo();
         expect(editor.selection.start.paragraph.height).toBeGreaterThanOrEqual(48);
     });
     it('After after spacing via paragraph dialog-Multiple undo and redo validation', function () {
+console.log('After after spacing via paragraph dialog-Multiple undo and redo validation');
 
         for (let i: number = 0; i < 5; i++) {
             editor.editorHistory.undo();
@@ -759,6 +801,7 @@ describe('Paragraph format using paragraph dialog- right to left changes in empt
         }, 2000);
     });
     it('apply bidi true', function () {
+console.log('apply bidi true');
         editor.editor.insertText('Sample');
         editor.editor.insertText('سشةحمث');
         editor.editor.insertText('سشةحمث');
@@ -776,18 +819,21 @@ describe('Paragraph format using paragraph dialog- right to left changes in empt
     });
 
     it('undo after apply bidi', function () {
+console.log('undo after apply bidi');
         editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(false);
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
         expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('Sample');
     });
     it('after apply bidi- Redo validation', function () {
+console.log('after apply bidi- Redo validation');
         editor.editorHistory.redo();
         expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(true);
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
         expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('Sample');
     });
     it('after apply bidi-Multiple undo and redo validation', function () {
+console.log('after apply bidi-Multiple undo and redo validation');
 
         for (let i: number = 0; i < 5; i++) {
             editor.editorHistory.undo();
@@ -827,6 +873,7 @@ describe('Paragraph format using paragraph dialog- right to left changes in empt
         }, 2000);
     });
     it('apply bidi true at center alignment', function () {
+console.log('apply bidi true at center alignment');
         editor.editor.insertText('Sample');
         editor.editor.insertText('سشةحمث');
         editor.editor.insertText('سشةحمث');
@@ -840,16 +887,19 @@ describe('Paragraph format using paragraph dialog- right to left changes in empt
     });
 
     it('undo apply bidi true at center alignment', function () {
+console.log('undo apply bidi true at center alignment');
         editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(false);
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
     });
     it('apply bidi true at center alignment- Redo validation', function () {
+console.log('apply bidi true at center alignment- Redo validation');
         editor.editorHistory.redo();
         expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(true);
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
     });
     it('apply bidi true at center alignment-Multiple undo and redo validation', function () {
+console.log('apply bidi true at center alignment-Multiple undo and redo validation');
 
         for (let i: number = 0; i < 5; i++) {
             editor.editorHistory.undo();
@@ -889,6 +939,7 @@ describe('Paragraph format using paragraph dialog- right to left changes in non-
         }, 2000);
     });
     it('apply bidi true in non-empty selection', function () {
+console.log('apply bidi true in non-empty selection');
         editor.editor.insertText('Sample');
         editor.editor.insertText('سشةحمث');
         editor.editor.insertText('سشةحمث');
@@ -909,16 +960,19 @@ describe('Paragraph format using paragraph dialog- right to left changes in non-
     });
 
     it('undo apply bidi true in non-empty selection', function () {
+console.log('undo apply bidi true in non-empty selection');
         editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(false);
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it('apply bidi true in non-empty selection- Redo validation', function () {
+console.log('apply bidi true in non-empty selection- Redo validation');
         editor.editorHistory.redo();
         expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(true);
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
     });
     it('apply bidi true in non-empty selection-Multiple undo and redo validation', function () {
+console.log('apply bidi true in non-empty selection-Multiple undo and redo validation');
 
         for (let i: number = 0; i < 5; i++) {
             editor.editorHistory.undo();
@@ -958,6 +1012,7 @@ describe('Paragraph format using paragraph dialog- right to left changes in non-
         }, 2000);
     });
     it('apply bidi true in non-empty selection- alignment left', function () {
+console.log('apply bidi true in non-empty selection- alignment left');
         editor.editor.insertText('Sample');
         editor.editor.insertText('سشةحمث');
         editor.editor.insertText('سشةحمث');
@@ -979,6 +1034,7 @@ describe('Paragraph format using paragraph dialog- right to left changes in non-
     });
 
     it('apply bidi true in non-empty selection- aligment justify', function () {
+console.log('apply bidi true in non-empty selection- aligment justify');
         editor.openBlank();
         editor.editor.insertText('Sample');
         editor.editor.insertText('سشةحمث');

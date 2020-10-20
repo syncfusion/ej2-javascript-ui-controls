@@ -1466,6 +1466,7 @@ describe('Search module testing', () => {
         }, 1000);
     });
     it('header text testing using search icon', () => {
+console.log('header text testing using search icon');
         editor.open(getJson());
         let optionsPane = editor.optionsPaneModule;
         editor.showOptionsPane();
@@ -1474,6 +1475,7 @@ describe('Search module testing', () => {
         expect((optionsPane as any).resultsListBlock.children.length).toBe(11);
     });
     it('click close icon while searching text', () => {
+console.log('click close icon while searching text');
         editor.open(getJson());
         let optionsPane = editor.optionsPaneModule;
         editor.showOptionsPane();
@@ -1484,6 +1486,7 @@ describe('Search module testing', () => {
         expect((optionsPane as any).resultsListBlock.children.length).toBe(0);
     });
     it('searching text does not contain document testing', () => {
+console.log('searching text does not contain document testing');
         editor.open(getJson());
         let optionsPane = editor.optionsPaneModule;
         editor.showOptionsPane();
@@ -1492,6 +1495,7 @@ describe('Search module testing', () => {
         expect((optionsPane as any).resultsListBlock.children.length).toBe(0);
     });
     it('header text replace testing validation', () => {
+console.log('header text replace testing validation');
         editor.open(getJson());
         let optionsPane = editor.optionsPaneModule;
         editor.showOptionsPane();
@@ -1530,6 +1534,7 @@ describe('Search Public API validation ', () => {
         }, 1000);
     });
     it('Search result change event validtion', () => {
+console.log('Search result change event validtion');
         editor.open(getJson());
         let spy = jasmine.createSpy('searchChange');
         editor.searchResultsChange = spy;
@@ -1538,6 +1543,7 @@ describe('Search Public API validation ', () => {
         expect(editor.search.searchResults.index).toBe(0);
     });
     it('Search result navigation', () => {
+console.log('Search result navigation');
         editor.search.searchResults.index++;
         expect(editor.search.searchResults.index).toBe(1);
         editor.search.searchResults.index--;
@@ -1572,6 +1578,7 @@ describe('Search Public API validation Replace All Validation ', () => {
         }, 1000);
     });
     it('Replace Operation with out search result', () => {
+console.log('Replace Operation with out search result');
         editor.editorModule.insertText('Syncfusion sft pvt ltd');
         let spy = jasmine.createSpy('searchChange');
         editor.searchResultsChange = spy;
@@ -1580,6 +1587,7 @@ describe('Search Public API validation Replace All Validation ', () => {
         expect(spy).not.toHaveBeenCalled();
     });
     it('Search result change event validtion', () => {
+console.log('Search result change event validtion');
         editor.editorModule.insertText('Syncfusion sft pvt ltd');
         editor.editorModule.insertText('Syncfusion sft pvt ltd');
         editor.editorModule.insertText('Syncfusion sft pvt ltd');
@@ -1594,6 +1602,7 @@ describe('Search Public API validation Replace All Validation ', () => {
         expect(editor.search.searchResults.length).toBe(0);
     });
     it('Search result change event validtion', () => {
+console.log('Search result change event validtion');
         editor.editorModule.insertText('Syncfusion sft pvt ltd');
         editor.editorModule.insertText('Syncfusion sft pvt ltd');
         editor.editorModule.insertText('Syncfusion sft pvt ltd');

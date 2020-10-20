@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
-## 18.3.40 (2020-10-13)
+## 18.3.42 (2020-10-20)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#288436` - The issue with "The error dialog appears when copy and paste the folder with the same name" has been resolved.
+
+## 18.2.57 (2020-09-08)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#288598` - Now, the file details will be sent correctly to the server side while using the rootAliasName property.
+
+## 18.2.56 (2020-09-01)
 
 ### File Manager
 

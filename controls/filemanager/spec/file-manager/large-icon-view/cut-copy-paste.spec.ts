@@ -7,7 +7,7 @@ import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 
 
-import { data1, doubleClickRead, fileCopySuccess, fileCopyRead, folderCopySuccess, folderCopyRead, data23, multiItemCopyRead, multiCopySuccess1, multiCopySuccess, doubleClickRead2, multiItemCopyRead1, multiCopySuccess2, multiItemCopyRead2, multiCopySuccess3, multiItemCopyRead3, data1pasteIN, data1pasteIN2, data1pasteIN3, data1pasteIN4, folderDragSuccess1, folderDragRead } from '../data';
+import { data1, doubleClickRead, fileCopySuccess, fileCopyRead, folderCopy, folderRead, folderCopySuccess, folderCopyRead, data23, multiItemCopyRead, multiCopySuccess1, multiCopySuccess, doubleClickRead2, multiItemCopyRead1, multiCopySuccess2, multiItemCopyRead2, multiCopySuccess3, multiItemCopyRead3, data1pasteIN, data1pasteIN2, data1pasteIN3, data1pasteIN4, folderDragSuccess1, folderDragRead } from '../data';
 import { createElement, closest, isNullOrUndefined, EventHandler } from '@syncfusion/ej2-base';
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -1851,6 +1851,97 @@ describe('FileManager control LargeIcons view', () => {
                 expect(feObj.largeiconsviewModule.element.querySelectorAll('li').length).toBe(4);
                 done();
             }, 100);
+        });
+
+        it('Folder copy paste using context menu', (done) => {
+            let el: any = document.getElementById(feObj.element.id + '_contextmenu');
+            let Li: any = document.getElementById('file_largeicons').querySelectorAll('li')[0];
+            mouseEventArgs.target = Li;
+            tapEvent.tapCount = 1;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            let sourceElement: any = el.ej2_instances[0];
+            let evt = document.createEvent('MouseEvents')
+            evt.initEvent('contextmenu', true, true);
+            Li.dispatchEvent(evt);
+            sourceElement.element.querySelectorAll('li')[3].click();
+            mouseEventArgs.target = document.getElementById('file_largeicons').querySelectorAll('li')[2];
+            tapEvent.tapCount = 1;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            sourceElement.element.querySelectorAll('li')[0].click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(folderCopyRead)
+            });
+            mouseEventArgs.target = document.getElementById('file_largeicons').querySelectorAll('li')[0];
+            tapEvent.tapCount = 1;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            setTimeout(function () {
+                let Li: Element = document.getElementById('file_largeicons').querySelectorAll('li')[0];
+                let evt = document.createEvent('MouseEvents')
+                evt.initEvent('contextmenu', true, true);
+                Li.dispatchEvent(evt);
+                sourceElement.element.querySelectorAll('li')[4].click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(folderCopy)
+                });
+                sourceElement.element.querySelectorAll('li')[0].click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(folderRead)
+                });
+                setTimeout(function () {
+                    expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(1);
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('Folder copy paste using toolbar', (done) => {
+            let Li: any = document.getElementById('file_largeicons').querySelectorAll('li')[0];
+            mouseEventArgs.target = Li;
+            tapEvent.tapCount = 1;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            (<HTMLElement>document.getElementsByClassName('e-fe-copy')[0]).click();
+            Li = document.getElementById('file_largeicons').querySelectorAll('li')[2];
+            mouseEventArgs.target = Li;
+            tapEvent.tapCount = 1;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            let el: any = document.getElementById(feObj.element.id + '_contextmenu');
+            let sourceElement: any = el.ej2_instances[0];
+            let evt = document.createEvent('MouseEvents')
+            evt.initEvent('contextmenu', true, true);
+            Li.dispatchEvent(evt);
+            sourceElement.element.querySelectorAll('li')[0].click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(folderCopyRead)
+            });
+            mouseEventArgs.target = document.getElementById('file_largeicons').querySelectorAll('li')[0];
+            tapEvent.tapCount = 1;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            setTimeout(function () {
+                (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(folderCopy)
+                });
+                sourceElement.element.querySelectorAll('li')[0].click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(folderRead)
+                });
+                setTimeout(function () {
+                    expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(1);
+                    done();
+                }, 500);
+            }, 500);
         });
     });
 });

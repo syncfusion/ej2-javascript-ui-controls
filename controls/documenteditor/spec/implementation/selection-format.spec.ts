@@ -10,6 +10,7 @@ import { Selection } from '../../src/index';
 
 describe('Selection Format validation -1', () => {
     it('Selection table format validation', () => {
+console.log('Selection table format validation');
         let tableFormat: SelectionTableFormat = new SelectionTableFormat(undefined);
         expect(tableFormat.background).toBe(undefined);
         expect(tableFormat.tableAlignment).toBe(undefined);
@@ -32,6 +33,7 @@ describe('Selection Format validation -1', () => {
         tableFormat.destroy();
     });
     it('selection cell format validation', () => {
+console.log('selection cell format validation');
         let cellFormat: SelectionCellFormat = new SelectionCellFormat(undefined);
         cellFormat.preferredWidth = 14;
         cellFormat.preferredWidth = 14;
@@ -65,6 +67,7 @@ describe('Selection Format validation -1', () => {
         cellFormat.destroy();
     });
     it('selection row format validation', () => {
+console.log('selection row format validation');
         let rowFormat: SelectionRowFormat = new SelectionRowFormat(undefined);
         rowFormat.height = 12;
         rowFormat.allowBreakAcrossPages = true;
@@ -97,6 +100,7 @@ describe('Selection Format validation -1', () => {
 });
 describe('Selection Format validation -2', () => {
     it('Selection Section Format Validation', () => {
+console.log('Selection Section Format Validation');
         let sectionFormat: WSectionFormat = new WSectionFormat(undefined);
         sectionFormat.pageHeight = 12;
         sectionFormat.pageWidth = 13;
@@ -127,6 +131,7 @@ describe('Selection Format validation -2', () => {
         selectionSection.destroy();
     });
     it('selection character format validation', () => {
+console.log('selection character format validation');
         let charFormat: SelectionCharacterFormat = new SelectionCharacterFormat(undefined);
         charFormat.baselineAlignment = 'Subscript';
         charFormat.underline = 'Double';
@@ -139,6 +144,7 @@ describe('Selection Format validation -2', () => {
         charFormat.destroy();
     });
     it('selection Paragraph format validation', () => {
+console.log('selection Paragraph format validation');
         let selFormat: SelectionParagraphFormat = new SelectionParagraphFormat(undefined, undefined);
         expect(() => { selFormat.clearFormat() }).not.toThrowError();
         selFormat.rightIndent = 1;
@@ -153,12 +159,14 @@ describe('Selection Format validation -2', () => {
 });
 describe('Selection Format validation, Paragraph Format validation- 4', () => {
     it('Copy to Format method validation with undefined parameter', () => {
+console.log('Copy to Format method validation with undefined parameter');
         let selFormat: SelectionParagraphFormat = new SelectionParagraphFormat(undefined, undefined);
         let format = selFormat.copyToFormat(undefined);
         expect(format).toBe(undefined);
     });
 
     it('Copy to Format method validation with paragraph format value as undefined', () => {
+console.log('Copy to Format method validation with paragraph format value as undefined');
         let selFormat: SelectionParagraphFormat = new SelectionParagraphFormat(undefined, undefined);
         let paraFormat: WParagraphFormat = new WParagraphFormat();
         selFormat.leftIndent = undefined;

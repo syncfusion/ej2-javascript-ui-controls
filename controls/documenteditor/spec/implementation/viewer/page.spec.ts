@@ -3,7 +3,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from '../../test-helper.spec';
 import { Editor } from '../../../src/document-editor/implementation/editor/editor';
 import { Selection } from '../../../src/document-editor/implementation/selection/selection';
-import { WidthInfo } from '../../../src/index';
+import { EditorHistory, WidthInfo } from '../../../src/index';
 
 
 /**
@@ -32,6 +32,7 @@ describe('Numbering apply validation in different scenario', () => {
         }, 1000);
     });
     it('Get next Rendered widget validation in splitted table ', () => {
+console.log('Get next Rendered widget validation in splitted table ');
         editor.editorModule.insertTable(2, 2);
         editor.editorModule.insertText('Syncfusion');
         editor.selection.handleTabKey(true, false);
@@ -67,6 +68,7 @@ describe('Get Minimum and maximum width form cell', () => {
         }, 500);
     });
     it('Get minimum and maximum width from cell', () => {
+console.log('Get minimum and maximum width from cell');
         editor.editor.insertTable(2, 2);
         editor.editor.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational manufacturing company.');
         editor.editor.insertHyperlinkInternal('https://syncfusion.com', 'Syncfusion', true, false);
@@ -77,6 +79,7 @@ describe('Get Minimum and maximum width form cell', () => {
         expect(widthInfo.maximumWordWidth).toBeLessThan(758);
     });
     it('Get min and max width from table', () => {
+console.log('Get min and max width from table');
         editor.editor.insertTable(1, 2);
         // get width info from nested cell
         editor.selection.start.paragraph.associatedCell.ownerTable.isGridUpdated = false;
@@ -85,6 +88,7 @@ describe('Get Minimum and maximum width form cell', () => {
         expect(widthInfo.minimumWordWidth).toBe(editor.selection.start.paragraph.associatedCell.ownerTable.tableHolder.getTotalWidth(0));
     });
     it('Get min and max width from Row', () => {
+console.log('Get min and max width from Row');
         let widthInfo: WidthInfo = editor.selection.start.paragraph.associatedCell.ownerRow.getMinimumAndMaximumWordWidth(0, 0);
         expect(widthInfo.minimumWordWidth).toBe(0);
         expect(widthInfo.maximumWordWidth).toBe(0);
@@ -112,6 +116,318 @@ describe('Link Field Validation', () => {
         editor = undefined;
     });
     it('Check Error on Link Field', () => {
+console.log('Check Error on Link Field');
         expect(() => { editor.open(JSON.stringify(sfdt)) }).not.toThrowError();
     });
+});
+
+let restartNumberSfdt: any = {
+    "sections": [
+      {
+        "blocks": [
+          {
+            "characterFormat": { "fontColor": "empty" },
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": []
+          }
+        ],
+        "headersFooters": {
+          "header": {
+            "blocks": [
+              {
+                "characterFormat": { "fontColor": "empty" },
+                "paragraphFormat": { "styleName": "Header" },
+                "inlines": []
+              }
+            ]
+          },
+          "footer": {
+            "blocks": [
+              {
+                "blocks": [
+                  {
+                    "characterFormat": { "fontColor": "empty" },
+                    "paragraphFormat": { "styleName": "Footer" },
+                    "inlines": [
+                      {
+                        "name": "_GoBack",
+                        "bookmarkType": 0
+                      },
+                      {
+                        "name": "_GoBack",
+                        "bookmarkType": 1
+                      },
+                      {
+                        "hasFieldEnd": true,
+                        "characterFormat": { "fontColor": "empty" },
+                        "fieldType": 0
+                      },
+                      {
+                        "text": " PAGE \\* MERGEFORMAT ",
+                        "characterFormat": { "fontColor": "empty" }
+                      },
+                      { "fieldType": 2 },
+                      {
+                        "text": "2",
+                        "characterFormat": { "fontColor": "empty" }
+                      },
+                      { "fieldType": 1 }
+                    ]
+                  }
+                ],
+                "contentControlProperties": {
+                  "lockContentControl": false,
+                  "lockContents": false,
+                  "color": "#00000000",
+                  "type": "BuildingBlockGallery",
+                  "hasPlaceHolderText": false,
+                  "multiline": false,
+                  "isTemporary": false,
+                  "dateCalendarType": "Gregorian",
+                  "isChecked": false,
+                  "characterFormat": { "fontColor": "empty" }
+                }
+              },
+              {
+                "characterFormat": { "fontColor": "empty" },
+                "paragraphFormat": { "styleName": "Footer" },
+                "inlines": []
+              }
+            ]
+          },
+          "evenHeader": {
+            "blocks": [
+              {
+                "characterFormat": { "fontColor": "empty" },
+                "paragraphFormat": { "styleName": "Header" },
+                "inlines": []
+              }
+            ]
+          },
+          "evenFooter": {
+            "blocks": [
+              {
+                "characterFormat": { "fontColor": "empty" },
+                "paragraphFormat": { "styleName": "Footer" },
+                "inlines": []
+              }
+            ]
+          },
+          "firstPageHeader": {
+            "blocks": [
+              {
+                "characterFormat": { "fontColor": "empty" },
+                "paragraphFormat": { "styleName": "Header" },
+                "inlines": []
+              }
+            ]
+          },
+          "firstPageFooter": {
+            "blocks": [
+              {
+                "characterFormat": { "fontColor": "empty" },
+                "paragraphFormat": { "styleName": "Footer" },
+                "inlines": []
+              }
+            ]
+          }
+        },
+        "sectionFormat": {
+          "headerDistance": 36.0,
+          "footerDistance": 36.0,
+          "pageWidth": 612.0,
+          "pageHeight": 792.0,
+          "leftMargin": 72.0,
+          "rightMargin": 72.0,
+          "topMargin": 72.0,
+          "bottomMargin": 72.0,
+          "differentFirstPage": false,
+          "differentOddAndEvenPages": false,
+          "bidi": false,
+          "restartPageNumbering": false,
+          "pageStartingNumber": 0
+        }
+      },
+      {
+        "blocks": [
+          {
+            "characterFormat": { "fontColor": "empty" },
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": []
+          }
+        ],
+        "headersFooters": {},
+        "sectionFormat": {
+          "headerDistance": 36.0,
+          "footerDistance": 36.0,
+          "pageWidth": 612.0,
+          "pageHeight": 792.0,
+          "leftMargin": 72.0,
+          "rightMargin": 72.0,
+          "topMargin": 72.0,
+          "bottomMargin": 72.0,
+          "differentFirstPage": false,
+          "differentOddAndEvenPages": false,
+          "bidi": false,
+          "restartPageNumbering": true,
+          "pageStartingNumber": 9
+        }
+      },
+      {
+        "blocks": [
+          {
+            "characterFormat": { "fontColor": "empty" },
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": []
+          }
+        ],
+        "headersFooters": {},
+        "sectionFormat": {
+          "headerDistance": 36.0,
+          "footerDistance": 36.0,
+          "pageWidth": 612.0,
+          "pageHeight": 792.0,
+          "leftMargin": 72.0,
+          "rightMargin": 72.0,
+          "topMargin": 72.0,
+          "bottomMargin": 72.0,
+          "differentFirstPage": false,
+          "differentOddAndEvenPages": false,
+          "bidi": false,
+          "restartPageNumbering": false,
+          "pageStartingNumber": 0
+        }
+      }
+    ],
+    "characterFormat": {
+      "fontSize": 11.0,
+      "fontFamily": "Calibri",
+      "fontColor": "empty",
+      "fontSizeBidi": 11.0,
+      "fontFamilyBidi": "Arial"
+    },
+    "paragraphFormat": {
+      "afterSpacing": 8.0,
+      "lineSpacing": 1.0791666507720947,
+      "lineSpacingType": "Multiple"
+    },
+    "background": { "color": "#FFFFFFFF" },
+    "styles": [
+      {
+        "type": "Paragraph",
+        "name": "Normal",
+        "next": "Normal",
+        "characterFormat": { "fontColor": "empty" }
+      },
+      {
+        "type": "Character",
+        "name": "Default Paragraph Font",
+        "characterFormat": { "fontColor": "empty" }
+      },
+      {
+        "type": "Paragraph",
+        "name": "Header",
+        "basedOn": "Normal",
+        "next": "Header",
+        "link": "Header Char",
+        "characterFormat": { "fontColor": "empty" },
+        "paragraphFormat": {
+          "afterSpacing": 0.0,
+          "lineSpacing": 1.0,
+          "lineSpacingType": "Multiple",
+          "tabs": [
+            {
+              "tabJustification": "Center",
+              "position": 234.0,
+              "tabLeader": "None",
+              "deletePosition": 0.0
+            },
+            {
+              "tabJustification": "Right",
+              "position": 468.0,
+              "tabLeader": "None",
+              "deletePosition": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "type": "Character",
+        "name": "Header Char",
+        "basedOn": "Default Paragraph Font",
+        "characterFormat": { "fontColor": "empty" }
+      },
+      {
+        "type": "Paragraph",
+        "name": "Footer",
+        "basedOn": "Normal",
+        "next": "Footer",
+        "link": "Footer Char",
+        "characterFormat": { "fontColor": "empty" },
+        "paragraphFormat": {
+          "afterSpacing": 0.0,
+          "lineSpacing": 1.0,
+          "lineSpacingType": "Multiple",
+          "tabs": [
+            {
+              "tabJustification": "Center",
+              "position": 234.0,
+              "tabLeader": "None",
+              "deletePosition": 0.0
+            },
+            {
+              "tabJustification": "Right",
+              "position": 468.0,
+              "tabLeader": "None",
+              "deletePosition": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "type": "Character",
+        "name": "Footer Char",
+        "basedOn": "Default Paragraph Font",
+        "characterFormat": { "fontColor": "empty" }
+      }
+    ],
+    "defaultTabWidth": 36.0,
+    "formatting": false,
+    "trackChanges": false,
+    "protectionType": "NoProtection",
+    "enforcement": false,
+    "dontUseHTMLParagraphAutoSpacing": false,
+    "alignTablesRowByRow": false,
+    "formFieldShading": true
+};
+
+describe('Restart Page Numbering Validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Restart Page Numbering Validation', () => {
+console.log('Restart Page Numbering Validation');
+        editor.open(restartNumberSfdt);
+        expect(editor.documentHelper.pages[0].currentPageNum).toBe(1);
+        expect(editor.documentHelper.pages[1].currentPageNum).toBe(9);
+        expect(editor.documentHelper.pages[2].currentPageNum).toBe(10);
+    });
+    
 });

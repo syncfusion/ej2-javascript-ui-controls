@@ -6543,9 +6543,17 @@ var Series = /** @__PURE__ @class */ (function (_super) {
             var render = (this.type === 'Scatter' || this.type === 'Bubble') ?
                 chart.svgRenderer : chart.renderer;
             var index = this.index === undefined ? this.category : this.index;
-            var markerHeight = (this.type === 'Scatter') ? (this.marker.height + explodeValue) / 2 : 0;
-            var markerWidth = (this.type === 'Scatter') ? (this.marker.width + explodeValue) / 2 : 0;
+            var markerHeight = void 0;
+            var markerWidth = void 0;
             var options = void 0;
+            if (this.type === 'Scatter') {
+                markerHeight = (chart.primaryYAxis.maximum || chart.primaryXAxis.maximum) ? 0 : (this.marker.height + explodeValue) / 2;
+                markerWidth = (chart.primaryYAxis.maximum || chart.primaryXAxis.maximum) ? 0 : (this.marker.width + explodeValue) / 2;
+            }
+            else {
+                markerHeight = 0;
+                markerWidth = 0;
+            }
             if (chart.chartAreaType === 'PolarRadar') {
                 var markerMaxValue = (this.drawType === 'Scatter') ? Math.max(this.marker.width, this.marker.height) : 0;
                 options = new CircleOption(elementId + '_ChartSeriesClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1, this.clipRect.width / 2 + this.clipRect.x, this.clipRect.height / 2 + this.clipRect.y, chart.radius + markerMaxValue);

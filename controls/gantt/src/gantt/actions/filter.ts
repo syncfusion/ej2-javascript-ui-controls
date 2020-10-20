@@ -1,6 +1,6 @@
 import { TreeGrid, Filter as TreeGridFilter, FilterSettingsModel as TreeFilterSettingsModel } from '@syncfusion/ej2-treegrid';
 import { FilterEventArgs, filterAfterOpen, GroupEventArgs, getFilterMenuPostion, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
-import { getActualProperties, IFilterMUI, Filter as GridFilter, IXLFilter } from '@syncfusion/ej2-grids';
+import { getActualProperties, IFilterMUI, Filter as GridFilter, IXLFilter, getCustomDateFormat } from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
 import { FilterSettingsModel, ColumnModel, TaskFieldsModel } from '../models/models';
 import { getValue, isNullOrUndefined, remove, createElement, addClass } from '@syncfusion/ej2-base';
@@ -90,10 +90,11 @@ export class Filter {
             ? parent.defaultStartTime : parent.defaultEndTime;
         let dropDateInstance: DatePicker;
         let filterDateUI: IFilterMUI = {
-            create: (args: { target: Element, column: Object }) => {
+            create: (args: { target: Element, column: ColumnModel }) => {
+                let format: string = getCustomDateFormat(args.column.format, args.column.type);
                 let flValInput: HTMLElement = createElement('input', { className: 'flm-input' });
                 args.target.appendChild(flValInput);
-                dropDateInstance = new DatePicker({ placeholder: this.parent.localeObj.getConstant('enterValue') });
+                dropDateInstance = new DatePicker({ placeholder: this.parent.localeObj.getConstant('enterValue'), format: format });
                 dropDateInstance.appendTo(flValInput);
             },
             write: (args: {
@@ -114,10 +115,11 @@ export class Filter {
     private getDateTimePickerFilter(): IFilterMUI {
         let dropInstance: DateTimePicker;
         let filterDateTimeUI: IFilterMUI = {
-            create: (args: { target: Element, column: Object }) => {
+            create: (args: { target: Element, column: ColumnModel }) => {
+                let format: string = getCustomDateFormat(args.column.format, args.column.type);
                 let flValInput: HTMLElement = createElement('input', { className: 'flm-input' });
                 args.target.appendChild(flValInput);
-                dropInstance = new DateTimePicker({ placeholder: this.parent.localeObj.getConstant('enterValue') });
+                dropInstance = new DateTimePicker({ placeholder: this.parent.localeObj.getConstant('enterValue'), format: format });
                 dropInstance.appendTo(flValInput);
             },
             write: (args: {

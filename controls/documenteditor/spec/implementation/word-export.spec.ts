@@ -43,12 +43,14 @@ describe('Save validation', () => {
         }, 1000);
     });
     it('save validation in json format', () => {
+console.log('save validation in json format');
         let preservedString: string = 'characterFormat":{"bold":true';
         json = editor.serialize();
         editor.save('Sample', 'Sfdt');
         expect(json.substring(313, 342)).toBe(preservedString);
     });
     it('Open the saved Json', () => {
+console.log('Open the saved Json');
         editor.open(json);
         expect((documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).characterFormat.bold).toBe(true);
     });
@@ -85,6 +87,7 @@ describe('Word export validation of RTL content with section and paragraph forma
         }, 1000);
     });
     it('section bidi export validation', () => {
+console.log('section bidi export validation');
         json = editor.sfdtExportModule.write();
         (editor.wordExportModule as any).setDocument(json);
         (editor.wordExportModule as any).section = (editor.wordExportModule as any).document.sections[0];
@@ -92,11 +95,13 @@ describe('Word export validation of RTL content with section and paragraph forma
         expect(writer.bufferText.indexOf('<w:bidi />')).not.toBe(-1);
     });
     it('Paragraph format with bidi export validation', () => {
+console.log('Paragraph format with bidi export validation');
         writer = new XmlWriter();
         (editor.wordExportModule as any).serializeParagraph(writer, json.sections[0].blocks[2], true);
         expect((writer as any).bufferText.indexOf('<w:bidi />')).not.toBe(-1);
     });
     it('Paragraph format without bidi export validation', () => {
+console.log('Paragraph format without bidi export validation');
         writer = new XmlWriter();
         (editor.wordExportModule as any).serializeParagraph(writer, json.sections[0].blocks[0], true);
         expect((writer as any).bufferText.indexOf('<w:bidi />')).toBe(-1);
@@ -133,11 +138,13 @@ describe('Word export validation of RTL content with character format Bidi vaida
         }, 1000);
     });
     it('Character format with bidi export validation', () => {
+console.log('Character format with bidi export validation');
         writer = new XmlWriter();
         (editor.wordExportModule as any).serializeParagraph(writer, json.sections[0].blocks[0], true);
         expect((writer as any).bufferText.indexOf('<w:rtl />')).not.toBe(-1);
     });
     it('Character format without bidi export validation', () => {
+console.log('Character format without bidi export validation');
         writer = new XmlWriter();
         (editor.wordExportModule as any).serializeParagraph(writer, json.sections[0].blocks[1], true);
         expect((writer as any).bufferText.indexOf('<w:rtl />')).toBe(-1);
@@ -175,16 +182,19 @@ describe('Word export validation of RTL content with character format bdo vaidat
         }, 1000);
     });
     it('Character format with bdo RTL export validation-1', () => {
+console.log('Character format with bdo RTL export validation-1');
         writer = new XmlWriter();
         (editor.wordExportModule as any).serializeParagraph(writer, json.sections[0].blocks[0], true);
         expect((writer as any).bufferText.indexOf('<w:bdo w:val="rtl">')).not.toBe(-1);
     });
     it('Character format with bdo LTR export validation', () => {
+console.log('Character format with bdo LTR export validation');
         writer = new XmlWriter();
         (editor.wordExportModule as any).serializeParagraph(writer, json.sections[0].blocks[1], true);
         expect((writer as any).bufferText.indexOf('<w:bdo w:val="ltr">')).not.toBe(-1);
     });
     it('Character format with bdo None export validation', () => {
+console.log('Character format with bdo None export validation');
         writer = new XmlWriter();
         (editor.wordExportModule as any).serializeParagraph(writer, json.sections[0].blocks[2], true);
         expect((writer as any).bufferText.indexOf('<w:bdo w:val="rtl">')).not.toBe(-1);
@@ -219,6 +229,7 @@ describe('Word export validation of RTL content', () => {
         }, 1000);
     });
     it('section without bidi export validation', () => {
+console.log('section without bidi export validation');
         json = editor.sfdtExportModule.write();
         (editor.wordExportModule as any).setDocument(json);
         (editor.wordExportModule as any).section = (editor.wordExportModule as any).document.sections[0];
@@ -226,6 +237,7 @@ describe('Word export validation of RTL content', () => {
         expect(writer.bufferText.indexOf('<w:bidi />')).toBe(-1);
     });
     it('Table format with bidi validation', () => {
+console.log('Table format with bidi validation');
         writer = new XmlWriter();
         (editor.wordExportModule as any).mVerticalMerge = new Dictionary<number, number>();
         (editor.wordExportModule as any).mGridSpans = new Dictionary<number, number>();

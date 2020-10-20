@@ -23,7 +23,7 @@ import { Selector } from '../objects/node';
 import { CommandHandler } from './command-manager';
 import { Actions, findToolToActivate, isSelected, getCursor, contains } from './actions';
 import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools, RendererAction, DiagramConstraints } from '../enum/enum';
-import { BlazorAction } from '../enum/enum';
+import { BlazorAction, ScrollActions } from '../enum/enum';
 import { isPointOverConnector, findObjectType, insertObject, getObjectFromCollection, getTooltipOffset } from '../utility/diagram-util';
 import { getObjectType, getInOutConnectPorts, removeChildNodes, cloneBlazorObject, checkPort } from '../utility/diagram-util';
 import { canZoomPan, canDraw, canDrag, canZoomTextEdit, canVitualize, canPreventClearSelection } from './../utility/constraints-util';
@@ -95,7 +95,7 @@ export class DiagramEventHandler {
             }
             this.currentAction = action;
             if (this.currentAction !== 'None' && this.currentAction !== 'Select' &&
-                !(this.diagram.diagramActions & DiagramAction.TextEdit)) {
+                !(this.diagram.diagramActions & DiagramAction.TextEdit) || this.commandHandler.isUserHandle(this.currentPosition)) {
                 this.diagram.diagramActions = this.diagram.diagramActions | DiagramAction.ToolAction;
             } else {
                 this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.ToolAction;
@@ -990,11 +990,13 @@ export class DiagramEventHandler {
                 this.eventArgs.position = mousePosition;
                 this.tool.mouseWheel(this.eventArgs);
             }
+            this.diagram.scrollActions |= ScrollActions.Interaction;
             if (evt.shiftKey) {
                 this.diagram.scroller.zoom(1, change, 0, mousePosition);
             } else {
                 this.diagram.scroller.zoom(1, 0, change, mousePosition);
             }
+            this.diagram.scrollActions &= ~ScrollActions.Interaction;
             if (horizontalOffset !== this.diagram.scroller.horizontalOffset
                 || verticalOffset !== this.diagram.scroller.verticalOffset) {
                 evt.preventDefault();
@@ -1220,7 +1222,9 @@ export class DiagramEventHandler {
                 this.currentPosition, this.diagram, this.eventArgs, null, this.action);
             this.eventArgs.target = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
             this.tool.mouseMove(this.eventArgs);
+            this.diagram.scrollActions |= ScrollActions.Interaction;
             this.diagram.scroller.zoom(1, -left, -top, pos);
+            this.diagram.scrollActions &= ~ScrollActions.Interaction;
         }
     }
     private mouseEvents(): void {

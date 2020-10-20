@@ -1458,6 +1458,7 @@ describe('Right Indent Tab layout', () => {
         }, 1000);
     });
     it('Footer Paragraphs children count', () => {
+console.log('Footer Paragraphs children count');
         expect((editor.documentHelper.pages[0].footerWidget.childWidgets[1] as ParagraphWidget).childWidgets.length).toBe(1);
     });
 });
@@ -4238,6 +4239,7 @@ describe('List tab justification', () => {
         }, 1000);
     });
     it('List Tab justification', () => {
+console.log('List Tab justification');
         expect(Math.round(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1].width)).toBe(17);
     });
 });
@@ -7065,6 +7067,7 @@ describe('Right Indent Tab layout 2', () => {
         }, 1000);
     });
     it('Paragraphs children count', () => {
+console.log('Paragraphs children count');
         expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets.length).toBe(1);
     });
 });
@@ -9816,6 +9819,7 @@ describe('List tab justification 2', () => {
         }, 1000);
     });
     it('List Tab justification', () => {
+console.log('List Tab justification');
         expect(Math.round(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1].width)).toBe(35);
     });
 });
@@ -9845,6 +9849,7 @@ describe('List tab Width Validation', () => {
         }, 1000);
     });
     it('List Tab Width', () => {
+console.log('List Tab Width');
         expect(Math.round(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1].width)).toBeGreaterThanOrEqual(18);
     });
 });

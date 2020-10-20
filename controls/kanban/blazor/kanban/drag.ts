@@ -162,6 +162,10 @@ export class DragAndDrop {
     private dragStop(e: MouseEvent): void {
         let contentCell: Element = closest(this.dragObj.targetClone, '.' + cls.CONTENT_CELLS_CLASS);
         let columnKey: Element;
+        let dropIndex: number;
+        if (this.dragObj.targetClone.parentElement) {
+            dropIndex = [].slice.call(this.dragObj.targetClone.parentElement.children).indexOf(this.dragObj.targetClone);
+        }
         if (this.parent.element.querySelector('.' + cls.TARGET_MULTI_CLONE_CLASS)) {
             columnKey = closest(e.target as HTMLElement, '.' + cls.MULTI_COLUMN_KEY_CLASS);
         }
@@ -187,7 +191,7 @@ export class DragAndDrop {
                     cardId.push(element.getAttribute('data-id'));
                 });
             }
-            this.parent.dotNetRef.invokeMethodAsync('DragStop', cardId, cardStatus, swimData);
+            this.parent.dotNetRef.invokeMethodAsync('DragStop', cardId, cardStatus, swimData, dropIndex);
         }
         this.removeElement(this.dragObj.draggedClone);
         this.removeElement(this.dragObj.targetClone);

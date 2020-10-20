@@ -41,6 +41,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         }, 1000);
     });
     it('Apply Heading1', () => {
+console.log('Apply Heading1');
         editor.open(json);
         editor.editorModule.insertText('Heading');
         editor.editorModule.onEnter();
@@ -63,6 +64,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         expect(editor.selection.characterFormat.fontColor).toBe("empty");
     });
     it('Apply Heading2', () => {
+console.log('Apply Heading2');
         editor.open(json);
         editor.editorModule.insertText('Heading');
         editor.editorModule.onEnter();
@@ -84,6 +86,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         expect(editor.selection.characterFormat.fontColor).toBe("empty");
     });
     it('Apply Heading3', () => {
+console.log('Apply Heading3');
         editor.open(json);
         editor.editorModule.insertText('Heading');
         editor.editorModule.onEnter();
@@ -106,6 +109,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         expect(editor.selection.characterFormat.fontColor).toBe("empty");
     });
     it('Apply Heading4', () => {
+console.log('Apply Heading4');
         editor.open(json);
         editor.editorModule.insertText('Heading');
         editor.editorModule.onEnter();
@@ -127,6 +131,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         expect(editor.selection.characterFormat.fontColor).toBe("empty");
     });
     it('Apply Heading5', () => {
+console.log('Apply Heading5');
         editor.open(json);
         editor.editorModule.insertText('Heading');
         editor.editorModule.onEnter();
@@ -147,6 +152,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         expect(editor.selection.characterFormat.fontColor).toBe("empty");
     });
     it('Apply Heading6', () => {
+console.log('Apply Heading6');
         editor.open(json);
         editor.editorModule.insertText('Heading');
         editor.editorModule.onEnter();

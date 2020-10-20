@@ -48,6 +48,7 @@ describe('undo and redo toc', () => {
         }, 1000);
     });
     it('paragraph length - undo and redo', () => {
+console.log('paragraph length - undo and redo');
         editor.openBlank();
         editor.open(JSON.stringify(getJson()));
         let paraWidgets: ParagraphWidget[] = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
@@ -63,6 +64,7 @@ describe('undo and redo toc', () => {
         expect(paraWidgets.length).toBe(3);
     });
     it('paragraph length - multiple undo', () => {
+console.log('paragraph length - multiple undo');
         editor.openBlank();
         editor.open(JSON.stringify(getJson()));
         editor.editorModule.insertTableOfContents();
@@ -81,6 +83,7 @@ describe('undo and redo toc', () => {
         expect(paraWidgets.length).toBe(1);
     });
     it('paragraph length - multiple undo', () => {
+console.log('paragraph length - multiple undo');
         editor.openBlank();
         editor.open(JSON.stringify(getJson()));
         editor.editorModule.insertTableOfContents();

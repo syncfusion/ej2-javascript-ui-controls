@@ -383,6 +383,9 @@ describe('DropDown Tree control hierarchical datasource', () => {
             setTimeout(function () {
                 ddtreeObj.showPopup();
                 let li: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
+                tapEvent.tapCount = 1;
+                mouseEventArgs.target = li[5].querySelector('.e-list-text');
+                ddtreeObj.treeObj.touchClickObj.tap(tapEvent);
                 tapEvent.tapCount = 2;
                 mouseEventArgs.target = li[5].querySelector('.e-list-text');
                 expect(li[5].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(true);
@@ -433,6 +436,8 @@ describe('DropDown Tree control hierarchical datasource', () => {
                 ddtreeObj.showPopup();
                 let li: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
                 mouseEventArgs.target = li[5].querySelector('.e-list-text');
+                tapEvent.tapCount = 1;
+                ddtreeObj.treeObj.touchExpandObj.tap(tapEvent);
                 expect(li[5].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(true);
                 expect(li[5].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                 expect(li[5].childElementCount).toBe(3);
@@ -1286,7 +1291,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
             expect(ddtreeObj.text).toBe('Personals');
             ddtreeObj.value = null;
             ddtreeObj.dataBind();
-            expect(ddtreeObj.value.length).toBe(0);
+            expect(ddtreeObj.value).toBe(null);
             expect(ddtreeObj.text).toBe(null);
         });
 

@@ -117,6 +117,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Property('320px')
     public height: string;
     /**
+     * Enable partial lock and edit module.
+     * @default false
+     */
+    @Property(false)
+    public enableLockAndEdit: boolean;
+    /**
      * Triggers when the component is created
      * @event
      * @blazorproperty 'Created'
@@ -300,7 +306,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * Defines the settings of the DocumentEditorContainer service.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
+    @Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing', canLock: 'CanLock', getPendingActions: 'GetPendingActions' })
     public serverActionSettings: ContainerServerActionSettingsModel;
 
     //tslint:disable:max-line-length
@@ -517,10 +523,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         for (let prop of Object.keys(newModel)) {
             switch (prop) {
                 case 'restrictEditing':
+                    this.documentEditor.isReadOnly = newModel.restrictEditing;
                     if (this.toolbarModule) {
                         this.toolbarModule.enableDisableToolBarItem(!newModel.restrictEditing, false);
                     }
-                    this.documentEditor.isReadOnly = newModel.restrictEditing;
                     break;
                 case 'showPropertiesPane':
                     this.showHidePropertiesPane(newModel.showPropertiesPane);
@@ -731,6 +737,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.documentEditorSettings.fontFamilies) {
             this.documentEditor.documentEditorSettings.fontFamilies = this.documentEditorSettings.fontFamilies;
         }
+        if (this.documentEditorSettings.collaborativeEditingSettings) {
+            // tslint:disable-next-line:max-line-length
+            this.documentEditor.documentEditorSettings.collaborativeEditingSettings = this.documentEditorSettings.collaborativeEditingSettings;
+        }
     }
     /**
      * @private
@@ -820,7 +830,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             height: '100%',
             width: '100%',
             enableTrackChanges: this.enableTrackChanges,
-            showRevisions: this.enableTrackChanges
+            showRevisions: this.enableTrackChanges,
+            enableLockAndEdit: this.enableLockAndEdit
         });
         this.documentEditor.enableAllModules();
         this.documentEditor.enableComment = this.enableComment;

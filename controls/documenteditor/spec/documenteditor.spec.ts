@@ -56,21 +56,26 @@ describe('DocumentEditor', () => {
             }, 1000);
         })
         it('Get module name in Document Editor', () => {
+console.log('Get module name in Document Editor');
             expect(editor.getModuleName()).toBe("DocumentEditor");
             expect(editor.getPersistData()).toBe("documenteditor");
         });
         it('document title testing', () => {
+console.log('document title testing');
             expect(editor.documentName).toEqual('');
         });
         it('Layout Enabled property testing', () => {
+console.log('Layout Enabled property testing');
             editor.isLayoutEnabled = true;
             expect(editor.isLayoutEnabled).toBe(true);
         });
         it('Shift Enabled property testing', () => {
+console.log('Shift Enabled property testing');
             editor.isShiftingEnabled = true;
             expect(editor.isShiftingEnabled).toBe(true);
         });
         it('page background color', () => {
+console.log('page background color');
             editor.documentHelper.backgroundColor = '#000000';
             expect(editor.documentHelper.backgroundColor).not.toEqual('#FFFFFF');
         });
@@ -97,30 +102,37 @@ describe('DocumentEditor', () => {
             }, 1000);
         });
         it('container className testing', () => {
+console.log('container className testing');
             expect(editor.element.classList.contains("e-documenteditor")).toEqual(true);
         });
         it('Editable div container test', () => {
+console.log('Editable div container test');
             expect(editor.documentHelper.editableDiv.parentElement).toBe(editor.documentHelper.iframe.contentDocument.body);
         });
         it('viewerContainer element testing', () => {
+console.log('viewerContainer element testing');
             let container = document.querySelector("#container");
             let viewerContainer = document.querySelector("#container_viewerContainer");
             expect(container.contains(viewerContainer)).toEqual(true);
         });
         it('pageContainer element testing', () => {
+console.log('pageContainer element testing');
             let viewerContainer = document.querySelector("#container_viewerContainer");
             let pageContainer = document.querySelector("#container_pageContainer");
             expect(viewerContainer.contains(pageContainer)).toEqual(true);
         });
         it('canvas rendering testing', () => {
+console.log('canvas rendering testing');
             pagecontainer = document.querySelector("#container_pageContainer");
             let canvas = document.getElementsByTagName('canvas')[0];
             expect(pagecontainer.contains(canvas)).toEqual(true);
         });
         it('element testing', () => {
+console.log('element testing');
             expect(document.getElementById("container").id).toEqual(editor.element.id);
         });
         it('element testing after removing container', () => {
+console.log('element testing after removing container');
             if (editor.element !== undefined && editor.element !== null) {
                 let element: HTMLElement = editor.element;
                 editor.element.parentNode.removeChild(element);
@@ -132,10 +144,12 @@ describe('DocumentEditor', () => {
     });
     describe('Physical Dom Api Testing', () => {
         it('initialize the BodyWidget class', () => {
+console.log('initialize the BodyWidget class');
             let bodyWidget: BodyWidget = new BodyWidget();
             expect('').toBe('');
         });
         it('margin testing', () => {
+console.log('margin testing');
             let margin = new Margin(10, 10, 10, 10);
             expect(margin.bottom).toBe(10);
             expect(margin.top).toBe(10);
@@ -143,6 +157,7 @@ describe('DocumentEditor', () => {
             expect(margin.left).toBe(10);
         });
         it('margin class api testing', () => {
+console.log('margin class api testing');
             let margin = new Margin(10, 10, 10, 10);
             margin.bottom = 20;
             margin.top = 20;
@@ -157,41 +172,49 @@ describe('DocumentEditor', () => {
 
     describe('Disposing method validation', () => {
         it('page destroy validation', () => {
+console.log('page destroy validation');
             let page: Page = new Page(undefined);
             page.bodyWidgets = undefined;
             expect(() => { page.destroy() }).not.toThrowError();
         });
         it('image element box validation', () => {
+console.log('image element box validation');
             let image: ImageElementBox = new ImageElementBox(undefined);
             expect(() => { image.line }).not.toThrowError();
         });
         it('Table Row widget validation', () => {
+console.log('Table Row widget validation');
             let row: TableRowWidget = new TableRowWidget();
             row.childWidgets = undefined;
             expect(() => { row.destroy(); }).not.toThrowError();
         });
         it('Paragraph widget validation', () => {
+console.log('Paragraph widget validation');
             let row: ParagraphWidget = new ParagraphWidget();
             row.childWidgets = undefined;
             expect(() => { row.destroy(); }).not.toThrowError();
         });
         it('Line widget validation', () => {
+console.log('Line widget validation');
             let line: LineWidget = new LineWidget(undefined);
             line.children = undefined;
             expect(() => { line.destroy(); }).not.toThrowError();
         });
         it('Table cell widget validation', () => {
+console.log('Table cell widget validation');
             let cell: TableCellWidget = new TableCellWidget();
             cell.childWidgets = undefined;
             expect(() => { cell.destroy(); }).not.toThrowError();
         });
         it('BodyWidget validation', () => {
+console.log('BodyWidget validation');
             let body: BodyWidget = new BodyWidget();
             body.page = undefined;
             body.childWidgets = undefined;
             expect(() => { body.destroy(); }).not.toThrowError();
         });
         it('Table widget validation', () => {
+console.log('Table widget validation');
             let table: TableWidget = new TableWidget();
             table.childWidgets = undefined;
             expect(() => { table.destroy(); }).not.toThrowError();
@@ -218,6 +241,7 @@ describe('DocumentEditor', () => {
             }, 1000);
         });
         it('Localization en-US testing', () => {
+console.log('Localization en-US testing');
             let oldProp: DocumentEditorModel = { locale: '' };
             let newProp: DocumentEditorModel = { locale: 'en-US' };
             editor.locale = 'en-US';
@@ -225,6 +249,7 @@ describe('DocumentEditor', () => {
             expect(editor.locale).toBe('en-US');
         });
         it('Localization empty string testing', () => {
+console.log('Localization empty string testing');
             let oldProp: DocumentEditorModel = { locale: 'en-US' };
             let newProp: DocumentEditorModel = { locale: '' };
             editor.locale = '';
@@ -232,6 +257,7 @@ describe('DocumentEditor', () => {
             expect(editor.locale).toBe('');
         });
         it('page gap API validation', () => {
+console.log('page gap API validation');
             editor.pageGap = 0;
             expect((editor.viewer as PageLayoutViewer).pageGap).toBe(0);
         });
@@ -261,6 +287,7 @@ describe('DocumentEditor', () => {
         });
 
         it('Show ListDialog dialog testing', () => {
+console.log('Show ListDialog dialog testing');
             editor.showListDialog();
             expect((editor.listDialogModule as any).target).not.toBeNull();
             expect((editor.listDialogModule as any).target).not.toBeUndefined();
@@ -298,6 +325,7 @@ describe('DocumentEditor', () => {
         });
 
         it('table dialog-preferred width using point testing', () => {
+console.log('table dialog-preferred width using point testing');
             editor.open(getJson());
             editor.showTablePropertiesDialog();
             expect((editor.tablePropertiesDialogModule as any).preferCheckBox.checked).toBe(false);
@@ -309,6 +337,7 @@ describe('DocumentEditor', () => {
             editor.tablePropertiesDialogModule.applyTableProperties();
         });
         it('table dialog-preferred width using pixel testing', () => {
+console.log('table dialog-preferred width using pixel testing');
             editor.open(getJson());
             editor.showTablePropertiesDialog();
             (editor.tablePropertiesDialogModule as any).preferCheckBox.checked = true;
@@ -321,6 +350,7 @@ describe('DocumentEditor', () => {
             editor.tablePropertiesDialogModule.applyTableProperties();
         });
         it('table dialog- indent from left testing', () => {
+console.log('table dialog- indent from left testing');
             editor.open(getJson());
             editor.showTablePropertiesDialog();
             let tableProperties: any = editor.tablePropertiesDialogModule;
@@ -363,6 +393,7 @@ describe('DocumentEditor', () => {
             }, 1000);
         });
         it('table dialog-table left alignment testing', () => {
+console.log('table dialog-table left alignment testing');
             editor.open(getJson());
             editor.showTablePropertiesDialog();
             document.getElementById('container_TablePropertiesDialog_TablePropertiesContentDialogTab_left_alignment').click();
@@ -370,6 +401,7 @@ describe('DocumentEditor', () => {
             editor.tablePropertiesDialogModule.applyTableProperties();
         });
         it('table dialog-table center alignment testing', () => {
+console.log('table dialog-table center alignment testing');
             editor.open(getJson());
             editor.showTablePropertiesDialog();
             document.getElementById('container_TablePropertiesDialog_TablePropertiesContentDialogTab_center_alignment').click();
@@ -377,6 +409,7 @@ describe('DocumentEditor', () => {
             editor.tablePropertiesDialogModule.applyTableProperties();
         });
         it('table dialog-table right alignment testing', () => {
+console.log('table dialog-table right alignment testing');
             editor.open(getJson());
             editor.showTablePropertiesDialog();
             document.getElementById('container_TablePropertiesDialog_TablePropertiesContentDialogTab_right_alignment').click();
@@ -429,6 +462,7 @@ describe('DocumentEditor', () => {
         //     (document.getElementsByClassName('e-table-ppty-okay')[0] as any).click();
         // });
         it('setting border style as none testing', () => {
+console.log('setting border style as none testing');
             editor.open(getJson());
             editor.showTablePropertiesDialog();
             (editor.tablePropertiesDialogModule as any).bordersAndShadingButton.click();
@@ -436,6 +470,7 @@ describe('DocumentEditor', () => {
             expect((document.getElementsByClassName('e-de-table-border-none')[0]).children[0].classList.contains('e-de-table-border-inside-setting-click')).toBe(true);
         });
         it('setting border style as box testing', () => {
+console.log('setting border style as box testing');
             editor.open(getJson());
             editor.showTablePropertiesDialog();
             (editor.tablePropertiesDialogModule as any).bordersAndShadingButton.click();
@@ -443,6 +478,7 @@ describe('DocumentEditor', () => {
             expect((document.getElementsByClassName('e-de-table-border-box')[0]).children[0].classList.contains('e-de-table-border-inside-setting-click')).toBe(true);
         });
         it('setting border style as all testing', () => {
+console.log('setting border style as all testing');
             editor.open(getJson());
             editor.showTablePropertiesDialog();
             (editor.tablePropertiesDialogModule as any).bordersAndShadingButton.click();
@@ -493,6 +529,7 @@ describe('DocumentEditor', () => {
         //     (document.getElementsByClassName('e-table-ppty-okay')[0] as any).click();
         // });
         it('Show table options dialog testing', () => {
+console.log('Show table options dialog testing');
             editor.open(getJson());
             editor.showTablePropertiesDialog();
             editor.showTableOptionsDialog();
@@ -526,6 +563,7 @@ describe('DocumentEditor', () => {
             }, 1000);
         });
         it('Prevent bold operation', () => {
+console.log('Prevent bold operation');
             editor.editor.insertText('Syncfusion');
             editor.selection.selectAll();
             editor.keyDown = (args) => {
@@ -1410,6 +1448,7 @@ describe('DocumentEditor', () => {
     describe('Component created and destroy event validation', () => {
         let documentEditor = new DocumentEditor();
         it('Created event validation', () => {
+console.log('Created event validation');
             let createSpy = jasmine.createSpy('created');
             let ele: HTMLElement = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
@@ -1420,6 +1459,7 @@ describe('DocumentEditor', () => {
             expect(createSpy).toHaveBeenCalled();
         });
         it('Destroy vaalidation', () => {
+console.log('Destroy vaalidation');
             let destroy = jasmine.createSpy('destroy');
             documentEditor.destroyed = destroy;
             documentEditor.destroy();
@@ -1428,6 +1468,7 @@ describe('DocumentEditor', () => {
     });
 
     it('memory leak', () => {
+console.log('memory leak');
         profile.sample();
         let average: any = inMB(profile.averageChange)
         //Check average change in memory samples to not be over 10MB
@@ -1465,6 +1506,7 @@ describe("Initilize document editor", function () {
     });
 
     it('In Device testing', function () {
+console.log('In Device testing');
         expect(() => { editor.appendTo("#container"); }).not.toThrowError();
     });
 });
@@ -1490,6 +1532,7 @@ describe('Header Ajax value checking', () => {
         }, 1000);
     });
     it('header value checking', () => {
+console.log('header value checking');
         editor.headers = [{ "syncfusion": "true" }];
         var httpRequest = new XmlHttpRequestHandler();
         httpRequest.customHeaders = editor.headers;
@@ -1522,15 +1565,18 @@ describe('Enable comment checking in docmenteitor', () => {
         }, 1000);
     });
     it('Insert comment', () => {
+console.log('Insert comment');
         editor.editor.insertComment();
         expect(editor.showComments).toBe(true);
         editor.enableComment = false;
     });
     it('set enable comment as false', () => {
+console.log('set enable comment as false');
         editor.enableComment = false;
         expect(editor.showComments).toBe(false);
     });
     it('insert comment after enable comment as false', () => {
+console.log('insert comment after enable comment as false');
         editor.openBlank();
         editor.editor.insertComment();
         expect(editor.documentHelper.comments.length).toBe(0);
@@ -1560,6 +1606,7 @@ describe('Form field API validation', () => {
         }, 1000);
     });
     it('get form field names', () => {
+console.log('get form field names');
         documentEditor.editor.insertFormField('Text');
         documentEditor.editor.insertFormField('CheckBox');
         documentEditor.editor.insertFormField('DropDown');
@@ -1573,6 +1620,7 @@ describe('Form field API validation', () => {
         expect((documentEditor.documentHelper.formFields[2].formFieldData as DropDownFormField).name).toBe('Dropdown1');
     })
     it('get form fields', () => {
+console.log('get form fields');
         (documentEditor.documentHelper.formFields[0].formFieldData as TextFormField).name = 'Text1';
         (documentEditor.documentHelper.formFields[1].formFieldData as CheckBoxFormField).name = 'Checkbox1';
         (documentEditor.documentHelper.formFields[2].formFieldData as DropDownFormField).name = 'Dropdown1';
@@ -1582,6 +1630,7 @@ describe('Form field API validation', () => {
         expect((documentEditor.documentHelper.formFields[2].formFieldData as DropDownFormField).selectedIndex).toBe(0);
     })
     it('set form fields', () => {
+console.log('set form fields');
         (documentEditor.documentHelper.formFields[0].formFieldData as TextFormField).name = 'Text1';
         (documentEditor.documentHelper.formFields[0].formFieldData as TextFormField).defaultValue = 'check';
         (documentEditor.documentHelper.formFields[0].formFieldData as TextFormField).format = 'Uppercase';
@@ -1595,6 +1644,7 @@ describe('Form field API validation', () => {
         expect((documentEditor.documentHelper.formFields[2].formFieldData as TextFormField).enabled).toBe(true);
     })
     it('reset form fields', () => {
+console.log('reset form fields');
         (documentEditor.documentHelper.formFields[2].formFieldData as TextFormField).name = 'Text1';
         (documentEditor.documentHelper.formFields[2].formFieldData as TextFormField).defaultValue = '';
         (documentEditor.documentHelper.formFields[0].formFieldData as CheckBoxFormField).name = 'Checkbox1';
@@ -1608,6 +1658,7 @@ describe('Form field API validation', () => {
         expect((documentEditor.documentHelper.formFields[1].formFieldData as DropDownFormField).selectedIndex).toBe(0);
     })
     it('export form fields', () => {
+console.log('export form fields');
         let formData: FormFieldData[] = documentEditor.exportFormData();
         let text: string = (documentEditor.documentHelper.formFields[2].formFieldData as TextFormField).defaultValue;
         expect(formData[2].value).toBe(text);
@@ -1617,6 +1668,7 @@ describe('Form field API validation', () => {
         expect(formData[1].value).toBe(index);
     })
     it('import form fields', () => {
+console.log('import form fields');
         let formData: FormFieldData[] = documentEditor.exportFormData();
         let formfield: FieldElementBox[] = documentEditor.documentHelper.formFields;
         documentEditor.editor.updateFormField(formfield[2], 'result', true);
@@ -1629,6 +1681,7 @@ describe('Form field API validation', () => {
         expect((documentEditor.documentHelper.formFields[1].formFieldData as DropDownFormField).selectedIndex).toBe(index);
     })
     it('set checkbox form fields', () => {
+console.log('set checkbox form fields');
         (documentEditor.documentHelper.formFields[0].formFieldData as CheckBoxFormField).size = 11;
         (documentEditor.documentHelper.formFields[0].formFieldData as CheckBoxFormField).sizeType = 'Auto';
         let checkboxInfo: TextFormFieldInfo | CheckBoxFormFieldInfo | DropDownFormFieldInfo = documentEditor.getFormFieldInfo('Checkbox1');
@@ -1637,23 +1690,37 @@ describe('Form field API validation', () => {
         expect((documentEditor.documentHelper.formFields[2].formFieldData as CheckBoxFormField).sizeType).toBe('Auto');
     })
     it('set dropdown form fields', () => {
+console.log('set dropdown form fields');
         let dropdownInfo: TextFormFieldInfo | CheckBoxFormFieldInfo | DropDownFormFieldInfo = documentEditor.getFormFieldInfo('Dropdown1');
         documentEditor.setFormFieldInfo('Dropdown1', dropdownInfo);
         expect((documentEditor.documentHelper.formFields[2].formFieldData as DropDownFormField).selectedIndex).toBe(0);
     })
     it('prevent content change trigger', () => {
+console.log('prevent content change trigger');
         documentEditor.openBlank();
         documentEditor.layoutType = 'Continuous';
         expect(() => { documentEditor.editor.layoutWholeDocument(true) }).not.toThrowError();
     })
     it('Bookmark reference validation', () => {
+console.log('Bookmark reference validation');
         expect(() => { documentEditor.open(JSON.stringify(sfdt)) }).not.toThrowError();
         documentEditor.documentHelper.selection.handleHomeKey();
         documentEditor.documentHelper.selection.selectCurrentWord();
         expect(() => { documentEditor.documentHelper.selection.bookmarks }).not.toThrowError();
     });
     it('Restrict editing pane public api validation', () => {
+console.log('Restrict editing pane public api validation');
         documentEditor.openBlank();
         expect(() => { documentEditor.showRestrictEditingPane() }).not.toThrowError();
+    });
+    it('Restrict editing trackchanges pane validation', () => {
+console.log('Restrict editing trackchanges pane validation');
+        documentEditor.openBlank();
+        documentEditor.enableTrackChanges = true;
+        documentEditor.isReadOnly = true;
+        expect(documentEditor.showRevisions).toBe(false);
+        documentEditor.isReadOnly =  false;
+        documentEditor.documentHelper.isDocumentProtected = true;
+        expect(documentEditor.showRevisions).toBe(false);
     });
 });

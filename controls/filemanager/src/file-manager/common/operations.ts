@@ -148,7 +148,7 @@ function createAjax(
                     parent.notify(events.afterRequest, { action: 'success' });
                     let id: string = parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1];
                     if (!isNOU(result.cwd) && (getValue('action', data) === 'read')) {
-                        result.cwd.name = parent.rootAliasName || result.cwd.name;
+                        result.cwd.name = (parent.pathId.length === 1) ? (parent.rootAliasName || result.cwd.name) : result.cwd.name;
                         setValue('_fm_id', id, result.cwd);
                         setValue(id, result.cwd, parent.feParent);
                         if (!isNOU(result.files) || result.error.code === '401') {

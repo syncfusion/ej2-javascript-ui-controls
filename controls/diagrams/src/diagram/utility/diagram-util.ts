@@ -64,6 +64,7 @@ import { MouseEventArgs } from '../interaction/event-handlers';
 import { IBlazorDropEventArgs, IBlazorCollectionChangeEventArgs } from '../objects/interface/IElement';
 import { ConnectorFixedUserHandleModel, NodeFixedUserHandleModel } from '../objects/fixed-user-handle-model';
 import { ConnectorFixedUserHandle } from '../objects/fixed-user-handle';
+import { SymbolPaletteModel } from '../../symbol-palette';
 
 
 
@@ -2208,4 +2209,26 @@ export function canMeasureDecoratorPath(objects: string[]): boolean {
         return true;
     }
     return false;
+}
+
+/** @private */
+export function getPreviewSize(sourceElement: SymbolPaletteModel, clonedObject: Node, wrapper: DiagramElement): Size {
+    let previewWidth: number;
+    let previewHeight: number;
+    previewWidth = this.getSymbolSize(sourceElement as SymbolPaletteModel, clonedObject as Node, wrapper, 'width');
+    previewHeight = this.getSymbolSize(sourceElement as SymbolPaletteModel, clonedObject as Node, wrapper, 'height');
+    return new Size(previewWidth, previewHeight);
+}
+
+/** @private */
+export function getSymbolSize(sourceElement: SymbolPaletteModel, clonedObject: Node, wrapper: DiagramElement, size: string): number {
+    let previewSize: number = 0;
+    if ((clonedObject as Node).previewSize[size] !== undefined) {
+        previewSize = (clonedObject as Node).previewSize[size];
+    } else if ((sourceElement as SymbolPaletteModel).symbolPreview[size] !== undefined) {
+        previewSize = (sourceElement as SymbolPaletteModel).symbolPreview[size];
+    } else {
+        previewSize = (clonedObject as Node).width || wrapper.actualSize.width;
+    }
+    return previewSize;
 }

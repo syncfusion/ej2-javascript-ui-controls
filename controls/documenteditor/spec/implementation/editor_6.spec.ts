@@ -33,6 +33,7 @@ describe('Insert table validation', () => {
     });
 
     it('load the table of contents document border validation', () => {
+console.log('load the table of contents document border validation');
         editor.open(JSON.stringify(tableContents));
         editor.selection.moveDown();
         editor.selection.moveDown();
@@ -70,6 +71,7 @@ describe('ApplyStyle API validation - 1', () => {
     });
 
     it('set ClearDirectFormatting as true', () => {
+console.log('set ClearDirectFormatting as true');
         editor.editor.insertText('Sample');
         editor.selection.selectAll();
         editor.selection.characterFormat.fontSize = 24;
@@ -81,6 +83,7 @@ describe('ApplyStyle API validation - 1', () => {
         expect(editor.selection.paragraphFormat.textAlignment).toBe('Left');
     });
     it('undo -after applyStyle validation', () => {
+console.log('undo -after applyStyle validation');
         editor.editorHistory.undo();
         expect(editor.selection.characterFormat.fontFamily).toBe('Algerian');
         expect(editor.selection.characterFormat.fontSize).toBe(24);
@@ -88,6 +91,7 @@ describe('ApplyStyle API validation - 1', () => {
     });
 
     it('redo -after applyStyle validation', () => {
+console.log('redo -after applyStyle validation');
         editor.editorHistory.redo();
         expect(editor.selection.characterFormat.fontFamily).toBe('Calibri Light');
         expect(editor.selection.characterFormat.fontSize).toBe(16);
@@ -95,6 +99,7 @@ describe('ApplyStyle API validation - 1', () => {
     });
 
     it('multiple undo and redo -after applyStyle validation', () => {
+console.log('multiple undo and redo -after applyStyle validation');
         let count: number = 1;
         while (count <= 5) {
             editor.editorHistory.undo();
@@ -131,6 +136,7 @@ describe('ApplyStyle API validation - 2', () => {
     });
 
     it('The paragraph already contains style and direct formatting, set ClearDirectFormatting as true', () => {
+console.log('The paragraph already contains style and direct formatting, set ClearDirectFormatting as true');
         editor.editor.insertText('Sample');
         editor.editor.applyStyle('Heading 1', true);
         editor.selection.selectAll();
@@ -140,18 +146,21 @@ describe('ApplyStyle API validation - 2', () => {
         expect(editor.selection.characterFormat.fontSize).toBe(11);
     });
     it('undo -after applyStyle validation', () => {
+console.log('undo -after applyStyle validation');
         editor.editorHistory.undo();
         expect(editor.selection.characterFormat.italic).toBe(false);
         expect(editor.selection.characterFormat.fontSize).toBe(24);
     });
 
     it('redo -after applyStyle validation', () => {
+console.log('redo -after applyStyle validation');
         editor.editorHistory.redo();
         expect(editor.selection.characterFormat.italic).toBe(true);
         expect(editor.selection.characterFormat.fontSize).toBe(11);
     });
 
     it('multiple undo and redo -after applyStyle validation', () => {
+console.log('multiple undo and redo -after applyStyle validation');
         let count: number = 1;
         while (count <= 5) {
             editor.editorHistory.undo();
@@ -187,6 +196,7 @@ describe('ApplyStyle API validation - 2 without History', () => {
     });
 
     it('without specify ClearDirectFormatting', () => {
+console.log('without specify ClearDirectFormatting');
         editor.editor.insertText('Sample');
         editor.selection.selectAll();
         editor.selection.characterFormat.fontSize = 24;
@@ -194,6 +204,7 @@ describe('ApplyStyle API validation - 2 without History', () => {
         expect(editor.selection.characterFormat.fontSize).toBe(24);
     });
     it('with ClearDirectFormatting', () => {
+console.log('with ClearDirectFormatting');
         editor.editor.insertText('Sample');
         editor.selection.selectAll();
         editor.selection.characterFormat.fontSize = 24;
@@ -225,6 +236,7 @@ describe('Adding bookmark link in empty paragraph validation', () => {
     });
 
     it('Adding bookmark link in empty paragraph', () => {
+console.log('Adding bookmark link in empty paragraph');
         editor.showBookmarkDialog();
         (document.getElementById('bookmark_text_box') as any).value = 'firstpage';
         editor.bookmarkDialogModule.onKeyUpOnTextBox({} as any);
@@ -258,21 +270,25 @@ describe('Apply Character format in empty selection and paragraph is Empty', () 
     });
 
     it('Apply character format value and paragraph is empty', () => {
+console.log('Apply character format value and paragraph is empty');
         editor.selection.characterFormat.bold = true;
         editor.selection.handleRightKey();
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
     it('undo -after apply character format in empty selection', () => {
+console.log('undo -after apply character format in empty selection');
         editor.editorHistory.undo();
         expect(editor.selection.characterFormat.bold).toBe(false);
     });
 
     it('redo -after apply character format in empty selection', () => {
+console.log('redo -after apply character format in empty selection');
         editor.editorHistory.redo();
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
 
     it('multiple undo and redo -after apply character format in empty selection', () => {
+console.log('multiple undo and redo -after apply character format in empty selection');
         let count: number = 1;
         while (count <= 5) {
             editor.editorHistory.undo();
@@ -306,6 +322,7 @@ describe('Apply Character format in empty selection and paragraph is not Empty',
     });
 
     it('Apply character format value and paragraph is empty', () => {
+console.log('Apply character format value and paragraph is empty');
         editor.editor.insertText('Sample');
         editor.selection.characterFormat.fontSize = 48;
         editor.selection.characterFormat.fontColor = 'Red';
@@ -313,11 +330,13 @@ describe('Apply Character format in empty selection and paragraph is not Empty',
         expect(editor.selection.characterFormat.fontColor).toBe('Red');
     });
     it('Enter -after apply character format and paragraph is not empty', () => {
+console.log('Enter -after apply character format and paragraph is not empty');
         editor.editor.onEnter();
         expect(editor.selection.characterFormat.fontSize).toBe(48);
         expect(editor.selection.characterFormat.fontColor).toBe('Red');
     });
     it('Undo - Enter -after apply character format and paragraph is not empty', () => {
+console.log('Undo - Enter -after apply character format and paragraph is not empty');
         editor.editorHistory.undo();
         editor.editorHistory.undo();
         expect(editor.selection.characterFormat.fontSize).toBe(11);

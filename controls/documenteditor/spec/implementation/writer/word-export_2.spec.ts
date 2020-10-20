@@ -36,6 +36,7 @@ describe('Word export module with different table', () => {
         }, 1000);
     });   
     it('Borders and texture style', () => {
+console.log('Borders and texture style');
         editor.open(JSON.stringify(table_border));
         expect(()=>{editor.save('simple', 'Docx');}).not.toThrowError();
     });
@@ -66,6 +67,7 @@ describe('Word export module with different image and underline', () => {
         }, 1000);
     });   
     it('different image', () => {
+console.log('different image');
         editor.open(JSON.stringify(image));
         expect(()=>{editor.save('image', 'Docx');}).not.toThrowError();
     });
@@ -98,9 +100,11 @@ describe('Word export module with empty page default character format validation
         }, 1000);
     });   
     it('save empty page', () => {        
+console.log('save empty page');
         expect(()=>{editor.save('empty', 'Docx');}).not.toThrowError();
     });
     it('default character format validation',()=>{
+console.log('default character format validation');
         (editor.wordExportModule as any).serializeCharacterFormat(writer,editor.documentHelper.characterFormat,true);
         expect((writer as any).bufferText.indexOf('<sz w:val="22"')).not.toBe(-1);
     })
@@ -135,14 +139,65 @@ describe('Word export module with empty page default character format validation
         }, 1000);
     });   
     it('save empty page', () => {        
+console.log('save empty page');
         expect(()=>{editor.save('empty', 'Docx');}).not.toThrowError();
     });
     it('default character format validation',()=>{
+console.log('default character format validation');
         (editor.wordExportModule as any).serializeCharacterFormat(writer,editor.documentHelper.characterFormat,true);
         expect((writer as any).bufferText.indexOf('<sz w:val="24"')).not.toBe(-1);
     })
     it('Table alignment validation',()=>{
+console.log('Table alignment validation');
         editor.open(JSON.stringify(tablealign));
         expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).tableFormat.tableAlignment).toBe('Right');
     })
+});
+describe('Merge Rows and Col Export validation', () => {
+    let editor: DocumentEditor;
+    let writer: XmlWriter;
+    beforeAll((): void => {
+        document.body.appendChild(createElement('div', { id: 'container' }));
+        DocumentEditor.Inject(Editor, Selection, WordExport,SfdtExport);
+        editor = new DocumentEditor({ enableWordExport: true,enableSfdtExport:true, enableEditor: true, isReadOnly: false, enableSelection: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        writer = new XmlWriter();
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('Merge Rows and Col Table Export validation', () => {
+console.log('Merge Rows and Col Table Export validation');
+        editor.editorModule.insertTable(4, 3);
+        editor.selection.handleRightKey();
+        editor.selection.handleShiftRightKey();
+        editor.selection.handleShiftRightKey();
+        editor.editor.mergeCells();
+        editor.selection.handleDownKey();
+        editor.selection.handleShiftRightKey();
+        editor.selection.handleShiftRightKey();
+        editor.editor.mergeCells();
+        editor.selection.handleDownKey();
+        editor.selection.handleShiftRightKey();
+        editor.selection.handleShiftRightKey();
+        editor.editor.mergeCells();
+        editor.selection.handleLeftKey();
+        editor.selection.handleLeftKey();
+        editor.selection.handleShiftUpKey();
+        editor.editor.mergeCells();
+        let table = (editor.sfdtExportModule as any).createTable(editor.selection.tableFormat.table);
+        (editor.wordExportModule as any).serializeTable(writer, table);
+        expect((writer as any).bufferText.indexOf('<w:gridSpan w:val="2"')).toBe(-1);
+        
+    });
 });

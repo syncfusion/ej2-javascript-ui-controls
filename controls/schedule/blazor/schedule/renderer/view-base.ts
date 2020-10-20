@@ -39,7 +39,9 @@ export class ViewBase {
                 }
                 tdLeft += cell.offsetWidth;
             }
-            (currentCell.children[0] as HTMLElement).style[isRtl ? 'right' : 'left'] = (hiddenLeft - tdLeft) + 'px';
+            if (!isNullOrUndefined(currentCell)) {
+                (currentCell.children[0] as HTMLElement).style[isRtl ? 'right' : 'left'] = (hiddenLeft - tdLeft) + 'px';
+            }
         };
         let classNames: string[] = ['.e-header-year-cell', '.e-header-month-cell', '.e-header-week-cell', '.e-header-cells'];
         for (let className of classNames) {

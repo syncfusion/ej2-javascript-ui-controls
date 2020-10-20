@@ -67,6 +67,7 @@ describe('Layout multiple section', () => {
         }, 1000);
     });
     it('Enter press multiple times', () => {
+console.log('Enter press multiple times');
         editor.open(JSON.stringify(sfdt));
         expect(editor.documentHelper.pages.length).toBe(2);
         for (let i: number = 0; i < 60; i++) {
@@ -101,15 +102,19 @@ describe('Layout multiple section', () => {
 describe('Layout Module branches validation', () => {
     let layout: any = new Layout({} as any);
     it('Shift next widget validation', () => {
+console.log('Shift next widget validation');
         expect(() => { layout.shiftNextWidgets({}); }).not.toThrowError();
     });
     it('Get Top margin validation', () => {
+console.log('Get Top margin validation');
         expect(layout.getMaxTopCellMargin({})).toBe(0);
     });
     it('Get laine spacing validation', () => {
+console.log('Get laine spacing validation');
         expect(layout.getLineSpacing({})).toBe(0);
     });
     it('Layout body widget collection', () => {
+console.log('Layout body widget collection');
         expect(() => { layout.layoutBodyWidgetCollection(); }).not.toThrowError();
     });
 });

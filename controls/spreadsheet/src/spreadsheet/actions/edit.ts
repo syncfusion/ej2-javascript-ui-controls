@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../index';
 import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress } from '../../workbook/common/address';
+import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress, isSingleCell } from '../../workbook/common/address';
 import { keyDown, editOperation, clearCopy, mouseDown, selectionComplete, enableToolbarItems, completeAction } from '../common/event';
 import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage } from '../common/index';
 import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation } from '../../workbook/common/event';
@@ -8,7 +8,7 @@ import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell } from '../
 import { getSheetNameFromAddress, getSheet } from '../../workbook/base/index';
 import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit } from '../common/index';
-import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula } from '../../workbook/index';
+import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber } from '../../workbook/index';
 import { checkConditionalFormat, initiateFormulaReference, initiateCur, clearCellRef, addressHandle } from '../common/event';
 import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit } from '../common/event';
 
@@ -23,6 +23,7 @@ export class Edit {
     private isCellEdit: boolean = true;
     private isNewValueEdit: boolean = true;
     private isAltEnter: boolean = false;
+    private validCharacters: string[] = ['+', '-', '*', '/', ',', '(', '=', '&'];
 
     private keyCodes: { [key: string]: number } = {
         BACKSPACE: 8,
@@ -175,7 +176,8 @@ export class Edit {
             } else if (this.isCellEdit && this.editCellData.value !== this.editorElem.textContent && e.keyCode !== 16) {
                 this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
             }
-            let isFormulaEdit: boolean = checkIsFormula(this.editCellData.value);
+            let isFormulaEdit: boolean = checkIsFormula(this.editCellData.value) ||
+                (this.editCellData.value && this.editCellData.value.toString().indexOf('=') === 0);
             if (isFormulaEdit && e.keyCode !== 16) {
                 let formulaRefIndicator: HTMLElement = this.parent.element.querySelector('.e-formularef-indicator');
                 if (formulaRefIndicator) {
@@ -198,9 +200,9 @@ export class Edit {
         if (!closest(e.target as Element, '.e-findtool-dlg') && !closest(e.target as Element, '.e-validationerror-dlg')) {
             if (!sheet.isProtected || closest(e.target as Element, '.e-sheet-rename') || (cell.isLocked === false)) {
                 if (this.isEdit) {
-                    let isFormulaEdit: boolean = checkIsFormula(this.editCellData.value);
-                    if (this.isCellEdit || (isFormulaEdit &&
-                        this.editCellData.value !== this.editorElem.textContent && e.keyCode !== 16)) {
+                    let isFormulaEdit: boolean = checkIsFormula(this.editCellData.value) ||
+                        (this.editCellData.value && this.editCellData.value.toString().indexOf('=') === 0);
+                    if (this.isCellEdit || (isFormulaEdit && this.editCellData.value !== this.editorElem.textContent && e.keyCode !== 16)) {
                         this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
                     }
                     if (!e.altKey) {
@@ -413,15 +415,16 @@ export class Edit {
                             this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
                         }
                     }
-                    let isFormula: boolean = checkIsFormula(this.editCellData.value);
+                    let isFormula: boolean = checkIsFormula(this.editCellData.value) ||
+                        (this.editCellData.value && this.editCellData.value.toString().indexOf('=') === 0);
                     if (!isFormula) {
                         this.endEdit(false, e);
                     } else {
                         let curPos: number = window.getSelection().focusOffset;
                         let actCellIdx: number[] = getCellIndexes(sheet.activeCell);
                         let cell: CellModel = getCell(actCellIdx[0], actCellIdx[1], sheet);
-                        if (this.editCellData.value === this.editorElem.textContent && this.editorElem.textContent.indexOf('(') !==
-                            this.editorElem.textContent.length - 1) {
+                        if (this.editCellData.value === this.editorElem.textContent && (this.editorElem.textContent.indexOf('(') !==
+                            this.editorElem.textContent.length - 1 && this.editorElem.textContent.indexOf('(') !== -1)) {
                             if (this.editCellData.sheetIndex !== sheet.id - 1) {
                                 let elem: HTMLTextAreaElement =
                                     this.parent.element.querySelector('.e-formula-bar') as HTMLTextAreaElement;
@@ -435,7 +438,7 @@ export class Edit {
                                     return;
                                 }
                             } else {
-                                if (this.editorElem.textContent.substring(curPos - 1, curPos) !== ',') {
+                                if (this.validCharacters.indexOf(this.editorElem.textContent.substring(curPos - 1, curPos)) === -1) {
                                     if (formulaRefIndicator) {
                                         formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
                                     }
@@ -448,11 +451,13 @@ export class Edit {
                             return;
                         }
                         isFormula = cell.formula ?
-                            checkIsFormula(getCell(actCellIdx[0], actCellIdx[1], sheet).formula) : false;
+                            checkIsFormula(getCell(actCellIdx[0], actCellIdx[1], sheet).formula) ||
+                            (this.editCellData.value && this.editCellData.value.toString().indexOf('=') === 0) : false;
                         if (isFormula) {
                             let curPos: number = window.getSelection().focusOffset;
                             if (this.editCellData.value.length === curPos) {
-                                if (this.editCellData.value.substring(this.editCellData.value.length - 1) === ')') {
+                                if (this.editCellData.value.substring(this.editCellData.value.length - 1) === ')' ||
+                                    isNumber(this.editCellData.value.substring(this.editCellData.value.length - 1))) {
                                     if (formulaRefIndicator) {
                                         formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
                                     }
@@ -478,7 +483,7 @@ export class Edit {
                         this.editorElem.textContent.length - 1) {
                         if (this.editCellData.sheetIndex === sheet.id - 1) {
                             let curPos: number = window.getSelection().focusOffset;
-                            if (this.editorElem.textContent.substring(curPos - 1, curPos) !== ',') {
+                            if (this.validCharacters.indexOf(this.editorElem.textContent.substring(curPos - 1, curPos)) === -1) {
                                 if (formulaRefIndicator) {
                                     formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
                                 }
@@ -858,6 +863,7 @@ export class Edit {
     private updateFormulaBarValue(): void {
         let value: string = this.editCellData.value;
         let address: string = this.parent.getActiveSheet().selectedRange;
+        address = isSingleCell(getIndexesFromAddress(address)) ? address.split(':')[0] : address;
         let formulaBar: HTMLTextAreaElement = this.parent.element.querySelector('.e-formula-bar') as HTMLTextAreaElement;
         if (value && checkIsFormula(value)) {
             let sheetName: string = this.editCellData.fullAddr.substring(0, this.editCellData.fullAddr.indexOf('!'));

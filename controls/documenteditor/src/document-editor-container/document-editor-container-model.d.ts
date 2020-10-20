@@ -97,6 +97,12 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     height?: string;
 
     /**
+     * Enable partial lock and edit module.
+     * @default false
+     */
+    enableLockAndEdit?: boolean;
+
+    /**
      * Triggers when the component is created
      * @event
      * @blazorproperty 'Created'

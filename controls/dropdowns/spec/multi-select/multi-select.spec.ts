@@ -2295,13 +2295,17 @@ describe('MultiSelect', () => {
         let popupObj: any;
         let originalTimeout: number;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let remoteData: DataManager = new DataManager({ 
+            url: 'https://ej2services.syncfusion.com/production/web-services/api/Employees',
+            adaptor: new WebApiAdaptor ,
+            crossDomain: true
+         });
         beforeAll((done) => {
             document.body.innerHTML = '';
             document.body.appendChild(element);
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, mode: 'Delimiter', fields: { text: "text", value: "text" }, value: [1004] });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, mode: 'Delimiter', fields: { text: "FirstName", value: "EmployeeID" }, value: [1] });
             listObj.appendTo(element);
             done();
         });
@@ -2363,11 +2367,15 @@ describe('MultiSelect', () => {
         let listObj: MultiSelect;
         let popupObj: any;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let remoteData: DataManager = new DataManager({ 
+            url: 'https://ej2services.syncfusion.com/production/web-services/api/Employees',
+            adaptor: new WebApiAdaptor ,
+            crossDomain: true
+         });
         beforeAll((done) => {
             document.body.innerHTML = '';
             document.body.appendChild(element);
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, mode: 'Delimiter', fields: { text: "text", value: "text" }, value: [1004] });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, mode: 'Delimiter', fields: { text: "FirstName", value: "EmployeeID" }, value: [1] });
             listObj.appendTo(element);
             done();
         });
@@ -7243,7 +7251,7 @@ describe('MultiSelect', () => {
                 element.remove();
             }
         });
-        it('enter custom value and focus out and focus in', () => {
+        it('enter custom value and focus out and focus in', (done) => {
             let listObj: MultiSelect = new MultiSelect({
                 dataSource: remoteData,
                 fields: { value: 'EmployeeID', text: 'FirstName' },
@@ -7264,7 +7272,9 @@ describe('MultiSelect', () => {
             (<any>listObj).showPopup();
             setTimeout(() => {
                 expect((<any>listObj).isPopupOpen()).toBe(true);
-            }, 450);
+                listObj.destroy();
+                done();
+            }, 800);
         });
     });  
     describe('BLAZ-6160 Popup shows empty data in the MultiSelect component, while adding the template with checkbox mode', () => {
@@ -7288,7 +7298,6 @@ describe('MultiSelect', () => {
             }
         });
         it('close popup and open again to show all list item correctly', () => {
-            debugger;
             let listObj: MultiSelect = new MultiSelect({
                 dataSource: empList,
                 fields: { value: 'EmployeeID', text: 'FirstName' },
@@ -7370,6 +7379,157 @@ describe('MultiSelect', () => {
             expect(listObj.value[0]).toBe("AU");
             expect(listObj.value[1]).toBe("CM");
             expect(listObj.value[2]).toBe("PL");
+        });
+    });
+    describe('Preselected value is added to the control, if we provide invalid value', () => {
+        let listObj: any;
+        let mEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multi' });
+        beforeAll(() => {
+            document.body.appendChild(mEle);
+            listObj = new MultiSelect({
+                value: ['AU', 'CM', 'AM', 'PL']
+            });
+            listObj.appendTo(mEle);
+        });
+        afterAll(() => {
+            listObj.destroy();
+            mEle.remove();
+        });
+        it('without datasource', () => {
+            expect(listObj.value.length).toBe(0);
+            //invalid value will be prevented from adding to the control when allowcustomvalue is false
+            listObj.allowCustomValue = true;
+            listObj.value = ['Sync'];
+            expect(listObj.value.length).toBe(1);
+            expect(listObj.value[0]).toBe('Sync');
+        });
+    });
+    describe('Invalid data allowed if invalid value is set in value property when allowcustom is true', () => {
+        let listObj: any;
+        let mEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multi' });
+        let originalTimeout: number;
+        let remoteData: DataManager = new DataManager({ 
+            url: 'https://ej2services.syncfusion.com/production/web-services/api/Employees',
+            adaptor: new WebApiAdaptor ,
+            crossDomain: true
+         });
+        beforeAll((done) => {
+            document.body.appendChild(mEle);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            listObj = new MultiSelect({
+                dataSource: remoteData,
+                fields: {text: 'FirstName', value: 'FirstName'},
+                value: ['Andrew Fuller', 'Sync'],
+                allowCustomValue: true
+            });
+            listObj.appendTo(mEle);
+            done();
+        });
+        afterAll(() => {
+           jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            listObj.destroy();
+            mEle.remove();
+        });
+        it('value property with invalid data', (done) => {
+            setTimeout(() => {
+                expect(listObj.value.length).toBe(2);
+                done();
+            }, 800);
+        });
+    });
+    describe('value property with disabled allowCustomValue', () => {
+        let listObj: any;
+        let mEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multi' });
+        let originalTimeout: number;
+        let remoteData: DataManager = new DataManager({ 
+            url: 'https://ej2services.syncfusion.com/production/web-services/api/Employees',
+            adaptor: new WebApiAdaptor ,
+            crossDomain: true
+         });
+        beforeAll((done) => {
+            document.body.appendChild(mEle);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            listObj = new MultiSelect({
+                dataSource: remoteData,
+                fields: {text: 'FirstName', value: 'FirstName'},
+                value: ['Andrew Fuller'],
+            });
+            listObj.appendTo(mEle);
+            done();
+        });
+        afterAll(() => {
+           jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            listObj.destroy();
+            mEle.remove();
+        });
+        it('preselect value', (done) => {
+            setTimeout(() => {
+                expect(listObj.value.length).toBe(1);
+                let values: string[] = [];
+                values.push('Andrew Fuller');
+                let checkVal: Query = (<any>listObj).getForQuery(values);
+                expect(checkVal.queries[0].e.value).toBe('Andrew Fuller');
+                done();
+            }, 800);
+        });
+    });
+    describe('bug(EJ2-42714): Cannot read property filter of undefined in multiselect when bind the value', () => {
+        let listObj: MultiSelect;
+        let popupObj: any;
+        let originalTimeout: number;
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multi' });
+        let remoteData: DataManager = new DataManager({ 
+            url: 'https://ej2services.syncfusion.com/production/web-services/api/Employees',
+            adaptor: new WebApiAdaptor ,
+            crossDomain: true
+         });
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (ele) {
+                ele.remove();
+            }
+        });
+        it('remoteData and value property set dyanamically', (done) => {
+            let listObj: MultiSelect = new MultiSelect({
+                query: new Query().select(['FirstName', 'EmployeeID']).take(10).requiresCount(),
+                fields: { text: 'FirstName', value: 'EmployeeID' },
+                placeholder: 'Select name',
+                sortOrder: 'Ascending',
+            });         
+            listObj.appendTo('#multi');
+            listObj.dataSource = remoteData;
+            listObj.value = [6];
+            listObj.dataBind();
+            setTimeout(() => {
+                expect((listObj as any).viewWrapper.innerText).toBe('Michael Suyama');
+                listObj.destroy();
+                done();
+            }, 800);
+        });
+        it('value property alone set dyanamically', (done) => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource : remoteData,
+                query: new Query().select(['FirstName', 'EmployeeID']).take(10).requiresCount(),
+                fields: { text: 'FirstName', value: 'EmployeeID' },
+                placeholder: 'Select name',
+                sortOrder: 'Ascending',
+            });         
+            listObj.appendTo('#multi');
+            listObj.value = [6];
+            listObj.dataBind();
+            setTimeout(() => {
+                expect((listObj as any).viewWrapper.innerText).toBe('Michael Suyama');
+                listObj.destroy();
+                done();
+            }, 800);
         });
     });
 });

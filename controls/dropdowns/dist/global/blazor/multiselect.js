@@ -522,7 +522,6 @@ var MultiSelect = /** @class */ (function (_super) {
         _super.prototype.onActionComplete.call(this, ulElement, list, e);
         this.updateSelectElementData(this.allowFiltering);
         var proxy = this;
-        var valuecheck = [];
         if (sf.base.isBlazor() && this.isServerRendered && this.isDynamicDataChange && this.value !== null && this.value.length > 0) {
             var items = [];
             for (var k = 0; k < this.value.length; k++) {
@@ -540,19 +539,12 @@ var MultiSelect = /** @class */ (function (_super) {
             for (var i = 0; i < this.value.length; i++) {
                 var checkEle = this.findListElement(((this.allowFiltering && !sf.base.isNullOrUndefined(this.mainList)) ? this.mainList : ulElement), 'li', 'data-value', proxy.value[i]);
                 if (!checkEle) {
-                    valuecheck.push(proxy.value[i]);
+                    this.value.splice(i, 1);
+                    i -= 1;
                 }
             }
         }
-        if (valuecheck.length > 0 && this.dataSource instanceof sf.data.DataManager && !sf.base.isNullOrUndefined(this.value)) {
-            this.dataSource.executeQuery(this.getForQuery(valuecheck)).then(function (e) {
-                proxy.addItem(e.result, list.length);
-                proxy.updateActionList(ulElement, list, e);
-            });
-        }
-        else {
-            this.updateActionList(ulElement, list, e);
-        }
+        this.updateActionList(ulElement, list, e);
         if (sf.base.isBlazor() && this.isServerRendered && this.allowFiltering && this.mode === 'CheckBox') {
             this.removeFocus();
         }
@@ -2407,18 +2399,21 @@ var MultiSelect = /** @class */ (function (_super) {
         this.hiddenElement.innerHTML = '';
         if (!sf.base.isNullOrUndefined(this.value)) {
             for (var index = 0; !sf.base.isNullOrUndefined(this.value[index]); index++) {
-                var listValue = this.findListElement(this.mainList, 'li', 'data-value', this.value[index]);
+                var listValue = this.findListElement(((!sf.base.isNullOrUndefined(this.mainList)) ? this.mainList : this.ulElement), 'li', 'data-value', this.value[index]);
                 if (!(sf.base.isBlazor() && this.isServerRendered) && sf.base.isNullOrUndefined(listValue) && !this.allowCustomValue) {
                     this.value.splice(index, 1);
-                }
-                if (this.listData) {
-                    temp = this.getTextByValue(this.value[index]);
+                    index -= 1;
                 }
                 else {
-                    temp = this.value[index];
+                    if (this.listData) {
+                        temp = this.getTextByValue(this.value[index]);
+                    }
+                    else {
+                        temp = this.value[index];
+                    }
+                    data += temp + delimiterChar + ' ';
+                    text.push(temp);
                 }
-                data += temp + delimiterChar + ' ';
-                text.push(temp);
                 this.hiddenElement.innerHTML += '<option selected value ="' + this.value[index] + '">' + index + '</option>';
             }
         }
@@ -3488,6 +3483,9 @@ var MultiSelect = /** @class */ (function (_super) {
     };
     MultiSelect.prototype.updateVal = function (newProp, oldProp, prop) {
         if (!this.list) {
+            this.onLoadSelect();
+        }
+        else if ((this.dataSource instanceof sf.data.DataManager) && (!this.listData || !(this.mainList && this.mainData))) {
             this.onLoadSelect();
         }
         else if (!this.inputFocus) {

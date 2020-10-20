@@ -62,7 +62,8 @@ export class TimelineHeaderRow {
             let htmlCol: HTMLElement[];
             if (row.template) {
                 let args: CellTemplateArgs = { date: dates[0], type: type };
-                htmlCol = [].slice.call(this.parent.templateParser(row.template)(args));
+                let templateId: string = this.parent.element.id + '_headerRowTemplate';
+                htmlCol = [].slice.call(this.parent.templateParser(row.template)(args, this.parent, 'template', templateId, false));
             } else {
                 let viewTemplate: string;
                 switch (row.option) {

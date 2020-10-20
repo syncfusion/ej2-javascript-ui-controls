@@ -3,6 +3,7 @@ import { WLevelOverride } from '../../../src/document-editor/implementation/list
 
 describe('WLevelOverride Validation Testing', () => {
     it('Level Override  Testing', () => {
+console.log('Level Override  Testing');
         let levelOverride: WLevelOverride = new WLevelOverride();
         levelOverride.startAt = 6;
         expect(levelOverride.startAt).toBe(6);
@@ -11,6 +12,7 @@ describe('WLevelOverride Validation Testing', () => {
         expect(() => { levelOverride.destroy() }).not.toThrowError();
     });
     it('Level Override  Clone validation', () => {
+console.log('Level Override  Clone validation');
         let levelOverride: WLevelOverride = new WLevelOverride();
         levelOverride.startAt = 6;
         levelOverride.overrideListLevel = new WListLevel(levelOverride);

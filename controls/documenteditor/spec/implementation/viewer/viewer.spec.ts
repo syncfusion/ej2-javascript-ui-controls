@@ -33,6 +33,7 @@ describe('Position editable div on', () => {
         }, 750);
     });
     it('IME start event', (done: DoneFn) => {
+console.log('IME start event');
         editor.editor.insertText('Syncfusion Software ');
         expect(editor.documentHelper.iframe.getAttribute('style')).toBe('pointer-events:none;position:absolute;left:0px;top:0px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
@@ -87,12 +88,14 @@ describe('IME Text processing with History', () => {
         }, 750);
     });
     it('Trigger Composition start event validation', () => {
+console.log('Trigger Composition start event validation');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionstart', true, true);
         editor.documentHelper.editableDiv.dispatchEvent(event);
         expect(editor.documentHelper.isComposingIME).toBe(true);
     });
     it('Composition Update event', (done: DoneFn) => {
+console.log('Composition Update event');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionupdate', true, true);
         editor.documentHelper.editableDiv.innerText = 'S';
@@ -104,6 +107,7 @@ describe('IME Text processing with History', () => {
         }, 10);
     });
     it('Composition Update event 2', (done: DoneFn) => {
+console.log('Composition Update event 2');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionupdate', true, true);
         editor.documentHelper.editableDiv.innerText = 'Sy';
@@ -115,6 +119,7 @@ describe('IME Text processing with History', () => {
         }, 10);
     });
     it('Composition Update event 3', (done: DoneFn) => {
+console.log('Composition Update event 3');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionupdate', true, true);
         editor.documentHelper.editableDiv.innerText = 'Syncfusion';
@@ -126,6 +131,7 @@ describe('IME Text processing with History', () => {
         }, 10);
     });
     it('Composition end event', () => {
+console.log('Composition end event');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionend', true, true);
         editor.documentHelper.editableDiv.dispatchEvent(event);
@@ -135,11 +141,13 @@ describe('IME Text processing with History', () => {
         expect(editor.editorHistory.undoStack.length).toBe(1);
     });
     it('Undo IME Text', () => {
+console.log('Undo IME Text');
         editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.isEmpty()).toBe(true);
         expect(editor.selection.start.offset).toBe(0);
     });
     it('Redo IME text', () => {
+console.log('Redo IME text');
         editor.editorHistory.redo();
         expect(editor.selection.start.paragraph.isEmpty()).toBe(false);
         expect(editor.selection.isEmpty).toBe(true);
@@ -170,12 +178,14 @@ describe('IME Text processing without History', () => {
         }, 750);
     });
     it('Trigger Composition start event validation', () => {
+console.log('Trigger Composition start event validation');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionstart', true, true);
         editor.documentHelper.editableDiv.dispatchEvent(event);
         expect(editor.documentHelper.isComposingIME).toBe(true);
     });
     it('Composition Update event', (done: DoneFn) => {
+console.log('Composition Update event');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionupdate', true, true);
         editor.documentHelper.editableDiv.innerText = 'S';
@@ -187,6 +197,7 @@ describe('IME Text processing without History', () => {
         }, 10);
     });
     it('Composition Update event 2', (done: DoneFn) => {
+console.log('Composition Update event 2');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionupdate', true, true);
         editor.documentHelper.editableDiv.innerText = 'Sy';
@@ -198,6 +209,7 @@ describe('IME Text processing without History', () => {
         }, 10);
     });
     it('Composition Update event 3', (done: DoneFn) => {
+console.log('Composition Update event 3');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionupdate', true, true);
         editor.documentHelper.editableDiv.innerText = 'Syncfusion';
@@ -209,6 +221,7 @@ describe('IME Text processing without History', () => {
         }, 10);
     });
     it('Composition end event', () => {
+console.log('Composition end event');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionend', true, true);
         editor.documentHelper.editableDiv.dispatchEvent(event);
@@ -242,6 +255,7 @@ describe('Composition event on Device validation', () => {
         }, 750);
     });
     it('Composition updated without start', () => {
+console.log('Composition updated without start');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionupdate', true, true);
         editor.documentHelper.editableDiv.dispatchEvent(event);
@@ -249,6 +263,7 @@ describe('Composition event on Device validation', () => {
         expect(editor.selection.isEmpty).toBe(true);
     });
     it('IME start end', () => {
+console.log('IME start end');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionend', true, true);
         editor.documentHelper.editableDiv.dispatchEvent(event);
@@ -281,12 +296,14 @@ describe('Composition event cancel by undo operation', () => {
         }, 750);
     });
     it('Trigger Composition start event validation', () => {
+console.log('Trigger Composition start event validation');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionstart', true, true);
         editor.documentHelper.editableDiv.dispatchEvent(event);
         expect(editor.documentHelper.isComposingIME).toBe(true);
     });
     it('Composition Update event', (done: DoneFn) => {
+console.log('Composition Update event');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionupdate', true, true);
         editor.documentHelper.editableDiv.innerText = 'S';
@@ -298,6 +315,7 @@ describe('Composition event cancel by undo operation', () => {
         }, 10);
     });
     it('Composition Update event 2', (done: DoneFn) => {
+console.log('Composition Update event 2');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionupdate', true, true);
         editor.documentHelper.editableDiv.innerText = 'S';
@@ -309,6 +327,7 @@ describe('Composition event cancel by undo operation', () => {
         }, 10);
     });
     it('Composition end event', () => {
+console.log('Composition end event');
         // Composition event end on undo operation update empty string in editable div
         editor.documentHelper.editableDiv.innerText = '';
         let event: CompositionEvent = document.createEvent('CompositionEvent');
@@ -650,6 +669,7 @@ describe('Author color Validation for different authors', () => {
         }, 1000);
     });
     it('author color validate', () => {
+console.log('author color validate');
         editor.open(authorColorSfdt);
         let documentHelper: DocumentHelper = editor.documentHelper;
         let colors: string[] = ['#b5082e', '#2e97d3', '#bb00ff', '#f37e43', '#03a60b', '#881824', '#e09a2b', '#50565e'];
@@ -666,6 +686,7 @@ describe('Author color Validation for different authors', () => {
         expect(documentHelper.authors.get(documentHelper.authors.keys[10])).toBe(colors[2]);
     });
     it('Polish char validation', () => {
+console.log('Polish char validation');
         editor.openBlank();
         let event: any = { keyCode: 18, preventDefault: function () { }, ctrlKey: false, shiftKey: false, altKey: true, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);

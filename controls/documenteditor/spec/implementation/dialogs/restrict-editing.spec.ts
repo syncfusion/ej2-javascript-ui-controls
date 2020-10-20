@@ -38,24 +38,29 @@ describe('Restrict editing dialog validation', () => {
         }, 2000);
     });
     it('Restrict editing pane open', () => {
+console.log('Restrict editing pane open');
         editor.documentHelper.restrictEditingPane.showHideRestrictPane(true);
         editor.documentHelper.restrictEditingPane.showHideRestrictPane(false);
     });
     it('open enforce dialog', () => {
+console.log('open enforce dialog');
         editor.documentHelper.restrictEditingPane.enforceProtectionDialog.show();
         editor.documentHelper.restrictEditingPane.enforceProtectionDialog.hideDialog();
     });
     it('open add user dialog', () => {
+console.log('open add user dialog');
         (editor.documentHelper.restrictEditingPane as any).addUserDialog.show();
         (editor.documentHelper.restrictEditingPane as any).addUserDialog.hideDialog();
 
     });
     it('open unprotect document dialog', () => {
+console.log('open unprotect document dialog');
         editor.documentHelper.restrictEditingPane.unProtectDialog.show();
         editor.documentHelper.restrictEditingPane.unProtectDialog.hideDialog();
 
     });
     it('stop protection pane', () => {
+console.log('stop protection pane');
         editor.documentHelper.restrictEditingPane.showStopProtectionPane(true);
         (editor.documentHelper.restrictEditingPane as any).closePane();
     });
@@ -88,10 +93,12 @@ describe('Unprotect loaded document with password empty', () => {
         }, 2000);
     });
     it('Open protected document', () => {
+console.log('Open protected document');
        editor.open(protectString);
        expect(editor.documentHelper.isDocumentProtected).toBe(true);
     });
     it('Unprotect document', () => {
+console.log('Unprotect document');
         (editor.documentHelper.restrictEditingPane as any).stopProtectionTriggered(undefined);
         expect(editor.documentHelper.isDocumentProtected).toBe(false);
     });

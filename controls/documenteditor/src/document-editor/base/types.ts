@@ -1457,3 +1457,7 @@ export type ContentControlWidgetType = 'Block' | 'Inline' | 'Row' | 'Cell';
  */
 export type ContentControlType = 'BuildingBlockGallery' | 'CheckBox' | 'ComboBox' | 'Date' | 'DropDownList' | 'Group' | 'Picture'
     | 'RepeatingSection' | 'RichText' | 'Text';
+/**
+ * Specifies collaborative editing action
+ */
+export type CollaborativeEditingAction = 'LockContent' | 'SaveContent' | 'UnlockContent';

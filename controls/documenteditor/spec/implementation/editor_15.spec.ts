@@ -31,6 +31,7 @@ describe('Arabic list previous paragraph is list', () => {
         }, 1000);
     });
     it('valid list conversion', () => {
+console.log('valid list conversion');
         editor.editor.insertText('1');
         editor.editor.insertText('.');
         editor.editor.insertText(' ');
@@ -44,6 +45,7 @@ describe('Arabic list previous paragraph is list', () => {
         expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).not.toBe(-1);
     });
     it('after some paragraph check valid list conversion', () => {
+console.log('after some paragraph check valid list conversion');
         editor.editor.insertText('sample');
         editor.selection.handleEndKey();
         editor.editor.onEnter();
@@ -57,6 +59,7 @@ describe('Arabic list previous paragraph is list', () => {
         expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).not.toBe(-1);
     });
     it('invalid number format', () => {
+console.log('invalid number format');
         editor.editor.insertText('sample');
         editor.selection.handleEndKey();
         editor.editor.onEnter();
@@ -93,6 +96,7 @@ describe('History validation after Uproman list ', () => {
         }, 1000);
     });
     it('valid list conversion', () => {
+console.log('valid list conversion');
         editor.editor.insertText('I');
         editor.editor.insertText('.');
         editor.editor.insertText(' ');
@@ -106,10 +110,12 @@ describe('History validation after Uproman list ', () => {
         expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).not.toBe(-1);
     });
     it('undo after valid list conversion', () => {
+console.log('undo after valid list conversion');
        editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).toBe(-1);
     });
     it('redo after valid list conversion', () => {
+console.log('redo after valid list conversion');
         editor.editorHistory.redo();
          expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).not.toBe(-1);
      });
@@ -140,6 +146,7 @@ describe('Uproman and lowRoman auto list validation', () => {
         }, 1000);
     });
     it('uproman validation', () => {
+console.log('uproman validation');
         editor.editor.insertText('sample');
         editor.editor.onEnter();
         editor.editor.insertText('sample');
@@ -160,6 +167,7 @@ describe('Uproman and lowRoman auto list validation', () => {
         expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).not.toBe(-1);
     });
     it('lowRoman list validation', () => {
+console.log('lowRoman list validation');
         editor.openBlank();
         editor.editor.insertText('sample');
         editor.editor.onEnter();
@@ -207,6 +215,7 @@ describe('UpLetter list previous paragraph is list', () => {
         }, 1000);
     });
     it('low letter valid list conversion', () => {
+console.log('low letter valid list conversion');
         editor.editor.insertText('a');
         editor.editor.insertText('.');
         editor.editor.insertText(' ');
@@ -220,6 +229,7 @@ describe('UpLetter list previous paragraph is list', () => {
         expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).not.toBe(-1);
     });
     it('after some paragraph check low letter valid list conversion', () => {
+console.log('after some paragraph check low letter valid list conversion');
         editor.editor.insertText('sample');
         editor.selection.handleEndKey();
         editor.editor.onEnter();
@@ -233,6 +243,7 @@ describe('UpLetter list previous paragraph is list', () => {
         expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).not.toBe(-1);
     });
     it('up letter valid list conversion', () => {
+console.log('up letter valid list conversion');
         editor.openBlank();
         editor.editor.insertText('A');
         editor.editor.insertText('.');
@@ -247,6 +258,7 @@ describe('UpLetter list previous paragraph is list', () => {
         expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).not.toBe(-1);
     });
     it('after some paragraph check up letter valid list conversion', () => {
+console.log('after some paragraph check up letter valid list conversion');
         
         editor.editor.insertText('sample');
         editor.selection.handleEndKey();
@@ -288,11 +300,13 @@ describe('257171- copy and paste bookmark insert multiple time',()=>{
         }, 1000);
     });
     it('intial paste bookmark child validation', () => {
+console.log('intial paste bookmark child validation');
         editor.editor.insertText('a');
        editor.editor.paste(pasteData);
        expect(editor.selection.start.currentWidget.children.length).toBe(10);
     });
     it('After multiple format, paste bookmark validation',()=>{
+console.log('After multiple format, paste bookmark validation');
         editor.selection.handleEndKey();
         editor.editor.onEnter();
         editor.editor.paste(pasteData);

@@ -1,7 +1,7 @@
 import {
     PdfViewer, PdfViewerBase, IPageAnnotations, IPoint, AnnotationType as AnnotType, ICommentsCollection, IReviewCollection
 } from '../..';
-import { isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ColorPicker } from '@syncfusion/ej2-inputs';
 import { PointModel } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
@@ -204,12 +204,9 @@ export class FreeTextAnnotation {
         this.inputBoxElement.style.overflow = 'hidden';
         this.inputBoxElement.style.wordBreak = 'break-all';
         this.inputBoxElement.readOnly = this.isReadonly;
-        if (!isBlazor()) {
-            this.inputBoxElement.addEventListener('focusout', this.onFocusOutInputBox.bind(this));
-        }
+        this.inputBoxElement.addEventListener('focusout', this.onFocusOutInputBox.bind(this));
         this.inputBoxElement.addEventListener('keydown', this.onKeyDownInputBox.bind(this));
         this.inputBoxElement.addEventListener('mouseup', this.onMouseUpInputBox.bind(this));
-
         this.freeTextPageNumbers = [];
     }
 

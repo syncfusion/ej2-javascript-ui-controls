@@ -4,6 +4,7 @@ describe('Border Validation Testing', () => {
 
     });;
      it('Borders destroy Testing', () => {
+console.log('Borders destroy Testing');
         let borders: WBorders = new WBorders();
         borders.destroy();
         expect('').toBe('');
@@ -11,6 +12,7 @@ describe('Border Validation Testing', () => {
         expect(() => { borders.destroy() }).not.toThrowError();
     });
     it('Borders clone format Testing', () => {
+console.log('Borders clone format Testing');
         let borders: WBorders = new WBorders();
         borders.cloneFormat();
         borders.destroy();
@@ -18,11 +20,13 @@ describe('Border Validation Testing', () => {
         expect('').toBe('');
     });
     it('Borders copy format Testing', () => {
+console.log('Borders copy format Testing');
         let borders: WBorders = new WBorders();
         borders.copyFormat(borders);
         expect('').toBe('');
     });
     it('Borders copy format undefined Testing', () => {
+console.log('Borders copy format undefined Testing');
         let borders: WBorders = new WBorders(undefined);
         borders.left = undefined;
         borders.top = undefined;

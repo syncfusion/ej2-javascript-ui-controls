@@ -103,7 +103,7 @@ export class DragAndDrop extends ActionBase {
                     pointerEvents: 'none'
                 });
             }
-            let top: number = parseInt(<string>e.top, 10);
+            let top: number = this.actionObj.clone.offsetTop;
             top = top < 0 ? 0 : top;
             topValue = formatUnit(Math.ceil(top / cellHeight) * cellHeight);
             let scrollHeight: number = this.parent.element.querySelector('.e-content-wrap').scrollHeight;
@@ -489,7 +489,9 @@ export class DragAndDrop extends ActionBase {
             offsetTop = Math.round(offsetTop / this.actionObj.cellHeight) * this.actionObj.cellHeight;
             this.actionObj.clone.style.top = formatUnit(offsetTop);
         }
-        let rowIndex: number = (this.parent.activeViewOptions.timeScale.enable) ? (offsetTop / this.actionObj.cellHeight) : 0;
+        let rowIndex: number = (this.parent.activeViewOptions.timeScale.enable) ?
+            ((this.actionObj.target as HTMLElement).offsetTop /
+                this.actionObj.cellHeight) : 0;
         let heightPerMinute: number = this.actionObj.cellHeight / this.actionObj.slotInterval;
         let diffInMinutes: number = parseInt(this.actionObj.clone.style.top, 10) - offsetTop;
         let tr: HTMLElement;
@@ -847,7 +849,7 @@ export class DragAndDrop extends ActionBase {
             eventContainer.appendChild(eventWrapper);
         }
         this.appendCloneElement(eventWrapper);
-        let td: HTMLTableCellElement = closest((<HTMLTableCellElement>e.target), 'td') as HTMLTableCellElement;
+        let td: HTMLTableCellElement = closest((<HTMLTableCellElement>this.actionObj.target), 'td') as HTMLTableCellElement;
         this.actionObj.groupIndex = (td && !isNaN(parseInt(td.getAttribute('data-group-index'), 10)))
             ? parseInt(td.getAttribute('data-group-index'), 10) : this.actionObj.groupIndex;
         let top: number = (<HTMLElement>trCollection[rowIndex]).offsetTop;

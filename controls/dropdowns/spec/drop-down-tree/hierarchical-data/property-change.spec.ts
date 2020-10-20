@@ -257,7 +257,7 @@ describe('DropDownTree control', () => {
             expect(ddtreeObj.text).toBe('Personals');
             ddtreeObj.value = null;
             ddtreeObj.dataBind();
-            expect(ddtreeObj.value.length).toBe(0);
+            expect(ddtreeObj.value).toBe(null);
             expect(ddtreeObj.text).toBe(null);
         });
 

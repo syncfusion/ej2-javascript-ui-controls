@@ -24,12 +24,12 @@ export class CheckboxColumn {
         let span: Element = createElement('span', { className: 'e-frame e-icons', styles: 'width: 18px;'} );
         container.appendChild(span);
         span.addEventListener('click', this.headerSelect.bind(this));
-        let spanlabel: Element = createElement('span', { className: 'e-lable'} );
+        let spanlabel: Element = createElement('span', { className: 'e-label'} );
         container.appendChild(spanlabel);
         let headerElement: HTMLElement = <HTMLElement>element.querySelectorAll('.e-headercontent th')[columnIndex];
         if (isNullOrUndefined(headerElement.querySelector('.e-checkbox-wrapper'))) {
             let headercelldiv: HTMLElement = headerElement.querySelector('.e-headercelldiv');
-            headercelldiv.insertBefore(container, headercelldiv);
+            headercelldiv.insertBefore(container, headercelldiv.firstChild);
         }
     }
 
@@ -57,6 +57,6 @@ export class CheckboxColumn {
             spanElement.classList.add('e-check');
             checkState = 'check';
         }
-        this.dotNetRef.invokeMethodAsync('SelectAllCheckbox', checkState);
+        this.dotNetRef.invokeMethodAsync('HeaderSelectAll', checkState);
     }
 }

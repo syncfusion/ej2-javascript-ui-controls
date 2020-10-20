@@ -1546,10 +1546,10 @@ class KeyboardInteraction {
             pageDown: 'pagedown',
             tab: 'tab',
             shiftTab: 'shift+tab',
-            altUpArrow: 'alt+uparrow',
-            altDownArrow: 'alt+downarrow',
-            altLeftArrow: 'alt+leftarrow',
-            altRightArrow: 'alt+rightarrow'
+            ctrlShiftUpArrow: 'ctrl+shift+uparrow',
+            ctrlShiftDownArrow: 'ctrl+shift+downarrow',
+            ctrlShiftLeftArrow: 'ctrl+shift+leftarrow',
+            ctrlShiftRightArrow: 'ctrl+shift+rightarrow'
         };
         this.parent = parent;
         this.parent.element.tabIndex = this.parent.element.tabIndex === -1 ? 0 : this.parent.element.tabIndex;
@@ -1614,11 +1614,11 @@ class KeyboardInteraction {
             case 'delete':
                 this.processDelete(e);
                 break;
-            case 'altUpArrow':
-            case 'altDownArrow':
-            case 'altLeftArrow':
-            case 'altRightArrow':
-                this.processAltNavigationArrows(e);
+            case 'ctrlShiftUpArrow':
+            case 'ctrlShiftDownArrow':
+            case 'ctrlShiftLeftArrow':
+            case 'ctrlShiftRightArrow':
+                this.processCtrlShiftNavigationArrows(e);
                 break;
             case 'escape':
                 this.processEscape();
@@ -1694,7 +1694,9 @@ class KeyboardInteraction {
         let target = closest(e.target, queryStr);
         this.parent.activeCellsData = this.getSelectedElements(target);
         let cellData = {};
-        this.parent.eventWindow.convertToEventData(this.parent.activeCellsData, cellData);
+        if (this.parent.eventWindow) {
+            this.parent.eventWindow.convertToEventData(this.parent.activeCellsData, cellData);
+        }
         let args = {
             data: cellData, element: this.parent.activeCellsData.element, event: e,
             requestType: 'cellSelect', showQuickPopup: false
@@ -2307,22 +2309,35 @@ class KeyboardInteraction {
             this.parent.quickPopup.deleteClick();
         }
     }
-    processAltNavigationArrows(e) {
+    processCtrlShiftNavigationArrows(e) {
         if (this.parent.activeViewOptions.group.resources.length > 0 && document.activeElement.classList.contains(APPOINTMENT_CLASS)) {
             let groupIndex = parseInt(document.activeElement.getAttribute('data-group-index'), 10);
-            let index = (e.action === 'altLeftArrow' || e.action === 'altUpArrow') ? groupIndex - 1 : groupIndex + 1;
+            let index = (e.action === 'ctrlShiftLeftArrow' || e.action === 'ctrlShiftUpArrow') ? groupIndex - 1 : groupIndex + 1;
             index = index < 0 ? 0 : index > this.parent.resourceBase.lastResourceLevel.length ?
                 this.parent.resourceBase.lastResourceLevel.length : index;
             let eventEle = [];
             while (eventEle.length === 0 && index >= 0 && index <= this.parent.resourceBase.lastResourceLevel.length) {
                 eventEle = [].slice.call(this.parent.element.querySelectorAll(`.${APPOINTMENT_CLASS}[data-group-index="${index}"]`));
-                index = (e.action === 'altLeftArrow' || e.action === 'altUpArrow') ? index - 1 : index + 1;
+                index = (e.action === 'ctrlShiftLeftArrow' || e.action === 'ctrlShiftUpArrow') ? index - 1 : index + 1;
             }
             let nextAppEle = eventEle[0];
             if (nextAppEle) {
                 this.parent.eventBase.removeSelectedAppointmentClass();
                 this.parent.eventBase.addSelectedAppointments([nextAppEle]);
                 nextAppEle.focus();
+            }
+        }
+        else if (this.parent.activeViewOptions.group.resources.length > 0 &&
+            !document.activeElement.classList.contains(APPOINTMENT_CLASS)) {
+            let index = this.parent.resourceBase.renderedResources[0].groupIndex;
+            let appSelector = `.${APPOINTMENT_CLASS}[data-group-index="${index}"]`;
+            let appElements = [].slice.call(this.parent.element.querySelectorAll(appSelector));
+            if (appElements.length > 0) {
+                this.parent.eventBase.removeSelectedAppointmentClass();
+                let focusAppointment = appElements[0];
+                this.parent.eventBase.addSelectedAppointments([focusAppointment]);
+                focusAppointment.focus();
+                e.preventDefault();
             }
         }
     }
@@ -5253,6 +5268,7 @@ class VerticalEvent extends EventBase {
         if (isDragging) {
             this.parent.crudModule.crudObj.isCrudAction = false;
         }
+        this.parent.renderTemplates();
     }
     initializeValues() {
         this.resources = (this.parent.activeViewOptions.group.resources.length > 0) ? this.parent.uiStateValues.isGroupAdaptive ?
@@ -5702,6 +5718,12 @@ class VerticalEvent extends EventBase {
             let index = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
             this.appendEvent(eventObj, appointmentElement, index, tempData.appLeft);
             this.wireAppointmentEvents(appointmentElement, eventObj);
+            if (appointmentElement.offsetHeight < this.cellHeight) {
+                let resizeHandlers = [].slice.call(appointmentElement.querySelectorAll('.' + EVENT_RESIZE_CLASS));
+                resizeHandlers.forEach((resizeHandler) => {
+                    resizeHandler.style.height = Math.ceil(appointmentElement.offsetHeight / resizeHandler.offsetHeight) + 'px';
+                });
+            }
         }
     }
     getEventWidth() {
@@ -5958,6 +5980,7 @@ class MonthEvent extends EventBase {
             }
             this.parent.notify(scrollUiUpdate, data);
         }
+        this.parent.renderTemplates();
     }
     renderEventsHandler(dateRender, workDays, resData) {
         this.renderedEvents = [];
@@ -6557,6 +6580,7 @@ class TimelineEvent extends MonthEvent {
             }
         }
     }
+    // tslint:disable-next-line:max-func-body-length
     renderEvents(event, resIndex, appointmentsList) {
         let startTime = event[this.fields.startTime];
         let endTime = event[this.fields.endTime];
@@ -6613,6 +6637,13 @@ class TimelineEvent extends MonthEvent {
                     let firstChild = this.getFirstChild(resIndex);
                     this.updateCellHeight(firstChild, height);
                 }
+                if (appointmentElement.offsetWidth < this.cellWidth && this.parent.activeViewOptions.timeScale.enable
+                    && this.parent.activeViewOptions.option !== 'TimelineMonth') {
+                    let resizeHandlers = [].slice.call(appointmentElement.querySelectorAll('.' + EVENT_RESIZE_CLASS));
+                    resizeHandlers.forEach((resizeHandler) => {
+                        resizeHandler.style.width = Math.ceil(appointmentElement.offsetWidth / resizeHandler.offsetWidth) + 'px';
+                    });
+                }
             }
             else {
                 for (let i = 0; i < diffInDays; i++) {
@@ -6656,6 +6687,7 @@ class TimelineEvent extends MonthEvent {
                 }
             }
         }
+        this.parent.renderTemplates();
     }
     updateCellHeight(cell, height) {
         if ((height > cell.offsetHeight)) {
@@ -7992,6 +8024,7 @@ class QuickPopups {
                 this.morePopup.relateTo = closest(target, '.' + WORK_CELLS_CLASS);
             }
         }
+        this.parent.renderTemplates();
         this.parent.updateEventTemplates();
         let eventProp = { type: 'EventContainer', cancel: false, element: this.morePopup.element };
         if (!isBlazor()) {
@@ -8343,8 +8376,8 @@ class QuickPopups {
             if (this.parent.quickInfoTemplates.footer) {
                 resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
             }
+            this.parent.resetTemplates();
         }
-        this.parent.resetTemplates();
     }
     quickPopupClose() {
         this.resetQuickPopupTemplates();
@@ -9901,13 +9934,11 @@ class EventWindow {
         if (this.parent.editorTemplate) {
             updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
         }
-        this.parent.renderTemplates();
     }
     resetEditorTemplate() {
         if (this.parent.editorTemplate) {
             resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
         }
-        this.parent.resetTemplates();
     }
     refresh() {
         this.destroy();
@@ -10091,6 +10122,7 @@ class EventWindow {
                 let templateId = this.parent.element.id + '_editorTemplate';
                 let tempEle = [].slice.call(this.parent.getEditorTemplate()(args || {}, this.parent, 'editorTemplate', templateId, false));
                 append(tempEle, form);
+                this.parent.renderTemplates();
                 this.updateEditorTemplate();
             }
         }
@@ -10876,6 +10908,18 @@ class EventWindow {
         });
     }
     updateMinMaxDateToEditor() {
+        let startDate = this.element.querySelector('.e-start');
+        let endDate = this.element.querySelector('.e-end');
+        if (startDate && endDate) {
+            let startObj = startDate.ej2_instances[0];
+            let endObj = endDate.ej2_instances[0];
+            startObj.min = this.parent.minDate;
+            startObj.max = this.parent.maxDate;
+            endObj.min = this.parent.minDate;
+            endObj.max = this.parent.maxDate;
+            startObj.dataBind();
+            endObj.dataBind();
+        }
         if (this.recurrenceEditor) {
             let untilDate = this.recurrenceEditor.element.querySelector('.e-until-date');
             if (untilDate) {
@@ -11527,6 +11571,7 @@ class EventWindow {
         if (!this.parent.isDestroyed) {
             this.resetEditorTemplate();
             this.updateEditorTemplate();
+            this.parent.resetTemplates(['editorTemplate']);
         }
         if (this.recurrenceEditor) {
             this.recurrenceEditor.destroy();
@@ -14231,10 +14276,10 @@ let Schedule = class Schedule extends Component {
      * To reset the react templates
      *  @hidden
      */
-    resetTemplates() {
+    resetTemplates(templates) {
         // tslint:disable-next-line:no-any
         if (this.isReact) {
-            this.clearTemplate();
+            this.clearTemplate(templates);
         }
     }
     initializeResources(isSetModel = false) {
@@ -14533,7 +14578,7 @@ let Schedule = class Schedule extends Component {
         if (isNullOrUndefined(index)) {
             index = this.getViewIndex(view);
         }
-        if (!muteOnChange && index === this.viewIndex || index < 0) {
+        if (!muteOnChange && index === this.viewIndex && this.currentView === view || index < 0) {
             return;
         }
         this.viewIndex = index;
@@ -16722,6 +16767,9 @@ class Resize extends ActionBase {
         if (this.resizeEdges.top) {
             if (resizeValidation) {
                 let topStyles = this.getTopBottomStyles(e, true);
+                if (parseInt(topStyles.height, 10) < 1) {
+                    return;
+                }
                 for (let cloneElement of this.actionObj.cloneElement) {
                     setStyleAttribute(cloneElement, topStyles);
                     addClass([cloneElement], TOP_RESIZE_HANDLER);
@@ -16732,6 +16780,9 @@ class Resize extends ActionBase {
         if (this.resizeEdges.bottom) {
             if (resizeValidation) {
                 let bottomStyles = this.getTopBottomStyles(e, false);
+                if (parseInt(bottomStyles.height, 10) < 1) {
+                    return;
+                }
                 for (let cloneElement of this.actionObj.cloneElement) {
                     setStyleAttribute(cloneElement, bottomStyles);
                     addClass([cloneElement], BOTTOM_RESIZE_HANDLER);
@@ -16933,8 +16984,8 @@ class Resize extends ActionBase {
         clnHeight = clnTop + clnHeight >= viewElement.scrollHeight ? viewElement.scrollHeight - clnTop :
             Math.ceil(clnHeight / slotInterval) * slotInterval;
         let styles = {
-            height: formatUnit(clnHeight < this.actionObj.cellHeight ? this.actionObj.cellHeight : clnHeight),
-            top: formatUnit((clnHeight < this.actionObj.cellHeight && isTop) ? this.actionObj.clone.offsetTop : clnTop),
+            height: formatUnit(clnHeight < this.actionObj.cellHeight ? Math.floor(clnHeight / slotInterval) * slotInterval : clnHeight),
+            top: formatUnit((clnHeight < this.actionObj.cellHeight && isTop) ? Math.ceil(clnTop / slotInterval) * slotInterval : clnTop),
             left: '0px', right: '0px', width: '100%'
         };
         return styles;
@@ -16959,6 +17010,9 @@ class Resize extends ActionBase {
         }
         let width = !isLeft && ((offsetWidth + this.actionObj.clone.offsetLeft > this.scrollArgs.width)) ?
             this.actionObj.clone.offsetWidth : (offsetWidth < this.actionObj.cellWidth) ? this.actionObj.cellWidth : offsetWidth;
+        if (!isLeft && (offsetWidth === this.actionObj.cellWidth && Math.ceil(pageWidth / slotInterval) * slotInterval === 0)) {
+            width = -Math.floor(pageWidth / slotInterval) * slotInterval;
+        }
         if (this.parent.enableRtl) {
             let rightValue = isTimelineView ? parseInt(this.actionObj.element.style.right, 10) :
                 -(offsetWidth - this.actionObj.cellWidth);
@@ -17124,7 +17178,7 @@ class DragAndDrop extends ActionBase {
                     pointerEvents: 'none'
                 });
             }
-            let top = parseInt(e.top, 10);
+            let top = this.actionObj.clone.offsetTop;
             top = top < 0 ? 0 : top;
             topValue = formatUnit(Math.ceil(top / cellHeight) * cellHeight);
             let scrollHeight = this.parent.element.querySelector('.e-content-wrap').scrollHeight;
@@ -17506,7 +17560,9 @@ class DragAndDrop extends ActionBase {
             offsetTop = Math.round(offsetTop / this.actionObj.cellHeight) * this.actionObj.cellHeight;
             this.actionObj.clone.style.top = formatUnit(offsetTop);
         }
-        let rowIndex = (this.parent.activeViewOptions.timeScale.enable) ? (offsetTop / this.actionObj.cellHeight) : 0;
+        let rowIndex = (this.parent.activeViewOptions.timeScale.enable) ?
+            (this.actionObj.target.offsetTop /
+                this.actionObj.cellHeight) : 0;
         let heightPerMinute = this.actionObj.cellHeight / this.actionObj.slotInterval;
         let diffInMinutes = parseInt(this.actionObj.clone.style.top, 10) - offsetTop;
         let tr;
@@ -17861,7 +17917,7 @@ class DragAndDrop extends ActionBase {
             eventContainer.appendChild(eventWrapper);
         }
         this.appendCloneElement(eventWrapper);
-        let td = closest(e.target, 'td');
+        let td = closest(this.actionObj.target, 'td');
         this.actionObj.groupIndex = (td && !isNaN(parseInt(td.getAttribute('data-group-index'), 10)))
             ? parseInt(td.getAttribute('data-group-index'), 10) : this.actionObj.groupIndex;
         let top = trCollection[rowIndex].offsetTop;
@@ -19794,6 +19850,9 @@ class Month extends ViewBase {
                 }
             }
             start = addDays(start, 1);
+            if (start.getHours() > 0) {
+                start = resetTime(start);
+            }
         } while (start.getTime() <= monthEnd.getTime());
         if (!workDays) {
             this.renderDates = renderDates;
@@ -19912,7 +19971,8 @@ class YearEvent extends TimelineEvent {
     }
     renderAppointments() {
         this.fields = this.parent.eventFields;
-        let elementSelector = '.' + APPOINTMENT_WRAPPER_CLASS + ',.' + MORE_INDICATOR_CLASS;
+        let elementSelector = (this.parent.currentView === 'Year') ? '.' + APPOINTMENT_CLASS :
+            '.' + APPOINTMENT_WRAPPER_CLASS + ',.' + MORE_INDICATOR_CLASS;
         let eventWrappers = [].slice.call(this.parent.element.querySelectorAll(elementSelector));
         for (let wrapper of eventWrappers) {
             remove(wrapper);
@@ -19930,6 +19990,7 @@ class YearEvent extends TimelineEvent {
                 this.timelineYearViewEvents();
             }
         }
+        this.parent.renderTemplates();
         this.parent.notify(contentReady, {});
     }
     yearViewEvents() {
@@ -20101,7 +20162,7 @@ class YearEvent extends TimelineEvent {
         let wrap = this.createEventElement(eventObj);
         let width;
         let index;
-        if (eventObj[this.fields.isAllDay]) {
+        if (eventObj[this.fields.isAllDay] && eventObj.isSpanned.count === 1) {
             eventObj[this.fields.endTime] = new Date(eventObj[this.fields.startTime].getTime());
         }
         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
@@ -20661,6 +20722,7 @@ class AgendaBase {
             || this.parent.currentView === 'Agenda') {
             addClass([aTd], AGENDA_DAY_BORDER_CLASS);
         }
+        this.parent.renderTemplates();
         return aTd;
     }
     createAppointment(event) {
@@ -21572,7 +21634,8 @@ class TimelineHeaderRow {
             let htmlCol;
             if (row.template) {
                 let args = { date: dates[0], type: type };
-                htmlCol = [].slice.call(this.parent.templateParser(row.template)(args));
+                let templateId = this.parent.element.id + '_headerRowTemplate';
+                htmlCol = [].slice.call(this.parent.templateParser(row.template)(args, this.parent, 'template', templateId, false));
             }
             else {
                 let viewTemplate;

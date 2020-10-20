@@ -29,9 +29,11 @@ describe('Table border render validation', () => {
         }, 1000);
     });
     it('page count to be 1', () => {
+console.log('page count to be 1');
       expect(editor.documentHelper.pages.length).toBe(1);
     });
     it('get adjacent bottom border to render', () => {
+console.log('get adjacent bottom border to render');
       editor.selection.handleDownKey();
       editor.selection.handleDownKey();
       editor.selection.handleControlRightKey();
@@ -42,6 +44,7 @@ describe('Table border render validation', () => {
       expect(bottomBorder.lineWidth).toBe(0.5);
     });
     it('get adjacent top border to render', () => {
+console.log('get adjacent top border to render');
         editor.selection.handleDownKey();        
         let cellWidget:TableCellWidget=(editor.selection.start.paragraph.containerWidget as TableCellWidget);
         let bottomBorder:WBorder=cellWidget.getPreviousCellTopBorder(cellWidget.cellFormat.borders.top,cellWidget);

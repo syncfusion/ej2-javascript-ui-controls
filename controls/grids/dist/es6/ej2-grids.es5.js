@@ -2755,7 +2755,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             this.parent.destroyTemplate(['template'], templatetoclear);
         }
         if (this.parent.isReact && args.requestType !== 'infiniteScroll' && !args.isFrozen) {
-            this.parent.destroyTemplate(['template', 'rowTemplate', 'detailTemplate', 'captionTemplate', 'commandsTemplate']);
+            this.parent.destroyTemplate(['columnTemplate', 'rowTemplate', 'detailTemplate', 'captionTemplate', 'commandsTemplate']);
             this.parent.renderTemplates();
         }
         if (this.parent.enableColumnVirtualization) {
@@ -4332,7 +4332,7 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
             else {
                 if (isReactCompiler) {
                     var copied = { 'index': attributes$$1[literals[0]] };
-                    cell.column.getColumnTemplate()(extend(copied, dummyData), this.parent, 'template', templateID, this.parent[str], null, node);
+                    cell.column.getColumnTemplate()(extend(copied, dummyData), this.parent, 'columnTemplate', templateID, this.parent[str], null, node);
                     this.parent.renderTemplates();
                 }
                 else {
@@ -21260,12 +21260,14 @@ var Page = /** @__PURE__ @class */ (function () {
         gObj.prevPageMoving = false;
         var prevPage = this.pageSettings.currentPage;
         this.pageSettings.currentPage = e.currentPage;
-        this.parent.notify(modelChanged, {
-            requestType: 'paging',
-            previousPage: prevPage,
-            currentPage: e.currentPage,
-            type: actionBegin
-        });
+        var args = {
+            cancel: false, requestType: 'paging', previousPage: prevPage,
+            currentPage: e.currentPage, type: actionBegin
+        };
+        this.parent.notify(modelChanged, args);
+        if (args.cancel) {
+            e.cancel = true;
+        }
         this.parent.requestTypeAction = 'paging';
     };
     Page.prototype.keyPressHandler = function (e) {
@@ -26742,6 +26744,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                 }
             }
             else {
+                this.toolbar.off('render-react-toolbar-template', this.addReactToolbarPortals);
                 this.toolbar.destroy();
             }
             this.unWireEvent();
@@ -26777,6 +26780,8 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             enableRtl: this.parent.enableRtl,
             created: this.toolbarCreated.bind(this)
         });
+        this.toolbar.isReact = this.parent.isReact;
+        this.toolbar.on('render-react-toolbar-template', this.addReactToolbarPortals, this);
         var isStringTemplate = 'isStringTemplate';
         this.toolbar[isStringTemplate] = true;
         var viewStr = 'viewContainerRef';
@@ -26817,6 +26822,12 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             this.toolbar.appendTo(this.element);
         }
         this.parent.element.insertBefore(this.element, this.parent.getHeaderContent());
+    };
+    Toolbar$$1.prototype.addReactToolbarPortals = function (args) {
+        if (this.parent.isReact) {
+            this.parent.portals = this.parent.portals.concat(args);
+            this.parent.renderTemplates();
+        }
     };
     Toolbar$$1.prototype.refreshToolbarItems = function (args) {
         var gObj = this.parent;
@@ -27366,9 +27377,9 @@ var SummaryCellRenderer = /** @__PURE__ @class */ (function (_super) {
             var guid = 'guid';
             tempID = this.parent.element.id + column[guid] + tempObj.property;
         }
-        var isReactCompiler = this.parent.isReact && column.footerTemplate ?
+        var isReactCompiler = this.parent.isReact && (column.footerTemplate ?
             typeof (column.footerTemplate) !== 'string' : column.groupFooterTemplate ? typeof (column.groupFooterTemplate) !== 'string'
-            : column.groupCaptionTemplate ? typeof (column.groupCaptionTemplate) !== 'string' : false;
+            : column.groupCaptionTemplate ? typeof (column.groupCaptionTemplate) !== 'string' : false);
         if (isReactCompiler) {
             tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID, null, null, node);
             this.parent.renderTemplates();
@@ -29442,7 +29453,13 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
         var _this = this;
         var dummyData = extend({}, data, { isAdd: !this.isEdit, isFrozen: isFrozen }, true);
         var editTemplateID = this.parent.element.id + 'editSettingsTemplate';
-        appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
+        if (this.parent.isReact && typeof (this.parent.editSettings.template) !== 'string') {
+            this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID, null, null, form);
+            this.parent.renderTemplates();
+        }
+        else {
+            appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
+        }
         var setRules = function () {
             var cols = _this.parent.getColumns();
             for (var i = 0; i < cols.length; i++) {

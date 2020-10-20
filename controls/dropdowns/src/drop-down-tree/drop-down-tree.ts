@@ -1292,11 +1292,12 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 element: this.element
             };
             this.trigger('change', eventArgs);
+            this.oldValue = this.value;
         }
     }
 
     private ddtCompareValues(oldValue: string[], newValue: string[]): boolean {
-        if (oldValue === null || oldValue.length === 0) {
+        if (oldValue === null || newValue === null ) {
             let isValid: boolean = oldValue === null ? ((newValue === oldValue) ? true : false) :
                 (oldValue.length === 0 ? (newValue === oldValue) : false);
             return isValid;
@@ -1472,7 +1473,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private resetValueHandler(e: Event): void {
         let formElement: HTMLFormElement = closest(this.inputWrapper, 'form') as HTMLFormElement;
         if (formElement && e.target === formElement) {
+            this.isDynamicChange = true;
+            this.setProperties({ value: null }, true);
             this.resetValue(true);
+            this.isDynamicChange = false;
         }
     }
 
@@ -2616,7 +2620,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
 
     private setMultiSelect(): void {
         if (this.showCheckBox && !this.isDynamicChange) {
-            this.setMultiSelectValue(this.treeObj.checkedNodes);
+            this.setMultiSelectValue(this.treeObj.checkedNodes.slice());
         } else {
             let ddtValue: string[] = this.allowMultiSelection ? (this.showCheckBox ? this.treeObj.checkedNodes
                 : this.treeObj.selectedNodes) : (this.value ? (this.showCheckBox ? this.value : [this.value[0]]) : null);
@@ -2869,9 +2873,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
 
     private resetValue(isDynamicChange?: boolean): void {
         Input.setValue(null, this.inputEle, this.floatLabelType);
-        this.oldValue = this.value;
+        if (!isDynamicChange) {
+            this.oldValue = this.value;
+            this.setProperties({ value: [] }, true);
+        }
         this.dataValue = null;
-        this.setProperties({ value: [] }, true);
         this.setProperties({ text: null }, true);
         this.selectedData = [];
         setValue('selectedNodes', [], this.treeObj);
@@ -2888,12 +2894,15 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         if ((this.allowMultiSelection || this.showCheckBox) && this.chipWrapper) {
             this.chipCollection.innerHTML = '';
+            if (!this.wrapText) {
+                this.updateOverflowWrapper(true);
+            }
             this.ensurePlaceHolder();
         }
     }
 
     private clearCheckAll(): void {
-        if (this.showSelectAll && this.value.length === 0) {
+        if (this.showSelectAll && this.value && this.value.length === 0) {
             this.setLocale(false);
         }
     }
@@ -3092,6 +3101,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private updateValue(value: string[]): void {
+        this.isDynamicChange = true;
         if (isNOU(value) || value.length === 0) {
             this.resetValue(true);
         } else {
@@ -3102,6 +3112,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             }
         }
         this.updateHiddenValue();
+        this.isDynamicChange = false;
     }
 
     private updateText(text: string): void {
@@ -3178,7 +3189,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 case 'filterBarPlaceholder':
                     this.updateFilterPlaceHolder();
                     break;
-                case 'value': this.updateValue(newProp.value); break;
+                case 'value':
+                    this.oldValue = oldProp.value;
+                    this.updateValue(newProp.value); break;
                 case 'text': this.updateText(newProp.text); break;
                 case 'allowMultiSelection': this.updateMultiSelection(newProp.allowMultiSelection); break;
                 case 'mode': this.updateModelMode(); break;

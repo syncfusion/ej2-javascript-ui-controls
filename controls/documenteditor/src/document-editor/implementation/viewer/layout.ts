@@ -858,7 +858,10 @@ export class Layout {
             } else if (this.documentHelper.textHelper.containsSpecialCharAlone(text.charAt(i))) {
                 currentCharacterType = 2;
                 if (separateEachWordSplitChars = (isTextBidi || (text.charAt(i) === ' ' && wordSplitChars === ''))) {
-                    wordSplitChars += text[i];
+                    if (i !== 0 && /^[0-9]+$/.test(text[i - 1]) && text[i] === '.' && text[i + 1] && /^[0-9]+$/.test(text[i + 1])) {
+                        numberText += text[i];
+                        currentCharacterType = 4;
+                    }
                 } else {
                     wordSplitChars += text[i];
                 }
@@ -4967,7 +4970,7 @@ export class Layout {
     /**
      * @private
      */
-    public shiftLayoutedItems(): void {
+    public shiftLayoutedItems(reLayout: boolean): void {
         if (isNullOrUndefined(this.documentHelper.blockToShift) || isNullOrUndefined(this.documentHelper.blockToShift.containerWidget)) {
             this.documentHelper.blockToShift = undefined;
             return;
@@ -5016,7 +5019,9 @@ export class Layout {
         // if (viewer instanceof PageLayoutViewer) {
         this.documentHelper.removeEmptyPages();
         this.updateFieldElements();
-        viewer.updateScrollBars();
+        if (!this.documentHelper.owner.enableLockAndEdit || !reLayout) {
+            viewer.updateScrollBars();
+        }
         // }
     }
     /**

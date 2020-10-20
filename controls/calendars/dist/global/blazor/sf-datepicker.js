@@ -85,7 +85,9 @@ var SfDatePicker = /** @class */ (function () {
                 Action: e.action, Key: e.key, Events: e
             };
         }
-        this.dotNetRef.invokeMethodAsync(INPUT_HANDLER, keyEventsArgs);
+        if (!this.isDisposed) {
+            this.dotNetRef.invokeMethodAsync(INPUT_HANDLER, keyEventsArgs);
+        }
         if (e.action !== 'select' && this.popupObj && document.body.contains(this.popupObj.element)) {
             e.preventDefault();
         }
@@ -185,10 +187,12 @@ var SfDatePicker = /** @class */ (function () {
                 if (_this.popupObj) {
                     _this.popupObj.destroy();
                 }
-                _this.dotNetRef.invokeMethodAsync(CLOSE_POPUP);
+                if (!_this.isDisposed) {
+                    _this.dotNetRef.invokeMethodAsync(CLOSE_POPUP);
+                }
                 _this.popupObj = null;
             }, targetExitViewport: function () {
-                if (!sf.base.Browser.isDevice) {
+                if (!sf.base.Browser.isDevice && !_this.isDisposed) {
                     _this.dotNetRef.invokeMethodAsync(HIDE_POPUP, null);
                 }
             }
@@ -253,7 +257,7 @@ var SfDatePicker = /** @class */ (function () {
         if (!(sf.base.closest(target, '.' + ROOT + '.' + POPUP_CONTAINER))
             && !sf.base.closest(target, '.' + 'e-datetimepicker' + '.' + POPUP_CONTAINER)
             && !(sf.base.closest(target, '.' + INPUTCONTAINER) === this.containerElement)
-            && (!target.classList.contains(DAY))) {
+            && (!target.classList.contains(DAY)) && !this.isDisposed) {
             this.dotNetRef.invokeMethodAsync(HIDE_POPUP, e);
             this.element.focus();
         }
@@ -262,13 +266,13 @@ var SfDatePicker = /** @class */ (function () {
                 && !sf.base.isNullOrUndefined(e.target.parentElement)
                 && e.target.parentElement.classList.contains(SELECTED)
                 && sf.base.closest(target, '.' + CONENT)
-                && sf.base.closest(target, '.' + CONENT).classList.contains('e-' + this.options.depth.toLowerCase())) {
+                && sf.base.closest(target, '.' + CONENT).classList.contains('e-' + this.options.depth.toLowerCase()) && !this.isDisposed) {
                 this.dotNetRef.invokeMethodAsync(HIDE_POPUP, e);
             }
             else if (sf.base.closest(target, '.' + FOOTER_CONTAINER)
                 && target.classList.contains(TODAY)
                 && target.classList.contains(BTN)
-                && (+new Date(dateValue) === +this.generateTodayVal(new Date(dateValue)))) {
+                && (+new Date(dateValue) === +this.generateTodayVal(new Date(dateValue))) && !this.isDisposed) {
                 this.dotNetRef.invokeMethodAsync(HIDE_POPUP, e);
             }
         }
@@ -365,6 +369,12 @@ var DatePicker = {
     focusOut: function (inputEle) {
         if (inputEle) {
             inputEle.blur();
+        }
+    },
+    destroy: function (element, popupElement, popupHolderEle, closeEventArgs, options) {
+        if (element && element.blazor__instance && popupElement && popupElement instanceof HTMLElement && popupHolderEle) {
+            element.blazor__instance.isDisposed = true;
+            element.blazor__instance.closePopup(closeEventArgs, options);
         }
     }
 };

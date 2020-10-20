@@ -119,7 +119,7 @@ let importRules: RuleModel = {
                             'field': 'OrderID',
                             'type': 'number',
                             'operator': 'equal',
-                            'value': [10]
+                            'value': 10
                         }]
                 }]
         }]

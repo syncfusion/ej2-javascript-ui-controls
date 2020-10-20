@@ -38,6 +38,7 @@ class SfDatePicker {
     private mobilePopupContainer: HTMLElement;
     public dotNetRef: BlazorDotnetObject;
     public options: IDatePickerOptions;
+    public isDisposed: boolean;
     constructor(
         containerElement: HTMLElement,
         element: BlazorDatePickerElement, dotnetRef: BlazorDotnetObject, options: IDatePickerOptions) {
@@ -100,7 +101,9 @@ class SfDatePicker {
                 Action: e.action, Key: e.key, Events: e
             };
         }
+        if (!this.isDisposed) {
         this.dotNetRef.invokeMethodAsync(INPUT_HANDLER, keyEventsArgs);
+        }
         if (e.action !== 'select' && this.popupObj && document.body.contains(this.popupObj.element)) {
             e.preventDefault();
         }
@@ -199,10 +202,12 @@ class SfDatePicker {
                 if (this.popupObj) {
                     this.popupObj.destroy();
                 }
+                if (!this.isDisposed) {
                 this.dotNetRef.invokeMethodAsync(CLOSE_POPUP);
+                }
                 this.popupObj = null;
             }, targetExitViewport: () => {
-                if (!Browser.isDevice) { this.dotNetRef.invokeMethodAsync(HIDE_POPUP, null); }
+                if (!Browser.isDevice && !this.isDisposed) { this.dotNetRef.invokeMethodAsync(HIDE_POPUP, null); }
             }
         });
         if (!options.isDatePopup) {
@@ -264,7 +269,7 @@ class SfDatePicker {
         if (!(closest(target, '.' + ROOT + '.' + POPUP_CONTAINER))
             && !closest(target, '.' + 'e-datetimepicker' + '.' + POPUP_CONTAINER)
             && !(closest(target, '.' + INPUTCONTAINER) === this.containerElement)
-            && (!target.classList.contains(DAY))) {
+            && (!target.classList.contains(DAY)) && !this.isDisposed) {
             this.dotNetRef.invokeMethodAsync(HIDE_POPUP, e);
             this.element.focus();
         } else if (closest(target, '.' + ROOT + '.' + POPUP_CONTAINER)) {
@@ -272,12 +277,12 @@ class SfDatePicker {
                 && !isNullOrUndefined((e.target as HTMLElement).parentElement)
                 && (e.target as HTMLElement).parentElement.classList.contains(SELECTED)
                 && closest(target, '.' + CONENT)
-                && closest(target, '.' + CONENT).classList.contains('e-' + this.options.depth.toLowerCase())) {
+                && closest(target, '.' + CONENT).classList.contains('e-' + this.options.depth.toLowerCase()) && !this.isDisposed) {
                 this.dotNetRef.invokeMethodAsync(HIDE_POPUP, e);
             } else if (closest(target, '.' + FOOTER_CONTAINER)
                 && target.classList.contains(TODAY)
                 && target.classList.contains(BTN)
-                && (+new Date(dateValue) === +this.generateTodayVal(new Date(dateValue)))) {
+                && (+new Date(dateValue) === +this.generateTodayVal(new Date(dateValue))) && !this.isDisposed) {
                 this.dotNetRef.invokeMethodAsync(HIDE_POPUP, e);
             }
         }
@@ -368,6 +373,12 @@ let DatePicker: object = {
     },
     focusOut(inputEle: HTMLElement): void {
         if (inputEle) { inputEle.blur(); }
+    },
+    destroy(element: BlazorDatePickerElement, popupElement: HTMLElement, popupHolderEle: HTMLElement, closeEventArgs: PopupObjectArgs, options: IDatePickerOptions) {
+        if (element && element.blazor__instance && popupElement && popupElement instanceof HTMLElement && popupHolderEle) {
+            element.blazor__instance.isDisposed = true;
+            element.blazor__instance.closePopup(closeEventArgs, options);
+        }
     }
 };
 interface BlazorDatePickerElement extends HTMLElement {

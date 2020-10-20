@@ -58,6 +58,7 @@ describe('Context Menu Testing - 1', () => {
     //     expect(menu.contextMenuInstance.element.style.display).toBe('none');
     // });
     it('Context Menu Opening Texting without selection', () => {
+console.log('Context Menu Opening Texting without selection');
         editor.editorModule.insertText('Syncfusion Software');
         let event: MouseEvent = document.createEvent('MouseEvent');
         event.initEvent('contextmenu', true, true);
@@ -74,6 +75,7 @@ describe('Context Menu Testing - 1', () => {
         imageResizer.isImageResizing = false;
     });
     it('Context Menu Opening Texting with selection', () => {
+console.log('Context Menu Opening Texting with selection');
         editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectAll();
         let event: MouseEvent = document.createEvent('MouseEvent');
@@ -119,6 +121,7 @@ describe('Context Menu Testing - 2', () => {
         }, 1000);
     });
     it('Open Context Menu in read only mode', () => {
+console.log('Open Context Menu in read only mode');
         editor.editorModule.insertText('Syncfusion Software');
         editor.isReadOnly = true;
         let event: MouseEvent = document.createEvent('MouseEvent');
@@ -138,6 +141,7 @@ describe('Context Menu Testing - 2', () => {
         editor.isReadOnly = false;
     });
     it('open content Menu inside table', () => {
+console.log('open content Menu inside table');
         editor.editor.insertTable(2, 2);
         let event: MouseEvent = document.createEvent('MouseEvent');
         event.initEvent('contextmenu', true, true);
@@ -151,6 +155,7 @@ describe('Context Menu Testing - 2', () => {
         }
     });
     it('Open context menu in hyperlink', () => {
+console.log('Open context menu in hyperlink');
         editor.editorModule.insertHyperlinkInternal('https://syncfusion.com', 'Syncfusion Software', true);
         editor.selection.movePreviousPosition();
         let event: MouseEvent = document.createEvent('MouseEvent');
@@ -196,6 +201,7 @@ describe('Context Menu Testing - 3 ', () => {
         }, 1000);
     });
     it('open context menu for with merge Cell option', () => {
+console.log('open context menu for with merge Cell option');
         editor.editor.insertTable(2, 2);
         editor.selection.handleShiftDownKey();
         let event: MouseEvent = document.createEvent('MouseEvent');
@@ -211,6 +217,7 @@ describe('Context Menu Testing - 3 ', () => {
         }
     });
     it('add custom context menu', () => {
+console.log('add custom context menu');
         let menuItems: MenuItemModel[] = [
             {
                 text: 'search',
@@ -262,6 +269,7 @@ describe('handle Context menu item validation-1 for editing', () => {
         }, 1000);
     });
     it('cut,copy and paste', () => {
+console.log('cut,copy and paste');
         editor.editorModule.insertText('Adventure Works cycles');
         let event: any = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, altKey: false, which: 0 };
         documentHelper.onKeyDownInternal(event);
@@ -272,6 +280,7 @@ describe('handle Context menu item validation-1 for editing', () => {
         menu.handleContextMenuItem('container_contextmenu_paste');
     });
     it('insert and delete row', () => {
+console.log('insert and delete row');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         menu.handleContextMenuItem('container_contextmenu_insert_above');
@@ -281,6 +290,7 @@ describe('handle Context menu item validation-1 for editing', () => {
         menu.handleContextMenuItem('container_contextmenu_delete_row');
     });
     it('insert and delete column', () => {
+console.log('insert and delete column');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         menu.handleContextMenuItem('container_contextmenu_insert_left');
@@ -289,11 +299,13 @@ describe('handle Context menu item validation-1 for editing', () => {
         menu.handleContextMenuItem('container_contextmenu_delete_column');
     });
     it('table dialog open using context menu testing', () => {
+console.log('table dialog open using context menu testing');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         menu.handleContextMenuItem('container_contextmenu_table_dialog');
     });
     it('paragraph dialog and hyperlink dilaog open using context menu', () => {
+console.log('paragraph dialog and hyperlink dilaog open using context menu');
         editor.openBlank();
         editor.editorModule.insertText('Syncfusion software');
         let event: MouseEvent = document.createEvent('MouseEvent');
@@ -301,6 +313,7 @@ describe('handle Context menu item validation-1 for editing', () => {
         editor.documentHelper.viewerContainer.dispatchEvent(event);
     });
     it('paragraph and hyperlink dialog open using contextmenu validation', () => {
+console.log('paragraph and hyperlink dialog open using contextmenu validation');
         editor.openBlank();
         editor.enableParagraphDialog = false;
         editor.enableHyperlinkDialog = false;
@@ -342,12 +355,14 @@ describe('handle Context menu item validation-2 for editing', () => {
         }, 1000);
     });
     it('insert and delete Table', () => {
+console.log('insert and delete Table');
         editor.openBlank()
         editor.editor.insertTable(2, 2);
         menu.handleContextMenuItem('container_contextmenu_complete_table_delete');
         editor.editorHistory.undo();
     });
     it('open and copy hyperlink', () => {
+console.log('open and copy hyperlink');
         editor.openBlank()
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.onEnter();
@@ -387,16 +402,19 @@ describe('Apply table auto fit types', () => {
         }, 1000);
     });
     it('Apply auto fit type fit to contents', () => {
+console.log('Apply auto fit type fit to contents');
         editor.editorModule.insertTable(2, 2);
         editor.selection.selectTable();
         editor.contextMenu.handleContextMenuItem('container_contextmenu_auto_fit_contents');
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.allowAutoFit).toBe(true);
     });
     it('Apply auto fit type fit to window', () => {
+console.log('Apply auto fit type fit to window');
         editor.contextMenu.handleContextMenuItem('container_contextmenu_auto_fit_window');
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.preferredWidthType).toBe('Percent');
     });
     it('Apply auto fit type fit to contents', () => {
+console.log('Apply auto fit type fit to contents');
         editor.contextMenu.handleContextMenuItem('container_contextmenu_fixed_column_width');
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.allowAutoFit).toBe(false);
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.preferredWidthType).toBe('Auto');
@@ -428,6 +446,7 @@ describe('Context Menu element show validation', () => {
         }, 1000);
     });
     it('Show context menu with hyperlink dialog as false', () => {
+console.log('Show context menu with hyperlink dialog as false');
         (editor.contextMenu as any).showHideElements(editor.selection);
         expect(document.getElementById(editor.element.id + '_contextmenu_hyperlink').style.display).toBe('none');
         expect((document.getElementById(editor.element.id + '_contextmenu_font_dialog').previousSibling as HTMLElement).style.display).toBe('none');

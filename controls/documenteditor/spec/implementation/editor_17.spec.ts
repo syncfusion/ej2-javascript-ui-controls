@@ -31,6 +31,7 @@ describe('Insert comment', () => {
         }, 1000);
     });
     it('In header footer', () => {
+console.log('In header footer');
         editor.selection.goToHeader();
         editor.editor.insertComment();
         expect(editor.documentHelper.comments.length).toBe(0);
@@ -66,14 +67,17 @@ describe('Open restrict document with para mark at end of table cell', () => {
         }, 1000);
     });
     it('Document open', () => {
+console.log('Document open');
         expect(() => { editor.open(restrictJson) }).not.toThrowError();
     });
     it('insert text at non-editable region', () => {
+console.log('insert text at non-editable region');
         let currentLineLength: number = editor.selection.start.currentWidget.children.length;
         editor.editor.handleTextInput('s');
         expect(editor.selection.start.currentWidget.children.length).toBe(currentLineLength);
     });
     it('insert text at editable region', () => {
+console.log('insert text at editable region');
         editor.selection.select('0;0;0;0;0;6', '0;0;0;0;0;6');
         let currentLineLength: number = editor.selection.start.currentWidget.children.length;
         editor.editor.handleTextInput('s');
@@ -107,6 +111,7 @@ describe('Apply character format validation', () => {
         }, 1000);
     });
     it('Bold property', () => {
+console.log('Bold property');
         editor.editor.insertText('Sample hello world');
         editor.selection.handleControlLeftKey();
         editor.selection.handleControlLeftKey();
@@ -115,6 +120,7 @@ describe('Apply character format validation', () => {
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
     it('Bold property for multiple different inline', () => {
+console.log('Bold property for multiple different inline');
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
@@ -124,10 +130,12 @@ describe('Apply character format validation', () => {
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
     it('Undo after bold', () => {
+console.log('Undo after bold');
         editor.editorHistory.undo();
         expect(editor.selection.characterFormat.bold).toBeUndefined();
     });
     it('Redo after bold', () => {
+console.log('Redo after bold');
         editor.editorHistory.redo();
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
@@ -163,6 +171,7 @@ describe('Paste formatting with underline validation', () => {
         }, 1000);
     });
     it('Merge formatting', () => {
+console.log('Merge formatting');
         editor.editor.insertText('Sample');
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
@@ -172,15 +181,18 @@ describe('Paste formatting with underline validation', () => {
         expect(editor.selection.characterFormat.underline).toBe('Single');
     });
     it('undo after merge formatting', () => {
+console.log('undo after merge formatting');
         editor.editorHistory.undo();
         expect(editor.selection.characterFormat.underline).toBe('None');
     });
     it('redo after merge formatting', () => {
+console.log('redo after merge formatting');
         editor.editorHistory.redo();
         editor.selection.handleLeftKey();
         expect(editor.selection.characterFormat.underline).toBe('Single');
     });
     it('Alignment after para delete', () => {
+console.log('Alignment after para delete');
         editor.openBlank();
         editor.editor.insertText('hello');
         editor.selection.selectAll();
@@ -189,6 +201,7 @@ describe('Paste formatting with underline validation', () => {
         expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).paragraphFormat.textAlignment).toBe('Center');
     });
     it('Replacing a paragraph with text validation', () => {
+console.log('Replacing a paragraph with text validation');
         editor.openBlank();
         editor.editor.insertText('hello');
         editor.editor.handleEnterKey();
@@ -204,6 +217,7 @@ describe('Paste formatting with underline validation', () => {
         expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
     });
     it('Comment mark is not removed after deleting the comment validation', () => {
+console.log('Comment mark is not removed after deleting the comment validation');
         editor.openBlank();
         editor.enableTrackChanges = true;
         editor.editor.insertComment('hello');
@@ -237,6 +251,7 @@ describe('Comment initial validation', () => {
         }, 1000);
     });
     it('Comment initial construction validation', () => {
+console.log('Comment initial construction validation');
         editor.openBlank();
         editor.editor.insertText('hello');
         editor.selection.selectAll();

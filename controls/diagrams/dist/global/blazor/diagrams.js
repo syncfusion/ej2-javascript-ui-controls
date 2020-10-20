@@ -2571,6 +2571,15 @@ var DiagramShapeStyle = /** @class */ (function (_super) {
 })(exports.RealAction || (exports.RealAction = {}));
 /** @private */
 
+(function (ScrollActions) {
+    ScrollActions[ScrollActions["None"] = 0] = "None";
+    /** Indicates when the scroll properties are changed using property change */
+    ScrollActions[ScrollActions["PropertyChange"] = 1024] = "PropertyChange";
+    /** Indicates when the scroll properties are changed using interaction */
+    ScrollActions[ScrollActions["Interaction"] = 2048] = "Interaction";
+})(exports.ScrollActions || (exports.ScrollActions = {}));
+/** @private */
+
 (function (NoOfSegments) {
     NoOfSegments[NoOfSegments["Zero"] = 0] = "Zero";
     NoOfSegments[NoOfSegments["One"] = 1] = "One";
@@ -12897,7 +12906,7 @@ function addLane(diagram, parent, lane, count) {
                 }
             }
             if (!(diagram.diagramActions & exports.DiagramAction.UndoRedo)) {
-                laneObj.id += randomId();
+                laneObj.id = (laneObj.id === '') ? randomId() : laneObj.id;
             }
             if (count !== undefined) {
                 shape.lanes.splice(count, 0, laneObj);
@@ -16072,6 +16081,28 @@ function canMeasureDecoratorPath(objects) {
     }
     return false;
 }
+/** @private */
+function getPreviewSize(sourceElement, clonedObject, wrapper) {
+    var previewWidth;
+    var previewHeight;
+    previewWidth = this.getSymbolSize(sourceElement, clonedObject, wrapper, 'width');
+    previewHeight = this.getSymbolSize(sourceElement, clonedObject, wrapper, 'height');
+    return new Size(previewWidth, previewHeight);
+}
+/** @private */
+function getSymbolSize(sourceElement, clonedObject, wrapper, size) {
+    var previewSize = 0;
+    if (clonedObject.previewSize[size] !== undefined) {
+        previewSize = clonedObject.previewSize[size];
+    }
+    else if (sourceElement.symbolPreview[size] !== undefined) {
+        previewSize = sourceElement.symbolPreview[size];
+    }
+    else {
+        previewSize = clonedObject.width || wrapper.actualSize.width;
+    }
+    return previewSize;
+}
 
 var __extends$23 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19146,7 +19177,7 @@ function getContent(element, isHtml, nodeObject) {
     }
     else if (element.isTemplate) {
         var compiledString = void 0;
-        compiledString = element.getNodeTemplate()(cloneObject(nodeObject), diagram, propertyName, undefined, undefined, false);
+        compiledString = element.getNodeTemplate()(cloneObject(nodeObject), diagram, propertyName + "_" + ((propertyName === "nodeTemplate") ? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false);
         for (var i = 0; i < compiledString.length; i++) {
             div.appendChild(compiledString[i]);
         }
@@ -19264,7 +19295,7 @@ function createUserHandleTemplates(userHandleTemplate, template, selectedItems, 
         for (var _i = 0, _a = selectedItems.userHandles; _i < _a.length; _i++) {
             handle = _a[_i];
             if (userHandleFn) {
-                compiledString = userHandleFn(cloneObject(handle), diagram, 'userHandleTemplate', undefined, undefined, false);
+                compiledString = userHandleFn(cloneObject(handle), diagram, 'userHandleTemplate' + '_' + handle.name, undefined, undefined, false);
                 for (i = 0; i < compiledString.length; i++) {
                     var attr = {
                         'style': 'height: 100%; width: 100%; pointer-events: all',
@@ -26764,7 +26795,7 @@ var DiagramEventHandler = /** @class */ (function () {
                 }
                 this.currentAction = action;
                 if (this.currentAction !== 'None' && this.currentAction !== 'Select' &&
-                    !(this.diagram.diagramActions & exports.DiagramAction.TextEdit)) {
+                    !(this.diagram.diagramActions & exports.DiagramAction.TextEdit) || this.commandHandler.isUserHandle(this.currentPosition)) {
                     this.diagram.diagramActions = this.diagram.diagramActions | exports.DiagramAction.ToolAction;
                 }
                 else {
@@ -27650,12 +27681,14 @@ var DiagramEventHandler = /** @class */ (function () {
                 this.eventArgs.position = mousePosition;
                 this.tool.mouseWheel(this.eventArgs);
             }
+            this.diagram.scrollActions |= exports.ScrollActions.Interaction;
             if (evt.shiftKey) {
                 this.diagram.scroller.zoom(1, change, 0, mousePosition);
             }
             else {
                 this.diagram.scroller.zoom(1, 0, change, mousePosition);
             }
+            this.diagram.scrollActions &= ~exports.ScrollActions.Interaction;
             if (horizontalOffset !== this.diagram.scroller.horizontalOffset
                 || verticalOffset !== this.diagram.scroller.verticalOffset) {
                 evt.preventDefault();
@@ -27877,7 +27910,9 @@ var DiagramEventHandler = /** @class */ (function () {
             var objects = this.objectFinder.findObjectsUnderMouse(this.currentPosition, this.diagram, this.eventArgs, null, this.action);
             this.eventArgs.target = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
             this.tool.mouseMove(this.eventArgs);
+            this.diagram.scrollActions |= exports.ScrollActions.Interaction;
             this.diagram.scroller.zoom(1, -left, -top_1, pos);
+            this.diagram.scrollActions &= ~exports.ScrollActions.Interaction;
         }
     };
     DiagramEventHandler.prototype.mouseEvents = function () {
@@ -34110,7 +34145,7 @@ var DiagramScroller = /** @class */ (function () {
         this.oldCollectionObjects = oObjectsID;
     };
     /** @private */
-    DiagramScroller.prototype.setSize = function () {
+    DiagramScroller.prototype.setSize = function (newOffset) {
         var pageBounds = this.getPageBounds(undefined, undefined, true);
         pageBounds.x *= this.currentZoom;
         pageBounds.y *= this.currentZoom;
@@ -34134,8 +34169,47 @@ var DiagramScroller = /** @class */ (function () {
         var oldHeight = this.diagramHeight;
         this.diagramWidth = Math.max(pageBounds.right, -this.horizontalOffset + this.viewPortWidth - vScrollSize) - x;
         this.diagramHeight = Math.max(pageBounds.bottom, -this.verticalOffset + this.viewPortHeight - hScrollSize) - y;
-        if (oldWidth !== this.diagramWidth || oldHeight !== this.diagramHeight) {
+        if ((oldWidth !== this.diagramWidth || oldHeight !== this.diagramHeight) && this.diagram.scrollSettings.scrollLimit !== 'Diagram') {
             this.diagram.setSize(this.diagramWidth, this.diagramHeight);
+        }
+        if (this.diagram.scrollSettings.scrollLimit === 'Diagram') {
+            if ((oldWidth !== this.diagramWidth || oldHeight !== this.diagramHeight || this.currentZoom !== 1)
+                && ((!this.diagram.diagramActions || !newOffset) || (this.diagram.diagramActions && newOffset &&
+                    ((this.verticalOffset !== 0 || this.verticalOffset === newOffset.y) &&
+                        (this.horizontalOffset !== 0 || this.horizontalOffset === newOffset.x))))) {
+                if ((this.diagram.scrollActions & exports.ScrollActions.Interaction) && newOffset) {
+                    this.transform = {
+                        tx: Math.max(newOffset.x, -(pageBounds.left / this.currentZoom)) / this.currentZoom,
+                        ty: Math.max(newOffset.y, -(pageBounds.top / this.currentZoom)) / this.currentZoom,
+                        scale: this.currentZoom
+                    };
+                    this.horizontalOffset = newOffset.x;
+                    this.verticalOffset = newOffset.y;
+                }
+                this.diagram.setSize(this.diagramWidth, this.diagramHeight);
+                if ((!(this.diagram.scrollActions & exports.ScrollActions.PropertyChange)) && newOffset) {
+                    this.horizontalOffset = newOffset.x;
+                    this.verticalOffset = newOffset.y;
+                    this.transform = {
+                        tx: Math.max(newOffset.x, -pageBounds.left) / this.currentZoom,
+                        ty: Math.max(newOffset.y, -pageBounds.top) / this.currentZoom,
+                        scale: this.currentZoom
+                    };
+                }
+            }
+            else if (newOffset && oldWidth === this.diagramWidth && oldHeight === this.diagramHeight &&
+                ((this.diagram.diagramCanvas.scrollHeight > this.viewPortHeight &&
+                    newOffset.y < 0 && this.horizontalOffset === newOffset.x && this.verticalOffset === 0) ||
+                    (this.diagram.diagramCanvas.scrollWidth > this.viewPortWidth &&
+                        newOffset.x < 0 && this.verticalOffset === newOffset.y && this.horizontalOffset === 0))) {
+                this.verticalOffset = newOffset.y;
+                this.horizontalOffset = newOffset.x;
+                this.transform = {
+                    tx: Math.max(newOffset.x, -pageBounds.left) / this.currentZoom,
+                    ty: Math.max(newOffset.y, -pageBounds.top) / this.currentZoom,
+                    scale: this.currentZoom
+                };
+            }
         }
         this.diagram.transformLayers();
         this.diagram.element.style.overflow = 'hidden';
@@ -34291,14 +34365,18 @@ var DiagramScroller = /** @class */ (function () {
                 if (factor === 1) {
                     newOffset = this.applyScrollLimit(newOffset.x, newOffset.y);
                 }
-                this.transform = {
-                    tx: Math.max(newOffset.x, -pageBounds.left) / this.currentZoom,
-                    ty: Math.max(newOffset.y, -pageBounds.top) / this.currentZoom,
-                    scale: this.currentZoom
-                };
-                this.horizontalOffset = newOffset.x;
-                this.verticalOffset = newOffset.y;
-                this.setSize();
+                if ((this.diagram.scrollActions & exports.ScrollActions.PropertyChange ||
+                    !(this.diagram.scrollActions & exports.ScrollActions.Interaction)) ||
+                    this.diagram.scrollSettings.scrollLimit !== 'Diagram') {
+                    this.transform = {
+                        tx: Math.max(newOffset.x, -pageBounds.left) / this.currentZoom,
+                        ty: Math.max(newOffset.y, -pageBounds.top) / this.currentZoom,
+                        scale: this.currentZoom
+                    };
+                    this.horizontalOffset = newOffset.x;
+                    this.verticalOffset = newOffset.y;
+                }
+                this.setSize(newOffset);
                 if (this.diagram.mode !== 'SVG' && canVitualize(this.diagram)) {
                     this.diagram.scroller.virtualizeElements();
                 }
@@ -35193,6 +35271,8 @@ var Diagram = /** @class */ (function (_super) {
         /** @private */
         _this.groupTable = {};
         /** @private */
+        _this.scrollActions = exports.ScrollActions.None;
+        /** @private */
         _this.blazorActions = exports.BlazorAction.Default;
         /** @private */
         _this.activeLabel = { id: '', parentId: '', isGroup: false, text: undefined };
@@ -35513,7 +35593,9 @@ var Diagram = /** @class */ (function (_super) {
                         this.updateLayer(newProp);
                         break;
                     case 'scrollSettings':
+                        this.scrollActions |= exports.ScrollActions.PropertyChange;
                         this.updateScrollSettings(newProp);
+                        this.scrollActions &= ~exports.ScrollActions.PropertyChange;
                         break;
                     case 'locale':
                         if (newProp.locale !== oldProp.locale) {
@@ -35547,6 +35629,7 @@ var Diagram = /** @class */ (function (_super) {
             }
             if (refreshLayout && !refereshColelction) {
                 this.doLayout();
+                this.renderReactTemplates();
             }
             if (isPropertyChanged && this.propertyChange) {
                 var args = {
@@ -35823,6 +35906,9 @@ var Diagram = /** @class */ (function (_super) {
         this.isLoading = false;
         this.renderComplete();
         this.updateFitToPage();
+        if (this.refreshing) {
+            this.renderReactTemplates();
+        }
     };
     /* tslint:enable */
     Diagram.prototype.updateFitToPage = function () {
@@ -36030,6 +36116,16 @@ var Diagram = /** @class */ (function (_super) {
         }
         return modules;
     };
+    Diagram.prototype.removeUserHandlesTemplate = function () {
+        if (this.selectedItems.userHandles.length) {
+            for (var i = 0; i < this.selectedItems.userHandles.length; i++) {
+                for (var _i = 0, _a = this.views; _i < _a.length; _i++) {
+                    var elementId = _a[_i];
+                    removeElement(this.selectedItems.userHandles[i].name + '_template_hiddenUserHandle', elementId);
+                }
+            }
+        }
+    };
     /**
      * Destroys the diagram control
      */
@@ -36045,6 +36141,8 @@ var Diagram = /** @class */ (function (_super) {
         this.unWireEvents();
         this.notify('destroy', {});
         _super.prototype.destroy.call(this);
+        this.removeUserHandlesTemplate();
+        this.clearTemplate();
         if (document.getElementById(this.element.id)) {
             this.element.classList.remove('e-diagram');
             var tooltipelement = document.getElementsByClassName('e-diagram-tooltip');
@@ -37660,6 +37758,7 @@ var Diagram = /** @class */ (function (_super) {
                 this.refreshCanvasDiagramLayer(view);
             }
         }
+        this.renderReactTemplates();
         return newObj;
     };
     /* tslint:enable */
@@ -37848,6 +37947,10 @@ var Diagram = /** @class */ (function (_super) {
                         var elementId = _c[_b];
                         removeElement(currentObj.id + '_html_element', elementId);
                         removeElement(children[i].id + '_html_element', elementId);
+                        this.clearTemplate(['nodeTemplate' + '_' + currentObj.id]);
+                        if (children[i].annotationId) {
+                            this.clearTemplate(['annotationTemplate' + '_' + currentObj.id + (children[i].annotationId)]);
+                        }
                     }
                 }
                 removeGradient(children[i].id);
@@ -43091,6 +43194,7 @@ var Diagram = /** @class */ (function (_super) {
                     var nodeDragSize = void 0;
                     var nodePreviewSize = void 0;
                     var paletteDragSize = void 0;
+                    var preview = void 0;
                     if (paletteId) {
                         // tslint:disable-next-line:no-any
                         var sourceElement = document.getElementById(paletteId).ej2_instances[0];
@@ -43104,14 +43208,15 @@ var Diagram = /** @class */ (function (_super) {
                             clonedObject = cloneObject(sourceElement[selectedSymbols]);
                             childTable = sourceElement[childtable];
                             var wrapper = obj.wrapper.children[0].children[0];
+                            preview = getPreviewSize(sourceElement, clonedObject, wrapper);
                             if (sourceElement[selectedSymbols] instanceof Node) {
                                 if (obj.shape.shape === 'TextAnnotation') {
-                                    clonedObject.offsetX = position.x + 11 + (clonedObject.width || wrapper.actualSize.width) / 2;
-                                    clonedObject.offsetY = position.y + 11 + (clonedObject.height || wrapper.actualSize.height) / 2;
+                                    clonedObject.offsetX = position.x + 11 + (preview.width) * clonedObject.pivot.x;
+                                    clonedObject.offsetY = position.y + 11 + (preview.height) * clonedObject.pivot.y;
                                 }
                                 else {
-                                    clonedObject.offsetX = position.x + 5 + (clonedObject.width || wrapper.actualSize.width) / 2;
-                                    clonedObject.offsetY = position.y + (clonedObject.height || wrapper.actualSize.height) / 2;
+                                    clonedObject.offsetX = position.x + 5 + (preview.width) * clonedObject.pivot.x;
+                                    clonedObject.offsetY = position.y + (preview.height) * clonedObject.pivot.y;
                                 }
                                 var newNode = new Node(_this, 'nodes', clonedObject, true);
                                 if (newNode.shape.type === 'Bpmn' && newNode.shape.activity.subProcess.processes
@@ -52343,10 +52448,10 @@ var HierarchicalTree = /** @class */ (function () {
                 if (this.hasChild(layout, child)) {
                     if (!info.firstChild || info.firstChild.x >= childInfo.firstChild.x) {
                         if (childInfo.firstChild && info.firstChild.canMoveBy < childInfo.canMoveBy) {
-                            info.firstChild.canMoveBy = canMoveBy;
-                            childInfo.canMoveBy = canMoveBy;
                             canMoveBy = info.firstChild.canMoveBy;
+                            childInfo.canMoveBy = canMoveBy;
                             layout.graphNodes[info.firstChild.child].canMoveBy = canMoveBy;
+                            info.firstChild.canMoveBy = canMoveBy;
                         }
                         var canMoveValue = canMoveBy !== undefined ? canMoveBy : childInfo.canMoveBy;
                         info.firstChild = { x: childInfo.firstChild.x, canMoveBy: canMoveValue, child: child.id };
@@ -58968,6 +59073,8 @@ exports.findDistance = findDistance;
 exports.cloneBlazorObject = cloneBlazorObject;
 exports.checkBrowserInfo = checkBrowserInfo;
 exports.canMeasureDecoratorPath = canMeasureDecoratorPath;
+exports.getPreviewSize = getPreviewSize;
+exports.getSymbolSize = getSymbolSize;
 exports.CanvasRenderer = CanvasRenderer;
 exports.DiagramRenderer = DiagramRenderer;
 exports.DataBinding = DataBinding;
@@ -59133,6 +59240,4 @@ sfBlazor.modules["diagram"] = "diagrams.Diagram";
 sfBlazor.modules["symbolpalette"] = "diagrams.SymbolPalette";
 sfBlazor.modules["overview"] = "diagrams.Overview";
 
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.diagrams, () => {
     sf.diagrams = sf.diagrams({});
-});

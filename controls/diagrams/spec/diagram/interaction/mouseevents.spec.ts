@@ -70,9 +70,9 @@ export class MouseEvents {
         element.dispatchEvent(click);
     }
 
-    public mouseWheelEvent(element: Element, cx: number, cy: number, ctrlKey: boolean = false, shift: boolean = false): void {
+    public mouseWheelEvent(element: Element, cx: number, cy: number, ctrlKey: boolean = false, shift: boolean = false, up: boolean = false): void {
         let wheelEvent: MouseWheelEvent = document.createEvent('WheelEvent') as MouseWheelEvent;
-        wheelEvent.initMouseEvent('mousewheel', false, false, window, 1, 0, 0, cx, cy, ctrlKey, false, shift, false, 0, null);
+        wheelEvent.initMouseEvent('mousewheel', false, false, window, up? -1 : 1, 0, 0, cx, cy, ctrlKey, false, shift, false, 0, null);
         element.dispatchEvent(wheelEvent);
     }
 

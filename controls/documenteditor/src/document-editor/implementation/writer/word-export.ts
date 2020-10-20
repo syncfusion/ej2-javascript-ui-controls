@@ -669,10 +669,9 @@ export class WordExport {
     }
     // Serialize the comments (comments.xml)
     private serializeComments(): void {
-        if (this.mComments.length === 0) {
+        if (this.mComments.length === 0 || (this.mComments.length === 1 && this.mComments[0].text === '')) {
             return;
         }
-
         let writer: XmlWriter = new XmlWriter();
         writer.writeStartElement('w', 'comments', this.wNamespace);
         this.serializeCommentCommonAttribute(writer);
@@ -718,7 +717,7 @@ export class WordExport {
                 this.serializeBodyItem(writer, blocks[k], true);
                 this.isInsideComment = false;
             }
-            //if (blocks.length > 0) {
+            //if (blocks.length === 0 && this.commentParaID === 0) {
             this.commentParaIDInfo[comment.commentId] = this.commentParaID;
             //}
             //}
@@ -745,10 +744,9 @@ export class WordExport {
     }
     // Serialize the comments (commentsExtended.xml)
     private serializeCommentsExtended(): void {
-        if (this.mComments.length === 0) {
+        if (this.mComments.length === 0 || (this.mComments.length === 1 && this.mComments[0].text === '')) {
             return;
         }
-
         let writer: XmlWriter = new XmlWriter();
         writer.writeStartElement('w15', 'commentsEx', this.wNamespace);
         this.serializeCommentCommonAttribute(writer);
@@ -1431,19 +1429,21 @@ export class WordExport {
     }
     // Serialize the comment
     private serializeComment(writer: XmlWriter, comment: any): void {
-        if (comment.commentCharacterType === 0) {
-            writer.writeStartElement('w', 'commentRangeStart', this.wNamespace);
-        } else if (comment.commentCharacterType === 1) {
-            writer.writeStartElement('w', 'commentRangeEnd', this.wNamespace);
-        }
-        let commentId: number = this.commentId[comment.commentId];
-        if (isNullOrUndefined(commentId)) {
-            commentId = this.commentId[comment.commentId] = this.currentCommentId++;
-        }
-        writer.writeAttributeString('w', 'id', this.wNamespace, commentId.toString());
-        writer.writeEndElement();
-        if (comment.commentCharacterType === 1) {
-            this.serializeCommentItems(writer, commentId);
+        if (!(this.mComments.length === 1 && this.mComments[0].text === '')) {
+            if (comment.commentCharacterType === 0) {
+                writer.writeStartElement('w', 'commentRangeStart', this.wNamespace);
+            } else if (comment.commentCharacterType === 1) {
+                writer.writeStartElement('w', 'commentRangeEnd', this.wNamespace);
+            }
+            let commentId: number = this.commentId[comment.commentId];
+            if (isNullOrUndefined(commentId)) {
+                commentId = this.commentId[comment.commentId] = this.currentCommentId++;
+            }
+            writer.writeAttributeString('w', 'id', this.wNamespace, commentId.toString());
+            writer.writeEndElement();
+            if (comment.commentCharacterType === 1) {
+                this.serializeCommentItems(writer, commentId);
+            }
         }
     }
     private serializeCommentItems(writer: XmlWriter, commentId: any): void {
@@ -3551,10 +3551,10 @@ export class WordExport {
         // serialize cell margins
         this.serializeCellMargins(writer, cellFormat);
         if (ensureMerge) {
-            //w:gridSpan -   Grid Columns Spanned by Current Table Cell
-            this.serializeGridSpan(writer, cell);
             //w:hMerge -    Horizontally Merged Cell and w:vMerge -    Vertically Merged Cell
             this.serializeCellMerge(writer, cellFormat);
+            //w:gridSpan -   Grid Columns Spanned by Current Table Cell
+            this.serializeGridSpan(writer, cell);
         }
         //w:tcBorders -    Table Cell Borders
         writer.writeStartElement(undefined, 'tcBorders', this.wNamespace);
@@ -5455,8 +5455,10 @@ export class WordExport {
         this.serializeRelationShip(writer, this.getNextRelationShipID(), this.stylesRelType, 'styles.xml');
         this.serializeRelationShip(writer, this.getNextRelationShipID(), this.settingsRelType, 'settings.xml');
         if (this.mComments.length > 0) {
-            this.serializeRelationShip(writer, this.getNextRelationShipID(), this.commentsRelType, 'comments.xml');
-            this.serializeRelationShip(writer, this.getNextRelationShipID(), this.commentsExRelType, 'commentsExtended.xml');
+            if (!(this.mComments.length === 1 && this.mComments[0].text === '')) {
+                this.serializeRelationShip(writer, this.getNextRelationShipID(), this.commentsRelType, 'comments.xml');
+                this.serializeRelationShip(writer, this.getNextRelationShipID(), this.commentsExRelType, 'commentsExtended.xml');
+            }
         }
         // this.serializeRelationShip(writer, this.getNextRelationShipID(), this.ThemeRelType, 'theme/theme1.xml');
 

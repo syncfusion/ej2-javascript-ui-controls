@@ -2,7 +2,28 @@
 
 ## [Unreleased]
 
+## 18.3.42 (2020-10-20)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#294515` - This issue "When zoom out the diagram ruler value not update properly' has been fixed.
+- `#294604` - This issue "Vertical Scroll bar appears while scroll the diagram" has been fixed.
+- `#296511`, `#296304` - The issue "Nodes are not added properly to the newly added lane" has been fixed.
+
 ## 18.3.40 (2020-10-13)
+
+### Diagram
+
+#### Bug Fixes
+
+- `292439` - The issue "Exception occurs when try to draw connector on node text edit" has been fixed.
+- `294302` - The issue with "Node overlapping issue in hierarchical tree layout" has been fixed.
+- `292214` - The issue "Mouse cursor does not place on a node" has been fixed
+- `292439` - The issue "Exception occurs when try to draw connector on node text edit" has been fixed.
+
+## 18.3.35 (2020-10-01)
 
 ### Diagram
 
@@ -36,6 +57,8 @@
 - `287349` - The issue "Infinite loop occurs while setting delete constraints for node in swim-lane and clear diagram" has been fixed.
 - `290066` - The issue "SendToBack and BringToFront not work for connector with group node" has been fixed.
 
+## 18.2.59 (2020-09-21)
+
 ### Diagram
 
 #### Bug Fixes
@@ -50,6 +73,8 @@
 
 ### Diagram
 
+#### Bug Fixes
+
 - `291364` - The issue "Connector's tooltip position updated wrongly" has been fixed.
 - `287349` - The issue "Infinite loop occurs while setting delete constraints for node in swim-lane and clear diagram" has been fixed.
 - `290066` - The issue "SendToBack and BringToFront not work for connector with group node" has been fixed.
@@ -57,6 +82,8 @@
 ## 18.2.56 (2020-09-01)
 
 ### Diagram
+
+#### Bug Fixes
 
 - `287578` - The issue "Connector segments not update properly" has been fixed.
 - `289532` - The issue "Group width and height does not update" has been fixed.

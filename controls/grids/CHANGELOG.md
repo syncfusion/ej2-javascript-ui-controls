@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.42 (2020-10-20)
+
+### Grid
+
+#### Bug Fixes
+
+- `#293485` - `ActionBegin` event paging arguments `cancel` property retained issue has been fixed.
+
 ## 18.3.40 (2020-10-13)
 
 ### Grid

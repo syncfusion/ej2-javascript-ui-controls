@@ -32,6 +32,7 @@ describe('Restrict editing Add edit region', () => {
         }, 1000);
     });
     it('Add selected region to readonly case', () => {
+console.log('Add selected region to readonly case');
         editor.editor.insertText('sample');
         editor.editor.onEnter();
         editor.editor.insertText('sample');
@@ -45,19 +46,22 @@ describe('Restrict editing Add edit region', () => {
         expect(editor.documentHelper.editRanges.length).toBe(1);
     });
     it('highlight selection for editable region', () => {
+console.log('highlight selection for editable region');
         editor.selection.isHighlightEditRegion = true;
         editor.selection.highlightEditRegion();
     });
     it('SelectAll for editable region', () => {
+console.log('SelectAll for editable region');
         editor.selection.showAllEditingRegion();
     });
     it('remove editrange at current selection', () => {
+console.log('remove editrange at current selection');
         editor.selection.handleControlHomeKey();
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
         editor.editor.removeUserRestrictions('Everyone');
-        expect(editor.documentHelper.editRanges.get('Everyone').length).toBe(0);
+        expect(editor.documentHelper.editRanges.containsKey('Everyone')).toBe(false);
     });
 });
 
@@ -89,15 +93,18 @@ describe('Restrict editing Add edit region with everyone validation', () => {
         }, 1000);
     });
     it('highlightedit region validation', () => {
+console.log('highlightedit region validation');
         editor.selection.isHighlightEditRegion = true;
         editor.selection.highlightEditRegion();
     });
     it('Navigate edit region validation', () => {
+console.log('Navigate edit region validation');
         editor.selection.navigateToNextEditingRegion();
         editor.selection.navigateToNextEditingRegion();
         editor.selection.navigateToNextEditingRegion();
     });
     it('Formatting inside edit region validation', () => {
+console.log('Formatting inside edit region validation');
         editor.selection.handleControlHomeKey();
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
@@ -108,6 +115,7 @@ describe('Restrict editing Add edit region with everyone validation', () => {
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
     it('Formatting outside edit region validation', () => {
+console.log('Formatting outside edit region validation');
         editor.selection.handleDownKey();
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
@@ -120,10 +128,12 @@ describe('Restrict editing Add edit region with everyone validation', () => {
         expect(editor.selection.characterFormat.bold).toBe(false);
     });
     it('Editing outside edit region validation', () => {
+console.log('Editing outside edit region validation');
         editor.editor.handleTextInput('sample');
         expect(editor.selection.getText(true)).toBe('')
     });
     it('Editing inside edit region validation', () => {
+console.log('Editing inside edit region validation');
         editor.selection.handleControlHomeKey();
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
@@ -161,19 +171,23 @@ describe('Restrict editing Add edit region based on currentuser validation', () 
         }, 1000);
     });
     it('highlightedit region validation', () => {
+console.log('highlightedit region validation');
         editor.selection.isHighlightEditRegion = true;
         expect(editor.documentHelper.editRanges.length).toBe(2);
     });
     it('Unhighlightedit region validation', () => {
+console.log('Unhighlightedit region validation');
         editor.selection.isHighlightEditRegion = false;
         expect(editor.selection.editRegionHighlighters).toBeUndefined();
     });
     it('Navigate edit region validation', () => {
+console.log('Navigate edit region validation');
         editor.selection.navigateToNextEditingRegion();
         editor.selection.navigateToNextEditingRegion();
         editor.selection.navigateToNextEditingRegion();
     });
     it('Formatting inside edit region validation', () => {
+console.log('Formatting inside edit region validation');
         editor.selection.handleControlHomeKey();
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
@@ -184,6 +198,7 @@ describe('Restrict editing Add edit region based on currentuser validation', () 
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
     it('Formatting outside edit region validation', () => {
+console.log('Formatting outside edit region validation');
         editor.selection.handleDownKey();
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
@@ -196,10 +211,12 @@ describe('Restrict editing Add edit region based on currentuser validation', () 
         expect(editor.selection.characterFormat.bold).toBe(false);
     });
     it('Editing outside edit region validation', () => {
+console.log('Editing outside edit region validation');
         editor.editor.handleTextInput('sample');
         expect(editor.selection.getText(true)).toBe('')
     });
     it('Editing inside edit region validation', () => {
+console.log('Editing inside edit region validation');
         editor.selection.handleControlHomeKey();
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
@@ -236,19 +253,23 @@ describe('Restrict editing Add edit region inside Table', () => {
         }, 1000);
     });
     it('highlightedit region validation', () => {
+console.log('highlightedit region validation');
         editor.selection.isHighlightEditRegion = true;
         expect(editor.selection.editRegionHighlighters.length).not.toBe(0);
     });
     it('Unhighlightedit region validation', () => {
+console.log('Unhighlightedit region validation');
         editor.selection.isHighlightEditRegion = false;
         expect(editor.selection.editRegionHighlighters).toBeUndefined();
     });
     it('Navigate edit region validation', () => {
+console.log('Navigate edit region validation');
         editor.selection.navigateToNextEditingRegion();
         editor.selection.navigateToNextEditingRegion();
         editor.selection.navigateToNextEditingRegion();
     });
     it('BackSpace Validation', () => {
+console.log('BackSpace Validation');
         editor.selection.navigateToNextEditingRegion();
         editor.editor.insertText('T');
         editor.editor.onBackSpace();
@@ -256,6 +277,7 @@ describe('Restrict editing Add edit region inside Table', () => {
         expect(editor.selection.isSelectionInEditRegion()).toBe(true);
     });
     it('Public API validation', () => {
+console.log('Public API validation');
         editor.selection.navigateToNextEditingRegion();
         expect(editor.selection.isSelectionInEditRegion()).toBe(true);
     });
@@ -286,6 +308,7 @@ describe('Restrict editing add and remove with history preservation', () => {
         }, 1000);
     });
     it('Add restrictions to selected area in document', () => {
+console.log('Add restrictions to selected area in document');
         editor.editor.insertText('sample');
         editor.editor.onEnter();
         editor.editor.insertText('sample');
@@ -294,14 +317,17 @@ describe('Restrict editing add and remove with history preservation', () => {
         expect(editor.selection.editRangeCollection.length).toBe(1);
     });
     it('Undo after edit range collection', () => {
+console.log('Undo after edit range collection');
         editor.editorHistory.undo();
         expect(editor.selection.editRangeCollection.length).toBe(0);
     });
     it('Redo after edit range collection', () => {
+console.log('Redo after edit range collection');
         editor.editorHistory.redo();
         expect(editor.selection.editRangeCollection.length).toBe(1);
     });
     it('Remove restrictions to selected area in document', () => {
+console.log('Remove restrictions to selected area in document');
         editor.selection.isHighlightEditRegion = true;
         editor.openBlank();
         editor.editor.insertText('sample');
@@ -314,6 +340,7 @@ describe('Restrict editing add and remove with history preservation', () => {
         expect(editor.selection.editRangeCollection.length).toBe(0);
     });
     it('undo after remove restrictions', () => {
+console.log('undo after remove restrictions');
         editor.editorHistory.undo();
         expect(editor.selection.editRangeCollection.length).toBe(1);
     });
@@ -347,18 +374,21 @@ describe('Restrict Editing validation with password is empty validation', () => 
         }, 1000);
     });
     it('protect document with empty password', () => {
+console.log('protect document with empty password');
         editor.editor.insertText('sample');
         editor.editor.addProtection('', 'ReadOnly');
         expect(editor.documentHelper.protectionType).toBe('ReadOnly');
         expect(editor.documentHelper.isDocumentProtected).toBe(true);
     });
     it('Insert text in protected document', () => {
+console.log('Insert text in protected document');
         editor.editor.handleTextInput('s');
         expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('sample');
         editor.editor.unProtectDocument();
 
     });
     it('Insert text after unprotect document', () => {
+console.log('Insert text after unprotect document');
         editor.editor.insertText('s');
         expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('samples');
         editor.selection.selectAll();
@@ -758,6 +788,7 @@ describe('Form Filling validation For Formatting', () => {
         }, 1000);
     });
     it('Form Filling TextForm Field validation For CharacterFormatting', () => {
+console.log('Form Filling TextForm Field validation For CharacterFormatting');
         editor.selection.navigateToNextFormField();
         editor.selection.selectField();
         editor.documentEditorSettings.formFieldSettings.formattingExceptions = ['Bold', 'Italic'];
@@ -767,6 +798,7 @@ describe('Form Filling validation For Formatting', () => {
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
     it('Form Filling TextForm Field validation For ParagraphFormatting', () => {
+console.log('Form Filling TextForm Field validation For ParagraphFormatting');
         editor.selection.selectField();
         editor.documentEditorSettings.formFieldSettings.formattingExceptions = ['TextAlignment'];
         editor.editorModule.onApplyParagraphFormat('textAlignment', 'Center', false, true);
@@ -780,669 +812,669 @@ describe('Form Filling validation For Formatting', () => {
  * Restrict editing inside
  */
 
- let restrictData:any={
-	"sections": [
-		{
-			"blocks": [
-				{
-					"paragraphFormat": {
-						"styleName": "Normal"
-					},
-					"characterFormat": {},
-					"inlines": [
-						{
-							"characterFormat": {},
-							"text": "Out of table"
-						}
-					]
-				},
-				{
-					"paragraphFormat": {},
-					"characterFormat": {},
-					"inlines": []
-				},
-				{
-					"rows": [
-						{
-							"cells": [
-								{
-									"blocks": [
-										{
-											"paragraphFormat": {
-												"styleName": "Section Title"
-											},
-											"characterFormat": {},
-											"inlines": [
-												{
-													"characterFormat": {},
-													"text": "TITLE IN TABLE"
-												}
-											]
-										}
-									],
-									"cellFormat": {
-										"borders": {
-											"top": {},
-											"left": {},
-											"right": {},
-											"bottom": {},
-											"diagonalDown": {},
-											"diagonalUp": {},
-											"horizontal": {},
-											"vertical": {}
-										},
-										"shading": {
-											"backgroundColor": "#415364FF",
-											"foregroundColor": "empty",
-											"textureStyle": "TextureNone"
-										},
-										"preferredWidth": 468,
-										"preferredWidthType": "Point",
-										"cellWidth": 468,
-										"columnSpan": 1,
-										"rowSpan": 1,
-										"verticalAlignment": "Center"
-									},
-									"columnIndex": 0
-								}
-							],
-							"rowFormat": {
-								"height": 20,
-								"allowBreakAcrossPages": true,
-								"heightType": "AtLeast",
-								"isHeader": false,
-								"borders": {
-									"top": {},
-									"left": {},
-									"right": {},
-									"bottom": {},
-									"diagonalDown": {},
-									"diagonalUp": {},
-									"horizontal": {},
-									"vertical": {}
-								},
-								"gridBefore": 1,
-								"gridBeforeWidth": 0,
-								"gridBeforeWidthType": "Point",
-								"gridAfter": 0,
-								"leftMargin": 5.4,
-								"topMargin": 0,
-								"rightMargin": 5.4,
-								"bottomMargin": 0
-							}
-						}
-					],
-					"grid": [
-						468
-					],
-					"tableFormat": {
-						"borders": {
-							"top": {},
-							"left": {},
-							"right": {},
-							"bottom": {},
-							"diagonalDown": {},
-							"diagonalUp": {},
-							"horizontal": {},
-							"vertical": {}
-						},
-						"shading": {},
-						"leftIndent": 0,
-						"topMargin": 0,
-						"rightMargin": 5.4,
-						"leftMargin": 5.4,
-						"bottomMargin": 0,
-						"bidi": false,
-						"allowAutoFit": true
-					},
-					"columnCount": 1
-				},
-				{
-					"paragraphFormat": {},
-					"characterFormat": {},
-					"inlines": []
-				},
-				{
-					"rows": [
-						{
-							"cells": [
-								{
-									"blocks": [
-										{
-											"paragraphFormat": {
-												"listFormat": {},
-												"styleName": "Normal"
-											},
-											"characterFormat": {},
-											"inlines": [
-												{
-													"characterFormat": {},
-													"text": "Key 0"
-												}
-											]
-										}
-									],
-									"cellFormat": {
-										"borders": {
-											"top": {},
-											"left": {},
-											"right": {},
-											"bottom": {},
-											"diagonalDown": {},
-											"diagonalUp": {},
-											"horizontal": {},
-											"vertical": {}
-										},
-										"shading": {},
-										"preferredWidth": 234,
-										"cellWidth": 234,
-										"columnSpan": 1,
-										"rowSpan": 1
-									},
-									"columnIndex": 0
-								},
-								{
-									"blocks": [
-										{
-											"paragraphFormat": {
-												"listFormat": {},
-												"styleName": "Normal"
-											},
-											"inlines": [
-												{
-													"editRangeId": "0",
-													"columnFirst": 1,
-													"columnLast": 1,
-													"user": "Everyone"
-												},
-												{
-													"characterFormat": {},
-													"text": " "
-												}
-											]
-										},
-										{
-											"paragraphFormat": {
-												"styleName": "Restricted Editing"
-											},
-											"inlines": [
-												{
-													"editableRangeStart": {
-														"user": "Everyone",
-														"group": "",
-														"columnFirst": 1,
-														"columnLast": 1
-													},
-													"editRangeId": "0"
-												}
-											]
-										}
-									],
-									"cellFormat": {
-										"borders": {
-											"top": {},
-											"left": {},
-											"right": {},
-											"bottom": {},
-											"diagonalDown": {},
-											"diagonalUp": {},
-											"horizontal": {},
-											"vertical": {}
-										},
-										"shading": {},
-										"preferredWidth": 234,
-										"cellWidth": 234,
-										"columnSpan": 1,
-										"rowSpan": 1
-									},
-									"columnIndex": 1
-								}
-							],
-							"rowFormat": {
-								"height": 0,
-								"heightType": "Auto",
-								"borders": {
-									"top": {},
-									"left": {},
-									"right": {},
-									"bottom": {},
-									"diagonalDown": {},
-									"diagonalUp": {},
-									"horizontal": {},
-									"vertical": {}
-								},
-								"gridBefore": 0,
-								"gridAfter": 0
-							}
-						},
-						{
-							"cells": [
-								{
-									"blocks": [
-										{
-											"paragraphFormat": {
-												"listFormat": {},
-												"styleName": "Normal"
-											},
-											"characterFormat": {},
-											"inlines": [
-												{
-													"characterFormat": {},
-													"text": "Key 1"
-												}
-											]
-										}
-									],
-									"cellFormat": {
-										"borders": {
-											"top": {},
-											"left": {},
-											"right": {},
-											"bottom": {},
-											"diagonalDown": {},
-											"diagonalUp": {},
-											"horizontal": {},
-											"vertical": {}
-										},
-										"shading": {},
-										"preferredWidth": 234,
-										"cellWidth": 234,
-										"columnSpan": 1,
-										"rowSpan": 1
-									},
-									"columnIndex": 0
-								},
-								{
-									"blocks": [
-										{
-											"paragraphFormat": {
-												"listFormat": {},
-												"styleName": "Normal"
-											},
-											"inlines": [
-												{
-													"editRangeId": "1",
-													"columnFirst": 1,
-													"columnLast": 1,
-													"user": "Everyone"
-												},
-												{
-													"characterFormat": {},
-													"text": " "
-												}
-											]
-										},
-										{
-											"paragraphFormat": {
-												"styleName": "Restricted Editing"
-											},
-											"inlines": [
-												{
-													"editableRangeStart": {
-														"user": "Everyone",
-														"group": "",
-														"columnFirst": 1,
-														"columnLast": 1
-													},
-													"editRangeId": "1"
-												}
-											]
-										}
-									],
-									"cellFormat": {
-										"borders": {
-											"top": {},
-											"left": {},
-											"right": {},
-											"bottom": {},
-											"diagonalDown": {},
-											"diagonalUp": {},
-											"horizontal": {},
-											"vertical": {}
-										},
-										"shading": {},
-										"preferredWidth": 234,
-										"cellWidth": 234,
-										"columnSpan": 1,
-										"rowSpan": 1
-									},
-									"columnIndex": 1
-								}
-							],
-							"rowFormat": {
-								"height": 0,
-								"heightType": "Auto",
-								"borders": {
-									"top": {},
-									"left": {},
-									"right": {},
-									"bottom": {},
-									"diagonalDown": {},
-									"diagonalUp": {},
-									"horizontal": {},
-									"vertical": {}
-								},
-								"gridBefore": 0,
-								"gridAfter": 0
-							}
-						}
-					],
-					"grid": [
-						234,
-						234
-					],
-					"tableFormat": {
-						"borders": {
-							"top": {
-								"lineStyle": "Single",
-								"lineWidth": 0.5
-							},
-							"left": {
-								"lineStyle": "Single",
-								"lineWidth": 0.5
-							},
-							"right": {
-								"lineStyle": "Single",
-								"lineWidth": 0.5
-							},
-							"bottom": {
-								"lineStyle": "Single",
-								"lineWidth": 0.5
-							},
-							"diagonalDown": {},
-							"diagonalUp": {},
-							"horizontal": {
-								"lineStyle": "Single",
-								"lineWidth": 0.5
-							},
-							"vertical": {
-								"lineStyle": "Single",
-								"lineWidth": 0.5
-							}
-						},
-						"shading": {},
-						"topMargin": 0,
-						"rightMargin": 5.4,
-						"leftMargin": 5.4,
-						"bottomMargin": 0,
-						"preferredWidthType": "Auto"
-					},
-					"columnCount": 2
-				},
-				{
-					"paragraphFormat": {},
-					"characterFormat": {},
-					"inlines": [
-						{
-							"characterFormat": {},
-							"text": ""
-						}
-					]
-				}
-			],
-			"headersFooters": {},
-			"sectionFormat": {
-				"headerDistance": 36.0,
-				"footerDistance": 36.0,
-				"pageWidth": 612.0,
-				"pageHeight": 792.0,
-				"leftMargin": 72.0,
-				"rightMargin": 72.0,
-				"topMargin": 72.0,
-				"bottomMargin": 72.0,
-				"differentFirstPage": false,
-				"differentOddAndEvenPages": false,
-				"bidi": false
-			}
-		}
-	],
-	"characterFormat": {
-		"bold": false,
-		"italic": false,
-		"fontSize": 10,
-		"fontFamily": "Arial",
-		"underline": "None",
-		"strikethrough": "None",
-		"baselineAlignment": "Normal",
-		"highlightColor": "NoColor",
-		"fontColor": "#000000",
-		"fontSizeBidi": 10,
-		"fontFamilyBidi": "Arial"
-	},
-	"paragraphFormat": {
-		"leftIndent": 0,
-		"rightIndent": 0,
-		"firstLineIndent": 0,
-		"textAlignment": "Left",
-		"beforeSpacing": 0,
-		"afterSpacing": 0,
-		"lineSpacing": 1,
-		"lineSpacingType": "Multiple",
-		"listFormat": {},
-		"bidi": false
-	},
-	"defaultTabWidth": 36,
-	"styles": [
-		{
-			"name": "Normal",
-			"type": "Paragraph",
-			"paragraphFormat": {
-				"leftIndent": 0,
-				"rightIndent": 0,
-				"firstLineIndent": 0,
-				"textAlignment": "Left",
-				"beforeSpacing": 0,
-				"afterSpacing": 0,
-				"lineSpacing": 1.15,
-				"lineSpacingType": "Multiple",
-				"listFormat": {},
-				"bidi": false
-			},
-			"characterFormat": {
-				"bold": false,
-				"italic": false,
-				"fontSize": 10,
-				"fontFamily": "Arial",
-				"underline": "None",
-				"strikethrough": "None",
-				"baselineAlignment": "Normal",
-				"highlightColor": "NoColor",
-				"fontColor": "#000000",
-				"fontSizeBidi": 10,
-				"fontFamilyBidi": "Arial"
-			},
-			"next": "Normal"
-		},
-		{
-			"name": "Notes",
-			"type": "Paragraph",
-			"paragraphFormat": {
-				"leftIndent": 0,
-				"rightIndent": 0,
-				"firstLineIndent": 0,
-				"textAlignment": "Left",
-				"beforeSpacing": 0,
-				"afterSpacing": 0,
-				"lineSpacing": 1.15,
-				"lineSpacingType": "Multiple",
-				"listFormat": {},
-				"bidi": false
-			},
-			"characterFormat": {
-				"bold": false,
-				"italic": true,
-				"fontSize": 9,
-				"fontFamily": "Arial",
-				"underline": "None",
-				"strikethrough": "None",
-				"baselineAlignment": "Normal",
-				"highlightColor": "NoColor",
-				"fontColor": "#000000",
-				"fontSizeBidi": 9,
-				"fontFamilyBidi": "Arial",
-				"bidi": false
-			},
-			"next": "Notes"
-		},
-		{
-			"name": "Restricted Editing",
-			"type": "Paragraph",
-			"paragraphFormat": {
-				"leftIndent": 0,
-				"rightIndent": 0,
-				"firstLineIndent": 0,
-				"textAlignment": "Left",
-				"beforeSpacing": 0,
-				"afterSpacing": 0,
-				"lineSpacing": 0,
-				"lineSpacingType": "Multiple",
-				"listFormat": {},
-				"bidi": false
-			},
-			"characterFormat": {
-				"bold": false,
-				"italic": false,
-				"fontSize": 1,
-				"fontFamily": "Arial",
-				"underline": "None",
-				"strikethrough": "None",
-				"baselineAlignment": "Normal",
-				"highlightColor": "NoColor",
-				"fontColor": "#000000FF",
-				"fontSizeBidi": 1,
-				"fontFamilyBidi": "Arial"
-			},
-			"basedOn": "Normal",
-			"next": "Restricted Editing"
-		},
-		{
-			"name": "Section Title",
-			"type": "Paragraph",
-			"paragraphFormat": {
-				"leftIndent": 0,
-				"rightIndent": 0,
-				"firstLineIndent": 0,
-				"textAlignment": "Left",
-				"beforeSpacing": 0,
-				"afterSpacing": 0.2,
-				"lineSpacing": 1,
-				"lineSpacingType": "Multiple",
-				"outlineLevel": "BodyText",
-				"listFormat": {},
-				"bidi": false,
-				"contextualSpacing": false
-			},
-			"characterFormat": {
-				"bold": true,
-				"italic": false,
-				"fontSize": 12,
-				"fontFamily": "Arial",
-				"strikethrough": "None",
-				"fontColor": "#FFFFFFFF",
-				"bidi": false,
-				"fontSizeBidi": 12,
-				"fontFamilyBidi": "Arial"
-			},
-			"basedOn": "Normal",
-			"next": "Section Title"
-		},
-		{
-			"name": "Notes Index",
-			"type": "Paragraph",
-			"paragraphFormat": {},
-			"characterFormat": {
-				"baselineAlignment": "Superscript"
-			},
-			"basedOn": "Normal",
-			"next": "Normal"
-		}
-	],
-	"lists": [
-		{
-			"abstractListId": 0,
-			"listId": 0
-		}
-	],
-	"abstractLists": [
-		{
-			"abstractListId": 0,
-			"levels": [
-				{
-					"characterFormat": {
-						"bold": false,
-						"italic": true,
-						"fontSize": 9,
-						"fontFamily": "Arial",
-						"underline": "None",
-						"strikethrough": "None",
-						"baselineAlignment": "Normal",
-						"highlightColor": "NoColor",
-						"fontColor": "#000000",
-						"fontSizeBidi": 9,
-						"fontFamilyBidi": "Arial",
-						"bidi": false
-					},
-					"paragraphFormat": {
-						"leftIndent": 0,
-						"firstLineIndent": -18,
-						"listFormat": {}
-					},
-					"followCharacter": "Tab",
-					"listLevelPattern": "Arabic",
-					"numberFormat": "%1.",
-					"restartLevel": 0,
-					"startAt": 1
-				}
-			]
-		}
-	],
-	"comments": [],
-	"enforcement": true,
-	"hashValue": "0A6BRhgb7C35JUaau8qeETWxzp4O8TjjGorpxLEPw38dZLWfkB///MlunuZDLzDzBHhdK1B2nMyusb0+do6hSQ==",
-	"saltValue": "ij25cMkkS+M/f5fyEQEFdQ==",
-	"formatting": false,
-	"protectionType": "ReadOnly"
-};
+// let restrictData: any = {
+//     "sections": [
+//         {
+//             "blocks": [
+//                 {
+//                     "paragraphFormat": {
+//                         "styleName": "Normal"
+//                     },
+//                     "characterFormat": {},
+//                     "inlines": [
+//                         {
+//                             "characterFormat": {},
+//                             "text": "Out of table"
+//                         }
+//                     ]
+//                 },
+//                 {
+//                     "paragraphFormat": {},
+//                     "characterFormat": {},
+//                     "inlines": []
+//                 },
+//                 {
+//                     "rows": [
+//                         {
+//                             "cells": [
+//                                 {
+//                                     "blocks": [
+//                                         {
+//                                             "paragraphFormat": {
+//                                                 "styleName": "Section Title"
+//                                             },
+//                                             "characterFormat": {},
+//                                             "inlines": [
+//                                                 {
+//                                                     "characterFormat": {},
+//                                                     "text": "TITLE IN TABLE"
+//                                                 }
+//                                             ]
+//                                         }
+//                                     ],
+//                                     "cellFormat": {
+//                                         "borders": {
+//                                             "top": {},
+//                                             "left": {},
+//                                             "right": {},
+//                                             "bottom": {},
+//                                             "diagonalDown": {},
+//                                             "diagonalUp": {},
+//                                             "horizontal": {},
+//                                             "vertical": {}
+//                                         },
+//                                         "shading": {
+//                                             "backgroundColor": "#415364FF",
+//                                             "foregroundColor": "empty",
+//                                             "textureStyle": "TextureNone"
+//                                         },
+//                                         "preferredWidth": 468,
+//                                         "preferredWidthType": "Point",
+//                                         "cellWidth": 468,
+//                                         "columnSpan": 1,
+//                                         "rowSpan": 1,
+//                                         "verticalAlignment": "Center"
+//                                     },
+//                                     "columnIndex": 0
+//                                 }
+//                             ],
+//                             "rowFormat": {
+//                                 "height": 20,
+//                                 "allowBreakAcrossPages": true,
+//                                 "heightType": "AtLeast",
+//                                 "isHeader": false,
+//                                 "borders": {
+//                                     "top": {},
+//                                     "left": {},
+//                                     "right": {},
+//                                     "bottom": {},
+//                                     "diagonalDown": {},
+//                                     "diagonalUp": {},
+//                                     "horizontal": {},
+//                                     "vertical": {}
+//                                 },
+//                                 "gridBefore": 1,
+//                                 "gridBeforeWidth": 0,
+//                                 "gridBeforeWidthType": "Point",
+//                                 "gridAfter": 0,
+//                                 "leftMargin": 5.4,
+//                                 "topMargin": 0,
+//                                 "rightMargin": 5.4,
+//                                 "bottomMargin": 0
+//                             }
+//                         }
+//                     ],
+//                     "grid": [
+//                         468
+//                     ],
+//                     "tableFormat": {
+//                         "borders": {
+//                             "top": {},
+//                             "left": {},
+//                             "right": {},
+//                             "bottom": {},
+//                             "diagonalDown": {},
+//                             "diagonalUp": {},
+//                             "horizontal": {},
+//                             "vertical": {}
+//                         },
+//                         "shading": {},
+//                         "leftIndent": 0,
+//                         "topMargin": 0,
+//                         "rightMargin": 5.4,
+//                         "leftMargin": 5.4,
+//                         "bottomMargin": 0,
+//                         "bidi": false,
+//                         "allowAutoFit": true
+//                     },
+//                     "columnCount": 1
+//                 },
+//                 {
+//                     "paragraphFormat": {},
+//                     "characterFormat": {},
+//                     "inlines": []
+//                 },
+//                 {
+//                     "rows": [
+//                         {
+//                             "cells": [
+//                                 {
+//                                     "blocks": [
+//                                         {
+//                                             "paragraphFormat": {
+//                                                 "listFormat": {},
+//                                                 "styleName": "Normal"
+//                                             },
+//                                             "characterFormat": {},
+//                                             "inlines": [
+//                                                 {
+//                                                     "characterFormat": {},
+//                                                     "text": "Key 0"
+//                                                 }
+//                                             ]
+//                                         }
+//                                     ],
+//                                     "cellFormat": {
+//                                         "borders": {
+//                                             "top": {},
+//                                             "left": {},
+//                                             "right": {},
+//                                             "bottom": {},
+//                                             "diagonalDown": {},
+//                                             "diagonalUp": {},
+//                                             "horizontal": {},
+//                                             "vertical": {}
+//                                         },
+//                                         "shading": {},
+//                                         "preferredWidth": 234,
+//                                         "cellWidth": 234,
+//                                         "columnSpan": 1,
+//                                         "rowSpan": 1
+//                                     },
+//                                     "columnIndex": 0
+//                                 },
+//                                 {
+//                                     "blocks": [
+//                                         {
+//                                             "paragraphFormat": {
+//                                                 "listFormat": {},
+//                                                 "styleName": "Normal"
+//                                             },
+//                                             "inlines": [
+//                                                 {
+//                                                     "editRangeId": "0",
+//                                                     "columnFirst": 1,
+//                                                     "columnLast": 1,
+//                                                     "user": "Everyone"
+//                                                 },
+//                                                 {
+//                                                     "characterFormat": {},
+//                                                     "text": " "
+//                                                 }
+//                                             ]
+//                                         },
+//                                         {
+//                                             "paragraphFormat": {
+//                                                 "styleName": "Restricted Editing"
+//                                             },
+//                                             "inlines": [
+//                                                 {
+//                                                     "editableRangeStart": {
+//                                                         "user": "Everyone",
+//                                                         "group": "",
+//                                                         "columnFirst": 1,
+//                                                         "columnLast": 1
+//                                                     },
+//                                                     "editRangeId": "0"
+//                                                 }
+//                                             ]
+//                                         }
+//                                     ],
+//                                     "cellFormat": {
+//                                         "borders": {
+//                                             "top": {},
+//                                             "left": {},
+//                                             "right": {},
+//                                             "bottom": {},
+//                                             "diagonalDown": {},
+//                                             "diagonalUp": {},
+//                                             "horizontal": {},
+//                                             "vertical": {}
+//                                         },
+//                                         "shading": {},
+//                                         "preferredWidth": 234,
+//                                         "cellWidth": 234,
+//                                         "columnSpan": 1,
+//                                         "rowSpan": 1
+//                                     },
+//                                     "columnIndex": 1
+//                                 }
+//                             ],
+//                             "rowFormat": {
+//                                 "height": 0,
+//                                 "heightType": "Auto",
+//                                 "borders": {
+//                                     "top": {},
+//                                     "left": {},
+//                                     "right": {},
+//                                     "bottom": {},
+//                                     "diagonalDown": {},
+//                                     "diagonalUp": {},
+//                                     "horizontal": {},
+//                                     "vertical": {}
+//                                 },
+//                                 "gridBefore": 0,
+//                                 "gridAfter": 0
+//                             }
+//                         },
+//                         {
+//                             "cells": [
+//                                 {
+//                                     "blocks": [
+//                                         {
+//                                             "paragraphFormat": {
+//                                                 "listFormat": {},
+//                                                 "styleName": "Normal"
+//                                             },
+//                                             "characterFormat": {},
+//                                             "inlines": [
+//                                                 {
+//                                                     "characterFormat": {},
+//                                                     "text": "Key 1"
+//                                                 }
+//                                             ]
+//                                         }
+//                                     ],
+//                                     "cellFormat": {
+//                                         "borders": {
+//                                             "top": {},
+//                                             "left": {},
+//                                             "right": {},
+//                                             "bottom": {},
+//                                             "diagonalDown": {},
+//                                             "diagonalUp": {},
+//                                             "horizontal": {},
+//                                             "vertical": {}
+//                                         },
+//                                         "shading": {},
+//                                         "preferredWidth": 234,
+//                                         "cellWidth": 234,
+//                                         "columnSpan": 1,
+//                                         "rowSpan": 1
+//                                     },
+//                                     "columnIndex": 0
+//                                 },
+//                                 {
+//                                     "blocks": [
+//                                         {
+//                                             "paragraphFormat": {
+//                                                 "listFormat": {},
+//                                                 "styleName": "Normal"
+//                                             },
+//                                             "inlines": [
+//                                                 {
+//                                                     "editRangeId": "1",
+//                                                     "columnFirst": 1,
+//                                                     "columnLast": 1,
+//                                                     "user": "Everyone"
+//                                                 },
+//                                                 {
+//                                                     "characterFormat": {},
+//                                                     "text": " "
+//                                                 }
+//                                             ]
+//                                         },
+//                                         {
+//                                             "paragraphFormat": {
+//                                                 "styleName": "Restricted Editing"
+//                                             },
+//                                             "inlines": [
+//                                                 {
+//                                                     "editableRangeStart": {
+//                                                         "user": "Everyone",
+//                                                         "group": "",
+//                                                         "columnFirst": 1,
+//                                                         "columnLast": 1
+//                                                     },
+//                                                     "editRangeId": "1"
+//                                                 }
+//                                             ]
+//                                         }
+//                                     ],
+//                                     "cellFormat": {
+//                                         "borders": {
+//                                             "top": {},
+//                                             "left": {},
+//                                             "right": {},
+//                                             "bottom": {},
+//                                             "diagonalDown": {},
+//                                             "diagonalUp": {},
+//                                             "horizontal": {},
+//                                             "vertical": {}
+//                                         },
+//                                         "shading": {},
+//                                         "preferredWidth": 234,
+//                                         "cellWidth": 234,
+//                                         "columnSpan": 1,
+//                                         "rowSpan": 1
+//                                     },
+//                                     "columnIndex": 1
+//                                 }
+//                             ],
+//                             "rowFormat": {
+//                                 "height": 0,
+//                                 "heightType": "Auto",
+//                                 "borders": {
+//                                     "top": {},
+//                                     "left": {},
+//                                     "right": {},
+//                                     "bottom": {},
+//                                     "diagonalDown": {},
+//                                     "diagonalUp": {},
+//                                     "horizontal": {},
+//                                     "vertical": {}
+//                                 },
+//                                 "gridBefore": 0,
+//                                 "gridAfter": 0
+//                             }
+//                         }
+//                     ],
+//                     "grid": [
+//                         234,
+//                         234
+//                     ],
+//                     "tableFormat": {
+//                         "borders": {
+//                             "top": {
+//                                 "lineStyle": "Single",
+//                                 "lineWidth": 0.5
+//                             },
+//                             "left": {
+//                                 "lineStyle": "Single",
+//                                 "lineWidth": 0.5
+//                             },
+//                             "right": {
+//                                 "lineStyle": "Single",
+//                                 "lineWidth": 0.5
+//                             },
+//                             "bottom": {
+//                                 "lineStyle": "Single",
+//                                 "lineWidth": 0.5
+//                             },
+//                             "diagonalDown": {},
+//                             "diagonalUp": {},
+//                             "horizontal": {
+//                                 "lineStyle": "Single",
+//                                 "lineWidth": 0.5
+//                             },
+//                             "vertical": {
+//                                 "lineStyle": "Single",
+//                                 "lineWidth": 0.5
+//                             }
+//                         },
+//                         "shading": {},
+//                         "topMargin": 0,
+//                         "rightMargin": 5.4,
+//                         "leftMargin": 5.4,
+//                         "bottomMargin": 0,
+//                         "preferredWidthType": "Auto"
+//                     },
+//                     "columnCount": 2
+//                 },
+//                 {
+//                     "paragraphFormat": {},
+//                     "characterFormat": {},
+//                     "inlines": [
+//                         {
+//                             "characterFormat": {},
+//                             "text": ""
+//                         }
+//                     ]
+//                 }
+//             ],
+//             "headersFooters": {},
+//             "sectionFormat": {
+//                 "headerDistance": 36.0,
+//                 "footerDistance": 36.0,
+//                 "pageWidth": 612.0,
+//                 "pageHeight": 792.0,
+//                 "leftMargin": 72.0,
+//                 "rightMargin": 72.0,
+//                 "topMargin": 72.0,
+//                 "bottomMargin": 72.0,
+//                 "differentFirstPage": false,
+//                 "differentOddAndEvenPages": false,
+//                 "bidi": false
+//             }
+//         }
+//     ],
+//     "characterFormat": {
+//         "bold": false,
+//         "italic": false,
+//         "fontSize": 10,
+//         "fontFamily": "Arial",
+//         "underline": "None",
+//         "strikethrough": "None",
+//         "baselineAlignment": "Normal",
+//         "highlightColor": "NoColor",
+//         "fontColor": "#000000",
+//         "fontSizeBidi": 10,
+//         "fontFamilyBidi": "Arial"
+//     },
+//     "paragraphFormat": {
+//         "leftIndent": 0,
+//         "rightIndent": 0,
+//         "firstLineIndent": 0,
+//         "textAlignment": "Left",
+//         "beforeSpacing": 0,
+//         "afterSpacing": 0,
+//         "lineSpacing": 1,
+//         "lineSpacingType": "Multiple",
+//         "listFormat": {},
+//         "bidi": false
+//     },
+//     "defaultTabWidth": 36,
+//     "styles": [
+//         {
+//             "name": "Normal",
+//             "type": "Paragraph",
+//             "paragraphFormat": {
+//                 "leftIndent": 0,
+//                 "rightIndent": 0,
+//                 "firstLineIndent": 0,
+//                 "textAlignment": "Left",
+//                 "beforeSpacing": 0,
+//                 "afterSpacing": 0,
+//                 "lineSpacing": 1.15,
+//                 "lineSpacingType": "Multiple",
+//                 "listFormat": {},
+//                 "bidi": false
+//             },
+//             "characterFormat": {
+//                 "bold": false,
+//                 "italic": false,
+//                 "fontSize": 10,
+//                 "fontFamily": "Arial",
+//                 "underline": "None",
+//                 "strikethrough": "None",
+//                 "baselineAlignment": "Normal",
+//                 "highlightColor": "NoColor",
+//                 "fontColor": "#000000",
+//                 "fontSizeBidi": 10,
+//                 "fontFamilyBidi": "Arial"
+//             },
+//             "next": "Normal"
+//         },
+//         {
+//             "name": "Notes",
+//             "type": "Paragraph",
+//             "paragraphFormat": {
+//                 "leftIndent": 0,
+//                 "rightIndent": 0,
+//                 "firstLineIndent": 0,
+//                 "textAlignment": "Left",
+//                 "beforeSpacing": 0,
+//                 "afterSpacing": 0,
+//                 "lineSpacing": 1.15,
+//                 "lineSpacingType": "Multiple",
+//                 "listFormat": {},
+//                 "bidi": false
+//             },
+//             "characterFormat": {
+//                 "bold": false,
+//                 "italic": true,
+//                 "fontSize": 9,
+//                 "fontFamily": "Arial",
+//                 "underline": "None",
+//                 "strikethrough": "None",
+//                 "baselineAlignment": "Normal",
+//                 "highlightColor": "NoColor",
+//                 "fontColor": "#000000",
+//                 "fontSizeBidi": 9,
+//                 "fontFamilyBidi": "Arial",
+//                 "bidi": false
+//             },
+//             "next": "Notes"
+//         },
+//         {
+//             "name": "Restricted Editing",
+//             "type": "Paragraph",
+//             "paragraphFormat": {
+//                 "leftIndent": 0,
+//                 "rightIndent": 0,
+//                 "firstLineIndent": 0,
+//                 "textAlignment": "Left",
+//                 "beforeSpacing": 0,
+//                 "afterSpacing": 0,
+//                 "lineSpacing": 0,
+//                 "lineSpacingType": "Multiple",
+//                 "listFormat": {},
+//                 "bidi": false
+//             },
+//             "characterFormat": {
+//                 "bold": false,
+//                 "italic": false,
+//                 "fontSize": 1,
+//                 "fontFamily": "Arial",
+//                 "underline": "None",
+//                 "strikethrough": "None",
+//                 "baselineAlignment": "Normal",
+//                 "highlightColor": "NoColor",
+//                 "fontColor": "#000000FF",
+//                 "fontSizeBidi": 1,
+//                 "fontFamilyBidi": "Arial"
+//             },
+//             "basedOn": "Normal",
+//             "next": "Restricted Editing"
+//         },
+//         {
+//             "name": "Section Title",
+//             "type": "Paragraph",
+//             "paragraphFormat": {
+//                 "leftIndent": 0,
+//                 "rightIndent": 0,
+//                 "firstLineIndent": 0,
+//                 "textAlignment": "Left",
+//                 "beforeSpacing": 0,
+//                 "afterSpacing": 0.2,
+//                 "lineSpacing": 1,
+//                 "lineSpacingType": "Multiple",
+//                 "outlineLevel": "BodyText",
+//                 "listFormat": {},
+//                 "bidi": false,
+//                 "contextualSpacing": false
+//             },
+//             "characterFormat": {
+//                 "bold": true,
+//                 "italic": false,
+//                 "fontSize": 12,
+//                 "fontFamily": "Arial",
+//                 "strikethrough": "None",
+//                 "fontColor": "#FFFFFFFF",
+//                 "bidi": false,
+//                 "fontSizeBidi": 12,
+//                 "fontFamilyBidi": "Arial"
+//             },
+//             "basedOn": "Normal",
+//             "next": "Section Title"
+//         },
+//         {
+//             "name": "Notes Index",
+//             "type": "Paragraph",
+//             "paragraphFormat": {},
+//             "characterFormat": {
+//                 "baselineAlignment": "Superscript"
+//             },
+//             "basedOn": "Normal",
+//             "next": "Normal"
+//         }
+//     ],
+//     "lists": [
+//         {
+//             "abstractListId": 0,
+//             "listId": 0
+//         }
+//     ],
+//     "abstractLists": [
+//         {
+//             "abstractListId": 0,
+//             "levels": [
+//                 {
+//                     "characterFormat": {
+//                         "bold": false,
+//                         "italic": true,
+//                         "fontSize": 9,
+//                         "fontFamily": "Arial",
+//                         "underline": "None",
+//                         "strikethrough": "None",
+//                         "baselineAlignment": "Normal",
+//                         "highlightColor": "NoColor",
+//                         "fontColor": "#000000",
+//                         "fontSizeBidi": 9,
+//                         "fontFamilyBidi": "Arial",
+//                         "bidi": false
+//                     },
+//                     "paragraphFormat": {
+//                         "leftIndent": 0,
+//                         "firstLineIndent": -18,
+//                         "listFormat": {}
+//                     },
+//                     "followCharacter": "Tab",
+//                     "listLevelPattern": "Arabic",
+//                     "numberFormat": "%1.",
+//                     "restartLevel": 0,
+//                     "startAt": 1
+//                 }
+//             ]
+//         }
+//     ],
+//     "comments": [],
+//     "enforcement": true,
+//     "hashValue": "0A6BRhgb7C35JUaau8qeETWxzp4O8TjjGorpxLEPw38dZLWfkB///MlunuZDLzDzBHhdK1B2nMyusb0+do6hSQ==",
+//     "saltValue": "ij25cMkkS+M/f5fyEQEFdQ==",
+//     "formatting": false,
+//     "protectionType": "ReadOnly"
+// };
 
- describe('Delete inside restricked content', () => {
-    let editor: DocumentEditor = undefined;
-    beforeAll(() => {
-        document.body.innerHTML = '';
-        let ele: HTMLElement = createElement('div', { id: 'container' });
-        document.body.appendChild(ele);
-        DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        editor = new DocumentEditor({
-            enableEditor: true, isReadOnly: false, enableEditorHistory: true,
-            documentEditorSettings: { formFieldSettings: { formFillingMode: 'Inline' } }
-        });
-        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
-        editor.appendTo('#container');
-        editor.open(JSON.stringify(restrictData));
-        editor.selection.isHighlightEditRegion = true;
-    });
-    afterAll((done) => {
-        editor.destroy();
-        document.body.removeChild(document.getElementById('container'));
-        editor = undefined;
-        document.body.innerHTML = '';
-        setTimeout(() => {
-            done();
-        }, 1000);
-    });
-    it('Delete', () => {
-        editor.selection.select("0;4;0;1;0;2","0;4;0;1;0;2");
-        editor.editor.delete();
-        expect(editor.selection.start.currentWidget.children.length).toBe(3);
-        editor.editor.delete();
-        expect(editor.selection.start.currentWidget.children.length).toBe(3);
-    });
-    it('Enter inside restricted area', () => {
-        
-        editor.editor.onEnter();
-        editor.selection.select("0;4;0;1;0;2","0;4;0;1;0;2");
-       expect(()=>{ editor.editor.delete();}).not.toThrowError();
-    });
-});
+// describe('Delete inside restricked content', () => {
+//     let editor: DocumentEditor = undefined;
+//     beforeAll(() => {
+//         document.body.innerHTML = '';
+//         let ele: HTMLElement = createElement('div', { id: 'container' });
+//         document.body.appendChild(ele);
+//         DocumentEditor.Inject(Editor, Selection, EditorHistory);
+//         editor = new DocumentEditor({
+//             enableEditor: true, isReadOnly: false, enableEditorHistory: true,
+//             documentEditorSettings: { formFieldSettings: { formFillingMode: 'Inline' } }
+//         });
+//         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+//         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+//         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+//         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+//         editor.appendTo('#container');
+//         editor.open(JSON.stringify(restrictData));
+//         editor.selection.isHighlightEditRegion = true;
+//     });
+//     afterAll((done) => {
+//         editor.destroy();
+//         document.body.removeChild(document.getElementById('container'));
+//         editor = undefined;
+//         document.body.innerHTML = '';
+//         setTimeout(() => {
+//             done();
+//         }, 1000);
+//     });
+//     it('Delete', () => {
+//         editor.selection.select("0;4;0;1;0;2", "0;4;0;1;0;2");
+//         editor.editor.delete();
+//         expect(editor.selection.start.currentWidget.children.length).toBe(3);
+//         editor.editor.delete();
+//         expect(editor.selection.start.currentWidget.children.length).toBe(3);
+//     });
+//     it('Enter inside restricted area', () => {
+
+//         editor.editor.onEnter();
+//         editor.selection.select("0;4;0;1;0;2", "0;4;0;1;0;2");
+//         expect(() => { editor.editor.delete(); }).not.toThrowError();
+//     });
+// });

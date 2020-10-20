@@ -12768,9 +12768,6 @@ var PasteCleanup = /** @class */ (function () {
                     if (beforeUploadArgs.cancel) {
                         return;
                     }
-                    /* tslint:disable */
-                    _this.uploadObj.uploadFiles(_this.rawFile, null);
-                    /* tslint:enable */
                     // @ts-ignore-end
                 });
             },
@@ -12831,7 +12828,7 @@ var PasteCleanup = /** @class */ (function () {
         // @ts-ignore-start
         this.parent.dotNetRef.invokeMethodAsync(pasteImageUploadSuccess, e).then(function (beforeUploadArgs) {
             // @ts-ignore-end
-            if (!isNullOrUndefined(_this.parent.insertImageSettings.path)) {
+            if (!sf.base.isNullOrUndefined(_this.parent.insertImageSettings.path)) {
                 var url = _this.parent.insertImageSettings.path + e.file.name;
                 imgElem.src = url;
                 imgElem.setAttribute('alt', e.file.name);
@@ -16510,6 +16507,9 @@ var SfRichTextEditor = /** @class */ (function () {
     SfRichTextEditor.prototype.insertImageLink = function (url, target) {
         this.imageModule.insertLink(url, target);
     };
+    SfRichTextEditor.prototype.destroy = function () {
+        this.unWireEvents();
+    };
     //#endregion
     //#region Event binding and unbinding function
     SfRichTextEditor.prototype.wireEvents = function () {
@@ -17015,7 +17015,6 @@ var SfRichTextEditor = /** @class */ (function () {
                     break;
             }
         }
-        //#endregion
     };
     return SfRichTextEditor;
 }());
@@ -17204,6 +17203,9 @@ var RichTextEditor = {
     },
     restoreSelection: function (element) {
         element.blazor__instance.restoreSelection();
+    },
+    destroy: function (element) {
+        element.blazor__instance.destroy();
     }
 };
 

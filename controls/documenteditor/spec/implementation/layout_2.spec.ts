@@ -102,6 +102,7 @@ describe('Document Layout behaviour validation', () => {
         }, 1000);
     });
     it('break character validation', () => {
+console.log('break character validation');
         editor.open(getJson());
         expect(editor.documentHelper.pages.length).toBe(1);
     });
@@ -115,24 +116,29 @@ describe('Layout API validation-1', () => {
         layout = undefined;
     });
     it('ListLevel Validation', () => {
+console.log('ListLevel Validation');
         let level = layout.getListLevel(null, 0);
         expect(level).toBe(undefined);
     });
     it('getAsletter branch  validation', () => {
+console.log('getAsletter branch  validation');
         let value = (layout as any).getAsLetter(26);
         expect(value).not.toBe(null);
     });
     it('getCellContentHeight  branch  validation', () => {
+console.log('getCellContentHeight  branch  validation');
         let cellWidget = new TableCellWidget();
         cellWidget.childWidgets = null;
         expect(() => { (layout as any).getCellContentHeight(26); }).not.toThrowError();
     });
     it('isFirstLineFitForCell  branch  validation', () => {
+console.log('isFirstLineFitForCell  branch  validation');
         let cellWidget = new TableCellWidget();
         cellWidget.childWidgets = [];
         expect(() => { (layout as any).isFirstLineFitForCell(26, cellWidget); }).not.toThrowError();
     });
     it('getListTextListLevel Validation', () => {
+console.log('getListTextListLevel Validation');
         let listLevel: WListLevel = new WListLevel(undefined);
         listLevel.listLevelPattern = 'None';
         let level = layout.getListTextListLevel(listLevel, 0);
@@ -151,24 +157,28 @@ describe('Layout API validation-2', () => {
     });
 
     it('right Border testing', () => {
+console.log('right Border testing');
         border = new WBorders(null);
         border.right = null;
         let rightBorder: WBorder = layout.getTableRightBorder(border);
         expect(rightBorder.lineStyle).toBe('Single');
     });
     it('left Border testing', () => {
+console.log('left Border testing');
         border = new WBorders(null);
         border.left = null;
         let leftBorder: WBorder = layout.getTableLeftBorder(border);
         expect(leftBorder.lineStyle).toBe('Single');
     });
     it('Bottom Border Testing', () => {
+console.log('Bottom Border Testing');
         border = new WBorders(null);
         border.bottom = null;
         let bottomBorder = layout.getTableBottomBorder(border);
         expect(bottomBorder.lineStyle).toBe('Single');
     });
     it('Top Border testing', () => {
+console.log('Top Border testing');
         border = new WBorders(null);
         border.top = null;
         let topBorder: WBorder = layout.getTableTopBorder(border);
@@ -10216,6 +10226,7 @@ describe('ListLevel API validation', () => {
         layout = undefined;
     });
     it('listLevelPatter validation -1', () => {
+console.log('listLevelPatter validation -1');
         let pattern = layout.getListLevelPattern(0);
         expect(pattern).toBe('Arabic');
         pattern = layout.getListLevelPattern(1);
@@ -10226,6 +10237,7 @@ describe('ListLevel API validation', () => {
         expect(pattern).toBe('UpLetter');
     });
     it('listLevelPatter validation -2', () => {
+console.log('listLevelPatter validation -2');
         let pattern = layout.getListLevelPattern(4);
         expect(pattern).toBe('UpRoman');
         pattern = layout.getListLevelPattern(6);
@@ -10238,6 +10250,7 @@ describe('ListLevel API validation', () => {
         expect(pattern).toBe('LeadingZero');
     });
     it('listLevelPatter validation -3', () => {
+console.log('listLevelPatter validation -3');
         let pattern = layout.getListLevelPattern(9);
         expect(pattern).toBe('Bullet');
         pattern = layout.getListLevelPattern(10);

@@ -4,14 +4,15 @@ import { DocumentEditor } from "../../../src/document-editor/document-editor";
 import { Editor } from "../../../src/document-editor/implementation/editor/editor";
 import { Selection } from '../../../src/document-editor/implementation/selection/selection';
 import { EditorHistory } from "../../../src/document-editor/implementation/editor-history/editor-history";
-describe('cut copy paste with Track changes',()=>{
-    let container : DocumentEditor;
+import { SfdtExport } from "../../../src/document-editor/implementation/writer/sfdt-export";
+describe('cut copy paste with Track changes', () => {
+    let container: DocumentEditor;
     beforeAll(() => {
         document.body.innerHTML = '';
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
-        DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
         (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
         (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
         (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
@@ -28,6 +29,7 @@ describe('cut copy paste with Track changes',()=>{
         }, 1000);
     });
     it('Copy text when trackchange is enabled and paste when trackchange disabled(local clipboard)', function () {
+console.log('Copy text when trackchange is enabled and paste when trackchange disabled(local clipboard)');
         container.openBlank();
         container.enableTrackChanges = false;
         container.editor.insertText('Hello worlding');
@@ -52,6 +54,7 @@ describe('cut copy paste with Track changes',()=>{
         expect(count).toBe(2);
     });
     it('Copy and paste text when track change is disabled (local clipboard)', function () {
+console.log('Copy and paste text when track change is disabled (local clipboard)');
         container.openBlank();
         container.enableTrackChanges = false;
         container.editor.insertText('Hello worlding');
@@ -76,6 +79,7 @@ describe('cut copy paste with Track changes',()=>{
         expect(count).toBe(4);
     });
     it('Copy and paste text when track change is enabled (local clipboard)', function () {
+console.log('Copy and paste text when track change is enabled (local clipboard)');
         container.openBlank();
         container.enableTrackChanges = false;
         container.editor.insertText('Hello worlding');
@@ -99,6 +103,7 @@ describe('cut copy paste with Track changes',()=>{
         expect(count).toBe(2);
     });
     it('Copy when trackchange disabled and paste text when track change is enabled (local clipboard)', function () {
+console.log('Copy when trackchange disabled and paste text when track change is enabled (local clipboard)');
         container.openBlank();
         container.enableTrackChanges = false;
         container.editor.insertText('Hello worlding');
@@ -124,6 +129,7 @@ describe('cut copy paste with Track changes',()=>{
         expect(count).toBe(3);
     });
     it('Cut text when trackchange is enabled and paste when trackchange disabled(local clipboard)', function () {
+console.log('Cut text when trackchange is enabled and paste when trackchange disabled(local clipboard)');
         container.openBlank();
         container.enableTrackChanges = false;
         container.editor.insertText('Hello worlding');
@@ -148,6 +154,7 @@ describe('cut copy paste with Track changes',()=>{
         expect(count).toBe(1);
     });
     it('Cut and paste text when track change is disabled (local clipboard)', function () {
+console.log('Cut and paste text when track change is disabled (local clipboard)');
         container.openBlank();
         container.enableTrackChanges = false;
         container.enableLocalPaste = false;
@@ -173,6 +180,7 @@ describe('cut copy paste with Track changes',()=>{
         expect(count).toBe(2);
     });
     it('Cut and paste text when track change is enabled (local clipboard)', function () {
+console.log('Cut and paste text when track change is enabled (local clipboard)');
         container.openBlank();
         container.enableTrackChanges = false;
         container.enableLocalPaste = false;
@@ -197,6 +205,7 @@ describe('cut copy paste with Track changes',()=>{
         expect(count).toBe(2);
     });
     it('Cut when trackchange disabled and paste text when track change is enabled (local clipboard)', function () {
+console.log('Cut when trackchange disabled and paste text when track change is enabled (local clipboard)');
         container.openBlank();
         container.enableTrackChanges = false;
         container.enableLocalPaste = false;
@@ -224,6 +233,7 @@ describe('cut copy paste with Track changes',()=>{
         expect(count).toBe(2);
     });
     it('Copy text when trackchange is enabled and paste when trackchange disabled(local clipboard) with new author', function () {
+console.log('Copy text when trackchange is enabled and paste when trackchange disabled(local clipboard) with new author');
         container.openBlank();
         container.enableTrackChanges = false;
         container.editor.insertText('Hello ');
@@ -251,6 +261,7 @@ describe('cut copy paste with Track changes',()=>{
         expect(count).toBe(2);
     });
     it('Copy and paste text when track change is disabled (local clipboard) with new author', function () {
+console.log('Copy and paste text when track change is disabled (local clipboard) with new author');
         container.openBlank();
         container.enableTrackChanges = false;
         container.editor.insertText('Hello ');
@@ -278,6 +289,7 @@ describe('cut copy paste with Track changes',()=>{
         expect(count).toBe(4);
     });
     it('Copy and paste text when track change is enabled (local clipboard) with new author', function () {
+console.log('Copy and paste text when track change is enabled (local clipboard) with new author');
         container.openBlank();
         container.enableTrackChanges = false;
         container.editor.insertText('Hello ');
@@ -305,6 +317,7 @@ describe('cut copy paste with Track changes',()=>{
         expect(count).toBe(3);
     });
     it('Copy when trackchange disabled and paste text when track change is enabled (local clipboard) with new author', function () {
+console.log('Copy when trackchange disabled and paste text when track change is enabled (local clipboard) with new author');
         container.openBlank();
         container.enableTrackChanges = false;
         container.editor.insertText('Hello ');
@@ -334,6 +347,7 @@ describe('cut copy paste with Track changes',()=>{
         expect(count).toBe(4);
     });
     it('Cut and paste text when track change is disabled (local clipboard)', function () {
+console.log('Cut and paste text when track change is disabled (local clipboard)');
         container.openBlank();
         container.enableTrackChanges = false;
         container.editor.insertText('Hello ');
@@ -361,6 +375,7 @@ describe('cut copy paste with Track changes',()=>{
         expect(count).toBe(2);
     });
     it('Cut when trackchange disabled and paste text when track change is enabled (local clipboard)', function () {
+console.log('Cut when trackchange disabled and paste text when track change is enabled (local clipboard)');
         container.openBlank();
         container.enableTrackChanges = false;
         container.editor.insertText('Hello ');

@@ -46,6 +46,7 @@ describe('Table Resize at simple case in table middle validation', () => {
         }, 1000);
     });
     it('Table resize at resizePosition 0', () => {
+console.log('Table resize at resizePosition 0');
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.leftIndent).toBe(0);
         editor.documentHelper.isRowOrCellResizing = true;
         editor.editorModule.tableResize.currentResizingTable = editor.selection.start.paragraph.associatedCell.ownerTable;
@@ -57,6 +58,7 @@ describe('Table Resize at simple case in table middle validation', () => {
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.allowAutoFit).toBe(true);
     });
     it('Table resize at resizePosition 1', () => {
+console.log('Table resize at resizePosition 1');
         editor.documentHelper.isRowOrCellResizing = true;
         editor.editorModule.tableResize.currentResizingTable = editor.selection.start.paragraph.associatedCell.ownerTable;
         editor.editorModule.tableResize.resizeNode = 0;
@@ -66,6 +68,7 @@ describe('Table Resize at simple case in table middle validation', () => {
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.allowAutoFit).toBe(false);
     });
     it('Table resize at resizePosition 2', () => {
+console.log('Table resize at resizePosition 2');
         editor.documentHelper.isRowOrCellResizing = true;
         editor.editorModule.tableResize.currentResizingTable = editor.selection.start.paragraph.associatedCell.ownerTable;
         editor.editorModule.tableResize.resizeNode = 0;

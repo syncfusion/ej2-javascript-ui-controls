@@ -81,6 +81,7 @@ export class Toolbar {
                     this.parent.renderTemplates();
                 }
             } else {
+                this.toolbar.off('render-react-toolbar-template', this.addReactToolbarPortals);
                 this.toolbar.destroy();
             }
             this.unWireEvent();
@@ -119,6 +120,8 @@ export class Toolbar {
             enableRtl: this.parent.enableRtl,
             created: this.toolbarCreated.bind(this)
         });
+        (<{ isReact?: boolean }>this.toolbar).isReact = this.parent.isReact;
+        this.toolbar.on('render-react-toolbar-template', this.addReactToolbarPortals, this);
         let isStringTemplate: string = 'isStringTemplate';
         this.toolbar[isStringTemplate] = true;
         let viewStr: string = 'viewContainerRef';
@@ -157,6 +160,13 @@ export class Toolbar {
             this.toolbar.appendTo(this.element);
         }
         this.parent.element.insertBefore(this.element, this.parent.getHeaderContent());
+    }
+
+    private addReactToolbarPortals(args: Object[]): void {
+        if (this.parent.isReact) {
+            (<{ portals?: Object[] }>this.parent).portals = (<{ portals?: Object[] }>this.parent).portals.concat(args);
+            this.parent.renderTemplates();
+        }
     }
 
     private refreshToolbarItems(args?: { editSettings: EditSettingsModel, name: string }): void {

@@ -15,33 +15,39 @@ describe('Paragraph Validation Testing', () => {
         WListFormat.clear();
     });
     it('Copy format setting  Testing', () => {
+console.log('Copy format setting  Testing');
         let para: WListFormat = new WListFormat();
         para.listLevelNumber = 20;
         expect('').toBe('');
     });
     it('Copy format Testing', () => {
+console.log('Copy format Testing');
         let para: WParagraphFormat = new WParagraphFormat();
         let para1: WParagraphFormat = new WParagraphFormat();
         para.copyFormat(para1);
         expect('').toBe('');
     });
     it('Copy format undefined Testing', () => {
+console.log('Copy format undefined Testing');
         let para: WParagraphFormat = new WParagraphFormat();
         para.copyFormat(undefined);
         expect('').toBe('');
     });
     it('Clone format Testing', () => {
+console.log('Clone format Testing');
         let para: WParagraphFormat = new WParagraphFormat();
         para.cloneFormat();
         expect('').toBe('');
     });
     it('destroy Testing', () => {
+console.log('destroy Testing');
         let para: WParagraphFormat = new WParagraphFormat();
         para.destroy();
         para.cloneFormat();
         expect(() => { para.destroy() }).not.toThrowError();
     });
     it('Clear Format validation', () => {
+console.log('Clear Format validation');
         let format: WParagraphFormat = new WParagraphFormat();
         format.leftIndent = 10;
         format.rightIndent = 12;
@@ -55,12 +61,14 @@ describe('Paragraph Validation Testing', () => {
         expect(format.listFormat.listId).toBe(-1);
     });
     it('Text alignment right valdiation', () => {
+console.log('Text alignment right valdiation');
         let format: WParagraphFormat = new WParagraphFormat();
         format.textAlignment = 'Right';
         format.bidi = true;
         expect(format.textAlignment).toBe("Left");
     });
     it('style property default value', () => {
+console.log('style property default value');
         expect((WParagraphFormat as any).getPropertyDefaultValue('styleName')).toBe('Normal');
     });
 });
@@ -92,6 +100,7 @@ describe('Tab stop with delete position', () => {
     });
 
     it('Get tab stop from paragraph', () => {
+console.log('Get tab stop from paragraph');
         editor.open(JSON.stringify(tabStop));
         // Excluding delete position.
         expect(editor.selection.start.paragraph.paragraphFormat.getUpdatedTabs().length).toBe(14);
@@ -176,6 +185,7 @@ describe('Default Paragraph Format API Validation', () => {
     });
 
     it('Check Text Alignment is center', () => {
+console.log('Check Text Alignment is center');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
     });
 });

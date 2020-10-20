@@ -193,6 +193,9 @@ let RichTextEditor: object = {
     },
     restoreSelection(element: BlazorRteElement): void {
         element.blazor__instance.restoreSelection();
+    },
+    destroy(element: BlazorRteElement): void {
+        element.blazor__instance.destroy();
     }
 };
 export default RichTextEditor;

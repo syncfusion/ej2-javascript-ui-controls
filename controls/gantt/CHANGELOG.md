@@ -2,7 +2,18 @@
 
 ## [Unreleased]
 
-## 18.3.40 (2020-10-13)
+## 18.3.42 (2020-10-20)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#296920` - Issue on rendering Gantt with resources has been fixed.
+- `F158128` - Issue on updating DB on `indent` and `outdent` action has been fixed.
+- `#291962` - Dates are not filtered with given date format issue has been fixed.
+- `#295998` - Events are not triggered properly while perform zoom to fit actions has been fixed.
+
+## 18.3.35 (2020-10-01)
 
 ### Gantt
 

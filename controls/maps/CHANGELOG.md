@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 18.3.42 (2020-10-20)
+
+### Maps
+
+#### Bug Fixes
+
+- `#292757` - `doubleClick` event will now be triggered properly.
+
 ## 18.3.40 (2020-10-13)
 
 ### Maps

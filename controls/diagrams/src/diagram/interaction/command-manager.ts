@@ -4723,15 +4723,15 @@ export class CommandHandler {
     public scroll(scrollX: number, scrollY: number, focusPoint?: PointModel): void {
         let panx: number = canPanX(this.diagram);
         let pany: number = canPanY(this.diagram);
-        if(isBlazor()){
-        this.diagram.setCursor('grabbing');
-        this.diagram.scroller.zoom(
-            1, (scrollX = panx ? scrollX : 0) * this.diagram.scroller.currentZoom,
-            (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint);
+        if (isBlazor()) {
+            this.diagram.setCursor('grabbing');
+            this.diagram.scroller.zoom(
+                1, (scrollX = panx ? scrollX : 0) * this.diagram.scroller.currentZoom,
+                (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint);
         } else {
             this.diagram.pan(
                 (scrollX = panx ? scrollX : 0) * this.diagram.scroller.currentZoom,
-                (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint);    
+                (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint);
         }
     }
 

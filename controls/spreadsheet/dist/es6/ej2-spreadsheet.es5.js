@@ -4823,8 +4823,32 @@ var Parser = /** @__PURE__ @class */ (function () {
                                         j = j - 1;
                                     }
                                 }
-                                j = j + 1;
-                                left = this.parent.substring(text, j, i - j);
+                                if (j > -1 && text[j] === ':') {
+                                    //// handle range operands
+                                    j = j - 1;
+                                    while (j > -1 && this.parent.isDigit(text[j])) {
+                                        j = j - 1;
+                                    }
+                                    while (j > -1 && this.parent.isUpperChar(text[j])) {
+                                        j = j - 1;
+                                    }
+                                    if (j > -1 && text[j] === this.sheetToken) {
+                                        j--;
+                                        while (j > -1 && text[j] !== this.sheetToken) {
+                                            j--;
+                                        }
+                                        if (j > -1 && text[j] === this.sheetToken) {
+                                            j--;
+                                        }
+                                    }
+                                    j = j + 1;
+                                    left = this.parent.substring(text, j, i - j);
+                                    left = this.parent.getCellFrom(left);
+                                }
+                                else {
+                                    j = j + 1;
+                                    left = this.parent.substring(text, j, i - j);
+                                }
                                 this.parent.updateDependentCell(left);
                                 leftIndex = j;
                             }
@@ -6696,6 +6720,32 @@ var Calculate = /** @__PURE__ @class */ (function (_super) {
         }
         return text;
     };
+    /** @hidden */
+    Calculate.prototype.getCellFrom = function (range) {
+        var cellRange = '';
+        var cells = range.indexOf(':') > -1 ? range.split(':') : [range];
+        //this.getCellsFromArgs(range);
+        var last = cells.length - 1;
+        var r1 = this.rowIndex(cells[0]);
+        var x;
+        if (r1 === this.rowIndex(cells[last])) {
+            var c1 = this.colIndex(cells[0]);
+            var c2 = this.colIndex(cells[last]);
+            var c = this.colIndex(this.cell);
+            if (c >= c1 && c <= c2) {
+                cellRange = getAlphalabel(c).toString() + r1.toString();
+            }
+        }
+        else if (this.colIndex(cells[0]) === this.colIndex(cells[last])) {
+            x = this.colIndex(cells[0]);
+            var r2 = this.rowIndex(cells[last]);
+            var r = this.rowIndex(this.cell);
+            if (r >= r1 && r <= r2) {
+                cellRange = getAlphalabel(x).toString() + r.toString();
+            }
+        }
+        return cellRange;
+    };
     /* tslint:disable-next-line:max-func-body-length */
     Calculate.prototype.computeValue = function (pFormula) {
         try {
@@ -6740,7 +6790,34 @@ var Calculate = /** @__PURE__ @class */ (function (_super) {
                         s = s + pFormula[i];
                         i = i + 1;
                     }
-                    s = sheet + s;
+                    if (i < pFormula.length && pFormula[i] === ':') {
+                        s = s + pFormula[i];
+                        i = i + 1;
+                        if (i < pFormula.length && pFormula[i] === this.sheetToken) {
+                            s = s + pFormula[i];
+                            i = i + 1;
+                            while (i < pFormula.length && pFormula[i] !== this.sheetToken) {
+                                s = s + pFormula[i];
+                                i = i + 1;
+                            }
+                        }
+                        while (i < pFormula.length) {
+                            if (this.isUpperChar(pFormula[i])) {
+                                s = s + pFormula[i];
+                                i = i + 1;
+                            }
+                        }
+                        while (i < pFormula.length) {
+                            if (this.isDigit(pFormula[i])) {
+                                s = s + pFormula[i];
+                                i = i + 1;
+                            }
+                        }
+                        s = sheet + this.getCellFrom(s);
+                    }
+                    else {
+                        s = sheet + s;
+                    }
                     textName = this.getParentObjectCellValue(s).toString();
                     if (typeof textName === 'string' && this.getErrorStrings().indexOf(textName) > -1) {
                         return textName;
@@ -7528,7 +7605,7 @@ var Calculate = /** @__PURE__ @class */ (function (_super) {
             }
             if (j === val.length) {
                 val = val.toLowerCase();
-                return this.getErrorStrings()[CommonErrors.name];
+                return val === '' ? this.getErrorStrings()[CommonErrors.value] : this.getErrorStrings()[CommonErrors.name];
             }
             else {
                 row = this.rowIndex(val);
@@ -16961,6 +17038,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         this.isCellEdit = true;
         this.isNewValueEdit = true;
         this.isAltEnter = false;
+        this.validCharacters = ['+', '-', '*', '/', ',', '(', '=', '&'];
         this.keyCodes = {
             BACKSPACE: 8,
             SPACE: 32,
@@ -17098,7 +17176,8 @@ var Edit = /** @__PURE__ @class */ (function () {
             else if (this.isCellEdit && this.editCellData.value !== this.editorElem.textContent && e.keyCode !== 16) {
                 this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
             }
-            var isFormulaEdit = checkIsFormula(this.editCellData.value);
+            var isFormulaEdit = checkIsFormula(this.editCellData.value) ||
+                (this.editCellData.value && this.editCellData.value.toString().indexOf('=') === 0);
             if (isFormulaEdit && e.keyCode !== 16) {
                 var formulaRefIndicator = this.parent.element.querySelector('.e-formularef-indicator');
                 if (formulaRefIndicator) {
@@ -17122,9 +17201,9 @@ var Edit = /** @__PURE__ @class */ (function () {
         if (!closest(e.target, '.e-findtool-dlg') && !closest(e.target, '.e-validationerror-dlg')) {
             if (!sheet.isProtected || closest(e.target, '.e-sheet-rename') || (cell.isLocked === false)) {
                 if (this.isEdit) {
-                    var isFormulaEdit = checkIsFormula(this.editCellData.value);
-                    if (this.isCellEdit || (isFormulaEdit &&
-                        this.editCellData.value !== this.editorElem.textContent && e.keyCode !== 16)) {
+                    var isFormulaEdit = checkIsFormula(this.editCellData.value) ||
+                        (this.editCellData.value && this.editCellData.value.toString().indexOf('=') === 0);
+                    if (this.isCellEdit || (isFormulaEdit && this.editCellData.value !== this.editorElem.textContent && e.keyCode !== 16)) {
                         this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
                     }
                     if (!e.altKey) {
@@ -17339,7 +17418,8 @@ var Edit = /** @__PURE__ @class */ (function () {
                             this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
                         }
                     }
-                    var isFormula = checkIsFormula(this.editCellData.value);
+                    var isFormula = checkIsFormula(this.editCellData.value) ||
+                        (this.editCellData.value && this.editCellData.value.toString().indexOf('=') === 0);
                     if (!isFormula) {
                         this.endEdit(false, e);
                     }
@@ -17347,8 +17427,8 @@ var Edit = /** @__PURE__ @class */ (function () {
                         var curPos = window.getSelection().focusOffset;
                         var actCellIdx = getCellIndexes(sheet.activeCell);
                         var cell = getCell(actCellIdx[0], actCellIdx[1], sheet);
-                        if (this.editCellData.value === this.editorElem.textContent && this.editorElem.textContent.indexOf('(') !==
-                            this.editorElem.textContent.length - 1) {
+                        if (this.editCellData.value === this.editorElem.textContent && (this.editorElem.textContent.indexOf('(') !==
+                            this.editorElem.textContent.length - 1 && this.editorElem.textContent.indexOf('(') !== -1)) {
                             if (this.editCellData.sheetIndex !== sheet.id - 1) {
                                 var elem = this.parent.element.querySelector('.e-formula-bar');
                                 if (this.editorElem.textContent.substring(elem.selectionEnd - 1, elem.selectionEnd) !== ',' &&
@@ -17362,7 +17442,7 @@ var Edit = /** @__PURE__ @class */ (function () {
                                 }
                             }
                             else {
-                                if (this.editorElem.textContent.substring(curPos - 1, curPos) !== ',') {
+                                if (this.validCharacters.indexOf(this.editorElem.textContent.substring(curPos - 1, curPos)) === -1) {
                                     if (formulaRefIndicator) {
                                         formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
                                     }
@@ -17375,11 +17455,13 @@ var Edit = /** @__PURE__ @class */ (function () {
                             return;
                         }
                         isFormula = cell.formula ?
-                            checkIsFormula(getCell(actCellIdx[0], actCellIdx[1], sheet).formula) : false;
+                            checkIsFormula(getCell(actCellIdx[0], actCellIdx[1], sheet).formula) ||
+                                (this.editCellData.value && this.editCellData.value.toString().indexOf('=') === 0) : false;
                         if (isFormula) {
                             var curPos_1 = window.getSelection().focusOffset;
                             if (this.editCellData.value.length === curPos_1) {
-                                if (this.editCellData.value.substring(this.editCellData.value.length - 1) === ')') {
+                                if (this.editCellData.value.substring(this.editCellData.value.length - 1) === ')' ||
+                                    isNumber(this.editCellData.value.substring(this.editCellData.value.length - 1))) {
                                     if (formulaRefIndicator) {
                                         formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
                                     }
@@ -17408,7 +17490,7 @@ var Edit = /** @__PURE__ @class */ (function () {
                         this.editorElem.textContent.length - 1) {
                         if (this.editCellData.sheetIndex === sheet.id - 1) {
                             var curPos = window.getSelection().focusOffset;
-                            if (this.editorElem.textContent.substring(curPos - 1, curPos) !== ',') {
+                            if (this.validCharacters.indexOf(this.editorElem.textContent.substring(curPos - 1, curPos)) === -1) {
                                 if (formulaRefIndicator) {
                                     formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
                                 }
@@ -17803,6 +17885,7 @@ var Edit = /** @__PURE__ @class */ (function () {
     Edit.prototype.updateFormulaBarValue = function () {
         var value = this.editCellData.value;
         var address = this.parent.getActiveSheet().selectedRange;
+        address = isSingleCell(getIndexesFromAddress(address)) ? address.split(':')[0] : address;
         var formulaBar$$1 = this.parent.element.querySelector('.e-formula-bar');
         if (value && checkIsFormula(value)) {
             var sheetName = this.editCellData.fullAddr.substring(0, this.editCellData.fullAddr.indexOf('!'));
@@ -17992,7 +18075,8 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.mouseDownHandler = function (e) {
         var eventArgs = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
-        var isFormulaEdit = checkIsFormula(eventArgs.editedValue);
+        var isFormulaEdit = (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0) ||
+            checkIsFormula(eventArgs.editedValue);
         if (!this.parent.isEdit || isFormulaEdit) {
             var overlayElem = document.getElementById(this.parent.element.id + '_overlay');
             if (e.target.className.indexOf('e-ss-overlay') > -1) {
@@ -18065,6 +18149,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (isFormulaEdit && (e.target.classList.contains('e-cell') ||
             e.target.classList.contains('e-header-cell')) && this.parent.isEdit) {
             var range = this.parent.getActiveSheet().selectedRange;
+            range = isSingleCell(getIndexesFromAddress(range)) ? range.split(':')[0] : range;
             this.parent.notify(addressHandle, { range: range, isSelect: false });
         }
     };
@@ -18076,7 +18161,8 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         var eventArgs = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
-        var isFormulaEdit = checkIsFormula(eventArgs.editedValue);
+        var isFormulaEdit = checkIsFormula(eventArgs.editedValue) ||
+            (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0);
         var cont = this.getScrollContent();
         var clientRect = cont.getBoundingClientRect();
         var clientX = getClientX(e);
@@ -18148,7 +18234,8 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.parent.notify(mouseUpAfterSelection, e);
         var eventArgs = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
-        var isFormulaEdit = checkIsFormula(eventArgs.editedValue);
+        var isFormulaEdit = checkIsFormula(eventArgs.editedValue) ||
+            (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0);
         if (isFormulaEdit && this.parent.isEdit && !e.target.classList.contains('e-spreadsheet-edit')) {
             this.parent.notify(initiateCur, {});
         }
@@ -18233,7 +18320,8 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.selectRangeByIdx = function (range, e, isScrollRefresh, isActCellChanged, isInit, skipChecking) {
         var eventArgs = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
-        var isFormulaEdit = checkIsFormula(eventArgs.editedValue);
+        var isFormulaEdit = checkIsFormula(eventArgs.editedValue) ||
+            (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0);
         var ele = this.getSelectionElement();
         var sheet = this.parent.getActiveSheet();
         var formulaRefIndicator = this.parent.element.querySelector('.e-formularef-indicator');
@@ -18259,7 +18347,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 ele.classList.add('e-hide');
             }
             if (isFormulaEdit && e && !e.target.classList.contains('e-spreadsheet-edit') && this.parent.isEdit) {
-                this.parent.notify(addressHandle, { range: getRangeAddress(range), isSelect: true });
+                this.parent.notify(addressHandle, { range: getRangeAddress(range).split(':')[0], isSelect: true });
                 this.initFormulaReferenceIndicator(range);
             }
         }
@@ -29062,7 +29150,8 @@ var FormulaBar = /** @__PURE__ @class */ (function () {
     FormulaBar.prototype.keyDownHandler = function (e) {
         var trgtElem = e.target;
         if (this.parent.isEdit && !this.parent.getActiveSheet().isProtected) {
-            if (checkIsFormula(trgtElem.value) && e.keyCode === 16) {
+            if ((checkIsFormula(trgtElem.value) || (trgtElem.validity && trgtElem.value.toString().indexOf('=') === 0)) &&
+                e.keyCode === 16) {
                 return;
             }
             if (trgtElem.classList.contains('e-formula-bar')) {
@@ -30138,7 +30227,7 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
     SheetTabs.prototype.addSheetTab = function () {
         var eventArgs = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
-        var isFormulaEdit = checkIsFormula(eventArgs.editedValue);
+        var isFormulaEdit = checkIsFormula(eventArgs.editedValue) || eventArgs.editedValue.toString().indexOf('=') === 0;
         if (!isFormulaEdit) {
             this.parent.notify(insertModel, { model: this.parent, start: this.parent.activeSheetIndex + 1, end: this.parent.activeSheetIndex + 1, modelType: 'Sheet', isAction: true, activeSheetIndex: this.parent.activeSheetIndex + 1 });
             this.parent.element.focus();
@@ -33663,9 +33752,11 @@ var SheetRender = /** @__PURE__ @class */ (function () {
         if (this.parent.scrollSettings.enableVirtualization) {
             this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
         }
-        if (this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0] &&
-            checkIsFormula(this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0].textContent)) {
-            this.parent.notify(forRefSelRender, null);
+        if (this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0]) {
+            var editCellVal = this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0].textContent;
+            if (checkIsFormula(editCellVal) || editCellVal.indexOf('=') === 0) {
+                this.parent.notify(forRefSelRender, null);
+            }
         }
         if (!this.parent.isOpen) {
             this.parent.hideSpinner();

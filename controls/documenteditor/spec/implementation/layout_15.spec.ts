@@ -28,6 +28,7 @@ describe('Auto fit table exceeds container width', () => {
         }, 1000);
     });
     it('validation', () => {
+console.log('validation');
         editor.selection.handleDownKey();
         let table: TableWidget = editor.selection.tableFormat.table;
         expect(table.tableHolder.tableWidth == table.getOwnerWidth(true)).toBe(true);
@@ -60,6 +61,7 @@ describe('Copy and paste excel table', () => {
         }, 1000);
     });
     it('validation', () => {
+console.log('validation');
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.borders.left.lineStyle).toBe('Single');
     });
 });
@@ -89,6 +91,7 @@ describe('List level override layout validation', () => {
         }, 1000);
     });
     it('Start at override', () => {
+console.log('Start at override');
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
         expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('.1');

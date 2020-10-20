@@ -41,6 +41,7 @@ describe('Table Resize at simple case in table middle validation', () => {
         }, 1000);
     });
     it('simple resizeColumn validation', () => {
+console.log('simple resizeColumn validation');
         documentHelper = editor.documentHelper;
         editor.editor.insertTable(2, 2);
         let offsetX = 632;
@@ -57,12 +58,15 @@ describe('Table Resize at simple case in table middle validation', () => {
         expect(editor.editorModule.tableResize.resizerPosition).toBe(-1);
     });
     it('undo validation', () => {
+console.log('undo validation');
         editor.editorHistory.undo();
     });
     it('redo validation', () => {
+console.log('redo validation');
         editor.editorHistory.redo();
     });
     it('undo and redo validation', () => {
+console.log('undo and redo validation');
     });
 });
 
@@ -93,6 +97,7 @@ describe('Table row at simple case validation', () => {
         }, 1000);
     });
     it('Resize Table Row', () => {
+console.log('Resize Table Row');
         editor.editor.insertTable(2, 2);
         let event: any = { offsetX: 557, offsetY: 134, preventDefault: function () { }, ctrlKey: false, which: 1 };
         editor.documentHelper.onMouseDownInternal(event);
@@ -110,9 +115,11 @@ describe('Table row at simple case validation', () => {
         editor.documentHelper.onMouseUpInternal(event);
     });
     it('Undo validation', () => {
+console.log('Undo validation');
         editor.editorHistory.undo();
     });
     it('redo validation', () => {
+console.log('redo validation');
         editor.editorHistory.redo();
     });
 
@@ -146,6 +153,7 @@ describe('After resize cell validation without selection', () => {
         }, 1000);
     });
     it('Resize without selection', () => {
+console.log('Resize without selection');
         documentHelper = editor.documentHelper;
         editor.openBlank();
         editor.editor.insertTable(2, 2);
@@ -212,6 +220,7 @@ describe('Table CELL Resizing table cell Selection testing', () => {
         }, 1000);
     });
     it('Table Cell Resizing With Cell Spacing', () => {
+console.log('Table Cell Resizing With Cell Spacing');
         editor.open(getTableCellSpaceJson());
         documentHelper = editor.documentHelper;
         let event: any = { offsetX: 318, offsetY: 144, preventDefault: function () { }, ctrlKey: false, which: 1 };
@@ -224,6 +233,7 @@ describe('Table CELL Resizing table cell Selection testing', () => {
     });
 
     it('Table Cell Resizing ResizeTableCell With Cell Spacing', () => {
+console.log('Table Cell Resizing ResizeTableCell With Cell Spacing');
         editor.open(getTableCellSpaceJson());
         documentHelper = editor.documentHelper;
         editor.editorModule.tableResize.currentResizingTable = documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget
@@ -262,6 +272,7 @@ describe('Table CELL Resizing table cell Selection testing', () => {
         }, 1000);
     });
     it('Selection At Row Resizing Tesing', () => {
+console.log('Selection At Row Resizing Tesing');
         editor.open(getTableCellSpaceJson());
         documentHelper = editor.documentHelper;
         (editor.editorModule.tableResize as any).getRowReSizerPosition(null, new Point(252.5, 391.33));

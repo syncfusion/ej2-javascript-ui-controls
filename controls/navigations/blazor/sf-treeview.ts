@@ -95,6 +95,7 @@ class SfTreeView {
     private keyAction: KeyboardEventArgs;
     private keyConfigs: { [key: string]: string };
     private preventExpand: boolean = false;
+    private firstTap: Element;
     public focussedElement: Element;
     constructor(element: BlazorTreeViewElement, options: ITreeViewOptions, dotnetRef: BlazorDotnetObject) {
         this.element = element;
@@ -206,7 +207,7 @@ class SfTreeView {
             event: e,
         };
         let id: string = focusedNode.getAttribute('data-uid');
-        this.dotNetRef.invokeMethodAsync('TriggerKeyboardEvent', eventArgs, id);
+        this.dotNetRef.invokeMethodAsync('TriggerKeyboardEvent', eventArgs, id, e.action, e.key);
     }
     public setMultiSelect(isEnabled: boolean): void {
         this.options.allowMultiSelection = isEnabled;
@@ -228,7 +229,7 @@ class SfTreeView {
             let proxy: SfTreeView = this;
             this.touchEditObj = new Touch(this.element, {
                 tap: (e: TapEventArgs) => {
-                    if (e.tapCount === 2) {
+                    if ( this.isDoubleTapped(e) && e.tapCount === 2) {
                         e.originalEvent.preventDefault();
                         proxy.editingHandler(e.originalEvent);
                     }
@@ -434,6 +435,9 @@ class SfTreeView {
                 remove(e.helper);
             }
             document.body.style.cursor = EMPTY;
+            if (!dropLi || dropLi.isSameNode(dragLi) || this.isDescendant(dragLi, dropLi)) {
+                return;
+            }
             if (dragObj.allowMultiSelection && dragLi.classList.contains(ACTIVE)) {
                 let sNodes: HTMLElement[] = selectAll('.' + ACTIVE, dragObj.element);
                 if (e.target.offsetHeight <= 33 && offsetY > e.target.offsetHeight - 10 && offsetY > 6) {
@@ -462,6 +466,19 @@ class SfTreeView {
         let left: number = this.getXYValue(e.event, 'X');
         let top: number = this.getXYValue(e.event, 'Y');
         this.dotNetRef.invokeMethodAsync('TriggerNodeDropped', this.updateObjectValues(eventArgs), left, top);
+    }
+
+    private isDoubleTapped(e: TapEventArgs): boolean {
+        let target: Element = <Element>e.originalEvent.target;
+        let secondTap: Element;
+        if (target && e.tapCount) {
+            if (e.tapCount === 1) {
+                this.firstTap = closest(target, '.' + LISTITEM);
+            } else if (e.tapCount === 2) {
+                secondTap = closest(target, '.' + LISTITEM);
+            }
+        }
+        return (this.firstTap === secondTap);
     }
 
     private isDescendant(parent: Element, child: Element): boolean {
@@ -917,7 +934,7 @@ class SfTreeView {
             let proxy: SfTreeView = this;
             this.touchExpandObj = new Touch(this.element, {
                 tap: (e: TapEventArgs) => {
-                    if ((this.options.expandOnType === CLICK || (this.options.expandOnType === DBLCLICK && e.tapCount === 2))
+                    if ((this.options.expandOnType === CLICK || (this.options.expandOnType === DBLCLICK &&  this.isDoubleTapped(e) && e.tapCount === 2 ))
                         && e.originalEvent.which !== 3) {
                         proxy.expandHandler(e);
                     }
@@ -1011,7 +1028,9 @@ class SfTreeView {
                 }
             });
         } else if (li.querySelector(".e-icon-expandable")) {
-            li.querySelector(".e-icon-expandable").remove();
+            let icon: Element = select('div.' + ICON, li);
+            removeClass([icon], EXPANDABLE);
+            addClass([icon], COLLAPSIBLE);
         }
     }
 
@@ -1029,11 +1048,18 @@ class SfTreeView {
         let ulelement: HTMLElement = li.querySelector('ul');
         if (ulelement) {
             ulelement.style.display = NONE;
-            li.style.overflow = EMPTY;
-            li.style.height = EMPTY;
             ulelement.classList.add(DISPLAYNONE);
-            this.dotNetRef.invokeMethodAsync('TriggerNodeCollapsedEvent', this.expandArgs);
         }
+        li.style.overflow = EMPTY;
+        li.style.height = EMPTY;   
+        this.expandArgs = this.getExpandEvent(li, null);
+        let icon: Element = select('div.' + ICON, li);
+        let _this: any = this;
+        setTimeout(function(){
+            removeClass([icon], COLLAPSIBLE);
+            addClass([icon], EXPANDABLE);
+            _this.dotNetRef.invokeMethodAsync('TriggerNodeCollapsedEvent', _this.expandArgs);
+        }, 100);
     }
 
     private preventContextMenu(e: MouseEvent): void {

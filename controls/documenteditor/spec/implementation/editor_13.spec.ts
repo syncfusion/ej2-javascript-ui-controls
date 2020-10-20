@@ -30,10 +30,12 @@ describe('Paste list content from outside editor ', () => {
         }, 1000);
     });
     it('Paste list on new page', () => {
+console.log('Paste list on new page');
         (editor.editor as any).pasteFormattedContent({ data: content });
         expect(editor.documentHelper.lists.length).toBe(1);
     });
     it('Paste list on page with same existing list', () => {
+console.log('Paste list on page with same existing list');
         editor.documentHelper.lists = [];
         editor.documentHelper.abstractLists = [];
         editor.openBlank();
@@ -45,6 +47,7 @@ describe('Paste list content from outside editor ', () => {
         expect(editor.documentHelper.lists.length).toBe(1);
     });
     it('Paste list on page with different format existing list', () => {
+console.log('Paste list on page with different format existing list');
         editor.documentHelper.lists = [];
         editor.documentHelper.abstractLists = [];
         editor.openBlank();
@@ -57,6 +60,7 @@ describe('Paste list content from outside editor ', () => {
         expect(editor.documentHelper.lists.length).toBe(2);
     });
     it('copy paste list internal', () => {
+console.log('copy paste list internal');
         editor.documentHelper.lists = [];
         editor.documentHelper.abstractLists = [];
         editor.enableLocalPaste = true;
@@ -97,6 +101,7 @@ describe('Restrict editing public API validation', () => {
         }, 1000);
     });
     it('insert edit region', () => {
+console.log('insert edit region');
         editor.editor.insertText('Hello world');
         editor.selection.extendToWordStart();
         editor.editor.insertEditingRegion();
@@ -107,19 +112,23 @@ describe('Restrict editing public API validation', () => {
         expect(editor.documentHelper.editRanges.get('Everyone').length).toBe(2);
     });
     it('enfore protection', () => {
+console.log('enfore protection');
         editor.editor.enforceProtection('aa', false, true);
     });
     it('navigate to next edit region', () => {
+console.log('navigate to next edit region');
         let end: string = editor.selection.end.hierarchicalPosition;
         editor.selection.navigateToNextEditingRegion();
         expect(editor.selection.end.hierarchicalPosition).not.toBe(end);
     });
     it('show to all edit region', () => {
+console.log('show to all edit region');
         let end: TextPosition = editor.selection.end;
         editor.selection.showAllEditingRegion();
         expect(editor.selection.editRangeCollection.length).toBe(2);
     });
     it('stop protection', () => {
+console.log('stop protection');
         editor.editor.stopProtection('aa');
     });
 });
@@ -148,6 +157,7 @@ describe('Test page break delete', () => {
         }, 1000);
     });
     it('Test page break delete', () => {
+console.log('Test page break delete');
         editor.editor.insertText('Hello World');
         editor.editor.insertPageBreak();
         editor.editor.insertTable(2, 2);
@@ -156,10 +166,12 @@ describe('Test page break delete', () => {
         expect(editor.documentHelper.pages.length).toBe(1);
     });
     it('undo after page break delete', () => {
+console.log('undo after page break delete');
         editor.editorHistory.undo();
         expect(editor.documentHelper.pages.length).toBe(2);
     });
     it('redo after page break delete', () => {
+console.log('redo after page break delete');
         editor.editorHistory.redo();
         expect(editor.documentHelper.pages.length).toBe(1);
     });
@@ -189,6 +201,7 @@ describe('Bookmark collection checking on delete', () => {
         }, 1000);
     });
     it('Bookmark delete in inline', () => {
+console.log('Bookmark delete in inline');
         editor.editor.insertText('Hello World');
         editor.selection.handleHomeKey();
         editor.selection.selectCurrentWord();
@@ -199,10 +212,12 @@ describe('Bookmark collection checking on delete', () => {
         expect(editor.documentHelper.bookmarks.length).toBe(0);
     });
     it('undo after bookmark delete in inline', () => {
+console.log('undo after bookmark delete in inline');
         editor.editorHistory.undo();
         expect(editor.documentHelper.bookmarks.length).toBe(1);
     });
     it('redo after bookmark delete in inline', () => {
+console.log('redo after bookmark delete in inline');
         editor.editorHistory.redo();
         expect(editor.documentHelper.bookmarks.length).toBe(0);
     });
@@ -233,6 +248,7 @@ describe('Bookmark collection checking on replace action', () => {
         }, 1000);
     });
     it('Bookmark delete in inline', () => {
+console.log('Bookmark delete in inline');
         editor.editor.insertText('Hello World');
         editor.selection.handleHomeKey();
         editor.selection.selectCurrentWord();
@@ -243,10 +259,12 @@ describe('Bookmark collection checking on replace action', () => {
         expect(editor.documentHelper.bookmarks.length).toBe(0);
     });
     it('undo after bookmark delete in inline', () => {
+console.log('undo after bookmark delete in inline');
         editor.editorHistory.undo();
         expect(editor.documentHelper.bookmarks.length).toBe(1);
     });
     it('redo after bookmark delete in inline', () => {
+console.log('redo after bookmark delete in inline');
         editor.editorHistory.redo();
         expect(editor.documentHelper.bookmarks.length).toBe(0);
     });
@@ -277,6 +295,7 @@ describe('Bookmark collection checking on inline', () => {
         }, 1000);
     });
     it('Bookmark delete in inline', () => {
+console.log('Bookmark delete in inline');
         editor.editor.insertText('Hello World');
         editor.selection.handleHomeKey();
         editor.selection.handleRightKey();
@@ -293,10 +312,12 @@ describe('Bookmark collection checking on inline', () => {
         expect(editor.documentHelper.bookmarks.length).toBe(0);
     });
     it('undo after bookmark delete in inline', () => {
+console.log('undo after bookmark delete in inline');
         editor.editorHistory.undo();
         expect(editor.documentHelper.bookmarks.length).toBe(1);
     });
     it('redo after bookmark delete in inline', () => {
+console.log('redo after bookmark delete in inline');
         editor.editorHistory.redo();
         expect(editor.documentHelper.bookmarks.length).toBe(0);
     });
@@ -328,6 +349,7 @@ describe('Cut and undo operation at end of table in second page', () => {
         }, 1000);
     });
     it('Cut and undo', () => {
+console.log('Cut and undo');
         editor.selection.moveToDocumentEnd();
         editor.selection.handleControlUpKey();
         editor.selection.handleControlShiftDownKey();
@@ -363,6 +385,7 @@ describe('Restrict editing public API validation by Protectiontype', () => {
         }, 1000);
     });
     it('Form field Protection type', () => {
+console.log('Form field Protection type');
         editor.editor.insertText('Name: ');
         editor.editor.insertFormField('Text');
         editor.editor.updateFormField(editor.documentHelper.formFields[0], 'Test');
@@ -373,6 +396,7 @@ describe('Restrict editing public API validation by Protectiontype', () => {
         expect(textElement).toBe('sync');
     });
     it('Read Only Protection type', () => {
+console.log('Read Only Protection type');
         editor.openBlank();
         editor.editor.insertText('Test');
         editor.editor.enforceProtection('', 'ReadOnly');

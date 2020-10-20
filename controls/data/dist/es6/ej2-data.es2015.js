@@ -3129,7 +3129,7 @@ class UrlAdaptor extends Adaptor {
             if (!isNullOrUndefined(data.result[0][key])) {
                 args.result = this.formRemoteGroupedData(args.result, 1, pvt.groups.length - 1);
             }
-            if (query.lazyLoad.length && pvt.groups.length) {
+            if (query && query.lazyLoad.length && pvt.groups.length) {
                 for (let i = 0; i < query.lazyLoad.length; i++) {
                     if (query.lazyLoad[i][key] === 'onDemandGroupInfo') {
                         let value = query.lazyLoad[i][val][level];

@@ -467,13 +467,13 @@
     }
 }
 
-  & .e-undo-icon {
+  .e-undo-icon {
     &::before {
       content: '\ebed';
     }
   }
 
-  & .e-redo-icon {
+  .e-redo-icon {
     &::before {
       content: '\ebfa';
     }

@@ -1584,6 +1584,28 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public mapsOnDoubleClick(e: PointerEvent): void {
         this.notify('dblclick', e);
+        let targetElement: Element = <Element>e.target;
+        let targetId: string = targetElement.id;
+        let layerIndex: number = 0;
+        let latLongValue: Object;
+        let latitude: number = null; let longitude: number = null;
+        if (targetElement.id.indexOf('_ToolBar') === -1) {
+            if (targetElement.id.indexOf('_LayerIndex_') !== -1 && !this.isTileMap && (this.mouseDownEvent['x'] === e.clientX)
+                    && (this.mouseDownEvent['y'] === e.clientY)) {
+                    layerIndex = parseFloat(targetElement.id.split('_LayerIndex_')[1].split('_')[0]);
+                    latLongValue = this.getGeoLocation(layerIndex, e);
+                    latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
+            } else if (this.isTileMap && (this.mouseDownEvent['x'] === e.clientX)
+                    && (this.mouseDownEvent['y'] === e.clientY)) {
+                    latLongValue = this.getTileGeoLocation(e);
+                    latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
+            }
+            let doubleClickArgs: IMouseEventArgs = { cancel: false, name: doubleClick,  x: e.clientX, y: e.clientY,
+            target : targetId, latitude: latitude, longitude: longitude, isShapeSelected : null };
+            let doubleClickBlazorArgs: IMouseEventArgs = { cancel: false, name: doubleClick,  x: e.clientX, y: e.clientY,
+                target : targetId, latitude: latitude, longitude: longitude, isShapeSelected : null };
+            this.trigger('doubleClick', this.isBlazor ? doubleClickBlazorArgs : doubleClickArgs);
+        }
     }
 
     /**

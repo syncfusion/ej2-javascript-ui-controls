@@ -112,6 +112,7 @@ export class MonthEvent extends EventBase {
             }
             this.parent.notify(events.scrollUiUpdate, data);
         }
+        this.parent.renderTemplates();
     }
 
     public renderEventsHandler(dateRender: Date[], workDays: number[], resData?: TdData): void {

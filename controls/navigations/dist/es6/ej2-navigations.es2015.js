@@ -3669,10 +3669,13 @@ let Toolbar = class Toolbar extends Component {
             else {
                 itemEleDom.appendChild(innerItem);
             }
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            let portals = 'portals';
             // tslint:disable-next-line:no-any
-            if (this.isReact) {
-                this.renderReactTemplates();
-            }
+            this.notify('render-react-toolbar-template', this[portals]);
+            this.renderReactTemplates();
         }
     }
     serverItemsRerender() {
@@ -12666,7 +12669,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             let proxy = this;
             this.touchEditObj = new Touch(this.element, {
                 tap: (e) => {
-                    if (e.tapCount === 2) {
+                    if (this.isDoubleTapped(e) && e.tapCount === 2) {
                         e.originalEvent.preventDefault();
                         proxy.editingHandler(e.originalEvent);
                     }
@@ -12699,7 +12702,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             let proxy = this;
             this.touchExpandObj = new Touch(this.element, {
                 tap: (e) => {
-                    if ((this.expandOnType === 'Click' || (this.expandOnType === 'DblClick' && e.tapCount === 2))
+                    if ((this.expandOnType === 'Click' || (this.expandOnType === 'DblClick' && this.isDoubleTapped(e) && e.tapCount === 2))
                         && e.originalEvent.which !== 3) {
                         proxy.expandHandler(e);
                     }
@@ -12763,6 +12766,19 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             el = el.parentNode;
         }
         return matched;
+    }
+    isDoubleTapped(e) {
+        let target = e.originalEvent.target;
+        let secondTap;
+        if (target && e.tapCount) {
+            if (e.tapCount === 1) {
+                this.firstTap = closest(target, '.' + LISTITEM);
+            }
+            else if (e.tapCount === 2) {
+                secondTap = closest(target, '.' + LISTITEM);
+            }
+        }
+        return (this.firstTap === secondTap);
     }
     isDescendant(parent, child) {
         let node = child.parentNode;

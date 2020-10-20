@@ -2,6 +2,7 @@ import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
 import { projectData, sampleData } from '../base/datasource.spec';
 import { CustomSummaryType, ActionEventArgs } from '@syncfusion/ej2-grids';
+import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Filter } from '../../src/treegrid/actions/filter';
 import { Aggregate } from '../../src/treegrid/actions/summary';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
@@ -539,6 +540,124 @@ describe('Summary with Sorting', () => {
       destroy(TreegridObj);
     });
   });
+  
+        describe(' Summary row format', () => {
+    let TreegridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      TreegridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          aggregates: [{
+            showChildSummary: true,
+            columns: [{
+                type: 'Sum',
+                field: 'duration',
+                columnName: 'duration',
+                format: 'C2',
+                footerTemplate: 'Sum: ${Sum}'
+             }]
+          },
+        {
+          showChildSummary: false,
+          columns: [{     
+              type: 'Max',
+              field: 'progress',
+              columnName: 'progress',
+              footerTemplate: 'Maximum: ${Max}'
+           }]
+        }
+        ],
+          columns: [
+            { field: 'taskID', headerText: 'Order ID', width: 120 },
+            { field: 'taskName', headerText: 'Customer ID', width: 150 },
+            { field: 'duration', headerText: 'Freight', type: "number", width: 150 },
+            { field: 'progress', headerText: 'Ship Name',type: "number", width: 150 },
+            { field: 'startDate', headerText: 'start Date', type: "datetime", format: 'yMd', width: 150 }
+          ]
+        },done);
+    });
+
+    it('Summary row format', () => {
+      expect(TreegridObj.element.getElementsByClassName('e-gridfooter')[0].getElementsByTagName('tfoot')[0].querySelector('.e-templatecell').innerHTML === "Sum: $150.00").toBe(true);
+      });
+    afterAll(() => {
+      destroy(TreegridObj);
+    });
+  });
+
+  describe('Summary row Rendering ', () => {
+    let TreegridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      TreegridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          columns: ['taskID', 'taskName', 'progress','duration'],
+          aggregates: [{
+            showChildSummary: false,
+            columns: [{
+                type: 'Sum',
+                field: 'duration',
+                columnName: 'duration',
+                footerTemplate: 'Sum: ${Sum}'
+             }]
+          }]
+        },done);
+    });
+
+    it('Summary Row Rendering', () => {
+      expect(TreegridObj.element.getElementsByClassName('e-gridfooter')[0].getElementsByTagName('tfoot')[0].querySelector('.e-templatecell').innerHTML === "Sum: 150").toBe(true);
+    });
+    afterAll(() => {
+      destroy(TreegridObj);
+    });
+  });
+  
+  describe(' Summary format', () => {
+    let TreegridObj: TreeGrid;
+    let data: DataManager = new DataManager({
+      json: sampleData,
+      adaptor: new RemoteSaveAdaptor 
+  });
+    beforeAll((done: Function) => {
+      TreegridObj = createGrid(
+        {
+          dataSource: data,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          aggregates: [{
+            showChildSummary: false,
+            columns: [{
+                type: 'Max',
+                field: 'duration',
+                columnName: 'duration',
+                format: 'C2',
+                footerTemplate: 'Max: ${Max}'
+             }]
+          },
+        ],
+          columns: [
+            { field: 'taskID', headerText: 'Order ID', width: 120 },
+            { field: 'taskName', headerText: 'Customer ID', width: 150 },
+            { field: 'duration', headerText: 'Freight', type: "number", width: 150 },
+            { field: 'progress', headerText: 'Ship Name',type: "number", width: 150 },
+            { field: 'startDate', headerText: 'start Date', type: "datetime", format: 'yMd', width: 150 }
+          ]
+        },done);
+    });
+
+    it('Summary format', () => {
+      debugger;
+      expect(TreegridObj.element.getElementsByClassName('e-gridfooter')[0].getElementsByTagName('tfoot')[0].querySelector('.e-templatecell').innerHTML === "Max: $11.00").toBe(true);
+      });
+    afterAll(() => {
+      destroy(TreegridObj);
+    });
+  });
+
   
   it('memory leak', () => {
     profile.sample();

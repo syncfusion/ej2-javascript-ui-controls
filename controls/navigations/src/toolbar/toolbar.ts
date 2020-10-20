@@ -909,9 +909,13 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             } else {
                 itemEleDom.appendChild(innerItem);
             }
-            // tslint:disable-next-line:no-any
-            if ((this as any).isReact) { this.renderReactTemplates(); }
         }
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) {
+            let portals: string = 'portals';
+            // tslint:disable-next-line:no-any
+            this.notify('render-react-toolbar-template', (this as any)[portals]);
+            this.renderReactTemplates(); }
     }
 
     private serverItemsRerender(): void {

@@ -816,6 +816,68 @@ describe('checkbox retained after cell edit and cancel', () => {
     });
   });
 
+  describe('Editing', () => {
+    let gridObj: TreeGrid;
+    let preventDefault: Function = new Function();
+    let cellEdit: () => void;
+    let actionBegin: () => void;
+    let data: Object[] = sampleData;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: data.slice(0,1),
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          height: 400,
+           selectionSettings: {
+              mode: 'Cell'
+          },
+        
+          editSettings: {
+              allowAdding: true,
+              allowEditing: true,
+              allowDeleting: true,
+              mode: 'Cell',
+              newRowPosition: 'Child'
+    
+          },
+          toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+          columns: [
+              { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',  width: 90 },
+              { field: 'taskName', headerText: 'Task Name',  },
+              { field: 'startDate', headerText: 'Start', textAlign: 'Right', width: 130, showCheckbox: true },
+              { field: 'progress', headerText: 'Duration', textAlign: 'Right', width: 100, }
+          ],
+        },
+        done
+      );
+    });
+    it('Double click',(done: Function) => {
+      let click: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+     gridObj.cellEdit = (args?: Object) : void => {
+        if(args['columnName'] === 'progress'){
+        expect(args['type'] === 'edit').toBe(true);
+        expect(args['cancel'] === 'true').toBe(false);
+      }
+       done();
+     } 
+     let cell:any = gridObj.element.querySelectorAll('.e-rowcell')[1];
+     gridObj.getCellFromIndex(0, 1).dispatchEvent(click);
+     gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = '102';
+     gridObj.grid.keyboardModule.keyAction({ action: 'enter',preventDefault: preventDefault,  target: cell } as any);
+     expect(cell.innerText = '102').toBeTruthy();
+     gridObj.getCellFromIndex(0, 3).dispatchEvent(click);        
+   });
+   
+   afterAll(() => {
+     destroy(gridObj);
+   });
+ });
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

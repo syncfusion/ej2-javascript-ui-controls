@@ -105,7 +105,8 @@ export class FormulaBar {
     private keyDownHandler(e: KeyboardEvent): void {
         let trgtElem: HTMLTextAreaElement = <HTMLTextAreaElement>e.target;
         if (this.parent.isEdit && !this.parent.getActiveSheet().isProtected) {
-            if (checkIsFormula(trgtElem.value) && e.keyCode === 16) {
+            if ((checkIsFormula(trgtElem.value) || (trgtElem.validity && trgtElem.value.toString().indexOf('=') === 0)) &&
+                e.keyCode === 16) {
                 return;
             }
             if (trgtElem.classList.contains('e-formula-bar')) {

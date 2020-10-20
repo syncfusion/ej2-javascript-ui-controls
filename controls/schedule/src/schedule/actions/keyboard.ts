@@ -45,10 +45,10 @@ export class KeyboardInteraction {
         pageDown: 'pagedown',
         tab: 'tab',
         shiftTab: 'shift+tab',
-        altUpArrow: 'alt+uparrow',
-        altDownArrow: 'alt+downarrow',
-        altLeftArrow: 'alt+leftarrow',
-        altRightArrow: 'alt+rightarrow'
+        ctrlShiftUpArrow: 'ctrl+shift+uparrow',
+        ctrlShiftDownArrow: 'ctrl+shift+downarrow',
+        ctrlShiftLeftArrow: 'ctrl+shift+leftarrow',
+        ctrlShiftRightArrow: 'ctrl+shift+rightarrow'
     };
     private keyboardModule: KeyboardEvents;
     constructor(parent: Schedule) {
@@ -115,11 +115,11 @@ export class KeyboardInteraction {
             case 'delete':
                 this.processDelete(e);
                 break;
-            case 'altUpArrow':
-            case 'altDownArrow':
-            case 'altLeftArrow':
-            case 'altRightArrow':
-                this.processAltNavigationArrows(e);
+            case 'ctrlShiftUpArrow':
+            case 'ctrlShiftDownArrow':
+            case 'ctrlShiftLeftArrow':
+            case 'ctrlShiftRightArrow':
+                this.processCtrlShiftNavigationArrows(e);
                 break;
             case 'escape':
                 this.processEscape();
@@ -193,7 +193,9 @@ export class KeyboardInteraction {
         let target: HTMLTableCellElement = closest((e.target as Element), queryStr) as HTMLTableCellElement;
         this.parent.activeCellsData = this.getSelectedElements(target);
         let cellData: { [key: string]: Object } = {};
-        this.parent.eventWindow.convertToEventData(<Object>this.parent.activeCellsData as { [key: string]: Object }, cellData);
+        if (this.parent.eventWindow) {
+            this.parent.eventWindow.convertToEventData(<Object>this.parent.activeCellsData as { [key: string]: Object }, cellData);
+        }
         let args: SelectEventArgs = {
             data: cellData, element: this.parent.activeCellsData.element, event: e,
             requestType: 'cellSelect', showQuickPopup: false
@@ -782,22 +784,34 @@ export class KeyboardInteraction {
             this.parent.quickPopup.deleteClick();
         }
     }
-    private processAltNavigationArrows(e: KeyboardEventArgs): void {
+    private processCtrlShiftNavigationArrows(e: KeyboardEventArgs): void {
         if (this.parent.activeViewOptions.group.resources.length > 0 && document.activeElement.classList.contains(cls.APPOINTMENT_CLASS)) {
             let groupIndex: number = parseInt(document.activeElement.getAttribute('data-group-index'), 10);
-            let index: number = (e.action === 'altLeftArrow' || e.action === 'altUpArrow') ? groupIndex - 1 : groupIndex + 1;
+            let index: number = (e.action === 'ctrlShiftLeftArrow' || e.action === 'ctrlShiftUpArrow') ? groupIndex - 1 : groupIndex + 1;
             index = index < 0 ? 0 : index > this.parent.resourceBase.lastResourceLevel.length ?
                 this.parent.resourceBase.lastResourceLevel.length : index;
             let eventEle: HTMLElement[] = [];
             while (eventEle.length === 0 && index >= 0 && index <= this.parent.resourceBase.lastResourceLevel.length) {
                 eventEle = [].slice.call(this.parent.element.querySelectorAll(`.${cls.APPOINTMENT_CLASS}[data-group-index="${index}"]`));
-                index = (e.action === 'altLeftArrow' || e.action === 'altUpArrow') ? index - 1 : index + 1;
+                index = (e.action === 'ctrlShiftLeftArrow' || e.action === 'ctrlShiftUpArrow') ? index - 1 : index + 1;
             }
             let nextAppEle: HTMLElement = eventEle[0];
             if (nextAppEle) {
                 this.parent.eventBase.removeSelectedAppointmentClass();
                 this.parent.eventBase.addSelectedAppointments([nextAppEle]);
                 nextAppEle.focus();
+            }
+        } else if (this.parent.activeViewOptions.group.resources.length > 0 &&
+            !document.activeElement.classList.contains(cls.APPOINTMENT_CLASS)) {
+            let index: number = this.parent.resourceBase.renderedResources[0].groupIndex;
+            let appSelector: string = `.${cls.APPOINTMENT_CLASS}[data-group-index="${index}"]`;
+            let appElements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(appSelector));
+            if (appElements.length > 0) {
+                this.parent.eventBase.removeSelectedAppointmentClass();
+                let focusAppointment: HTMLElement = appElements[0];
+                this.parent.eventBase.addSelectedAppointments([focusAppointment]);
+                focusAppointment.focus();
+                e.preventDefault();
             }
         }
     }

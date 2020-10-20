@@ -193,12 +193,14 @@ describe('Delete with history preservation -1 ', () => {
         }, 1000);
     });
     it('single delete at empty line widget', () => {
+console.log('single delete at empty line widget');
         editor.openBlank();
         editor.editorModule.delete();
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
     it('single delete at inline start', () => {
+console.log('single delete at inline start');
         editor.documentHelper.onDocumentChanged([createDocument()]);
         editor.editorModule.delete();
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
@@ -227,6 +229,7 @@ describe('Delete with history preservation-2', () => {
         }, 1000);
     });
     it('single delete at inline end', () => {
+console.log('single delete at inline end');
         editor.documentHelper.onDocumentChanged([createDocument()]);
         editor.selection.moveToLineEnd();
         let start = editor.selection.getText(true);
@@ -237,6 +240,7 @@ describe('Delete with history preservation-2', () => {
         expect(start !== end).toBe(false);
     });
     it('single delete at field begin', () => {
+console.log('single delete at field begin');
         editor.openBlank();
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.insertText(' ');
@@ -250,6 +254,7 @@ describe('Delete with history preservation-2', () => {
         expect(start !== end).toBe(true);
     });
     it('selected content removal using delete', () => {
+console.log('selected content removal using delete');
         editor.documentHelper.onDocumentChanged([createDocument()]);
         editor.selection.selectAll();
         let start = editor.selection.getText(true);
@@ -281,6 +286,7 @@ describe('Delete with history preservation-3', () => {
         }, 1000);
     });
     it('selected content removal containing paragraph,field,table using delete', () => {
+console.log('selected content removal containing paragraph,field,table using delete');
         editor.documentHelper.onDocumentChanged([createDocument()]);
         editor.selection.moveToLineEnd();
         editor.editorModule.insertText('www.google.com');
@@ -291,6 +297,7 @@ describe('Delete with history preservation-3', () => {
         expect(() => { editor.editorModule.delete(); }).not.toThrowError();
     });
     it('delete at paragraph end', () => {
+console.log('delete at paragraph end');
         editor.openBlank();
         editor.editorModule.insertText('Adventure Work Cycles');
         editor.editorModule.onEnter();
@@ -304,6 +311,7 @@ describe('Delete with history preservation-3', () => {
         expect(() => { editor.editorModule.delete(); }).not.toThrowError();
     });
     it('delete at paragraph end', () => {
+console.log('delete at paragraph end');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         editor.editorModule.insertText('Adventure Work Cycles');
@@ -334,6 +342,7 @@ describe('Delete with history preservation-4', () => {
         }, 1000);
     });
     it('delete at empty paragraph', () => {
+console.log('delete at empty paragraph');
         editor.openBlank();
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
@@ -341,6 +350,7 @@ describe('Delete with history preservation-4', () => {
         expect(() => { editor.editorModule.delete(); }).not.toThrowError();
     });
     it('delete at empty paragraph and previous inline table', () => {
+console.log('delete at empty paragraph and previous inline table');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         editor.selection.handleDownKey();
@@ -351,6 +361,7 @@ describe('Delete with history preservation-4', () => {
         expect(() => { editor.editorModule.delete(); }).not.toThrowError();
     });
     it('delete with different inline ', () => {
+console.log('delete with different inline ');
         editor.openBlank();
         editor.editorModule.insertText('Adv');
         editor.editorModule.insertText(' ');
@@ -384,6 +395,7 @@ describe('Delete and paste with history preservation', () => {
         }, 1000);
     });
     it('paste testing inside paragraph', () => {
+console.log('paste testing inside paragraph');
         editor.openBlank()
         editor.editorModule.insertText('Adventure');
         editor.editorModule.onEnter();
@@ -400,6 +412,7 @@ describe('Delete and paste with history preservation', () => {
         expect(() => { editor.editorModule.paste(); }).not.toThrowError();
     });
     it('paste testing inside paragraph', () => {
+console.log('paste testing inside paragraph');
         editor.openBlank()
         editor.editorModule.insertText('Adventure');
         editor.editorModule.onEnter();
@@ -412,6 +425,7 @@ describe('Delete and paste with history preservation', () => {
         expect(() => { editor.editorModule.paste(); }).not.toThrowError();
     });
     it('MultiSelection in insert text testing', () => {
+console.log('MultiSelection in insert text testing');
         editor.openBlank()
         let documentHelper: DocumentHelper = editor.documentHelper;
         editor.editorModule.insertText('Adventure Work Cycles');
@@ -471,6 +485,7 @@ describe('Delete and paste with history preservation', () => {
         }, 1000);
     });
     it('Skipbackspace testing if nextblock is table', () => {
+console.log('Skipbackspace testing if nextblock is table');
         editor.openBlank()
         let documentHelper: DocumentHelper = editor.documentHelper;
         editor.editorModule.insertText('Adventure Work Cycles');
@@ -489,6 +504,7 @@ describe('Delete and paste with history preservation', () => {
         editor.editorHistory.redo();
     });
     it('insert text skip testing if selection end is inside table', () => {
+console.log('insert text skip testing if selection end is inside table');
         editor.openBlank()
         let documentHelper: DocumentHelper = editor.documentHelper;
         editor.editorModule.insertText('Adventure Work Cycles');
@@ -503,6 +519,7 @@ describe('Delete and paste with history preservation', () => {
         expect(() => { editor.editorModule.insertText('A'); }).not.toThrowError();
     });
     it('insert text skip testing if selection end is inside table', () => {
+console.log('insert text skip testing if selection end is inside table');
         editor.openBlank()
         let documentHelper: DocumentHelper = editor.documentHelper;
         editor.editorModule.insertText('Adventure Work Cycles');
@@ -519,6 +536,7 @@ describe('Delete and paste with history preservation', () => {
         expect(() => { editor.editorModule.onBackSpace() }).not.toThrowError();
     });
     it('insert text  testing at different format', () => {
+console.log('insert text  testing at different format');
         editor.openBlank()
         let documentHelper: DocumentHelper = editor.documentHelper;
         editor.editorModule.insertText('Adventure Work Cycles');
@@ -569,6 +587,7 @@ describe('Delete Validation ', () => {
     });
 
     it('delete paragraph Mark validation and previous block is table', () => {
+console.log('delete paragraph Mark validation and previous block is table');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.handleDownKey();
@@ -582,6 +601,7 @@ describe('Delete Validation ', () => {
         editor.editorHistory.undo();
     });
     it('Tab in justify alignment validation', () => {
+console.log('Tab in justify alignment validation');
         editor.openBlank();
         let event: any = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
@@ -595,6 +615,7 @@ describe('Delete Validation ', () => {
         expect(editor.selection.paragraphFormat.textAlignment).toBe('Justify');
     });
     it('update List Paragraph in table Validation', () => {
+console.log('update List Paragraph in table Validation');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         let block = editor.selection.getTable(editor.selection.start, editor.selection.end);
@@ -633,6 +654,7 @@ describe('ctrl backspace word removal', () => {
         }, 1000);
     });
     it('when selection is empty is false', () => {
+console.log('when selection is empty is false');
         editor.openBlank();
         editor.editorModule.insertText('sync fusion');
         editor.selection.selectAll();
@@ -642,6 +664,7 @@ describe('ctrl backspace word removal', () => {
         expect(intext.text).toBe('sync fusion');
     });
     it('when selection is empty is true', () => {
+console.log('when selection is empty is true');
         editor.openBlank();
         editor.editorModule.insertText('sync fusion');
         editor.editor.handleCtrlBackKey();
@@ -651,6 +674,7 @@ describe('ctrl backspace word removal', () => {
         expect(intext.text).toBe('sync');
     });
     it('undo behaviour when selection is empty is true', () => {
+console.log('undo behaviour when selection is empty is true');
         editor.openBlank();
         editor.editorModule.insertText('sync fusion');
         editor.editor.handleCtrlBackKey();
@@ -664,6 +688,7 @@ describe('ctrl backspace word removal', () => {
         expect(intext.text).toBe('fusion');
     });
     it('Redo behaviour when selection is empty is true', () => {
+console.log('Redo behaviour when selection is empty is true');
         editor.openBlank();
         editor.editorModule.insertText('sync fusion');
         editor.editor.handleCtrlBackKey();
@@ -693,6 +718,7 @@ describe('ctrl backspace word removal validation on mutliple paragraph', () => {
         editor.appendTo('#container');
     });
     it('word removal on paragraph by using ctrl back space', () => {
+console.log('word removal on paragraph by using ctrl back space');
         editor.openBlank();
         editor.editorModule.insertText('sync fusion');
         editor.editorModule.onEnter();
@@ -720,6 +746,7 @@ describe('ctrl backspace word removal validation user selection', () => {
         editor.appendTo('#container');
     });
     it('word removal by using ctrl back space by user desired selection', () => {
+console.log('word removal by using ctrl back space by user desired selection');
         editor.openBlank();
         editor.editorModule.insertText('sync fusion');
         editor.selection.handleLeftKey();
@@ -764,6 +791,7 @@ describe('Ctrl Delete word removal', () => {
         }, 1000);
     });
     it('when selection is empty is false', () => {
+console.log('when selection is empty is false');
         editor.openBlank();
         editor.editorModule.insertText('sync fusion');
         editor.selection.selectAll();
@@ -773,6 +801,7 @@ describe('Ctrl Delete word removal', () => {
         expect(intext.text).toBe(' fusion');
     });
     it('undo behaviour when selection is empty is false', () => {
+console.log('undo behaviour when selection is empty is false');
         editor.openBlank();
         editor.editorModule.insertText('sync fusion');
         editor.selection.selectAll();
@@ -785,6 +814,7 @@ describe('Ctrl Delete word removal', () => {
         expect(intext.text).toBe('sync');
     });
     it('when selection is empty is true', () => {
+console.log('when selection is empty is true');
         editor.openBlank();
         editor.editorModule.insertText('sync fusion');
         editor.editor.handleCtrlDelete();
@@ -793,6 +823,7 @@ describe('Ctrl Delete word removal', () => {
         expect(intext.text).toBe('sync fusion');
     });
     it('undo behaviour when selection is empty is true', () => {
+console.log('undo behaviour when selection is empty is true');
         editor.openBlank();
         editor.editorModule.insertText('sync fusion');
         editor.editor.handleCtrlDelete();
@@ -816,6 +847,7 @@ describe('ctrl delete word removal validation on mutliple paragraph', () => {
         editor.appendTo('#container');
     });
     it('word removal on paragraph by using ctrl delete', () => {
+console.log('word removal on paragraph by using ctrl delete');
         editor.openBlank();
         editor.editorModule.insertText('sync fusion');
         editor.editorModule.onEnter();
@@ -843,6 +875,7 @@ describe('ctrl delete word removal validation user selection', () => {
         editor.appendTo('#container');
     });
     it('word removal by using ctrl delete by user desired selection', () => {
+console.log('word removal by using ctrl delete by user desired selection');
         editor.openBlank();
         editor.editorModule.insertText('sync fusion');
         editor.selection.handleLeftKey();
@@ -909,6 +942,7 @@ describe('Delete Validation ', () => {
     // });
 
     it('value type boolean for character format and paragraph format valdiation', () => {
+console.log('value type boolean for character format and paragraph format valdiation');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         let block: TableWidget = editor.selection.getTable(editor.selection.start, editor.selection.end);
@@ -948,6 +982,7 @@ describe('backspace with history preservation-1', () => {
         }, 1000);
     });
     it('single backspace at inline start', () => {
+console.log('single backspace at inline start');
         editor.openBlank();
         editor.editorModule.insertText('s')
         editor.editorModule.onBackSpace();
@@ -955,6 +990,7 @@ describe('backspace with history preservation-1', () => {
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
     it('single backspace at inline end', () => {
+console.log('single backspace at inline end');
         editor.openBlank();
         editor.selection.moveToLineEnd();
         editor.editorModule.onBackSpace();
@@ -962,6 +998,7 @@ describe('backspace with history preservation-1', () => {
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
     it('single backspace at field end', () => {
+console.log('single backspace at field end');
         editor.openBlank();
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.insertText(' ');
@@ -995,12 +1032,14 @@ describe('backspace with history preservation-2', () => {
     });
 
     it('selected content removal using backspace', () => {
+console.log('selected content removal using backspace');
         editor.openBlank();
         editor.selection.selectAll();
         editor.editorModule.onBackSpace();
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
     });
     it('selected content removal containing paragraph,field,table using onBackSpace', () => {
+console.log('selected content removal containing paragraph,field,table using onBackSpace');
         editor.openBlank();
         editor.selection.moveToLineEnd();
         editor.editorModule.insertText('www.google.com');
@@ -1033,6 +1072,7 @@ describe('backspace with history preservation-3', () => {
         }, 1000);
     });
     it('backspace at paragraph start', () => {
+console.log('backspace at paragraph start');
         editor.openBlank();
         editor.editorModule.insertText('Adventure Work Cycles');
         editor.editorModule.onEnter();
@@ -1046,6 +1086,7 @@ describe('backspace with history preservation-3', () => {
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
     it('backspace at end paragraph is inside table', () => {
+console.log('backspace at end paragraph is inside table');
         editor.openBlank();
         editor.editorModule.insertText('Adventure Work Cycles');
         editor.editor.insertTable(2, 2);
@@ -1060,6 +1101,7 @@ describe('backspace with history preservation-3', () => {
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
     it('Back space on field separator validation', () => {
+console.log('Back space on field separator validation');
         editor.documentHelper.onDocumentChanged([createDocumentHyperlink()]);
         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
         editor.selection.moveNextPosition();
@@ -1092,6 +1134,7 @@ describe('backspace with history preservation in table', () => {
         }, 1000);
     });
     it('backspace of nested table cell', () => {
+console.log('backspace of nested table cell');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         editor.editorModule.insertText('s');
@@ -1104,6 +1147,7 @@ describe('backspace with history preservation in table', () => {
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
     });
     it('backspace of single cell', () => {
+console.log('backspace of single cell');
         editor.openBlank();
         editor.editorHistory.isUndoing = false;
         editor.editorModule.insertTable(2, 2);
@@ -1115,6 +1159,7 @@ describe('backspace with history preservation in table', () => {
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
     it('delete table using backspace', () => {
+console.log('delete table using backspace');
         editor.openBlank();
         editor.editorHistory.isUndoing = false;
         editor.editor.insertTable(2, 2);
@@ -1156,6 +1201,7 @@ describe('Enter validation with history preservation-1', () => {
         }, 1000);
     });
     it('Enter inside hyperlink', () => {
+console.log('Enter inside hyperlink');
         editor.openBlank()
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.insertText(' ');
@@ -1164,6 +1210,7 @@ describe('Enter validation with history preservation-1', () => {
         editor.editorModule.onEnter();
     });
     it('selected content removal using enter', () => {
+console.log('selected content removal using enter');
         (editor as any).clearPreservedCollectionsInViewer();
         editor.documentHelper.onDocumentChanged([createDocument()]);
         editor.selection.selectAll();
@@ -1172,6 +1219,7 @@ describe('Enter validation with history preservation-1', () => {
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
     it('at empty selection use enter', () => {
+console.log('at empty selection use enter');
         editor.openBlank()
         editor.editorModule.onEnter();
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
@@ -1201,10 +1249,12 @@ describe('shift Enter and tab key validation with history preservation-1', () =>
         }, 1000);
     });
     it('shift Enter validation at empty line widget', () => {
+console.log('shift Enter validation at empty line widget');
         let event: any = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
     });
     it('shift Enter validation at inline', () => {
+console.log('shift Enter validation at inline');
         editor.documentHelper.onDocumentChanged([createDocument()]);
         editor.selection.handleEndKey();
         editor.selection.handleControlLeftKey();
@@ -1212,6 +1262,7 @@ describe('shift Enter and tab key validation with history preservation-1', () =>
         editor.documentHelper.onKeyDownInternal(event);
     });
     it('shift Enter validation at paragraph end', () => {
+console.log('shift Enter validation at paragraph end');
         editor.documentHelper.onDocumentChanged([createDocument()]);
         editor.selection.handleEndKey();
         editor.selection.handleControlLeftKey();
@@ -1244,11 +1295,13 @@ describe('shift Enter and tab key validation with history preservation-2', () =>
         }, 1000);
     });
     it('tab validation', () => {
+console.log('tab validation');
         editor.openBlank()
         let event: any = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         expect(() => { editor.documentHelper.onKeyDownInternal(event); }).not.toThrowError();
     });
     it('shift Enter validation at inline', () => {
+console.log('shift Enter validation at inline');
         editor.documentHelper.onDocumentChanged([createDocument()]);
         editor.selection.handleEndKey();
         editor.selection.handleControlLeftKey();
@@ -1279,6 +1332,7 @@ describe('Enter & insert Image validation with history preservation-2', () => {
         }, 1000);
     });
     it('shift widgets', () => {
+console.log('shift widgets');
         let event: any;
         editor.open(getJson());
         let documentHelper: DocumentHelper = editor.documentHelper;
@@ -1313,6 +1367,7 @@ describe('Enter & insert Image validation with history preservation-2', () => {
         expect(documentHelper.pages.length).not.toBe(1);
     });
     it('insert Text at image validation', () => {
+console.log('insert Text at image validation');
         let event: any;
         editor.open(JSON.stringify(imageJson));
         let documentHelper: DocumentHelper = editor.documentHelper;
@@ -1359,6 +1414,7 @@ describe('enter and tab key behaviour validation', () => {
         }, 1000);
     });
     it('Enter key character format validation', () => {
+console.log('Enter key character format validation');
         editor.editorModule.insertText('Adfff');
         editor.selection.handleShiftHomeKey();
         editor.selection.toggleBold();
@@ -1372,6 +1428,7 @@ describe('enter and tab key behaviour validation', () => {
         expect(inline1).toEqual(inline2);
     });
     it('Shift Enter cursor validation', () => {
+console.log('Shift Enter cursor validation');
         editor.editorModule.insertText('x');
         let x = editor.selection.start.location.x;
         editor.editorModule.handleShiftEnter();
@@ -1379,6 +1436,7 @@ describe('enter and tab key behaviour validation', () => {
         expect(x).toBeGreaterThan(y);
     });
     it('enter inside table move to next page validation', () => {
+console.log('enter inside table move to next page validation');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         for (let i: number = 0; i < 45; i++) {
@@ -1430,6 +1488,7 @@ describe('Insert Hyperlink validation via dialog method', () => {
         }, 1000);
     });
     it('simple hyperlink inserting', () => {
+console.log('simple hyperlink inserting');
         editor.editorModule.insertHyperlinkInternal('www.google.com', 'www.google.com', true);
         let line: LineWidget = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
         expect(line.children.length).toBe(5);
@@ -1460,6 +1519,7 @@ describe('Text insert behaviour validation with history preservation-1', () => {
     });
 
     it('text insert at empty line widget', () => {
+console.log('text insert at empty line widget');
 
         editor.openBlank();
         let start = editor.selection.start.location;
@@ -1470,6 +1530,7 @@ describe('Text insert behaviour validation with history preservation-1', () => {
         expect(start !== end).toBe(true);
     });
     it('text insert at start of inline', () => {
+console.log('text insert at start of inline');
         editor.documentHelper.onDocumentChanged([createDocument()]);
         let start = editor.selection.start.location;
         editor.editorModule.insertText('s');
@@ -1479,6 +1540,7 @@ describe('Text insert behaviour validation with history preservation-1', () => {
         expect(start !== end).toBe(true);
     });
     it('text insert at end of inline', () => {
+console.log('text insert at end of inline');
         editor.documentHelper.onDocumentChanged([createDocument()]);
         editor.selection.moveToLineEnd();
         let start = editor.selection.start.location;
@@ -1512,6 +1574,7 @@ describe('Text insert behaviour validation with history preservation-2', () => {
     });
 
     it('insert Text at field end validation', () => {
+console.log('insert Text at field end validation');
         editor.openBlank();
         let event: any;
         editor.editorModule.insertText('www.syncfusion.com');
@@ -1526,6 +1589,7 @@ describe('Text insert behaviour validation with history preservation-2', () => {
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
     it('insert Text at field begin validation', () => {
+console.log('insert Text at field begin validation');
         editor.openBlank();
         let event: any;
         editor.editorModule.insertText('www.syncfusion.com');
@@ -1541,6 +1605,7 @@ describe('Text insert behaviour validation with history preservation-2', () => {
         expect(documentHelper.pages.length).not.toBe(0);
     });
     it('insert Text at field separator  validation', () => {
+console.log('insert Text at field separator  validation');
         editor.openBlank();
         let event: any;
         editor.editorModule.insertText('www.syncfusion.com');
@@ -1583,20 +1648,24 @@ describe('Insert Text and Insert table undo redo', () => {
         }, 1000);
     });
     it('In backward selection insert hyperlink validation in Multiple paragraph', () => {
+console.log('In backward selection insert hyperlink validation in Multiple paragraph');
         editor.editorModule.insertTextInternal('Syncfusion', true);
         editor.editorModule.insertTable(2, 3);
         editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length
         expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(3);
     });
     it('In backward selection edit hyperlink validation in Multiple paragraph', () => {
+console.log('In backward selection edit hyperlink validation in Multiple paragraph');
         editor.editorHistoryModule.undo();
         expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(1);
     });
     it('undo edit hyperlink in multiple paragraph', () => {
+console.log('undo edit hyperlink in multiple paragraph');
         editor.editorHistoryModule.redo();
         expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(3);
     });
     it('undo redo multiple times with undo at last', () => {
+console.log('undo redo multiple times with undo at last');
         let i: number = 0;
         while (i >= 5) {
             editor.editorHistoryModule.undo();
@@ -1606,6 +1675,7 @@ describe('Insert Text and Insert table undo redo', () => {
         expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(1);
     });
     it('undo redo multiple times with redo at last', () => {
+console.log('undo redo multiple times with redo at last');
         let i: number = 0;
         while (i >= 5) {
             editor.editorHistoryModule.redo();
@@ -1640,20 +1710,24 @@ describe('Auto format URL on space', (): void => {
         }, 1000);
     });
     it('format URL on space at end', (): void => {
+console.log('format URL on space at end');
         editor.openBlank()
         editor.editorModule.insertText('http://syncfusion.com');
         editor.editorModule.insertText(' ');
         expect(editor.selection.start.currentWidget.children.length).toBe(6);
     });
     it('undo validation', () => {
+console.log('undo validation');
         editor.editorHistory.undo();
         expect(editor.selection.start.currentWidget.children.length).toBe(2);
     });
     it('redo validation', () => {
+console.log('redo validation');
         editor.editorHistory.redo();
         expect(editor.selection.start.currentWidget.children.length).toBe(6);
     });
     it('Multiple undo and redo validation', () => {
+console.log('Multiple undo and redo validation');
         let i: number = 1;
         while (i <= 5) {
             editor.editorHistory.undo();
@@ -1663,11 +1737,13 @@ describe('Auto format URL on space', (): void => {
         expect(editor.selection.start.currentWidget.children.length).toBe(6);
     });
     it('format URL without text validation', (): void => {
+console.log('format URL without text validation');
         editor.openBlank()
         editor.editorModule.insertText(' ');
         expect(editor.selection.start.currentWidget.children.length).toBe(1);
     });
     it('format URL without text with multiple text validation', (): void => {
+console.log('format URL without text with multiple text validation');
         editor.openBlank()
         let text: TextElementBox = new TextElementBox();
         text.text = "";
@@ -1700,30 +1776,35 @@ describe('Auto format URL on space', (): void => {
         }, 1000);
     });
     it('format URL on space with out hyperlink', (): void => {
+console.log('format URL on space with out hyperlink');
         editor.openBlank()
         editor.editorModule.insertText('syncfusion.com');
         editor.editorModule.insertText(' ');
         expect(editor.selection.start.currentWidget.children.length).toBe(1);
     });
     it('Format url on space with https', (): void => {
+console.log('Format url on space with https');
         editor.openBlank()
         editor.editorModule.insertText('https://syncfusion.com');
         editor.editorModule.insertText(' ');
         expect(editor.selection.start.currentWidget.children.length).toBe(6);
     });
     it('Format url on space key without https', (): void => {
+console.log('Format url on space key without https');
         editor.openBlank()
         editor.editorModule.insertText('www.syncfusion.com');
         editor.editorModule.insertText(' ');
         expect(editor.selection.start.currentWidget.children.length).toBe(6);
     });
     it('Format url on space key with mailto', (): void => {
+console.log('Format url on space key with mailto');
         editor.openBlank()
         editor.editorModule.insertText('mailto:support@syncfusion.com');
         editor.editorModule.insertText(' ');
         expect(editor.selection.start.currentWidget.children.length).toBe(6);
     });
     it('Format mail on space without mailto', (): void => {
+console.log('Format mail on space without mailto');
         editor.openBlank()
         editor.editorModule.insertText('support@syncfusion.com');
         editor.editorModule.insertText(' ');
@@ -1752,6 +1833,7 @@ describe('Auto format URL on Enter ,tab, shift & enter', () => {
         }, 1000);
     });
     it('Format url on tab key at end', (): void => {
+console.log('Format url on tab key at end');
         editor.openBlank()
         editor.editorModule.insertText('https://syncfusion.com');
         editor.editorModule.insertText('\t');
@@ -1759,6 +1841,7 @@ describe('Auto format URL on Enter ,tab, shift & enter', () => {
         //expect(editor.selection.start.paragraph.inlines.length).toBe(6);
     });
     it('Format url on tab key at inline middle', (): void => {
+console.log('Format url on tab key at inline middle');
         editor.openBlank()
         editor.selection.selectAll();
         editor.selection.toggleBold();
@@ -1780,6 +1863,7 @@ describe('Auto format URL on Enter ,tab, shift & enter', () => {
         //expect(editor.selection.start.paragraph.inlines.length).toBe(6);
     });
     it('Format url on enter key', (): void => {
+console.log('Format url on enter key');
         editor.openBlank();
         editor.editorModule.insertText('http://syncfusion.com');
         editor.editorModule.onEnter();
@@ -1808,12 +1892,14 @@ describe('Auto format URL on Enter ,tab, shift & enter', () => {
         }, 1000);
     });
     it('Format url on enter key with https', (): void => {
+console.log('Format url on enter key with https');
         editor.openBlank()
         editor.editorModule.insertText('https://syncfusion.com');
         editor.editorModule.onEnter();
         expect(editor.selection.start.currentWidget.children.length).toBe(0);
     });
     it('Format url on enter key without https', (): void => {
+console.log('Format url on enter key without https');
         editor.openBlank()
         editor.editorModule.insertText('www.syncfusion.com');
         editor.editorModule.onEnter();
@@ -1842,12 +1928,14 @@ describe('Auto format URL on Enter ,tab, shift & enter', () => {
         }, 1000);
     });
     it('Format url on enter key with mailto', (): void => {
+console.log('Format url on enter key with mailto');
         editor.openBlank()
         editor.editorModule.insertText('mailto:support@syncfusion.com');
         editor.editorModule.onEnter();
         expect(editor.selection.start.currentWidget.children.length).toBe(0);
     });
     it('Format mail on enter key without mailto', (): void => {
+console.log('Format mail on enter key without mailto');
         editor.openBlank()
         editor.editorModule.insertText('support@syncfusion.com');
         editor.editorModule.onEnter();
@@ -1882,6 +1970,7 @@ describe('HyperLink Navigation validation', () => {
         }, 1000);
     });
     it('Hyperlink navigation on enter testing', () => {
+console.log('Hyperlink navigation on enter testing');
         editor.openBlank()
         let event: any;
         editor.editorModule.insertText('www.google.com');
@@ -1901,6 +1990,7 @@ describe('HyperLink Navigation validation', () => {
         expect(documentHelper.pages.length).toBe(1);
     });
     it('Hyperlink navigation on enter testing with mailto', () => {
+console.log('Hyperlink navigation on enter testing with mailto');
         editor.openBlank()
         let event: any;
         editor.editorModule.insertText('mailto:document@gmail.com');
@@ -1919,6 +2009,7 @@ describe('HyperLink Navigation validation', () => {
         expect(() => { editor.editorModule.onEnter(); }).not.toThrowError();
     });
     it('Hyperlink navigation on enter testing link type as file', () => {
+console.log('Hyperlink navigation on enter testing link type as file');
         editor.openBlank()
         let event: any;
         editor.editorModule.editHyperlink(editor.selection, 'file:///c:/document', 'support@syncfusion.com');
@@ -1959,6 +2050,7 @@ describe('HyperLink Navigation validation', () => {
     });
 
     it('Hyperlink navigation on enter @ testing', () => {
+console.log('Hyperlink navigation on enter @ testing');
         editor.openBlank()
         let event: any;
         editor.editorModule.editHyperlink(editor.selection, 'support@syncfusion.com', 'support@syncfusion.com');
@@ -1976,6 +2068,7 @@ describe('HyperLink Navigation validation', () => {
         expect(() => { editor.editorModule.onEnter(); }).not.toThrowError();
     });
     it('Hyperlink navigation link type as webpage', () => {
+console.log('Hyperlink navigation link type as webpage');
         editor.openBlank()
         let event: any;
         editor.editorModule.editHyperlink(editor.selection, 'www.syncfusion.com', 'www.syncfusion.com');
@@ -1993,6 +2086,7 @@ describe('HyperLink Navigation validation', () => {
         expect(() => { editor.editorModule.onEnter(); }).not.toThrowError();
     });
     it('remove hyperlink validation', () => {
+console.log('remove hyperlink validation');
         editor.openBlank()
         let event: any;
         editor.editorModule.insertText('www.google.com');
@@ -2035,6 +2129,7 @@ describe('insert column testing with selection is not empty', () => {
         }, 1000);
     });
     it('insert column testing with selection containing single column', () => {
+console.log('insert column testing with selection containing single column');
         editor.openBlank()
         editor.editor.insertTable(2, 2);
         let event: any;
@@ -2046,6 +2141,7 @@ describe('insert column testing with selection is not empty', () => {
         expect(() => { editor.editor.insertColumn(true); }).not.toThrowError();
     });
     it('insert column testing with selection containing single column', () => {
+console.log('insert column testing with selection containing single column');
         editor.openBlank()
         editor.editor.insertTable(2, 2);
         let event: any;
@@ -2057,6 +2153,7 @@ describe('insert column testing with selection is not empty', () => {
         expect(() => { editor.editor.insertRow(false); }).not.toThrowError();
     });
     it('insert Row branch validation', () => {
+console.log('insert Row branch validation');
         editor.openBlank()
         expect(() => { editor.editor.insertRow(); }).not.toThrowError();
         expect(() => { editor.editor.insertColumn(true); }).not.toThrowError();
@@ -2093,6 +2190,7 @@ describe('insert column testing with selection is not empty', () => {
     });
 
     it('delete  Row branch validation', () => {
+console.log('delete  Row branch validation');
         editor.openBlank()
         editor.editor.insertTable(2, 3);
         expect(() => { editor.editor.deleteRow(); }).not.toThrowError();
@@ -2112,6 +2210,7 @@ describe('insert column testing with selection is not empty', () => {
     //     expect(tableWidth).not.toBe(12);
     // });
     it('insert text with different format validation', () => {
+console.log('insert text with different format validation');
         editor.openBlank()
         editor.editorModule.insertText('Adventure');
         editor.selection.selectAll();
@@ -2129,6 +2228,7 @@ describe('insert column testing with selection is not empty', () => {
         editor.editorModule.insertText('A');
     });
     it('Empty line selection testing', () => {
+console.log('Empty line selection testing');
         editor.openBlank()
         editor.editorModule.insertText('Adventure');
         editor.editorModule.onEnter();
@@ -2181,6 +2281,7 @@ describe('insert column testing with selection is not empty', () => {
         }, 1000);
     });
     it('editaction 2 validation', () => {
+console.log('editaction 2 validation');
         editor.openBlank()
         editor.editorModule.insertTable(2, 2);
         editor.editorModule.insertText('s');
@@ -2214,6 +2315,7 @@ describe('insert row below on empty selection with row spanned cells', () => {
         }, 1000);
     });
     it('insert row below on empty selection scenario1', () => {
+console.log('insert row below on empty selection scenario1');
         editor.openBlank()
         let event: any;
         editor.editorModule.insertTable(5, 5);
@@ -2238,6 +2340,7 @@ describe('insert row below on empty selection with row spanned cells', () => {
         expect((editor.selectionModule.start.paragraph.associatedCell.previousWidget as TableCellWidget).cellFormat.rowSpan).toBe(3);
     });
     it('insert row below on empty selection scenario 2', () => {
+console.log('insert row below on empty selection scenario 2');
         editor.openBlank()
         let event: any;
         editor.editorModule.insertTable(5, 5);
@@ -2262,6 +2365,7 @@ describe('insert row below on empty selection with row spanned cells', () => {
         expect(editor.selectionModule.start.paragraph.associatedCell.cellFormat.columnSpan).toBe(2);
     });
     it('insert row below on empty selection scenario 3', () => {
+console.log('insert row below on empty selection scenario 3');
         editor.openBlank()
         let event: any;
         editor.editorModule.insertTable(5, 5);
@@ -2300,6 +2404,7 @@ describe('insert row below on empty selection with row spanned cells', () => {
         expect(editor.selectionModule.start.paragraph.associatedCell.ownerRow.childWidgets.length).toBe(3);
     });
     it('insert row below on empty selection scenario 4', () => {
+console.log('insert row below on empty selection scenario 4');
         editor.openBlank()
         let event: any;
         editor.editorModule.insertTable(5, 5);
@@ -2341,6 +2446,7 @@ describe('insert row below on empty selection with row spanned cells', () => {
         expect(editor.selectionModule.start.paragraph.associatedCell.ownerTable.childWidgets.length).toBe(6);
     });
     it('insert row below on empty selection scenario 5', () => {
+console.log('insert row below on empty selection scenario 5');
         editor.openBlank()
         let event: any;
         editor.editorModule.insertTable(5, 5);
@@ -2370,6 +2476,7 @@ describe('insert row below on empty selection with row spanned cells', () => {
         expect(editor.selectionModule.start.paragraph.associatedCell.ownerRow.childWidgets.length).toBe(4);
     });
     it('insert row below on empty selection scenario 6', () => {
+console.log('insert row below on empty selection scenario 6');
         editor.openBlank()
         let event: any;
         editor.editorModule.insertTable(5, 5);
@@ -2426,6 +2533,7 @@ describe('insert row above on empty selection with row spanned cells', () => {
         }, 1000);
     });
     it('insert row above on empty selection scenario 1', () => {
+console.log('insert row above on empty selection scenario 1');
         editor.openBlank()
         let event: any;
         editor.editorModule.insertTable(5, 5);
@@ -2455,6 +2563,7 @@ describe('insert row above on empty selection with row spanned cells', () => {
         expect(editor.selectionModule.start.paragraph.associatedCell.ownerRow.childWidgets.length).toBe(5);
     });
     it('insert row above on empty selection scenario 2', () => {
+console.log('insert row above on empty selection scenario 2');
         editor.openBlank()
         let event: any;
         editor.editorModule.insertTable(5, 5);
@@ -2489,6 +2598,7 @@ describe('insert row above on empty selection with row spanned cells', () => {
         expect(editor.selectionModule.start.paragraph.associatedCell.ownerRow.childWidgets.length).toBe(4);
     });
     it('insert row above on empty selection scenario 3', () => {
+console.log('insert row above on empty selection scenario 3');
         editor.openBlank()
         let event: any;
         editor.editorModule.insertTable(5, 5);
@@ -2518,6 +2628,7 @@ describe('insert row above on empty selection with row spanned cells', () => {
         expect(editor.selectionModule.start.paragraph.associatedCell.ownerRow.childWidgets.length).toBe(5);
     });
     it('insert row above on empty selection scenario 4', () => {
+console.log('insert row above on empty selection scenario 4');
         editor.openBlank()
         let event: any;
         editor.editorModule.insertTable(5, 5);
@@ -2551,6 +2662,7 @@ describe('insert row above on empty selection with row spanned cells', () => {
         expect(editor.selectionModule.start.paragraph.associatedCell.ownerRow.childWidgets.length).toBe(5);
     });
     it('insert row above on empty selection scenario 5', () => {
+console.log('insert row above on empty selection scenario 5');
         editor.openBlank()
         let event: any;
         editor.editorModule.insertTable(5, 5);
@@ -2592,6 +2704,7 @@ describe('insert row above on empty selection with row spanned cells', () => {
         expect(editor.selectionModule.start.paragraph.associatedCell.ownerTable.childWidgets.length).toBe(6);
     });
     it('insert row above on empty selection scenario 6', () => {
+console.log('insert row above on empty selection scenario 6');
         editor.openBlank()
         let event: any;
         editor.editorModule.insertTable(5, 5);
@@ -2653,18 +2766,22 @@ describe('paragraph format apply and removal onsingle backspace', () => {
         }, 1000);
     });
     it('FirstLine Indent validation', () => {
+console.log('FirstLine Indent validation');
         editor.editorModule.onApplyParagraphFormat('firstLineIndent', 24, false, false);
         editor.editorModule.onBackSpace();
     });
     it('Left Indent validation', () => {
+console.log('Left Indent validation');
         editor.editorModule.onApplyParagraphFormat('leftIndent', 24, false, false);
         editor.editorModule.onBackSpace();
     });
     it('Text Alignment validation', () => {
+console.log('Text Alignment validation');
         editor.editorModule.onApplyParagraphFormat('textAlignment', 'Center', false, true);
         editor.editorModule.onBackSpace();
     });
     it('Apply list testing', () => {
+console.log('Apply list testing');
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
@@ -2701,6 +2818,7 @@ describe('Selected content replace tesing-1', () => {
         }, 1000);
     });
     it('text insert at empty line widget', () => {
+console.log('text insert at empty line widget');
         editor.openBlank();
         editor.editorModule.insertText('s');
         editor.editorModule.insertText(' ');
@@ -2716,6 +2834,7 @@ describe('Selected content replace tesing-1', () => {
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
     it('text insert at empty line widget', () => {
+console.log('text insert at empty line widget');
         editor.openBlank();
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.insertText(' ');
@@ -2729,6 +2848,7 @@ describe('Selected content replace tesing-1', () => {
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
     });
     it('selection containing table and paragraph', () => {
+console.log('selection containing table and paragraph');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         editor.editorModule.insertText(' ');
@@ -2804,6 +2924,7 @@ describe('Copy and paste with content control', () => {
         }, 1000);
     });
     it('copy with content control', () => {
+console.log('copy with content control');
         editor.openBlank();
         let contentControl = '{"sections":[{"sectionFormat":{"pageWidth":612,"pageHeight":792,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"headerDistance":36,"footerDistance":36,"bidi":false},"blocks":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{"fontColor":"empty"},"inlines":[{"characterFormat":{"fontColor":"empty"},"text":"Hello world "},{"inlines":[{"characterFormat":{"fontColor":"empty"},"text":"checking contents"}],"contentControlProperties":{"lockContentControl":false,"lockContents":false,"color":"#00000000","type":"RichText","hasPlaceHolderText":false,"multiline":false,"isTemporary":false,"characterFormat":{"fontColor":"empty"},"contentControlListItems":[]}},{"characterFormat":{"fontColor":"empty"},"text":"  "}]},{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{"fontColor":"empty"},"inlines":[{"characterFormat":{"fontColor":"empty"},"text":"Test for "},{"inlines":[{"characterFormat":{"fontColor":"empty"},"text":"content control"}],"contentControlProperties":{"lockContentControl":false,"lockContents":false,"color":"#00000000","type":"Text","hasPlaceHolderText":false,"multiline":false,"isTemporary":false,"characterFormat":{"fontColor":"empty"},"contentControlListItems":[]}},{"characterFormat":{"fontColor":"empty"},"text":" while copying"}]}],"headersFooters":{}}],"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"empty","fontSizeBidi":11,"fontFamilyBidi":"Arial","allCaps":false},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","listFormat":{},"bidi":false},"defaultTabWidth":36,"trackChanges":false,"enforcement":false,"hashValue":"","saltValue":"","formatting":false,"protectionType":"NoProtection","dontUseHTMLParagraphAutoSpacing":false,"formFieldShading":true,"styles":[{"name":"Normal","type":"Paragraph","paragraphFormat":{"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple","listFormat":{}},"characterFormat":{"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","fontSizeBidi":12,"fontFamilyBidi":"Times New Roman"},"next":"Normal"},{"name":"Heading 1","type":"Paragraph","paragraphFormat":{"beforeSpacing":6,"afterSpacing":6,"lineSpacing":1,"lineSpacingType":"Multiple","outlineLevel":"Level1","listFormat":{"listId":13}},"characterFormat":{"bold":true,"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","boldBidi":true,"fontSizeBidi":14,"fontFamilyBidi":"Arial","allCaps":true},"link":"Heading 1 Char","next":"Paragraph"},{"name":"Heading 1 Char","type":"Character","characterFormat":{"bold":true,"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","boldBidi":true,"fontSizeBidi":14,"fontFamilyBidi":"Arial","allCaps":true},"basedOn":"Default Paragraph Font"},{"name":"Default Paragraph Font","type":"Character","characterFormat":{"fontColor":"empty"}},{"name":"Paragraph","type":"Paragraph","paragraphFormat":{"afterSpacing":12,"lineSpacing":1,"lineSpacingType":"Multiple","listFormat":{}},"characterFormat":{"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","fontSizeBidi":12,"fontFamilyBidi":"Times New Roman"},"link":"Paragraph Char","next":"Paragraph"},{"name":"Paragraph Char","type":"Character","characterFormat":{"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","fontSizeBidi":12,"fontFamilyBidi":"Times New Roman"},"basedOn":"Default Paragraph Font"},{"name":"Heading 2","type":"Paragraph","paragraphFormat":{"beforeSpacing":6,"afterSpacing":6,"lineSpacing":1,"lineSpacingType":"Multiple","outlineLevel":"Level2","listFormat":{"listId":13,"listLevelNumber":1}},"characterFormat":{"bold":true,"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","boldBidi":true,"fontSizeBidi":13,"fontFamilyBidi":"Arial"},"link":"Heading 2 Char","next":"Paragraph"},{"name":"Heading 2 Char","type":"Character","characterFormat":{"bold":true,"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","boldBidi":true,"fontSizeBidi":13,"fontFamilyBidi":"Arial"},"basedOn":"Default Paragraph Font"},{"name":"Heading 3","type":"Paragraph","paragraphFormat":{"beforeSpacing":6,"afterSpacing":6,"lineSpacing":1,"lineSpacingType":"Multiple","outlineLevel":"Level3","listFormat":{"listId":13,"listLevelNumber":2}},"characterFormat":{"bold":true,"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","fontSizeBidi":13,"fontFamilyBidi":"Arial"},"link":"Heading 3 Char","next":"Paragraph"},{"name":"Heading 3 Char","type":"Character","characterFormat":{"bold":true,"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","fontSizeBidi":13,"fontFamilyBidi":"Arial"},"basedOn":"Default Paragraph Font"},{"name":"Heading 4","type":"Paragraph","paragraphFormat":{"beforeSpacing":6,"afterSpacing":6,"lineSpacing":1,"lineSpacingType":"Multiple","outlineLevel":"Level4","listFormat":{"listId":13,"listLevelNumber":3}},"characterFormat":{"bold":true,"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","boldBidi":true,"fontSizeBidi":12,"fontFamilyBidi":"Arial"},"link":"Heading 4 Char","next":"Paragraph"},{"name":"Heading 4 Char","type":"Character","characterFormat":{"bold":true,"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","boldBidi":true,"fontSizeBidi":12,"fontFamilyBidi":"Arial"},"basedOn":"Default Paragraph Font"},{"name":"Heading 5","type":"Paragraph","paragraphFormat":{"leftIndent":36,"firstLineIndent":-18,"beforeSpacing":6,"afterSpacing":6,"lineSpacing":1,"lineSpacingType":"Multiple","outlineLevel":"Level5","listFormat":{"listId":13,"listLevelNumber":4},"tabs":[{"position":0,"deletePosition":0,"tabJustification":"Left","tabLeader":"None"},{"position":36,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"characterFormat":{"bold":true,"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","italicBidi":true,"fontSizeBidi":12,"fontFamilyBidi":"Arial"},"link":"Heading 5 Char","next":"Paragraph"},{"name":"Heading 5 Char","type":"Character","characterFormat":{"bold":true,"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","italicBidi":true,"fontSizeBidi":12,"fontFamilyBidi":"Arial"},"basedOn":"Default Paragraph Font"},{"name":"Heading 6","type":"Paragraph","paragraphFormat":{"leftIndent":36,"firstLineIndent":-18,"beforeSpacing":6,"afterSpacing":6,"lineSpacing":1,"lineSpacingType":"Multiple","outlineLevel":"Level6","listFormat":{"listId":13,"listLevelNumber":5},"tabs":[{"position":0,"deletePosition":0,"tabJustification":"Left","tabLeader":"None"},{"position":36,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"characterFormat":{"bold":true,"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","italicBidi":true,"fontSizeBidi":12,"fontFamilyBidi":"Arial"},"link":"Heading 6 Char","next":"Paragraph"},{"name":"Heading 6 Char","type":"Character","characterFormat":{"bold":true,"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","italicBidi":true,"fontSizeBidi":12,"fontFamilyBidi":"Arial"},"basedOn":"Default Paragraph Font"},{"name":"Heading 7","type":"Paragraph","paragraphFormat":{"leftIndent":36,"firstLineIndent":-18,"beforeSpacing":6,"afterSpacing":6,"lineSpacing":1,"lineSpacingType":"Multiple","outlineLevel":"Level7","listFormat":{"listId":13,"listLevelNumber":6},"tabs":[{"position":0,"deletePosition":0,"tabJustification":"Left","tabLeader":"None"},{"position":36,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"characterFormat":{"bold":true,"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","italicBidi":true,"fontSizeBidi":12,"fontFamilyBidi":"Arial"},"link":"Heading 7 Char","next":"Paragraph"},{"name":"Heading 7 Char","type":"Character","characterFormat":{"bold":true,"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","italicBidi":true,"fontSizeBidi":12,"fontFamilyBidi":"Arial"},"basedOn":"Default Paragraph Font"},{"name":"Heading 8","type":"Paragraph","paragraphFormat":{"leftIndent":36,"firstLineIndent":-18,"beforeSpacing":6,"afterSpacing":6,"lineSpacing":1,"lineSpacingType":"Multiple","outlineLevel":"Level8","listFormat":{"listId":13,"listLevelNumber":7},"tabs":[{"position":0,"deletePosition":0,"tabJustification":"Left","tabLeader":"None"},{"position":36,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"characterFormat":{"bold":true,"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","italicBidi":true,"fontSizeBidi":12,"fontFamilyBidi":"Arial"},"link":"Heading 8 Char","next":"Paragraph"},{"name":"Heading 8 Char","type":"Character","characterFormat":{"bold":true,"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","italicBidi":true,"fontSizeBidi":12,"fontFamilyBidi":"Arial"},"basedOn":"Default Paragraph Font"},{"name":"Heading 9","type":"Paragraph","paragraphFormat":{"leftIndent":36,"firstLineIndent":-18,"beforeSpacing":6,"afterSpacing":6,"lineSpacing":1,"lineSpacingType":"Multiple","outlineLevel":"Level9","listFormat":{"listId":13,"listLevelNumber":8},"tabs":[{"position":0,"deletePosition":0,"tabJustification":"Left","tabLeader":"None"},{"position":36,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"characterFormat":{"bold":true,"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","italicBidi":true,"fontSizeBidi":12,"fontFamilyBidi":"Arial"},"link":"Heading 9 Char","next":"Paragraph"},{"name":"Heading 9 Char","type":"Character","characterFormat":{"bold":true,"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","italicBidi":true,"fontSizeBidi":12,"fontFamilyBidi":"Arial"},"basedOn":"Default Paragraph Font"},{"name":"List Alpha Table","type":"Paragraph","paragraphFormat":{"afterSpacing":0,"lineSpacing":1,'
         + '"lineSpacingType":"Multiple","listFormat":{"listId":18}},"characterFormat":{"fontSize":10,"fontFamily":"Times New Roman","fontColor":"empty","fontSizeBidi":10,"fontFamilyBidi":"Times New Roman"},"next":"List Alpha Table"},{"name":"Placeholder Text","type":"Character","characterFormat":{"fontColor":"#808080FF"},"basedOn":"Default Paragraph Font"},{"name":"List Bullet","type":"Paragraph","paragraphFormat":{"afterSpacing":12,"lineSpacing":1,"lineSpacingType":"Multiple","listFormat":{"listId":2}},"characterFormat":{"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","fontSizeBidi":12,"fontFamilyBidi":"Times New Roman"},"next":"List Bullet"},{"name":"List Bullet 3 Char","type":"Character","characterFormat":{"fontSize":12,"fontColor":"empty","fontSizeBidi":12},"basedOn":"Default Paragraph Font"},{"name":"List Bullet 3","type":"Paragraph","paragraphFormat":{"afterSpacing":12,"lineSpacing":1,"lineSpacingType":"Multiple","listFormat":{"listId":17}},"characterFormat":{"fontSize":12,"fontColor":"empty","fontSizeBidi":12},"link":"List Bullet 3 Char","next":"List Bullet 3"},{"name":"TableText Char","type":"Character","characterFormat":{"fontFamily":"DengXian","fontColor":"empty","fontFamilyBidi":"Arial"},"basedOn":"Default Paragraph Font"},{"name":"TableText","type":"Paragraph","paragraphFormat":{"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple","listFormat":{}},"characterFormat":{"fontFamily":"DengXian","fontColor":"empty","fontFamilyBidi":"Arial"},"link":"TableText Char","next":"TableText"},{"name":"TableText Footnote","type":"Paragraph","paragraphFormat":{"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple","listFormat":{},"tabs":[{"position":18,"deletePosition":0,"tabJustification":"Left","tabLeader":"None"}]},"characterFormat":{"fontSize":10,"fontFamily":"Times New Roman","fontColor":"empty","fontSizeBidi":10,"fontFamilyBidi":"Times New Roman"},"next":"TableText Footnote"},{"name":"TableText 12","type":"Character","characterFormat":{"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","fontFamilyBidi":"Times New Roman"},"basedOn":"Default Paragraph Font"},{"name":"Hyperlink","type":"Character","characterFormat":{"strikethrough":"None","fontColor":"#0000FFFF"},"basedOn":"Default Paragraph Font"},{"name":"List Number 3","type":"Paragraph","paragraphFormat":{"afterSpacing":12,"lineSpacing":1,"lineSpacingType":"Multiple","listFormat":{"listId":20}},"characterFormat":{"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","fontSizeBidi":12,"fontFamilyBidi":"Times New Roman"},"next":"List Number 3"},{"name":"Instructions","type":"Character","characterFormat":{"italic":true,"fontColor":"#008000FF","italicBidi":true},"basedOn":"Default Paragraph Font"},{"name":"Balloon Text","type":"Paragraph","paragraphFormat":{"listFormat":{}},"characterFormat":{"fontSize":9,"fontFamily":"Segoe UI","fontColor":"empty","fontSizeBidi":9,"fontFamilyBidi":"Segoe UI"},"basedOn":"Normal","link":"Balloon Text Char","next":"Balloon Text"},{"name":"Balloon Text Char","type":"Character","characterFormat":{"fontSize":9,"fontFamily":"Segoe UI","fontColor":"empty","fontSizeBidi":9,"fontFamilyBidi":"Segoe UI"},"basedOn":"Default Paragraph Font"},{"name":"Header","type":"Paragraph","paragraphFormat":{"listFormat":{},"tabs":[{"position":234,"deletePosition":0,"tabJustification":"Center","tabLeader":"None"},{"position":468,"deletePosition":0,"tabJustification":"Right","tabLeader":"None"}]},"characterFormat":{"fontColor":"empty"},"basedOn":"Normal","link":"Header Char","next":"Header"},{"name":"Header Char","type":"Character","characterFormat":{"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","fontSizeBidi":12,"fontFamilyBidi":"Times New Roman"},"basedOn":"Default Paragraph Font"},{"name":"Footer","type":"Paragraph","paragraphFormat":{"listFormat":{},"tabs":[{"position":234,"deletePosition":0,"tabJustification":"Center","tabLeader":"None"},{"position":468,"deletePosition":0,"tabJustification":"Right","tabLeader":"None"}]},"characterFormat":{"fontColor":"empty"},"basedOn":"Normal","link":"Footer Char","next":"Footer"},{"name":"Footer Char","type":"Character","characterFormat":{"fontSize":12,"fontFamily":"Times New Roman","fontColor":"empty","fontSizeBidi":12,"fontFamilyBidi":"Times New Roman"},"basedOn":"Default Paragraph Font"},{"name":"TableText 9","type":"Character","characterFormat":{"fontSize":9,"fontFamily":"Times New Roman","fontColor":"empty","fontFamilyBidi":"Times New Roman"},"basedOn":"Default Paragraph Font"},{"name":"List Bullet 2","type":"Paragraph","paragraphFormat":{"listFormat":{"listId":0},"contextualSpacing":true},"characterFormat":{"fontColor":"empty"},"basedOn":"Normal","next":"List Bullet 2"}],"lists":[{"abstractListId":0,"levelOverrides":[],"listId":0},{"abstractListId":2,"levelOverrides":[],"listId":2},{"abstractListId":13,"levelOverrides":[],"listId":13},{"abstractListId":17,"levelOverrides":[],"listId":17},{"abstractListId":9,"levelOverrides":[{"levelNumber":0,"startAt":1}],"listId":18},{"abstractListId":1,"levelOverrides":[{"levelNumber":0,"startAt":1}],"listId":20}],"abstractLists":[{"abstractListId":0,"levels":[{"characterFormat":{"fontFamily":"Symbol","fontColor":"empty"},"paragraphFormat":{"leftIndent":36,"firstLineIndent":-18,"listFormat":{},"tabs":[{"position":36,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"followCharacter":"Tab","listLevelPattern":"Bullet","numberFormat":"","restartLevel":0,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":1,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":2,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":3,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":4,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":5,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":6,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":7,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":8,"startAt":0}]},{"abstractListId":1,"levels":[{"characterFormat":{"strikethrough":"None","fontColor":"empty","allCaps":false},"paragraphFormat":{"leftIndent":54,"firstLineIndent":-18,"listFormat":{},"tabs":[{"position":54,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"%1.","restartLevel":0,"startAt":1},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":1,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":2,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":3,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":4,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":5,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":6,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":7,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":8,"startAt":0}]},{"abstractListId":2,"levels":[{"characterFormat":{"fontFamily":"Symbol","strikethrough":"None","fontColor":"empty","allCaps":false},"paragraphFormat":{"leftIndent":18,"firstLineIndent":-18,"listFormat":{},"tabs":[{"position":18,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"followCharacter":"Tab","listLevelPattern":"Bullet","numberFormat":"","restartLevel":0,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":1,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":2,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":3,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":4,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":5,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":6,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":7,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":8,"startAt":0}]},{"abstractListId":9,"levels":[{"characterFormat":{"strikethrough":"None","fontColor":"empty","allCaps":false},"paragraphFormat":{"leftIndent":18,"firstLineIndent":-18,"listFormat":{},"tabs":[{"position":18,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"followCharacter":"Tab","listLevelPattern":"LowLetter","numberFormat":"%1.","restartLevel":0,"startAt":1},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":1,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":2,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":3,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":4,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":5,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":6,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":7,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":8,"startAt":0}]},{"abstractListId":13,"levels":[{"characterFormat":{"bold":true,"italic":false,"fontSize":12,"fontFamily":"Times New Roman","strikethrough":"None","fontColor":"empty","fontFamilyBidi":"Times New Roman","allCaps":true},"paragraphFormat":{"leftIndent":0,"firstLineIndent":0,"listFormat":{},"tabs":[{"position":0,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"followCharacter":"Space","listLevelPattern":"Arabic","numberFormat":"%1.","restartLevel":0,"startAt":1},{"characterFormat":{"bold":true,"italic":false,"fontSize":12,"fontFamily":"Times New Roman","strikethrough":"None","fontColor":"#00000000","fontFamilyBidi":"Times New Roman","allCaps":false},"paragraphFormat":{"leftIndent":0,"firstLineIndent":0,"listFormat":{},"tabs":[{"position":0,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"followCharacter":"Space","listLevelPattern":"Arabic","numberFormat":"%1.%2.","restartLevel":1,"startAt":1},{"characterFormat":{"bold":true,"italic":false,"fontSize":12,"fontFamily":"Times New Roman","strikethrough":"None","fontColor":"empty","fontFamilyBidi":"Times New Roman","allCaps":false},"paragraphFormat":{"leftIndent":0,"firstLineIndent":0,"listFormat":{},"tabs":[{"position":0,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"followCharacter":"Space","listLevelPattern":"Arabic","numberFormat":"%1.%2.%3.","restartLevel":2,"startAt":1},{"characterFormat":{"bold":true,"italic":false,"fontSize":12,"fontFamily":"Times New Roman","strikethrough":"None","fontColor":"empty","fontFamilyBidi":"Times New Roman","allCaps":false},"paragraphFormat":{"leftIndent":0,"firstLineIndent":0,"listFormat":{},"tabs":[{"position":0,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"followCharacter":"Space","listLevelPattern":"Arabic","numberFormat":"%1.%2.%3.%4.","restartLevel":3,"startAt":1},{"characterFormat":{"bold":true,"italic":false,"fontSize":12,"fontFamily":"Times New Roman","strikethrough":"None","fontColor":"empty","fontFamilyBidi":"Times New Roman","allCaps":false},"paragraphFormat":{"leftIndent":0,"firstLineIndent":0,"listFormat":{},"tabs":[{"position":0,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"followCharacter":"Space","listLevelPattern":"Arabic","numberFormat":"%1.%2.%3.%4.%5.","restartLevel":4,"startAt":1},{"characterFormat":{"bold":true,"italic":false,"fontSize":12,"fontFamily":"Times New Roman","strikethrough":"None","fontColor":"empty","fontFamilyBidi":"Times New Roman","allCaps":false},"paragraphFormat":{"leftIndent":0,"firstLineIndent":0,"listFormat":{},"tabs":[{"position":0,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"followCharacter":"Space","listLevelPattern":"Arabic","numberFormat":"%1.%2.%3.%4.%5.%6.","restartLevel":5,"startAt":1},{"characterFormat":{"bold":true,"italic":false,"fontSize":12,"fontFamily":"Times New Roman","strikethrough":"None","fontColor":"empty","fontFamilyBidi":"Times New Roman","allCaps":false},"paragraphFormat":{"leftIndent":0,"firstLineIndent":0,"listFormat":{},"tabs":[{"position":0,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"followCharacter":"Space","listLevelPattern":"Arabic","numberFormat":"%1.%2.%3.%4.%5.%6.%7.","restartLevel":6,"startAt":1},{"characterFormat":{"bold":true,"italic":false,"fontSize":12,"fontFamily":"Times New Roman","strikethrough":"None","fontColor":"empty","fontFamilyBidi":"Times New Roman","allCaps":false},"paragraphFormat":{"leftIndent":0,"firstLineIndent":0,"listFormat":{},"tabs":[{"position":0,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"followCharacter":"Space","listLevelPattern":"Arabic","numberFormat":"%1.%2.%3.%4.%5.%6.%7.%8.","restartLevel":7,"startAt":1},{"characterFormat":{"bold":true,"italic":false,"fontSize":12,"fontFamily":"Times New Roman","strikethrough":"None","fontColor":"empty","fontFamilyBidi":"Times New Roman","allCaps":false},"paragraphFormat":{"leftIndent":0,"firstLineIndent":0,"listFormat":{},"tabs":[{"position":0,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"followCharacter":"Space","listLevelPattern":"Arabic","numberFormat":"%1.%2.%3.%4.%5.%6.%7.%8.%9.","restartLevel":8,"startAt":1}]},{"abstractListId":17,"levels":[{"characterFormat":{"fontFamily":"Symbol","strikethrough":"None","fontColor":"empty","allCaps":false},"paragraphFormat":{"leftIndent":54,"firstLineIndent":-18,"listFormat":{},"tabs":[{"position":54,"deletePosition":0,"tabJustification":"List","tabLeader":"None"}]},"followCharacter":"Tab","listLevelPattern":"Bullet","numberFormat":"","restartLevel":0,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":1,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":2,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":3,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":4,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":5,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":6,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":7,"startAt":0},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"","restartLevel":8,"startAt":0}]}],"comments":[],"revisions":[],"customXml":[]}';

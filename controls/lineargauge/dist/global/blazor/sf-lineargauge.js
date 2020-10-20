@@ -58,6 +58,7 @@ var SfLinearGauge = /** @class */ (function () {
             this.dotNetRef.invokeMethodAsync('TriggerMouseDownEvent', element.x, element.y);
         }
     };
+    /* tslint:disable:no-string-literal */
     SfLinearGauge.prototype.gaugeOnMouseMove = function (element) {
         var targetId = element.target.id;
         if ((targetId.indexOf('Bar') > -1 && this.pointerCheck) || (targetId.indexOf('Marker') > -1 && this.pointerCheck)) {
@@ -72,15 +73,55 @@ var SfLinearGauge = /** @class */ (function () {
             var pointerIndex = parseInt(targetId.split('_AxisIndex_')[1].split('_')[2], 10);
             var parentId = targetId.split('_')[0];
             var parentElement = document.getElementById(parentId).getBoundingClientRect();
+            var parentEle = {
+                Bottom: parentElement['bottom'],
+                Height: parentElement['height'],
+                Left: parentElement['left'],
+                Right: parentElement['right'],
+                Top: parentElement['top'],
+                Width: parentElement['width'],
+                X: parentElement['x'],
+                Y: parentElement['y']
+            };
             var lineElement = document.getElementById(parentId + '_AxisLine_' + axisIndex).getBoundingClientRect();
+            var lineEle = {
+                Bottom: lineElement['bottom'],
+                Height: lineElement['height'],
+                Left: lineElement['left'],
+                Right: lineElement['right'],
+                Top: lineElement['top'],
+                Width: lineElement['width'],
+                X: lineElement['x'],
+                Y: lineElement['y']
+            };
             var tickElement = document.getElementById(parentId + '_MajorTicksLine_' + axisIndex).getBoundingClientRect();
+            var tickEle = {
+                Bottom: tickElement['bottom'],
+                Height: tickElement['height'],
+                Left: tickElement['left'],
+                Right: tickElement['right'],
+                Top: tickElement['top'],
+                Width: tickElement['width'],
+                X: tickElement['x'],
+                Y: tickElement['y']
+            };
             var pointElement = document.getElementById(targetId).getBoundingClientRect();
+            var pointEle = {
+                Bottom: pointElement['bottom'],
+                Height: pointElement['height'],
+                Left: pointElement['left'],
+                Right: pointElement['right'],
+                Top: pointElement['top'],
+                Width: pointElement['width'],
+                X: pointElement['x'],
+                Y: pointElement['y']
+            };
             var elementId = targetId.split('_')[0];
             var tooltipElement = document.getElementById(elementId + '_Tooltip');
             if (tooltipElement != null) {
                 tooltipElement.style.visibility = 'visible';
             }
-            this.dotNetRef.invokeMethodAsync('TriggerTooltip', targetId, axisIndex, pointerIndex, (element.clientX - svgBounds.left), (element.clientY - svgBounds.top), parentElement, lineElement, tickElement, pointElement);
+            this.dotNetRef.invokeMethodAsync('TriggerTooltip', targetId, axisIndex, pointerIndex, (element.clientX - svgBounds.left), (element.clientY - svgBounds.top), parentEle, lineEle, tickEle, pointEle);
         }
         else {
             var elementId = targetId.split('_')[0];
@@ -92,6 +133,7 @@ var SfLinearGauge = /** @class */ (function () {
     };
     SfLinearGauge.prototype.gaugeOnMouseEnd = function (element) {
         var targetId = element.target.id;
+        this.pointerCheck = false;
         if (targetId.indexOf('Bar') > -1 || targetId.indexOf('Marker') > -1) {
             this.pointerCheck = false;
             var svgBounds = this.svgClient(targetId);
@@ -125,7 +167,7 @@ var LinearGauge = {
             elementWidth = elementRect.width;
             elementHeight = elementRect.height;
         }
-        return { width: elementWidth, height: elementHeight };
+        return { width: elementWidth, height: elementHeight, isIE: sf.base.Browser.isIE };
     },
     setPathAttribute: function (id, type, path, x, y) {
         var pathElement = document.getElementById(id);

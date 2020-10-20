@@ -552,6 +552,9 @@ export class Month extends ViewBase implements IRenderer {
                 }
             }
             start = util.addDays(start, 1);
+            if (start.getHours() > 0) {
+                start = util.resetTime(start);
+            }
         } while (start.getTime() <= monthEnd.getTime());
         if (!workDays) {
             this.renderDates = renderDates;

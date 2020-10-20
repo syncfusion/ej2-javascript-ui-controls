@@ -51,6 +51,7 @@ describe('Insert Hyperlink Dialog validation', (): void => {
         }, 2000);
     });
     it(' Url Text Box Key Up validation', (): void => {
+console.log(' Url Text Box Key Up validation');
 
         let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
         urlTextBox.value = 'www.google.com';
@@ -58,12 +59,14 @@ describe('Insert Hyperlink Dialog validation', (): void => {
         expect(urlTextBox.value).toBe('www.google.com');
     });
     it('on keyUp Method validation', () => {
+console.log('on keyUp Method validation');
         let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
         urlTextBox.value = 'www.google.com';
         dialog.onKeyUpOnUrlBox({ keyCode: 10 } as any);
         expect(urlTextBox.value).toBe('http://www.google.com');
     });
     it('insert hyper link on Enter Key', () => {
+console.log('insert hyper link on Enter Key');
         let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
         urlTextBox.value = 'www.google.com';
         let displayTextBox: HTMLInputElement = (dialog as any).displayTextBox;
@@ -72,6 +75,7 @@ describe('Insert Hyperlink Dialog validation', (): void => {
         expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(5);
     });
     it('Enter Key validation', () => {
+console.log('Enter Key validation');
         let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
         urlTextBox.value = '';
         let displayTextBox: HTMLInputElement = (dialog as any).displayTextBox;
@@ -80,6 +84,7 @@ describe('Insert Hyperlink Dialog validation', (): void => {
         expect('').toBe('');
     });
     it('Key down with out www text', () => {
+console.log('Key down with out www text');
         let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
         urlTextBox.value = 'bing';
         let displayTextBox: HTMLInputElement = (dialog as any).displayTextBox;
@@ -122,6 +127,7 @@ describe('Hyperlink Dialog API Validation', () => {
         }, 2000);
     });
     it('Key down with out www text', () => {
+console.log('Key down with out www text');
         let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
         urlTextBox.value = 'bing';
         let displayTextBox: HTMLInputElement = (dialog as any).displayTextBox;
@@ -131,6 +137,7 @@ describe('Hyperlink Dialog API Validation', () => {
         expect(displayTextBox.value).toBe('Bing');
     });
     it('Open Hyperlink dialog', () => {
+console.log('Open Hyperlink dialog');
         let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
         urlTextBox.value = 'https://syncfusion.com';
         let displayTextBox: HTMLInputElement = (dialog as any).displayTextBox;
@@ -140,6 +147,7 @@ describe('Hyperlink Dialog API Validation', () => {
         dialog.hide();
     });
     it('Open Hyperlink dialog', () => {
+console.log('Open Hyperlink dialog');
         let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
         urlTextBox.value = 'https://syncfusion.com';
         let displayTextBox: HTMLInputElement = (dialog as any).displayTextBox;
@@ -150,6 +158,7 @@ describe('Hyperlink Dialog API Validation', () => {
         expect('').toBe('');
     });
     it('insert Empty string validation', () => {
+console.log('insert Empty string validation');
         let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
         urlTextBox.value = '';
         let displayTextBox: HTMLInputElement = (dialog as any).displayTextBox;
@@ -158,6 +167,7 @@ describe('Hyperlink Dialog API Validation', () => {
         expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(0);
     });
     it('Insert hyperlink multiple paragraph', () => {
+console.log('Insert hyperlink multiple paragraph');
         getDocument(editor);
         let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
         urlTextBox.value = 'https://syncfusion.com';
@@ -205,6 +215,7 @@ describe('Edit Hyperlink validation', () => {
     });
 
     it('Edit Hyperlink validation', () => {
+console.log('Edit Hyperlink validation');
         let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
         urlTextBox.value = 'https://syncfusion.com';
         let displayTextBox: HTMLInputElement = (dialog as any).displayTextBox;
@@ -232,6 +243,7 @@ describe('Edit Hyperlink validation', () => {
         dialog.hide();
     });
     it('handle context menu validation', () => {
+console.log('handle context menu validation');
         menu.handleContextMenuItem('container_contextmenu_hyperlink');
         expect(() => { editor.hyperlinkDialogModule.hide(); }).not.toThrowError();
         editor.editorModule.insertText('www.google.com');
@@ -242,6 +254,7 @@ describe('Edit Hyperlink validation', () => {
     });
 
     it('using shortcut open hyperlink dialog', () => {
+console.log('using shortcut open hyperlink dialog');
         let event: any = { keyCode: 75, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         expect(() => { editor.hyperlinkDialogModule.hide(); }).not.toThrowError();
@@ -283,6 +296,7 @@ describe('Edit Hyperlink validation without history', () => {
     });
 
     it('Edit Hyperlink validation', () => {
+console.log('Edit Hyperlink validation');
         let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
         urlTextBox.value = 'https://syncfusion.com';
         let displayTextBox: HTMLInputElement = (dialog as any).displayTextBox;
@@ -310,16 +324,19 @@ describe('Edit Hyperlink validation without history', () => {
         dialog.hide();
     });
     it('Auto format hyperlink ', () => {
+console.log('Auto format hyperlink ');
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.insertText(' ');
         expect(editor.enableEditorHistory).toBe(false);
     });
     it('insert Hyperlink without history', () => {
+console.log('insert Hyperlink without history');
         editor.openBlank();
         editor.editorModule.insertHyperlinkInternal('www.google.com', 'www.google.com', false);
         expect(editor.enableEditorHistory).toBe(false);
     });
     it('Insert Hyperlink on multiple paragraph', () => {
+console.log('Insert Hyperlink on multiple paragraph');
         editor.openBlank();
         editor.editorModule.insertText('Syncfusion');
         editor.editorModule.handleEnterKey();
@@ -1776,6 +1793,7 @@ describe('insert Hyperlink validation in multiple cases in forward', () => {
     });
 
     it('insert Hyperlink in single paragraph', () => {
+console.log('insert Hyperlink in single paragraph');
         editor.selection.handleShiftEndKey();
         editor.hyperlinkDialogModule.show();
         let urlTextBox: HTMLInputElement = (editor.hyperlinkDialogModule as any).urlTextBox;
@@ -1788,11 +1806,13 @@ describe('insert Hyperlink validation in multiple cases in forward', () => {
         expect(editor.selection.getFieldCode(fieldBegin)).toBe('HYPERLINK "https://syncfusion.com"')
     });
     it('undo after insert Hyerplink validation', () => {
+console.log('undo after insert Hyerplink validation');
         editor.editorHistory.undo();
         let fieldBegin = editor.selection.getHyperlinkField();
         expect(fieldBegin).toBeUndefined();
     });
     it('redo after insert Hyerplink validation', () => {
+console.log('redo after insert Hyerplink validation');
         editor.editorHistory.redo();
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
@@ -1801,6 +1821,7 @@ describe('insert Hyperlink validation in multiple cases in forward', () => {
         expect(editor.selection.getFieldCode(fieldBegin)).toBe('HYPERLINK "https://syncfusion.com"')
     });
     it('Multiple undo and redo cases hyperlink validation', () => {
+console.log('Multiple undo and redo cases hyperlink validation');
         let i: number = 1;
         while (i <= 5) {
             editor.editorHistory.undo();
@@ -1848,6 +1869,7 @@ describe('insert Hyperlink validation in multiple cases in backward direction', 
     });
 
     it('insert Hyperlink in single paragraph', () => {
+console.log('insert Hyperlink in single paragraph');
         editor.selection.handleEndKey();
         editor.selection.handleShiftHomeKey();
         editor.hyperlinkDialogModule.show();
@@ -1861,12 +1883,14 @@ describe('insert Hyperlink validation in multiple cases in backward direction', 
         expect(editor.selection.getFieldCode(fieldBegin)).toBe('HYPERLINK "https://syncfusion.com"')
     });
     it('undo after insert Hyperlink validation', () => {
+console.log('undo after insert Hyperlink validation');
         editor.editorHistory.undo();
         let fieldBegin = editor.selection.getHyperlinkField();
         expect(fieldBegin).toBeUndefined();
     });
     // Once insert hyperlink bahaviour handled similar to word by excluding para mark considered
     it('redo after insert Hyperlink validation', () => {
+console.log('redo after insert Hyperlink validation');
         editor.editorHistory.redo();
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
@@ -1875,6 +1899,7 @@ describe('insert Hyperlink validation in multiple cases in backward direction', 
         expect(editor.selection.getFieldCode(fieldBegin)).toBe('HYPERLINK "https://syncfusion.com"')
     });
     it('Multiple undo and redo cases hyperlink validation', () => {
+console.log('Multiple undo and redo cases hyperlink validation');
         let i: number = 1;
         while (i <= 5) {
             editor.editorHistory.undo();

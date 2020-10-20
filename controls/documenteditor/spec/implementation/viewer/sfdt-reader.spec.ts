@@ -39,15 +39,19 @@ describe('import section, character and paragraph Bidi validation', () => {
         }, 1000);
     });
     it('section format Bidi validation', () => {
+console.log('section format Bidi validation');
         expect((sections[0] as any).sectionFormat.bidi).toBe(true);
     });
     it('character format Bidi validation', () => {
+console.log('character format Bidi validation');
         expect((sections[0] as any).childWidgets[0].characterFormat.bidi).toBe(true);
     });
     it('character format Bdo validation', () => {
+console.log('character format Bdo validation');
         expect((sections[0] as any).childWidgets[1].childWidgets[0].children[0].characterFormat.bdo).toBe('RTL');
     });
     it('Paragraph format Bidi validation', () => {
+console.log('Paragraph format Bidi validation');
         expect((sections[0] as any).childWidgets[2].paragraphFormat.bidi).toBe(true);
     });
 });
@@ -79,6 +83,7 @@ describe('import Table format Bidi validation', () => {
         }, 1000);
     });
     it('Table format Bidi validation', () => {
+console.log('Table format Bidi validation');
         expect((sections[0] as any).childWidgets[0].tableFormat.bidi).toBe(true);
     });
 });
@@ -109,6 +114,7 @@ describe('import page break inside table validation', () => {
         }, 1000);
     });
     it('Page break inside table open validation', () => {
+console.log('Page break inside table open validation');
         expect(() => { editor.open(JSON.stringify(pageBreak)); }).not.toThrowError();
     });
 });
@@ -158,17 +164,21 @@ describe('Default tab width validation and export validation', () => {
         }, 1000);
     });
     it('check default tab width', () => {
+console.log('check default tab width');
         editor.open(JSON.stringify(tab));
         expect(editor.documentHelper.defaultTabWidth).toBe(56);
     });
     it('open blank default tab width', () => {
+console.log('open blank default tab width');
         editor.openBlank();
         expect(editor.documentHelper.defaultTabWidth).toBe(36);
     });
     it('open chart', () => {
+console.log('open chart');
         editor.open(JSON.stringify(chart));
     });
     it('open Line chart', () => {
+console.log('open Line chart');
         editor.open(JSON.stringify(lineChart));
     });
 });
@@ -249,10 +259,12 @@ describe('restrict editing feature formatting validation', () => {
         }, 1000);
     });
     it('Formatting restriction validation', () => {
+console.log('Formatting restriction validation');
         expect(editor.documentHelper.restrictFormatting).toBe(true);
         expect(editor.documentHelper.isDocumentProtected).toBe(true);
     });
     it(' without Formatting restriction validation', () => {
+console.log(' without Formatting restriction validation');
         editor.open(JSON.stringify(without_format_restrict));
         expect(editor.documentHelper.restrictFormatting).toBe(false);
         expect(editor.documentHelper.isDocumentProtected).toBe(false);
@@ -590,12 +602,14 @@ describe('restrict editing feature- editing validation', () => {
         }, 1000);
     });
     it('Edit readonly with everyone validation', () => {
+console.log('Edit readonly with everyone validation');
         expect(editor.documentHelper.protectionType).toBe('ReadOnly');
         let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets[0] as LineWidget;
         expect(lineWidget.children.length).toBe(3);
         expect((lineWidget.children[0] as EditRangeStartElementBox).group).toBe('Everyone');
     });
     it('Edit readonly with single user validation validation', () => {
+console.log('Edit readonly with single user validation validation');
         editor.open(JSON.stringify(edit_restrict_table));
         expect(editor.documentHelper.protectionType).toBe('NoProtection');
         expect(editor.documentHelper.isDocumentProtected).toBe(false);
@@ -1006,6 +1020,7 @@ describe('field character format validation', () => {
         }, 500);
     });
     it('Field character validation', () => {
+console.log('Field character validation');
         let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
         let fiedElement: FieldElementBox = lineWidget.children[2] as FieldElementBox;
         expect(fiedElement.characterFormat.bold).toBe(true);
@@ -1037,6 +1052,7 @@ describe("Paste style Validation", () => {
         }, 500);
     });
     it('Default style paste validation', () => {
+console.log('Default style paste validation');
         //if already style is there in collection with same name it should not be added.
         let json = {"name":"onSuccess","data":{"sections":[{"blocks":[{"characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","bidi":false,"fontSizeBidi":16,"fontFamilyBidi":"Calibri Light"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"beforeSpacing":12,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level1","textAlignment":"Left","styleName":"Heading 1","bidi":false,"contextualSpacing":false},"inlines":[{"text":"Syncfusion","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","bidi":false,"fontSizeBidi":16,"fontFamilyBidi":"Calibri Light"}}]}],"headersFooters":{},"sectionFormat":{"headerDistance":36,"footerDistance":36,"pageWidth":612,"pageHeight":792,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0}}],"paragraphFormat":{"leftIndent":0,"rightIndent":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":11,"fontFamily":"Calibri","fontColor":"#00000000","bidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left"}},{"type":"Character","name":"Default Paragraph Font"},{"type":"Paragraph","name":"Heading 1","basedOn":"Normal","next":"Heading 1","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","bidi":false,"fontSizeBidi":16,"fontFamilyBidi":"Calibri Light"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"beforeSpacing":12,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level1","textAlignment":"Left"}},{"type":"Character","name":"Heading 1 Char","basedOn":"Default Paragraph Font","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","bidi":false,"fontSizeBidi":16,"fontFamilyBidi":"Calibri Light"}}],"defaultTabWidth":36,"formatting":false,"protectionType":"NoProtection","enforcement":false},"readyState":4,"status":200};
         editor.openBlank();
@@ -1044,6 +1060,7 @@ describe("Paste style Validation", () => {
         expect(editor.documentHelper.styles.length).toBe(14);
     });
     it('Custom style paste validation', () => {
+console.log('Custom style paste validation');
         let json = {"name":"onSuccess","data":{"sections":[{"blocks":[{"characterFormat":{"bold":true,"italic":false,"strikethrough":"None","fontSize":22,"fontFamily":"Algerian","fontColor":"#00B0F0FF","bidi":false,"fontSizeBidi":22,"fontFamilyBidi":"Algerian"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"beforeSpacing":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level1","textAlignment":"Left","styleName":"Sync","bidi":false,"contextualSpacing":false},"inlines":[{"text":"Syncfusion","characterFormat":{"bold":true,"italic":false,"strikethrough":"None","fontSize":22,"fontFamily":"Algerian","fontColor":"#00B0F0FF","bidi":false,"fontSizeBidi":22,"fontFamilyBidi":"Algerian"}}]}],"headersFooters":{},"sectionFormat":{"headerDistance":36,"footerDistance":36,"pageWidth":612,"pageHeight":792,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0}}],"paragraphFormat":{"leftIndent":0,"rightIndent":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":11,"fontFamily":"Calibri","fontColor":"#00000000","bidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left"}},{"type":"Character","name":"Default Paragraph Font"},{"type":"Paragraph","name":"Sync","basedOn":"Normal","next":"Sync","characterFormat":{"bold":true,"italic":false,"strikethrough":"None","fontSize":22,"fontFamily":"Algerian","fontColor":"#00B0F0FF","bidi":false,"fontSizeBidi":22,"fontFamilyBidi":"Algerian"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level1","textAlignment":"Left"}},{"type":"Character","name":"Sync Char","basedOn":"Default Paragraph Font","characterFormat":{"bold":true,"italic":false,"strikethrough":"None","fontSize":22,"fontFamily":"Algerian","fontColor":"#00B0F0FF","bidi":false,"fontSizeBidi":22,"fontFamilyBidi":"Algerian"}}],"defaultTabWidth":36,"formatting":false,"protectionType":"NoProtection","enforcement":false},"readyState":4,"status":200};
         editor.openBlank();
         editor.editor.pasteFormattedContent(json);
@@ -1474,6 +1491,7 @@ let formFieldData: any = {
         }, 500);
     });
     it('Text formfield validation', () => {
+console.log('Text formfield validation');
         let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
         let fieldElement: FieldElementBox = lineWidget.children[1] as FieldElementBox;
         let formFieldData: TextFormField = new TextFormField();
@@ -1484,6 +1502,7 @@ let formFieldData: any = {
         expect((fieldElement.formFieldData as TextFormField).format).toBeNull;
     });
     it('Checkbox formfield validation', () => {
+console.log('Checkbox formfield validation');
         let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
         let fieldElement: FieldElementBox = lineWidget.children[2] as FieldElementBox;
         let formFieldData: TextFormField = new TextFormField();
@@ -1492,6 +1511,7 @@ let formFieldData: any = {
        // expect((fieldElement.formFieldData as CheckBoxFormField).defaultValue).toBe('');
     });
     it('Dropdown formfield validation', () => {
+console.log('Dropdown formfield validation');
         let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
         let fieldElement: FieldElementBox = lineWidget.children[0] as FieldElementBox;
         let formFieldData: TextFormField = new TextFormField();
@@ -1500,10 +1520,12 @@ let formFieldData: any = {
         expect((fieldElement.formFieldData as DropDownFormField).dropdownItems).toString;
     });
     it('Apply shading true validation', () => {
+console.log('Apply shading true validation');
         editor.open(form1);      
         expect(editor.documentEditorSettings.formFieldSettings.applyShading).toBe(false);
     });
     it('Apply shading false validation', () => {
+console.log('Apply shading false validation');
         editor.open(form);      
         expect(editor.documentEditorSettings.formFieldSettings.applyShading).toBe(true);
     });
@@ -2100,6 +2122,7 @@ describe('Content Control Validation', () => {
         }, 500);
     });
     it('Block Content Control', () => {
+console.log('Block Content Control');
         let cntntCtrlWidget: ContentControlWidgetType = 'Block';
         expect(blocks[0].contentControlProperties.contentControlWidgetType).toBe(cntntCtrlWidget);
         expect(blocks[0].contentControlProperties).toBe(((blocks[0].childWidgets[0] as LineWidget).children[0] as ElementBox).contentControlProperties);
@@ -2108,6 +2131,7 @@ describe('Content Control Validation', () => {
         expect(((blocks[0].childWidgets[0] as LineWidget).children[2] as ContentControl).type).toBe(1);
     });
     it('Table in Block Content Control', () => {        
+console.log('Table in Block Content Control');
         let cntntCtrlWidget: ContentControlWidgetType = 'Block';
         expect(blocks[1].contentControlProperties.contentControlWidgetType).toBe(cntntCtrlWidget);
         let firstCell: TableCellWidget = (blocks[1].childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget;
@@ -2118,6 +2142,7 @@ describe('Content Control Validation', () => {
         expect((((lastCell.childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget).children[1] as ContentControl).type).toBe(1);
     });
     it('Inline Content Control', () => {
+console.log('Inline Content Control');
         let cntntCtrlWidget: ContentControlWidgetType = 'Inline';
         let cntnCtrlType: ContentControlType = 'CheckBox';
         expect((blocks[3].childWidgets[0] as LineWidget).children[2].contentControlProperties.contentControlWidgetType).toBe(cntntCtrlWidget);

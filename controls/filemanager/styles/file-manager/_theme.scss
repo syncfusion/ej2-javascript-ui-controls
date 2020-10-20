@@ -27,7 +27,7 @@
 }
 
 @include export-module('FileManager-theme') {
-  #{&}.e-filemanager {
+  .e-filemanager {
     background: $fe-background;
     border-color: $fe-border-color;
 
@@ -303,7 +303,7 @@
     }
   }
 
-  #{&}.e-fe-popup {
+  .e-fe-popup {
 
     &.e-dropdown-popup ul .e-item,
     &.e-contextmenu-wrapper ul .e-menu-item {

@@ -4077,7 +4077,7 @@ var ContentRender = /** @class */ (function () {
             this.parent.destroyTemplate(['template'], templatetoclear);
         }
         if (this.parent.isReact && args.requestType !== 'infiniteScroll' && !args.isFrozen) {
-            this.parent.destroyTemplate(['template', 'rowTemplate', 'detailTemplate', 'captionTemplate', 'commandsTemplate']);
+            this.parent.destroyTemplate(['columnTemplate', 'rowTemplate', 'detailTemplate', 'captionTemplate', 'commandsTemplate']);
             this.parent.renderTemplates();
         }
         if (this.parent.enableColumnVirtualization) {
@@ -5654,7 +5654,7 @@ var CellRenderer = /** @class */ (function () {
             else {
                 if (isReactCompiler) {
                     var copied = { 'index': attributes$$1[literals[0]] };
-                    cell.column.getColumnTemplate()(sf.base.extend(copied, dummyData), this.parent, 'template', templateID, this.parent[str], null, node);
+                    cell.column.getColumnTemplate()(sf.base.extend(copied, dummyData), this.parent, 'columnTemplate', templateID, this.parent[str], null, node);
                     this.parent.renderTemplates();
                 }
                 else {

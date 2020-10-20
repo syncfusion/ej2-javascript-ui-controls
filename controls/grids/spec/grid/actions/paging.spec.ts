@@ -537,4 +537,35 @@ describe('Paging module', () => {
             gridObj = null;
         });
     });
+    
+    describe('EJ2-43015 Not able to cancel paging action in the Grid', () => {
+        let gridInstance: Grid;
+        beforeAll((done: Function) => {
+            gridInstance = createGrid(
+                {
+                    allowPaging: true,
+                    dataSource: data,
+                    columns: [{ field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                    { field: 'ShipCity' }],
+                }, done);
+        });
+        it('cancel the paging', (done: Function) => {
+            let actionBegin = (args?: any): void => {
+                if (args.requestType === "paging") {
+                    args.cancel = true;
+                }
+                done();
+            };
+            gridInstance.actionBegin = actionBegin;
+            (gridInstance.getPager().getElementsByClassName('e-numericcontainer')[0].childNodes[1].childNodes[0] as HTMLElement).click();
+        });
+        it('check the active paging element', () => {
+            expect(gridInstance.getPager().querySelectorAll('.e-active')[0].textContent).toBe('1');
+        });
+
+        afterAll(() => {
+            destroy(gridInstance);
+            gridInstance = null;
+        });
+    });
 });

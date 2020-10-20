@@ -637,12 +637,12 @@ var CheckboxColumn = /** @class */ (function () {
         var span = sf.base.createElement('span', { className: 'e-frame e-icons', styles: 'width: 18px;' });
         container.appendChild(span);
         span.addEventListener('click', this.headerSelect.bind(this));
-        var spanlabel = sf.base.createElement('span', { className: 'e-lable' });
+        var spanlabel = sf.base.createElement('span', { className: 'e-label' });
         container.appendChild(spanlabel);
         var headerElement = element.querySelectorAll('.e-headercontent th')[columnIndex];
         if (sf.base.isNullOrUndefined(headerElement.querySelector('.e-checkbox-wrapper'))) {
             var headercelldiv = headerElement.querySelector('.e-headercelldiv');
-            headercelldiv.insertBefore(container, headercelldiv);
+            headercelldiv.insertBefore(container, headercelldiv.firstChild);
         }
     };
     CheckboxColumn.prototype.updateHeaderCheckbox = function (spanElement, checkState) {
@@ -672,7 +672,7 @@ var CheckboxColumn = /** @class */ (function () {
             spanElement.classList.add('e-check');
             checkState = 'check';
         }
-        this.dotNetRef.invokeMethodAsync('SelectAllCheckbox', checkState);
+        this.dotNetRef.invokeMethodAsync('HeaderSelectAll', checkState);
     };
     return CheckboxColumn;
 }());

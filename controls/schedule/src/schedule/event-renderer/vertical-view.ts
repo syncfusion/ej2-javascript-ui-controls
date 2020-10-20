@@ -86,6 +86,7 @@ export class VerticalEvent extends EventBase {
         if (isDragging) {
             this.parent.crudModule.crudObj.isCrudAction = false;
         }
+        this.parent.renderTemplates();
     }
 
     public initializeValues(): void {
@@ -538,6 +539,12 @@ export class VerticalEvent extends EventBase {
             let index: number = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
             this.appendEvent(eventObj, appointmentElement, index, tempData.appLeft as string);
             this.wireAppointmentEvents(appointmentElement, eventObj);
+            if (appointmentElement.offsetHeight < this.cellHeight) {
+                let resizeHandlers: HTMLElement[] = [].slice.call(appointmentElement.querySelectorAll('.' + cls.EVENT_RESIZE_CLASS));
+                resizeHandlers.forEach((resizeHandler: HTMLElement) => {
+                    resizeHandler.style.height = Math.ceil(appointmentElement.offsetHeight / resizeHandler.offsetHeight) + 'px';
+                });
+            }
         }
     }
 

@@ -28,6 +28,7 @@ describe('Single Tab Stop Validation 1', () => {
         }, 500);
     });
     it('Tab Stop Count', () => {
+console.log('Tab Stop Count');
         editor.open(JSON.stringify(singleTabStopJson));
         let childWidgets: any = editor.selection.start.paragraph.nextWidget.childWidgets[0];
         expect(childWidgets.paragraph.paragraphFormat.getUpdatedTabs().length).toBe(1);
@@ -59,11 +60,13 @@ describe('Table Cell Validation', () => {
         }, 1000);
     });
     it('Check Left Border Line Style', () => {
+console.log('Check Left Border Line Style');
         editor.open(JSON.stringify(tableCell));
         let table: any = editor.selection.start.paragraph.associatedCell.ownerTable;
         expect(table.childWidgets[1].childWidgets[1].cellFormat.borders.left.lineStyle).not.toBe('None');
     });
     it('Check Left Border Width', () => {
+console.log('Check Left Border Width');
         editor.open(JSON.stringify(tableCell));
         let table: any = editor.selection.start.paragraph.associatedCell.ownerTable;
         expect(table.childWidgets[1].childWidgets[1].leftBorderWidth).not.toBe(0);
@@ -95,6 +98,7 @@ describe('Single Tab Stop Validation 2', () => {
         }, 500);
     });
     it('Tab Stop Width', () => {
+console.log('Tab Stop Width');
         editor.open(JSON.stringify(TabWidth));
         let childWidgets: ParagraphWidget = editor.selection.start.paragraph.containerWidget.childWidgets[3] as ParagraphWidget;
         expect(((childWidgets.childWidgets[0]) as LineWidget).children[3].width).toBeLessThanOrEqual(497.9296875);
@@ -123,6 +127,7 @@ describe('Table Margin Validation', () => {
         editor = undefined;
     });
     it('Check Cell Margin Value', () => {
+console.log('Check Cell Margin Value');
         editor.open(JSON.stringify(tableDocument));
         let table: TableWidget = editor.selection.start.paragraph.bodyWidget.childWidgets[0] as TableWidget;
         expect((editor.documentHelper.layout as any).getMaxTopCellMargin(table.childWidgets[0])).toBe(18.933329999999998);

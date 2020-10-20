@@ -29,6 +29,7 @@ describe('Vertical merge cell continue validation', () => {
         }, 1000);
     });
     it(' with splitted cell widget content is empty', () => {
+console.log(' with splitted cell widget content is empty');
         let tableRow:TableRowWidget=(editor.documentHelper.pages[1].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget;
         expect(tableRow.childWidgets.length).toBe(2);
     });

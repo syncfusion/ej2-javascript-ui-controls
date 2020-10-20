@@ -1732,6 +1732,10 @@
           overflow: hidden;
           position: absolute;
 
+          &.e-hidden {
+            display: none;
+          }
+
           .e-appointment-details {
             display: flex;
             flex: auto;
@@ -1801,6 +1805,10 @@
           padding: 2px 4px;
           position: absolute;
           text-overflow: ellipsis;
+
+          &.e-hidden {
+            display: none;
+          }
 
           &:focus {
             text-decoration: underline;

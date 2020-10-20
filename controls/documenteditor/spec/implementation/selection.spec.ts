@@ -3427,11 +3427,13 @@ describe('Selection test script1', () => {
         }, 1000);
     });
     it('Select All Testing', () => {
+console.log('Select All Testing');
         editor.selection.selectAll();
         editor.viewer.updateScrollBars();
         expect('').toBe('');
     });
     it('navigate up and down on empty selection', () => {
+console.log('navigate up and down on empty selection');
         editor.viewer.updateScrollBars();
         for (let i: number = 0; i < 100; i++) {
             editor.selection.moveNextPosition();
@@ -3439,6 +3441,7 @@ describe('Selection test script1', () => {
         expect(editor.selection.isEmpty).toBe(true);
     });
     it('Select Current word', () => {
+console.log('Select Current word');
         editor.selection.selectCurrentWord();
         expect(editor.selection.text).toBe('Syncfusion ');
         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
@@ -3447,6 +3450,7 @@ describe('Selection test script1', () => {
         expect(editor.selection.text).toBe('Syncfusion ');
     });
     it('Selection on field', () => {
+console.log('Selection on field');
         expect(editor.selection.getText(false)).toBe('');
         editor.selection.moveDown();
         editor.selection.moveNextPosition();
@@ -3454,6 +3458,7 @@ describe('Selection test script1', () => {
         expect(editor.selection.text).toBe('Document ');
     });
     it('Select Current word  on field end validation', () => {
+console.log('Select Current word  on field end validation');
         editor.editorModule.insertText('https://syncfusion.com');
         editor.editorModule.handleTextInput(' ');
         editor.selectionModule.movePreviousPosition();
@@ -3492,11 +3497,13 @@ describe('Selection test script2', () => {
         }, 1000);
     });
     it('Select Current Paragraph', () => {
+console.log('Select Current Paragraph');
         editor.selection.selectParagraph();
         //expect(editor.selection.text).toBe('Syncfusion Software pvt ltd ');
         expect(editor.selection.text).not.toBe('');
     });
     it('select current word on field end', () => {
+console.log('select current word on field end');
         editor.selection.moveDown();
         for (let i: number = 0; i < 8; i++) {
             editor.selection.moveNextPosition();
@@ -3505,6 +3512,7 @@ describe('Selection test script2', () => {
         expect(editor.selection.text).toBe('Editor ');
     });
     it('get hyperlink field null', () => {
+console.log('get hyperlink field null');
         for (let i: number = 0; i < 4; i++) {
             editor.selection.moveDown();
         }
@@ -3542,6 +3550,7 @@ describe('Selection test script3', () => {
         }, 1000);
     });
     it('get hyperlink field null', () => {
+console.log('get hyperlink field null');
         for (let i: number = 0; i < 2; i++) {
             editor.selection.moveDown();
         }
@@ -3551,9 +3560,11 @@ describe('Selection test script3', () => {
         expect(link).toBe('HYPERLINK "https://syncfusion.com/"');
     });
     it('Extend to word start and end', () => {
+console.log('Extend to word start and end');
         expect(editor.selection.extendToWordStartEnd()).toBe(false);
     });
     it('Move to Next paragraph', () => {
+console.log('Move to Next paragraph');
         editor.selection.moveToNextParagraph();
         editor.selection.moveToNextParagraph();
         editor.selection.moveToNextParagraph();
@@ -3591,18 +3602,21 @@ describe('Selection test scrip4', () => {
         }, 1000);
     });
     it('Extend selection validation', () => {
+console.log('Extend selection validation');
         editor.selection.extendToWordStartInternal(false);
         expect(editor.selection.isEmpty).toBe(true);
         editor.selection.extendToWordEndInternal(false);
         expect(editor.selection.text).toBe('Syncfusion ');
     });
     it('Selection extend to line start and end', () => {
+console.log('Selection extend to line start and end');
         editor.selection.extendToLineStart();
         expect(editor.selection.isEmpty).toBe(true);
         editor.selection.extendToLineEnd();
         expect(editor.selection.isEmpty).toBe(false);
     });
     it('Extend to paragraph start and end', () => {
+console.log('Extend to paragraph start and end');
         editor.selection.extendToParagraphStart();
         expect(editor.selection.isEmpty).toBe(true);
         editor.selection.extendToParagraphEnd();
@@ -3640,6 +3654,7 @@ describe('Selection test script5', () => {
         }, 1000);
     });
     it('Selection Move Next Position and move down with out clearing selection', () => {
+console.log('Selection Move Next Position and move down with out clearing selection');
         editor.selection.selectCurrentWord();
         editor.selection.moveNextPosition();
         editor.selection.selectCurrentWord();
@@ -3649,6 +3664,7 @@ describe('Selection test script5', () => {
         expect(editor.selection.end.paragraph.isInsideTable).toBe(true);
     });
     it('Selection Move up and move to previous paragraph', () => {
+console.log('Selection Move up and move to previous paragraph');
         editor.selection.selectPosition(editor.documentEnd, editor.documentEnd);
         editor.selection.moveToPreviousParagraph();
         editor.selection.moveToPreviousParagraph();
@@ -3658,6 +3674,7 @@ describe('Selection test script5', () => {
         editor.selection.moveUp();
     });
     it('Move to line end validation', () => {
+console.log('Move to line end validation');
         editor.selection.moveToLineEnd();
         expect(editor.selection.end.offset).toBe(editor.selection.getParagraphLength(editor.selection.end.paragraph));
     });
@@ -3691,11 +3708,13 @@ describe('Selection test script6', () => {
         }, 1000)
     });
     it('Extent to next line validation', () => {
+console.log('Extent to next line validation');
         for (let i: number = 0; i < 10; i++) {
             editor.selection.extendToNextLine();
         }
     });
     it('Move Text position on Mouse move', () => {
+console.log('Move Text position on Mouse move');
         let point: Point = editor.selection.end.location;
         point.x = point.x + 15;
         point.y = point.y + 30;
@@ -3726,6 +3745,7 @@ describe('Selection test script6', () => {
         editor.selection.moveTextPosition(point, editor.selection.end);
     });
     it('Selection inside paragraph', () => {
+console.log('Selection inside paragraph');
         editor.selection.moveToNextParagraph();
         editor.selection.moveToNextParagraph();
         editor.selection.moveToNextParagraph();
@@ -3788,18 +3808,21 @@ describe('Selection test scrip7', () => {
         }, 1000)
     });
     it('Select table ', () => {
+console.log('Select table ');
         editor.selection.moveToNextParagraph();
         editor.selection.moveToNextParagraph();
         editor.selection.moveToNextParagraph();
         // editor.selection.selectTable();
     });
     it('select row', () => {
+console.log('select row');
         editor.selection.moveToNextParagraph();
         editor.selection.moveToNextParagraph();
         editor.selection.moveToNextParagraph();
         // editor.selection.selectTableRow();
     });
     it('select row', () => {
+console.log('select row');
         editor.selection.moveToNextParagraph();
         editor.selection.moveToNextParagraph();
         editor.selection.moveToNextParagraph();
@@ -3835,6 +3858,7 @@ describe('Selection test script9', () => {
         }, 1000)
     });
     it('select row', () => {
+console.log('select row');
         editor.selection.moveToNextParagraph();
         editor.selection.moveToNextParagraph();
         editor.selection.moveToNextParagraph();
@@ -3844,6 +3868,7 @@ describe('Selection test script9', () => {
         editor.selection.selectTableCellInternal(editor.selection.end.paragraph.associatedCell, false)
     });
     it('select column', () => {
+console.log('select column');
         editor.selection.moveToNextParagraph();
         editor.selection.moveToNextParagraph();
         editor.selection.moveToNextParagraph();
@@ -3853,6 +3878,7 @@ describe('Selection test script9', () => {
         // editor.selection.clearSelectionHighlight();
     });
     it('Selection get block validation', () => {
+console.log('Selection get block validation');
         expect(editor.selection.getBlock(undefined)).toBe(undefined);
     });
 });
@@ -3885,6 +3911,7 @@ describe('Selection test script10', () => {
         }, 1000);
     });
     it('get hyperlink field in cursor position', () => {
+console.log('get hyperlink field in cursor position');
         editor.selection.moveDown();
         editor.selection.moveDown();
         editor.selection.moveDown();
@@ -3895,6 +3922,7 @@ describe('Selection test script10', () => {
         expect(field).toBe(undefined);
     });
     it('get hyperlink field in cursor position with hyperlink', () => {
+console.log('get hyperlink field in cursor position with hyperlink');
         editor.selection.moveDown();
         editor.selection.moveDown();
         let point: Point = editor.selection.end.location;
@@ -3904,6 +3932,7 @@ describe('Selection test script10', () => {
         expect(field).not.toBe(null);
     });
     it('get hyperlink with out lie widget', () => {
+console.log('get hyperlink with out lie widget');
         let point: Point = editor.selection.end.location;
         let line: LineWidget = editor.selection.start.paragraph.childWidgets[0] as LineWidget;
         let widget = editor.selection.getLineWidgetParagraph(0, line);
@@ -3941,12 +3970,14 @@ describe('Selection test script11', () => {
         }, 1000);
     });
     it('Select paragraph testing', () => {
+console.log('Select paragraph testing');
         editor.selection.selectParagraphInternal(editor.selection.start.paragraph, false);
         expect(editor.selection.end.offset).toBe(editor.selection.getParagraphLength(editor.selection.end.paragraph));
         editor.selection.selectParagraphInternal(editor.selection.start.paragraph, true);
         expect(editor.selection.end.offset).toBe(0);
     });
     it('Fit image to page testing', () => {
+console.log('Fit image to page testing');
         let image = new ImageElementBox(null);
         image.width = 200;
         image.height = 300;
@@ -3991,6 +4022,7 @@ describe('Selection test script12', () => {
         }, 1000);
     });
     it('Move Cursor up and down', () => {
+console.log('Move Cursor up and down');
         for (let i = 0; i < 12; i++) {
             editor.selection.moveDown();
         }
@@ -4010,6 +4042,7 @@ describe('Selection test script12', () => {
         editor.selection.extendToNextLine();
     });
     it('Move Previous paragraph in cell', () => {
+console.log('Move Previous paragraph in cell');
         editor.selection.moveDown();
         editor.selection.moveDown();
         editor.selection.moveDown();
@@ -4022,6 +4055,7 @@ describe('Selection test script12', () => {
         editor.selection.extendToWordStartInternal(false);
     });
     it('Move to next paragraph', () => {
+console.log('Move to next paragraph');
         editor.selection.moveDown();
         editor.selection.moveDown();
         editor.selection.moveDown();
@@ -4034,6 +4068,7 @@ describe('Selection test script12', () => {
         editor.selection.extendToWordEndInternal(false);
     });
     it('Move previous Position', () => {
+console.log('Move previous Position');
         let line: LineWidget = editor.selection.start.paragraph.childWidgets[0] as LineWidget;
         editor.selection.selectInternal(line, line.children[0], 0, editor.selection.getPhysicalPositionInternal(line, line.getEndOffset(), true));
         for (let i: number = 0; i < 8; i++) {
@@ -4072,30 +4107,35 @@ describe('Selection test script13', () => {
         }, 1000);
     });
     it('Backward Shift + Left', () => {
+console.log('Backward Shift + Left');
         for (let i: number = 0; i < 100; i++) {
             editor.selection.moveNextPosition();
         }
         expect(editor.selection.isEmpty).toBe(true)
     });
     it('Extend backward selection without clearing multi selection', () => {
+console.log('Extend backward selection without clearing multi selection');
         for (let i: number = 0; i < 100; i++) {
             editor.selection.extendForward();
         }
         expect(editor.selection.isEmpty).toBe(false)
     });
     it('Extend backward selection', () => {
+console.log('Extend backward selection');
         for (let i: number = 0; i < 100; i++) {
             editor.selection.extendForward();
         }
         expect(editor.selection.isEmpty).toBe(false)
     });
     it('Extend up selection without clearing multi selection', () => {
+console.log('Extend up selection without clearing multi selection');
         for (let i: number = 0; i < 30; i++) {
             editor.selection.extendToNextLine();
         }
         expect(editor.selection.isEmpty).toBe(false)
     });
     it('Extend previous position selection ', () => {
+console.log('Extend previous position selection ');
         editor.selection.extendToPreviousLine();
         expect(editor.selection.isEmpty).toBe(true)
     });
@@ -4130,6 +4170,7 @@ describe('Back ward Selection validation', () => {
         }, 1000);
     });
     it('Move text position backward', () => {
+console.log('Move text position backward');
         let point: Point = editor.selection.end.location;
         point.x = point.x - 15;
         point.y = point.y - 30;
@@ -4160,36 +4201,42 @@ describe('Back ward Selection validation', () => {
         editor.selection.moveTextPosition(point, editor.selection.end);;
     });
     it('Backward Shift + Left', () => {
+console.log('Backward Shift + Left');
         for (let i: number = 0; i < 100; i++) {
             editor.selection.movePreviousPosition();
         }
         expect(editor.selection.isEmpty).toBe(true)
     });
     it('Extend backward selection without clearing multi selection', () => {
+console.log('Extend backward selection without clearing multi selection');
         for (let i: number = 0; i < 100; i++) {
             editor.selection.extendBackward();
         }
         expect(editor.selection.isEmpty).toBe(false)
     });
     it('Extend backward selection', () => {
+console.log('Extend backward selection');
         for (let i: number = 0; i < 100; i++) {
             editor.selection.extendBackward();
         }
         expect(editor.selection.isEmpty).toBe(false)
     });
     it('Extend up selection without clearing multi selection', () => {
+console.log('Extend up selection without clearing multi selection');
         for (let i: number = 0; i < 30; i++) {
             editor.selection.extendToPreviousLine();
         }
         expect(editor.selection.isEmpty).toBe(false)
     });
     it('Extend up selection ', () => {
+console.log('Extend up selection ');
         for (let i: number = 0; i < 30; i++) {
             editor.selection.extendToPreviousLine();
         }
         expect(editor.selection.isEmpty).toBe(false)
     });
     it('Move up from document end', () => {
+console.log('Move up from document end');
         editor.selection.moveUp();
         editor.selection.moveUp();
         editor.selection.moveUp();
@@ -4272,6 +4319,7 @@ describe('Back ward Selection validation', () => {
 // });
 describe('selection Widget info validation', () => {
     it('selection Widget info validation', () => {
+console.log('selection Widget info validation');
         let widgetInfo = new SelectionWidgetInfo(10, 10);
         widgetInfo.destroy();
         expect(widgetInfo.left).toBe(undefined);
@@ -4307,6 +4355,7 @@ describe('Selection Validation for branch ', () => {
         }, 1000);
     });
     it('get Fields from parageph', () => {
+console.log('get Fields from parageph');
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.insertText(' ');
         let field: FieldElementBox[] = editor.documentHelper.fields;
@@ -4353,6 +4402,7 @@ describe('Selection Module Unit Test script', () => {
     //     // editor.selection.checkSelectionRangesIsExist(viewer,  editor.selection.start,  editor.selection.end);        
     // });
     it('Apply left indent With selection', () => {
+console.log('Apply left indent With selection');
         editor.selection.selectAll();
         editor.editorModule.onApplyParagraphFormat('leftIndent', 48, true, false);
         expect(isNullOrUndefined(editor.selection.paragraphFormat.leftIndent)).toBe(true);
@@ -4360,6 +4410,7 @@ describe('Selection Module Unit Test script', () => {
         editor.editorHistory.redo();
     });
     it('Apply Left indent in empty selection', () => {
+console.log('Apply Left indent in empty selection');
         editor.editorModule.onApplyParagraphFormat('leftIndent', 48, true, false);
         expect(editor.selection.paragraphFormat.leftIndent).toBe(96);
     });
@@ -4395,6 +4446,7 @@ describe('update table format validation', () => {
         }, 1000);
     });
     it('Apply hight light color validation', () => {
+console.log('Apply hight light color validation');
         editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectAll();
         editor.editorModule.toggleHighlightColor();
@@ -4454,6 +4506,7 @@ describe('Selection API validation For field ', () => {
     //     expect(editor.selectionModule.getPreviousSelection(section2)).toBe(paragaph1);
     // });
     it('Is Exist after validation', () => {
+console.log('Is Exist after validation');
         let table: TableWidget = new TableWidget();
         let row: TableRowWidget = new TableRowWidget();
         let cell: TableCellWidget = new TableCellWidget();
@@ -4482,6 +4535,7 @@ describe('Selection API validation For field ', () => {
     });
 
     it('Move to paragraph validation', () => {
+console.log('Move to paragraph validation');
         editor.openBlank();
         editor.editorModule.insertTextInternal('Syncfusion Software', true);
         editor.editorModule.onEnter();
@@ -4495,6 +4549,7 @@ describe('Selection API validation For field ', () => {
         expect(editor.selection.end.offset).toBe((editor.selection.end.paragraph.childWidgets[0] as LineWidget).getEndOffset() + 1);
     });
     it('Move to paragraph start validation', () => {
+console.log('Move to paragraph start validation');
         editor.openBlank();
         editor.editorModule.insertTextInternal('https://syncfusion.com', true);
         editor.editorModule.handleTextInput(' ');
@@ -4537,6 +4592,7 @@ describe('Move To paragraph start validation', () => {
         }, 1000);
     });
     it('get editing context testing', () => {
+console.log('get editing context testing');
         editor.openBlank();
         editor.editorModule.insertTextInternal('syncfusion software', true);
         let type = editor.selection.contextType;
@@ -4576,6 +4632,7 @@ describe('Get next and previous rendered block validation', () => {
         }, 1000);
     });
     it('get next block selection', (done) => {
+console.log('get next block selection');
         let section2: BodyWidget = new BodyWidget();
         section2.sectionFormat = new WSectionFormat();
         let paragraph: ParagraphWidget = new ParagraphWidget();
@@ -4598,6 +4655,7 @@ describe('Get next and previous rendered block validation', () => {
         });
     });
     it('Get Next rendered element with next node', () => {
+console.log('Get Next rendered element with next node');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -4615,6 +4673,7 @@ describe('Get next and previous rendered block validation', () => {
 
     });
     it('Get Next Paragraph validation', () => {
+console.log('Get Next Paragraph validation');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -4633,11 +4692,13 @@ describe('Get next and previous rendered block validation', () => {
 
     });
     it('get next paragraph without owner', () => {
+console.log('get next paragraph without owner');
         let paragraph: ParagraphWidget = new ParagraphWidget();
         expect(selection.getNextParagraphBlock(paragraph)).toBe(undefined);
         paragraph.destroy();
     });
     it('get next paragraph from table', () => {
+console.log('get next paragraph from table');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -4666,6 +4727,7 @@ describe('Get next and previous rendered block validation', () => {
 
     });
     it('Get Next Block inside table', () => {
+console.log('Get Next Block inside table');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -4717,12 +4779,14 @@ describe('Insert Hyperlink Validation', () => {
         }, 1000);
     });
     it('Insert Hyperlink With new display text', () => {
+console.log('Insert Hyperlink With new display text');
         editor.openBlank();
         editor.editorModule.insertHyperlinkInternal('http://bing.com', 'Bing', true);
         let line: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
         expect(line.children.length).toBe(5);
     });
     it('insert hyperlink with same display name', () => {
+console.log('insert hyperlink with same display name');
         editor.openBlank();
         editor.editorModule.insertText('Google');
         let span: TextElementBox = editor.selection.start.currentWidget.children[0] as TextElementBox;
@@ -4736,6 +4800,7 @@ describe('Insert Hyperlink Validation', () => {
         expect(line2.children.length).toBe(5);
     });
     it('insert hyperlink with same display name', () => {
+console.log('insert hyperlink with same display name');
         editor.openBlank();
         editor.openBlank();
         editor.editorModule.insertText('Google');
@@ -4751,6 +4816,7 @@ describe('Insert Hyperlink Validation', () => {
         expect(line2.children.length).toBe(10);
     });
     it('insert hyperlink with same display name back ward selection', () => {
+console.log('insert hyperlink with same display name back ward selection');
         editor.openBlank();
         editor.openBlank();
         editor.editorModule.insertText('Google');
@@ -4771,6 +4837,7 @@ describe('Insert Hyperlink Validation', () => {
         expect(line2.children.length).toBe(15);
     });
     it('Edit hyperlink with same display name back ward selection', () => {
+console.log('Edit hyperlink with same display name back ward selection');
         editor.openBlank();
         editor.openBlank();
         editor.editorModule.insertText('Google');
@@ -4864,10 +4931,12 @@ describe('Get Cell and Block Validation', () => {
         }, 1000);
     });
     it('Get block from last cell with empty cell', () => {
+console.log('Get block from last cell with empty cell');
         let table: TableWidget = new TableWidget();
         expect(selection.getLastBlockInLastCell(table)).toBe(undefined);
     });
     it('Get Block from last cell', () => {
+console.log('Get Block from last cell');
         editor.editor.insertTable(1, 2);
         editor.selection.handleTabKey(true, false);
         editor.editorModule.insertText('2');
@@ -4876,11 +4945,13 @@ describe('Get Cell and Block Validation', () => {
         expect(selection.getLastBlockInLastCell(table)).toBe(paragraph);
     });
     it('Get first Block from First cell validation', () => {
+console.log('Get first Block from First cell validation');
         let table: TableWidget = new TableWidget();
         table.childWidgets = [];
         expect(selection.getFirstBlockInFirstCell(table)).toBe(undefined);
     });
     it('Get Block from last cell', () => {
+console.log('Get Block from last cell');
         let table: TableWidget = new TableWidget();
         let row: TableRowWidget = new TableRowWidget();
         let cell: TableCellWidget = new TableCellWidget();
@@ -4893,6 +4964,7 @@ describe('Get Cell and Block Validation', () => {
         expect(selection.getFirstBlockInFirstCell(table)).toBe(paragraph);
     });
     it('Get Block from last cell', () => {
+console.log('Get Block from last cell');
         let table: TableWidget = new TableWidget();
         let row: TableRowWidget = new TableRowWidget();
         let cell: TableCellWidget = new TableCellWidget();
@@ -4901,10 +4973,12 @@ describe('Get Cell and Block Validation', () => {
         expect(selection.getFirstBlockInFirstCell(table)).toBe(undefined);
     });
     it('First paragraph in last row with out row', () => {
+console.log('First paragraph in last row with out row');
         let table: TableWidget = new TableWidget();
         expect(selection.getFirstParagraphInLastRow(table)).toBe(undefined);
     });
     it('First paragraph in last row with row', () => {
+console.log('First paragraph in last row with row');
         let table: TableWidget = new TableWidget();
         let row: TableRowWidget = new TableRowWidget();
         let cell: TableCellWidget = new TableCellWidget();
@@ -4915,10 +4989,12 @@ describe('Get Cell and Block Validation', () => {
         expect(selection.getFirstParagraphInLastRow(table)).toBe(undefined);
     });
     it('First block from empty cell validation', () => {
+console.log('First block from empty cell validation');
         let cell: TableCellWidget = new TableCellWidget();
         expect(selection.getFirstBlock(cell)).toBe(undefined);
     });
     it('First block from cell validation', () => {
+console.log('First block from cell validation');
         let table: TableWidget = new TableWidget();
         let row: TableRowWidget = new TableRowWidget();
         row.containerWidget = table;
@@ -4929,6 +5005,7 @@ describe('Get Cell and Block Validation', () => {
         expect(selection.getCellInTable(table, cell)).toBe(cell);
     });
     it('First block from nested cell validation', () => {
+console.log('First block from nested cell validation');
         let table: TableWidget = new TableWidget();
         let row: TableRowWidget = new TableRowWidget();
         row.containerWidget = table;
@@ -4980,6 +5057,7 @@ describe('Get previous valid line ', () => {
         }, 1000);
     });
     it('Get previous valid inline', () => {
+console.log('Get previous valid inline');
         let span: TextElementBox = new TextElementBox();
         expect(selection.getPreviousValidElement(span)).toBe(span);
     });
@@ -4988,6 +5066,7 @@ describe('Get previous valid line ', () => {
     //     expect(selection.getPreviousValidElement(fieldEnd)).toBe(undefined);
     // });
     it('Get Previous valid inline of FieldEnd', () => {
+console.log('Get Previous valid inline of FieldEnd');
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.insertText(' ');
         let end = editor.selection.start.currentWidget.children[4];
@@ -4997,6 +5076,7 @@ describe('Get previous valid line ', () => {
         expect(selection.getPreviousValidElement(separator)).toBe(begin);
     });
     it('get next valid inline with out field separator', () => {
+console.log('get next valid inline with out field separator');
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.insertText(' ');
         editor.selection.start.currentWidget.children.splice(2, 1);
@@ -5005,6 +5085,7 @@ describe('Get previous valid line ', () => {
         expect(selection.getPreviousValidElement(end)).not.toBe(begin);
     });
     it('Validate text position testing', () => {
+console.log('Validate text position testing');
         editor.editorModule.insertHyperlinkInternal('http://syncfusion.com', 'Syncfusion Software', true);
 
         let result = editor.selection.start.currentWidget.children[3] as TextElementBox;
@@ -5023,6 +5104,7 @@ describe('Get previous valid line ', () => {
         expect(selection.isLastRenderedInline(temp, temp.length)).toBe(false);
     });
     it('Get Next text inline', () => {
+console.log('Get Next text inline');
         let span1: TextElementBox = new TextElementBox();
         span1.text = 'Syncfusion Software';
         span1.line = editor.selection.start.currentWidget;
@@ -5045,6 +5127,7 @@ describe('Get previous valid line ', () => {
         expect(selection.getNextTextInline(span)).toBe(end);
     });
     it('get Next rendered inline', () => {
+console.log('get Next rendered inline');
         let span1: TextElementBox = new TextElementBox();
         span1.text = 'Syncfusion Software';
         span1.line = editor.selection.start.currentWidget;
@@ -5098,6 +5181,7 @@ describe('is exist after inline', () => {
         }, 1000);
     });
     it('is Exist after in line validation', () => {
+console.log('is Exist after in line validation');
         let span: TextElementBox = new TextElementBox();
         span.text = 'Syncfusion Software';
         span.line = editor.selection.start.currentWidget;
@@ -5116,6 +5200,7 @@ describe('is exist after inline', () => {
         expect(selection.isExistBeforeInline(span1, span)).toBe(false);
     });
     it('is Exist After in different section in side table', () => {
+console.log('is Exist After in different section in side table');
         editor.editorModule.insertText('Syncfusion Software');
         let span = selection.start.currentWidget.children[0];
         editor.editor.insertTable(2, 2);
@@ -5132,6 +5217,7 @@ describe('is exist after inline', () => {
         expect(selection.isExistBeforeInline(span1, span)).toBe(false);
     });
     it('is Exist After inline with paragraph and table', () => {
+console.log('is Exist After inline with paragraph and table');
         editor.editorModule.insertTable(2, 2);
         editor.editorModule.insertText('Syncfusion Software');
         editor.editorModule.onEnter();
@@ -5174,33 +5260,39 @@ describe('Left Indent Validation', () => {
         }, 1000);
     });
     it('Update paragraph format', () => {
+console.log('Update paragraph format');
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('leftIndent', 20, true, false);
         expect(editor.selection.paragraphFormat.leftIndent).toBe(20);
     });
     it('Apply left indent Empty Selection', () => {
+console.log('Apply left indent Empty Selection');
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('leftIndent', 20, false, false);
         expect(editor.selection.paragraphFormat.leftIndent).toBe(20);
     });
     it('Apply left indent Empty Selection with update', () => {
+console.log('Apply left indent Empty Selection with update');
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('leftIndent', 20, true, false);
         expect(editor.selection.paragraphFormat.leftIndent).toBe(20);
     });
     it('Apply left indent Empty Selection with update back ward selection', () => {
+console.log('Apply left indent Empty Selection with update back ward selection');
         editor.openBlank();
         editor.selection.selectPosition(editor.documentEnd, editor.documentStart);
         editor.editorModule.onApplyParagraphFormat('leftIndent', 20, true, false);
         expect(editor.selection.paragraphFormat.leftIndent).toBe(20);
     });
     it('Apply left indent Empty Selection', () => {
+console.log('Apply left indent Empty Selection');
         editor.openBlank();
         editor.selection.selectAll();
         editor.editorModule.onApplyParagraphFormat('leftIndent', 20, false, false);
         expect(editor.selection.paragraphFormat.leftIndent).toBe(20);
     });
     it('Apply left indent Empty Selection', () => {
+console.log('Apply left indent Empty Selection');
         editor.isReadOnly = true;
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('leftIndent', 20, false, false);
@@ -5236,17 +5328,20 @@ describe('Apply Right indent', () => {
         }, 1000);
     });
     it('Update paragraph format', () => {
+console.log('Update paragraph format');
         editor.isReadOnly = false;
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('rightIndent', 20, false, false);
         expect(editor.selection.paragraphFormat.rightIndent).toBe(20);
     });
     it('Apply left indent Empty Selection', () => {
+console.log('Apply left indent Empty Selection');
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('rightIndent', 20, false, false);
         expect(editor.selection.paragraphFormat.rightIndent).toBe(20);
     });
     it('Apply right indent Empty Selection', () => {
+console.log('Apply right indent Empty Selection');
         editor.openBlank();
         editor.selection.selectAll();
         editor.editorModule.onApplyParagraphFormat('rightIndent', 20, false, false);
@@ -5254,6 +5349,7 @@ describe('Apply Right indent', () => {
         editor.editorHistory.undo();
     });
     it('Apply right indent Empty Selection', () => {
+console.log('Apply right indent Empty Selection');
         editor.isReadOnly = true;
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('rightIndent', 20, false, false);
@@ -5289,16 +5385,19 @@ describe('Apply first line indent', () => {
         }, 1000);
     });
     it('Update paragraph format', () => {
+console.log('Update paragraph format');
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('firstLineIndent', 20, false, false);
         expect(editor.selection.paragraphFormat.firstLineIndent).toBe(20);
     });
     it(' Apply first line indent Empty Selection', () => {
+console.log(' Apply first line indent Empty Selection');
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('firstLineIndent', 20, false, false);
         expect(editor.selection.paragraphFormat.firstLineIndent).toBe(20);
     });
     it('Apply first line indent Empty Selection', () => {
+console.log('Apply first line indent Empty Selection');
         editor.openBlank();
         editor.selection.selectAll();
         editor.editorModule.onApplyParagraphFormat('firstLineIndent', 20, false, false);
@@ -5306,6 +5405,7 @@ describe('Apply first line indent', () => {
         editor.editorHistory.undo();
     });
     it(' Apply first line indent Empty Selection on read only', () => {
+console.log(' Apply first line indent Empty Selection on read only');
         editor.isReadOnly = true;
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('firstLineIndent', 20, false, false);
@@ -5341,17 +5441,20 @@ describe('Apply before spacing indent', () => {
         }, 1000);
     });
     it('Update paragraph format', () => {
+console.log('Update paragraph format');
         editor.isReadOnly = false;
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('beforeSpacing', 20, false, false);
         expect(editor.selection.paragraphFormat.beforeSpacing).toBe(20);
     });
     it(' Apply before spacing indent Empty Selection', () => {
+console.log(' Apply before spacing indent Empty Selection');
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('beforeSpacing', 20, false, false);
         expect(editor.selection.paragraphFormat.beforeSpacing).toBe(20);
     });
     it('Apply before spacing indent Empty Selection', () => {
+console.log('Apply before spacing indent Empty Selection');
         editor.openBlank();
         editor.selection.selectAll();
         editor.editorModule.onApplyParagraphFormat('beforeSpacing', 20, false, false);
@@ -5359,6 +5462,7 @@ describe('Apply before spacing indent', () => {
         editor.editorHistory.undo();
     });
     it(' Apply before spacing indent Empty Selection on read only', () => {
+console.log(' Apply before spacing indent Empty Selection on read only');
         editor.isReadOnly = true;
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('beforeSpacing', 20, false, false);
@@ -5394,24 +5498,28 @@ describe('Apply after spacing indent', () => {
         }, 1000);
     });
     it('Update paragraph format', () => {
+console.log('Update paragraph format');
         editor.isReadOnly = false;
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('afterSpacing', 20, false, false);
         expect(editor.selection.paragraphFormat.afterSpacing).toBe(20);
     });
     it(' Apply after spacing indent Empty Selection', () => {
+console.log(' Apply after spacing indent Empty Selection');
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('afterSpacing', 20, false, false);
         expect(editor.selection.paragraphFormat.afterSpacing).toBe(20);
         editor.editorHistory.undo();
     });
     it('Apply after spacing indent Empty Selection', () => {
+console.log('Apply after spacing indent Empty Selection');
         editor.openBlank();
         editor.selection.selectAll();
         editor.editorModule.onApplyParagraphFormat('afterSpacing', 20, false, false);
         expect(editor.selection.paragraphFormat.afterSpacing).toBe(20);
     });
     it(' Apply after spacing indent Empty Selection on read only', () => {
+console.log(' Apply after spacing indent Empty Selection on read only');
         editor.isReadOnly = true;
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('afterSpacing', 20, false, false);
@@ -5447,17 +5555,20 @@ describe('Apply line spacing', () => {
         }, 1000);
     });
     it('Update paragraph format', () => {
+console.log('Update paragraph format');
         editor.isReadOnly = false;
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('lineSpacing', 20, false, false);
         expect(editor.selection.paragraphFormat.lineSpacing).toBe(20);
     });
     it(' Apply line spacing Empty Selection', () => {
+console.log(' Apply line spacing Empty Selection');
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('lineSpacing', 20, false, false);
         expect(editor.selection.paragraphFormat.lineSpacing).toBe(20);
     });
     it('Apply line spacing Empty Selection', () => {
+console.log('Apply line spacing Empty Selection');
         editor.openBlank();
         editor.selection.selectAll();
         editor.editorModule.onApplyParagraphFormat('lineSpacing', 20, false, false);
@@ -5465,6 +5576,7 @@ describe('Apply line spacing', () => {
         editor.editorHistory.undo();
     });
     it(' Apply line spacing Empty Selection on read only', () => {
+console.log(' Apply line spacing Empty Selection on read only');
         editor.isReadOnly = true;
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('lineSpacing', 20, false, false);
@@ -5500,17 +5612,20 @@ describe('Apply line spacing type', () => {
         }, 1000);
     });
     it('Update paragraph format', () => {
+console.log('Update paragraph format');
         editor.isReadOnly = false;
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('lineSpacingType', 'AtLeast', false, false);
         expect(editor.selection.paragraphFormat.lineSpacingType).toBe('AtLeast');
     });
     it('Apply line spacing  type Empty Selection', () => {
+console.log('Apply line spacing  type Empty Selection');
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('lineSpacingType', 'Exactly', false, false);
         expect(editor.selection.paragraphFormat.lineSpacingType).toBe('Exactly');
     });
     it('Apply line spacing type Empty Selection', () => {
+console.log('Apply line spacing type Empty Selection');
         editor.openBlank();
         editor.selection.selectAll();
         editor.editorModule.onApplyParagraphFormat('lineSpacingType', 'Multiple', false, false);
@@ -5518,6 +5633,7 @@ describe('Apply line spacing type', () => {
         editor.editorHistory.undo();
     });
     it('Apply line spacing type Empty Selection on read only', () => {
+console.log('Apply line spacing type Empty Selection on read only');
         editor.isReadOnly = true;
         editor.openBlank();
         editor.editorModule.onApplyParagraphFormat('lineSpacingType', 'AtLeast', false, false);
@@ -5564,6 +5680,7 @@ describe('Get Next and previous selected cell', () => {
         }, 1000);
     });
     it('Get next Selected cell', () => {
+console.log('Get next Selected cell');
         editor.openBlank();
         editor.editorModule.insertTable(1, 2);
         let cell: TableCellWidget = editor.selection.start.paragraph.associatedCell.ownerRow.childWidgets[0] as TableCellWidget;
@@ -5572,6 +5689,7 @@ describe('Get Next and previous selected cell', () => {
         expect(selection.getNextSelectionCell(cell)).toBe(paragaph)
     });
     it('get Next paragraph cell', () => {
+console.log('get Next paragraph cell');
         editor.openBlank();
         editor.editorModule.insertTable(1, 2);
         let cell: TableCellWidget = editor.selection.start.paragraph.associatedCell.ownerRow.childWidgets[0] as TableCellWidget;
@@ -5581,6 +5699,7 @@ describe('Get Next and previous selected cell', () => {
     });
 
     it('get previous paragraph cell', () => {
+console.log('get previous paragraph cell');
         editor.openBlank();
         editor.editorModule.insertTable(1, 2);
         let cell: TableCellWidget = editor.selection.start.paragraph.associatedCell.ownerRow.childWidgets[1] as TableCellWidget;
@@ -5590,12 +5709,14 @@ describe('Get Next and previous selected cell', () => {
     });
 
     it('get container cell validation', () => {
+console.log('get container cell validation');
         editor.openBlank();
         editor.editorModule.insertTable(1, 2);
         let cell: TableCellWidget = editor.selection.start.paragraph.associatedCell.ownerRow.childWidgets[0] as TableCellWidget;
         expect(selection.getContainerCell(cell)).toBe(cell);
     });
     it('get container nested cell', () => {
+console.log('get container nested cell');
         editor.openBlank();
         editor.editorModule.insertTable(1, 2);
         editor.editorModule.insertTable(1, 2);
@@ -5801,11 +5922,13 @@ describe('Shape Selection Validation', () => {
         }, 1000);
     });
     it('Floating Elements in paragraph', () => {
+console.log('Floating Elements in paragraph');
         let paragraph: ParagraphWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
         expect(paragraph.floatingElements.length).toBe(2);
         expect(editor.documentHelper.pages[0].bodyWidgets[0].floatingElements.length).toBe(2);
     });
     it('Check all float Elements', () => {
+console.log('Check all float Elements');
         let paragraph: ParagraphWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
         let line: LineWidget = paragraph.childWidgets[0] as LineWidget
         let shape: ShapeElementBox = paragraph.floatingElements[0] as ShapeElementBox;
@@ -5820,6 +5943,7 @@ describe('Shape Selection Validation', () => {
         expect(shapeInfo.isShapeSelected).toBe(false);
     });
     it('Select Shape Pargraph to check shape also selected', () => {
+console.log('Select Shape Pargraph to check shape also selected');
         let cursorPoint: Point = new Point(150, 105);
         editor.viewer.documentHelper.updateTextPositionForSelection(cursorPoint, 3);
         let line: LineWidget = editor.selection.start.paragraph.childWidgets[0] as LineWidget;
@@ -5827,6 +5951,7 @@ describe('Shape Selection Validation', () => {
         expect(line.children[1] instanceof ShapeElementBox).toBe(true);
     });
     it('Check Shape resizer visible for selected shape', () => {
+console.log('Check Shape resizer visible for selected shape');
         let paragraph: ParagraphWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
         let shape: ShapeElementBox = paragraph.floatingElements[0] as ShapeElementBox;
         let cursorPoint: Point = new Point(shape.x + 50, shape.y + 40);
@@ -5836,6 +5961,7 @@ describe('Shape Selection Validation', () => {
         expect(editor.imageResizerModule.isImageResizerVisible).toBe(true);
     });
     it('Editor History inside shape', () => {
+console.log('Editor History inside shape');
         let paragraph: ParagraphWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
         let shape: ShapeElementBox = paragraph.floatingElements[0] as ShapeElementBox;
         let cursorPoint: Point = new Point(shape.x + 50, shape.y + 40);
@@ -5848,6 +5974,7 @@ describe('Shape Selection Validation', () => {
         expect(editor.editorHistoryModule.redoStack.length).toBe(1);
     });
     it('Editor History on deleting shape', () => {
+console.log('Editor History on deleting shape');
         let paragraph: ParagraphWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
         let shape: ShapeElementBox = paragraph.floatingElements[0] as ShapeElementBox;
         editor.selectionModule.selectShape(shape);
@@ -6057,6 +6184,7 @@ describe('Text form field Inline validation', () => {
         }, 1000);
     });
     it('Navigate to next form field on Mouse Up', () => {
+console.log('Navigate to next form field on Mouse Up');
         editor.open(JSON.stringify(textInlineSfdt));
         let formFields: FieldElementBox[] = documentHelper.formFields;
         let currentFormField: FieldElementBox = editor.selection.getCurrentFormField();
@@ -6085,6 +6213,7 @@ describe('Text form field Inline validation', () => {
         expect(currentFormField).toBe(formFields[0]);
     });
     it('arrow Key navigation form fields Validation', () => {
+console.log('arrow Key navigation form fields Validation');
         editor.open(JSON.stringify(textInlineSfdt));
         let formFields: FieldElementBox[] = documentHelper.formFields;
         let currentFormField: FieldElementBox = editor.selection.getCurrentFormField();
@@ -6112,6 +6241,7 @@ describe('Text form field Inline validation', () => {
         expect(currentFormField).toBe(formFields[0]);
     });
     it('Tab & shift Key navigation form fields Validation', () => {
+console.log('Tab & shift Key navigation form fields Validation');
         editor.open(JSON.stringify(textInlineSfdt));
         let formFields: FieldElementBox[] = documentHelper.formFields;
         let currentFormField: FieldElementBox = editor.selection.getCurrentFormField();
@@ -6167,6 +6297,7 @@ describe('Track changes Enabled deletion', () => {
     });
 
     it('Bulleted deletion', () => {
+console.log('Bulleted deletion');
         editor.openBlank();
         editor.editorModule.insertText('Sync');
         editor.editorModule.applyBulletOrNumbering('%1.', 'Arabic', 'Verdana');

@@ -2676,7 +2676,7 @@ class ContentRender {
             this.parent.destroyTemplate(['template'], templatetoclear);
         }
         if (this.parent.isReact && args.requestType !== 'infiniteScroll' && !args.isFrozen) {
-            this.parent.destroyTemplate(['template', 'rowTemplate', 'detailTemplate', 'captionTemplate', 'commandsTemplate']);
+            this.parent.destroyTemplate(['columnTemplate', 'rowTemplate', 'detailTemplate', 'captionTemplate', 'commandsTemplate']);
             this.parent.renderTemplates();
         }
         if (this.parent.enableColumnVirtualization) {
@@ -4245,7 +4245,7 @@ class CellRenderer {
             else {
                 if (isReactCompiler) {
                     let copied = { 'index': attributes$$1[literals[0]] };
-                    cell.column.getColumnTemplate()(extend(copied, dummyData), this.parent, 'template', templateID, this.parent[str], null, node);
+                    cell.column.getColumnTemplate()(extend(copied, dummyData), this.parent, 'columnTemplate', templateID, this.parent[str], null, node);
                     this.parent.renderTemplates();
                 }
                 else {
@@ -20634,12 +20634,14 @@ class Page {
         gObj.prevPageMoving = false;
         let prevPage = this.pageSettings.currentPage;
         this.pageSettings.currentPage = e.currentPage;
-        this.parent.notify(modelChanged, {
-            requestType: 'paging',
-            previousPage: prevPage,
-            currentPage: e.currentPage,
-            type: actionBegin
-        });
+        let args = {
+            cancel: false, requestType: 'paging', previousPage: prevPage,
+            currentPage: e.currentPage, type: actionBegin
+        };
+        this.parent.notify(modelChanged, args);
+        if (args.cancel) {
+            e.cancel = true;
+        }
         this.parent.requestTypeAction = 'paging';
     }
     keyPressHandler(e) {
@@ -26027,6 +26029,7 @@ class Toolbar$1 {
                 }
             }
             else {
+                this.toolbar.off('render-react-toolbar-template', this.addReactToolbarPortals);
                 this.toolbar.destroy();
             }
             this.unWireEvent();
@@ -26062,6 +26065,8 @@ class Toolbar$1 {
             enableRtl: this.parent.enableRtl,
             created: this.toolbarCreated.bind(this)
         });
+        this.toolbar.isReact = this.parent.isReact;
+        this.toolbar.on('render-react-toolbar-template', this.addReactToolbarPortals, this);
         let isStringTemplate = 'isStringTemplate';
         this.toolbar[isStringTemplate] = true;
         let viewStr = 'viewContainerRef';
@@ -26102,6 +26107,12 @@ class Toolbar$1 {
             this.toolbar.appendTo(this.element);
         }
         this.parent.element.insertBefore(this.element, this.parent.getHeaderContent());
+    }
+    addReactToolbarPortals(args) {
+        if (this.parent.isReact) {
+            this.parent.portals = this.parent.portals.concat(args);
+            this.parent.renderTemplates();
+        }
     }
     refreshToolbarItems(args) {
         let gObj = this.parent;
@@ -26615,9 +26626,9 @@ class SummaryCellRenderer extends CellRenderer {
             let guid = 'guid';
             tempID = this.parent.element.id + column[guid] + tempObj.property;
         }
-        let isReactCompiler = this.parent.isReact && column.footerTemplate ?
+        let isReactCompiler = this.parent.isReact && (column.footerTemplate ?
             typeof (column.footerTemplate) !== 'string' : column.groupFooterTemplate ? typeof (column.groupFooterTemplate) !== 'string'
-            : column.groupCaptionTemplate ? typeof (column.groupCaptionTemplate) !== 'string' : false;
+            : column.groupCaptionTemplate ? typeof (column.groupCaptionTemplate) !== 'string' : false);
         if (isReactCompiler) {
             tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID, null, null, node);
             this.parent.renderTemplates();
@@ -28642,7 +28653,13 @@ class InlineEditRender {
     appendChildren(form, data, isFrozen) {
         let dummyData = extend({}, data, { isAdd: !this.isEdit, isFrozen: isFrozen }, true);
         let editTemplateID = this.parent.element.id + 'editSettingsTemplate';
-        appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
+        if (this.parent.isReact && typeof (this.parent.editSettings.template) !== 'string') {
+            this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID, null, null, form);
+            this.parent.renderTemplates();
+        }
+        else {
+            appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
+        }
         let setRules = () => {
             let cols = this.parent.getColumns();
             for (let i = 0; i < cols.length; i++) {

@@ -514,7 +514,7 @@ export function validateSubFolder(parent: IFileManager, data: { [key: string]: O
     for (let i: number = 0; i < data.length; i++) {
         if (!getValue('isFile', data[i])) {
             let tempTarget: string = getFullPath(parent, data[i], dragPath);
-            if (dropPath.indexOf(tempTarget) !== -1) {
+            if (dropPath.indexOf(tempTarget) === 0) {
                 let result: ReadArgs = {
                     files: null,
                     error: {

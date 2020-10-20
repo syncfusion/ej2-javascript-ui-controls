@@ -14,6 +14,7 @@ describe('Character Format Testing', () => {
         WCharacterFormat.clear();
     });
     it('Copy Format Testing', () => {
+console.log('Copy Format Testing');
         let charFormat: WCharacterFormat = new WCharacterFormat();
         let charFormat1: WCharacterFormat = new WCharacterFormat();
         charFormat.bold = true;
@@ -22,34 +23,41 @@ describe('Character Format Testing', () => {
         expect(charFormat1.fontSize).toBe(12);
     });
     it('Copy Format undefined Testing', () => {
+console.log('Copy Format undefined Testing');
         let charFormat: WCharacterFormat = new WCharacterFormat();
         charFormat.copyFormat(undefined);
     });
     it('destroy Testing', () => {
+console.log('destroy Testing');
         let charFormat: WCharacterFormat = new WCharacterFormat();
         charFormat.destroy();
         charFormat.cloneFormat();
         expect(() => { charFormat.destroy() }).not.toThrowError();
     });
     it('Clone Format Testing', () => {
+console.log('Clone Format Testing');
         let charFormat: WCharacterFormat = new WCharacterFormat();
         charFormat.cloneFormat();
     });
     it('Character Format Equal Format Testing', () => {
+console.log('Character Format Equal Format Testing');
         let charFormat: WCharacterFormat = new WCharacterFormat();
         charFormat.isEqualFormat(charFormat);
         expect(charFormat.bold).toBe(false);
     });
     it('Default Value Testing', () => {
+console.log('Default Value Testing');
         let charFormat: WCharacterFormat = new WCharacterFormat();
         expect(charFormat.bold).toBe(false);
     });
     it('set Property Value Testing', () => {
+console.log('set Property Value Testing');
         let charFormat: WCharacterFormat = new WCharacterFormat();
         charFormat.bold = undefined;
         expect(charFormat.bold).toBe(false);
     });
     it('Clear Format validation', () => {
+console.log('Clear Format validation');
         let characterFormat: WCharacterFormat = new WCharacterFormat();
         characterFormat.bold = true;
         characterFormat.italic = true;
@@ -61,26 +69,31 @@ describe('Character Format Testing', () => {
     });
 
     it('Character format Boldbidi validation', () => {
+console.log('Character format Boldbidi validation');
         let characterFormat: WCharacterFormat = new WCharacterFormat();
         characterFormat.boldBidi = true;
         expect(characterFormat.boldBidi).toBe(true);
     });
     it('Character format Italicbidi validation', () => {
+console.log('Character format Italicbidi validation');
         let characterFormat: WCharacterFormat = new WCharacterFormat();
         characterFormat.italicBidi = true;
         expect(characterFormat.italicBidi).toBe(true);
     });
     it('Character format FontFamily validation', () => {
+console.log('Character format FontFamily validation');
         let characterFormat: WCharacterFormat = new WCharacterFormat();
         characterFormat.fontFamilyBidi = 'Arial';
         expect(characterFormat.fontFamilyBidi).toBe('Arial');
     });
     it('Character format FontSize validation', () => {
+console.log('Character format FontSize validation');
         let characterFormat: WCharacterFormat = new WCharacterFormat();
         characterFormat.fontSizeBidi = 22;
         expect(characterFormat.fontSizeBidi).toBe(22);
     });
     it('Default value validation of bidi properties', () => {
+console.log('Default value validation of bidi properties');
         let characterFormat: WCharacterFormat = new WCharacterFormat();
         expect(characterFormat.boldBidi).toBe(false);
         expect(characterFormat.italicBidi).toBe(false);
@@ -117,6 +130,7 @@ describe('TOC Hyperlink Character Style Validation', () => {
         }, 1000);
     });
     it('TOC Heading Style Validation', () => {
+console.log('TOC Heading Style Validation');
         expect(editor.selection.start.paragraph.paragraphFormat.baseStyle.name).toBe('TOC Heading');
     });
 });
@@ -153,6 +167,7 @@ describe('Default Character Format API Validation', () => {
     });
 
     it('Check bold is true', () => {
+console.log('Check bold is true');
         expect(editor.selection.start.paragraph.characterFormat.bold).toBe(true);
     });
 });

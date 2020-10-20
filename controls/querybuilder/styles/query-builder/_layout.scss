@@ -338,6 +338,10 @@
           max-width: $qrybldr-multi-maxwidth;
         }
 
+        & .e-rule-value.e-custom-value {
+          width: 200px;
+        }
+
         & .e-operator,
 
         & .e-value {
@@ -585,6 +589,10 @@
       & .e-horizontal-mode .e-rule-value,
       & .e-horizontal-mode .e-rule-value-delete {
         display: $qrybldr-device-diaplay;
+      }
+
+      & .e-rule-value.e-custom-value {
+        width: 200px;
       }
 
       & .e-rule-value {

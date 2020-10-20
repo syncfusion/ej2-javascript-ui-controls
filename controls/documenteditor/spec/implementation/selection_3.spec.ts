@@ -40,18 +40,21 @@ describe('Select Table API validation', () => {
         }, 1000);
     });
     it('Insert table cursor validation', () => {
+console.log('Insert table cursor validation');
         editor.editorModule.insertTable(2, 2);
         let table: TableWidget = documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget;
         expect(editor.selection.start.hierarchicalPosition).toBe("0;0;0;0;0;0;0;0");
         expect(editor.selection.start.paragraph.associatedCell).toBe((table.childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget);
     });
     it('Nested insert Table cursor validation', () => {
+console.log('Nested insert Table cursor validation');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         editor.editorModule.insertTable(2, 2);
         expect(editor.selection.start.hierarchicalPosition).toBe("0;0;0;0;0;0;0;0;0;0;0");
     });
     it('Select Table in Forward selection', () => {
+console.log('Select Table in Forward selection');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         let table: TableWidget = documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget;
@@ -62,6 +65,7 @@ describe('Select Table API validation', () => {
         expect(editor.selection.end.paragraph.associatedCell).toBe(lastCell);
     });
     it('Select Table in Backward selection', () => {
+console.log('Select Table in Backward selection');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         let table: TableWidget = documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget;
@@ -74,11 +78,13 @@ describe('Select Table API validation', () => {
         expect(editor.selection.end.paragraph.associatedCell).toBe(lastCell);
     });
     it('Select Table if selection is not inside table', () => {
+console.log('Select Table if selection is not inside table');
         editor.openBlank();
         editor.selection.selectTable();
         expect(editor.selection.start.paragraph.isInsideTable).toBe(false);
     });
     it('Select Table in nested Table case', () => {
+console.log('Select Table in nested Table case');
         editor.openBlank();
 
         editor.editorModule.insertTable(2, 2);
@@ -91,6 +97,7 @@ describe('Select Table API validation', () => {
         expect(editor.selection.end.paragraph.associatedCell).toBe(lastCell);
     });
     it('Select Table if selection is not empty', () => {
+console.log('Select Table if selection is not empty');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         let table: TableWidget = documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget;
@@ -130,6 +137,7 @@ describe('Select Row API validation', () => {
     });
 
     it('Select Row in Forward selection', () => {
+console.log('Select Row in Forward selection');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         let table: TableWidget = documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget;
@@ -141,6 +149,7 @@ describe('Select Row API validation', () => {
         expect(editor.selection.start.paragraph.associatedCell.ownerRow).toEqual(editor.selection.end.paragraph.associatedCell.ownerRow);
     });
     it('Select Row in Backward selection', () => {
+console.log('Select Row in Backward selection');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         editor.selection.handleRightKey();
@@ -148,11 +157,13 @@ describe('Select Row API validation', () => {
         expect(editor.selection.start.paragraph.associatedCell.ownerRow).toEqual(editor.selection.end.paragraph.associatedCell.ownerRow);
     });
     it('Select Row if selection is not inside table', () => {
+console.log('Select Row if selection is not inside table');
         editor.openBlank();
         editor.selection.selectRow();
         expect(editor.selection.start.paragraph.isInsideTable).toBe(false);
     });
     it('Select Row in nested Table case', () => {
+console.log('Select Row in nested Table case');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         editor.editorModule.insertTable(2, 2);
@@ -160,6 +171,7 @@ describe('Select Row API validation', () => {
         expect(editor.selection.start.paragraph.associatedCell.ownerRow).toEqual(editor.selection.end.paragraph.associatedCell.ownerRow);
     });
     it('Select Row if selection is not empty', () => {
+console.log('Select Row if selection is not empty');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         editor.selection.handleRightKey();
@@ -196,6 +208,7 @@ describe('Select Cell API validation', () => {
     });
 
     it('Select Cell in Forward selection', () => {
+console.log('Select Cell in Forward selection');
         editor.editorModule.insertTable(2, 2);
         let table: TableWidget = documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget;
         let firstCell: TableCellWidget = (table.firstChild as TableRowWidget).firstChild as TableCellWidget;
@@ -204,6 +217,7 @@ describe('Select Cell API validation', () => {
         expect(editor.selection.end.paragraph.associatedCell).toEqual(firstCell);
     });
     it('Select Cell in Nested Table', () => {
+console.log('Select Cell in Nested Table');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         editor.editorModule.insertTable(2, 2);
@@ -213,11 +227,13 @@ describe('Select Cell API validation', () => {
     });
 
     it('Select Cell if selection is not inside table', () => {
+console.log('Select Cell if selection is not inside table');
         editor.openBlank();
         editor.selection.selectCell();
         expect(editor.selection.start.paragraph.isInsideTable).toBe(false);
     });
     it('Select Cell if selection is not empty', () => {
+console.log('Select Cell if selection is not empty');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         let table: TableWidget = documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget;
@@ -261,11 +277,13 @@ describe('Select Column API validation', () => {
     });
 
     it('Select Cell if selection is not inside table', () => {
+console.log('Select Cell if selection is not inside table');
         editor.openBlank();
         editor.selection.selectColumn();
         expect(editor.selection.start.paragraph.isInsideTable).toBe(false);
     });
     it('Select Cell if selection is not empty', () => {
+console.log('Select Cell if selection is not empty');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         let table: TableWidget = documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget;
@@ -278,6 +296,7 @@ describe('Select Column API validation', () => {
         expect(editor.selection.end.paragraph.associatedCell).toEqual(lastCell);
     });
     it('Select Column in Forward selection', () => {
+console.log('Select Column in Forward selection');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         let table: TableWidget = documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget;
@@ -288,6 +307,7 @@ describe('Select Column API validation', () => {
         expect(editor.selection.end.paragraph.associatedCell).toBe(lastCell);
     });
     it('Select Column in nested table', () => {
+console.log('Select Column in nested table');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         editor.editorModule.insertTable(2, 2);
@@ -325,6 +345,7 @@ describe('BookMark validation in double tap', () => {
         }, 1000);
     });
     it('Book Mark insert validation', () => {
+console.log('Book Mark insert validation');
         editor.editorModule.insertText('Sample Work');
         editor.selection.handleLeftKey();
         editor.selection.handleShiftLeftKey();
@@ -334,11 +355,13 @@ describe('BookMark validation in double tap', () => {
         (editor.bookmarkDialogModule as any).addBookmark();
     });
     it('In bookmark element select current word validation', () => {
+console.log('In bookmark element select current word validation');
         editor.selection.selectCurrentWord();
         expect(editor.selection.start.offset).toBe(7);
         expect(editor.selection.end.offset).toBe(13);
     });
     it('start of line selection containing Bookmark element-select current word validation', () => {
+console.log('start of line selection containing Bookmark element-select current word validation');
         editor.selection.handleHomeKey();
         editor.selection.selectCurrentWord();
         expect(editor.selection.start.offset).toBe(0);
@@ -372,12 +395,14 @@ describe('BookMark validation in double tap', () => {
         }, 1000);
     });
     it('Book Mark insert validation', () => {
+console.log('Book Mark insert validation');
         editor.editorModule.insertText('Sample Work');
         editor.selection.selectAll();
         editor.bookmarkDialogModule.show();
         (editor.bookmarkDialogModule as any).addBookmark();
     });
     it('In bookmark element select current word validation', () => {
+console.log('In bookmark element select current word validation');
         editor.selection.handleEndKey();
         editor.selection.handleLeftKey();
         editor.selection.selectCurrentWord();
@@ -385,6 +410,7 @@ describe('BookMark validation in double tap', () => {
         expect(editor.selection.end.offset).toBe(11);
     });
     it('start of line selection containing Bookmark element-select current word validation', () => {
+console.log('start of line selection containing Bookmark element-select current word validation');
         editor.selection.handleHomeKey();
         editor.selection.selectCurrentWord();
         expect(editor.selection.start.offset).toBe(0);
@@ -418,12 +444,14 @@ describe('Nested Table copy validation', () => {
         }, 1000);
     });
     it('copy nested table', () => {
+console.log('copy nested table');
         editor.editorModule.insertTable(2, 2);
         editor.editorModule.insertTable(2, 2);
         editor.selection.selectTable();
         expect(() => { editor.selection.copy(); }).not.toThrowError();
     });
     it('Paste the copied table', () => {
+console.log('Paste the copied table');
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
@@ -432,6 +460,7 @@ describe('Nested Table copy validation', () => {
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.childWidgets.length).toBe(4);
     });
     it('copy after paste', () => {
+console.log('copy after paste');
         editor.selection.selectAll();
         editor.selection.copy();
         editor.selection.handleControlDownKey();
@@ -469,9 +498,11 @@ describe('Selection HighLight Validation', () => {
         }, 1000);
     });
     it('Selection Validation', () => {
+console.log('Selection Validation');
         expect(() => { editor.selection.selectAll(); }).not.toThrowError();
     });
     it('HighLightNextBlock Validation', () => {
+console.log('HighLightNextBlock Validation');
         expect(editor.selection.isHighlightNext).toBe(false);
     });
 });

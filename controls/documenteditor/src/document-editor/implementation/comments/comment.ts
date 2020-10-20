@@ -242,7 +242,7 @@ export class CommentReviewPane {
         }
     }
 
-    public addComment(comment: CommentElementBox, isNewComment: boolean): void {
+    public addComment(comment: CommentElementBox, isNewComment: boolean, selectComment: boolean): void {
         this.isNewComment = isNewComment;
         this.owner.documentHelper.currentSelectedComment = comment;
         this.commentPane.insertComment(comment);
@@ -251,7 +251,9 @@ export class CommentReviewPane {
             commentView.cancelEditing();
             this.enableDisableToolbarItem();
         }
-        this.selectComment(comment);
+        if (selectComment) {
+            this.selectComment(comment);
+        }
     }
 
     public deleteComment(comment: CommentElementBox): void {
@@ -281,7 +283,7 @@ export class CommentReviewPane {
         this.commentPane.reopenComment(comment);
     }
 
-    public addReply(comment: CommentElementBox, newComment: boolean): void {
+    public addReply(comment: CommentElementBox, newComment: boolean, selectComment: boolean): void {
         this.isNewComment = newComment;
         this.commentPane.insertReply(comment);
         if (!newComment) {
@@ -289,7 +291,9 @@ export class CommentReviewPane {
             commentView.cancelEditing();
             this.enableDisableToolbarItem();
         }
-        this.selectComment(comment.ownerComment);
+        if (selectComment) {
+            this.selectComment(comment.ownerComment);
+        }
     }
 
     public navigatePreviousComment(): void {
@@ -896,6 +900,7 @@ export class CommentView {
         this.cancelReply();
         this.updateReplyTextAreaHeight();
         this.owner.editorModule.replyComment(this.comment, replyText);
+        this.owner.fireContentChange();
     }
 
     public cancelReply(): void {
@@ -910,9 +915,11 @@ export class CommentView {
     }
     private updateTextAreaHeight(): void {
         setTimeout(() => {
-            this.textArea.style.height = 'auto';
-            let scrollHeight: number = this.textArea.scrollHeight;
-            this.textArea.style.height = scrollHeight + 'px';
+            if (!isNullOrUndefined(this.textArea)) {
+                this.textArea.style.height = 'auto';
+                let scrollHeight: number = this.textArea.scrollHeight;
+                this.textArea.style.height = scrollHeight + 'px';
+            }
         });
     }
 
@@ -966,7 +973,9 @@ export class CommentView {
         this.menuBar.style.display = 'none';
         this.updateTextAreaHeight();
         setTimeout(() => {
-            this.textArea.focus();
+            if (this.textArea) {
+                this.textArea.focus();
+            }
         });
     }
 
@@ -1000,6 +1009,7 @@ export class CommentView {
         if (!isNullOrUndefined(this.replyViewContainer)) {
             this.replyViewContainer.style.display = '';
         }
+        this.owner.fireContentChange();
     }
 
     public showCommentView(): void {

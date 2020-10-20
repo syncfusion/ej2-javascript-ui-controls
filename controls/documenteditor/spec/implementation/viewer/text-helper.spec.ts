@@ -10,6 +10,7 @@ describe('text-helper function validation',()=>{
        helper.destroy();
     });
     it('Reverse string validation open brackets', () => {
+console.log('Reverse string validation open brackets');
         let specString:string='({[<.';
         expect(helper.containsSpecialChar(specString)).toBe(true);
         specString = '(';
@@ -22,6 +23,7 @@ describe('text-helper function validation',()=>{
         expect(helper.inverseCharacter(specString)).toBe('>');
     });
     it('Reverse string validation', () => {
+console.log('Reverse string validation');
         let specString:string=')}]>,';
         expect(helper.containsSpecialChar(specString)).toBe(true);
         specString = ')';

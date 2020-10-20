@@ -129,8 +129,8 @@ export class Zoom {
                 newZoomFactor = map.tileZoomLevel = map.mapScaleValue = map.initialZoomLevel;
                 map.scale = Math.pow(2, newZoomFactor - 1);
             }
-            map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.scale)) / map.scale;
-            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
+            map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.mapScaleValue)) / map.scale;
+            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.mapScaleValue)) / map.scale;
             this.triggerZoomEvent(prevTilePoint, prevLevel, type);
             if (document.querySelector('.GroupElement')) {
                 (document.querySelector('.GroupElement') as HTMLElement).style.display = 'none';
@@ -377,7 +377,7 @@ export class Zoom {
                             }
 
                         } else if (currentEle.id.indexOf('_Markers_Group') > -1) {
-                            if (!this.isPanning) {
+                            if (!this.isPanning || this.maps.isBlazor) {
                               this.markerTranslates(<Element>currentEle.childNodes[0], factor, x, y, scale, 'Marker', layerElement, animate);
                             }
                             currentEle = layerElement.childNodes[j] as Element;
@@ -997,8 +997,8 @@ export class Zoom {
                 tileZoomFactor = map.tileZoomLevel = map.mapScaleValue = map.initialZoomLevel;
             }
             this.triggerZoomEvent(prevTilePoint, prevLevel, type);
-            map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.scale)) / map.scale;
-            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
+            map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.mapScaleValue)) / map.scale;
+            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.mapScaleValue)) / map.scale;
             if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
                 document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'none';
             }

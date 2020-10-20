@@ -35,24 +35,29 @@ describe('Paste Validation without history with multiple options', () => {
         }, 1000);
     });
     it('Paste with source formatting', () => {
+console.log('Paste with source formatting');
         (editor.editor as any).pasteContents(JSON.parse(pasteContent));
         expect(editor.selection.start.paragraph.isEmpty()).toBe(false);
     });
     it('paste with source formatting inbetween paragraph', () => {
+console.log('paste with source formatting inbetween paragraph');
         editor.selection.handleControlLeftKey();
         (editor.editor as any).pasteContents(JSON.parse(pasteContent));
         (editor.editor as any).copiedTextContent = "Link & Use Destination Styles    ";
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
     it('paste options with keep text only', () => {
+console.log('paste options with keep text only');
         editor.editor.applyPasteOptions('KeepTextOnly');
         expect(editor.selection.characterFormat.bold).toBe(false);
     });
     it('paste options with Merge existing format', () => {
+console.log('paste options with Merge existing format');
         editor.editor.applyPasteOptions('MergeWithExistingFormatting');
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
     it('paste with default formatting options', () => {
+console.log('paste with default formatting options');
         editor.editor.applyPasteOptions(editor.defaultPasteOption);
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
@@ -97,18 +102,21 @@ describe('Paste Validation with history with multiple options', () => {
         }, 1000);
     });
     it('paste with source formatting inbetween paragraph', () => {
+console.log('paste with source formatting inbetween paragraph');
         editor.selection.handleControlRightKey();
         expect(() => { (editor.editor as any).pasteContents(JSON.parse(pasteMultipleContent)); }).not.toThrowError();
         (editor.editor as any).copiedTextContent = text;
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
     it('paste options with keep text only', () => {
+console.log('paste options with keep text only');
         editor.editor.applyPasteOptions('KeepTextOnly');
 
         expect(editor.selection.characterFormat.bold).toBe(false);
 
     });
     it('paste options with Merge existing format', () => {
+console.log('paste options with Merge existing format');
         editor.editor.applyPasteOptions('MergeWithExistingFormatting');
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
@@ -141,6 +149,7 @@ describe('Merge Formatting Validation', () => {
         }, 1000);
     });
     it('Script Error validation', () => {
+console.log('Script Error validation');
         let paragraph: ParagraphWidget = new ParagraphWidget();
         paragraph.index = 0;
         paragraph.characterFormat = new WCharacterFormat(paragraph);
@@ -173,6 +182,7 @@ describe('Paste Validation with List Formatting', () => {
         container = undefined;
     });
     it('paste with list formatting', () => {
+console.log('paste with list formatting');
         let editor: DocumentEditor = container.documentEditor;
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
@@ -209,6 +219,7 @@ describe('Excel Table Paste Validation', () => {
         container = undefined;
     });
     it('Default Table Format Update Validation', () => {
+console.log('Default Table Format Update Validation');
         (container.documentEditor.editor as any).pasteContents(JSON.parse(excelTable));
         let TableWidget: TableWidget = container.documentEditor.selection.start.paragraph.containerWidget.childWidgets[0] as TableWidget;
         expect(TableWidget.isDefaultFormatUpdated).toBe(true);
@@ -243,6 +254,7 @@ describe('paste start at list validation ', () => {
         }, 750);
     });
     it('paste list sfdt', () => {
+console.log('paste list sfdt');
         editor.editor.insertText('Sample');
         editor.editor.onEnter();
         editor.editor.insertText('Sample');
@@ -284,6 +296,7 @@ describe('paste validation ', () => {
         }, 750);
     });
     it('With bookmark', () => {
+console.log('With bookmark');
 
         editor.editor.paste(pasteSfdt);
         expect(editor.documentHelper.bookmarks.length).toBe(1);
@@ -323,17 +336,20 @@ describe('paste in rtl paragraph validation ', () => {
         }, 750);
     });
     it('With source formatting validation', () => {
+console.log('With source formatting validation');
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
         editor.editor.paste(JSON.stringify(fieldSfdt));
         expect(editor.selection.paragraphFormat.bidi).toBe(true);
     });
     it('With Text only format validation', () => {
+console.log('With Text only format validation');
         (editor.editor as any).copiedTextContent = 'Lead#EMail';
         editor.editor.applyPasteOptions('KeepTextOnly');
         expect(editor.selection.paragraphFormat.bidi).toBe(true);
     });
     it('With Merge Existing format validation', () => {
+console.log('With Merge Existing format validation');
         editor.editor.applyPasteOptions('MergeWithExistingFormatting');
         expect(editor.selection.paragraphFormat.bidi).toBe(true);
     });

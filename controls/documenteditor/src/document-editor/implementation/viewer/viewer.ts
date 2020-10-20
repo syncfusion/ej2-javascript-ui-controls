@@ -1412,7 +1412,7 @@ export class DocumentHelper {
      */
     public updateFocus = (): void => {
         if (this.selection && !(this.isMobileDevice && this.owner.isReadOnly)) {
-            if (!Browser.isDevice && !Browser.isIE) {
+            if (!Browser.isDevice && !Browser.isIE && !navigator.userAgent.match('Edge')) {
                 this.iframe.focus();
             }
             this.editableDiv.focus();
@@ -1433,6 +1433,12 @@ export class DocumentHelper {
             let commentMarkElement: NodeListOf<Element> = this.pageContainer.getElementsByClassName('e-de-cmt-mark');
             for (let i: number = 0; i < commentMarkElement.length; i++) {
                 (commentMarkElement[i] as HTMLElement).style.display = 'none';
+            }
+        }
+        if (this.pageContainer) {
+            let editRangeStart: NodeListOf<Element> = this.pageContainer.getElementsByClassName('e-de-lock-mark');
+            for (let i: number = 0; i < editRangeStart.length; i++) {
+                (editRangeStart[i] as HTMLElement).style.display = 'none';
             }
         }
     }
@@ -2826,6 +2832,8 @@ export class DocumentHelper {
             if (fieldCodes.length > 1) {
                 fieldPattern = fieldCodes[1].replace(/[^\w\s]/gi, '').trim();
             }
+            fieldCategory = (!fieldCategory.match('numpages') && !fieldCategory.match('sectionpages') &&
+            fieldCategory.match('page')) ? 'page' : fieldCategory;
             switch (fieldCategory) {
                 case 'page':
                     if (page.bodyWidgets[0].sectionFormat.restartPageNumbering && page.sectionIndex !== 0) {
@@ -2841,7 +2849,7 @@ export class DocumentHelper {
                         page.currentPageNum = previousPage.currentPageNum + 1;
                         return this.getFieldText(fieldPattern, page.currentPageNum);
                     }
-                    page.currentPageNum = page.index + 1;
+                    page.currentPageNum = (!isNullOrUndefined(page.previousPage)) ? page.previousPage.currentPageNum + 1 : page.index + 1;
                     return this.getFieldText(fieldPattern, page.currentPageNum);
                 case 'numpages':
                     return this.getFieldText(fieldPattern, page.documentHelper.pages.length);
@@ -3048,6 +3056,27 @@ export class DocumentHelper {
                 if (this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline' && isInlineFormFillMode) {
                     //Update text cursor in text form field.
                     formField = undefined;
+                }
+            }
+            if (this.owner.enableLockAndEdit) {
+                let isLocked: boolean = false;
+                let block: BlockWidget = widget.paragraph;
+                if (block.isInsideTable) {
+                    block = this.layout.getParentTable(block);
+                }
+                if (block.locked && block.lockedBy !== this.owner.currentUser) {
+                    isLocked = true;
+                }
+                let sectionFormat: WSectionFormat = widget.paragraph.bodyWidget.sectionFormat;
+                let pageWidth: number = sectionFormat.pageWidth - sectionFormat.rightMargin - sectionFormat.leftMargin;
+                pageWidth = HelperMethods.convertPointToPixel(pageWidth) * this.zoomFactor;
+                if (this.viewer instanceof WebLayoutViewer) {
+                    pageWidth = (this.visibleBounds.width - (this.viewer.padding.right * 5)) / this.zoomFactor;
+                }
+                if (isLocked && touchPoint.x >= lineLeft && touchPoint.x < lineLeft + pageWidth) {
+                    this.selection.setLockInfoTooptip(widget, touchPoint.x, block.lockedBy);
+                } else {
+                    this.selection.setLockInfoTooptip(undefined, touchPoint.x, '');
                 }
             }
         }

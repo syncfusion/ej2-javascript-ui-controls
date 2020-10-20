@@ -102,6 +102,7 @@ describe('Spell Checker API', () => {
         }, 1000);
     });
     it('Spell check for Handle IgnoreAll API testing', () => {
+console.log('Spell check for Handle IgnoreAll API testing');
         editor.openBlank();
         editor.spellChecker.ignoreAllItems = [];
         editor.spellChecker.errorWordCollection.clear();
@@ -111,6 +112,7 @@ describe('Spell Checker API', () => {
         expect(editor.spellChecker.ignoreAllItems.length).toBe(1);
     });
     it('Spell check for Handle IgnoreAll API testing 1', () => {
+console.log('Spell check for Handle IgnoreAll API testing 1');
         editor.openBlank();
         editor.spellChecker.ignoreAllItems = [];
         editor.spellChecker.errorWordCollection.clear();
@@ -120,6 +122,7 @@ describe('Spell Checker API', () => {
         expect(editor.spellChecker.ignoreAllItems.length).toBe(1);
     });
     it('Error count testing single word', () => {
+console.log('Error count testing single word');
         editor.editorModule.insertTextInternal('Syncfusion', false);
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
         let lineInfo: LineInfo = editor.documentHelper.selection.getLineInfo(paragraph, 0);
@@ -129,6 +132,7 @@ describe('Spell Checker API', () => {
         expect(editor.spellChecker.errorWordCollection.length).toBe(1);
     });
     it('Error count testing for words in a line', () => {
+console.log('Error count testing for words in a line');
         editor.openBlank();
         editor.editorModule.insertTextInternal('This sction elains the stps to create a Word document editor within your applation and demonstrates the sction', false);
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
@@ -139,6 +143,7 @@ describe('Spell Checker API', () => {
         expect(editor.spellChecker.errorWordCollection.get('sction').length).toBe(element.errorCollection.length);
     });
     it('Error count testing for words in a line for combination', () => {
+console.log('Error count testing for words in a line for combination');
         editor.openBlank();
         editor.spellChecker.languageID = 1;
         editor.serviceUrl = '';
@@ -156,6 +161,7 @@ describe('Spell Checker API', () => {
         expect(editor.spellChecker.checkElementCanBeCombined(element, 11, 0, false)).toBe(true);
     });
     it('Spell check combination testing 1', () => {
+console.log('Spell check combination testing 1');
         editor.openBlank();
         editor.spellChecker.languageID = 1;
         editor.serviceUrl = '';
@@ -175,6 +181,7 @@ describe('Spell Checker API', () => {
         expect((retrievedElement as TextElementBox).text).toBe('par');
     });
     it('Error count testing for words in a line for combination 1', () => {
+console.log('Error count testing for words in a line for combination 1');
         editor.openBlank();
         editor.spellChecker.languageID = 1;
         editor.serviceUrl = '';
@@ -190,6 +197,7 @@ describe('Spell Checker API', () => {
         expect(editor.spellChecker.checkElementCanBeCombined(element, 11, 0, false)).toBe(false);
     });
     it('Handle combined elements API testing', () => {
+console.log('Handle combined elements API testing');
         editor.openBlank();
         editor.spellChecker.languageID = 1;
         editor.serviceUrl = undefined;
@@ -204,6 +212,7 @@ describe('Spell Checker API', () => {
         expect(() => { editor.spellChecker.handleCombinedElements(element, 'paragraph', 0, 0) }).not.toThrowError();
     });
     it('Handle combined elements API testing 1', () => {
+console.log('Handle combined elements API testing 1');
         editor.openBlank();
         editor.spellChecker.languageID = 1;
         editor.serviceUrl = undefined;
@@ -214,6 +223,7 @@ describe('Spell Checker API', () => {
         expect(() => { editor.spellChecker.handleCombinedElements(element, 'Empty Txt', 0, 0) }).not.toThrowError();
     });
     it('Spell check for HandleErrorCollection testing', () => {
+console.log('Spell check for HandleErrorCollection testing');
         editor.openBlank();
         editor.serviceUrl = '';
         editor.spellChecker.allowSpellCheckAndSuggestion = true;
@@ -230,6 +240,7 @@ describe('Spell Checker API', () => {
         expect(editor.spellChecker.errorWordCollection.length).toBe(0);
     });
     it('Spell check for HandleErrorCollection testing 1', () => {
+console.log('Spell check for HandleErrorCollection testing 1');
         editor.openBlank();
         editor.spellChecker.errorWordCollection.clear();
         editor.editorModule.insertTextInternal('heloSyncfusion', false);
@@ -241,6 +252,7 @@ describe('Spell Checker API', () => {
         expect(editor.spellChecker.handleErrorCollection(element)).toBe(false);
     });
     it('Spell check for replace case', () => {
+console.log('Spell check for replace case');
         editor.openBlank();
         let start: TextPosition = editor.documentHelper.selection.start;
         editor.editorModule.insertTextInternal('helo', false);
@@ -253,6 +265,7 @@ describe('Spell Checker API', () => {
         expect((lineInfo.line.children[0] as TextElementBox).text).toBe('hello');
     });
     it('Spell check for replace case 1', () => {
+console.log('Spell check for replace case 1');
         editor.openBlank();
         editor.editorModule.insertTextInternal('Helo world', false);
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
@@ -264,6 +277,7 @@ describe('Spell Checker API', () => {
         expect((lineInfo.line.children[0] as TextElementBox).ignoreOnceItems.length).toBe(1);
     });
     it('Spell check for CheckArrayHasSameElement API', () => {
+console.log('Spell check for CheckArrayHasSameElement API');
         editor.openBlank();
         editor.editorModule.insertTextInternal('Helo wrld', false);
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
@@ -276,6 +290,7 @@ describe('Spell Checker API', () => {
         expect(editor.spellChecker.CheckArrayHasSameElement(element.errorCollection, element.errorCollection[0])).toBe(true);
     });
     it('Spell check for ignore once case', () => {
+console.log('Spell check for ignore once case');
         editor.openBlank();
         let start: TextPosition = editor.documentHelper.selection.start;
         editor.editorModule.insertTextInternal('helo', false);
@@ -288,9 +303,11 @@ describe('Spell Checker API', () => {
         expect(element.ignoreOnceItems.length).toBe(1);
     });
     it('Spell module name validation', () => {
+console.log('Spell module name validation');
         expect((editor.spellChecker as any).getModuleName()).toBe('SpellChecker');
     });
     it('Spell check find text API test', () => {
+console.log('Spell check find text API test');
         editor.openBlank();
         let start: TextPosition = editor.documentHelper.selection.start;
         editor.editorModule.insertTextInternal('Helo Wlcome', false);
@@ -306,6 +323,7 @@ describe('Spell Checker API', () => {
         expect(element.errorCollection.length).toBe(2);
     });
     it('Spell check find text API test 1', () => {
+console.log('Spell check find text API test 1');
         editor.openBlank();
         let start: TextPosition = editor.documentHelper.selection.start;
         editor.editorModule.insertTextInternal(' ', false);
@@ -315,6 +333,7 @@ describe('Spell Checker API', () => {
         expect(currentContext.text).toBe('Hello');
     });
     it('Spell check find text API test 2', () => {
+console.log('Spell check find text API test 2');
         editor.openBlank();
         let start: TextPosition = editor.documentHelper.selection.start;
         editor.editorModule.insertTextInternal('Helo', false);
@@ -328,12 +347,14 @@ describe('Spell Checker API', () => {
         expect(currentContext.text).toBe('Helo');
     });
     it('Spell check suggestion test on context menu', () => {
+console.log('Spell check suggestion test on context menu');
         editor.openBlank();
         editor.editorModule.insertTextInternal('Helo', false);
         let jsonData: any = { "HasSpellingError": true, 'Suggestions': ['Hello', 'Halo', 'Help', 'Helm', 'hide'] };
         editor.spellChecker.handleSuggestions(jsonData);
     });
     it('Spell check suggestion test on context menu 1', () => {
+console.log('Spell check suggestion test on context menu 1');
         editor.openBlank();
         editor.editorModule.insertTextInternal('Helo', false);
         let jsonData: any = { "HasSpellingError": true, 'Suggestions': [] };
@@ -341,6 +362,7 @@ describe('Spell Checker API', () => {
         expect(suggestions.length).toBe(1);
     });
     it('Spell check retrieveText API test on context menu', () => {
+console.log('Spell check retrieveText API test on context menu');
         editor.openBlank();
         let start: TextPosition = editor.documentHelper.selection.start;
         editor.editorModule.insertTextInternal('Helo Wlcome', false);
@@ -356,6 +378,7 @@ describe('Spell Checker API', () => {
         expect(retrievedText.text).toBe(editor.spellChecker.currentContextInfo.text);
     });
     it('Spell check replace element with context item', () => {
+console.log('Spell check replace element with context item');
         editor.openBlank();
         let start: TextPosition = editor.documentHelper.selection.start;
         editor.editorModule.insertTextInternal('Helo world', false);
@@ -372,6 +395,7 @@ describe('Spell Checker API', () => {
         expect((lineInfo.line.children[0] as TextElementBox).text).toBe('Hello');
     });
     it('Spell check ignore element with context item', () => {
+console.log('Spell check ignore element with context item');
         editor.openBlank();
         let start: TextPosition = editor.documentHelper.selection.start;
         editor.editorModule.insertTextInternal('Helo world', false);
@@ -388,6 +412,7 @@ describe('Spell Checker API', () => {
         expect((lineInfo.line.children[0] as TextElementBox).text).toBe('Helo world');
     });
     it('Spell check handle ignore once testing', () => {
+console.log('Spell check handle ignore once testing');
         editor.openBlank();
         let start: TextPosition = editor.documentHelper.selection.start;
         editor.editorModule.insertTextInternal('Helo', false);
@@ -402,6 +427,7 @@ describe('Spell Checker API', () => {
         expect((lineInfo.line.children[0] as TextElementBox).ignoreOnceItems.length).toBe(1);
     });
     it('Spell check handleAddToDictionary', () => {
+console.log('Spell check handleAddToDictionary');
         editor.openBlank();
         let start: TextPosition = editor.documentHelper.selection.start;
         editor.editorModule.insertTextInternal('Helo world', false);
@@ -413,6 +439,7 @@ describe('Spell Checker API', () => {
         expect(() => { editor.spellChecker.handleAddToDictionary() }).not.toThrowError();
     });
     it('Spell check remove errors from collection', () => {
+console.log('Spell check remove errors from collection');
         editor.openBlank();
         editor.spellChecker.errorWordCollection.clear();
         editor.spellChecker.languageID = 1;
@@ -432,16 +459,19 @@ describe('Spell Checker API', () => {
         expect(editor.spellChecker.errorWordCollection.length).toBe(0);
     });
     it('Spell check ManageSpecial character API testing', () => {
+console.log('Spell check ManageSpecial character API testing');
         editor.openBlank();
         let text: string = editor.spellChecker.manageSpecialCharacters(',&helo*#', undefined, true);
         expect(text).toBe('helo');
     });
     it('Spell check ManageSpecial character API testing 1', () => {
+console.log('Spell check ManageSpecial character API testing 1');
         editor.openBlank();
         let text: string = editor.spellChecker.manageSpecialCharacters(',&helo*#', 'helo', false);
         expect(text).toBe(',&helo');
     });
     it('Spell check CheckTextElementError API testing', () => {
+console.log('Spell check CheckTextElementError API testing');
         editor.openBlank();
         let start: TextPosition = editor.documentHelper.selection.start;
         editor.editorModule.insertTextInternal('Helo world', false);
@@ -456,6 +486,7 @@ describe('Spell Checker API', () => {
 
     });
     it('Spell check CheckTextElementError API testing 1', () => {
+console.log('Spell check CheckTextElementError API testing 1');
         editor.openBlank();
         let start: TextPosition = editor.documentHelper.selection.start;
         editor.editorModule.insertTextInternal('Helo world', false);
@@ -468,6 +499,7 @@ describe('Spell Checker API', () => {
         expect(errorInfo.errorFound).toBe(true);
     });
     it('Spell check CheckTextElementError API testing 2', () => {
+console.log('Spell check CheckTextElementError API testing 2');
         editor.openBlank();
         editor.editorModule.insertTextInternal('Helo', false);
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
@@ -480,6 +512,7 @@ describe('Spell Checker API', () => {
         expect(lineInfo.line.children[0].ischangeDetected).toBe(true);
     });
     it('Spell check add error collection API testing', () => {
+console.log('Spell check add error collection API testing');
         editor.openBlank();
         editor.editorModule.insertTextInternal('Helo', false);
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
@@ -493,6 +526,7 @@ describe('Spell Checker API', () => {
         expect(editor.spellChecker.errorWordCollection.length).toBe(2);
     });
     it('Spell check checkNextError API testing', () => {
+console.log('Spell check checkNextError API testing');
         editor.openBlank();
         editor.spellChecker.errorWordCollection.clear();
         editor.editorModule.insertTextInternal('Helo', false);
@@ -507,6 +541,7 @@ describe('Spell Checker API', () => {
         expect(() => { editor.spellChecker.checkForNextError() }).not.toThrowError();
     });
     it('Spell check checkNextError API testing 1', () => {
+console.log('Spell check checkNextError API testing 1');
         editor.openBlank();
         editor.spellChecker.errorWordCollection.clear();
         editor.editorModule.insertTextInternal('Syncfusion company', false);
@@ -518,6 +553,7 @@ describe('Spell Checker API', () => {
         expect(() => { editor.spellChecker.checkForNextError() }).not.toThrowError();
     });
     it('Spell check on trigger ContextMenu', () => {
+console.log('Spell check on trigger ContextMenu');
         editor.openBlank();
         editor.editorModule.insertTextInternal('Helo', false);
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
@@ -528,6 +564,7 @@ describe('Spell Checker API', () => {
         expect(() => { editor.contextMenu.onContextMenuInternal(new PointerEvent('context')) }).not.toThrowError();
     });
     it('Spell check handle Context Item', () => {
+console.log('Spell check handle Context Item');
         editor.openBlank();
         let start: TextPosition = editor.documentHelper.selection.start;
         editor.editorModule.insertTextInternal('Helo world', false);
@@ -543,12 +580,14 @@ describe('Spell Checker API', () => {
         editor.spellChecker.allowSpellCheckAndSuggestion = true;
     });
     it('Spell check on trigger ContextMenu ', () => {
+console.log('Spell check on trigger ContextMenu ');
         editor.openBlank();
         editor.serviceUrl = '';
         editor.spellChecker.allowSpellCheckAndSuggestion = true;
         expect(() => { editor.contextMenu.onContextMenuInternal(new PointerEvent('context')) }).not.toThrowError();
     });
     it('Spell check Construct context menu testing', () => {
+console.log('Spell check Construct context menu testing');
         editor.openBlank();
         let jsonData: any = { 'HasSpellingError': true, 'Suggestions': ['Hello', 'Halo', 'Help'] };
         let spellingSuggestion: any = ['Add To Dicitonary', 'Ignore All'];
@@ -556,6 +595,7 @@ describe('Spell Checker API', () => {
         expect(suggestions.length).toBe(11);
     });
     it('Spell check CompareTextElementAPI testing', () => {
+console.log('Spell check CompareTextElementAPI testing');
         editor.openBlank();
         editor.editorModule.insertTextInternal('Helo world', false);
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
@@ -564,6 +604,7 @@ describe('Spell Checker API', () => {
         expect(editor.spellChecker.compareTextElement(element, [element])).toBe(true);
     });
     it('Spell check WhiteSpace testing', () => {
+console.log('Spell check WhiteSpace testing');
         editor.openBlank();
         editor.editorModule.insertTextInternal(' hello ', false);
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
@@ -573,6 +614,7 @@ describe('Spell Checker API', () => {
         expect(spaceCharacterInfo.wordLength).toBe(1);
     });
     it('Spell check specialCharacter testing', () => {
+console.log('Spell check specialCharacter testing');
         editor.openBlank();
         editor.editorModule.insertTextInternal('#!hello*&', false);
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
@@ -582,6 +624,7 @@ describe('Spell Checker API', () => {
         expect(Math.round(specialInfo.beginningWidth)).toBe(12);
     });
     it('Spell check specialCharacter testing', () => {
+console.log('Spell check specialCharacter testing');
         editor.openBlank();
         editor.editorModule.insertTextInternal('[hello]', false);
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
@@ -592,6 +635,7 @@ describe('Spell Checker API', () => {
         expect(searchResult.length).toBe(1);
     });
     it('Spell check retrieve element API testing', () => {
+console.log('Spell check retrieve element API testing');
         editor.openBlank();
         editor.editorModule.insertTextInternal('hello', false);
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
@@ -601,6 +645,7 @@ describe('Spell Checker API', () => {
         expect(() => { editor.spellChecker.retrieveExactElementInfo(elementInfo) }).not.toThrowError();
     });
     it('Spell checked unique count', () => {
+console.log('Spell checked unique count');
         editor.open(data)
         editor.spellChecker.uniqueWordsCount = 10;
         editor.spellChecker.clearCache();
@@ -612,12 +657,14 @@ describe('Spell Checker API', () => {
         expect(Object.keys(jsonObject).length).toBe(4);
     });
     it('Spell check by page content', () => {
+console.log('Spell check by page content');
         editor.open(data);
         let wordSpec: WordSpellInfo = editor.spellChecker.checkSpellingInPageInfo('error')
         expect(wordSpec.hasSpellError).toBe(false);
         expect(wordSpec.isElementPresent).toBe(true);
     });
     it('Remove underline API validation', () => {
+console.log('Remove underline API validation');
         editor.openBlank();
         editor.editor.insertText('AdventureWorks')
         editor.spellChecker.removeUnderline = false;
@@ -655,6 +702,7 @@ describe('Find validation when spell check enabled', () => {
         }, 1000);
     });
     it('Find validation', () => {
+console.log('Find validation');
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
         let lineInfo: LineInfo = editor.documentHelper.selection.getLineInfo(paragraph, 0);
         let element: TextElementBox = lineInfo.line.children[0] as TextElementBox;

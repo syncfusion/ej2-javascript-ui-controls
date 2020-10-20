@@ -471,13 +471,13 @@
     }
   }
 
-  & .e-undo-icon {
+  .e-undo-icon {
     &::before {
       content: '\e341';
     }
   }
 
-  & .e-redo-icon {
+  .e-redo-icon {
     &::before {
       content: '\e354';
     }

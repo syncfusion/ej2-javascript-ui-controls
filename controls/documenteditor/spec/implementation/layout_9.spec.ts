@@ -3317,6 +3317,7 @@ describe('Left indent on heading style validation', () => {
         }, 1000);
     });
     it('Left indent on heading style', () => {
+console.log('Left indent on heading style');
         expect(editor.selection.paragraphFormat.leftIndent).toBe(28.799999237060547);
     });
 });
@@ -3344,6 +3345,7 @@ describe('Left indent on list para validation', () => {
         }, 1000);
     });
     it('Left indent on heading style', () => {
+console.log('Left indent on heading style');
         expect(editor.selection.paragraphFormat.leftIndent).toBe(68.4000015258789);
     });
 });
@@ -3371,9 +3373,11 @@ describe('Section break para style validation', () => {
         }, 1000);
     });
     it('Section break para style validation 1', () => {
+console.log('Section break para style validation 1');
         expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).paragraphFormat.baseStyle.name).toBe('Normal');
     });
     it('Section break para style validation 2', () => {
+console.log('Section break para style validation 2');
         editor.open(JSON.stringify(sectionBrkJson));
         expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
     });

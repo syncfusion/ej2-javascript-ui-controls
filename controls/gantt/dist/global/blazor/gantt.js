@@ -2370,7 +2370,8 @@ var TaskProcessor = /** @class */ (function (_super) {
         }
         resourceIdCollection = data[this.parent.taskFields.resourceInfo];
         var resourceData;
-        if (!sf.base.isNullOrUndefined(this.parent.editModule) && this.parent.editModule.dialogModule.isAddNewResource) {
+        if (!sf.base.isNullOrUndefined(this.parent.editModule) && !sf.base.isNullOrUndefined(this.parent.editModule.dialogModule)
+            && this.parent.editModule.dialogModule.isAddNewResource) {
             resourceData = this.parent.editModule.dialogModule.ganttResources;
         }
         else {
@@ -4527,12 +4528,11 @@ var Timeline = /** @class */ (function () {
                 break;
             }
         }
-        var newTimeline = __assign({}, zoomingLevel);
+        var newTimeline = sf.base.extend({}, {}, zoomingLevel, true);
         this.roundOffDateToZoom(this.parent.cloneProjectStartDate, true, perDayWidth, newTimeline.bottomTier.unit);
         this.roundOffDateToZoom(this.parent.cloneProjectEndDate, false, perDayWidth, newTimeline.bottomTier.unit);
         var numberOfCells = this.calculateNumberOfTimelineCells(newTimeline);
         newTimeline.timelineUnitSize = Math.abs((chartWidth - 25)) / numberOfCells;
-        this.changeTimelineSettings(newTimeline);
         var args = {
             requestType: 'beforeZoomToProject',
             timeline: newTimeline
@@ -4541,6 +4541,7 @@ var Timeline = /** @class */ (function () {
             this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin', this.parent.controlId + '_zoomout'], true);
         }
         this.parent.trigger('actionBegin', args);
+        this.changeTimelineSettings(newTimeline);
     };
     Timeline.prototype.roundOffDateToZoom = function (date, isStartDate, perDayWidth, tierMode) {
         var width = tierMode === 'Month' || tierMode === 'Year' ? 60 : 20;
@@ -16367,7 +16368,7 @@ var DialogEdit = /** @class */ (function () {
         }
         var inputModel = {
             allowFiltering: true,
-            treeColumnIndex: 5,
+            treeColumnIndex: -1,
             editSettings: { allowEditing: true, mode: 'Cell' },
             locale: this.parent.locale,
             allowSelection: true,
@@ -20632,6 +20633,7 @@ var Edit$2 = /** @class */ (function () {
         }
     };
     Edit$$1.prototype.reArrangeRows = function (args, isByMethod) {
+        var _this = this;
         this.dropPosition = args.dropPosition;
         if (args.dropPosition !== 'Invalid' && this.parent.editModule) {
             var obj = this.parent;
@@ -20671,9 +20673,9 @@ var Edit$2 = /** @class */ (function () {
                             }
                             this.treeGridData.splice(recordIndex1 + c + 1, 0, this.draggedRecord);
                         }
-                        draggedRec.parentItem = this.treeGridData[recordIndex1].parentItem;
-                        draggedRec.parentUniqueID = this.treeGridData[recordIndex1].parentUniqueID;
-                        draggedRec.level = this.treeGridData[recordIndex1].level;
+                        this.parent.setRecordValue('parentItem', this.treeGridData[recordIndex1].parentItem, draggedRec);
+                        this.parent.setRecordValue('parentUniqueID', this.treeGridData[recordIndex1].parentUniqueID, draggedRec);
+                        this.parent.setRecordValue('level', this.treeGridData[recordIndex1].level, draggedRec);
                         if (draggedRec.hasChildRecords) {
                             var level = 1;
                             this.updateChildRecordLevel(draggedRec, level);
@@ -20725,6 +20727,28 @@ var Edit$2 = /** @class */ (function () {
             this.updateParentRecords = [];
             this.parent.isOnEdit = false;
         }
+        if (isRemoteData(this.parent.dataSource)) {
+            var data = this.parent.dataSource;
+            var updatedData = {
+                changedRecords: getTaskData(this.parent.editedRecords)
+            };
+            /* tslint:disable-next-line */
+            var queryValue = this.parent.query instanceof sf.data.Query ? this.parent.query : new sf.data.Query();
+            var crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, queryValue);
+            crud.then(function (e) { return _this.indentSuccess(e, args); })
+                .catch(function (e) { return _this.indentFailure(e); });
+        }
+        else {
+            this.indentOutdentSuccess(args);
+        }
+    };
+    Edit$$1.prototype.indentSuccess = function (e, args) {
+        this.indentOutdentSuccess(args);
+    };
+    Edit$$1.prototype.indentFailure = function (e) {
+        this.parent.trigger('actionFailure', { error: e });
+    };
+    Edit$$1.prototype.indentOutdentSuccess = function (args) {
         this.parent.treeGrid.refresh();
         if (this.dropPosition === 'middleSegment') {
             args.requestType = 'indented';
@@ -20983,8 +21007,8 @@ var Edit$2 = /** @class */ (function () {
                 index: parentItem.index,
                 taskId: parentItem.ganttProperties.rowUniqueID
             };
-            draggedRec.parentItem = createParentItem;
-            draggedRec.parentUniqueID = droppedRec.uniqueID;
+            this.parent.setRecordValue('parentItem', createParentItem, draggedRec);
+            this.parent.setRecordValue('parentUniqueID', droppedRec.uniqueID, draggedRec);
             droppedRec.childRecords.splice(droppedRec.childRecords.length, 0, draggedRec);
             if (!sf.base.isNullOrUndefined(draggedRec) && !obj.taskFields.parentID && !sf.base.isNullOrUndefined(droppedRec.taskData[childItem])) {
                 droppedRec.taskData[obj.taskFields.child].splice(droppedRec.childRecords.length, 0, draggedRec.taskData);
@@ -21169,9 +21193,10 @@ var Filter$1 = /** @class */ (function () {
         var dropDateInstance;
         var filterDateUI = {
             create: function (args) {
+                var format = sf.grids.getCustomDateFormat(args.column.format, args.column.type);
                 var flValInput = sf.base.createElement('input', { className: 'flm-input' });
                 args.target.appendChild(flValInput);
-                dropDateInstance = new sf.calendars.DatePicker({ placeholder: _this.parent.localeObj.getConstant('enterValue') });
+                dropDateInstance = new sf.calendars.DatePicker({ placeholder: _this.parent.localeObj.getConstant('enterValue'), format: format });
                 dropDateInstance.appendTo(flValInput);
             },
             write: function (args) {
@@ -21191,9 +21216,10 @@ var Filter$1 = /** @class */ (function () {
         var dropInstance;
         var filterDateTimeUI = {
             create: function (args) {
+                var format = sf.grids.getCustomDateFormat(args.column.format, args.column.type);
                 var flValInput = sf.base.createElement('input', { className: 'flm-input' });
                 args.target.appendChild(flValInput);
-                dropInstance = new sf.calendars.DateTimePicker({ placeholder: _this.parent.localeObj.getConstant('enterValue') });
+                dropInstance = new sf.calendars.DateTimePicker({ placeholder: _this.parent.localeObj.getConstant('enterValue'), format: format });
                 dropInstance.appendTo(flValInput);
             },
             write: function (args) {

@@ -406,14 +406,14 @@ export class DragAndDrop extends ActionBase {
             if ((dragArea.scrollLeft === 0) &&
                 (Math.round(this.actionObj.X) <=
                     Math.round(dragArea.getBoundingClientRect().left + this.actionObj.cellWidth + window.pageXOffset))) {
-                navigationType = this.parent.options.enableRtl ? 'next' : 'previous';
+                navigationType = this.parent.options.enableRtl ? 'Next' : 'Previous';
             } else if ((Math.round(dragArea.scrollLeft) + dragArea.clientWidth === dragArea.scrollWidth) &&
                 (Math.round(this.actionObj.X) >=
                     Math.round(dragArea.getBoundingClientRect().right - this.actionObj.cellWidth + window.pageXOffset))) {
-                navigationType = this.parent.options.enableRtl ? 'previous' : 'next';
+                navigationType = this.parent.options.enableRtl ? 'Previous' : 'Next';
             }
             if (navigationType) {
-                //this.parent.changeDate(this.parent.activeView.getNextPreviousDate(navigationType));
+                this.parent.dotNetRef.invokeMethodAsync('OnDateNavigate', navigationType);
             }
         }
     }

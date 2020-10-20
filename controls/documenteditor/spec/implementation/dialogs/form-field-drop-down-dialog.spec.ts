@@ -36,6 +36,7 @@ describe('Form field Dropdown dialog', () => {
         }, 2000);
     });
     it('Insert Form field Dropdown value updates', () => {
+console.log('Insert Form field Dropdown value updates');
         editor.editorModule.insertFormField('DropDown');
         let arrValue: string[] = ['Sync', 'Syncfusion'];
         (dialog as any).dropDownItems = arrValue;
@@ -53,6 +54,7 @@ describe('Form field Dropdown dialog', () => {
         expect(fieldData.helpText).toBe('testsync');
     });
     it('Load Values - Form field Dropdown Dialog', () => {
+console.log('Load Values - Form field Dropdown Dialog');
         editor.editorModule.insertFormField('DropDown');
         editor.selection.selectAll();
         dialog.loadDropDownDialog();
@@ -64,6 +66,7 @@ describe('Form field Dropdown dialog', () => {
         expect(fieldData.enabled).toBe((dialog as any).dropDownEnable.checked);
     });
     it('add items - Form field Dropdown Dialog', () => {
+console.log('add items - Form field Dropdown Dialog');
         editor.editorModule.insertFormField('DropDown');
         editor.selection.selectAll();
         (dialog as any).drpDownItemsInput.value = 'Sync';
@@ -71,6 +74,7 @@ describe('Form field Dropdown dialog', () => {
         expect((dialog as any).dropDownItems[0]).toBe('Sync');
     });
     it('remove items - Form field Dropdown Dialog', () => {
+console.log('remove items - Form field Dropdown Dialog');
         editor.editorModule.insertFormField('DropDown');
         editor.selection.selectAll();
         (dialog as any).dropDownItems = [];
@@ -80,6 +84,7 @@ describe('Form field Dropdown dialog', () => {
         expect((dialog as any).dropDownItems.length).toBe(0);
     });
     it('move Up items - Form field Dropdown Dialog', () => {
+console.log('move Up items - Form field Dropdown Dialog');
         editor.editorModule.insertFormField('DropDown');
         editor.selection.selectAll();
         (dialog as any).dropDownItems = [];
@@ -97,6 +102,7 @@ describe('Form field Dropdown dialog', () => {
         expect((dialog as any).dropDownItems[2]).toBe('Test3');
     });
     it('move Down items - Form field Dropdown Dialog', () => {
+console.log('move Down items - Form field Dropdown Dialog');
         editor.editorModule.insertFormField('DropDown');
         editor.selection.selectAll();
         (dialog as any).dropDownItems = [];
@@ -113,6 +119,7 @@ describe('Form field Dropdown dialog', () => {
         expect((dialog as any).dropDownItems[1]).toBe('Test3');
     });
     it('Key up input- enable disable add button - Form field Dropdown Dialog', () => {
+console.log('Key up input- enable disable add button - Form field Dropdown Dialog');
         editor.editorModule.insertFormField('DropDown');
         editor.selection.selectAll();
         (dialog as any).dropDownItems = [];

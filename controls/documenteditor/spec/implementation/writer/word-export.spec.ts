@@ -36,20 +36,24 @@ describe('Word export module with simple text and character formatting text vali
         }, 1000);
     });
     it('module name validation', () => {
+console.log('module name validation');
         expect((editor.wordExportModule as any).getModuleName()).toBe('WordExport')
     });
     it('export simple text validation', () => {
+console.log('export simple text validation');
         editor.editor.insertText('Sample');
         let doc= editor.documentHelper.owner.sfdtExportModule.write();
         expect(()=>{ editor.save('simpleText', 'Docx');}).not.toThrowError();
     });
     it('export simple text validation and save as blob', () => {
+console.log('export simple text validation and save as blob');
         editor.openBlank();
         editor.editor.insertText('Sample');
         expect(()=>{ editor.saveAsBlob('Docx');}).not.toThrowError();
     });
 
     it('export text with character formatting validation-1', () => {
+console.log('export text with character formatting validation-1');
         editor.openBlank();
         editor.editor.insertText('Sample');
         editor.selection.selectAll();
@@ -59,6 +63,7 @@ describe('Word export module with simple text and character formatting text vali
         expect(()=>{ editor.save('SimpleChar1', 'Docx');}).not.toThrowError();
     });
     it('export text with character formatting validation-2', () => {
+console.log('export text with character formatting validation-2');
         editor.openBlank();
         editor.editor.insertText('Sample');
         editor.selection.selectAll();
@@ -68,6 +73,7 @@ describe('Word export module with simple text and character formatting text vali
         expect(()=>{ editor.save('SimpleChar2', 'Docx');}).not.toThrowError();
     });
     it('export text with character formatting validation-3', () => {
+console.log('export text with character formatting validation-3');
         editor.openBlank();
         editor.editor.insertText('Sample');
         editor.selection.selectAll();
@@ -100,6 +106,7 @@ describe('Word export module paragraph formatting text validation', () => {
     });
 
     it('export text with paragraph formatting validation-1', () => {
+console.log('export text with paragraph formatting validation-1');
         editor.openBlank();
         editor.editor.insertText('Sample');
         editor.editor.onEnter();
@@ -112,6 +119,7 @@ describe('Word export module paragraph formatting text validation', () => {
         expect(()=>{ editor.save('SimplePara1', 'Docx');}).not.toThrowError();
     });
     it('export text with paragraph formatting validation-2', () => {
+console.log('export text with paragraph formatting validation-2');
         editor.openBlank();
         editor.editor.insertText('Sample');
         editor.editor.onEnter();
@@ -150,6 +158,7 @@ describe('Word export module with list validation', () => {
     });
 
     it('export text with bullet list', () => {
+console.log('export text with bullet list');
         editor.openBlank();
         editor.editor.insertText('Sample');
         editor.editor.onEnter();
@@ -162,6 +171,7 @@ describe('Word export module with list validation', () => {
         expect(()=>{ editor.save('SimpleBulletList', 'Docx');}).not.toThrowError();
     });
     it('export text with numbering list', () => {
+console.log('export text with numbering list');
         editor.openBlank();
         editor.editor.insertText('Sample');
         editor.editor.onEnter();
@@ -174,6 +184,7 @@ describe('Word export module with list validation', () => {
         expect(()=>{ editor.save('UpRoman', 'Docx');}).not.toThrowError();
     });
     it('export text with numbering list', () => {
+console.log('export text with numbering list');
         editor.openBlank();
         editor.editor.insertText('Sample');
         editor.editor.onEnter();   
@@ -182,6 +193,7 @@ describe('Word export module with list validation', () => {
         expect(()=>{ editor.save('Arabic', 'Docx');}).not.toThrowError();
     });
     it('export text with numbering list', () => {
+console.log('export text with numbering list');
         editor.openBlank();
         editor.editor.insertText('Sample');
         editor.editor.onEnter();   
@@ -190,6 +202,7 @@ describe('Word export module with list validation', () => {
         expect(()=>{ editor.save('LowRoman', 'Docx');}).not.toThrowError();
     });
     it('export text with numbering list', () => {
+console.log('export text with numbering list');
         editor.openBlank();
         editor.editor.insertText('Sample');
         editor.editor.onEnter();   
@@ -198,6 +211,7 @@ describe('Word export module with list validation', () => {
         expect(()=>{ editor.save('UpLetter', 'Docx');}).not.toThrowError();
     });
     it('export text with numbering list', () => {
+console.log('export text with numbering list');
         editor.openBlank();
         editor.editor.insertText('Sample');
         editor.editor.onEnter();   
@@ -206,12 +220,14 @@ describe('Word export module with list validation', () => {
         expect(()=>{ editor.save('LowLetter', 'Docx');}).not.toThrowError();
     });
     it('export text with follow character space', () => {
+console.log('export text with follow character space');
         editor.openBlank();
         editor.editor.insertText('1');
         editor.editor.insertText(' ');        
         expect(()=>{ editor.save('FollowChar', 'Docx');}).not.toThrowError();
     });
     it('export text with multilevel list', () => {
+console.log('export text with multilevel list');
         editor.openBlank();
         editor.editor.insertText('Sample');
         editor.editor.applyNumbering('%1)', 'UpRoman');
@@ -251,12 +267,14 @@ describe('Word export module with table validation', () => {
     });
 
     it('export simple table', () => {
+console.log('export simple table');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.editor.insertText('Sample');
         expect(()=>{ editor.save('SimpleTable', 'Docx');}).not.toThrowError();
     });
     it('export nested table', () => {
+console.log('export nested table');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.editor.insertTable(2, 2);
@@ -264,6 +282,7 @@ describe('Word export module with table validation', () => {
         expect(()=>{ editor.save('NestedList', 'Docx');}).not.toThrowError();
     });
     it('export table with vertical merge cell', () => {
+console.log('export table with vertical merge cell');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.handleShiftDownKey();
@@ -271,6 +290,7 @@ describe('Word export module with table validation', () => {
         expect(()=>{ editor.save('VMerge', 'Docx');}).not.toThrowError();
     });
     it('export table with horizontal merge cell', () => {
+console.log('export table with horizontal merge cell');
         editor.openBlank();
         editor.editor.insertTable(4, 4);
         editor.selection.handleShiftDownKey();
@@ -312,6 +332,7 @@ describe('Word export module with table formatting validation', () => {
     });
 
     it('table formatting validation with cell spacing and margin', () => {
+console.log('table formatting validation with cell spacing and margin');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.tableFormat.cellSpacing = 1;
@@ -323,6 +344,7 @@ describe('Word export module with table formatting validation', () => {
         expect(()=>{ editor.save('TableFormat1', 'Docx');}).not.toThrowError();
     });
     it('table formatting validation with table alignment, background color and left indent', () => {
+console.log('table formatting validation with table alignment, background color and left indent');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.tableFormat.tableAlignment = 'Center';
@@ -330,12 +352,14 @@ describe('Word export module with table formatting validation', () => {
         expect(()=>{ editor.save('TableFormat2', 'Docx');}).not.toThrowError();
     });
     it('table formatting validation with table alignment as right', () => {
+console.log('table formatting validation with table alignment as right');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.tableFormat.tableAlignment = 'Right';
         expect(()=>{ editor.save('TableFormat3', 'Docx');}).not.toThrowError();
     });
     it('table formatting validation with left indent and preffered width', () => {
+console.log('table formatting validation with left indent and preffered width');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.tableFormat.leftIndent = 12;
@@ -369,6 +393,7 @@ describe('Word export module with cell formatting validation', () => {
     });
 
     it('cell formatting validation with margin', () => {        
+console.log('cell formatting validation with margin');
         editor.editor.insertTable(2, 2);
         editor.selection.handleShiftDownKey();
         editor.selection.cellFormat.leftMargin = 10;
@@ -378,6 +403,7 @@ describe('Word export module with cell formatting validation', () => {
         expect(()=>{ editor.save('CellMargin', 'Docx');}).not.toThrowError();
     });
     it('cell formatting validation with vertical alignment, background color', () => {
+console.log('cell formatting validation with vertical alignment, background color');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.handleShiftDownKey();
@@ -386,6 +412,7 @@ describe('Word export module with cell formatting validation', () => {
         expect(()=>{ editor.save('CellAlignment', 'Docx');}).not.toThrowError();
     });
     it('cell formatting validation and preffered width', () => {
+console.log('cell formatting validation and preffered width');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.handleShiftDownKey();
@@ -394,6 +421,7 @@ describe('Word export module with cell formatting validation', () => {
         expect(()=>{ editor.save('CellFormat', 'Docx');}).not.toThrowError();
     });
     it('Row formatting validation with margin', () => {
+console.log('Row formatting validation with margin');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.isHeader = true;
@@ -428,6 +456,7 @@ describe('Word export module with row formatting validation', () => {
     });
 
     it('cell formatting validation with vertical alignment as top, background color', () => {
+console.log('cell formatting validation with vertical alignment as top, background color');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.handleShiftDownKey();
@@ -436,6 +465,7 @@ describe('Word export module with row formatting validation', () => {
         expect(()=>{ editor.save('CellFormatting1', 'Docx');}).not.toThrowError();
     });
     it('cell formatting validation with vertical alignment  as center, background color', () => {
+console.log('cell formatting validation with vertical alignment  as center, background color');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.handleShiftDownKey();
@@ -446,6 +476,7 @@ describe('Word export module with row formatting validation', () => {
         expect(()=>{ editor.save('CellCenterAlignment', 'Docx');}).not.toThrowError();
     });
     it('cell formatting validation with vertical alignment  as bottom, background color', () => {
+console.log('cell formatting validation with vertical alignment  as bottom, background color');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.handleShiftDownKey();
@@ -456,6 +487,7 @@ describe('Word export module with row formatting validation', () => {
         expect(()=>{ editor.save('CellFormat1', 'Docx');}).not.toThrowError();
     });
     it('cell formatting validation with vertical alignment, background color', () => {
+console.log('cell formatting validation with vertical alignment, background color');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.handleShiftDownKey();
@@ -464,6 +496,7 @@ describe('Word export module with row formatting validation', () => {
         expect(()=>{ editor.save('CellFormat2', 'Docx');}).not.toThrowError();
     });
     it('cell formatting validation and preffered width', () => {
+console.log('cell formatting validation and preffered width');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.handleShiftDownKey();
@@ -497,6 +530,7 @@ describe('Word export module with hyperlink , bookmark and image', () => {
         }, 1000);
     });
     it('export simple hyperlink', () => {
+console.log('export simple hyperlink');
         editor.editor.insertText('www.google.com');
         editor.editor.onEnter();
         expect(()=>{ editor.save('link', 'Docx');}).not.toThrowError();
@@ -510,6 +544,7 @@ describe('Word export module with hyperlink , bookmark and image', () => {
     //     editor.save('simple','Docx');
     // });
     it('export bookmark and image', () => {
+console.log('export bookmark and image');
         editor.open(JSON.stringify(bookmark_image));
         expect(()=>{ editor.save('Bookmark_Image', 'Docx');}).not.toThrowError();
     });

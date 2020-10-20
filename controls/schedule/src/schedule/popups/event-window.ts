@@ -121,14 +121,12 @@ export class EventWindow {
         if (this.parent.editorTemplate) {
             updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
         }
-        this.parent.renderTemplates();
     }
 
     private resetEditorTemplate(): void {
         if (this.parent.editorTemplate) {
             resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
         }
-        this.parent.resetTemplates();
     }
 
     public refresh(): void {
@@ -321,6 +319,7 @@ export class EventWindow {
                 let tempEle: HTMLElement[] =
                     [].slice.call(this.parent.getEditorTemplate()(args || {}, this.parent, 'editorTemplate', templateId, false));
                 append(tempEle, form);
+                this.parent.renderTemplates();
                 this.updateEditorTemplate();
             }
         } else {
@@ -1122,6 +1121,18 @@ export class EventWindow {
     }
 
     public updateMinMaxDateToEditor(): void {
+        let startDate: Element = this.element.querySelector('.e-start');
+        let endDate: Element = this.element.querySelector('.e-end');
+        if (startDate && endDate) {
+            let startObj: DatePicker = (startDate as EJ2Instance).ej2_instances[0] as DatePicker;
+            let endObj: DatePicker = (endDate as EJ2Instance).ej2_instances[0] as DatePicker;
+            startObj.min = this.parent.minDate;
+            startObj.max = this.parent.maxDate;
+            endObj.min = this.parent.minDate;
+            endObj.max = this.parent.maxDate;
+            startObj.dataBind();
+            endObj.dataBind();
+        }
         if (this.recurrenceEditor) {
             let untilDate: Element = this.recurrenceEditor.element.querySelector('.e-until-date');
             if (untilDate) {
@@ -1757,6 +1768,7 @@ export class EventWindow {
         if (!this.parent.isDestroyed) {
             this.resetEditorTemplate();
             this.updateEditorTemplate();
+            this.parent.resetTemplates(['editorTemplate']);
         }
         if (this.recurrenceEditor) {
             this.recurrenceEditor.destroy();

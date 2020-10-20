@@ -71,15 +71,18 @@ describe('Table autoFit validation', () => {
     });
 
     it('check preferedWidth Type', () => {
+console.log('check preferedWidth Type');
         let tableWidget: TableWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget;
         expect(tableWidget.tableFormat.preferredWidthType).toBe('Percent');
     });
 
     it('check auto fit', function () {
+console.log('check auto fit');
         var tableWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget;
         expect(tableWidget.tableFormat.allowAutoFit).toBe(true);
     });
     it('Atleast height type table rendering', () => {
+console.log('Atleast height type table rendering');
         editor.open(JSON.stringify(sfdt1));
         expect(editor.documentHelper.pages.length).toBe(8);
     })

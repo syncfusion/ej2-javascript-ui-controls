@@ -13,6 +13,7 @@ import { WList } from '../../../src/document-editor/implementation/list/list';
 
 describe('Text Format Testing', () => {
     it('constructor testing', () => {
+console.log('constructor testing');
         let format: WCharacterFormat = new WCharacterFormat();
         expect('').toBe('');
         expect(format.bold).toBe(false);
@@ -29,6 +30,7 @@ describe('Text Format Testing', () => {
 });
 describe('character format testing', () => {
     it('constructor testing', () => {
+console.log('constructor testing');
         let format: WCharacterFormat = new WCharacterFormat(undefined);
         expect('').toBe('');
         expect(format.bold).toBe(false);
@@ -44,10 +46,12 @@ describe('character format testing', () => {
 });
 describe('Section format', () => {
     it('constructor testing', () => {
+console.log('constructor testing');
         let sectionFormat: WSectionFormat = new WSectionFormat(undefined);
         expect('').toBe('');
     });
     it('Validate Section format', () => {
+console.log('Validate Section format');
         let sectionFormat: WSectionFormat = new WSectionFormat(undefined);
         expect(sectionFormat.headerDistance).toBe(36);
         expect(sectionFormat.footerDistance).toBe(36);
@@ -63,6 +67,7 @@ describe('Section format', () => {
 })
 describe('ParaFormat Testing', () => {
     it('List Format Validation', () => {
+console.log('List Format Validation');
         let listFormat: WListFormat = new WListFormat();
         // expect(listFormat.document).toBe(undefined);
         // expect(listFormat.list).toBe(undefined);
@@ -75,6 +80,7 @@ describe('ParaFormat Testing', () => {
 describe('table Format Testing', () => {
 
     it('Paragraph Format Validation', () => {
+console.log('Paragraph Format Validation');
         let paraFormat: WParagraphFormat = new WParagraphFormat(undefined);
         expect(paraFormat.firstLineIndent).toBe(0);
         expect(paraFormat.beforeSpacing).toBe(0);
@@ -85,6 +91,7 @@ describe('table Format Testing', () => {
         // expect(paraFormat.document).toBe(undefined);
     });
     it('Copy Paragraph Format', () => {
+console.log('Copy Paragraph Format');
         let sourceFormat: WParagraphFormat = new WParagraphFormat(undefined);
         sourceFormat.afterSpacing = undefined;
         sourceFormat.beforeSpacing = undefined;
@@ -101,6 +108,7 @@ describe('table Format Testing', () => {
     });
     describe('Table Format Testing', () => {
         it('constructor testing', () => {
+console.log('constructor testing');
             let tableFormat: WTableFormat = new WTableFormat(undefined);
             tableFormat.borders = undefined;
             tableFormat.leftIndent = 1;
@@ -115,6 +123,7 @@ describe('table Format Testing', () => {
     });
     describe('Row Format Testing', () => {
         it('constructor testing', () => {
+console.log('constructor testing');
             let rowFormat: WRowFormat = new WRowFormat(undefined);
             expect('').toBe('');
             rowFormat.heightType = 'AtLeast';
@@ -125,6 +134,7 @@ describe('table Format Testing', () => {
             // expect(rowFormat.document).toBe(undefined);
         });
         it('Row Format Testing', () => {
+console.log('Row Format Testing');
             let rowFormat: WRowFormat = new WRowFormat(undefined);
             expect(rowFormat.allowBreakAcrossPages).toBe(true);
             expect(rowFormat.isHeader).toBe(false);
@@ -133,6 +143,7 @@ describe('table Format Testing', () => {
     });
     describe('Cell Format Testing', () => {
         it('constructor testing', () => {
+console.log('constructor testing');
             let cell: WCellFormat = new WCellFormat(undefined);
             expect('').toBe('');
             expect(cell.preferredWidth).toBe(0);
@@ -140,6 +151,7 @@ describe('table Format Testing', () => {
             // expect(cell.document).toBe(undefined);
         });
         it('Cell Format Validation', () => {
+console.log('Cell Format Validation');
             let cell: WCellFormat = new WCellFormat(undefined);
             expect(cell.cellWidth).toBe(0);
             expect(cell.columnSpan).toBe(1);
@@ -150,6 +162,7 @@ describe('table Format Testing', () => {
     });
     describe('Border Testing', () => {
         it('constructor testing', () => {
+console.log('constructor testing');
             let borderObj: WBorder = new WBorder(undefined);
             borderObj.color = "#000000";
             borderObj.hasNoneStyle = true;
@@ -157,6 +170,7 @@ describe('table Format Testing', () => {
             // expect(borderObj.space).toThrowError();
         });
         it('Border Class Validation', () => {
+console.log('Border Class Validation');
             let border: WBorder = new WBorder(undefined);
             border.color;
             border.color = "#000000";
@@ -171,6 +185,7 @@ describe('table Format Testing', () => {
             expect(border.ownerBase).toBe(undefined);
         });
         it('Border Line Spacing validation', () => {
+console.log('Border Line Spacing validation');
             let border: WBorder = new WBorder(undefined);
             border.lineStyle = 'Triple';
             border.getLineWidth();
@@ -193,6 +208,7 @@ describe('table Format Testing', () => {
     });
     describe('Shading Testing', () => {
         it('constructor testing', () => {
+console.log('constructor testing');
             let shading: WShading = new WShading(undefined);
             shading.backgroundColor = '#000000';
             shading.foregroundColor = '#ffffff';
@@ -205,6 +221,7 @@ describe('table Format Testing', () => {
     });
     describe(' WBorders Testing', () => {
         it('constructor testing', () => {
+console.log('constructor testing');
             let bordersObj: WBorders = new WBorders(undefined);
             bordersObj.left = undefined;
             bordersObj.top = undefined;

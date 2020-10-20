@@ -72,6 +72,9 @@ describe('DropDown Tree control Remote datasource', () => {
             expect(li[0].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(true);
             expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
             expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+            tapEvent.tapCount = 1;
+            mouseEventArgs.target = li[0].querySelector('.e-list-text');
+            ddtreeObj.treeObj.touchExpandObj.tap(tapEvent);
             tapEvent.tapCount = 2;
             mouseEventArgs.target = li[0].querySelector('.e-list-text');
             ddtreeObj.treeObj.touchExpandObj.tap(tapEvent);
@@ -166,6 +169,9 @@ describe('DropDown Tree control Remote datasource', () => {
             expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
             expect(li[0].childElementCount).toBe(2);
             expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+            tapEvent.tapCount = 1;
+            mouseEventArgs.target = li[0].querySelector('.e-list-text');
+            ddtreeObj.treeObj.touchExpandObj.tap(tapEvent);
             tapEvent.tapCount = 2;
             mouseEventArgs.target = li[0].querySelector('.e-list-text');
             ddtreeObj.treeObj.touchExpandObj.tap(tapEvent);

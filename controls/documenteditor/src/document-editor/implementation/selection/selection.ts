@@ -78,7 +78,7 @@ export class Selection {
 
     private toolTipElement: HTMLElement;
     private toolTipObject: Popup;
-    private toolTipField: FieldElementBox;
+    private toolTipField: FieldElementBox | string;
     private isMoveDownOrMoveUp: boolean = false;
     private pasteDropDwn: DropDownButton;
     /**
@@ -2581,7 +2581,10 @@ export class Selection {
         }
         return index;
     }
-    private getHierarchicalIndexByPosition(position: TextPosition): string {
+    /**
+     * @private
+     */
+    public getHierarchicalIndexByPosition(position: TextPosition): string {
         let info: ParagraphInfo = this.getParagraphInfo(position);
         return this.getHierarchicalIndex(info.paragraph, info.offset.toString());
     }
@@ -5687,6 +5690,9 @@ export class Selection {
                     inline = inline.fieldBegin;
                     index = 0;
                 }
+                if (inline instanceof EditRangeEndElementBox) {
+                    index = 0;
+                }
                 let inlineObj: ElementInfo = this.validateTextPosition(inline, index);
                 inline = inlineObj.element;
                 index = inlineObj.index;
@@ -7427,8 +7433,7 @@ export class Selection {
             } else {
                 this.toolTipElement.innerHTML = linkText + '</br><b>' + toolTipText + '</b>';
             }
-
-            let position: Point = this.getTooltipPosition(fieldBegin, xPos, this.toolTipElement, false);
+            let position: Point = this.getTooltipPosition(fieldBegin.line, xPos, this.toolTipElement, false);
             this.showToolTip(position.x, position.y);
             if (!isNullOrUndefined(this.toolTipField) && fieldBegin !== this.toolTipField) {
                 this.toolTipObject.position = { X: position.x, Y: position.y };
@@ -7439,11 +7444,43 @@ export class Selection {
             this.hideToolTip();
         }
     }
+
+    /**
+     * Set locked content info to tool tip element
+     * @private
+     */
+    public setLockInfoTooptip(widget: LineWidget, xPos: number, user: string): void {
+        if (widget) {
+            if (this.owner.contextMenuModule &&
+                this.owner.contextMenuModule.contextMenuInstance.element.style.display === 'block') {
+                return;
+            }
+            let toolTipElement: HTMLElement = this.toolTipElement;
+            if (!this.toolTipElement) {
+                toolTipElement = createElement('div', { className: 'e-de-tooltip' });
+                this.documentHelper.viewerContainer.appendChild(toolTipElement);
+                this.toolTipElement = toolTipElement;
+            }
+            toolTipElement.style.display = 'block';
+            let l10n: L10n = new L10n('documenteditor', this.owner.defaultLocale);
+            l10n.setLocale(this.owner.locale);
+            let toolTipInfo: string = l10n.getConstant('This region is locked by');
+            toolTipElement.innerHTML = toolTipInfo + ' <b>' + user + '</b>';
+            let position: Point = this.getTooltipPosition(widget, xPos, toolTipElement, false);
+            this.showToolTip(position.x, position.y);
+            if (!isNullOrUndefined(this.toolTipField) && user !== this.toolTipField) {
+                this.toolTipObject.position = { X: position.x, Y: position.y };
+            }
+            this.toolTipObject.show();
+            this.toolTipField = user;
+        } else {
+            this.hideToolTip();
+        }
+    }
     /**
      * @private
      */
-    public getTooltipPosition(fieldBegin: FieldElementBox, xPos: number, toolTipElement: HTMLElement, isFormField: boolean): Point {
-        let widget: LineWidget = fieldBegin.line;
+    public getTooltipPosition(widget: LineWidget, xPos: number, toolTipElement: HTMLElement, isFormField: boolean): Point {
         let widgetTop: number = this.getTop(widget) * this.documentHelper.zoomFactor;
         let page: Page = this.getPage(widget.paragraph);
         // tslint:disable-next-line:max-line-length
@@ -9046,6 +9083,9 @@ export class Selection {
      */
     public highlightEditRegion(): void {
         this.updateEditRangeCollection();
+        if (this.owner.enableLockAndEdit) {
+            return;
+        }
         if (!this.isHighlightEditRegion) {
             this.unHighlightEditRegion();
             return;
@@ -9251,6 +9291,8 @@ export class Selection {
             endElement = (element as EditRangeStartElementBox).editRangeEnd as ElementBox;
         } else if (element instanceof ContentControl) {
             endElement = (element as ContentControl).reference as ElementBox;
+        } else if (element instanceof BookmarkElementBox) {
+            endElement = element.reference;
         }
         offset = endElement.line.getOffset(endElement, 1);
         let endPosition: TextPosition = new TextPosition(this.owner);

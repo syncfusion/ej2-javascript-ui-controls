@@ -135,10 +135,21 @@ export class Toolbar {
                 this.annotationToolbarModule = new AnnotationToolbar(this.pdfViewer, this.pdfViewerBase, this);
                 this.initialEnableItems();
                 this.pdfViewerBase.navigationPane.adjustPane();
+                if (this.pdfViewer.enableToolbar) {
+                    this.bindOpenIconEvent();
+                }
             }
         }
         return toolbarDiv;
     }
+
+    private bindOpenIconEvent(): void {
+        let openElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_open');
+        if (openElement) {
+            openElement.addEventListener('click', this.openFileDialogBox.bind(this));
+        }
+    }
+
     private InitializeMobileToolbarInBlazor(): void {
         let toolbarDiv: HTMLElement;
         toolbarDiv = this.pdfViewer.element.querySelector('.e-pv-mobile-toolbar');
@@ -628,15 +639,17 @@ export class Toolbar {
      * @private
      */
     public destroy(): void {
-        this.unWireEvent();
-        if (this.moreDropDown) {
-            this.moreDropDown.destroy();
+        if (!isBlazor()) {
+            this.unWireEvent();
+            if (this.moreDropDown) {
+                this.moreDropDown.destroy();
+            }
+            if (this.annotationToolbarModule) {
+                this.annotationToolbarModule.destroy();
+            }
+            this.toolbar.destroy();
+            this.toolbarElement.remove();
         }
-        if (this.annotationToolbarModule) {
-            this.annotationToolbarModule.destroy();
-        }
-        this.toolbar.destroy();
-        this.toolbarElement.remove();
     }
     /**
      * @private
@@ -1048,7 +1061,7 @@ export class Toolbar {
         if (this.fileInputElement) {
             this.fileInputElement.removeEventListener('change', this.loadDocument);
         }
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice && !isBlazor()) {
             this.toolbarElement.removeEventListener('mouseup', this.toolbarOnMouseup.bind(this));
             this.currentPageBoxElement.removeEventListener('focusout', this.textBoxFocusOut);
             this.currentPageBoxElement.removeEventListener('keypress', this.navigateToPage);

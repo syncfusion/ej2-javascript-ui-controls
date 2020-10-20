@@ -1,6 +1,6 @@
 import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, classList, closest, compile, createElement, deleteObject, extend, formatUnit, getElement, getValue, isBlazor, isNullOrUndefined, isObject, isObjectArray, isUndefined, merge, remove, removeClass, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Dialog, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
-import { Edit, ForeignKey, Grid, Page, Predicate, Toolbar, ValueFormatter, click, filterAfterOpen, getActualProperties, getFilterMenuPostion, getForeignData, getObject, getUid, parentsUntil, setCssInGridPopUp } from '@syncfusion/ej2-grids';
+import { Edit, ForeignKey, Grid, Page, Predicate, Toolbar, ValueFormatter, click, filterAfterOpen, getActualProperties, getCustomDateFormat, getFilterMenuPostion, getForeignData, getObject, getUid, parentsUntil, setCssInGridPopUp } from '@syncfusion/ej2-grids';
 import { CacheAdaptor, DataManager, DataUtil, Deferred, ODataAdaptor, Query, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
 import { ColumnMenu, ContextMenu, Edit as Edit$1, ExcelExport, Filter, Reorder, Resize, RowDD, Selection, Sort, TreeGrid } from '@syncfusion/ej2-treegrid';
 import { Splitter } from '@syncfusion/ej2-layouts';
@@ -2380,7 +2380,8 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
         }
         resourceIdCollection = data[this.parent.taskFields.resourceInfo];
         var resourceData;
-        if (!isNullOrUndefined(this.parent.editModule) && this.parent.editModule.dialogModule.isAddNewResource) {
+        if (!isNullOrUndefined(this.parent.editModule) && !isNullOrUndefined(this.parent.editModule.dialogModule)
+            && this.parent.editModule.dialogModule.isAddNewResource) {
             resourceData = this.parent.editModule.dialogModule.ganttResources;
         }
         else {
@@ -4537,12 +4538,11 @@ var Timeline = /** @__PURE__ @class */ (function () {
                 break;
             }
         }
-        var newTimeline = __assign({}, zoomingLevel);
+        var newTimeline = extend({}, {}, zoomingLevel, true);
         this.roundOffDateToZoom(this.parent.cloneProjectStartDate, true, perDayWidth, newTimeline.bottomTier.unit);
         this.roundOffDateToZoom(this.parent.cloneProjectEndDate, false, perDayWidth, newTimeline.bottomTier.unit);
         var numberOfCells = this.calculateNumberOfTimelineCells(newTimeline);
         newTimeline.timelineUnitSize = Math.abs((chartWidth - 25)) / numberOfCells;
-        this.changeTimelineSettings(newTimeline);
         var args = {
             requestType: 'beforeZoomToProject',
             timeline: newTimeline
@@ -4551,6 +4551,7 @@ var Timeline = /** @__PURE__ @class */ (function () {
             this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin', this.parent.controlId + '_zoomout'], true);
         }
         this.parent.trigger('actionBegin', args);
+        this.changeTimelineSettings(newTimeline);
     };
     Timeline.prototype.roundOffDateToZoom = function (date, isStartDate, perDayWidth, tierMode) {
         var width = tierMode === 'Month' || tierMode === 'Year' ? 60 : 20;
@@ -16377,7 +16378,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         }
         var inputModel = {
             allowFiltering: true,
-            treeColumnIndex: 5,
+            treeColumnIndex: -1,
             editSettings: { allowEditing: true, mode: 'Cell' },
             locale: this.parent.locale,
             allowSelection: true,
@@ -20642,6 +20643,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         }
     };
     Edit$$1.prototype.reArrangeRows = function (args, isByMethod) {
+        var _this = this;
         this.dropPosition = args.dropPosition;
         if (args.dropPosition !== 'Invalid' && this.parent.editModule) {
             var obj = this.parent;
@@ -20681,9 +20683,9 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                             }
                             this.treeGridData.splice(recordIndex1 + c + 1, 0, this.draggedRecord);
                         }
-                        draggedRec.parentItem = this.treeGridData[recordIndex1].parentItem;
-                        draggedRec.parentUniqueID = this.treeGridData[recordIndex1].parentUniqueID;
-                        draggedRec.level = this.treeGridData[recordIndex1].level;
+                        this.parent.setRecordValue('parentItem', this.treeGridData[recordIndex1].parentItem, draggedRec);
+                        this.parent.setRecordValue('parentUniqueID', this.treeGridData[recordIndex1].parentUniqueID, draggedRec);
+                        this.parent.setRecordValue('level', this.treeGridData[recordIndex1].level, draggedRec);
                         if (draggedRec.hasChildRecords) {
                             var level = 1;
                             this.updateChildRecordLevel(draggedRec, level);
@@ -20735,6 +20737,28 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             this.updateParentRecords = [];
             this.parent.isOnEdit = false;
         }
+        if (isRemoteData(this.parent.dataSource)) {
+            var data = this.parent.dataSource;
+            var updatedData = {
+                changedRecords: getTaskData(this.parent.editedRecords)
+            };
+            /* tslint:disable-next-line */
+            var queryValue = this.parent.query instanceof Query ? this.parent.query : new Query();
+            var crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, queryValue);
+            crud.then(function (e) { return _this.indentSuccess(e, args); })
+                .catch(function (e) { return _this.indentFailure(e); });
+        }
+        else {
+            this.indentOutdentSuccess(args);
+        }
+    };
+    Edit$$1.prototype.indentSuccess = function (e, args) {
+        this.indentOutdentSuccess(args);
+    };
+    Edit$$1.prototype.indentFailure = function (e) {
+        this.parent.trigger('actionFailure', { error: e });
+    };
+    Edit$$1.prototype.indentOutdentSuccess = function (args) {
         this.parent.treeGrid.refresh();
         if (this.dropPosition === 'middleSegment') {
             args.requestType = 'indented';
@@ -20993,8 +21017,8 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                 index: parentItem.index,
                 taskId: parentItem.ganttProperties.rowUniqueID
             };
-            draggedRec.parentItem = createParentItem;
-            draggedRec.parentUniqueID = droppedRec.uniqueID;
+            this.parent.setRecordValue('parentItem', createParentItem, draggedRec);
+            this.parent.setRecordValue('parentUniqueID', droppedRec.uniqueID, draggedRec);
             droppedRec.childRecords.splice(droppedRec.childRecords.length, 0, draggedRec);
             if (!isNullOrUndefined(draggedRec) && !obj.taskFields.parentID && !isNullOrUndefined(droppedRec.taskData[childItem])) {
                 droppedRec.taskData[obj.taskFields.child].splice(droppedRec.childRecords.length, 0, draggedRec.taskData);
@@ -21179,9 +21203,10 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
         var dropDateInstance;
         var filterDateUI = {
             create: function (args) {
+                var format = getCustomDateFormat(args.column.format, args.column.type);
                 var flValInput = createElement('input', { className: 'flm-input' });
                 args.target.appendChild(flValInput);
-                dropDateInstance = new DatePicker({ placeholder: _this.parent.localeObj.getConstant('enterValue') });
+                dropDateInstance = new DatePicker({ placeholder: _this.parent.localeObj.getConstant('enterValue'), format: format });
                 dropDateInstance.appendTo(flValInput);
             },
             write: function (args) {
@@ -21201,9 +21226,10 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
         var dropInstance;
         var filterDateTimeUI = {
             create: function (args) {
+                var format = getCustomDateFormat(args.column.format, args.column.type);
                 var flValInput = createElement('input', { className: 'flm-input' });
                 args.target.appendChild(flValInput);
-                dropInstance = new DateTimePicker({ placeholder: _this.parent.localeObj.getConstant('enterValue') });
+                dropInstance = new DateTimePicker({ placeholder: _this.parent.localeObj.getConstant('enterValue'), format: format });
                 dropInstance.appendTo(flValInput);
             },
             write: function (args) {

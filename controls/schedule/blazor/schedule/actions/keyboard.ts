@@ -194,6 +194,7 @@ export class KeyboardInteraction {
         }
         if (target.classList.contains(cls.WORK_CELLS_CLASS) || target.classList.contains(cls.ALLDAY_CELLS_CLASS)) {
             this.parent.activeCellsData = this.getSelectedElements(target);
+            this.parent.currentCell = target;
             let args: CellClickEventArgs = <CellClickEventArgs>extend(this.parent.activeCellsData, { cancel: false, event: e });
             if (this.parent.options.allowInline) {
                 this.parent.inlineModule.cellEdit();

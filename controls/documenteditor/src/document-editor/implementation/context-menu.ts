@@ -8,6 +8,9 @@ import { FieldElementBox, ElementBox, TextFormField, CheckBoxFormField, DropDown
 import { SpellChecker } from './spell-check/spell-checker';
 import { Point } from './editor/editor-helper';
 
+
+const CONTEXTMENU_LOCK: string = '_contextmenu_lock';
+const CONTEXTMENU_UNLOCK: string = '_contextmenu_unlock';
 const CONTEXTMENU_COPY: string = '_contextmenu_copy';
 const CONTEXTMENU_CUT: string = '_contextmenu_cut';
 const CONTEXTMENU_PASTE: string = '_contextmenu_paste';
@@ -131,6 +134,16 @@ export class ContextMenu {
         ul.oncontextmenu = this.disableBrowserContextmenu;
         this.contextMenu.appendChild(ul);
         this.menuItems = [
+            {
+                text: localValue.getConstant('Lock'),
+                iconCss: 'e-icons e-de-ctnr-lock',
+                id: id + CONTEXTMENU_LOCK
+            },
+            {
+                text: localValue.getConstant('Unlock'),
+                iconCss: 'e-icons',
+                id: id + CONTEXTMENU_UNLOCK
+            },
             {
                 text: localValue.getConstant('Cut'),
                 iconCss: 'e-icons e-de-cut',
@@ -372,6 +385,16 @@ export class ContextMenu {
     public handleContextMenuItem(item: string): void {
         let id: string = this.documentHelper.owner.element.id;
         switch (item) {
+            case id + CONTEXTMENU_LOCK:
+                if (this.documentHelper.owner.collaborativeEditingModule) {
+                    this.documentHelper.owner.collaborativeEditingModule.lockContent(this.documentHelper.owner.currentUser);
+                }
+                break;
+            case id + CONTEXTMENU_UNLOCK:
+                if (this.documentHelper.owner.collaborativeEditingModule) {
+                    this.documentHelper.owner.collaborativeEditingModule.unlockContent(this.documentHelper.owner.currentUser);
+                }
+                break;
             case id + CONTEXTMENU_COPY:
                 this.documentHelper.selection.copy();
                 break;
@@ -696,6 +719,8 @@ export class ContextMenu {
         selection.hideToolTip();
         let owner: DocumentEditor = this.documentHelper.owner;
         let id: string = owner.element.id;
+        let lock: HTMLElement = document.getElementById(id + CONTEXTMENU_LOCK);
+        let unlock: HTMLElement = document.getElementById(id + CONTEXTMENU_UNLOCK);
         let copy: HTMLElement = document.getElementById(id + CONTEXTMENU_COPY);
         let cut: HTMLElement = document.getElementById(id + CONTEXTMENU_CUT);
         let paste: HTMLElement = document.getElementById(id + CONTEXTMENU_PASTE);
@@ -717,6 +742,29 @@ export class ContextMenu {
         let restartAt: HTMLElement = document.getElementById(id + CONTEXTMENU_RESTART_AT);
         let autoFitTable: HTMLElement = document.getElementById(id + CONTEXTMENU_AUTO_FIT);
         let addComment: HTMLElement = document.getElementById(id + CONTEXTMENU_ADD_COMMENT);
+        if (!this.documentHelper.owner.enableLockAndEdit) {
+            lock.style.display = 'none';
+            unlock.style.display = 'none';
+        } else {
+            if (this.documentHelper.editRanges.containsKey(this.documentHelper.owner.currentUser)) {
+                lock.style.display = 'none';
+                unlock.style.display = 'block';
+                if (this.documentHelper.selection.isSelectionInEditRegion()) {
+                    classList(unlock, ['e-blankicon'], ['e-disabled']);
+                } else {
+                    classList(unlock, ['e-disabled', 'e-blankicon'], []);
+                }
+            } else {
+                lock.style.display = 'block';
+                if (this.documentHelper.owner.collaborativeEditingModule &&
+                    this.documentHelper.owner.collaborativeEditingModule.canLock()) {
+                    classList(unlock, ['e-disabled'], []);
+                } else {
+                    classList(unlock, [], ['e-disabled']);
+                }
+                unlock.style.display = 'none';
+            }
+        }
         let isDialogHidden: boolean = false;
         cut.style.display = 'none';
         paste.style.display = 'none';
@@ -857,7 +905,7 @@ export class ContextMenu {
             (removeHyperlink.nextSibling as HTMLElement).style.display = 'none';
         }
         if (this.documentHelper.selection.hasRevisions()) {
-             // tslint:disable-next-line:max-line-length
+            // tslint:disable-next-line:max-line-length
             (acceptChange.previousSibling as HTMLElement).style.display = this.documentHelper.owner.enableHeaderAndFooter ? 'none' : 'block';
             acceptChange.style.display = 'block';
             rejectChange.style.display = 'block';

@@ -336,6 +336,9 @@ export class Edit {
             this.parent.grid.focusModule.restoreFocus();
             editAction({ value: <ITreeData>args.rowData, action: 'edit' }, this.parent, this.isSelfReference,
                        this.addRowIndex, this.selectedIndex, args.columnName);
+            if ((row.rowIndex === this.parent.getCurrentViewRecords().length - 1) && this.keyPress === 'enter') {
+              this.keyPress = null;
+            }
             let saveArgs: CellSaveEventArgs = {
               type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
               previousData: args.previousValue, row: row, target: (args.cell as HTMLElement)
@@ -434,23 +437,25 @@ export class Edit {
           index = getValue('uniqueIDCollection.' + data2.parentItem.uniqueID + '.index', this.parent);
         }
         let treecell: HTMLElement = (row as HTMLTableRowElement).cells[this.parent.treeColumnIndex];
-        for (let l: number = 0; l < treecell.classList.length; l++) {
-          let value: string = treecell.classList[l];
-          let remove: RegExp = /e-gridrowindex/i;
-          let removed: RegExp = /e-griddetailrowindex/i;
-          let result: RegExpMatchArray = value.match(remove);
-          let results: RegExpMatchArray = value.match(removed);
-          if (result != null) {
-           removeClass([treecell], value);
-          }
-          if (results != null) {
-            removeClass([treecell], value);
-           }
-        }
-        if (!rows[k].classList.contains('e-detailrow')) {
-          addClass([treecell], 'e-gridrowindex' + index + 'level' + level);
-        }else {
-          addClass([treecell], 'e-griddetailrowindex' + index + 'level' + level);
+        if (!isNullOrUndefined(treecell)) {
+            for (let l: number = 0; l < treecell.classList.length; l++) {
+                let value: string = treecell.classList[l];
+                let remove: RegExp = /e-gridrowindex/i;
+                let removed: RegExp = /e-griddetailrowindex/i;
+                let result: RegExpMatchArray = value.match(remove);
+                let results: RegExpMatchArray = value.match(removed);
+                if (result != null) {
+                    removeClass([treecell], value);
+                }
+                if (results != null) {
+                    removeClass([treecell], value);
+                }
+            }
+            if (!rows[k].classList.contains('e-detailrow')) {
+                addClass([treecell], 'e-gridrowindex' + index + 'level' + level);
+            }else {
+                addClass([treecell], 'e-griddetailrowindex' + index + 'level' + level);
+            }
         }
       }
     }

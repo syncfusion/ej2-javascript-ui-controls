@@ -119,7 +119,7 @@ export class Revision {
             // tslint:disable-next-line:max-line-length
             if (editorHistory.currentHistoryInfo && (editorHistory.currentHistoryInfo.action === 'Accept All' || editorHistory.currentHistoryInfo.action === 'Reject All')) {
                 if (this.owner.documentHelper.blockToShift) {
-                    this.owner.documentHelper.layout.shiftLayoutedItems();
+                    this.owner.documentHelper.layout.shiftLayoutedItems(false);
                 }
             }
             editorHistory.updateHistory();

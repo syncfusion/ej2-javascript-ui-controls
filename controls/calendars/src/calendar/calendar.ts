@@ -99,6 +99,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     private serverModuleName: string;
     protected defaultKeyConfigs: { [key: string]: string };
     protected previousDateTime: Date;
+    protected isTodayClicked: boolean = false;
+    protected todayButtonEvent: MouseEvent | KeyboardEvent;
 
     /**
      * Gets or sets the minimum date that can be selected in the Calendar.
@@ -698,7 +700,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         this.blazorRef = ref;
         this.serverModuleName = moduleName;
     }
-    protected todayButtonClick(value?: Date): void {
+    protected todayButtonClick(e?: MouseEvent | KeyboardEvent, value?: Date): void {
         if (this.showTodayButton) {
             if (this.currentView() === this.depth) {
                 this.effect = '';
@@ -791,7 +793,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                     break;
                 case 'select':
                     if (e.target === this.todayElement) {
-                        this.todayButtonClick(value);
+                        this.todayButtonClick(e, value);
                     } else {
                         let element: Element = !isNullOrUndefined(focusedDate) ? focusedDate : selectedDate;
                         if (!isNullOrUndefined(element) && !element.classList.contains(DISABLED)) {
@@ -2284,10 +2286,12 @@ export class Calendar extends CalendarBase {
         return tempValue;
     }
 
-    protected todayButtonClick(): void {
+    protected todayButtonClick(e?: MouseEvent | KeyboardEvent): void {
         if (this.showTodayButton) {
             let tempValue: Date = this.generateTodayVal(this.value);
             this.setProperties({ value: tempValue }, true);
+            this.isTodayClicked = true;
+            this.todayButtonEvent = e;
             if (this.isMultiSelection) {
                 let copyValues: Date[] = this.copyValues(this.values);
                 if (!super.checkPresentDate(tempValue, this.values)) {
@@ -2295,7 +2299,7 @@ export class Calendar extends CalendarBase {
                     this.setProperties({ values: copyValues });
                 }
             }
-            super.todayButtonClick(new Date(+this.value));
+            super.todayButtonClick(e, new Date(+this.value));
         }
     }
     protected keyActionHandle(e: KeyboardEventArgs): void {
@@ -2584,6 +2588,10 @@ export class Calendar extends CalendarBase {
     }
 
     protected triggerChange(e: MouseEvent | KeyboardEvent): void {
+        if (!isNullOrUndefined(this.todayButtonEvent) && this.isTodayClicked) {
+            e = this.todayButtonEvent;
+            this.isTodayClicked = false;
+        }
         this.changedArgs.event = e || null;
         this.changedArgs.isInteracted = !isNullOrUndefined(e);
         if (!isNullOrUndefined(this.value)) {

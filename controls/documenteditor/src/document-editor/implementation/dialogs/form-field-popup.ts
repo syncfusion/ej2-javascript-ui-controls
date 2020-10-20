@@ -228,7 +228,7 @@ export class FormFieldPopUp {
                 }
                 let left: number = this.owner.selection.getLeftInternal(formField.line, formField, 0);
                 let lineHeight: number = formField.line.height * this.owner.documentHelper.zoomFactor;
-                let position: Point = this.owner.selection.getTooltipPosition(formField, left, this.target, true);
+                let position: Point = this.owner.selection.getTooltipPosition(formField.line, left, this.target, true);
                 if (!this.popupObject) {
                     this.popupObject = new Popup(this.target, {
                         height: 'auto',

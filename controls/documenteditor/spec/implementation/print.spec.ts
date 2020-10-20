@@ -377,6 +377,7 @@ describe('Print testing', () => {
         }, 1000);
     });
     it('print in IE validation', (done) => {
+console.log('print in IE validation');
         let win: any = {
             document: { write: () => { }, close: () => { } },
             close: () => { }, print: () => { }, focus: () => { }
@@ -392,6 +393,7 @@ describe('Print testing', () => {
         }, 1000);
     });
     it('print in chrome validation', (done) => {
+console.log('print in chrome validation');
         let win: any = {
             document: { write: () => { }, close: () => { } },
             close: () => { }, print: () => { }, focus: () => { }
@@ -406,6 +408,7 @@ describe('Print testing', () => {
         }, 1000);
     });
     it('Get Print document Width validation', () => {
+console.log('Get Print document Width validation');
         let pages: Page[] = [];
         let page1: Page = new Page(editor.documentHelper);
         page1.boundingRectangle = new Rect(96, 96, 816, 1056);
@@ -417,6 +420,7 @@ describe('Print testing', () => {
         expect(print.getPageHeight(pages)).toBe(1056);
     });
     it('Generate Print Content validation', () => {
+console.log('Generate Print Content validation');
         editor.appendTo('#container');
         documentHelper=editor.documentHelper;
         let element: HTMLDivElement = document.createElement('div');
@@ -424,6 +428,7 @@ describe('Print testing', () => {
         expect(element.childNodes.length).not.toBe(0);
     });
     it('Print API testing', () => {
+console.log('Print API testing');
         let win: any = {
             document: { write: () => { }, close: () => { } },
             close: () => { }, print: () => { }, focus: () => { }
@@ -457,6 +462,7 @@ describe('Print testing 2', () => {
         }, 1000);
     });
     it('Test print canvas alpha after enabling HF', () => {
+console.log('Test print canvas alpha after enabling HF');
         editor.appendTo('#container');
         documentHelper=editor.documentHelper;
         editor.open(JSON.stringify(json));        

@@ -1,11 +1,11 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
-import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
+import { NodeModel, BasicShapeModel, SelectorModel } from '../../../src/diagram/objects/node-model';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { UserHandleModel } from '../../../src/diagram/interaction/selector-model';
-import { HorizontalAlignment, Side, VerticalAlignment, DiagramTools } from '../../../src/diagram/enum/enum';
+import { HorizontalAlignment, Side, VerticalAlignment, DiagramTools, BpmnSequenceFlows, DiagramConstraints, NodeConstraints, AnnotationConstraints, ConnectorConstraints, PortConstraints, PortVisibility, SnapConstraints } from '../../../src/diagram/enum/enum';
 import { MouseEvents } from '../interaction/mouseevents.spec';
-import { Canvas, ToolBase, MouseEventArgs, IElement, cloneObject, randomId, SelectorConstraints, PathModel, MoveTool, UserHandleEventsArgs, IDraggingEventArgs } from '../../../src/index';
+import { Canvas,Node, ToolBase,BpmnShapeModel, MouseEventArgs, IElement, cloneObject, randomId, SelectorConstraints, PathModel, MoveTool, UserHandleEventsArgs, IDraggingEventArgs, ISelectionChangeEventArgs, ScrollSettingsModel, ConnectorDrawingTool, PointPortModel, SnapSettingsModel } from '../../../src/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 /*
@@ -704,6 +704,7 @@ describe('Diagram Control', () => {
             expect(diagram.selectedItems.nodes.length == 1).toBe(true);
             mouseEvents.clickEvent(diagramCanvas, 75, 150);
             expect(diagram.nodes.length == 2).toBe(true);
+            // Pan the diagram
             mouseEvents.dragAndDropEvent(diagramCanvas, 400, 300, 400, 200);
             expect(diagram.scroller.horizontalOffset == 0 && diagram.scroller.verticalOffset == -75).toBe(true);
             done();
@@ -996,4 +997,668 @@ describe('rendering user handle template', () => {
 
 
     });
+});
+describe('EJ2-42693 - Exception occurs when try to draw connector on node text edit', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let script: HTMLElement;
+    let button:HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let selArray: any = [];
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            getStartNode(),
+            getOrdinaryNode('node1', 'Activity 1', 200, 100),                     
+            getOrdinaryNode('node2', 'Activity 2', 350, 200),
+            getOrdinaryNode('node3', 'Activity 3', 350, 100),
+            getOrdinaryNode('node4', 'Activity 4', 500, 200),
+            getEndNode('node5', 650, 200)
+          ];
+        
+          let connectors: ConnectorModel[] = [
+            get01Connector('connector1', 'node0', 'node1'),
+            get01Connector('connector2', 'node0', 'node2'),
+            get03Connector('connector3', 'node1', 'node2', 'Conditional'),
+            get03Connector('connector4', 'node1', 'node3', 'Default'),
+            get01Connector('connector5', 'node2', 'node4'),
+            /*this.get01Connector('connector6', 'node3', 'node5'),
+            this.get01Connector('connector7', 'node4', 'node5')*/
+          ];
+        
+          function getOrdinaryNode(nodeId:string, label:string, x:number, y:number): NodeModel {
+            return {
+              id: nodeId,
+              offsetX: x,
+              offsetY: y,
+              width: 90,
+              height: 60,
+              annotations: [
+                {
+                  content: label,
+                  style: {
+                    fontSize: 11,
+                    textWrapping: 'WrapWithOverflow',
+                    textOverflow: 'Ellipsis'
+                  },
+                  offset: { x: 0.5, y: 0.5 },
+                  margin: { top: 7, right: 0, bottom: -8, left: 0 },
+                }
+              ],
+              /*borderColor: '#78BE83',*/
+              borderWidth: 4,
+              shape: {
+                type: 'Bpmn',
+                shape: 'Activity',
+                activity: {
+                  activity: 'Task',
+                  task: {
+                    type: 'Service'
+                  }
+                }
+              },
+              style: {
+                fill: '#d8ecdc',
+                strokeColor: '#78BE83',
+                strokeWidth: 3,
+                gradient: {
+                  // Start point of linear gradient
+                  x1: 0,
+                  y1: 0,
+                  // End point of linear gradient
+                  x2: 1,
+                  y2: 1,
+                  // Sets an array of stop objects
+                  stops: [
+                    {
+                        color: 'white',
+                        offset: x,
+                        opacity: 0.1
+                    },
+                    {
+                        color: '#d8ecdc',
+                        offset: y,
+                        opacity: 0.1
+                    }
+                  ],
+                  type: 'Linear'
+                }
+              },
+              ports: [
+                {
+                  id: 'left',
+                  offset: { x: 0, y: 0.5 }
+                },
+                {
+                  id: 'right',
+                  offset: { x: 1, y: 0.5 }
+                },
+                {
+                  id: 'top',
+                  offset: { x: 0.5, y: 0 }
+                },
+                {
+                  id: 'bottom',
+                  offset: { x: 0.5, y: 1 }
+                }
+              ]
+            };
+          }
+          function getStartNode(): NodeModel {
+            return {
+              id: 'node0',
+              offsetX: 100,
+              offsetY: 300,
+              width: 30,
+              height: 30,
+              annotations: [{
+                content: 'Start',
+                margin: { bottom: -30 }
+              }],
+              shape: {
+                type: 'Bpmn',
+                shape: 'Event',
+                event: {
+                  event: 'Start',
+                  trigger: 'None'
+                }
+              },
+              style: {
+                strokeColor: '#62A716',
+                strokeWidth: 1
+              },
+              ports: [
+                { id: 'right', offset: { x: 1, y: 0.5 } },
+                { id: 'bottom', offset: { x: 0.5, y: 1 } }
+              ]
+            };
+          }
+          function getEndNode(nodeId: string, x: number, y: number): NodeModel {
+            return {
+              id: nodeId,
+              offsetX: x,
+              offsetY: y,
+              width: 30,
+              height: 30,
+              annotations: [{
+                content: 'End',
+                margin: { bottom: -30 }
+              }],
+              shape: {
+                type: 'Bpmn',
+                shape: 'Event',
+                event: {
+                  event: 'End',
+                  trigger: 'None'
+                }
+              },
+              style: {
+                strokeColor: '#FF0000',
+                strokeWidth: 1
+              },
+              ports: [
+                { id: 'left', offset: { x: 0, y: 0.5 } },
+                { id: 'top', offset: { x: 0.5, y: 0 } }
+              ]
+            };
+          }
+        
+          function getTool(action: string): ToolBase {
+            let tool: ToolBase;
+            if (action === 'node') {
+             tool = new OrdinaryTool(diagram);
+            } 
+             else if (action === 'arrow') {
+              tool = new DrawConnector(diagram);
+             } 
+            return tool;
+          }
+        
+          function get01Connector(conId:string, source:string, target:string): ConnectorModel {
+            return {
+              id: conId,
+              sourceID: source,
+              targetID: target,
+              sourcePortID: 'right',
+              targetPortID: 'left',
+              style: {
+                strokeColor: '#888888',
+                fill: '#555555',
+                strokeWidth: 1
+              },
+              targetDecorator: {
+                style: {
+                    fill: '#555555',
+                    strokeColor: '#888888'
+                }
+              },
+              type: 'Orthogonal',
+              cornerRadius: 10
+            };
+          }
+          function get03Connector(conId:string, source:string, target:string, sequence:BpmnSequenceFlows): ConnectorModel {
+            return {
+              id: conId,
+              sourceID: source,
+              targetID: target,
+              sourcePortID: 'right',
+              targetPortID: 'left',
+              shape: {
+                type: 'Bpmn',
+                flow: 'Sequence',
+                sequence: sequence
+              },
+              style: {
+                strokeColor: '#888888',
+                fill: '#555555',
+                strokeWidth: 1
+              },
+              targetDecorator: {
+                style: {
+                    fill: '#555555',
+                    strokeColor: '#888888'
+                }
+              },
+              type: 'Orthogonal',
+              cornerRadius: 10
+            };
+          }
+          
+          let snapSettings: SnapSettingsModel = {
+            // Define the Constraints for gridlines and snapping
+            constraints: SnapConstraints.None,
+            // Defines the horizontalGridlines for SnapSettings
+            horizontalGridlines: {
+                // Sets the line color of gridlines
+                // lineColor: 'blue',
+                // Defines the lineDashArray of gridlines
+                lineDashArray: '2 2',
+                lineIntervals: [1, 9, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75,
+                 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75],
+                 // snapIntervals: [10]
+            },
+            // Defines the verticalGridlines for SnapSettings
+            verticalGridlines: {
+                // lineColor: 'blue',
+                lineDashArray: '2 2',
+                lineIntervals: [1, 9, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75,
+                 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75],
+                 // snapIntervals: [10]
+            }
+          };
+        
+          let scrollSettings: ScrollSettingsModel = {
+            canAutoScroll: true,
+            scrollLimit: 'Infinity',
+            // scrollableArea: new Rect(0, 0, 300, 300),
+            // horizontalOffset: 30,
+            //verticalOffset: 30,
+            padding: { left: 0, top: 0, right: 10, bottom: 0 }
+        };
+        let constraints: DiagramConstraints = DiagramConstraints.Default | DiagramConstraints.LineRouting | DiagramConstraints.Bridging;
+        let handles: UserHandleModel[] = [
+            {
+              name: 'arrow',
+              pathData: 'M4,11v2h8v7l8-8L12,4v7Z',
+              visible: true,
+              offset: 0.5,
+              side: 'Top',
+              pathColor: 'black',
+              backgroundColor: 'transparent',
+              size: 32,
+              margin: {top: 12, bottom: 0, left: 0, right: 0}
+            },
+            {
+              name: 'Delete',
+              pathData: `M 0, 0 c -3.201999999999998,-2.8130000000000006,-8.105999999999995,-2.455,-11.119,
+                      0.5579999999999998l-34.179,34.205l-34.337,-34.362c-3.093,-3.0920000000000005,-8.108,-3.0920000000000005,-11.201,
+                      0l-0.11299999999999956,0.11299999999999956c-3.093,3.093,-3.093,8.107,0,11.201l34.341,34.366l-34.34,34.366c-3.093,
+                      3.0930000000000035,-3.093,8.108000000000004,0,11.201000000000008l0.11299999999999956,0.11299999999999956c3.093,
+                      3.0930000000000035,8.107,3.0930000000000035,11.201,0l34.337,-34.363l34.17900000000001,34.205c3.0130000000000052,
+                      3.0130000000000052,7.917000000000002,3.3700000000000045,11.119,0.5580000000000069c3.507000000000005,
+                      -3.081000000000003,3.6370000000000005,-8.429000000000002,0.38800000000000534,-11.677999999999997l-34.37899999999999,
+                      -34.403l34.37700000000001,-34.404c3.25,-3.2489999999999988,3.1200000000000045,-8.596,-0.38800000000000534,-11.677Z`,
+              visible: true,
+              offset: 1,
+              side: 'Top',
+              pathColor: 'black',
+              backgroundColor: 'none',
+              size: 30,
+              margin: {top: 12, bottom: 0, left: 0, right: 0}
+            },
+            {
+              name: 'node',
+              pathData: 'M17.75,13.89H2.5a2,2,0,0,1-2-2V2.5a2,2,0,0,1,2-2H17.75a2,2,0,0,1,2,2v9.39A2,2,0,0,1,17.75,13.89Z',
+              visible: true,
+              offset: 0,
+              side: 'Right',
+              pathColor: '#e9f8ff',
+              backgroundColor: 'none',
+              size: 35,
+              margin: {top: 0, bottom: 0, left: 0, right: 12}
+            },
+            {
+              name: 'decision',
+              pathData: 'M19.94,11.93l-8,8a2,2,0,0,1-2.83,0l-8-8a2,2,0,0,1,0-2.83l8-8a2,2,0,0,1,2.83,0l8,8A2,2,0,0,1,19.94,11.93Z',
+              visible: true,
+              offset: 0.5,
+              side: 'Right',
+              pathColor: '#fff6df',
+              backgroundColor: 'none',
+              size: 35,
+              margin: {top: 0, bottom: 0, left: 0, right: 12}
+            },
+            {
+              name: 'end',
+              pathData: 'M16.92,8.71A8.21,8.21,0,1,1,8.71.5,8.21,8.21,0,0,1,16.92,8.71Z',
+              visible: true,
+              offset: 1,
+              side: 'Right',
+              pathColor: '#ffedef',
+              backgroundColor: 'none',
+              size: 35,
+              margin: {top: 0, bottom: 0, left: 0, right: 12}
+            },
+            {
+              name: 'attachment',
+              pathData: 'M11,9h5.5L11,3.5V9M4,2h8l6,6V20a2,2,0,0,1-2,2H4a2,2,0,0,1-2-2V4A2,2,0,0,1,4,2M9,4H4V20H16V11H9Z',
+              visible: true,
+              offset: 0.5,
+              side: 'Bottom',
+              pathColor: '#5a5a64',
+              backgroundColor: 'none',
+              size: 35,
+              margin: {top: 0, bottom: 12, left: 0, right: 0}
+            },
+            {
+              name: 'annotation',
+              pathData: `M8,11h8v2H8Zm8-4H8V9h8Zm0,8H8v2h8ZM18,2H10V4h8V20H10v2h8a2,2,0,0,0,2-2V4A2,2,0,0,0,18,2ZM6,4H8V2H6A2,2,0,0,0,4,4v6L2,12l2,
+                        2v6a2,2,0,0,0,2,2H8V20H6Z`,
+              visible: true,
+              offset: 1,
+              side: 'Bottom',
+              pathColor: '#5a5a64',
+              backgroundColor: 'none',
+              size: 35,
+              margin: {top: 0, bottom: 12, left: 0, right: 0}
+            }
+          ];
+          let selectedItems: SelectorModel = {
+            constraints: SelectorConstraints.UserHandle,
+            userHandles: handles
+          };
+          let commandManager: any;
+          
+          let _userHandles: UserHandleModel[] = JSON.parse(JSON.stringify(handles));
+        
+          function selectionChanged(event: ISelectionChangeEventArgs): void {
+            if (event.state === 'Changed') {
+              if (event.newValue.length > 0) {
+                let node = null;
+                if (event.newValue[0].addInfo) {
+                  node = (event.newValue[0].addInfo as any).getDiagramNode();
+                }
+        
+                if (event.newValue[0].id === '0') {
+                  handles[1].visible = false;
+                handles[3].offset = 1;
+                  handles[4].visible = false;
+                  handles[6].offset = 0;
+                } else {
+                  // tslint:disable
+                  event.newValue[0].constraints = NodeConstraints.Default & ~NodeConstraints.Rotate;
+                  // tslint:enable
+                  handles = JSON.parse(JSON.stringify(_userHandles));
+                }
+              }
+        
+              selectedItems = {
+                constraints: SelectorConstraints.UserHandle,
+                userHandles: handles
+              };
+            }
+          }     
+        
+        diagram = new Diagram({
+            width: '100%',height: '600px',nodes: nodes,connectors: connectors, getCustomTool:getTool,
+            selectedItems: selectedItems,constraints: constraints,snapSettings: snapSettings,
+            scrollSettings: scrollSettings,commandManager: commandManager,selectionChange: selectionChanged
+        });
+        diagram.appendTo('#diagram');
+        class DrawConnector extends ConnectorDrawingTool {
+            public sourceNode: NodeModel;
+            private isDragging = false;
+        
+            constructor(private diagram: Diagram) {
+                super(diagram.commandHandler, '', diagram.selectedItems.nodes[0] as Node);
+                this.diagram.drawingObject = this.getConnector();
+                /*this.diagram.tool = DiagramTools.DrawOnce;*/
+                this.diagram.dataBind();
+            }
+        
+            public mouseDown(args: MouseEventArgs): Promise<void> {
+                let b = super.mouseDown(args);
+                this.sourceNode = this.diagram.selectedItems.nodes[0];
+                this.diagram.drawingObject = this.getConnector();
+                return b;
+            }
+        
+            public mouseUp(args: MouseEventArgs): Promise<void> {
+                let no:Node;
+                let b = super.mouseUp(args);
+                // this.diagram.add(this.addConnector(this.sourceNode, args.target));
+                this.diagram.selectedItems.connectors[0].sourceID = this.sourceNode.id;
+                this.diagram.dataBind();
+                this.diagram.clearSelection();
+                this.isDragging = false;
+                this.diagram.drawingObject = null;
+                return b;
+            }
+        
+            private addConnector(source: NodeModel, dest: NodeModel): ConnectorModel {
+                const connector: ConnectorModel = {
+                    sourceID: source.id,
+                    targetID: dest.id,
+                    shape: {
+                        type: 'Bpmn',
+                        flow: 'Sequence',
+                        sequence: 'Default'
+                    },
+                    style: {
+                        strokeColor: '#888888',
+                        strokeWidth: 1
+                    },
+                    targetDecorator: {
+                        style: {
+                            fill: '#555555',
+                            strokeColor: '#888888'
+                        },
+                        height: 6
+                    },
+                    type: 'Orthogonal',
+                    constraints: ConnectorConstraints.Default | ConnectorConstraints.LineRouting
+                  };
+        
+                  return connector;
+            }
+        
+            private getConnector(): ConnectorModel {
+                return {
+                    cornerRadius: 10,
+                    type: 'Orthogonal'
+                };
+            }
+        }
+        class OrdinaryTool extends ToolBase {
+            public node: NodeModel;
+            constructor(private diagram: Diagram) {
+                super(diagram.commandHandler, true);
+            }
+        
+            public mouseDown(args: MouseEventArgs): void {
+                super.mouseDown(args);
+                this.node = this.diagram.selectedItems.nodes[0];
+            }
+        
+            public mouseUp(args: MouseEventArgs): void {
+                super.mouseUp(args);
+        
+                let ordNode = new OrdinaryActivity(this.diagram.nodes.length + 1);
+                let nodeModel = ordNode.getDiagramNode();
+                let newPos: { x: number, y: number } = { x: 0, y: 0 };
+                newPos.x = this.node.offsetX + this.node.width + 75;
+                newPos.y = this.node.offsetY;
+                ordNode.setLocation(nodeModel, newPos.x, newPos.y);
+                this.createPorts(nodeModel);
+                const n = this.diagram.add(nodeModel) as Node;
+        
+                let ports: string[] = ['right', 'left'];
+        
+                if (this.diagram.layout.orientation === 'TopToBottom') {
+                  ports = ['bottom', 'top'];
+                }
+        
+                if ((this.node.shape as BpmnShapeModel).shape === 'Gateway') {
+                  if (this.diagram.layout.orientation === 'LeftToRight') {
+                    if ((this.node as Node).outEdges.length % 2 === 0) {
+                      ports = ['top', 'left'];
+                    } else {
+                      ports = ['bottom', 'left'];
+                    }
+                  } else {
+                    if ((this.node as Node).outEdges.length % 2 === 0) {
+                      ports = ['left', 'top'];
+                    } else {
+                      ports = ['right', 'top'];
+                    }
+                  }
+        
+                  ports[0] = '';
+                }
+        
+                this.diagram.add(this.getConnector(this.node, nodeModel, ports));
+                this.diagram.select([n], false);
+                this.diagram.bringIntoView(n.wrapper.bounds);
+                this.diagram.startTextEdit(n, n.annotations[0].id);
+            }
+        
+            private createPorts(node: Node | NodeModel): void {
+              let ports: PointPortModel[] = [
+                {
+                  id: 'left',
+                  offset: { x: 0, y: 0.5 },
+                  visibility: PortVisibility.Hidden,
+                  constraints: PortConstraints.InConnect
+                },
+                {
+                  id: 'top',
+                  offset: { x: 0.5, y: 0 },
+                  visibility: PortVisibility.Hidden,
+                  constraints: PortConstraints.InConnect
+                },
+                {
+                  id: 'right',
+                  offset: { x: 1, y: 0.5 },
+                  visibility: PortVisibility.Hidden,
+                  constraints: PortConstraints.OutConnect
+                },
+                {
+                  id: 'bottom',
+                  offset: { x: 0.5, y: 1 },
+                  visibility: PortVisibility.Hidden,
+                  constraints: PortConstraints.OutConnect
+                }
+              ];
+        
+              node.ports = ports;
+            }
+        
+            private getConnector(source: NodeModel, dest: NodeModel, ports: string[]): ConnectorModel {
+                const connector: ConnectorModel = {
+                  sourceID: source.id,
+                  targetID: dest.id,
+                  zIndex: 0,
+                  style: {
+                    strokeColor: '#888888',
+                    fill: '#555555',
+                    strokeWidth: 1
+                  },
+                  targetDecorator: {
+                    style: {
+                        fill: '#555555',
+                        strokeColor: '#888888'
+                    }
+                  },
+                  type: 'Orthogonal',
+                  constraints: ConnectorConstraints.Default | ConnectorConstraints.InheritLineRouting,
+                  cornerRadius: 10,
+                  sourcePortID: ports[0],
+                  targetPortID: ports[1]
+                };
+        
+                return connector;
+            }
+        }
+        class KtaNode {
+            constructor(protected id: number) {}
+        
+            public getDiagramNode(): NodeModel {
+                return null;
+            }
+        
+            public setAddInfo(node: NodeModel): void {
+                // Done by Child
+            }
+        
+            public setColor(node: NodeModel): void {
+                // Done by Child
+            }
+        
+            public setLocation(node: NodeModel, x: number, y: number): void {
+            }
+        }
+        
+        class OrdinaryActivity extends KtaNode {
+            private myNode: NodeModel;
+            constructor(protected id: number) {
+                super(id);
+            }
+        
+            public getDiagramNode(): NodeModel {
+                const width = 90;
+                const height = 60;
+        
+                this.myNode = {
+                    id: 'node' + this.id,
+                    annotations: [
+                        {
+                            content: 'Activity ' + this.id.toString(),
+                            style: {
+                                textOverflow: 'Clip',
+                                textWrapping: 'Wrap',
+                                whiteSpace: 'CollapseSpace'
+                            },
+                            margin: { top: 10, right: 5, bottom: 3, left: 5 },
+                            constraints: AnnotationConstraints.None & ~AnnotationConstraints.Drag & ~AnnotationConstraints.Resize
+                        }
+                    ],
+                    shape: {
+                        type: 'Bpmn',
+                        shape: 'Activity',
+                        activity: {
+                            activity: 'Task',
+                            task: {
+                                type: 'Service'
+                            }
+                        }
+                    },
+                    width: width,
+                    height: 60,
+                    style: {
+                        fill: '#d8ecdc',
+                        strokeColor: '#78BE83',
+                        strokeWidth: 3
+                    }
+                };
+        
+                return this.myNode;
+            }
+        
+            public setAddInfo(node: NodeModel): void {
+                node.addInfo = this;
+            }
+        
+            public setColor(node: NodeModel): void {
+                node.style.fill = '#FF4432';
+                this.setAddInfo(node);
+            }
+        
+            public setLocation(node: NodeModel, x: number, y: number): void {
+                node.offsetX = x;
+                node.offsetY = y;
+            }
+        }
+    })
+    it('Template Rendering', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        expect(diagram.nodes.length === 6 && diagram.connectors.length === 5).toBe(true);
+        diagram.select([diagram.nodes[3]]);
+        mouseEvents.mouseDownEvent(diagramCanvas, 410, 79);
+        mouseEvents.mouseUpEvent(diagramCanvas, 410, 79);    
+        mouseEvents.dragAndDropEvent(diagramCanvas, 535, 55, 200, 93);
+        expect(diagram.nodes.length === 7 && diagram.connectors.length === 7).toBe(true);
+        done();
+    });   
 });

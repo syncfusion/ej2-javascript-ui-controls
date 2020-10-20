@@ -172,10 +172,15 @@
 }
 
 .e-bigger .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+  margin-top: $ddl-closer-margin-top-bigger;
+}
+
+.e-bigger .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+.e-bigger.e-multiselect .e-down-icon .e-chips-close.e-close-hooker.e-multi-select-wrapper .e-chips-close.e-close-hooker {
   @if $ddl-multiselect-skin-name == 'bootstrap4' {
     font-size: $ddl-closer-hooker-font-bigger;
+    margin-top: $ddl-closer-margin-top;
   }
-  margin-top: $ddl-closer-margin-top-bigger;
 }
 
 .e-multi-select-wrapper input[type='text'] {

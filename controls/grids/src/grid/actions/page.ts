@@ -214,12 +214,14 @@ export class Page implements IAction {
         gObj.prevPageMoving = false;
         let prevPage: number = this.pageSettings.currentPage;
         this.pageSettings.currentPage = e.currentPage;
-        this.parent.notify(events.modelChanged, {
-            requestType: 'paging',
-            previousPage: prevPage,
-            currentPage: e.currentPage,
-            type: events.actionBegin
-        });
+        let args: Object = {
+            cancel: false, requestType: 'paging', previousPage: prevPage,
+            currentPage: e.currentPage, type: events.actionBegin
+        };
+        this.parent.notify(events.modelChanged, args);
+        if ((<{ cancel?: boolean }>args).cancel) {
+            e.cancel = true;
+        }
         this.parent.requestTypeAction = 'paging';
     }
 

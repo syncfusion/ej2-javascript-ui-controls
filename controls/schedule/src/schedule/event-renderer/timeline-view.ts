@@ -95,6 +95,7 @@ export class TimelineEvent extends MonthEvent {
         }
     }
 
+    // tslint:disable-next-line:max-func-body-length
     public renderEvents(event: { [key: string]: Object }, resIndex: number, appointmentsList?: { [key: string]: Object }[]): void {
         let startTime: Date = event[this.fields.startTime] as Date;
         let endTime: Date = event[this.fields.endTime] as Date;
@@ -150,6 +151,13 @@ export class TimelineEvent extends MonthEvent {
                     let firstChild: HTMLElement = this.getFirstChild(resIndex);
                     this.updateCellHeight(firstChild, height);
                 }
+                if (appointmentElement.offsetWidth < this.cellWidth && this.parent.activeViewOptions.timeScale.enable
+                    && this.parent.activeViewOptions.option !== 'TimelineMonth') {
+                    let resizeHandlers: HTMLElement[] = [].slice.call(appointmentElement.querySelectorAll('.' + cls.EVENT_RESIZE_CLASS));
+                    resizeHandlers.forEach((resizeHandler: HTMLElement) => {
+                        resizeHandler.style.width = Math.ceil(appointmentElement.offsetWidth / resizeHandler.offsetWidth) + 'px';
+                    });
+                }
             } else {
                 for (let i: number = 0; i < diffInDays; i++) {
                     let moreIndicator: HTMLElement = cellTd.querySelector('.' + cls.MORE_INDICATOR_CLASS) as HTMLElement;
@@ -193,6 +201,7 @@ export class TimelineEvent extends MonthEvent {
                 }
             }
         }
+        this.parent.renderTemplates();
     }
 
     public updateCellHeight(cell: HTMLElement, height: number): void {

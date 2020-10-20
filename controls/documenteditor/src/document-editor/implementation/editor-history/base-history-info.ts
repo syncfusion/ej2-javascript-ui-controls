@@ -202,7 +202,7 @@ export class BaseHistoryInfo {
                 if (comment.isReply) {
                     this.owner.editor.addReplyComment(comment, this.insertPosition);
                 } else {
-                    this.owner.editor.addCommentWidget(comment, false);
+                    this.owner.editor.addCommentWidget(comment, false, true, true);
                 }
             }
         } else {
@@ -326,7 +326,7 @@ export class BaseHistoryInfo {
                         }
                         if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo) &&
                             this.editorHistory.currentHistoryInfo.action === 'PageBreak' && this.documentHelper.blockToShift) {
-                            this.documentHelper.layout.shiftLayoutedItems();
+                            this.documentHelper.layout.shiftLayoutedItems(false);
                         }
                     }
                 }
@@ -351,15 +351,15 @@ export class BaseHistoryInfo {
                 || this.action === 'InsertColumnLeft'
                 || this.action === 'InsertColumnRight' || this.action === 'Accept Change') && (this.editorHistory.isRedoing
                     || this.editorHistory.currentHistoryInfo.action === 'Paste'))) {
-                        if (this.action === 'RemoveRowTrack' && this.editorHistory.isRedoing) {
-                            selectionStartTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.selectionStart);
-                            selectionEndTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.selectionEnd);
-                        } else {
-                            selectionStartTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(start);
-                            selectionEndTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(end);
-                        }
-                        this.owner.selection.selectRange(selectionStartTextPosition, selectionEndTextPosition);
-                        isSelectionChanged = true;
+            if (this.action === 'RemoveRowTrack' && this.editorHistory.isRedoing) {
+                selectionStartTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.selectionStart);
+                selectionEndTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.selectionEnd);
+            } else {
+                selectionStartTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(start);
+                selectionEndTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(end);
+            }
+            this.owner.selection.selectRange(selectionStartTextPosition, selectionEndTextPosition);
+            isSelectionChanged = true;
         }
         this.owner.trackChangesPane.isTrackingPageBreak = false;
         // Updates insert position of history info instance.
@@ -368,7 +368,7 @@ export class BaseHistoryInfo {
         // tslint:disable-next-line:max-line-length
         if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo) && (this.editorHistory.currentHistoryInfo.action === 'Accept All' || this.editorHistory.currentHistoryInfo.action === 'Reject All')) {
             if (this.owner.documentHelper.blockToShift) {
-                this.owner.documentHelper.layout.shiftLayoutedItems();
+                this.owner.documentHelper.layout.shiftLayoutedItems(false);
             }
         }
         this.owner.editorModule.reLayout(this.owner.selection, this.owner.selection.isEmpty);

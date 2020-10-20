@@ -32,11 +32,13 @@ describe('Rtl text editing validation', () => {
         }, 1000);
     });
     it('arabic text insert', () => {
+console.log('arabic text insert');
         editor.editor.insertText('سشةحمث');
         expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
         expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('سشةحمث')
     });
     it('arabic and english text insert', () => {
+console.log('arabic and english text insert');
         editor.openBlank();
         editor.editor.insertText('sample');
         editor.editor.insertText('سشةحمث');
@@ -44,6 +46,7 @@ describe('Rtl text editing validation', () => {
         expect((editor.selection.start.currentWidget.children[1] as TextElementBox).text).toBe('سشةحمث')
     });
     it('space after arabic text-consider as single text element box', () => {
+console.log('space after arabic text-consider as single text element box');
         editor.openBlank();
         editor.editor.insertText('سشةحمث');
         editor.editor.insertText('    ');
@@ -52,6 +55,7 @@ describe('Rtl text editing validation', () => {
         expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('سشةحمث    سشةحمث')
     });
     it('space after normal text followed by arabic text', () => {
+console.log('space after normal text followed by arabic text');
         editor.openBlank();
         editor.editor.insertText('سشةحمث');
         editor.editor.insertText('    ');
@@ -85,12 +89,14 @@ describe('Rtl text editing validation- combination of hebrew and arabic text', (
         }, 1000);
     });
     it('Hebrew text after arabic text insert', () => {
+console.log('Hebrew text after arabic text insert');
         editor.editor.insertText('سشةحمث');
         editor.editor.insertText('דשצפךק');
         expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
         expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('דשצפךק')
     });
     it('arabic and english text insert', () => {
+console.log('arabic and english text insert');
         editor.openBlank();
         editor.editor.insertText('sample');
         editor.editor.insertText('سشةحمث');
@@ -99,6 +105,7 @@ describe('Rtl text editing validation- combination of hebrew and arabic text', (
         expect((editor.selection.start.currentWidget.children[1] as TextElementBox).text).toBe('דשצפךק')
     });
     it('space after arabic text-consider as single text element box-2', () => {
+console.log('space after arabic text-consider as single text element box-2');
         editor.openBlank();
         editor.editor.insertText('سشةحمث');
         editor.editor.insertText('    ');
@@ -107,6 +114,7 @@ describe('Rtl text editing validation- combination of hebrew and arabic text', (
         expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('דשצפךק')
     });
     it('space after hebrew text followed by arabic text and normal text', () => {
+console.log('space after hebrew text followed by arabic text and normal text');
         editor.openBlank();
         editor.editor.insertText('سشةحمث');
         editor.editor.insertText('    ');
@@ -126,41 +134,49 @@ describe('Text helper getRTLlanguage() method validation', () => {
         textHelper = undefined;
     });
     it('input text is undefined', () => {
+console.log('input text is undefined');
         let text: RtlInfo = textHelper.getRtlLanguage(undefined);
         expect(text.isRtl).toBe(false);
         expect(text.id).toBe(0);
     });
     it('input text is empty', () => {
+console.log('input text is empty');
         let text: RtlInfo = textHelper.getRtlLanguage('');
         expect(text.isRtl).toBe(false);
         expect(text.id).toBe(0);
     });
     it('input text is normal text', () => {
+console.log('input text is normal text');
         let text: RtlInfo = textHelper.getRtlLanguage('Sample');
         expect(text.isRtl).toBe(false);
         expect(text.id).toBe(0);
     });
     it('input text is hebrew', () => {
+console.log('input text is hebrew');
         let text: RtlInfo = textHelper.getRtlLanguage('דשצפךק');
         expect(text.isRtl).toBe(true);
         expect(text.id).toBe(1);
     });
     it('input text is arabic', () => {
+console.log('input text is arabic');
         let text: RtlInfo = textHelper.getRtlLanguage('سشةحمث');
         expect(text.isRtl).toBe(true);
         expect(text.id).toBe(2);
     });
     it('input text is Syriac', () => {
+console.log('input text is Syriac');
         let text: RtlInfo = textHelper.getRtlLanguage('ܨܨܨ');
         expect(text.isRtl).toBe(true);
         expect(text.id).toBe(4);
     });
     it('input text is NKo', () => {
+console.log('input text is NKo');
         let text: RtlInfo = textHelper.getRtlLanguage('ߍߍߍ');
         expect(text.isRtl).toBe(true);
         expect(text.id).toBe(7);
     });
     it('input text is tifinagh', () => {
+console.log('input text is tifinagh');
         let text: RtlInfo = textHelper.getRtlLanguage('ⵙⵇ,ⵃⵍⴻ');
         expect(text.isRtl).toBe(true);
         expect(text.id).toBe(9);
@@ -196,19 +212,23 @@ describe('Apply Rtl for paragraph validation', () => {
         }, 1000);
     });
     it('Apply Rtl for already RTl paragraph in empty selection', () => {
+console.log('Apply Rtl for already RTl paragraph in empty selection');
         editor.selection.paragraphFormat.bidi = false;
         expect(editor.selection.paragraphFormat.bidi).toBe(false);
         expect(editor.selection.paragraphFormat.textAlignment).toBe('Right');
     });
     it('undo after apply rtl for paragraph', () => {
+console.log('undo after apply rtl for paragraph');
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.bidi).toBe(true);
     });
     it('redo after apply rtl for paragraph', () => {
+console.log('redo after apply rtl for paragraph');
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.bidi).toBe(false);
     });
     it('Apply Rtl for already RTl paragraph in non-empty selection', () => {
+console.log('Apply Rtl for already RTl paragraph in non-empty selection');
         editor.selection.handleShiftDownKey();
         editor.selection.handleShiftDownKey();
         editor.selection.paragraphFormat.bidi = false;
@@ -216,12 +236,14 @@ describe('Apply Rtl for paragraph validation', () => {
         expect(editor.selection.paragraphFormat.bidi).toBe(true);
     });
     it('undo after apply rtl for paragraph', () => {
+console.log('undo after apply rtl for paragraph');
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.bidi).toBe(false);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.bidi).toBeUndefined();
     });
     it('redo after apply rtl for paragraph', () => {
+console.log('redo after apply rtl for paragraph');
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.bidi).toBe(false);
         editor.editorHistory.redo();
@@ -253,15 +275,18 @@ describe('Apply Rtl for Table list paragraph validation', () => {
         }, 1000);
     });
     it('Apply Rtl for table and list in non-empty selection', () => {
+console.log('Apply Rtl for table and list in non-empty selection');
         editor.selection.selectAll();
         editor.selection.paragraphFormat.bidi = false;
         editor.selection.paragraphFormat.bidi = true;
     });
     it('undo Apply Rtl for table and list in non-empty selection', () => {
+console.log('undo Apply Rtl for table and list in non-empty selection');
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.bidi).toBe(false);
     });
     it('redo Apply Rtl for table and list in non-empty selection', () => {
+console.log('redo Apply Rtl for table and list in non-empty selection');
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.bidi).toBe(true);
     });
@@ -294,11 +319,13 @@ describe('LTR text editing inside RTL paragraph', () => {
         }, 1000);
     });
     it('LTR text editing inside Bidi false paragraph at start of paragraph', () => {
+console.log('LTR text editing inside Bidi false paragraph at start of paragraph');
         editor.editor.insertText('s');
         let textElement: TextElementBox = editor.selection.start.currentWidget.children[editor.selection.start.currentWidget.children.length - 1] as TextElementBox;
         expect(textElement.text).toBe('s');
     });
     it('LTR text editing inside Bidi false paragraph', () => {
+console.log('LTR text editing inside Bidi false paragraph');
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
@@ -308,6 +335,7 @@ describe('LTR text editing inside RTL paragraph', () => {
         expect(textElement.text).toBe('s');
     });
     it('LTR text editing inside Bidi false paragraph at end of paragraph', () => {
+console.log('LTR text editing inside Bidi false paragraph at end of paragraph');
         editor.selection.handleEndKey();
         editor.editor.insertText('s');
         // let textElement: TextElementBox = editor.selection.start.currentWidget.children[0] as TextElementBox;
@@ -315,6 +343,7 @@ describe('LTR text editing inside RTL paragraph', () => {
 
     });
     it('LTR text editing inside Bidi true paragraph', () => {
+console.log('LTR text editing inside Bidi true paragraph');
         editor.selection.handleDownKey();
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
@@ -350,12 +379,14 @@ describe('Field insert with rtl para', () => {
         }, 1000);
     });
     it('Insert Field at begin of RTL paragraph', () => {
+console.log('Insert Field at begin of RTL paragraph');
         let text = 'Lead#Email';
 
         editor.editor.insertField('MERGEFIELD ' + text + ' \\* MERGEFORMAT');
-        expect(editor.selection.start.currentWidget.children[9] instanceof FieldElementBox).toBe(true);
+        expect(editor.selection.start.currentWidget.children[8] instanceof FieldElementBox).toBe(true);
     });
     it('Insert field at middle of RTL paragraph', () => {
+console.log('Insert field at middle of RTL paragraph');
         editor.selection.handleControlRightKey();
         editor.selection.handleControlRightKey();
         editor.selection.handleControlRightKey();
@@ -367,9 +398,10 @@ describe('Field insert with rtl para', () => {
         let text = 'Lead#Email';
 
         editor.editor.insertField('MERGEFIELD ' + text + ' \\* MERGEFORMAT');
-        expect(editor.selection.start.currentWidget.children[11] instanceof FieldElementBox).toBe(true);
+        expect(editor.selection.start.currentWidget.children[10] instanceof FieldElementBox).toBe(true);
     });
     it('Insert field at last of RTL paragraph', () => {
+console.log('Insert field at last of RTL paragraph');
         editor.selection.handleControlRightKey();
         editor.selection.handleControlRightKey();
         editor.selection.handleControlRightKey();

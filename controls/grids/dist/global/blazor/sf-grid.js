@@ -2930,7 +2930,7 @@ var Edit = /** @class */ (function () {
                 // }
                 div.style.top = null;
             }
-            div.style.display = 'none';
+            // div.style.display = 'none';
             arrowPosition = validationForBottomRowPos ? 'bottom' : 'top';
             toolTipPos[name_1] = "top: " + div.style.top + "; bottom: " + div.style.bottom + "; left: " + div.style.left + "; \n            max-width: " + div.style.maxWidth + "; width: " + div.style.width + "; text-align: center; position: " + div.style.position + ";";
         }
@@ -3469,6 +3469,7 @@ var RowDD = /** @class */ (function () {
             _this.dragStartData = _this.rowData;
             var dropElem = document.getElementById(gObj.options.rowDropTarget);
             if (gObj.options.rowDropTarget && dropElem && dropElem.blazor__instance &&
+                (typeof dropElem.blazor__instance.getModuleName === 'function') &&
                 dropElem.blazor__instance.getModuleName() === 'grid') {
                 dropElem.blazor__instance.getContent().classList.add('e-allowRowDrop');
             }
@@ -3559,6 +3560,7 @@ var RowDD = /** @class */ (function () {
                 gObj.dotNetRef.invokeMethodAsync("ReorderRows", fromIdx, toIdx, 'add', false, targetClass, targetID, null, true);
             }
             if (gObj.options.rowDropTarget && dropElement && dropElement.blazor__instance &&
+                (typeof dropElement.blazor__instance.getModuleName === 'function') &&
                 dropElement.blazor__instance.getModuleName() === 'grid') {
                 dropElement.blazor__instance.getContent().classList.remove('e-allowRowDrop');
             }
@@ -5756,6 +5758,21 @@ var Grid = {
         else {
             return null;
         }
+    },
+    removePersistItem: function (element, id) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            var _this = element.blazor__instance;
+            _this.getHeaderTable().style.width = "";
+            _this.getContentTable().style.width = "";
+            if (_this.options.aggregatesCount != 0) {
+                _this.getFooterContent().querySelector(".e-table").style.width = "";
+            }
+            if (_this.options.frozenColumns > 0) {
+                _this.element.querySelector(".e-movableheader").querySelector('.e-table').style.width = "";
+                _this.element.querySelector(".e-movablecontent").querySelector('.e-table').style.width = "";
+            }
+        }
+        localStorage.removeItem(id);
     },
     focusChild: function (element, rowuid, celluid) {
         var query = 'button, [href], input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])';

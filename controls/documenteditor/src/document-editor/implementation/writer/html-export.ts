@@ -29,7 +29,7 @@ export class HtmlExport {
         this.document = document;
         let html: string = '';
         for (let i: number = 0; i < document.sections.length; i++) {
-            html = this.serializeSection(document.sections[i]);
+            html += this.serializeSection(document.sections[i]);
         }
         return html;
     }

@@ -284,7 +284,12 @@ export class InlineEditRender {
     private appendChildren(form: Element, data: Object, isFrozen: boolean): void {
         let dummyData: Object = extend({}, data, {isAdd: !this.isEdit, isFrozen: isFrozen}, true);
         let editTemplateID: string = this.parent.element.id + 'editSettingsTemplate';
-        appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
+        if (this.parent.isReact && typeof (this.parent.editSettings.template) !== 'string') {
+            this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID, null, null, form);
+            this.parent.renderTemplates();
+        } else {
+            appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
+        }
         let setRules: Function = () => {
             let cols: Column[] = this.parent.getColumns();
             for (let i: number = 0; i < cols.length; i++) {

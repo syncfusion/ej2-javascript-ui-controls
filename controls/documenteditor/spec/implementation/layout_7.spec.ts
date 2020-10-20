@@ -28,15 +28,18 @@ describe('RTL Table layout validation', () => {
         }, 1000);
     });
     it('Table widget with bidi true validation', () => {
+console.log('Table widget with bidi true validation');
         let tableWidget: TableWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget);
         expect(tableWidget.tableFormat.bidi).toBe(true);
     });
     it('Table widget with bidi true validation', () => {
+console.log('Table widget with bidi true validation');
         let tableWidget: TableWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[10] as TableWidget);
         expect(tableWidget.tableFormat.bidi).toBe(true);
         expect(tableWidget.tableFormat.tableAlignment).toBe('Left');
     });
     it('Table widget with bidi true validation', () => {
+console.log('Table widget with bidi true validation');
         let tableWidget: TableWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[14] as TableWidget);
         expect(tableWidget.tableFormat.bidi).toBe(true);
         expect(tableWidget.tableFormat.tableAlignment).toBe('Right');

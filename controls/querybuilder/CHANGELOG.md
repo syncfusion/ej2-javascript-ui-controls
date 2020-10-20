@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.3.42 (2020-10-20)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with 'setRulesFromSql' method is fixed.
+- Issue with changing value field width is fixed.
+
 ## 18.3.40 (2020-10-13)
 
 ### QueryBuilder

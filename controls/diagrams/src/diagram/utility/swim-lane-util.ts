@@ -836,7 +836,7 @@ export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, co
                 }
             }
             if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
-                laneObj.id += randomId();
+                laneObj.id = (laneObj.id === '') ? randomId() : laneObj.id;
             }
             if (count !== undefined) {
                 shape.lanes.splice(count, 0, laneObj);

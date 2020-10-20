@@ -4,6 +4,7 @@ describe('Shading Validation Testing', () => {
         WShading.clear();
     });
     it('Get Value  Testing', () => {
+console.log('Get Value  Testing');
         let shading: WShading = new WShading();
         let foregroundColor: string = shading.foregroundColor;
         let backgroundColor: string = shading.backgroundColor;
@@ -11,6 +12,7 @@ describe('Shading Validation Testing', () => {
         expect(backgroundColor).toBe('empty');
     });
     it('Set Value  Testing', () => {
+console.log('Set Value  Testing');
         let shading: WShading = new WShading();
         shading.foregroundColor = 'black';
         shading.backgroundColor = 'red';
@@ -18,6 +20,7 @@ describe('Shading Validation Testing', () => {
         expect(shading.foregroundColor).toBe('black');
     });
     it('Set Invalid Value  Testing', () => {
+console.log('Set Invalid Value  Testing');
         let shading: WShading = new WShading();
         shading.foregroundColor = '';
         shading.backgroundColor = undefined;
@@ -25,12 +28,14 @@ describe('Shading Validation Testing', () => {
         expect(shading.foregroundColor).toBe('empty');
     });
     it('Set Invalid Value  Testing', () => {
+console.log('Set Invalid Value  Testing');
         let shading: WShading = new WShading();
         shading.foregroundColor = 'blue';
         shading.foregroundColor = 'blue';
         expect(shading.foregroundColor).toBe('blue');
     });
     it('copy format  Testing', () => {
+console.log('copy format  Testing');
         let shading1: WShading = new WShading();
         let shading: WShading = new WShading();
         shading.backgroundColor = 'blue';
@@ -38,12 +43,14 @@ describe('Shading Validation Testing', () => {
         expect(shading1.backgroundColor).toBe('blue');
     });
     it('copy format undefined  Testing', () => {
+console.log('copy format undefined  Testing');
         let shading1: WShading = new WShading();
         let shading: WShading = new WShading();
         shading1.copyFormat(shading);
         expect('').toBe('');
     });
     it('copy format undefined  Testing', () => {
+console.log('copy format undefined  Testing');
         let shading: WShading = new WShading();
         shading.copyFormat(undefined);
         expect('').toBe('');

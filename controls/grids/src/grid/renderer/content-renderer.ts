@@ -381,7 +381,7 @@ export class ContentRender implements IRenderer {
             this.parent.destroyTemplate(['template'], templatetoclear);
         }
         if (this.parent.isReact && args.requestType !== 'infiniteScroll' && !args.isFrozen) {
-            this.parent.destroyTemplate(['template', 'rowTemplate', 'detailTemplate', 'captionTemplate', 'commandsTemplate']);
+            this.parent.destroyTemplate(['columnTemplate', 'rowTemplate', 'detailTemplate', 'captionTemplate', 'commandsTemplate']);
             this.parent.renderTemplates();
         }
         if (this.parent.enableColumnVirtualization) {

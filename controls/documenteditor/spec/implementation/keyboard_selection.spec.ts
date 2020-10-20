@@ -1610,6 +1610,7 @@ describe('Keyboard shortcut internal API Testing', () => {
         }, 2000);
     });
     it('right key navigation Testing ', () => {
+console.log('right key navigation Testing ');
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -1619,6 +1620,7 @@ describe('Keyboard shortcut internal API Testing', () => {
         expect(editor.selection.start.offset).toBe(3);
     });
     it('left key navigation Testing ', () => {
+console.log('left key navigation Testing ');
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -1628,6 +1630,7 @@ describe('Keyboard shortcut internal API Testing', () => {
         expect(editor.selection.start.offset).toBe(0);
     });
     it('down key navigation Testing ', () => {
+console.log('down key navigation Testing ');
         let currentPara: ParagraphWidget = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
@@ -1635,6 +1638,7 @@ describe('Keyboard shortcut internal API Testing', () => {
         expect(currentPara === editor.selection.start.currentWidget.paragraph).toBe(false);
     });
     it('Up key navigation Testing', () => {
+console.log('Up key navigation Testing');
         let currentPara: ParagraphWidget = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
@@ -1642,11 +1646,13 @@ describe('Keyboard shortcut internal API Testing', () => {
         expect(currentPara === editor.selection.start.currentWidget.paragraph).toBe(false);
     });
     it('end key navigation Testing', () => {
+console.log('end key navigation Testing');
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(22);
     });
     it('home key navigation Testing', () => {
+console.log('home key navigation Testing');
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
@@ -1680,6 +1686,7 @@ describe('control shift combination testing', () => {
         }, 2000);
     });
     it('shift control right selection testing', () => {
+console.log('shift control right selection testing');
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: true, shiftKey: true, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: true, shiftKey: true, which: 0 };
@@ -1688,12 +1695,14 @@ describe('control shift combination testing', () => {
         expect(editor.selection.end.offset).toBe(16);
     });
     it('shift control left selection testing', () => {
+console.log('shift control left selection testing');
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: true, shiftKey: true, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
         expect(editor.selection.end.offset).toBe(10);
     });
     it('shift control down selection testing', () => {
+console.log('shift control down selection testing');
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: true, shiftKey: true, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: true, shiftKey: true, which: 0 };
@@ -1702,17 +1711,20 @@ describe('control shift combination testing', () => {
         expect(editor.selection.end.offset).toBe(82);
     });
     it('shift control up selection testing', () => {
+console.log('shift control up selection testing');
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: true, shiftKey: true, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
         expect(editor.selection.end.offset).toBe(0);
     });
     it(' shift control end selection testing', () => {
+console.log(' shift control end selection testing');
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: true, shiftKey: true, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.end.offset === editor.documentEnd.offset + 1).toBe(true);
     });
     it('shift control home selection testing', () => {
+console.log('shift control home selection testing');
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: true, shiftKey: true, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
@@ -1746,16 +1758,19 @@ describe('control key combination testing', () => {
         }, 2000);
     });
     it('control right navigation Testing', () => {
+console.log('control right navigation Testing');
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(10);
     });
     it('control left navigation testing', () => {
+console.log('control left navigation testing');
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
     });
     it('control down navigation testing', () => {
+console.log('control down navigation testing');
         let currentPara: ParagraphWidget = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
@@ -1763,6 +1778,7 @@ describe('control key combination testing', () => {
         expect(currentPara === editor.selection.start.currentWidget.paragraph).toBe(false);
     });
     it('control up navigation testing', () => {
+console.log('control up navigation testing');
         let currentPara: ParagraphWidget = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
@@ -1770,11 +1786,13 @@ describe('control key combination testing', () => {
         expect(currentPara === editor.selection.start.currentWidget.paragraph).toBe(false);
     });
     it('control end navigation testing', () => {
+console.log('control end navigation testing');
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.end.offset === editor.documentEnd.offset).toBe(true);
     });
     it('control home navigation testing', () => {
+console.log('control home navigation testing');
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset === editor.documentStart.offset).toBe(true);
@@ -1808,6 +1826,7 @@ describe('shift key combination testing', () => {
         }, 2000);
     });
     it('Shift right selection Testing ', () => {
+console.log('Shift right selection Testing ');
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
@@ -1818,6 +1837,7 @@ describe('shift key combination testing', () => {
         expect(editor.selection.end.offset).toBe(3);
     });
     it('Shift left selection Testing', () => {
+console.log('Shift left selection Testing');
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
@@ -1828,6 +1848,7 @@ describe('shift key combination testing', () => {
         expect(editor.selection.end.offset).toBe(0);
     });
     it('shift down selection testing', () => {
+console.log('shift down selection testing');
         let currentPara: ParagraphWidget = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
@@ -1836,6 +1857,7 @@ describe('shift key combination testing', () => {
         expect(currentPara === editor.selection.end.currentWidget.paragraph).toBe(false);
     });
     it('shift up selection testing', () => {
+console.log('shift up selection testing');
         let currentPara: ParagraphWidget = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
@@ -1844,11 +1866,13 @@ describe('shift key combination testing', () => {
         expect(currentPara === editor.selection.end.currentWidget.paragraph).toBe(true);
     });
     it('shift end navigation testing', () => {
+console.log('shift end navigation testing');
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.end.offset).toBe(23);
     });
     it('shift home navigation testing', () => {
+console.log('shift home navigation testing');
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.end.offset).toBe(0);
@@ -1881,6 +1905,7 @@ describe('whole document selection testing', () => {
         }, 2000);
     });
     it('control A testing', () => {
+console.log('control A testing');
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.end.offset === editor.documentEnd.offset + 1).toBe(true);
@@ -1918,23 +1943,28 @@ describe('Keyboard shortcut validation in Field', () => {
         }, 2000);
     });
     it('left key validation', () => {
+console.log('left key validation');
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
         expect(editor.selection.start.offset).toBe(50);
     });
     it('Up key validation', () => {
+console.log('Up key validation');
         editor.selection.handleUpKey();
         expect(editor.selection.start.offset).toBe(50);
     });
     it('Right key validation', () => {
+console.log('Right key validation');
         editor.selection.handleRightKey();
         expect(editor.selection.start.offset).toBe(52);
     });
     it('Down key validation', () => {
+console.log('Down key validation');
         editor.selection.handleDownKey();
         expect(editor.selection.start.offset).toBe(52);
     });
     it('Shift Up key validation', () => {
+console.log('Shift Up key validation');
         editor.selection.handleShiftUpKey();
         expect(editor.selection.start.paragraph).not.toBe(editor.selection.end.paragraph);
     });
@@ -1972,18 +2002,22 @@ describe('Keyboard shortcut validation in Field home and end key', () => {
         }, 2000);
     });
     it('Home key validation', () => {
+console.log('Home key validation');
         editor.selection.handleHomeKey();
         expect(editor.selection.start.offset).toBe(0);
     });
     it('End key validation', () => {
+console.log('End key validation');
         editor.selection.handleEndKey();
         expect(editor.selection.start.offset).toBe(53);
     });
     it('shift Home key validation', () => {
+console.log('shift Home key validation');
         editor.selection.handleShiftHomeKey();
         expect(editor.selection.start).not.toEqual(editor.selection.end);
     });
     it('shift End key validation', () => {
+console.log('shift End key validation');
         editor.selection.handleHomeKey();
         editor.selection.handleShiftEndKey();
         expect(editor.selection.start).not.toEqual(editor.selection.end);

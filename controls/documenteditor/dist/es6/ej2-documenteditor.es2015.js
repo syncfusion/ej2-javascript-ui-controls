@@ -3367,7 +3367,7 @@ class Revision {
             // tslint:disable-next-line:max-line-length
             if (editorHistory.currentHistoryInfo && (editorHistory.currentHistoryInfo.action === 'Accept All' || editorHistory.currentHistoryInfo.action === 'Reject All')) {
                 if (this.owner.documentHelper.blockToShift) {
-                    this.owner.documentHelper.layout.shiftLayoutedItems();
+                    this.owner.documentHelper.layout.shiftLayoutedItems(false);
                 }
             }
             editorHistory.updateHistory();
@@ -6632,7 +6632,10 @@ class Layout {
             else if (this.documentHelper.textHelper.containsSpecialCharAlone(text.charAt(i))) {
                 currentCharacterType = 2;
                 if (separateEachWordSplitChars = (isTextBidi || (text.charAt(i) === ' ' && wordSplitChars === ''))) {
-                    wordSplitChars += text[i];
+                    if (i !== 0 && /^[0-9]+$/.test(text[i - 1]) && text[i] === '.' && text[i + 1] && /^[0-9]+$/.test(text[i + 1])) {
+                        numberText += text[i];
+                        currentCharacterType = 4;
+                    }
                 }
                 else {
                     wordSplitChars += text[i];
@@ -10861,7 +10864,7 @@ class Layout {
     /**
      * @private
      */
-    shiftLayoutedItems() {
+    shiftLayoutedItems(reLayout) {
         if (isNullOrUndefined(this.documentHelper.blockToShift) || isNullOrUndefined(this.documentHelper.blockToShift.containerWidget)) {
             this.documentHelper.blockToShift = undefined;
             return;
@@ -10911,7 +10914,9 @@ class Layout {
         // if (viewer instanceof PageLayoutViewer) {
         this.documentHelper.removeEmptyPages();
         this.updateFieldElements();
-        viewer.updateScrollBars();
+        if (!this.documentHelper.owner.enableLockAndEdit || !reLayout) {
+            viewer.updateScrollBars();
+        }
         // }
     }
     /**
@@ -12596,7 +12601,9 @@ class Renderer {
     render(page, bodyWidget) {
         for (let i = 0; i < bodyWidget.childWidgets.length; i++) {
             let widget = bodyWidget.childWidgets[i];
-            if (i === 0 && bodyWidget.childWidgets[0] instanceof TableWidget && page.repeatHeaderRowTableWidget) {
+            if (i === 0 && bodyWidget.childWidgets[0] instanceof TableWidget &&
+                (bodyWidget.childWidgets[0].childWidgets[0].rowFormat.isHeader ||
+                    page.repeatHeaderRowTableWidget)) {
                 // tslint:disable-next-line:max-line-length
                 this.renderHeader(page, widget, this.documentHelper.layout.getHeader(bodyWidget.childWidgets[0]));
             }
@@ -12633,11 +12640,46 @@ class Renderer {
      * @param {Widget} widget
      */
     renderWidget(page, widget) {
+        if (this.documentHelper.owner.enableLockAndEdit) {
+            this.renderLockRegionBorder(page, widget);
+        }
         if (widget instanceof ParagraphWidget) {
             this.renderParagraphWidget(page, widget);
         }
         else {
             this.renderTableWidget(page, widget);
+        }
+    }
+    renderLockRegionBorder(page, widget) {
+        if (!widget.isInsideTable && widget instanceof BlockWidget && widget.locked) {
+            let settinsModel = this.documentHelper.owner.documentEditorSettings.collaborativeEditingSettings;
+            let sectionFormat = page.bodyWidgets[0].sectionFormat;
+            let leftPosition = HelperMethods.convertPointToPixel(sectionFormat.leftMargin) - 5;
+            let pageWidth = sectionFormat.pageWidth - sectionFormat.leftMargin - sectionFormat.rightMargin;
+            pageWidth = HelperMethods.convertPointToPixel(pageWidth) + 10;
+            if (this.viewer instanceof WebLayoutViewer) {
+                // tslint:disable-next-line:max-line-length
+                leftPosition = widget.x - 5;
+                pageWidth = (this.documentHelper.visibleBounds.width - (this.viewer.padding.right * 5)) / this.documentHelper.zoomFactor;
+            }
+            let previousWidget = widget.previousRenderedWidget;
+            let nextWidget = widget.nextRenderedWidget;
+            // tslint:disable-next-line:max-line-length
+            let color = widget.lockedBy === this.documentHelper.owner.currentUser ? settinsModel.editableRegionColor : settinsModel.lockedRegionColor;
+            let topPosition = widget.y;
+            let height = widget.y + widget.height;
+            //Left border
+            this.renderSingleBorder(color, leftPosition, topPosition, leftPosition, height, 1);
+            //Top border
+            if (isNullOrUndefined(previousWidget) || !previousWidget.locked || widget.lockedBy !== previousWidget.lockedBy) {
+                this.renderSingleBorder(color, leftPosition, topPosition, leftPosition + pageWidth, topPosition, 1);
+            }
+            //Right border
+            this.renderSingleBorder(color, leftPosition + pageWidth, topPosition, leftPosition + pageWidth, height, 1);
+            if (isNullOrUndefined(nextWidget) || !nextWidget.locked || widget.lockedBy !== nextWidget.lockedBy) {
+                // Bottom border
+                this.renderSingleBorder(color, leftPosition, height, leftPosition + pageWidth, height, 1);
+            }
         }
     }
     /**
@@ -12737,7 +12779,7 @@ class Renderer {
             let widget = cellWidget.childWidgets[i];
             let width = cellWidget.width + cellWidget.margin.left - cellWidget.leftBorderWidth;
             if (!this.isPrinting) {
-                this.clipRect(cellWidget.x, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));
+                //this.clipRect(cellWidget.x, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));
             }
             this.renderWidget(page, widget);
             this.pageContext.restore();
@@ -12804,34 +12846,57 @@ class Renderer {
             if (elementBox instanceof ShapeElementBox) {
                 continue;
             }
-            if (elementBox instanceof CommentCharacterElementBox &&
-                elementBox.commentType === 0 && this.documentHelper.owner.selectionModule) {
-                if (this.documentHelper.owner.enableComment && !isCommentMark) {
-                    isCommentMark = true;
-                    elementBox.renderCommentMark();
-                    let pageGap = 0;
-                    if (this.viewer instanceof PageLayoutViewer) {
-                        pageGap = this.viewer.pageGap;
-                    }
-                    let style = 'display:block;position:absolute;';
-                    elementBox.commentMark.style.display = 'block';
-                    elementBox.commentMark.style.position = 'absolute';
-                    let rightMargin = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.rightMargin);
-                    let pageWidth = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.pageWidth);
-                    // tslint:disable-next-line:max-line-length
-                    let leftPosition = page.boundingRectangle.x + this.getScaledValue((pageWidth - rightMargin) + (rightMargin / 4)) + 'px;';
-                    if (this.viewer instanceof WebLayoutViewer) {
-                        // tslint:disable-next-line:max-line-length
-                        leftPosition = (page.boundingRectangle.width - (this.viewer.padding.right * 2) - (this.viewer.padding.left * 2)) + 'px;';
-                    }
-                    let topPosition = this.getScaledValue(top + (page.boundingRectangle.y -
-                        (pageGap * (page.index + 1)))) + (pageGap * (page.index + 1)) + 'px;';
-                    style = style + 'left:' + leftPosition + 'top:' + topPosition;
-                    elementBox.commentMark.setAttribute('style', style);
+            if (elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox) {
+                let pageGap = 0;
+                if (this.viewer instanceof PageLayoutViewer) {
+                    pageGap = this.viewer.pageGap;
                 }
-                else {
-                    if (elementBox.commentMark) {
-                        elementBox.commentMark.setAttribute('style', 'display:none');
+                let style = 'display:block;position:absolute;';
+                let topPosition = this.getScaledValue((top - 10) + (page.boundingRectangle.y -
+                    (pageGap * (page.index + 1)))) + (pageGap * (page.index + 1)) + 'px;';
+                if (elementBox instanceof EditRangeStartElementBox) {
+                    if (this.documentHelper.owner.enableLockAndEdit) {
+                        let l10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+                        l10n.setLocale(this.documentHelper.owner.locale);
+                        elementBox.renderLockMark(this.documentHelper.owner.currentUser, l10n);
+                        // tslint:disable-next-line:max-line-length
+                        let settings = this.documentHelper.owner.documentEditorSettings.collaborativeEditingSettings;
+                        let color = elementBox.user === this.documentHelper.owner.currentUser ? settings.editableRegionColor : settings.lockedRegionColor;
+                        style += `color:${color};`;
+                        let leftMargin = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.leftMargin);
+                        let leftPosition = page.boundingRectangle.x + this.getScaledValue(leftMargin - 20) + 'px;';
+                        if (this.viewer instanceof WebLayoutViewer) {
+                            leftPosition = lineWidget.paragraph.x - 5 + 'px;';
+                        }
+                        style = style + 'left:' + leftPosition + 'top:' + topPosition;
+                        elementBox.editRangeMark.setAttribute('style', style);
+                    }
+                    else {
+                        if (elementBox.editRangeMark) {
+                            elementBox.editRangeMark.setAttribute('style', 'display:none');
+                        }
+                    }
+                }
+                else if (elementBox instanceof CommentCharacterElementBox &&
+                    elementBox.commentType === 0 && this.documentHelper.owner.selectionModule) {
+                    if (this.documentHelper.owner.enableComment && !isCommentMark) {
+                        isCommentMark = true;
+                        elementBox.renderCommentMark();
+                        let rightMargin = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.rightMargin);
+                        let pageWidth = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.pageWidth);
+                        // tslint:disable-next-line:max-line-length
+                        let leftPosition = page.boundingRectangle.x + this.getScaledValue((pageWidth - rightMargin) + (rightMargin / 4)) + 'px;';
+                        if (this.viewer instanceof WebLayoutViewer) {
+                            // tslint:disable-next-line:max-line-length
+                            leftPosition = (page.boundingRectangle.width - (this.viewer.padding.right * 2) - (this.viewer.padding.left * 2)) + 'px;';
+                        }
+                        style = style + 'left:' + leftPosition + 'top:' + topPosition;
+                        elementBox.commentMark.setAttribute('style', style);
+                    }
+                    else {
+                        if (elementBox.commentMark) {
+                            elementBox.commentMark.setAttribute('style', 'display:none');
+                        }
                     }
                 }
             }
@@ -13494,14 +13559,14 @@ class Renderer {
         // if (!isNullOrUndefined(border )) {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
         // tslint:disable-next-line:max-line-length
-        this.renderSingleBorder(border, tableWidget.x - tableWidget.margin.left - lineWidth / 2, tableWidget.y, tableWidget.x - tableWidget.margin.left - lineWidth / 2, tableWidget.y + tableWidget.height, lineWidth);
+        this.renderSingleBorder(border.color, tableWidget.x - tableWidget.margin.left - lineWidth / 2, tableWidget.y, tableWidget.x - tableWidget.margin.left - lineWidth / 2, tableWidget.y + tableWidget.height, lineWidth);
         // }
         border = layout.getTableTopBorder(table.tableFormat.borders);
         lineWidth = 0;
         // if (!isNullOrUndefined(border )) {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
         // tslint:disable-next-line:max-line-length
-        this.renderSingleBorder(border, tableWidget.x - tableWidget.margin.left - lineWidth, tableWidget.y - lineWidth / 2, tableWidget.x + tableWidget.width + lineWidth + tableWidget.margin.right, tableWidget.y - lineWidth / 2, lineWidth);
+        this.renderSingleBorder(border.color, tableWidget.x - tableWidget.margin.left - lineWidth, tableWidget.y - lineWidth / 2, tableWidget.x + tableWidget.width + lineWidth + tableWidget.margin.right, tableWidget.y - lineWidth / 2, lineWidth);
         // }
         border = !table.isBidiTable ? layout.getTableRightBorder(table.tableFormat.borders)
             : layout.getTableLeftBorder(table.tableFormat.borders);
@@ -13509,14 +13574,14 @@ class Renderer {
         // if (!isNullOrUndefined(border )) {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
         // tslint:disable-next-line:max-line-length
-        this.renderSingleBorder(border, tableWidget.x + tableWidget.width + tableWidget.margin.right + lineWidth / 2, tableWidget.y, tableWidget.x + tableWidget.width + tableWidget.margin.right + lineWidth / 2, tableWidget.y + tableWidget.height, lineWidth);
+        this.renderSingleBorder(border.color, tableWidget.x + tableWidget.width + tableWidget.margin.right + lineWidth / 2, tableWidget.y, tableWidget.x + tableWidget.width + tableWidget.margin.right + lineWidth / 2, tableWidget.y + tableWidget.height, lineWidth);
         // }
         border = layout.getTableBottomBorder(table.tableFormat.borders);
         lineWidth = 0;
         // if (!isNullOrUndefined(border )) {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
         // tslint:disable-next-line:max-line-length
-        this.renderSingleBorder(border, tableWidget.x - tableWidget.margin.left - lineWidth, tableWidget.y + tableWidget.height - lineWidth / 2, tableWidget.x + tableWidget.width + lineWidth + tableWidget.margin.right, tableWidget.y + tableWidget.height - lineWidth / 2, lineWidth);
+        this.renderSingleBorder(border.color, tableWidget.x - tableWidget.margin.left - lineWidth, tableWidget.y + tableWidget.height - lineWidth / 2, tableWidget.x + tableWidget.width + lineWidth + tableWidget.margin.right, tableWidget.y + tableWidget.height - lineWidth / 2, lineWidth);
         // }
     }
     /**
@@ -13561,7 +13626,7 @@ class Renderer {
         this.renderCellBackground(height, cellWidget, cellLeftMargin, lineWidth);
         let leftBorderWidth = lineWidth;
         // tslint:disable-next-line:max-line-length
-        this.renderSingleBorder(border, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
+        this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
         // }
         if (tableCell.updatedTopBorders && tableCell.updatedTopBorders.length > 0) {
             let cellX = cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2;
@@ -13571,7 +13636,7 @@ class Renderer {
                 border = borderInfo.border;
                 if (!isNullOrUndefined(border)) {
                     lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-                    this.renderSingleBorder(border, cellX, cellY, cellX + borderInfo.width, cellY, lineWidth);
+                    this.renderSingleBorder(border.color, cellX, cellY, cellX + borderInfo.width, cellY, lineWidth);
                     cellX = cellX + borderInfo.width;
                 }
             }
@@ -13581,7 +13646,7 @@ class Renderer {
             // if (!isNullOrUndefined(border )) { //Renders the cell top border.        
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
             // tslint:disable-next-line:max-line-length
-            this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
+            this.renderSingleBorder(border.color, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
             // }
         }
         let isLastCell = false;
@@ -13596,7 +13661,7 @@ class Renderer {
             // if (!isNullOrUndefined(border )) { //Renders the cell right border.           
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
             // tslint:disable-next-line:max-line-length
-            this.renderSingleBorder(border, cellWidget.x + cellWidget.width + cellWidget.margin.right - lineWidth / 2, cellWidget.y - cellTopMargin, cellWidget.x + cellWidget.width + cellWidget.margin.right - lineWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
+            this.renderSingleBorder(border.color, cellWidget.x + cellWidget.width + cellWidget.margin.right - lineWidth / 2, cellWidget.y - cellTopMargin, cellWidget.x + cellWidget.width + cellWidget.margin.right - lineWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
             // }
         }
         let nextRow = tableCell.ownerRow.nextWidget;
@@ -13636,7 +13701,7 @@ class Renderer {
             //Renders the cell bottom border.
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
             // tslint:disable-next-line:max-line-length
-            this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);
+            this.renderSingleBorder(border.color, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);
             // }
         }
         border = layout.getCellDiagonalUpBorder(tableCell);
@@ -13645,7 +13710,7 @@ class Renderer {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
         if (lineWidth > 0) {
             // tslint:disable-next-line:max-line-length
-            this.renderSingleBorder(border, cellWidget.x - cellLeftMargin, cellWidget.y + cellWidget.height + cellBottomMargin, cellWidget.x + cellWidget.width + cellRightMargin, cellWidget.y - cellTopMargin, lineWidth);
+            this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin, cellWidget.y + cellWidget.height + cellBottomMargin, cellWidget.x + cellWidget.width + cellRightMargin, cellWidget.y - cellTopMargin, lineWidth);
             // }
         }
         border = layout.getCellDiagonalDownBorder(tableCell);
@@ -13654,7 +13719,7 @@ class Renderer {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
         if (lineWidth > 0) {
             // tslint:disable-next-line:max-line-length
-            this.renderSingleBorder(border, cellWidget.x - cellLeftMargin, cellWidget.y - cellTopMargin, cellWidget.x + cellWidget.width + cellRightMargin, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
+            this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin, cellWidget.y - cellTopMargin, cellWidget.x + cellWidget.width + cellRightMargin, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
         }
         // }
     }
@@ -13703,13 +13768,13 @@ class Renderer {
      * @param {number} lineWidth
      */
     // tslint:disable-next-line:max-line-length
-    renderSingleBorder(border, startX, startY, endX, endY, lineWidth) {
+    renderSingleBorder(color, startX, startY, endX, endY, lineWidth) {
         this.pageContext.beginPath();
         this.pageContext.moveTo(this.getScaledValue(startX, 1), this.getScaledValue(startY, 2));
         this.pageContext.lineTo(this.getScaledValue(endX, 1), this.getScaledValue(endY, 2));
         this.pageContext.lineWidth = this.getScaledValue(lineWidth);
         // set line color
-        this.pageContext.strokeStyle = border.color;
+        this.pageContext.strokeStyle = color;
         if (lineWidth > 0) {
             this.pageContext.stroke();
         }
@@ -15130,7 +15195,7 @@ class FormFieldPopUp {
                 }
                 let left = this.owner.selection.getLeftInternal(formField.line, formField, 0);
                 let lineHeight = formField.line.height * this.owner.documentHelper.zoomFactor;
-                let position = this.owner.selection.getTooltipPosition(formField, left, this.target, true);
+                let position = this.owner.selection.getTooltipPosition(formField.line, left, this.target, true);
                 if (!this.popupObject) {
                     this.popupObject = new Popup(this.target, {
                         height: 'auto',
@@ -15510,6 +15575,10 @@ class TrackChangesPane {
         }
         if (this.viewTypeDropDownButton) {
             this.viewTypeDropDownButton.destroy();
+        }
+        if (this.menuDropDownButton) {
+            this.menuDropDownButton.destroy();
+            this.menuDropDownButton = undefined;
         }
         if (this.userDropDown) {
             this.userDropDown = undefined;
@@ -16192,7 +16261,7 @@ class DocumentHelper {
          */
         this.updateFocus = () => {
             if (this.selection && !(this.isMobileDevice && this.owner.isReadOnly)) {
-                if (!Browser.isDevice && !Browser.isIE) {
+                if (!Browser.isDevice && !Browser.isIE && !navigator.userAgent.match('Edge')) {
                     this.iframe.focus();
                 }
                 this.editableDiv.focus();
@@ -17685,6 +17754,12 @@ class DocumentHelper {
                 commentMarkElement[i].style.display = 'none';
             }
         }
+        if (this.pageContainer) {
+            let editRangeStart = this.pageContainer.getElementsByClassName('e-de-lock-mark');
+            for (let i = 0; i < editRangeStart.length; i++) {
+                editRangeStart[i].style.display = 'none';
+            }
+        }
     }
     /**
      * Fired when the document gets changed.
@@ -18377,6 +18452,8 @@ class DocumentHelper {
             if (fieldCodes.length > 1) {
                 fieldPattern = fieldCodes[1].replace(/[^\w\s]/gi, '').trim();
             }
+            fieldCategory = (!fieldCategory.match('numpages') && !fieldCategory.match('sectionpages') &&
+                fieldCategory.match('page')) ? 'page' : fieldCategory;
             switch (fieldCategory) {
                 case 'page':
                     if (page.bodyWidgets[0].sectionFormat.restartPageNumbering && page.sectionIndex !== 0) {
@@ -18392,7 +18469,7 @@ class DocumentHelper {
                         page.currentPageNum = previousPage.currentPageNum + 1;
                         return this.getFieldText(fieldPattern, page.currentPageNum);
                     }
-                    page.currentPageNum = page.index + 1;
+                    page.currentPageNum = (!isNullOrUndefined(page.previousPage)) ? page.previousPage.currentPageNum + 1 : page.index + 1;
                     return this.getFieldText(fieldPattern, page.currentPageNum);
                 case 'numpages':
                     return this.getFieldText(fieldPattern, page.documentHelper.pages.length);
@@ -18600,6 +18677,28 @@ class DocumentHelper {
                 if (this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline' && isInlineFormFillMode) {
                     //Update text cursor in text form field.
                     formField = undefined;
+                }
+            }
+            if (this.owner.enableLockAndEdit) {
+                let isLocked = false;
+                let block = widget.paragraph;
+                if (block.isInsideTable) {
+                    block = this.layout.getParentTable(block);
+                }
+                if (block.locked && block.lockedBy !== this.owner.currentUser) {
+                    isLocked = true;
+                }
+                let sectionFormat = widget.paragraph.bodyWidget.sectionFormat;
+                let pageWidth = sectionFormat.pageWidth - sectionFormat.rightMargin - sectionFormat.leftMargin;
+                pageWidth = HelperMethods.convertPointToPixel(pageWidth) * this.zoomFactor;
+                if (this.viewer instanceof WebLayoutViewer) {
+                    pageWidth = (this.visibleBounds.width - (this.viewer.padding.right * 5)) / this.zoomFactor;
+                }
+                if (isLocked && touchPoint.x >= lineLeft && touchPoint.x < lineLeft + pageWidth) {
+                    this.selection.setLockInfoTooptip(widget, touchPoint.x, block.lockedBy);
+                }
+                else {
+                    this.selection.setLockInfoTooptip(undefined, touchPoint.x, '');
                 }
             }
         }
@@ -20410,6 +20509,17 @@ class HeaderFooterWidget extends BlockContainer {
  * @private
  */
 class BlockWidget extends Widget {
+    constructor() {
+        super(...arguments);
+        /**
+         * @private
+         */
+        this.locked = false;
+        /**
+         * @private
+         */
+        this.lockedBy = '';
+    }
     /**
      * @private
      */
@@ -25055,6 +25165,34 @@ class EditRangeStartElementBox extends ElementBox {
     /**
      * @private
      */
+    renderLockMark(currentUser, locale) {
+        if (isNullOrUndefined(this.editRangeMark)) {
+            let user = currentUser === this.user ? 'you' : this.user;
+            this.editRangeMark = document.createElement('div');
+            this.editRangeMark.style.display = 'none';
+            this.editRangeMark.classList.add('e-de-lock-mark');
+            let span = document.createElement('span');
+            span.className = 'e-icons e-de-ctnr-lock';
+            this.editRangeMark.appendChild(span);
+            this.editRangeMark.title = locale.getConstant('This region is locked by') + ' ' + user;
+        }
+        if (this.line && isNullOrUndefined(this.editRangeMark.parentElement)) {
+            let documentHelper = this.line.paragraph.bodyWidget.page.documentHelper;
+            documentHelper.pageContainer.appendChild(this.editRangeMark);
+        }
+    }
+    /**
+     * @private
+     */
+    removeEditRangeMark() {
+        if (this.editRangeMark) {
+            this.editRangeMark.parentElement.removeChild(this.editRangeMark);
+            this.editRangeMark = undefined;
+        }
+    }
+    /**
+     * @private
+     */
     destroy() {
         this.user = undefined;
         this.columnFirst = undefined;
@@ -26998,6 +27136,8 @@ class ColumnSizeInfo {
     }
 }
 
+const CONTEXTMENU_LOCK = '_contextmenu_lock';
+const CONTEXTMENU_UNLOCK = '_contextmenu_unlock';
 const CONTEXTMENU_COPY = '_contextmenu_copy';
 const CONTEXTMENU_CUT = '_contextmenu_cut';
 const CONTEXTMENU_PASTE = '_contextmenu_paste';
@@ -27153,6 +27293,16 @@ class ContextMenu$1 {
         ul.oncontextmenu = this.disableBrowserContextmenu;
         this.contextMenu.appendChild(ul);
         this.menuItems = [
+            {
+                text: localValue.getConstant('Lock'),
+                iconCss: 'e-icons e-de-ctnr-lock',
+                id: id + CONTEXTMENU_LOCK
+            },
+            {
+                text: localValue.getConstant('Unlock'),
+                iconCss: 'e-icons',
+                id: id + CONTEXTMENU_UNLOCK
+            },
             {
                 text: localValue.getConstant('Cut'),
                 iconCss: 'e-icons e-de-cut',
@@ -27396,6 +27546,16 @@ class ContextMenu$1 {
     handleContextMenuItem(item) {
         let id = this.documentHelper.owner.element.id;
         switch (item) {
+            case id + CONTEXTMENU_LOCK:
+                if (this.documentHelper.owner.collaborativeEditingModule) {
+                    this.documentHelper.owner.collaborativeEditingModule.lockContent(this.documentHelper.owner.currentUser);
+                }
+                break;
+            case id + CONTEXTMENU_UNLOCK:
+                if (this.documentHelper.owner.collaborativeEditingModule) {
+                    this.documentHelper.owner.collaborativeEditingModule.unlockContent(this.documentHelper.owner.currentUser);
+                }
+                break;
             case id + CONTEXTMENU_COPY:
                 this.documentHelper.selection.copy();
                 break;
@@ -27680,6 +27840,8 @@ class ContextMenu$1 {
         selection.hideToolTip();
         let owner = this.documentHelper.owner;
         let id = owner.element.id;
+        let lock = document.getElementById(id + CONTEXTMENU_LOCK);
+        let unlock = document.getElementById(id + CONTEXTMENU_UNLOCK);
         let copy = document.getElementById(id + CONTEXTMENU_COPY);
         let cut = document.getElementById(id + CONTEXTMENU_CUT);
         let paste = document.getElementById(id + CONTEXTMENU_PASTE);
@@ -27701,6 +27863,33 @@ class ContextMenu$1 {
         let restartAt = document.getElementById(id + CONTEXTMENU_RESTART_AT);
         let autoFitTable = document.getElementById(id + CONTEXTMENU_AUTO_FIT);
         let addComment = document.getElementById(id + CONTEXTMENU_ADD_COMMENT);
+        if (!this.documentHelper.owner.enableLockAndEdit) {
+            lock.style.display = 'none';
+            unlock.style.display = 'none';
+        }
+        else {
+            if (this.documentHelper.editRanges.containsKey(this.documentHelper.owner.currentUser)) {
+                lock.style.display = 'none';
+                unlock.style.display = 'block';
+                if (this.documentHelper.selection.isSelectionInEditRegion()) {
+                    classList(unlock, ['e-blankicon'], ['e-disabled']);
+                }
+                else {
+                    classList(unlock, ['e-disabled', 'e-blankicon'], []);
+                }
+            }
+            else {
+                lock.style.display = 'block';
+                if (this.documentHelper.owner.collaborativeEditingModule &&
+                    this.documentHelper.owner.collaborativeEditingModule.canLock()) {
+                    classList(unlock, ['e-disabled'], []);
+                }
+                else {
+                    classList(unlock, [], ['e-disabled']);
+                }
+                unlock.style.display = 'none';
+            }
+        }
         let isDialogHidden = false;
         cut.style.display = 'none';
         paste.style.display = 'none';
@@ -27887,6 +28076,9 @@ class SfdtReader {
         this.documentHelper = undefined;
         this.commentStarts = undefined;
         this.commentEnds = undefined;
+        /**
+         * @private
+         */
         this.commentsCollection = undefined;
         /**
          * @private
@@ -28070,6 +28262,9 @@ class SfdtReader {
             }
         }
     }
+    /**
+     * @private
+     */
     parseComments(data, comments) {
         let count = 0;
         for (let i = 0; i < data.comments.length; i++) {
@@ -29038,7 +29233,7 @@ class SfdtReader {
             }
             this.addEditRangeCollection(permStart.user, permStart);
         }
-        if (!isNullOrUndefined(data.group)) {
+        if (!isNullOrUndefined(data.group) && data.group !== '') {
             permStart.group = data.group;
             permStart.group = permStart.group === 'everyone' ? 'Everyone' : permStart.group;
             if (this.documentHelper.userCollection.indexOf(permStart.group) === -1) {
@@ -31985,7 +32180,7 @@ class HtmlExport {
         this.document = document;
         let html = '';
         for (let i = 0; i < document.sections.length; i++) {
-            html = this.serializeSection(document.sections[i]);
+            html += this.serializeSection(document.sections[i]);
         }
         return html;
     }
@@ -37771,6 +37966,9 @@ class Selection {
         }
         return index;
     }
+    /**
+     * @private
+     */
     getHierarchicalIndexByPosition(position) {
         let info = this.getParagraphInfo(position);
         return this.getHierarchicalIndex(info.paragraph, info.offset.toString());
@@ -41000,6 +41198,9 @@ class Selection {
                     inline = inline.fieldBegin;
                     index = 0;
                 }
+                if (inline instanceof EditRangeEndElementBox) {
+                    index = 0;
+                }
                 let inlineObj = this.validateTextPosition(inline, index);
                 inline = inlineObj.element;
                 index = inlineObj.index;
@@ -42803,7 +43004,7 @@ class Selection {
             else {
                 this.toolTipElement.innerHTML = linkText + '</br><b>' + toolTipText + '</b>';
             }
-            let position = this.getTooltipPosition(fieldBegin, xPos, this.toolTipElement, false);
+            let position = this.getTooltipPosition(fieldBegin.line, xPos, this.toolTipElement, false);
             this.showToolTip(position.x, position.y);
             if (!isNullOrUndefined(this.toolTipField) && fieldBegin !== this.toolTipField) {
                 this.toolTipObject.position = { X: position.x, Y: position.y };
@@ -42816,10 +43017,42 @@ class Selection {
         }
     }
     /**
+     * Set locked content info to tool tip element
      * @private
      */
-    getTooltipPosition(fieldBegin, xPos, toolTipElement, isFormField) {
-        let widget = fieldBegin.line;
+    setLockInfoTooptip(widget, xPos, user) {
+        if (widget) {
+            if (this.owner.contextMenuModule &&
+                this.owner.contextMenuModule.contextMenuInstance.element.style.display === 'block') {
+                return;
+            }
+            let toolTipElement = this.toolTipElement;
+            if (!this.toolTipElement) {
+                toolTipElement = createElement('div', { className: 'e-de-tooltip' });
+                this.documentHelper.viewerContainer.appendChild(toolTipElement);
+                this.toolTipElement = toolTipElement;
+            }
+            toolTipElement.style.display = 'block';
+            let l10n = new L10n('documenteditor', this.owner.defaultLocale);
+            l10n.setLocale(this.owner.locale);
+            let toolTipInfo = l10n.getConstant('This region is locked by');
+            toolTipElement.innerHTML = toolTipInfo + ' <b>' + user + '</b>';
+            let position = this.getTooltipPosition(widget, xPos, toolTipElement, false);
+            this.showToolTip(position.x, position.y);
+            if (!isNullOrUndefined(this.toolTipField) && user !== this.toolTipField) {
+                this.toolTipObject.position = { X: position.x, Y: position.y };
+            }
+            this.toolTipObject.show();
+            this.toolTipField = user;
+        }
+        else {
+            this.hideToolTip();
+        }
+    }
+    /**
+     * @private
+     */
+    getTooltipPosition(widget, xPos, toolTipElement, isFormField) {
         let widgetTop = this.getTop(widget) * this.documentHelper.zoomFactor;
         let page = this.getPage(widget.paragraph);
         // tslint:disable-next-line:max-line-length
@@ -44426,6 +44659,9 @@ class Selection {
      */
     highlightEditRegion() {
         this.updateEditRangeCollection();
+        if (this.owner.enableLockAndEdit) {
+            return;
+        }
         if (!this.isHighlightEditRegion) {
             this.unHighlightEditRegion();
             return;
@@ -44629,6 +44865,9 @@ class Selection {
             endElement = element.editRangeEnd;
         }
         else if (element instanceof ContentControl) {
+            endElement = element.reference;
+        }
+        else if (element instanceof BookmarkElementBox) {
             endElement = element.reference;
         }
         offset = endElement.line.getOffset(endElement, 1);
@@ -48109,6 +48348,10 @@ class Editor {
         /**
          * @private
          */
+        this.isRemoveRevision = false;
+        /**
+         * @private
+         */
         this.isHandledComplex = false;
         /**
          * @private
@@ -48526,7 +48769,7 @@ class Editor {
         commentRangeEnd.commentId = commentAdv.commentId;
         commentAdv.commentStart = commentRangeStart;
         commentAdv.commentEnd = commentRangeEnd;
-        this.addCommentWidget(commentAdv, true);
+        this.addCommentWidget(commentAdv, true, true, true);
         if (this.editorHistory) {
             this.editorHistory.currentBaseHistoryInfo.insertPosition = this.getCommentHierarchicalIndex(commentAdv);
             this.editorHistory.updateHistory();
@@ -48705,7 +48948,7 @@ class Editor {
             replyComment.commentStart = commentRangeStart;
             replyComment.commentEnd = commentRangeEnd;
             if (this.owner.commentReviewPane) {
-                this.owner.commentReviewPane.addReply(replyComment, false);
+                this.owner.commentReviewPane.addReply(replyComment, false, true);
             }
             if (this.editorHistory) {
                 this.editorHistory.currentBaseHistoryInfo.insertPosition = this.getCommentHierarchicalIndex(replyComment);
@@ -48733,7 +48976,7 @@ class Editor {
     /**
      * @private
      */
-    addCommentWidget(commentWidget, isNewComment) {
+    addCommentWidget(commentWidget, isNewComment, showComments, selectComment) {
         if (this.documentHelper.comments.indexOf(commentWidget) === -1) {
             let isInserted = false;
             if (this.documentHelper.comments.length > 0) {
@@ -48753,9 +48996,11 @@ class Editor {
                 this.documentHelper.comments.push(commentWidget);
             }
             if (this.owner.commentReviewPane) {
-                this.owner.showComments = true;
-                this.owner.commentReviewPane.addComment(commentWidget, isNewComment);
-                this.owner.selection.selectComment(commentWidget);
+                this.owner.showComments = showComments;
+                this.owner.commentReviewPane.addComment(commentWidget, isNewComment, selectComment);
+                if (selectComment) {
+                    this.owner.selection.selectComment(commentWidget);
+                }
             }
         }
     }
@@ -48771,7 +49016,7 @@ class Editor {
         }
         if (this.owner.commentReviewPane) {
             this.owner.showComments = true;
-            this.owner.commentReviewPane.addReply(comment, false);
+            this.owner.commentReviewPane.addReply(comment, false, true);
             this.owner.selection.selectComment(comment);
         }
     }
@@ -48902,7 +49147,12 @@ class Editor {
      */
     fireContentChange() {
         if (this.selection.isHighlightEditRegion) {
-            this.selection.onHighlight();
+            if (this.owner.enableLockAndEdit) {
+                this.owner.collaborativeEditingModule.updateLockRegion();
+            }
+            else {
+                this.selection.onHighlight();
+            }
         }
         this.selection.highlightFormFields();
         if (!this.isPaste) {
@@ -50686,6 +50936,9 @@ class Editor {
         }
         return firstBlock;
     }
+    /**
+     * @private
+     */
     splitBodyWidget(bodyWidget, sectionFormat, startBlock) {
         let newBodyWidget = this.documentHelper.layout.moveBlocksToNextPage(startBlock);
         //Update SectionIndex for splitted body widget
@@ -50723,6 +50976,9 @@ class Editor {
             block = blocks.pop().nextRenderedWidget;
         } while (!isNullOrUndefined(block) && block.bodyWidget.sectionIndex === sectionIndex);
     }
+    /**
+     * @private
+     */
     updateSectionIndex(sectionFormat, startBodyWidget, increaseIndex) {
         let currentSectionIndex = startBodyWidget.sectionIndex;
         let bodyWidget = startBodyWidget;
@@ -51326,6 +51582,9 @@ class Editor {
             }
             if (currentRevision.range.length === 0 && removeCollection) {
                 this.owner.revisions.remove(currentRevision);
+                if (this.isRemoveRevision && this.documentHelper.revisionsInternal.containsKey(currentRevision.revisionID)) {
+                    this.documentHelper.revisionsInternal.remove(currentRevision.revisionID);
+                }
             }
         }
     }
@@ -51342,6 +51601,9 @@ class Editor {
         }
         if (currentRevision.range.length === 0) {
             this.owner.revisions.remove(currentRevision);
+            if (this.isRemoveRevision && this.documentHelper.revisionsInternal.containsKey(currentRevision.revisionID)) {
+                this.documentHelper.revisionsInternal.remove(currentRevision.revisionID);
+            }
         }
     }
     /**
@@ -52039,7 +52301,11 @@ class Editor {
             delete blck.paragraphFormat.listFormat.isUpdated;
         }
     }
-    getBlocks(pasteContent) {
+    /**
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    getBlocks(pasteContent, isPaste, sections, comments, revision) {
         let widgets = [];
         if (typeof (pasteContent) === 'string') {
             let startParagraph = this.selection.start.paragraph;
@@ -52095,9 +52361,13 @@ class Editor {
         }
         else {
             this.viewer.owner.parser.addCustomStyles(pasteContent);
+            if (!isPaste && pasteContent.comments.length > 0) {
+                this.documentHelper.owner.parser.commentsCollection = new Dictionary();
+                this.documentHelper.owner.parser.parseComments(pasteContent, comments);
+            }
             for (let i = 0; i < pasteContent.sections.length; i++) {
                 let parser = this.documentHelper.owner.parser;
-                parser.isPaste = true;
+                parser.isPaste = isPaste;
                 if (!this.isPasteListUpdated && !isNullOrUndefined(pasteContent.lists)) {
                     if (this.documentHelper.lists.length > 0) {
                         this.updatePasteContent(pasteContent, i);
@@ -52111,41 +52381,52 @@ class Editor {
                     }
                 }
                 if (!isNullOrUndefined(pasteContent.revisions)) {
-                    let revisionChanges = this.viewer.owner.revisionsInternal.changes;
-                    if (!isNullOrUndefined(parser.revisionCollection)) {
-                        parser.revisionCollection = undefined;
-                    }
-                    parser.revisionCollection = new Dictionary();
-                    let revisionCollection = parser.revisionCollection;
-                    if (!(this.documentHelper.owner.sfdtExportModule.copyWithTrackChange && parser.isCutPerformed)) {
-                        if (pasteContent.revisions.length >= 1) {
-                            for (let i = 0; i < pasteContent.revisions.length; i++) {
-                                let revisionCheck = true;
-                                if (revisionCollection.containsKey(pasteContent.revisions[i].revisionId)) {
-                                    if (revisionChanges.length > 0) {
-                                        for (let j = 0; j < revisionChanges.length; j++) {
-                                            if (revisionChanges[j].revisionID === pasteContent.revisions[i].revisionId) {
-                                                revisionCheck = false;
+                    if (isPaste) {
+                        let revisionChanges = this.viewer.owner.revisionsInternal.changes;
+                        if (!isNullOrUndefined(parser.revisionCollection)) {
+                            parser.revisionCollection = undefined;
+                        }
+                        parser.revisionCollection = new Dictionary();
+                        let revisionCollection = parser.revisionCollection;
+                        if (!(this.documentHelper.owner.sfdtExportModule.copyWithTrackChange && parser.isCutPerformed)) {
+                            if (pasteContent.revisions.length >= 1) {
+                                for (let i = 0; i < pasteContent.revisions.length; i++) {
+                                    let revisionCheck = true;
+                                    if (revisionCollection.containsKey(pasteContent.revisions[i].revisionId)) {
+                                        if (revisionChanges.length > 0) {
+                                            for (let j = 0; j < revisionChanges.length; j++) {
+                                                if (revisionChanges[j].revisionID === pasteContent.revisions[i].revisionId) {
+                                                    revisionCheck = false;
+                                                }
                                             }
                                         }
+                                        if (revisionCheck) {
+                                            let revision = revisionCollection.get(pasteContent.revisions[i].revisionId);
+                                            revisionChanges.push(revision);
+                                        }
                                     }
-                                    if (revisionCheck) {
-                                        let revision = revisionCollection.get(pasteContent.revisions[i].revisionId);
-                                        revisionChanges.push(revision);
+                                    else {
+                                        parser.parseRevisions(pasteContent, revisionChanges);
                                     }
-                                }
-                                else {
-                                    parser.parseRevisions(pasteContent, revisionChanges);
                                 }
                             }
                         }
+                        this.documentHelper.owner.sfdtExportModule.copyWithTrackChange = false;
                     }
-                    this.documentHelper.owner.sfdtExportModule.copyWithTrackChange = false;
+                    else {
+                        parser.revisionCollection = this.documentHelper.revisionsInternal;
+                        parser.parseRevisions(pasteContent, revision);
+                    }
                 }
                 let bodyWidget = new BodyWidget();
                 bodyWidget.sectionFormat = new WSectionFormat(bodyWidget);
                 parser.parseSectionFormat(pasteContent.sections[i].sectionFormat, bodyWidget.sectionFormat);
-                widgets.push(bodyWidget);
+                if (!isPaste) {
+                    sections.unshift(bodyWidget);
+                }
+                else {
+                    widgets.push(bodyWidget);
+                }
                 parser.parseBody(pasteContent.sections[i].blocks, bodyWidget.childWidgets);
                 parser.isPaste = false;
             }
@@ -52267,7 +52548,7 @@ class Editor {
                 }
             }
         }
-        this.pasteContentsInternal(this.getBlocks(content), true, currentFormat);
+        this.pasteContentsInternal(this.getBlocks(content, true), true, currentFormat);
         this.isInsertField = false;
     }
     pasteContentsInternal(widgets, isPaste, currentFormat) {
@@ -52346,7 +52627,7 @@ class Editor {
         if (this.documentHelper.layout.isBidiReLayout) {
             this.documentHelper.layout.isBidiReLayout = false;
         }
-        if (this.isPaste && this.isSectionEmpty(this.selection)) {
+        if (this.isPaste && this.isSectionEmpty(this.selection) && !this.selection.start.paragraph.isInHeaderFooter) {
             this.selection.start.paragraph.bodyWidget.sectionFormat.copyFormat(bodyWidget[0].sectionFormat);
             if (this.owner.viewer instanceof PageLayoutViewer) {
                 let page = this.selection.start.paragraph.bodyWidget.page;
@@ -54132,7 +54413,7 @@ class Editor {
             }
         }
         if (selection.owner.isShiftingEnabled) {
-            this.documentHelper.layout.shiftLayoutedItems();
+            this.documentHelper.layout.shiftLayoutedItems(false);
             if (this.documentHelper.owner.enableHeaderAndFooter) {
                 this.updateHeaderFooterWidget();
             }
@@ -54188,7 +54469,7 @@ class Editor {
         if (selection.owner.isShiftingEnabled) {
             selection.owner.isShiftingEnabled = false;
             selection.owner.isLayoutEnabled = true;
-            this.documentHelper.layout.shiftLayoutedItems();
+            this.documentHelper.layout.shiftLayoutedItems(true);
             if (this.documentHelper.owner.enableHeaderAndFooter) {
                 this.updateHeaderFooterWidget();
             }
@@ -54210,6 +54491,11 @@ class Editor {
             this.editorHistory.updateHistory();
         }
         this.fireContentChange();
+        if (this.owner.enableLockAndEdit) {
+            // Editable region border get updated in content changes event.
+            // So, handled rerendering content after applying border.
+            this.owner.viewer.updateScrollBars();
+        }
     }
     /**
      * @private
@@ -54366,7 +54652,7 @@ class Editor {
             if (this.documentHelper.blockToShift) {
                 this.documentHelper.renderedLists.clear();
                 this.documentHelper.renderedLevelOverrides = [];
-                this.documentHelper.layout.shiftLayoutedItems();
+                this.documentHelper.layout.shiftLayoutedItems(false);
             }
             while (section) {
                 let splittedSection = section.getSplitWidgets();
@@ -57495,7 +57781,7 @@ class Editor {
                         // tslint:disable-next-line:max-line-length
                         currentParagraph = this.splitParagraph(paragraph, paragraph.firstChild, 0, startLine, startOffset, true);
                         this.insertParagraphPaste(paragraph, currentParagraph, start, end, isCombineNextParagraph, editAction);
-                        this.removeRevisionForBlock(paragraph, undefined, false);
+                        this.removeRevisionForBlock(paragraph, undefined, false, true);
                         this.addRemovedNodes(paragraph);
                     }
                 }
@@ -57533,7 +57819,7 @@ class Editor {
                 }
                 else {
                     newParagraph = this.checkAndInsertBlock(paragraph, start, end, editAction, prevParagraph);
-                    this.removeRevisionForBlock(paragraph, undefined, false);
+                    this.removeRevisionForBlock(paragraph, undefined, false, true);
                     this.addRemovedNodes(paragraph);
                     this.removeBlock(paragraph);
                 }
@@ -57720,6 +58006,9 @@ class Editor {
         inline.line.paragraph.bodyWidget.floatingElements.splice(inline.line.paragraph.bodyWidget.floatingElements.indexOf(inline), 1);
         inline.line.paragraph.floatingElements.splice(shapeIndex, 1);
     }
+    /**
+     * @private
+     */
     removeField(block, isBookmark, isContentControl) {
         let collection = this.documentHelper.fields;
         if (isBookmark) {
@@ -58125,9 +58414,11 @@ class Editor {
     /**
      * @private
      */
-    removeRevisionForBlock(paraWidget, revision, skipParaMark) {
+    removeRevisionForBlock(paraWidget, revision, skipParaMark, addToRevisionInfo) {
         if (paraWidget.characterFormat.revisions.length > 0 && !skipParaMark) {
-            this.addRemovedRevisionInfo(paraWidget.characterFormat, undefined, false);
+            if (addToRevisionInfo) {
+                this.addRemovedRevisionInfo(paraWidget.characterFormat, undefined, false);
+            }
             if (isNullOrUndefined(revision)) {
                 this.unlinkRangeFromRevision(paraWidget.characterFormat, true);
             }
@@ -58142,7 +58433,9 @@ class Editor {
                 for (let elementIndex = 0; elementIndex < lineWidget.children.length; elementIndex++) {
                     let currentElement = lineWidget.children[elementIndex];
                     if (!isNullOrUndefined(currentElement) && currentElement.revisions.length > 0) {
-                        this.addRemovedRevisionInfo(currentElement, undefined, false);
+                        if (addToRevisionInfo) {
+                            this.addRemovedRevisionInfo(currentElement, undefined, false);
+                        }
                         if (isNullOrUndefined(revision)) {
                             this.unlinkRangeFromRevision(currentElement, true);
                         }
@@ -60175,12 +60468,15 @@ class Editor {
      * @param  {boolean} isRedoing
      * @private
      */
+    // tslint:disable:max-func-body-length
     singleDelete(selection, isRedoing) {
         // tslint:disable-next-line:max-line-length
+        let lineWidget = selection.start.currentWidget;
         let paragraph = selection.start.paragraph;
         let offset = selection.start.offset;
         let indexInInline = 0;
-        let inlineObj = paragraph.getInline(selection.start.offset, indexInInline);
+        // tslint:disable-next-line:max-line-length
+        let inlineObj = lineWidget.getInline(selection.start.offset, indexInInline);
         let inline = inlineObj.element;
         if (this.selection.isInlineFormFillMode()) {
             if (inline instanceof FieldElementBox && inline.fieldType === 1) {
@@ -60247,13 +60543,21 @@ class Editor {
                     && inline.editRangeStart === inline.previousNode)) {
                 return;
             }
-            if (inline instanceof EditRangeStartElementBox) {
-                inline = inline.nextNode;
-                offset = inline.line.getOffset(inline, 0);
-                paragraph = inline.line.paragraph;
+            if (this.documentHelper.isDocumentProtected &&
+                this.documentHelper.protectionType === 'ReadOnly') {
+                if (inline instanceof EditRangeStartElementBox || inline instanceof EditRangeEndElementBox) {
+                    return;
+                }
             }
-            else if (inline instanceof EditRangeEndElementBox) {
-                offset++;
+            else {
+                if (inline instanceof EditRangeStartElementBox) {
+                    inline = inline.nextNode;
+                    offset = inline.line.getOffset(inline, 0);
+                    paragraph = inline.line.paragraph;
+                }
+                else if (inline instanceof EditRangeEndElementBox) {
+                    offset++;
+                }
             }
             if (inline.length === 1 && inline.nextNode instanceof EditRangeEndElementBox
                 && inline.previousNode instanceof EditRangeStartElementBox) {
@@ -63074,6 +63378,10 @@ class Editor {
         }
         let index = this.documentHelper.editRanges.get(user).indexOf(editStart);
         this.documentHelper.editRanges.get(user).splice(index, 1);
+        if (this.documentHelper.editRanges.get(user).length === 0) {
+            this.documentHelper.editRanges.remove(user);
+        }
+        editStart.removeEditRangeMark();
         editStart.editRangeEnd.line.children.splice(editStart.editRangeEnd.indexInOwner, 1);
         editStart.line.children.splice(editStart.indexInOwner, 1);
     }
@@ -63107,7 +63415,7 @@ class Editor {
      * @param type Form field type
      */
     insertFormField(type) {
-        if (isNullOrUndefined(this.selection.start)) {
+        if (isNullOrUndefined(this.selection.start) || this.owner.enableHeaderAndFooter) {
             return;
         }
         this.initHistory('InsertHyperlink');
@@ -63967,7 +64275,7 @@ class BaseHistoryInfo {
                     this.owner.editor.addReplyComment(comment, this.insertPosition);
                 }
                 else {
-                    this.owner.editor.addCommentWidget(comment, false);
+                    this.owner.editor.addCommentWidget(comment, false, true, true);
                 }
             }
         }
@@ -64098,7 +64406,7 @@ class BaseHistoryInfo {
                         }
                         if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo) &&
                             this.editorHistory.currentHistoryInfo.action === 'PageBreak' && this.documentHelper.blockToShift) {
-                            this.documentHelper.layout.shiftLayoutedItems();
+                            this.documentHelper.layout.shiftLayoutedItems(false);
                         }
                     }
                 }
@@ -64141,7 +64449,7 @@ class BaseHistoryInfo {
         // tslint:disable-next-line:max-line-length
         if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo) && (this.editorHistory.currentHistoryInfo.action === 'Accept All' || this.editorHistory.currentHistoryInfo.action === 'Reject All')) {
             if (this.owner.documentHelper.blockToShift) {
-                this.owner.documentHelper.layout.shiftLayoutedItems();
+                this.owner.documentHelper.layout.shiftLayoutedItems(false);
             }
         }
         this.owner.editorModule.reLayout(this.owner.selection, this.owner.selection.isEmpty);
@@ -66521,10 +66829,6 @@ class SelectedImageInfo {
 }
 
 /**
- * Editor Export
- */
-
-/**
  * EditorHistory preservation class
  */
 /**
@@ -66922,7 +67226,7 @@ class EditorHistory {
                 this.owner.editorModule.layoutWholeDocument();
             }
             else if (selection.owner.isShiftingEnabled) {
-                this.documentHelper.layout.shiftLayoutedItems();
+                this.documentHelper.layout.shiftLayoutedItems(false);
                 if (this.owner.enableHeaderAndFooter) {
                     this.owner.editorModule.updateHeaderFooterWidget();
                 }
@@ -67129,6 +67433,9 @@ class EditorHistory {
         this.undoStackIn = undefined;
         this.redoStackIn = undefined;
     }
+    /**
+     * @private
+     */
     clearHistory() {
         this.clearUndoStack();
         this.clearRedoStack();
@@ -67155,6 +67462,837 @@ class EditorHistory {
 
 /**
  * EditorHistory implementation
+ */
+
+/**
+ * Collaborative editing module
+ */
+class CollaborativeEditing {
+    /**
+     * @private
+     */
+    constructor(editor) {
+        this.version = 0;
+        this.owner = editor;
+    }
+    //private lockEnd: string = '';
+    /**
+     * @private
+     */
+    get documentHelper() {
+        return this.owner.documentHelper;
+    }
+    get selection() {
+        return this.owner.selection;
+    }
+    get collaborativeEditingSettings() {
+        return this.owner.documentEditorSettings.collaborativeEditingSettings;
+    }
+    /**
+     * @private
+     */
+    getModuleName() {
+        return 'CollaborativeEditing';
+    }
+    /**
+     * To update the action which need to perform.
+     */
+    updateAction(data) {
+        if (!Array.isArray(data)) {
+            data = [data];
+        }
+        for (let i = 0; i < data.length; i++) {
+            let documentData = data[i];
+            switch (documentData.action) {
+                case 'LockContent':
+                    // Transform position
+                    this.transFormLockRegion(documentData);
+                    this.lockRegion(documentData.selectionInfo.start, documentData.selectionInfo.end, documentData.author);
+                    break;
+                case 'SaveContent':
+                    this.version = documentData.version;
+                    this.updateRegion(documentData.author, documentData.data);
+                    break;
+                case 'UnlockContent':
+                    this.version = documentData.version;
+                    this.updateRegion(documentData.author, documentData.data);
+                    this.removeEditRange(documentData.author);
+                    break;
+            }
+        }
+    }
+    transFormLockRegion(data) {
+        let previousLockInfo = data.selectionInfo.previousLockInfo;
+        if (!isNullOrUndefined(previousLockInfo)) {
+            let author = previousLockInfo.author;
+            let sectionDiff = 0;
+            let blockDiff = 0;
+            if (this.documentHelper.editRanges.containsKey(author)) {
+                let editRange = this.documentHelper.editRanges.get(author);
+                if (editRange.length > 0) {
+                    let position = this.selection.getPosition(editRange[0]);
+                    let endOffset = this.selection.getHierarchicalIndexByPosition(position.endPosition).split(';');
+                    let previousOffset = previousLockInfo.end.split(';');
+                    sectionDiff = parseInt(endOffset[0], 10) - parseInt(previousOffset[0], 10);
+                    blockDiff = parseInt(endOffset[1], 10) - parseInt(previousOffset[1], 10);
+                    // Same section
+                    if (data.selectionInfo.start.split(';')[0] === previousLockInfo.end.split(';')[0]) {
+                        data.selectionInfo.start = this.tranformPosition(data.selectionInfo.start, sectionDiff, blockDiff);
+                        data.selectionInfo.end = this.tranformPosition(data.selectionInfo.end, sectionDiff, blockDiff);
+                    }
+                    else {
+                        data.selectionInfo.start = this.tranformPosition(data.selectionInfo.start, sectionDiff, 0);
+                        data.selectionInfo.end = this.tranformPosition(data.selectionInfo.end, sectionDiff, 0);
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * Lock selected region from editing by other users.
+     */
+    lockContent(user) {
+        if (this.canLock()) {
+            let start = this.owner.selection.start;
+            let end = this.owner.selection.end;
+            if (!this.owner.selection.isForward) {
+                start = this.owner.selection.end;
+                end = this.owner.selection.start;
+            }
+            if (start.paragraph.isInsideTable) {
+                let table = this.owner.documentHelper.layout.getParentTable(start.paragraph);
+                let firstPara = this.owner.selection.getFirstParagraphBlock(table);
+                start.setPosition(firstPara.childWidgets[0], true);
+            }
+            else {
+                start.paragraphStartInternal(this.owner.selection, false);
+            }
+            if (end.paragraph.isInsideTable) {
+                let table = this.owner.documentHelper.layout.getParentTable(end.paragraph);
+                let lastPara = this.owner.selection.getLastParagraphBlock(table);
+                let offset = lastPara.lastChild.getEndOffset();
+                end.setPositionParagraph(lastPara.lastChild, offset);
+            }
+            else {
+                end.moveToParagraphEndInternal(this.owner.selection, false);
+            }
+            let startOffset = this.owner.selection.getHierarchicalIndexByPosition(start);
+            let endOffset = this.owner.selection.getHierarchicalIndexByPosition(end);
+            let selectionInfo = {
+                start: startOffset,
+                end: endOffset,
+                roomName: this.owner.documentEditorSettings.collaborativeEditingSettings.roomName,
+                author: this.owner.currentUser,
+                version: this.version
+            };
+            let startInfo = this.selection.getParagraphInfo(start);
+            let endInfo = this.selection.getParagraphInfo(end);
+            this.owner.selection.select(startOffset, endOffset);
+            let ajax = new XmlHttpRequestHandler();
+            ajax.url = this.owner.serviceUrl + this.owner.serverActionSettings.canLock;
+            ajax.contentType = 'application/json;charset=UTF-8';
+            ajax.onSuccess = (result) => {
+                this.successHandler(result, selectionInfo, startInfo, endInfo);
+            };
+            ajax.onFailure = this.failureHandler.bind(this);
+            ajax.onError = this.failureHandler.bind(this);
+            ajax.customHeaders = this.owner.headers;
+            ajax.send(selectionInfo);
+        }
+    }
+    /**
+     * @private
+     */
+    canLock() {
+        let editRanges = this.documentHelper.editRanges;
+        if (editRanges.containsKey(this.owner.currentUser)) {
+            return false;
+        }
+        let userNames = editRanges.keys;
+        for (let i = 0; i < userNames.length; i++) {
+            let range = editRanges.get(userNames[i]);
+            if (!isNullOrUndefined(range) && range.length > 0) {
+                if (this.isSelectionInEditableRange(range[0])) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    getPreviousLockedRegion() {
+        let editRanges = this.documentHelper.editRanges;
+        if (editRanges.containsKey(this.owner.currentUser)) {
+            return undefined;
+        }
+        let previous;
+        let userNames = editRanges.keys;
+        for (let i = 0; i < userNames.length; i++) {
+            let range = editRanges.get(userNames[i])[0];
+            let startPosition = this.selection.getPosition(range).startPosition;
+            if (startPosition.isExistBefore(this.selection.start)) {
+                if (isNullOrUndefined(previous)) {
+                    previous = range;
+                }
+                else if (startPosition.isExistAfter(this.selection.getPosition(previous).startPosition)) {
+                    previous = range;
+                }
+            }
+        }
+        return previous;
+    }
+    /**
+     * @private
+     */
+    unlockContent(user) {
+        if (this.documentHelper.editRanges.containsKey(user)) {
+            if (this.saveTimer) {
+                clearTimeout(this.saveTimer);
+            }
+            let sfdtContent = JSON.stringify(this.serializeEditableRegion(user));
+            let saveObject = {
+                action: 'UnlockContent',
+                author: user,
+                version: this.version,
+                data: sfdtContent,
+                selectionInfo: {
+                    start: '',
+                    end: '',
+                    roomName: this.collaborativeEditingSettings.roomName,
+                    author: this.owner.currentUser,
+                    version: this.version
+                },
+                roomName: this.collaborativeEditingSettings.roomName
+            };
+            this.removeEditRange(user);
+            this.owner.editorHistory.clearHistory();
+            this.owner.fireContentChange();
+            // Todo: selection tranformation
+            this.owner.trigger('actionComplete', saveObject);
+        }
+    }
+    removeEditRange(user) {
+        if (this.documentHelper.editRanges.containsKey(user)) {
+            this.updateLockRegion(user, false);
+            this.owner.editor.removeUserRestrictionsInternal(this.documentHelper.editRanges.get(user)[0]);
+            this.documentHelper.clearContent();
+            this.selection.updateEditRangeCollection();
+            this.documentHelper.owner.viewer.updateScrollBars();
+        }
+    }
+    /**
+     * Save locked content to other clients.
+     * @private
+     */
+    saveContent() {
+        if (this.saveTimer) {
+            clearTimeout(this.saveTimer);
+        }
+        let timeOut = this.collaborativeEditingSettings.saveTimeout;
+        if (isNullOrUndefined(timeOut)) {
+            timeOut = 3000;
+        }
+        /* tslint:disable:align */
+        this.saveTimer = setTimeout(() => {
+            this.saveContentInternal();
+        }, timeOut);
+        /* tslint:enable:align */
+    }
+    saveContentInternal() {
+        if (this.documentHelper.editRanges.containsKey(this.owner.currentUser)) {
+            let editRangeStart = this.documentHelper.editRanges.get(this.owner.currentUser)[0];
+            let position = this.selection.getPosition(editRangeStart);
+            let saveObject = {
+                action: 'SaveContent',
+                author: this.owner.currentUser,
+                version: this.version,
+                data: JSON.stringify(this.serializeEditableRegion(this.owner.currentUser)),
+                selectionInfo: {
+                    'start': this.selection.getHierarchicalIndexByPosition(position.startPosition),
+                    'end': this.selection.getHierarchicalIndexByPosition(position.endPosition),
+                    roomName: this.collaborativeEditingSettings.roomName,
+                    author: this.owner.currentUser,
+                    version: this.version
+                },
+                roomName: this.collaborativeEditingSettings.roomName
+            };
+            this.owner.trigger('actionComplete', saveObject);
+        }
+    }
+    serializeEditableRegion(user) {
+        let startElement = this.documentHelper.editRanges.get(user)[0];
+        let endElement = startElement.editRangeEnd;
+        let start = new TextPosition(this.owner);
+        start.setPosition(startElement.line, true);
+        let end = new TextPosition(this.owner);
+        end.setPosition(endElement.line, false);
+        this.owner.sfdtExportModule.isPartialExport = true;
+        // tslint:disable-next-line:max-line-length
+        let sfdtContent = this.owner.sfdtExportModule.write(start.currentWidget, start.offset, end.currentWidget, end.offset, false);
+        this.owner.sfdtExportModule.isPartialExport = false;
+        return sfdtContent;
+    }
+    // tslint:disable-next-line:max-line-length
+    successHandler(result, selectionInfo, startInfo, endInfo) {
+        let canLock = JSON.parse(result.data).canLock;
+        if (canLock) {
+            selectionInfo.start = this.selection.getHierarchicalIndex(startInfo.paragraph, startInfo.offset.toString());
+            selectionInfo.end = this.selection.getHierarchicalIndex(endInfo.paragraph, endInfo.offset.toString());
+            let previousEditRange = this.getPreviousLockedRegion();
+            if (previousEditRange) {
+                let position = this.selection.getPosition(previousEditRange);
+                selectionInfo.previousLockInfo = {
+                    start: this.selection.getHierarchicalIndexByPosition(position.startPosition),
+                    end: this.selection.getHierarchicalIndexByPosition(position.endPosition),
+                    author: previousEditRange.user,
+                    roomName: '',
+                    version: 0
+                };
+            }
+            let lockObject = {
+                action: 'LockContent',
+                selectionInfo: selectionInfo,
+                author: this.owner.currentUser,
+                version: this.version,
+                data: '',
+                roomName: this.collaborativeEditingSettings.roomName
+            };
+            this.owner.trigger('actionComplete', lockObject);
+        }
+        else {
+            let localizeValue = new L10n('documenteditor', this.owner.defaultLocale);
+            localizeValue.setLocale(this.owner.locale);
+            DialogUtility.alert({
+                content: localizeValue.getConstant('Already locked'),
+                closeOnEscape: true, showCloseIcon: true, position: { X: 'Center', Y: 'Center' }
+            });
+        }
+    }
+    failureHandler() {
+        let localizeValue = new L10n('documenteditor', this.owner.defaultLocale);
+        localizeValue.setLocale(this.owner.locale);
+        DialogUtility.alert({
+            content: localizeValue.getConstant('Error in establishing connection with web server'),
+            closeOnEscape: true, showCloseIcon: true, position: { X: 'Center', Y: 'Center' }
+        });
+    }
+    /**
+     * Locker specified region for specified user.
+     * @private
+     */
+    lockRegion(start, end, user) {
+        let startPosition = this.selection.getTextPosBasedOnLogicalIndex(start);
+        let endPosition = this.selection.getTextPosBasedOnLogicalIndex(end);
+        this.lockRegionInternal(startPosition, endPosition, user);
+    }
+    lockRegionInternal(start, end, user) {
+        let editStart = this.owner.editor.addEditElement(user);
+        let editEnd = editStart.editRangeEnd;
+        this.insertElements(start, end, [editEnd], [editStart]);
+        this.updateLockInfo(editStart.paragraph, editEnd.paragraph, user, true);
+        this.owner.viewer.updateScrollBars();
+    }
+    /**
+     * @private
+     */
+    insertElements(start, end, endElements, startElements) {
+        if (!isNullOrUndefined(startElements)) {
+            this.insertElementsInternal(start, startElements);
+        }
+        if (!isNullOrUndefined(endElements)) {
+            this.insertElementsInternal(end, endElements);
+        }
+    }
+    /**
+     * @private
+     */
+    insertElementsInternal(position, elements) {
+        let indexInInline = 0;
+        if (position.paragraph.isEmpty()) {
+            let paragraph = position.paragraph;
+            paragraph.childWidgets[0].children.push(elements[0]);
+            elements[0].line = paragraph.childWidgets[0];
+            this.documentHelper.layout.reLayoutParagraph(paragraph, 0, 0);
+        }
+        else {
+            // tslint:disable-next-line:max-line-length
+            let inlineObj = position.currentWidget.getInline(position.offset, indexInInline);
+            let curInline = inlineObj.element;
+            indexInInline = inlineObj.index;
+            let firstElement = elements[0];
+            this.insertElementInternal(curInline, firstElement, indexInInline);
+            let index = firstElement.indexInOwner;
+            let lastElement = firstElement;
+            for (let i = 1; i < elements.length; i++) {
+                lastElement = elements[i];
+                firstElement.line.children.splice(index + i, 0, lastElement);
+            }
+        }
+    }
+    // tslint:disable-next-line:max-line-length
+    insertElementInternal(element, newElement, index) {
+        let line = element.line;
+        let paragraph = line.paragraph;
+        let insertIndex = element.indexInOwner;
+        let isBidi = paragraph.paragraphFormat.bidi && element.isRightToLeft;
+        if (index === element.length) {
+            // Add new Element in current 
+            if (!isBidi) {
+                insertIndex++;
+            }
+            line.children.splice(insertIndex, 0, newElement);
+        }
+        else if (index === 0) {
+            if (isNullOrUndefined(element.previousNode)) {
+                line.children.splice(0, 0, newElement);
+                insertIndex = 0;
+            }
+            else {
+                line.children.splice(insertIndex, 0, newElement);
+            }
+        }
+        newElement.line = element.line;
+    }
+    //#region Save content 
+    setEditableRegion() {
+        if (this.documentHelper.editRanges.containsKey(this.owner.currentUser)) {
+            let editRanges = this.documentHelper.editRanges.get(this.owner.currentUser);
+            let editRangeStart = editRanges[0];
+            let firstBlock = this.getParentBlock(editRangeStart.paragraph);
+            this.lockStart = this.owner.selection.getHierarchicalIndex(firstBlock, '0').split(';');
+        }
+    }
+    isSelectionInEditableRange(editRange) {
+        if (!isNullOrUndefined(this.owner.selection)) {
+            let start = this.owner.selection.start;
+            let end = this.owner.selection.end;
+            if (!this.owner.selection.isForward) {
+                [start, end] = [end, start];
+            }
+            let position = this.owner.selection.getPosition(editRange);
+            if ((start.isExistAfter(position.startPosition) || start.isAtSamePosition(position.startPosition))
+                && (end.isExistBefore(position.endPosition) || end.isAtSamePosition(position.endPosition)) ||
+                ((position.startPosition.isExistAfter(start) || position.startPosition.isAtSamePosition(start))
+                    && (position.endPosition.isExistBefore(end) || position.endPosition.isAtSamePosition(end))) ||
+                (position.startPosition.isExistAfter(start) && position.startPosition.isExistBefore(end)
+                    && (end.isExistAfter(position.endPosition) || end.isExistBefore(position.endPosition))) ||
+                (position.endPosition.isExistBefore(end) && position.endPosition.isExistAfter(start)
+                    && (start.isExistBefore(position.startPosition) || start.isExistAfter(position.startPosition)))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    /**
+     * Updated modified content from remote user
+     */
+    // tslint:disable:max-func-body-length
+    updateRegion(user, content) {
+        if (this.documentHelper.editRanges.containsKey(user)) {
+            let editRanges = this.documentHelper.editRanges.get(user);
+            if (editRanges.length === 1) {
+                // Remove exisiting range  from collection.
+                // New range will get inserted while updating the content.
+                this.documentHelper.editRanges.remove(user);
+                editRanges[0].removeEditRangeMark();
+            }
+            // Preserve hierachical position for history position tranformation
+            this.setEditableRegion();
+            let startElement = editRanges[0];
+            let endElement = startElement.editRangeEnd;
+            let firstBlock = this.getParentBlock(startElement.paragraph);
+            let lastBlock = this.getParentBlock(endElement.paragraph);
+            let isInEditRange = this.isSelectionInEditableRange(startElement);
+            let startParagrahInfo;
+            let endParagrahInfo;
+            this.owner.editor.isRemoveRevision = true;
+            if (!isInEditRange) {
+                startParagrahInfo = this.owner.selection.getParagraphInfo(this.owner.selection.start);
+                endParagrahInfo = this.owner.selection.getParagraphInfo(this.owner.selection.end);
+            }
+            let sections = [];
+            while (lastBlock !== firstBlock) {
+                let currentBlock = lastBlock.combineWidget(this.owner.viewer);
+                lastBlock = currentBlock.previousRenderedWidget;
+                if (lastBlock.bodyWidget.index !== currentBlock.bodyWidget.index) {
+                    sections.push(currentBlock.bodyWidget);
+                }
+                let removedBlock = currentBlock.containerWidget.childWidgets[currentBlock.indexInOwner];
+                this.removeDuplicateCollection(removedBlock);
+                currentBlock.containerWidget.removeChild(currentBlock.indexInOwner);
+            }
+            if (!isNullOrUndefined(firstBlock)) {
+                let lastBockIndex = firstBlock.index;
+                let containerWidget = firstBlock.containerWidget;
+                sections.push(containerWidget);
+                let lastInsertIndex = firstBlock.containerWidget.childWidgets.indexOf(firstBlock);
+                let removedBlock = containerWidget.childWidgets[lastInsertIndex];
+                containerWidget.removeChild(lastInsertIndex);
+                this.removeDuplicateCollection(removedBlock);
+                let comments = [];
+                let blocks = [];
+                let revision = [];
+                this.owner.editor.isPasteListUpdated = false;
+                this.owner.editor.getBlocks(JSON.parse(content), false, blocks, comments, revision);
+                if (sections.length !== blocks.length) {
+                    if (sections.length === 1) {
+                        let bodyWidget = sections[0];
+                        // tslint:disable-next-line:max-line-length
+                        sections.unshift(this.owner.editor.splitBodyWidget(bodyWidget, blocks[blocks.length - 2].sectionFormat, bodyWidget.childWidgets[lastInsertIndex - 1]));
+                    }
+                    if (sections.length < blocks.length) {
+                        for (let m = 1; m < blocks.length - 1; m++) {
+                            let page = new Page(this.owner.documentHelper);
+                            let bodyWidget = new BodyWidget();
+                            page.bodyWidgets.push(bodyWidget);
+                            bodyWidget.page = page;
+                            sections.splice(m, 0, bodyWidget);
+                            bodyWidget.index = sections[m - 1].index;
+                            bodyWidget.sectionFormat = new WSectionFormat(bodyWidget);
+                            bodyWidget.sectionFormat.copyFormat(blocks[m].sectionFormat);
+                            let pageIndex = sections[m - 1].page.index;
+                            this.documentHelper.insertPage(pageIndex, page);
+                            //Todo: update section index
+                            this.owner.editor.updateSectionIndex(sections[m - 1].sectionFormat, sections[m - 1], true);
+                            if (sections.length === blocks.length) {
+                                break;
+                            }
+                        }
+                    }
+                }
+                for (let z = 0; z < sections.length; z++) {
+                    let containerWidget = sections[z];
+                    let blockIndex = 0;
+                    let insertIndex = 0;
+                    if (z === sections.length - 1) {
+                        blockIndex = lastBockIndex;
+                        insertIndex = lastInsertIndex;
+                    }
+                    let block = blocks[z].childWidgets;
+                    for (let i = 0; i < block.length; i++) {
+                        block[i].containerWidget = containerWidget;
+                        block[i].index = blockIndex;
+                        containerWidget.childWidgets.splice(insertIndex, 0, block[i]);
+                        insertIndex++;
+                        blockIndex++;
+                    }
+                    lastBlock = block[block.length - 1];
+                    if (lastBlock.nextRenderedWidget && lastBlock.nextRenderedWidget.index !== lastBlock.index) {
+                        //Todo: update block index properly
+                        this.updateNextBlocksIndex(lastBlock, true);
+                    }
+                    this.documentHelper.layout.layoutBodyWidgetCollection(block[0].index, containerWidget, undefined, false);
+                }
+                for (let k = 0; k < comments.length; k++) {
+                    let comment = comments[k];
+                    this.owner.editor.addCommentWidget(comment, false, this.owner.showComments, false);
+                    if (comment.replyComments.length > 0) {
+                        for (let z = 0; z < comment.replyComments.length; z++) {
+                            this.owner.commentReviewPane.addReply(comment.replyComments[z], false, false);
+                        }
+                    }
+                }
+                if (revision.length > 0) {
+                    this.updateRevisionCollection(revision);
+                }
+                this.owner.trackChangesPane.updateTrackChanges();
+                let editRanges = this.documentHelper.editRanges.get(user);
+                // update content
+                if (!isInEditRange) {
+                    this.tranformSelection(startParagrahInfo, endParagrahInfo);
+                }
+                else {
+                    if (editRanges.length > 0) {
+                        let positionInfo = this.selection.getPosition(editRanges[0]);
+                        // We can't able to predic the modified content inside editable region
+                        // So, it not possible to transform the position relativly.
+                        // So, move the selection to editable region end.
+                        this.selection.selectPosition(positionInfo.endPosition, positionInfo.endPosition);
+                    }
+                }
+                this.tranformHistoryPosition();
+                this.selection.updateEditRangeCollection();
+                this.updateLockRegion(user);
+                this.documentHelper.removeEmptyPages();
+                this.owner.viewer.updateScrollBars();
+                this.owner.editor.isRemoveRevision = false;
+            }
+        }
+    }
+    updateRevisionCollection(revision) {
+        let insertIndex = 0;
+        let revisionStart = this.getRevisionTextPosition(revision[0]);
+        let isInsert = false;
+        if (this.owner.revisionsInternal.changes.length > 0 &&
+            !isNullOrUndefined(revisionStart)) {
+            for (let i = 0; i < this.owner.revisionsInternal.changes.length; i++) {
+                let textPosition = this.getRevisionTextPosition(this.owner.revisionsInternal.changes[i]);
+                if (textPosition.isExistAfter(revisionStart)) {
+                    insertIndex = i;
+                    isInsert = true;
+                    break;
+                }
+            }
+        }
+        for (let j = 0; j < revision.length; j++) {
+            if (isInsert) {
+                this.owner.revisionsInternal.changes.splice(insertIndex, 0, revision[j]);
+                insertIndex++;
+            }
+            else {
+                this.owner.revisionsInternal.changes.push(revision[j]);
+            }
+        }
+    }
+    /* tslint:disable:no-any */
+    getRevisionTextPosition(revision) {
+        if (revision.range.length > 0) {
+            let range = revision.range[0];
+            if (range instanceof ElementBox) {
+                return this.selection.getElementPosition(range).startPosition;
+            }
+            else if (range instanceof WRowFormat) {
+                let block = range.ownerBase.firstChild.firstChild;
+                if (block.bodyWidget) {
+                    return this.selection.getTextPosBasedOnLogicalIndex(this.selection.getHierarchicalIndex(block, '0'));
+                }
+            }
+            else if (range instanceof WCharacterFormat) {
+                let paraWidget = range.ownerBase;
+                if (paraWidget.lastChild.paragraph.bodyWidget) {
+                    let offset = paraWidget.getLength();
+                    let startPosition = new TextPosition(this.owner);
+                    startPosition.setPositionParagraph(paraWidget.lastChild, offset);
+                    return startPosition;
+                }
+            }
+        }
+        return undefined;
+    }
+    /* tslint:enable:no-any */
+    tranformSelection(startParagrahInfo, endParagraphInfo) {
+        this.documentHelper.skipScrollToPosition = true;
+        let startIndex = this.selection.getHierarchicalIndex(startParagrahInfo.paragraph, startParagrahInfo.offset.toString());
+        let endIndex = this.selection.getHierarchicalIndex(endParagraphInfo.paragraph, endParagraphInfo.offset.toString());
+        this.selection.select(startIndex, endIndex);
+    }
+    tranformHistoryPosition() {
+        if (this.documentHelper.editRanges.containsKey(this.owner.currentUser)) {
+            let editRanges = this.documentHelper.editRanges.get(this.owner.currentUser);
+            let startElement = editRanges[0];
+            let startBlock = this.getParentBlock(startElement.paragraph);
+            let startOffset = this.selection.getHierarchicalIndex(startBlock, '0').split(';');
+            if (!isNullOrUndefined(this.lockStart) && this.lockStart.length > 1) {
+                let sectionDiff = parseInt(startOffset[0], 10) - parseInt(this.lockStart[0], 10);
+                let blockDiff = parseInt(startOffset[1], 10) - parseInt(this.lockStart[1], 10);
+                this.transformHistory(sectionDiff, blockDiff);
+            }
+        }
+    }
+    transformHistory(sectionDiff, blockDiff) {
+        if (this.owner.enableEditorHistory) {
+            let undoStack = this.owner.editorHistory.undoStack;
+            if (!isNullOrUndefined(undoStack)) {
+                for (let i = 0; i < undoStack.length; i++) {
+                    this.transformBaseHistoryInfo(undoStack[i], sectionDiff, blockDiff);
+                }
+            }
+            let redoStack = this.owner.editorHistory.redoStack;
+            if (!isNullOrUndefined(redoStack)) {
+                for (let i = 0; i < redoStack.length; i++) {
+                    this.transformBaseHistoryInfo(redoStack[i], sectionDiff, blockDiff);
+                }
+            }
+        }
+    }
+    transformBaseHistoryInfo(baseHistoryInfo, sectionDiff, blockDiff) {
+        if (baseHistoryInfo.endPosition) {
+            baseHistoryInfo.endPosition = this.tranformPosition(baseHistoryInfo.endPosition, sectionDiff, blockDiff);
+        }
+        if (baseHistoryInfo.insertPosition) {
+            baseHistoryInfo.insertPosition = this.tranformPosition(baseHistoryInfo.insertPosition, sectionDiff, blockDiff);
+        }
+        if (baseHistoryInfo.selectionStart) {
+            baseHistoryInfo.selectionStart = this.tranformPosition(baseHistoryInfo.selectionStart, sectionDiff, blockDiff);
+        }
+        if (baseHistoryInfo.selectionEnd) {
+            baseHistoryInfo.selectionEnd = this.tranformPosition(baseHistoryInfo.selectionEnd, sectionDiff, blockDiff);
+        }
+        if (baseHistoryInfo instanceof HistoryInfo) {
+            let modifiedActions = baseHistoryInfo.modifiedActions;
+            for (let j = 0; j < modifiedActions.length; j++) {
+                this.transformBaseHistoryInfo(modifiedActions[j], sectionDiff, blockDiff);
+            }
+        }
+    }
+    tranformPosition(position, sectionDiff, blockDiff) {
+        let index = position.split(';');
+        index[0] = (parseInt(index[0], 10) + sectionDiff).toString();
+        index[1] = (parseInt(index[1], 10) + blockDiff).toString();
+        return index.join(';');
+    }
+    getParentBlock(block) {
+        if (block.isInsideTable) {
+            block = this.owner.documentHelper.layout.getParentTable(block);
+        }
+        return block.combineWidget(this.owner.viewer);
+    }
+    //#endregion
+    //#region Remove existing items in locked region
+    removeDuplicateCollection(removedBlock) {
+        this.removeFieldInBlock(removedBlock, false, false);
+        this.removeFieldInBlock(removedBlock, true, false);
+        this.removeFieldInBlock(removedBlock, false, true);
+        if (removedBlock instanceof TableWidget) {
+            for (let i = 0; i < removedBlock.childWidgets.length; i++) {
+                if (removedBlock.childWidgets[i] instanceof TableRowWidget) {
+                    let tableDelete = removedBlock.childWidgets[i];
+                    this.owner.editor.removeDeletedCellRevision(tableDelete);
+                }
+            }
+        }
+        else {
+            this.owner.editor.removeRevisionForBlock(removedBlock, undefined, false, false);
+        }
+    }
+    /**
+     * @private
+     */
+    removeFieldInBlock(block, isBookmark, contentControl) {
+        if (block instanceof TableWidget) {
+            this.removeFieldTable(block, isBookmark, contentControl);
+        }
+        else {
+            this.owner.editor.removeField(block, isBookmark, contentControl);
+            this.removeComment(block);
+        }
+    }
+    /**
+     * @private
+     */
+    removeFieldTable(table, isBookmark, contentControl) {
+        for (let i = 0; i < table.childWidgets.length; i++) {
+            let rowWidget = table.childWidgets[i];
+            for (let j = 0; j < rowWidget.childWidgets.length; j++) {
+                let widget = rowWidget.childWidgets[j];
+                for (let i = 0; i < widget.childWidgets.length; i++) {
+                    this.removeFieldInBlock(widget.childWidgets[i], isBookmark, contentControl);
+                }
+            }
+        }
+    }
+    removeComment(block) {
+        if (this.documentHelper.comments.length > 0) {
+            for (let i = 0; i < this.documentHelper.comments.length; i++) {
+                let comment = this.documentHelper.comments[i];
+                if (comment.commentStart.line.paragraph === block) {
+                    this.documentHelper.comments.splice(i, 1);
+                    this.owner.commentReviewPane.deleteComment(comment);
+                    i--;
+                }
+            }
+        }
+    }
+    //#endregion
+    /**
+     * @private
+     */
+    updateNextBlocksIndex(block, increaseIndex) {
+        let nextBlock = block.getSplitWidgets().pop().nextRenderedWidget;
+        let incrementCount = 1;
+        if (nextBlock.bodyWidget.index === block.bodyWidget.index) {
+            incrementCount = block.index - nextBlock.index + 1;
+        }
+        let nextIndex = block.containerWidget.childWidgets.indexOf(block) + 1;
+        if (block.containerWidget instanceof BodyWidget) {
+            let sectionIndex = block.containerWidget.index;
+            let pageIndex = this.documentHelper.pages.indexOf(block.containerWidget.page);
+            for (let j = pageIndex; j < this.documentHelper.pages.length; j++) {
+                let page = this.documentHelper.pages[j];
+                if (page.bodyWidgets[0].index === sectionIndex) {
+                    for (let k = nextIndex; k < page.bodyWidgets[0].childWidgets.length; k++) {
+                        let childWidget = page.bodyWidgets[0].childWidgets[k];
+                        childWidget.index += incrementCount;
+                    }
+                    nextIndex = 0;
+                }
+                else {
+                    return;
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    updateLockRegion(user, isLocked) {
+        if (isNullOrUndefined(user)) {
+            user = this.owner.currentUser;
+        }
+        isLocked = isNullOrUndefined(isLocked) ? true : isLocked;
+        if (this.documentHelper.editRanges.containsKey(user)) {
+            let editRanges = this.documentHelper.editRanges.get(user);
+            if (editRanges.length === 1 && !isNullOrUndefined(editRanges[0].editRangeEnd)) {
+                let editStart = editRanges[0];
+                this.updateLockInfo(editStart.paragraph, editStart.editRangeEnd.paragraph, user, isLocked);
+            }
+        }
+    }
+    updateLockInfo(startBlock, endBlock, user, locked) {
+        if (startBlock.isInsideTable) {
+            startBlock = this.documentHelper.layout.getParentTable(startBlock);
+        }
+        if (endBlock.isInsideTable) {
+            endBlock = this.documentHelper.layout.getParentTable(endBlock);
+        }
+        do {
+            if (locked) {
+                startBlock.lockedBy = user;
+                startBlock.locked = locked;
+            }
+            else {
+                startBlock.lockedBy = undefined;
+                startBlock.locked = locked;
+            }
+            if (startBlock === endBlock) {
+                break;
+            }
+            startBlock = startBlock.nextRenderedWidget;
+            if (isNullOrUndefined(startBlock)) {
+                break;
+            }
+        } while (startBlock);
+    }
+    /**
+     * Pull pending actions from server.
+     */
+    /* tslint:disable:no-any */
+    pullAction() {
+        if (this.owner) {
+            let ajax = new XmlHttpRequestHandler();
+            ajax.url = this.owner.serviceUrl + this.owner.serverActionSettings.getPendingActions;
+            ajax.contentType = 'application/json;charset=UTF-8';
+            ajax.onSuccess = (result) => {
+                this.updateAction(JSON.parse(result.data));
+                hideSpinner(this.owner.element);
+            };
+            ajax.onFailure = this.failureHandler.bind(this);
+            ajax.onError = this.failureHandler.bind(this);
+            ajax.customHeaders = this.owner.headers;
+            showSpinner(this.owner.element);
+            ajax.send(({ 'roomName': this.collaborativeEditingSettings.roomName, version: this.version }));
+        }
+    }
+    /* tslint:enable:no-any */
+    /**
+     * Destroy collaborative editing module.
+     */
+    destroy() {
+        this.owner = undefined;
+    }
+}
+
+/**
+ * Editor Export
  */
 
 /**
@@ -67767,7 +68905,7 @@ class WordExport {
     }
     // Serialize the comments (comments.xml)
     serializeComments() {
-        if (this.mComments.length === 0) {
+        if (this.mComments.length === 0 || (this.mComments.length === 1 && this.mComments[0].text === '')) {
             return;
         }
         let writer = new XmlWriter();
@@ -67815,7 +68953,7 @@ class WordExport {
                 this.serializeBodyItem(writer, blocks[k], true);
                 this.isInsideComment = false;
             }
-            //if (blocks.length > 0) {
+            //if (blocks.length === 0 && this.commentParaID === 0) {
             this.commentParaIDInfo[comment.commentId] = this.commentParaID;
             //}
             //}
@@ -67841,7 +68979,7 @@ class WordExport {
     }
     // Serialize the comments (commentsExtended.xml)
     serializeCommentsExtended() {
-        if (this.mComments.length === 0) {
+        if (this.mComments.length === 0 || (this.mComments.length === 1 && this.mComments[0].text === '')) {
             return;
         }
         let writer = new XmlWriter();
@@ -68513,20 +69651,22 @@ class WordExport {
     }
     // Serialize the comment
     serializeComment(writer, comment) {
-        if (comment.commentCharacterType === 0) {
-            writer.writeStartElement('w', 'commentRangeStart', this.wNamespace);
-        }
-        else if (comment.commentCharacterType === 1) {
-            writer.writeStartElement('w', 'commentRangeEnd', this.wNamespace);
-        }
-        let commentId = this.commentId[comment.commentId];
-        if (isNullOrUndefined(commentId)) {
-            commentId = this.commentId[comment.commentId] = this.currentCommentId++;
-        }
-        writer.writeAttributeString('w', 'id', this.wNamespace, commentId.toString());
-        writer.writeEndElement();
-        if (comment.commentCharacterType === 1) {
-            this.serializeCommentItems(writer, commentId);
+        if (!(this.mComments.length === 1 && this.mComments[0].text === '')) {
+            if (comment.commentCharacterType === 0) {
+                writer.writeStartElement('w', 'commentRangeStart', this.wNamespace);
+            }
+            else if (comment.commentCharacterType === 1) {
+                writer.writeStartElement('w', 'commentRangeEnd', this.wNamespace);
+            }
+            let commentId = this.commentId[comment.commentId];
+            if (isNullOrUndefined(commentId)) {
+                commentId = this.commentId[comment.commentId] = this.currentCommentId++;
+            }
+            writer.writeAttributeString('w', 'id', this.wNamespace, commentId.toString());
+            writer.writeEndElement();
+            if (comment.commentCharacterType === 1) {
+                this.serializeCommentItems(writer, commentId);
+            }
         }
     }
     serializeCommentItems(writer, commentId) {
@@ -70632,10 +71772,10 @@ class WordExport {
         // serialize cell margins
         this.serializeCellMargins(writer, cellFormat);
         if (ensureMerge) {
-            //w:gridSpan -   Grid Columns Spanned by Current Table Cell
-            this.serializeGridSpan(writer, cell);
             //w:hMerge -    Horizontally Merged Cell and w:vMerge -    Vertically Merged Cell
             this.serializeCellMerge(writer, cellFormat);
+            //w:gridSpan -   Grid Columns Spanned by Current Table Cell
+            this.serializeGridSpan(writer, cell);
         }
         //w:tcBorders -    Table Cell Borders
         writer.writeStartElement(undefined, 'tcBorders', this.wNamespace);
@@ -72468,8 +73608,10 @@ class WordExport {
         this.serializeRelationShip(writer, this.getNextRelationShipID(), this.stylesRelType, 'styles.xml');
         this.serializeRelationShip(writer, this.getNextRelationShipID(), this.settingsRelType, 'settings.xml');
         if (this.mComments.length > 0) {
-            this.serializeRelationShip(writer, this.getNextRelationShipID(), this.commentsRelType, 'comments.xml');
-            this.serializeRelationShip(writer, this.getNextRelationShipID(), this.commentsExRelType, 'commentsExtended.xml');
+            if (!(this.mComments.length === 1 && this.mComments[0].text === '')) {
+                this.serializeRelationShip(writer, this.getNextRelationShipID(), this.commentsRelType, 'comments.xml');
+                this.serializeRelationShip(writer, this.getNextRelationShipID(), this.commentsExRelType, 'commentsExtended.xml');
+            }
         }
         // this.serializeRelationShip(writer, this.getNextRelationShipID(), this.ThemeRelType, 'theme/theme1.xml');
         if (this.document.lists.length > 0) {
@@ -73047,6 +74189,8 @@ class SfdtExport {
         this.multipleLineContent = false;
         this.nestedContent = false;
         this.editRangeId = -1;
+        this.selectedCommentsId = [];
+        this.selectedRevisionId = [];
         this.nestedBlockContent = false;
         this.nestedBlockEnabled = false;
         this.blocks = [];
@@ -73057,6 +74201,10 @@ class SfdtExport {
          * @private
          */
         this.isExport = true;
+        /**
+         * @private
+         */
+        this.isPartialExport = false;
         this.checkboxOrDropdown = false;
         /**
          * @private
@@ -73081,6 +74229,11 @@ class SfdtExport {
         this.endCell = undefined;
         this.startColumnIndex = undefined;
         this.endColumnIndex = undefined;
+        this.selectedCommentsId = [];
+        this.selectedRevisionId = [];
+        this.startBlock = undefined;
+        this.endBlock = undefined;
+        this.isPartialExport = false;
     }
     /**
      * Serialize the data as Syncfusion document text.
@@ -73118,6 +74271,7 @@ class SfdtExport {
     /**
      * @private
      */
+    // tslint:disable:max-func-body-length
     // tslint:disable-next-line:max-line-length
     write(line, startOffset, endLine, endOffset, writeInlineStyles, isExport) {
         if (writeInlineStyles) {
@@ -73133,6 +74287,10 @@ class SfdtExport {
             // For selection
             let startPara = line.paragraph;
             let endPara = endLine.paragraph;
+            if (this.isPartialExport) {
+                this.startBlock = this.getParentBlock(startPara);
+                this.endBlock = this.getParentBlock(endPara);
+            }
             let startCell = startPara.associatedCell;
             let endCell = endPara.associatedCell;
             // Creates section
@@ -73164,12 +74322,22 @@ class SfdtExport {
                 }
             }
             let nextBlock;
-            if (startCell === endCell || isNullOrUndefined(startCell)) {
+            if ((startCell === endCell && !this.isPartialExport) || isNullOrUndefined(startCell)) {
                 let paragraph = this.createParagraph(line.paragraph);
                 section.blocks.push(paragraph);
+                let lastBlock = line.paragraph;
                 nextBlock = this.writeParagraph(line.paragraph, paragraph, section.blocks, line.indexInOwner, startOffset);
+                if (this.isPartialExport) {
+                    nextBlock = this.getNextBlock(nextBlock, lastBlock);
+                    section = this.document.sections[this.document.sections.length - 1];
+                }
                 while (nextBlock) {
+                    lastBlock = nextBlock;
                     nextBlock = this.writeBlock(nextBlock, 0, section.blocks);
+                    if (this.isPartialExport && isNullOrUndefined(nextBlock)) {
+                        nextBlock = this.getNextBlock(nextBlock, lastBlock);
+                        section = this.document.sections[this.document.sections.length - 1];
+                    }
                 }
                 // Todo:continue in next section
             }
@@ -73191,9 +74359,19 @@ class SfdtExport {
                 }
                 let table = this.createTable(startCell.ownerTable);
                 section.blocks.push(table);
+                let lastBlock = startCell.ownerTable;
                 nextBlock = this.writeTable(startCell.ownerTable, table, startCell.ownerRow.indexInOwner, section.blocks);
+                if (this.isPartialExport) {
+                    nextBlock = this.getNextBlock(nextBlock, lastBlock);
+                    section = this.document.sections[this.document.sections.length - 1];
+                }
                 while (nextBlock) {
+                    lastBlock = nextBlock;
                     nextBlock = this.writeBlock(nextBlock, 0, section.blocks);
+                    if (this.isPartialExport) {
+                        nextBlock = this.getNextBlock(nextBlock, lastBlock);
+                        section = this.document.sections[this.document.sections.length - 1];
+                    }
                 }
             }
         }
@@ -73212,6 +74390,20 @@ class SfdtExport {
         let doc = this.document;
         this.clear();
         return doc;
+    }
+    getNextBlock(nextBlock, lastBlock) {
+        if (isNullOrUndefined(nextBlock) && this.isPartialExport && this.endBlock
+            && !this.endBlock.equals(lastBlock)) {
+            nextBlock = lastBlock.getSplitWidgets().pop().nextRenderedWidget;
+            if (nextBlock && lastBlock.bodyWidget.index !== nextBlock.bodyWidget.index) {
+                let section = this.createSection(nextBlock.bodyWidget);
+                this.document.sections.push(section);
+            }
+            else {
+                nextBlock = undefined;
+            }
+        }
+        return nextBlock;
     }
     /**
      * @private
@@ -73700,9 +74892,13 @@ class SfdtExport {
                 inline.text = element.text.replace(/\u001f/g, '');
             }
             else if (element.revisions.length !== 0) {
-                if (!this.isExport && this.owner.enableTrackChanges) {
+                if (!this.isExport && this.owner.enableTrackChanges && !this.isPartialExport) {
                     this.copyWithTrackChange = true;
                     for (let x = 0; x < element.revisions.length; x++) {
+                        let revision = element.revisions[x];
+                        if (this.selectedRevisionId.indexOf(revision.revisionID) === -1) {
+                            this.selectedRevisionId.push(revision.revisionID);
+                        }
                         if (element.revisions[x].revisionType === 'Deletion') {
                             element.revisions.pop();
                         }
@@ -73740,6 +74936,9 @@ class SfdtExport {
             inline.editRangeId = element.editRangeId.toString();
         }
         else if (element instanceof CommentCharacterElementBox) {
+            if (!this.isExport && element.commentType === 0) {
+                this.selectedCommentsId.push(element.commentId);
+            }
             inline.commentCharacterType = element.commentType;
             inline.commentId = element.commentId;
         }
@@ -73753,6 +74952,9 @@ class SfdtExport {
             inline.revisionIds = [];
             for (let x = 0; x < element.revisions.length; x++) {
                 //revisionIdes[x] = element.revisions[x];
+                if (this.selectedRevisionId.indexOf(element.revisions[x].revisionID) === -1) {
+                    this.selectedRevisionId.push(element.revisions[x].revisionID);
+                }
                 inline.revisionIds.push(element.revisions[x].revisionID);
                 //this.document.revisionIdes.push(inline.revisionIds)
             }
@@ -74081,7 +75283,7 @@ class SfdtExport {
                 }
                 offset = -1;
             }
-            if (!this.isExport && !inline.hasOwnProperty('text') && this.owner.enableTrackChanges) {
+            if (!this.isExport && !inline.hasOwnProperty('text') && this.owner.enableTrackChanges && !this.isPartialExport) {
                 let index = inlines.length - 1;
                 inlines.splice(index, 1);
             }
@@ -74408,6 +75610,9 @@ class SfdtExport {
         return rowFormat;
     }
     writeRowRevisions(wrevisions, revisionIds) {
+        if (this.selectedRevisionId.indexOf(wrevisions.revisionID) === -1) {
+            this.selectedRevisionId.push(wrevisions.revisionID);
+        }
         revisionIds.push(wrevisions.revisionID);
         return revisionIds;
     }
@@ -74460,7 +75665,10 @@ class SfdtExport {
     writeRevisions(documentHelper) {
         this.document.revisions = [];
         for (let i = 0; i < documentHelper.owner.revisions.changes.length; i++) {
-            this.document.revisions.push(this.writeRevision(documentHelper.owner.revisions.changes[i]));
+            if (this.isExport ||
+                (!this.isExport && this.selectedRevisionId.indexOf(documentHelper.owner.revisions.changes[i].revisionID) !== -1)) {
+                this.document.revisions.push(this.writeRevision(documentHelper.owner.revisions.changes[i]));
+            }
         }
     }
     writeRevision(revisions) {
@@ -74474,7 +75682,10 @@ class SfdtExport {
     writeComments(documentHelper) {
         this.document.comments = [];
         for (let i = 0; i < documentHelper.comments.length; i++) {
-            this.document.comments.push(this.writeComment(documentHelper.comments[i]));
+            if (this.isExport ||
+                (!this.isExport && this.selectedCommentsId.indexOf(this.documentHelper.comments[i].commentId) !== -1)) {
+                this.document.comments.push(this.writeComment(this.documentHelper.comments[i]));
+            }
         }
     }
     writeCustomXml(documentHelper) {
@@ -74565,6 +75776,12 @@ class SfdtExport {
         listLevel.restartLevel = wListLevel.restartLevel;
         listLevel.startAt = wListLevel.startAt;
         return listLevel;
+    }
+    getParentBlock(widget) {
+        if (widget.isInsideTable) {
+            widget = this.owner.documentHelper.layout.getParentTable(widget);
+        }
+        return widget;
     }
     /**
      * @private
@@ -85667,7 +86884,7 @@ class CommentReviewPane {
             this.owner.editorModule.insertComment('');
         }
     }
-    addComment(comment, isNewComment) {
+    addComment(comment, isNewComment, selectComment) {
         this.isNewComment = isNewComment;
         this.owner.documentHelper.currentSelectedComment = comment;
         this.commentPane.insertComment(comment);
@@ -85676,7 +86893,9 @@ class CommentReviewPane {
             commentView.cancelEditing();
             this.enableDisableToolbarItem();
         }
-        this.selectComment(comment);
+        if (selectComment) {
+            this.selectComment(comment);
+        }
     }
     deleteComment(comment) {
         if (this.commentPane) {
@@ -85701,7 +86920,7 @@ class CommentReviewPane {
     reopenComment(comment) {
         this.commentPane.reopenComment(comment);
     }
-    addReply(comment, newComment) {
+    addReply(comment, newComment, selectComment) {
         this.isNewComment = newComment;
         this.commentPane.insertReply(comment);
         if (!newComment) {
@@ -85709,7 +86928,9 @@ class CommentReviewPane {
             commentView.cancelEditing();
             this.enableDisableToolbarItem();
         }
-        this.selectComment(comment.ownerComment);
+        if (selectComment) {
+            this.selectComment(comment.ownerComment);
+        }
     }
     navigatePreviousComment() {
         if (this.owner && this.owner.editorModule) {
@@ -86251,6 +87472,7 @@ class CommentView {
         this.cancelReply();
         this.updateReplyTextAreaHeight();
         this.owner.editorModule.replyComment(this.comment, replyText);
+        this.owner.fireContentChange();
     }
     cancelReply() {
         this.commentPane.currentEditingComment = undefined;
@@ -86263,9 +87485,11 @@ class CommentView {
     }
     updateTextAreaHeight() {
         setTimeout(() => {
-            this.textArea.style.height = 'auto';
-            let scrollHeight = this.textArea.scrollHeight;
-            this.textArea.style.height = scrollHeight + 'px';
+            if (!isNullOrUndefined(this.textArea)) {
+                this.textArea.style.height = 'auto';
+                let scrollHeight = this.textArea.scrollHeight;
+                this.textArea.style.height = scrollHeight + 'px';
+            }
         });
     }
     showMenuItems() {
@@ -86314,7 +87538,9 @@ class CommentView {
         this.menuBar.style.display = 'none';
         this.updateTextAreaHeight();
         setTimeout(() => {
-            this.textArea.focus();
+            if (this.textArea) {
+                this.textArea.focus();
+            }
         });
     }
     resolveComment() {
@@ -86345,6 +87571,7 @@ class CommentView {
         if (!isNullOrUndefined(this.replyViewContainer)) {
             this.replyViewContainer.style.display = '';
         }
+        this.owner.fireContentChange();
     }
     showCommentView() {
         this.commentPane.isEditMode = false;
@@ -86532,6 +87759,9 @@ __decorate([
 __decorate([
     Property({ shadingColor: '#cfcfcf', applyShading: true, selectionColor: '#cccccc', formFillingMode: 'Popup' })
 ], DocumentEditorSettings.prototype, "formFieldSettings", void 0);
+__decorate([
+    Property({ roomName: '', editableRegionColor: '#22b24b', lockedRegionColor: '#f44336' })
+], DocumentEditorSettings.prototype, "collaborativeEditingSettings", void 0);
 /**
  * The Document editor component is used to draft, save or print rich text contents as page by page.
  */
@@ -86948,7 +88178,11 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
             'View': 'View',
             'Insertion': 'Insertion',
             'Deletion': 'Deletion',
-            'All caps': 'All caps'
+            'All caps': 'All caps',
+            'This region is locked by': 'This region is locked by',
+            'Lock': 'Lock',
+            'Unlock': 'Unlock',
+            'Already locked': 'Selected or part of region is already locked by another user'
         };
         this.documentHelper = new DocumentHelper(this);
         if (this.layoutType === 'Pages') {
@@ -87194,6 +88428,7 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
                     if (this.selection && this.documentHelper.isDocumentProtected) {
                         this.selection.highlightEditRegion();
                     }
+                    this.viewer.updateScrollBars();
                     break;
                 case 'pageGap':
                 case 'pageOutline':
@@ -87211,6 +88446,7 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
                     if (this.viewer) {
                         this.documentHelper.showComments(model.showComments);
                     }
+                    this.viewer.updateScrollBars();
                     break;
                 case 'enableRtl':
                     this.localizeDialogs(model.enableRtl);
@@ -87223,7 +88459,11 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
                     this.viewer.updateScrollBars();
                     break;
                 case 'showRevisions':
-                    if (this.viewer) {
+                    if (this.isReadOnly || this.documentHelper.isDocumentProtected) {
+                        this.showRevisions = false;
+                        this.documentHelper.showRevisions(false);
+                    }
+                    else if (this.viewer) {
                         this.documentHelper.showRevisions(model.showRevisions);
                     }
                     this.viewer.updateScrollBars();
@@ -87346,6 +88586,9 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
      * @private
      */
     fireContentChange() {
+        if (this.enableLockAndEdit && this.collaborativeEditingModule) {
+            this.collaborativeEditingModule.saveContent();
+        }
         let eventArgs = { source: isBlazor() ? null : this };
         this.trigger('contentChange', eventArgs);
     }
@@ -87353,6 +88596,9 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
      * @private
      */
     fireDocumentChange() {
+        if (this.enableLockAndEdit && this.enableEditor) {
+            this.editor.enforceProtection('', false, true);
+        }
         let eventArgs = { source: isBlazor() ? null : this };
         this.trigger('documentChange', eventArgs);
     }
@@ -87554,6 +88800,11 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     //tslint:disable: max-func-body-length
     requiredModules() {
         let modules = [];
+        if (this.enableLockAndEdit) {
+            modules.push({
+                member: 'CollaborativeEditing', args: [this]
+            });
+        }
         if (this.enablePrint) {
             modules.push({
                 member: 'Print', args: []
@@ -88437,10 +89688,13 @@ __decorate([
     Property(false)
 ], DocumentEditor.prototype, "enableLocalPaste", void 0);
 __decorate([
+    Property(false)
+], DocumentEditor.prototype, "enableLockAndEdit", void 0);
+__decorate([
     Complex({}, DocumentEditorSettings)
 ], DocumentEditor.prototype, "documentEditorSettings", void 0);
 __decorate([
-    Property({ systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
+    Property({ systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing', canLock: 'CanLock', getPendingActions: 'GetPendingActions' })
 ], DocumentEditor.prototype, "serverActionSettings", void 0);
 __decorate([
     Property([])
@@ -88516,6 +89770,9 @@ __decorate([
 ], DocumentEditor.prototype, "afterFormFieldFill", void 0);
 __decorate([
     Event()
+], DocumentEditor.prototype, "actionComplete", void 0);
+__decorate([
+    Event()
 ], DocumentEditor.prototype, "contentControl", void 0);
 DocumentEditor = DocumentEditor_1 = __decorate([
     NotifyPropertyChanges
@@ -88534,6 +89791,12 @@ __decorate([
 __decorate([
     Property('RestrictEditing')
 ], ServerActionSettings.prototype, "restrictEditing", void 0);
+__decorate([
+    Property('CanLock')
+], ServerActionSettings.prototype, "canLock", void 0);
+__decorate([
+    Property('GetPendingActions')
+], ServerActionSettings.prototype, "getPendingActions", void 0);
 /**
  * Form field settings.
  */
@@ -88554,6 +89817,23 @@ __decorate([
 __decorate([
     Property([])
 ], FormFieldSettings.prototype, "formattingExceptions", void 0);
+/**
+ * Collaborative editing settings.
+ */
+class CollaborativeEditingSettings extends ChildProperty {
+}
+__decorate([
+    Property('')
+], CollaborativeEditingSettings.prototype, "roomName", void 0);
+__decorate([
+    Property('#22b24b')
+], CollaborativeEditingSettings.prototype, "editableRegionColor", void 0);
+__decorate([
+    Property('#f44336')
+], CollaborativeEditingSettings.prototype, "lockedRegionColor", void 0);
+__decorate([
+    Property(3000)
+], CollaborativeEditingSettings.prototype, "saveTimeout", void 0);
 /**
  * The `ServerActionSettings` module is used to provide the server action methods of Document Editor Container.
  */
@@ -89190,6 +90470,15 @@ class Toolbar$1 {
     /**
      * @private
      */
+    enableDisableFormField(enable) {
+        let ele = document.getElementById('container_toolbar_form_fields');
+        if (!isNullOrUndefined(ele)) {
+            this.toolbar.enableItems(ele.parentElement, enable);
+        }
+    }
+    /**
+     * @private
+     */
     enableDisableInsertComment(enable) {
         this.isCommentEditing = !enable;
         let id = this.container.element.id + TOOLBAR_ID;
@@ -89252,11 +90541,17 @@ class Toolbar$1 {
                 this.toolbar.enableItems(element.parentElement, enable);
             }
         }
+        if (!isNullOrUndefined(this.documentEditor)) {
+            this.enableDisableFormField(!this.documentEditor.enableHeaderAndFooter && enable && !this.documentEditor.isReadOnlyMode);
+        }
         if (!isProtectedContent || this.container.showPropertiesPane) {
             if (isProtectedContent) {
                 enable = this.container.showPropertiesPane;
             }
             classList(this.propertiesPaneButton.element.parentElement, !enable ? ['e-de-overlay'] : [], !enable ? [] : ['e-de-overlay']);
+        }
+        if (this.documentEditor.isReadOnly || this.documentEditor.documentHelper.isDocumentProtected) {
+            this.documentEditor.showRevisions = false;
         }
         if (enable || (this.documentEditor.documentHelper.isDocumentProtected &&
             this.documentEditor.documentHelper.protectionType === 'FormFieldsOnly')) {
@@ -92731,10 +94026,10 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         for (let prop of Object.keys(newModel)) {
             switch (prop) {
                 case 'restrictEditing':
+                    this.documentEditor.isReadOnly = newModel.restrictEditing;
                     if (this.toolbarModule) {
                         this.toolbarModule.enableDisableToolBarItem(!newModel.restrictEditing, false);
                     }
-                    this.documentEditor.isReadOnly = newModel.restrictEditing;
                     break;
                 case 'showPropertiesPane':
                     this.showHidePropertiesPane(newModel.showPropertiesPane);
@@ -92941,6 +94236,10 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         if (this.documentEditorSettings.fontFamilies) {
             this.documentEditor.documentEditorSettings.fontFamilies = this.documentEditorSettings.fontFamilies;
         }
+        if (this.documentEditorSettings.collaborativeEditingSettings) {
+            // tslint:disable-next-line:max-line-length
+            this.documentEditor.documentEditorSettings.collaborativeEditingSettings = this.documentEditorSettings.collaborativeEditingSettings;
+        }
     }
     /**
      * @private
@@ -93031,7 +94330,8 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             height: '100%',
             width: '100%',
             enableTrackChanges: this.enableTrackChanges,
-            showRevisions: this.enableTrackChanges
+            showRevisions: this.enableTrackChanges,
+            enableLockAndEdit: this.enableLockAndEdit
         });
         this.documentEditor.enableAllModules();
         this.documentEditor.enableComment = this.enableComment;
@@ -93406,6 +94706,9 @@ __decorate$1([
     Property('320px')
 ], DocumentEditorContainer.prototype, "height", void 0);
 __decorate$1([
+    Property(false)
+], DocumentEditorContainer.prototype, "enableLockAndEdit", void 0);
+__decorate$1([
     Event()
 ], DocumentEditorContainer.prototype, "created", void 0);
 __decorate$1([
@@ -93448,7 +94751,7 @@ __decorate$1([
     Complex({}, DocumentEditorSettings)
 ], DocumentEditorContainer.prototype, "documentEditorSettings", void 0);
 __decorate$1([
-    Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
+    Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing', canLock: 'CanLock', getPendingActions: 'GetPendingActions' })
 ], DocumentEditorContainer.prototype, "serverActionSettings", void 0);
 __decorate$1([
     Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Find', 'Separator', 'Comments', 'TrackChanges', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields', 'UpdateFields'])
@@ -93468,5 +94771,5 @@ DocumentEditorContainer = __decorate$1([
  * export document editor modules
  */
 
-export { Dictionary, WUniqueFormat, WUniqueFormats, XmlHttpRequestHandler, Print, ContextMenu$1 as ContextMenu, WSectionFormat, WStyle, WParagraphStyle, WCharacterStyle, WStyles, WCharacterFormat, WListFormat, WTabStop, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WBorder, WBorders, WShading, WList, WAbstractList, WListLevel, WLevelOverride, DocumentHelper, LayoutViewer, PageLayoutViewer, WebLayoutViewer, Rect, Padding, Margin, Widget, BlockContainer, BodyWidget, HeaderFooterWidget, BlockWidget, ParagraphWidget, TableWidget, TableRowWidget, TableCellWidget, LineWidget, ElementBox, FieldElementBox, FormField, TextFormField, CheckBoxFormField, DropDownFormField, TextElementBox, ErrorTextElementBox, FieldTextElementBox, TabElementBox, BookmarkElementBox, ContentControl, ContentControlProperties, ContentControlListItems, CheckBoxState, XmlMapping, CustomXmlPart, ShapeCommon, ShapeBase, ShapeElementBox, TextFrame, LineFormat, ImageElementBox, ListTextElementBox, EditRangeEndElementBox, EditRangeStartElementBox, ChartElementBox, ChartArea, ChartCategory, ChartData, ChartLegend, ChartSeries, ChartErrorBar, ChartSeriesFormat, ChartDataLabels, ChartTrendLines, ChartTitleArea, ChartDataFormat, ChartFill, ChartLayout, ChartCategoryAxis, ChartDataTable, CommentCharacterElementBox, CommentElementBox, Page, WTableHolder, WColumn, ColumnSizeInfo, Layout, Renderer, SfdtReader, TextHelper, Zoom, Selection, SelectionCharacterFormat, SelectionParagraphFormat, SelectionSectionFormat, SelectionTableFormat, SelectionCellFormat, SelectionRowFormat, SelectionImageFormat, TextPosition, SelectionWidgetInfo, Hyperlink, ImageFormat, Search, OptionsPane, TextSearch, SearchWidgetInfo, TextSearchResult, TextSearchResults, Editor, ImageResizer, ImageResizingPoints, SelectedImageInfo, TableResizer, HelperMethods, Point, Base64, EditorHistory, BaseHistoryInfo, HistoryInfo, ModifiedLevel, ModifiedParagraphFormat, RowHistoryFormat, TableHistoryInfo, TableFormatHistoryInfo, RowFormatHistoryInfo, CellFormatHistoryInfo, CellHistoryFormat, WordExport, TextExport, SfdtExport, HtmlExport, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog, FormFieldPopUp, SpellChecker, AddUserDialog, EnforceProtectionDialog, UnProtectDocumentDialog, RestrictEditing, CommentReviewPane, CommentPane, CommentView, Revision, RevisionCollection, TrackChangesPane, ChangesSingleView, DocumentEditorSettings, DocumentEditor, ServerActionSettings, FormFieldSettings, ContainerServerActionSettings, Toolbar$1 as Toolbar, DocumentEditorContainer };
+export { Dictionary, WUniqueFormat, WUniqueFormats, XmlHttpRequestHandler, Print, ContextMenu$1 as ContextMenu, WSectionFormat, WStyle, WParagraphStyle, WCharacterStyle, WStyles, WCharacterFormat, WListFormat, WTabStop, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WBorder, WBorders, WShading, WList, WAbstractList, WListLevel, WLevelOverride, DocumentHelper, LayoutViewer, PageLayoutViewer, WebLayoutViewer, Rect, Padding, Margin, Widget, BlockContainer, BodyWidget, HeaderFooterWidget, BlockWidget, ParagraphWidget, TableWidget, TableRowWidget, TableCellWidget, LineWidget, ElementBox, FieldElementBox, FormField, TextFormField, CheckBoxFormField, DropDownFormField, TextElementBox, ErrorTextElementBox, FieldTextElementBox, TabElementBox, BookmarkElementBox, ContentControl, ContentControlProperties, ContentControlListItems, CheckBoxState, XmlMapping, CustomXmlPart, ShapeCommon, ShapeBase, ShapeElementBox, TextFrame, LineFormat, ImageElementBox, ListTextElementBox, EditRangeEndElementBox, EditRangeStartElementBox, ChartElementBox, ChartArea, ChartCategory, ChartData, ChartLegend, ChartSeries, ChartErrorBar, ChartSeriesFormat, ChartDataLabels, ChartTrendLines, ChartTitleArea, ChartDataFormat, ChartFill, ChartLayout, ChartCategoryAxis, ChartDataTable, CommentCharacterElementBox, CommentElementBox, Page, WTableHolder, WColumn, ColumnSizeInfo, Layout, Renderer, SfdtReader, TextHelper, Zoom, Selection, SelectionCharacterFormat, SelectionParagraphFormat, SelectionSectionFormat, SelectionTableFormat, SelectionCellFormat, SelectionRowFormat, SelectionImageFormat, TextPosition, SelectionWidgetInfo, Hyperlink, ImageFormat, Search, OptionsPane, TextSearch, SearchWidgetInfo, TextSearchResult, TextSearchResults, Editor, ImageResizer, ImageResizingPoints, SelectedImageInfo, TableResizer, HelperMethods, Point, Base64, CollaborativeEditing, EditorHistory, BaseHistoryInfo, HistoryInfo, ModifiedLevel, ModifiedParagraphFormat, RowHistoryFormat, TableHistoryInfo, TableFormatHistoryInfo, RowFormatHistoryInfo, CellFormatHistoryInfo, CellHistoryFormat, WordExport, TextExport, SfdtExport, HtmlExport, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog, FormFieldPopUp, SpellChecker, AddUserDialog, EnforceProtectionDialog, UnProtectDocumentDialog, RestrictEditing, CommentReviewPane, CommentPane, CommentView, Revision, RevisionCollection, TrackChangesPane, ChangesSingleView, DocumentEditorSettings, DocumentEditor, ServerActionSettings, FormFieldSettings, CollaborativeEditingSettings, ContainerServerActionSettings, Toolbar$1 as Toolbar, DocumentEditorContainer };
 //# sourceMappingURL=ej2-documenteditor.es2015.js.map

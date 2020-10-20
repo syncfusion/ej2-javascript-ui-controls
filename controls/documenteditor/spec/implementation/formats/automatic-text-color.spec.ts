@@ -34,6 +34,7 @@ describe('Automatic text color', () => {
     });
 
     it('text color', () => {
+console.log('text color');
         expect(editor.selection.start.paragraph.characterFormat.fontColor).toBe("Empty");
     });
 });

@@ -64,6 +64,7 @@ let CalendarBase = class CalendarBase extends Component {
         this.effect = '';
         this.isPopupClicked = false;
         this.isDateSelected = true;
+        this.isTodayClicked = false;
     }
     /**
      * To Initialize the control rendering.
@@ -392,7 +393,7 @@ let CalendarBase = class CalendarBase extends Component {
         this.blazorRef = ref;
         this.serverModuleName = moduleName;
     }
-    todayButtonClick(value) {
+    todayButtonClick(e, value) {
         if (this.showTodayButton) {
             if (this.currentView() === this.depth) {
                 this.effect = '';
@@ -492,7 +493,7 @@ let CalendarBase = class CalendarBase extends Component {
                     break;
                 case 'select':
                     if (e.target === this.todayElement) {
-                        this.todayButtonClick(value);
+                        this.todayButtonClick(e, value);
                     }
                     else {
                         let element = !isNullOrUndefined(focusedDate) ? focusedDate : selectedDate;
@@ -2051,10 +2052,12 @@ let Calendar = class Calendar extends CalendarBase {
         }
         return tempValue;
     }
-    todayButtonClick() {
+    todayButtonClick(e) {
         if (this.showTodayButton) {
             let tempValue = this.generateTodayVal(this.value);
             this.setProperties({ value: tempValue }, true);
+            this.isTodayClicked = true;
+            this.todayButtonEvent = e;
             if (this.isMultiSelection) {
                 let copyValues = this.copyValues(this.values);
                 if (!super.checkPresentDate(tempValue, this.values)) {
@@ -2062,7 +2065,7 @@ let Calendar = class Calendar extends CalendarBase {
                     this.setProperties({ values: copyValues });
                 }
             }
-            super.todayButtonClick(new Date(+this.value));
+            super.todayButtonClick(e, new Date(+this.value));
         }
     }
     keyActionHandle(e) {
@@ -2355,6 +2358,10 @@ let Calendar = class Calendar extends CalendarBase {
         }
     }
     triggerChange(e) {
+        if (!isNullOrUndefined(this.todayButtonEvent) && this.isTodayClicked) {
+            e = this.todayButtonEvent;
+            this.isTodayClicked = false;
+        }
         this.changedArgs.event = e || null;
         this.changedArgs.isInteracted = !isNullOrUndefined(e);
         if (!isNullOrUndefined(this.value)) {

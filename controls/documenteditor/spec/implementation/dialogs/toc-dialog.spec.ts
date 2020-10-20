@@ -368,6 +368,7 @@ describe('Toc test case validation - 1', () => {
         }, 1000);
     });
     it('Toc linking validation', () => {
+console.log('Toc linking validation');
         let fieldCode = updateToc(editor);
         expect(editor.selection.getFieldCode(fieldCode)).not.toBe('');
         editor.selection.handleControlEndKey();
@@ -408,14 +409,17 @@ describe('TOC test case validation - 2', () => {
         }, 1000);
     });
     it('On Insert Button testing', function () {
+console.log('On Insert Button testing');
         (dialog as any).heading1.value = 1;
         (dialog as any).heading2.value = 2;
         dialog.applyTableOfContentProperties();
     });
     it('On close Button testing', function () {
+console.log('On close Button testing');
         dialog.closeTableOfContentDialog();
     });
     it('On cancel Button testing', function () {
+console.log('On cancel Button testing');
         dialog.onCancelButtonClick();
     });
     // it('TOC page number validation', () => {
@@ -432,6 +436,7 @@ describe('TOC test case validation - 2', () => {
     //     expect(fieldCode.text).toBe(' PAGEREF_Toc512292613 \\h ');
     // });
     it('undo and redo testing', () => {
+console.log('undo and redo testing');
         editor.editorHistory.undo();
         let childWidgets: any = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0];
         let fieldCode: any = childWidgets.paragraph.childWidgets[0].children[9];
@@ -482,6 +487,7 @@ describe('TOC test case validation - 3', () => {
     //     expect(childWidgets.paragraph.containerWidget.childWidgets.length).toBe(4);
     // })
     it('TOC hyperlink validation', () => {
+console.log('TOC hyperlink validation');
         editor.open(tocJson());
         dialog.show();
         (dialog as any).showLevel.value = 1;
@@ -495,6 +501,7 @@ describe('TOC test case validation - 3', () => {
         expect(fieldCode.text).toBe(' HYPERLINK \\l "_Toc512292613" ');
     })
     it('reset Button validation', () => {
+console.log('reset Button validation');
         editor.open(tocJson());
         dialog.show();
         (dialog as any).heading1.value = 1;

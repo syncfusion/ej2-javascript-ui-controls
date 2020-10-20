@@ -39,6 +39,7 @@ describe('Table dialog validation', () => {
         }, 750);
     });
     it('Dialog with bold and italic property apply testing', () => {
+console.log('Dialog with bold and italic property apply testing');
         editor.editor.insertTable(3, 3);
         editor.tablePropertiesDialogModule.show();
         expect(editor.documentHelper.dialog2.visible).toBe(true);
@@ -74,23 +75,27 @@ describe('Show internal Dialogs validation', () => {
         }, 750);
     });
     it('Show Borders and shadings Dialog testing', () => {
+console.log('Show Borders and shadings Dialog testing');
         editor.editor.insertTable(3, 3);
         editor.tablePropertiesDialogModule.showBordersShadingsPropertiesDialog();
         expect(editor.documentHelper.dialog.visible).toBe(true);
     });
     it('Show Cell Options Dialog testing', () => {
+console.log('Show Cell Options Dialog testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         editor.tablePropertiesDialogModule.showCellOptionsDialog();
         expect(editor.documentHelper.dialog.visible).toBe(true);
     });
     it('Show Table Options Dialog testing', () => {
+console.log('Show Table Options Dialog testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         editor.tablePropertiesDialogModule.showTableOptionsDialog();
         expect(editor.documentHelper.dialog.visible).toBe(true);
     });
     it('handle context menu items', () => {
+console.log('handle context menu items');
         editor.editor.insertTable(3, 3);
         expect(() => { menu.handleContextMenuItem('container_contextmenu_table'); }).not.toThrowError();
     });
@@ -119,6 +124,7 @@ describe('Check Cell and Table Alignment Validation', () => {
         }, 750);
     });
     it('Change Cell Alignment testing', () => {
+console.log('Change Cell Alignment testing');
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
         tablePropertiesDialog.show();
@@ -130,6 +136,7 @@ describe('Check Cell and Table Alignment Validation', () => {
         tablePropertiesDialog.changeCellAlignment(event);
     });
     it('Change Table Alignment testing', () => {
+console.log('Change Table Alignment testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -165,6 +172,7 @@ describe('Check Cell and Table Alignment Else part Validation', () => {
         }, 750);
     });
     it('Change Center Alignment testing', () => {
+console.log('Change Center Alignment testing');
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
         tablePropertiesDialog.show();
@@ -176,6 +184,7 @@ describe('Check Cell and Table Alignment Else part Validation', () => {
         tablePropertiesDialog.changeTableAlignment(event);
     });
     it('Change Left Alignment testing', () => {
+console.log('Change Left Alignment testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -212,6 +221,7 @@ describe('Set Table Properties Dialog Validation', () => {
         }, 750);
     });
     it('Set table properties validation', () => {
+console.log('Set table properties validation');
         editor.editor.insertTable(3, 3);
         let tableFormat: WTableFormat = editor.selection.tableFormat.table.tableFormat;
         tableFormat.preferredWidth = 300;
@@ -222,6 +232,7 @@ describe('Set Table Properties Dialog Validation', () => {
         (tablePropertiesDialog as any).setTableProperties();
     });
     it('Set Different Table properties validation', () => {
+console.log('Set Different Table properties validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tableFormat: WTableFormat = editor.selection.tableFormat.table.tableFormat;
@@ -256,6 +267,7 @@ describe('Get Table and Cell Alignment Validation', () => {
         }, 750);
     });
     it('get table alignment properties validation', () => {
+console.log('get table alignment properties validation');
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
         tablePropertiesDialog.show();
@@ -265,6 +277,7 @@ describe('Get Table and Cell Alignment Validation', () => {
         (tablePropertiesDialog as any).center.classList.remove('e-de-table-alignment-active');
     });
     it('get table alignment other properties validation', () => {
+console.log('get table alignment other properties validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -275,6 +288,7 @@ describe('Get Table and Cell Alignment Validation', () => {
         (tablePropertiesDialog as any).right.classList.remove('e-de-table-alignment-active');
     });
     it('get table alignment properties properties validation', () => {
+console.log('get table alignment properties properties validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -310,6 +324,7 @@ describe('Get Cell Alignment Validation', () => {
         }, 750);
     });
     it('get cell alignment properties validation', () => {
+console.log('get cell alignment properties validation');
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
         tablePropertiesDialog.show();
@@ -319,6 +334,7 @@ describe('Get Cell Alignment Validation', () => {
         (tablePropertiesDialog as any).cellCenterAlign.classList.remove('e-de-table-alignment-active');
     });
     it('get cell alignment other properties validation', () => {
+console.log('get cell alignment other properties validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -329,6 +345,7 @@ describe('Get Cell Alignment Validation', () => {
         (tablePropertiesDialog as any).cellBottomAlign.classList.remove('e-de-table-alignment-active');
     });
     it('get cell alignment other properties validation', () => {
+console.log('get cell alignment other properties validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -363,6 +380,7 @@ describe('Apply and Close Table Properties Dialog Validation', () => {
         }, 750);
     });
     it('Apply table properties validation', () => {
+console.log('Apply table properties validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: any = editor.tablePropertiesDialogModule;
@@ -373,6 +391,7 @@ describe('Apply and Close Table Properties Dialog Validation', () => {
         tablePropertiesDialog.applyTableProperties();
     });
     it('Apply table properties validation', () => {
+console.log('Apply table properties validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -382,6 +401,7 @@ describe('Apply and Close Table Properties Dialog Validation', () => {
         editor.editorHistory.redo();
     });
     it('Close Table properties validation', () => {
+console.log('Close Table properties validation');
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
         tablePropertiesDialog.closeTablePropertiesDialog();
     });
@@ -410,6 +430,7 @@ describe('Apply Row Properties Dialog Validation', () => {
         }, 750);
     });
     it('Apply row properties validation', () => {
+console.log('Apply row properties validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -422,6 +443,7 @@ describe('Apply Row Properties Dialog Validation', () => {
 
     });
     it('Apply row properties-2 validation', () => {
+console.log('Apply row properties-2 validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -433,6 +455,7 @@ describe('Apply Row Properties Dialog Validation', () => {
         tablePropertiesDialog.applyTableProperties();
     });
     it('Apply row properties-3 validation', () => {
+console.log('Apply row properties-3 validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -468,6 +491,7 @@ describe('Apply Row Properties-4 Dialog Validation', () => {
         }, 750);
     });
     it('Apply row properties validation', () => {
+console.log('Apply row properties validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -504,6 +528,7 @@ describe('Apply Cell properties Dialog Validation', () => {
         }, 750);
     });
     it('Apply row properties validation', () => {
+console.log('Apply row properties validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -553,6 +578,7 @@ describe('Table Check box Validation Testing', () => {
         }, 750);
     });
     it('Table checkbox checked validation', () => {
+console.log('Table checkbox checked validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -563,6 +589,7 @@ describe('Table Check box Validation Testing', () => {
         expect((tablePropertiesDialog as any).tableWidthType.enabled).toBe(true);
     });
     it('Table checkbox uchecked validation', () => {
+console.log('Table checkbox uchecked validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -597,6 +624,7 @@ describe('Row Check box Validation Testing', () => {
         }, 750);
     });
     it('Row checkbox checked validation', () => {
+console.log('Row checkbox checked validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -607,6 +635,7 @@ describe('Row Check box Validation Testing', () => {
         expect((tablePropertiesDialog as any).rowHeightBox.enabled).toBe(true);
     });
     it('Row checkbox unchecked validation', () => {
+console.log('Row checkbox unchecked validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -641,6 +670,7 @@ describe('Cell Check box Validation Testing', () => {
         }, 750);
     });
     it('Cell checkbox checked validation', () => {
+console.log('Cell checkbox checked validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -651,6 +681,7 @@ describe('Cell Check box Validation Testing', () => {
         expect((tablePropertiesDialog as any).cellWidthBox.enabled).toBe(true);
     });
     it('Cell checkbox unchecked validation', () => {
+console.log('Cell checkbox unchecked validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -685,6 +716,7 @@ describe('Table,Row and cell Format history preservation validation', () => {
         }, 750);
     });
     it('Row Format  validation', () => {
+console.log('Row Format  validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -696,6 +728,7 @@ describe('Table,Row and cell Format history preservation validation', () => {
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
     });
     it('Row Format with multiple selected cells validation', (done) => {
+console.log('Row Format with multiple selected cells validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         editor.selection.handleShiftDownKey();
@@ -713,6 +746,7 @@ describe('Table,Row and cell Format history preservation validation', () => {
         }, 10);
     });
     it('cell Format with multiple selected cells validation', () => {
+console.log('cell Format with multiple selected cells validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         editor.selection.handleShiftDownKey();
@@ -725,6 +759,7 @@ describe('Table,Row and cell Format history preservation validation', () => {
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
     });
     it('Table Format validation', () => {
+console.log('Table Format validation');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -783,6 +818,7 @@ describe('load table format', () => {
         }, 750);
     });
     it('load Table format Left alignment', () => {
+console.log('load Table format Left alignment');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -819,6 +855,7 @@ describe('load table format', () => {
 
     });
     it('load Table format Center alignment', () => {
+console.log('load Table format Center alignment');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -851,6 +888,7 @@ describe('load table format', () => {
         editor.tablePropertiesDialogModule.closeTablePropertiesDialog();
     });
     it('load Table format Right alignment', () => {
+console.log('load Table format Right alignment');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -885,6 +923,7 @@ describe('load table format', () => {
 
     });
     it('load Table format Right alignment with preferred with percentage', () => {
+console.log('load Table format Right alignment with preferred with percentage');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -921,6 +960,7 @@ describe('load table format', () => {
 
     });
     it('Load with preferred with undefined', () => {
+console.log('Load with preferred with undefined');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -955,6 +995,7 @@ describe('load table format', () => {
 
     });
     it('Load with preferred with undefined', () => {
+console.log('Load with preferred with undefined');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -1013,6 +1054,7 @@ describe('Load Row Format', () => {
     });
 
     it('Row Height with isHeader undefined', () => {
+console.log('Row Height with isHeader undefined');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -1073,6 +1115,7 @@ describe('Load Cell format', () => {
         }, 750);
     });
     it('Load Cell format option', () => {
+console.log('Load Cell format option');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -1109,6 +1152,7 @@ describe('Load Cell format', () => {
 
     });
     it('Load Cell format option', () => {
+console.log('Load Cell format option');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -1144,6 +1188,7 @@ describe('Load Cell format', () => {
 
     });
     it('Load Cell format option', () => {
+console.log('Load Cell format option');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -1209,6 +1254,7 @@ describe('Table dialog Property change validation', () => {
         }, 750);
     });
     it('cell width type change to percentage', () => {
+console.log('cell width type change to percentage');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -1251,6 +1297,7 @@ describe('Table dialog Property change validation', () => {
         expect(instance.cellWidthBox.value).toBe(100);
     });
     it('cell Width type change to point', () => {
+console.log('cell Width type change to point');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -1294,6 +1341,7 @@ describe('Table dialog Property change validation', () => {
         expect(instance.cellWidthBox.value).toBe(100);
     });
     it('Table width type change to point', () => {
+console.log('Table width type change to point');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -1336,6 +1384,7 @@ describe('Table dialog Property change validation', () => {
         expect(instance.tableWidthBox.value).toBeLessThanOrEqual(50);
     });
     it('Table Width type change to percent', () => {
+console.log('Table Width type change to percent');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -1378,6 +1427,7 @@ describe('Table dialog Property change validation', () => {
         expect(instance.tableWidthBox.value).toBeGreaterThanOrEqual(230);
     });
     it('Apply Cell format with as Percent width out table preferred width', () => {
+console.log('Apply Cell format with as Percent width out table preferred width');
         let sections: BodyWidget[] = [];
         let section: BodyWidget = new BodyWidget();
         section.sectionFormat = new WSectionFormat();
@@ -1444,6 +1494,7 @@ describe('Table vertical alignment - center validation', () => {
         }, 750);
     });
     it('in 3*4 table and last column resized with minimum width', () => {
+console.log('in 3*4 table and last column resized with minimum width');
         editor.editor.insertTable(2, 2);
         editor.selection.handleRightKey();
         editor.selection.cellFormat.preferredWidth = 10.8;
@@ -1461,6 +1512,7 @@ describe('Table vertical alignment - center validation', () => {
         expect(Math.round(cellWidget.cellFormat.preferredWidth)).toBe(Math.round(previousCellWidth));
     });
     it('cell with different backgroud validation', () => {
+console.log('cell with different backgroud validation');
         editor.openBlank();
         editor.editor.insertTable(1, 2);
         editor.selection.handleHomeKey();

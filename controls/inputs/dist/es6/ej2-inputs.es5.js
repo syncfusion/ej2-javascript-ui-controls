@@ -10786,7 +10786,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                     var validUrl = (removeUrl === '' || isNullOrUndefined(removeUrl)) ? false : true;
                     var _loop_6 = function (files) {
                         index = _this.filesData.indexOf(files);
-                        if ((files.statusCode === '2' || files.statusCode === '4') && validUrl) {
+                        var fileUploadedIndex = _this.uploadedFilesData.indexOf(files);
+                        if ((files.statusCode === '2' || files.statusCode === '4' || (files.statusCode === '0' &&
+                            fileUploadedIndex !== -1)) && validUrl) {
                             _this.removeUploadedFile(files, eventArgs, removeDirectly, customTemplate);
                         }
                         else {

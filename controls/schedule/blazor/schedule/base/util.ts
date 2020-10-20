@@ -138,3 +138,8 @@ export function getOuterHeight(element: HTMLElement): number {
 export function addLocalOffset(date: Date): Date {
     return new Date(+date - (date.getTimezoneOffset() * 60000));
 }
+
+export function removeLocalOffset(date: Date): Date {
+    let localDate: Date = new Date(+date + (date.getTimezoneOffset() * 60000));
+    return new Date(localDate.getTime() + (localDate.getTimezoneOffset() - date.getTimezoneOffset()) * 60000);
+}

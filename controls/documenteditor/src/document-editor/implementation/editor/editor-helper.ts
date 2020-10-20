@@ -1,7 +1,7 @@
 import { isNullOrUndefined, NumberFormatOptions, Internationalization, DateFormatOptions } from '@syncfusion/ej2-base';
 import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox } from '../viewer/page';
 import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults } from '../index';
-import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType } from '../../base/types';
+import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction } from '../../base/types';
 import { Widget, FieldElementBox } from '../viewer/page';
 import { Dictionary } from '../..';
 import { WBorder } from '../format';
@@ -653,6 +653,66 @@ export interface TextSearchResultInfo {
     startOffset: string;
     endOffset: string;
 }
+
+/**
+ * Locked region selection info.
+ */
+export interface LockSelectionInfo {
+    /**
+     * Selection start of the locked region.
+     */
+    start: string;
+    /**
+     * Selection end of the locked region.
+     */
+    end: string;
+    /**
+     * Specifies collaborative editing room name.
+     */
+    roomName: string;
+    /**
+     * Specifies author of the locked region.
+     */
+    author: string;
+    /**
+     * Version of the collaborative editing session.
+     */
+    version: number;
+    /**
+     * @private
+     */
+    previousLockInfo?: LockSelectionInfo;
+}
+/**
+ * Document Editor data
+ */
+export interface CollaborativeEditingEventArgs {
+    /**
+     * Specifies current action in collaborative session.
+     */
+    action: CollaborativeEditingAction;
+    /**
+     * Specifies selection info.
+     */
+    selectionInfo?: LockSelectionInfo;
+    /**
+     * Collaborative session version.
+     */
+    version?: number;
+    /**
+     * Specifies modified data in SFDT format.
+     */
+    data?: string;
+    /**
+     * Specifies author of the edit action. 
+     */
+    author?: string;
+    /**
+     * Specifies collaborative editing room name.
+     */
+    roomName?: string;
+}
+
 /** 
  * @private
  */

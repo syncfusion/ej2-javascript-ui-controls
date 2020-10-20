@@ -1,3 +1,5 @@
+[![coverage](http://ej2.syncfusion.com/badges/ej2-documenteditor/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-documenteditor)
+
 # ej2-documenteditor
 
 The Document Editor component is used to create, edit, view, and print Word documents in web applications. All the user interactions and editing operations that run purely in the client-side provides much faster editing experience to the users.

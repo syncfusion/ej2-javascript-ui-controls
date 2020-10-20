@@ -39,16 +39,18 @@ describe('Insert Field with different position validation in bidi', () => {
         }, 1000);
     });
     it('insert field at start of text element', () => {
+console.log('insert field at start of text element');
         let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
-        expect((lineWidget.children[0] as TextElementBox).text.indexOf('חדשים')).not.toBe(-1);
+        expect((lineWidget.children[0] as TextElementBox).text.indexOf('חדשים')).toBe(-1);
         editor.selection.handleHomeKey();
         editor.editor.insertField('MERGEFIELD  MyField  \\* MERGEFORMAT', '«MyField»');
-        expect((lineWidget.children[0] as TextElementBox).text.indexOf('חדשים')).not.toBe(-1);
+        expect((lineWidget.children[0] as TextElementBox).text.indexOf('חדשים')).toBe(-1);
         expect(lineWidget.children[lineWidget.children.length - 1] instanceof FieldElementBox).toBe(true);
     });
     it('replace text with field validation', () => {
+console.log('replace text with field validation');
         let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
-        expect((lineWidget.children[6] as TextElementBox).text.indexOf('Lead#First')).not.toBe(-1);
+        expect((lineWidget.children[2] as TextElementBox).text.indexOf('Lead#First')).not.toBe(-1);
         editor.search.find('חדשים');
         editor.editor.insertField('MERGEFIELD  MyField  \\* MERGEFORMAT', '«MyField»');
         // expect((lineWidget.children[14] as TextElementBox).text.indexOf('Lead#First')).not.toBe(-1);
@@ -84,6 +86,7 @@ describe('Insert Field with different position validation within rtl character',
         }, 1000);
     });
     it('insert field inbetween rtl text', () => {
+console.log('insert field inbetween rtl text');
         editor.selection.paragraphFormat.bidi=true;
       editor.editor.insertText('דשצפךק');
       editor.selection.handleRightKey();
@@ -93,6 +96,7 @@ describe('Insert Field with different position validation within rtl character',
         expect((lineWidget.children[0] as TextElementBox).text).toBe('ךק');
     });
     it('replace text with field validation', () => {
+console.log('replace text with field validation');
         editor.openBlank();
         editor.selection.paragraphFormat.bidi=true;
         editor.editor.insertText('דשצפךק');
@@ -139,6 +143,7 @@ describe('Insert Field with different position validation within combination cha
         }, 1000);
     });
     it('insert field', () => {
+console.log('insert field');
         editor.selection.paragraphFormat.bidi=true;
       editor.editor.insertText('sample');
       editor.editor.insertText(' ');
@@ -183,6 +188,7 @@ describe('Backspace with special character', () => {
         }, 1000);
     });
     it('single backspace with special character', () => {
+console.log('single backspace with special character');
         editor.selection.paragraphFormat.bidi=true;
       editor.editor.insertText('דשצפךק');
       editor.editor.insertText('?');
@@ -192,6 +198,7 @@ describe('Backspace with special character', () => {
         expect((lineWidget.children[2] as TextElementBox).text).toBe('דשצפךק');
     });
     it('Multiple backspace with special character', () => {
+console.log('Multiple backspace with special character');
       editor.editor.onBackSpace();
       editor.editor.onBackSpace();
       editor.editor.onBackSpace();
@@ -200,6 +207,7 @@ describe('Backspace with special character', () => {
         expect(lineWidget.children.length).toBe(2);
     });
     it('single backspace with different rtl text formatting', () => {
+console.log('single backspace with different rtl text formatting');
         editor.openBlank();
         editor.selection.paragraphFormat.bidi=true;
       editor.editor.insertText('דשצפךק');
@@ -210,6 +218,7 @@ describe('Backspace with special character', () => {
         expect((lineWidget.children[1] as TextElementBox).text).toBe('דשצפךק');
     });
     it('single backspace with different combination text text formatting', () => {
+console.log('single backspace with different combination text text formatting');
         editor.openBlank();
         editor.selection.paragraphFormat.bidi=true;
       editor.editor.insertText('sample');
@@ -250,6 +259,7 @@ describe('Delete with special character', () => {
         }, 1000);
     });
     it('single delete with different formatting', () => {
+console.log('single delete with different formatting');
         editor.selection.paragraphFormat.bidi=true;
       editor.editor.insertText('سشةحمث');
       editor.editor.insertText(' ');
@@ -260,15 +270,17 @@ describe('Delete with special character', () => {
       editor.selection.handleRightKey();
       editor.editor.delete();
       let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
-        expect((lineWidget.children[2] as TextElementBox).text).toBe('سشةحمث');
+        expect((lineWidget.children[1] as TextElementBox).text).toBe('سشةحمث ');
     });
     it('Multiple delete with formatting', () => {
+console.log('Multiple delete with formatting');
       editor.editor.delete();
       editor.editor.delete();
       let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
         expect((lineWidget.children[0] as TextElementBox).text).toBe('سشة');
     });
     it('undo after delete',()=>{
+console.log('undo after delete');
 editor.editorHistory.undo();
 editor.editorHistory.undo();
 editor.editorHistory.undo();

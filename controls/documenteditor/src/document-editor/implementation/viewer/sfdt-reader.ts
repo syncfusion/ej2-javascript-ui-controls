@@ -29,7 +29,10 @@ export class SfdtReader {
     private fieldSeparator: FieldElementBox;
     private commentStarts: Dictionary<string, CommentCharacterElementBox> = undefined;
     private commentEnds: Dictionary<string, CommentCharacterElementBox> = undefined;
-    private commentsCollection: Dictionary<string, CommentElementBox> = undefined;
+    /**
+     * @private
+     */
+    public commentsCollection: Dictionary<string, CommentElementBox> = undefined;
     /**
      * @private
      */
@@ -212,7 +215,10 @@ export class SfdtReader {
             }
         }
     }
-    private parseComments(data: any, comments: CommentElementBox[]): void {
+    /**
+     * @private
+     */
+    public parseComments(data: any, comments: CommentElementBox[]): void {
         let count: number = 0;
         for (let i: number = 0; i < data.comments.length; i++) {
             let commentData: any = data.comments[i];
@@ -1145,7 +1151,7 @@ export class SfdtReader {
             }
             this.addEditRangeCollection(permStart.user, permStart);
         }
-        if (!isNullOrUndefined(data.group)) {
+        if (!isNullOrUndefined(data.group) && data.group !== '') {
             permStart.group = data.group;
             permStart.group = permStart.group === 'everyone' ? 'Everyone' : permStart.group;
             if (this.documentHelper.userCollection.indexOf(permStart.group) === -1) {

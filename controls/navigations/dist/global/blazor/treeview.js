@@ -3962,11 +3962,12 @@ var TreeView = /** @class */ (function (_super) {
         sf.base.EventHandler.add(inpEle, 'blur', this.inputFocusOut, this);
     };
     TreeView.prototype.wireEditingEvents = function (toBind) {
+        var _this = this;
         if (toBind && !this.disabled) {
             var proxy_2 = this;
             this.touchEditObj = new sf.base.Touch(this.element, {
                 tap: function (e) {
-                    if (e.tapCount === 2) {
+                    if (_this.isDoubleTapped(e) && e.tapCount === 2) {
                         e.originalEvent.preventDefault();
                         proxy_2.editingHandler(e.originalEvent);
                     }
@@ -4000,7 +4001,7 @@ var TreeView = /** @class */ (function (_super) {
             var proxy_4 = this;
             this.touchExpandObj = new sf.base.Touch(this.element, {
                 tap: function (e) {
-                    if ((_this.expandOnType === 'Click' || (_this.expandOnType === 'DblClick' && e.tapCount === 2))
+                    if ((_this.expandOnType === 'Click' || (_this.expandOnType === 'DblClick' && _this.isDoubleTapped(e) && e.tapCount === 2))
                         && e.originalEvent.which !== 3) {
                         proxy_4.expandHandler(e);
                     }
@@ -4064,6 +4065,19 @@ var TreeView = /** @class */ (function (_super) {
             el = el.parentNode;
         }
         return matched;
+    };
+    TreeView.prototype.isDoubleTapped = function (e) {
+        var target = e.originalEvent.target;
+        var secondTap;
+        if (target && e.tapCount) {
+            if (e.tapCount === 1) {
+                this.firstTap = sf.base.closest(target, '.' + LISTITEM);
+            }
+            else if (e.tapCount === 2) {
+                secondTap = sf.base.closest(target, '.' + LISTITEM);
+            }
+        }
+        return (this.firstTap === secondTap);
     };
     TreeView.prototype.isDescendant = function (parent, child) {
         var node = child.parentNode;

@@ -9915,4 +9915,116 @@ describe('Swimlane - Enable Line Routing', () => {
         done();
         });
     });
+    describe('Horizontal Swimlane', () => {
+        let diagram: Diagram;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramSwimlane1' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'swimlane',
+                    shape: {
+                        type: 'SwimLane',
+                        orientation: 'Horizontal',
+                        header: {
+                            annotation: { content: 'SALES PROCESS FLOW CHART', style: { fill: 'transparent' } },
+                            height: 50, style: { fontSize: 11 },
+                        },
+                        lanes: [
+                            {
+                                id: 'stackCanvas1',
+                                header: {
+                                    annotation: { content: 'Consumer' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'node1',
+                                        annotations: [
+                                            {
+                                                content: 'Consumer learns \n of product',
+                                                style: { fontSize: 11 }
+                                            }
+                                        ],
+                                        margin: { left: 60, top: 30 },
+                                        height: 40, width: 100, ports: this.port
+                                    },
+                                    {
+                                        id: 'node2',
+                                        shape: { type: 'Flow', shape: 'Decision' },
+                                        annotations: [
+                                            {
+                                                content: 'Does \nConsumer want \nthe product',
+                                                style: { fontSize: 11 }
+                                            }
+                                        ],
+                                        margin: { left: 200, top: 20 },
+                                        height: 60, width: 120, ports: this.port
+                                    },
+                                    
+                                ],
+                            },
+                            
+                        ],
+                        phases: [
+                            {
+                                id: 'phase1', offset: 170,
+                                header: { annotation: { content: 'Phase' } }
+                            },
+                        ],
+                        phaseSize: 20,
+                    },
+                    offsetX: 390, offsetY: 320,
+                    height: 100,
+                    width: 650
+                },
+            ];
+            let connectors: ConnectorModel[] = [
+                {
+                    id: 'connector1', sourceID: 'node1',
+                    targetID: 'node2'
+                },
+            ];
+            diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes, connectors:connectors, created: created });
+            diagram.appendTo('#diagramSwimlane1');
+            function created() {
+                const lane: LaneModel[] = [
+                    {
+                      id: 'lane1',
+                      height: 100,
+                      header: {
+                        annotation: { content: 'Online Consumer 2' },
+                        width: 50,
+                        style: { fontSize: 11, fill: 'blue' },
+                      },                      
+                    },
+                  ];
+                diagram.addLanes(diagram.nodes[0], lane);
+                let node1: NodeModel = 
+                {
+                    id: 'newNode', width: 50, height: 60, shape: { type: 'Flow', shape: 'Process' },
+                    style: { strokeWidth: 1, fill: 'red' }, margin: { left: 400, top: 25 }
+                }
+                diagram.addNodeToLane(node1, 'swimlane', 'lane1');
+            }
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Node added to the dynamically rendered lane', (done: Function) => {
+            let node = diagram.nameTable['newNode'];
+            diagram.select([node]);
+            console.log(diagram.selectedItems.nodes[0].offsetX);
+            console.log(diagram.selectedItems.nodes[0].offsetY);
+            expect(diagram.selectedItems.nodes[0].offsetX === 490 && diagram.selectedItems.nodes[0].offsetY === 460).toBe(true);
+            let laneElement = document.getElementById('lane10');
+            expect(laneElement !== undefined).toBe(true);
+            done();
+        });
+    });
 });

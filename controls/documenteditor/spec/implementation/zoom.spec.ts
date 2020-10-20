@@ -34,10 +34,12 @@ describe("Zoom constructor and Possible value checking - 1", () => {
     });
 
     it('Zoomfactor with possible value As 1 checking', () => {
+console.log('Zoomfactor with possible value As 1 checking');
         editor.documentHelper.zoomFactor = 1;
         expect(editor.documentHelper.zoomFactor).toBe(1);
     });
     it('Zoomfactor with possible value as 0 checking', (done) => {
+console.log('Zoomfactor with possible value as 0 checking');
         editor.documentHelper.zoomFactor = 0;
         setTimeout(() => {
             expect(editor.documentHelper.zoomFactor).toBe(0.1);
@@ -46,6 +48,7 @@ describe("Zoom constructor and Possible value checking - 1", () => {
 
     });
     it('Zoomfactor with possible value greater than 5 checking', (done) => {
+console.log('Zoomfactor with possible value greater than 5 checking');
         editor.documentHelper.zoomFactor = 5.1;
         setTimeout(() => {
             expect(editor.documentHelper.zoomFactor).toBe(5);
@@ -54,6 +57,7 @@ describe("Zoom constructor and Possible value checking - 1", () => {
 
     });
     it('Zoomfactor with possible value as 3 checking', (done) => {
+console.log('Zoomfactor with possible value as 3 checking');
         editor.documentHelper.zoomFactor = 3;
         setTimeout(() => {
             expect(editor.documentHelper.zoomFactor).toBe(3);
@@ -87,6 +91,7 @@ describe("Zoom Module- Mouse wheel event testing-1", () => {
     });
 
     it('Mouse Wheel Event with control pressed false', (done) => {
+console.log('Mouse Wheel Event with control pressed false');
         let event: any = { pageX: 250, pageY: 120, preventDefault: function () { }, ctrlKey: true, wheelDelta: 5 };
         editor.documentHelper.zoomModule.onMouseWheelInternal(event);
         setTimeout(() => {
@@ -95,12 +100,14 @@ describe("Zoom Module- Mouse wheel event testing-1", () => {
         }, 100);
     });
     it('Mouse Wheel Event with control pressed true with zoomactor negative', () => {
+console.log('Mouse Wheel Event with control pressed true with zoomactor negative');
         editor.documentHelper.zoomFactor = -0.1;
         let event: any = { pageX: 250, pageY: 120, preventDefault: function () { }, ctrlKey: true, wheelDelta: 0 };
         editor.documentHelper.zoomModule.onMouseWheelInternal(event);
         expect(editor.documentHelper.zoomFactor).toBe(0.1);
     });
     it('Mouse Wheel Event with control pressed true with zoom factor 1', () => {
+console.log('Mouse Wheel Event with control pressed true with zoom factor 1');
         let event: any = { pageX: 250, pageY: 120, preventDefault: function () { }, ctrlKey: true, wheelDelta: 0 };
         editor.documentHelper.zoomModule.onMouseWheelInternal(event);
         expect(editor.documentHelper.zoomFactor).toBe(0.9);
@@ -136,12 +143,14 @@ describe("Zoom Module- Mouse wheel event testing-2", () => {
     });
 
     it('Mouse Wheel Event with control pressed false', () => {
+console.log('Mouse Wheel Event with control pressed false');
         let event: any = { pageX: 250, pageY: 120, preventDefault: function () { }, ctrlKey: false, wheelDelta: 5 };
         editor.documentHelper.zoomModule.onMouseWheelInternal(event);
         expect(editor.documentHelper.zoomFactor).toBe(1);
 
     });
     it('Mouse Wheel Event with control pressed true with zoomfactor 6', () => {
+console.log('Mouse Wheel Event with control pressed true with zoomfactor 6');
         zoomModule = new Zoom(editor.documentHelper);
         editor.documentHelper.zoomFactor = 6;
         let event: any = { pageX: 250, pageY: 120, preventDefault: function () { }, ctrlKey: true, wheelDelta: 5 };
@@ -149,6 +158,7 @@ describe("Zoom Module- Mouse wheel event testing-2", () => {
         expect(editor.documentHelper.zoomFactor).toBe(5);
     });
     it('Mouse Wheel Event with control pressed true with pageX large', () => {
+console.log('Mouse Wheel Event with control pressed true with pageX large');
         let event: any = { pageX: 5000, pageY: 120, preventDefault: function () { }, ctrlKey: true, wheelDelta: 5 };
         editor.documentHelper.zoomModule.onMouseWheelInternal(event);
         expect(editor.documentHelper.zoomFactor).toBe(1);

@@ -1165,14 +1165,17 @@ describe('Word export module with row span validation', () => {
         }, 1000);
     });
     it('Row column span in firt row last cell', () => {
+console.log('Row column span in firt row last cell');
         editor.open(JSON.stringify(rowSpanJson));
         expect(() => { editor.save('rowColSpan', 'Docx'); }).not.toThrowError();
     });
     it('Row column span merge validation', () => {
+console.log('Row column span merge validation');
         editor.open(JSON.stringify(rowMerge));
         expect(() => { editor.save('rowMerge', 'Docx'); }).not.toThrowError();
     });
     it('Row column span merge open validation', () => {;
+console.log('Row column span merge open validation');
         expect(() => { editor.open(JSON.stringify(rowMerge)); }).not.toThrowError();
     })
 });
@@ -1202,6 +1205,7 @@ describe('Table grid span validation', () => {
         }, 1000);
     });
     it('export grid span', () => {
+console.log('export grid span');
         editor.editorModule.insertTable(2, 2);
         let table = (editor.sfdtExportModule as any).createTable(editor.selection.tableFormat.table);
         (editor.wordExportModule as any).serializeGridColumns(writer, table.grid);
@@ -1236,6 +1240,7 @@ describe('Serialize section propertes validation', () => {
         }, 1000);
     });
     it('When section break inside table validation', () => {
+console.log('When section break inside table validation');
        let document=editor.documentHelper.owner.sfdtExportModule.write();
         (editor.wordExportModule as any).setDocument(document);
         (editor.wordExportModule as any).mVerticalMerge = new Dictionary<number, number>();
@@ -1273,6 +1278,7 @@ describe('Serialize Shape validation', () => {
         }, 1000);
     });
     it('Serialize AutoShape StraightConnector validation', () => {
+console.log('Serialize AutoShape StraightConnector validation');
         json = editor.sfdtExportModule.write();
         (editor.wordExportModule as any).setDocument(json);
         (editor.wordExportModule as any).section = (editor.wordExportModule as any).document.sections[0];

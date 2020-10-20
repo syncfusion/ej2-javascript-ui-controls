@@ -34,6 +34,7 @@ describe('Section Break API Validation', () => {
         }, 1000);
     });
     it('Insert Section break inside paragraph', () => {
+console.log('Insert Section break inside paragraph');
         editor.editorModule.insertText('Section 1');
         editor.editorModule.onEnter();
         editor.editorModule.insertText('Section 1');
@@ -43,6 +44,7 @@ describe('Section Break API Validation', () => {
         expect(editor.selection.start.paragraph.bodyWidget.index).toBe(1);
     });
     it('Undo redo mutiple times', () => {
+console.log('Undo redo mutiple times');
         for (let i: number = 0; i < 5; i++) {
             editor.editorHistory.undo();
             editor.editorHistory.redo();
@@ -76,6 +78,7 @@ describe('Section Break API Validation', () => {
         }, 750);
     });
     it('Insert Section break inside table', () => {
+console.log('Insert Section break inside table');
         editor.editorModule.insertTable(2, 2);
         editor.editorModule.insertSectionBreak();
         expect(editor.documentHelper.pages.length).toBe(2);
@@ -83,6 +86,7 @@ describe('Section Break API Validation', () => {
         expect(editor.selection.start.paragraph.bodyWidget.previousRenderedWidget.childWidgets.length).toBe(1);
     });
     it('Insert Section break at second row', () => {
+console.log('Insert Section break at second row');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         editor.selection.moveDown();
@@ -92,6 +96,7 @@ describe('Section Break API Validation', () => {
         expect(editor.selection.start.paragraph.bodyWidget.previousRenderedWidget.childWidgets.length).toBe(2);
     });
     it('Apply section format on second column', () => {
+console.log('Apply section format on second column');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.handleTabKey(true, false)
@@ -179,15 +184,18 @@ describe('List document with multilevel layouting validation', () => {
         }, 1000);
     });
     it('First Level validation', () => {
+console.log('First Level validation');
         expect(editor.selection.paragraphFormat.leftIndent).toBe(36);
         expect(editor.selection.paragraphFormat.firstLineIndent).toBe(-18);
     });
     it('second level validation', () => {
+console.log('second level validation');
         editor.selection.handleDownKey();
         expect(editor.selection.paragraphFormat.leftIndent).toBe(72);
         expect(editor.selection.paragraphFormat.firstLineIndent).toBe(-18);
     });
     it('Third level validation', () => {
+console.log('Third level validation');
         editor.selection.handleDownKey();
         expect(editor.selection.paragraphFormat.leftIndent).toBe(108);
         expect(editor.selection.paragraphFormat.firstLineIndent).toBe(-9);
@@ -222,6 +230,7 @@ describe('Apply Borders Validation', () => {
     });
     describe('Apply OutsideBorder', () => {
         it('On empty selection', () => {
+console.log('On empty selection');
             let settings: BorderSettings = { type: 'OutsideBorders', borderColor: 'green', lineWidth: 1, borderStyle: 'Single' };
             editor.editor.applyBorders(settings);
             let cell = editor.selection.start.paragraph.associatedCell;
@@ -234,6 +243,7 @@ describe('Apply Borders Validation', () => {
 
         });
         it('Undo action', () => {
+console.log('Undo action');
             editor.editorHistory.undo();
             let cell = editor.selection.start.paragraph.associatedCell;
             expect(cell.cellFormat.borders.left.color).not.toBe('green');
@@ -284,6 +294,7 @@ describe('Apply AllBorders', () => {
         }, 1000);
     });
     it('On empty selection', () => {
+console.log('On empty selection');
         let settings: BorderSettings = { type: 'AllBorders', borderColor: 'red', lineWidth: 1, borderStyle: 'Single' };
         editor.editor.applyBorders(settings);
         let cell = editor.selection.start.paragraph.associatedCell;
@@ -296,6 +307,7 @@ describe('Apply AllBorders', () => {
 
     });
     it('Undo action', () => {
+console.log('Undo action');
         editor.editorHistory.undo();
         let cell = editor.selection.start.paragraph.associatedCell;
         expect(cell.cellFormat.borders.left.color).not.toBe('red');
@@ -349,6 +361,7 @@ describe('Apply Single border', () => {
     });
 
     it('Apply LeftBorder', () => {
+console.log('Apply LeftBorder');
         let settings: BorderSettings = { type: 'LeftBorder', borderColor: 'Yellow', lineWidth: 1, borderStyle: 'Single' };
         editor.editor.applyBorders(settings);
         let cell = editor.selection.start.paragraph.associatedCell;
@@ -360,6 +373,7 @@ describe('Apply Single border', () => {
         expect(cell.cellFormat.borders.horizontal.color).not.toBe('Yellow');
     });
     it('Apply RightBorder', () => {
+console.log('Apply RightBorder');
         let settings: BorderSettings = { type: 'RightBorder', borderColor: 'gray', lineWidth: 1, borderStyle: 'Single' };
         editor.editor.applyBorders(settings);
         let cell = editor.selection.start.paragraph.associatedCell;
@@ -371,6 +385,7 @@ describe('Apply Single border', () => {
         expect(cell.cellFormat.borders.horizontal.color).not.toBe('gray');
     });
     it('Apply TopBorder', () => {
+console.log('Apply TopBorder');
         let settings: BorderSettings = { type: 'TopBorder', borderColor: 'blue', lineWidth: 1, borderStyle: 'Single' };
         editor.editor.applyBorders(settings);
         let cell = editor.selection.start.paragraph.associatedCell;
@@ -382,6 +397,7 @@ describe('Apply Single border', () => {
         expect(cell.cellFormat.borders.horizontal.color).not.toBe('blue');
     });
     it('Apply BottomBorder', () => {
+console.log('Apply BottomBorder');
         let settings: BorderSettings = { type: 'BottomBorder', borderColor: 'orange', lineWidth: 1, borderStyle: 'Single' };
         editor.editor.applyBorders(settings);
         let cell = editor.selection.start.paragraph.associatedCell;
@@ -393,6 +409,7 @@ describe('Apply Single border', () => {
         expect(cell.cellFormat.borders.horizontal.color).not.toBe('orange');
     });
     it('Apply NoBorder', () => {
+console.log('Apply NoBorder');
         let settings: BorderSettings = { type: 'NoBorder', borderColor: 'red', lineWidth: 1, borderStyle: 'Single' };
         editor.editor.applyBorders(settings);
         let cell = editor.selection.start.paragraph.associatedCell;
@@ -404,6 +421,7 @@ describe('Apply Single border', () => {
         expect(cell.cellFormat.borders.horizontal.lineStyle).toBe('Cleared');
     });
     it('Apply InsideHorizontalBorder', () => {
+console.log('Apply InsideHorizontalBorder');
         let settings: BorderSettings = { type: 'InsideHorizontalBorder', borderColor: 'green', lineWidth: 1, borderStyle: 'Single' };
         editor.editor.applyBorders(settings);
         let cell = editor.selection.start.paragraph.associatedCell;
@@ -415,6 +433,7 @@ describe('Apply Single border', () => {
         expect(cell.cellFormat.borders.horizontal.color).toBe('green');
     });
     it('Apply InsideVerticalBorder', () => {
+console.log('Apply InsideVerticalBorder');
         let settings: BorderSettings = { type: 'InsideVerticalBorder', borderColor: 'green', lineWidth: 1, borderStyle: 'Single' };
         editor.editor.applyBorders(settings);
         let cell = editor.selection.start.paragraph.associatedCell;
@@ -459,6 +478,7 @@ describe('Apply Borders Validation with selection', () => {
     });
     describe('Apply OutsideBorder', () => {
         it('On empty selection', () => {
+console.log('On empty selection');
             editor.selection.selectColumn();
 
             let settings: BorderSettings = { type: 'OutsideBorders', borderColor: 'green', lineWidth: 1, borderStyle: 'Single' };
@@ -481,6 +501,7 @@ describe('Apply Borders Validation with selection', () => {
             expect(cell2.cellFormat.borders.horizontal.color).not.toBe('green');
         });
         it('Undo action', () => {
+console.log('Undo action');
             editor.editorHistory.undo();
             let cells: TableCellWidget[] = editor.selection.getSelectedCells();
             for (let i: number = 0; i < cells.length; i++) {
@@ -537,6 +558,7 @@ describe('Apply AllBorders with selection', () => {
         }, 1000);
     });
     it('On empty selection', () => {
+console.log('On empty selection');
         let settings: BorderSettings = { type: 'AllBorders', borderColor: 'red', lineWidth: 1, borderStyle: 'Single' };
         editor.editor.applyBorders(settings);
         let cells: TableCellWidget[] = editor.selection.getSelectedCells();
@@ -552,6 +574,7 @@ describe('Apply AllBorders with selection', () => {
 
     });
     it('Undo action', () => {
+console.log('Undo action');
         editor.editorHistory.undo();
         let cells: TableCellWidget[] = editor.selection.getSelectedCells();
         for (let i: number = 0; i < cells.length; i++) {
@@ -612,6 +635,7 @@ describe('Apply Single border with selection', () => {
     });
 
     it('Apply LeftBorder', () => {
+console.log('Apply LeftBorder');
         let settings: BorderSettings = { type: 'LeftBorder', borderColor: 'Yellow', lineWidth: 1, borderStyle: 'Single' };
         editor.editor.applyBorders(settings);
         let cells: TableCellWidget[] = editor.selection.getSelectedCells();
@@ -626,6 +650,7 @@ describe('Apply Single border with selection', () => {
         }
     });
     it('Apply RightBorder', () => {
+console.log('Apply RightBorder');
         let settings: BorderSettings = { type: 'RightBorder', borderColor: 'gray', lineWidth: 1, borderStyle: 'Single' };
         editor.editor.applyBorders(settings);
         let cells: TableCellWidget[] = editor.selection.getSelectedCells();
@@ -640,6 +665,7 @@ describe('Apply Single border with selection', () => {
         }
     });
     it('Apply TopBorder', () => {
+console.log('Apply TopBorder');
         let settings: BorderSettings = { type: 'TopBorder', borderColor: 'blue', lineWidth: 1, borderStyle: 'Single' };
         editor.editor.applyBorders(settings);
         let cells: TableCellWidget[] = editor.selection.getSelectedCells();
@@ -659,6 +685,7 @@ describe('Apply Single border with selection', () => {
         expect(cell1.cellFormat.borders.horizontal.color).not.toBe('blue');
     });
     it('Apply BottomBorder', () => {
+console.log('Apply BottomBorder');
         let settings: BorderSettings = { type: 'BottomBorder', borderColor: 'orange', lineWidth: 1, borderStyle: 'Single' };
         editor.editor.applyBorders(settings);
         let cells: TableCellWidget[] = editor.selection.getSelectedCells();
@@ -678,6 +705,7 @@ describe('Apply Single border with selection', () => {
         expect(cell1.cellFormat.borders.horizontal.color).not.toBe('orange');
     });
     it('Apply NoBorder', () => {
+console.log('Apply NoBorder');
         let settings: BorderSettings = { type: 'NoBorder', borderColor: 'red', lineWidth: 1, borderStyle: 'Single' };
         editor.editor.applyBorders(settings);
         let cells: TableCellWidget[] = editor.selection.getSelectedCells();
@@ -690,6 +718,7 @@ describe('Apply Single border with selection', () => {
         }
     });
     it('Apply InsideHorizontalBorder', () => {
+console.log('Apply InsideHorizontalBorder');
         let settings: BorderSettings = { type: 'InsideHorizontalBorder', borderColor: 'green', lineWidth: 1, borderStyle: 'Single' };
         editor.editor.applyBorders(settings);
         let cells: TableCellWidget[] = editor.selection.getSelectedCells();
@@ -712,6 +741,7 @@ describe('Apply Single border with selection', () => {
 
     });
     it('Apply InsideVerticalBorder', () => {
+console.log('Apply InsideVerticalBorder');
         let settings: BorderSettings = { type: 'InsideVerticalBorder', borderColor: 'green', lineWidth: 1, borderStyle: 'Single' };
         editor.editor.applyBorders(settings);
         let cells: TableCellWidget[] = editor.selection.getSelectedCells();
@@ -757,15 +787,18 @@ describe('Table shift downward validation when field is present inside header wi
         }, 1000);
     });
     it('header height valdiation', () => {
+console.log('header height valdiation');
         editor.open(JSON.stringify(headerTable));
         let height: number = editor.documentHelper.pages[0].headerWidget.height;
         expect(height).toBeLessThanOrEqual(108);
     });
     it('header table border render validation', () => {
+console.log('header table border render validation');
         let cellWidget: TableCellWidget = ((editor.documentHelper.pages[0].headerWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[2] as TableCellWidget;
         expect(cellWidget.cellFormat.columnSpan).toBe(1);
     });
     it('header height validation after text insert', () => {
+console.log('header height validation after text insert');
         let height: number = editor.documentHelper.pages[0].headerWidget.height;
         editor.editor.insertText('s');
         expect(height).toEqual(editor.documentHelper.pages[0].headerWidget.height);

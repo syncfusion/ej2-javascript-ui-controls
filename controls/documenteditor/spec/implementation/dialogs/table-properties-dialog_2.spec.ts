@@ -32,6 +32,7 @@ describe('Table vertical alignment - center validation', () => {
         }, 2000);
     });
     it('in 3*4 table cell table vertical alignment validation', () => {
+console.log('in 3*4 table cell table vertical alignment validation');
         editor.editor.insertTable(2, 2);
         editor.selection.tableFormat.leftIndent = 10.8;
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
@@ -43,6 +44,7 @@ describe('Table vertical alignment - center validation', () => {
     });
 
     it('in 3*4 table and last column resized with minimum width', () => {
+console.log('in 3*4 table and last column resized with minimum width');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.cellFormat.preferredWidth = 0;
@@ -84,6 +86,7 @@ describe('Table direction- right to left and left to right validation', () => {
         }, 2000);
     });
     it('Table for bidi is false and left indent is 0', () => {
+console.log('Table for bidi is false and left indent is 0');
         editor.editor.insertTable(2, 2);
         editor.tablePropertiesDialogModule.show();
         event = { value: "rtl" };
@@ -92,14 +95,17 @@ describe('Table direction- right to left and left to right validation', () => {
         expect(editor.selection.tableFormat.bidi).toBe(true);
     });
     it('undo after applt rtl via dialog',()=>{
+console.log('undo after applt rtl via dialog');
         editor.editorHistory.undo();
         expect(editor.selection.tableFormat.bidi).toBe(false);
     });
     it('redo after applt rtl via dialog',()=>{
+console.log('redo after applt rtl via dialog');
         editor.editorHistory.redo();
         expect(editor.selection.tableFormat.bidi).toBe(true);
     });
     it('apply left to right for RTl table',()=>{
+console.log('apply left to right for RTl table');
         editor.tablePropertiesDialogModule.show();
         event = { value: "ltr" };
         (dialog as any).changeBidirectional(event);
@@ -107,10 +113,12 @@ describe('Table direction- right to left and left to right validation', () => {
         expect(editor.selection.tableFormat.bidi).toBe(false);
     });
     it('undo after apply ltr via dialog',()=>{
+console.log('undo after apply ltr via dialog');
         editor.editorHistory.undo();
         expect(editor.selection.tableFormat.bidi).toBe(true);
     });
     it('redo after apply ltr via dialog',()=>{
+console.log('redo after apply ltr via dialog');
         editor.editorHistory.redo();
         expect(editor.selection.tableFormat.bidi).toBe(false);
     });
@@ -141,6 +149,7 @@ describe('Rtl table change table alignment validation', () => {
         }, 2000);
     });
     it('Table for bidi is true and table alignment as left', () => {
+console.log('Table for bidi is true and table alignment as left');
         editor.editor.insertTable(2, 2);
         editor.selection.tableFormat.bidi=true;        
         editor.tablePropertiesDialogModule.show();
@@ -155,10 +164,12 @@ describe('Rtl table change table alignment validation', () => {
         expect(editor.selection.tableFormat.tableAlignment).toBe('Right');
     });
     it('undo after applt rtl via dialog',()=>{
+console.log('undo after applt rtl via dialog');
         editor.editorHistory.undo();
         expect(editor.selection.tableFormat.tableAlignment).toBe('Left');
     });
     it('redo after applt rtl via dialog',()=>{
+console.log('redo after applt rtl via dialog');
         editor.editorHistory.redo();
         expect(editor.selection.tableFormat.tableAlignment).toBe('Right');
     });  
@@ -189,6 +200,7 @@ describe('Change RTl options with table indent', () => {
         }, 2000);
     });
     it('Table for bidi is true and table alignment as left', () => {
+console.log('Table for bidi is true and table alignment as left');
         editor.editor.insertTable(2, 2);
         editor.selection.tableFormat.preferredWidthType='Point';
         editor.selection.tableFormat.preferredWidth=100;
@@ -201,10 +213,12 @@ describe('Change RTl options with table indent', () => {
         expect(editor.selection.tableFormat.leftIndent).toBe(0);
     });
     it('undo after applt rtl via dialog',()=>{
+console.log('undo after applt rtl via dialog');
         editor.editorHistory.undo();
         expect(editor.selection.tableFormat.leftIndent).toBe(36);
     });
     it('redo after applt rtl via dialog',()=>{
+console.log('redo after applt rtl via dialog');
         editor.editorHistory.redo();
         expect(editor.selection.tableFormat.leftIndent).toBe(0);
     });  

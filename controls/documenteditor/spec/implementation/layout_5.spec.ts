@@ -28,11 +28,13 @@ describe('Text with bdo is RTL validation', () => {
         }, 1000);
     });
     it('Bdo text layouting validation- RTL', () => {
+console.log('Bdo text layouting validation- RTL');
         let lineWidget: LineWidget = ((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget);
         expect((lineWidget.children[0] as TextElementBox).text).toBe('sample');
         expect((lineWidget.children[0] as TextElementBox).characterFormat.bdo).toBe('RTL');
     });
     it('Bdo text layouting validation - LTR', () => {        
+console.log('Bdo text layouting validation - LTR');
         let lineWidget: LineWidget = ((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0] as LineWidget);
         expect((lineWidget.children[0] as TextElementBox).text).toBe('sample');
     });
@@ -61,14 +63,17 @@ describe('Normal text and RTL Text layout combination validation', () => {
         }, 1000);
     });
     it('Hebrew text RTL validation with bidi false', () => {        
+console.log('Hebrew text RTL validation with bidi false');
         let lineWidget: LineWidget = ((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget);
         // expect((lineWidget.children[1] as TextElementBox).text).toBe("גג'ג'ג'ג'ג'גק''");
     });
     it('Space after RTL text valdiation with bidi false', () => {        
+console.log('Space after RTL text valdiation with bidi false');
         let lineWidget: LineWidget = ((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0] as LineWidget);
         expect((lineWidget.children[1] as TextElementBox).text).toBe("    ");
     });
     it('English text after RTL text valdiation with bidi false', () => {        
+console.log('English text after RTL text valdiation with bidi false');
         let lineWidget: LineWidget = ((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0] as LineWidget);
         expect((lineWidget.children[4] as TextElementBox).text).toBe("English     ");
     });
@@ -98,13 +103,15 @@ describe('RTL Paragraph layout validation', () => {
         }, 1000);
     });
     it('Bidi false with normal text and RTL Text combination', () => {        
+console.log('Bidi false with normal text and RTL Text combination');
         let paraWidget: ParagraphWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget);
         expect(paraWidget.paragraphFormat.textAlignment).toBe('Left');
     });
     it('Bidi true and bdo none with normal text and RTL Text combination', () => {        
+console.log('Bidi true and bdo none with normal text and RTL Text combination');
         let paraWidget: ParagraphWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[8] as ParagraphWidget);
         expect(paraWidget.paragraphFormat.textAlignment).toBe('Right');
-        expect((((paraWidget.childWidgets[0] as LineWidget).children[0]) as TextElementBox).text).toBe("سشةحمث سشةحمث ");
+        expect((((paraWidget.childWidgets[1] as LineWidget).children[4]) as TextElementBox).text).toBe("سشةحمث");
     });
     // it('Bidi true and bdo- RTL with normal text and RTL Text combination', () => {        
     //     let paraWidget: ParagraphWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[9] as ParagraphWidget);
@@ -112,6 +119,7 @@ describe('RTL Paragraph layout validation', () => {
     //     expect((((paraWidget.childWidgets[0] as LineWidget).children[0]) as TextElementBox).text.indexOf('سشةحمث سشةحمث سشةحمث سشةحمث ')).toBe(0);
     // });
     it('Bidi true and bdo- LTR with normal text and RTL Text combination', () => {        
+console.log('Bidi true and bdo- LTR with normal text and RTL Text combination');
         let paraWidget: ParagraphWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[10] as ParagraphWidget);
         expect(paraWidget.paragraphFormat.textAlignment).toBe('Right');
         expect((((paraWidget.childWidgets[0] as LineWidget).children[0]) as TextElementBox).text).toBe("B");

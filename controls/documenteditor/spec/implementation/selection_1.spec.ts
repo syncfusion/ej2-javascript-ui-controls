@@ -104,16 +104,19 @@ describe('Insert Picture', () => {
   });
 
   it('insert Image with specific string , width and height', () => {
+console.log('insert Image with specific string , width and height');
     editor.open(JSON.stringify(jsonStr));
     editor.editor.insertImage(imageString, 100, 100);
     expect((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children[0] instanceof ImageElementBox).toBe(true);
   });
   it('insert Image with specific string and  width and height are undefined', () => {
+console.log('insert Image with specific string and  width and height are undefined');
     editor.open(JSON.stringify(jsonStr));
     editor.editor.insertImage(imageString);
     expect((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children[0] instanceof ImageElementBox).toBe(true);
   });
   it('insert Image with specific string and  width  greater than page width', () => {
+console.log('insert Image with specific string and  width  greater than page width');
     editor.open(JSON.stringify(jsonStr));
     editor.editor.insertImage(imageString, 2000, 100);
     expect((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children[0] instanceof ImageElementBox).toBe(true);
@@ -141,12 +144,14 @@ describe('Insert Picture Validation', () => {
     }, 1000);
   });
   it('insert image api return when readonly is true', () => {
+console.log('insert image api return when readonly is true');
     editor.open(JSON.stringify(jsonStr));
     editor.isReadOnly = true;
     editor.editor.insertImage(imageString, 500, 400);
     expect((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children[0] instanceof ImageElementBox).not.toBe(true);
   });
   it('caret not to be shown when editable lose its focus', () => {
+console.log('caret not to be shown when editable lose its focus');
     let event: any = { preventDefault: function () { } };
     editor.documentHelper.onFocusOut();
     expect(editor.selection.caret.style.display).toBe('none');
@@ -177,6 +182,7 @@ describe('Selection Based on client Coordinated validation', () => {
     }, 1000);
   });
   it('Selection content based on cilent coordinated corresponding to View port', () => {
+console.log('Selection content based on cilent coordinated corresponding to View port');
     editor.editorModule.insertTextInternal('Syncfusion', true);
     for (let i: number = 0; i < 9; i++) {
       editor.editorModule.onEnter();
@@ -186,16 +192,19 @@ describe('Selection Based on client Coordinated validation', () => {
     expect(editor.selection.start.paragraph.index).toBe(0);
   });
   it('Extent selection based on sursor position relative to view port', () => {
+console.log('Extent selection based on sursor position relative to view port');
     editor.selection.select({ x: 162.5 + editor.selection.start.paragraph.bodyWidget.page.boundingRectangle.x, y: 289, extend: true });
     expect(editor.selection.start.paragraph.index).toBe(0);
     expect(editor.selection.end.paragraph.index).toBe(9);
   })
   it('Extend to selection start', () => {
+console.log('Extend to selection start');
     editor.selection.select({ x: 97.5 + editor.selection.start.paragraph.bodyWidget.page.boundingRectangle.x, y: 108 });
     expect(editor.selection.start.paragraph.index).toBe(0);
     expect(editor.selection.end.paragraph.index).toBe(0);
   })
   it('Page unresponsive error', () => {
+console.log('Page unresponsive error');
     editor.open(JSON.stringify(page));
     editor.selection.select({ x: 188.4814208984375 , y: 662.00005 });
     editor.editorModule.onEnter();

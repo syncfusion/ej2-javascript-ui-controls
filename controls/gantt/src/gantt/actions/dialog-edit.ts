@@ -1067,7 +1067,7 @@ export class DialogEdit {
 
         let inputModel: TreeGridModel = {
             allowFiltering: true,
-            treeColumnIndex: 5,
+            treeColumnIndex: -1,
             editSettings: { allowEditing: true, mode: 'Cell' },
             locale: this.parent.locale,
             allowSelection: true,

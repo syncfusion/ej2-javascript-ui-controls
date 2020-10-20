@@ -38,6 +38,7 @@ describe('borders dialog setting check box validation', () => {
         }, 750);
     });
     it('Handle none div check box testing', () => {
+console.log('Handle none div check box testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         dialog.show();
@@ -50,6 +51,7 @@ describe('borders dialog setting check box validation', () => {
         dialog.closeDialog();
     });
     it('Handle box div check box testing', () => {
+console.log('Handle box div check box testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         dialog.show();
@@ -91,6 +93,7 @@ describe('Borders dialog setting checkbox validation', () => {
         }, 750);
     });
     it('Handle all div check box testing', () => {
+console.log('Handle all div check box testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         dialog.show();
@@ -103,6 +106,7 @@ describe('Borders dialog setting checkbox validation', () => {
         dialog.closeDialog();
     });
     it('Handle custom div check box testing', () => {
+console.log('Handle custom div check box testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         dialog.show();
@@ -144,6 +148,7 @@ describe('Borders dialog preview checkbox validation', () => {
         }, 750);
     });
     it('Top Top preview div check box testing', () => {
+console.log('Top Top preview div check box testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         dialog.show();
@@ -156,6 +161,7 @@ describe('Borders dialog preview checkbox validation', () => {
         dialog.closeDialog();
     });
     it('Top center div check box testing', () => {
+console.log('Top center div check box testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         dialog.show();
@@ -168,6 +174,7 @@ describe('Borders dialog preview checkbox validation', () => {
         dialog.closeDialog();
     });
     it('Top bottom div check box testing', () => {
+console.log('Top bottom div check box testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         dialog.show();
@@ -209,6 +216,7 @@ describe('Borders dialog preview divs checkbox validation', () => {
         }, 750);
     });
     it('bottom right preview div check box testing 1', () => {
+console.log('bottom right preview div check box testing 1');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         dialog.show();
@@ -222,6 +230,7 @@ describe('Borders dialog preview divs checkbox validation', () => {
         dialog.destroy();
     });
     it('bottom center div check box testing', () => {
+console.log('bottom center div check box testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         dialog.show();
@@ -235,6 +244,7 @@ describe('Borders dialog preview divs checkbox validation', () => {
         dialog.destroy();
     });
     it('bottom left div check box testing', () => {
+console.log('bottom left div check box testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         dialog.show();
@@ -277,6 +287,7 @@ describe('Borders dialog preview div checkbox validation', () => {
         }, 750);
     });
     it('diagonal right preview div check box testing 2', () => {
+console.log('diagonal right preview div check box testing 2');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         dialog.show();
@@ -290,6 +301,7 @@ describe('Borders dialog preview div checkbox validation', () => {
         dialog.destroy();
     });
     it('diagonal left div check box testing', () => {
+console.log('diagonal left div check box testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         dialog.show();
@@ -303,6 +315,7 @@ describe('Borders dialog preview div checkbox validation', () => {
         dialog.destroy();
     });
     it('Remove events', () => {
+console.log('Remove events');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tableOptions: BordersAndShadingDialog = editor.bordersAndShadingDialogModule;
@@ -339,6 +352,7 @@ describe('Change table cell drop down preview div checkbox validation', () => {
         }, 750);
     });
     it('diagonal right preview div check box testing 3', () => {
+console.log('diagonal right preview div check box testing 3');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         dialog.show();
@@ -347,6 +361,7 @@ describe('Change table cell drop down preview div checkbox validation', () => {
         ulElement.index = 1;
     });
     it('diagonal left div check box testing', () => {
+console.log('diagonal left div check box testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         dialog.show();
@@ -436,38 +451,47 @@ describe('Get Line Style Validation of Border testing', () => {
         }, 750);
     });
     it('Single,Dot,DashSmallGap line style testing', () => {
+console.log('Single,Dot,DashSmallGap line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('Single');
         expect(lineStyle).toBe(1);
     });
     it('Single,Dot,DashSmallGap line style testing', () => {
+console.log('Single,Dot,DashSmallGap line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('Dot');
         expect(lineStyle).toBe(2);
     });
     it('Single,Dot,DashSmallGap line style testing', () => {
+console.log('Single,Dot,DashSmallGap line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('DashSmallGap');
         expect(lineStyle).toBe(3);
     });
     it('DashLargeGap,DashDot,DashDotDot line style testing', () => {
+console.log('DashLargeGap,DashDot,DashDotDot line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('DashLargeGap');
         expect(lineStyle).toBe(4);
     });
     it('DashLargeGap,DashDot,DashDotDot line style testing', () => {
+console.log('DashLargeGap,DashDot,DashDotDot line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('DashDot');
         expect(lineStyle).toBe(5);
     });
     it('DashLargeGap,DashDot,DashDotDot line style testing', () => {
+console.log('DashLargeGap,DashDot,DashDotDot line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('DashDotDot');
         expect(lineStyle).toBe(6);
     });
     it('Double, Triple, ThinThickSmallGap line style testing', () => {
+console.log('Double, Triple, ThinThickSmallGap line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('Double');
         expect(lineStyle).toBe(7);
     });
     it('Double, Triple, ThinThickSmallGap line style testing', () => {
+console.log('Double, Triple, ThinThickSmallGap line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('Triple');
         expect(lineStyle).toBe(8);
     });
     it('Double, Triple, ThinThickSmallGap line style testing', () => {
+console.log('Double, Triple, ThinThickSmallGap line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('ThinThickSmallGap');
         expect(lineStyle).toBe(9);
     });
@@ -501,38 +525,47 @@ describe('Check Line Style Validation of Border testing', () => {
         }, 750);
     });
     it('ThickThinSmallGap,ThinThickThinSmallGap,ThinThickMediumGap line style testing', () => {
+console.log('ThickThinSmallGap,ThinThickThinSmallGap,ThinThickMediumGap line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('ThickThinSmallGap');
         expect(lineStyle).toBe(10);
     });
     it('ThickThinSmallGap,ThinThickThinSmallGap,ThinThickMediumGap line style testing', () => {
+console.log('ThickThinSmallGap,ThinThickThinSmallGap,ThinThickMediumGap line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('ThinThickThinSmallGap');
         expect(lineStyle).toBe(11);
     });
     it('ThickThinSmallGap,ThinThickThinSmallGap,ThinThickMediumGap line style testing', () => {
+console.log('ThickThinSmallGap,ThinThickThinSmallGap,ThinThickMediumGap line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('ThinThickMediumGap');
         expect(lineStyle).toBe(12);
     });
     it('ThickThinMediumGap,ThinThickThinMediumGap,ThinThickLargeGap line style testing', () => {
+console.log('ThickThinMediumGap,ThinThickThinMediumGap,ThinThickLargeGap line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('ThickThinMediumGap');
         expect(lineStyle).toBe(13);
     });
     it('ThickThinMediumGap,ThinThickThinMediumGap,ThinThickLargeGap line style testing', () => {
+console.log('ThickThinMediumGap,ThinThickThinMediumGap,ThinThickLargeGap line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('ThinThickThinMediumGap');
         expect(lineStyle).toBe(14);
     });
     it('ThickThinMediumGap,ThinThickThinMediumGap,ThinThickLargeGap line style testing', () => {
+console.log('ThickThinMediumGap,ThinThickThinMediumGap,ThinThickLargeGap line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('ThinThickLargeGap');
         expect(lineStyle).toBe(15);
     });
     it('ThickThinLargeGap,ThinThickThinLargeGap,SingleWavy line style testing', () => {
+console.log('ThickThinLargeGap,ThinThickThinLargeGap,SingleWavy line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('ThickThinLargeGap');
         expect(lineStyle).toBe(16);
     });
     it('ThickThinLargeGap,ThinThickThinLargeGap,SingleWavy line style testing', () => {
+console.log('ThickThinLargeGap,ThinThickThinLargeGap,SingleWavy line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('ThinThickThinLargeGap');
         expect(lineStyle).toBe(17);
     });
     it('ThickThinLargeGap,ThinThickThinLargeGap,SingleWavy line style testing', () => {
+console.log('ThickThinLargeGap,ThinThickThinLargeGap,SingleWavy line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('SingleWavy');
         expect(lineStyle).toBe(18);
     });
@@ -566,34 +599,42 @@ describe('Check Linestyle of Border testing', () => {
         }, 750);
     });
     it('DoubleWavy,DashDotStroked,Emboss3D line style testing', () => {
+console.log('DoubleWavy,DashDotStroked,Emboss3D line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('DoubleWavy');
         expect(lineStyle).toBe(19);
     });
     it('DoubleWavy,DashDotStroked,Emboss3D line style testing', () => {
+console.log('DoubleWavy,DashDotStroked,Emboss3D line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('DashDotStroked');
         expect(lineStyle).toBe(20);
     });
     it('DoubleWavy,DashDotStroked,Emboss3D line style testing', () => {
+console.log('DoubleWavy,DashDotStroked,Emboss3D line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('Emboss3D');
         expect(lineStyle).toBe(21);
     });
     it('Engrave3D,Outset,Inset line style testing', () => {
+console.log('Engrave3D,Outset,Inset line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('Engrave3D');
         expect(lineStyle).toBe(22);
     });
     it('Engrave3D,Outset,Inset line style testing', () => {
+console.log('Engrave3D,Outset,Inset line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('Outset');
         expect(lineStyle).toBe(23);
     });
     it('Engrave3D,Outset,Inset line style testing', () => {
+console.log('Engrave3D,Outset,Inset line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('Inset');
         expect(lineStyle).toBe(24);
     });
     it('Thick,None line style testing', () => {
+console.log('Thick,None line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('Thick');
         expect(lineStyle).toBe(25);
     });
     it('Thick,None line style testing', () => {
+console.log('Thick,None line style testing');
         let lineStyle: number = (dialog as any).getLineStyle(undefined);
         expect(lineStyle).toBe(0);
     });
@@ -627,34 +668,42 @@ describe('Check Linestyle of Border testing', () => {
         }, 750);
     });
     it('DoubleWavy,DashDotStroked,Emboss3D line style testing', () => {
+console.log('DoubleWavy,DashDotStroked,Emboss3D line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('DoubleWavy');
         expect(lineStyle).toBe(19);
     });
     it('DoubleWavy,DashDotStroked,Emboss3D line style testing', () => {
+console.log('DoubleWavy,DashDotStroked,Emboss3D line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('DashDotStroked');
         expect(lineStyle).toBe(20);
     });
     it('DoubleWavy,DashDotStroked,Emboss3D line style testing', () => {
+console.log('DoubleWavy,DashDotStroked,Emboss3D line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('Emboss3D');
         expect(lineStyle).toBe(21);
     });
     it('Engrave3D,Outset,Inset line style testing', () => {
+console.log('Engrave3D,Outset,Inset line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('Engrave3D');
         expect(lineStyle).toBe(22);
     });
     it('Engrave3D,Outset,Inset line style testing', () => {
+console.log('Engrave3D,Outset,Inset line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('Outset');
         expect(lineStyle).toBe(23);
     });
     it('Engrave3D,Outset,Inset line style testing', () => {
+console.log('Engrave3D,Outset,Inset line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('Inset');
         expect(lineStyle).toBe(24);
     });
     it('Thick,None line style testing', () => {
+console.log('Thick,None line style testing');
         let lineStyle: number = (dialog as any).getLineStyle('Thick');
         expect(lineStyle).toBe(25);
     });
     it('Thick,None line style testing', () => {
+console.log('Thick,None line style testing');
         let lineStyle: number = (dialog as any).getLineStyle(undefined);
         expect(lineStyle).toBe(0);
     });
@@ -691,6 +740,7 @@ describe('Apply borders and shadings dialog values testing', () => {
         }, 750);
     });
     it('Apply table properties style testing', () => {
+console.log('Apply table properties style testing');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         tablePropertiesDialog.show();
@@ -700,6 +750,7 @@ describe('Apply borders and shadings dialog values testing', () => {
         (dialog as any).applyBordersShadingsProperties();
     });
     it('Apply cell properties line style testing', () => {
+console.log('Apply cell properties line style testing');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         tablePropertiesDialog.show();
@@ -709,6 +760,7 @@ describe('Apply borders and shadings dialog values testing', () => {
         (dialog as any).applyBordersShadingsProperties();
     });
     it('Apply none div transparent properties line style testing', () => {
+console.log('Apply none div transparent properties line style testing');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         tablePropertiesDialog.show();
@@ -757,6 +809,7 @@ describe('Apply borders&shadings dialog values testing', () => {
         }, 750);
     });
     it('Apply table properties style testing', () => {
+console.log('Apply table properties style testing');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         tablePropertiesDialog.show();
@@ -808,6 +861,7 @@ describe('Apply borders&shadings checkbox values testing', () => {
         }, 750);
     });
     it('Apply Table Cell Preview Boxes index 0 testing', () => {
+console.log('Apply Table Cell Preview Boxes index 0 testing');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         tablePropertiesDialog.show();
@@ -817,12 +871,15 @@ describe('Apply borders&shadings checkbox values testing', () => {
         expect((dialog as any).previewDivBottomcenterContainer.style.display).toBe('none');
     });
     it('Apply Table Cell Preview Boxes index 0 testing', () => {
+console.log('Apply Table Cell Preview Boxes index 0 testing');
         expect((dialog as any).previewDivTopCenterContainer.style.display).toBe('none');
     });
     it('Apply Table Cell Preview Boxes index 0 testing', () => {
+console.log('Apply Table Cell Preview Boxes index 0 testing');
         expect((dialog as any).previewVerticalDiv.style.display).toBe('none');
     });
     it('Apply Table Cell Preview Boxes index 0 testing', () => {
+console.log('Apply Table Cell Preview Boxes index 0 testing');
         expect((dialog as any).previewHorizontalDiv.style.display).toBe('none');
     });
 });
@@ -858,6 +915,7 @@ describe('Apply borders&shadings checkbox values testing - 1', () => {
         }, 750);
     });
     it('Apply Table Cell Preview Boxes index 1 testing', () => {
+console.log('Apply Table Cell Preview Boxes index 1 testing');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         tablePropertiesDialog.show();
@@ -867,12 +925,15 @@ describe('Apply borders&shadings checkbox values testing - 1', () => {
         expect((dialog as any).previewDivBottomcenterContainer.style.display).toBe('');
     });
     it('Apply Table Cell Preview Boxes index 1 testing', () => {
+console.log('Apply Table Cell Preview Boxes index 1 testing');
         expect((dialog as any).previewDivTopCenterContainer.style.display).toBe('');
     });
     it('Apply Table Cell Preview Boxes index 1 testing', () => {
+console.log('Apply Table Cell Preview Boxes index 1 testing');
         expect((dialog as any).previewVerticalDiv.style.display).toBe('');
     });
     it('Apply Table Cell Preview Boxes index 1 testing', () => {
+console.log('Apply Table Cell Preview Boxes index 1 testing');
         expect((dialog as any).previewHorizontalDiv.style.display).toBe('');
     });
 });
@@ -909,6 +970,7 @@ describe('Border and shading dialog applying testing to table testing with histo
         }, 750);
     });
     it('Apply table properties style testing', () => {
+console.log('Apply table properties style testing');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         dialog.show();
@@ -919,10 +981,12 @@ describe('Border and shading dialog applying testing to table testing with histo
         expect(editor.selection.tableFormat.table.tableFormat.shading.backgroundColor).toBe('#000080');
     });
     it('Apply table properties style testing', () => {
+console.log('Apply table properties style testing');
         editor.editorHistory.undo();
         expect(editor.selection.tableFormat.table.tableFormat.shading.backgroundColor).toBe('empty');
     });
     it('Apply table properties style testing', () => {
+console.log('Apply table properties style testing');
         editor.editorHistory.redo();
         expect(editor.selection.tableFormat.table.tableFormat.shading.backgroundColor).toBe('#000080');
     });
@@ -958,6 +1022,7 @@ describe('Border and shading dialog applying testing to table testing with histo
         }, 750);
     });
     it('Apply cell properties line style testing', () => {
+console.log('Apply cell properties line style testing');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         dialog.show();
@@ -968,10 +1033,12 @@ describe('Border and shading dialog applying testing to table testing with histo
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.shading.backgroundColor).toBe('#000080');
     });
     it('Apply cell properties line style testing', () => {
+console.log('Apply cell properties line style testing');
         editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.shading.backgroundColor).toBe('empty');
     });
     it('Apply cell properties line style testing', () => {
+console.log('Apply cell properties line style testing');
         editor.editorHistory.redo();
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.shading.backgroundColor).toBe('#000080');
     });
@@ -1008,6 +1075,7 @@ describe('Border applying testing with none and box validation', () => {
         }, 750);
     });
     it('Box div in borders div click validation', () => {
+console.log('Box div in borders div click validation');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         dialog.show();
@@ -1015,6 +1083,7 @@ describe('Border applying testing with none and box validation', () => {
         (dialog as any).applyBordersShadingsProperties();
     });
     it('Box div in borders div click validation', (done) => {
+console.log('Box div in borders div click validation');
         dialog.show();
         setTimeout(() => {
             expect((dialog as any).boxDiv.classList.contains('e-de-table-border-inside-setting-click')).toBe(true);
@@ -1023,6 +1092,7 @@ describe('Border applying testing with none and box validation', () => {
         }, 50);
     });
     it('custom div in borders div click validation', () => {
+console.log('custom div in borders div click validation');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         dialog.show();
@@ -1030,6 +1100,7 @@ describe('Border applying testing with none and box validation', () => {
         (dialog as any).applyBordersShadingsProperties();
     });
     it('custom div in borders div click validation', (done) => {
+console.log('custom div in borders div click validation');
         dialog.show();
         setTimeout(() => {
             expect((dialog as any).boxDiv.classList.contains('e-de-table-border-inside-setting-click')).toBe(true);
@@ -1038,6 +1109,7 @@ describe('Border applying testing with none and box validation', () => {
         }, 50);
     });
     it('None div in borders div click validation', () => {
+console.log('None div in borders div click validation');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         dialog.show();
@@ -1045,6 +1117,7 @@ describe('Border applying testing with none and box validation', () => {
         (dialog as any).applyBordersShadingsProperties();
     });
     it('None div in borders div click validation', (done) => {
+console.log('None div in borders div click validation');
         editor.selection.tableFormat.table.tableFormat.borders.top.hasNoneStyle = true;
         editor.selection.tableFormat.table.tableFormat.borders.bottom.hasNoneStyle = true;
         editor.selection.tableFormat.table.tableFormat.borders.left.hasNoneStyle = true;
@@ -1091,6 +1164,7 @@ describe('Border applying testing with custom div validation', () => {
         }, 750);
     });
     it('custom div in bottom  previw div validation borders div click validation', () => {
+console.log('custom div in bottom  previw div validation borders div click validation');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         dialog.show();
@@ -1101,11 +1175,13 @@ describe('Border applying testing with custom div validation', () => {
         (dialog as any).applyBordersShadingsProperties();
     });
     it('custom div in bottom  previw div validation borders div click validation', () => {
+console.log('custom div in bottom  previw div validation borders div click validation');
         dialog.show();
         expect((dialog as any).customDiv.classList.contains('e-de-table-border-inside-setting-click')).toBe(true);
         dialog.closeDialog();
     });
     it('custom div in bottom  previw div validation borders div click validation', () => {
+console.log('custom div in bottom  previw div validation borders div click validation');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         dialog.show();
@@ -1116,6 +1192,7 @@ describe('Border applying testing with custom div validation', () => {
         (dialog as any).applyBordersShadingsProperties();
     });
     it('custom div in bottom  previw div validation borders div click validation', () => {
+console.log('custom div in bottom  previw div validation borders div click validation');
         dialog.show();
         expect((dialog as any).customDiv.classList.contains('e-de-table-border-inside-setting-click')).toBe(true);
         dialog.closeDialog();

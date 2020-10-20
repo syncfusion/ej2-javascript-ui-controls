@@ -28,12 +28,14 @@ describe('RTL List Paragraph layout validation', () => {
         }, 1000);
     });
     it('List numbering bidi true validation', () => {
+console.log('List numbering bidi true validation');
         let paraWidget: ParagraphWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget);
         let line: LineWidget = paraWidget.childWidgets[0] as LineWidget;
         expect(paraWidget.paragraphFormat.bidi).toBe(true);
         expect(line.children[2] instanceof ListTextElementBox).toBe(true);
     });
     it('Bullet list bidi true validation', () => {
+console.log('Bullet list bidi true validation');
         let paraWidget: ParagraphWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[5] as ParagraphWidget);
         let line: LineWidget = paraWidget.childWidgets[0] as LineWidget;
         expect(paraWidget.paragraphFormat.textAlignment).toBe('Right');

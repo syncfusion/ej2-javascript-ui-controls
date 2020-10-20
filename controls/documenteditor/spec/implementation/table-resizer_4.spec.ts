@@ -35,6 +35,7 @@ describe('Table Column resizing validation with selection', () => {
         }, 1000);
     });
     it('Resize Table Row', () => {
+console.log('Resize Table Row');
         editor.editor.insertTable(2, 2);
         let event: any = { offsetX: 557, offsetY: 134, preventDefault: function () { }, ctrlKey: false, which: 1 };
         editor.documentHelper.onMouseDownInternal(event);
@@ -79,6 +80,7 @@ describe('Table Column resizing validation with selection', () => {
         }, 1000);
     });
     it('Resize Table Row', () => {
+console.log('Resize Table Row');
         editor.editor.insertTable(2, 2);
         let event: any = { offsetX: 557, offsetY: 134, preventDefault: function () { }, ctrlKey: false, which: 1 };
         editor.documentHelper.onMouseDownInternal(event);
@@ -128,6 +130,7 @@ describe('Table Column resizing validation with selection', () => {
         }, 1000);
     });
     it('Resize Table column with left column selection ', () => {
+console.log('Resize Table column with left column selection ');
         editor.editor.insertTable(2, 2);
         editor.selection.handleShiftDownKey();
         let event: any = { offsetX: 631, offsetY: 142, preventDefault: function () { }, ctrlKey: false, which: 1 };
@@ -145,6 +148,7 @@ describe('Table Column resizing validation with selection', () => {
         // expect(((editor.selection.tableFormat.table.childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).cellFormat.cellWidth).toBe(234);
     });
     it('Resize Table column with right column selection ', () => {
+console.log('Resize Table column with right column selection ');
         editor.editor.insertTable(2, 2);
         editor.selection.handleRightKey();
         editor.selection.handleShiftDownKey();
@@ -830,6 +834,7 @@ describe('Table Cell resizing testing at cell resizer position at 0', () => {
         }, 1000);
     });
     it('Table grid before width value 83 and test resizer at position 0', () => {
+console.log('Table grid before width value 83 and test resizer at position 0');
         editor.open(getJson());
         documentHelper = editor.documentHelper;
         editor.selection.handleDownKey();
@@ -849,6 +854,7 @@ describe('Table Cell resizing testing at cell resizer position at 0', () => {
         editor.editorHistory.redo();
     });
     it('Table grid before width value 83 and test resizer at position 0', () => {
+console.log('Table grid before width value 83 and test resizer at position 0');
         documentHelper = editor.documentHelper;
         editor.openBlank();
         editor.editor.insertTable(2, 2);
@@ -897,6 +903,7 @@ describe('Table Cell resizing testing at cell resizer position at 0', () => {
         }, 1000);
     });
     it('Table grid before width value 83 and test resizer at position 0', () => {
+console.log('Table grid before width value 83 and test resizer at position 0');
         editor.open(getJson());
         documentHelper = editor.documentHelper;
         editor.selection.handleDownKey();

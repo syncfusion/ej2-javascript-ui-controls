@@ -1,6 +1,6 @@
 import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, classList, closest, compile, createElement, deleteObject, extend, formatUnit, getElement, getValue, isBlazor, isNullOrUndefined, isObject, isObjectArray, isUndefined, merge, remove, removeClass, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Dialog, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
-import { Edit, ForeignKey, Grid, Page, Predicate, Toolbar, ValueFormatter, click, filterAfterOpen, getActualProperties, getFilterMenuPostion, getForeignData, getObject, getUid, parentsUntil, setCssInGridPopUp } from '@syncfusion/ej2-grids';
+import { Edit, ForeignKey, Grid, Page, Predicate, Toolbar, ValueFormatter, click, filterAfterOpen, getActualProperties, getCustomDateFormat, getFilterMenuPostion, getForeignData, getObject, getUid, parentsUntil, setCssInGridPopUp } from '@syncfusion/ej2-grids';
 import { CacheAdaptor, DataManager, DataUtil, Deferred, ODataAdaptor, Query, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
 import { ColumnMenu, ContextMenu, Edit as Edit$1, ExcelExport, Filter, Reorder, Resize, RowDD, Selection, Sort, TreeGrid } from '@syncfusion/ej2-treegrid';
 import { Splitter } from '@syncfusion/ej2-layouts';
@@ -2350,7 +2350,8 @@ class TaskProcessor extends DateProcessor {
         }
         resourceIdCollection = data[this.parent.taskFields.resourceInfo];
         let resourceData;
-        if (!isNullOrUndefined(this.parent.editModule) && this.parent.editModule.dialogModule.isAddNewResource) {
+        if (!isNullOrUndefined(this.parent.editModule) && !isNullOrUndefined(this.parent.editModule.dialogModule)
+            && this.parent.editModule.dialogModule.isAddNewResource) {
             resourceData = this.parent.editModule.dialogModule.ganttResources;
         }
         else {
@@ -4489,12 +4490,11 @@ class Timeline {
                 break;
             }
         }
-        let newTimeline = Object.assign({}, zoomingLevel);
+        let newTimeline = extend({}, {}, zoomingLevel, true);
         this.roundOffDateToZoom(this.parent.cloneProjectStartDate, true, perDayWidth, newTimeline.bottomTier.unit);
         this.roundOffDateToZoom(this.parent.cloneProjectEndDate, false, perDayWidth, newTimeline.bottomTier.unit);
         let numberOfCells = this.calculateNumberOfTimelineCells(newTimeline);
         newTimeline.timelineUnitSize = Math.abs((chartWidth - 25)) / numberOfCells;
-        this.changeTimelineSettings(newTimeline);
         let args = {
             requestType: 'beforeZoomToProject',
             timeline: newTimeline
@@ -4503,6 +4503,7 @@ class Timeline {
             this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin', this.parent.controlId + '_zoomout'], true);
         }
         this.parent.trigger('actionBegin', args);
+        this.changeTimelineSettings(newTimeline);
     }
     roundOffDateToZoom(date, isStartDate, perDayWidth, tierMode) {
         let width = tierMode === 'Month' || tierMode === 'Year' ? 60 : 20;
@@ -15971,7 +15972,7 @@ class DialogEdit {
         }
         let inputModel = {
             allowFiltering: true,
-            treeColumnIndex: 5,
+            treeColumnIndex: -1,
             editSettings: { allowEditing: true, mode: 'Cell' },
             locale: this.parent.locale,
             allowSelection: true,
@@ -20221,9 +20222,9 @@ class Edit$2 {
                             }
                             this.treeGridData.splice(recordIndex1 + c + 1, 0, this.draggedRecord);
                         }
-                        draggedRec.parentItem = this.treeGridData[recordIndex1].parentItem;
-                        draggedRec.parentUniqueID = this.treeGridData[recordIndex1].parentUniqueID;
-                        draggedRec.level = this.treeGridData[recordIndex1].level;
+                        this.parent.setRecordValue('parentItem', this.treeGridData[recordIndex1].parentItem, draggedRec);
+                        this.parent.setRecordValue('parentUniqueID', this.treeGridData[recordIndex1].parentUniqueID, draggedRec);
+                        this.parent.setRecordValue('level', this.treeGridData[recordIndex1].level, draggedRec);
                         if (draggedRec.hasChildRecords) {
                             let level = 1;
                             this.updateChildRecordLevel(draggedRec, level);
@@ -20275,6 +20276,28 @@ class Edit$2 {
             this.updateParentRecords = [];
             this.parent.isOnEdit = false;
         }
+        if (isRemoteData(this.parent.dataSource)) {
+            let data = this.parent.dataSource;
+            let updatedData = {
+                changedRecords: getTaskData(this.parent.editedRecords)
+            };
+            /* tslint:disable-next-line */
+            let queryValue = this.parent.query instanceof Query ? this.parent.query : new Query();
+            let crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, queryValue);
+            crud.then((e) => this.indentSuccess(e, args))
+                .catch((e) => this.indentFailure(e));
+        }
+        else {
+            this.indentOutdentSuccess(args);
+        }
+    }
+    indentSuccess(e, args) {
+        this.indentOutdentSuccess(args);
+    }
+    indentFailure(e) {
+        this.parent.trigger('actionFailure', { error: e });
+    }
+    indentOutdentSuccess(args) {
         this.parent.treeGrid.refresh();
         if (this.dropPosition === 'middleSegment') {
             args.requestType = 'indented';
@@ -20533,8 +20556,8 @@ class Edit$2 {
                 index: parentItem.index,
                 taskId: parentItem.ganttProperties.rowUniqueID
             };
-            draggedRec.parentItem = createParentItem;
-            draggedRec.parentUniqueID = droppedRec.uniqueID;
+            this.parent.setRecordValue('parentItem', createParentItem, draggedRec);
+            this.parent.setRecordValue('parentUniqueID', droppedRec.uniqueID, draggedRec);
             droppedRec.childRecords.splice(droppedRec.childRecords.length, 0, draggedRec);
             if (!isNullOrUndefined(draggedRec) && !obj.taskFields.parentID && !isNullOrUndefined(droppedRec.taskData[childItem])) {
                 droppedRec.taskData[obj.taskFields.child].splice(droppedRec.childRecords.length, 0, draggedRec.taskData);
@@ -20713,9 +20736,10 @@ class Filter$1 {
         let dropDateInstance;
         let filterDateUI = {
             create: (args) => {
+                let format = getCustomDateFormat(args.column.format, args.column.type);
                 let flValInput = createElement('input', { className: 'flm-input' });
                 args.target.appendChild(flValInput);
-                dropDateInstance = new DatePicker({ placeholder: this.parent.localeObj.getConstant('enterValue') });
+                dropDateInstance = new DatePicker({ placeholder: this.parent.localeObj.getConstant('enterValue'), format: format });
                 dropDateInstance.appendTo(flValInput);
             },
             write: (args) => {
@@ -20734,9 +20758,10 @@ class Filter$1 {
         let dropInstance;
         let filterDateTimeUI = {
             create: (args) => {
+                let format = getCustomDateFormat(args.column.format, args.column.type);
                 let flValInput = createElement('input', { className: 'flm-input' });
                 args.target.appendChild(flValInput);
-                dropInstance = new DateTimePicker({ placeholder: this.parent.localeObj.getConstant('enterValue') });
+                dropInstance = new DateTimePicker({ placeholder: this.parent.localeObj.getConstant('enterValue'), format: format });
                 dropInstance.appendTo(flValInput);
             },
             write: (args) => {

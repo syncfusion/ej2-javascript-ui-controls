@@ -39,6 +39,7 @@ describe('Character formatting in RTL paragraph', () => {
         }, 1000);
     });
     it('bold apply', () => {
+console.log('bold apply');
         editor.selection.handleControlLeftKey();
         editor.selection.handleShiftLeftKey();
         editor.selection.handleShiftLeftKey();
@@ -78,6 +79,7 @@ describe('Character formatting with RTL and english paragraph', () => {
         }, 1000);
     });
     it('bold apply', () => {
+console.log('bold apply');
         editor.selection.paragraphFormat.bidi = true;
         editor.editor.insertText('سشةحمث');
         editor.editor.insertText(' ');
@@ -99,6 +101,6 @@ describe('Character formatting with RTL and english paragraph', () => {
         editor.selection.handleShiftLeftKey();
         editor.selection.handleShiftLeftKey();
         let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
-        expect((lineWidget.children[0] as TextElementBox).text).toBe('sample?');
+        expect((lineWidget.children[0] as TextElementBox).text).toBe('?sample');
     });
 });

@@ -34,6 +34,7 @@ describe('Hidden list edit validation - 1', () => {
         }, 1000);
     });
     it('valid list conversion on enter', () => {
+console.log('valid list conversion on enter');
         editor.selection.handleDownKey();
         editor.selection.handleEndKey();
         editor.editor.onEnter();
@@ -42,6 +43,7 @@ describe('Hidden list edit validation - 1', () => {
         expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('2.1.');
     });
     it('undo after list conversion', () => {
+console.log('undo after list conversion');
         editor.editorHistory.undo();
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
@@ -74,6 +76,7 @@ describe('Hidden list edit validation - 2', () => {
         }, 1000);
     });
     it('valid list conversion on enter in list level 1', () => {
+console.log('valid list conversion on enter in list level 1');
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
@@ -82,10 +85,12 @@ describe('Hidden list edit validation - 2', () => {
         expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('1.2.');
     });
     it('undo after list conversion in list level 1', () => {
+console.log('undo after list conversion in list level 1');
         editor.editorHistory.undo();
         expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('1.1.');
     });
     it('redo after list conversion in list level 1', () => {
+console.log('redo after list conversion in list level 1');
         editor.editorHistory.redo();
         expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('1.2.');
     })
@@ -117,6 +122,7 @@ describe('Keep Text only validation', () => {
         }, 1000);
     });
     it('Paste format', () => {
+console.log('Paste format');
         (editor.editor as any).pasteContents(content);
         (editor.editor as any).copiedTextContent = 'ampe';
         editor.editor.applyPasteOptions('KeepTextOnly');
@@ -150,6 +156,7 @@ describe('Restart Numbering List validation - 1', () => {
         }, 1000);
     });
     it('Apply restart numbering with different numberformat', () => {
+console.log('Apply restart numbering with different numberformat');
         editor.editor.insertText('Sample');
         editor.editor.onEnter();
         editor.editor.insertText('Sample');
@@ -163,10 +170,12 @@ describe('Restart Numbering List validation - 1', () => {
         expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('.1');
     });
     it('undo after restart numbering list', () => {
+console.log('undo after restart numbering list');
         editor.editorHistory.undo();
         expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('.2');
     });
     it('redo after restart numbering list', () => {
+console.log('redo after restart numbering list');
         editor.editorHistory.redo();
         expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('.1');
     });
@@ -196,6 +205,7 @@ describe('Restart Numbering List validation - 2', () => {
         }, 1000);
     });
     it('Ensuring multiple list level for restart numbering', () => {
+console.log('Ensuring multiple list level for restart numbering');
         editor.editor.insertText('Sample');
         editor.editor.onEnter();
         editor.editor.insertText('Sample');
@@ -214,10 +224,12 @@ describe('Restart Numbering List validation - 2', () => {
         expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).not.toBe('.1');
     });
     it('undo after multiple list level for restart numbering list', () => {
+console.log('undo after multiple list level for restart numbering list');
         editor.editorHistory.undo();
         expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('.2');
     });
     it('redo after multiple list level for restart numbering list', () => {
+console.log('redo after multiple list level for restart numbering list');
         editor.editorHistory.redo();
         expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('.1');
     });
@@ -248,16 +260,19 @@ describe('Remove hyperlink validation', () => {
         }, 1000);
     });
     it('Insert hyperlink at start of paragraph', () => {
+console.log('Insert hyperlink at start of paragraph');
         editor.editor.insertHyperlink("google.com", "test");
         expect(editor.selection.start.paragraph.childWidgets.length).toBe(2);
     });
     it('Remove hyperlink at start of paragraph', () => {
+console.log('Remove hyperlink at start of paragraph');
         editor.search.findAll("test");
         expect(editor.selection.getHyperlinkField()).not.toBeUndefined();
         editor.editor.removeHyperlink();
         expect(editor.selection.getHyperlinkField()).toBeUndefined();
     });
     it('undo after remove hyperlink', () => {
+console.log('undo after remove hyperlink');
         editor.editorHistory.undo();
         editor.selection.handleLeftKey();
         expect(editor.selection.getHyperlinkField()).not.toBeUndefined();
@@ -292,18 +307,22 @@ describe('Insert table', () => {
         }, 1000);
     });
     it('inside table with preferred width type auto and left margin undefined', () => {
+console.log('inside table with preferred width type auto and left margin undefined');
         editor.editor.insertTable(1, 1);
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.cellWidth).toBeGreaterThan(0);
     });
     it('Undo after insert Table', () => {
+console.log('Undo after insert Table');
         editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.cellWidth).toBeGreaterThan(0);
     });
     it('Redo after insert Table', () => {
+console.log('Redo after insert Table');
         editor.editorHistory.redo();
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.cellWidth).toBeGreaterThan(0);
     });
     it('Apply restart list clone validation', () => {
+console.log('Apply restart list clone validation');
         editor.openBlank();
         editor.editor.insertText('Sample');
         editor.editor.onEnter();

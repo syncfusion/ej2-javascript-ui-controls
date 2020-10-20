@@ -37,11 +37,11 @@
 }
 
 @include export-module('FileManager-layout') {
-  #{&}ejs-filemanager {
+  ejs-filemanager {
     display: block;
   }
 
-  #{&}.e-filemanager {
+  .e-filemanager {
     @include user-select;
     border: 1px solid;
     position: relative;
@@ -752,7 +752,7 @@
     }
   }
 
-  #{&}.e-fe-popup {
+  .e-fe-popup {
 
     &.e-dropdown-popup ul .e-item,
     &.e-contextmenu-wrapper ul .e-menu-item {
@@ -858,9 +858,9 @@
     }
   }
 
-  #{&}.e-filemanager,
-  .e-bigger #{&}.e-filemanager,
-  #{&}.e-filemanager.e-bigger {
+  .e-filemanager,
+  .e-bigger .e-filemanager,
+  .e-filemanager.e-bigger {
 
     &.e-fe-mobile {
 
@@ -1154,8 +1154,8 @@
     }
   }
 
-  #{&}.e-fe-popup.e-bigger,
-  .e-bigger #{&}.e-fe-popup {
+  .e-fe-popup.e-bigger,
+  .e-bigger .e-fe-popup {
 
     &.e-dialog {
 
@@ -1173,8 +1173,8 @@
     }
   }
 
-  .e-bigger #{&}.e-filemanager,
-  #{&}.e-filemanager.e-bigger {
+  .e-bigger .e-filemanager,
+  .e-filemanager.e-bigger {
 
     .e-toolbar {
 
@@ -1427,8 +1427,8 @@
   }
 
   @media (max-width: 469px) {
-    .e-bigger #{&}.e-filemanager,
-    #{&}.e-filemanager.e-bigger {
+    .e-bigger .e-filemanager,
+    .e-filemanager.e-bigger {
       &.e-fe-mobile .e-large-icons .e-list-parent .e-list-item {
         min-width: $fe-mobile-lg-item-minwidth;
         width: $fe-mobile-lg-item-width-two;
@@ -1437,8 +1437,8 @@
   }
 
   @media (min-width: 470px) and (max-width: 625px) {
-    .e-bigger #{&}.e-filemanager,
-    #{&}.e-filemanager.e-bigger {
+    .e-bigger .e-filemanager,
+    .e-filemanager.e-bigger {
       &.e-fe-mobile .e-large-icons .e-list-parent .e-list-item {
         min-width: $fe-mobile-lg-item-minwidth;
         width: $fe-mobile-lg-item-width-three;

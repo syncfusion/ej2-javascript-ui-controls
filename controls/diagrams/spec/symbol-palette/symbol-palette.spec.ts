@@ -29,7 +29,7 @@ describe('Symbol Palette', () => {
         let palette: SymbolPalette;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
-        let flowshapes: NodeModel[] = [{ id: 'start', dragSize:{width:300, height:300}, previewSize:{width:200, height:200} ,shape: { type: 'Flow', shape: 'Terminator' } },
+        let flowshapes: NodeModel[] = [{ id: 'start', dragSize:{width:300, height:300}, previewSize:{width:200, height:200} ,shape: { type: 'Flow', shape: 'Terminator' },pivot:{x:0,y:0} },
         { id: 'process', dragSize:{width:300, height:300}, previewSize:{width:200, height:200} , shape: { type: 'Flow', shape: 'Process' } },
         { id: 'decision', dragSize:{width:300, height:300}, previewSize:{width:200, height:200} , shape: { type: 'Flow', shape: 'Decision' } },
         { id: 'data', dragSize:{width:300, height:300}, previewSize:{width:200, height:200} , shape: { type: 'Flow', shape: 'Data' } },
@@ -46,8 +46,8 @@ describe('Symbol Palette', () => {
                 activity: { activity: 'SubProcess', subProcess: { type: 'Event' } }
             }
         }, {
-            id: 'annot4', width: 100, height: 100,
-            shape: { type: 'Bpmn', shape: 'TextAnnotation', annotation: { angle: 280, length: 150, text: 'textAnnotation4', } }
+            id: 'annot4', width: 100, height: 100,pivot:{x:0,y:0},
+            shape: { type: 'Bpmn', shape: 'TextAnnotation', annotation: { angle: 280, length: 150, text: 'textAnnotation4' } }
         }];
 
         let connectorSymbols: ConnectorModel[] = [{
@@ -319,8 +319,89 @@ describe('Symbol Palette', () => {
                 done();
             }, 10);
         });
-
-
+        it('Mouse cursor does not placed on the node', (done: Function) => {
+            debugger;
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: any;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let target = document.elementFromPoint(position.x, position.y).childNodes[0];
+                let symbols: IElement = palette.symbolTable[target['id']];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            diagram.dragEnter = (arg) => {
+                expect(arg.source instanceof SymbolPalette).toBe(true);
+                done();
+            }
+            diagram.dragOver = (arg) => {
+                expect(arg.diagram !== undefined).toBe(true);
+                done();
+            }
+            diagram.drop = (arg) => {
+                console.log((arg.element as NodeModel).offsetX);
+                console.log((arg.element as NodeModel).offsetY);
+                expect((arg.element as NodeModel).offsetX === 400).toBe(true);
+                expect((arg.element as NodeModel).offsetY === 400).toBe(true);
+                done();
+            }
+            let events: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            events.mouseMoveEvent(diagramCanvas, 300+diagram.element.offsetLeft, 300+diagram.element.offsetTop, false, false);
+            events.mouseMoveEvent(diagramCanvas, 400+diagram.element.offsetLeft, 400+diagram.element.offsetTop, false, false);
+            events.mouseUpEvent(diagramCanvas, 400+diagram.element.offsetLeft, 400+diagram.element.offsetTop, false, false);
+            expect(diagram.selectedItems.nodes[0].offsetX === 400).toBe(true);
+            expect(diagram.selectedItems.nodes[0].offsetY === 400).toBe(true);
+            diagram.undo();
+            done();
+        });
+        it('Mouse cursor does not placed on the node -text annotation', (done: Function) => {
+            debugger;
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: any;
+                let symbols: IElement = palette.symbolTable["annot4"];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            diagram.dragEnter = (arg) => {
+                expect(arg.source instanceof SymbolPalette).toBe(true);
+                done();
+            }
+            diagram.dragOver = (arg) => {
+                expect(arg.diagram !== undefined).toBe(true);
+                done();
+            }
+            diagram.drop = (arg) => {
+                console.log((arg.element as NodeModel).offsetX);
+                console.log((arg.element as NodeModel).offsetY);
+                expect(Math.round((arg.element as NodeModel).offsetX) === 311).toBe(true);
+                expect(Math.round((arg.element as NodeModel).offsetY) === 311).toBe(true);
+                expect((arg.element as NodeModel).id === diagram.currentSymbol.id).toBe(true);
+                done();
+            }
+            let events: MouseEvents = new MouseEvents();
+            debugger;
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            events.mouseDownEvent(palette.element, 175, 350, false, false);
+            events.mouseMoveEvent(palette.element, 100, 350, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            events.mouseMoveEvent(diagramCanvas, 300+diagram.element.offsetLeft, 300+diagram.element.offsetTop, false, false);
+            events.mouseUpEvent(diagramCanvas, 300+diagram.element.offsetLeft, 300+diagram.element.offsetTop, false, false);
+            expect(Math.round(diagram.selectedItems.nodes[0].offsetX) === 311).toBe(true);
+            expect(Math.round(diagram.selectedItems.nodes[0].offsetY) === 311).toBe(true);
+            diagram.undo();
+            done();
+        });
         it('Checking drag and drop', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
                 let clonedElement: HTMLElement; let diagramElement: any;
@@ -370,6 +451,7 @@ describe('Symbol Palette', () => {
             done();
         });
         it('drag and drop annotation node', (done: Function) => {
+            debugger;
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
                 let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
@@ -964,6 +1046,7 @@ describe('Symbol Palette', () => {
             expect(palette.palettes[0].expanded === true).toBe(true);
             done();
         });
+        
         });
     describe('Testing symbol palette', () => {
         let diagram: Diagram;
@@ -1899,4 +1982,231 @@ describe('Symbol Palette', () => {
             done();
         });
     })
+});
+describe('Mouse cursor inside the preview shape', () => {
+    let diagram: Diagram;
+    let palette: SymbolPalette;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let basicShapes: NodeModel[] = [
+        { id: 'Rectangle', shape: { type: 'Basic', shape: 'Rectangle' }, style: { strokeWidth: 2 }, previewSize: { width: 100, height: 100 } },
+        { id: 'Ellipse', shape: { type: 'Basic', shape: 'Ellipse' }, style: { strokeWidth: 2 }, previewSize: { width: 100, height: 100 } },
+        { id: 'Hexagon', shape: { type: 'Basic', shape: 'Hexagon' }, style: { strokeWidth: 2 } },
+    ];
+    let bpmnShapes: NodeModel[] = [{
+        id: 'node2a', offsetX: 500, offsetY: 100, constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+        shape: { type: 'Bpmn', shape: 'DataObject', dataObject: { collection: false, type: 'None' } }
+    },
+    {
+        id: 'task', offsetX: 300, offsetY: 100,
+        shape: {
+            type: 'Bpmn', shape: 'Activity',
+            activity: { activity: 'SubProcess', subProcess: { type: 'Event' } }
+        }
+    }, {
+        id: 'annot4', previewSize: { width: 100, height: 100 },
+        shape: { type: 'Bpmn', shape: 'TextAnnotation', annotation: { angle: 280, length: 150, text: 'textAnnotation4' } }
+    }];
+    beforeAll((): void => {
+        ele = createElement('div', { styles: 'width:100%;height:500px;' });
+        ele.appendChild(createElement('div', { id: 'symbolpalettePreview1', styles: 'width:25%;float:left;' }));
+        ele.appendChild(createElement('div', { id: 'diagramPreview1', styles: 'width:74%;height:500px;float:left;' }));
+        document.body.appendChild(ele);
+        diagram = new Diagram({
+            width: '1000px', height: '500px',
+            pageSettings: {
+                background: { color: 'transparent' }
+            },
+            scrollSettings: {
+                canAutoScroll: false,
+                scrollLimit: 'Diagram',
+            }
+        });
+        diagram.appendTo('#diagramPreview1');
+        palette = new SymbolPalette({
+            expandMode: 'Multiple',
+            symbolPreview: { height: 200, width: 200 },
+            palettes: [
+                { id: 'basic', expanded: true, symbols: basicShapes, title: 'Basic Shapes' },
+                { id: 'bpmn', expanded: true, symbols: bpmnShapes, title: 'Bpmn Shapes' },
+            ],
+            width: '700px', height: '500px', symbolHeight: 50, symbolWidth: 50,
+            getNodeDefaults: setPaletteNodeDefaults,
+            symbolMargin: { left: 12, right: 12, top: 12, bottom: 12 },
+        });
+        palette.appendTo('#symbolpalettePreview1');
+        function setPaletteNodeDefaults(node: NodeModel): void {
+            {
+                node.width = 50;
+                node.height = 50;
+            }
+            node.style.strokeColor = '#3A3A3A';
+        }
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        palette.destroy();
+        ele.remove();
+    });
+    it('Mouse cursor inside the preview shape- with palette and shape preview size', (done: Function) => {
+        debugger;
+        setTimeout(function () {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement;
+                let symbols: IElement = palette.symbolTable['Ellipse'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+
+            diagram.drop = (arg) => {
+                console.log((arg.element as NodeModel).offsetX);
+                console.log((arg.element as NodeModel).offsetY);
+                expect((arg.element as NodeModel).offsetX === 350).toBe(true);
+                expect((arg.element as NodeModel).offsetY === 930).toBe(true);
+                done();
+            }
+            let events: MouseEvents = new MouseEvents();
+            debugger;
+            var diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseUpEvent(diagramCanvas, 300 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop, false, false);
+            diagram.undo();
+            expect(diagram.nodes.length === 0).toBe(true);
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            events.mouseMoveEvent(palette.element, 250, 250, false, false);
+            events.mouseMoveEvent(palette.element, 300, 300, false, false);
+            events.mouseMoveEvent(diagramCanvas, 200 + diagram.element.offsetLeft, 200 + diagram.element.offsetTop, false, false);
+            events.mouseMoveEvent(diagramCanvas, 250 + diagram.element.offsetLeft, 250 + diagram.element.offsetTop, false, false);
+            events.mouseMoveEvent(diagramCanvas, 300 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop, false, false);
+            events.mouseUpEvent(diagramCanvas, 300 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop, false, false);
+            expect(diagram.nodes[0].offsetX === 350).toBe(true);
+            expect(diagram.nodes[0].offsetY === 930).toBe(true);
+            diagram.undo();
+            done();
+        },
+            1000);
+    });
+    it('Mouse cursor inside the preview shape- with palette and shape preview size-text Annotation', (done: Function) => {
+        debugger;
+        setTimeout(function () {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement;
+                let symbols: IElement = palette.symbolTable['annot4'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+
+            diagram.drop = (arg) => {
+                console.log((arg.element as NodeModel).offsetX);
+                console.log((arg.element as NodeModel).offsetY);
+                expect((arg.element as NodeModel).offsetX === 361).toBe(true);
+                expect((arg.element as NodeModel).offsetY === 937 || (arg.element as NodeModel).offsetY === 935).toBe(true);
+                done();
+            }
+            let events: MouseEvents = new MouseEvents();
+            debugger;
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            events.mouseDownEvent(palette.element, 175, 350, false, false);
+            events.mouseMoveEvent(palette.element, 100, 350, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            events.mouseMoveEvent(diagramCanvas, 300 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop, false, false);
+            events.mouseUpEvent(diagramCanvas, 300 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop, false, false);
+            expect(Math.round(diagram.selectedItems.nodes[0].offsetX) === 361).toBe(true);
+            expect(Math.round(diagram.selectedItems.nodes[0].offsetY) === 937 || Math.round(diagram.selectedItems.nodes[0].offsetY) === 935).toBe(true);
+            diagram.undo();
+            done();
+        },
+            1000);
+    });
+    it('Mouse cursor inside the preview shape- with palette preview size alone', (done: Function) => {
+        debugger;
+        setTimeout(function () {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement;
+                let symbols: IElement = palette.symbolTable['Ellipse'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+
+            diagram.drop = (arg) => {
+                console.log((arg.element as NodeModel).offsetX);
+                console.log((arg.element as NodeModel).offsetY);
+                expect((arg.element as NodeModel).offsetX === 350 || (arg.element as NodeModel).offsetX === 400).toBe(true);
+                expect((arg.element as NodeModel).offsetY === 930 || (arg.element as NodeModel).offsetY === 980).toBe(true);
+                done();
+            }
+            let events: MouseEvents = new MouseEvents();
+            debugger;
+            var diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            palette.symbolPreview.width = undefined; palette.symbolPreview.height = undefined;
+            palette.dataBind();
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            events.mouseMoveEvent(palette.element, 250, 250, false, false);
+            events.mouseMoveEvent(palette.element, 300, 300, false, false);
+            events.mouseMoveEvent(diagramCanvas, 200 + diagram.element.offsetLeft, 200 + diagram.element.offsetTop, false, false);
+            events.mouseMoveEvent(diagramCanvas, 250 + diagram.element.offsetLeft, 250 + diagram.element.offsetTop, false, false);
+            events.mouseMoveEvent(diagramCanvas, 300 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop, false, false);
+            events.mouseUpEvent(diagramCanvas, 300 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop, false, false);
+            expect(diagram.nodes[0].offsetX === 350).toBe(true);
+            expect(diagram.nodes[0].offsetY === 930).toBe(true);
+            diagram.undo();
+            palette.symbolPreview.width = 200; palette.symbolPreview.height = 200;
+            palette.palettes[0].symbols[1].previewSize.width = undefined;
+            palette.palettes[0].symbols[1].previewSize.height = undefined;
+            palette.dataBind();
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            events.mouseMoveEvent(palette.element, 250, 250, false, false);
+            events.mouseMoveEvent(palette.element, 300, 300, false, false);
+            events.mouseMoveEvent(diagramCanvas, 200 + diagram.element.offsetLeft, 200 + diagram.element.offsetTop, false, false);
+            events.mouseMoveEvent(diagramCanvas, 250 + diagram.element.offsetLeft, 250 + diagram.element.offsetTop, false, false);
+            events.mouseMoveEvent(diagramCanvas, 300 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop, false, false);
+            events.mouseUpEvent(diagramCanvas, 300 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop, false, false);
+            console.log(diagram.nodes[0].offsetX);
+            console.log(diagram.nodes[0].offsetY);
+            console.log(diagram.element.offsetTop);
+            expect(diagram.nodes[0].offsetX === 400).toBe(true);
+            expect(diagram.nodes[0].offsetY === 980).toBe(true);
+            diagram.undo();
+            palette.symbolPreview.width = 200; palette.symbolPreview.height = undefined;
+            palette.palettes[0].symbols[1].previewSize.width = undefined;
+            palette.palettes[0].symbols[1].previewSize.height = 100;
+            palette.dataBind();
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            events.mouseMoveEvent(palette.element, 250, 250, false, false);
+            events.mouseMoveEvent(palette.element, 300, 300, false, false);
+            events.mouseMoveEvent(diagramCanvas, 200 + diagram.element.offsetLeft, 200 + diagram.element.offsetTop, false, false);
+            events.mouseMoveEvent(diagramCanvas, 250 + diagram.element.offsetLeft, 250 + diagram.element.offsetTop, false, false);
+            events.mouseMoveEvent(diagramCanvas, 300 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop, false, false);
+            events.mouseUpEvent(diagramCanvas, 300 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop, false, false);
+            console.log(diagram.nodes[0].offsetX);
+            console.log(diagram.nodes[0].offsetY);
+            console.log(diagram.element.offsetTop);
+            expect(diagram.nodes[0].offsetX === 400).toBe(true);
+            expect(diagram.nodes[0].offsetY === 930).toBe(true);
+            diagram.undo();
+            done();
+        },
+            1000);
+    });
 });

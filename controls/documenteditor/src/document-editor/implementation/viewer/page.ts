@@ -5,7 +5,7 @@ import {
 } from '../../base/types';
 import { WListLevel } from '../list/list-level';
 import { WParagraphFormat, WCharacterFormat, WSectionFormat, WBorder, WBorders } from '../format/index';
-import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, createElement, L10n } from '@syncfusion/ej2-base';
 import { Dictionary } from '../../base/dictionary';
 // tslint:disable-next-line:max-line-length
 import { ElementInfo, HelperMethods, Point, WidthInfo, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, BorderInfo } from '../editor/editor-helper';
@@ -717,6 +717,14 @@ export abstract class BlockWidget extends Widget {
      * @private
      */
     public bottomBorderWidth: number;
+    /**
+     * @private
+     */
+    public locked: boolean = false;
+    /**
+     * @private
+     */
+    public lockedBy: string = '';
     /**
      * @private
      */
@@ -5685,6 +5693,11 @@ export class EditRangeStartElementBox extends ElementBox {
      */
     public editRangeEnd: EditRangeEndElementBox;
     public editRangeId: number = -1;
+    /**
+     * Edit range mark
+     * @private
+     */
+    public editRangeMark: HTMLElement;
 
     constructor() {
         super();
@@ -5694,6 +5707,34 @@ export class EditRangeStartElementBox extends ElementBox {
      */
     public getLength(): number {
         return 1;
+    }
+    /**
+     * @private
+     */
+    public renderLockMark(currentUser: string, locale: L10n): void {
+        if (isNullOrUndefined(this.editRangeMark)) {
+            let user: string = currentUser === this.user ? 'you' : this.user;
+            this.editRangeMark = document.createElement('div');
+            this.editRangeMark.style.display = 'none';
+            this.editRangeMark.classList.add('e-de-lock-mark');
+            let span: HTMLElement = document.createElement('span');
+            span.className = 'e-icons e-de-ctnr-lock';
+            this.editRangeMark.appendChild(span);
+            this.editRangeMark.title = locale.getConstant('This region is locked by') + ' ' + user;
+        }
+        if (this.line && isNullOrUndefined(this.editRangeMark.parentElement)) {
+            let documentHelper: DocumentHelper = this.line.paragraph.bodyWidget.page.documentHelper;
+            documentHelper.pageContainer.appendChild(this.editRangeMark);
+        }
+    }
+    /**
+     * @private
+     */
+    public removeEditRangeMark(): void {
+        if (this.editRangeMark) {
+            this.editRangeMark.parentElement.removeChild(this.editRangeMark);
+            this.editRangeMark = undefined;
+        }
     }
     /**
      * @private

@@ -425,6 +425,7 @@ describe('Search module testing', () => {
         }, 1000);
     });
     it('field text testing using search', () => {
+console.log('field text testing using search');
         editor.open(getJson());
         let optionsPane = editor.optionsPaneModule;
         editor.showOptionsPane();
@@ -432,14 +433,17 @@ describe('Search module testing', () => {
         optionsPane.searchIconClickInternal();
     });   
     it('find validation', () => {
+console.log('find validation');
         editor.open(getJson());
         editor.searchModule.find('xyz', 'None');
     });
     it('findall validation', () => {
+console.log('findall validation');
         editor.open(getJson());
         editor.searchModule.findAll('xyz', 'None');
     });
     it('findOption undefind validation', () => {
+console.log('findOption undefind validation');
         editor.open(getJson());
         let pattern = editor.searchModule.textSearch.stringToRegex('the', 'None');
         editor.searchModule.textSearch.findAll(pattern, undefined, '0;0;0;0;0;0');

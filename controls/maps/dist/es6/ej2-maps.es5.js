@@ -5657,6 +5657,10 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                 }
                 var animateElement;
                 if (!document.getElementById('animated_tiles') && element) {
+                    if (!isNullOrUndefined(document.getElementById(_this.mapObject.element.id + '_animated_tiles'))) {
+                        document.getElementById(_this.mapObject.element.id + '_animated_tiles').id = _this.mapObject.element.id +
+                            '_animated_tiles_old';
+                    }
                     animateElement = createElement('div', { id: _this.mapObject.element.id + '_animated_tiles' });
                     element.appendChild(animateElement);
                 }
@@ -5671,25 +5675,34 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                     }
                 }
                 var id = 0;
-                for (var _i = 0, _a = _this.tiles; _i < _a.length; _i++) {
-                    var tile = _a[_i];
+                var _loop_3 = function (tile) {
                     var imgElement = createElement('img');
                     imgElement.setAttribute('src', tile.src);
-                    var child = void 0;
-                    if (document.getElementById(_this.mapObject.element.id + '_tile_' + id) && type === 'Pan') {
-                        removeElement(_this.mapObject.element.id + '_tile_' + id);
-                    }
-                    child = createElement('div', { id: _this.mapObject.element.id + '_tile_' + id });
-                    child.style.position = 'absolute';
-                    child.style.left = tile.left + 'px';
-                    child.style.top = tile.top + 'px';
-                    child.style.height = tile.height + 'px';
-                    child.style.width = tile.width + 'px';
-                    child.appendChild(imgElement);
-                    if (animateElement) {
-                        animateElement.appendChild(child);
-                    }
-                    id++;
+                    var mapId = _this.mapObject.element.id;
+                    imgElement.onload = function () {
+                        var child;
+                        if (document.getElementById(mapId + '_tile_' + id) && type === 'Pan') {
+                            removeElement(mapId + '_tile_' + id);
+                        }
+                        child = createElement('div', { id: mapId + '_tile_' + id });
+                        child.style.position = 'absolute';
+                        child.style.left = tile.left + 'px';
+                        child.style.top = tile.top + 'px';
+                        child.style.height = tile.height + 'px';
+                        child.style.width = tile.width + 'px';
+                        child.appendChild(imgElement);
+                        if (animateElement) {
+                            animateElement.appendChild(child);
+                        }
+                        id++;
+                        if (id === _this.tiles.length && document.getElementById(_this.mapObject.element.id + '_animated_tiles_old')) {
+                            removeElement(_this.mapObject.element.id + '_animated_tiles_old');
+                        }
+                    };
+                };
+                for (var _i = 0, _a = _this.tiles; _i < _a.length; _i++) {
+                    var tile = _a[_i];
+                    _loop_3(tile);
                 }
                 // tslint:disable-next-line:align
             }, timeOut);
@@ -5836,7 +5849,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                 y = this.mapObject.tileTranslatePoint.y;
             }
         }
-        this.mapObject.translatePoint = new Point((x - (0.01 * this.mapObject.scale)) / this.mapObject.scale, (y - (0.01 * this.mapObject.scale)) / this.mapObject.scale);
+        this.mapObject.translatePoint = new Point((x - (0.01 * this.mapObject.zoomSettings.zoomFactor)) / this.mapObject.scale, (y - (0.01 * this.mapObject.zoomSettings.zoomFactor)) / this.mapObject.scale);
         this.mapObject.previousTileWidth = factorX;
         this.mapObject.previousTileHeight = factorY;
         return new Point(x, y);
@@ -6907,6 +6920,32 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      */
     Maps.prototype.mapsOnDoubleClick = function (e) {
         this.notify('dblclick', e);
+        var targetElement = e.target;
+        var targetId = targetElement.id;
+        var layerIndex = 0;
+        var latLongValue;
+        var latitude = null;
+        var longitude = null;
+        if (targetElement.id.indexOf('_ToolBar') === -1) {
+            if (targetElement.id.indexOf('_LayerIndex_') !== -1 && !this.isTileMap && (this.mouseDownEvent['x'] === e.clientX)
+                && (this.mouseDownEvent['y'] === e.clientY)) {
+                layerIndex = parseFloat(targetElement.id.split('_LayerIndex_')[1].split('_')[0]);
+                latLongValue = this.getGeoLocation(layerIndex, e);
+                latitude = latLongValue['latitude'];
+                longitude = latLongValue['longitude'];
+            }
+            else if (this.isTileMap && (this.mouseDownEvent['x'] === e.clientX)
+                && (this.mouseDownEvent['y'] === e.clientY)) {
+                latLongValue = this.getTileGeoLocation(e);
+                latitude = latLongValue['latitude'];
+                longitude = latLongValue['longitude'];
+            }
+            var doubleClickArgs = { cancel: false, name: doubleClick, x: e.clientX, y: e.clientY,
+                target: targetId, latitude: latitude, longitude: longitude, isShapeSelected: null };
+            var doubleClickBlazorArgs = { cancel: false, name: doubleClick, x: e.clientX, y: e.clientY,
+                target: targetId, latitude: latitude, longitude: longitude, isShapeSelected: null };
+            this.trigger('doubleClick', this.isBlazor ? doubleClickBlazorArgs : doubleClickArgs);
+        }
     };
     /**
      * This method is used to perform operations while performing mouse over on maps.
@@ -11501,8 +11540,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 newZoomFactor = map.tileZoomLevel = map.mapScaleValue = map.initialZoomLevel;
                 map.scale = Math.pow(2, newZoomFactor - 1);
             }
-            map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.scale)) / map.scale;
-            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
+            map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.mapScaleValue)) / map.scale;
+            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.mapScaleValue)) / map.scale;
             this.triggerZoomEvent(prevTilePoint, prevLevel, type);
             if (document.querySelector('.GroupElement')) {
                 document.querySelector('.GroupElement').style.display = 'none';
@@ -11740,7 +11779,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
                             }
                         }
                         else if (currentEle.id.indexOf('_Markers_Group') > -1) {
-                            if (!this.isPanning) {
+                            if (!this.isPanning || this.maps.isBlazor) {
                                 this.markerTranslates(currentEle.childNodes[0], factor, x, y, scale, 'Marker', layerElement, animate$$1);
                             }
                             currentEle = layerElement.childNodes[j];
@@ -12377,8 +12416,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 tileZoomFactor = map.tileZoomLevel = map.mapScaleValue = map.initialZoomLevel;
             }
             this.triggerZoomEvent(prevTilePoint, prevLevel, type);
-            map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.scale)) / map.scale;
-            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
+            map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.mapScaleValue)) / map.scale;
+            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.mapScaleValue)) / map.scale;
             if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
                 document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'none';
             }

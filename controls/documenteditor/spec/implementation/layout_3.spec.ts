@@ -3282,19 +3282,23 @@ describe('Page Break Layout Validation', () => {
         }, 750);
     });
     it('Layout page break', () => {
+console.log('Layout page break');
         editor.open(JSON.stringify(sfdt));
         expect(editor.documentHelper.pages.length).toBe(2);
     });
     it('Insert Text Before Page Break', () => {
+console.log('Insert Text Before Page Break');
         editor.editorModule.insertText('Syncfusion');
         expect(editor.selection.start.paragraph.bodyWidget.page.index).toBe(0);
     });
     it('Insert Text after page break', () => {
+console.log('Insert Text after page break');
         editor.selection.moveToLineEnd();
         editor.editorModule.insertText('Syncfusion');
         expect(editor.selection.start.paragraph.bodyWidget.page.index).toBe(1);
     });
     it('Handle Shifting after page break validation', () => {
+console.log('Handle Shifting after page break validation');
         editor.selection.moveUp();
         editor.selection.moveUp();
         editor.selection.moveToLineStart();
@@ -3304,6 +3308,7 @@ describe('Page Break Layout Validation', () => {
         expect(editor.documentHelper.pages.length).toBe(3);
     });
     it('Handle Shifting after page break validation backward', () => {
+console.log('Handle Shifting after page break validation backward');
         for (let i: number = 0; i < 20; i++) {
             editor.editor.onBackSpace();
         }
@@ -3335,6 +3340,7 @@ describe('Insert Page break API validation', () => {
         }, 750);
     });
     it('Ctrl + Enter key validation', () => {
+console.log('Ctrl + Enter key validation');
         let event: any = {
             preventDefault: function () { return false },
             which: 13
@@ -3343,6 +3349,7 @@ describe('Insert Page break API validation', () => {
         expect(editor.documentHelper.pages.length).toBe(2);
     });
     it('Insert Text Before Page Break', () => {
+console.log('Insert Text Before Page Break');
         editor.editorModule.insertText('Syncfusion');
         expect(editor.selection.start.paragraph.bodyWidget.page.index).toBe(1);
     });
@@ -3372,6 +3379,7 @@ describe('Insert page break history preservation', () => {
         }, 750);
     });
     it('Insert Page break at paragraph start', () => {
+console.log('Insert Page break at paragraph start');
         editor.editor.insertText('Syncfusion Software');
         editor.selection.moveToLineStart();
         let event: any = {
@@ -3382,6 +3390,7 @@ describe('Insert page break history preservation', () => {
         expect(editor.documentHelper.pages.length).toBe(2);
     });
     it('Undo Redo multiple times', () => {
+console.log('Undo Redo multiple times');
         for (let i: number = 0; i < 5; i++) {
             editor.editorHistory.undo();
             expect(editor.documentHelper.pages.length).toBe(1);
@@ -3416,6 +3425,7 @@ describe('Insert page break history preservation', () => {
         }, 750);
     });
     it('Insert Page break at paragraph end', () => {
+console.log('Insert Page break at paragraph end');
         editor.editor.insertText('Syncfusion Software');
         let event: any = {
             preventDefault: function () { return false },
@@ -3425,6 +3435,7 @@ describe('Insert page break history preservation', () => {
         expect(editor.documentHelper.pages.length).toBe(2);
     });
     it('Undo Redo multiple times at paragraph end', () => {
+console.log('Undo Redo multiple times at paragraph end');
         for (let i: number = 0; i < 5; i++) {
             editor.editorHistory.undo();
             expect(editor.documentHelper.pages.length).toBe(1);
@@ -3459,6 +3470,7 @@ describe('Insert page break history preservation', () => {
         }, 750);
     });
     it('Insert Page break at paragraph middle', () => {
+console.log('Insert Page break at paragraph middle');
         editor.editor.insertText('Syncfusion Software');
         editor.selection.movePreviousPosition();
         editor.selection.movePreviousPosition();
@@ -3470,6 +3482,7 @@ describe('Insert page break history preservation', () => {
         expect(editor.documentHelper.pages.length).toBe(2);
     });
     it('Undo Redo multiple times at paragraph middle', () => {
+console.log('Undo Redo multiple times at paragraph middle');
         for (let i: number = 0; i < 5; i++) {
             editor.editorHistory.undo();
             expect(editor.documentHelper.pages.length).toBe(1);
@@ -3640,6 +3653,7 @@ describe('Insert page break history preservation', () => {
         }, 750);
     });
     it('Insert Page break at paragraph middle', () => {
+console.log('Insert Page break at paragraph middle');
         editor.editor.insertText('Syncfusion Software');
         editor.editor.onEnter();
         editor.editor.insertText('Syncfusion Software');
@@ -3651,6 +3665,7 @@ describe('Insert page break history preservation', () => {
         expect(editor.documentHelper.pages.length).toBe(2);
     });
     it('Insert Page Break on non empty selection', () => {
+console.log('Insert Page Break on non empty selection');
         editor.openBlank();
         editor.editor.insertText('Syncfusion Software');
         editor.editor.onEnter();
@@ -3734,6 +3749,7 @@ describe('Empty Header footer validation', () => {
         }, 750);
     });
     it('Load empty header footer validation', () => {
+console.log('Load empty header footer validation');
         editor.open(JSON.stringify(documentWithoutHeaderFooter));
         expect(editor.documentHelper.pages.length).toBe(1);
         let page: Page = editor.documentHelper.pages[0];
@@ -3741,6 +3757,7 @@ describe('Empty Header footer validation', () => {
         expect((page.bodyWidgets[0].firstChild as ParagraphWidget).y).toBeLessThan(page.headerWidget.y + page.headerWidget.height);
     });
     it('Go to header', () => {
+console.log('Go to header');
         editor.selection.goToHeader();
         let page: Page = editor.documentHelper.pages[0];
         expect((page.bodyWidgets[0].firstChild as ParagraphWidget).y).toBe(page.headerWidget.y + page.headerWidget.height);
@@ -3748,6 +3765,7 @@ describe('Empty Header footer validation', () => {
         expect((page.bodyWidgets[0].firstChild as ParagraphWidget).y).toBeLessThan(page.headerWidget.y + page.headerWidget.height);
     });
     it('insert text in Empty Header', () => {
+console.log('insert text in Empty Header');
         editor.selection.goToHeader();
         editor.editor.insertText("Syncfusion");
         let page: Page = editor.documentHelper.pages[0];
@@ -3782,6 +3800,7 @@ describe('F9 key press Validation', () => {
         }, 750);
     });
     it('F9 key press', () => {
+console.log('F9 key press');
         editor.open(JSON.stringify(crossRefSfdt));
         let field: FieldElementBox =  editor.documentHelper.fields[0];
         let textElement: TextElementBox = field.line.children[3] as TextElementBox;

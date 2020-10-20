@@ -1254,7 +1254,7 @@ function validateSubFolder(parent, data, dropPath$$1, dragPath) {
     for (var i = 0; i < data.length; i++) {
         if (!sf.base.getValue('isFile', data[i])) {
             var tempTarget = getFullPath(parent, data[i], dragPath);
-            if (dropPath$$1.indexOf(tempTarget) !== -1) {
+            if (dropPath$$1.indexOf(tempTarget) === 0) {
                 var result = {
                     files: null,
                     error: {
@@ -1795,7 +1795,7 @@ function createAjax(parent, data, fn, event, operation, targetPath) {
                     parent.notify(afterRequest, { action: 'success' });
                     var id = parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1];
                     if (!sf.base.isNullOrUndefined(result.cwd) && (sf.base.getValue('action', data) === 'read')) {
-                        result.cwd.name = parent.rootAliasName || result.cwd.name;
+                        result.cwd.name = (parent.pathId.length === 1) ? (parent.rootAliasName || result.cwd.name) : result.cwd.name;
                         sf.base.setValue('_fm_id', id, result.cwd);
                         sf.base.setValue(id, result.cwd, parent.feParent);
                         if (!sf.base.isNullOrUndefined(result.files) || result.error.code === '401') {
@@ -9760,7 +9760,5 @@ exports.ContextMenu = ContextMenu$2;
 return exports;
 
 });
-sfBlazor.modules["filemanager"] = "filemanager.FileManager";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.filemanager, () => {
+
     sf.filemanager = sf.base.extend({}, sf.filemanager, sffilemanager({}));
-});

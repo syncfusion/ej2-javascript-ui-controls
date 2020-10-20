@@ -467,13 +467,13 @@
     }
 }
 
-  & .e-undo-icon {
+  .e-undo-icon {
     &::before {
       content: '\ebc5';
     }
   }
 
-  & .e-redo-icon {
+  .e-redo-icon {
     &::before {
       content: '\ebd3';
     }

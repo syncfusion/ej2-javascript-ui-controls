@@ -2,6 +2,7 @@ import { Dictionary } from '../../src/document-editor/base/dictionary';
 
 describe('Dictionary API testing', () => {
     it('item count', () => {
+console.log('item count');
         let dictionary: Dictionary<number, number> = new Dictionary<number, number>();
         dictionary.add(1, 1);
         dictionary.add(2, 2);
@@ -16,6 +17,7 @@ describe('Dictionary API testing', () => {
         expect(dictionary.add(2, 2)).toBe(1);
     });
     it('Set value in Dictionary', () => {
+console.log('Set value in Dictionary');
         let dictionary: Dictionary<number, number> = new Dictionary<number, number>();
         dictionary.add(1, 1);
         dictionary.add(2, 2);
@@ -29,6 +31,7 @@ describe('Dictionary API testing', () => {
         expect(() => { dictionary.get(10) }).toThrowError();
     });
     it('Set value in Dictionary', () => {
+console.log('Set value in Dictionary');
         let dictionary: Dictionary<number, number> = new Dictionary<number, number>();
         dictionary.add(1, 1);
         dictionary.add(2, 2);

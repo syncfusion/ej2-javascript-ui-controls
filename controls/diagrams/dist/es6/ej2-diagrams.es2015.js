@@ -2424,6 +2424,15 @@ var RealAction;
     RealAction[RealAction["OverViewAction"] = 512] = "OverViewAction";
 })(RealAction || (RealAction = {}));
 /** @private */
+var ScrollActions;
+(function (ScrollActions) {
+    ScrollActions[ScrollActions["None"] = 0] = "None";
+    /** Indicates when the scroll properties are changed using property change */
+    ScrollActions[ScrollActions["PropertyChange"] = 1024] = "PropertyChange";
+    /** Indicates when the scroll properties are changed using interaction */
+    ScrollActions[ScrollActions["Interaction"] = 2048] = "Interaction";
+})(ScrollActions || (ScrollActions = {}));
+/** @private */
 var NoOfSegments;
 (function (NoOfSegments) {
     NoOfSegments[NoOfSegments["Zero"] = 0] = "Zero";
@@ -12261,7 +12270,7 @@ function addLane(diagram, parent, lane, count) {
                 }
             }
             if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
-                laneObj.id += randomId();
+                laneObj.id = (laneObj.id === '') ? randomId() : laneObj.id;
             }
             if (count !== undefined) {
                 shape.lanes.splice(count, 0, laneObj);
@@ -15421,6 +15430,28 @@ function canMeasureDecoratorPath(objects) {
     }
     return false;
 }
+/** @private */
+function getPreviewSize(sourceElement, clonedObject, wrapper) {
+    let previewWidth;
+    let previewHeight;
+    previewWidth = this.getSymbolSize(sourceElement, clonedObject, wrapper, 'width');
+    previewHeight = this.getSymbolSize(sourceElement, clonedObject, wrapper, 'height');
+    return new Size(previewWidth, previewHeight);
+}
+/** @private */
+function getSymbolSize(sourceElement, clonedObject, wrapper, size) {
+    let previewSize = 0;
+    if (clonedObject.previewSize[size] !== undefined) {
+        previewSize = clonedObject.previewSize[size];
+    }
+    else if (sourceElement.symbolPreview[size] !== undefined) {
+        previewSize = sourceElement.symbolPreview[size];
+    }
+    else {
+        previewSize = clonedObject.width || wrapper.actualSize.width;
+    }
+    return previewSize;
+}
 
 var __decorate$15 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -18254,7 +18285,7 @@ function getContent(element, isHtml, nodeObject) {
     }
     else if (element.isTemplate) {
         let compiledString;
-        compiledString = element.getNodeTemplate()(cloneObject(nodeObject), diagram, propertyName, undefined, undefined, false);
+        compiledString = element.getNodeTemplate()(cloneObject(nodeObject), diagram, propertyName + "_" + ((propertyName === "nodeTemplate") ? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false);
         for (let i = 0; i < compiledString.length; i++) {
             div.appendChild(compiledString[i]);
         }
@@ -18371,7 +18402,7 @@ function createUserHandleTemplates(userHandleTemplate, template, selectedItems, 
         userHandleFn = templateCompiler(userHandleTemplate);
         for (handle of selectedItems.userHandles) {
             if (userHandleFn) {
-                compiledString = userHandleFn(cloneObject(handle), diagram, 'userHandleTemplate', undefined, undefined, false);
+                compiledString = userHandleFn(cloneObject(handle), diagram, 'userHandleTemplate' + '_' + handle.name, undefined, undefined, false);
                 for (i = 0; i < compiledString.length; i++) {
                     let attr = {
                         'style': 'height: 100%; width: 100%; pointer-events: all',
@@ -25559,7 +25590,7 @@ class DiagramEventHandler {
             }
             this.currentAction = action;
             if (this.currentAction !== 'None' && this.currentAction !== 'Select' &&
-                !(this.diagram.diagramActions & DiagramAction.TextEdit)) {
+                !(this.diagram.diagramActions & DiagramAction.TextEdit) || this.commandHandler.isUserHandle(this.currentPosition)) {
                 this.diagram.diagramActions = this.diagram.diagramActions | DiagramAction.ToolAction;
             }
             else {
@@ -26436,12 +26467,14 @@ class DiagramEventHandler {
                 this.eventArgs.position = mousePosition;
                 this.tool.mouseWheel(this.eventArgs);
             }
+            this.diagram.scrollActions |= ScrollActions.Interaction;
             if (evt.shiftKey) {
                 this.diagram.scroller.zoom(1, change, 0, mousePosition);
             }
             else {
                 this.diagram.scroller.zoom(1, 0, change, mousePosition);
             }
+            this.diagram.scrollActions &= ~ScrollActions.Interaction;
             if (horizontalOffset !== this.diagram.scroller.horizontalOffset
                 || verticalOffset !== this.diagram.scroller.verticalOffset) {
                 evt.preventDefault();
@@ -26662,7 +26695,9 @@ class DiagramEventHandler {
             let objects = this.objectFinder.findObjectsUnderMouse(this.currentPosition, this.diagram, this.eventArgs, null, this.action);
             this.eventArgs.target = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
             this.tool.mouseMove(this.eventArgs);
+            this.diagram.scrollActions |= ScrollActions.Interaction;
             this.diagram.scroller.zoom(1, -left, -top, pos);
+            this.diagram.scrollActions &= ~ScrollActions.Interaction;
         }
     }
     mouseEvents() {
@@ -32762,7 +32797,7 @@ class DiagramScroller {
         this.oldCollectionObjects = oObjectsID;
     }
     /** @private */
-    setSize() {
+    setSize(newOffset) {
         let pageBounds = this.getPageBounds(undefined, undefined, true);
         pageBounds.x *= this.currentZoom;
         pageBounds.y *= this.currentZoom;
@@ -32786,8 +32821,47 @@ class DiagramScroller {
         let oldHeight = this.diagramHeight;
         this.diagramWidth = Math.max(pageBounds.right, -this.horizontalOffset + this.viewPortWidth - vScrollSize) - x;
         this.diagramHeight = Math.max(pageBounds.bottom, -this.verticalOffset + this.viewPortHeight - hScrollSize) - y;
-        if (oldWidth !== this.diagramWidth || oldHeight !== this.diagramHeight) {
+        if ((oldWidth !== this.diagramWidth || oldHeight !== this.diagramHeight) && this.diagram.scrollSettings.scrollLimit !== 'Diagram') {
             this.diagram.setSize(this.diagramWidth, this.diagramHeight);
+        }
+        if (this.diagram.scrollSettings.scrollLimit === 'Diagram') {
+            if ((oldWidth !== this.diagramWidth || oldHeight !== this.diagramHeight || this.currentZoom !== 1)
+                && ((!this.diagram.diagramActions || !newOffset) || (this.diagram.diagramActions && newOffset &&
+                    ((this.verticalOffset !== 0 || this.verticalOffset === newOffset.y) &&
+                        (this.horizontalOffset !== 0 || this.horizontalOffset === newOffset.x))))) {
+                if ((this.diagram.scrollActions & ScrollActions.Interaction) && newOffset) {
+                    this.transform = {
+                        tx: Math.max(newOffset.x, -(pageBounds.left / this.currentZoom)) / this.currentZoom,
+                        ty: Math.max(newOffset.y, -(pageBounds.top / this.currentZoom)) / this.currentZoom,
+                        scale: this.currentZoom
+                    };
+                    this.horizontalOffset = newOffset.x;
+                    this.verticalOffset = newOffset.y;
+                }
+                this.diagram.setSize(this.diagramWidth, this.diagramHeight);
+                if ((!(this.diagram.scrollActions & ScrollActions.PropertyChange)) && newOffset) {
+                    this.horizontalOffset = newOffset.x;
+                    this.verticalOffset = newOffset.y;
+                    this.transform = {
+                        tx: Math.max(newOffset.x, -pageBounds.left) / this.currentZoom,
+                        ty: Math.max(newOffset.y, -pageBounds.top) / this.currentZoom,
+                        scale: this.currentZoom
+                    };
+                }
+            }
+            else if (newOffset && oldWidth === this.diagramWidth && oldHeight === this.diagramHeight &&
+                ((this.diagram.diagramCanvas.scrollHeight > this.viewPortHeight &&
+                    newOffset.y < 0 && this.horizontalOffset === newOffset.x && this.verticalOffset === 0) ||
+                    (this.diagram.diagramCanvas.scrollWidth > this.viewPortWidth &&
+                        newOffset.x < 0 && this.verticalOffset === newOffset.y && this.horizontalOffset === 0))) {
+                this.verticalOffset = newOffset.y;
+                this.horizontalOffset = newOffset.x;
+                this.transform = {
+                    tx: Math.max(newOffset.x, -pageBounds.left) / this.currentZoom,
+                    ty: Math.max(newOffset.y, -pageBounds.top) / this.currentZoom,
+                    scale: this.currentZoom
+                };
+            }
         }
         this.diagram.transformLayers();
         this.diagram.element.style.overflow = 'hidden';
@@ -32943,14 +33017,18 @@ class DiagramScroller {
                 if (factor === 1) {
                     newOffset = this.applyScrollLimit(newOffset.x, newOffset.y);
                 }
-                this.transform = {
-                    tx: Math.max(newOffset.x, -pageBounds.left) / this.currentZoom,
-                    ty: Math.max(newOffset.y, -pageBounds.top) / this.currentZoom,
-                    scale: this.currentZoom
-                };
-                this.horizontalOffset = newOffset.x;
-                this.verticalOffset = newOffset.y;
-                this.setSize();
+                if ((this.diagram.scrollActions & ScrollActions.PropertyChange ||
+                    !(this.diagram.scrollActions & ScrollActions.Interaction)) ||
+                    this.diagram.scrollSettings.scrollLimit !== 'Diagram') {
+                    this.transform = {
+                        tx: Math.max(newOffset.x, -pageBounds.left) / this.currentZoom,
+                        ty: Math.max(newOffset.y, -pageBounds.top) / this.currentZoom,
+                        scale: this.currentZoom
+                    };
+                    this.horizontalOffset = newOffset.x;
+                    this.verticalOffset = newOffset.y;
+                }
+                this.setSize(newOffset);
                 if (this.diagram.mode !== 'SVG' && canVitualize(this.diagram)) {
                     this.diagram.scroller.virtualizeElements();
                 }
@@ -33741,6 +33819,8 @@ class Diagram extends Component {
         /** @private */
         this.groupTable = {};
         /** @private */
+        this.scrollActions = ScrollActions.None;
+        /** @private */
         this.blazorActions = BlazorAction.Default;
         /** @private */
         this.activeLabel = { id: '', parentId: '', isGroup: false, text: undefined };
@@ -34055,7 +34135,9 @@ class Diagram extends Component {
                         this.updateLayer(newProp);
                         break;
                     case 'scrollSettings':
+                        this.scrollActions |= ScrollActions.PropertyChange;
                         this.updateScrollSettings(newProp);
+                        this.scrollActions &= ~ScrollActions.PropertyChange;
                         break;
                     case 'locale':
                         if (newProp.locale !== oldProp.locale) {
@@ -34088,6 +34170,7 @@ class Diagram extends Component {
             }
             if (refreshLayout && !refereshColelction) {
                 this.doLayout();
+                this.renderReactTemplates();
             }
             if (isPropertyChanged && this.propertyChange) {
                 let args = {
@@ -34359,6 +34442,9 @@ class Diagram extends Component {
         this.isLoading = false;
         this.renderComplete();
         this.updateFitToPage();
+        if (this.refreshing) {
+            this.renderReactTemplates();
+        }
     }
     /* tslint:enable */
     updateFitToPage() {
@@ -34566,6 +34652,15 @@ class Diagram extends Component {
         }
         return modules;
     }
+    removeUserHandlesTemplate() {
+        if (this.selectedItems.userHandles.length) {
+            for (let i = 0; i < this.selectedItems.userHandles.length; i++) {
+                for (let elementId of this.views) {
+                    removeElement(this.selectedItems.userHandles[i].name + '_template_hiddenUserHandle', elementId);
+                }
+            }
+        }
+    }
     /**
      * Destroys the diagram control
      */
@@ -34581,6 +34676,8 @@ class Diagram extends Component {
         this.unWireEvents();
         this.notify('destroy', {});
         super.destroy();
+        this.removeUserHandlesTemplate();
+        this.clearTemplate();
         if (document.getElementById(this.element.id)) {
             this.element.classList.remove('e-diagram');
             let tooltipelement = document.getElementsByClassName('e-diagram-tooltip');
@@ -36178,6 +36275,7 @@ class Diagram extends Component {
                 this.refreshCanvasDiagramLayer(view);
             }
         }
+        this.renderReactTemplates();
         return newObj;
     }
     /* tslint:enable */
@@ -36361,6 +36459,10 @@ class Diagram extends Component {
                     for (let elementId of this.views) {
                         removeElement(currentObj.id + '_html_element', elementId);
                         removeElement(children[i].id + '_html_element', elementId);
+                        this.clearTemplate(['nodeTemplate' + '_' + currentObj.id]);
+                        if (children[i].annotationId) {
+                            this.clearTemplate(['annotationTemplate' + '_' + currentObj.id + (children[i].annotationId)]);
+                        }
                     }
                 }
                 removeGradient(children[i].id);
@@ -41533,6 +41635,7 @@ class Diagram extends Component {
                     let nodeDragSize;
                     let nodePreviewSize;
                     let paletteDragSize;
+                    let preview;
                     if (paletteId) {
                         // tslint:disable-next-line:no-any
                         let sourceElement = document.getElementById(paletteId).ej2_instances[0];
@@ -41546,14 +41649,15 @@ class Diagram extends Component {
                             clonedObject = cloneObject(sourceElement[selectedSymbols]);
                             childTable = sourceElement[childtable];
                             let wrapper = obj.wrapper.children[0].children[0];
+                            preview = getPreviewSize(sourceElement, clonedObject, wrapper);
                             if (sourceElement[selectedSymbols] instanceof Node) {
                                 if (obj.shape.shape === 'TextAnnotation') {
-                                    clonedObject.offsetX = position.x + 11 + (clonedObject.width || wrapper.actualSize.width) / 2;
-                                    clonedObject.offsetY = position.y + 11 + (clonedObject.height || wrapper.actualSize.height) / 2;
+                                    clonedObject.offsetX = position.x + 11 + (preview.width) * clonedObject.pivot.x;
+                                    clonedObject.offsetY = position.y + 11 + (preview.height) * clonedObject.pivot.y;
                                 }
                                 else {
-                                    clonedObject.offsetX = position.x + 5 + (clonedObject.width || wrapper.actualSize.width) / 2;
-                                    clonedObject.offsetY = position.y + (clonedObject.height || wrapper.actualSize.height) / 2;
+                                    clonedObject.offsetX = position.x + 5 + (preview.width) * clonedObject.pivot.x;
+                                    clonedObject.offsetY = position.y + (preview.height) * clonedObject.pivot.y;
                                 }
                                 let newNode = new Node(this, 'nodes', clonedObject, true);
                                 if (newNode.shape.type === 'Bpmn' && newNode.shape.activity.subProcess.processes
@@ -50690,10 +50794,10 @@ class HierarchicalTree {
                 if (this.hasChild(layout, child)) {
                     if (!info.firstChild || info.firstChild.x >= childInfo.firstChild.x) {
                         if (childInfo.firstChild && info.firstChild.canMoveBy < childInfo.canMoveBy) {
-                            info.firstChild.canMoveBy = canMoveBy;
-                            childInfo.canMoveBy = canMoveBy;
                             canMoveBy = info.firstChild.canMoveBy;
+                            childInfo.canMoveBy = canMoveBy;
                             layout.graphNodes[info.firstChild.child].canMoveBy = canMoveBy;
+                            info.firstChild.canMoveBy = canMoveBy;
                         }
                         let canMoveValue = canMoveBy !== undefined ? canMoveBy : childInfo.canMoveBy;
                         info.firstChild = { x: childInfo.firstChild.x, canMoveBy: canMoveValue, child: child.id };
@@ -57074,5 +57178,5 @@ __decorate$28([
  * Diagram component exported items
  */
 
-export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, BlazorAction, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, DiagramGradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramShapeStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, getIndex, templateCompiler, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, getSpaceValue, getInterval, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, initfixedUserHandlesSymbol, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, cloneSelectedObjects, updatePathElement, checkPort, findPath, findDistance, cloneBlazorObject, checkBrowserInfo, canMeasureDecoratorPath, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, DiagramShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, DiagramConnectorSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, DiagramConnectorShape, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, SymbolSize, SymbolPaletteInfo, FixedUserHandle, NodeFixedUserHandle, ConnectorFixedUserHandle, UserHandle, ToolBase, SelectTool, FixedUserHandleTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, BlazorAnimation, BlazorTooltip, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolDragSize, SymbolPreview, SymbolPalette, Ruler, Overview };
+export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, BlazorAction, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, ScrollActions, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, DiagramGradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramShapeStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, getIndex, templateCompiler, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, getSpaceValue, getInterval, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, initfixedUserHandlesSymbol, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, cloneSelectedObjects, updatePathElement, checkPort, findPath, findDistance, cloneBlazorObject, checkBrowserInfo, canMeasureDecoratorPath, getPreviewSize, getSymbolSize, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, DiagramShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, DiagramConnectorSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, DiagramConnectorShape, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, SymbolSize, SymbolPaletteInfo, FixedUserHandle, NodeFixedUserHandle, ConnectorFixedUserHandle, UserHandle, ToolBase, SelectTool, FixedUserHandleTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, BlazorAnimation, BlazorTooltip, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolDragSize, SymbolPreview, SymbolPalette, Ruler, Overview };
 //# sourceMappingURL=ej2-diagrams.es2015.js.map

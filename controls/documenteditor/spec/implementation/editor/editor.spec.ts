@@ -34,6 +34,7 @@ describe('Auto fit command ', () => {
         }, 750);
     });
     it('apply Fit to content', () => {
+console.log('apply Fit to content');
         editor.editor.insertTable(2, 2);
         editor.editor.autoFitTable('FitToContents');
         let table: TableWidget = editor.selection.start.paragraph.associatedCell.ownerTable;
@@ -42,11 +43,13 @@ describe('Auto fit command ', () => {
         expect(table.tableHolder.getTotalWidth(0)).toBeGreaterThan(20);
     });
     it('Insert text in table', () => {
+console.log('Insert text in table');
         editor.editor.insertText('Syncfusion');
         let table: TableWidget = editor.selection.start.paragraph.associatedCell.ownerTable;
         expect(table.tableHolder.getTotalWidth(0)).toBeGreaterThan(25);
     });
     it('Undo operation after insert text ', () => {
+console.log('Undo operation after insert text ');
         editor.editorHistory.undo();
         let table: TableWidget = editor.selection.start.paragraph.associatedCell.ownerTable;
         expect(table.tableHolder.getTotalWidth(0)).toBeGreaterThan(25);
@@ -56,6 +59,7 @@ describe('Auto fit command ', () => {
         expect(table.tableHolder.getTotalWidth(0)).toBeGreaterThan(25);
     });
     it('Apply fit to window', () => {
+console.log('Apply fit to window');
         editor.editor.autoFitTable('FitToWindow');
         let table: TableWidget = editor.selection.start.paragraph.associatedCell.ownerTable;
         expect(table.tableFormat.preferredWidthType).toBe('Percent');
@@ -64,6 +68,7 @@ describe('Auto fit command ', () => {
         expect(table.tableHolder.getTotalWidth(0)).toBeLessThan(471);
     });
     it('Undo fit to window operation after insert text ', () => {
+console.log('Undo fit to window operation after insert text ');
         editor.editorHistory.undo();
         let table: TableWidget = editor.selection.start.paragraph.associatedCell.ownerTable;
         expect(table.tableFormat.allowAutoFit).toBe(true);
@@ -72,6 +77,7 @@ describe('Auto fit command ', () => {
 
     });
     it('Redo fit to window operation', () => {
+console.log('Redo fit to window operation');
         editor.editorHistory.redo();
         let table: TableWidget = editor.selection.start.paragraph.associatedCell.ownerTable;
         expect(table.tableFormat.preferredWidthType).toBe('Percent');
@@ -80,6 +86,7 @@ describe('Auto fit command ', () => {
         expect(table.tableHolder.getTotalWidth(0)).toBeLessThan(471);
     });
     it('Apply Fixed column width for Fit to window table', () => {
+console.log('Apply Fixed column width for Fit to window table');
         editor.editor.autoFitTable('FixedColumnWidth');
         let table: TableWidget = editor.selection.start.paragraph.associatedCell.ownerTable;
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.preferredWidthType).toBe('Point');
@@ -88,6 +95,7 @@ describe('Auto fit command ', () => {
         editor.editorHistory.undo();
     });
     it('Apply Fixed column width in Fit to content table', () => {
+console.log('Apply Fixed column width in Fit to content table');
         editor.editor.autoFitTable('FitToContents');
         let table: TableWidget = editor.selection.start.paragraph.associatedCell.ownerTable;
         let previousTableWidth: number = table.tableHolder.getTotalWidth(0);

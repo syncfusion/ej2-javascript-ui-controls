@@ -86,6 +86,7 @@ export class RowDD {
         this.dragStartData = this.rowData;
         let dropElem: any = document.getElementById(gObj.options.rowDropTarget);
         if (gObj.options.rowDropTarget && dropElem && dropElem.blazor__instance &&
+            (typeof (<{ getModuleName?: Function }>dropElem.blazor__instance).getModuleName === 'function') &&
             (<{ getModuleName?: Function }>dropElem.blazor__instance).getModuleName() === 'grid') {
             dropElem.blazor__instance.getContent().classList.add('e-allowRowDrop');
         }
@@ -171,6 +172,7 @@ export class RowDD {
             gObj.dotNetRef.invokeMethodAsync("ReorderRows", fromIdx, toIdx, 'add', false, targetClass, targetID, null, true);
         }
         if (gObj.options.rowDropTarget && dropElement && dropElement.blazor__instance &&
+            (typeof (<{ getModuleName?: Function }>dropElement.blazor__instance).getModuleName === 'function') &&
             (<{ getModuleName?: Function }>dropElement.blazor__instance).getModuleName() === 'grid') {
             dropElement.blazor__instance.getContent().classList.remove('e-allowRowDrop');
         }

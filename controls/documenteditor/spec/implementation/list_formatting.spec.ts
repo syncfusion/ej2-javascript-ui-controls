@@ -987,18 +987,22 @@ describe('Multi Level List apply validation', () => {
         }, 1000);
     });
     it('Multilevel number brace validation', () => {
+console.log('Multilevel number brace validation');
         editor.editor.applyNumbering('numbering');
         expect(editor.selection.paragraphFormat.listLevelNumber).toBe(0);
     });
     it('MultiLevel Number dot validation', () => {
+console.log('MultiLevel Number dot validation');
         editor.editor.applyNumbering('multiLevel');
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
     });
     it('MultiLevel Bullet List validation', () => {
+console.log('MultiLevel Bullet List validation');
         editor.editor.applyNumbering('bullet');
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
     });
     it('MultiLevel None validation', () => {
+console.log('MultiLevel None validation');
         editor.selection.paragraphFormat.setList(undefined);
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
     });
@@ -1030,6 +1034,7 @@ describe('Numbering apply validation in different scenario', () => {
         }, 1000);
     });
     it('Numbering list arabic', () => {
+console.log('Numbering list arabic');
         let id: number = editor.selection.paragraphFormat.listId;
         editor.editor.applyNumbering('%1)', 'Arabic');
         expect(editor.selection.paragraphFormat.listId).not.toBe(id);
@@ -1041,6 +1046,7 @@ describe('Numbering apply validation in different scenario', () => {
         expect(editor.selection.paragraphFormat.listId).not.toBe(id);
     });
     it('Numbering list low roman', () => {
+console.log('Numbering list low roman');
         let id: number = editor.selection.paragraphFormat.listId;
         editor.editor.applyNumbering('%1.', 'LowRoman');
         expect(editor.selection.paragraphFormat.listId).not.toBe(id);
@@ -1052,6 +1058,7 @@ describe('Numbering apply validation in different scenario', () => {
         expect(editor.selection.paragraphFormat.listId).not.toBe(id);
     });
     it('Numbering list up roman', () => {
+console.log('Numbering list up roman');
         let id: number = editor.selection.paragraphFormat.listId;
         editor.editor.applyNumbering('%1.', 'UpRoman');
         expect(editor.selection.paragraphFormat.listId).not.toBe(id);
@@ -1091,6 +1098,7 @@ describe('Bullet list Apply validation', () => {
         }, 1000);
     });
     it('Bullet List validation', () => {
+console.log('Bullet List validation');
         let id: number = editor.selection.paragraphFormat.listId;
         editor.editor.applyBullet('\uf0b7', 'Symbol');
         expect(editor.selection.paragraphFormat.listId).not.toBe(id);
@@ -1103,6 +1111,7 @@ describe('Bullet list Apply validation', () => {
         expect(editor.selection.paragraphFormat.listId).not.toBe(id);
     });
     it('Bullet List with selection', () => {
+console.log('Bullet List with selection');
         let listId: number = editor.selection.paragraphFormat.listId;
         editor.selection.selectAll();
         editor.editor.applyBullet('\uf0b7', 'Symbol');
@@ -1134,78 +1143,91 @@ describe('List Text validation', () => {
         }, 1000);
     });
     it('bullet-Dot', () => {
+console.log('bullet-Dot');
         editor.openBlank();
         editor.editorModule.insertText('one');
         editor.editor.applyBullet('\uf0b7', 'Symbol');
         expect(editor.selection.paragraphFormat.listText).toBe('\uf0b7');
     });
     it('bullet-Circle', () => {
+console.log('bullet-Circle');
         editor.openBlank();
         editor.editorModule.insertText('one');
         editor.editor.applyBullet("\uf06f" + "\u0020", 'Symbol');
         expect(editor.selection.paragraphFormat.listText).toBe("\uf06f" + "\u0020");
     });
     it('bullet-Square', () => {
+console.log('bullet-Square');
         editor.openBlank();
         editor.editorModule.insertText('one');
         editor.editor.applyBullet('\uf0a7', 'Wingdings')
         expect(editor.selection.paragraphFormat.listText).toBe('\uf0a7');
     });
     it('bullet-Flower', () => {
+console.log('bullet-Flower');
         editor.openBlank();
         editor.editorModule.insertText('one');
         editor.editor.applyBullet('\uf076', 'Wingdings');
         expect(editor.selection.paragraphFormat.listText).toBe('\uf076');
     });
     it('bullet-Arrow', () => {
+console.log('bullet-Arrow');
         editor.openBlank();
         editor.editorModule.insertText('one');
         editor.editor.applyBullet('\uf0d8', 'Wingdings');
         expect(editor.selection.paragraphFormat.listText).toBe('\uf0d8');
     });
     it('bullet-Tick', () => {
+console.log('bullet-Tick');
         editor.openBlank();
         editor.editorModule.insertText('one');
         editor.editor.applyBullet('\uf0fc', 'Wingdings');
         expect(editor.selection.paragraphFormat.listText).toBe('\uf0fc');
     });
     it('numbered-NumberDot', () => {
+console.log('numbered-NumberDot');
         editor.openBlank();
         editor.editorModule.insertText('one');
         editor.editor.applyNumbering('%1.', 'Arabic');
         expect(editor.selection.paragraphFormat.listText).toBe('1.');
     });
     it('numbered-NumberBrace', () => {
+console.log('numbered-NumberBrace');
         editor.openBlank();
         editor.editorModule.insertText('one');
         editor.editor.applyNumbering('%1)', 'Arabic');
         expect(editor.selection.paragraphFormat.listText).toBe('1)');
     });
     it('numbered-UpRoman', () => {
+console.log('numbered-UpRoman');
         editor.openBlank();
         editor.editorModule.insertText('one');
         editor.editor.applyNumbering('%1.', 'UpRoman');
         expect(editor.selection.paragraphFormat.listText).toBe('I.');
     });
     it('numbered-UpLetter', () => {
+console.log('numbered-UpLetter');
         editor.openBlank();
         editor.editorModule.insertText('one');
         editor.editor.applyNumbering('%1.', 'UpLetter');
         expect(editor.selection.paragraphFormat.listText).toBe('A.');
     });
     it('numbered-LowLetterBrace', () => {
+console.log('numbered-LowLetterBrace');
         editor.openBlank();
         editor.editorModule.insertText('one');
         editor.editor.applyNumbering('%1)', 'LowLetter');
         expect(editor.selection.paragraphFormat.listText).toBe('a)');
     });
     it('numbered-LowLetterDot', () => {
+console.log('numbered-LowLetterDot');
         editor.openBlank();
         editor.editorModule.insertText('one');
         editor.editor.applyNumbering('%1.', 'LowLetter');
         expect(editor.selection.paragraphFormat.listText).toBe('a.');
     });
     it('numbered-LowRoman', () => {
+console.log('numbered-LowRoman');
         editor.openBlank();
         editor.editorModule.insertText('one');
         editor.editor.applyNumbering('%1.', 'LowRoman');
@@ -1237,6 +1259,7 @@ describe('List Edit operation validation', () => {
         }, 1000);
     });
     it('List Edit Validation', () => {
+console.log('List Edit Validation');
         editor.documentHelper.onDocumentChanged([createListDocument()]);
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.selection.handleEndKey();
@@ -1266,6 +1289,7 @@ describe('List Edit operation validation', () => {
         }
     });
     it('Insert Table At List start Validation', () => {
+console.log('Insert Table At List start Validation');
         editor.documentHelper.onDocumentChanged([createListDocument()]);
         editor.editor.applyNumbering('%1.', 'Arabic');
         let paragraph = editor.selection.start.paragraph;
@@ -1275,6 +1299,7 @@ describe('List Edit operation validation', () => {
         expect(((paragraph.firstChild as LineWidget).children[0] as ListTextElementBox).text).toBe((1) + '.');
     });
     it('Insert Table At List End Validation', () => {
+console.log('Insert Table At List End Validation');
         editor.documentHelper.onDocumentChanged([createListDocument()]);
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.selection.handleEndKey();
@@ -1284,6 +1309,7 @@ describe('List Edit operation validation', () => {
         expect(((editor.selection.start.paragraph.firstChild as LineWidget).children[0] as ListTextElementBox).text).toBe((2) + '.')
     });
     it('Insert Table At List Middle  Validation', () => {
+console.log('Insert Table At List Middle  Validation');
         editor.documentHelper.onDocumentChanged([createListDocument()]);
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.selection.handleRightKey();
@@ -1324,6 +1350,7 @@ describe('List paste issue', () => {
         }, 1000);
     });
     it('Paste copied List content', () => {
+console.log('Paste copied List content');
         editor.documentHelper.onDocumentChanged([createListDocument()]);
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.selection.handleEndKey();
@@ -1342,6 +1369,7 @@ describe('List paste issue', () => {
         }
     });
     it('Undo after paste', () => {
+console.log('Undo after paste');
         editor.editorHistory.undo();
         for (let i: number = 0; i < editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length; i++) {
             let block: BlockWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[i] as BlockWidget;
@@ -1349,6 +1377,7 @@ describe('List paste issue', () => {
         }
     });
     it('Redo after paste', () => {
+console.log('Redo after paste');
         editor.editorHistory.redo();
         for (let i: number = 0; i < editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length; i++) {
             let block: BlockWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[i] as BlockWidget;
@@ -1356,6 +1385,7 @@ describe('List paste issue', () => {
         }
     });
     it('Undo redo multiple times with redo as last operation', () => {
+console.log('Undo redo multiple times with redo as last operation');
         let i: number = 1;
         while (i <= 5) {
             editor.editorHistory.undo();
@@ -1368,6 +1398,7 @@ describe('List paste issue', () => {
         }
     });
     it('Undo redo multiple times with undo as last operation', () => {
+console.log('Undo redo multiple times with undo as last operation');
         let i: number = 1;
         while (i <= 5) {
             editor.editorHistory.undo();
@@ -1407,6 +1438,7 @@ describe('List paste Mutiple Page then Undo and redo operation', () => {
         }, 1000);
     });
     it('Paste copied List content', () => {
+console.log('Paste copied List content');
         editor.documentHelper.onDocumentChanged([createListDocument()]);
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.selection.handleEndKey();
@@ -1426,6 +1458,7 @@ describe('List paste Mutiple Page then Undo and redo operation', () => {
         expect(editor.documentHelper.pages.length).toBe(2);
     });
     it('Undo after paste', () => {
+console.log('Undo after paste');
         let i: number = 0;
         while (i <= 30) {
             editor.editorHistory.undo();
@@ -1434,6 +1467,7 @@ describe('List paste Mutiple Page then Undo and redo operation', () => {
         expect(editor.documentHelper.pages.length).toBe(1);
     });
     it('Redo after paste', () => {
+console.log('Redo after paste');
         let i: number = 0;
         while (i <= 30) {
             editor.editorHistory.redo();
@@ -1489,6 +1523,7 @@ describe('Numbering list apply validation', () => {
         }, 1000);
     });
     it('Arabic numbering validation', () => {
+console.log('Arabic numbering validation');
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.editor.insertText('Arabic');
         editor.editor.onEnter();
@@ -1499,6 +1534,7 @@ describe('Numbering list apply validation', () => {
         expect(editor.documentHelper.lists.length).toBe(2);
     });
     it('Uproman numbering validation', () => {
+console.log('Uproman numbering validation');
         editor.editor.applyNumbering('%1.', 'UpRoman');
         editor.editor.insertText('Arabic');
         editor.editor.onEnter();
@@ -1537,6 +1573,7 @@ describe('List apply validation for level number is greater than 1', () => {
         }, 1000);
     });
     it('Upletter with different number format validation', () => {
+console.log('Upletter with different number format validation');
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.editor.insertText('Arabic');
         editor.editor.onEnter();
@@ -1546,6 +1583,7 @@ describe('List apply validation for level number is greater than 1', () => {
         expect(editor.selection.paragraphFormat.listLevelNumber).toBe(1);
     });
     it('Upletter with same number format validation', () => {
+console.log('Upletter with same number format validation');
         editor.openBlank();
         editor.editor.applyNumbering('%1.', 'UpRoman');
         editor.editor.insertText('Arabic');
@@ -1556,6 +1594,7 @@ describe('List apply validation for level number is greater than 1', () => {
         expect(editor.selection.paragraphFormat.listLevelNumber).toBe(1);
     });
     it('Increase list level validation Numbering', () => {
+console.log('Increase list level validation Numbering');
         editor.openBlank();
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.editor.insertText('Arabic');
@@ -1573,6 +1612,7 @@ describe('List apply validation for level number is greater than 1', () => {
         expect(editor.selection.paragraphFormat.listLevelNumber).toBe(2);
     });
     it('Increase list level validation Bullets', () => {
+console.log('Increase list level validation Bullets');
         editor.openBlank();
         editor.editor.applyBullet('\uf0b7', 'Symbol');
         editor.editor.insertText('dot');

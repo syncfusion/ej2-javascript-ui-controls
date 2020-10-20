@@ -13,6 +13,7 @@ import { FilterSettings } from '../models/filter-settings';
 import { TextWrapSettings } from '../models/textwrap-settings';
 import { TextWrapSettingsModel } from '../models/textwrap-settings-model';
 import {Filter} from '../actions/filter';
+import { Logger as TreeLogger } from '../actions/logger';
 import { gridObserver, BeforeCopyEventArgs, BeforePasteEventArgs } from '@syncfusion/ej2-grids';
 import { TreeClipboard } from '../actions/clipboard';
 import {Aggregate} from '../actions/summary';
@@ -44,7 +45,7 @@ import {BeforeDataBoundArgs} from '@syncfusion/ej2-grids';
 import { DataManager, ReturnOption, RemoteSaveAdaptor, Query, JsonAdaptor, Deferred } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner, Dialog } from '@syncfusion/ej2-popups';
 import { isRemoteData, isOffline, extendArray, isCountRequired } from '../utils';
-import { Grid, QueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
+import { Grid, QueryCellInfoEventArgs, Logger } from '@syncfusion/ej2-grids';
 import { Render } from '../renderer/render';
 import { VirtualTreeContentRenderer } from '../renderer/virtual-tree-content-render';
 import { DataManipulation } from './data';
@@ -90,6 +91,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     super(options, <HTMLButtonElement | string>element);
     TreeGrid.Inject(TreeGridSelection);
     setValue('mergePersistData', this.mergePersistTreeGridData, this);
+    let logger: string = 'Logger';
+    if (!isNullOrUndefined(this.injectedModules[logger])) {
+      Grid.Inject(Logger);
+    }
     this.grid = new Grid();
   }
   // internal variables
@@ -109,6 +114,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
    * The `sortModule` is used to manipulate sorting in TreeGrid.
    */
   public sortModule: Sort;
+  private loggerModule: TreeLogger;
   private isSelfReference: boolean;
   private columnModel: Column[];
   private isExpandAll: boolean;
@@ -1584,6 +1590,10 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
             args: [this]
         });
       }
+      modules.push({
+        member: 'logger',
+        args: [this.grid]
+      });
     }
     private isCommandColumn(columns: Column[]): boolean {
       return columns.some((col: Column) => {
@@ -1603,6 +1613,14 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       }
     }
 
+    /**
+     * @hidden
+     * @private
+     */
+    public log(types: string | string[], args?: Object): void {
+      this.loggerModule ? this.loggerModule.treeLog(types, args, this) : (() => 0)();
+    }
+
   /**
    * For internal use only - To Initialize the component rendering.
    * @private
@@ -1612,6 +1630,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       (<{ isReact?: boolean }>this.grid).isReact = true;
     }
     createSpinner({ target: this.element }, this.createElement);
+    this.log(['mapping_fields_missing']);
     this.renderModule = new Render(this);
     this.dataModule = new DataManipulation(this);
     this.printModule = new Print(this);
@@ -1813,7 +1832,14 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
   }
   private bindGridEvents(): void {
     let treeGrid: TreeGrid = this;
-    this.grid.rowSelecting = this.triggerEvents.bind(this);
+    this.grid.rowSelecting = (args: RowDeselectEventArgs): void => {
+      if (!isNullOrUndefined(args.target) && (args.target.classList.contains('e-treegridexpand')
+          || args.target.classList.contains('e-treegridcollapse'))) {
+        args.cancel = true;
+        return;
+      }
+      this.trigger(events.rowSelecting, args);
+    };
     this.grid.rowSelected = (args: RowDeselectEventArgs): void => {
       if (!isBlazor()) {
         this.selectedRowIndex = this.grid.selectedRowIndex;
@@ -1873,6 +1899,10 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     };
     this.grid.load = (): void => {
       treeGrid.grid.on('initial-end', treeGrid.afterGridRender, treeGrid);
+      if (!isNullOrUndefined(this.loggerModule)) {
+        let loggerModule: string = 'loggerModule';
+        this.loggerModule = this.grid[loggerModule] = new TreeLogger(this.grid);
+      }
     };
     this.grid.printComplete = this.triggerEvents.bind(this);
     this.grid.actionFailure = this.triggerEvents.bind(this);
@@ -1948,6 +1978,9 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         });
         return callBackPromise;
       }
+    };
+    this.grid.log = (type: string | string[], args?: Object) => {
+      this.loggerModule ? this.loggerModule.log(type, args) : (() => 0)();
     };
   }
   private bindCallBackEvents(): void {
@@ -3092,7 +3125,7 @@ private getGridEditSettings(): GridEditModel {
     let temp: string;
     let field: string;
     let gridColumns: GridColumn[] = isNullOrUndefined(column) ? this.grid.getColumns() : column;
-    if (!isNullOrUndefined(gridColumns[this.treeColumnIndex].template)) {
+    if (this.treeColumnIndex !== -1 && !isNullOrUndefined(gridColumns[this.treeColumnIndex].template)) {
       temp = gridColumns[this.treeColumnIndex].template;
       field = gridColumns[this.treeColumnIndex].field;
     }
@@ -3448,6 +3481,12 @@ private getGridEditSettings(): GridEditModel {
         this.collapseRow(rows[i], records[i]);
       }
     }
+    if (!(this.grid.contentModule as VirtualTreeContentRenderer).isDataSourceChanged && this.enableVirtualization && this.getRows()
+        && this.parentData.length === this.getRows().length) {
+            let endIndex : string | number = 'endIndex';
+            (this.grid.contentModule as VirtualTreeContentRenderer).startIndex = -1;
+            (this.grid.contentModule as VirtualTreeContentRenderer)[endIndex] = -1;
+        }
   }
 
   /**

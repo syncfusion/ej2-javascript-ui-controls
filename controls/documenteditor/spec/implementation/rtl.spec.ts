@@ -41,6 +41,7 @@ describe('Table Dialog testing', () => {
         }, 1000);
     });
     it('Show tableProperties, tableOptions, borders and shading dialog in rtl view', () => {
+console.log('Show tableProperties, tableOptions, borders and shading dialog in rtl view');
         editor.open(getJson());
         editor.showTablePropertiesDialog();
         editor.showTableOptionsDialog();
@@ -73,6 +74,7 @@ describe('List Dialog testing', () => {
     });
 
     it('Show ListDialog dialog testing in rtl view', () => {
+console.log('Show ListDialog dialog testing in rtl view');
         editor.showListDialog();
         expect((editor.listDialogModule as any).target).not.toBeNull();
         expect((editor.listDialogModule as any).target).not.toBeUndefined();
@@ -115,6 +117,7 @@ describe('Style dialog validation', () => {
         }, 2000);
     });
     it('Show style and font dialog testing in rtl view', () => {
+console.log('Show style and font dialog testing in rtl view');
         editor.showFontDialog();
         editor.showStyleDialog();
         editor.showStylesDialog();
@@ -149,9 +152,11 @@ describe('TableOfContents dialog validation', () => {
         }, 2000);
     });
     it('Show toc in rtl view', () => {
+console.log('Show toc in rtl view');
         editor.showTableOfContentsDialog();
     });
     it('Show toc in ltr view', function () {
+console.log('Show toc in ltr view');
         editor.enableRtl = false;
         editor.showTableOfContentsDialog();
     });
@@ -187,6 +192,7 @@ describe('PageSetup Dialog Test Case Validation', () => {
         }, 2000);
     });
     it('Load PageSetup Dialog testing', () => {
+console.log('Load PageSetup Dialog testing');
         dialog.loadPageSetupDialog();
     });
 });
@@ -219,6 +225,7 @@ describe('BookMark add validation', () => {
         }, 2000);
     });
     it('Bookmark dialog testing in rtl view', () => {
+console.log('Bookmark dialog testing in rtl view');
         editor.showBookmarkDialog();
     });
 });

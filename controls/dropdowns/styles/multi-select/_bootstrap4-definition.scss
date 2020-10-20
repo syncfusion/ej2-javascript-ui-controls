@@ -163,7 +163,8 @@ $ddl-delimviewheight-bigger-small: 34px !default;
 $ddl-closer-margin-top-bigger-small: -2.9em !default;
 $multiselect-closer-bigger-height: 36px !default;
 $multiselect-closer--bigger-margin-top: -3em !default;
-$multiselect-closer-bigger-width: 34px !default;
+$multiselect-closer-bigger-width: 0 !default;
+$multiselect-dropicon-closer-bigger-width: 34px !default;
 
 @include export-module('multiselect-bootstrap4') {
   .e-multi-select-wrapper .e-chips-collection .e-chips .e-chips-close.e-icon::before {
@@ -226,8 +227,9 @@ $multiselect-closer-bigger-width: 34px !default;
     right: $multiselect-closer-bigger-width;
   }
 
-  .e-bigger .e-multiselect .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
-    right: $multiselect-closer-bigger-width;
+  .e-bigger .e-multiselect .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-multiselect .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    right: $multiselect-dropicon-closer-bigger-width;
   }
 
 }

@@ -4874,10 +4874,11 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                 element: this.element
             };
             this.trigger('change', eventArgs);
+            this.oldValue = this.value;
         }
     };
     DropDownTree.prototype.ddtCompareValues = function (oldValue, newValue) {
-        if (oldValue === null || oldValue.length === 0) {
+        if (oldValue === null || newValue === null) {
             var isValid = oldValue === null ? ((newValue === oldValue) ? true : false) :
                 (oldValue.length === 0 ? (newValue === oldValue) : false);
             return isValid;
@@ -5053,7 +5054,10 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     DropDownTree.prototype.resetValueHandler = function (e) {
         var formElement = closest(this.inputWrapper, 'form');
         if (formElement && e.target === formElement) {
+            this.isDynamicChange = true;
+            this.setProperties({ value: null }, true);
             this.resetValue(true);
+            this.isDynamicChange = false;
         }
     };
     DropDownTree.prototype.getAriaAttributes = function () {
@@ -6221,7 +6225,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     };
     DropDownTree.prototype.setMultiSelect = function () {
         if (this.showCheckBox && !this.isDynamicChange) {
-            this.setMultiSelectValue(this.treeObj.checkedNodes);
+            this.setMultiSelectValue(this.treeObj.checkedNodes.slice());
         }
         else {
             var ddtValue = this.allowMultiSelection ? (this.showCheckBox ? this.treeObj.checkedNodes
@@ -6476,9 +6480,11 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     };
     DropDownTree.prototype.resetValue = function (isDynamicChange) {
         Input.setValue(null, this.inputEle, this.floatLabelType);
-        this.oldValue = this.value;
+        if (!isDynamicChange) {
+            this.oldValue = this.value;
+            this.setProperties({ value: [] }, true);
+        }
         this.dataValue = null;
-        this.setProperties({ value: [] }, true);
         this.setProperties({ text: null }, true);
         this.selectedData = [];
         setValue('selectedNodes', [], this.treeObj);
@@ -6496,11 +6502,14 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         }
         if ((this.allowMultiSelection || this.showCheckBox) && this.chipWrapper) {
             this.chipCollection.innerHTML = '';
+            if (!this.wrapText) {
+                this.updateOverflowWrapper(true);
+            }
             this.ensurePlaceHolder();
         }
     };
     DropDownTree.prototype.clearCheckAll = function () {
-        if (this.showSelectAll && this.value.length === 0) {
+        if (this.showSelectAll && this.value && this.value.length === 0) {
             this.setLocale(false);
         }
     };
@@ -6693,6 +6702,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DropDownTree.prototype.updateValue = function (value) {
+        this.isDynamicChange = true;
         if (isNullOrUndefined(value) || value.length === 0) {
             this.resetValue(true);
         }
@@ -6704,6 +6714,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.updateHiddenValue();
+        this.isDynamicChange = false;
     };
     DropDownTree.prototype.updateText = function (text) {
         if (isNullOrUndefined(text)) {
@@ -6798,6 +6809,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                     this.updateFilterPlaceHolder();
                     break;
                 case 'value':
+                    this.oldValue = oldProp.value;
                     this.updateValue(newProp.value);
                     break;
                 case 'text':
@@ -8924,7 +8936,6 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.onActionComplete.call(this, ulElement, list, e);
         this.updateSelectElementData(this.allowFiltering);
         var proxy = this;
-        var valuecheck = [];
         if (isBlazor() && this.isServerRendered && this.isDynamicDataChange && this.value !== null && this.value.length > 0) {
             var items = [];
             for (var k = 0; k < this.value.length; k++) {
@@ -8942,19 +8953,12 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             for (var i = 0; i < this.value.length; i++) {
                 var checkEle = this.findListElement(((this.allowFiltering && !isNullOrUndefined(this.mainList)) ? this.mainList : ulElement), 'li', 'data-value', proxy.value[i]);
                 if (!checkEle) {
-                    valuecheck.push(proxy.value[i]);
+                    this.value.splice(i, 1);
+                    i -= 1;
                 }
             }
         }
-        if (valuecheck.length > 0 && this.dataSource instanceof DataManager && !isNullOrUndefined(this.value)) {
-            this.dataSource.executeQuery(this.getForQuery(valuecheck)).then(function (e) {
-                proxy.addItem(e.result, list.length);
-                proxy.updateActionList(ulElement, list, e);
-            });
-        }
-        else {
-            this.updateActionList(ulElement, list, e);
-        }
+        this.updateActionList(ulElement, list, e);
         if (isBlazor() && this.isServerRendered && this.allowFiltering && this.mode === 'CheckBox') {
             this.removeFocus();
         }
@@ -10809,18 +10813,21 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         this.hiddenElement.innerHTML = '';
         if (!isNullOrUndefined(this.value)) {
             for (var index = 0; !isNullOrUndefined(this.value[index]); index++) {
-                var listValue = this.findListElement(this.mainList, 'li', 'data-value', this.value[index]);
+                var listValue = this.findListElement(((!isNullOrUndefined(this.mainList)) ? this.mainList : this.ulElement), 'li', 'data-value', this.value[index]);
                 if (!(isBlazor() && this.isServerRendered) && isNullOrUndefined(listValue) && !this.allowCustomValue) {
                     this.value.splice(index, 1);
-                }
-                if (this.listData) {
-                    temp = this.getTextByValue(this.value[index]);
+                    index -= 1;
                 }
                 else {
-                    temp = this.value[index];
+                    if (this.listData) {
+                        temp = this.getTextByValue(this.value[index]);
+                    }
+                    else {
+                        temp = this.value[index];
+                    }
+                    data += temp + delimiterChar + ' ';
+                    text.push(temp);
                 }
-                data += temp + delimiterChar + ' ';
-                text.push(temp);
                 this.hiddenElement.innerHTML += '<option selected value ="' + this.value[index] + '">' + index + '</option>';
             }
         }
@@ -11890,6 +11897,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     };
     MultiSelect.prototype.updateVal = function (newProp, oldProp, prop) {
         if (!this.list) {
+            this.onLoadSelect();
+        }
+        else if ((this.dataSource instanceof DataManager) && (!this.listData || !(this.mainList && this.mainData))) {
             this.onLoadSelect();
         }
         else if (!this.inputFocus) {
@@ -14588,7 +14598,6 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     ListBox.prototype.getDragArgs = function (args, isDragEnd) {
         var elems = this.getSelectedItems();
         if (elems.length) {
-            elems.pop();
             if (isDragEnd) {
                 elems.push(args.target);
             }

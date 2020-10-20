@@ -66,6 +66,7 @@ class SfLinearGauge {
             this.dotNetRef.invokeMethodAsync('TriggerMouseDownEvent', element.x, element.y);
         }
     }
+    /* tslint:disable:no-string-literal */
     private gaugeOnMouseMove(element: PointerEvent): void {
         let targetId: string = (element.target as HTMLElement).id;
         if ((targetId.indexOf('Bar') > -1 && this.pointerCheck) || (targetId.indexOf('Marker') > -1 && this.pointerCheck)) {
@@ -81,16 +82,56 @@ class SfLinearGauge {
             let pointerIndex: number = parseInt(targetId.split('_AxisIndex_')[1].split('_')[2], 10);
             let parentId: string = targetId.split('_')[0];
             let parentElement: ClientRect = document.getElementById(parentId).getBoundingClientRect();
+            let parentEle: IClientOptions = {
+                Bottom: parentElement['bottom'],
+                Height: parentElement['height'],
+                Left: parentElement['left'],
+                Right: parentElement['right'],
+                Top: parentElement['top'],
+                Width: parentElement['width'],
+                X: parentElement['x'],
+                Y: parentElement['y']
+            };
             let lineElement: ClientRect = document.getElementById(parentId + '_AxisLine_' + axisIndex).getBoundingClientRect();
+            let lineEle: IClientOptions = {
+                Bottom: lineElement['bottom'],
+                Height: lineElement['height'],
+                Left: lineElement['left'],
+                Right: lineElement['right'],
+                Top: lineElement['top'],
+                Width: lineElement['width'],
+                X: lineElement['x'],
+                Y: lineElement['y']
+            };
             let tickElement: ClientRect = document.getElementById(parentId + '_MajorTicksLine_' + axisIndex).getBoundingClientRect();
+            let tickEle: IClientOptions = {
+                Bottom: tickElement['bottom'],
+                Height: tickElement['height'],
+                Left: tickElement['left'],
+                Right: tickElement['right'],
+                Top: tickElement['top'],
+                Width: tickElement['width'],
+                X: tickElement['x'],
+                Y: tickElement['y']
+            };
             let pointElement: ClientRect = document.getElementById(targetId).getBoundingClientRect();
+            let pointEle: IClientOptions = {
+                Bottom: pointElement['bottom'],
+                Height: pointElement['height'],
+                Left: pointElement['left'],
+                Right: pointElement['right'],
+                Top: pointElement['top'],
+                Width: pointElement['width'],
+                X: pointElement['x'],
+                Y: pointElement['y']
+            };
             let elementId: string = targetId.split('_')[0];
             let tooltipElement: HTMLElement = document.getElementById(elementId + '_Tooltip');
             if (tooltipElement != null) {
                 tooltipElement.style.visibility = 'visible';
             }
             this.dotNetRef.invokeMethodAsync('TriggerTooltip', targetId, axisIndex, pointerIndex, (element.clientX - svgBounds.left),
-                                             (element.clientY - svgBounds.top), parentElement, lineElement, tickElement, pointElement);
+                                             (element.clientY - svgBounds.top), parentEle, lineEle, tickEle, pointEle);
         } else {
             let elementId: string = targetId.split('_')[0];
             let tooltipElement: HTMLElement = document.getElementById(elementId + '_Tooltip');
@@ -101,6 +142,7 @@ class SfLinearGauge {
     }
     private gaugeOnMouseEnd(element: PointerEvent): void {
         let targetId: string = (element.target as HTMLElement).id;
+        this.pointerCheck = false;
         if (targetId.indexOf('Bar') > -1 || targetId.indexOf('Marker') > -1) {
             this.pointerCheck = false;
             let svgBounds: ClientRect = this.svgClient(targetId);
@@ -122,6 +164,16 @@ interface ILinearGaugeOptions {
     width: string;
     height: string;
 }
+interface IClientOptions {
+    Bottom: number;
+    Height: number;
+    Left: number;
+    Right: number;
+    Top: number;
+    Width: number;
+    X: number;
+    Y: number;
+}
 interface BlazorLinearGaugeElement extends HTMLElement {
     blazor__instance: SfLinearGauge;
 }
@@ -140,7 +192,7 @@ let LinearGauge: object = {
             elementWidth = elementRect.width;
             elementHeight = elementRect.height;
         }
-        return { width: elementWidth, height: elementHeight };
+        return { width: elementWidth, height: elementHeight, isIE: Browser.isIE };
     },
 
     setPathAttribute(id : string, type: string, path: string, x: number, y: number): void {

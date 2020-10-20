@@ -2743,9 +2743,9 @@ export class Edit {
                             this.treeGridData.splice(recordIndex1 + c + 1, 0, this.draggedRecord);
 
                         }
-                        draggedRec.parentItem = this.treeGridData[recordIndex1].parentItem;
-                        draggedRec.parentUniqueID = this.treeGridData[recordIndex1].parentUniqueID;
-                        draggedRec.level = this.treeGridData[recordIndex1].level;
+                        this.parent.setRecordValue('parentItem', this.treeGridData[recordIndex1].parentItem, draggedRec);
+                        this.parent.setRecordValue('parentUniqueID', this.treeGridData[recordIndex1].parentUniqueID, draggedRec);
+                        this.parent.setRecordValue('level', this.treeGridData[recordIndex1].level, draggedRec);
                         if (draggedRec.hasChildRecords) {
                             let level: number = 1;
                             this.updateChildRecordLevel(draggedRec, level);
@@ -2797,6 +2797,27 @@ export class Edit {
             this.updateParentRecords = [];
             this.parent.isOnEdit = false;
         }
+        if (isRemoteData(this.parent.dataSource)) {
+            let data: DataManager = this.parent.dataSource as DataManager;
+            let updatedData: object = {
+                changedRecords: getTaskData(this.parent.editedRecords)
+            };
+            /* tslint:disable-next-line */
+            let queryValue: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
+            let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, queryValue) as Promise<Object>;
+            crud.then((e: ReturnType) => this.indentSuccess(e, args))
+                .catch((e: { result: Object[] }) => this.indentFailure(e as { result: Object[] }));
+        } else {
+            this.indentOutdentSuccess(args);
+        }
+    }
+    private indentSuccess(e: ReturnType, args: RowDropEventArgs): void {
+        this.indentOutdentSuccess(args);
+    }
+    private indentFailure(e: { result: Object[] }): void {
+        this.parent.trigger('actionFailure', { error: e });
+    }
+    private indentOutdentSuccess(args: RowDropEventArgs): void {
         this.parent.treeGrid.refresh();
         if (this.dropPosition === 'middleSegment') {
             args.requestType = 'indented';
@@ -3047,8 +3068,8 @@ export class Edit {
                 index: parentItem.index,
                 taskId: parentItem.ganttProperties.rowUniqueID
             };
-            draggedRec.parentItem = createParentItem;
-            draggedRec.parentUniqueID = droppedRec.uniqueID;
+            this.parent.setRecordValue('parentItem', createParentItem, draggedRec);
+            this.parent.setRecordValue('parentUniqueID', droppedRec.uniqueID, draggedRec);
             droppedRec.childRecords.splice(droppedRec.childRecords.length, 0, draggedRec);
             if (!isNullOrUndefined(draggedRec) && !obj.taskFields.parentID && !isNullOrUndefined(droppedRec.taskData[childItem])) {
                 droppedRec.taskData[obj.taskFields.child].splice(droppedRec.childRecords.length, 0, draggedRec.taskData);

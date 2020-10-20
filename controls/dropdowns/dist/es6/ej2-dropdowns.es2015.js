@@ -4789,10 +4789,11 @@ let DropDownTree = class DropDownTree extends Component {
                 element: this.element
             };
             this.trigger('change', eventArgs);
+            this.oldValue = this.value;
         }
     }
     ddtCompareValues(oldValue, newValue) {
-        if (oldValue === null || oldValue.length === 0) {
+        if (oldValue === null || newValue === null) {
             let isValid = oldValue === null ? ((newValue === oldValue) ? true : false) :
                 (oldValue.length === 0 ? (newValue === oldValue) : false);
             return isValid;
@@ -4965,7 +4966,10 @@ let DropDownTree = class DropDownTree extends Component {
     resetValueHandler(e) {
         let formElement = closest(this.inputWrapper, 'form');
         if (formElement && e.target === formElement) {
+            this.isDynamicChange = true;
+            this.setProperties({ value: null }, true);
             this.resetValue(true);
+            this.isDynamicChange = false;
         }
     }
     getAriaAttributes() {
@@ -6129,7 +6133,7 @@ let DropDownTree = class DropDownTree extends Component {
     }
     setMultiSelect() {
         if (this.showCheckBox && !this.isDynamicChange) {
-            this.setMultiSelectValue(this.treeObj.checkedNodes);
+            this.setMultiSelectValue(this.treeObj.checkedNodes.slice());
         }
         else {
             let ddtValue = this.allowMultiSelection ? (this.showCheckBox ? this.treeObj.checkedNodes
@@ -6384,9 +6388,11 @@ let DropDownTree = class DropDownTree extends Component {
     }
     resetValue(isDynamicChange) {
         Input.setValue(null, this.inputEle, this.floatLabelType);
-        this.oldValue = this.value;
+        if (!isDynamicChange) {
+            this.oldValue = this.value;
+            this.setProperties({ value: [] }, true);
+        }
         this.dataValue = null;
-        this.setProperties({ value: [] }, true);
         this.setProperties({ text: null }, true);
         this.selectedData = [];
         setValue('selectedNodes', [], this.treeObj);
@@ -6404,11 +6410,14 @@ let DropDownTree = class DropDownTree extends Component {
         }
         if ((this.allowMultiSelection || this.showCheckBox) && this.chipWrapper) {
             this.chipCollection.innerHTML = '';
+            if (!this.wrapText) {
+                this.updateOverflowWrapper(true);
+            }
             this.ensurePlaceHolder();
         }
     }
     clearCheckAll() {
-        if (this.showSelectAll && this.value.length === 0) {
+        if (this.showSelectAll && this.value && this.value.length === 0) {
             this.setLocale(false);
         }
     }
@@ -6601,6 +6610,7 @@ let DropDownTree = class DropDownTree extends Component {
         }
     }
     updateValue(value) {
+        this.isDynamicChange = true;
         if (isNullOrUndefined(value) || value.length === 0) {
             this.resetValue(true);
         }
@@ -6612,6 +6622,7 @@ let DropDownTree = class DropDownTree extends Component {
             }
         }
         this.updateHiddenValue();
+        this.isDynamicChange = false;
     }
     updateText(text) {
         if (isNullOrUndefined(text)) {
@@ -6705,6 +6716,7 @@ let DropDownTree = class DropDownTree extends Component {
                     this.updateFilterPlaceHolder();
                     break;
                 case 'value':
+                    this.oldValue = oldProp.value;
                     this.updateValue(newProp.value);
                     break;
                 case 'text':
@@ -8776,7 +8788,6 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         super.onActionComplete(ulElement, list, e);
         this.updateSelectElementData(this.allowFiltering);
         let proxy = this;
-        let valuecheck = [];
         if (isBlazor() && this.isServerRendered && this.isDynamicDataChange && this.value !== null && this.value.length > 0) {
             let items = [];
             for (let k = 0; k < this.value.length; k++) {
@@ -8794,19 +8805,12 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             for (let i = 0; i < this.value.length; i++) {
                 let checkEle = this.findListElement(((this.allowFiltering && !isNullOrUndefined(this.mainList)) ? this.mainList : ulElement), 'li', 'data-value', proxy.value[i]);
                 if (!checkEle) {
-                    valuecheck.push(proxy.value[i]);
+                    this.value.splice(i, 1);
+                    i -= 1;
                 }
             }
         }
-        if (valuecheck.length > 0 && this.dataSource instanceof DataManager && !isNullOrUndefined(this.value)) {
-            this.dataSource.executeQuery(this.getForQuery(valuecheck)).then((e) => {
-                proxy.addItem(e.result, list.length);
-                proxy.updateActionList(ulElement, list, e);
-            });
-        }
-        else {
-            this.updateActionList(ulElement, list, e);
-        }
+        this.updateActionList(ulElement, list, e);
         if (isBlazor() && this.isServerRendered && this.allowFiltering && this.mode === 'CheckBox') {
             this.removeFocus();
         }
@@ -10655,18 +10659,21 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         this.hiddenElement.innerHTML = '';
         if (!isNullOrUndefined(this.value)) {
             for (let index = 0; !isNullOrUndefined(this.value[index]); index++) {
-                let listValue = this.findListElement(this.mainList, 'li', 'data-value', this.value[index]);
+                let listValue = this.findListElement(((!isNullOrUndefined(this.mainList)) ? this.mainList : this.ulElement), 'li', 'data-value', this.value[index]);
                 if (!(isBlazor() && this.isServerRendered) && isNullOrUndefined(listValue) && !this.allowCustomValue) {
                     this.value.splice(index, 1);
-                }
-                if (this.listData) {
-                    temp = this.getTextByValue(this.value[index]);
+                    index -= 1;
                 }
                 else {
-                    temp = this.value[index];
+                    if (this.listData) {
+                        temp = this.getTextByValue(this.value[index]);
+                    }
+                    else {
+                        temp = this.value[index];
+                    }
+                    data += temp + delimiterChar + ' ';
+                    text.push(temp);
                 }
-                data += temp + delimiterChar + ' ';
-                text.push(temp);
                 this.hiddenElement.innerHTML += '<option selected value ="' + this.value[index] + '">' + index + '</option>';
             }
         }
@@ -11732,6 +11739,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     updateVal(newProp, oldProp, prop) {
         if (!this.list) {
+            this.onLoadSelect();
+        }
+        else if ((this.dataSource instanceof DataManager) && (!this.listData || !(this.mainList && this.mainData))) {
             this.onLoadSelect();
         }
         else if (!this.inputFocus) {
@@ -14374,7 +14384,6 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
     getDragArgs(args, isDragEnd) {
         let elems = this.getSelectedItems();
         if (elems.length) {
-            elems.pop();
             if (isDragEnd) {
                 elems.push(args.target);
             }

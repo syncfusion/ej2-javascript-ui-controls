@@ -1,4 +1,4 @@
-import { setStyleAttribute, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { setStyleAttribute } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constant';
 import * as util from '../base/util';
 import { MonthEvent } from './month';
@@ -51,12 +51,6 @@ export class TimelineEvent extends MonthEvent {
     }
 
     public renderAppointments(): void {
-        let eventTable: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS);
-        if (!isNullOrUndefined(eventTable)) {
-            setStyleAttribute(eventTable, {
-                'display': 'block'
-            });
-        }
         let eventsClass: string = '.' + cls.APPOINTMENT_CLASS + ', .' + cls.MORE_INDICATOR_CLASS;
         let blockEventClass: string = '.' + cls.BLOCK_APPOINTMENT_CLASS + ', .' + cls.BLOCK_INDICATOR_CLASS;
         let elementList: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(eventsClass + ', ' + blockEventClass));
@@ -81,9 +75,9 @@ export class TimelineEvent extends MonthEvent {
         this.getSlotDates();
         for (let i: number = 0; i < elementList.length; i++) {
             let ele: HTMLElement = elementList[i] as HTMLElement;
-            ele.removeAttribute('style');
-            let startTime: Date = new Date(this.getStartTime(ele));
-            let endTime: Date = this.getEndTime(ele);
+            this.removedPositionedStyles(ele);
+            let startTime: Date = util.removeLocalOffset(this.getStartTime(ele));
+            let endTime: Date = util.removeLocalOffset(this.getEndTime(ele));
             this.day = this.parent.getIndexOfDate(this.dateRender, util.resetTime(new Date(startTime.getTime())));
             if (this.day >= 0) {
                 let overlapCount: number = this.getOverLapCount(ele);
@@ -112,7 +106,7 @@ export class TimelineEvent extends MonthEvent {
                         }
                         if (ele.classList.contains('e-block-appointment')) {
                             setStyleAttribute(ele, {
-                                'height': this.cellHeight + 'px'
+                                'height': this.cellHeight - 1 + 'px'
                             });
                         }
                         if (ele.classList.contains('e-appointment')) {

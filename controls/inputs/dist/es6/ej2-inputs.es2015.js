@@ -10562,7 +10562,9 @@ let Uploader = class Uploader extends Component {
                     let validUrl = (removeUrl === '' || isNullOrUndefined(removeUrl)) ? false : true;
                     for (let files of removeFiles) {
                         index = this.filesData.indexOf(files);
-                        if ((files.statusCode === '2' || files.statusCode === '4') && validUrl) {
+                        let fileUploadedIndex = this.uploadedFilesData.indexOf(files);
+                        if ((files.statusCode === '2' || files.statusCode === '4' || (files.statusCode === '0' &&
+                            fileUploadedIndex !== -1)) && validUrl) {
                             this.removeUploadedFile(files, eventArgs, removeDirectly, customTemplate);
                         }
                         else {

@@ -143,7 +143,9 @@ class SfSplitter {
         this.element = element;
         this.dotNetRef = dotnetRef;
         this.updateContext(options);
-        this.element.blazor__instance = this;
+        if (!isNullOrUndefined(element)) {
+            this.element.blazor__instance = this;
+        }
     }
 
     private updateContext(splitObj: { [key: string]: Object }): void {
@@ -1539,8 +1541,8 @@ interface Coordinates {
 // tslint:disable-next-line
 let Splitter: object = {
     initialize(element: BlazorSplitterElement, options: { [key: string]: Object }, dotnetRef: BlazorDotnetObject): void {
-        new SfSplitter(element, options, dotnetRef);
         if (!isNullOrUndefined(element)) {
+            new SfSplitter(element, options, dotnetRef);
             element.blazor__instance.initialize();
         }
     },

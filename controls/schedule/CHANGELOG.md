@@ -2,7 +2,34 @@
 
 ## [Unreleased]
 
+## 18.3.42 (2020-10-20)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#293358` - An issue with the Scheduler events are not rendered in month view and the same events rendered in other views has been fixed.
+- `#292093` - An issue with setting the resize interval for event in `resizeStart` not resizing the event to its minimum interval value has been fixed.
+- `#286376` - An issue with refreshing the layout when setting `dataSource` dynamically using `setmodel` in Year view has been fixed.
+- `#286376` - An issue with view navigation when setting `dataSource` dynamically using `setmodel` in year view has been fixed.
+- `#294568` - An issue with all day spanned event is not rendered properly in the `TimelineYear` view has been fixed.
+- `#296098` - An issue with event click action on less duration events not deselecting the previously selected event has been fixed.
+
 ## 18.3.40 (2020-10-13)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#290061` - An issue with the drop action not working properly in the first row of the Scheduler has been fixed.
+- `#289933` - An issue with the flickering clone drag element when dragging action is performed at the top most cells of the Scheduler has been fixed.
+- `#285797` - An issue with dragging an appointment beyond the schedule end time causes appointment to jump has been fixed.
+- `#290061` - An issue with the drop action not working properly in the first row of the Scheduler has been fixed.
+- `#289933` - An issue with the flickering clone drag element when dragging action is performed at the top most cells of the Scheduler has been fixed.
+- `#292609` - An issue with dynamically changed `minDate` and `maxDate` property are not applying to editor start and end date pickers has been fixed.
+- `#296040` - An issue with event template is not applied in react scheduler has been fixed.
+
+## 18.3.35 (2020-10-01)
 
 ### Schedule
 

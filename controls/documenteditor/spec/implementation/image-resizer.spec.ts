@@ -108,6 +108,7 @@ describe('Image Resizer testing', () => {
         }, 2000);
     });
     it('Testing image resizer with all side', () => {
+console.log('Testing image resizer with all side');
         editor.open(JSON.stringify(jsonObj));
         documentHelper = editor.documentHelper;
         editor.viewer.updateScrollBars();
@@ -183,6 +184,7 @@ describe('Image Resizer testing', () => {
         expect(documentHelper.pages.length).not.toBe(0);
     });
     it('Testing with current page as null in image resizer', () => {
+console.log('Testing with current page as null in image resizer');
         editor.open(JSON.stringify(jsonObj));
         documentHelper = editor.documentHelper;
         editor.viewer.updateScrollBars();
@@ -210,6 +212,7 @@ describe('Image Resizer testing', () => {
         expect(documentHelper.pages.length).not.toBe(0);
     });
     it('Validate get image point position', () => {
+console.log('Validate get image point position');
         editor.open(JSON.stringify(jsonObj));
         documentHelper = editor.documentHelper;
         editor.viewer.updateScrollBars();
@@ -280,6 +283,7 @@ describe('Image Resizer validation', () => {
         }, 1000);
     });
     it('Selected image info validation', () => {
+console.log('Selected image info validation');
         let imageinfo = new SelectedImageInfo(0, 0);
         imageinfo.height = 10;
         imageinfo.width = 10;
@@ -289,6 +293,7 @@ describe('Image Resizer validation', () => {
         expect(width).toBe(10);
     });
     it('showImageResizer method validation', () => {
+console.log('showImageResizer method validation');
         editor.open(JSON.stringify(jsonObj));
         documentHelper = editor.documentHelper;
         editor.viewer.updateScrollBars();
@@ -341,6 +346,7 @@ describe('Image Point', () => {
         }, 1000);
     });
     it('Image resizing with touch', () => {
+console.log('Image resizing with touch');
         editor.open(JSON.stringify(jsonObj));
         documentHelper = editor.documentHelper;
         let touchevent: any;
@@ -376,6 +382,7 @@ describe('Image Point', () => {
         documentHelper.onTouchUpInternal(touchevent);
     });
     it('validate getImagePoint for touch events', () => {
+console.log('validate getImagePoint for touch events');
         editor.open(JSON.stringify(jsonObj));
         documentHelper = editor.documentHelper;
         let touchevent: any;
@@ -420,6 +427,7 @@ describe('Image Point', () => {
         expect(imagePointInfo.resizePosition).toBe('move');
     });
     it('handle image resizing on touch method validation', () => {
+console.log('handle image resizing on touch method validation');
         editor.open(JSON.stringify(jsonObj));
         documentHelper = editor.documentHelper;
         let touchevent: any;
@@ -444,6 +452,7 @@ describe('Image Point', () => {
         imageResizer.handleImageResizingOnTouch(touchevent);
     });
     it('Touch move internal method validation', () => {
+console.log('Touch move internal method validation');
         editor.open(JSON.stringify(jsonObj));
         documentHelper = editor.documentHelper;
         let touchevent: any;
@@ -506,6 +515,7 @@ describe('Image resizing undo and redo operation', () => {
         }, 1000);
     });
     it('Image resizing with undo and redo testing', () => {
+console.log('Image resizing with undo and redo testing');
         editor.open(JSON.stringify(jsonObj));
         documentHelper = editor.documentHelper;
         editor.viewer.updateScrollBars();
@@ -556,6 +566,7 @@ describe('Image resizer destroy method validation', () => {
         }, 1000);
     });
     it('destroy method validation', () => {
+console.log('destroy method validation');
         editor.open(JSON.stringify(jsonObj));
         documentHelper = editor.documentHelper;
         editor.viewer.updateScrollBars();
@@ -585,6 +596,7 @@ describe('Image resizer destroy method validation', () => {
 });
 describe('Image format validation', () => {
     it('Image format constructor validation', () => {
+console.log('Image format constructor validation');
         let image: ImageElementBox = new ImageElementBox(false);
         image.height = 100;
         image.width = 75;
@@ -593,6 +605,7 @@ describe('Image format validation', () => {
         expect(imageFormat.width).toBe(75);
     });
     it('Image format destroy validation', () => {
+console.log('Image format destroy validation');
         let image: ImageElementBox = new ImageElementBox(false);
         image.width = 10;
         image.height = 10;

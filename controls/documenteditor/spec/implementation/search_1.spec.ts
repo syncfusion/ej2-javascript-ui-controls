@@ -109,6 +109,7 @@ describe('Search module testing', () => {
     });
 
     it('find method testing with findoptions none value', () => {
+console.log('find method testing with findoptions none value');
         editor.open(getJson());
         setTimeout(() => {
             let result = editor.searchModule.find('adventure', 'None');
@@ -116,10 +117,12 @@ describe('Search module testing', () => {
         }, 10);
     });
     it('find all method testing', () => {
+console.log('find all method testing');
         let results = editor.searchModule.findAll('adventure', 'None');
         expect(results).toBe(undefined);
     });
     it('findnext method testing', () => {
+console.log('findnext method testing');
         let pattern: RegExp = editor.searchModule.textSearch.stringToRegex('adventure', 'WholeWord');
         let result = editor.searchModule.textSearch.findNext(pattern, 'WholeWord', undefined);
         expect(result.text).toBe('Adventure');
@@ -176,22 +179,27 @@ describe('Search module testing-replace', () => {
     //     expect(results).toBe(undefined);
     // });
     it('find method validation', () => {
+console.log('find method validation');
         editor.open(getJson());
         setTimeout(() => {
             editor.searchModule.find('adventure', undefined);
         }, 10);
     });
     it('findall method validation', () => {
+console.log('findall method validation');
         editor.searchModule.findAll('adventure', undefined);
     });
     it('addSearchResultItems method validation1', () => {
+console.log('addSearchResultItems method validation1');
         editor.searchModule.addSearchResultItems(undefined);
     });
     it('addSearchResultItems method validation2', () => {
+console.log('addSearchResultItems method validation2');
         editor.findResultsList = undefined;
         editor.searchModule.addSearchResultItems('<li></li>');
     });
     it('textsearchresults indexof method testing', () => {
+console.log('textsearchresults indexof method testing');
         let results = new TextSearchResults(editor);
         results.innerList = undefined;
         let value: number = results.indexOf(undefined);

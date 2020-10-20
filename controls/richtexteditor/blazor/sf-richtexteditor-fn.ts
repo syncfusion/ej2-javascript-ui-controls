@@ -1103,6 +1103,9 @@ export class SfRichTextEditor {
     public insertImageLink(url: string, target: string): void {
         this.imageModule.insertLink(url, target);
     }
+    public destroy(): void {
+        this.unWireEvents();
+    }
     //#endregion
     //#region Event binding and unbinding function
     private wireEvents(): void {
@@ -1585,6 +1588,6 @@ export class SfRichTextEditor {
                     break;
             }
         }
-        //#endregion
     }
+    //#endregion
 }

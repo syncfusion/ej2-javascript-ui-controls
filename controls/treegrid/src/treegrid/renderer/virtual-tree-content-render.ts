@@ -293,11 +293,8 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         this.previousInfo = viewInfo;
         let page: number = viewInfo.loadNext && !viewInfo.loadSelf ? viewInfo.nextInfo.page : viewInfo.page;
         this.parent.setProperties({ pageSettings: { currentPage: page } }, true);
-        if (viewInfo.event === 'refresh-virtual-block') {
-          this.parent.refresh();
-        } else {
-          this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', focusElement: scrollArgs.focusElement });
-        }
+        viewInfo.event = viewInfo.event === 'refresh-virtual-block' ? 'model-changed' : viewInfo.event;
+        this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', focusElement: scrollArgs.focusElement });
       }
     }
     public appendContent(target: HTMLElement, newChild: DocumentFragment, e: NotifyArgs) : void {

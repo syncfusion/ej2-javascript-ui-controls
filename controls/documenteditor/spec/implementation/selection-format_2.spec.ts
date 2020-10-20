@@ -146,6 +146,7 @@ describe('Selection section Format validation', () => {
     });
 
     it('Page width and Page Height validation', () => {
+console.log('Page width and Page Height validation');
         editor.selection.sectionFormat.pageHeight = 100;
         expect(editor.selection.sectionFormat.pageHeight).toBe(100);
         editor.editorHistory.undo();
@@ -154,6 +155,7 @@ describe('Selection section Format validation', () => {
         expect(editor.selection.sectionFormat.pageHeight).toBe(100);
     });
     it('Left and right margin validation', () => {
+console.log('Left and right margin validation');
         editor.selection.sectionFormat.leftMargin = 172;
         expect(editor.selection.sectionFormat.leftMargin).toBe(172);
         editor.editorHistory.undo();
@@ -166,6 +168,7 @@ describe('Selection section Format validation', () => {
         expect(editor.selection.sectionFormat.rightMargin).toBe(72);
     });
     it('top and bottom margin validation', () => {
+console.log('top and bottom margin validation');
         editor.selection.sectionFormat.bottomMargin = 172;
         expect(editor.selection.sectionFormat.bottomMargin).toBe(172);
         editor.editorHistory.undo();
@@ -178,6 +181,7 @@ describe('Selection section Format validation', () => {
         expect(editor.selection.sectionFormat.topMargin).toBe(72);
     });
     it('section format value as invalid cases', () => {
+console.log('section format value as invalid cases');
         editor.selection.sectionFormat.bottomMargin = -2;
         editor.selection.sectionFormat.rightMargin = -2;
         editor.selection.sectionFormat.topMargin = -2;
@@ -187,6 +191,7 @@ describe('Selection section Format validation', () => {
         expect('').toBe('');
     });
     it('header and footer validation', () => {
+console.log('header and footer validation');
         editor.selection.sectionFormat.differentFirstPage = true;
         expect(editor.selection.sectionFormat.differentFirstPage).toBeTruthy();
         editor.editorHistory.undo();
@@ -227,6 +232,7 @@ describe('Selection character and paragraph Format validation', () => {
     });
 
     it('character format validation', () => {
+console.log('character format validation');
         editor.editorModule.onApplyCharacterFormat('bold', true, false);
         expect(editor.selection.characterFormat.bold).toBe(true);
         editor.editorHistory.undo();
@@ -239,6 +245,7 @@ describe('Selection character and paragraph Format validation', () => {
         expect(editor.selection.characterFormat.underline).toBe('None');
     });
     it('paragraph format validation', () => {
+console.log('paragraph format validation');
         editor.editorModule.onApplyParagraphFormat('textAlignment', 'Right', false, false);
         expect(editor.selection.paragraphFormat.textAlignment).toBe('Right');
         editor.editorHistory.undo();
@@ -284,6 +291,7 @@ describe('Selection header and footer  validation weblayout', () => {
         }, 1000);
     });
     it('header and footer validation for weblayout', () => {
+console.log('header and footer validation for weblayout');
         let page: Page = (editor.documentHelper.pages[0]);
         let point: Point = new Point(0, 0);
         let isheader: Boolean = editor.selection.isCursorInHeaderRegion(point, page);
@@ -564,6 +572,7 @@ describe('Add support to apply restart page number and pageStartingNumber for di
     });
 
     it('PageStartingNumber validation', () => {
+console.log('PageStartingNumber validation');
         // Before apply restart page number
         expect(editor.documentHelper.pages[1].currentPageNum).toBe(1);
         editor.selection.goToPage(2);

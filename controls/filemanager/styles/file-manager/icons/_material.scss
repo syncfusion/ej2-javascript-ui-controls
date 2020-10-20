@@ -1,6 +1,6 @@
 @include export-module('FileManager-material-icons') {
 
-  #{&}.e-filemanager {
+  .e-filemanager {
 
     .e-fe-icon,
     .e-list-icon {
@@ -116,8 +116,8 @@
     }
   }
 
-  #{&}.e-filemanager,
-  #{&}.e-fe-popup {
+  .e-filemanager,
+  .e-fe-popup {
 
     .e-fe-open::before {
       content: '\e609';
@@ -222,7 +222,7 @@
     }
   }
 
-  #{&}.e-fe-popup {
+  .e-fe-popup {
 
     .e-fe-dot::before {
       content: '\e614';

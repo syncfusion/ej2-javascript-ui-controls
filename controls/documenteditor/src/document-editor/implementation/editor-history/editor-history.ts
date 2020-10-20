@@ -324,7 +324,7 @@ export class EditorHistory {
             if (this.currentHistoryInfo.action === 'ReplaceAll') {
                 this.owner.editorModule.layoutWholeDocument();
             } else if (selection.owner.isShiftingEnabled) {
-                this.documentHelper.layout.shiftLayoutedItems();
+                this.documentHelper.layout.shiftLayoutedItems(false);
                 if (this.owner.enableHeaderAndFooter) {
                     this.owner.editorModule.updateHeaderFooterWidget();
                 }
@@ -529,7 +529,10 @@ export class EditorHistory {
         this.undoStackIn = undefined;
         this.redoStackIn = undefined;
     }
-    private clearHistory(): void {
+    /**
+     * @private
+     */
+    public clearHistory(): void {
         this.clearUndoStack();
         this.clearRedoStack();
     }

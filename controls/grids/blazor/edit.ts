@@ -133,7 +133,7 @@ export class Edit {
                 // }
                 div.style.top = null;
             }
-            div.style.display = 'none';
+            // div.style.display = 'none';
             arrowPosition = validationForBottomRowPos ? 'bottom' : 'top';
             toolTipPos[name] = `top: ${div.style.top}; bottom: ${div.style.bottom}; left: ${div.style.left}; 
             max-width: ${div.style.maxWidth}; width: ${div.style.width}; text-align: center; position: ${div.style.position};`;

@@ -28,7 +28,7 @@ describe('Timezone module', () => {
 
     it('checking negative timezone', () => {
         let offset: number = timezone.offset(new Date(2017, 9, 5), 'IST');
-        expect(offset).toEqual(0);
+        expect(offset).toEqual(-330);
         let invalidOffset: number = timezone.offset(new Date('test'), 'UTC');
         expect(invalidOffset).toEqual(0);
     });

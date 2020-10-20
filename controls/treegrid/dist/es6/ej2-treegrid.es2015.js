@@ -1,5 +1,5 @@
 import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, compile, createElement, extend, getElement, getEnumValue, getValue, isBlazor, isNullOrUndefined, merge, removeClass, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import { Aggregate, CellType, Clipboard, ColumnChooser, ColumnMenu, CommandColumn, ContextMenu, DetailRow, Edit, ExcelExport, Filter, Freeze, Grid, InterSectionObserver, Page, PdfExport, Print, RenderType, Reorder, Resize, RowDD, RowDropSettings, Scroll, Sort, Toolbar, VirtualContentRenderer, VirtualRowModelGenerator, VirtualScroll, appendChildren, calculateAggregate, extend as extend$1, getActualProperties, getObject, getUid, gridObserver, iterateArrayOrObject, parentsUntil, templateCompiler } from '@syncfusion/ej2-grids';
+import { Aggregate, CellType, Clipboard, ColumnChooser, ColumnMenu, CommandColumn, ContextMenu, DetailRow, Edit, ExcelExport, Filter, Freeze, Grid, InterSectionObserver, Logger, Page, PdfExport, Print, RenderType, Reorder, Resize, RowDD, RowDropSettings, Scroll, Sort, Toolbar, VirtualContentRenderer, VirtualRowModelGenerator, VirtualScroll, appendChildren, calculateAggregate, detailLists, extend as extend$1, getActualProperties, getObject, getUid, gridObserver, iterateArrayOrObject, parentsUntil, templateCompiler } from '@syncfusion/ej2-grids';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { CacheAdaptor, DataManager, DataUtil, Deferred, JsonAdaptor, ODataAdaptor, Predicate, Query, RemoteSaveAdaptor, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
@@ -161,6 +161,104 @@ class TextWrapSettings extends ChildProperty {
 __decorate$2([
     Property('Both')
 ], TextWrapSettings.prototype, "wrapMode", void 0);
+
+/**
+ * Logger module for TreeGrid
+ * @hidden
+ */
+const DOC_URL = 'https://ej2.syncfusion.com/documentation/treegrid';
+const BASE_DOC_URL = 'https://ej2.syncfusion.com/documentation';
+const ERROR = '[EJ2TreeGrid.Error]';
+class Logger$1 extends Logger {
+    constructor(parent) {
+        Grid.Inject(Logger);
+        super(parent);
+    }
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    getModuleName() {
+        return 'logger';
+    }
+    log(types, args) {
+        if (!(types instanceof Array)) {
+            types = [types];
+        }
+        let type = types;
+        for (let i = 0; i < type.length; i++) {
+            let item = detailLists[type[i]];
+            let cOp = item.check(args, this.parent);
+            if (cOp.success) {
+                let message = item.generateMessage(args, this.parent, cOp.options);
+                message = message.replace('EJ2Grid', 'EJ2TreeGrid');
+                let index = message.indexOf('https');
+                let gridurl = message.substring(index);
+                if (type[i] === 'module_missing') {
+                    message = message.replace(gridurl, DOC_URL + '/modules');
+                }
+                else if (type[i] === 'primary_column_missing' || type[i] === 'selection_key_missing') {
+                    message = message.replace(gridurl, BASE_DOC_URL + '/api/treegrid/column/#isprimarykey');
+                }
+                else if (type[i] === 'grid_remote_edit') {
+                    message = message.replace(gridurl, DOC_URL + '/edit');
+                }
+                else if (type[i] === 'virtual_height') {
+                    message = message.replace(gridurl, DOC_URL + '/virtual');
+                }
+                else if (type[i] === 'check_datasource_columns') {
+                    message = message.replace(gridurl, DOC_URL + '/columns');
+                }
+                else if (type[i] === 'locale_missing') {
+                    message = message.replace(gridurl, DOC_URL + '/global-local/#localization');
+                }
+                console[item.logType](message);
+            }
+        }
+    }
+    treeLog(types, args, treeGrid) {
+        if (!(types instanceof Array)) {
+            types = [types];
+        }
+        let type = types;
+        if (treeGrid.allowRowDragAndDrop) {
+            this.log('primary_column_missing', args);
+        }
+        for (let i = 0; i < type.length; i++) {
+            let item = treeGridDetails[type[i]];
+            let cOp = item.check(args, treeGrid);
+            if (cOp.success) {
+                let message = item.generateMessage(args, treeGrid, cOp.options);
+                console[item.logType](message);
+            }
+        }
+    }
+}
+const treeGridDetails = {
+    mapping_fields_missing: {
+        type: 'mapping_fields_missing',
+        logType: 'error',
+        check(args, parent) {
+            let opt = { success: false };
+            if ((isNullOrUndefined(parent.idMapping) && isNullOrUndefined(parent.childMapping)
+                && isNullOrUndefined(parent.parentIdMapping)) ||
+                (!isNullOrUndefined(parent.idMapping) && isNullOrUndefined(parent.parentIdMapping)) ||
+                (isNullOrUndefined(parent.idMapping) && !isNullOrUndefined(parent.parentIdMapping))) {
+                opt = { success: true };
+            }
+            return opt;
+        },
+        generateMessage(args, parent, field) {
+            return ERROR + ':' + ' MAPPING FIELDS MISSING \n' + 'One of the following fields are missing which are ' +
+                'required for the hierarchy relation of records in Tree Grid.\n' +
+                '* childMapping\n' + '* idMapping\n' + '* parentIdMapping\n' +
+                'Refer to the following documentation links for more details\n' +
+                `${BASE_DOC_URL}/api/treegrid#childmapping` + '\n' +
+                `${BASE_DOC_URL}/api/treegrid#idmapping` + '\n' +
+                `${BASE_DOC_URL}/api/treegrid#$parentidmapping`;
+        }
+    },
+};
 
 /**
  *  @hidden
@@ -1495,11 +1593,16 @@ class DataManipulation {
     convertJSONData(data) {
         this.hierarchyData = [];
         this.taskIds = [];
-        for (let i = 0; i < Object.keys(data).length; i++) {
-            let tempData = data[i];
-            this.hierarchyData.push(extend({}, tempData));
-            if (!isNullOrUndefined(tempData[this.parent.idMapping])) {
-                this.taskIds.push(tempData[this.parent.idMapping]);
+        if (!this.parent.idMapping) {
+            this.hierarchyData = data;
+        }
+        else {
+            for (let i = 0; i < Object.keys(data).length; i++) {
+                let tempData = data[i];
+                this.hierarchyData.push(extend({}, tempData));
+                if (!isNullOrUndefined(tempData[this.parent.idMapping])) {
+                    this.taskIds.push(tempData[this.parent.idMapping]);
+                }
             }
         }
         if (this.isSelfReference) {
@@ -2194,6 +2297,10 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.addedRecords = 'addedRecords';
         TreeGrid_1.Inject(Selection);
         setValue('mergePersistData', this.mergePersistTreeGridData, this);
+        let logger = 'Logger';
+        if (!isNullOrUndefined(this.injectedModules[logger])) {
+            Grid.Inject(Logger);
+        }
         this.grid = new Grid();
     }
     /**
@@ -2590,6 +2697,10 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                 args: [this]
             });
         }
+        modules.push({
+            member: 'logger',
+            args: [this.grid]
+        });
     }
     isCommandColumn(columns) {
         return columns.some((col) => {
@@ -2609,6 +2720,13 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         }
     }
     /**
+     * @hidden
+     * @private
+     */
+    log(types, args) {
+        this.loggerModule ? this.loggerModule.treeLog(types, args, this) : (() => 0)();
+    }
+    /**
      * For internal use only - To Initialize the component rendering.
      * @private
      */
@@ -2617,6 +2735,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             this.grid.isReact = true;
         }
         createSpinner({ target: this.element }, this.createElement);
+        this.log(['mapping_fields_missing']);
         this.renderModule = new Render(this);
         this.dataModule = new DataManipulation(this);
         this.printModule = new Print$1(this);
@@ -2821,7 +2940,14 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     }
     bindGridEvents() {
         let treeGrid = this;
-        this.grid.rowSelecting = this.triggerEvents.bind(this);
+        this.grid.rowSelecting = (args) => {
+            if (!isNullOrUndefined(args.target) && (args.target.classList.contains('e-treegridexpand')
+                || args.target.classList.contains('e-treegridcollapse'))) {
+                args.cancel = true;
+                return;
+            }
+            this.trigger(rowSelecting, args);
+        };
         this.grid.rowSelected = (args) => {
             if (!isBlazor()) {
                 this.selectedRowIndex = this.grid.selectedRowIndex;
@@ -2883,6 +3009,10 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         };
         this.grid.load = () => {
             treeGrid.grid.on('initial-end', treeGrid.afterGridRender, treeGrid);
+            if (!isNullOrUndefined(this.loggerModule)) {
+                let loggerModule = 'loggerModule';
+                this.loggerModule = this.grid[loggerModule] = new Logger$1(this.grid);
+            }
         };
         this.grid.printComplete = this.triggerEvents.bind(this);
         this.grid.actionFailure = this.triggerEvents.bind(this);
@@ -2965,6 +3095,9 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                 });
                 return callBackPromise;
             }
+        };
+        this.grid.log = (type, args) => {
+            this.loggerModule ? this.loggerModule.log(type, args) : (() => 0)();
         };
     }
     bindCallBackEvents() {
@@ -4117,7 +4250,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         let temp;
         let field;
         let gridColumns = isNullOrUndefined(column) ? this.grid.getColumns() : column;
-        if (!isNullOrUndefined(gridColumns[this.treeColumnIndex].template)) {
+        if (this.treeColumnIndex !== -1 && !isNullOrUndefined(gridColumns[this.treeColumnIndex].template)) {
             temp = gridColumns[this.treeColumnIndex].template;
             field = gridColumns[this.treeColumnIndex].field;
         }
@@ -4457,6 +4590,12 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             for (let i = 0; i < records.length; i++) {
                 this.collapseRow(rows[i], records[i]);
             }
+        }
+        if (!this.grid.contentModule.isDataSourceChanged && this.enableVirtualization && this.getRows()
+            && this.parentData.length === this.getRows().length) {
+            let endIndex = 'endIndex';
+            this.grid.contentModule.startIndex = -1;
+            this.grid.contentModule[endIndex] = -1;
         }
     }
     /**
@@ -5877,7 +6016,8 @@ class RowDD$1 {
                     draggedRecord.taskData[tObj.childMapping] = [];
                 }
                 if (draggedRecord.hasOwnProperty(tObj.childMapping) &&
-                    (draggedRecord[tObj.childMapping]).length && !this.isDraggedWithChild) {
+                    (draggedRecord[tObj.childMapping]).length && !this.isDraggedWithChild &&
+                    !isNullOrUndefined(tObj.parentIdMapping)) {
                     let childData = (draggedRecord[tObj.childMapping]);
                     for (let j = 0; j < childData.length; j++) {
                         if (dragRecords.indexOf(childData[j]) === -1) {
@@ -6363,6 +6503,7 @@ class RowDD$1 {
                 this.getParentData(record);
             }
             else {
+                args.dropIndex = args.dropIndex === args.fromIndex ? this.getTargetIdx(args.target.parentElement) : args.dropIndex;
                 this.droppedRecord = tObj.getCurrentViewRecords()[args.dropIndex];
             }
             let dragRecords = [];
@@ -7699,48 +7840,64 @@ class Aggregate$1 {
         let summaryLength = Object.keys(this.parent.aggregates).length;
         let dataLength = Object.keys(parentRecords).length;
         let childRecordsLength;
-        for (let i = 0, len = dataLength; i < len; i++) {
-            parentRecord = parentRecords[i];
-            childRecordsLength = this.getChildRecordsLength(parentRecord, flatRecords);
-            if (childRecordsLength) {
-                for (let summaryRowIndex = 1, len = summaryLength; summaryRowIndex <= len; summaryRowIndex++) {
-                    let item;
-                    item = {};
-                    for (let columnIndex = 0, len = columnLength; columnIndex < len; columnIndex++) {
-                        let field = isNullOrUndefined(getObject('field', this.parent.columns[columnIndex])) ?
-                            this.parent.columns[columnIndex] : getObject('field', this.parent.columns[columnIndex]);
-                        item[field] = null;
-                    }
-                    item = this.createSummaryItem(item, this.parent.aggregates[summaryRowIndex - 1]);
-                    if (this.parent.aggregates[summaryRowIndex - 1].showChildSummary) {
-                        let idx;
-                        flatRecords.map((e, i) => { if (e.uniqueID === parentRecord.uniqueID) {
-                            idx = i;
-                            return;
-                        } });
-                        let currentIndex = idx + childRecordsLength + summaryRowIndex;
-                        let summaryParent = extend({}, parentRecord);
-                        delete summaryParent.childRecords;
-                        delete summaryParent[this.parent.childMapping];
-                        setValue('parentItem', summaryParent, item);
-                        let level = getObject('level', summaryParent);
-                        setValue('level', level + 1, item);
-                        let index = getObject('index', summaryParent);
-                        setValue('isSummaryRow', true, item);
-                        setValue('parentUniqueID', summaryParent.uniqueID, item);
-                        if (isSort) {
-                            let childRecords = getObject('childRecords', parentRecord);
-                            if (childRecords.length) {
-                                childRecords.push(item);
-                            }
+        if (this.parent.aggregates.filter((x) => x.showChildSummary).length) {
+            for (let i = 0, len = dataLength; i < len; i++) {
+                parentRecord = parentRecords[i];
+                childRecordsLength = this.getChildRecordsLength(parentRecord, flatRecords);
+                if (childRecordsLength) {
+                    for (let summaryRowIndex = 1, len = summaryLength; summaryRowIndex <= len; summaryRowIndex++) {
+                        let item;
+                        item = {};
+                        for (let columnIndex = 0, len = columnLength; columnIndex < len; columnIndex++) {
+                            let field = isNullOrUndefined(getObject('field', this.parent.columns[columnIndex])) ?
+                                this.parent.columns[columnIndex] : getObject('field', this.parent.columns[columnIndex]);
+                            item[field] = null;
                         }
-                        flatRecords.splice(currentIndex, 0, item);
+                        item = this.createSummaryItem(item, this.parent.aggregates[summaryRowIndex - 1]);
+                        if (this.parent.aggregates[summaryRowIndex - 1].showChildSummary) {
+                            let idx;
+                            flatRecords.map((e, i) => {
+                                if (e.uniqueID === parentRecord.uniqueID) {
+                                    idx = i;
+                                    return;
+                                }
+                            });
+                            let currentIndex = idx + childRecordsLength + summaryRowIndex;
+                            let summaryParent = extend({}, parentRecord);
+                            delete summaryParent.childRecords;
+                            delete summaryParent[this.parent.childMapping];
+                            setValue('parentItem', summaryParent, item);
+                            let level = getObject('level', summaryParent);
+                            setValue('level', level + 1, item);
+                            let index = getObject('index', summaryParent);
+                            setValue('isSummaryRow', true, item);
+                            setValue('parentUniqueID', summaryParent.uniqueID, item);
+                            if (isSort) {
+                                let childRecords = getObject('childRecords', parentRecord);
+                                if (childRecords.length) {
+                                    childRecords.push(item);
+                                }
+                            }
+                            flatRecords.splice(currentIndex, 0, item);
+                        }
+                        else {
+                            continue;
+                        }
                     }
-                    else {
-                        continue;
-                    }
+                    this.flatChildRecords = [];
                 }
-                this.flatChildRecords = [];
+            }
+        }
+        else {
+            let items;
+            items = {};
+            for (let columnIndex = 0, length = columnLength; columnIndex < length; columnIndex++) {
+                let fields = isNullOrUndefined(getObject('field', this.parent.columns[columnIndex])) ?
+                    this.parent.columns[columnIndex] : getObject('field', this.parent.columns[columnIndex]);
+                items[fields] = null;
+            }
+            for (let summaryRowIndex = 1, length = summaryLength; summaryRowIndex <= length; summaryRowIndex++) {
+                this.createSummaryItem(items, this.parent.aggregates[summaryRowIndex - 1]);
             }
         }
         return flatRecords;
@@ -7773,7 +7930,14 @@ class Aggregate$1 {
             let keys = Object.keys(itemData);
             for (let key of keys) {
                 if (key === displayColumn) {
-                    itemData[key] = this.getSummaryValues(summary.columns[i], this.flatChildRecords);
+                    if (this.flatChildRecords.length) {
+                        itemData[key] = this.getSummaryValues(summary.columns[i], this.flatChildRecords);
+                    }
+                    else if (this.parent.isLocalData) {
+                        let data = this.parent.dataSource instanceof DataManager ? this.parent.dataSource.dataSource.json
+                            : this.parent.flatData;
+                        itemData[key] = this.getSummaryValues(summary.columns[i], data);
+                    }
                 }
                 else {
                     continue;
@@ -8907,6 +9071,9 @@ class Edit$1 {
                 removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
                 this.parent.grid.focusModule.restoreFocus();
                 editAction({ value: args.rowData, action: 'edit' }, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, args.columnName);
+                if ((row.rowIndex === this.parent.getCurrentViewRecords().length - 1) && this.keyPress === 'enter') {
+                    this.keyPress = null;
+                }
                 let saveArgs = {
                     type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
                     previousData: args.previousValue, row: row, target: args.cell
@@ -9002,24 +9169,26 @@ class Edit$1 {
                 index = getValue('uniqueIDCollection.' + data2.parentItem.uniqueID + '.index', this.parent);
             }
             let treecell = row.cells[this.parent.treeColumnIndex];
-            for (let l = 0; l < treecell.classList.length; l++) {
-                let value = treecell.classList[l];
-                let remove = /e-gridrowindex/i;
-                let removed = /e-griddetailrowindex/i;
-                let result = value.match(remove);
-                let results = value.match(removed);
-                if (result != null) {
-                    removeClass([treecell], value);
+            if (!isNullOrUndefined(treecell)) {
+                for (let l = 0; l < treecell.classList.length; l++) {
+                    let value = treecell.classList[l];
+                    let remove = /e-gridrowindex/i;
+                    let removed = /e-griddetailrowindex/i;
+                    let result = value.match(remove);
+                    let results = value.match(removed);
+                    if (result != null) {
+                        removeClass([treecell], value);
+                    }
+                    if (results != null) {
+                        removeClass([treecell], value);
+                    }
                 }
-                if (results != null) {
-                    removeClass([treecell], value);
+                if (!rows[k].classList.contains('e-detailrow')) {
+                    addClass([treecell], 'e-gridrowindex' + index + 'level' + level);
                 }
-            }
-            if (!rows[k].classList.contains('e-detailrow')) {
-                addClass([treecell], 'e-gridrowindex' + index + 'level' + level);
-            }
-            else {
-                addClass([treecell], 'e-griddetailrowindex' + index + 'level' + level);
+                else {
+                    addClass([treecell], 'e-griddetailrowindex' + index + 'level' + level);
+                }
             }
         }
     }
@@ -9760,12 +9929,8 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
             this.previousInfo = viewInfo;
             let page = viewInfo.loadNext && !viewInfo.loadSelf ? viewInfo.nextInfo.page : viewInfo.page;
             this.parent.setProperties({ pageSettings: { currentPage: page } }, true);
-            if (viewInfo.event === 'refresh-virtual-block') {
-                this.parent.refresh();
-            }
-            else {
-                this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', focusElement: scrollArgs.focusElement });
-            }
+            viewInfo.event = viewInfo.event === 'refresh-virtual-block' ? 'model-changed' : viewInfo.event;
+            this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', focusElement: scrollArgs.focusElement });
         }
     }
     appendContent(target, newChild, e) {
@@ -10170,5 +10335,5 @@ class ColumnChooser$1 {
  * Export TreeGrid component
  */
 
-export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, dataStateChange, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, beforeCopy, beforePaste, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchDelete, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, virtualColumnIndex, virtualActionArgs, dataListener, indexModifier, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, detailDataBound, rowDrag, rowDragStartHelper, rowDrop, rowDragStart, rowsAdd, rowsRemove, rowdraging, rowDropped, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, RowDD$1 as RowDD, Column, EditSettings, Predicate$1 as Predicate, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, SortDescriptor, SortSettings, RowDropSettings$1 as RowDropSettings, Render, TreeVirtualRowModelGenerator, isRemoteData, isCountRequired, isCheckboxcolumn, isFilterChildHierarchy, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, isHidden, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, TreeClipboard, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection, DetailRow$1 as DetailRow, VirtualScroll$1 as VirtualScroll, TreeVirtual, Freeze$1 as Freeze, ColumnChooser$1 as ColumnChooser };
+export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, dataStateChange, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, beforeCopy, beforePaste, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchDelete, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, virtualColumnIndex, virtualActionArgs, dataListener, indexModifier, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, detailDataBound, rowDrag, rowDragStartHelper, rowDrop, rowDragStart, rowsAdd, rowsRemove, rowdraging, rowDropped, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, RowDD$1 as RowDD, Column, EditSettings, Predicate$1 as Predicate, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, SortDescriptor, SortSettings, RowDropSettings$1 as RowDropSettings, Render, TreeVirtualRowModelGenerator, isRemoteData, isCountRequired, isCheckboxcolumn, isFilterChildHierarchy, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, isHidden, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, TreeClipboard, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection, DetailRow$1 as DetailRow, VirtualScroll$1 as VirtualScroll, TreeVirtual, Freeze$1 as Freeze, ColumnChooser$1 as ColumnChooser, Logger$1 as Logger, treeGridDetails };
 //# sourceMappingURL=ej2-treegrid.es2015.js.map

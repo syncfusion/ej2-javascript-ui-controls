@@ -1261,7 +1261,7 @@ function validateSubFolder(parent, data, dropPath$$1, dragPath) {
     for (var i = 0; i < data.length; i++) {
         if (!getValue('isFile', data[i])) {
             var tempTarget = getFullPath(parent, data[i], dragPath);
-            if (dropPath$$1.indexOf(tempTarget) !== -1) {
+            if (dropPath$$1.indexOf(tempTarget) === 0) {
                 var result = {
                     files: null,
                     error: {
@@ -1802,7 +1802,7 @@ function createAjax(parent, data, fn, event, operation, targetPath) {
                     parent.notify(afterRequest, { action: 'success' });
                     var id = parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1];
                     if (!isNullOrUndefined(result.cwd) && (getValue('action', data) === 'read')) {
-                        result.cwd.name = parent.rootAliasName || result.cwd.name;
+                        result.cwd.name = (parent.pathId.length === 1) ? (parent.rootAliasName || result.cwd.name) : result.cwd.name;
                         setValue('_fm_id', id, result.cwd);
                         setValue(id, result.cwd, parent.feParent);
                         if (!isNullOrUndefined(result.files) || result.error.code === '401') {

@@ -104,6 +104,21 @@ let Grid: object = {
             return null;
         }
     },
+    removePersistItem(element: BlazorGridElement, id: string) {
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            let _this: SfGrid = element.blazor__instance;
+            (_this.getHeaderTable() as HTMLTableElement).style.width = "";
+            (_this.getContentTable() as HTMLTableElement).style.width = "";
+            if (_this.options.aggregatesCount != 0) {
+                (_this.getFooterContent().querySelector(".e-table") as HTMLTableElement).style.width  = "";
+            }
+            if (_this.options.frozenColumns > 0) {
+                (_this.element.querySelector(".e-movableheader").querySelector('.e-table') as HTMLTableElement).style.width = "";
+                (_this.element.querySelector(".e-movablecontent").querySelector('.e-table') as HTMLTableElement).style.width = "";
+            }
+        }
+        localStorage.removeItem(id);
+    },
     focusChild(element: BlazorGridElement, rowuid: string, celluid: string) {
         let query = 'button, [href], input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])';
         let child = [].slice.call(element.querySelector("[data-uid=\"" + celluid + "\"]").querySelectorAll(query));

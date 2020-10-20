@@ -172,7 +172,7 @@ var SfTreeView = /** @class */ (function () {
             event: e,
         };
         var id = focusedNode.getAttribute('data-uid');
-        this.dotNetRef.invokeMethodAsync('TriggerKeyboardEvent', eventArgs, id);
+        this.dotNetRef.invokeMethodAsync('TriggerKeyboardEvent', eventArgs, id, e.action, e.key);
     };
     SfTreeView.prototype.setMultiSelect = function (isEnabled) {
         this.options.allowMultiSelection = isEnabled;
@@ -194,11 +194,12 @@ var SfTreeView = /** @class */ (function () {
         this.options.cssClass = cssClass;
     };
     SfTreeView.prototype.wireEditingEvents = function (toBind) {
+        var _this_1 = this;
         if (toBind && !this.options.disabled) {
             var proxy_1 = this;
             this.touchEditObj = new sf.base.Touch(this.element, {
                 tap: function (e) {
-                    if (e.tapCount === 2) {
+                    if (_this_1.isDoubleTapped(e) && e.tapCount === 2) {
                         e.originalEvent.preventDefault();
                         proxy_1.editingHandler(e.originalEvent);
                     }
@@ -229,23 +230,23 @@ var SfTreeView = /** @class */ (function () {
         }
     };
     SfTreeView.prototype.initializeDrag = function () {
-        var _this = this;
+        var _this_1 = this;
         var virtualEle;
         this.dragObj = new sf.base.Draggable(this.element, {
             enableTailMode: true, enableAutoScroll: true,
             dragArea: this.options.dropArea,
             dragTarget: '.' + TEXTWRAP,
             helper: function (e) {
-                _this.dragTarget = e.sender.target;
-                var dragRoot = sf.base.closest(_this.dragTarget, '.' + ROOT);
-                var dragWrap = sf.base.closest(_this.dragTarget, '.' + TEXTWRAP);
-                _this.dragLi = sf.base.closest(_this.dragTarget, '.' + LISTITEM);
-                if (_this.options.fullRowSelect && !dragWrap && _this.dragTarget.classList.contains(FULLROW)) {
-                    dragWrap = _this.dragTarget.nextElementSibling;
+                _this_1.dragTarget = e.sender.target;
+                var dragRoot = sf.base.closest(_this_1.dragTarget, '.' + ROOT);
+                var dragWrap = sf.base.closest(_this_1.dragTarget, '.' + TEXTWRAP);
+                _this_1.dragLi = sf.base.closest(_this_1.dragTarget, '.' + LISTITEM);
+                if (_this_1.options.fullRowSelect && !dragWrap && _this_1.dragTarget.classList.contains(FULLROW)) {
+                    dragWrap = _this_1.dragTarget.nextElementSibling;
                 }
-                if (!_this.dragTarget || !e.element.isSameNode(dragRoot) || !dragWrap ||
-                    _this.dragTarget.classList.contains(ROOT) || _this.dragTarget.classList.contains(PARENTITEM) ||
-                    _this.dragTarget.classList.contains(LISTITEM) || _this.dragLi.classList.contains(DISABLE)) {
+                if (!_this_1.dragTarget || !e.element.isSameNode(dragRoot) || !dragWrap ||
+                    _this_1.dragTarget.classList.contains(ROOT) || _this_1.dragTarget.classList.contains(PARENTITEM) ||
+                    _this_1.dragTarget.classList.contains(LISTITEM) || _this_1.dragLi.classList.contains(DISABLE)) {
                     return false;
                 }
                 var cloneEle = (dragWrap.cloneNode(true));
@@ -253,54 +254,54 @@ var SfTreeView = /** @class */ (function () {
                     var icon = sf.base.createElement('div', { className: ICON + ' ' + EXPANDABLE });
                     cloneEle.insertBefore(icon, cloneEle.children[0]);
                 }
-                var cssClass = DRAGITEM + ' ' + ROOT + ' ' + _this.options.cssClass + ' ' + (_this.options.enableRtl ? RTL : EMPTY);
+                var cssClass = DRAGITEM + ' ' + ROOT + ' ' + _this_1.options.cssClass + ' ' + (_this_1.options.enableRtl ? RTL : EMPTY);
                 virtualEle = sf.base.createElement('div', { className: cssClass });
                 virtualEle.appendChild(cloneEle);
-                var selectedLI = _this.element.querySelectorAll('.' + ACTIVE);
+                var selectedLI = _this_1.element.querySelectorAll('.' + ACTIVE);
                 var length = selectedLI.length;
-                if (length > 1 && _this.options.allowMultiSelection && _this.dragLi.classList.contains(ACTIVE)) {
+                if (length > 1 && _this_1.options.allowMultiSelection && _this_1.dragLi.classList.contains(ACTIVE)) {
                     var cNode = sf.base.createElement('span', { className: DROPCOUNT, innerHTML: EMPTY + length });
                     virtualEle.appendChild(cNode);
                 }
                 document.body.appendChild(virtualEle);
                 document.body.style.cursor = EMPTY;
-                _this.dragData = _this.getNodeData(_this.dragLi);
+                _this_1.dragData = _this_1.getNodeData(_this_1.dragLi);
                 return virtualEle;
             },
             drag: function (e) {
-                _this.dragObj.setProperties({ cursorAt: { top: (!sf.base.isNullOrUndefined(e.event.targetTouches) || sf.base.Browser.isDevice) ? 60 : -20 } });
-                _this.dragAction(e, virtualEle);
+                _this_1.dragObj.setProperties({ cursorAt: { top: (!sf.base.isNullOrUndefined(e.event.targetTouches) || sf.base.Browser.isDevice) ? 60 : -20 } });
+                _this_1.dragAction(e, virtualEle);
             },
             dragStart: function (e) {
-                sf.base.addClass([_this.element], DRAGGING);
+                sf.base.addClass([_this_1.element], DRAGGING);
                 var listItem = sf.base.closest(e.target, LISTITEM);
                 var level;
                 if (listItem) {
                     level = parseInt(listItem.getAttribute('aria-level'), 10);
                 }
-                var eventArgs = _this.getDragEvent(e.event, _this, null, e.target, null, virtualEle, level);
+                var eventArgs = _this_1.getDragEvent(e.event, _this_1, null, e.target, null, virtualEle, level);
                 if (eventArgs.draggedNode.classList.contains(EDITING)) {
-                    _this.dragObj.intDestroy(e.event);
-                    _this.dragCancelAction(virtualEle);
+                    _this_1.dragObj.intDestroy(e.event);
+                    _this_1.dragCancelAction(virtualEle);
                 }
                 else {
-                    _this.dragStartEventArgs = e;
-                    var left = _this.getXYValue(e.event, 'X');
-                    var top_1 = _this.getXYValue(e.event, 'Y');
-                    _this.dotNetRef.invokeMethodAsync('TriggerDragStartEvent', _this.updateObjectValues(eventArgs), left, top_1);
+                    _this_1.dragStartEventArgs = e;
+                    var left = _this_1.getXYValue(e.event, 'X');
+                    var top_1 = _this_1.getXYValue(e.event, 'Y');
+                    _this_1.dotNetRef.invokeMethodAsync('TriggerDragStartEvent', _this_1.updateObjectValues(eventArgs), left, top_1);
                 }
             },
             dragStop: function (e) {
-                sf.base.removeClass([_this.element], DRAGGING);
-                _this.removeVirtualEle();
+                sf.base.removeClass([_this_1.element], DRAGGING);
+                _this_1.removeVirtualEle();
                 var dropTarget = e.target;
                 var preventTargetExpand = false;
                 var dropRoot = (sf.base.closest(dropTarget, '.' + DROPPABLE));
-                _this.isHelperElement = true;
+                _this_1.isHelperElement = true;
                 if (!dropTarget || !dropRoot) {
                     sf.base.remove(e.helper);
                     document.body.style.cursor = EMPTY;
-                    _this.isHelperElement = false;
+                    _this_1.isHelperElement = false;
                 }
                 var listItem = sf.base.closest(dropTarget, LISTITEM);
                 var level;
@@ -308,12 +309,12 @@ var SfTreeView = /** @class */ (function () {
                     level = parseInt(listItem.getAttribute('aria-level'), 10);
                 }
                 var dropEle = dropTarget;
-                var eventArgs = _this.getDragEvent(e.event, _this, dropTarget, dropEle, null, e.helper, level);
-                _this.dragStopEventArgs = e;
+                var eventArgs = _this_1.getDragEvent(e.event, _this_1, dropTarget, dropEle, null, e.helper, level);
+                _this_1.dragStopEventArgs = e;
                 eventArgs.preventTargetExpand = preventTargetExpand;
-                var left = _this.getXYValue(e.event, 'X');
-                var top = _this.getXYValue(e.event, 'Y');
-                _this.dotNetRef.invokeMethodAsync('TriggerDragStopEvent', _this.updateObjectValues(eventArgs), left, top);
+                var left = _this_1.getXYValue(e.event, 'X');
+                var top = _this_1.getXYValue(e.event, 'Y');
+                _this_1.dotNetRef.invokeMethodAsync('TriggerDragStopEvent', _this_1.updateObjectValues(eventArgs), left, top);
             }
         });
         this.dropObj = new sf.base.Droppable(this.element, {
@@ -326,7 +327,7 @@ var SfTreeView = /** @class */ (function () {
                 document.body.style.cursor = EMPTY;
             },
             drop: function (e) {
-                _this.dropAction(e);
+                _this_1.dropAction(e);
             }
         });
     };
@@ -408,6 +409,9 @@ var SfTreeView = /** @class */ (function () {
                 sf.base.remove(e.helper);
             }
             document.body.style.cursor = EMPTY;
+            if (!dropLi || dropLi.isSameNode(dragLi) || this.isDescendant(dragLi, dropLi)) {
+                return;
+            }
             if (dragObj.allowMultiSelection && dragLi.classList.contains(ACTIVE)) {
                 var sNodes = sf.base.selectAll('.' + ACTIVE, dragObj.element);
                 if (e.target.offsetHeight <= 33 && offsetY > e.target.offsetHeight - 10 && offsetY > 6) {
@@ -438,6 +442,19 @@ var SfTreeView = /** @class */ (function () {
         var left = this.getXYValue(e.event, 'X');
         var top = this.getXYValue(e.event, 'Y');
         this.dotNetRef.invokeMethodAsync('TriggerNodeDropped', this.updateObjectValues(eventArgs), left, top);
+    };
+    SfTreeView.prototype.isDoubleTapped = function (e) {
+        var target = e.originalEvent.target;
+        var secondTap;
+        if (target && e.tapCount) {
+            if (e.tapCount === 1) {
+                this.firstTap = sf.base.closest(target, '.' + LISTITEM);
+            }
+            else if (e.tapCount === 2) {
+                secondTap = sf.base.closest(target, '.' + LISTITEM);
+            }
+        }
+        return (this.firstTap === secondTap);
     };
     SfTreeView.prototype.isDescendant = function (parent, child) {
         var node = child.parentNode;
@@ -885,12 +902,12 @@ var SfTreeView = /** @class */ (function () {
         });
     };
     SfTreeView.prototype.wireExpandOnEvent = function (toBind) {
-        var _this = this;
+        var _this_1 = this;
         if (toBind) {
             var proxy_2 = this;
             this.touchExpandObj = new sf.base.Touch(this.element, {
                 tap: function (e) {
-                    if ((_this.options.expandOnType === CLICK || (_this.options.expandOnType === DBLCLICK && e.tapCount === 2))
+                    if ((_this_1.options.expandOnType === CLICK || (_this_1.options.expandOnType === DBLCLICK && _this_1.isDoubleTapped(e) && e.tapCount === 2))
                         && e.originalEvent.which !== 3) {
                         proxy_2.expandHandler(e);
                     }
@@ -983,7 +1000,9 @@ var SfTreeView = /** @class */ (function () {
             });
         }
         else if (li.querySelector(".e-icon-expandable")) {
-            li.querySelector(".e-icon-expandable").remove();
+            var icon = sf.base.select('div.' + ICON, li);
+            sf.base.removeClass([icon], EXPANDABLE);
+            sf.base.addClass([icon], COLLAPSIBLE);
         }
     };
     SfTreeView.prototype.setHeight = function (currli, ul) {
@@ -999,11 +1018,18 @@ var SfTreeView = /** @class */ (function () {
         var ulelement = li.querySelector('ul');
         if (ulelement) {
             ulelement.style.display = NONE;
-            li.style.overflow = EMPTY;
-            li.style.height = EMPTY;
             ulelement.classList.add(DISPLAYNONE);
-            this.dotNetRef.invokeMethodAsync('TriggerNodeCollapsedEvent', this.expandArgs);
         }
+        li.style.overflow = EMPTY;
+        li.style.height = EMPTY;
+        this.expandArgs = this.getExpandEvent(li, null);
+        var icon = sf.base.select('div.' + ICON, li);
+        var _this = this;
+        setTimeout(function () {
+            sf.base.removeClass([icon], COLLAPSIBLE);
+            sf.base.addClass([icon], EXPANDABLE);
+            _this.dotNetRef.invokeMethodAsync('TriggerNodeCollapsedEvent', _this.expandArgs);
+        }, 100);
     };
     SfTreeView.prototype.preventContextMenu = function (e) {
         e.preventDefault();

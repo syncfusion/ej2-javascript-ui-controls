@@ -41,6 +41,7 @@ describe('insert hyperlink validation', () => {
         }, 1000);
     });
     it('In backward selection edit hyperlink validation', () => {
+console.log('In backward selection edit hyperlink validation');
         editor.openBlank();
         editor.editorModule.insertText('sample');
         editor.selection.handleLeftKey();
@@ -79,6 +80,7 @@ describe('Edit hyperlink validation', () => {
         }, 1000);
     });
     it('In backward selection insert hyperlink validation in Multiple paragraph', () => {
+console.log('In backward selection insert hyperlink validation in Multiple paragraph');
         editor.openBlank();
         editor.editorModule.insertText('sample');
         editor.editorModule.onEnter();
@@ -97,6 +99,7 @@ describe('Edit hyperlink validation', () => {
         expect(editor.selection.getFieldCode(fieldBegin)).toBe('HYPERLINK "s"');
     });
     it('In backward selection edit hyperlink validation in Multiple paragraph', () => {
+console.log('In backward selection edit hyperlink validation in Multiple paragraph');
         editor.hyperlinkDialogModule.show();
         (editor.hyperlinkDialogModule as any).urlTextBox.value = 'ss';
         editor.hyperlinkDialogModule.onInsertButtonClick();
@@ -143,6 +146,7 @@ describe('Remove Hyperlink valdiation', () => {
         }, 1000);
     });
     it('Hyerplink using enter', () => {
+console.log('Hyerplink using enter');
         editor.openBlank();
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.onEnter();
@@ -153,18 +157,22 @@ describe('Remove Hyperlink valdiation', () => {
         expect(editor.selection.getFieldCode(fieldBegin)).not.toBeUndefined();
     });
     it('remove Hyperlink validation', () => {
+console.log('remove Hyperlink validation');
         editor.editor.removeHyperlink();
         expect((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children.length).toBe(1);
     });
     it('undo after remove Hyperlink validation', () => {
+console.log('undo after remove Hyperlink validation');
         editor.editorHistory.undo();
         expect((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children.length).toBe(5);
     });
     it('redo after remove Hyperlink validation', () => {
+console.log('redo after remove Hyperlink validation');
         editor.editorHistory.redo();
         expect((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children.length).toBe(1);
     });
     it('Multiple undo and redo after remove Hyperlink validation', () => {
+console.log('Multiple undo and redo after remove Hyperlink validation');
         let i: number = 1;
         while (i <= 5) {
             editor.editorHistory.undo();

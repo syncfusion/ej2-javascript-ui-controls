@@ -31,6 +31,7 @@ describe('Selection bookmark property validation', () => {
         }, 1000);
     });
     it('Single line in a paragraph with selection 1', () => {
+console.log('Single line in a paragraph with selection 1');
         editor.editor.insertText('Hello World');
         editor.selection.handleLeftKey();
         editor.selection.selectCurrentWord();
@@ -38,6 +39,7 @@ describe('Selection bookmark property validation', () => {
         expect(editor.selection.getBookmarks()[0]).toBe('b1');
     });
     it('Multiple lines in a paragraph with selection', () => {
+console.log('Multiple lines in a paragraph with selection');
         editor.openBlank();
         editor.editor.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large');
         editor.selection.handleShiftUpKey();
@@ -45,6 +47,7 @@ describe('Selection bookmark property validation', () => {
         expect(editor.selection.getBookmarks()[0]).toBe('b1');
     });
     it('Multiple lines in different paragraph with selection', () => {
+console.log('Multiple lines in different paragraph with selection');
         editor.openBlank();
         editor.editor.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large');
         editor.editor.onEnter();
@@ -56,6 +59,7 @@ describe('Selection bookmark property validation', () => {
         expect(editor.selection.getBookmarks()[0]).toBe('b1');
     });
     it('Inside table cell with selection', () => {
+console.log('Inside table cell with selection');
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
         editor.editor.insertText('Hello World');
@@ -73,6 +77,7 @@ describe('Selection bookmark property validation', () => {
         expect(editor.selection.getBookmarks().length).toBe(2);
     });
     it('Single line in a paragraph without selection', () => {
+console.log('Single line in a paragraph without selection');
         editor.openBlank();
         editor.editor.insertText('Hello World');
         editor.selection.handleLeftKey();
@@ -82,6 +87,7 @@ describe('Selection bookmark property validation', () => {
         expect(editor.selection.getBookmarks()[0]).toBe('b1');
     });
     it('Empty bookmark on single line in a paragraph without selection', () => {
+console.log('Empty bookmark on single line in a paragraph without selection');
         editor.openBlank();
         editor.editor.insertText('Hello World');
         editor.selection.handleLeftKey();
@@ -92,6 +98,7 @@ describe('Selection bookmark property validation', () => {
         expect(editor.selection.getBookmarks().length).toBe(0);
     });
     it('single line in a paragraph with selection 2', () => {
+console.log('single line in a paragraph with selection 2');
         editor.openBlank();
         editor.editor.insertText('Hello World');
         editor.selection.selectAll();
@@ -102,6 +109,7 @@ describe('Selection bookmark property validation', () => {
         expect(editor.selection.getBookmarks().length).toBe(1);
     });
     it('combination paragraph and table contains bookmark validation ', () => {
+console.log('combination paragraph and table contains bookmark validation ');
         editor.openBlank();
         editor.editor.insertText('Hello World');
         editor.selection.handleLeftKey();
@@ -118,6 +126,7 @@ describe('Selection bookmark property validation', () => {
         expect(editor.selection.getBookmarks().length).toBe(2);
     });
     it('insert text after bookmark insert validation', () => {
+console.log('insert text after bookmark insert validation');
         editor.openBlank();
         editor.editor.insertText('Sample');
         editor.selection.selectAll();
@@ -130,6 +139,7 @@ describe('Selection bookmark property validation', () => {
     });
 
     it('Bookmark validation in nested table', () => {
+console.log('Bookmark validation in nested table');
         editor.open(JSON.stringify(testCase));
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
@@ -164,21 +174,25 @@ describe('enable repeat row header test', () => {
         }, 1000);
     });
     it('enable repeat row header scenario 1', () => {
+console.log('enable repeat row header scenario 1');
         editor.editor.insertTable(2, 2);
         expect(editor.tablePropertiesDialogModule.enableRepeatHeader()).toBe(true);
     });
     it('enable repeat row header scenario 2', () => {
+console.log('enable repeat row header scenario 2');
         editor.editor.insertTable(2, 2);
         editor.selection.moveDown();
         expect(editor.tablePropertiesDialogModule.enableRepeatHeader()).toBe(false);
     });
     it('enable repeat row header scenario 3', () => {
+console.log('enable repeat row header scenario 3');
         editor.editor.insertTable(2, 2);
         editor.selection.moveDown();
         editor.editor.insertTable(2, 2);
         expect(editor.tablePropertiesDialogModule.enableRepeatHeader()).toBe(true);
     });
     it('enable repeat row header scenario 4', () => {
+console.log('enable repeat row header scenario 4');
         editor.editor.insertTable(2, 2);
         editor.selection.moveDown();
         editor.editor.insertTable(2, 2);
@@ -213,11 +227,13 @@ describe('Selection public API validation', () => {
         }, 1000);
     });
     it('selects current line', () => {
+console.log('selects current line');
         editor.editor.insertText('Hello World');
         editor.selection.selectLine();
         expect(editor.selection.start.hierarchicalPosition).not.toBe(editor.selection.end.hierarchicalPosition);
     });
     it('selects current paragraph', () => {
+console.log('selects current paragraph');
         editor.editor.onEnter();
         editor.editor.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational manufacturing company. The company manufactures and sells metal and composite bicycles to North American,');
         editor.selection.moveUp();
@@ -225,6 +241,7 @@ describe('Selection public API validation', () => {
         expect(editor.selection.start.currentWidget).not.toBe(editor.selection.end.currentWidget);
     });
     it('select current word by excluding space', () => {
+console.log('select current word by excluding space');
         editor.editor.onEnter();
         editor.editor.insertText('Hello world');
         editor.selection.handleLeftKey();
@@ -232,6 +249,7 @@ describe('Selection public API validation', () => {
         expect(editor.selection.text).toBe('world');
     });
     it('select current word by including space', () => {
+console.log('select current word by including space');
         editor.editor.onEnter();
         editor.editor.insertText('Hello world ');
         editor.selection.handleLeftKey();
@@ -239,110 +257,134 @@ describe('Selection public API validation', () => {
         expect(editor.selection.text).toBe('world ');
     });
     it('moves selection to document start', () => {
+console.log('moves selection to document start');
         editor.editor.onEnter();
         editor.editor.insertText('Hello world ');
         editor.selection.moveToDocumentStart();
         expect(editor.selection.end.hierarchicalPosition).toBe('0;0;0;0;0');
     });
     it('moves selection to document end', () => {
+console.log('moves selection to document end');
         editor.editor.onEnter();
         editor.editor.insertText('Hello world ');
         editor.selection.moveToDocumentEnd();
         expect(editor.selection.end.hierarchicalPosition).toBe('0;0;4;0;12');
     });
     it('moves selection to paragraph start', () => {
+console.log('moves selection to paragraph start');
         editor.editor.onEnter();
         editor.editor.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational manufacturing company. The company manufactures and sells metal and composite bicycles to North American,');
         editor.selection.moveToParagraphStart();
         expect(editor.selection.end.hierarchicalPosition).toBe('0;0;5;0;0');
     });
     it('moves selection to paragraph end', () => {
+console.log('moves selection to paragraph end');
         editor.selection.moveToParagraphEnd();
         expect(editor.selection.end.hierarchicalPosition).toBe('0;0;5;2;38');
     });
     it('moves selection to previous line', () => {
+console.log('moves selection to previous line');
         editor.selection.moveToPreviousLine();
         //expect(editor.selection.end.hierarchicalPosition).toBe('0;0;5;1;39');
     });
     it('moves selection to next line', () => {
+console.log('moves selection to next line');
         editor.selection.moveToNextLine();
         expect(editor.selection.end.hierarchicalPosition).toBe('0;0;5;2;37');
     });
     it('moves selection to line start', () => {
+console.log('moves selection to line start');
         editor.selection.moveToLineStart();
         expect(editor.selection.end.hierarchicalPosition).toBe('0;0;5;2;0');
     });
     it('moves selection to line end', () => {
+console.log('moves selection to line end');
         editor.selection.moveToLineEnd();
         expect(editor.selection.end.hierarchicalPosition).toBe('0;0;5;2;37');
     });
     it('moves selection to previous character', () => {
+console.log('moves selection to previous character');
         let endOffset = editor.selection.end.offset;
         editor.selection.moveToPreviousCharacter();
         expect(editor.selection.end.offset).toBeLessThan(endOffset);
     });
     it('moves selection to next character', () => {
+console.log('moves selection to next character');
         let endOffset = editor.selection.end.offset;
         editor.selection.moveToNextCharacter();
         expect(editor.selection.end.offset).toBe(endOffset + 1);
     });
     it('extends selection to line start', () => {
+console.log('extends selection to line start');
         editor.selection.extendToLineStart();
         expect(editor.selection.start.offset).not.toBe(editor.selection.end.offset);
     });
     it('extends selection to line end', () => {
+console.log('extends selection to line end');
         editor.selection.extendToLineEnd();
         expect(editor.selection.start.offset).not.toBe(editor.selection.end.offset);
     });
     it('extends selection to line end', () => {
+console.log('extends selection to line end');
         editor.selection.extendToLineEnd();
         expect(editor.selection.start.offset).not.toBe(editor.selection.end.offset);
     });
     it('extends selection to previous line', () => {
+console.log('extends selection to previous line');
         editor.selection.extendToPreviousLine();
         expect(editor.selection.start.currentWidget).not.toBe(editor.selection.end.currentWidget);
     });
     it('extends selection to next line', () => {
+console.log('extends selection to next line');
         editor.selection.extendToNextLine();
         expect(editor.selection.start.currentWidget).toBe(editor.selection.end.currentWidget);
     });
     it('extends selection to paragraph start', () => {
+console.log('extends selection to paragraph start');
         editor.selection.extendToParagraphStart();
         expect(editor.selection.end.hierarchicalPosition).toBe('0;0;5;0;0');
     });
     it('extends selection to paragraph end', () => {
+console.log('extends selection to paragraph end');
         editor.selection.extendToParagraphEnd();
         expect(editor.selection.end.hierarchicalPosition).toBe('0;0;5;2;38');
     });
     it('extends selection backward', () => {
+console.log('extends selection backward');
         editor.selection.moveToLineEnd();
         let endOffset: number = editor.selection.end.offset;
         editor.selection.extendBackward();
         expect(editor.selection.end.offset).toBe(endOffset - 1);
     });
     it('extends selection forward', () => {
+console.log('extends selection forward');
         editor.selection.moveToLineStart();
         let endOffset: number = editor.selection.start.offset;
         editor.selection.extendForward();
         expect(editor.selection.end.offset).toBe(endOffset + 1);
     });
     it('extends selection to word start', () => {
+console.log('extends selection to word start');
         editor.openBlank();
         editor.editor.insertText('Hello world');
         editor.selection.extendToWordStart();
         expect(editor.selection.text).toBe('world');
     });
     it('extends selection to word start', () => {
+console.log('extends selection to word start');
         editor.selection.extendToWordEnd();
         expect(editor.selection.text).toBe('');
     });
     it('start offset property', () => {
+console.log('start offset property');
         expect(editor.selection.startOffset).toBe('0;0;11');
     });
     it('end offset property', () => {
+console.log('end offset property');
         expect(editor.selection.endOffset).toBe('0;0;11');
     });
     it('select using hierarchical index', () => {
+console.log('select using hierarchical index');
         editor.openBlank();
         editor.editor.insertText('Hello world');
         editor.selection.select('0;0;0', '0;0;11');
@@ -374,6 +416,7 @@ describe('Selection extension in backward selection', () => {
         }, 1000);
     });
     it('handle shift up key validation', () => {
+console.log('handle shift up key validation');
         editor.editor.insertText('Hello World');
         editor.editor.onEnter();
         editor.editor.insertText('Hello World');
@@ -381,6 +424,7 @@ describe('Selection extension in backward selection', () => {
         expect(editor.selection.start.offset).toBe(12);
     });
     it('apply highlight color on backward selection', () => {
+console.log('apply highlight color on backward selection');
         editor.selection.selectAll();
         editor.editor.applyNumbering('%1.');
         editor.selection.handleDownKey();
@@ -391,6 +435,7 @@ describe('Selection extension in backward selection', () => {
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
     it('apply highlight color for multiple paragraph', () => {
+console.log('apply highlight color for multiple paragraph');
         editor.editor.onEnter();
         editor.editor.insertText('Hello World');
         editor.selection.handleUpKey();
@@ -429,6 +474,7 @@ describe('Update Reference field', () => {
         }, 1000);
     });
     it('update Reference field', () => {
+console.log('update Reference field');
         let refText: string;
         let text: string;
         for (let i: number = 0; i < editor.documentHelper.fields.length; i++) {
@@ -445,6 +491,7 @@ describe('Update Reference field', () => {
         expect(refText).toBe(text);
     });
     it('update Reference field after updation', () => {
+console.log('update Reference field after updation');
         let referenceText: string;
         for (let i: number = 0; i < editor.documentHelper.fields.length; i++) {
             let field: FieldElementBox = editor.documentHelper.fields[i];
@@ -558,6 +605,7 @@ describe('shift down key validation', () => {
         }, 1000);
     });
     it('with bookmark and line break character', () => {
+console.log('with bookmark and line break character');
         editor.open(JSON.stringify(loadData));
         editor.selection.handleShiftDownKey();
         expect(editor.selection.start.currentWidget).not.toBe(editor.selection.end.currentWidget);
@@ -594,6 +642,7 @@ describe('Hidden Bookmark API', () => {
         }, 1000);
     });
     it('include hidden bookmark validation', () => {
+console.log('include hidden bookmark validation');
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
@@ -603,6 +652,7 @@ describe('Hidden Bookmark API', () => {
         expect(editor.selection.getBookmarks(true).length).toBe(1)
     });
     it('Insert text before merge field', () => {
+console.log('Insert text before merge field');
         editor.openBlank();
         editor.editor.insertField('Merge', 'check');
         editor.selection.handleHomeKey();
@@ -611,6 +661,7 @@ describe('Hidden Bookmark API', () => {
         expect(text).toBe('Hello');
     });
     it('select comment word Control right shift key', () => {
+console.log('select comment word Control right shift key');
         editor.openBlank();
         editor.editorModule.insertText('hello syncfusion world');
         editor.selection.handleHomeKey();
@@ -624,6 +675,7 @@ describe('Hidden Bookmark API', () => {
         expect(editor.selection.isEmpty).toBe(false)
     });
     it('select comment word Control left shift key ', () => {
+console.log('select comment word Control left shift key ');
         editor.openBlank();
         editor.editorModule.insertText('hello syncfusion world');
         editor.selection.handleHomeKey();
@@ -640,6 +692,7 @@ describe('Hidden Bookmark API', () => {
         expect(editor.selection.isEmpty).toBe(false)
     });
     it('select single word comment word Control right shift key', () => {
+console.log('select single word comment word Control right shift key');
         editor.openBlank();
         editor.editorModule.insertText('hello');
         editor.selection.selectAll();
@@ -677,17 +730,20 @@ describe('Bookmark navigate API', () => {
         }, 1000);
     });
     it('insert bookmark validation', () => {
+console.log('insert bookmark validation');
         editor.editor.insertText('sample');
         editor.selection.selectAll();
         editor.editor.insertBookmark('sample');
         expect(editor.selection.start.currentWidget.children.length).toBe(3);
     });
     it('Navigate bookmark and delete validation', () => {
+console.log('Navigate bookmark and delete validation');
         editor.selection.selectBookmark('sample');
         editor.editor.delete();
         expect(editor.selection.start.currentWidget.children.length).toBe(0);
     });
     it('Navigate dropdown formfield validation', () => {
+console.log('Navigate dropdown formfield validation');
         editor.openBlank();
         editor.editor.insertFormField('DropDown');    
         let keyEvent: any = {
@@ -700,6 +756,7 @@ describe('Bookmark navigate API', () => {
         expect(() => {  editor.selectionModule.onKeyDownInternal(keyEvent, false, false, false); }).not.toThrowError();
     });
     it('Get previous context item validation', () => {
+console.log('Get previous context item validation');
         editor.openBlank();
         editor.editor.insertText('check ');
         editor.editor.insertBookmark('goto');
@@ -712,6 +769,7 @@ describe('Bookmark navigate API', () => {
         expect(contextItem).toBe('Bookmark');        
     });
     it('Get next context item validation', () => {
+console.log('Get next context item validation');
         editor.openBlank();
         editor.editor.insertText('check ');
         editor.editor.insertBookmark('goto');
@@ -723,5 +781,20 @@ describe('Bookmark navigate API', () => {
         editor.selection.handleLeftKey();
         contextItem = editor.selection.getNextContextType();
         expect(contextItem).toBe('Bookmark');        
+    });
+    it('EditRangeElement validation', () => {
+console.log('EditRangeElement validation');
+        editor.openBlank();
+        editor.editor.insertText('Hello');
+        editor.documentHelper.selection.selectAll();
+        editor.editor.insertEditRangeElement('Everyone');
+        editor.documentHelper.selection.handleLeftKey();
+        editor.documentHelper.selection.handleRightKey();
+        editor.documentHelper.selection.handleRightKey();
+        editor.documentHelper.selection.handleRightKey();
+        editor.documentHelper.selection.handleRightKey();
+        editor.documentHelper.selection.handleRightKey();
+        editor.documentHelper.selection.handleRightKey();
+        expect(editor.documentHelper.selection.caret.style.display).toBe('block');  
     });
 });

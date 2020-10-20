@@ -1103,7 +1103,8 @@ export class TaskProcessor extends DateProcessor {
         }
         resourceIdCollection = data[this.parent.taskFields.resourceInfo];
         let resourceData: Object[];
-        if (!isNullOrUndefined(this.parent.editModule) && this.parent.editModule.dialogModule.isAddNewResource) {
+        if (!isNullOrUndefined(this.parent.editModule) && !isNullOrUndefined(this.parent.editModule.dialogModule)
+            && this.parent.editModule.dialogModule.isAddNewResource) {
             resourceData = this.parent.editModule.dialogModule.ganttResources;
         } else {
             resourceData = this.parent.resources;

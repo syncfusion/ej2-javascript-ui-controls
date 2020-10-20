@@ -40,6 +40,7 @@ describe('paragraph format validation with selection including table', () => {
         }, 1000);
     });
     it('Center alignment Property validation', () => {
+console.log('Center alignment Property validation');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.editorModule.insertText('Sample document');
@@ -53,6 +54,7 @@ describe('paragraph format validation with selection including table', () => {
         expect(editor.selection.paragraphFormat.textAlignment).not.toBe('Center');
     });
     it('Center alignment Property validation', () => {
+console.log('Center alignment Property validation');
         editor.openBlank();
         editor.editorModule.insertText('Sample document');
         editor.editorModule.insertText('Sample document');
@@ -72,6 +74,7 @@ describe('paragraph format validation with selection including table', () => {
         expect(editor.selection.paragraphFormat.textAlignment).toBe('Center');
     });
     it('paragraph inside table paragraph format validation', () => {
+console.log('paragraph inside table paragraph format validation');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.editorModule.insertText('Adventure Works cycles');
@@ -120,6 +123,7 @@ describe('paragraph format validation with selection including table', () => {
         }, 1000);
     });
     it('paragraph inside table paragraph format validation', () => {
+console.log('paragraph inside table paragraph format validation');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.editorModule.insertText('Adventure Works cycles');
@@ -146,6 +150,7 @@ describe('paragraph format validation with selection including table', () => {
         expect(editor.selection.paragraphFormat.textAlignment).not.toBe('Center');
     });
     it('paragraph nested table paragraph format validation', () => {
+console.log('paragraph nested table paragraph format validation');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.editor.insertTable(2, 2);
@@ -186,6 +191,7 @@ describe('paragraph format validation with selection in nested table', () => {
         }, 1000);
     });
     it('Nested Table validation', () => {
+console.log('Nested Table validation');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.editorModule.insertText('Adventure Works cycles');
@@ -242,6 +248,7 @@ describe('character format validation font size increment and decrement', () => 
         }, 1000);
     });
     it('Font size decrement validation', () => {
+console.log('Font size decrement validation');
         editor.openBlank();
         editor.editorModule.insertText('Sample document');
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
@@ -260,6 +267,7 @@ describe('character format validation font size increment and decrement', () => 
         expect(editor.selection.characterFormat.fontSize).not.toBe(prevFontSize);
     });
     it('Font size  decrement validation', () => {
+console.log('Font size  decrement validation');
         editor.openBlank();
         editor.editorModule.insertText('Sample document');
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
@@ -279,6 +287,7 @@ describe('character format validation font size increment and decrement', () => 
         expect(editor.selection.characterFormat.fontSize).not.toBe(prevFontSize);
     });
     it('Font size  increment with font size 72 validation', () => {
+console.log('Font size  increment with font size 72 validation');
         editor.openBlank();
         editor.editorModule.insertText('Sample document');
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
@@ -294,6 +303,7 @@ describe('character format validation font size increment and decrement', () => 
         expect(editor.selection.characterFormat.fontSize).not.toBe(prevFontSize);
     });
     it('font size with type number and boolean validation', () => {
+console.log('font size with type number and boolean validation');
         editor.openBlank();
         let fontSize = (editor.editorModule as any).updateFontSize(editor.selection.characterFormat, 12);
         expect(fontSize).toBe(23);
@@ -329,6 +339,7 @@ describe('selection character format property applying validation', () => {
     });
 
     it('bold,italic,underline,fontsize validation validation', () => {
+console.log('bold,italic,underline,fontsize validation validation');
         editor.openBlank();
         editor.editorModule.insertText('Sample document');
         let prevFormat = editor.selection.characterFormat;
@@ -342,6 +353,7 @@ describe('selection character format property applying validation', () => {
         expect(prevFormat.italic).toBe(editor.selection.characterFormat.italic);
     });
     it('strikethrough,baselineAlignment,highlightColor,fontColor and validation', () => {
+console.log('strikethrough,baselineAlignment,highlightColor,fontColor and validation');
         editor.openBlank();
         editor.editorModule.insertText('Sample document');
         let prevFormat = editor.selection.characterFormat;
@@ -357,6 +369,7 @@ describe('selection character format property applying validation', () => {
     });
 
     it('paragraph format leftindent,rightindent , beforespacing and after spacing validation', () => {
+console.log('paragraph format leftindent,rightindent , beforespacing and after spacing validation');
         editor.openBlank();
         editor.editorModule.insertText('Sample document');
         let prevFormat = editor.selection.paragraphFormat;
@@ -370,6 +383,7 @@ describe('selection character format property applying validation', () => {
         expect(prevFormat.rightIndent).toBe(editor.selection.paragraphFormat.rightIndent)
     });
     it('apply left indent for list', () => {
+console.log('apply left indent for list');
         editor.openBlank();
         editor.editorModule.insertText('sample');
         editor.selection.handleHomeKey();
@@ -378,6 +392,7 @@ describe('selection character format property applying validation', () => {
         expect(editor.selection.paragraphFormat.leftIndent).toBe(96);
     });
     it('while insert table selected content remove false testing', () => {
+console.log('while insert table selected content remove false testing');
         editor.openBlank();
         editor.editorModule.insertText('sample');
         editor.editorModule.onEnter();
@@ -388,6 +403,7 @@ describe('selection character format property applying validation', () => {
         expect(editor.selection.start.paragraph.isEmpty()).toBe(true);
     });
     it('left indent on multiple selection validation', () => {
+console.log('left indent on multiple selection validation');
         editor.openBlank();
         editor.editorModule.insertText('sample');
         editor.editorModule.onEnter();
@@ -415,6 +431,7 @@ describe('selection character format property applying validation', () => {
         expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).not.toBe(-1);
     });
     it('backspace testing on hyperlink validation', () => {
+console.log('backspace testing on hyperlink validation');
         editor.openBlank();
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.insertText(' ');
@@ -428,6 +445,7 @@ describe('selection character format property applying validation', () => {
         expect(editor.selection.start.paragraph.isEmpty()).not.toBe(true);
     });
     it('allCaps validation', () => {
+console.log('allCaps validation');
         editor.openBlank();
         editor.editorModule.insertText('Sample document');
         let prevFormat = editor.selection.characterFormat;
@@ -464,6 +482,7 @@ describe('Delete and paste with history preservation', () => {
         }, 1000);
     });
     it('paste testing inside paragraph', () => {
+console.log('paste testing inside paragraph');
         editor.openBlank();
         editor.editorModule.insertText('Adventure');
         editor.editorModule.onEnter();
@@ -514,6 +533,7 @@ describe('Paste undo and redo validation ', () => {
     //     expect(() => { editor.editorModule.cut(); }).not.toThrowError();
     // });
     it('cut and enable paste true valdiation', () => {
+console.log('cut and enable paste true valdiation');
         editor.openBlank();
         editor.editorModule.insertText('Adventure');
         editor.editorModule.onEnter();
@@ -531,6 +551,7 @@ describe('Paste undo and redo validation ', () => {
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
     it('cut nested table validation', () => {
+console.log('cut nested table validation');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.editor.insertTable(2, 2);
@@ -571,6 +592,7 @@ describe('Delete table at specfic row valdiation', () => {
     });
 
     it('delete table at row index 2', () => {
+console.log('delete table at row index 2');
         editor.editor.insertTable(5, 7);
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
@@ -581,6 +603,7 @@ describe('Delete table at specfic row valdiation', () => {
     });
 
     it('tab and enter in hyperlink validation', () => {
+console.log('tab and enter in hyperlink validation');
         editor.openBlank();
         let event: any = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
@@ -589,12 +612,14 @@ describe('Delete table at specfic row valdiation', () => {
     });
 
     it('delete single cells validation ', () => {
+console.log('delete single cells validation ');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.handleShiftRightKey();
         expect(() => { editor.editorModule.delete(); }).not.toThrowError();
     });
     it('insertText method else part validation', () => {
+console.log('insertText method else part validation');
         expect(() => { editor.editorModule.insertTextInline(undefined, undefined, undefined, 12) }).not.toThrowError();
     });
     // it('update widget height', () => {
@@ -603,6 +628,7 @@ describe('Delete table at specfic row valdiation', () => {
     //     expect(() => { editor.updateWidgetHeight(cellWidget); }).not.toThrowError();
     // });
     it('copy List Level validation', () => {
+console.log('copy List Level validation');
         let listLevel: WListLevel = new WListLevel(undefined);
         listLevel.paragraphFormat = undefined;
         listLevel.characterFormat = undefined;
@@ -761,6 +787,7 @@ describe('shift widget validation ', () => {
         }, 1000);
     });
     it('shift table widgets to next page validation', () => {
+console.log('shift table widgets to next page validation');
         editor.selection.handleEndKey();
         onEnter(editor);
         editor.editor.insertTable(2, 2);
@@ -785,6 +812,7 @@ describe('shift widget validation ', () => {
         expect(documentHelper.pages.length).toBe(1);
     });
     it('shift paragraph widgets validation', () => {
+console.log('shift paragraph widgets validation');
         editor.openBlank();
         editor.editorModule.insertText('Adventure Works Cycles');
         editor.editorModule.onEnter();
@@ -800,6 +828,7 @@ describe('shift widget validation ', () => {
 
     });
     it('shift paragraph to next page validation', () => {
+console.log('shift paragraph to next page validation');
         editor.openBlank();
         editor.editorModule.insertText('Adventure Works Cycles');
         editor.editorModule.onEnter();
@@ -840,6 +869,7 @@ describe('combine widgets validation ', () => {
         }, 1000);
     });
     it('get row width selected else validation', () => {
+console.log('get row width selected else validation');
         editor.openBlank();
         documentHelper = editor.documentHelper;
         editor.editor.insertTable(2, 2);
@@ -863,6 +893,7 @@ describe('combine widgets validation ', () => {
         expect(() => { editor.editorModule.onBackSpace(); }).not.toThrowError();
     });
     it('Combine table cell widgets validation', () => {
+console.log('Combine table cell widgets validation');
         editor.openBlank();
         documentHelper =editor.documentHelper;
         editor.editorModule.insertText('Sample');
@@ -879,6 +910,7 @@ describe('combine widgets validation ', () => {
         expect(documentHelper.pages.length).toBe(2);
     });
     it('get row width selected else validation', () => {
+console.log('get row width selected else validation');
         editor.openBlank();
         documentHelper = editor.documentHelper;
         editor.editorModule.insertText('Sample');
@@ -919,6 +951,7 @@ describe('Paste and replace else part validation ', () => {
     });
 
     it('Delete with selection containing table and paragraph', () => {
+console.log('Delete with selection containing table and paragraph');
         editor.openBlank();
         documentHelper = editor.documentHelper;
         editor.editorModule.insertText('Sample');
@@ -933,6 +966,7 @@ describe('Paste and replace else part validation ', () => {
         editor.editorHistory.redo()
     });
     it('paste with html string as empty', () => {
+console.log('paste with html string as empty');
         editor.openBlank();
         editor.editorModule.copiedData = '';
         documentHelper = editor.documentHelper;
@@ -940,6 +974,7 @@ describe('Paste and replace else part validation ', () => {
         expect(editor.editorModule.copiedData).toBe('');
     });
     it('paste with selection containing table and paragraph', () => {
+console.log('paste with selection containing table and paragraph');
         editor.openBlank();
         editor.editorModule.copiedData = '';
         documentHelper= editor.documentHelper;
@@ -989,6 +1024,7 @@ describe('section combine validation ', () => {
         }, 1000);
     });
     it('insert Text at next body widgets', () => {
+console.log('insert Text at next body widgets');
         for (let i: number = 0; i < 47; i++) {
             editor.editorModule.onEnter();
         }
@@ -996,6 +1032,7 @@ describe('section combine validation ', () => {
         expect((documentHelper.pages[documentHelper.pages.length - 1].bodyWidgets[0].lastChild as Widget).index).toBe(47);
     });
     it('hyperlink and delete else part validation', () => {
+console.log('hyperlink and delete else part validation');
         editor.openBlank()
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.insertText(' ');
@@ -1004,6 +1041,7 @@ describe('section combine validation ', () => {
         expect(() => { editor.editorModule.insertText(' '); }).not.toThrowError();
     });
     it('edit hyperlink in multiple paragraph validation', () => {
+console.log('edit hyperlink in multiple paragraph validation');
         editor.openBlank()
         editor.editorModule.insertText('sample');
         editor.editorModule.onEnter();
@@ -1054,11 +1092,13 @@ describe('Single backspace and delete at empty line widget validation', () => {
     });
 
     it('single backpsace in empty line widget ', () => {
+console.log('single backpsace in empty line widget ');
         editor.openBlank()
         editor.editorModule.onBackSpace();
         expect(documentHelper.pages.length).toBe(1);
     });
     it('single delete in empty line widget ', () => {
+console.log('single delete in empty line widget ');
         editor.openBlank()
         editor.editorModule.onEnter();
         editor.selection.handleUpKey();
@@ -1066,6 +1106,7 @@ describe('Single backspace and delete at empty line widget validation', () => {
         expect(documentHelper.pages.length).toBe(1);
     });
     it('Delete with selection containing table and paragraph ', () => {
+console.log('Delete with selection containing table and paragraph ');
         editor.openBlank()
         editor.editorModule.insertText('sample');
         editor.editorModule.onEnter();
@@ -1084,6 +1125,7 @@ describe('Single backspace and delete at empty line widget validation', () => {
         expect(() => { editor.editorModule.delete(); }).not.toThrowError();
     });
     it('single delete in multiple hyperlink validation ', () => {
+console.log('single delete in multiple hyperlink validation ');
         editor.openBlank()
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.onEnter();
@@ -1121,6 +1163,7 @@ describe('paragraph format Increase indent and decrease indent validation', () =
         }, 1000);
     });
     it('Increase indent with undo and redo', () => {
+console.log('Increase indent with undo and redo');
         editor.openBlank();
         editor.editorModule.insertText('Sampsle kjqwhj qhwjkdhjwhdkjqhdjkwqhdkjqhdkqhdkjqhdkjhqkdjh qkjdhkjqwhdkqhdkqhkdj hwkjd');
         editor.editorModule.insertText('www.google.com');
@@ -1134,6 +1177,7 @@ describe('paragraph format Increase indent and decrease indent validation', () =
         expect(editor.documentHelper.pages.length).toBeGreaterThan(1);
     });
     it('Decrease indent with multiple times', () => {
+console.log('Decrease indent with multiple times');
         let i: number = 0;
         while (i < 15) {
             editor.selection.decreaseIndent();
@@ -1143,6 +1187,7 @@ describe('paragraph format Increase indent and decrease indent validation', () =
         expect(editor.documentHelper.pages.length).toBe(1);
     });
     it('undo with multiple times', () => {
+console.log('undo with multiple times');
         let i: number = 0;
         while (i < 15) {
             editor.editorHistory.undo();
@@ -1151,6 +1196,7 @@ describe('paragraph format Increase indent and decrease indent validation', () =
         expect(editor.selection.paragraphFormat.leftIndent).toBe(540);
     });
     it('redo with multiple times', () => {
+console.log('redo with multiple times');
         let i: number = 0;
         while (i < 15) {
             editor.editorHistory.redo();
@@ -1159,6 +1205,7 @@ describe('paragraph format Increase indent and decrease indent validation', () =
         expect(editor.selection.paragraphFormat.leftIndent).toBe(0);
     });
     it('undo with multiple times again', () => {
+console.log('undo with multiple times again');
         let i: number = 0;
         while (i < 15) {
             editor.editorHistory.undo();
@@ -1190,6 +1237,7 @@ describe('Delete table width undo and redo', () => {
         }, 1000);
     });
     it('Insert table aftet paragraph then delete', () => {
+console.log('Insert table aftet paragraph then delete');
         editor.openBlank();
         editor.editorModule.insertText('Syncfusion');
         editor.editorModule.onEnter();
@@ -1201,6 +1249,7 @@ describe('Delete table width undo and redo', () => {
         expect(editor.selection.start.paragraph.bodyWidget.childWidgets.length).toBe(1);
     });
     it('revert last action', () => {
+console.log('revert last action');
         let i: number = 0;
         while (i < 15) {
             editor.editorHistory.undo();
@@ -1211,6 +1260,7 @@ describe('Delete table width undo and redo', () => {
         // expect(editor.selection.start.paragraph.bodyWidget.childWidgets.length).toBe(1);
     });
     it('undo with multiple times', () => {
+console.log('undo with multiple times');
         editor.editorHistory.redo();
         let i: number = 0;
         while (i < 15) {
@@ -1221,6 +1271,7 @@ describe('Delete table width undo and redo', () => {
         expect(editor.selection.start.paragraph.bodyWidget.childWidgets.length).toBe(3);
     });
     it('paste dropdown on opening document', () => {
+console.log('paste dropdown on opening document');
         editor.openBlank()
         editor.editorModule.insertText('Adventure');
         editor.enableLocalPaste = true;

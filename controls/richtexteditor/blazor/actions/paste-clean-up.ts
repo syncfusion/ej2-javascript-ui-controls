@@ -261,9 +261,6 @@ export class PasteCleanup {
                 // @ts-ignore-start
                 this.parent.dotNetRef.invokeMethodAsync(events.beforeUpload, args).then((beforeUploadArgs: ImageUploadingEventArgs) => {
                     if (beforeUploadArgs.cancel) { return; }
-                    /* tslint:disable */
-                    (this.uploadObj as any).uploadFiles(this.rawFile, null);
-                    /* tslint:enable */
                     // @ts-ignore-end
                 });
             },
@@ -323,7 +320,7 @@ export class PasteCleanup {
         // @ts-ignore-start
         this.parent.dotNetRef.invokeMethodAsync(events.pasteImageUploadSuccess, e).then((beforeUploadArgs: ImageUploadingEventArgs) => {
             // @ts-ignore-end
-            if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
+            if (!isNOU(this.parent.insertImageSettings.path)) {
                 let url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
                 (imgElem as HTMLImageElement).src = url;
                 imgElem.setAttribute('alt', (e as MetaData).file.name);

@@ -50,10 +50,12 @@ describe('NumberBullet dialog', () => {
         }, 2000);
     });
     it('module name validation', () => {
+console.log('module name validation');
         let name: string = numBulletDialog.getModuleName();
         expect(name).toBe('BulletsAndNumberingDialog')
     });
     it('Select bullet style tab', (done) => {
+console.log('Select bullet style tab');
         createDocument(editor);
         let event: any;
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
@@ -64,6 +66,7 @@ describe('NumberBullet dialog', () => {
         }, 10);
     });
     it('Select number style tab', (done) => {
+console.log('Select number style tab');
         createDocument(editor);
         let event: any;
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
@@ -74,6 +77,7 @@ describe('NumberBullet dialog', () => {
         }, 10);
     });
     it('Show & Cancel', () => {
+console.log('Show & Cancel');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -83,6 +87,7 @@ describe('NumberBullet dialog', () => {
         numBulletDialog.onCancelButtonClick();
     });
     it('Show & Close', () => {
+console.log('Show & Close');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -92,6 +97,7 @@ describe('NumberBullet dialog', () => {
         numBulletDialog.closeNumberingBulletDialog();
     });
     it('numbered-none', () => {
+console.log('numbered-none');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -101,6 +107,7 @@ describe('NumberBullet dialog', () => {
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-numbered-number-dot', () => {
+console.log('e-de-list-numbered-number-dot');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -110,6 +117,7 @@ describe('NumberBullet dialog', () => {
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-numbered-number-brace', () => {
+console.log('e-de-list-numbered-number-brace');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -119,6 +127,7 @@ describe('NumberBullet dialog', () => {
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-numbered-up-roman', () => {
+console.log('e-de-list-numbered-up-roman');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -128,6 +137,7 @@ describe('NumberBullet dialog', () => {
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-numbered-up-letter', () => {
+console.log('e-de-list-numbered-up-letter');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -137,6 +147,7 @@ describe('NumberBullet dialog', () => {
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-numbered-low-letter-brace', () => {
+console.log('e-de-list-numbered-low-letter-brace');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -146,6 +157,7 @@ describe('NumberBullet dialog', () => {
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-numbered-low-letter-dot', () => {
+console.log('e-de-numbered-low-letter-dot');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -155,6 +167,7 @@ describe('NumberBullet dialog', () => {
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-numbered-low-roman', () => {
+console.log('e-de-list-numbered-low-roman');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -164,6 +177,7 @@ describe('NumberBullet dialog', () => {
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-icon-bullet-list-none', () => {
+console.log('e-de-icon-bullet-list-none');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -173,6 +187,7 @@ describe('NumberBullet dialog', () => {
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-bullet-dot', () => {
+console.log('e-de-list-bullet-dot');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -182,6 +197,7 @@ describe('NumberBullet dialog', () => {
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-bullet-circle', () => {
+console.log('e-de-list-bullet-circle');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -191,6 +207,7 @@ describe('NumberBullet dialog', () => {
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-bullet-square', () => {
+console.log('e-de-list-bullet-square');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -200,6 +217,7 @@ describe('NumberBullet dialog', () => {
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-bullet-flower', () => {
+console.log('e-de-list-bullet-flower');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -209,6 +227,7 @@ describe('NumberBullet dialog', () => {
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-bullet-arrow', () => {
+console.log('e-de-list-bullet-arrow');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -218,6 +237,7 @@ describe('NumberBullet dialog', () => {
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-icon-bullet-list-tick', () => {
+console.log('e-de-icon-bullet-list-tick');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };

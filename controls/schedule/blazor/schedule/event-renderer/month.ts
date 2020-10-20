@@ -1,4 +1,4 @@
-import { createElement, setStyleAttribute, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, setStyleAttribute, closest } from '@syncfusion/ej2-base';
 import { EventBase } from './event-base';
 import * as cls from '../base/css-constant';
 import * as util from '../base/util';
@@ -38,85 +38,114 @@ export class MonthEvent extends EventBase {
     }
 
     public renderAppointments(): void {
-        let eventTable: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS);
-        if (!isNullOrUndefined(eventTable)) {
-            setStyleAttribute(eventTable, {
-                'display': 'block'
-            });
-        }
-        let eventsClass: string = '.' + cls.APPOINTMENT_CLASS + ', .' + cls.MORE_INDICATOR_CLASS;
-        let blockEventClass: string = '.' + cls.BLOCK_APPOINTMENT_CLASS + ', .' + cls.BLOCK_INDICATOR_CLASS;
-        let elementList: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(eventsClass + ', ' + blockEventClass));
-        let workcell: HTMLElement = this.parent.element.querySelector('.e-work-cells');
-        if (!workcell) {
-            return;
-        }
-        let conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
-        if (this.parent.options.rowAutoHeight) {
-            this.parent.uiStateValues.top = conWrap.scrollTop;
-            this.parent.uiStateValues.left = conWrap.scrollLeft;
-        }
-        this.removeHeightProperty(cls.CONTENT_TABLE_CLASS);
-        this.cellHeight = workcell.getBoundingClientRect().height;
-        this.cellWidth = workcell.getBoundingClientRect().width;
-        let currentPanel: HTMLElement = this.parent.element.querySelector('.e-current-panel');
-        let appHeight: number = util.getElementHeightFromClass(currentPanel, cls.APPOINTMENT_CLASS);
-        this.dateRender = this.parent.activeView.renderDates;
-        for (let i: number = 0; i < elementList.length; i++) {
-            let ele: HTMLElement = elementList[i] as HTMLElement;
-            ele.removeAttribute('style');
-            let startTime: string = this.getStartTime(ele);
-            let overlapCount: number = this.getOverLapCount(ele);
-            let diffInDays: number = this.getDataCount(ele);
-            let appWidth: number = (diffInDays * this.cellWidth) - 5;
-            let appLeft: number = 0;
-            let appRight: number = 0;
-            let resIndex: number = this.getGroupIndex(ele);
-            let cellTd: HTMLElement = this.getCellTd(resIndex, startTime);
-            let target: HTMLElement = closest(cellTd, 'tr') as HTMLElement;
-            this.monthHeaderHeight = (<HTMLElement>cellTd.firstChild).offsetHeight;
-            let height: number =
-                this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
-            if (this.parent.options.rowAutoHeight) {
-                this.updateCellHeight(<HTMLElement>target.firstElementChild, height);
+        if (this.parent.options.currentView === 'Month') {
+            let eventsClass: string = '.' + cls.APPOINTMENT_CLASS + ', .' + cls.MORE_INDICATOR_CLASS;
+            let blockEventClass: string = '.' + cls.BLOCK_APPOINTMENT_CLASS + ', .' + cls.BLOCK_INDICATOR_CLASS;
+            let elementList: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(eventsClass + ', ' + blockEventClass));
+            let workcell: HTMLElement = this.parent.element.querySelector('.e-work-cells');
+            if (!workcell) {
+                return;
             }
-            let top: number = cellTd.offsetTop;
-            let appTop: number = this.monthHeaderHeight + ((ele.classList.contains('e-block-appointment')) ? top :
-                (top + EVENT_GAP) + (overlapCount * (appHeight + EVENT_GAP))) + EVENT_TOP;
-            appLeft = (this.parent.options.enableRtl) ? 0 : cellTd.offsetLeft;
-            appRight = (this.parent.options.enableRtl) ? cellTd.parentElement.offsetWidth - cellTd.offsetLeft - this.cellWidth : 0;
-            if (!ele.classList.contains('e-more-indicator')) {
-                if (!ele.classList.contains('e-block-indicator')) {
-                    setStyleAttribute(ele, {
-                        'width': appWidth + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
-                    });
-                    if (this.maxOrIndicator) {
-                        this.setMaxEventHeight(ele, cellTd);
-                    }
-                    if (ele.classList.contains('e-block-appointment')) {
+            let conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+            if (this.parent.options.rowAutoHeight) {
+                this.parent.uiStateValues.top = conWrap.scrollTop;
+                this.parent.uiStateValues.left = conWrap.scrollLeft;
+            }
+            this.removeHeightProperty(cls.CONTENT_TABLE_CLASS);
+            this.cellHeight = workcell.getBoundingClientRect().height;
+            this.cellWidth = workcell.getBoundingClientRect().width;
+            let currentPanel: HTMLElement = this.parent.element.querySelector('.e-current-panel');
+            let appHeight: number = util.getElementHeightFromClass(currentPanel, cls.APPOINTMENT_CLASS);
+            this.dateRender = this.parent.activeView.renderDates;
+            for (let i: number = 0; i < elementList.length; i++) {
+                let ele: HTMLElement = elementList[i] as HTMLElement;
+                this.removedPositionedStyles(ele);
+                let startTime: Date = this.getStartTime(ele);
+                let overlapCount: number = this.getOverLapCount(ele);
+                let diffInDays: number = this.getDataCount(ele);
+                let appWidth: number = (diffInDays * this.cellWidth) - 5;
+                let appLeft: number = 0;
+                let appRight: number = 0;
+                let resIndex: number = this.getGroupIndex(ele);
+                let cellTd: HTMLElement = this.getCellTd(resIndex, startTime);
+                let target: HTMLElement = closest(cellTd, 'tr') as HTMLElement;
+                this.monthHeaderHeight = (<HTMLElement>cellTd.firstChild).offsetHeight;
+                let height: number =
+                    this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
+                if (this.parent.options.rowAutoHeight) {
+                    this.updateCellHeight(<HTMLElement>target.firstElementChild, height);
+                }
+                let top: number = cellTd.offsetTop;
+                let appTop: number = this.monthHeaderHeight + ((ele.classList.contains('e-block-appointment')) ? top :
+                    (top + EVENT_GAP) + (overlapCount * (appHeight + EVENT_GAP))) + EVENT_TOP;
+                appLeft = (this.parent.options.enableRtl) ? 0 : cellTd.offsetLeft;
+                appRight = (this.parent.options.enableRtl) ? cellTd.parentElement.offsetWidth - cellTd.offsetLeft - this.cellWidth : 0;
+                if (!ele.classList.contains('e-more-indicator')) {
+                    if (!ele.classList.contains('e-block-indicator')) {
                         setStyleAttribute(ele, {
-                            'height': (<HTMLElement>cellTd).offsetHeight - this.monthHeaderHeight - 1 + 'px'
+                            'width': appWidth + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
                         });
-                    }
-                    if (ele.classList.contains('e-appointment')) {
-                        this.parent.eventBase.applyResourceColor(ele);
-                        this.parent.eventBase.wireAppointmentEvents(ele);
+                        if (this.maxOrIndicator) {
+                            this.setMaxEventHeight(ele, cellTd);
+                        }
+                        if (ele.classList.contains('e-block-appointment')) {
+                            setStyleAttribute(ele, {
+                                'height': (<HTMLElement>cellTd).offsetHeight - (appTop - cellTd.offsetTop) + 'px'
+                            });
+                        }
+                        if (ele.classList.contains('e-appointment')) {
+                            this.parent.eventBase.applyResourceColor(ele);
+                            this.parent.eventBase.wireAppointmentEvents(ele);
+                        }
+                    } else {
+                        this.updateBlockIndicator(ele, appRight, appLeft, cellTd);
+
                     }
                 } else {
-                    this.updateBlockIndicator(ele, appRight, appLeft, cellTd);
-
+                    this.updateMoreIndicator(ele, appRight, appLeft, top);
                 }
-            } else {
-                this.updateMoreIndicator(ele, appRight, appLeft, top);
+            }
+            this.updateRowHeight(appHeight);
+        } else if (!this.parent.activeViewOptions.timeScale.enable) {
+            let workcell: HTMLElement = this.parent.element.querySelector('.e-work-cells');
+            if (!workcell) {
+                return;
+            }
+            let contentTableWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS);
+            let disableTimeElementList: HTMLElement[] =
+                [].slice.call(contentTableWrap.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
+            let appointmentHeight: number = disableTimeElementList.length > 0 ? disableTimeElementList[0].offsetHeight : 0;
+            for (let i: number = 0; i < disableTimeElementList.length; i++) {
+                let ele: HTMLElement = disableTimeElementList[i] as HTMLElement;
+                let rowCount: number = this.getRowCount(ele);
+                let totalLength: number = this.getTotalLength(ele);
+                ele.style.top = rowCount * appointmentHeight + 'px';
+                ele.style.width = (workcell.getBoundingClientRect().width * totalLength) - 10 + 'px';
+                this.parent.eventBase.wireAppointmentEvents(ele);
+            }
+            if (disableTimeElementList.length > 0) {
+                let moreIndicatorList: HTMLElement[] = [].slice.call(contentTableWrap.querySelectorAll('.' + cls.MORE_INDICATOR_CLASS));
+                for (let i: number = 0; i < moreIndicatorList.length; i++) {
+                    let ele: HTMLElement = moreIndicatorList[i];
+                    ele.style.top = 8 * appointmentHeight + 'px';
+                }
             }
         }
-        this.updateRowHeight(appHeight);
+    }
+
+    public removedPositionedStyles(ele: HTMLElement): void {
+        ele.style.removeProperty('width');
+        ele.style.removeProperty('height');
+        ele.style.removeProperty('left');
+        ele.style.removeProperty('right');
+        ele.style.removeProperty('top');
+        ele.style.removeProperty('display');
     }
 
     public updateMoreIndicator(ele: HTMLElement, right: number, left: number, top: number): void {
         let appArea: number = this.cellHeight - this.moreIndicatorHeight;
         setStyleAttribute(ele, {
-            'top': top + appArea + 'px', 'width': this.cellWidth + 'px', 'left': left + 'px', 'right': right + 'px'
+            'top': top + appArea + 'px', 'width': this.cellWidth - 2 + 'px', 'left': left + 'px', 'right': right + 'px'
         });
     }
 
@@ -136,13 +165,13 @@ export class MonthEvent extends EventBase {
         setStyleAttribute(event, { 'height': height + 'px', 'align-items': 'center' });
     }
 
-    public getCellTd(resIndex: number, date?: string): HTMLElement {
+    public getCellTd(resIndex: number, date?: Date): HTMLElement {
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
             return (<HTMLElement>this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
-                ' ' + 'tbody td[data-group-index="' + resIndex.toString() + '"][data-date="' + date + '"]'));
+                ' ' + 'tbody td[data-group-index="' + resIndex.toString() + '"][data-date="' + date.getTime() + '"]'));
         }
         return (<HTMLElement>this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
-            ' ' + 'tbody td[data-date="' + date + '"]'));
+            ' ' + 'tbody td[data-date="' + date.getTime() + '"]'));
     }
 
     public getGroupIndex(ele: HTMLElement): number {
@@ -153,12 +182,20 @@ export class MonthEvent extends EventBase {
         return parseInt(ele.getAttribute('data-index'), 10);
     }
 
-    public getStartTime(ele: HTMLElement): string {
-        return (ele.getAttribute('data-start'));
+    public getTotalLength(ele: HTMLElement): number {
+        return parseInt(ele.getAttribute('data-total-length'), 10);
+    }
+
+    public getRowCount(ele: HTMLElement): number {
+        return parseInt(ele.getAttribute('data-row-index'), 10);
+    }
+
+    public getStartTime(ele: HTMLElement): Date {
+        return new Date(parseInt(ele.getAttribute('data-start'), 10));
     }
 
     public getEndTime(ele: HTMLElement): Date {
-        return new Date(ele.getAttribute('data-end'));
+        return new Date(parseInt(ele.getAttribute('data-end'), 10));
     }
 
     public getDataCount(ele: HTMLElement): number {
@@ -182,7 +219,7 @@ export class MonthEvent extends EventBase {
     private updateBlockIndicatorEle(): void {
         let blockElement: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.BLOCK_INDICATOR_CLASS));
         for (let element of blockElement) {
-            let startTime: string = this.getStartTime(element);
+            let startTime: Date = this.getStartTime(element);
             let resIndex: number = this.getGroupIndex(element);
             let cellTd: HTMLElement = this.getCellTd(resIndex, startTime);
             let appLeft: number = (this.parent.options.enableRtl) ? 0 : cellTd.offsetLeft;
@@ -195,7 +232,7 @@ export class MonthEvent extends EventBase {
     public updateBlockElements(): void {
         let blockElement: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.BLOCK_APPOINTMENT_CLASS));
         for (let element of blockElement) {
-            let startTime: string = this.getStartTime(element);
+            let startTime: Date = this.getStartTime(element);
             let resIndex: number = this.getGroupIndex(element);
             let cellTd: HTMLElement = this.getCellTd(resIndex, startTime);
             let height: number = (<HTMLElement>cellTd).offsetHeight - this.monthHeaderHeight - 1;
@@ -214,7 +251,7 @@ export class MonthEvent extends EventBase {
     private updateNormalEventElements(appHeight: number): void {
         let blockElement: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
         for (let element of blockElement) {
-            let startTime: string = this.getStartTime(element);
+            let startTime: Date = this.getStartTime(element);
             let resIndex: number = this.getGroupIndex(element);
             let cellTd: HTMLElement = this.getCellTd(resIndex, startTime);
             let overlapCount: number = this.getOverLapCount(element);

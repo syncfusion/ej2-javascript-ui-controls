@@ -625,6 +625,7 @@ describe('image Cropping', () => {
         }, 1000);
     });
     it('crop ', () => {
+console.log('crop ');
         let ecrop: any = exportData.sections[0].blocks[0].inlines[0];
         expect(ecrop.iscrop).toBe(true);
         expect(ecrop.width).toBe(175);
@@ -661,6 +662,7 @@ describe('image Cropping', () => {
         }, 1000);
     });
     it('uncrop', () => {
+console.log('uncrop');
         let euncrop: any = data.sections[0].blocks[0].inlines[0];
         expect(euncrop.width).toBe(468);
         expect(euncrop.height).toBe(263.25);

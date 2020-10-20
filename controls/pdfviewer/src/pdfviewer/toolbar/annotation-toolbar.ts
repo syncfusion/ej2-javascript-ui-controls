@@ -69,6 +69,12 @@ export class AnnotationToolbar {
     private closeItem: HTMLElement;
     private opacityIndicator: HTMLElement;
     private thicknessIndicator: HTMLElement;
+    // tslint:disable-next-line
+    private HighlightElement: any;
+    // tslint:disable-next-line
+    private UnderlineElement: any;
+    // tslint:disable-next-line
+    private StrikethroughElement: any
     /**
      * @private
      */
@@ -1646,8 +1652,14 @@ export class AnnotationToolbar {
             }
         }
         if (this.pdfViewer.selectedItems.annotations.length === 1) {
-            if (args.currentValue.hex !== args.previousValue.hex) {
-                this.pdfViewer.annotation.modifyFillColor(currentColor);
+            if (isBlazor()) {
+                if (args[0] !== args[1]) {
+                    this.pdfViewer.annotation.modifyFillColor(currentColor);
+                }
+            } else {
+                if (args.currentValue.hex !== args.previousValue.hex) {
+                    this.pdfViewer.annotation.modifyFillColor(currentColor);
+                }
             }
         } else {
             if (this.pdfViewer.annotation.shapeAnnotationModule) {
@@ -1696,8 +1708,14 @@ export class AnnotationToolbar {
             currentColor = args[0];
         }
         if (this.pdfViewer.selectedItems.annotations.length === 1) {
-            if (args.currentValue.hex !== args.previousValue.hex) {
-                this.pdfViewer.annotation.modifyStrokeColor(currentColor);
+            if (isBlazor()) {
+                if (args[0] !== args[1]) {
+                    this.pdfViewer.annotation.modifyStrokeColor(currentColor);
+                }
+            } else {
+                if (args.currentValue.hex !== args.previousValue.hex) {
+                    this.pdfViewer.annotation.modifyStrokeColor(currentColor);
+                }
             }
         } else {
             if (this.pdfViewer.annotation.shapeAnnotationModule) {
@@ -3019,5 +3037,67 @@ export class AnnotationToolbar {
 
     private resetViewerHeight(viewerHeight: number, toolbarHeight: number): number {
         return viewerHeight + toolbarHeight;
+    }
+    private afterAnnotationToolbarCreationInBlazor(): void {
+        this.HighlightElement = document.getElementById(this.pdfViewer.element.id + '_highLight').children[0];
+        this.UnderlineElement = document.getElementById(this.pdfViewer.element.id + '_underline').children[0];
+        this.StrikethroughElement = document.getElementById(this.pdfViewer.element.id + '_strikethrough').children[0];
+        this.HighlightElement = this.addClassToToolbarInBlazor(this.HighlightElement, 'e-pv-highlight', '_highLight');
+        this.UnderlineElement = this.addClassToToolbarInBlazor(this.UnderlineElement, 'e-pv-underline', '_underline');
+        this.StrikethroughElement = this.addClassToToolbarInBlazor(this.StrikethroughElement, 'e-pv-strikethrough', '_strikethrough');
+    }
+    // tslint:disable-next-line
+    private addClassToToolbarInBlazor(element: any, className: string, idString: string): void {  
+        element.classList.add(className);
+        element.classList.add('e-pv-tbar-btn');
+        if (element.childNodes.length > 0) {
+            let spanElement: HTMLElement = element.childNodes[0] as HTMLElement;
+            spanElement.id = this.pdfViewer.element.id + idString + 'Icon';
+            spanElement.classList.remove('e-icons');
+            spanElement.classList.remove('e-btn-icon');
+            if (this.pdfViewer.enableRtl) {
+                spanElement.classList.add('e-right');
+            }
+        }
+        return element;
+    }
+    private handleHighlightInBlazor(): void {
+        if (this.HighlightElement.classList.contains('e-pv-select')) {
+            this.primaryToolbar.deSelectItem(this.HighlightElement);
+        } else if (!this.HighlightElement.classList.contains('e-pv-select')) {
+            this.primaryToolbar.selectItem(this.HighlightElement);
+        }
+        if (this.StrikethroughElement.classList.contains('e-pv-select')) {
+            this.primaryToolbar.deSelectItem(this.StrikethroughElement);
+        }
+        if (this.UnderlineElement.classList.contains('e-pv-select')) {
+            this.primaryToolbar.deSelectItem(this.UnderlineElement);
+        }
+    }
+    private handleUnderlineInBlazor(): void {
+        if (this.UnderlineElement.classList.contains('e-pv-select')) {
+            this.primaryToolbar.deSelectItem(this.UnderlineElement);
+        } else if (!this.UnderlineElement.classList.contains('e-pv-select')) {
+            this.primaryToolbar.selectItem(this.UnderlineElement);
+        }
+        if (this.StrikethroughElement.classList.contains('e-pv-select')) {
+            this.primaryToolbar.deSelectItem(this.StrikethroughElement);
+        }
+        if (this.HighlightElement.classList.contains('e-pv-select')) {
+            this.primaryToolbar.deSelectItem(this.HighlightElement);
+        }
+    }
+    private handleStrikethroughInBlazor(): void {
+        if (this.StrikethroughElement.classList.contains('e-pv-select')) {
+            this.primaryToolbar.deSelectItem(this.StrikethroughElement);
+        } else if (!this.StrikethroughElement.classList.contains('e-pv-select')) {
+            this.primaryToolbar.selectItem(this.StrikethroughElement);
+        }
+        if (this.HighlightElement.classList.contains('e-pv-select')) {
+            this.primaryToolbar.deSelectItem(this.HighlightElement);
+        }
+        if (this.UnderlineElement.classList.contains('e-pv-select')) {
+            this.primaryToolbar.deSelectItem(this.UnderlineElement);
+        }
     }
 }

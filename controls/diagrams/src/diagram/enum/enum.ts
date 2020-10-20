@@ -2325,7 +2325,16 @@ export enum RealAction {
     /** Indicate action in Progress */
     PanInProgress = 1 << 8,
     /** Indicate overview action  */
-    OverViewAction = 1 << 9,
+    OverViewAction = 1 << 9
+}
+
+/** @private */
+export enum ScrollActions {
+    None = 0,
+    /** Indicates when the scroll properties are changed using property change */
+    PropertyChange = 1 << 10,
+    /** Indicates when the scroll properties are changed using interaction */
+    Interaction = 1 << 11
 }
 
 /** @private */

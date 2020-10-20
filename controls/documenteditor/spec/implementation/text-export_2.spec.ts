@@ -833,10 +833,12 @@ describe('Text Export module testing', () => {
     });
 
     it('document section validation', () => {
+console.log('document section validation');
         documentHelper = editor.documentHelper;
         editor.save('sample', 'Txt');
     });
     it('header and Footer validation', () => {
+console.log('header and Footer validation');
         let streamWriter: StreamWriter = new StreamWriter;
         let section: any = {};
         (textExport as any).writeHeadersFooters(streamWriter, section)

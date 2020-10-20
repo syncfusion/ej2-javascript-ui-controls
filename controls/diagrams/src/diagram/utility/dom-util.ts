@@ -739,7 +739,7 @@ export function getContent(
     } else if ((element as DiagramHtmlElement).isTemplate) {
         let compiledString: Function;
         compiledString = (element as DiagramHtmlElement).getNodeTemplate()(
-            cloneObject(nodeObject), diagram, propertyName, undefined, undefined, false);
+            cloneObject(nodeObject), diagram, propertyName +"_"+  ((propertyName === "nodeTemplate")? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false);
         for (let i: number = 0; i < compiledString.length; i++) {
             div.appendChild(compiledString[i]);
         }
@@ -865,7 +865,7 @@ export function createUserHandleTemplates(userHandleTemplate: string, template: 
         userHandleFn = templateCompiler(userHandleTemplate);
         for (handle of selectedItems.userHandles) {
             if (userHandleFn) {
-                compiledString = userHandleFn(cloneObject(handle), diagram, 'userHandleTemplate', undefined, undefined, false);
+                compiledString = userHandleFn(cloneObject(handle), diagram, 'userHandleTemplate'+'_'+ handle.name, undefined, undefined, false);
                 for (i = 0; i < compiledString.length; i++) {
                     let attr: Object = {
                         'style': 'height: 100%; width: 100%; pointer-events: all',

@@ -44,6 +44,7 @@ describe('Font dialog validation bold,italic,underLine', () => {
         }, 2000);
     });
     it('Dialog with bold and italic property apply testing', () => {
+console.log('Dialog with bold and italic property apply testing');
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
@@ -55,6 +56,7 @@ describe('Font dialog validation bold,italic,underLine', () => {
         expect(editor.selection.characterFormat.italic).toBe(true);
     });
     it('Underline value changed and apply testing', () => {
+console.log('Underline value changed and apply testing');
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
@@ -73,6 +75,7 @@ describe('Font dialog validation bold,italic,underLine', () => {
         expect(editor.selection.characterFormat.underline).toBe('Single');
     });
     it('handle context menu validation', () => {
+console.log('handle context menu validation');
         menu.handleContextMenuItem('container_contextmenu_font_dialog');
         expect(() => { editor.fontDialogModule.onCancelButtonClick(); }).not.toThrowError();
         let event: any = { keyCode: 68, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
@@ -106,6 +109,7 @@ describe('Font dialog validation bold,italic,underLine', () => {
         }, 2000);
     });
     it('Strikethrough value retrieval in dialog and apply testing', () => {
+console.log('Strikethrough value retrieval in dialog and apply testing');
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
@@ -127,6 +131,7 @@ describe('Font dialog validation bold,italic,underLine', () => {
         dialog.onInsertFontFormat();
     });
     it('BaseLineAlignment value retrieval in dialog and apply testing', () => {
+console.log('BaseLineAlignment value retrieval in dialog and apply testing');
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
@@ -147,6 +152,7 @@ describe('Font dialog validation bold,italic,underLine', () => {
         expect(editor.selection.characterFormat.baselineAlignment).toBe('Superscript');
     });
     it('Add modified property for character format  validation', () => {
+console.log('Add modified property for character format  validation');
         editor.openBlank();
         editor.editorModule.insertText('Syncfusion Software');
         let event: any;
@@ -190,6 +196,7 @@ describe('Font dialog validation bold,italic,underLine', () => {
     });
 
     it('Font size event change and apply testing', () => {
+console.log('Font size event change and apply testing');
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
@@ -232,6 +239,7 @@ describe('Font Dialog Font family,color,stikethrough validation -1 ', () => {
         }, 2000);
     });
     it('Font Family event change and apply testing', () => {
+console.log('Font Family event change and apply testing');
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
@@ -247,6 +255,7 @@ describe('Font Dialog Font family,color,stikethrough validation -1 ', () => {
         expect(editor.selection.characterFormat.fontFamily).not.toBe(prevFormat);
     });
     it('Font Color event change and apply testing', () => {
+console.log('Font Color event change and apply testing');
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
@@ -287,6 +296,7 @@ describe('Font Dialog Font family,color,stikethrough validation-2', () => {
         }, 2000);
     });
     it('Font Family event change and apply testing', (done) => {
+console.log('Font Family event change and apply testing');
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
@@ -304,6 +314,7 @@ describe('Font Dialog Font family,color,stikethrough validation-2', () => {
         }, 50);
     });
     it('double Strikethrough value apply testing', () => {
+console.log('double Strikethrough value apply testing');
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
@@ -348,6 +359,7 @@ describe('Font Dialog Font family,color,stikethrough validation-3', () => {
         }, 2000);
     });
     it('SubScript value apply testing', () => {
+console.log('SubScript value apply testing');
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
@@ -372,6 +384,7 @@ describe('Font Dialog Font family,color,stikethrough validation-3', () => {
         expect(editor.selection.characterFormat.strikethrough).toBe(prevFormat);
     });
     it('Strikethrough value apply testing', () => {
+console.log('Strikethrough value apply testing');
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
@@ -417,17 +430,20 @@ describe('font dialog api validation', () => {
         }, 2000);
     });
     it(' onInsertFontFormat api validation', () => {
+console.log(' onInsertFontFormat api validation');
         documentHelper = editor.documentHelper;
         dialog.showFontDialog();
         dialog.characterFormat = null;
         expect(() => { dialog.onInsertFontFormat(); }).not.toThrowError();
     });
     it(' destroy api validation', () => {
+console.log(' destroy api validation');
         documentHelper = editor.documentHelper;
         dialog.showFontDialog();
         expect(() => { dialog.destroy(); }).not.toThrowError();
     });
     it('Dialog with bold property with selection is empty', () => {
+console.log('Dialog with bold property with selection is empty');
         let event: any;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
@@ -437,11 +453,13 @@ describe('font dialog api validation', () => {
         expect(() => { dialog.onInsertFontFormat(); }).not.toThrowError();
     });
     it(' close Dialog Api validation', () => {
+console.log(' close Dialog Api validation');
         documentHelper = editor.documentHelper;
         dialog.showFontDialog();
         expect(() => { dialog.closeFontDialog() }).not.toThrowError();
     });
     it('Module name validation', () => {
+console.log('Module name validation');
         let name: string = dialog.getModuleName();
         expect(name).toBe('FontDialog');
     });
@@ -476,6 +494,7 @@ describe('Strikethrough and basline alignment validation', () => {
         }, 2000);
     });
     it('Strikethrough value retrieval in dialog and apply testing', () => {
+console.log('Strikethrough value retrieval in dialog and apply testing');
         createDocument(editor)
         let event: any;
         editor.editorModule.onApplyCharacterFormat('strikethrough', 'SingleStrike');
@@ -491,6 +510,7 @@ describe('Strikethrough and basline alignment validation', () => {
         dialog.onInsertFontFormat();
     });
     it('Strikethrough value retrieval in dialog and apply testing', () => {
+console.log('Strikethrough value retrieval in dialog and apply testing');
         createDocument(editor)
         let event: any;
         editor.editorModule.onApplyCharacterFormat('strikethrough', 'SingleStrike');
@@ -506,6 +526,7 @@ describe('Strikethrough and basline alignment validation', () => {
         dialog.onInsertFontFormat();
     });
     it('DoubleStrikeThrough value retrieval in dialog and apply testing', () => {
+console.log('DoubleStrikeThrough value retrieval in dialog and apply testing');
         createDocument(editor)
         let event: any;
         editor.editorModule.onApplyCharacterFormat('strikethrough', 'SingleStrike');
@@ -521,6 +542,7 @@ describe('Strikethrough and basline alignment validation', () => {
         dialog.onInsertFontFormat();
     });
     it('Strikethrough Testing', () => {
+console.log('Strikethrough Testing');
         createDocument(editor)
         let event: any;
         editor.editorModule.onApplyCharacterFormat('strikethrough', 'SingleStrike');
@@ -567,6 +589,7 @@ describe('Font dialog validation for allCaps', () => {
         }, 2000);
     });
     it('allCaps property value apply testing', () => {
+console.log('allCaps property value apply testing');
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };

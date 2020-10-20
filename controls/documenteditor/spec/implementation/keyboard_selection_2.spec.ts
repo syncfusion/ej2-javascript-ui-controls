@@ -37,16 +37,19 @@ describe('Rtl Keyboard selection for Shift left key', () => {
         }, 2000);
     });
     it('Bidi for paragraph is true containing normal text only', () => {
+console.log('Bidi for paragraph is true containing normal text only');
         editor.selection.handleShiftLeftKey();
         expect(editor.selection.start.offset).toBe(0);
         expect(editor.selection.end.offset).toBe(1);
     });
     it('Again Bidi for paragraph is true containing normal text only', () => {
+console.log('Again Bidi for paragraph is true containing normal text only');
         editor.selection.handleShiftLeftKey();
         expect(editor.selection.start.offset).toBe(0);
         expect(editor.selection.end.offset).toBe(2);
     });
     it('Bidi for paragraph is true containing rtl text only selection is at start of linewidget', () => {
+console.log('Bidi for paragraph is true containing rtl text only selection is at start of linewidget');
         editor.selection.handleDownKey();
         editor.selection.handleControlDownKey();
         editor.selection.handleShiftLeftKey();
@@ -54,19 +57,22 @@ describe('Rtl Keyboard selection for Shift left key', () => {
         expect(editor.selection.end.offset).toBe(1);
     });
     it('Bidi for paragraph is true containing rtl text only selection is at end of line widget', () => {
+console.log('Bidi for paragraph is true containing rtl text only selection is at end of line widget');
         editor.selection.handleEndKey();
         editor.selection.handleShiftLeftKey();
         // expect(editor.selection.start.offset).toBe(115);
         expect(editor.selection.end.offset).toBe(1);
     });
     it('Bidi for paragraph is false containing rtl text only', () => {
+console.log('Bidi for paragraph is false containing rtl text only');
         editor.selection.handleControlDownKey();
         editor.selection.handleControlDownKey();
         editor.selection.handleShiftLeftKey();
         expect(editor.selection.start.offset).toBe(0);
-        expect(editor.selection.end.offset).toBe(41);
+        expect(editor.selection.end.offset).toBe(48);
     });
     it('Bidi for paragraph is false containing rtl text only at middle of paragraph', () => {
+console.log('Bidi for paragraph is false containing rtl text only at middle of paragraph');
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
         editor.selection.handleShiftLeftKey();
@@ -100,17 +106,20 @@ describe('Rtl Keyboard selection for Shift Right key', () => {
         }, 2000);
     });
     it('Bidi for paragraph is true containing normal text only', () => {
+console.log('Bidi for paragraph is true containing normal text only');
         editor.selection.handleEndKey();
         editor.selection.handleShiftRightKey();
         expect(editor.selection.start.offset).not.toBe(0);
     });
     it('Bidi for paragraph is true containing rtl text only selection is at start of linewidget', () => {
+console.log('Bidi for paragraph is true containing rtl text only selection is at start of linewidget');
         editor.selection.handleControlDownKey();
         editor.selection.handleShiftRightKey();
         expect(editor.selection.start.offset).toBe(0);
         // expect(editor.selection.end.offset).toBe(14);
     });
     it('Bidi for paragraph is true containing rtl text only selection is at end of line widget', () => {
+console.log('Bidi for paragraph is true containing rtl text only selection is at end of line widget');
         editor.selection.handleEndKey();
         editor.selection.handleShiftRightKey();
         expect(editor.selection.start.offset).not.toBe(0);
@@ -118,6 +127,7 @@ describe('Rtl Keyboard selection for Shift Right key', () => {
         // expect(editor.selection.end.offset).toBe(114);
     });
     it('Bidi for paragraph is false containing rtl text only', () => {
+console.log('Bidi for paragraph is false containing rtl text only');
         editor.selection.handleControlDownKey();
         editor.selection.handleControlDownKey();
         editor.selection.handleShiftRightKey();
@@ -125,6 +135,7 @@ describe('Rtl Keyboard selection for Shift Right key', () => {
         expect(editor.selection.end.offset).toBe(1);
     });
     it('Bidi for paragraph is false containing rtl text only at middle of paragraph', () => {
+console.log('Bidi for paragraph is false containing rtl text only at middle of paragraph');
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
         editor.selection.handleShiftRightKey();
@@ -160,6 +171,7 @@ describe('Rtl Keyboard selection for Shift Home and End key', () => {
         }, 2000);
     });
     it('Bidi for paragraph is true containing normal text only- home key', () => {
+console.log('Bidi for paragraph is true containing normal text only- home key');
         editor.selection.handleControlLeftKey();
         editor.selection.handleControlLeftKey();
         editor.selection.handleControlLeftKey();
@@ -168,23 +180,27 @@ describe('Rtl Keyboard selection for Shift Home and End key', () => {
         expect(editor.selection.end.offset).toBe(0);
     });
     it('Bidi for paragraph is true containing normal text only-end key', () => {
+console.log('Bidi for paragraph is true containing normal text only-end key');
         editor.selection.handleShiftEndKey();
         expect(editor.selection.start.offset).toBe(17);
     });
     it('Bidi for paragraph is true containing rtl text only selection is at start of linewidget', () => {
+console.log('Bidi for paragraph is true containing rtl text only selection is at start of linewidget');
         editor.selection.handleControlDownKey();
         editor.selection.handleControlLeftKey();
         editor.selection.handleControlLeftKey();
         editor.selection.handleControlLeftKey();
         editor.selection.handleShiftHomeKey();
-        expect(editor.selection.start.offset).toBe(19);
-        expect(editor.selection.end.offset).toBe(0);
+        expect(editor.selection.start.offset).toBe(0);
+        expect(editor.selection.end.offset).toBe(72);
     });
     it('Bidi for paragraph is true containing rtl text only selection is at start of linewidget', () => {
+console.log('Bidi for paragraph is true containing rtl text only selection is at start of linewidget');
         editor.selection.handleShiftEndKey();
-        expect(editor.selection.start.offset).toBe(19);
+        expect(editor.selection.start.offset).toBe(0);
     });
     it('Bidi for paragraph is false containing rtl text only-shift home', () => {
+console.log('Bidi for paragraph is false containing rtl text only-shift home');
         editor.selection.handleControlDownKey();
         editor.selection.handleControlDownKey();
         editor.selection.handleControlRightKey();
@@ -195,11 +211,13 @@ describe('Rtl Keyboard selection for Shift Home and End key', () => {
         // expect(editor.selection.end.offset).toBe(0);
     });
     it('Bidi for paragraph is false containing rtl text only- shift end', () => {
+console.log('Bidi for paragraph is false containing rtl text only- shift end');
         editor.selection.handleShiftEndKey();
         //TODO
         // expect(editor.selection.start.offset).toBe(6);
     });
     it('Bidi for paragraph is false containing rtl text only at middle of paragraph', () => {
+console.log('Bidi for paragraph is false containing rtl text only at middle of paragraph');
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
         editor.selection.handleShiftHomeKey();
@@ -234,34 +252,41 @@ describe('Rtl Keyboard selection for Home and End key', () => {
         }, 2000);
     });
     it('Bidi for paragraph is true containing normal text only- home key', () => {
+console.log('Bidi for paragraph is true containing normal text only- home key');
         editor.selection.handleDownKey();
         editor.selection.handleHomeKey();
         expect(editor.selection.end.offset).toBe(0);
     });
     it('Bidi for paragraph is true containing normal text only-end key', () => {
+console.log('Bidi for paragraph is true containing normal text only-end key');
         editor.selection.handleEndKey();
         expect(editor.selection.end.offset).not.toBe(0);
     });
     it('Bidi for paragraph is true containing rtl text only selection is at start of linewidget', () => {
+console.log('Bidi for paragraph is true containing rtl text only selection is at start of linewidget');
         editor.selection.handleControlDownKey();
         editor.selection.handleHomeKey();
         expect(editor.selection.end.offset).toBe(0);
     });
     it('Bidi for paragraph is true containing rtl text only selection is at start of linewidget', () => {
+console.log('Bidi for paragraph is true containing rtl text only selection is at start of linewidget');
         editor.selection.handleEndKey();
         expect(editor.selection.end.offset).not.toBe(0);
     });
     it('Bidi for paragraph is false containing rtl text only-shift home', () => {
+console.log('Bidi for paragraph is false containing rtl text only-shift home');
         editor.selection.handleControlDownKey();
         editor.selection.handleControlDownKey();
         editor.selection.handleHomeKey();
         expect(editor.selection.end.offset).toBe(0);
     });
     it('Bidi for paragraph is false containing rtl text only- shift end', () => {
+console.log('Bidi for paragraph is false containing rtl text only- shift end');
         editor.selection.handleEndKey();
         expect(editor.selection.end.offset).not.toBe(0);
     });
     it('Bidi for paragraph is false containing rtl text only at middle of paragraph', () => {
+console.log('Bidi for paragraph is false containing rtl text only at middle of paragraph');
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
         editor.selection.handleHomeKey();
@@ -295,40 +320,48 @@ describe('Rtl Keyboard selection for Left and Right key', () => {
         }, 2000);
     });
     it('Bidi for paragraph is true containing normal text only- Left', () => {
+console.log('Bidi for paragraph is true containing normal text only- Left');
         editor.selection.handleLeftKey();
         expect(editor.selection.end.hierarchicalPosition).toBe("0;0;0;0;1");
     });
     it('Bidi for paragraph is true containing normal text only- Right', () => {
+console.log('Bidi for paragraph is true containing normal text only- Right');
         editor.selection.handleRightKey();
         expect(editor.selection.end.hierarchicalPosition).toBe("0;0;0;0;0");
     });
     it('Bidi for paragraph is true containing rtl text only selection is at start of linewidget-Left', () => {
+console.log('Bidi for paragraph is true containing rtl text only selection is at start of linewidget-Left');
         editor.selection.handleControlDownKey();
         editor.selection.handleLeftKey();
         expect(editor.selection.end.hierarchicalPosition).toBe("0;0;1;0;1");
     });
     it('Bidi for paragraph is true containing rtl text only selection is at start of linewidget-Right', () => {
+console.log('Bidi for paragraph is true containing rtl text only selection is at start of linewidget-Right');
         editor.selection.handleRightKey();
         expect(editor.selection.end.hierarchicalPosition).toBe("0;0;1;0;0");
     });
     it('Bidi for paragraph is true containing rtl text only selection is at end of line widget-Left', () => {
+console.log('Bidi for paragraph is true containing rtl text only selection is at end of line widget-Left');
         editor.selection.handleEndKey();
         editor.selection.handleLeftKey();
         expect(editor.selection.end.hierarchicalPosition).toBe("0;0;1;1;0");
     });
     it('Bidi for paragraph is true containing rtl text only selection is at end of line widget-Right', () => {
+console.log('Bidi for paragraph is true containing rtl text only selection is at end of line widget-Right');
         editor.selection.handleRightKey();
         expect(editor.selection.end.hierarchicalPosition).not.toBe("0;0;1;1;0");
     });
     it('Bidi for paragraph is false containing rtl text only-Left', () => {
+console.log('Bidi for paragraph is false containing rtl text only-Left');
         editor.selection.handleControlDownKey();
         editor.selection.handleControlDownKey();
         editor.selection.handleLeftKey();
-        expect(editor.selection.end.hierarchicalPosition).toBe("0;0;2;1;41");
+        expect(editor.selection.end.hierarchicalPosition).toBe("0;0;2;1;48");
     });
     it('Bidi for paragraph is false containing rtl text only-Right', () => {
+console.log('Bidi for paragraph is false containing rtl text only-Right');
         editor.selection.handleRightKey();
-        expect(editor.selection.end.hierarchicalPosition).toBe("0;0;2;1;40");
+        expect(editor.selection.end.hierarchicalPosition).toBe("0;0;2;1;47");
     });
 });
 
@@ -359,20 +392,24 @@ describe('Rtl Keyboard selection for control shift left and right key', () => {
         }, 2000);
     });
     it('Bidi for paragraph is true containing normal text only- Left', () => {
+console.log('Bidi for paragraph is true containing normal text only- Left');
         editor.selection.handleControlShiftLeftKey();
         expect(editor.selection.end.hierarchicalPosition).not.toBe(editor.selection.start.hierarchicalPosition);
     });
     it('Bidi for paragraph is true containing normal text only- Right', () => {
+console.log('Bidi for paragraph is true containing normal text only- Right');
         editor.selection.handleDownKey();
         editor.selection.handleControlShiftRightKey();
         expect(editor.selection.end.hierarchicalPosition).not.toBe(editor.selection.start.hierarchicalPosition);
     });
     it('Bidi for paragraph is true containing rtl text only selection is at start of linewidget-Left', () => {
+console.log('Bidi for paragraph is true containing rtl text only selection is at start of linewidget-Left');
         editor.selection.handleControlDownKey();
         editor.selection.handleControlShiftRightKey();
         expect(editor.selection.end.hierarchicalPosition).not.toBe(editor.selection.start.hierarchicalPosition);
     });
     it('Bidi for paragraph is true containing rtl text only selection is at start of linewidget-Right', () => {
+console.log('Bidi for paragraph is true containing rtl text only selection is at start of linewidget-Right');
         editor.selection.handleControlShiftLeftKey();
         expect(editor.selection.end.hierarchicalPosition).not.toBe(editor.selection.start.hierarchicalPosition);
     });
@@ -405,6 +442,7 @@ describe('Rtl Keyboard selection for Shift up and down key', () => {
         }, 2000);
     });
     it('Bidi for paragraph is true containing normal text only- shiftUp', () => {
+console.log('Bidi for paragraph is true containing normal text only- shiftUp');
         editor.selection.handleControlLeftKey();
         editor.selection.handleControlLeftKey();
         editor.selection.handleShiftDownKey();
@@ -412,10 +450,12 @@ describe('Rtl Keyboard selection for Shift up and down key', () => {
         expect(editor.selection.end.currentWidget).not.toBe(editor.selection.start.currentWidget);
     });
     it('Bidi for paragraph is true containing normal text only- Right', () => {
+console.log('Bidi for paragraph is true containing normal text only- Right');
         editor.selection.handleShiftUpKey();
         expect(editor.selection.end.currentWidget).not.toBe(editor.selection.start.currentWidget);
     });
     it('Bidi for paragraph is true containing rtl text only selection is at start of linewidget-Left', () => {
+console.log('Bidi for paragraph is true containing rtl text only selection is at start of linewidget-Left');
         editor.selection.handleControlDownKey();
         editor.selection.handleControlLeftKey()
         editor.selection.handleControlLeftKey()
@@ -424,13 +464,15 @@ describe('Rtl Keyboard selection for Shift up and down key', () => {
         expect(editor.selection.end.currentWidget).not.toBe(editor.selection.start.currentWidget);
     });
     it('Bidi for paragraph is true containing rtl text only selection is at start of linewidget-Right', () => {
+console.log('Bidi for paragraph is true containing rtl text only selection is at start of linewidget-Right');
         editor.selection.handleShiftUpKey();
         expect(editor.selection.end.currentWidget).not.toBe(editor.selection.start.currentWidget);
     });
     it('Bidi for paragraph is true containing rtl text only selection is at end of line widget-Left', () => {
+console.log('Bidi for paragraph is true containing rtl text only selection is at end of line widget-Left');
         editor.selection.handleEndKey();
         editor.selection.handleShiftUpKey();
-        expect(editor.selection.end.currentWidget).not.toBe(editor.selection.start.currentWidget);
+        expect(editor.selection.end.currentWidget).toBe(editor.selection.start.currentWidget);
     });
 });
 
@@ -464,6 +506,7 @@ describe('Rtl and ltr text combinations validation', () => {
         }, 2000);
     });
     it('RTl text for paragraph with shift left validation', () => {
+console.log('RTl text for paragraph with shift left validation');
         editor.selection.handleShiftLeftKey();
         editor.selection.handleShiftLeftKey();
         editor.selection.handleShiftLeftKey();
@@ -475,6 +518,7 @@ describe('Rtl and ltr text combinations validation', () => {
         expect(editor.selection.end.currentWidget).toBe(editor.selection.start.currentWidget);
     });
     it('RTl text for paragraph with shift left validation-2', () => {
+console.log('RTl text for paragraph with shift left validation-2');
         editor.selection.handleShiftLeftKey();
         editor.selection.handleShiftLeftKey();
         editor.selection.handleShiftLeftKey();
@@ -484,6 +528,7 @@ describe('Rtl and ltr text combinations validation', () => {
         expect(editor.selection.end.currentWidget).toBe(editor.selection.start.currentWidget);
     });
     it('RTl and ltr text for paragraph with shift left validation', () => {
+console.log('RTl and ltr text for paragraph with shift left validation');
         editor.selection.handleShiftLeftKey();
         editor.selection.handleShiftLeftKey();
         editor.selection.handleShiftLeftKey();
@@ -493,6 +538,7 @@ describe('Rtl and ltr text combinations validation', () => {
         expect(editor.selection.end.currentWidget).toBe(editor.selection.start.currentWidget);
     });
     it('RTl and ltr text for paragraph with shift right validation', () => {
+console.log('RTl and ltr text for paragraph with shift right validation');
         editor.selection.handleShiftRightKey();
         editor.selection.handleShiftRightKey();
         editor.selection.handleShiftRightKey();

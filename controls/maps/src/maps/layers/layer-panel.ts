@@ -952,6 +952,10 @@ export class LayerPanel {
                 }
                 let animateElement: HTMLElement;
                 if (!document.getElementById('animated_tiles') && element) {
+                    if (!isNullOrUndefined(document.getElementById(this.mapObject.element.id + '_animated_tiles'))) {
+                        document.getElementById(this.mapObject.element.id + '_animated_tiles').id = this.mapObject.element.id +
+                        '_animated_tiles_old';
+                    }
                     animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
                     element.appendChild(animateElement);
                 } else {
@@ -967,21 +971,27 @@ export class LayerPanel {
                 for (let tile of this.tiles) {
                     let imgElement: HTMLElement = createElement('img');
                     imgElement.setAttribute('src', tile.src);
-                    let child: HTMLElement;
-                    if (document.getElementById(this.mapObject.element.id + '_tile_' + id) && type === 'Pan') {
-                        removeElement(this.mapObject.element.id + '_tile_' + id);
-                    }
-                    child = createElement('div', { id: this.mapObject.element.id + '_tile_' + id });
-                    child.style.position = 'absolute';
-                    child.style.left = tile.left + 'px';
-                    child.style.top = tile.top + 'px';
-                    child.style.height = tile.height + 'px';
-                    child.style.width = tile.width + 'px';
-                    child.appendChild(imgElement);
-                    if (animateElement) {
-                        animateElement.appendChild(child);
-                    }
-                    id++;
+                    let mapId: string = this.mapObject.element.id;
+                    imgElement.onload = () => {
+                        let child: HTMLElement;
+                        if (document.getElementById(mapId + '_tile_' + id) && type === 'Pan') {
+                            removeElement(mapId + '_tile_' + id);
+                        }
+                        child = createElement('div', { id: mapId + '_tile_' + id });
+                        child.style.position = 'absolute';
+                        child.style.left = tile.left + 'px';
+                        child.style.top = tile.top + 'px';
+                        child.style.height = tile.height + 'px';
+                        child.style.width = tile.width + 'px';
+                        child.appendChild(imgElement);
+                        if (animateElement) {
+                            animateElement.appendChild(child);
+                        }
+                        id++;
+                        if (id === this.tiles.length && document.getElementById(this.mapObject.element.id + '_animated_tiles_old')) {
+                            removeElement(this.mapObject.element.id + '_animated_tiles_old');
+                        }
+                    };
                 }
             // tslint:disable-next-line:align
             }, timeOut);
@@ -1127,8 +1137,8 @@ export class LayerPanel {
             }
         }
         this.mapObject.translatePoint = new Point(
-            (x - (0.01 * this.mapObject.scale)) / this.mapObject.scale,
-            (y - (0.01 * this.mapObject.scale)) / this.mapObject.scale
+            (x - (0.01 * this.mapObject.zoomSettings.zoomFactor)) / this.mapObject.scale,
+            (y - (0.01 * this.mapObject.zoomSettings.zoomFactor)) / this.mapObject.scale
         );
         this.mapObject.previousTileWidth = factorX;
         this.mapObject.previousTileHeight = factorY;

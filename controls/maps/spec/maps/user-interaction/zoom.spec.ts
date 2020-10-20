@@ -1237,7 +1237,14 @@ describe('Zoom feature tesing for map control', () => {
 
         it('Checking mouse double click', () => {
             map.loaded = (args: ILoadedEventArgs) => {
-                map.mapsOnDoubleClick(<PointerEvent>{});
+                let element: Element = getElementByID(map.element.id + '_svg');
+                let eventObj: Object = {
+                    target: element,
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                    pageY: element.getBoundingClientRect().top + map.mapAreaRect.y + (map.mapAreaRect.height / 2)
+                };
+                map.mapsOnDoubleClick(<PointerEvent>eventObj);
             }
             map.refresh();
         });

@@ -564,10 +564,10 @@ export class HierarchicalTree {
                 if (this.hasChild(layout, child)) {
                     if (!info.firstChild || info.firstChild.x >= childInfo.firstChild.x) {
                         if (childInfo.firstChild && info.firstChild.canMoveBy < childInfo.canMoveBy) {
-                            info.firstChild.canMoveBy = canMoveBy;
-                            childInfo.canMoveBy = canMoveBy;
                             canMoveBy = info.firstChild.canMoveBy;
+                            childInfo.canMoveBy = canMoveBy;
                             layout.graphNodes[info.firstChild.child].canMoveBy = canMoveBy;
+                            info.firstChild.canMoveBy = canMoveBy;
                         }
                         let canMoveValue: number = canMoveBy !== undefined ? canMoveBy : childInfo.canMoveBy;
                         info.firstChild = { x: childInfo.firstChild.x, canMoveBy: canMoveValue, child: child.id };

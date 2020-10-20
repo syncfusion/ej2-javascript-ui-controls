@@ -26,7 +26,8 @@ export class YearEvent extends TimelineEvent {
 
     public renderAppointments(): void {
         this.fields = this.parent.eventFields;
-        let elementSelector: string = '.' + cls.APPOINTMENT_WRAPPER_CLASS + ',.' + cls.MORE_INDICATOR_CLASS;
+        let elementSelector: string = (this.parent.currentView === 'Year') ? '.' + cls.APPOINTMENT_CLASS :
+            '.' + cls.APPOINTMENT_WRAPPER_CLASS + ',.' + cls.MORE_INDICATOR_CLASS;
         let eventWrappers: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(elementSelector));
         for (let wrapper of eventWrappers) {
             remove(wrapper);
@@ -42,6 +43,7 @@ export class YearEvent extends TimelineEvent {
                 this.timelineYearViewEvents();
             }
         }
+        this.parent.renderTemplates();
         this.parent.notify(events.contentReady, {});
     }
 
@@ -215,7 +217,7 @@ export class YearEvent extends TimelineEvent {
         let wrap: HTMLElement = this.createEventElement(eventObj);
         let width: number;
         let index: number;
-        if (eventObj[this.fields.isAllDay]) {
+        if (eventObj[this.fields.isAllDay] && (<{ [key: string]: number }>eventObj.isSpanned).count === 1) {
             eventObj[this.fields.endTime] = new Date((eventObj[this.fields.startTime] as Date).getTime());
         }
         if (this.parent.activeViewOptions.orientation === 'Horizontal') {

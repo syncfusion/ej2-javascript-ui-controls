@@ -523,8 +523,35 @@ export class Parser {
                                         j = j - 1;
                                     }
                                 }
+                                if (j > -1 && text[j] === ':') {
+                                    //// handle range operands
+                                    j = j - 1;
+                                    while (j > -1 && this.parent.isDigit(text[j])) {
+                                        j = j - 1;
+                                    }
+
+                                    while (j > -1 && this.parent.isUpperChar(text[j])) {
+                                        j = j - 1;
+                                    }
+
+                                    if (j > -1 && text[j] === this.sheetToken) {
+                                        j--;
+                                        while (j > -1 && text[j] !== this.sheetToken) {
+                                            j--;
+                                        }
+
+                                        if (j > -1 && text[j] === this.sheetToken) {
+                                            j--;
+                                        }
+                                    }
+
+                                    j = j + 1;
+                                    left = this.parent.substring(text, j, i - j);
+                                    left = this.parent.getCellFrom(left);
+                                } else {
                                 j = j + 1;
                                 left = this.parent.substring(text, j, i - j);
+                                }
                                 this.parent.updateDependentCell(left);
                                 leftIndex = j;
                             }

@@ -42,6 +42,10 @@ export class SfdtExport {
     private nestedContent: boolean = false;
     private contentType: string;
     private editRangeId: number = -1;
+    private selectedCommentsId: string[] = [];
+    private selectedRevisionId: string[] = [];
+    private startBlock: BlockWidget;
+    private endBlock: BlockWidget;
     private nestedBlockContent: boolean = false;
     private nestedBlockEnabled: boolean = false;
     private blocks: any = [];
@@ -52,6 +56,10 @@ export class SfdtExport {
      * @private
      */
     private isExport: boolean = true;
+    /**
+     * @private
+     */
+    public isPartialExport: boolean = false;
     private documentHelper: DocumentHelper;
     private checkboxOrDropdown: boolean = false;
     /**
@@ -81,6 +89,11 @@ export class SfdtExport {
         this.endCell = undefined;
         this.startColumnIndex = undefined;
         this.endColumnIndex = undefined;
+        this.selectedCommentsId = [];
+        this.selectedRevisionId = [];
+        this.startBlock = undefined;
+        this.endBlock = undefined;
+        this.isPartialExport = false;
     }
     /**
      * Serialize the data as Syncfusion document text.
@@ -119,6 +132,7 @@ export class SfdtExport {
     /** 
      * @private
      */
+    // tslint:disable:max-func-body-length
     // tslint:disable-next-line:max-line-length
     public write(line?: LineWidget, startOffset?: number, endLine?: LineWidget, endOffset?: number, writeInlineStyles?: boolean, isExport?: boolean): any {
         if (writeInlineStyles) {
@@ -135,6 +149,10 @@ export class SfdtExport {
             let startPara: ParagraphWidget = line.paragraph;
             let endPara: ParagraphWidget = endLine.paragraph;
 
+            if (this.isPartialExport) {
+                this.startBlock = this.getParentBlock(startPara);
+                this.endBlock = this.getParentBlock(endPara);
+            }
             let startCell: TableCellWidget = startPara.associatedCell;
             let endCell: TableCellWidget = endPara.associatedCell;
             // Creates section
@@ -165,12 +183,22 @@ export class SfdtExport {
                 }
             }
             let nextBlock: BlockWidget;
-            if (startCell === endCell || isNullOrUndefined(startCell)) {
+            if ((startCell === endCell && !this.isPartialExport) || isNullOrUndefined(startCell)) {
                 let paragraph: any = this.createParagraph(line.paragraph);
                 section.blocks.push(paragraph);
+                let lastBlock: BlockWidget = line.paragraph;
                 nextBlock = this.writeParagraph(line.paragraph, paragraph, section.blocks, line.indexInOwner, startOffset);
+                if (this.isPartialExport) {
+                    nextBlock = this.getNextBlock(nextBlock, lastBlock);
+                    section = this.document.sections[this.document.sections.length - 1];
+                }
                 while (nextBlock) {
+                    lastBlock = nextBlock;
                     nextBlock = this.writeBlock(nextBlock, 0, section.blocks);
+                    if (this.isPartialExport && isNullOrUndefined(nextBlock)) {
+                        nextBlock = this.getNextBlock(nextBlock, lastBlock);
+                        section = this.document.sections[this.document.sections.length - 1];
+                    }
                 }
                 // Todo:continue in next section
             } else {
@@ -191,9 +219,19 @@ export class SfdtExport {
                 }
                 let table: any = this.createTable(startCell.ownerTable);
                 section.blocks.push(table);
+                let lastBlock: BlockWidget = startCell.ownerTable;
                 nextBlock = this.writeTable(startCell.ownerTable, table, startCell.ownerRow.indexInOwner, section.blocks);
+                if (this.isPartialExport) {
+                    nextBlock = this.getNextBlock(nextBlock, lastBlock);
+                    section = this.document.sections[this.document.sections.length - 1];
+                }
                 while (nextBlock) {
+                    lastBlock = nextBlock;
                     nextBlock = this.writeBlock(nextBlock, 0, section.blocks);
+                    if (this.isPartialExport) {
+                        nextBlock = this.getNextBlock(nextBlock, lastBlock);
+                        section = this.document.sections[this.document.sections.length - 1];
+                    }
                 }
             }
         } else {
@@ -211,6 +249,20 @@ export class SfdtExport {
         let doc: Document = this.document;
         this.clear();
         return doc;
+    }
+
+    private getNextBlock(nextBlock: BlockWidget, lastBlock: BlockWidget): BlockWidget {
+        if (isNullOrUndefined(nextBlock) && this.isPartialExport && this.endBlock
+            && !this.endBlock.equals(lastBlock)) {
+            nextBlock = lastBlock.getSplitWidgets().pop().nextRenderedWidget as BlockWidget;
+            if (nextBlock && lastBlock.bodyWidget.index !== nextBlock.bodyWidget.index) {
+                let section: any = this.createSection(nextBlock.bodyWidget as BlockContainer);
+                this.document.sections.push(section);
+            } else {
+                nextBlock = undefined;
+            }
+        }
+        return nextBlock;
     }
     /**
      * @private
@@ -339,7 +391,7 @@ export class SfdtExport {
     private writeParagraphs(widget: ParagraphWidget): any {
         let blocks: any = this.blocks;
         let child: LineWidget = widget.childWidgets[0] as LineWidget;
-        let firstChild: ElementBox  = child.children[0];
+        let firstChild: ElementBox = child.children[0];
         let secondChild: ElementBox = child.children[1];
         if (firstChild instanceof ListTextElementBox || secondChild instanceof ListTextElementBox) {
             firstChild = child.children[2];
@@ -353,7 +405,7 @@ export class SfdtExport {
             let nestedBlocks: boolean = false;
             if (secondChild instanceof ContentControl) {
                 if ((secondChild as ContentControl).contentControlWidgetType === 'Block') {
-                nestedBlocks = true;
+                    nestedBlocks = true;
                 }
             }
             // tslint:disable-next-line:max-line-length
@@ -443,7 +495,7 @@ export class SfdtExport {
         block.blocks = this.writeParagraphs(widget);
         if (!isNullOrUndefined(block.blocks)) {
             let child: LineWidget = widget.childWidgets[0] as LineWidget;
-            let firstChild: ElementBox  = child.children[0];
+            let firstChild: ElementBox = child.children[0];
             let secondChild: ElementBox = child.children[1];
             if (firstChild instanceof ListTextElementBox || secondChild instanceof ListTextElementBox) {
                 firstChild = child.children[2];
@@ -588,7 +640,7 @@ export class SfdtExport {
     }
     private nestedContentProperty(nextElement: any, inline: any, inlines?: any): any {
         if (!isNullOrUndefined(nextElement)) {
-            if (nextElement.type === 1 ) {
+            if (nextElement.type === 1) {
                 inline.contentControlProperties = this.contentControlProperty(nextElement.contentControlProperties);
                 return inline;
             } else if (this.startContent) {
@@ -677,9 +729,13 @@ export class SfdtExport {
             } else if (element.text.indexOf('\u001f') !== -1) {
                 inline.text = element.text.replace(/\u001f/g, '');
             } else if (element.revisions.length !== 0) {
-                if (!this.isExport && this.owner.enableTrackChanges) {
+                if (!this.isExport && this.owner.enableTrackChanges && !this.isPartialExport) {
                     this.copyWithTrackChange = true;
                     for (let x: number = 0; x < element.revisions.length; x++) {
+                        let revision: Revision = element.revisions[x];
+                        if (this.selectedRevisionId.indexOf(revision.revisionID) === -1) {
+                            this.selectedRevisionId.push(revision.revisionID);
+                        }
                         if (element.revisions[x].revisionType === 'Deletion') {
                             element.revisions.pop();
                         } else if (element.revisions[x].revisionType === 'Insertion') {
@@ -710,6 +766,9 @@ export class SfdtExport {
             };
             inline.editRangeId = element.editRangeId.toString();
         } else if (element instanceof CommentCharacterElementBox) {
+            if (!this.isExport && element.commentType === 0) {
+                this.selectedCommentsId.push(element.commentId);
+            }
             inline.commentCharacterType = element.commentType;
             inline.commentId = element.commentId;
         } else if (element instanceof ShapeElementBox) {
@@ -721,6 +780,9 @@ export class SfdtExport {
             inline.revisionIds = [];
             for (let x: number = 0; x < element.revisions.length; x++) {
                 //revisionIdes[x] = element.revisions[x];
+                if (this.selectedRevisionId.indexOf(element.revisions[x].revisionID) === -1) {
+                    this.selectedRevisionId.push(element.revisions[x].revisionID);
+                }
                 inline.revisionIds.push(element.revisions[x].revisionID);
                 //this.document.revisionIdes.push(inline.revisionIds)
             }
@@ -1048,7 +1110,7 @@ export class SfdtExport {
                 }
                 offset = -1;
             }
-            if (!this.isExport && !inline.hasOwnProperty('text') && this.owner.enableTrackChanges) {
+            if (!this.isExport && !inline.hasOwnProperty('text') && this.owner.enableTrackChanges && !this.isPartialExport) {
                 let index: number = inlines.length - 1;
                 inlines.splice(index, 1);
             }
@@ -1370,6 +1432,9 @@ export class SfdtExport {
         return rowFormat;
     }
     private writeRowRevisions(wrevisions: Revision, revisionIds: any): any {
+        if (this.selectedRevisionId.indexOf(wrevisions.revisionID) === -1) {
+            this.selectedRevisionId.push(wrevisions.revisionID);
+        }
         revisionIds.push(wrevisions.revisionID);
         return revisionIds;
     }
@@ -1423,7 +1488,10 @@ export class SfdtExport {
     public writeRevisions(documentHelper: DocumentHelper): void {
         this.document.revisions = [];
         for (let i: number = 0; i < documentHelper.owner.revisions.changes.length; i++) {
-            this.document.revisions.push(this.writeRevision(documentHelper.owner.revisions.changes[i]));
+            if (this.isExport ||
+                (!this.isExport && this.selectedRevisionId.indexOf(documentHelper.owner.revisions.changes[i].revisionID) !== -1)) {
+                this.document.revisions.push(this.writeRevision(documentHelper.owner.revisions.changes[i]));
+            }
         }
     }
     private writeRevision(revisions: Revision): any {
@@ -1436,10 +1504,13 @@ export class SfdtExport {
     }
     public writeComments(documentHelper: DocumentHelper): void {
         this.document.comments = [];
-        for (let i: number = 0; i < documentHelper.comments.length; i++) {
-            this.document.comments.push(this.writeComment(documentHelper.comments[i]));
-        }
 
+        for (let i: number = 0; i < documentHelper.comments.length; i++) {
+            if (this.isExport ||
+                (!this.isExport && this.selectedCommentsId.indexOf(this.documentHelper.comments[i].commentId) !== -1)) {
+                this.document.comments.push(this.writeComment(this.documentHelper.comments[i]));
+            }
+        }
     }
     public writeCustomXml(documentHelper: DocumentHelper): void {
         this.document.customXml = [];
@@ -1533,6 +1604,12 @@ export class SfdtExport {
         listLevel.startAt = wListLevel.startAt;
 
         return listLevel;
+    }
+    private getParentBlock(widget: BlockWidget): BlockWidget {
+        if (widget.isInsideTable) {
+            widget = this.owner.documentHelper.layout.getParentTable(widget);
+        }
+        return widget;
     }
     /** 
      * @private

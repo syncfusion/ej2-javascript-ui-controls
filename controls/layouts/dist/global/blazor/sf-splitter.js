@@ -107,7 +107,9 @@ var SfSplitter = /** @class */ (function () {
         this.element = element;
         this.dotNetRef = dotnetRef;
         this.updateContext(options);
-        this.element.blazor__instance = this;
+        if (!sf.base.isNullOrUndefined(element)) {
+            this.element.blazor__instance = this;
+        }
     }
     SfSplitter.prototype.updateContext = function (splitObj) {
         sf.base.extend(this, this, splitObj);
@@ -1451,8 +1453,8 @@ var SfSplitter = /** @class */ (function () {
 // tslint:disable-next-line
 var Splitter = {
     initialize: function (element, options, dotnetRef) {
-        new SfSplitter(element, options, dotnetRef);
         if (!sf.base.isNullOrUndefined(element)) {
+            new SfSplitter(element, options, dotnetRef);
             element.blazor__instance.initialize();
         }
     },

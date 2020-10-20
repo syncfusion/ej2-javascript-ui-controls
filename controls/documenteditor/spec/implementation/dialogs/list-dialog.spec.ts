@@ -463,6 +463,7 @@ describe('List dialog validation-2', () => {
         }, 1000);
     });
     it('followCharacter API validation', () => {
+console.log('followCharacter API validation');
         dialog.showListDialog();
         let number = (dialog as any).followCharacterConverter('None');
         (dialog as any).followCharacterConverter('Space');
@@ -470,6 +471,7 @@ describe('List dialog validation-2', () => {
         expect(number).toBe(2);
     });
     it('List Pattern API validation', () => {
+console.log('List Pattern API validation');
         let number = (dialog as any).listPatternConverter('Arabic');
         (dialog as any).listPatternConverter('LowRoman');
         (dialog as any).listPatternConverter('UpRoman');
@@ -486,6 +488,7 @@ describe('List dialog validation-2', () => {
         expect(number).toBe(0);
     });
     it('Applylist API validation', () => {
+console.log('Applylist API validation');
         let dialog: any = new ListDialog(editor.documentHelper);
         createDocument(editor);
         dialog.showListDialog();
@@ -527,16 +530,19 @@ describe('ListDialogViewModel class validation', () => {
         }, 1000);
     });
     it('viewmodel property validation', () => {
+console.log('viewmodel property validation');
         dialog.showListDialog();
         viewModel.listLevelPattern = 'Arabic';
         expect(viewModel.listLevelPattern).not.toBe(undefined);
     });
     it('viewmodel property validation', () => {
+console.log('viewmodel property validation');
         dialog.showListDialog();
         viewModel.followCharacter = 'Space';
         expect(viewModel.followCharacter).not.toBe(undefined);
     });
     it('Create List and addListLevel API validation', () => {
+console.log('Create List and addListLevel API validation');
 
         dialog.showListDialog();
         let dialogview: ListViewModel = new ListViewModel();
@@ -573,6 +579,7 @@ describe('dialog event validation-1', () => {
         }, 500);
     });
     it('NumberFormat event validation', (done) => {
+console.log('NumberFormat event validation');
         editor.openBlank();
         editor.editorModule.insertText('Syncfusion Software');
         editor.editor.applyNumbering('%1.', 'Number');
@@ -586,6 +593,7 @@ describe('dialog event validation-1', () => {
         });
     });
     it('follow character event validation', () => {
+console.log('follow character event validation');
         createDocument(editor);
         editor.editorModule.insertText('Syncfusion Software');
         editor.editor.applyBullet('\uf0b7', 'Symbol');
@@ -597,11 +605,13 @@ describe('dialog event validation-1', () => {
         expect((dialog as any).viewModel.followCharacter).toBe('None');
     });
     it('follow character event validation', () => {
+console.log('follow character event validation');
         let event: any = { target: { value: "Tab" } };
         (dialog as any).onFollowCharacterValueChanged(event);
         expect((dialog as any).viewModel.followCharacter).toBe('None');
     });
     it('follow character event validation', () => {
+console.log('follow character event validation');
         let event: any = { target: { value: "None" } };
         (dialog as any).onFollowCharacterValueChanged(event);
         expect((dialog as any).viewModel.followCharacter).toBe('None');
@@ -636,6 +646,7 @@ describe('dialog event validation', () => {
         }, 500);
     });
     it('ListLevel event validation', () => {
+console.log('ListLevel event validation');
         createDocument(editor);
         dialog.showListDialog();
         let event: any = { value: 'Level 3', target: { selectedIndex: 2 } };
@@ -643,6 +654,7 @@ describe('dialog event validation', () => {
         (dialog as any).onApplyList();
     });
     it('ListLevel event validation with index 0', () => {
+console.log('ListLevel event validation with index 0');
         createDocument(editor);
         dialog.showListDialog();
         let event: any = { value: 'Level 1', target: { selectedIndex: 0 } };
@@ -650,10 +662,12 @@ describe('dialog event validation', () => {
         (dialog as any).onApplyList();
     });
     it('ListLevel event validation with index 0', () => {
+console.log('ListLevel event validation with index 0');
         editor.editorHistory.undo();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
     it('Dialog property validation', (done) => {
+console.log('Dialog property validation');
         createDocument(editor);
         dialog.showListDialog();
         setTimeout(() => {
@@ -695,58 +709,72 @@ describe('dialog event validation', () => {
         }, 1000);
     });
     it('LevelPattern event validation', () => {
+console.log('LevelPattern event validation');
         event = { target: { value: "UpRoman" } };
         expect(() => { (dialog as any).onLevelPatternValueChanged(event); }).not.toThrowError();
     });
     it('LevelPattern event validation', () => {
+console.log('LevelPattern event validation');
         event = { target: { value: "LowRoman" } };
         expect(() => { (dialog as any).onLevelPatternValueChanged(event); }).not.toThrowError();
     });
     it('LevelPattern event validation', () => {
+console.log('LevelPattern event validation');
         event = { target: { value: "UpLetter" } };
         expect(() => { (dialog as any).onLevelPatternValueChanged(event); }).not.toThrowError();
     });
     it('LevelPattern event validation', () => {
+console.log('LevelPattern event validation');
         event = { target: { value: "LowLetter" } };
         expect(() => { (dialog as any).onLevelPatternValueChanged(event); }).not.toThrowError();
     });
     it('LevelPattern event validation', () => {
+console.log('LevelPattern event validation');
         event = { target: { value: "Arabic" } };
         expect(() => { (dialog as any).onLevelPatternValueChanged(event); }).not.toThrowError();
     });
     it('LevelPattern event validation', () => {
+console.log('LevelPattern event validation');
         event = { target: { value: "Bullet" } };
         expect(() => { (dialog as any).onLevelPatternValueChanged(event); }).not.toThrowError();
     });
     it('LevelPattern event validation-2', () => {
+console.log('LevelPattern event validation-2');
         event = { target: { value: "Number" } };
         expect(() => { (dialog as any).onLevelPatternValueChanged(event); }).not.toThrowError();
     });
     it('LevelPattern event validation-2', () => {
+console.log('LevelPattern event validation-2');
         event = { target: { value: "LeadingZero" } };
         expect(() => { (dialog as any).onLevelPatternValueChanged(event); }).not.toThrowError();
     });
     it('LevelPattern event validation-2', () => {
+console.log('LevelPattern event validation-2');
         event = { target: { value: "Ordinal" } };
         expect(() => { (dialog as any).onLevelPatternValueChanged(event); }).not.toThrowError();
     });
     it('LevelPattern event validation-2', () => {
+console.log('LevelPattern event validation-2');
         event = { target: { value: "OrdinalText" } };
         expect(() => { (dialog as any).onLevelPatternValueChanged(event); }).not.toThrowError();
     });
     it('LevelPattern event validation-2', () => {
+console.log('LevelPattern event validation-2');
         event = { target: { value: "FarEast" } };
         expect(() => { (dialog as any).onLevelPatternValueChanged(event); }).not.toThrowError();
     });
     it('LevelPattern event validation-2', () => {
+console.log('LevelPattern event validation-2');
         event = { target: { value: "Special" } };
         expect(() => { (dialog as any).onLevelPatternValueChanged(event); }).not.toThrowError();
     });
     it('LevelPattern event validation-2', () => {
+console.log('LevelPattern event validation-2');
         event = { target: { value: "None" } };
         expect(() => { (dialog as any).onLevelPatternValueChanged(event); }).not.toThrowError();
     });
     it('module name validation', () => {
+console.log('module name validation');
         let name: string = dialog.getModuleName();
         expect(name).toBe('ListDialog')
     });

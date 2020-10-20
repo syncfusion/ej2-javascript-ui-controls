@@ -5,6 +5,7 @@ describe('WListLevel Validation Testing', () => {
         WListLevel.clear();
     });
     it('List Level  Testing', () => {
+console.log('List Level  Testing');
         let list: WListLevel = new WListLevel(undefined);
         list.followCharacter = 'Tab';
         list.listLevelPattern = 'Arabic';

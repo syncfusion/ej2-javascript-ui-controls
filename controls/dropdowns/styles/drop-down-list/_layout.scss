@@ -159,6 +159,16 @@
     display: none;
   }
 
+  .e-input-group.e-static-clear input.e-dropdownlist.e-input:not(:valid):first-child ~ .e-clear-icon.e-clear-icon-hide,
+  .e-input-group.e-static-clear.e-control-wrapper input.e-dropdownlist.e-input:not(:valid):first-child ~ .e-clear-icon.e-clear-icon-hide,
+  .e-float-input.e-static-clear input.e-dropdownlist:not(:valid):first-child ~ .e-clear-icon.e-clear-icon-hide,
+  .e-float-input.e-static-clear.e-control-wrapper input.e-dropdownlist:not(:valid):first-child ~ .e-clear-icon.e-clear-icon-hide,
+  .e-float-input.e-static-clear.e-input-group input.e-dropdownlist:not(:valid):first-child ~ .e-clear-icon.e-clear-icon-hide,
+  .e-float-input.e-static-clear.e-input-group.e-control-wrapper input.e-dropdownlist:not(:valid):first-child ~ .e-clear-icon.e-clear-icon-hide {
+    cursor: pointer;
+    display: flex;
+  }
+
   .e-ddl.e-input-group {
     .e-input-value,
     .e-input-value:focus {

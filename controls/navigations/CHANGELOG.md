@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.42 (2020-10-20)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#286629` - The issue with "when quickly clicking on the different nodes then it is interpreted as double click" has been resolved.
+
 ## 18.3.40 (2020-10-13)
 
 ### Context Menu

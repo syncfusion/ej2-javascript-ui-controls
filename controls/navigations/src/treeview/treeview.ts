@@ -628,6 +628,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private changeDataSource: boolean = false;
     private isBlazorExpandedNodes: string[] = [];
     private isOffline: boolean;
+    private firstTap : Element;
     /**
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
@@ -4777,7 +4778,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             let proxy: TreeView = this;
             this.touchEditObj = new Touch(this.element, {
                 tap: (e: TapEventArgs) => {
-                    if (e.tapCount === 2) {
+                    if (this.isDoubleTapped(e) && e.tapCount === 2) {
                         e.originalEvent.preventDefault();
                         proxy.editingHandler(e.originalEvent);
                     }
@@ -4810,7 +4811,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             let proxy: TreeView = this;
             this.touchExpandObj = new Touch(this.element, {
                 tap: (e: TapEventArgs) => {
-                    if ((this.expandOnType === 'Click' || (this.expandOnType === 'DblClick' && e.tapCount === 2))
+                    if ((this.expandOnType === 'Click' || (this.expandOnType === 'DblClick' && this.isDoubleTapped(e) && e.tapCount === 2 ))
                         && e.originalEvent.which !== 3 ) {
                         proxy.expandHandler(e);
                     }
@@ -4881,6 +4882,19 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             el = <Element>el.parentNode;
         }
         return matched;
+    }
+
+    private isDoubleTapped(e: TapEventArgs): boolean {
+        let target: Element = <Element>e.originalEvent.target;
+        let secondTap: Element;
+        if (target && e.tapCount) {
+            if (e.tapCount === 1) {
+                this.firstTap = closest(target, '.' + LISTITEM);
+            } else if (e.tapCount === 2) {
+                secondTap = closest(target, '.' + LISTITEM);
+            }
+        }
+        return (this.firstTap === secondTap);
     }
 
     private isDescendant(parent: Element, child: Element): boolean {

@@ -45,6 +45,7 @@ describe('Table options dialog validation', () => {
         }, 2000);
     });
     it('change allow spacing checkbox testing', () => {
+console.log('change allow spacing checkbox testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tableOptions: TableOptionsDialog = editor.tableOptionsDialogModule;
@@ -53,6 +54,7 @@ describe('Table options dialog validation', () => {
         tableOptions.changeAllowSpaceCheckBox();
     });
     it('change allow spacing false testing', () => {
+console.log('change allow spacing false testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tableOptions: TableOptionsDialog = editor.tableOptionsDialogModule;
@@ -61,6 +63,7 @@ describe('Table options dialog validation', () => {
         tableOptions.changeAllowSpaceCheckBox();
     });
     it('Remove events', () => {
+console.log('Remove events');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tableOptions: TableOptionsDialog = editor.tableOptionsDialogModule;
@@ -92,6 +95,7 @@ describe('Table Options Dialog Apply cell margins validation', () => {
         }, 2000);
     });
     it('set cell format values testing', () => {
+console.log('set cell format values testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tableOptions: TableOptionsDialog = editor.tableOptionsDialogModule;
@@ -107,6 +111,7 @@ describe('Table Options Dialog Apply cell margins validation', () => {
         editor.editorHistory.redo();
     });
     it('load cell margins dialog testing', () => {
+console.log('load cell margins dialog testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         editor.selection.tableFormat.table.tableFormat.cellSpacing = 10;
@@ -115,6 +120,7 @@ describe('Table Options Dialog Apply cell margins validation', () => {
         tableOptions.applyTableCellProperties();
     });
     it('apply table options testing', () => {
+console.log('apply table options testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         editor.selection.tableFormat.table.tableFormat.cellSpacing = 10;
@@ -148,6 +154,7 @@ describe('Cell Options Dialog validation', () => {
         }, 2000);
     });
     it('Change same as table testing', () => {
+console.log('Change same as table testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let cellOptions: CellOptionsDialog = editor.cellOptionsDialogModule;
@@ -156,6 +163,7 @@ describe('Cell Options Dialog validation', () => {
         cellOptions.changeSameAsTable();
     });
     it('Change same as table testing', () => {
+console.log('Change same as table testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let cellOptions: CellOptionsDialog = editor.cellOptionsDialogModule;
@@ -164,6 +172,7 @@ describe('Cell Options Dialog validation', () => {
         cellOptions.changeSameAsTable();
     });
     it('Remove events', () => {
+console.log('Remove events');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let cellOptions: CellOptionsDialog = editor.cellOptionsDialogModule;
@@ -195,6 +204,7 @@ describe('Cell Options Dialog Initial loading validation', () => {
         }, 2000);
     });
     it('Change same as table testing', () => {
+console.log('Change same as table testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let cell: TableCellWidget = editor.selection.end.paragraph.associatedCell;
@@ -207,12 +217,14 @@ describe('Cell Options Dialog Initial loading validation', () => {
         cellOptions.loadCellMarginsDialog();
     });
     it('get cell margins undefined testing', () => {
+console.log('get cell margins undefined testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let cellOptions: CellOptionsDialog = editor.cellOptionsDialogModule;
         CellOptionsDialog.getCellMarginDialogElements(undefined, undefined, undefined);
     });
     it('Remove events', () => {
+console.log('Remove events');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let cellOptions: CellOptionsDialog = editor.cellOptionsDialogModule;
@@ -244,6 +256,7 @@ describe('Cell Options Dialog apply properties loading validation', () => {
         }, 2000);
     });
     it('Change same as table testing', () => {
+console.log('Change same as table testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let cellOptions: CellOptionsDialog = editor.cellOptionsDialogModule;
@@ -256,6 +269,7 @@ describe('Cell Options Dialog apply properties loading validation', () => {
         cellOptions.applyTableCellProperties();
     });
     it('Change same as table testing', () => {
+console.log('Change same as table testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let cellOptions: CellOptionsDialog = editor.cellOptionsDialogModule;
@@ -294,6 +308,7 @@ describe('Cell Options Dialog apply properties loading validation', () => {
         }, 2000);
     });
     it('Parent null or undefined same as cell options testing', () => {
+console.log('Parent null or undefined same as cell options testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let cellOptions: CellOptionsDialog = editor.cellOptionsDialogModule;
@@ -302,6 +317,7 @@ describe('Cell Options Dialog apply properties loading validation', () => {
         cellOptions.destroy();
     });
     it('Parent null or undefined same as table options testing', () => {
+console.log('Parent null or undefined same as table options testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let tableOptions: TableOptionsDialog = editor.tableOptionsDialogModule;
@@ -338,6 +354,7 @@ describe('Cell Options Dialog Without Selection Testing', () => {
         }, 2000);
     });
     it('Apply Cell Format For Single Cell with undo redo', () => {
+console.log('Apply Cell Format For Single Cell with undo redo');
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
         let cellOptions: CellOptionsDialog = editor.cellOptionsDialogModule;
@@ -349,16 +366,19 @@ describe('Cell Options Dialog Without Selection Testing', () => {
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.bottomMargin).toBe(10);
     });
     it('Apply Cell Format For Single Cell with undo redo', () => {
+console.log('Apply Cell Format For Single Cell with undo redo');
         editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.topMargin).toBe(0);
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.bottomMargin).toBe(0);
     });
     it('Apply Cell Format For Single Cell with undo redo', () => {
+console.log('Apply Cell Format For Single Cell with undo redo');
         editor.editorHistory.redo();
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.topMargin).toBe(10);
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.bottomMargin).toBe(10);
     });
     it('Apply Cell Format Selection with undo redo', () => {
+console.log('Apply Cell Format Selection with undo redo');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let start: TextPosition = getTextPosition(editor, "0;0;0;0;0;0;0;0");
@@ -374,11 +394,13 @@ describe('Cell Options Dialog Without Selection Testing', () => {
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.bottomMargin).toBe(10);
     });
     it('Apply Cell Format Selection with undo redo', () => {
+console.log('Apply Cell Format Selection with undo redo');
         editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.topMargin).toBe(0);
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.bottomMargin).toBe(0);
     });
     it('Apply Cell Format Selection with undo redo', () => {
+console.log('Apply Cell Format Selection with undo redo');
         editor.editorHistory.redo();
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.topMargin).toBe(10);
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.bottomMargin).toBe(10);
@@ -412,6 +434,7 @@ describe('Table Options Dialog Without Selection Testing', () => {
         }, 2000);
     });
     it('Apply Table Format For Single Cell with undo redo', () => {
+console.log('Apply Table Format For Single Cell with undo redo');
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
         let tableOptions: TableOptionsDialog = editor.tableOptionsDialogModule;
@@ -425,16 +448,19 @@ describe('Table Options Dialog Without Selection Testing', () => {
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.bottomMargin).toBe(10);
     });
     it('Apply Table Format For Single Cell with undo redo', () => {
+console.log('Apply Table Format For Single Cell with undo redo');
         editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.topMargin).toBe(0);
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.bottomMargin).toBe(0);
     });
     it('Apply Table Format For Single Cell with undo redo', () => {
+console.log('Apply Table Format For Single Cell with undo redo');
         editor.editorHistory.redo();
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.topMargin).toBe(10);
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.bottomMargin).toBe(10);
     });
     it('Apply Table Format Selection with undo redo', () => {
+console.log('Apply Table Format Selection with undo redo');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let start: TextPosition = getTextPosition(editor, "0;0;0;0;0;0;0;0");
@@ -450,11 +476,13 @@ describe('Table Options Dialog Without Selection Testing', () => {
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.bottomMargin).toBe(10);
     });
     it('Apply Table Format Selection with undo redo', () => {
+console.log('Apply Table Format Selection with undo redo');
         editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.topMargin).toBe(0);
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.bottomMargin).toBe(0);
     });
     it('Apply Table Format Selection with undo redo', () => {
+console.log('Apply Table Format Selection with undo redo');
         editor.editorHistory.redo();
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.topMargin).toBe(10);
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.bottomMargin).toBe(10);
@@ -491,6 +519,7 @@ describe('Table Options Dialog Without Selection Testing', () => {
         }, 2000);
     });
     it('Apply Table Format With undefined values', () => {
+console.log('Apply Table Format With undefined values');
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
         let tableOptions: TableOptionsDialog = editor.tableOptionsDialogModule;
@@ -504,6 +533,7 @@ describe('Table Options Dialog Without Selection Testing', () => {
         expect(tablePropertiesDialog.isCellOptionsUpdated).toBe(false);
     });
     it('Load Table Format With cell spacing greater than zero', () => {
+console.log('Load Table Format With cell spacing greater than zero');
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
         let tableOptions: TableOptionsDialog = editor.tableOptionsDialogModule;
@@ -545,6 +575,7 @@ describe('Cell Options Dialog With undefined values', () => {
         }, 2000);
     });
     it('Load Table Format With cell spacing greater than zero', () => {
+console.log('Load Table Format With cell spacing greater than zero');
         editor.editor.insertTable(3, 3);
         let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
         let cellOptions: CellOptionsDialog = editor.cellOptionsDialogModule;

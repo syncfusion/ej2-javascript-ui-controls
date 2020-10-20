@@ -58,43 +58,56 @@ export class Aggregate {
         let columnLength: number = Object.keys(this.parent.columns).length;
         let summaryLength: number = Object.keys(this.parent.aggregates).length;
         let dataLength: number = Object.keys(parentRecords).length; let childRecordsLength: number;
-        for (let i: number = 0, len: number = dataLength; i < len; i++) {
-            parentRecord = parentRecords[i];
-            childRecordsLength = this.getChildRecordsLength(parentRecord, flatRecords);
-            if (childRecordsLength) {
-                for (let summaryRowIndex: number = 1, len: number = summaryLength; summaryRowIndex <= len; summaryRowIndex++) {
-                    let item: Object; item = {};
-                    for (let columnIndex: number = 0, len: number = columnLength; columnIndex < len; columnIndex++) {
-                       let field: string = isNullOrUndefined(getObject('field', this.parent.columns[columnIndex])) ?
-                       this.parent.columns[columnIndex] : getObject('field', this.parent.columns[columnIndex]);
-                       item[field] = null;
-                    }
-                    item = this.createSummaryItem(item,  this.parent.aggregates[summaryRowIndex - 1]);
-                    if (this.parent.aggregates[summaryRowIndex - 1].showChildSummary) {
-                        let idx: number;
-                        flatRecords.map((e: ITreeData, i: number) => { if (e.uniqueID === parentRecord.uniqueID) { idx = i; return; } });
-                        let currentIndex: number = idx + childRecordsLength + summaryRowIndex;
-                        let summaryParent: ITreeData = extend({}, parentRecord);
-                        delete summaryParent.childRecords;
-                        delete summaryParent[this.parent.childMapping];
-                        setValue('parentItem', summaryParent, item);
-                        let level: number = getObject('level', summaryParent);
-                        setValue('level', level + 1, item);
-                        let index: number = getObject('index', summaryParent);
-                        setValue('isSummaryRow', true, item);
-                        setValue('parentUniqueID', summaryParent.uniqueID, item);
-                        if (isSort) {
-                            let childRecords: Object[] = getObject('childRecords', parentRecord);
-                            if (childRecords.length) {
-                                childRecords.push(item);
-                            }
+        if (this.parent.aggregates.filter((x: AggregateRowModel) => x.showChildSummary).length) {
+            for (let i: number = 0, len: number = dataLength; i < len; i++) {
+                parentRecord = parentRecords[i];
+                childRecordsLength = this.getChildRecordsLength(parentRecord, flatRecords);
+                if (childRecordsLength) {
+                    for (let summaryRowIndex: number = 1, len: number = summaryLength; summaryRowIndex <= len; summaryRowIndex++) {
+                        let item: Object; item = {};
+                        for (let columnIndex: number = 0, len: number = columnLength; columnIndex < len; columnIndex++) {
+                        let field: string = isNullOrUndefined(getObject('field', this.parent.columns[columnIndex])) ?
+                        this.parent.columns[columnIndex] : getObject('field', this.parent.columns[columnIndex]);
+                        item[field] = null;
                         }
-                        flatRecords.splice(currentIndex, 0, item);
-                    } else {
-                        continue;
+                        item = this.createSummaryItem(item,  this.parent.aggregates[summaryRowIndex - 1]);
+                        if (this.parent.aggregates[summaryRowIndex - 1].showChildSummary) {
+                            let idx: number;
+                            flatRecords.map((e: ITreeData, i: number) => {
+                                if (e.uniqueID === parentRecord.uniqueID) { idx = i; return; } });
+                            let currentIndex: number = idx + childRecordsLength + summaryRowIndex;
+                            let summaryParent: ITreeData = extend({}, parentRecord);
+                            delete summaryParent.childRecords;
+                            delete summaryParent[this.parent.childMapping];
+                            setValue('parentItem', summaryParent, item);
+                            let level: number = getObject('level', summaryParent);
+                            setValue('level', level + 1, item);
+                            let index: number = getObject('index', summaryParent);
+                            setValue('isSummaryRow', true, item);
+                            setValue('parentUniqueID', summaryParent.uniqueID, item);
+                            if (isSort) {
+                                let childRecords: Object[] = getObject('childRecords', parentRecord);
+                                if (childRecords.length) {
+                                    childRecords.push(item);
+                                }
+                            }
+                            flatRecords.splice(currentIndex, 0, item);
+                        } else {
+                            continue;
+                        }
                     }
+                    this.flatChildRecords = [];
                 }
-                this.flatChildRecords = [];
+            }
+        } else {
+            let items: Object; items = {};
+            for (let columnIndex: number = 0, length: number = columnLength; columnIndex < length; columnIndex++) {
+                let fields: string = isNullOrUndefined(getObject('field', this.parent.columns[columnIndex])) ?
+                this.parent.columns[columnIndex] : getObject('field', this.parent.columns[columnIndex]);
+                items[fields] = null;
+            }
+            for (let summaryRowIndex: number = 1, length: number = summaryLength; summaryRowIndex <= length; summaryRowIndex++) {
+                this.createSummaryItem(items,  this.parent.aggregates[summaryRowIndex - 1]);
             }
         }
         return flatRecords;
@@ -127,7 +140,13 @@ export class Aggregate {
             let keys: string[] = Object.keys(itemData);
             for (let key of keys) {
                 if (key === displayColumn) {
-                    itemData[key] = this.getSummaryValues(summary.columns[i] as AggregateColumn, this.flatChildRecords);
+                    if (this.flatChildRecords.length) {
+                        itemData[key] = this.getSummaryValues(summary.columns[i] as AggregateColumn, this.flatChildRecords);
+                    } else if (this.parent.isLocalData) {
+                        let data: Object[] = this.parent.dataSource instanceof DataManager ? this.parent.dataSource.dataSource.json
+                                            : this.parent.flatData;
+                        itemData[key] = this.getSummaryValues(summary.columns[i] as AggregateColumn, data );
+                     }
                 } else {
                     continue;
                 }

@@ -1753,7 +1753,7 @@ describe('Diagram Control', () => {
             mouseEvents.mouseMoveEvent(diagramCanvas, 500, 100);
             mouseEvents.mouseWheelEvent(diagramCanvas, 500, 850, false);
             mouseEvents.dblclickEvent(diagramCanvas, 500, 850);
-            expect(diagram.scroller.horizontalOffset === 0 && diagram.scroller.verticalOffset === -20).toBe(true);
+            expect(diagram.scroller.horizontalOffset === 0 && diagram.scroller.verticalOffset === 0).toBe(true);
             done();
         });
         it('Draw polygon with mouseleave', (done: Function) => {
@@ -2073,7 +2073,7 @@ describe('Diagram Control', () => {
             mouseEvents.mouseMoveEvent(diagramCanvas, 500, 100);
             mouseEvents.mouseWheelEvent(diagramCanvas, 500, 850, false);
             mouseEvents.dblclickEvent(diagramCanvas, 500, 850);
-            expect(diagram.scroller.horizontalOffset === 0 && diagram.scroller.verticalOffset === -20).toBe(true);
+            expect(diagram.scroller.horizontalOffset === 0 && diagram.scroller.verticalOffset === 0).toBe(true);
             done();
         });
     });

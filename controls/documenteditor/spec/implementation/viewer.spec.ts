@@ -62,6 +62,7 @@ describe('double tap and trible tap testing', () => {
         }, 1000);
     });
     it('Double tap validation', () => {
+console.log('Double tap validation');
         editor.editorModule.insertText('Syncfusion Software');
         let event: any = getEventObject('MouseEvent', 'dblclick');
         event = setMouseCoordinates(event, 345, 130);
@@ -96,6 +97,7 @@ describe('Double tap touch testing', () => {
         }, 1000);
     });
     it('Double tap touch', () => {
+console.log('Double tap touch');
         editor.openBlank();
         let touchevent: any;
         let clientX_Y = { clientX: 297, clientY: 302, pageX: 297, pageY: 302 };
@@ -115,6 +117,7 @@ describe('Double tap touch testing', () => {
         expect((editor.documentHelper).tapCount).toBe(2);
     });
     it('Double tap validation', () => {
+console.log('Double tap validation');
         editor.openBlank();
         editor.editorModule.insertText('Syncfusion Software');
         let event: any = getEventObject('MouseEvent', 'dblclick');
@@ -124,6 +127,7 @@ describe('Double tap touch testing', () => {
         expect(editor.selection.text).toBe('Syncfusion ');
     })
     it('Triple tap touch', () => {
+console.log('Triple tap touch');
         editor.openBlank();
         let touchevent: any;
         let clientX_Y = { clientX: 297, clientY: 302, pageX: 297, pageY: 302 };
@@ -172,6 +176,7 @@ describe('update cursor position validation', () => {
         }, 1000);
     });
     it('Update Cursor on hyperlink validation', () => {
+console.log('Update Cursor on hyperlink validation');
         editor.editorModule.insertHyperlinkInternal('Syncfusion', 'https://syncfusion.com', true);
         editor.selection.movePreviousPosition();
         editor.selection.movePreviousPosition();
@@ -218,18 +223,21 @@ describe('Branch validation', () => {
         }, 1000);
     });
     it('Hide Context menu on window resize', () => {
+console.log('Hide Context menu on window resize');
         editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectAll();
         documentHelper.onDoubleTap({ offsetX: 10000, offsetY: 10000 } as any);
         expect(editor.selection.text).toBe('Syncfusion Software\r');
     });
     it('Fit full page validation', () => {
+console.log('Fit full page validation');
         viewer.onPageFitTypeChanged('FitOnePage');
         let zoomFactor: number = documentHelper.zoomFactor;
         viewer.onPageFitTypeChanged('FitOnePage');
         expect(zoomFactor).toBe(documentHelper.zoomFactor);
     });
     it('Get Current header footer validation', () => {
+console.log('Get Current header footer validation');
         let paragraph: ParagraphWidget = new ParagraphWidget();
 
         let paragraph2: ParagraphWidget = new ParagraphWidget();
@@ -255,6 +263,7 @@ describe('Branch validation', () => {
 
     });
     it('Cursor over image testing', () => {
+console.log('Cursor over image testing');
         editor.documentHelper.zoomFactor = 1;
         let paragraph: ParagraphWidget = new ParagraphWidget();
         paragraph.index = 0;
@@ -309,6 +318,7 @@ describe('Handle Key down', () => {
         }, 1000);
     });
     it('Mouse down on image resizer area', () => {
+console.log('Mouse down on image resizer area');
         editor.openBlank();
         documentHelper.editableDiv.innerHTML = 'S';
         editor.editorModule.onTextInputInternal({} as any);
@@ -348,6 +358,7 @@ describe('Key down validation', () => {
         }, 1000);
     });
     it('Open option pane validation', () => {
+console.log('Open option pane validation');
         let event: any = {
             which: 72,
             preventDefault: () => { return true; },
@@ -360,6 +371,7 @@ describe('Key down validation', () => {
         expect(editor.optionsPaneModule.optionsPane.style.display).toBe('none');
     });
     it('Create empty document', () => {
+console.log('Create empty document');
         let event: any = {
             keyCode: 78,
             preventDefault: () => { return true; },
@@ -371,6 +383,7 @@ describe('Key down validation', () => {
         expect(spy).toHaveBeenCalled();
     });
     it('shift end and home key validation', () => {
+console.log('shift end and home key validation');
         let event: any = {
             keyCode: 35,
             preventDefault: () => { return true; },
@@ -414,6 +427,7 @@ describe('Tab key validation list level', () => {
         }, 1000);
     });
     it('Page Down  and page Up validation', () => {
+console.log('Page Down  and page Up validation');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.editorModule.insertText('Adventure Work Cycles');
@@ -426,6 +440,7 @@ describe('Tab key validation list level', () => {
         expect(prevLocation).toBe(editor.selection.start.location.x);
     });
     it('tab key validation', () => {
+console.log('tab key validation');
         editor.openBlank();
         editor.editor.applyNumbering('%1.', 'Arabic');
         let prevlocation = editor.selection.start.location.x;
@@ -444,6 +459,7 @@ describe('Tab key validation list level', () => {
         expect(prevlocation).toBe(editor.selection.start.location.x);
     });
     it('Enter at empty list validation', () => {
+console.log('Enter at empty list validation');
         editor.openBlank();
         editor.editor.applyNumbering('%1.', 'Arabic');
         let prevlocation = editor.selection.start.location.x;
@@ -481,6 +497,7 @@ describe('Viewer API validation', () => {
     });
 
     it('Key up validation', () => {
+console.log('Key up validation');
         documentHelper.isControlPressed = true;
         let event: any = {
             preventDefault: () => { return true; },
@@ -490,12 +507,14 @@ describe('Viewer API validation', () => {
         expect(documentHelper.isControlPressed).toBe(false);
     });
     it('Pinch Zoom in validation', () => {
+console.log('Pinch Zoom in validation');
         (editor.documentHelper as any).onPinchInInternal();
         expect(documentHelper.zoomFactor).toBe(0.99);
         (editor.documentHelper as any).onPinchOutInternal();
         expect(documentHelper.zoomFactor).toBe(1);
     });
     it('Delete API validation', () => {
+console.log('Delete API validation');
         editor.editorModule.insertText('Syncfusion Software');
         editor.selection.moveToLineStart();
         editor.editorModule.handleDelete();
@@ -504,6 +523,7 @@ describe('Viewer API validation', () => {
         expect(editor.selection.text).toBe('ncfusion Software\r')
     });
     it('Ctrl + Up Arrow validation', () => {
+console.log('Ctrl + Up Arrow validation');
         editor.editorModule.insertText('Syncfusion Software');
         editor.selection.handleControlUpKey();
         expect(editor.selection.start.offset).toBe(0);
@@ -511,6 +531,7 @@ describe('Viewer API validation', () => {
         //expect(editor.selection.start.offset).toBe(editor.selection.getLength(editor.selection.start.paragraph) - 1);
     });
     it('Shift + Ctrl down key validation', () => {
+console.log('Shift + Ctrl down key validation');
         editor.editorModule.insertText('Syncfusion Software');
         editor.selection.moveToLineStart();
         editor.selection.handleControlShiftDownKey();
@@ -543,6 +564,7 @@ describe('Tab key validation with accept tab false', () => {
         }, 1000);
     });
     it('tab key validation', () => {
+console.log('tab key validation');
         editor.openBlank();
         editor.editor.applyNumbering('%1.', 'Arabic');
         let prevlocation = editor.selection.start.location.x;
@@ -551,6 +573,7 @@ describe('Tab key validation with accept tab false', () => {
         expect(prevlocation).toBe(editor.selection.start.location.x);
     });
     it('shift tab key validation with accept tab false', () => {
+console.log('shift tab key validation with accept tab false');
         editor.openBlank();
         editor.editor.applyNumbering('%1.', 'Arabic');
         let prevlocation = editor.selection.start.location.x;
@@ -559,6 +582,7 @@ describe('Tab key validation with accept tab false', () => {
         expect(prevlocation).toBe(editor.selection.start.location.x);
     });
     it('control tab key validation with accept tab false', () => {
+console.log('control tab key validation with accept tab false');
         editor.openBlank();
         editor.editor.applyNumbering('%1.', 'Arabic');
         let prevlocation = editor.selection.start.location.x;
@@ -592,6 +616,7 @@ describe('Header footer maximum height validation', () => {
         }, 1000);
     });
     it('Double Table on header footer region', () => {
+console.log('Double Table on header footer region');
         editor.openBlank();
         editor.editor.insertText('Synfusion');
         editor.editor.onEnter();
@@ -635,6 +660,7 @@ describe('Long Touch Testing', () => {
         }, 1000);
     });
     it('Select current word on long touch in empty selection', () => {
+console.log('Select current word on long touch in empty selection');
         let touchevent: any;
         let clientX_Y = { clientX: 297, clientY: 302, pageX: 297, pageY: 302 };
         let touches = [];
@@ -650,6 +676,7 @@ describe('Long Touch Testing', () => {
         expect(selStart).not.toBe(selEnd);
     });
     it('Restrict editing in drop down form field', () => {
+console.log('Restrict editing in drop down form field');
         editor.openBlank();
         editor.editor.insertFormField('DropDown');
         editor.selection.handleHomeKey();

@@ -7,7 +7,7 @@ import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 
 
-import { data1, doubleClickRead, fileCopySuccess, fileCopyRead, folderCopySuccess, folderCopyRead, searchpng, data1pasteIN, data1pasteIN2, data1pasteIN3, data1pasteIN4, folderDragSuccess1, folderDragRead, folderDragSuccess2, data18 } from '../data';
+import { data1, doubleClickRead, fileCopySuccess, fileCopyRead, folderRead, folderCopy, folderCopySuccess, folderCopyRead, searchpng, data1pasteIN, data1pasteIN2, data1pasteIN3, data1pasteIN4, folderDragSuccess1, folderDragRead, folderDragSuccess2, data18 } from '../data';
 import { data23, multiItemCopyRead, multiCopySuccess1, multiCopySuccess, doubleClickRead2 } from '../data';
 import { multiCopySuccess2, multiItemCopyRead2, multiCopySuccess3, multiItemCopyRead1, multiItemCopyRead3, fileCopymissing2, fileCopymissing1 } from '../data';
 import { createElement, closest, isNullOrUndefined, EventHandler } from '@syncfusion/ej2-base';
@@ -2192,6 +2192,82 @@ describe('FileManager control Details view', () => {
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
             expect(flag).toBe(true);
+        });
+
+        it('Folder copy paste using context menu', (done) => {
+            let el: any = document.getElementById(feObj.element.id + '_contextmenu');
+            feObj.detailsviewModule.gridObj.selectRows([0]);
+            let Li: Element = feObj.detailsviewModule.gridObj.getRowByIndex(0).getElementsByTagName('td')[2];
+            let sourceElement: any = el.ej2_instances[0];
+            let evt = document.createEvent('MouseEvents')
+            evt.initEvent('contextmenu', true, true);
+            Li.dispatchEvent(evt);
+            sourceElement.element.querySelectorAll('li')[3].click();
+            feObj.detailsviewModule.gridObj.selectRows([2]);
+            sourceElement.element.querySelectorAll('li')[0].click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(folderCopyRead)
+            });
+            setTimeout(function () {
+                let Li: Element = feObj.detailsviewModule.gridObj.getRowByIndex(0).getElementsByTagName('td')[2];
+                let evt = document.createEvent('MouseEvents')
+                evt.initEvent('contextmenu', true, true);
+                Li.dispatchEvent(evt);
+                sourceElement.element.querySelectorAll('li')[4].click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(folderCopy)
+                });
+                sourceElement.element.querySelectorAll('li')[0].click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(folderRead)
+                });
+                setTimeout(function () {
+                    expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(1);
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('Folder copy paste using toolbar', (done) => {
+            feObj.detailsviewModule.gridObj.selectRows([0]);
+            (<HTMLElement>document.getElementsByClassName('e-fe-copy')[0]).click();
+            feObj.detailsviewModule.gridObj.selectRows([2]);
+            let el: any = document.getElementById(feObj.element.id + '_contextmenu');
+            let sourceElement: any = el.ej2_instances[0];
+            let Li: Element = feObj.detailsviewModule.gridObj.getRowByIndex(2).getElementsByTagName('td')[2];
+            let evt = document.createEvent('MouseEvents')
+            evt.initEvent('contextmenu', true, true);
+            Li.dispatchEvent(evt);
+            sourceElement.element.querySelectorAll('li')[0].click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(folderCopyRead)
+            });
+            feObj.detailsviewModule.gridObj.element.querySelectorAll('.e-row')[0].firstElementChild.dispatchEvent(dblclickevent);
+            setTimeout(function () {
+                (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(folderCopy)
+                });
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(folderRead)
+                });
+                setTimeout(function () {
+                    expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(1);
+                    done();
+                }, 500);
+            }, 500);
         });
     });
 });

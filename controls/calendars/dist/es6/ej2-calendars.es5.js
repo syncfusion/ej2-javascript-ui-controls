@@ -78,6 +78,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         _this.effect = '';
         _this.isPopupClicked = false;
         _this.isDateSelected = true;
+        _this.isTodayClicked = false;
         return _this;
     }
     /**
@@ -408,7 +409,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         this.blazorRef = ref;
         this.serverModuleName = moduleName;
     };
-    CalendarBase.prototype.todayButtonClick = function (value) {
+    CalendarBase.prototype.todayButtonClick = function (e, value) {
         if (this.showTodayButton) {
             if (this.currentView() === this.depth) {
                 this.effect = '';
@@ -508,7 +509,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'select':
                     if (e.target === this.todayElement) {
-                        this.todayButtonClick(value);
+                        this.todayButtonClick(e, value);
                     }
                     else {
                         var element = !isNullOrUndefined(focusedDate) ? focusedDate : selectedDate;
@@ -2071,10 +2072,12 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
         }
         return tempValue;
     };
-    Calendar.prototype.todayButtonClick = function () {
+    Calendar.prototype.todayButtonClick = function (e) {
         if (this.showTodayButton) {
             var tempValue = this.generateTodayVal(this.value);
             this.setProperties({ value: tempValue }, true);
+            this.isTodayClicked = true;
+            this.todayButtonEvent = e;
             if (this.isMultiSelection) {
                 var copyValues = this.copyValues(this.values);
                 if (!_super.prototype.checkPresentDate.call(this, tempValue, this.values)) {
@@ -2082,7 +2085,7 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
                     this.setProperties({ values: copyValues });
                 }
             }
-            _super.prototype.todayButtonClick.call(this, new Date(+this.value));
+            _super.prototype.todayButtonClick.call(this, e, new Date(+this.value));
         }
     };
     Calendar.prototype.keyActionHandle = function (e) {
@@ -2377,6 +2380,10 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Calendar.prototype.triggerChange = function (e) {
+        if (!isNullOrUndefined(this.todayButtonEvent) && this.isTodayClicked) {
+            e = this.todayButtonEvent;
+            this.isTodayClicked = false;
+        }
         this.changedArgs.event = e || null;
         this.changedArgs.isInteracted = !isNullOrUndefined(e);
         if (!isNullOrUndefined(this.value)) {

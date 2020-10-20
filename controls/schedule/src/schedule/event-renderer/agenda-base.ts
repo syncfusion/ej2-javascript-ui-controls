@@ -96,6 +96,7 @@ export class AgendaBase {
             || this.parent.currentView === 'Agenda') {
             addClass([aTd], cls.AGENDA_DAY_BORDER_CLASS);
         }
+        this.parent.renderTemplates();
         return aTd;
     }
 

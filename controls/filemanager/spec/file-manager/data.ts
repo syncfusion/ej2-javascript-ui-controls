@@ -1122,3 +1122,19 @@ export let noSorting: any = {
     "error": null,
     "details": null
 }
+export let folderCopy: any = {
+    "cwd": null,
+    "files": [
+        { "name": "Documents", "previousName": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Food\\Documents\\" }
+    ],
+    "error": null,
+    "details": null
+}
+export let folderRead: any = {
+    "cwd": { "name": "Documents", "previousName": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Food\\" },
+    "files": [
+        { "name": "Documents", "previousName": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Food\\Documents\\" }
+    ],
+    "error": null,
+    "details": null
+}

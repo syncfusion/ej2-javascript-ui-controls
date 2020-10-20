@@ -709,10 +709,13 @@ var Toolbar = /** @class */ (function (_super) {
             else {
                 itemEleDom.appendChild(innerItem);
             }
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            var portals = 'portals';
             // tslint:disable-next-line:no-any
-            if (this.isReact) {
-                this.renderReactTemplates();
-            }
+            this.notify('render-react-toolbar-template', this[portals]);
+            this.renderReactTemplates();
         }
     };
     Toolbar.prototype.serverItemsRerender = function () {

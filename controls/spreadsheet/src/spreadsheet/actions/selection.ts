@@ -10,6 +10,7 @@ import { colWidthChanged, protectSelection, editOperation, initiateFormulaRefere
 import { getRangeIndexes, getCellAddress, getRangeAddress, getCellIndexes, getSwapRange } from '../../workbook/common/address';
 import { addressHandle } from '../common/index';
 import { isCellReference } from '../../workbook/index';
+import { getIndexesFromAddress } from '../../workbook/common/address';
 
 
 /**
@@ -162,7 +163,8 @@ export class Selection {
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
         let eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
-        let isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue);
+        let isFormulaEdit: boolean = (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0) ||
+            checkIsFormula(eventArgs.editedValue);
         if (!this.parent.isEdit || isFormulaEdit) {
             let overlayElem: HTMLElement = document.getElementById(this.parent.element.id + '_overlay');
             if ((e.target as HTMLElement).className.indexOf('e-ss-overlay') > -1) {
@@ -232,6 +234,7 @@ export class Selection {
         if (isFormulaEdit && ((e.target as HTMLElement).classList.contains('e-cell') ||
             (e.target as HTMLElement).classList.contains('e-header-cell')) && this.parent.isEdit) {
             let range: string = this.parent.getActiveSheet().selectedRange;
+            range = isSingleCell(getIndexesFromAddress(range)) ? range.split(':')[0] : range;
             this.parent.notify(addressHandle, { range: range, isSelect: false });
         }
     }
@@ -243,7 +246,8 @@ export class Selection {
         }
         let eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
-        let isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue);
+        let isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue) ||
+            (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0);
         let cont: Element = this.getScrollContent();
         let clientRect: ClientRect = cont.getBoundingClientRect();
         let clientX: number = getClientX(e); let clientY: number = getClientY(e);
@@ -310,9 +314,10 @@ export class Selection {
         this.parent.notify(mouseUpAfterSelection, e);
         let eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
-        let isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue);
+        let isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue) ||
+            (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0);
         if (isFormulaEdit && this.parent.isEdit && !(e.target as HTMLElement).classList.contains('e-spreadsheet-edit')) {
-            this.parent.notify( initiateCur, {});
+            this.parent.notify(initiateCur, {});
         }
     }
 
@@ -406,7 +411,8 @@ export class Selection {
         isActCellChanged?: boolean, isInit?: boolean, skipChecking?: boolean): void {
         let eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
-        let isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue);
+        let isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue) ||
+            (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0);
         let ele: HTMLElement = this.getSelectionElement();
         let sheet: SheetModel = this.parent.getActiveSheet();
         let formulaRefIndicator: HTMLElement = this.parent.element.querySelector('.e-formularef-indicator');
@@ -430,7 +436,7 @@ export class Selection {
                 ele.classList.add('e-hide');
             }
             if (isFormulaEdit && e && !(e.target as HTMLElement).classList.contains('e-spreadsheet-edit') && this.parent.isEdit) {
-                this.parent.notify(addressHandle, { range: getRangeAddress(range), isSelect: true });
+                this.parent.notify(addressHandle, { range: getRangeAddress(range).split(':')[0], isSelect: true });
                 this.initFormulaReferenceIndicator(range);
             }
         } else {

@@ -46,9 +46,9 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
             let guid: string = 'guid';
             tempID = this.parent.element.id + column[guid] + tempObj.property;
         }
-        let isReactCompiler: boolean = this.parent.isReact && column.footerTemplate ?
+        let isReactCompiler: boolean = this.parent.isReact && (column.footerTemplate ?
             typeof (column.footerTemplate) !== 'string' : column.groupFooterTemplate ? typeof (column.groupFooterTemplate) !== 'string'
-                : column.groupCaptionTemplate ? typeof (column.groupCaptionTemplate) !== 'string' : false;
+                : column.groupCaptionTemplate ? typeof (column.groupCaptionTemplate) !== 'string' : false);
         if (isReactCompiler) {
             tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID, null, null, node);
             this.parent.renderTemplates();

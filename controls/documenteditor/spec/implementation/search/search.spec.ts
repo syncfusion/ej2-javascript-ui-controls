@@ -32,11 +32,13 @@ describe('Find and Replace all in Header footer validation', () => {
         }, 750);
     });
     it('Find All validation', () => {
+console.log('Find All validation');
         editor.open(JSON.stringify(sfdtText));
         editor.search.findAll('Adventure Cycle');
         expect(editor.search.textSearchResults.length).toBe(6);
     });
     it('Replace all validation', () => {
+console.log('Replace all validation');
         editor.search.replaceAll('Giant Panda', editor.search.textSearchResults);
         for (let i: number = 0; i < editor.documentHelper.pages.length; i++) {
             let page: Page = editor.documentHelper.pages[i];
@@ -130,10 +132,12 @@ describe('search rtl text', () => {
         }, 750);
     });
     it('find all in rtl document', () => {
+console.log('find all in rtl document');
         editor.search.findAll('سشةحمث');
         expect(editor.search.textSearchResults.length).toBe(12);
     });
     it('find all in rtl document', () => {
+console.log('find all in rtl document');
         editor.search.findAll('hello');
         expect(editor.search.textSearchResults.length).toBe(7);
     });
@@ -167,17 +171,20 @@ describe('Find and find all with $ validation', () => {
         }, 750);
     });
     it('Find $symbol validation', () => {
+console.log('Find $symbol validation');
         let text: string = 'Adventure Works Cycles, $4000 fictitious company on which $4000 AdventureWorks sample databases are based, is a large, multinational manufacturing company. $4000 company manufactures and sells metal and composite bicycles to North American, European and Asian commercial markets. While its base operation is located in Bo$4000ll, Washington with 290 employees, several regional sales teams are located throughout $4000ir market base.';
         editor.editor.insertText(text);
         editor.search.find('$4000');
         expect(editor.selection.text).toBe('$4000');
     });
     it('Replace after find $symbol validation', () => {
+console.log('Replace after find $symbol validation');
         editor.editor.insertText('sample');
         editor.editorHistory.undo();
         expect(editor.selection.text).toBe('$4000');
     });
     it('find all validation', () => {
+console.log('find all validation');
         editor.openBlank();
         let text: string = 'Adventure Works Cycles, $4000 fictitious company on which $4000 AdventureWorks sample databases are based, is a large, multinational manufacturing company. $4000 company manufactures and sells metal and composite bicycles to North American, European and Asian commercial markets. While its base operation is located in Bo$4000ll, Washington with 290 employees, several regional sales teams are located throughout $4000ir market base.';
         editor.editor.insertText(text);
@@ -185,6 +192,7 @@ describe('Find and find all with $ validation', () => {
         expect(editor.selection.text).toBe('$4000');
     });
     it('find curly braces validation', () => {
+console.log('find curly braces validation');
         editor.openBlank();
         editor.editor.insertText('{2}');
         editor.search.findAll('{2}');

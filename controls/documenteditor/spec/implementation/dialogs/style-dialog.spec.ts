@@ -56,10 +56,12 @@ describe('Style dialog validation', () => {
         }, 2000);
     });
     it('module name validation', () => {
+console.log('module name validation');
         let name: string = styleDialog.getModuleName();
         expect(name).toBe('StyleDialog')
     });
     it('Show Dialog Diable Ok', () => {
+console.log('Show Dialog Diable Ok');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -80,6 +82,7 @@ describe('Style dialog validation', () => {
         styleDialog.closeStyleDialog();
     });
     it('Show Font dialog', () => {
+console.log('Show Font dialog');
         createDocument(editor);
         styleDialog.show();
         styleDialog.showFontDialog();
@@ -87,6 +90,7 @@ describe('Style dialog validation', () => {
         styleDialog.closeStyleDialog();
     });
     it('Show Paragrph dialog', () => {
+console.log('Show Paragrph dialog');
         createDocument(editor);
         styleDialog.show();
         styleDialog.showParagraphDialog();
@@ -94,6 +98,7 @@ describe('Style dialog validation', () => {
         styleDialog.closeStyleDialog();
     });
     it('Show NumberingBullet dialog', () => {
+console.log('Show NumberingBullet dialog');
         createDocument(editor);
         styleDialog.show();
         styleDialog.showNumberingBulletDialog();
@@ -101,6 +106,7 @@ describe('Style dialog validation', () => {
         styleDialog.closeStyleDialog();
     });
     it('Click Cancel', () => {
+console.log('Click Cancel');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -109,6 +115,7 @@ describe('Style dialog validation', () => {
         styleDialog.onCancelButtonClick();
     });
     it('StyleType change', () => {
+console.log('StyleType change');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -178,6 +185,7 @@ describe('getStyles API', () => {
     });
 
     it('GetStyles Validation', () => {
+console.log('GetStyles Validation');
         createDocument(editor);
         let styles: any[] = editor.getStyles('Paragraph');
 
@@ -228,6 +236,7 @@ describe('getStyles API', () => {
 
     });
     it('GetStyles Validation-Opened Document', () => {
+console.log('GetStyles Validation-Opened Document');
         createDocument(editor);
         editor.open('{"sections":[{"blocks":[{"paragraphFormat":{"styleName":"Bold"},"inlines":[{"text":"Bold"}]},{"paragraphFormat":{"styleName":"Italic"},"inlines":[{"text":"Italic"}]},{"paragraphFormat":{"styleName":"Style1"},"inlines":[{"text":"Underline"}]},{"paragraphFormat":{"styleName":"Strike"},"inlines":[{"text":"Strike"},{"name":"_GoBack","bookmarkType":0},{"name":"_GoBack","bookmarkType":1}]},{"paragraphFormat":{"styleName":"fontfamily"},"inlines":[{"text":"Font-family"}]},{"paragraphFormat":{"styleName":"fontsize"},"inlines":[{"text":"Fontsize"}]},{"paragraphFormat":{"styleName":"FontColor"},"inlines":[{"text":"Font color"}]},{"paragraphFormat":{"styleName":"Style2"},"inlines":[{"text":"superscript"}]},{"paragraphFormat":{"styleName":"Style3"},"inlines":[{"text":"subscript"}]}],"headersFooters":{},"sectionFormat":{"headerDistance":36.0,"footerDistance":36.0,"pageWidth":612.0,"pageHeight":792.0,"leftMargin":72.0,"rightMargin":72.0,"topMargin":72.0,"bottomMargin":72.0,"differentFirstPage":false,"differentOddAndEvenPages":false}}],"characterFormat":{"fontSize":11.0,"fontFamily":"Calibri"},"paragraphFormat":{"afterSpacing":8.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal"},{"type":"Character","name":"Default Paragraph Font"},{"type":"Paragraph","name":"BoldStyle","basedOn":"Normal","link":"BoldStyle Char","paragraphFormat":{"lineSpacing":1.0,"lineSpacingType":"Multiple"}},{"type":"Paragraph","name":"Bold","basedOn":"Normal","next":"Normal","link":"Bold Char","characterFormat":{"bold":true}},{"type":"Character","name":"BoldStyle Char","basedOn":"Default Paragraph Font"},{"type":"Paragraph","name":"Italic","basedOn":"Bold","next":"Normal","link":"Italic Char","characterFormat":{"italic":true}},{"type":"Character","name":"Bold Char","basedOn":"Default Paragraph Font","characterFormat":{"bold":true}},{"type":"Paragraph","name":"Style1","basedOn":"Italic","next":"Normal","link":"Style1 Char","characterFormat":{"underline":"Single"}},{"type":"Character","name":"Italic Char","basedOn":"Bold Char","characterFormat":{"bold":true,"italic":true}},{"type":"Paragraph","name":"fontfamily","basedOn":"Style1","next":"Normal","link":"fontfamily Char","characterFormat":{"fontFamily":"Algerian"}},{"type":"Character","name":"Style1 Char","basedOn":"Italic Char","characterFormat":{"bold":true,"italic":true,"underline":"Single"}},{"type":"Paragraph","name":"fontsize","basedOn":"fontfamily","next":"Normal","link":"fontsize Char","characterFormat":{"fontSize":24.0}},{"type":"Character","name":"fontfamily Char","basedOn":"Style1 Char","characterFormat":{"bold":true,"italic":true,"underline":"Single","fontFamily":"Algerian"}},{"type":"Paragraph","name":"FontColor","basedOn":"fontsize","next":"Normal","link":"FontColor Char","characterFormat":{"fontColor":"#FF0000FF"}},{"type":"Character","name":"fontsize Char","basedOn":"fontfamily Char","characterFormat":{"bold":true,"italic":true,"underline":"Single","fontSize":24.0,"fontFamily":"Algerian"}},{"type":"Paragraph","name":"Style2","basedOn":"FontColor","next":"Normal","link":"Style2 Char","characterFormat":{"baselineAlignment":"Superscript"}},{"type":"Character","name":"FontColor Char","basedOn":"fontsize Char","characterFormat":{"bold":true,"italic":true,"underline":"Single","fontSize":24.0,"fontFamily":"Algerian","fontColor":"#FF0000FF"}},{"type":"Paragraph","name":"Style3","basedOn":"Style2","next":"Normal","link":"Style3 Char","characterFormat":{"baselineAlignment":"Subscript"}},{"type":"Character","name":"Style2 Char","basedOn":"FontColor Char","characterFormat":{"bold":true,"italic":true,"underline":"Single","baselineAlignment":"Superscript","fontSize":24.0,"fontFamily":"Algerian","fontColor":"#FF0000FF"}},{"type":"Character","name":"Style3 Char","basedOn":"Style2 Char","characterFormat":{"bold":true,"italic":true,"underline":"Single","baselineAlignment":"Subscript","fontSize":24.0,"fontFamily":"Algerian","fontColor":"#FF0000FF"}},{"type":"Paragraph","name":"Strike","basedOn":"Style1","next":"Normal","link":"Strike Char","characterFormat":{"strikethrough":"SingleStrike"}},{"type":"Character","name":"Strike Char","basedOn":"Style1 Char","characterFormat":{"bold":true,"italic":true,"underline":"Single","strikethrough":"SingleStrike"}}]}');
 
@@ -375,6 +384,7 @@ describe('Style dialog validation create', () => {
     });
 
     it('Create New ParagraphStyle', () => {
+console.log('Create New ParagraphStyle');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -394,6 +404,7 @@ describe('Style dialog validation create', () => {
         expect(style.type).toBe('Paragraph');
     });
     it('Create New LinkedStyle', () => {
+console.log('Create New LinkedStyle');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -457,6 +468,7 @@ describe('Style dialog validation create - Next Different', () => {
         }, 2000);
     });
     it('Create New ParagraphStyle-Change Next Paragraph', () => {
+console.log('Create New ParagraphStyle-Change Next Paragraph');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -517,6 +529,7 @@ describe('Style dialog validation create', () => {
     });
 
     it('Create New ParagraphStyle', () => {
+console.log('Create New ParagraphStyle');
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -573,6 +586,7 @@ describe('Style dialog - Editing', () => {
         }, 2000);
     });
     it('Edit', () => {
+console.log('Edit');
         editor.open(jsonString);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -633,6 +647,7 @@ describe('Modify Styles for Heading 1 validation', () => {
         }, 2000);
     });
     it('Modify heading 1 style validation', () => {
+console.log('Modify heading 1 style validation');
         editor.editor.insertText('Heading 1');
         editor.editor.applyStyle('Heading 1');
         editor.styleDialogModule.show('Heading 1');
@@ -640,6 +655,7 @@ describe('Modify Styles for Heading 1 validation', () => {
         expect(editor.selection.paragraphFormat.textAlignment).toBe('Left');
     });
     it('Open Paragraph dialog validation', () => {
+console.log('Open Paragraph dialog validation');
         editor.openBlank();
         editor.editor.insertText('Heading 1');
         editor.editor.applyStyle('Heading 1');

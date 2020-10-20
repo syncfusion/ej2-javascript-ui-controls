@@ -1825,7 +1825,6 @@ export class ListBox extends DropDownBase {
     private getDragArgs(args: DragEventArgs & BlazorDragEventArgs, isDragEnd?: boolean): DragEventArgs & BlazorDragEventArgs {
         let elems: Element[] = this.getSelectedItems();
         if (elems.length) {
-            elems.pop();
             if (isDragEnd) {
                 elems.push(args.target);
             }

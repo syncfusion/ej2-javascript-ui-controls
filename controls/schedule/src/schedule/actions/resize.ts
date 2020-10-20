@@ -166,6 +166,9 @@ export class Resize extends ActionBase {
         if (this.resizeEdges.top) {
             if (resizeValidation) {
                 let topStyles: { [key: string]: Object } = this.getTopBottomStyles(e, true);
+                if (parseInt(topStyles.height as string, 10) < 1) {
+                    return;
+                }
                 for (let cloneElement of this.actionObj.cloneElement) {
                     setStyleAttribute(cloneElement, topStyles);
                     addClass([cloneElement], cls.TOP_RESIZE_HANDLER);
@@ -176,6 +179,9 @@ export class Resize extends ActionBase {
         if (this.resizeEdges.bottom) {
             if (resizeValidation) {
                 let bottomStyles: { [key: string]: Object } = this.getTopBottomStyles(e, false);
+                if (parseInt(bottomStyles.height as string, 10) < 1) {
+                    return;
+                }
                 for (let cloneElement of this.actionObj.cloneElement) {
                     setStyleAttribute(cloneElement, bottomStyles);
                     addClass([cloneElement], cls.BOTTOM_RESIZE_HANDLER);
@@ -374,8 +380,8 @@ export class Resize extends ActionBase {
         clnHeight = clnTop + clnHeight >= viewElement.scrollHeight ? viewElement.scrollHeight - clnTop :
             Math.ceil(clnHeight / slotInterval) * slotInterval;
         let styles: { [key: string]: Object } = {
-            height: formatUnit(clnHeight < this.actionObj.cellHeight ? this.actionObj.cellHeight : clnHeight),
-            top: formatUnit((clnHeight < this.actionObj.cellHeight && isTop) ? this.actionObj.clone.offsetTop : clnTop),
+            height: formatUnit(clnHeight < this.actionObj.cellHeight ? Math.floor(clnHeight / slotInterval) * slotInterval : clnHeight),
+            top: formatUnit((clnHeight < this.actionObj.cellHeight && isTop) ? Math.ceil(clnTop / slotInterval) * slotInterval : clnTop),
             left: '0px', right: '0px', width: '100%'
         };
         return styles;
@@ -401,6 +407,9 @@ export class Resize extends ActionBase {
         }
         let width: number = !isLeft && ((offsetWidth + this.actionObj.clone.offsetLeft > this.scrollArgs.width)) ?
             this.actionObj.clone.offsetWidth : (offsetWidth < this.actionObj.cellWidth) ? this.actionObj.cellWidth : offsetWidth;
+        if (!isLeft && (offsetWidth === this.actionObj.cellWidth && Math.ceil(pageWidth / slotInterval) * slotInterval === 0)) {
+            width = -Math.floor(pageWidth / slotInterval) * slotInterval;
+        }
         if (this.parent.enableRtl) {
             let rightValue: number = isTimelineView ? parseInt(this.actionObj.element.style.right, 10) :
                 -(offsetWidth - this.actionObj.cellWidth);

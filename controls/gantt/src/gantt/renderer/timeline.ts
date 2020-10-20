@@ -1,6 +1,6 @@
 import { timelineHeaderCellLabel } from './../base/css-constants';
 import { TimelineFormat } from './../base/interface';
-import { createElement, isNullOrUndefined, getValue, addClass, removeClass } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, getValue, addClass, removeClass, extend } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { TimelineSettingsModel } from '../models/timeline-settings-model';
 import * as cls from '../base/css-constants';
@@ -216,12 +216,11 @@ export class Timeline {
                 break;
             }
         }
-        let newTimeline: ZoomTimelineSettings = { ...zoomingLevel };
+        let newTimeline: ZoomTimelineSettings = extend({}, {}, zoomingLevel, true);
         this.roundOffDateToZoom(this.parent.cloneProjectStartDate, true, perDayWidth, newTimeline.bottomTier.unit);
         this.roundOffDateToZoom(this.parent.cloneProjectEndDate, false, perDayWidth, newTimeline.bottomTier.unit);
         let numberOfCells: number = this.calculateNumberOfTimelineCells(newTimeline);
         newTimeline.timelineUnitSize = Math.abs((chartWidth - 25)) / numberOfCells;
-        this.changeTimelineSettings(newTimeline);
         let args: ZoomEventArgs = {
             requestType: 'beforeZoomToProject',
             timeline: newTimeline
@@ -230,6 +229,7 @@ export class Timeline {
             this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin', this.parent.controlId + '_zoomout'], true);
         }
         this.parent.trigger('actionBegin', args);
+        this.changeTimelineSettings(newTimeline);
     }
 
     private roundOffDateToZoom(date: Date, isStartDate: boolean, perDayWidth: number, tierMode: string): void {

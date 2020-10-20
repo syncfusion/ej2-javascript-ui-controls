@@ -33,7 +33,7 @@ import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path, DiagramShape, UmlActiv
 import { cloneBlazorObject, cloneSelectedObjects, findObjectIndex } from './utility/diagram-util';
 import { checkBrowserInfo } from './utility/diagram-util';
 import { updateDefaultValues, getCollectionChangeEventArguements } from './utility/diagram-util';
-import { flipConnector, updatePortEdges, alignElement, setConnectorDefaults } from './utility/diagram-util';
+import { flipConnector, updatePortEdges, alignElement, setConnectorDefaults, getPreviewSize } from './utility/diagram-util';
 import { Segment } from './interaction/scroller';
 import { Connector } from './objects/connector';
 import { ConnectorModel, BpmnFlowModel } from './objects/connector-model';
@@ -46,7 +46,7 @@ import { SnapSettingsModel } from './diagram/grid-lines-model';
 import { NodeModel, TextModel, BpmnShapeModel, BpmnAnnotationModel, HeaderModel, HtmlModel } from './objects/node-model';
 import { UmlActivityShapeModel, SwimLaneModel, LaneModel, PhaseModel } from './objects/node-model';
 import { Size } from './primitives/size';
-import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints } from './enum/enum';
+import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, ScrollActions } from './enum/enum';
 import { RendererAction, State } from './enum/enum';
 import { BlazorAction } from './enum/enum';
 import { DiagramConstraints, BridgeDirection, AlignmentOptions, SelectorConstraints, PortVisibility, DiagramEvent } from './enum/enum';
@@ -1427,6 +1427,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public diagramActions: DiagramAction;
     /** @private */
+    public scrollActions: ScrollActions = ScrollActions.None;
+    /** @private */
     public blazorActions: BlazorAction = BlazorAction.Default;
     /** @private */
     public commands: {};
@@ -1749,7 +1751,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     case 'layers':
                         this.updateLayer(newProp); break;
                     case 'scrollSettings':
-                        this.updateScrollSettings(newProp); break;
+                        this.scrollActions |= ScrollActions.PropertyChange;
+                        this.updateScrollSettings(newProp);
+                        this.scrollActions &= ~ScrollActions.PropertyChange;
+                        break;
                     case 'locale':
                         if (newProp.locale !== oldProp.locale) {
                             this.realActions |= RealAction.PreventDataInit;
@@ -1779,7 +1784,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         break;
                 }
             }
-            if (refreshLayout && !refereshColelction) { this.doLayout(); }
+            if (refreshLayout && !refereshColelction) { this.doLayout(); this.renderReactTemplates(); }
             if (isPropertyChanged && this.propertyChange) {
                 let args: IPropertyChangeEventArgs | IBlazorPropertyChangeEventArgs = {
                     element: cloneBlazorObject(this), cause: this.diagramActions,
@@ -2067,6 +2072,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.isLoading = false;
         this.renderComplete();
         this.updateFitToPage();
+        if (this.refreshing) {
+            this.renderReactTemplates();
+        }
     }
     /* tslint:enable */
     private updateFitToPage(): void {
@@ -2290,6 +2298,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         return modules;
     }
 
+    private removeUserHandlesTemplate(): void {
+        if (this.selectedItems.userHandles.length) {
+            for (let i: number = 0; i < this.selectedItems.userHandles.length; i++) {
+                for (let elementId of this.views) {
+                    removeElement(this.selectedItems.userHandles[i].name + '_template_hiddenUserHandle', elementId);
+                }
+            }
+        }
+    }
     /**
      * Destroys the diagram control
      */
@@ -2305,7 +2322,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.unWireEvents();
         this.notify('destroy', {});
         super.destroy();
-
+        this.removeUserHandlesTemplate();
+        this.clearTemplate();
         if (document.getElementById(this.element.id)) {
             this.element.classList.remove('e-diagram');
             let tooltipelement: HTMLCollection = document.getElementsByClassName('e-diagram-tooltip');
@@ -3949,6 +3967,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             let view: View = this.views[temp];
             if (!(view instanceof Diagram)) { this.refreshCanvasDiagramLayer(view); }
         }
+        this.renderReactTemplates();
         return newObj;
     }
     /* tslint:enable */
@@ -4137,6 +4156,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     for (let elementId of this.views) {
                         removeElement(currentObj.id + '_html_element', elementId);
                         removeElement(children[i].id + '_html_element', elementId);
+                        this.clearTemplate(['nodeTemplate' + '_' + currentObj.id]);
+                        if ((children[i] as DiagramEventAnnotation).annotationId) {
+                            this.clearTemplate(
+                                ['annotationTemplate' + '_' + currentObj.id + ((children[i] as DiagramEventAnnotation).annotationId)]);
+                        }
                     }
                 }
                 removeGradient(children[i].id);
@@ -9343,7 +9367,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     let clonedObject: Object; let selectedSymbol: HTMLElement = dragDataHelper || args.dragData.helper;
                     let paletteId: string = selectedSymbol.getAttribute('paletteId');
                     let nodeDragSize: SymbolSizeModel; let nodePreviewSize: SymbolSizeModel; let paletteDragSize: SymbolSizeModel;
-
+                    let preview: Size;
                     if (paletteId) {
                         // tslint:disable-next-line:no-any
                         let sourceElement: Object = (document.getElementById(paletteId) as any).ej2_instances[0];
@@ -9357,13 +9381,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             clonedObject = cloneObject(sourceElement[selectedSymbols]);
                             childTable = sourceElement[childtable];
                             let wrapper: DiagramElement = (obj.wrapper.children[0] as Container).children[0];
+                            preview = getPreviewSize(sourceElement, clonedObject as Node, wrapper);
                             if (sourceElement[selectedSymbols] instanceof Node) {
                                 if (((obj as Node).shape as BpmnShape).shape === 'TextAnnotation') {
-                                    (clonedObject as Node).offsetX = position.x + 11 + ((clonedObject as Node).width || wrapper.actualSize.width) / 2;
-                                    (clonedObject as Node).offsetY = position.y + 11 + ((clonedObject as Node).height || wrapper.actualSize.height) / 2;
+                                    (clonedObject as Node).offsetX = position.x + 11 + ((preview as Size).width)* (clonedObject as Node).pivot.x;
+                                    (clonedObject as Node).offsetY = position.y + 11 + ((preview as Size).height)* (clonedObject as Node).pivot.y;
                                 } else {
-                                    (clonedObject as Node).offsetX = position.x + 5 + ((clonedObject as Node).width || wrapper.actualSize.width) / 2;
-                                    (clonedObject as Node).offsetY = position.y + ((clonedObject as Node).height || wrapper.actualSize.height) / 2;
+                                    (clonedObject as Node).offsetX = position.x + 5 + ((preview as Size).width)* (clonedObject as Node).pivot.x;
+                                    (clonedObject as Node).offsetY = position.y + ((preview as Size).height)* (clonedObject as Node).pivot.y;
                                 }
                                 let newNode: Node = new Node(this, 'nodes', clonedObject as NodeModel, true);
                                 if (newNode.shape.type === 'Bpmn' && (newNode.shape as BpmnShape).activity.subProcess.processes

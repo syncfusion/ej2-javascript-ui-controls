@@ -37,9 +37,11 @@ describe('Contextual spacing preservation validation', () => {
         }, 1000);
     });
     it('In inline style validation', () => {
+console.log('In inline style validation');
         editor.open(JSON.stringify(inline));
     });
     it('direct spacing validation', () => {
+console.log('direct spacing validation');
         editor.open(JSON.stringify(direct));
     });
 });
@@ -71,14 +73,17 @@ describe('Contextual spacing preservation format retrieval validation in direct 
         }, 1000);
     });
     it('Contextual spacing is false', () => {
+console.log('Contextual spacing is false');
         expect(editor.selection.paragraphFormat.contextualSpacing).toBe(false);
     });
     it('Contextual spacing is true', () => {
+console.log('Contextual spacing is true');
         editor.selection.handleDownKey();
         editor.selection.handleRightKey();
         expect(editor.selection.paragraphFormat.contextualSpacing).toBe(true);
     });
     it('combination of Contextual spacing is true', () => {
+console.log('combination of Contextual spacing is true');
         editor.selection.handleShiftUpKey();
         expect(editor.selection.paragraphFormat.contextualSpacing).toBeUndefined();
     });
@@ -110,20 +115,24 @@ describe('Contextual spacing preservation apply via selection format API validat
         }, 1000);
     });
     it('Contextual spacing in empty selection', () => {
+console.log('Contextual spacing in empty selection');
         editor.selection.handleDownKey();
         editor.selection.handleRightKey();
         editor.selection.paragraphFormat.contextualSpacing = false;
         expect(editor.selection.paragraphFormat.contextualSpacing).toBe(false);
     });
     it('undo after Contextual spacing in empty selection', () => {
+console.log('undo after Contextual spacing in empty selection');
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.contextualSpacing).toBe(true);
     });
     it('redo after Contextual spacing in empty selection', () => {
+console.log('redo after Contextual spacing in empty selection');
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.contextualSpacing).toBe(false);
     });
     it('redo after Multiple undo and redo Contextual spacing in empty selection', () => {
+console.log('redo after Multiple undo and redo Contextual spacing in empty selection');
         for (let i: number = 0; i < 5; i++) {
             editor.editorHistory.undo();
             editor.editorHistory.redo();
@@ -159,19 +168,23 @@ describe('Contextual spacing preservation apply via selection format API validat
         }, 1000);
     });
     it('Contextual spacing in selection', () => {
+console.log('Contextual spacing in selection');
         editor.selection.selectAll();
         editor.selection.paragraphFormat.contextualSpacing = false;
         expect(editor.selection.paragraphFormat.contextualSpacing).toBe(false);
     });
     it('undo after Contextual spacing in selection', () => {
+console.log('undo after Contextual spacing in selection');
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.contextualSpacing).toBeUndefined();
     });
     it('redo after Contextual spacing in selection', () => {
+console.log('redo after Contextual spacing in selection');
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.contextualSpacing).toBe(false);
     });
     it('redo after Multiple undo and redo Contextual spacing in selection', () => {
+console.log('redo after Multiple undo and redo Contextual spacing in selection');
         for (let i: number = 0; i < 5; i++) {
             editor.editorHistory.undo();
             editor.editorHistory.redo();
@@ -207,13 +220,16 @@ describe('Contextual spacing sfdt export validation in direct formatting', () =>
         }, 1000);
     });
     it('export checking without error', () => {
+console.log('export checking without error');
         expect(() => { editor.save('cs', 'Sfdt') }).not.toThrowError();
     });
     it('export with Contextual spacing', () => {
+console.log('export with Contextual spacing');
         let write = editor.sfdtExportModule.write();
         expect(write.sections[0].blocks[1].paragraphFormat.contextualSpacing).toBe(true);
     });
     it('export without Contextual spacing', () => {
+console.log('export without Contextual spacing');
         let write = editor.sfdtExportModule.write();
         expect(write.paragraphFormat.contextualSpacing).toBeUndefined();
     });
@@ -246,9 +262,11 @@ describe('Contextual spacing sfdt export validation in inline styles', () => {
         }, 1000);
     });
     it('export checking without error', () => {
+console.log('export checking without error');
         expect(() => { editor.save('cs_inline', 'Sfdt') }).not.toThrowError();
     });
     it('export with Contextual spacing', () => {
+console.log('export with Contextual spacing');
         let write = editor.sfdtExportModule.write();
         expect(write.sections[0].blocks[0].paragraphFormat.contextualSpacing).toBeUndefined();
         expect(write.styles[1].paragraphFormat.contextualSpacing).toBe(true);
@@ -281,9 +299,11 @@ describe('Contextual spacing word export validation', () => {
         }, 1000);
     });
     it('export checking without error', () => {
+console.log('export checking without error');
         expect(() => { editor.save('cs', 'Docx') }).not.toThrowError();
     });
     it('export with Contextual spacing', () => {
+console.log('export with Contextual spacing');
         let write = editor.sfdtExportModule.write();
         expect(write.sections[0].blocks[1].paragraphFormat.contextualSpacing).toBe(true);
         let writer: XmlWriter = new XmlWriter();
@@ -291,6 +311,7 @@ describe('Contextual spacing word export validation', () => {
         expect((writer as any).bufferText.indexOf('<w:contextualSpacing')).not.toBe(-1);
     });
     it('export with Contextual spacing as false', () => {
+console.log('export with Contextual spacing as false');
         let write = editor.sfdtExportModule.write();
         write.sections[0].blocks[1].paragraphFormat.contextualSpacing = false;
         let writer: XmlWriter = new XmlWriter();
@@ -298,6 +319,7 @@ describe('Contextual spacing word export validation', () => {
         expect((writer as any).bufferText.indexOf('<w:contextualSpacing w:val="0"')).not.toBe(-1);
     });
     it('export with Contextual spacing as undefined', () => {
+console.log('export with Contextual spacing as undefined');
         let write = editor.sfdtExportModule.write();
         expect(write.sections[0].blocks[1].paragraphFormat.contextualSpacing).toBe(true);
         let writer: XmlWriter = new XmlWriter();
@@ -336,6 +358,7 @@ describe('Contextual spacing apply validation using paragraph dialog', () => {
         }, 1000);
     });
     it('apply contextual spacing - 1', () => {
+console.log('apply contextual spacing - 1');
         editor.paragraphDialogModule.show();
         let ele = document.getElementById(editor.containerId + '_contextSpacing')
         event = { checked: true, event: { currentTarget: ele } };
@@ -344,14 +367,17 @@ describe('Contextual spacing apply validation using paragraph dialog', () => {
         expect(editor.selection.paragraphFormat.contextualSpacing).toBe(true);
     });
     it('undo after contextual spacing - 1', () => {
+console.log('undo after contextual spacing - 1');
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.contextualSpacing).toBe(false);
     });
     it('redo after contextual spacing - 1', () => {
+console.log('redo after contextual spacing - 1');
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.contextualSpacing).toBe(true);
     });
     it('apply contextual spacing - 2', () => {
+console.log('apply contextual spacing - 2');
         editor.selection.handleDownKey();
         editor.selection.handleRightKey();
         editor.paragraphDialogModule.show();
@@ -362,10 +388,12 @@ describe('Contextual spacing apply validation using paragraph dialog', () => {
         expect(editor.selection.paragraphFormat.contextualSpacing).toBe(false);
     });
     it('undo after contextual spacing - 2', () => {
+console.log('undo after contextual spacing - 2');
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.contextualSpacing).toBe(true);
     });
     it('redo after contextual spacing - 2', () => {
+console.log('redo after contextual spacing - 2');
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.contextualSpacing).toBe(false);
     });

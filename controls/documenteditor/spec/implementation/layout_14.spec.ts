@@ -28,6 +28,7 @@ describe('Section pages field feature validation', () => {
         }, 1000);
     });
     it('Header section page validation', () => {
+console.log('Header section page validation');
         let fieldElement:FieldTextElementBox=((editor.documentHelper.pages[0].headerWidget.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[3] as FieldTextElementBox;
         expect(fieldElement.text).toBe('1');
     });
@@ -59,9 +60,11 @@ describe('Tab width validation when paragraph contains hanging indent', () => {
         }, 1000);
     });
     it('Width validation', () => {
+console.log('Width validation');
         expect((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children[3].width).toBeGreaterThan(0);
     });
     it('text box line validation', () => {
+console.log('text box line validation');
     editor.open(JSON.stringify(textbox));
     expect(editor.documentHelper.pages[0].bodyWidgets[0].floatingElements[0].lineFormat.color).toBe('#000000FF');
     });

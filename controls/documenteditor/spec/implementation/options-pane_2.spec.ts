@@ -43,6 +43,7 @@ describe('open find pane and repalce pane testing', () => {
         }, 1000);
     });
     it('replace all validation-1', () => {
+console.log('replace all validation-1');
         editor.open(getJson());
         let paraLength = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length;
         editor.selection.start.setPositionForCurrentIndex('0;0;1;1;33');
@@ -52,6 +53,7 @@ describe('open find pane and repalce pane testing', () => {
         expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length).not.toBe(paraLength);
     });
     it('replace all validation-2', () => {
+console.log('replace all validation-2');
         editor.open(getJson());
         let paraLength = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length + (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets.length;
         editor.selection.start.setPositionForCurrentIndex('0;0;1;1;33');
@@ -67,6 +69,7 @@ describe('open find pane and repalce pane testing', () => {
         expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length + (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets.length).not.toBe(paraLength);
     });
     it('replace all validation-3', () => {
+console.log('replace all validation-3');
         editor.open(getJson());
         documentHelper = editor.documentHelper;
         let paraLength = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets.length + (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length + (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets.length;
@@ -79,6 +82,7 @@ describe('open find pane and repalce pane testing', () => {
         expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets.length + (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length + (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets.length).not.toBe(paraLength);
     });
     it('replace all validation-4', () => {
+console.log('replace all validation-4');
         editor.open(getJson());
         documentHelper = editor.documentHelper;
         let paraLength = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets.length + (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length + (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets.length;
@@ -122,6 +126,7 @@ describe('open find pane and repalce pane testing', () => {
         }, 1000);
     });
     it('dot character validation', () => {
+console.log('dot character validation');
         editor.open(getJson());
         let optionsPane = editor.optionsPaneModule;
         optionsPane.showHideOptionsPane(true);
@@ -131,6 +136,7 @@ describe('open find pane and repalce pane testing', () => {
         expect(resultCount).toBe(10);
     });
     it('dot character validation', () => {
+console.log('dot character validation');
         editor.open(getJson());
         let optionsPane = editor.optionsPaneModule;
         optionsPane.showHideOptionsPane(true);
@@ -141,6 +147,7 @@ describe('open find pane and repalce pane testing', () => {
         expect(resultCount).toBe(3);
     });
     it('dot character with replace back slash validation', () => {
+console.log('dot character with replace back slash validation');
         editor.open(getJson());
         let optionsPane = editor.optionsPaneModule;
         optionsPane.showHideOptionsPane(true);
@@ -155,6 +162,7 @@ describe('open find pane and repalce pane testing', () => {
     });
 
     it('dot character with replace back slash undo validation', () => {
+console.log('dot character with replace back slash undo validation');
         editor.open(getJson());
         let optionsPane = editor.optionsPaneModule;
         optionsPane.showHideOptionsPane(true);
@@ -170,6 +178,7 @@ describe('open find pane and repalce pane testing', () => {
         expect(resultCount).toBe(0);
     });
     it('back slash character validation', () => {
+console.log('back slash character validation');
         editor.open(getJson());
         editor.editorModule.insertText('\\');
         let optionsPane = editor.optionsPaneModule;
@@ -203,6 +212,7 @@ describe('search icon focus validation', () => {
         editor = undefined;
     });
     it('Scroll Update Validation', () => {
+console.log('Scroll Update Validation');
         editor.open(getJson());
         let optionsPane = editor.optionsPaneModule;
         optionsPane.showHideOptionsPane(true);

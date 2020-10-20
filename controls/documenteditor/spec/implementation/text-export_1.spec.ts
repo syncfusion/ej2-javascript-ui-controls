@@ -1791,6 +1791,7 @@ describe('Text Export module testing', () => {
     });
 
     it('text export module testing ', () => {
+console.log('text export module testing ');
         documentHelper = editor.documentHelper;
         editor.save('sample', 'Txt');
     });

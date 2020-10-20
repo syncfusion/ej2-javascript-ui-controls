@@ -150,6 +150,194 @@ let expandRoutingData: object[] =    [
     { 'Id': '9', 'Role': 'Drafting Supervisor', 'Manager': '6', 'color': '#2E95D8' },
 ]
 
+export interface EmployeeInfo {
+    Id: string;
+    ManagerId: string;
+    Name:string;
+  }
+let layoutData: object[] = [
+    {
+      "Id": "1a3c1a45-9b53-4bd1-8ad6-7b64ec2d3258",
+      "ManagerId": "",
+      "Name": "Tim Johnson"
+    },
+    {
+      "Id": "0cc3c86b-200b-43ea-8122-b3107557f61e",
+      "ManagerId": "1a3c1a45-9b53-4bd1-8ad6-7b64ec2d3258",
+      "Name": "Yan Nem"
+    },
+    {
+      "Id": "1328b010-1ad9-4b15-8dab-50623b1e01e6",
+      "ManagerId": "1a3c1a45-9b53-4bd1-8ad6-7b64ec2d3258",
+      "Name": "Jessica Small"
+    },
+    {
+      "Id": "5d57fa17-7df2-4722-91c6-bcd2a0778f2e",
+      "ManagerId": "0cc3c86b-200b-43ea-8122-b3107557f61e",
+      "Name": "Thomas Ngyuen"
+    },
+    {
+      "Id": "f493da2b-ec35-45b1-97aa-a5ba757798e0",
+      "ManagerId": "378755ac-222b-4f93-a8d3-8546c83e8f2e",
+      "Name": "Christine Qin"
+    },
+    {
+      "Id": "57125eda-a326-46e3-bc5f-5af1be058e50",
+      "ManagerId": "5c826fa5-c2f4-4714-813d-cf072f98eb40",
+      "Name": "Rosita Ramos"
+    },
+    {
+      "Id": "5db5db14-d74f-4685-aa38-dc026f8b87ee",
+      "ManagerId": "5d57fa17-7df2-4722-91c6-bcd2a0778f2e",
+      "Name": "Ursala Burnet"
+    },
+    {
+      "Id": "bc3a25b5-86c1-4864-b1c8-70a92e2fe92c",
+      "ManagerId": "5d57fa17-7df2-4722-91c6-bcd2a0778f2e",
+      "Name": "Hayley Santos"
+    },
+    {
+      "Id": "59f91bfe-c7c1-4be4-aa14-d4b06a8105db",
+      "ManagerId": "0d95088a-3f47-4c1c-9ac0-b5d5dfd59455",
+      "Name": "Joan Isbell"
+    },
+    {
+      "Id": "26eaca86-c907-448c-a44a-a1de967417e5",
+      "ManagerId": "1328b010-1ad9-4b15-8dab-50623b1e01e6",
+      "Name": "Marcus Hawes"
+    },
+    {
+      "Id": "28fb81b8-0c6a-479b-9bf9-a0f6b462837b",
+      "ManagerId": "1328b010-1ad9-4b15-8dab-50623b1e01e6",
+      "Name": "Wei Sun"
+    },
+    {
+      "Id": "736f416b-32d7-44a7-b99f-519db6581b2c",
+      "ManagerId": "1328b010-1ad9-4b15-8dab-50623b1e01e6",
+      "Name": "Shauna Mosley"
+    },
+    {
+      "Id": "84b9e4e9-aac3-4374-8be5-50fee1d5bb8f",
+      "ManagerId": "1328b010-1ad9-4b15-8dab-50623b1e01e6",
+      "Name": "Skylar Cotton"
+    },
+    {
+      "Id": "8eae136d-ac13-4c64-b742-babf8f725888",
+      "ManagerId": "1328b010-1ad9-4b15-8dab-50623b1e01e6",
+      "Name": "Aicha Stiffel"
+    },
+    {
+      "Id": "a130fd55-8ffc-4987-a497-2dc03f0589aa",
+      "ManagerId": "8eae136d-ac13-4c64-b742-babf8f725888",
+      "Name": "Ibrahim Bukhari"
+    },
+    {
+      "Id": "c9b6fe99-dbe6-40b3-be7a-f4335897dc08",
+      "ManagerId": "8eae136d-ac13-4c64-b742-babf8f725888",
+      "Name": "Anthony Peeples"
+    },
+    {
+      "Id": "f997dd1e-5a0a-4591-bd14-a6a278cd6a08",
+      "ManagerId": "8eae136d-ac13-4c64-b742-babf8f725888",
+      "Name": "Jeremy Rukowski"
+    },
+    {
+      "Id": "e77bd427-8b76-4724-8bee-5ced085484ae",
+      "ManagerId": "a130fd55-8ffc-4987-a497-2dc03f0589aa",
+      "Name": "Nicky Castillo"
+    },
+    {
+      "Id": "64d57052-e220-45cc-8625-02ba8b4be252",
+      "ManagerId": "e77bd427-8b76-4724-8bee-5ced085484ae",
+      "Name": "Susan Cheung"
+    },
+    {
+      "Id": "60807129-0215-4ade-951c-b2f486328425",
+      "ManagerId": "64d57052-e220-45cc-8625-02ba8b4be252",
+      "Name": "Rosalita Clarkson"
+    },
+    {
+      "Id": "7a656afa-2444-4502-b60e-5fb0c04fb2f4",
+      "ManagerId": "64d57052-e220-45cc-8625-02ba8b4be252",
+      "Name": "Gloria Delarosa"
+    },
+    {
+      "Id": "32e80929-092b-41e5-9050-adfdd23e7a42",
+      "ManagerId": "60807129-0215-4ade-951c-b2f486328425",
+      "Name": "Maria Delgado"
+    },
+    {
+      "Id": "66b7348e-c5ea-4195-8df2-29ce63464540",
+      "ManagerId": "60807129-0215-4ade-951c-b2f486328425",
+      "Name": "Belinda Criswell"
+    },
+    {
+      "Id": "d38eff47-edcd-4e27-96d2-420f669863e6",
+      "ManagerId": "c9b6fe99-dbe6-40b3-be7a-f4335897dc08",
+      "Name": "Linda Permutter"
+    },
+    {
+      "Id": "0bb404c2-6b75-46b3-bc1c-ebe2b949925a",
+      "ManagerId": "d38eff47-edcd-4e27-96d2-420f669863e6",
+      "Name": "Arisha Davie"
+    },
+    {
+      "Id": "8e9f0361-4b4f-4487-b4fb-3561770feb37",
+      "ManagerId": "d38eff47-edcd-4e27-96d2-420f669863e6",
+      "Name": "Rosa Delacroix"
+    },
+    {
+      "Id": "46e8f064-fa6a-4bec-985c-9540ad5025a4",
+      "ManagerId": "8e9f0361-4b4f-4487-b4fb-3561770feb37",
+      "Name": "Ailsa Coates"
+    },
+    {
+      "Id": "6236e62d-f4c4-440b-9bb8-80f668d46ab4",
+      "ManagerId": "8e9f0361-4b4f-4487-b4fb-3561770feb37",
+      "Name": "Zakir Shelson"
+    },
+    {
+      "Id": "cff4ed13-eeda-49c8-a9c3-f8f924a16ab4",
+      "ManagerId": "8e9f0361-4b4f-4487-b4fb-3561770feb37",
+      "Name": "Rohit Grimes"
+    },
+    {
+      "Id": "6c81be8f-47cb-497d-a542-7b8533527916",
+      "ManagerId": "f997dd1e-5a0a-4591-bd14-a6a278cd6a08",
+      "Name": "Hector Sanchez"
+    },
+    {
+      "Id": "e3517e53-28f2-4b9e-94e7-712944dca222",
+      "ManagerId": "6c81be8f-47cb-497d-a542-7b8533527916",
+      "Name": "Lisa Sicarelli"
+    },
+    {
+      "Id": "0509e334-840f-40d7-9796-8e0c33c7c889",
+      "ManagerId": "e3517e53-28f2-4b9e-94e7-712944dca222",
+      "Name": "Crystal Dodd"
+    },
+    {
+      "Id": "0c0f8f79-1455-47bb-8c67-4768c9c008c1",
+      "ManagerId": "e3517e53-28f2-4b9e-94e7-712944dca222",
+      "Name": "Dolcie Ware"
+    },
+    {
+      "Id": "583dd23e-c722-45b8-a8ed-57e422177832",
+      "ManagerId": "e3517e53-28f2-4b9e-94e7-712944dca222",
+      "Name": "Saffa Alfaro"
+    },
+    {
+      "Id": "8a7f43f3-b645-48ce-b0f7-a815aeed185e",
+      "ManagerId": "e3517e53-28f2-4b9e-94e7-712944dca222",
+      "Name": "Zaki McKnight"
+    },
+    {
+      "Id": "f4ea67e7-3391-41ed-b7de-744868b883aa",
+      "ManagerId": "a3c38803-fb28-4bb1-a8ce-706e5e3f14c8",
+      "Name": "Nhan Tran"
+    },
+  ];
+
 function resize(diagram: Diagram, direction: string): void {
     if ((diagram.selectedItems as Selector).nodes[0]) {
         let diagramCanvas: HTMLElement; let left: number; let top: number;
@@ -3121,6 +3309,79 @@ describe('layout-info assistant support', () => {
             console.log(Math.round(node1.offsetY))
             console.log(Math.round(node1.offsetX))
             expect(Math.round(node1.offsetY) === 250 && Math.round(node1.offsetX) === 484).toBe(true)
+            done();
+        });
+    });
+    describe('Nodes overlapping issue in hierarchical tree layout', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll(() => {
+            debugger;
+            ele = createElement('div', { id: 'diagramdataMaps' });
+            document.body.appendChild(ele);
+            let items: DataManager = new DataManager(layoutData as JSON[], new Query().take(7));
+            diagram = new Diagram({
+                width: '1200px', height: '600px',
+                snapSettings: { constraints: SnapConstraints.None,
+                  snapAngle: 90,
+                  snapObjectDistance: 50 
+              },
+                //Use automatic layout to arrange elements on the page
+                layout: {
+                  type: 'HierarchicalTree',
+                  margin: { left: 10, top: 10 },
+                  horizontalSpacing: 70.0,
+                  verticalSpacing: 70.0,
+                  springFactor: 40.0,
+                  springLength: 50.0,
+                  orientation: 'TopToBottom',
+              },
+              dataSourceSettings: {
+                  id: "Id", parentId: "ManagerId", dataManager: items,
+                  doBinding: (nodeModel: NodeModel, data: object, diagram: Diagram) => {
+                      nodeModel.shape = { type: 'Text', content: (data as EmployeeInfo).Name };
+                  }
+              },
+                getNodeDefaults: (obj: Node, diagram: Diagram) => {
+                  obj.shape = { type: 'Text'};
+                  obj.style = { fill: '#659be5', strokeColor: 'none', color: 'white', strokeWidth: 2 };
+                  obj.borderColor = '#3a6eb5';
+                  obj.backgroundColor = '#659be5';
+                  (obj.shape as TextModel).margin = { left: 5, right: 5, bottom: 5, top: 5 };
+                  obj.expandIcon = { height: 10, width: 10, shape: 'Plus', fill: 'lightgray', offset: { x: 0.5, y: 1 } };
+                  obj.expandIcon.verticalAlignment = 'Auto';
+                  obj.expandIcon.margin = { left: 0, right: 0, top: 0, bottom: 0 };
+                  obj.collapseIcon.offset = { x: 0.5, y: 1 };
+                  obj.collapseIcon.verticalAlignment = 'Auto';
+                  obj.collapseIcon.margin = { left: 0, right: 0, top: 0, bottom: 0 };
+                  obj.collapseIcon.height = 10;
+                  obj.collapseIcon.width = 10;
+                  obj.collapseIcon.padding.top = 5;
+                  obj.collapseIcon.shape = 'Minus';
+                  obj.collapseIcon.fill = 'lightgray';
+                  return obj;
+                },
+                getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                  connector.targetDecorator.shape = 'None';
+                  connector.type = 'Straight';
+                  connector.style.strokeColor = '#6d6d6d';
+                  connector.constraints = 0;
+                  connector.cornerRadius = 5;
+                  return connector;
+                },
+            });
+            diagram.appendTo('#diagramdataMaps');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+    
+        it('nodes overlapping issue in hierarchical tree layout', (done: Function) => {
+            expect(Math.round(diagram.nodes[2].offsetX) === -91 || Math.round(diagram.nodes[2].offsetX) === -92).toBe(true);
+            expect(Math.round(diagram.nodes[3].offsetX) === -171 || Math.round(diagram.nodes[3].offsetX) === -173).toBe(true);
+            expect(Math.round(diagram.nodes[7].offsetX) === 221 || Math.round(diagram.nodes[7].offsetX) === 222).toBe(true);
+            expect(Math.round(diagram.nodes[11].offsetX) === 209 || Math.round(diagram.nodes[11].offsetX) === 210).toBe(true);
             done();
         });
     });

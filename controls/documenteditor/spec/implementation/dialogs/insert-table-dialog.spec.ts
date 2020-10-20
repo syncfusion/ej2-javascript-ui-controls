@@ -35,18 +35,21 @@ describe('Insert Table Dialog Test Case Validation', () => {
         }, 2000);
     });
     it('On Insert Button testing', () => {
+console.log('On Insert Button testing');
         dialog = new TableDialog(editor.documentHelper);
         dialog.show();
         dialog.onInsertTableClick();
         dialog.destroy();
     });
     it('On Cancel Button testing', () => {
+console.log('On Cancel Button testing');
         dialog = new TableDialog(editor.documentHelper);
         dialog.show();
         dialog.onCancelButtonClick();
         dialog.destroy();
     });
     it('Insert Table using event testing', () => {
+console.log('Insert Table using event testing');
         dialog = new TableDialog(editor.documentHelper);
         dialog.show();
         let event: any;
@@ -83,6 +86,7 @@ describe('Insert Table Dialog Test Case Validation', () => {
         }, 2000);
     });
     it('Insert Table Value Null Condition testing', () => {
+console.log('Insert Table Value Null Condition testing');
         dialog = new TableDialog(editor.documentHelper);
         dialog.show();
         let event: any;
@@ -93,6 +97,7 @@ describe('Insert Table Dialog Test Case Validation', () => {
         dialog.destroy();
     });
     it('Insert Table Destory Parent Element testing', () => {
+console.log('Insert Table Destory Parent Element testing');
         dialog = new TableDialog(editor.documentHelper);
         dialog.show();
         (dialog as any).columnsCountBox = document.createElement('div');
@@ -100,6 +105,7 @@ describe('Insert Table Dialog Test Case Validation', () => {
         dialog.destroy();
     });
     it('Insert Table Parent Destroy Element testing', () => {
+console.log('Insert Table Parent Destroy Element testing');
         dialog = new TableDialog(editor.documentHelper);
         dialog.show();
         (dialog as any).target = document.createElement('div');
@@ -132,6 +138,7 @@ describe('Insert Table Key and Destroy Test Case Validation', () => {
         }, 2000);
     });
     it('Insert Table Diff Event Key Condition testing', () => {
+console.log('Insert Table Diff Event Key Condition testing');
         dialog = new TableDialog(editor.documentHelper);
         dialog.show();
         let event: any;
@@ -141,11 +148,13 @@ describe('Insert Table Key and Destroy Test Case Validation', () => {
         dialog.destroy();
     });
     it('Insert Table Destory testing', () => {
+console.log('Insert Table Destory testing');
         dialog = new TableDialog(editor.documentHelper);
         dialog.show();
         dialog.destroy();
     });
     it('Insert Table Destory testing', () => {
+console.log('Insert Table Destory testing');
         dialog = new TableDialog(editor.documentHelper);
         (dialog as any).target = undefined;
         dialog.show();

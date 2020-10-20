@@ -232,6 +232,7 @@ export class NavigationPane {
             sideToolbarElement.style.height = this.getSideToolbarHeight(toolbarHeight);
             sideToolbarContent.style.height = this.getSideToolbarHeight(toolbarHeight);
             splitterElement.style.height = this.getSideToolbarHeight(toolbarHeight);
+            this.pdfViewerBase.viewerContainer.style.height = this.getSideToolbarHeight(toolbarHeight);
         } else {
             let splitterElement: HTMLElement = this.pdfViewerBase.getElement('_sideBarToolbarSplitter');
             let toolbarContainer: HTMLElement = this.pdfViewerBase.getElement('_toolbarContainer');

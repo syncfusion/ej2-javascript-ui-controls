@@ -545,7 +545,7 @@ export class SfSchedule {
         }
         let isWorkCell: boolean = this.currentCell.classList.contains(cls.WORK_CELLS_CLASS) ||
             this.currentCell.classList.contains(cls.ALLDAY_CELLS_CLASS);
-        if (isWorkCell) {
+        if (isWorkCell && this.getSelectedElements().length === 0) {
             this.selectCell(this.currentCell);
         }
         if (popupEle && !this.quickPopup) {
@@ -683,6 +683,7 @@ export class SfSchedule {
         if (this.quickPopup && this.quickPopup.element.classList.contains(cls.POPUP_OPEN)) {
             this.quickPopup.hide();
         }
+        this.eventBase.focusElement();
     }
     public onClosePopup(): void {
         //this.quickPopupHide();

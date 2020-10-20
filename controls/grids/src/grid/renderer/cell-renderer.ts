@@ -75,7 +75,7 @@ export class CellRenderer implements ICellRenderer<Column> {
                 if (isReactCompiler) {
                     let copied: Object = { 'index': attributes[literals[0]] };
                     cell.column.getColumnTemplate()(
-                        extend(copied, dummyData), this.parent, 'template', templateID, this.parent[str], null, node);
+                        extend(copied, dummyData), this.parent, 'columnTemplate', templateID, this.parent[str], null, node);
                     this.parent.renderTemplates();
                 } else {
                     result = cell.column.getColumnTemplate()(

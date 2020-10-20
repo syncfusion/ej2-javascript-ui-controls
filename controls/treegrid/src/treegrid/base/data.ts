@@ -133,12 +133,16 @@ public isRemote(): boolean {
   private convertJSONData(data: Object): void {
     this.hierarchyData = [];
     this.taskIds = [];
-    for (let i: number = 0; i < Object.keys(data).length; i++) {
-      let tempData: Object = data[i];
-      this.hierarchyData.push(extend({}, tempData));
-      if (!isNullOrUndefined(tempData[this.parent.idMapping])) {
-        this.taskIds.push(tempData[this.parent.idMapping]);
-      }
+    if (!this.parent.idMapping) {
+        this.hierarchyData = <Object[]> data;
+    } else {
+        for (let i: number = 0; i < Object.keys(data).length; i++) {
+            let tempData: Object = data[i];
+            this.hierarchyData.push(extend({}, tempData));
+            if (!isNullOrUndefined(tempData[this.parent.idMapping])) {
+                this.taskIds.push(tempData[this.parent.idMapping]);
+            }
+        }
     }
     if (this.isSelfReference) {
       let selfData: ITreeData[] = [];

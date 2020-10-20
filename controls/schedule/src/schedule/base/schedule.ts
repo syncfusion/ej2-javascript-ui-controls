@@ -973,10 +973,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * To reset the react templates
      *  @hidden
      */
-    public resetTemplates(): void {
+    public resetTemplates(templates?: string[]): void {
         // tslint:disable-next-line:no-any
         if ((this as any).isReact) {
-            this.clearTemplate();
+            this.clearTemplate(templates);
         }
     }
 
@@ -1280,7 +1280,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (isNullOrUndefined(index)) {
             index = this.getViewIndex(view);
         }
-        if (!muteOnChange && index === this.viewIndex || index < 0) {
+        if (!muteOnChange && index === this.viewIndex && this.currentView === view || index < 0) {
             return;
         }
         this.viewIndex = index;

@@ -1400,7 +1400,7 @@
     }
   }
 
-  & .e-colorpicker-wrapper.e-border-colorpicker {
+  .e-colorpicker-wrapper.e-border-colorpicker {
     display: none;
 
     & .e-container {
@@ -1782,7 +1782,7 @@
     }
   }
 
-  & .e-name-box {
+  .e-name-box {
     & .e-dropdownbase .e-list-item {
       line-height: 25px;
       min-height: 25px;

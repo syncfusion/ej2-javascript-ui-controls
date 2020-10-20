@@ -16,6 +16,7 @@ export class Agenda extends ViewBase implements IRenderer {
     private elementHeight: number = 70;
     private bufferCount: number = 3;
     private renderedCount: number = 10;
+    private timeValue: number;
     constructor(parent: SfSchedule) {
         super(parent);
     }
@@ -30,9 +31,12 @@ export class Agenda extends ViewBase implements IRenderer {
             wrap = createElement('div', { className: cls.VIRTUAL_TRACK_CLASS }) as HTMLElement;
         }
         let conWrap: HTMLElement = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
-        wrap.style.height = (count * this.elementHeight) + 'px';
+        wrap.style.height = (count * this.elementHeight) - conWrap.offsetHeight + 'px';
         conWrap.appendChild(wrap);
-        if (isScrollTop) { conWrap.scrollTop = 0; }
+        if (isScrollTop) {
+            conWrap.scrollTop = this.translateY = 0;
+            this.setTranslate(conWrap);
+        }
         this.itemCount = count;
     }
     private wireEvents(): void {
@@ -52,24 +56,27 @@ export class Agenda extends ViewBase implements IRenderer {
             let index : number;
             if (conWrap.scrollTop - this.translateY < 0) {
                 index = ~~(conWrap.scrollTop / this.elementHeight);
-                if (index === 0) {
-                    this.translateY = conWrap.scrollTop;
-                } else {
-                    this.translateY = conWrap.scrollTop - (this.elementHeight * this.bufferCount) > 0 ?
-                        conWrap.scrollTop - (this.elementHeight * this.bufferCount) : 0;
-                }
+                this.translateY = conWrap.scrollTop;
                 this.setTranslate(conWrap);
-                this.parent.dotNetRef.invokeMethodAsync('AgendaScroll', index);
+                this.beforeInvoke(index);
             } else if (conWrap.scrollTop - this.translateY > (this.elementHeight * this.bufferCount)) {
                 index = ~~(conWrap.scrollTop / this.elementHeight);
+                index = (index > this.itemCount) ? this.itemCount - this.renderedCount : index;
                 this.translateY = conWrap.scrollTop;
                 if (this.translateY > (this.itemCount * this.elementHeight) - (this.renderedCount * this.elementHeight)) {
                     this.translateY = (this.itemCount * this.elementHeight - (this.renderedCount * this.elementHeight));
                 }
                 this.setTranslate(conWrap);
-                this.parent.dotNetRef.invokeMethodAsync('AgendaScroll', index);
+                this.beforeInvoke(index);
             }
         }
+    }
+    private beforeInvoke(index: number): void {
+        window.clearTimeout(this.timeValue);
+        this.timeValue = window.setTimeout(() => { this.triggerScrolling(index); }, 100);
+    }
+    private triggerScrolling(index: number): void {
+        this.parent.dotNetRef.invokeMethodAsync('AgendaScroll', index);
     }
     public setTranslate(conWrap: HTMLElement): void {
         setStyleAttribute(conWrap.querySelector('table'), { transform: 'translateY(' + this.translateY + 'px)' });

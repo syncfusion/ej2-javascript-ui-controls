@@ -31,6 +31,7 @@ describe('Spell Checker dialog API', () => {
         }, 2000);
     });
     it('Call Spell checker dialog', () => {
+console.log('Call Spell checker dialog');
         editor.openBlank();
         editor.spellChecker.languageID = 1;
         editor.serviceUrl='';
@@ -42,9 +43,11 @@ describe('Spell Checker dialog API', () => {
         editor.spellCheckDialogModule.show(element.text, element, false);
     });
     it('Spell checker dialog module name validation', () => {
+console.log('Spell checker dialog module name validation');
         expect((editor.spellCheckDialogModule as any).getModuleName()).toBe('SpellCheckDialog');
     });
     it('Spell checker dialog ignore button test', () => {
+console.log('Spell checker dialog ignore button test');
         editor.openBlank();
         editor.editor.insertTextInternal('helo', false);
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
@@ -58,6 +61,7 @@ describe('Spell Checker dialog API', () => {
         expect(element.ignoreOnceItems.length).toBe(1);
     });
     it('Spell checker dialog Cancel button test', () => {
+console.log('Spell checker dialog Cancel button test');
         editor.openBlank();
         editor.editor.insertTextInternal('eacock', false);
         let jsonData: any = { "HasSpellingError": true, 'Suggestions': ['peacock', 'petcock'] };
@@ -65,6 +69,7 @@ describe('Spell Checker dialog API', () => {
         editor.spellCheckDialogModule.onCancelButtonClick();
     });
     it('Spell checker dialog Ignore All button test', () => {
+console.log('Spell checker dialog Ignore All button test');
         editor.openBlank();
         editor.editor.insertTextInternal('eacock', false);
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
@@ -77,6 +82,7 @@ describe('Spell Checker dialog API', () => {
         expect(editor.spellChecker.errorWordCollection.containsKey(element.text)).toBe(false);
     });
     it('Spell checker dialog change button test', () => {
+console.log('Spell checker dialog change button test');
         editor.openBlank();
         editor.editor.insertTextInternal('helo', false);
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
@@ -90,6 +96,7 @@ describe('Spell Checker dialog API', () => {
         expect((lineInfo.line.children[0] as TextElementBox).text).toBe('hello');
     });
     it('Spell checker dialog change All button test', () => {
+console.log('Spell checker dialog change All button test');
         editor.openBlank();
         editor.editor.insertTextInternal('helo', false);
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
@@ -105,6 +112,7 @@ describe('Spell Checker dialog API', () => {
         expect(editor.spellChecker.errorWordCollection.length).toBe(0);
     });
     it('Spell checker dialog change All button test 1', () => {
+console.log('Spell checker dialog change All button test 1');
         editor.openBlank();
         editor.editor.insertTextInternal('helo world', false);
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
@@ -120,6 +128,7 @@ describe('Spell Checker dialog API', () => {
         expect(editor.spellChecker.errorWordCollection.length).toBe(0);
     });
     it('Spell checker dialog Add to Dictionary button test', () => {
+console.log('Spell checker dialog Add to Dictionary button test');
         editor.openBlank();
         editor.serviceUrl= undefined;
         editor.editor.insertTextInternal('eacock', false);
@@ -133,6 +142,7 @@ describe('Spell Checker dialog API', () => {
     });
 
     it('custom header validation', () => {
+console.log('custom header validation');
         editor.openBlank();
         editor.serviceUrl= undefined;
        editor.headers=[{"syncfusion":"true"}];
@@ -140,6 +150,7 @@ describe('Spell Checker dialog API', () => {
         expect(() => { (editor.spellChecker as any).setCustomHeaders(httpRequest) }).toThrowError();
     });
     it('Public API Spell checker dialog validation', () => {
+console.log('Public API Spell checker dialog validation');
         editor.openBlank();
         editor.spellChecker.languageID = 1;
         editor.serviceUrl='';

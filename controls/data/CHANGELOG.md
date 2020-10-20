@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 18.3.42 (2020-10-20)
+
+### DataManager
+
+#### Bug Fixes
+
+- `295081` - Script error throws while set query as null in the Datamanager issue has been fixed.
+
+## 18.3.40 (2020-10-13)
+
+### DataManager
+
+#### Bug Fixes
+
+- `295025` - Provided the separate method for foreign key column sort.
+
 ## 18.1.55 (2020-06-02)
 
 ### DataManager

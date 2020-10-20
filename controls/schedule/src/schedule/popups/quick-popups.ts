@@ -850,6 +850,7 @@ export class QuickPopups {
                 this.morePopup.relateTo = closest(<Element>target, '.' + cls.WORK_CELLS_CLASS) as HTMLElement;
             }
         }
+        this.parent.renderTemplates();
         this.parent.updateEventTemplates();
         let eventProp: PopupOpenEventArgs = { type: 'EventContainer', cancel: false, element: this.morePopup.element };
         if (!isBlazor()) {
@@ -1215,8 +1216,8 @@ export class QuickPopups {
             if (this.parent.quickInfoTemplates.footer) {
                 resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
             }
+            this.parent.resetTemplates();
         }
-        this.parent.resetTemplates();
     }
 
     private quickPopupClose(): void {
