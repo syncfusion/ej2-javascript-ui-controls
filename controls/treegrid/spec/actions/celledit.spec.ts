@@ -877,6 +877,44 @@ describe('checkbox retained after cell edit and cancel', () => {
      destroy(gridObj);
    });
  });
+ 
+ describe('update rows method', () => {
+  let gridObj: TreeGrid;
+  let rows: Element[];
+  let actionComplete: ()=> void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+        editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Cell' },
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+      ]
+      },     
+      done
+    );
+  });
+  it(' update row method with index value', () => {
+    gridObj.updateRow(2,{taskID:3, taskName:"test"});
+    let event: MouseEvent = new MouseEvent('dblclick', {
+      'view': window,
+      'bubbles': true,
+      'cancelable': true
+    });
+    gridObj.getCellFromIndex(2, 3).dispatchEvent(event);
+    (gridObj.editModule as any).doubleClickTarget.getElementsByTagName("input")[0].value = "20";
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    expect(gridObj.getCurrentViewRecords()[2]['duration'] === 20 ).toBeTruthy();
+   });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
 
   it('memory leak', () => {
     profile.sample();

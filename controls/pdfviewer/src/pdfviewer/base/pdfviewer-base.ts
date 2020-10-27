@@ -534,6 +534,22 @@ export class PdfViewerBase {
             if (this.pdfViewer.toolbarModule) {
                 this.navigationPane.initializeNavigationPane();
                 toolbarDiv = this.pdfViewer.toolbarModule.intializeToolbar(controlWidth);
+            } else {
+                if (isBlazor()) {
+                    this.navigationPane.initializeNavigationPane();
+                    toolbarDiv = this.pdfViewer.element.querySelector('.e-pv-toolbar');
+                    if (!this.pdfViewer.enableToolbar) {
+                        this.toolbarHeight = 0;
+                        toolbarDiv.style.display = 'none';
+                    }
+                    if (!this.pdfViewer.enableNavigationToolbar) {
+                        this.navigationPane.sideBarToolbar.style.display = 'none';
+                        this.navigationPane.sideBarToolbarSplitter.style.display = 'none';
+                        if (this.navigationPane.isBookmarkOpen || this.navigationPane.isThumbnailOpen) {
+                            this.navigationPane.updateViewerContainerOnClose();
+                        }
+                    }
+                }
             }
             if (toolbarDiv) {
                 // tslint:disable-next-line:max-line-length
@@ -4525,7 +4541,7 @@ public mouseDownHandler(event: MouseEvent): void {
             let pageHeight: number = 0;
             if (next < this.pageCount) {
                 pageHeight = this.getPageHeight(next);
-                if (this.renderedPagesList.indexOf(next) === -1 && !this.getMagnified()) {
+                if (this.renderedPagesList.indexOf(next) === -1 && !this.getMagnified() && pageHeight) {
                     this.createRequestForRender(next);
                     this.renderCountIncrement();
                     while (this.viewerContainer.clientHeight > pageHeight) {

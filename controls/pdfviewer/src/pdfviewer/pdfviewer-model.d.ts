@@ -2042,6 +2042,12 @@ export interface PdfViewerModel extends ComponentModel{
     enableBookmark?: boolean;
 
     /**
+     * Enables or disables the bookmark styles in the PDF viewer
+     * @default false
+     */
+    enableBookmarkStyles?: boolean;
+
+    /**
      * Enables or disables the hyperlinks in PDF document.
      * @default true
      */

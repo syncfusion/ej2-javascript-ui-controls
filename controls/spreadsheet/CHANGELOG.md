@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 18.3.44 (2020-10-27)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#I298442` - File type added for `file` property in `OpenOptions`.
+
+#### New Features
+
+- **Dynamic data binding:** Provides the option to change datasource dynamically by changing `dataSource` property of the range.
+
 ## 18.3.42 (2020-10-20)
 
 ### Spreadsheet

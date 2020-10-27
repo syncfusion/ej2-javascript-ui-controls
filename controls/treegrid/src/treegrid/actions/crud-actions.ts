@@ -170,6 +170,11 @@ export function removeChildRecords(childRecords: ITreeData[], modifiedData: obje
                 for (let i: number = 0; i < keys.length; i++) {
                     if (childRecords[j].hasOwnProperty(keys[i]) && (control.editSettings.mode !== 'Cell' || keys[i] === columnName)) {
                         editedData[keys[i]] = editedData.taskData[keys[i]] = childRecords[j][keys[i]] = modifiedData[keys[i]];
+                        if (control.editSettings.mode === 'Cell') {
+                            let editModule: string = 'editModule';
+                            control.grid.editModule[editModule].editRowIndex = (<ITreeData>modifiedData).index;
+                            control.grid.editModule[editModule].updateCurrentViewData(modifiedData);
+                        }
                     }
                 }
                 break;

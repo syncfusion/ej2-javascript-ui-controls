@@ -2381,6 +2381,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableBookmark: boolean;
 
     /**
+     * Enables or disables the bookmark styles in the PDF viewer
+     * @default false
+     */
+    @Property(false)
+    public enableBookmarkStyles: boolean;
+
+    /**
      * Enables or disables the hyperlinks in PDF document.
      * @default true
      */
@@ -3453,18 +3460,20 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         for (let prop of properties) {
             switch (prop) {
                 case 'locale':
-                    // tslint:disable-next-line
-                    let data: any = window.sessionStorage.getItem(this.viewerBase.documentId + '_formfields');
-                    this.viewerBase.formfieldvalue = JSON.parse(data);
-                    // tslint:disable-next-line
-                    let annotCollection: any[] = this.annotationCollection;
-                    let filename: string = this.viewerBase.jsonDocumentId;
-                    super.refresh();
-                    this.load(this.viewerBase.loadedData, null);
-                    this.addAnnotation(annotCollection);
-                    this.viewerBase.loadedData = null;
-                    this.downloadFileName = filename;
-                    this.fileName = filename;
+                    if (this.viewerBase.loadedData) {
+                         // tslint:disable-next-line
+                        let data: any = window.sessionStorage.getItem(this.viewerBase.documentId + '_formfields');
+                        this.viewerBase.formfieldvalue = JSON.parse(data);
+                        // tslint:disable-next-line
+                        let annotCollection: any[] = this.annotationCollection;
+                        let filename: string = this.viewerBase.jsonDocumentId;
+                        super.refresh();
+                        this.load(this.viewerBase.loadedData, null);
+                        this.addAnnotation(annotCollection);
+                        this.viewerBase.loadedData = null;
+                        this.downloadFileName = filename;
+                        this.fileName = filename;
+                    }
                     break;
                 case 'enableToolbar':
                     this.notify('', { module: 'toolbar', enable: this.enableToolbar });
@@ -3518,7 +3527,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     this.renderCustomerStamp(this.customStamp[0]);
                     break;
                 case 'customStampSettings':
-                    this.renderCustomerStamp(this.customStampSettings.customStamps[0]);
+                    if (newProp.customStampSettings.customStamps) {
+                        this.renderCustomerStamp(this.customStampSettings.customStamps[0]);
+                    }
                     break;
                 case 'enableFormFields':
                     if (this.enableFormFields && this.formFieldsModule) {
@@ -3763,7 +3774,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Import Failed': 'Invalid JSON file type or file name; please select a valid JSON file',
         'File not found': 'Imported JSON file is not found in the desired location',
         'Export Failed': 'Export annotations action has failed; please ensure annotations are added properly',
-        'of': 'of '
+        'of': 'of ',
+        'Dynamic': 'Dynamic',
+        'Standard Business': 'Standard Business',
+        'Sign Here': 'Sign Here',
+        'Custom Stamp': 'Custom Stamp'
     };
 
     /**
@@ -3847,7 +3862,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public unload(): void {
         this.viewerBase.clear(true);
         this.pageCount = 0;
-        this.toolbarModule.resetToolbar();
+        if (!isBlazor()) {
+            this.toolbarModule.resetToolbar();
+        } else {
+            this._dotnetInstance.invokeMethodAsync('ResetToolbar');
+        }
         this.magnificationModule.zoomTo(100);
     }
 
@@ -4171,8 +4190,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line
-    public fireSignatureAdd(pageNumber: number, index: string, type: AnnotationType, bounds: any, opacity: number, strokeColor: string, thickness: number): void {
-        let eventArgs: AddSignatureEventArgs = { pageIndex: pageNumber, id: index, type: type, bounds: bounds, opacity: opacity, strokeColor: strokeColor, thickness: thickness };
+    public fireSignatureAdd(pageNumber: number, index: string, type: any, bounds: any, opacity: number, strokeColor?: string, thickness?: number): void {
+        let eventArgs: AddSignatureEventArgs = { pageIndex: pageNumber, id: index, type: type, bounds: bounds, opacity: opacity };
+        if (thickness) {
+            eventArgs.thickness = thickness;
+        }
+        if (strokeColor) {
+            eventArgs.strokeColor = strokeColor;
+        }
         this.trigger('addSignature', eventArgs);
     }
 

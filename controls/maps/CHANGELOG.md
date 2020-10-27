@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 18.3.44 (2020-10-27)
+
+### Maps
+
+#### Bug Fixes
+
+- `#298697` - The font style of legend and data labels will be now set properly.
+
 ## 18.3.42 (2020-10-20)
 
 ### Maps

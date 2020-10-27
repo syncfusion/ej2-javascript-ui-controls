@@ -10185,6 +10185,9 @@ var EventWindow = /** @__PURE__ @class */ (function () {
     EventWindow.prototype.resetEditorTemplate = function () {
         if (this.parent.editorTemplate) {
             resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
+            if (!isBlazor()) {
+                this.parent.resetTemplates(['editorTemplate']);
+            }
         }
     };
     EventWindow.prototype.refresh = function () {
@@ -14848,7 +14851,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      */
     Schedule.prototype.resetTemplates = function (templates) {
         // tslint:disable-next-line:no-any
-        if (this.isReact) {
+        if (this.isReact || (templates && templates.length > 0)) {
             this.clearTemplate(templates);
         }
     };
@@ -17370,6 +17373,9 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
         if (this.resizeEdges.left) {
             if (resizeValidation) {
                 var leftStyles = this.getLeftRightStyles(e, true);
+                if (parseInt(leftStyles.width, 10) < 1) {
+                    return;
+                }
                 for (var _i = 0, _a = this.actionObj.cloneElement; _i < _a.length; _i++) {
                     var cloneElement = _a[_i];
                     setStyleAttribute(cloneElement, leftStyles);
@@ -17381,6 +17387,9 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
         if (this.resizeEdges.right) {
             if (resizeValidation) {
                 var rightStyles = this.getLeftRightStyles(e, false);
+                if (parseInt(rightStyles.width, 10) < 1) {
+                    return;
+                }
                 for (var _b = 0, _c = this.actionObj.cloneElement; _b < _c.length; _b++) {
                     var cloneElement = _c[_b];
                     setStyleAttribute(cloneElement, rightStyles);
@@ -17633,15 +17642,12 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
         var offsetWidth = targetWidth + (Math.ceil(pageWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth);
         var left = (this.parent.enableRtl) ? parseInt(this.actionObj.element.style.right, 10) : this.actionObj.clone.offsetLeft;
         if (isTimeViews) {
-            offsetWidth = targetWidth + (Math.ceil(pageWidth / slotInterval) * slotInterval);
-            offsetWidth = (Math.ceil((left + offsetWidth) / slotInterval) * slotInterval) - left;
+            offsetWidth = targetWidth + (isLeft ? (Math.ceil(pageWidth / slotInterval) * slotInterval) :
+                (Math.floor(pageWidth / slotInterval) * slotInterval));
             this.actionObj.event[this.parent.eventFields.isAllDay] = false;
         }
         var width = !isLeft && ((offsetWidth + this.actionObj.clone.offsetLeft > this.scrollArgs.width)) ?
-            this.actionObj.clone.offsetWidth : (offsetWidth < this.actionObj.cellWidth) ? this.actionObj.cellWidth : offsetWidth;
-        if (!isLeft && (offsetWidth === this.actionObj.cellWidth && Math.ceil(pageWidth / slotInterval) * slotInterval === 0)) {
-            width = -Math.floor(pageWidth / slotInterval) * slotInterval;
-        }
+            this.actionObj.clone.offsetWidth : (offsetWidth < this.actionObj.cellWidth) ? offsetWidth : offsetWidth;
         if (this.parent.enableRtl) {
             var rightValue = isTimelineView ? parseInt(this.actionObj.element.style.right, 10) :
                 -(offsetWidth - this.actionObj.cellWidth);
@@ -23283,6 +23289,24 @@ var TimelineYear = /** @__PURE__ @class */ (function (_super) {
         var templateId = scheduleId + viewName + 'cellTemplate';
         var cellTemplate = [].slice.call(this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId, false));
         append(cellTemplate, td);
+    };
+    TimelineYear.prototype.scrollToDate = function (scrollDate) {
+        if (this.parent.activeViewOptions.group.resources.length === 0) {
+            var date = +new Date(resetTime(scrollDate));
+            var element = this.element.querySelector('[data-date="' + date + '"]');
+            if (element) {
+                this.getScrollableElement().scrollLeft = element.offsetLeft;
+                this.getScrollableElement().scrollTop = element.offsetTop;
+            }
+        }
+    };
+    TimelineYear.prototype.getScrollableElement = function () {
+        if (this.parent.isAdaptive && !this.isTimelineView() && !this.parent.isServerRenderer()) {
+            return this.element.querySelector('.' + SCROLL_CONTAINER_CLASS);
+        }
+        else {
+            return this.getContentAreaElement();
+        }
     };
     return TimelineYear;
 }(Year));

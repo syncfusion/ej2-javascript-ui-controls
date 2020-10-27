@@ -727,6 +727,12 @@
         pointer-events: none;
         }
       }
+
+    &.e-interaction.e-fullrow-wrap {
+      .e-text-content {
+        pointer-events: auto;
+      }
+    }
   }
   // sass-lint:enable no-vendor-prefixes
 }

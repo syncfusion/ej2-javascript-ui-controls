@@ -1304,20 +1304,16 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private wireEvents(): void {
         EventHandler.add(this.element, 'keydown', this.keyActionHandler, this);
         EventHandler.add(this.element, 'click', this.clickHandler, this);
-        if (!this.enableVirtualization) {
-            EventHandler.add(this.element, 'mouseover', this.hoverHandler, this);
-            EventHandler.add(this.element, 'mouseout', this.leaveHandler, this);
-        }
+        EventHandler.add(this.element, 'mouseover', this.hoverHandler, this);
+        EventHandler.add(this.element, 'mouseout', this.leaveHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusout, this);
         this.touchModule = new Touch(this.element, { swipe: this.swipeActionHandler.bind(this) });
     }
 
     private unWireEvents(): void {
         EventHandler.remove(this.element, 'click', this.clickHandler);
-        if (!this.enableVirtualization) {
-            EventHandler.remove(this.element, 'mouseover', this.hoverHandler);
-            EventHandler.remove(this.element, 'mouseout', this.leaveHandler);
-        }
+        EventHandler.remove(this.element, 'mouseover', this.hoverHandler);
+        EventHandler.remove(this.element, 'mouseout', this.leaveHandler);
         EventHandler.remove(this.element, 'mouseover', this.hoverHandler);
         EventHandler.remove(this.element, 'mouseout', this.leaveHandler);
         this.touchModule.destroy();

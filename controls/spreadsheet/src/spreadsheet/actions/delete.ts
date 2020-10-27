@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { beginAction, completeAction, skipHiddenIdx, refreshSheetTabs, refreshImagePosition } from '../common/index';
-import { deleteAction, InsertDeleteEventArgs } from '../../workbook/common/index';
+import { deleteAction, InsertDeleteEventArgs, dataChanged } from '../../workbook/common/index';
 import { SheetModel, CellModel, getCell } from '../../workbook/index';
 
 /**
@@ -59,6 +59,9 @@ export class Delete {
         }
         this.refreshImgElement(args.deletedModel.length, this.parent.activeSheetIndex, args.modelType, args.startIndex);
         if (isAction) { this.parent.notify(completeAction, { eventArgs: args, action: 'delete' }); }
+        if (args.modelType === 'Row') {
+            this.parent.notify(dataChanged, args);
+        }
     }
 
     private refreshImgElement(count: number, sheetIdx: number, modelType: string, index: number): void {

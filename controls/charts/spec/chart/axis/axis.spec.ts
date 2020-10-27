@@ -6,6 +6,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Chart } from '../../../src/chart/chart';
 import { LineSeries } from '../../../src/chart/series/line-series';
 import { ColumnSeries } from '../../../src/chart/series/column-series';
+import { AreaSeries } from '../../../src/chart/series/area-series';
 import { Category } from '../../../src/chart/axis/category-axis';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { MouseEvents } from '../base/events.spec';
@@ -15,7 +16,7 @@ import { DateTime, Zoom, ScrollBar } from '../../../src/index' ;
 import { Logarithmic } from '../../../src/index';
 import { ILoadedEventArgs, IAxisLabelRenderEventArgs, IAxisLabelClickEventArgs } from '../../../src/chart/model/chart-interface';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-Chart.Inject(LineSeries, Category, ColumnSeries, DateTime, Logarithmic, Zoom, ScrollBar);
+Chart.Inject(LineSeries, Category, ColumnSeries, DateTime, Logarithmic, Zoom, ScrollBar, AreaSeries);
 
 
 describe('Chart Control', () =>{
@@ -1652,6 +1653,210 @@ describe('Chart Control', () =>{
                 expect(text.innerHTML === '40%').toBe(true);
                 done();
             }
+            chartObj.refresh();
+        });
+    });
+
+    describe('Checking axis minor grid line while zooming', () => {
+        let chartContainer: HTMLElement;
+        let numericSeriesData: Object[] = [];
+        let logSeriesData: Object[] = [];
+        let logSeriesData2: Object[] = [];
+        let dateTimeData: Object[] = [];
+        let point: Object;
+        let minorGridElement: Element;
+        let i: number;
+        for (i = 0; i < 101; i++) {
+            point = { x: i, y: getRndInteger(1, 100) };
+            numericSeriesData.push(point);
+        }
+        function getRndInteger(min: number, max: number) {
+            return Math.floor(Math.random() * (max - min)) + min;
+        }
+        let value: number = 80;
+        for (i = 1; i < 500; i++) {
+            if (Math.random() > .5) {
+                value += Math.random();
+            } else {
+                value -= Math.random();
+            }
+            point = { x: new Date(1990, i + 2, i), y: value.toFixed(1) };
+            dateTimeData.push(point);
+        }
+        for (i = 0; i < 10; i++) {
+            point = { x: Math.pow(10, i), y: getRndInteger(1, 100) };
+            logSeriesData.push(point);
+        }
+        for (i = 0; i < 10; i++) {
+            point = { x: Math.pow(10, i) };
+            logSeriesData2.push(point);
+        }
+        let chartObj: Chart;
+        chartContainer = createElement('div', { id: 'container' });
+        chartContainer.style.width = '1000px';
+        chartContainer.style.height = '400px';
+        beforeAll(() => {
+            document.body.appendChild(chartContainer);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        majorGridLines: { dashArray: "5,5", width: 0.75, color: "#606060" },
+                        minorGridLines: { dashArray: "5,5", width: 0.75, color: "blue" },
+                        minorTicksPerInterval: 2,
+                        enableAutoIntervalOnZooming: false,
+                        interval: 5,
+                        zoomFactor: 0.8,
+                        zoomPosition: 0.1236508994003997
+
+                    },
+                    primaryYAxis: {},
+                    series: [
+                        {
+                            type: "Area",
+                            dataSource: numericSeriesData,
+                            name: "Product X",
+                            xName: "x",
+                            yName: "y",
+                            border: { width: 0.5, color: "#00bdae" },
+                            animation: { enable: false },
+                            opacity: 0.2
+                        }
+                    ],
+                    zoomSettings: {
+                        enableMouseWheelZooming: true,
+                        enablePinchZooming: true,
+                        enableSelectionZooming: true,
+                        mode: "X",
+                        enableScrollbar: true
+                    },
+                    title: 'Sales History of Product X',
+                    legendSettings: { visible: false },
+ 
+                }, '#container');
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            chartContainer.remove();
+        });
+        it('X axis with double', (done: Function) => {
+            chartObj.loaded = () => {
+                minorGridElement = document.getElementById('container_MinorGridLine_0_-1');
+                expect(minorGridElement !== null).toBe(true);
+                minorGridElement = document.getElementById('container_MinorTickLine_0_-1');
+                expect(minorGridElement !== null).toBe(true);
+                done();
+            }
+            chartObj.refresh();
+        });
+        it('X axis with date time', (done: Function) => {
+            chartObj.loaded = () => {
+                minorGridElement = document.getElementById('container_MinorGridLine_0_-1');
+                expect(minorGridElement !== null).toBe(true);
+                minorGridElement = document.getElementById('container_MinorTickLine_0_-1');
+                expect(minorGridElement !== null).toBe(true);
+                done();
+            }
+            chartObj.primaryXAxis = {
+                title: "Years",
+                valueType: "DateTime",
+                skeleton: "yMMM",
+                majorGridLines: { dashArray: "5,5", width: 0.75, color: "#606060" },
+                minorGridLines: { dashArray: "5,5", width: 0.75, color: "blue" },
+                minorTicksPerInterval: 2,
+                enableAutoIntervalOnZooming: false,
+                zoomFactor: 0.8,
+                zoomPosition: 0.057828114590273136
+            };
+            chartObj.series[0].dataSource = dateTimeData;
+            chartObj.refresh();
+        });
+        it('X axis with logarithmic', (done: Function) => {
+            chartObj.loaded = () => {
+                minorGridElement = document.getElementById('container_MinorGridLine_0_-1');
+                expect(minorGridElement !== null).toBe(true);
+                minorGridElement = document.getElementById('container_MinorTickLine_0_-1');
+                expect(minorGridElement !== null).toBe(true);
+                done();
+            }
+            chartObj.primaryXAxis = {
+                valueType: 'Logarithmic',
+                majorGridLines: { dashArray: "5,5", width: 0.75, color: "#606060" },
+                minorGridLines: { dashArray: "5,5", width: 0.75, color: "blue" },
+                minorTicksPerInterval: 8,
+                enableAutoIntervalOnZooming: false,
+                zoomFactor: 0.8,
+                zoomPosition: 0.15296469020652895,
+                interval: null
+            };
+            chartObj.series[0].dataSource = logSeriesData;
+            chartObj.refresh();
+        });
+        it('Y axis with logarithmic', (done: Function) => {
+            chartObj.loaded = () => {
+                minorGridElement = document.getElementById('container_MinorGridLine_1_-1');
+                expect(minorGridElement !== null).toBe(true);
+                done();
+            }
+            chartObj.primaryXAxis = {
+                valueType: 'Logarithmic',
+                majorGridLines: { dashArray: "", width: 1, color: null },
+                minorGridLines: { dashArray: "", width: 1, color: null },
+                minorTicksPerInterval: 0,
+                enableAutoIntervalOnZooming: true,
+                zoomFactor: 1,
+                zoomPosition: 0,
+                interval: null
+            };
+            chartObj.primaryYAxis = {
+                valueType: 'Logarithmic',
+                title: "Profit ($)",
+                majorGridLines: { dashArray: "5,5", width: 0.75, color: "#606060" },
+                minorGridLines: { dashArray: "5,5", width: 0.75, color: "blue" },
+                majorTickLines: { width: 0 },
+                minorTickLines: { width: 0 },
+                lineStyle: { width: 0 },
+                minorTicksPerInterval: 5,
+                enableAutoIntervalOnZooming: false,
+                zoomFactor: 0.8,
+                zoomPosition: 0.07943485086342228
+            }
+            chartObj.series[0].dataSource = logSeriesData2;
+            chartObj.series[0].yName = "x";
+            chartObj.zoomSettings.mode = "Y";
+            chartObj.refresh();
+        });
+        it('Y axis with double', (done: Function) => {
+            chartObj.loaded = () => {
+                minorGridElement = document.getElementById('container_MinorGridLine_1_-1');
+                expect(minorGridElement !== null).toBe(true);
+                done();
+            }
+            chartObj.primaryXAxis = {
+                valueType: 'Double',
+                majorGridLines: { dashArray: "", width: 1, color: null },
+                minorGridLines: { dashArray: "", width: 1, color: null },
+                minorTicksPerInterval: 0,
+                enableAutoIntervalOnZooming: true,
+                zoomFactor: 1,
+                zoomPosition: 0,
+                interval: null
+            };
+            chartObj.primaryYAxis = {
+                valueType: 'Double',
+                title: "Profit ($)",
+                majorGridLines: { dashArray: "5,5", width: 0.75, color: "#606060" },
+                minorGridLines: { dashArray: "5,5", width: 0.75, color: "blue" },
+                majorTickLines: { width: 0 },
+                minorTickLines: { width: 0 },
+                lineStyle: { width: 0 },
+                minorTicksPerInterval: 2,
+                enableAutoIntervalOnZooming: false,
+                zoomFactor: 0.8,
+                zoomPosition: 0.06813186813186813
+            }
+            chartObj.series[0].dataSource = numericSeriesData;
+            chartObj.series[0].yName = "y";
+            chartObj.zoomSettings.mode = "Y";
             chartObj.refresh();
         });
     });

@@ -1210,7 +1210,7 @@ export class Connector extends NodeBase implements IElement {
             }
         }
     }
-    /* tslint:enable */
+     /* tslint:enable */
     /** @private */
     // tslint:disable-next-line:no-any
     public init(diagram: any): Canvas {
@@ -1597,10 +1597,12 @@ export class Connector extends NodeBase implements IElement {
         textElement.relativeMode = 'Point';
     }
     /** @private */
-    public getConnectorPoints(type: Segments, points?: PointModel[], layoutOrientation?: LayoutOrientation): PointModel[] {
+    public getConnectorPoints(
+        type: Segments, points?: PointModel[], layoutOrientation?: LayoutOrientation,
+        lineDistribution?: boolean): PointModel[] {
         let width: number = Math.abs(this.sourcePoint.x - this.targetPoint.x);
         let height: number = Math.abs(this.sourcePoint.y - this.targetPoint.y);
-        points = findConnectorPoints(this, layoutOrientation);
+        points = findConnectorPoints(this, layoutOrientation, lineDistribution);
         let newPoints: PointModel[] = points.slice(0);
         if (newPoints && newPoints.length > 0) {
             this.sourcePoint = newPoints[0];

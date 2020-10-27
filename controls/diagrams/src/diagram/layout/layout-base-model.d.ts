@@ -1,4 +1,4 @@
-import { PointModel } from '../primitives/point-model';import { Rect } from '../primitives/rect';import { MarginModel } from '../core/appearance-model';import { Margin } from '../core/appearance';import { HorizontalAlignment, VerticalAlignment, ConnectionDirection, } from '../enum/enum';import { LayoutOrientation, ConnectorSegments, LayoutType, SubTreeOrientation, SubTreeAlignments, Segments } from '../enum/enum';import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { OrthogonalSegmentModel, BezierSegmentModel, StraightSegmentModel } from '../objects/connector-model';
+import { PointModel } from '../primitives/point-model';import { Rect } from '../primitives/rect';import { MarginModel } from '../core/appearance-model';import { Margin } from '../core/appearance';import { HorizontalAlignment, VerticalAlignment, ConnectionDirection, } from '../enum/enum';import { LayoutOrientation, ConnectorSegments, LayoutType, SubTreeOrientation, SubTreeAlignments, Segments } from '../enum/enum';import { ConnectionPointOrigin, ChildArrangement } from '../enum/enum';import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { OrthogonalSegmentModel, BezierSegmentModel, StraightSegmentModel } from '../objects/connector-model';
 import {TreeInfo} from "./layout-base";
 
 /**
@@ -17,6 +17,18 @@ export interface LayoutModel {
      * @default 30
      */
     horizontalSpacing?: number;
+
+    /**
+     * connect the node's without overlapping in automatic layout
+     * @default 'SamePoint'
+     */
+    connectionPointOrigin?: ConnectionPointOrigin;
+
+    /**
+     * connect the node's without overlapping in automatic layout
+     * @default 'NonLinear'
+     */
+    arrangement?: ChildArrangement;
 
     /**
      * Sets the space that has to be Vertically left between the nodes

@@ -39,6 +39,7 @@ var INPUTGROUP = 'e-input-group';
 var TREEINPUT = 'e-tree-input';
 var EDITING = 'e-editing';
 var RTL = 'e-rtl';
+var INTERACTION = 'e-interaction';
 var DRAGITEM = 'e-drag-item';
 var DROPPABLE = 'e-droppable';
 var DRAGGING = 'e-dragging';
@@ -357,6 +358,7 @@ var TreeView = /** @class */ (function (_super) {
     };
     TreeView.prototype.templateComplier = function (template) {
         if (template) {
+            this.element.classList.add(INTERACTION);
             try {
                 if (document.querySelectorAll(template).length) {
                     return sf.base.compile(document.querySelector(template).innerHTML.trim());
@@ -366,6 +368,7 @@ var TreeView = /** @class */ (function (_super) {
                 return sf.base.compile(template);
             }
         }
+        this.element.classList.remove(INTERACTION);
         return undefined;
     };
     TreeView.prototype.setDataBinding = function (changeDataSource) {
@@ -3364,6 +3367,7 @@ var TreeView = /** @class */ (function (_super) {
         var node = (drop === true) ? draggedNode : dropLi;
         var index = node ? sf.base.closest(node, '.e-list-parent') : null;
         var i = 0;
+        var position = null;
         dragParent = (obj.dragLi && dragParent === null) ? sf.base.closest(dragLiParent, '.' + ROOT) : dragParent;
         dragParent = (drop === true) ? this.dragParent : dragParent;
         if (cloneEle) {
@@ -3389,6 +3393,7 @@ var TreeView = /** @class */ (function (_super) {
                 }
             }
             indexValue = (dropTar !== 0) ? --indexValue : indexValue;
+            position = (iconClass == "e-drop-in") ? "Inside" : ((event.offsetY < 7) ? "Before" : "After");
         }
         if (dropTarget) {
             if (newParent.length === 0) {
@@ -3431,6 +3436,7 @@ var TreeView = /** @class */ (function (_super) {
             dropTarget: targetParent,
             dropIndicator: iconClass,
             target: target,
+            position: position,
         };
     };
     TreeView.prototype.addFullRow = function (toAdd) {

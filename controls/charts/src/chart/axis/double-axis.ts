@@ -25,7 +25,6 @@ export class Double {
     private interval: number;
     private paddingInterval: number;
     private isColumn: number = 0;
-
     /**
      * Constructor for the dateTime module.
      * @private
@@ -198,7 +197,6 @@ export class Double {
         if (!setRange(axis)) {
             let interval: number = axis.actualRange.interval;
             let padding: string = axis.getRangePadding(this.chart);
-
             if (padding === 'Additional' || padding === 'Round') {
                 this.findAdditional(axis, start, end, interval);
             } else if (padding === 'Normal') {
@@ -281,7 +279,7 @@ export class Double {
         if (this.chart.chartAreaType === 'Cartesian') {
             let isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
             if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-                axis.calculateVisibleRange(this.chart);
+                axis.calculateVisibleRangeOnZooming(this.chart);
                 axis.calculateAxisRange(size, this.chart);
                 axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
                     this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)

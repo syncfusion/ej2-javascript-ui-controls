@@ -486,6 +486,10 @@ function renderTextElement(option, style, color, parent, isMinus = false) {
     let height;
     let htmlObject = renderer.createText(renderOptions, text);
     htmlObject.style['user-select'] = 'none';
+    htmlObject.style['font-family'] = style.fontFamily;
+    htmlObject.style['font-size'] = style.size;
+    htmlObject.style['font-weight'] = style.fontWeight;
+    htmlObject.style['font-color'] = style.color;
     htmlObject.style['-moz-user-select'] = 'none';
     htmlObject.style['-webkit-touch-callout'] = 'none';
     htmlObject.style['-webkit-user-select'] = 'none';
@@ -4713,7 +4717,6 @@ class LayerPanel {
                     }
                     else if (layer.key && layer.key.length > 1) {
                         let proxy = this;
-                        let markerGroupElement = document.getElementById(this.mapObject.element.id + '_Markers_Group');
                         let bing = new BingMap(this.mapObject);
                         let bingType = layer.bingMapType === 'AerialWithLabel' ? 'AerialWithLabelsOnDemand' : layer.bingMapType;
                         let url = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + bingType;
@@ -4726,6 +4729,7 @@ class LayerPanel {
                             let imageUrl = resource['imageUrl'];
                             let subDomains = resource['imageUrlSubdomains'];
                             let maxZoom = resource['zoomMax'];
+                            let markerGroupElement = document.getElementById(this.mapObject.element.id + '_Markers_Group');
                             if (imageUrl !== null && imageUrl !== undefined && imageUrl !== bing.imageUrl) {
                                 bing.imageUrl = imageUrl;
                             }
@@ -4845,6 +4849,9 @@ class LayerPanel {
                 let getShapeColor$$1;
                 let fill = (shapeSettings.autofill) ? colors[i % colors.length] : shapeSettings.fill;
                 let opacity;
+                if (this.mapObject.isBlazor) {
+                    k = checkShapeDataFields(this.currentLayer.dataSource, currentShapeData['property'], this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath, this.currentLayer);
+                }
                 if (shapeSettings.colorValuePath !== null && !isNullOrUndefined(currentShapeData['property'])) {
                     k = checkShapeDataFields(this.currentLayer.dataSource, currentShapeData['property'], this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath, this.currentLayer);
                     if (k !== null && shapeSettings.colorMapping.length === 0) {

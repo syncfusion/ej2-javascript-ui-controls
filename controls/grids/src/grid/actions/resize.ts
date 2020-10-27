@@ -652,7 +652,7 @@ export class Resize implements IAction {
                 tr.splice(tr.length / 2, tr.length / 2);
             }
         }
-        for (let i: number = tr.indexOf(rect.parentElement); i < tr.length; i++) {
+        for (let i: number = tr.indexOf(rect.parentElement); i < tr.length && i > -1; i++) {
             height += tr[i].offsetHeight;
         }
         let pos: OffsetPosition = this.calcPos(rect);

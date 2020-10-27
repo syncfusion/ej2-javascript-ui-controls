@@ -234,6 +234,10 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
             extend(collectionObj, { element: [this.toastEle] }, true);
             this.toastCollection.push(collectionObj);
         }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     };
     /**
      * @hidden
@@ -340,6 +344,10 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
             element = (this.newestOnTop ? this.toastContainer.lastElementChild : this.toastContainer.firstElementChild);
         }
         this.destroyToast(element);
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
     };
     Toast.prototype.fetchEle = function (ele, value, prob) {
         value = typeof (value) === 'string' ? this.sanitizeHelper(value) : value;

@@ -1,6 +1,6 @@
+import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createResize, ResizeArgs, removeResize, setMaxWidth } from '../../src/common/resize';
 
-import {createResize, ResizeArgs, removeResize} from '../../src/common/resize';
-import { createElement, addClass, EmitType, isNullOrUndefined } from '@syncfusion/ej2-base'
 
 describe('Resize Plugin', () => {
     let dialog: any;
@@ -98,6 +98,11 @@ describe('Resize Plugin', () => {
         expect(isNullOrUndefined(document.querySelector('.e-west'))).toBe(true);
         expect(isNullOrUndefined(document.querySelector('.e-south'))).toBe(true);
         expect(isNullOrUndefined(document.querySelector('.e-north'))).toBe(true);
+    });
+
+    it('setMaxWidth method test', () => {
+        setMaxWidth(300);
+        expect(!isNullOrUndefined(document.querySelector('.e-south-east'))).toBe(true);
     });
 
     it('Removing resize', () => {

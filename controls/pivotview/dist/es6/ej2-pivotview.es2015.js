@@ -10,7 +10,7 @@ import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 import { Workbook } from '@syncfusion/ej2-excel-export';
 import { PdfBorders, PdfColor, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfPageOrientation, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfVerticalAlignment, PointF, RectangleF } from '@syncfusion/ej2-pdf-export';
-import { AccumulationChart, AccumulationDataLabel, AccumulationLegend, AccumulationTooltip, AreaSeries, BarSeries, BubbleSeries, Category, Chart, ColumnSeries, Crosshair, Export, FunnelSeries, Legend, LineSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiLevelLabel, ParetoSeries, PieSeries, PolarSeries, PyramidSeries, RadarSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries, ScrollBar, Selection as Selection$1, SplineAreaSeries, SplineSeries, StackingAreaSeries, StackingBarSeries, StackingColumnSeries, StepAreaSeries, StepLineSeries, StripLine, Tooltip as Tooltip$1, Zoom } from '@syncfusion/ej2-charts';
+import { AccumulationChart, AccumulationDataLabel, AccumulationLegend, AccumulationTooltip, AreaSeries, BarSeries, BubbleSeries, Category, Chart, ColumnSeries, Crosshair, DataLabel, Export, FunnelSeries, Legend, LineSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiLevelLabel, ParetoSeries, PieSeries, PolarSeries, PyramidSeries, RadarSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries, ScrollBar, Selection as Selection$1, SplineAreaSeries, SplineSeries, StackingAreaSeries, StackingBarSeries, StackingColumnSeries, StepAreaSeries, StepLineSeries, StripLine, Tooltip as Tooltip$1, Zoom } from '@syncfusion/ej2-charts';
 
 /**
  * This is a file to perform common utility for OLAP and Relational datasource
@@ -14107,7 +14107,7 @@ class PivotChart {
                 }));
                 this.parent.toolbarModule.isMultiAxisChange = false;
             }
-            Chart.Inject(ColumnSeries, StackingColumnSeries, RangeColumnSeries, BarSeries, StackingBarSeries, ScatterSeries, BubbleSeries, LineSeries, StepLineSeries, SplineSeries, SplineAreaSeries, MultiColoredLineSeries, PolarSeries, RadarSeries, AreaSeries, RangeAreaSeries, StackingAreaSeries, StepAreaSeries, MultiColoredAreaSeries, ParetoSeries, Legend, Tooltip$1, Category, MultiLevelLabel, ScrollBar, Zoom, Export, Crosshair, Selection$1, StripLine);
+            Chart.Inject(ColumnSeries, StackingColumnSeries, RangeColumnSeries, BarSeries, StackingBarSeries, ScatterSeries, BubbleSeries, LineSeries, StepLineSeries, SplineSeries, SplineAreaSeries, MultiColoredLineSeries, PolarSeries, RadarSeries, AreaSeries, RangeAreaSeries, StackingAreaSeries, StepAreaSeries, MultiColoredAreaSeries, ParetoSeries, Legend, Tooltip$1, Category, MultiLevelLabel, ScrollBar, Zoom, Export, Crosshair, Selection$1, StripLine, DataLabel);
             AccumulationChart.Inject(PieSeries, FunnelSeries, PyramidSeries, AccumulationDataLabel, AccumulationLegend, AccumulationTooltip, Export);
             if (this.accumulationType.indexOf(type) > -1) {
                 this.parent.chart = new AccumulationChart({
@@ -23277,10 +23277,11 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         if (firstColWidth !== this.pivotColumns[0].width) {
             this.firstColWidth = this.pivotColumns[0].width;
             this.renderModule.resColWidth = parseInt(this.firstColWidth.toString());
-            let colWidth = this.renderModule.calculateColWidth(this.pivotColumns ? this.pivotColumns.length : 0);
-            for (let i = 1; i < this.pivotColumns.length; i++) {
-                this.pivotColumns[i].width = colWidth;
-            }
+            // TODO: To be considered on compact layout implementation
+            // let colWidth: number = this.renderModule.calculateColWidth(this.pivotColumns ? this.pivotColumns.length : 0);
+            // for (let i: number = 1; i < this.pivotColumns.length; i++) {
+            //     this.pivotColumns[i].width = colWidth;
+            // }
         }
         this.posCount = 0;
         this.setGridColumns(gridcolumns);
@@ -31160,9 +31161,12 @@ class FieldList {
             styles: 'position:' + (this.parent.enableRtl ? 'static' : 'absolute') + ';height:0;width:' + this.parent.element.style.width +
                 ';display:none'
         });
-        this.parent.element.parentElement.setAttribute('id', 'ContainerWrapper');
-        this.parent.element.parentElement.appendChild(this.element);
-        this.parent.element.parentElement.appendChild(this.parent.element);
+        let containerWrapper = createElement('div', {
+            id: this.parent.element.id + 'containerwrapper'
+        });
+        this.parent.element.parentElement.appendChild(containerWrapper);
+        containerWrapper.appendChild(this.element);
+        containerWrapper.appendChild(this.parent.element);
         this.parent.pivotFieldListModule = new PivotFieldList({
             dataSourceSettings: {
                 providerType: this.parent.dataSourceSettings.providerType,

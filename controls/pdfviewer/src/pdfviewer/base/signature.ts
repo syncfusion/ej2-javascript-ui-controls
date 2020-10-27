@@ -200,7 +200,6 @@ export class Signature {
             this.pdfViewerBase.isToolbarSignClicked = false;
         } else {
             this.pdfViewer.formFieldsModule.drawSignature();
-            this.hideSignaturePanel();
         }
     }
     private addSignatureInPage(): void {
@@ -251,7 +250,11 @@ export class Signature {
         this.pdfViewer.formFieldsModule.drawSignature('Image');
         this.hideSignaturePanel();
     }
-    private hideSignaturePanel(): void {
+
+    /**
+     * @private
+     */
+    public hideSignaturePanel(): void {
         if (this.signatureDialog) {
             this.signatureDialog.hide();
         }

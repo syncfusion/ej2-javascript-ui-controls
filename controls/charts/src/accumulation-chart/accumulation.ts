@@ -970,7 +970,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         this.setMouseXY(e);
         this.trigger(chartMouseMove, { target: (<Element>e.target).id, x: this.mouseX, y: this.mouseY });
         if (this.pointMove) {
-            this.triggerPointEvent(pointMove, <Element>e.target);
+            this.triggerPointEvent(pointMove, <Element>e.target, e);
         }
         if (this.accumulationLegendModule && this.legendSettings.visible) {
             this.accumulationLegendModule.move(e);
@@ -1027,18 +1027,19 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
         this.trigger(chartMouseClick, { target: (<Element>e.target).id, x: this.mouseX, y: this.mouseY });
         if (this.pointClick) {
-            this.triggerPointEvent(pointClick, <Element>e.target);
+            this.triggerPointEvent(pointClick, <Element>e.target, e);
         }
         return false;
     }
 
-    private triggerPointEvent(event : string, element : Element) : void {
+    private triggerPointEvent(event : string, element : Element, e?: PointerEvent | TouchEvent) : void {
+        let evt: PointerEvent = e as PointerEvent;
         let indexes : Index = indexFinder(element.id, true);
         if (indexes.series >= 0 && indexes.point >= 0 ) {
            this.trigger(event, { series : this.isBlazor ? {} : this.series[indexes.series],
              point : (<AccumulationSeries>this.series[indexes.series]).points[indexes.point],
              seriesIndex : indexes.series, pointIndex : indexes.point,
-             x: this.mouseX, y: this.mouseY });
+             x: this.mouseX, y: this.mouseY, pageX: evt.pageX, pageY: evt.pageY });
         }
     }
 

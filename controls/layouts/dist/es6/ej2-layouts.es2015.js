@@ -3217,6 +3217,9 @@ let DashboardLayout = class DashboardLayout extends Component {
         if (!cellElement) {
             return;
         }
+        if (this.checkMediaQuery()) {
+            this.calculateCellSize();
+        }
         let heightValue = this.getCellSize()[1];
         let widthValue = this.getCellSize()[0];
         let left = col === 0 ? 0 : (((col) * ((widthValue) + this.cellSpacing[0])));

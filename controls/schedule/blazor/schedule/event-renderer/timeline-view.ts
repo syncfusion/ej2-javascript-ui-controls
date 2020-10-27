@@ -110,7 +110,6 @@ export class TimelineEvent extends MonthEvent {
                             });
                         }
                         if (ele.classList.contains('e-appointment')) {
-                            this.parent.eventBase.applyResourceColor(ele);
                             this.parent.eventBase.wireAppointmentEvents(ele);
                         }
                         if (this.parent.options.rowAutoHeight) {

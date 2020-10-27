@@ -37,7 +37,7 @@ export class VirtualScroll {
         let domCount: number = this.parent.viewport.rowCount + 1 + (this.parent.getThreshold('row') * 2);
         if (sheet.rowCount > domCount || sheet.usedRange.rowIndex > domCount - 1) {
             if (!this.parent.scrollSettings.isFinite && sheet.rowCount <= sheet.usedRange.rowIndex) {
-                sheet.rowCount = sheet.usedRange.rowIndex + 1;
+                this.parent.setSheetPropertyOnMute(sheet, 'rowCount', sheet.usedRange.rowIndex + 1);
             }
             this.setScrollCount(sheet.rowCount, 'row');
             height = getRowsHeight(sheet, 0, this.scroll[this.parent.activeSheetIndex].rowCount - 1);
@@ -116,7 +116,7 @@ export class VirtualScroll {
             rowCount = usedRangeCount;
         }
         if (!this.parent.scrollSettings.isFinite) {
-            sheet[layout + 'Count'] = rowCount;
+            this.parent.setSheetPropertyOnMute(sheet, layout + 'Count', rowCount);
         }
     }
 

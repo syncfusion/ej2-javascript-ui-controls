@@ -23,6 +23,7 @@ export class CellRenderer implements ICellRenderer {
         this.element = this.parent.createElement('td') as HTMLTableCellElement;
         this.th = this.parent.createElement('th', { className: 'e-header-cell' }) as HTMLTableHeaderCellElement;
         this.tableRow = parent.createElement('tr', { className: 'e-row' });
+        this.parent.on('updateView', this.updateView, this);
     }
     public renderColHeader(index: number): Element {
         let headerCell: Element = this.th.cloneNode() as Element;
@@ -298,5 +299,9 @@ export class CellRenderer implements ICellRenderer {
                 manualUpdate: true, first: '' });
             this.parent.notify(renderFilterCell, { td: cell, rowIndex: rowIdx, colIndex: colIdx });
         }
+    }
+
+    private updateView(args: { indexes: number[] }): void {
+        this.refreshRange(args.indexes);
     }
 }

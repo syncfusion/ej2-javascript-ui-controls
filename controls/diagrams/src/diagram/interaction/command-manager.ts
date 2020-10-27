@@ -102,6 +102,7 @@ export class CommandHandler {
     private parentTable: {} = {};
     private blazor: string = 'Blazor';
     private blazorInterop: string = 'sfBlazor';
+    private cloneGroupChildCollection: (NodeModel | ConnectorModel)[] = [];
 
     /**   @private  */
     public get snappingModule(): Snapping {
@@ -1111,6 +1112,7 @@ export class CommandHandler {
                 }
                 let copiedObject: (NodeModel | ConnectorModel)[] = [];
                 if (multiSelect) {
+                    // This bool is also consider to prevent selection change event is triggered after every object clone
                     this.diagram.isServerUpdate = true;
                 }
                 for (let j: number = 0; j < copiedItems.length; j++) {
@@ -1133,8 +1135,12 @@ export class CommandHandler {
 
                     } else {
                         let newNode: NodeModel = this.cloneNode(copy as NodeModel, multiSelect);
-                        copiedObject.push(newNode);
-
+                        if (isBlazor() && newNode && newNode.children && newNode.children.length > 0) {
+                            copiedObject = copiedObject.concat(this.cloneGroupChildCollection);
+                            this.cloneGroupChildCollection = [];
+                        } else {
+                            copiedObject.push(newNode);
+                        }
                         //bpmn text annotations will not be pasted
                         if (newNode) {
                             keyTable[copy.id] = newNode.id;
@@ -1168,6 +1174,8 @@ export class CommandHandler {
                 if (multiSelect) {
                     this.diagram.isServerUpdate = false;
                     this.diagram.UpdateBlazorDiagramModelCollection(copiedItems[0] as Node, copiedObject);
+                    this.getBlazorOldValues();
+                    this.diagram.select(copiedObject, true);
                 }
                 if (groupAction === true) {
                     this.diagram.historyManager.endGroupAction();
@@ -1199,7 +1207,9 @@ export class CommandHandler {
         this.translateObject(cloneObject as Connector);
         (cloneObject as Node).zIndex = -1;
         newConnector = this.diagram.add(cloneObject);
-        this.selectObjects([newConnector], multiSelect);
+        if (!this.diagram.isServerUpdate) {
+            this.selectObjects([newConnector], multiSelect);
+        }
         return newConnector as ConnectorModel;
     }
 
@@ -1257,7 +1267,7 @@ export class CommandHandler {
             ((newNode as Node).shape as BpmnShape).activity.subProcess.processes = process;
             this.cloneSubProcesses(newNode);
         }
-        if (newNode) {
+        if (newNode  && !this.diagram.isServerUpdate) {
             this.selectObjects([newNode], multiSelect);
         }
         return newNode;
@@ -1372,8 +1382,11 @@ export class CommandHandler {
             parentObj.wrapper.measure(new Size());
         }
         this.diagram.blazorActions &= ~BlazorAction.GroupClipboardInProcess;
-        this.diagram.isServerUpdate = false;
-        this.diagram.UpdateBlazorDiagramModelCollection(undefined, objectCollection, undefined, true);
+        if (!this.diagram.isServerUpdate) {
+            this.diagram.UpdateBlazorDiagramModelCollection(undefined, objectCollection, undefined, true);
+        } else {
+            this.cloneGroupChildCollection = objectCollection;
+        }
         return parentObj;
     }
 
@@ -2527,7 +2540,7 @@ export class CommandHandler {
                 window[blazorInterop].updateBlazorProperties(obj, this.diagram);
             }
         } else {
-            if (window && window[blazor]) {
+            if (window && window[blazor] && JSON.stringify(this.deepDiffer.diagramObject) !== '{}') {
                 let obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': this.deepDiffer.diagramObject };
                 window[blazorInterop].updateBlazorProperties(obj, this.diagram);
             }

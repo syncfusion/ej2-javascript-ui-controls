@@ -462,7 +462,7 @@ export class AnnotationToolbar {
 
         if (this.pdfViewer.stampSettings.dynamicStamps && this.pdfViewer.stampSettings.dynamicStamps.length > 0) {
             let dynamicStamps: Object[] = [];
-            items.push({ text: 'Dynamic', items: dynamicStamps });
+            items.push({ text: this.pdfViewer.localeObj.getConstant('Dynamic'), items: dynamicStamps });
             this.pdfViewer.stampSettings.dynamicStamps.forEach((stampItem: DynamicStampItem, index: number) => {
                 let name: string = DynamicStampItem[stampItem];
                 switch (name) {
@@ -476,7 +476,7 @@ export class AnnotationToolbar {
 
         if (this.pdfViewer.stampSettings.signStamps && this.pdfViewer.stampSettings.signStamps.length > 0) {
             let signStamps: Object[] = [];
-            items.push({ text: 'Sign Here', items: signStamps });
+            items.push({ text: this.pdfViewer.localeObj.getConstant('Sign Here'), items: signStamps });
             this.pdfViewer.stampSettings.signStamps.forEach((stampItem: SignStampItem, index: number) => {
                 let name: string = SignStampItem[stampItem];
                 switch (name) {
@@ -492,7 +492,7 @@ export class AnnotationToolbar {
         }
         if (this.pdfViewer.stampSettings.standardBusinessStamps && this.pdfViewer.stampSettings.standardBusinessStamps.length > 0) {
             let standardsBusinessStamps: Object[] = [];
-            items.push({ text: 'Standard Business', items: standardsBusinessStamps });
+            items.push({ text: this.pdfViewer.localeObj.getConstant('Standard Business'), items: standardsBusinessStamps });
             this.pdfViewer.stampSettings.standardBusinessStamps.forEach((stampItem: StandardBusinessStampItem, index: number) => {
                 let name: string = StandardBusinessStampItem[stampItem];
                 switch (name) {
@@ -522,7 +522,7 @@ export class AnnotationToolbar {
             if (items.length > 0) {
                 items.push({ separator: true });
             }
-            items.push({ text: 'Custom Stamp', items: [] });
+            items.push({ text: this.pdfViewer.localeObj.getConstant('Custom Stamp'), items: [] });
         }
         this.stampMenu = [
             {
@@ -541,7 +541,7 @@ export class AnnotationToolbar {
                     // tslint:disable-next-line
                     let currentElements: any = null;
                     for (let i: number = 0; i < args.items.length; i++) {
-                        if (args.items[i].text === 'Custom Stamp') {
+                        if (args.items[i].text === this.pdfViewer.localeObj.getConstant('Custom Stamp')) {
                             args.items[i].items = [];
                             currentElements = args.items[i];
                             break;
@@ -568,13 +568,13 @@ export class AnnotationToolbar {
             },
             beforeClose: (args: Menuopen) => {
                 // tslint:disable-next-line:max-line-length
-                if ((args.parentItem && args.parentItem.text !== 'Custom Stamp' && args.parentItem.text !== 'Standard Business' && args.parentItem.text !== 'Dynamic' && args.parentItem.text !== 'Sign Here') || !args.parentItem) {
+                if ((args.parentItem && args.parentItem.text !== this.pdfViewer.localeObj.getConstant('Custom Stamp') && args.parentItem.text !== 'Standard Business' && args.parentItem.text !== 'Dynamic' && args.parentItem.text !== 'Sign Here') || !args.parentItem) {
                     this.menuItems.showItemOnClick = true;
                 }
             },
             select: (args: MenuEventArgs): void => {
                 this.pdfViewerBase.isAlreadyAdded = false;
-                if (args.item.text === 'Custom Stamp') {
+                if (args.item.text === this.pdfViewer.localeObj.getConstant('Custom Stamp')) {
                     this.updateInteractionTools();
                     this.checkStampAnnotations();
                     this.pdfViewer.annotation.stampAnnotationModule.isStampAddMode = true;
@@ -590,7 +590,7 @@ export class AnnotationToolbar {
                     stampImage.addEventListener('change', this.addStampImage);
                     document.body.removeChild(stampImage);
                     // tslint:disable-next-line:max-line-length
-                } else if (this.stampParentID === 'Custom Stamp' && args.item.text !== '') {
+                } else if (this.stampParentID === this.pdfViewer.localeObj.getConstant('Custom Stamp') && args.item.text !== '') {
                     // tslint:disable-next-line
                     let elements: any = this.pdfViewerBase.customStampCollection;
                     for (let n: number = 0; n < elements.length; n++) {
@@ -606,13 +606,13 @@ export class AnnotationToolbar {
                         }
                     }
                     // tslint:disable-next-line:max-line-length
-                } else if (args.item.text !== 'Dynamic' && args.item.text !== '' && args.item.text !== 'Standard Business' && (this.stampParentID === 'Sign Here' || args.item.text !== 'Sign Here')) {
+                } else if (args.item.text !== this.pdfViewer.localeObj.getConstant('Dynamic') && args.item.text !== '' && args.item.text !== 'Standard Business' && (this.stampParentID === 'Sign Here' || args.item.text !== 'Sign Here')) {
                     this.updateInteractionTools();
                     this.checkStampAnnotations();
                     this.pdfViewer.annotation.stampAnnotationModule.isStampAddMode = true;
                     this.pdfViewer.annotationModule.stampAnnotationModule.isStampAnnotSelected = true;
                     this.pdfViewerBase.stampAdded = true;
-                    if (this.stampParentID === 'Dynamic') {
+                    if (this.stampParentID === this.pdfViewer.localeObj.getConstant('Dynamic')) {
                         this.pdfViewerBase.isDynamicStamp = true;
                         this.pdfViewer.annotationModule.stampAnnotationModule.retrieveDynamicStampAnnotation(args.item.text);
                     } else {
@@ -844,6 +844,7 @@ export class AnnotationToolbar {
         }
         this.strokeColorPicker.refresh();
         this.updateColorInIcon(this.strokeDropDownElement, this.strokeColorPicker.value);
+        this.updateInkannotationItems();
     }
 
     private setCurrentStrokeColorInPicker(): void {
@@ -1210,6 +1211,7 @@ export class AnnotationToolbar {
             }
         }
         this.updateOpacityIndicator();
+        this.updateInkannotationItems();
     }
 
     private thicknessDropDownBeforeOpen(): void {
@@ -1237,6 +1239,7 @@ export class AnnotationToolbar {
             }
         }
         this.updateThicknessIndicator();
+        this.updateInkannotationItems();
     }
 
     // tslint:disable-next-line
@@ -2053,6 +2056,19 @@ export class AnnotationToolbar {
             }
         }
         this.inkAnnotationSelected = false;
+    }
+    private updateInkannotationItems(): void {
+        if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule && this.inkAnnotationSelected) {
+            // tslint:disable-next-line
+            let currentPageNumber: any = this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber;
+            if (currentPageNumber && currentPageNumber !== '') {
+                // tslint:disable-next-line
+                this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(parseInt(currentPageNumber));
+                this.pdfViewerBase.isToolbarInkClicked = true;
+                this.pdfViewer.tool = 'Ink';
+                this.pdfViewer.clearSelection(currentPageNumber);
+            }
+        }
     }
 
     private showSignaturepanel(): void {

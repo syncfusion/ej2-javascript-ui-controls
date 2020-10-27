@@ -234,6 +234,10 @@ var Toast = /** @class */ (function (_super) {
             sf.base.extend(collectionObj, { element: [this.toastEle] }, true);
             this.toastCollection.push(collectionObj);
         }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     };
     /**
      * @hidden
@@ -340,6 +344,10 @@ var Toast = /** @class */ (function (_super) {
             element = (this.newestOnTop ? this.toastContainer.lastElementChild : this.toastContainer.firstElementChild);
         }
         this.destroyToast(element);
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
     };
     Toast.prototype.fetchEle = function (ele, value, prob) {
         value = typeof (value) === 'string' ? this.sanitizeHelper(value) : value;
@@ -846,7 +854,5 @@ exports.Toast = Toast;
 return exports;
 
 });
-sfBlazor.modules["toast"] = "notifications.Toast";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.toast, () => {
+
     sf.notifications = sf.base.extend({}, sf.notifications, sftoast({}));
-});

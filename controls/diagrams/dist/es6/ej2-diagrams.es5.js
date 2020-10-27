@@ -1898,6 +1898,30 @@ var SelectorConstraints;
     SelectorConstraints[SelectorConstraints["All"] = 16382] = "All";
 })(SelectorConstraints || (SelectorConstraints = {}));
 /**
+ * Defines the connection point of the connectors in the layout
+ * SamePoint - Connectors will connect with same point in the layout
+ * DifferentPoint - Connectors will connect with different points in the layout
+ */
+var ConnectionPointOrigin;
+(function (ConnectionPointOrigin) {
+    /** SamePoint - Connectors will connect with same point in the layout */
+    ConnectionPointOrigin["SamePoint"] = "SamePoint";
+    /** DifferentPoint - Connectors will connect with different points in the layout */
+    ConnectionPointOrigin["DifferentPoint"] = "DifferentPoint";
+})(ConnectionPointOrigin || (ConnectionPointOrigin = {}));
+/**
+ * Defines the child nodes need to arranged in linear manner in layout
+ * Linear - Child nodes will be arranged in linear manner
+ * NonLinear - Child nodes will be arranged in not linear manner
+ */
+var ChildArrangement;
+(function (ChildArrangement) {
+    /** Linear - Child nodes will be arranged in linear manner */
+    ChildArrangement["Linear"] = "Linear";
+    /** NonLinear - Child nodes will be arranged in not linear manner */
+    ChildArrangement["NonLinear"] = "NonLinear";
+})(ChildArrangement || (ChildArrangement = {}));
+/**
  * Defines the constraints to enable/disable certain features of connector.
  * * None - Interaction of the connectors cannot be done.
  * * Select - Selects the connector.
@@ -4373,7 +4397,7 @@ var flowShapes = {
  * Connector modules are used to dock and update the connectors
  */
 /** @private */
-function findConnectorPoints(element, layoutOrientation) {
+function findConnectorPoints(element, layoutOrientation, lineDistribution) {
     var intermeditatePoints;
     var sourcePoint;
     if (element.type === 'Straight' || !element.sourceWrapper) {
@@ -4382,7 +4406,7 @@ function findConnectorPoints(element, layoutOrientation) {
     else {
         sourcePoint = element.sourceWrapper.corners.center;
     }
-    intermeditatePoints = terminateConnection(element, sourcePoint, element.targetPoint, layoutOrientation);
+    intermeditatePoints = terminateConnection(element, sourcePoint, element.targetPoint, layoutOrientation, lineDistribution);
     setLineEndPoint(element, intermeditatePoints[0], false);
     setLineEndPoint(element, intermeditatePoints[intermeditatePoints.length - 1], true);
     return intermeditatePoints;
@@ -4429,7 +4453,7 @@ function getDirection$1(source, target, layoutOrientation) {
         target.direction = target.direction ? target.direction : 'Bottom';
     }
 }
-function terminateConnection(element, srcPoint, tarPoint, layoutOrientation) {
+function terminateConnection(element, srcPoint, tarPoint, layoutOrientation, lineDistribution) {
     var sourceNode = element.sourceWrapper;
     var targetNode = element.targetWrapper;
     var sourcePort = element.sourcePortWrapper;
@@ -4507,7 +4531,7 @@ function terminateConnection(element, srcPoint, tarPoint, layoutOrientation) {
                 }
             }
         }
-        return defaultOrthoConnection(element, source.direction, target.direction, source.point, target.point);
+        return defaultOrthoConnection(element, source.direction, target.direction, source.point, target.point, lineDistribution);
     }
     //It will be called only when there is only one end node
     checkLastSegmentasTerminal(element);
@@ -5144,7 +5168,7 @@ function swapBounds(object, bounds, outerBounds) {
     return bounds;
 }
 /* tslint:disable */
-function defaultOrthoConnection(ele, srcDir, tarDir, sPt, tPt) {
+function defaultOrthoConnection(ele, srcDir, tarDir, sPt, tPt, lineDistribution) {
     var sourceEle = ele.sourceWrapper;
     var targetEle = ele.targetWrapper;
     var srcPort = ele.sourcePortWrapper;
@@ -5273,7 +5297,7 @@ function defaultOrthoConnection(ele, srcDir, tarDir, sPt, tPt) {
                 var segment = new OrthogonalSegment(ele, 'segments', { type: 'Orthogonal' }, true);
                 ele.segments.push(segment);
             }
-            ele.segments[0].points = intermeditatePoints = findOrthoSegments(ele, source, target);
+            ele.segments[0].points = intermeditatePoints = findOrthoSegments(ele, source, target, undefined, lineDistribution);
         }
     }
     return intermeditatePoints;
@@ -5414,31 +5438,32 @@ function nodeOrPortToNode(ele, source, target) {
 }
 function checkSourcePointInTarget(ele, source) {
     if (ele.targetWrapper !== undefined && ele.targetPortWrapper === undefined) {
-        if (cornersPointsBeforeRotation(ele.targetWrapper).containsPoint(source.point)) {
+        var padding = 1;
+        if (cornersPointsBeforeRotation(ele.targetWrapper).containsPoint(source.point, padding)) {
             var target = ele.targetWrapper;
             var segment = ele.segments[ele.segments.length - 2];
             var lastPoint = segment.points[segment.points.length - 1];
             var direction = getOppositeDirection(segment.direction);
             if (direction === 'Bottom') {
-                if (lastPoint.y < target.corners.bottom) {
+                if (lastPoint.y < target.corners.bottom + padding) {
                     segment.points[segment.points.length - 1].y = target.corners.bottom + 20;
                     segment.length = Point.distancePoints(segment.points[0], segment.points[segment.points.length - 1]);
                 }
             }
             else if (direction === 'Top') {
-                if (lastPoint.y > target.corners.top) {
+                if (lastPoint.y > target.corners.top - padding) {
                     segment.points[segment.points.length - 1].y = target.corners.top - 20;
                     segment.length = Point.distancePoints(segment.points[0], segment.points[segment.points.length - 1]);
                 }
             }
             else if (direction === 'Left') {
-                if (lastPoint.x > target.corners.left) {
+                if (lastPoint.x > target.corners.left - padding) {
                     segment.points[segment.points.length - 1].x = target.corners.left - 20;
                     segment.length = Point.distancePoints(segment.points[0], segment.points[segment.points.length - 1]);
                 }
             }
             else if (direction === 'Right') {
-                if (lastPoint.x < target.corners.right) {
+                if (lastPoint.x < target.corners.right + padding) {
                     segment.points[segment.points.length - 1].x = target.corners.right + 20;
                     segment.length = Point.distancePoints(segment.points[0], segment.points[segment.points.length - 1]);
                 }
@@ -5569,7 +5594,7 @@ function findDirection(node, source, target, ele) {
     var refPoint = findPoint(nodeCorners, getOppositeDirection(target.direction));
     target.point = getIntersection(ele, node, target.point, refPoint, node === ele.targetWrapper);
 }
-function findOrthoSegments(ele, source, target, extra) {
+function findOrthoSegments(ele, source, target, extra, lineDistribution) {
     var swap = false;
     var intermeditatePoints = [];
     var seg;
@@ -5612,7 +5637,7 @@ function findOrthoSegments(ele, source, target, extra) {
     if (swap) {
         swapPoints(source, target);
     }
-    intermeditatePoints = addOrthoSegments(ele, seg, source, target, extra);
+    intermeditatePoints = addOrthoSegments(ele, seg, source, target, extra, lineDistribution);
     return intermeditatePoints;
 }
 /** @private */
@@ -6370,35 +6395,40 @@ function getTopToTopSegmentCount(element, source, target) {
     }
     return pts;
 }
-function addOrthoSegments(element, seg, source, target, segLength) {
+function addOrthoSegments(element, seg, source, target, segLength, lineDistribution) {
     var src = element.sourceWrapper;
     var tar = element.targetWrapper;
     var tarPort = element.targetPortWrapper;
     var intermeditatePoints;
     var srcCorner = src.corners;
     var tarCorner = tar.corners;
+    var value;
     var extra = 20;
     if (source.direction !== target.direction || seg === NoOfSegments.Five) {
         if (source.direction === getOppositeDirection(target.direction) || seg === NoOfSegments.Three) {
             switch (source.direction) {
                 case 'Left':
                     if (srcCorner.middleLeft.x > tarCorner.middleRight.x) {
-                        extra = Math.min(extra, (srcCorner.middleLeft.x - tarCorner.middleRight.x) / 2);
+                        value = (srcCorner.middleLeft.x - tarCorner.middleRight.x) / 2;
+                        extra = !lineDistribution ? Math.min(extra, value) : value;
                     }
                     break;
                 case 'Right':
                     if (srcCorner.middleRight.x < tarCorner.middleLeft.x) {
-                        extra = Math.min(extra, (tarCorner.middleLeft.x - srcCorner.middleRight.x) / 2);
+                        value = (tarCorner.middleLeft.x - srcCorner.middleRight.x) / 2;
+                        extra = !lineDistribution ? Math.min(extra, value) : value;
                     }
                     break;
                 case 'Top':
                     if (srcCorner.topCenter.y > tarCorner.bottomCenter.y) {
-                        extra = Math.min(extra, (srcCorner.topCenter.y - tarCorner.bottomCenter.y) / 2);
+                        value = (srcCorner.topCenter.y - tarCorner.bottomCenter.y) / 2;
+                        extra = !lineDistribution ? Math.min(extra, value) : value;
                     }
                     break;
                 case 'Bottom':
                     if (srcCorner.bottomCenter.y < tarCorner.topCenter.y) {
-                        extra = Math.min(extra, (tarCorner.topCenter.y - srcCorner.bottomCenter.y) / 2);
+                        value = (tarCorner.topCenter.y - srcCorner.bottomCenter.y) / 2;
+                        extra = !lineDistribution ? Math.min(extra) : value;
                     }
                     break;
             }
@@ -9381,10 +9411,10 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         textElement.relativeMode = 'Point';
     };
     /** @private */
-    Connector.prototype.getConnectorPoints = function (type, points, layoutOrientation) {
+    Connector.prototype.getConnectorPoints = function (type, points, layoutOrientation, lineDistribution) {
         var width = Math.abs(this.sourcePoint.x - this.targetPoint.x);
         var height = Math.abs(this.sourcePoint.y - this.targetPoint.y);
-        points = findConnectorPoints(this, layoutOrientation);
+        points = findConnectorPoints(this, layoutOrientation, lineDistribution);
         var newPoints = points.slice(0);
         if (newPoints && newPoints.length > 0) {
             this.sourcePoint = newPoints[0];
@@ -14378,7 +14408,7 @@ function intersect3(lineUtil1, lineUtil2) {
     var na = (l2.x2 - l2.x1) * (l1.y1 - l2.y1) - (l2.y2 - l2.y1) * (l1.x1 - l2.x1);
     var nb = (l1.x2 - l1.x1) * (l1.y1 - l2.y1) - (l1.y2 - l1.y1) * (l1.x1 - l2.x1);
     /*( EJ2-42102 - Connector segments not update properly ) by sivakumar sekar - condition added to avoid bridging for
-    overlapping segments in the connectors and to validate whether the connector is intersecting over the other */
+     overlapping segments in the connectors and to validate whether the connector is intersecting over the other */
     if (d === 0 || ((lineUtil1.x1 === lineUtil2.x1 || lineUtil1.y1 === lineUtil2.y1) &&
         (lineUtil1.x2 === lineUtil2.x2 || lineUtil1.y2 === lineUtil2.y2) && ((na === 0 || nb === 0) && d > 0))) {
         return { enabled: false, intersectPt: point };
@@ -16086,8 +16116,8 @@ function canMeasureDecoratorPath(objects) {
 function getPreviewSize(sourceElement, clonedObject, wrapper) {
     var previewWidth;
     var previewHeight;
-    previewWidth = this.getSymbolSize(sourceElement, clonedObject, wrapper, 'width');
-    previewHeight = this.getSymbolSize(sourceElement, clonedObject, wrapper, 'height');
+    previewWidth = getSymbolSize(sourceElement, clonedObject, wrapper, 'width');
+    previewHeight = getSymbolSize(sourceElement, clonedObject, wrapper, 'height');
     return new Size(previewWidth, previewHeight);
 }
 /** @private */
@@ -22983,6 +23013,12 @@ var Layout = /** @__PURE__ @class */ (function (_super) {
         Property(30)
     ], Layout.prototype, "horizontalSpacing", void 0);
     __decorate$22([
+        Property('SamePoint')
+    ], Layout.prototype, "connectionPointOrigin", void 0);
+    __decorate$22([
+        Property('NonLinear')
+    ], Layout.prototype, "arrangement", void 0);
+    __decorate$22([
         Property(30)
     ], Layout.prototype, "verticalSpacing", void 0);
     __decorate$22([
@@ -29145,6 +29181,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         this.parentTable = {};
         this.blazor = 'Blazor';
         this.blazorInterop = 'sfBlazor';
+        this.cloneGroupChildCollection = [];
         this.diagram = diagram;
     }
     Object.defineProperty(CommandHandler.prototype, "snappingModule", {
@@ -30156,6 +30193,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 }
                 var copiedObject = [];
                 if (multiSelect) {
+                    // This bool is also consider to prevent selection change event is triggered after every object clone
                     this.diagram.isServerUpdate = true;
                 }
                 for (var j = 0; j < copiedItems.length; j++) {
@@ -30178,7 +30216,13 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                     }
                     else {
                         var newNode = this.cloneNode(copy, multiSelect);
-                        copiedObject.push(newNode);
+                        if (isBlazor() && newNode && newNode.children && newNode.children.length > 0) {
+                            copiedObject = copiedObject.concat(this.cloneGroupChildCollection);
+                            this.cloneGroupChildCollection = [];
+                        }
+                        else {
+                            copiedObject.push(newNode);
+                        }
                         //bpmn text annotations will not be pasted
                         if (newNode) {
                             keyTable[copy.id] = newNode.id;
@@ -30210,6 +30254,8 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 if (multiSelect) {
                     this.diagram.isServerUpdate = false;
                     this.diagram.UpdateBlazorDiagramModelCollection(copiedItems[0], copiedObject);
+                    this.getBlazorOldValues();
+                    this.diagram.select(copiedObject, true);
                 }
                 if (groupAction === true) {
                     this.diagram.historyManager.endGroupAction();
@@ -30239,7 +30285,9 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         this.translateObject(cloneObject$$1);
         cloneObject$$1.zIndex = -1;
         newConnector = this.diagram.add(cloneObject$$1);
-        this.selectObjects([newConnector], multiSelect);
+        if (!this.diagram.isServerUpdate) {
+            this.selectObjects([newConnector], multiSelect);
+        }
         return newConnector;
     };
     CommandHandler.prototype.cloneNode = function (node, multiSelect, children, groupnodeID) {
@@ -30303,7 +30351,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             newNode.shape.activity.subProcess.processes = process;
             this.cloneSubProcesses(newNode);
         }
-        if (newNode) {
+        if (newNode && !this.diagram.isServerUpdate) {
             this.selectObjects([newNode], multiSelect);
         }
         return newNode;
@@ -30417,8 +30465,12 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             parentObj.wrapper.measure(new Size());
         }
         this.diagram.blazorActions &= ~BlazorAction.GroupClipboardInProcess;
-        this.diagram.isServerUpdate = false;
-        this.diagram.UpdateBlazorDiagramModelCollection(undefined, objectCollection, undefined, true);
+        if (!this.diagram.isServerUpdate) {
+            this.diagram.UpdateBlazorDiagramModelCollection(undefined, objectCollection, undefined, true);
+        }
+        else {
+            this.cloneGroupChildCollection = objectCollection;
+        }
         return parentObj;
     };
     /** @private */
@@ -31582,7 +31634,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             }
         }
         else {
-            if (window && window[blazor]) {
+            if (window && window[blazor] && JSON.stringify(this.deepDiffer.diagramObject) !== '{}') {
                 var obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': this.deepDiffer.diagramObject };
                 window[blazorInterop].updateBlazorProperties(obj, this.diagram);
             }
@@ -35629,6 +35681,34 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             if (refreshLayout && !refereshColelction) {
+                if (oldProp.layout && oldProp.layout.connectionPointOrigin === "DifferentPoint" && newProp.layout.connectionPointOrigin === "SamePoint") {
+                    for (var i = 0; i < this.nodes.length; i++) {
+                        var node = this.nodes[i];
+                        if ((node.ports && node.ports.length > 0)) {
+                            var ports = [];
+                            for (var j = node.ports.length - 1; j >= 0; j--) {
+                                if (node.ports[j].id.split('_')[1] === 'LineDistribution') {
+                                    ports.push(node.ports[j]);
+                                }
+                            }
+                            this.removePorts(node, ports);
+                        }
+                    }
+                    for (var j = 0; j < this.connectors.length; j++) {
+                        var connector = this.connectors[j];
+                        var sourcePortid = connector.sourcePortID;
+                        var targetPortId = connector.targetPortID;
+                        var oldSegment = connector.segments;
+                        connector.sourcePortID = "";
+                        connector.targetPortID = "";
+                        connector.sourcePortWrapper = undefined;
+                        connector.targetPortWrapper = undefined;
+                        connector.segments = [];
+                        this.connectorPropertyChange(connector, {
+                            sourcePortID: sourcePortid, targetPortID: targetPortId
+                        }, { sourcePortID: "", targetPortID: "" });
+                    }
+                }
                 this.doLayout();
                 this.renderReactTemplates();
             }
@@ -35923,25 +36003,30 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         var pathAnnotation;
         for (var i = 0; i < this.nodes.length; i++) {
             node = this.nodes[i];
-            annotation = node.annotations[0];
             if (node.shape.type === 'HTML' || node.shape.type === 'Native') {
                 updateBlazorTemplate('diagramsf_node_template', 'NodeTemplate', this, false);
+                break;
             }
-            else if (annotation && annotation.annotationType === 'Template') {
+        }
+        for (var i = 0; i < this.nodes.length; i++) {
+            node = this.nodes[i];
+            annotation = node.annotations[0];
+            if (annotation && annotation.annotationType === 'Template') {
                 updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, false);
+                break;
             }
         }
         for (var i = 0; i < this.connectors.length; i++) {
             pathAnnotation = this.connectors[i].annotations[0];
             if (pathAnnotation && pathAnnotation.annotationType === 'Template') {
                 updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, false);
+                break;
             }
         }
         for (var i = 0; i < this.selectedItems.userHandles.length; i++) {
-            {
-                if (this.selectedItems.userHandles[i].template) {
-                    updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
-                }
+            if (this.selectedItems.userHandles[i].template) {
+                updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
+                break;
             }
         }
     };
@@ -35951,26 +36036,31 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         var path;
         for (var i = 0; i < this.nodes.length; i++) {
             htmlNode = this.nodes[i];
-            templateAnnotation = htmlNode.annotations[0];
             if (htmlNode.shape.type === 'HTML' && htmlNode.shape.content instanceof HTMLElement) {
                 resetBlazorTemplate('diagramsf_node_template', 'NodeTemplate');
+                break;
             }
-            else if (templateAnnotation && templateAnnotation.annotationType === 'Template'
+        }
+        for (var i = 0; i < this.nodes.length; i++) {
+            htmlNode = this.nodes[i];
+            templateAnnotation = htmlNode.annotations[0];
+            if (templateAnnotation && templateAnnotation.annotationType === 'Template'
                 && templateAnnotation.content instanceof HTMLElement) {
                 resetBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate');
+                break;
             }
         }
         for (var i = 0; i < this.connectors.length; i++) {
             path = this.connectors[i].annotations[0];
             if (path && path.annotationType === 'Template' && path.content instanceof HTMLElement) {
                 resetBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate');
+                break;
             }
         }
         for (var i = 0; i < this.selectedItems.userHandles.length; i++) {
-            {
-                if (this.selectedItems.userHandles[i].template) {
-                    updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
-                }
+            if (this.selectedItems.userHandles[i].template) {
+                updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
+                break;
             }
         }
     };
@@ -36018,6 +36108,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     Diagram.prototype.getClassName = function () {
         return 'Diagram';
     };
+    /* tslint:disable */
     /**
      * To provide the array of modules needed for control rendering
      * @return {ModuleDeclaration[]}
@@ -36115,8 +36206,15 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 args: []
             });
         }
+        if ((this.layout && this.layout.connectionPointOrigin === "DifferentPoint") || (this.layout.arrangement === "Linear")) {
+            modules.push({
+                member: 'LineDistribution',
+                args: []
+            });
+        }
         return modules;
     };
+    /* tslint:enable */
     Diagram.prototype.removeUserHandlesTemplate = function () {
         if (this.selectedItems.userHandles.length) {
             for (var i = 0; i < this.selectedItems.userHandles.length; i++) {
@@ -37639,17 +37737,21 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     updateDefaultValues(newObj, obj, this.connectorDefaults);
                     this.connectors.push(newObj);
                     this.initObject(newObj);
-                    if ((this.blazorActions & BlazorAction.GroupingInProgress) && isBlazor()) {
-                        this.blazorAddorRemoveCollection.push(newObj);
-                    }
-                    else if (this.blazorAddorRemoveCollection.length > 0) {
-                        this.isServerUpdate = false;
-                        this.blazorAddorRemoveCollection.push(newObj);
-                        this.UpdateBlazorDiagramModelCollection(undefined, this.blazorAddorRemoveCollection, undefined, true);
-                        this.blazorAddorRemoveCollection = [];
-                    }
-                    else {
-                        this.UpdateBlazorDiagramModel(newObj, "Connector");
+                    if (isBlazor()) {
+                        if ((this.blazorActions & BlazorAction.GroupingInProgress)) {
+                            this.blazorAddorRemoveCollection.push(newObj);
+                        }
+                        else if (this.blazorAddorRemoveCollection.length > 0) {
+                            this.isServerUpdate = false;
+                            this.blazorAddorRemoveCollection.push(newObj);
+                            this.UpdateBlazorDiagramModelCollection(undefined, this.blazorAddorRemoveCollection, undefined, true);
+                            this.blazorAddorRemoveCollection = [];
+                            this.commandHandler.getBlazorOldValues();
+                        }
+                        else if ((!this.isServerUpdate) && !(this.blazorActions & BlazorAction.GroupClipboardInProcess)) {
+                            this.UpdateBlazorDiagramModel(newObj, "Connector");
+                            this.commandHandler.getBlazorOldValues();
+                        }
                     }
                     if (obj.visible === false) {
                         this.updateElementVisibility(newObj.wrapper, newObj, obj.visible);
@@ -37665,17 +37767,21 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     newObj.status = 'New';
                     this.nodes.push(newObj);
                     this.initObject(newObj, layers, undefined, group);
-                    if (isBlazor() && (this.blazorActions & BlazorAction.GroupingInProgress)) {
-                        this.blazorAddorRemoveCollection.push(newObj);
-                    }
-                    else if (this.blazorAddorRemoveCollection.length > 0) {
-                        this.blazorAddorRemoveCollection.push(newObj);
-                        this.isServerUpdate = false;
-                        this.UpdateBlazorDiagramModelCollection(undefined, this.blazorAddorRemoveCollection, undefined, true);
-                        this.blazorAddorRemoveCollection = [];
-                    }
-                    else {
-                        this.UpdateBlazorDiagramModel(newObj, "Node");
+                    if (isBlazor()) {
+                        if ((this.blazorActions & BlazorAction.GroupingInProgress)) {
+                            this.blazorAddorRemoveCollection.push(newObj);
+                        }
+                        else if (this.blazorAddorRemoveCollection.length > 0) {
+                            this.blazorAddorRemoveCollection.push(newObj);
+                            this.isServerUpdate = false;
+                            this.UpdateBlazorDiagramModelCollection(undefined, this.blazorAddorRemoveCollection, undefined, true);
+                            this.commandHandler.getBlazorOldValues();
+                            this.blazorAddorRemoveCollection = [];
+                        }
+                        else if ((!this.isServerUpdate) && !(this.blazorActions & BlazorAction.GroupClipboardInProcess)) {
+                            this.UpdateBlazorDiagramModel(newObj, "Node");
+                            this.commandHandler.getBlazorOldValues();
+                        }
                     }
                     this.updateTemplate();
                     if (this.bpmnModule) {
@@ -37718,8 +37824,6 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 if (this.parentObject) {
                     args.parentId = this.parentObject.id;
                 }
-                this.updateBlazorCollectionChange(newObj, true);
-                this.commandHandler.getBlazorOldValues();
                 if (isBlazor()) {
                     args = getCollectionChangeEventArguements(args, obj, 'Changed', 'Addition');
                 }
@@ -37763,20 +37867,6 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         return newObj;
     };
     /* tslint:enable */
-    Diagram.prototype.updateBlazorCollectionChange = function (newObject, isAdding) {
-        var blazorInterop = 'sfBlazor';
-        if (window && window[blazorInterop]) {
-            var newNode = {};
-            var object = newObject instanceof Node ? 'nodes' : 'connectors';
-            var index = void 0;
-            index = (object === 'nodes') ? this.nodes.indexOf(newObject).toString()
-                : this.connectors.indexOf(newObject).toString();
-            newNode[index] = cloneObject(newObject);
-            if (window[blazorInterop].updateDiagramCollection) {
-                window[blazorInterop].updateDiagramCollection.call(this, object, newNode, {}, !isAdding, false);
-            }
-        }
-    };
     Diagram.prototype.updateSvgNodes = function (node) {
         if (node.children) {
             for (var _i = 0, _a = node.children; _i < _a.length; _i++) {
@@ -38001,7 +38091,6 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                             type: 'CollectionChanged', changeType: 'Remove', undoObject: cloneObject(obj),
                             redoObject: cloneObject(obj), category: 'Internal'
                         };
-                        this.updateBlazorCollectionChange(obj, false);
                         if (!(this.diagramActions & DiagramAction.Clear)) {
                             if (obj.children && !obj.isLane && !obj.isPhase && obj.children.length > 0 && this.undoRedoModule && this.layout.type === 'None') {
                                 this.historyManager.startGroupAction();
@@ -38049,15 +38138,16 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         index = this.nodes.indexOf(currentObj);
                         if (isBlazor() && (obj.id !== 'helper')) {
                             if (this.blazorActions & BlazorAction.GroupingInProgress) {
-                                this.blazorAddorRemoveCollection.push(obj);
                                 this.blazorRemoveIndexCollection.splice(0, 0, index);
+                                this.blazorAddorRemoveCollection.splice(0, 0, obj);
                             }
                             else if (this.blazorAddorRemoveCollection.length > 0) {
-                                this.blazorAddorRemoveCollection.push(obj);
+                                this.commandHandler.getBlazorOldValues();
                                 this.blazorRemoveIndexCollection.splice(0, 0, index);
+                                this.blazorAddorRemoveCollection.splice(0, 0, obj);
                                 this.UpdateBlazorDiagramModelCollection(undefined, undefined, undefined, true);
                             }
-                            else {
+                            else if ((!this.isServerUpdate) && !(this.blazorActions & BlazorAction.GroupClipboardInProcess)) {
                                 this.UpdateBlazorDiagramModel(obj, "Node", index);
                             }
                         }
@@ -38069,7 +38159,21 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     }
                     else {
                         index = this.connectors.indexOf(currentObj);
-                        this.UpdateBlazorDiagramModel(obj, "Connector", index);
+                        if (isBlazor()) {
+                            if (this.blazorActions & BlazorAction.GroupingInProgress) {
+                                this.blazorAddorRemoveCollection.splice(0, 0, obj);
+                                this.blazorRemoveIndexCollection.splice(0, 0, index);
+                            }
+                            else if (this.blazorAddorRemoveCollection.length > 0) {
+                                this.commandHandler.getBlazorOldValues();
+                                this.blazorAddorRemoveCollection.splice(0, 0, obj);
+                                this.blazorRemoveIndexCollection.splice(0, 0, index);
+                                this.UpdateBlazorDiagramModelCollection(undefined, undefined, undefined, true);
+                            }
+                            else if ((!this.isServerUpdate) && !(this.blazorActions & BlazorAction.GroupClipboardInProcess)) {
+                                this.UpdateBlazorDiagramModel(obj, "Connector", index);
+                            }
+                        }
                         if (index !== -1) {
                             this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
                             this.connectors.splice(index, 1);
@@ -38077,6 +38181,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         this.updateEdges(currentObj);
                         this.spliceConnectorEdges(obj, true);
                         this.spliceConnectorEdges(obj, false);
+                    }
+                    if ((!this.isServerUpdate) && !(this.blazorActions & BlazorAction.GroupClipboardInProcess)) {
+                        this.commandHandler.getBlazorOldValues();
                     }
                     if (groupAction) {
                         this.historyManager.endGroupAction();
@@ -38110,7 +38217,6 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                             };
                             if (isBlazor()) {
                                 args = getCollectionChangeEventArguements(args, obj, 'Changed', 'Removal');
-                                this.commandHandler.getBlazorOldValues();
                             }
                             if (obj.id !== 'helper') {
                                 this.triggerEvent(DiagramEvent.collectionChange, args);
@@ -38124,6 +38230,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         else if (selectedItems.length > 0) {
             if (this.undoRedoModule) {
                 this.historyManager.startGroupAction();
+                this.blazorActions |= BlazorAction.GroupingInProgress;
                 groupAction = true;
             }
             if (isBlazor() && selectedItems.length > 1) {
@@ -38140,7 +38247,6 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     if (isBlazor()) {
                         if (!this.isServerUpdate && selectedItems && selectedItems.length > 1) {
                             this.isServerUpdate = true;
-                            this.UpdateBlazorDiagramModelCollection(selectedItems[0], undefined, selectedItems);
                         }
                         if (selectedItems[i].parentId) {
                             this.insertBlazorDiagramObjects(this.nameTable[selectedItems[i].parentId]);
@@ -38154,7 +38260,12 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             if (groupAction) {
+                this.blazorActions &= ~BlazorAction.GroupingInProgress;
+                this.isServerUpdate = true;
+                this.commandHandler.getBlazorOldValues();
+                this.UpdateBlazorDiagramModelCollection(undefined, undefined, undefined, true);
                 this.historyManager.endGroupAction();
+                this.isServerUpdate = false;
             }
             this.clearSelection();
         }
@@ -38503,17 +38614,22 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
         return nodesCollection;
     };
+    /* tslint:disable */
     /**
      * Automatically updates the diagram objects based on the type of the layout
      */
     Diagram.prototype.doLayout = function () {
         var update = false;
         var layout;
+        var canDoOverlap = (this.layout.type == "ComplexHierarchicalTree" || this.layout.type === "HierarchicalTree");
         var propChange = this.isProtectedOnChange;
         this.protectPropertyChange(true);
         var nodes = this.removeChildrenFromLayout(this.nodes);
         var viewPort = { x: this.scroller.viewPortWidth, y: this.scroller.viewPortHeight };
         if (this.layout.type !== 'None') {
+            if ((this.layout.connectionPointOrigin === "DifferentPoint" && this.lineDistributionModule && canDoOverlap) || this.layout.arrangement === "Linear") {
+                this.lineDistributionModule.initLineDistribution(this.layout, this);
+            }
             if (this.organizationalChartModule) {
                 layout = this.organizationalChartModule.updateLayout(nodes, this.nameTable, this.layout, viewPort, this.dataSourceSettings.id, this.diagramActions);
                 update = true;
@@ -38541,7 +38657,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             else if (this.complexHierarchicalTreeModule) {
                 var nodes_1 = this.complexHierarchicalTreeModule.getLayoutNodesCollection(this.nodes);
                 if (nodes_1.length > 0) {
-                    this.complexHierarchicalTreeModule.doLayout(nodes_1, this.nameTable, this.layout, viewPort);
+                    this.complexHierarchicalTreeModule.doLayout(nodes_1, this.nameTable, this.layout, viewPort, this.lineDistributionModule);
                 }
                 update = true;
             }
@@ -38593,6 +38709,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     this.updateQuad(connector);
                     this.updateDiagramObject(connector, true);
                 }
+                if (this.layout.connectionPointOrigin === "DifferentPoint" && this.lineDistributionModule && canDoOverlap) {
+                    this.lineDistributionModule.distributeLines(this.layout, this);
+                }
                 this.preventDiagramUpdate = false;
                 this.updatePage();
                 if ((!(this.diagramActions & DiagramAction.Render)) || this.mode === 'Canvas') {
@@ -38608,6 +38727,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
         return ((this.blazorActions & BlazorAction.expandNode) ? layout : isBlazor() ? null : true);
     };
+    /* tslint:enable */
     /**
      * Serializes the diagram control as a string
      */
@@ -41834,15 +41954,17 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     };
     /** @private */
     Diagram.prototype.insertValue = function (oldNodeObject, isNode) {
-        var value;
-        var oldObjects = isNode ? this.oldNodeObjects : this.oldConnectorObjects;
-        for (var i = 0; i < oldObjects.length; i++) {
-            if (oldObjects[i].id === oldNodeObject.id) {
-                value = true;
+        if (!(this.blazorActions & BlazorAction.GroupClipboardInProcess)) {
+            var value = void 0;
+            var oldObjects = isNode ? this.oldNodeObjects : this.oldConnectorObjects;
+            for (var i = 0; i < oldObjects.length; i++) {
+                if (oldObjects[i].id === oldNodeObject.id) {
+                    value = true;
+                }
             }
-        }
-        if (!value) {
-            isNode ? (this.oldNodeObjects.push(oldNodeObject)) : this.oldConnectorObjects.push(oldNodeObject);
+            if (!value) {
+                isNode ? (this.oldNodeObjects.push(oldNodeObject)) : this.oldConnectorObjects.push(oldNodeObject);
+            }
         }
     };
     /* tslint:disable */
@@ -42467,8 +42589,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     };
     Diagram.prototype.getPoints = function (actualObject, points) {
         var pts;
+        var lineDistributionModule = this.lineDistributionModule ? true : false;
         pts = actualObject.getConnectorPoints(actualObject.type, points, this.layout.type === 'ComplexHierarchicalTree' || this.layout.type === 'HierarchicalTree' ?
-            this.layout.orientation : undefined);
+            this.layout.orientation : undefined, lineDistributionModule);
         return pts;
     };
     /**
@@ -51897,6 +52020,1163 @@ var LineRouting = /** @__PURE__ @class */ (function () {
 }());
 
 /**
+ * Line Distribution
+ * @private
+ */
+var LineDistribution = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for the line distribution module
+     * @private
+     */
+    function LineDistribution() {
+        //constructs the line distribution module
+    }
+    /**
+     * To destroy the line distribution module
+     * @return {void}
+     * @private
+     */
+    LineDistribution.prototype.destroy = function () {
+        /**
+         * Destroys the line distribution module
+         */
+    };
+    /**
+     * Get module name.
+     */
+    LineDistribution.prototype.getModuleName = function () {
+        /**
+         * Returns the module name
+         */
+        return 'LineDistribution';
+    };
+    /** @private */
+    LineDistribution.prototype.initLineDistribution = function (graph, diagram) {
+        var srcDirection = 'Bottom';
+        this.diagram = diagram;
+        if (diagram.layout.connectionPointOrigin === 'DifferentPoint') {
+            var tarDirection = 'Top';
+            if (graph.orientation === 'BottomToTop') {
+                srcDirection = 'Top';
+                tarDirection = 'Bottom';
+            }
+            else if (graph.orientation === 'RightToLeft') {
+                srcDirection = 'Left';
+                tarDirection = 'Right';
+            }
+            else if (graph.orientation === 'LeftToRight') {
+                srcDirection = 'Right';
+                tarDirection = 'Left';
+            }
+            var graphnodes = diagram.nodes;
+            if (graphnodes.length > 0) {
+                for (var i = 0; i < graphnodes.length; i++) {
+                    var node = diagram.nameTable[graphnodes[i].id];
+                    this.addDynamicPortandDistrrbuteLine(graph, node, srcDirection, tarDirection, diagram);
+                }
+            }
+        }
+    };
+    LineDistribution.prototype.getConnectorDirection = function (src, tar) {
+        if (Math.abs(tar.x - src.x) > Math.abs(tar.y - src.y)) {
+            return src.x < tar.x ? 'Right' : 'Left';
+        }
+        else {
+            return src.y < tar.y ? 'Bottom' : 'Top';
+        }
+    };
+    LineDistribution.prototype.ObstacleSegment = function (options) {
+        options.direction = this.getConnectorDirection(options.startpt, options.endpt);
+        options.distance = Point.findLength(options.startpt, options.endpt);
+        options.orientation = options.direction === 'Left' || options.direction === 'Right' ? 'horizontal' : 'vertical';
+        options.id = options.id;
+        if (options.orientation === 'horizontal') {
+            options.coord = options.startpt.y;
+            if (options.direction === 'Left') {
+                options.start = options.endpt.x;
+                options.end = options.startpt.x;
+            }
+            else {
+                options.start = options.startpt.x;
+                options.end = options.endpt.x;
+            }
+        }
+        else {
+            options.coord = options.startpt.x;
+            if (options.direction === 'Top') {
+                options.start = options.endpt.y;
+                options.end = options.startpt.y;
+            }
+            else {
+                options.start = options.startpt.y;
+                options.end = options.endpt.y;
+            }
+        }
+        return options;
+    };
+    /** @private */
+    LineDistribution.prototype.distributeLines = function (layout, diagram) {
+        var isHorizontal = layout.orientation === 'LeftToRight'
+            || layout.orientation === 'RightToLeft';
+        var inversespacing = !isHorizontal ? layout.verticalSpacing : layout.horizontalSpacing;
+        var srcdecoratorSize = 8.0;
+        var obstacleCollection = 'obstaclePointCollection';
+        var tardecoratorSize = 10.0;
+        var avaibaleSpace = inversespacing - srcdecoratorSize - tardecoratorSize;
+        var graph = [];
+        var connectorObstacles = [];
+        var globalConnectors = diagram.connectors;
+        for (var i = 0; i < globalConnectors.length; i++) {
+            var connector = globalConnectors[i];
+            var pts = [];
+            for (var key = 0; key < connector.segments.length; key++) {
+                var seg = connector.segments[key];
+                for (var k = 0; k < seg.points.length; k++) {
+                    var pt = seg.points[k];
+                    if (pts.length === 0 || !(Point.equals(pt, pts[pts.length - 1]))) {
+                        pts.push(pt);
+                    }
+                }
+            }
+            var obssegments = [];
+            for (var j = 1; j < pts.length; j++) {
+                var obstacle = this.ObstacleSegment({ startpt: pts[j - 1], endpt: pts[j], id: connector.id });
+                obssegments.push(obstacle);
+            }
+            var connectorObstacle = { wrapper: connector, segments: obssegments };
+            var segments = [];
+            if (!isHorizontal) {
+                for (var key = 0; key < connectorObstacle.segments.length; key++) {
+                    var obstacle = connectorObstacle.segments[key];
+                    if (obstacle.orientation === 'horizontal') {
+                        segments.push(obstacle);
+                    }
+                }
+            }
+            else {
+                for (var key = 0; key < connectorObstacle.segments.length; key++) {
+                    var obstacle = connectorObstacle.segments[key];
+                    if (obstacle.orientation === 'vertical') {
+                        segments.push(obstacle);
+                    }
+                }
+            }
+            for (var j = 0; j < segments.length; j++) {
+                var obstacleSegment = segments[j];
+                if (!this.containsValue(graph, obstacleSegment.coord)) {
+                    graph.push({ key: obstacleSegment.coord, value: [] });
+                }
+                var index = void 0;
+                for (var k = 0; k < graph.length; k++) {
+                    var key = graph[k].key;
+                    if (Number(key) === obstacleSegment.coord) {
+                        index = k;
+                        break;
+                    }
+                }
+                graph[index].value.push(obstacleSegment);
+            }
+            connectorObstacles.push(connectorObstacle);
+        }
+        var modifiedgrap = [];
+        for (var m = 0; m < graph.length; m++) {
+            var row = graph[m];
+            var sortedrow = row.value;
+            sortedrow.sort();
+            var groupby = void 0;
+            groupby = [];
+            var index = 0;
+            var maxEnd = Number.MIN_VALUE;
+            groupby.push([]);
+            for (var n = 0; n < sortedrow.length; n++) {
+                var obstacleSegment = sortedrow[n];
+                if (!(groupby[index].length > 0) || maxEnd >= obstacleSegment.start) {
+                    groupby[index].push(obstacleSegment);
+                    maxEnd = Math.max(maxEnd, groupby[index][groupby[index].length - 1].end);
+                }
+                else {
+                    index++;
+                    groupby.push([]);
+                    groupby[index].push(obstacleSegment);
+                    maxEnd = groupby[index][groupby[index].length - 1].end;
+                }
+            }
+            for (var n = 0; n < groupby.length; n++) {
+                var group = groupby[n];
+                var sortedGroup = [];
+                for (var j = 0; j < group.length; j++) {
+                    var e = group[j];
+                    if (e.start) {
+                        sortedGroup.push(e);
+                    }
+                }
+                var comparingDir = isHorizontal ? 'Bottom' : 'Right';
+                var directed = [];
+                for (var j = 0; j < sortedGroup.length; j++) {
+                    var e = sortedGroup[j];
+                    if (e.direction === comparingDir) {
+                        directed.push(e);
+                    }
+                }
+                var reversedirected = [];
+                for (var j = 0; j < sortedGroup.length; j++) {
+                    var e = sortedGroup[j];
+                    if (e.direction !== comparingDir) {
+                        reversedirected.push(e);
+                    }
+                }
+                var mutual = [];
+                if (directed.length > 0) {
+                    var temp = directed[0].start;
+                    var j = 0;
+                    while (j < reversedirected.length) {
+                        if (reversedirected[j].end > temp) {
+                            mutual.push(reversedirected[j]);
+                            reversedirected.splice(j, 1);
+                        }
+                        else {
+                            j++;
+                        }
+                    }
+                }
+                var mutualRow = [];
+                mutualRow = this.updateSegmentRow(mutual, mutualRow);
+                var directedRow = [];
+                directedRow = [];
+                directedRow = this.updateSegmentRow(reversedirected, directedRow);
+                directed.reverse();
+                directedRow = this.updateSegmentRow(directed, directedRow);
+                if (!(mutualRow[mutualRow.length - 1].length > 0)) {
+                    mutualRow.splice(mutualRow.length - 1, 1);
+                }
+                if (!(directedRow[directedRow.length - 1].length > 0)) {
+                    directedRow.splice(directedRow.length - 1, 1);
+                }
+                var subrow = [];
+                var descAdding = mutual.length > 0 && (sortedGroup[0].direction === mutual[0].direction
+                    || sortedGroup[sortedGroup.length - 1].direction === mutual[mutual.length - 1].direction);
+                if (descAdding) {
+                    subrow = directedRow;
+                    for (var p = 0; p < mutualRow.length; p++) {
+                        var obj = mutualRow[p];
+                        subrow[subrow.length] = obj;
+                    }
+                }
+                else {
+                    subrow = mutualRow;
+                    for (var p = 0; p < directedRow.length; p++) {
+                        var obj = directedRow[p];
+                        subrow[subrow.length] = obj;
+                    }
+                }
+                if (subrow.length > 1) {
+                    var directionModifier = 1;
+                    if (layout.orientation === 'BottomToTop'
+                        || layout.orientation === 'RightToLeft') {
+                        directionModifier = -1;
+                    }
+                    var startCoord = row.key - (directionModifier * avaibaleSpace / 2.0);
+                    var diff = avaibaleSpace / subrow.length;
+                    for (var i = 0; i < subrow.length; i++) {
+                        var newcoord = startCoord + (i * diff * directionModifier);
+                        for (var p = 0; p < subrow[i].length; p++) {
+                            var obstacleSegment = subrow[i][p];
+                            obstacleSegment.coord = newcoord;
+                            if (!this.containsValue(modifiedgrap, obstacleSegment.coord)) {
+                                modifiedgrap.push({ key: obstacleSegment.coord, value: [] });
+                            }
+                            var index_1 = void 0;
+                            for (var k = 0; k < modifiedgrap.length; k++) {
+                                var keyCheck = modifiedgrap[k].key;
+                                if (keyCheck === obstacleSegment.coord) {
+                                    index_1 = k;
+                                    break;
+                                }
+                            }
+                            modifiedgrap[index_1].value.push(obstacleSegment);
+                        }
+                    }
+                }
+            }
+        }
+        for (var m = 0; m < connectorObstacles.length; m++) {
+            var connectorObstacle = connectorObstacles[m];
+            var pts = [];
+            for (var i = 0; i < connectorObstacle.segments.length; i++) {
+                if (i === 0) {
+                    pts.push(this.getObstacleStartPoint(connectorObstacle.segments[i]));
+                }
+                else if (isHorizontal) {
+                    if (connectorObstacle.segments[i].orientation === 'vertical') {
+                        pts[pts.length - 1] = this.getObstacleStartPoint(connectorObstacle.segments[i]);
+                    }
+                }
+                else if (!isHorizontal) {
+                    if (connectorObstacle.segments[i].orientation === 'horizontal') {
+                        pts[pts.length - 1] = this.getObstacleStartPoint(connectorObstacle.segments[i]);
+                    }
+                }
+                pts.push(this.getObstacleEndPoint(connectorObstacle.segments[i]));
+            }
+            /* tslint:disable */
+            connectorObstacle.wrapper[obstacleCollection] = [];
+            for (var j = 0; j < pts.length; j++) {
+                var point = pts[j];
+                if (j === 0 || (j > 0 && !(Point.equals(point, pts[j - 1])))) {
+                    connectorObstacle.wrapper[obstacleCollection].push(this.getPointvalue(point.x, point.y));
+                }
+            }
+            /* tslint:enable */
+            this.resetConnectorPoints(connectorObstacle.wrapper, diagram);
+        }
+    };
+    LineDistribution.prototype.inflate = function (rect, x, y) {
+        rect.x -= x;
+        rect.y -= y;
+        rect.width += 2 * x;
+        rect.height += 2 * y;
+        return rect;
+    };
+    LineDistribution.prototype.updateConnectorPoints = function (connectorPoints, startSegmentSize, intermediatePoint, bounds, orientation) {
+        var layoutBounds = bounds;
+        var isHorizontal = orientation === 'LeftToRight' || orientation === 'RightToLeft';
+        var pts = connectorPoints;
+        if (pts.length > 2) {
+            var newPt = Point.transform(pts[0], Point.findAngle(pts[0], pts[1]), startSegmentSize);
+            var nextPt = Point.transform(newPt, Point.findAngle(pts[1], pts[2]), Point.findLength(pts[1], pts[2]));
+            pts.splice(1, 2, newPt, nextPt);
+            if (intermediatePoint != null) {
+                var index = 2;
+                var ptsCount = pts.length;
+                var newPt1 = Point.transform(pts[ptsCount - 1], Point.findAngle(pts[ptsCount - 1], pts[ptsCount - 2]), startSegmentSize);
+                pts.splice(ptsCount - 1, 0, newPt1);
+                while (index < (pts.length - 2)) {
+                    pts.splice(index, 1);
+                }
+                var edgePt = intermediatePoint;
+                this.inflate(layoutBounds, layoutBounds.width, layoutBounds.height);
+                var line1 = [];
+                line1[0] = this.getPointvalue(edgePt.x, layoutBounds.y);
+                line1[1] = this.getPointvalue(edgePt.x, layoutBounds.y + layoutBounds.height);
+                var line2 = [];
+                line2[0] = this.getPointvalue(layoutBounds.x, pts[1].y);
+                line2[1] = this.getPointvalue(layoutBounds.x + layoutBounds.width, pts[1].y);
+                var line3 = [];
+                line3[0] = this.getPointvalue(layoutBounds.x, newPt1.y);
+                line3[1] = this.getPointvalue(layoutBounds.x + layoutBounds.width, newPt1.y);
+                if (isHorizontal) {
+                    line1[0] = this.getPointvalue(layoutBounds.x, edgePt.y);
+                    line1[1] = this.getPointvalue(layoutBounds.x + layoutBounds.width, edgePt.y);
+                    line2[0] = this.getPointvalue(pts[1].x, layoutBounds.y);
+                    line2[1] = this.getPointvalue(pts[1].x, layoutBounds.y + layoutBounds.height);
+                    line3[0] = this.getPointvalue(newPt1.x, layoutBounds.y);
+                    line2[1] = this.getPointvalue(newPt1.x, layoutBounds.y + layoutBounds.height);
+                }
+                var intercepts1 = [intersect2(line1[0], line1[1], line2[0], line2[1])];
+                var intercepts2 = [intersect2(line1[0], line1[1], line3[0], line3[1])];
+                if (intercepts2.length > 0) {
+                    pts.splice(2, 0, intercepts2[0]);
+                }
+                if (intercepts1.length > 0) {
+                    pts.splice(2, 0, intercepts1[0]);
+                }
+            }
+        }
+        var i = 1;
+        while (i < pts.length - 1) {
+            if (Point.equals(pts[i - 1], pts[i])) {
+                pts.splice(i, 1);
+            }
+            else if (Point.findAngle(pts[i - 1], pts[i]) === Point.findAngle(pts[i], pts[i + 1])) {
+                pts.splice(i, 1);
+            }
+            else {
+                i++;
+            }
+        }
+        return pts;
+    };
+    /* tslint:disable */
+    LineDistribution.prototype.resetConnectorPoints = function (edge, diagram) {
+        var obstacleCollection = 'obstaclePointCollection';
+        if (edge.segments[0].points
+            && edge.segments[0].points.length > 0) {
+            var connector = edge;
+            connector.sourcePoint = edge[obstacleCollection][0];
+            connector.targetPoint = edge[obstacleCollection][edge[obstacleCollection].length - 1];
+            var segments = void 0;
+            segments = [];
+            for (var i = 0; i < edge[obstacleCollection].length - 1; i++) {
+                var point1 = edge[obstacleCollection][i];
+                var point2 = edge[obstacleCollection][i + 1];
+                var length_1 = findDistance(point1, point2);
+                var direction = this.getConnectorDirection(point1, point2);
+                if (i === edge[obstacleCollection].length - 2) {
+                    if ((diagram.layout.orientation === 'RightToLeft' && direction === 'Left')
+                        || (diagram.layout.orientation === 'LeftToRight' && direction === 'Right')
+                        || (diagram.layout.orientation === 'TopToBottom' && direction === 'Bottom')
+                        || (diagram.layout.orientation === 'BottomToTop' && direction === 'Top')) {
+                        length_1 = length_1 / 2;
+                    }
+                }
+                /* tslint:enable */
+                var tempSegment = new OrthogonalSegment(edge, 'segments', { type: 'Orthogonal' }, true);
+                tempSegment.length = length_1;
+                tempSegment.direction = direction;
+                segments.push(tempSegment);
+            }
+            connector.segments = segments;
+            connector.type = 'Orthogonal';
+            diagram.connectorPropertyChange(connector, {}, {
+                type: 'Orthogonal',
+                segments: connector.segments
+            });
+        }
+    };
+    LineDistribution.prototype.getObstacleEndPoint = function (segment) {
+        if (segment.orientation === 'horizontal') {
+            if (segment.direction === 'Left') {
+                return this.getPointvalue(segment.start, segment.coord);
+            }
+            return this.getPointvalue(segment.end, segment.coord);
+        }
+        if (segment.direction === 'Top') {
+            return this.getPointvalue(segment.coord, segment.start);
+        }
+        return this.getPointvalue(segment.coord, segment.end);
+    };
+    LineDistribution.prototype.getObstacleStartPoint = function (segment) {
+        if (segment.orientation === 'horizontal') {
+            if (segment.direction === 'Left') {
+                return this.getPointvalue(segment.end, segment.coord);
+            }
+            return this.getPointvalue(segment.start, segment.coord);
+        }
+        if (segment.direction === 'Top') {
+            return this.getPointvalue(segment.coord, segment.end);
+        }
+        return this.getPointvalue(segment.coord, segment.start);
+    };
+    LineDistribution.prototype.updateSegmentRow = function (obstacleSegments, segmentRow) {
+        var k = 0;
+        if (!(segmentRow.length > 0)) {
+            segmentRow[0] = [];
+        }
+        for (var i = 0; i < obstacleSegments.length; i++) {
+            var obstacleSegment = obstacleSegments[i];
+            while (k < segmentRow.length) {
+                if (k === segmentRow.length - 1) {
+                    segmentRow[k + 1] = [];
+                }
+                if (!(segmentRow[k].length > 0)
+                    || segmentRow[k][segmentRow[k].length - 1].end < obstacleSegment.start) {
+                    segmentRow[k].push(obstacleSegment);
+                    break;
+                }
+                k++;
+            }
+        }
+        return segmentRow;
+    };
+    LineDistribution.prototype.portOffsetCalculation = function (port, length, direction, i) {
+        if (direction === 'Top') {
+            port.offset = { x: (i + 1) * (1.0 / (length + 1)), y: 0 };
+        }
+        if (direction === 'Bottom') {
+            port.offset = { x: (i + 1) * (1.0 / (length + 1)), y: 1 };
+        }
+        if (direction === 'Left') {
+            port.offset = { x: 0, y: (i + 1) * (1.0 / (length + 1)) };
+        }
+        if (direction === 'Right') {
+            port.offset = { x: 1, y: (i + 1) * (1.0 / (length + 1)) };
+        }
+    };
+    LineDistribution.prototype.addDynamicPortandDistrrbuteLine = function (layout, node, sourceDirection, targetDirection, diagram) {
+        if ((node.ports && node.ports.length > 0)) {
+            var port = node.ports;
+            diagram.removePorts(node, port);
+        }
+        var existingPorts = node.ports;
+        var outConnectors = node.outEdges;
+        var inConnectors = node.inEdges;
+        this.initPort(outConnectors, diagram, node, sourceDirection, false);
+        this.initPort(inConnectors, diagram, node, targetDirection, true);
+    };
+    /* tslint:disable */
+    LineDistribution.prototype.initPort = function (connectors, diagram, node, targetDirection, inConnectors) {
+        var obstacleCollection = 'obstaclePointCollection';
+        for (var i = 0; i <= connectors.length - 1; i++) {
+            var internalConnector = diagram.nameTable[connectors[i]];
+            internalConnector[obstacleCollection] = [];
+            var targetNodePort = findPort(node, inConnectors ? internalConnector.targetPortID : internalConnector.sourcePortID);
+            var direction = targetDirection;
+            if (targetNodePort === undefined) {
+                targetNodePort = new PointPort(node, 'ports', '', true);
+                targetNodePort.id = randomId() + '_LineDistribution';
+                inConnectors ? internalConnector.targetPortID : internalConnector.sourcePortID = targetNodePort.id;
+            }
+            this.portOffsetCalculation(targetNodePort, connectors.length, direction, i);
+            node.ports.push(targetNodePort);
+            var portWrapper = node.initPortWrapper(node.ports[node.ports.length - 1]);
+            node.wrapper.children.push(portWrapper);
+            diagram.connectorPropertyChange(internalConnector, inConnectors ? { targetPortID: '' } : { sourcePortID: '' }, inConnectors ? { targetPortID: targetNodePort.id } : { sourcePortID: targetNodePort.id });
+        }
+    };
+    /* tslint:enable */
+    LineDistribution.prototype.shiftMatrixCells = function (value, startingCell, shiftChildren, parentCell, matrixModel) {
+        if (!(value === 0)) {
+            var matrix = matrixModel.matrix;
+            var matrixRow = matrix[startingCell.level].value;
+            var index = matrixRow.indexOf(startingCell);
+            for (var i = index; i < matrixRow.length; i++) {
+                matrixRow[i].offset += value;
+            }
+            if (shiftChildren) {
+                if (startingCell.visitedChildren.length > 0) {
+                    this.shiftMatrixCells(value, startingCell.visitedChildren[0], true, startingCell, matrixModel);
+                }
+                else {
+                    var i = 1;
+                    var nextSibilingwithChild = null;
+                    while (index + i < matrixRow.length) {
+                        var nextCell = matrixRow[index + i];
+                        if (parentCell != null && this.containsValue(nextCell.visitedParents, parentCell)) {
+                            if (nextCell.visitedChildren.length > 0) {
+                                nextSibilingwithChild = nextCell;
+                            }
+                            else {
+                                i++;
+                                continue;
+                            }
+                        }
+                        break;
+                    }
+                    if (nextSibilingwithChild != null) {
+                        this.shiftMatrixCells(value, nextSibilingwithChild.visitedChildren[0], true, nextSibilingwithChild, matrixModel);
+                    }
+                }
+            }
+        }
+    };
+    LineDistribution.prototype.arrangeMatrix = function (cell, parent, matrixModel) {
+        var layoutSettings = matrixModel.model.layout;
+        var isHorizontal = layoutSettings.orientation === 'LeftToRight'
+            || layoutSettings.orientation === 'RightToLeft';
+        var spacing = isHorizontal ? layoutSettings.verticalSpacing : layoutSettings.horizontalSpacing;
+        var matrix = matrixModel.matrix;
+        var matrixRow = matrix[cell.level].value;
+        var matrixIndex = matrixRow.indexOf(cell);
+        if (cell.visitedParents.length > 0) {
+            if (cell.visitedParents.length === 1) {
+                cell.initialOffset = cell.offset;
+            }
+            if (matrixIndex + 1 < matrixRow.length) {
+                var nextCell = matrixRow[matrixIndex + 1];
+                if (nextCell.visitedParents.length > 0) {
+                    if (!this.containsValue(cell.visitedParents, parent)) {
+                        cell.visitedParents.push(parent);
+                        parent.ignoredChildren.push(cell);
+                        return;
+                    }
+                }
+            }
+        }
+        if (!(cell.children.length > 0)) {
+            var validOffset = cell.offset;
+            if (matrixIndex > 0) {
+                var prevCell = matrixRow[matrixIndex - 1];
+                validOffset = prevCell.offset + (prevCell.size / 2) + spacing + (cell.size / 2);
+            }
+            this.shiftMatrixCells(validOffset - cell.offset, cell, false, null, matrixModel);
+        }
+        else {
+            for (var i = 0; i < cell.children.length; i++) {
+                var matrixCellChild = cell.children[i];
+                if (!this.containsValue(cell.visitedChildren, matrixCellChild)) {
+                    this.arrangeMatrix(matrixCellChild, cell, matrixModel);
+                    cell.visitedChildren.push(matrixCellChild);
+                }
+            }
+            if (cell.visitedChildren.length > 0) {
+                var children = cell.visitedChildren.slice();
+                for (var i = 0; i < cell.ignoredChildren.length; i++) {
+                    var cellIgnoredChild = cell.ignoredChildren[i];
+                    children.splice(0, 1);
+                    cell.visitedChildren.splice(0, 1);
+                }
+                if (children.length > 0) {
+                    var firstChild = cell.visitedChildren[0];
+                    var lastChild = cell.visitedChildren[cell.visitedChildren.length - 1];
+                    var x1 = firstChild.offset - (firstChild.size / 2);
+                    var x2 = lastChild.offset + (lastChild.size / 2);
+                    var newoffset = (x1 + x2) / 2;
+                    if (newoffset < cell.offset) {
+                        this.shiftMatrixCells(cell.offset - newoffset, firstChild, true, cell, matrixModel);
+                    }
+                    else if (newoffset > cell.offset) {
+                        this.shiftMatrixCells(newoffset - cell.offset, cell, false, null, matrixModel);
+                    }
+                }
+            }
+        }
+        if (!this.containsValue(cell.visitedParents, parent)) {
+            cell.visitedParents.push(parent);
+        }
+    };
+    /** @private */
+    LineDistribution.prototype.arrangeElements = function (matrixModel, layout) {
+        var layoutSettings = matrixModel.model.layout;
+        var isHorizontal;
+        if (layout.orientation === 'LeftToRight' || layout.orientation === 'RightToLeft') {
+            isHorizontal = true;
+        }
+        else {
+            isHorizontal = false;
+        }
+        var spacing = isHorizontal ? layoutSettings.verticalSpacing : layoutSettings.horizontalSpacing;
+        var spacingInverse = !isHorizontal ? layoutSettings.verticalSpacing : layoutSettings.horizontalSpacing;
+        // Need to group element before
+        this.groupLayoutCells(matrixModel);
+        this.createMatrixCells(matrixModel);
+        for (var j = 0; j < matrixModel.matrix.length; j++) {
+            var matrixKey = matrixModel.matrix[j].key;
+            var matrixrow = matrixModel.matrix[matrixKey].value;
+            for (var i = 1; i < matrixrow.length; i++) {
+                var cell = matrixrow[i];
+                var prevCell = matrixrow[i - 1];
+                cell.offset += prevCell.offset + (prevCell.size / 2) + spacing + (cell.size / 2);
+            }
+        }
+        for (var j = 0; j < matrixModel.matrix[0].value.length; j++) {
+            var root = matrixModel.matrix[0].value[j];
+            this.arrangeMatrix(root, null, matrixModel);
+        }
+        for (var k = 0; k < matrixModel.matrix.length; k++) {
+            var row = matrixModel.matrix[k].value;
+            for (var i = 0; i < row.length; i++) {
+                var cell = row[i];
+                if (cell.visitedParents.length > 1) {
+                    var firstParent = cell.visitedParents[0];
+                    var lastParent = cell.visitedParents[cell.visitedParents.length - 1];
+                    var firstVertexParent = this.findParentVertexCellGroup(firstParent);
+                    var lastVertexParent = this.findParentVertexCellGroup(lastParent);
+                    if (firstParent !== firstVertexParent && firstVertexParent.offset < firstParent.offset) {
+                        firstParent = firstVertexParent;
+                    }
+                    if (lastParent !== lastVertexParent && lastVertexParent.offset > lastParent.offset) {
+                        lastParent = firstVertexParent;
+                    }
+                    var newoffset = (firstParent.offset + lastParent.offset) / 2;
+                    var availOffsetMin = cell.initialOffset;
+                    var availOffsetMax = cell.offset;
+                    if (!(availOffsetMax === availOffsetMin)) {
+                        if (newoffset >= availOffsetMin && newoffset <= availOffsetMax) {
+                            this.translateMatrixCells(newoffset - cell.offset, cell);
+                        }
+                        else if (newoffset < availOffsetMin) {
+                            this.translateMatrixCells(availOffsetMin - cell.offset, cell);
+                        }
+                    }
+                }
+            }
+        }
+        this.setXYforMatrixCell(matrixModel);
+    };
+    LineDistribution.prototype.findParentVertexCellGroup = function (cell) {
+        if (cell.cells[0]) {
+            return cell;
+        }
+        if (cell.parents.length > 0) {
+            return this.findParentVertexCellGroup(cell.parents[0]);
+        }
+        return cell;
+    };
+    LineDistribution.prototype.setXYforMatrixCell = function (matrixModel) {
+        var layoutSettings = matrixModel.model.layout;
+        var isHorizontal = layoutSettings.orientation === 'LeftToRight'
+            || layoutSettings.orientation === 'RightToLeft';
+        var spacing = isHorizontal ? layoutSettings.verticalSpacing : layoutSettings.horizontalSpacing;
+        for (var i = 0; i < matrixModel.matrix.length; i++) {
+            var matrixrow1 = matrixModel.matrix[i].value;
+            for (var j = 0; j < matrixrow1.length; j++) {
+                var matrixCell = matrixrow1[j];
+                var start = matrixCell.offset - (matrixCell.size / 2);
+                for (var k = 0; k < matrixCell.cells.length; k++) {
+                    var cell = matrixCell.cells[k];
+                    var type = this.getType(cell.type);
+                    if (type === 'internalVertex') {
+                        var internalVertex = cell;
+                        var width = internalVertex.cell.geometry.width;
+                        var height = internalVertex.cell.geometry.height;
+                        if (isHorizontal) {
+                            internalVertex.cell.geometry = new Rect(matrixModel.rowOffset[matrixCell.level] - (width / 2), start, width, height);
+                        }
+                        else {
+                            internalVertex.cell.geometry = new Rect(start, matrixModel.rowOffset[matrixCell.level] - (height / 2), width, height);
+                        }
+                        start += (isHorizontal ? height : width) + spacing;
+                    }
+                    else if (type === 'internalEdge') {
+                        var internalEdges = cell;
+                        var parent_1 = matrixCell.visitedParents[0];
+                        for (var l = 0; l < parent_1.visitedChildren.length; l++) {
+                            var children = parent_1.visitedChildren[l];
+                            var cells = [];
+                            for (var m = 0; m < children.cells.length; m++) {
+                                var cell_1 = children.cells[m];
+                                var type_1 = this.getType(cell_1.type);
+                                if (type_1 === 'internalVertex') {
+                                    cells.push(cell_1);
+                                }
+                            }
+                            if (cells.length > 0) {
+                                break;
+                            }
+                        }
+                        // Need to updated line width
+                        var lineWidth = 1;
+                        var edgeSpacing = 5;
+                        for (var m = 0; m < internalEdges.edges.length; m++) {
+                            var internalConnector = internalEdges.edges[m];
+                            var pt = this.getPointvalue(start + (lineWidth / 2.0), matrixModel.rowOffset[matrixCell.level]);
+                            if (isHorizontal) {
+                                pt = this.getPointvalue(matrixModel.rowOffset[matrixCell.level], start + (lineWidth / 2.0));
+                            }
+                            if (this.containsValue(this.getEdgeMapper(), internalConnector)) {
+                                var key = void 0;
+                                for (var l = 0; l < this.getEdgeMapper().length; l++) {
+                                    if ((this.getEdgeMapper())[l].key === internalConnector) {
+                                        key = l;
+                                        break;
+                                    }
+                                }
+                                (this.getEdgeMapper())[key].value.push(pt);
+                            }
+                            start += lineWidth + edgeSpacing;
+                        }
+                        start += spacing;
+                    }
+                }
+            }
+        }
+    };
+    LineDistribution.prototype.getEdgeMapper = function () {
+        return this.edgeMapper;
+    };
+    /** @private */
+    LineDistribution.prototype.setEdgeMapper = function (value) {
+        this.edgeMapper.push(value);
+    };
+    LineDistribution.prototype.translateMatrixCells = function (value, cell) {
+        if (!(value === 0)) {
+            cell.offset += value;
+            if (cell.visitedChildren.length > 0) {
+                for (var i = 0; i < cell.visitedChildren.length; i++) {
+                    var cellVisitedChild = cell.visitedChildren[i];
+                    this.translateMatrixCells(value, cellVisitedChild);
+                }
+            }
+        }
+    };
+    LineDistribution.prototype.groupLayoutCells = function (matrixModel) {
+        var ranks = matrixModel.model.ranks;
+        for (var j = ranks.length - 1; j >= 0; j--) {
+            var vertices = [];
+            for (var v = 0; v < ranks[j].length; v++) {
+                var rank = ranks[j][v];
+                var type = this.getType(rank.type);
+                if (type === 'internalVertex') {
+                    vertices.push(ranks[j][v]);
+                }
+            }
+            var edges = [];
+            for (var e = 0; e < ranks[j].length; e++) {
+                var rank = ranks[j][e];
+                var type = this.getType(rank.type);
+                if (type === 'internalEdge') {
+                    edges.push(rank);
+                }
+            }
+            while (vertices.length > 1) {
+                var vertex1 = vertices[0];
+                var parentset1 = this.selectIds(vertex1.connectsAsTarget, true);
+                var childset1 = this.selectIds(vertex1.connectsAsSource, false);
+                while (vertices.length > 1) {
+                    var vertex2 = vertices[1];
+                    var parentset2 = this.selectIds(vertex2.connectsAsTarget, true);
+                    var childset2 = this.selectIds(vertex2.connectsAsSource, false);
+                    var parentequals = this.compareLists(parentset1, parentset2);
+                    var childequals = this.compareLists(childset1, childset2);
+                    if (parentequals && childequals) {
+                        this.updateMutualSharing(vertices[0], vertex2.id);
+                        this.updateMutualSharing(vertices[1], vertex1.id);
+                        vertices.splice(1, 1);
+                        continue;
+                    }
+                    break;
+                }
+                vertices.splice(0, 1);
+            }
+            while (edges.length > 1) {
+                var internalEdge = edges[0];
+                var parentset = internalEdge.source;
+                var childset = internalEdge.target;
+                if (parentset.identicalSibiling != null) {
+                    var groupedges = [];
+                    for (var i = 0; i < edges.length; i++) {
+                        var edge = edges[i];
+                        if (edge.target === childset) {
+                            groupedges.push(edge);
+                        }
+                    }
+                    for (var i = 0; i < groupedges.length; i++) {
+                        var internalEdgese = groupedges[i];
+                        if (this.containsValue(parentset.identicalSibiling, internalEdgese.source.id)) {
+                            internalEdgese.source.identicalSibiling = null;
+                        }
+                    }
+                    internalEdge.source.identicalSibiling = null;
+                }
+                edges.splice(0, 1);
+            }
+        }
+    };
+    LineDistribution.prototype.getType = function (type) {
+        if (type === 'internalVertex') {
+            return 'internalVertex';
+        }
+        else {
+            return 'internalEdge';
+        }
+    };
+    LineDistribution.prototype.selectIds = function (node, source) {
+        var returnIds = [];
+        for (var i = 0; i < node.length; i++) {
+            var connector = node[i];
+            if (source) {
+                {
+                    returnIds.push(connector.source.id);
+                }
+            }
+            else {
+                returnIds.push(connector.target.id);
+            }
+        }
+        return returnIds;
+    };
+    LineDistribution.prototype.compareLists = function (list1, list2) {
+        var newList1 = list1.slice();
+        var newList2 = list2.slice();
+        if (newList1.length === newList2.length) {
+            if (newList1.length === 0) {
+                return true;
+            }
+            else {
+                var isSame = true;
+                for (var i = 0; i < newList2.length; i++) {
+                    var o = newList2[i];
+                    for (var j = i; j < newList1.length; j++) {
+                        if (!(newList1[j] === o)) {
+                            isSame = false;
+                            break;
+                        }
+                    }
+                }
+                return isSame;
+            }
+        }
+        return false;
+    };
+    LineDistribution.prototype.updateMutualSharing = function (cell, id) {
+        if (cell.identicalSibiling != null) {
+            cell.identicalSibiling.push(id);
+        }
+        else {
+            cell.identicalSibiling = [];
+            cell.identicalSibiling.push(id);
+        }
+    };
+    LineDistribution.prototype.matrixCellGroup = function (options) {
+        options.level = options.level;
+        options.parents = options.parents;
+        options.children = options.children;
+        options.visitedChildren = options.visitedChildren;
+        options.visitedParents = options.visitedParents;
+        options.ignoredChildren = options.ignoredChildren;
+        options.cells = options.cells;
+        options.offset = options.offset;
+        options.initialOffset = options.initialOffset;
+        return options;
+    };
+    LineDistribution.prototype.getPointvalue = function (x, y) {
+        return { 'x': Number(x) || 0, 'y': Number(y) || 0 };
+    };
+    LineDistribution.prototype.containsValue = function (list, keyValue) {
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].key === keyValue || list[i] === keyValue) {
+                return true;
+            }
+        }
+        return false;
+    };
+    /* tslint:disable */
+    LineDistribution.prototype.createMatrixCells = function (matrixModel) {
+        var layoutSettings = matrixModel.model.layout;
+        var isHorizontal = layoutSettings.orientation === 'LeftToRight'
+            || layoutSettings.orientation === 'RightToLeft';
+        var spacing = isHorizontal ? layoutSettings.verticalSpacing : layoutSettings.horizontalSpacing;
+        var spacingInverse = !isHorizontal ? layoutSettings.verticalSpacing : layoutSettings.horizontalSpacing;
+        var ranks = matrixModel.model.ranks;
+        var matrixCellMapper = [];
+        var rowoffset = -spacingInverse;
+        for (var j = ranks.length - 1; j >= 0; j--) {
+            var maxDimension = 0.0;
+            var index = (ranks.length - 1) - j;
+            var rank = ranks[j].slice(); //.ToList();
+            // Creating new row and adding it to matrix
+            var matrixRow = [];
+            matrixModel.matrix.push({ key: index, value: matrixRow });
+            // Creating new row mapper
+            var tempMatrixRow = [];
+            matrixCellMapper.push({ index: index, value: tempMatrixRow });
+            while (rank.length > 0) //.Any())
+             {
+                var layoutCell = rank[0];
+                var matrixCell = this.matrixCellGroup({ level: index, parents: [], children: [], visitedParents: [], visitedChildren: [], ignoredChildren: [], cells: [], size: 0, offset: 0, initialOffset: 0 });
+                matrixRow.push(matrixCell);
+                var type = this.getType(layoutCell.type);
+                if (type === 'internalVertex') {
+                    matrixCell.cells.push(layoutCell);
+                    if (layoutCell.identicalSibiling != null) {
+                        for (var i = 0; i < rank.length; i++) {
+                            var internalVertex = rank[i];
+                            var type_2 = this.getType(internalVertex.type);
+                            if (type_2 === 'internalVertex' && this.containsValue(layoutCell.identicalSibiling, internalVertex.id)) {
+                                matrixCell.cells.push(internalVertex);
+                                if (matrixCell.cells.length > layoutCell.identicalSibiling.length) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    for (var i = 0; i < matrixCell.cells.length; i++) {
+                        var internalVertex = matrixCell.cells[i];
+                        var type_3 = this.getType(internalVertex.type);
+                        if (type_3 === 'internalVertex') {
+                            var geometry = internalVertex.cell.geometry;
+                            matrixCell.size += isHorizontal ? geometry.height : geometry.width;
+                            maxDimension = Math.max(maxDimension, !isHorizontal ? geometry.height : geometry.width);
+                            tempMatrixRow.push({ key: internalVertex.id, value: matrixCell });
+                            if (internalVertex.connectsAsTarget.length > 0) {
+                                for (var k = 0; k < internalVertex.connectsAsTarget.length; k++) {
+                                    var internalEdgese = internalVertex.connectsAsTarget[k];
+                                    var key = null;
+                                    if (this.containsValue(matrixCellMapper[index - 1].value, internalEdgese.ids)) {
+                                        key = internalEdgese.ids;
+                                    }
+                                    else if (this.containsValue(matrixCellMapper[index - 1].value, internalEdgese.source.id)) {
+                                        key = internalEdgese.source.id;
+                                    }
+                                    if (key != null) {
+                                        var parentcellValue = matrixCellMapper[index - 1].value;
+                                        var parentMartixCell = void 0;
+                                        for (var v = 0; v < parentcellValue.length; v++) {
+                                            if (parentcellValue[v].key == key) {
+                                                parentMartixCell = parentcellValue[v].value;
+                                                break;
+                                            }
+                                        }
+                                        if (!this.containsValue(matrixCell.parents, parentMartixCell)) {
+                                            matrixCell.parents.push(parentMartixCell);
+                                        }
+                                        if (!this.containsValue(parentMartixCell.children, matrixCell)) {
+                                            parentMartixCell.children.push(matrixCell);
+                                        }
+                                    }
+                                }
+                            }
+                            rank.reverse();
+                            rank.pop();
+                            rank.reverse();
+                        }
+                    }
+                    matrixCell.size += (matrixCell.cells.length - 1) * spacing;
+                }
+                else if (type === 'internalEdge') {
+                    matrixCell.cells.push(layoutCell);
+                    for (var i = 0; i < matrixCell.cells.length; i++) {
+                        var internalEdge = matrixCell.cells[i];
+                        var type1 = this.getType(internalEdge.type);
+                        if (type1 === 'internalEdge' && internalEdge.edges != null) {
+                            // need to spacing based on its source and target Node
+                            var edgeSpacing = 5;
+                            var cellSize = -edgeSpacing;
+                            for (var k = 0; k < internalEdge.edges.length; k++) {
+                                var internalConnector = internalEdge.edges[k];
+                                // need to summ up the line width
+                                cellSize += 1 + edgeSpacing;
+                            }
+                            matrixCell.size += cellSize;
+                        }
+                        tempMatrixRow.push({ key: internalEdge.ids, value: matrixCell });
+                        var key = null;
+                        if (this.containsValue(matrixCellMapper[index - 1].value, internalEdge.ids)) {
+                            key = internalEdge.ids;
+                        }
+                        else if (this.containsValue(matrixCellMapper[index - 1].value, internalEdge.source.id)) {
+                            key = internalEdge.source.id;
+                        }
+                        if (key != null) {
+                            var parentcell = matrixCellMapper[index - 1].value;
+                            var parentMartixCell = void 0;
+                            for (var v = 0; v < parentcell.length; v++) {
+                                if (parentcell[v].key == key) {
+                                    parentMartixCell = parentcell[v].value;
+                                    break;
+                                }
+                            }
+                            if (!this.containsValue(matrixCell.parents, parentMartixCell)) {
+                                matrixCell.parents.push(parentMartixCell);
+                            }
+                            if (!this.containsValue(parentMartixCell.children, matrixCell)) {
+                                parentMartixCell.children.push(matrixCell);
+                            }
+                        }
+                        rank.reverse();
+                        rank.pop();
+                        rank.reverse();
+                    }
+                    matrixCell.size += (matrixCell.cells.length - 1) * spacing;
+                }
+            }
+            matrixModel.rowOffset.push(rowoffset + (maxDimension / 2) + spacingInverse);
+            rowoffset += maxDimension + spacingInverse;
+        }
+    };
+    /** @private */
+    LineDistribution.prototype.updateLayout = function (viewPort, modelBounds, layoutProp, layout, nodeWithMultiEdges, nameTable) {
+        {
+            var trnsX = ((viewPort.x - modelBounds.width) / 2) - modelBounds.x;
+            var trnsY = ((viewPort.y - modelBounds.height) / 2) - modelBounds.y;
+            trnsX = Math.round(trnsX);
+            trnsY = Math.round(trnsY);
+            var modifiedConnectors = [];
+            var transModelBounds = new Rect(modelBounds.x + trnsX, modelBounds.y + trnsY, modelBounds.width, modelBounds.height);
+            var margin = layoutProp.margin;
+            var isHorizontal = layout.orientation === 'RightToLeft' || layout.orientation === 'LeftToRight';
+            var inversespacing = !isHorizontal ? layout.verticalSpacing : layout.horizontalSpacing;
+            for (var i = 0; i < nodeWithMultiEdges.length; i++) {
+                var node = nodeWithMultiEdges[i];
+                if (node.outEdges != null && node.outEdges.length > 0) {
+                    var count = node.outEdges.length;
+                    for (var j = 0; j < count; j++) {
+                        var internalConnector = nameTable[node.outEdges[j]];
+                        internalConnector['pointCollection'] = [];
+                        if (count > 1) {
+                            var segmentsize = inversespacing / 2.0;
+                            var intermediatePoint = null;
+                            var key = void 0;
+                            var edgeMapper = this.getEdgeMapper();
+                            for (var k = 0; k < edgeMapper.length; k++) {
+                                if (edgeMapper[k].key === internalConnector) {
+                                    key = k;
+                                    break;
+                                }
+                            }
+                            if (edgeMapper[key].value.length > 0) {
+                                var edgePoint = edgeMapper[key].value[0];
+                                var dxValue1 = edgePoint.x + margin.left;
+                                var dyValue1 = edgePoint.y + margin.top;
+                                var x1 = dxValue1, y1 = dyValue1;
+                                if (layout.orientation === 'BottomToTop') {
+                                    y1 = modelBounds.height - dyValue1;
+                                }
+                                else if (layout.orientation === 'RightToLeft') {
+                                    x1 = modelBounds.width - dxValue1;
+                                }
+                                x1 += trnsX;
+                                y1 += trnsY;
+                                intermediatePoint = this.getPointvalue(x1, y1);
+                            }
+                            var pts = [];
+                            for (var i_1 = 0; i_1 < internalConnector.segments.length; i_1++) {
+                                var pt = internalConnector.segments[i_1].points;
+                                for (var temp in pt) {
+                                    pts.push(pt[temp]);
+                                }
+                            }
+                            pts = this.updateConnectorPoints(pts, segmentsize, intermediatePoint, transModelBounds, layout.orientation);
+                            for (var p = 0; p < pts.length; p++) {
+                                var pt = pts[p];
+                                internalConnector['pointCollection'].push(this.getPointvalue(pt.x, pt.y));
+                            }
+                            this.resetConnectorPoints(internalConnector, this.diagram);
+                        }
+                        modifiedConnectors.push(internalConnector);
+                    }
+                }
+                if (node.inEdges != null && node.inEdges.length > 1) {
+                    var count = node.inEdges.length;
+                    var edgeMapper = this.getEdgeMapper();
+                    for (var j = 0; j < count; j++) {
+                        var internalConnector = nameTable[node.inEdges[j]];
+                        if (!this.containsValue(modifiedConnectors, internalConnector)) {
+                            internalConnector['pointCollection'] = [];
+                        }
+                        if (count > 1) {
+                            var segmentsize = inversespacing / 2.0;
+                            var intermediatePoint = null;
+                            var key = void 0;
+                            var k = void 0;
+                            for (k = 0; k < edgeMapper.length; k++) {
+                                if (edgeMapper[k].key === internalConnector) {
+                                    key = k;
+                                    break;
+                                }
+                            }
+                            if (edgeMapper[key].value.length > 0
+                                && !this.containsValue(modifiedConnectors, internalConnector)) {
+                                var edgePt = edgeMapper[k].value[0];
+                                var dx1 = edgePt.x + margin.left;
+                                var dy1 = edgePt.y + margin.top;
+                                var x1 = dx1, y1 = dy1;
+                                if (layout.orientation === 'BottomToTop') {
+                                    y1 = modelBounds.height - dy1;
+                                }
+                                else if (layout.orientation === 'RightToLeft') {
+                                    x1 = modelBounds.width - dx1;
+                                }
+                                x1 += trnsX;
+                                y1 += trnsY;
+                                intermediatePoint = this.getPointvalue(x1, y1);
+                            }
+                            var pts = [];
+                            for (var p = 0; p < internalConnector.segments.length; p++) {
+                                var pt = internalConnector.segments[p].points;
+                                for (var temp in pt) {
+                                    pts.push(pt[temp]);
+                                }
+                            }
+                            pts.reverse();
+                            pts = this.updateConnectorPoints(pts, segmentsize, intermediatePoint, transModelBounds, layoutProp.orientation);
+                            pts.reverse();
+                            internalConnector['pointCollection'] = [];
+                            for (var p = 0; p < pts.length; p++) {
+                                var pt = pts[p];
+                                internalConnector['pointCollection'].push(this.getPointvalue(pt.x, pt.y));
+                            }
+                            this.resetConnectorPoints(internalConnector, this.diagram);
+                        }
+                    }
+                }
+            }
+        }
+    };
+    return LineDistribution;
+}());
+
+/**
  * Hierarchical Tree and Organizational Chart
  */
 var HierarchicalTree = /** @__PURE__ @class */ (function () {
@@ -54652,8 +55932,8 @@ var ComplexHierarchicalTree = /** @__PURE__ @class */ (function () {
         return 'ComplexHierarchicalTree';
     };
     /**   @private  */
-    ComplexHierarchicalTree.prototype.doLayout = function (nodes, nameTable, layout, viewPort) {
-        new HierarchicalLayoutUtil().doLayout(nodes, nameTable, layout, viewPort);
+    ComplexHierarchicalTree.prototype.doLayout = function (nodes, nameTable, layout, viewPort, lineDistribution) {
+        new HierarchicalLayoutUtil().doLayout(nodes, nameTable, layout, viewPort, lineDistribution);
     };
     ComplexHierarchicalTree.prototype.getLayoutNodesCollection = function (nodes) {
         var nodesCollection = [];
@@ -54850,18 +56130,32 @@ var HierarchicalLayoutUtil = /** @__PURE__ @class */ (function () {
      * Initializes the layouting process
      * @private
      */
-    HierarchicalLayoutUtil.prototype.doLayout = function (nodes, nameTable, layoutProp, viewPort) {
+    HierarchicalLayoutUtil.prototype.doLayout = function (nodes, nameTable, layoutProp, viewPort, lineDistribution) {
         this.nameTable = nameTable;
         var layout = {
             horizontalSpacing: layoutProp.horizontalSpacing, verticalSpacing: layoutProp.verticalSpacing,
             orientation: layoutProp.orientation, marginX: layoutProp.margin.left, marginY: layoutProp.margin.top
         };
+        if (lineDistribution) {
+            lineDistribution.edgeMapper = [];
+        }
+        var nodeWithMultiEdges = [];
         this.vertices = [];
         var filledVertexSet = {};
         for (var i = 0; i < nodes.length; i++) {
             var node = this.createVertex(nodes[i], nodes[i].id, 0, 0, nodes[i].actualSize.width, nodes[i].actualSize.height);
             this.vertices.push(node);
+            if (nodes[i].inEdges.length > 0 || nodes[i].outEdges.length > 0) {
+                nodeWithMultiEdges.push(nodes[i]);
+            }
             filledVertexSet[node.name] = node;
+            if (lineDistribution) {
+                var outEdges = nodes[i].outEdges.slice();
+                for (var j = 0; j < outEdges.length; j++) {
+                    var outEdge = nameTable[outEdges[j]];
+                    lineDistribution.setEdgeMapper({ key: outEdge, value: [] });
+                }
+            }
         }
         var hierarchyVertices = [];
         var candidateRoots;
@@ -54872,18 +56166,31 @@ var HierarchicalLayoutUtil = /** @__PURE__ @class */ (function () {
             this.traverse(candidateRoots[i], true, null, vertexSet, hierarchyVertices, filledVertexSet);
         }
         var limit = { marginX: 0, marginY: 0 };
+        var tmp = [];
+        var checkLinear = false;
         for (var i = 0; i < hierarchyVertices.length; i++) {
             var vertexSet = hierarchyVertices[i];
-            var tmp = [];
             for (var _i = 0, _a = Object.keys(vertexSet); _i < _a.length; _i++) {
                 var key = _a[_i];
                 tmp.push(vertexSet[key]);
             }
+            if (layoutProp.arrangement === 'Linear' && i === hierarchyVertices.length - 1) {
+                checkLinear = true;
+            }
             var model = new MultiParentModel(this, tmp, candidateRoots, layout);
             this.cycleStage(model);
             this.layeringStage(model);
-            this.crossingStage(model);
-            limit = this.placementStage(model, limit.marginX, limit.marginY);
+            if ((lineDistribution && layoutProp.connectionPointOrigin === 'DifferentPoint') || checkLinear) {
+                var matrixModel = this.matrixModel({ model: model, matrix: [], rowOffset: [] });
+                lineDistribution.arrangeElements(matrixModel, layoutProp);
+            }
+            else {
+                if (layoutProp.arrangement === 'NonLinear') {
+                    this.crossingStage(model);
+                    limit = this.placementStage(model, limit.marginX, limit.marginY);
+                    tmp = [];
+                }
+            }
         }
         var modelBounds = this.getModelBounds(this.vertices);
         this.updateMargin(layoutProp, layout, modelBounds, viewPort);
@@ -54908,9 +56215,20 @@ var HierarchicalLayoutUtil = /** @__PURE__ @class */ (function () {
                 dnode.offsetY += y - dnode.offsetY;
             }
         }
-        for (var i = 0; i < this.vertices.length; i++) {
-            this.isNodeOverLap(this.nameTable[this.vertices[i].name], layoutProp);
+        if (!checkLinear) {
+            for (var i = 0; i < this.vertices.length; i++) {
+                this.isNodeOverLap(this.nameTable[this.vertices[i].name], layoutProp);
+            }
         }
+        if ((lineDistribution && layoutProp.connectionPointOrigin === 'DifferentPoint')) {
+            lineDistribution.updateLayout(viewPort, modelBounds, layoutProp, layout, nodeWithMultiEdges, nameTable);
+        }
+    };
+    HierarchicalLayoutUtil.prototype.matrixModel = function (options) {
+        options.model = options.model;
+        options.matrix = options.matrix || [];
+        options.rowOffset = options.rowOffset || [];
+        return options;
     };
     HierarchicalLayoutUtil.prototype.calculateRectValue = function (dnode) {
         var rect = { x: 0, y: 0, right: 0, bottom: 0, height: 0, width: 0 };
@@ -55698,7 +57016,7 @@ var MultiParentModel = /** @__PURE__ @class */ (function () {
         for (var i = 0; i < vertices.length; i++) {
             internalVertices[i] = {
                 x: [], y: [], temp: [], cell: vertices[i],
-                id: vertices[i].name, connectsAsTarget: [], connectsAsSource: []
+                id: vertices[i].name, connectsAsTarget: [], connectsAsSource: [], type: 'internalVertex'
             };
             this.setDictionary(this.vertexMapper, vertices[i], internalVertices[i]);
             var conns = layout.getEdges(vertices[i]);
@@ -58921,5 +60239,5 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
  * Diagram component exported items
  */
 
-export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, BlazorAction, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, ScrollActions, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, DiagramGradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramShapeStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, getIndex, templateCompiler, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, getSpaceValue, getInterval, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, initfixedUserHandlesSymbol, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, cloneSelectedObjects, updatePathElement, checkPort, findPath, findDistance, cloneBlazorObject, checkBrowserInfo, canMeasureDecoratorPath, getPreviewSize, getSymbolSize, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, DiagramShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, DiagramConnectorSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, DiagramConnectorShape, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, SymbolSize, SymbolPaletteInfo, FixedUserHandle, NodeFixedUserHandle, ConnectorFixedUserHandle, UserHandle, ToolBase, SelectTool, FixedUserHandleTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, BlazorAnimation, BlazorTooltip, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolDragSize, SymbolPreview, SymbolPalette, Ruler, Overview };
+export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, BlazorAction, PortVisibility, SnapConstraints, SelectorConstraints, ConnectionPointOrigin, ChildArrangement, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, ScrollActions, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, DiagramGradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramShapeStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, getIndex, templateCompiler, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, getSpaceValue, getInterval, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, initfixedUserHandlesSymbol, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, cloneSelectedObjects, updatePathElement, checkPort, findPath, findDistance, cloneBlazorObject, checkBrowserInfo, canMeasureDecoratorPath, getPreviewSize, getSymbolSize, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, DiagramShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, DiagramConnectorSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, DiagramConnectorShape, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, SymbolSize, SymbolPaletteInfo, FixedUserHandle, NodeFixedUserHandle, ConnectorFixedUserHandle, UserHandle, ToolBase, SelectTool, FixedUserHandleTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, LineDistribution, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, BlazorAnimation, BlazorTooltip, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolDragSize, SymbolPreview, SymbolPalette, Ruler, Overview };
 //# sourceMappingURL=ej2-diagrams.es5.js.map

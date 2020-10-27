@@ -40,7 +40,7 @@ describe('Chart Control', () => {
                     primaryXAxis: {
                         title: 'Sales Across Years', intervalType: 'Years', valueType: 'DateTimeCategory',
                     },
-                    primaryYAxis: { title: 'Sales Amount in millions(USD)', rangePadding: 'Additional' },
+                    primaryYAxis: { title: 'Sales Amount in millions(USD)', rangePadding: 'Round' },
                     series: [
                         {
                             name: 'series1', type: 'Line', fill: '#ACE5FF', width: 2, animation: { enable: false },
@@ -451,8 +451,10 @@ describe('Chart Control', () => {
             chart.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
                 expect(element).not.toEqual(null);
-                expect((element as HTMLElement).style.left == '7.39844px' || (element as HTMLElement).style.left == '3.39844px').toBe(true);
-                expect((element as HTMLElement).style.top == '249.167px' || (element as HTMLElement).style.top == '255.389px').toBe(true);
+                let left: string = (element as HTMLElement).style.left;
+                let top: string = (element as HTMLElement).style.top;
+                expect(left == '7.39844px' || left == '3.39844px').toBe(true);
+                expect(top == '249.167px' || top == '255.389px' || top == '246.312px').toBe(true);
                 done();
             };
             chart.annotations = [{

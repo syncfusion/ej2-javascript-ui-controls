@@ -728,6 +728,36 @@ export type RenderingMode =
     'SVG' |
     /** Canvas - Renders the diagram in a canvas */
     'Canvas';
+
+
+
+/**
+ * Defines the connection point of the connectors in the layout
+ * SamePoint - Connectors will connect with same point in the layout
+ * DifferentPoint - Connectors will connect with different points in the layout
+ */
+export enum ConnectionPointOrigin {
+    /** SamePoint - Connectors will connect with same point in the layout */
+    SamePoint = 'SamePoint',
+    /** DifferentPoint - Connectors will connect with different points in the layout */
+    DifferentPoint = 'DifferentPoint',
+
+}
+
+
+/**
+ * Defines the child nodes need to arranged in linear manner in layout 
+ * Linear - Child nodes will be arranged in linear manner
+ * NonLinear - Child nodes will be arranged in not linear manner
+ */
+export enum ChildArrangement {
+    /** Linear - Child nodes will be arranged in linear manner */
+    Linear = 'Linear',
+    /** NonLinear - Child nodes will be arranged in not linear manner */
+    NonLinear = 'NonLinear',
+
+}
+
 /**
  * Defines the gird rendering pattern
  * Lines - Render the line for the grid

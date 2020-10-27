@@ -179,13 +179,16 @@ export function processIdx(model: (SheetModel | RowModel | CellModel)[], isSheet
                 (model[i] as SheetModel).id = getMaxSheetId(context.sheets);
             }
             if (!(model[i] as SheetModel).name) {
-                (model[i] as SheetModel).name = 'Sheet' + getSheetNameCount(context);
+                context.setSheetPropertyOnMute(model[i], 'name', 'Sheet' + getSheetNameCount(context));
             }
             let cellCnt: number = 0;
             (model[i] as SheetModel).rows.forEach((row: RowModel) => {
                 cellCnt = Math.max(cellCnt, (row && row.cells && row.cells.length - 1) || 0);
             });
-            (model[i] as SheetModel).usedRange = { rowIndex: (model[i] as SheetModel).rows.length - 1, colIndex: cellCnt };
+            context.setSheetPropertyOnMute(
+                model[i], 'usedRange',
+                { rowIndex: (model[i] as SheetModel).rows.length - 1, colIndex: cellCnt }
+            );
         }
     }
 }

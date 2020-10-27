@@ -498,7 +498,7 @@ describe('Chart Control Selection ', () => {
             expect(element.getAttribute('y')).toEqual('92');
             expect(element.getAttribute('height')).toEqual('200');
             expect(element.getAttribute('width')).toEqual('200');
-            expect(document.getElementsByClassName(selection + '2').length).toBe(2);
+            expect(document.getElementsByClassName(selection + '2').length).toBe(1);
             trigger.mouseupEvent(document.getElementById(closeId), 0, 0, 0, 0);
             done();
         };
@@ -800,10 +800,10 @@ describe('Chart Control Selection ', () => {
     });
     it('DragComplete selection event', (done: Function) => {
         let dragCompleted: EmitType<IDragCompleteEventArgs> = (args: IDragCompleteEventArgs) => {
-            expect(args.selectedDataValues[1][0].x).toBe(2008);
-            expect(args.selectedDataValues[1][0].y).toBe(36);
-            expect(args.selectedDataValues[2][0].x).toBe(2007);
-            expect(args.selectedDataValues[2][0].y).toBe(34);
+            expect(args.selectedDataValues[1][0].x).toBe(2007);
+            expect(args.selectedDataValues[1][0].y).toBe(30);
+            expect(args.selectedDataValues[2][0].x).toBe(2006);
+            expect(args.selectedDataValues[2][0].y).toBe(32);
         };
         chartObj.dragComplete = dragCompleted;
         chartObj.dataBind();

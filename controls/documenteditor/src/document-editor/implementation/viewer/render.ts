@@ -303,7 +303,7 @@ export class Renderer {
             let widget: Widget = bodyWidget.childWidgets[i] as ParagraphWidget;
             if (i === 0 && bodyWidget.childWidgets[0] instanceof TableWidget &&
                 (((bodyWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).rowFormat.isHeader ||
-                page.repeatHeaderRowTableWidget)) {
+                    page.repeatHeaderRowTableWidget)) {
                 // tslint:disable-next-line:max-line-length
                 this.renderHeader(page, widget as TableWidget, this.documentHelper.layout.getHeader(bodyWidget.childWidgets[0] as TableWidget));
             }
@@ -347,6 +347,7 @@ export class Renderer {
         if (widget instanceof ParagraphWidget) {
             this.renderParagraphWidget(page, widget as ParagraphWidget);
         } else {
+
             this.renderTableWidget(page, widget as TableWidget);
         }
     }
@@ -442,6 +443,9 @@ export class Renderer {
      * @param {TableWidget} tableWidget 
      */
     private renderTableWidget(page: Page, tableWidget: TableWidget): void {
+        if (this.isFieldCode) {
+            return;
+        }
         for (let i: number = 0; i < tableWidget.childWidgets.length; i++) {
             let widget: Widget = tableWidget.childWidgets[i] as Widget;
             this.renderTableRowWidget(page, widget);
@@ -483,7 +487,8 @@ export class Renderer {
             let widget: Widget = cellWidget.childWidgets[i] as Widget;
             let width: number = cellWidget.width + cellWidget.margin.left - cellWidget.leftBorderWidth;
             if (!this.isPrinting) {
-                //this.clipRect(cellWidget.x, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));
+                // tslint:disable-next-line:max-line-length
+                this.clipRect(cellWidget.x - cellWidget.margin.left, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));
             }
             this.renderWidget(page, widget);
             this.pageContext.restore();

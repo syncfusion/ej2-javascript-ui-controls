@@ -556,12 +556,14 @@ export class Render {
                 this.parent.hideSpinner();
             }
             this.parent.notify(events.toolbarRefresh, {});
+            this.setRowCount(this.parent.getCurrentViewRecords().length);
         });
     }
 
     /** @hidden */
     public dataManagerFailure(e: { result: Object[] }, args: NotifyArgs): void {
         this.ariaService.setOptions(<HTMLElement>this.parent.getContent().querySelector('.e-content'), { busy: false, invalid: true });
+        this.setRowCount(1);
         this.parent.trigger(events.actionFailure, { error: e });
         this.parent.hideSpinner();
         if (args.requestType === 'save' as Action || args.requestType === 'delete' as Action
@@ -571,6 +573,13 @@ export class Render {
         this.parent.currentViewData = [];
         this.renderEmptyRow();
         this.parent.log('actionfailure', { error: e });
+    }
+
+    private setRowCount(dataRowCount: number): void {
+        let gObj: IGrid = this.parent;
+        this.ariaService.setOptions(<HTMLElement>this.parent.getHeaderTable() as HTMLElement, {
+            rowcount: dataRowCount ? dataRowCount.toString() : '1'
+        });
     }
 
     private isInfiniteEnd(args: NotifyArgs): boolean {

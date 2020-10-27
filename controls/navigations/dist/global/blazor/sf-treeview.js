@@ -56,6 +56,7 @@ var DRAGAREA = 'dragArea';
 var CSSCLASS = 'cssClass';
 var ANIMATION = 'animation';
 var EXPANDONTYPE = 'expandOnType';
+var ENABLERTL = 'enableRtl';
 var DISABLE = 'e-disable';
 var RIPPLE = 'e-ripple';
 var RIPPLEELMENT = 'e-ripple-element';
@@ -122,6 +123,9 @@ var SfTreeView = /** @class */ (function () {
             this.element.classList.remove(DISABLED);
             this.wireEvents();
         }
+    };
+    SfTreeView.prototype.setEnableRtl = function () {
+        this.options.enableRtl ? sf.base.addClass([this.element], RTL) : sf.base.removeClass([this.element], RTL);
     };
     SfTreeView.prototype.mouseDownHandler = function (e) {
         this.mouseDownStatus = true;
@@ -353,9 +357,6 @@ var SfTreeView = /** @class */ (function () {
             this.isHelperElement = false;
         }
         this.dragStartAction = false;
-        if (this.isHelperElement) {
-            this.dropAction(this.dragStopEventArgs, true);
-        }
     };
     SfTreeView.prototype.dragStartActionContinue = function () {
         this.dragStartAction = true;
@@ -373,13 +374,6 @@ var SfTreeView = /** @class */ (function () {
         }
         else {
             return null;
-        }
-    };
-    SfTreeView.prototype.updateElement = function (dragParentUl, dragParentLi) {
-        if (dragParentLi && dragParentUl.childElementCount === 0) {
-            var dragIcon = sf.base.select('div.' + ICON, dragParentLi);
-            sf.base.remove(dragParentUl);
-            sf.base.remove(dragIcon);
         }
     };
     // tslint:disable
@@ -496,7 +490,7 @@ var SfTreeView = /** @class */ (function () {
         var dragParentUl = sf.base.closest(dragLi, '.' + PARENTITEM);
         var dragParentLi = sf.base.closest(dragParentUl, '.' + LISTITEM);
         var dropParentLi = sf.base.closest(dropUl, '.' + LISTITEM);
-        var dropParentLiId = null;
+        var dropParentLiId = null, dragParentLiId = null;
         var pre;
         if (e.target.offsetHeight > 0 && e.event.offsetY > e.target.offsetHeight - 2) {
             pre = false;
@@ -512,19 +506,14 @@ var SfTreeView = /** @class */ (function () {
                 pre = false;
             }
         }
-        if ((e.target.classList.contains(EXPANDABLE)) || (e.target.classList.contains(COLLAPSIBLE))) {
-            var target = e.target.closest('li');
-            dropUl.insertBefore(dragLi, pre ? target : target.nextElementSibling);
-        }
-        else {
-            dropUl.insertBefore(dragLi, pre ? e.target : e.target.nextElementSibling);
-        }
         if (dropParentLi) {
             dropParentLiId = dropParentLi.getAttribute('data-uid');
         }
+        if (dragParentLi) {
+            dragParentLiId = dragParentLi.getAttribute('data-uid');
+        }
         var dragLiId = dragLi.getAttribute('data-uid');
-        this.dotNetRef.invokeMethodAsync('DropNodeAsSibling', dragLiId, dropLi.getAttribute('data-uid'), dropParentLiId, pre);
-        this.updateElement(dragParentUl, dragParentLi);
+        this.dotNetRef.invokeMethodAsync('DropNodeAsSibling', dragLiId, dropLi.getAttribute('data-uid'), dropParentLiId, pre, dragParentLiId);
         this.updateAriaLevel(dragLi);
     };
     SfTreeView.prototype.updateAriaLevel = function (dragLi) {
@@ -547,31 +536,25 @@ var SfTreeView = /** @class */ (function () {
         var dragParentLi = sf.base.closest(dragParentUl, '.' + LISTITEM);
         var dropParentUl = sf.base.closest(dropLi, '.' + PARENTITEM);
         var dropParentLi = sf.base.closest(dropParentUl, '.' + LISTITEM);
-        var dropParentLiId = null;
+        var dropParentLiId = null, dragParentLiId = null;
         var dragLiId = dragLi.getAttribute('data-uid');
         var dropLiId = dropLi.getAttribute("data-uid");
         if (dropParentLi) {
             dropParentLiId = dropParentLi.getAttribute('data-uid');
         }
+        if (dragParentLi) {
+            dragParentLiId = dragParentLi.getAttribute('data-uid');
+        }
         if (e && (pos < 7) && !isCheck) {
-            dropParentUl.insertBefore(dragLi, dropLi);
-            this.dotNetRef.invokeMethodAsync('DropNodeAsSibling', dragLiId, dropLiId, dropParentLiId, true);
+            this.dotNetRef.invokeMethodAsync('DropNodeAsSibling', dragLiId, dropLiId, dropParentLiId, true, dragParentLiId);
         }
         else if (e && (e.target.offsetHeight > 0 && pos > (e.target.offsetHeight - 10)) && !isCheck) {
-            dropParentUl.insertBefore(dragLi, dropLi.nextElementSibling);
-            this.dotNetRef.invokeMethodAsync('DropNodeAsSibling', dragLiId, dropLiId, dropParentLiId, false);
+            this.dotNetRef.invokeMethodAsync('DropNodeAsSibling', dragLiId, dropLiId, dropParentLiId, false, dragParentLiId);
         }
         else {
-            this.dotNetRef.invokeMethodAsync('DropNodeAsChild', dragLiId, dropLiId);
+            this.dotNetRef.invokeMethodAsync('DropNodeAsChild', dragLiId, dropLiId, dragParentLiId);
         }
-        this.updateElement(dragParentUl, dragParentLi);
         this.updateAriaLevel(dragLi);
-    };
-    SfTreeView.prototype.getChildMapper = function (mapper) {
-        return (typeof mapper.child === 'string' || sf.base.isNullOrUndefined(mapper.child)) ? mapper : mapper.child;
-    };
-    SfTreeView.prototype.updateMappingField = function (value) {
-        return value.charAt(0).toLowerCase() + value.slice(1);
     };
     SfTreeView.prototype.dragCancelAction = function (virtualEle) {
         sf.base.detach(virtualEle);
@@ -1435,6 +1418,10 @@ var SfTreeView = /** @class */ (function () {
                     break;
                 case EXPANDONTYPE:
                     this.options.expandOnType = newProp.expandOnType;
+                    break;
+                case ENABLERTL:
+                    this.options.enableRtl = newProp.enableRtl;
+                    this.setEnableRtl();
                     break;
                 case ANIMATION:
                     this.options.animation = newProp.animation;

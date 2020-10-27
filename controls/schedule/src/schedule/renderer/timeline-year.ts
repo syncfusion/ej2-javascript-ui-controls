@@ -301,4 +301,23 @@ export class TimelineYear extends Year {
         append(cellTemplate, td);
     }
 
+    public scrollToDate(scrollDate: Date): void {
+        if (this.parent.activeViewOptions.group.resources.length === 0) {
+            let date: number = +new Date(util.resetTime(scrollDate));
+            let element: HTMLElement = this.element.querySelector('[data-date="' + date + '"]');
+            if (element) {
+                this.getScrollableElement().scrollLeft = element.offsetLeft;
+                this.getScrollableElement().scrollTop = element.offsetTop;
+            }
+        }
+    }
+
+    public getScrollableElement(): Element {
+        if (this.parent.isAdaptive && !this.isTimelineView() && !this.parent.isServerRenderer()) {
+            return this.element.querySelector('.' + cls.SCROLL_CONTAINER_CLASS);
+        } else {
+            return this.getContentAreaElement();
+        }
+    }
+
 }

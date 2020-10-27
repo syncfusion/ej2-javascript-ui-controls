@@ -21012,7 +21012,8 @@ let RichTextEditor = class RichTextEditor extends Component {
                 this.placeHolderWrapper.innerHTML = this.placeholder;
                 if (this.inputElement.textContent.length === 0 &&
                     !isNullOrUndefined(this.inputElement.firstChild) && this.inputElement.firstChild.nodeName === 'P' &&
-                    !isNullOrUndefined(this.inputElement.firstChild.firstChild) && this.inputElement.firstChild.firstChild.nodeName === 'BR') {
+                    !isNullOrUndefined(this.inputElement.firstChild.firstChild) && this.inputElement.firstChild.firstChild.nodeName === 'BR' &&
+                    this.inputElement.innerHTML !== '<p><br></p><p><br></p>') {
                     this.placeHolderWrapper.style.display = 'block';
                 }
                 else {

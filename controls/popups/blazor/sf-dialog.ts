@@ -2,7 +2,7 @@ import { Browser, addClass, removeClass, createElement, Draggable, extend, forma
 import { EventHandler, setStyleAttribute, BlazorDotnetObject, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { BlazorDragEventArgs, MouseEventArgs, select } from '@syncfusion/ej2-base';
 import { Popup, getZindexPartial } from '../src/popup/popup';
-import { createResize, removeResize, setMinHeight } from '../src/common/resize';
+import { createResize, removeResize, setMinHeight, setMaxWidth } from '../src/common/resize';
 
 const TAB: number = 9;
 const ENTER: number = 13;
@@ -290,14 +290,16 @@ class SfDialog {
                 maxHeight: this.targetEle.clientHeight,
                 minWidth: parseInt(computedWidth.slice(0, computedWidth.indexOf('p')), 10),
                 maxWidth: this.targetEle.clientWidth,
-                boundary: this.target === document.body ? null : this.targetEle,
+                boundary: (this.target === 'body' || this.target === 'document.body') ? null : this.targetEle,
                 resizeBegin: this.onResizeStart.bind(this),
                 resizeComplete: this.onResizeComplete.bind(this),
                 resizing: this.onResizing.bind(this),
                 proxy: this
             });
+            this.wireWindowResizeEvent();
         } else {
             removeResize();
+            this.unWireWindowResizeEvent();
             if (this.isModal) {
                 this.element.classList.remove(DLG_RESTRICT_LEFT);
             } else { this.element.classList.remove(DLG_RESIZE_VIEWPORT); }
@@ -517,7 +519,6 @@ class SfDialog {
         }
         if (this.isModal) { removeClass([(!isNOU(this.targetEle) ? this.targetEle : document.body)], SCROLL_DISABLED); }
         if (this.element.classList.contains(DLG_RESIZABLE)) {
-            removeResize();
             this.element.classList.remove(DLG_RESIZABLE);
         }
         if (this.element.classList.contains(DRAGGABLE)) {
@@ -554,6 +555,12 @@ class SfDialog {
     private unBindEvent(element: HTMLElement): void {
         EventHandler.remove(element, 'keydown', this.keyDown);
     }
+    private wireWindowResizeEvent(): void {
+        window.addEventListener('resize', this.windowResizeHandler.bind(this));
+    }
+    private unWireWindowResizeEvent(): void {
+        window.addEventListener('resize', this.windowResizeHandler.bind(this));
+    }
     /* Event handlers begin */
     public popupCloseHandler(): void {
         let activeEle: HTMLElement = document.activeElement as HTMLElement;
@@ -561,6 +568,9 @@ class SfDialog {
         if (!isNOU(this.storeActiveElement) && !isNOU(this.storeActiveElement.focus)) {
             this.storeActiveElement.focus();
         }
+    }
+    private windowResizeHandler(): void {
+        setMaxWidth(this.targetEle.clientWidth);
     }
     private onResizeStart(args: ResizeMouseEventArgs | ResizeTouchEventArgs, dialogObj: { [key: string]: Object }): void {
         let evtArgs: { [key: string]: string | number | boolean } = this.getMouseEvtArgs(args as MouseEventArgs);

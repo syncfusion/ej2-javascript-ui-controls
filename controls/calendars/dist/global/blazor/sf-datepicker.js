@@ -252,8 +252,13 @@ var SfDatePicker = /** @class */ (function () {
             (this.popupObj.element && this.popupObj.element.contains(e.target)))) && e.type !== 'touchstart') {
             e.preventDefault();
         }
+        var clearElement = this.containerElement.querySelector('.e-clear-icon');
+        var selectedElement = this.tableBodyElement ? this.tableBodyElement.querySelector('.e-selected') : null;
         var dateValue = this.options.value ? this.options.value.toString() : null;
         var target = e.target;
+        if (target == clearElement && selectedElement) {
+            sf.base.removeClass([this.tableBodyElement.querySelector('.e-selected')], SELECTED);
+        }
         if (!(sf.base.closest(target, '.' + ROOT + '.' + POPUP_CONTAINER))
             && !sf.base.closest(target, '.' + 'e-datetimepicker' + '.' + POPUP_CONTAINER)
             && !(sf.base.closest(target, '.' + INPUTCONTAINER) === this.containerElement)

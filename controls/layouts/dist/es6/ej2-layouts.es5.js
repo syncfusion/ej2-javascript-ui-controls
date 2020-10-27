@@ -3274,6 +3274,9 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         if (!cellElement) {
             return;
         }
+        if (this.checkMediaQuery()) {
+            this.calculateCellSize();
+        }
         var heightValue = this.getCellSize()[1];
         var widthValue = this.getCellSize()[0];
         var left = col === 0 ? 0 : (((col) * ((widthValue) + this.cellSpacing[0])));

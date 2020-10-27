@@ -2,13 +2,23 @@
 
 ## [Unreleased]
 
+## 18.3.44 (2020-10-27)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#297888` - This issue "Target decorator is not connected properly to the node" has been fixed.
+- `#298962` - This issue "HTML template node take more time to render in Blazor" has been fixed.
+- `#F159087` - This issue "When Drag and drop the node from palette exception throws" has been fixed.
+
 ## 18.3.42 (2020-10-20)
 
 ### Diagram
 
 #### Bug Fixes
 
-- `#294515` - This issue "When zoom out the diagram ruler value not update properly' has been fixed.
+- `#294515` - This issue "When zoom out the diagram ruler value not update properly" has been fixed.
 - `#294604` - This issue "Vertical Scroll bar appears while scroll the diagram" has been fixed.
 - `#296511`, `#296304` - The issue "Nodes are not added properly to the newly added lane" has been fixed.
 

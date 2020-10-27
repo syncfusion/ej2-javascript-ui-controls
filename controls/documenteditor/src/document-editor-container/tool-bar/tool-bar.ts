@@ -166,6 +166,9 @@ export class Toolbar {
                 iconCss: 'e-icons e-de-ctnr-image',
                 select: this.onDropDownButtonSelect.bind(this),
             };
+            if (!isNullOrUndefined(this.imgDropDwn)) {
+                this.imgDropDwn = undefined;
+            }
             this.imgDropDwn = new DropDownButton(items, imageButton as HTMLButtonElement);
         }
 
@@ -179,6 +182,9 @@ export class Toolbar {
                 iconCss: 'e-icons e-de-ctnr-break',
                 select: this.onDropDownButtonSelect.bind(this),
             };
+            if (!isNullOrUndefined(this.breakDropDwn)) {
+                this.breakDropDwn = undefined;
+            }
             this.breakDropDwn = new DropDownButton(items, breakButton as HTMLButtonElement);
         }
 
@@ -192,6 +198,9 @@ export class Toolbar {
         this.imagePicker = createElement('input', {
             attrs: { type: 'file', accept: '.jpg,.jpeg,.png,.bmp' }, className: 'e-de-ctnr-file-picker'
         }) as HTMLInputElement;
+        if (Browser.isIE) {
+            document.body.appendChild(this.imagePicker);
+        }
         if (this.toolbarItems.indexOf('LocalClipboard') >= 0) {
             this.toggleButton(id + CLIPBOARD_ID, this.container.enableLocalPaste);
         }
@@ -209,6 +218,9 @@ export class Toolbar {
                 cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                 select: this.onDropDownButtonSelect.bind(this)
             };
+            if (!isNullOrUndefined(this.restrictDropDwn)) {
+                this.restrictDropDwn = undefined;
+            }
             this.restrictDropDwn = new DropDownButton(items, restrictEditing as HTMLButtonElement);
         }
         if (this.toolbarItems.indexOf('FormFields') >= 0) {
@@ -221,6 +233,9 @@ export class Toolbar {
                 cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                 select: this.onDropDownButtonSelect.bind(this),
             };
+            if (!isNullOrUndefined(this.formFieldDropDown)) {
+                this.formFieldDropDown = undefined;
+            }
             this.formFieldDropDown = new DropDownButton(items, breakButton as HTMLButtonElement);
         }
     }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.44 (2020-10-27)
+
+### Range Slider
+
+#### Bug Fixes
+
+- `#294975` - Issue with Slider's handle staying large in size when clicking out of the screen has been fixed.
+
 ## 18.3.35 (2020-10-01)
 
 ### TextBox

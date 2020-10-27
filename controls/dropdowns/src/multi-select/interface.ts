@@ -63,4 +63,5 @@ export interface IMulitSelect extends Component<HTMLElement> {
     enableGroupCheckBox : boolean;
     pasteHandler?(e?: KeyboardEventArgs): void;
     cssClass: string;
+    isDynamicDataChange?: boolean;
 }

@@ -8,6 +8,8 @@ export const updateSheetFromDataSource: string = 'updateSheetFromDataSource';
 /** @hidden */
 export const dataSourceChanged: string = 'dataSourceChanged';
 /** @hidden */
+export const dataChanged: string = 'dataChanged';
+/** @hidden */
 export const workbookOpen: string = 'workbookOpen';
 /** @hidden */
 export const beginSave: string = 'beginSave';

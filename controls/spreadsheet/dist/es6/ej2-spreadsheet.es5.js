@@ -373,6 +373,8 @@ var updateSheetFromDataSource = 'updateSheetFromDataSource';
 /** @hidden */
 var dataSourceChanged = 'dataSourceChanged';
 /** @hidden */
+var dataChanged = 'dataChanged';
+/** @hidden */
 var workbookOpen = 'workbookOpen';
 /** @hidden */
 var beginSave = 'beginSave';
@@ -1098,11 +1100,13 @@ var DataBind = /** @__PURE__ @class */ (function () {
     DataBind.prototype.addEventListener = function () {
         this.parent.on(updateSheetFromDataSource, this.updateSheetFromDataSourceHandler, this);
         this.parent.on(dataSourceChanged, this.dataSourceChangedHandler, this);
+        this.parent.on(dataChanged, this.dataChangedHandler, this);
     };
     DataBind.prototype.removeEventListener = function () {
         if (!this.parent.isDestroyed) {
             this.parent.off(updateSheetFromDataSource, this.updateSheetFromDataSourceHandler);
             this.parent.off(dataSourceChanged, this.dataSourceChangedHandler);
+            this.parent.off(dataChanged, this.dataChangedHandler);
         }
     };
     /**
@@ -1174,7 +1178,7 @@ var DataBind = /** @__PURE__ @class */ (function () {
                 this_1.requestedInfo.push({ deferred: deferred, indexes: args.indexes, isNotLoaded: loadedInfo.isNotLoaded });
                 if (sRange >= 0 && loadedInfo.isNotLoaded && !isEndReached) {
                     sRanges[k] = sRange;
-                    requestedRange.push(false);
+                    requestedRange[k] = false;
                     var query = (range.query ? range.query : new Query()).clone();
                     dataManager.executeQuery(query.range(sRange, eRange >= count ? eRange : eRange + 1)
                         .requiresCount()).then(function (e) {
@@ -1193,6 +1197,7 @@ var DataBind = /** @__PURE__ @class */ (function () {
                             flds = Object.keys(result[0]);
                             if (!range.info.fldLen) {
                                 range.info.fldLen = flds.length;
+                                range.info.flds = flds;
                             }
                             if (range.info.insertColumnRange) {
                                 var insertCount_1 = 0;
@@ -1448,23 +1453,107 @@ var DataBind = /** @__PURE__ @class */ (function () {
      * Remove old data from sheet.
      */
     DataBind.prototype.dataSourceChangedHandler = function (args) {
-        var oldSheet = args.oldProp.sheets[args.sheetIdx];
+        var _this = this;
         var row;
         var sheet = this.parent.sheets[args.sheetIdx];
-        var oldRange = oldSheet && oldSheet.ranges && oldSheet.ranges[args.rangeIdx];
-        if (oldRange) {
-            var indexes_1 = getRangeIndexes(oldRange.startCell);
-            sheet.ranges[args.rangeIdx].info.loadedRange = [];
-            oldRange.info.loadedRange.forEach(function (range) {
-                for (var i = range[0]; i < range[1]; i++) {
-                    row = sheet.rows[i + indexes_1[0]];
-                    for (var j = indexes_1[1]; j < indexes_1[1] + oldRange.info.fldLen; j++) {
-                        row.cells[j].value = '';
+        var range = sheet.ranges[args.rangeIdx];
+        if (range && (this.checkRangeHasChanges(sheet, args.rangeIdx) || !range.info)) {
+            var showFieldAsHeader_1 = range.showFieldAsHeader;
+            var indexes_1 = getCellIndexes(range.startCell);
+            if (range.info) {
+                range.info.loadedRange.forEach(function (loadedRange) {
+                    for (var i = loadedRange[0]; i <= loadedRange[1] && (i < range.info.count + (showFieldAsHeader_1 ? 1 : 0)); i++) {
+                        row = sheet.rows[i + indexes_1[0]];
+                        if (row) {
+                            for (var j = indexes_1[1]; j < indexes_1[1] + range.info.fldLen; j++) {
+                                delete row.cells[j];
+                            }
+                        }
                     }
-                }
+                });
+                range.info = null;
+            }
+            var viewport = this.parent.viewport;
+            var refreshRange_1 = [viewport.topIndex, viewport.leftIndex, viewport.bottomIndex, viewport.rightIndex];
+            var args_1 = {
+                sheet: sheet, indexes: refreshRange_1, promise: new Promise(function (resolve, reject) { resolve((function () { })()); })
+            };
+            this.updateSheetFromDataSourceHandler(args_1);
+            args_1.promise.then(function () {
+                _this.parent.notify('updateView', { indexes: refreshRange_1 });
             });
         }
-        this.parent.notify('data-refresh', { sheetIdx: args.sheetIdx });
+    };
+    DataBind.prototype.checkRangeHasChanges = function (sheet, rangeIdx) {
+        if (this.parent.isAngular) {
+            var changedRangeIdx = 'changedRangeIdx';
+            if (sheet[changedRangeIdx] === parseInt(rangeIdx, 10)) {
+                delete sheet[changedRangeIdx];
+                return true;
+            }
+            return false;
+        }
+        else {
+            return true;
+        }
+    };
+    /**
+     * Triggers dataSourceChange event when cell data changes
+     */
+    DataBind.prototype.dataChangedHandler = function (args) {
+        var _this = this;
+        var changedData = [{}];
+        var action;
+        var cell;
+        var dataRange;
+        var startCell;
+        var isNewRow;
+        var inRange;
+        var sheetIdx = args.sheetIdx > -1 ? args.sheetIdx : args.activeSheetIndex > -1 ? args.activeSheetIndex
+            : getSheetIndex(this.parent, args.address.split('!')[0]);
+        var sheet = this.parent.sheets[sheetIdx];
+        var cellIndices;
+        sheet.ranges.forEach(function (range, idx) {
+            if (range.dataSource) {
+                startCell = getCellIndexes(range.startCell);
+                dataRange = startCell.concat([startCell[0] + range.info.count, startCell[1] + range.info.fldLen - 1]);
+                if (args.modelType === 'Row') {
+                    inRange = dataRange[0] <= args.startIndex && dataRange[2] >= args.startIndex;
+                }
+                else {
+                    cellIndices = getCellIndexes(args.sheetIdx > -1 ? args.address : args.address.split('!')[1]);
+                    inRange = dataRange[0] <= cellIndices[0] && dataRange[2] >= cellIndices[0] && dataRange[1] <= cellIndices[1]
+                        && dataRange[3] >= cellIndices[1];
+                    if (dataRange[2] + 1 === cellIndices[0]) {
+                        isNewRow = true;
+                        range.info.count += 1;
+                    }
+                    else {
+                        isNewRow = false;
+                    }
+                }
+                if (inRange || isNewRow) {
+                    if (args.modelType === 'Row') {
+                        action = 'delete';
+                        args.deletedModel.forEach(function (row, rowIdx) {
+                            changedData[rowIdx] = {};
+                            row.cells.forEach(function (cell, cellIdx) {
+                                changedData[rowIdx][range.info.flds[cellIdx]] = (cell && cell.value) || null;
+                            });
+                        });
+                        range.info.count -= 1;
+                    }
+                    else {
+                        action = isNewRow ? 'add' : 'edit';
+                        range.info.flds.forEach(function (fld, idx) {
+                            cell = getCell(cellIndices[0], idx, sheet);
+                            changedData[0][fld] = (cell && cell.value) || null;
+                        });
+                    }
+                    _this.parent.trigger('dataSourceChanged', { data: changedData, action: action, rangeIndex: idx, sheetIndex: sheetIdx });
+                }
+            }
+        });
     };
     /**
      * For internal use only - Get the module name.
@@ -2069,7 +2158,8 @@ var WorkbookSave = /** @__PURE__ @class */ (function (_super) {
             'beforeSort', 'cellEdit', 'cellEditing', 'cellSave', 'beforeCellSave', 'contextMenuItemSelect', 'contextMenuBeforeClose',
             'contextMenuBeforeOpen', 'created', 'dataBound', 'fileMenuItemSelect', 'fileMenuBeforeClose', 'fileMenuBeforeOpen',
             'saveComplete', 'sortComplete', 'select', 'actionBegin', 'actionComplete', 'afterHyperlinkClick', 'afterHyperlinkCreate',
-            'beforeHyperlinkClick', 'beforeHyperlinkCreate', 'openComplete', 'openFailure', 'queryCellInfo', 'dialogBeforeOpen']);
+            'beforeHyperlinkClick', 'beforeHyperlinkCreate', 'openComplete', 'openFailure', 'queryCellInfo', 'dialogBeforeOpen',
+            'dataSourceChanged']);
         var basicSettings = JSON.parse(jsonStr);
         var sheetCount = this.parent.sheets.length;
         if (sheetCount) {
@@ -4980,6 +5070,7 @@ var Parser = /** @__PURE__ @class */ (function () {
                                 }
                                 j = j - 1;
                                 right = this.parent.substring(text, i + 1, j - i);
+                                right = this.parent.getCellFrom(right);
                             }
                             else {
                                 j = j - 1;
@@ -6801,17 +6892,13 @@ var Calculate = /** @__PURE__ @class */ (function (_super) {
                                 i = i + 1;
                             }
                         }
-                        while (i < pFormula.length) {
-                            if (this.isUpperChar(pFormula[i])) {
-                                s = s + pFormula[i];
-                                i = i + 1;
-                            }
+                        while (i < pFormula.length && this.isUpperChar(pFormula[i])) {
+                            s = s + pFormula[i];
+                            i = i + 1;
                         }
-                        while (i < pFormula.length) {
-                            if (this.isDigit(pFormula[i])) {
-                                s = s + pFormula[i];
-                                i = i + 1;
-                            }
+                        while (i < pFormula.length && this.isUpperChar(pFormula[i])) {
+                            s = s + pFormula[i];
+                            i = i + 1;
                         }
                         s = sheet + this.getCellFrom(s);
                     }
@@ -13872,13 +13959,13 @@ function processIdx(model, isSheet, context) {
                 model[i].id = getMaxSheetId(context.sheets);
             }
             if (!model[i].name) {
-                model[i].name = 'Sheet' + getSheetNameCount(context);
+                context.setSheetPropertyOnMute(model[i], 'name', 'Sheet' + getSheetNameCount(context));
             }
             var cellCnt_1 = 0;
             model[i].rows.forEach(function (row) {
                 cellCnt_1 = Math.max(cellCnt_1, (row && row.cells && row.cells.length - 1) || 0);
             });
-            model[i].usedRange = { rowIndex: model[i].rows.length - 1, colIndex: cellCnt_1 };
+            context.setSheetPropertyOnMute(model[i], 'usedRange', { rowIndex: model[i].rows.length - 1, colIndex: cellCnt_1 });
         }
         out_i_1 = i;
     };
@@ -13912,225 +13999,6 @@ function clearRange(context, address, sheetIdx, valueOnly) {
             }
         }
     }
-}
-
-var __extends$6 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Configures the Row behavior for the spreadsheet.
- *  ```html
- * <div id='Spreadsheet'></div>
- * ```
- * ```typescript
- * let spreadsheet: Spreadsheet = new Spreadsheet({
- *      sheets: [{
- *                rows: [{
- *                        index: 30,
- *                        cells: [{ index: 4, value: 'Total Amount:' },
- *                               { formula: '=SUM(F2:F30)', style: { fontWeight: 'bold' } }]
- *                }]
- * ...
- * });
- * spreadsheet.appendTo('#Spreadsheet');
- * ```
- */
-var Row = /** @__PURE__ @class */ (function (_super) {
-    __extends$6(Row, _super);
-    function Row() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$5([
-        Collection([], Cell)
-    ], Row.prototype, "cells", void 0);
-    __decorate$5([
-        Property(0)
-    ], Row.prototype, "index", void 0);
-    __decorate$5([
-        Property(20)
-    ], Row.prototype, "height", void 0);
-    __decorate$5([
-        Property(false)
-    ], Row.prototype, "customHeight", void 0);
-    __decorate$5([
-        Property(false)
-    ], Row.prototype, "hidden", void 0);
-    return Row;
-}(ChildProperty));
-/**
- * @hidden
- */
-function getRow(sheet, rowIndex) {
-    return sheet.rows[rowIndex];
-}
-/** @hidden */
-function setRow(sheet, rowIndex, row) {
-    if (!sheet.rows[rowIndex]) {
-        sheet.rows[rowIndex] = {};
-    }
-    Object.keys(row).forEach(function (key) {
-        sheet.rows[rowIndex][key] = row[key];
-    });
-}
-/** @hidden */
-function isHiddenRow(sheet, index) {
-    return sheet.rows[index] && sheet.rows[index].hidden;
-}
-/**
- * @hidden
- */
-function getRowHeight(sheet, rowIndex) {
-    if (sheet && sheet.rows && sheet.rows[rowIndex]) {
-        if (sheet.rows[rowIndex].hidden) {
-            return 0;
-        }
-        return sheet.rows[rowIndex].height === undefined ? 20 : sheet.rows[rowIndex].height;
-    }
-    else {
-        return 20;
-    }
-}
-/**
- * @hidden
- */
-function setRowHeight(sheet, rowIndex, height) {
-    if (sheet && sheet.rows) {
-        if (!sheet.rows[rowIndex]) {
-            sheet.rows[rowIndex] = {};
-        }
-        sheet.rows[rowIndex].height = height;
-    }
-}
-/**
- * @hidden
- */
-function getRowsHeight(sheet, startRow, endRow) {
-    if (endRow === void 0) { endRow = startRow; }
-    var height = 0;
-    var swap;
-    if (startRow > endRow) {
-        swap = startRow;
-        startRow = endRow;
-        endRow = swap;
-    }
-    for (var i = startRow; i <= endRow; i++) {
-        height += getRowHeight(sheet, i);
-    }
-    return height;
-}
-
-var __extends$7 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Configures the Column behavior for the spreadsheet.
- */
-var Column = /** @__PURE__ @class */ (function (_super) {
-    __extends$7(Column, _super);
-    function Column() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$6([
-        Property(0)
-    ], Column.prototype, "index", void 0);
-    __decorate$6([
-        Property(64)
-    ], Column.prototype, "width", void 0);
-    __decorate$6([
-        Property(false)
-    ], Column.prototype, "customWidth", void 0);
-    __decorate$6([
-        Property(false)
-    ], Column.prototype, "hidden", void 0);
-    return Column;
-}(ChildProperty));
-/**
- * @hidden
- */
-function getColumn(sheet, colIndex) {
-    if (sheet.columns) {
-        if (!sheet.columns[colIndex]) {
-            sheet.columns[colIndex] = {};
-        }
-    }
-    else {
-        sheet.columns = [];
-        sheet.columns[colIndex] = {};
-    }
-    return sheet.columns[colIndex];
-}
-/** @hidden */
-function setColumn(sheet, colIndex, column) {
-    var curColumn = getColumn(sheet, colIndex);
-    Object.keys(column).forEach(function (key) {
-        curColumn[key] = column[key];
-    });
-}
-/**
- * @hidden
- */
-function getColumnWidth(sheet, index, skipHidden) {
-    if (sheet && sheet.columns && sheet.columns[index]) {
-        if (!skipHidden && sheet.columns[index].hidden) {
-            return 0;
-        }
-        return (sheet.columns[index].width || sheet.columns[index].customWidth) ? sheet.columns[index].width : 64;
-    }
-    else {
-        return 64;
-    }
-}
-/**
- * @hidden
- */
-function getColumnsWidth(sheet, startCol, endCol) {
-    if (endCol === void 0) { endCol = startCol; }
-    var width = 0;
-    if (startCol > endCol) {
-        var swap = startCol;
-        startCol = endCol;
-        endCol = swap;
-    }
-    for (var i = startCol; i <= endCol; i++) {
-        width += getColumnWidth(sheet, i);
-    }
-    return width;
-}
-/** @hidden */
-function isHiddenCol(sheet, index) {
-    return sheet.columns[index] && sheet.columns[index].hidden;
 }
 
 var __extends$1 = (undefined && undefined.__extends) || (function () {
@@ -14177,6 +14045,53 @@ var Range = /** @__PURE__ @class */ (function (_super) {
     function Range() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    Range.prototype.setProperties = function (prop, muteOnChange) {
+        var _this = this;
+        var name = 'name';
+        var instance = 'instance';
+        var parentObj = 'parentObj';
+        var currRangeIdx = 'currRangeIdx';
+        var controlParent = 'controlParent';
+        if (this[parentObj].isComplexArraySetter && this[controlParent] && this[controlParent].isAngular) {
+            if (Object.keys(prop).length) {
+                if (this[parentObj][currRangeIdx] === undefined) {
+                    this[parentObj][currRangeIdx] = 0;
+                }
+                else {
+                    this[parentObj][currRangeIdx] += 1;
+                }
+                var range = this[parentObj].ranges[this[parentObj][currRangeIdx]];
+                if (range && range.info) {
+                    this.info = range.info;
+                }
+                setTimeout(function () {
+                    if (_this[parentObj][currRangeIdx] !== undefined) {
+                        delete _this[parentObj][currRangeIdx];
+                    }
+                });
+            }
+            else if (this[controlParent].tagObjects[0].instance.hasChanges && !this[controlParent].tagObjects[0].instance.isInitChanges) {
+                var sheetIdx = this[controlParent].sheets.indexOf(this[parentObj]);
+                if (this[parentObj].changedRangeIdx === undefined) {
+                    var rangeIdx_1;
+                    var tagObjects = this[controlParent].tagObjects[0].instance.list[sheetIdx].tagObjects;
+                    for (var i = 0; i < tagObjects.length; i++) {
+                        if (tagObjects[i][name] === 'ranges') {
+                            tagObjects[i][instance].list
+                                .forEach(function (range, idx) {
+                                if (range.hasChanges) {
+                                    rangeIdx_1 = idx;
+                                }
+                            });
+                            break;
+                        }
+                    }
+                    this[parentObj].changedRangeIdx = rangeIdx_1;
+                }
+            }
+        }
+        _super.prototype.setProperties.call(this, prop, muteOnChange);
+    };
     __decorate$1([
         Property(null)
     ], Range.prototype, "dataSource", void 0);
@@ -14222,13 +14137,10 @@ var Sheet = /** @__PURE__ @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$1([
-        Property(0)
-    ], Sheet.prototype, "id", void 0);
-    __decorate$1([
-        Collection([], Row)
+        Property(null)
     ], Sheet.prototype, "rows", void 0);
     __decorate$1([
-        Collection([], Column)
+        Property([])
     ], Sheet.prototype, "columns", void 0);
     __decorate$1([
         Complex({}, ProtectSettings)
@@ -14252,13 +14164,13 @@ var Sheet = /** @__PURE__ @class */ (function (_super) {
         Property(100)
     ], Sheet.prototype, "colCount", void 0);
     __decorate$1([
-        Property('A1')
+        Property('A1:A1')
     ], Sheet.prototype, "selectedRange", void 0);
     __decorate$1([
         Property('A1')
     ], Sheet.prototype, "activeCell", void 0);
     __decorate$1([
-        Complex({}, UsedRange)
+        Property({})
     ], Sheet.prototype, "usedRange", void 0);
     __decorate$1([
         Property('A1')
@@ -14275,9 +14187,6 @@ var Sheet = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property('Visible')
     ], Sheet.prototype, "state", void 0);
-    __decorate$1([
-        Property([])
-    ], Sheet.prototype, "maxHgts", void 0);
     return Sheet;
 }(ChildProperty));
 /**
@@ -14334,7 +14243,7 @@ function getSheetIndexByName(context, name, info) {
  */
 function updateSelectedRange(context, range, sheet) {
     if (sheet === void 0) { sheet = {}; }
-    sheet.selectedRange = range;
+    context.setSheetPropertyOnMute(sheet, 'selectedRange', range);
 }
 /**
  * get selected range
@@ -14389,9 +14298,9 @@ function initSheet(context, sheet) {
         sheet.colCount = isUndefined(sheet.colCount) ? 100 : sheet.colCount;
         sheet.topLeftCell = sheet.topLeftCell || 'A1';
         sheet.activeCell = sheet.activeCell || 'A1';
-        sheet.selectedRange = sheet.selectedRange || 'A1';
+        sheet.selectedRange = sheet.selectedRange || 'A1:A1';
         sheet.usedRange = sheet.usedRange || { rowIndex: 0, colIndex: 0 };
-        sheet.ranges = sheet.ranges ? initRangeSettings(sheet.ranges) : [];
+        context.setSheetPropertyOnMute(sheet, 'ranges', sheet.ranges ? sheet.ranges : []);
         sheet.rows = sheet.rows || [];
         sheet.columns = sheet.columns || [];
         sheet.showHeaders = isUndefined(sheet.showHeaders) ? true : sheet.showHeaders;
@@ -14405,15 +14314,6 @@ function initSheet(context, sheet) {
         initRow(sheet.rows);
     });
     processIdx(sheets, true, context);
-}
-function initRangeSettings(ranges) {
-    ranges.forEach(function (range) {
-        range.startCell = range.startCell || 'A1';
-        range.address = range.address || 'A1';
-        range.template = range.template || '';
-        range.showFieldAsHeader = isUndefined(range.showFieldAsHeader) ? true : range.showFieldAsHeader;
-    });
-    return ranges;
 }
 function initRow(rows) {
     rows.forEach(function (row) {
@@ -15153,9 +15053,17 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     Workbook.prototype.getAddressInfo = function (address) {
         return getAddressInfo(this, address);
     };
+    /**
+     * @hidden
+     */
+    Workbook.prototype.setSheetPropertyOnMute = function (sheet, prop, value) {
+        this.isProtectedOnChange = true;
+        sheet[prop] = value;
+        this.isProtectedOnChange = false;
+    };
     var Workbook_1;
     __decorate([
-        Property([])
+        Collection([], Sheet)
     ], Workbook.prototype, "sheets", void 0);
     __decorate([
         Property(0)
@@ -15255,6 +15163,225 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     ], Workbook);
     return Workbook;
 }(Component));
+
+var __extends$6 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Configures the Row behavior for the spreadsheet.
+ *  ```html
+ * <div id='Spreadsheet'></div>
+ * ```
+ * ```typescript
+ * let spreadsheet: Spreadsheet = new Spreadsheet({
+ *      sheets: [{
+ *                rows: [{
+ *                        index: 30,
+ *                        cells: [{ index: 4, value: 'Total Amount:' },
+ *                               { formula: '=SUM(F2:F30)', style: { fontWeight: 'bold' } }]
+ *                }]
+ * ...
+ * });
+ * spreadsheet.appendTo('#Spreadsheet');
+ * ```
+ */
+var Row = /** @__PURE__ @class */ (function (_super) {
+    __extends$6(Row, _super);
+    function Row() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$5([
+        Collection([], Cell)
+    ], Row.prototype, "cells", void 0);
+    __decorate$5([
+        Property(0)
+    ], Row.prototype, "index", void 0);
+    __decorate$5([
+        Property(20)
+    ], Row.prototype, "height", void 0);
+    __decorate$5([
+        Property(false)
+    ], Row.prototype, "customHeight", void 0);
+    __decorate$5([
+        Property(false)
+    ], Row.prototype, "hidden", void 0);
+    return Row;
+}(ChildProperty));
+/**
+ * @hidden
+ */
+function getRow(sheet, rowIndex) {
+    return sheet.rows[rowIndex];
+}
+/** @hidden */
+function setRow(sheet, rowIndex, row) {
+    if (!sheet.rows[rowIndex]) {
+        sheet.rows[rowIndex] = {};
+    }
+    Object.keys(row).forEach(function (key) {
+        sheet.rows[rowIndex][key] = row[key];
+    });
+}
+/** @hidden */
+function isHiddenRow(sheet, index) {
+    return sheet.rows[index] && sheet.rows[index].hidden;
+}
+/**
+ * @hidden
+ */
+function getRowHeight(sheet, rowIndex) {
+    if (sheet && sheet.rows && sheet.rows[rowIndex]) {
+        if (sheet.rows[rowIndex].hidden) {
+            return 0;
+        }
+        return sheet.rows[rowIndex].height === undefined ? 20 : sheet.rows[rowIndex].height;
+    }
+    else {
+        return 20;
+    }
+}
+/**
+ * @hidden
+ */
+function setRowHeight(sheet, rowIndex, height) {
+    if (sheet && sheet.rows) {
+        if (!sheet.rows[rowIndex]) {
+            sheet.rows[rowIndex] = {};
+        }
+        sheet.rows[rowIndex].height = height;
+    }
+}
+/**
+ * @hidden
+ */
+function getRowsHeight(sheet, startRow, endRow) {
+    if (endRow === void 0) { endRow = startRow; }
+    var height = 0;
+    var swap;
+    if (startRow > endRow) {
+        swap = startRow;
+        startRow = endRow;
+        endRow = swap;
+    }
+    for (var i = startRow; i <= endRow; i++) {
+        height += getRowHeight(sheet, i);
+    }
+    return height;
+}
+
+var __extends$7 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Configures the Column behavior for the spreadsheet.
+ */
+var Column = /** @__PURE__ @class */ (function (_super) {
+    __extends$7(Column, _super);
+    function Column() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$6([
+        Property(0)
+    ], Column.prototype, "index", void 0);
+    __decorate$6([
+        Property(64)
+    ], Column.prototype, "width", void 0);
+    __decorate$6([
+        Property(false)
+    ], Column.prototype, "customWidth", void 0);
+    __decorate$6([
+        Property(false)
+    ], Column.prototype, "hidden", void 0);
+    return Column;
+}(ChildProperty));
+/**
+ * @hidden
+ */
+function getColumn(sheet, colIndex) {
+    if (sheet.columns) {
+        if (!sheet.columns[colIndex]) {
+            sheet.columns[colIndex] = {};
+        }
+    }
+    else {
+        sheet.columns = [];
+        sheet.columns[colIndex] = {};
+    }
+    return sheet.columns[colIndex];
+}
+/** @hidden */
+function setColumn(sheet, colIndex, column) {
+    var curColumn = getColumn(sheet, colIndex);
+    Object.keys(column).forEach(function (key) {
+        curColumn[key] = column[key];
+    });
+}
+/**
+ * @hidden
+ */
+function getColumnWidth(sheet, index, skipHidden) {
+    if (sheet && sheet.columns && sheet.columns[index]) {
+        if (!skipHidden && sheet.columns[index].hidden) {
+            return 0;
+        }
+        return (sheet.columns[index].width || sheet.columns[index].customWidth) ? sheet.columns[index].width : 64;
+    }
+    else {
+        return 64;
+    }
+}
+/**
+ * @hidden
+ */
+function getColumnsWidth(sheet, startCol, endCol) {
+    if (endCol === void 0) { endCol = startCol; }
+    var width = 0;
+    if (startCol > endCol) {
+        var swap = startCol;
+        startCol = endCol;
+        endCol = swap;
+    }
+    for (var i = startCol; i <= endCol; i++) {
+        width += getColumnWidth(sheet, i);
+    }
+    return width;
+}
+/** @hidden */
+function isHiddenCol(sheet, index) {
+    return sheet.columns[index] && sheet.columns[index].hidden;
+}
 
 /**
  * Export Spreadsheet library base modules
@@ -17397,6 +17524,7 @@ var Edit = /** @__PURE__ @class */ (function () {
                     this.parent.clearRange(address, null, true);
                     this.parent.serviceLocator.getService('cell').refreshRange(range);
                     this.parent.notify(selectionComplete, {});
+                    this.parent.notify(dataChanged, { address: address, sheetIdx: this.parent.activeSheetIndex, action: 'delete' });
                 }
                 break;
         }
@@ -17781,6 +17909,7 @@ var Edit = /** @__PURE__ @class */ (function () {
                 eventArgs.formula = this.editCellData.formula;
             }
             eventArgs.originalEvent = event;
+            this.parent.notify(dataChanged, eventArgs);
             this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'cellSave' });
         }
         if (eventName !== 'cellSave') {
@@ -18435,7 +18564,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         range = mergeArgs.range;
         if (sheet.activeCell !== getCellAddress(range[0], range[1]) || isInit) {
-            sheet.activeCell = getCellAddress(range[0], range[1]);
+            this.parent.setSheetPropertyOnMute(sheet, 'activeCell', getCellAddress(range[0], range[1]));
             if (this.getActiveCell()) {
                 var offset = this.getOffset(range[2], range[3]);
                 if (isMergeRange) {
@@ -18895,7 +19024,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
             top = skipHiddenIdx(sheet, top, true);
             left = skipHiddenIdx(sheet, left, true, 'columns');
         }
-        this.parent.getActiveSheet().topLeftCell = getCellAddress(top, left);
+        this.parent.setSheetPropertyOnMute(this.parent.getActiveSheet(), 'topLeftCell', getCellAddress(top, left));
     };
     Scroll.prototype.getRowOffset = function (scrollTop, scrollDown) {
         var temp = this.offset.top.size;
@@ -19084,7 +19213,7 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         var domCount = this.parent.viewport.rowCount + 1 + (this.parent.getThreshold('row') * 2);
         if (sheet.rowCount > domCount || sheet.usedRange.rowIndex > domCount - 1) {
             if (!this.parent.scrollSettings.isFinite && sheet.rowCount <= sheet.usedRange.rowIndex) {
-                sheet.rowCount = sheet.usedRange.rowIndex + 1;
+                this.parent.setSheetPropertyOnMute(sheet, 'rowCount', sheet.usedRange.rowIndex + 1);
             }
             this.setScrollCount(sheet.rowCount, 'row');
             height = getRowsHeight(sheet, 0, this.scroll[this.parent.activeSheetIndex].rowCount - 1);
@@ -19184,7 +19313,7 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
             rowCount = usedRangeCount;
         }
         if (!this.parent.scrollSettings.isFinite) {
-            sheet[layout + 'Count'] = rowCount;
+            this.parent.setSheetPropertyOnMute(sheet, layout + 'Count', rowCount);
         }
     };
     VirtualScroll.prototype.onVerticalScroll = function (args) {
@@ -19690,7 +19819,7 @@ var KeyboardNavigation = /** @__PURE__ @class */ (function () {
             } */
             if (isNavigate) {
                 this.scrollNavigation(scrollIdxes || actIdxes, scrollIdxes ? true : false);
-                sheet.activeCell = getRangeAddress(actIdxes);
+                this.parent.setSheetPropertyOnMute(sheet, 'activeCell', getRangeAddress(actIdxes));
                 this.parent.notify(cellNavigate, { range: actIdxes });
             }
         }
@@ -22884,6 +23013,9 @@ var Delete = /** @__PURE__ @class */ (function () {
         this.refreshImgElement(args.deletedModel.length, this.parent.activeSheetIndex, args.modelType, args.startIndex);
         if (isAction) {
             this.parent.notify(completeAction, { eventArgs: args, action: 'delete' });
+        }
+        if (args.modelType === 'Row') {
+            this.parent.notify(dataChanged, args);
         }
     };
     Delete.prototype.refreshImgElement = function (count, sheetIdx, modelType, index) {
@@ -29266,9 +29398,13 @@ var FormulaBar = /** @__PURE__ @class */ (function () {
                             value = cell.formula;
                         }
                     }
+                    var eventArgs = { action: 'getCurrentEditValue', editedValue: '' };
+                    _this.parent.notify(editOperation, eventArgs);
+                    var isFormulaEdit = (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0) ||
+                        checkIsFormula(eventArgs.editedValue);
                     var formulaInp = document.getElementById(_this.parent.element.id + '_formula_input');
                     formulaInp.value = value;
-                    if (!isNullOrUndefined(value)) {
+                    if (!isNullOrUndefined(value) && !isFormulaEdit) {
                         _this.parent.notify(editOperation, { action: 'refreshEditor', value: formulaInp.value, refreshEditorElem: true });
                     }
                     if (_this.parent.isEdit) {
@@ -34011,6 +34147,7 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
         this.element = this.parent.createElement('td');
         this.th = this.parent.createElement('th', { className: 'e-header-cell' });
         this.tableRow = parent.createElement('tr', { className: 'e-row' });
+        this.parent.on('updateView', this.updateView, this);
     }
     CellRenderer.prototype.renderColHeader = function (index) {
         var headerCell = this.th.cloneNode();
@@ -34320,6 +34457,9 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
                 manualUpdate: true, first: '' });
             this.parent.notify(renderFilterCell, { td: cell, rowIndex: rowIdx, colIndex: colIdx });
         }
+    };
+    CellRenderer.prototype.updateView = function (args) {
+        this.refreshRange(args.indexes);
     };
     return CellRenderer;
 }());
@@ -36303,16 +36443,39 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
                     // }
                     // if (newProp.sheets[sheetIdx].range) {
                     //     this.sheets[sheetIdx].range = newProp.sheets[sheetIdx].range;
-                    this.renderModule.refreshSheet();
-                    if (this.showSheetTabs) {
-                        Object.keys(newProp.sheets).forEach(function (sheetIdx) {
-                            _this.notify(sheetNameUpdate, {
-                                items: _this.element.querySelector('.e-sheet-tabs-items').children[sheetIdx],
-                                value: newProp.sheets[sheetIdx].name,
-                                idx: sheetIdx
+                    Object.keys(newProp.sheets).forEach(function (sheetIdx, index) {
+                        var sheet = newProp.sheets[sheetIdx];
+                        if (sheet.ranges && Object.keys(sheet.ranges).length) {
+                            var ranges_1 = Object.keys(sheet.ranges);
+                            var newRangeIdx_1;
+                            ranges_1.forEach(function (rangeIdx, idx) {
+                                if (!sheet.ranges[rangeIdx].info) {
+                                    newRangeIdx_1 = idx;
+                                }
                             });
-                        });
-                    }
+                            ranges_1.forEach(function (rangeIdx, idx) {
+                                if (sheet.ranges[rangeIdx].dataSource && (isUndefined(newRangeIdx_1)
+                                    || (!isUndefined(newRangeIdx_1) && newRangeIdx_1 === idx))) {
+                                    _this.notify(dataSourceChanged, {
+                                        sheetIdx: sheetIdx, rangeIdx: rangeIdx,
+                                        isLastRange: ranges_1.length - 1 === idx
+                                    });
+                                }
+                            });
+                        }
+                        else {
+                            if (index === 0) {
+                                _this.renderModule.refreshSheet();
+                            }
+                            if (_this.showSheetTabs && sheet.name) {
+                                _this.notify(sheetNameUpdate, {
+                                    items: _this.element.querySelector('.e-sheet-tabs-items').children[sheetIdx],
+                                    value: sheet.name,
+                                    idx: sheetIdx
+                                });
+                            }
+                        }
+                    });
                     break;
                 case 'locale':
                     this.refresh();
@@ -36443,6 +36606,9 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     ], Spreadsheet.prototype, "dataBound", void 0);
     __decorate$9([
         Event$1()
+    ], Spreadsheet.prototype, "dataSourceChanged", void 0);
+    __decorate$9([
+        Event$1()
     ], Spreadsheet.prototype, "cellEdit", void 0);
     __decorate$9([
         Event$1()
@@ -36501,5 +36667,5 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
  * Export Spreadsheet modules
  */
 
-export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, Format, ConditionalFormat, Image, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, setImage, checkIsFormula, isCellReference, isChar, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookImage, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, isFormulaBarEdit, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, initiateFormulaReference, initiateCur, clearCellRef, editValue, addressHandle, initiateEdit, forRefSelRender, blankWorkbook, insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY, getColIdxFromClientX, createImageElement, deleteImage, refreshImagePosition, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, SpreadsheetImage, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
+export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, Format, ConditionalFormat, Image, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, dataChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, setImage, checkIsFormula, isCellReference, isChar, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookImage, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, isFormulaBarEdit, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, initiateFormulaReference, initiateCur, clearCellRef, editValue, addressHandle, initiateEdit, forRefSelRender, blankWorkbook, insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY, getColIdxFromClientX, createImageElement, deleteImage, refreshImagePosition, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, SpreadsheetImage, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
 //# sourceMappingURL=ej2-spreadsheet.es5.js.map

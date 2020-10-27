@@ -447,7 +447,8 @@ export interface AddSignatureEventArgs extends BaseEventArgs {
     /**
      * Define the type of the signature added in the page of the PDF document.
      */
-    type: AnnotationType;
+    // tslint:disable-next-line
+    type: any;
     /**
      * Define the opacity of the signature added in the page of the PDF document.
      */
@@ -455,11 +456,11 @@ export interface AddSignatureEventArgs extends BaseEventArgs {
     /**
      * Define the stroke color of the signature added in the page of the PDF document.
      */
-    strokeColor: string;
+    strokeColor?: string;
     /**
      * Define the thickness of the signature added in the page of the PDF document.
      */
-    thickness: number;
+    thickness?: number;
 }
 
 /**

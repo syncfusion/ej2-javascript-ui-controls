@@ -7,7 +7,7 @@ import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
 import { Popup, PositionData, getZindexPartial } from '../popup/popup';
 import { PositionDataModel } from '../popup/popup-model';
 import { ButtonPropsModel, DialogModel, AnimationSettingsModel } from './dialog-model';
-import { createResize, removeResize, setMinHeight } from '../common/resize';
+import { createResize, removeResize, setMinHeight, setMaxWidth } from '../common/resize';
 
 /**
  * Defines the types of a button in the dialog.
@@ -828,8 +828,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 resizing: this.onResizing.bind(this),
                 proxy: this
             });
+            this.wireWindowResizeEvent();
         } else {
             removeResize();
+            this.unWireWindowResizeEvent();
             if (this.isModal) {
                 this.element.classList.remove(DLG_RESTRICT_LEFT_VALUE);
             } else {
@@ -1558,6 +1560,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.popupObj.zIndex = this.zIndex;
         }
     }
+
+    private windowResizeHandler(): void {
+        setMaxWidth(this.targetEle.clientWidth);
+    }
     /**
      * Get the properties to be maintained in the persisted state.
      * @private
@@ -1624,7 +1630,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         // tslint:disable-next-line:no-any
         if ((this as any).isReact) { this.clearTemplate(); }
     }
-
+    private wireWindowResizeEvent(): void {
+        window.addEventListener('resize', this.windowResizeHandler.bind(this));
+    }
+    private unWireWindowResizeEvent(): void {
+        window.addEventListener('resize', this.windowResizeHandler.bind(this));
+    }
     /**
      * Binding event to the element while widget creation
      * @hidden

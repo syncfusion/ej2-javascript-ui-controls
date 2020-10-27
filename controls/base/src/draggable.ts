@@ -459,7 +459,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 }
             }
         }
-        if (this.preventDefault && !isUndefined(evt.changedTouches)) {
+        if (this.preventDefault && !isUndefined(evt.changedTouches) && evt.type !== 'touchstart') {
             evt.preventDefault();
         }
         this.element.setAttribute('aria-grabbed', 'true');
@@ -549,8 +549,8 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             }
             this.getScrollableValues();
             let posValue: DragPosition = this.getProcessedPositionValue({
-                top: (pos.top - this.diffY - this.parentScrollY) + 'px',
-                left: (pos.left - this.diffX - this.parentScrollX) + 'px'
+                top: (pos.top - this.diffY - (this.clone ? 0 : this.parentScrollY)) + 'px',
+                left: (pos.left - this.diffX - (this.clone ? 0 : this.parentScrollX)) + 'px'
             });
             this.dragElePosition = { top: pos.top, left: pos.left };
             setStyleAttribute(dragTargetElement, this.getDragPosition({ position: 'absolute', left: posValue.left, top: posValue.top }));
@@ -703,10 +703,13 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             draEleTop = (top - iTop) < 0 ? this.dragLimit.top : (top - iTop);
             draEleLeft = (left - iLeft) < 0 ? this.dragElePosition.left : (left - iLeft);
         } else {
-            draEleTop = top - iTop - this.parentScrollY;
-            draEleLeft = left - iLeft - this.parentScrollX;
+            draEleTop = top - iTop;
+            draEleLeft = left - iLeft;
         }
-
+        if (!this.clone) {
+            draEleTop -= this.parentScrollY;
+            draEleLeft -= this.parentScrollX;
+        }
         let dragValue: DragPosition = this.getProcessedPositionValue({ top: draEleTop + 'px', left: draEleLeft + 'px' });
         setStyleAttribute(helperElement, this.getDragPosition(dragValue));
         if (!this.elementInViewport(helperElement) && this.enableAutoScroll) {

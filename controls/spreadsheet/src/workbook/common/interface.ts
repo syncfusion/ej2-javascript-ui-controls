@@ -124,6 +124,7 @@ interface RangeInfo {
     deleteColumnRange?: number[][];
     count?: number;
     fldLen?: number;
+    flds?: string[];
 }
 
 /** @hidden */
@@ -334,4 +335,11 @@ export interface InsertDeleteEventArgs {
     activeSheetIndex?: number;
     sheetCount?: number;
     name?: string;
+}
+
+export interface DataSourceChangedEventArgs {
+    data?: Object[];
+    action?: string;
+    rangeIndex?: number;
+    sheetIndex?: number;
 }

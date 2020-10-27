@@ -246,9 +246,11 @@ var Dialog = /** @class */ (function (_super) {
                 resizing: this.onResizing.bind(this),
                 proxy: this
             });
+            this.wireWindowResizeEvent();
         }
         else {
             sf.popups.removeResize();
+            this.unWireWindowResizeEvent();
             if (this.isModal) {
                 this.element.classList.remove(DLG_RESTRICT_LEFT_VALUE);
             }
@@ -1066,6 +1068,9 @@ var Dialog = /** @class */ (function (_super) {
             this.popupObj.zIndex = this.zIndex;
         }
     };
+    Dialog.prototype.windowResizeHandler = function () {
+        sf.popups.setMaxWidth(this.targetEle.clientWidth);
+    };
     /**
      * Get the properties to be maintained in the persisted state.
      * @private
@@ -1142,6 +1147,12 @@ var Dialog = /** @class */ (function (_super) {
         if (this.isReact) {
             this.clearTemplate();
         }
+    };
+    Dialog.prototype.wireWindowResizeEvent = function () {
+        window.addEventListener('resize', this.windowResizeHandler.bind(this));
+    };
+    Dialog.prototype.unWireWindowResizeEvent = function () {
+        window.addEventListener('resize', this.windowResizeHandler.bind(this));
     };
     /**
      * Binding event to the element while widget creation

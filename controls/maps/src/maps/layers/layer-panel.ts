@@ -227,7 +227,6 @@ export class LayerPanel {
                         this.renderTileLayer(this, layer, layerIndex);
                     } else if (layer.key && layer.key.length > 1) {
                         let proxy: LayerPanel = this;
-                        let markerGroupElement : HTMLElement = document.getElementById(this.mapObject.element.id + '_Markers_Group');
                         let bing: BingMap = new BingMap(this.mapObject);
                         let bingType: string = layer.bingMapType === 'AerialWithLabel' ? 'AerialWithLabelsOnDemand' : layer.bingMapType;
                         let url: string = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + bingType;
@@ -240,6 +239,7 @@ export class LayerPanel {
                             let imageUrl: string = <string>resource['imageUrl'];
                             let subDomains: string[] = <string[]>resource['imageUrlSubdomains'];
                             let maxZoom: string = <string>resource['zoomMax'];
+                            let markerGroupElement : HTMLElement = document.getElementById(this.mapObject.element.id + '_Markers_Group');
                             if (imageUrl !== null && imageUrl !== undefined && imageUrl !== bing.imageUrl) {
                                 bing.imageUrl = imageUrl;
                             }
@@ -354,6 +354,12 @@ export class LayerPanel {
                 let path: string = ''; let points: string = ''; let getShapeColor: Object;
                 let fill: string = (shapeSettings.autofill) ? colors[i % colors.length] : shapeSettings.fill;
                 let opacity: number;
+                if (this.mapObject.isBlazor) {
+                    k = checkShapeDataFields(
+                        <Object[]>this.currentLayer.dataSource, currentShapeData['property'],
+                        this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath, this.currentLayer
+                    );
+                }
                 if (shapeSettings.colorValuePath !== null && !isNullOrUndefined(currentShapeData['property'])) {
                     k = checkShapeDataFields(
                         <Object[]>this.currentLayer.dataSource, currentShapeData['property'],

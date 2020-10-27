@@ -739,9 +739,10 @@ describe('Chart Control', () => {
         it('Checking annotation within y axis - inverted axis', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '566.875px' || (element as HTMLElement).style.left == '573.625px').toBe(true);
-
-                expect((element as HTMLElement).style.top == '183.375px' || (element as HTMLElement).style.top == '184.375px').toBe(true);
+                let left: string = (element as HTMLElement).style.left;
+                let top: string = (element as HTMLElement).style.top;
+                expect(left == '566.875px' || left == '573.625px' || left == '607.7px').toBe(true);
+                expect(top == '183.375px' || top == '184.375px').toBe(true);
                 done();
             };
             chartObj.annotations[0].y = '10000';

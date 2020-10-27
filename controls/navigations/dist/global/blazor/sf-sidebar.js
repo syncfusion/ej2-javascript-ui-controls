@@ -301,7 +301,7 @@ var SfSidebar = /** @class */ (function () {
         this.windowWidth = null;
         var sibling = document.querySelector('.e-main-content') || this.targetElement;
         if (!sf.base.isNullOrUndefined(sibling)) {
-            sibling.style.margin = sibling.style.transform = '';
+            sibling.style.transform = ''; //sibling.style.margin - azure overflow issue
         }
         this.unWireEvents();
     };

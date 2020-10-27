@@ -13003,6 +13003,25 @@ describe('Drag and drop with different TreeView functionality testing with empty
                     expect(li[3].querySelector('i')).toBe(null);
                     done();
             });
+            it('Interaction testing for template support', function () {
+                treeObj = new TreeView({
+                    fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", iconCss: 'nodeIcon', imageUrl: 'nodeImage', child: "nodeChild", expanded: 'nodeExpanded1' },
+                    nodeTemplate: '${if(nodeChild == undefined)}<b>${nodeText}</b>${else}<i>${nodeText}</i>${/if}',
+                    fullRowSelect: true,
+                }, '#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                expect(document.getElementById('tree1').classList.contains('e-interaction')).toEqual(true);
+                treeObj.nodeTemplate = null;
+                treeObj.dataBind();
+                expect(document.getElementById('tree1').classList.contains('e-interaction')).toEqual(false);
+                treeObj.fullRowSelect = false;
+                treeObj.nodeTemplate = '${if(nodeChild == undefined)}<b>${nodeText}</b>${else}<i>${nodeText}</i>${/if}',
+                treeObj.dataBind();
+                expect(document.getElementById('tree1').classList.contains('e-interaction')).toEqual(true);
+                treeObj.nodeTemplate = null;
+                treeObj.dataBind();
+                expect(document.getElementById('tree1').classList.contains('e-interaction')).toEqual(false);
+            });
             it('expandedNodes property testing', (done: Function) => {
                 treeObj = new TreeView({ 
                     fields: { dataSource: hierarchicalData },

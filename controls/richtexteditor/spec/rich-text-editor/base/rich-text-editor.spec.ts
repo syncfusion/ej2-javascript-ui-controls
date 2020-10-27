@@ -1834,6 +1834,15 @@ describe('RTE base module', () => {
             expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
             expect((rteObj as any).placeHolderWrapper.innerText).toBe('type something');
         });
+        it('ensure placeholder property when enter key is pressed(with exact enter key content added)', () => {
+            rteObj.placeholder = 'write content';
+            rteObj.dataBind();
+            expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
+            expect((rteObj as any).placeHolderWrapper.innerText).toBe('write content');
+            rteObj.value = '<p><br></p><p><br></p>';
+            rteObj.dataBind();
+            expect((rteObj as any).placeHolderWrapper.style.display).toBe('none');
+        });
         it('ensure through onproperty change - placeholder', () => {
             rteObj.placeholder = 'changed';
             rteObj.value = '<p> jadskfasfese <p>';

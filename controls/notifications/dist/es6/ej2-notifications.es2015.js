@@ -199,6 +199,10 @@ let Toast = class Toast extends Component {
             extend(collectionObj, { element: [this.toastEle] }, true);
             this.toastCollection.push(collectionObj);
         }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
     }
     /**
      * @hidden
@@ -305,6 +309,10 @@ let Toast = class Toast extends Component {
             element = (this.newestOnTop ? this.toastContainer.lastElementChild : this.toastContainer.firstElementChild);
         }
         this.destroyToast(element);
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
     }
     fetchEle(ele, value, prob) {
         value = typeof (value) === 'string' ? this.sanitizeHelper(value) : value;

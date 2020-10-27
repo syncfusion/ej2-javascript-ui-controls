@@ -6560,14 +6560,16 @@ class Layout {
             while (elementBox) {
                 if (elementBox instanceof FieldElementBox) {
                     elementBox = this.documentHelper.selection.getNextValidElementForField(elementBox);
-                    if (!elementBox.line.paragraph.equals(paragraph)) {
+                    if (!isNullOrUndefined(elementBox) && !elementBox.line.paragraph.equals(paragraph)) {
                         return false;
                     }
                 }
                 if (elementBox instanceof TextElementBox || elementBox instanceof ImageElementBox) {
                     return true;
                 }
-                elementBox = elementBox.nextNode;
+                if (!isNullOrUndefined(elementBox)) {
+                    elementBox = elementBox.nextNode;
+                }
             }
         }
         return false;
@@ -12740,6 +12742,9 @@ class Renderer {
      * @param {TableWidget} tableWidget
      */
     renderTableWidget(page, tableWidget) {
+        if (this.isFieldCode) {
+            return;
+        }
         for (let i = 0; i < tableWidget.childWidgets.length; i++) {
             let widget = tableWidget.childWidgets[i];
             this.renderTableRowWidget(page, widget);
@@ -12779,7 +12784,8 @@ class Renderer {
             let widget = cellWidget.childWidgets[i];
             let width = cellWidget.width + cellWidget.margin.left - cellWidget.leftBorderWidth;
             if (!this.isPrinting) {
-                //this.clipRect(cellWidget.x, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));
+                // tslint:disable-next-line:max-line-length
+                this.clipRect(cellWidget.x - cellWidget.margin.left, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));
             }
             this.renderWidget(page, widget);
             this.pageContext.restore();
@@ -50104,7 +50110,8 @@ class Editor {
             let textElement = item.previousElement;
             while (!isNullOrUndefined(textElement) && textElement instanceof TextElementBox) {
                 resultantText = textElement.text + resultantText;
-                textElement = textElement.previousElement.previousValidNodeForTracking;
+                // tslint:disable-next-line:max-line-length
+                textElement = (!isNullOrUndefined(textElement.previousNode)) ? textElement.previousNode.previousValidNodeForTracking : undefined;
             }
         }
         return resultantText;
@@ -89971,6 +89978,9 @@ class Toolbar$1 {
                 iconCss: 'e-icons e-de-ctnr-image',
                 select: this.onDropDownButtonSelect.bind(this),
             };
+            if (!isNullOrUndefined(this.imgDropDwn)) {
+                this.imgDropDwn = undefined;
+            }
             this.imgDropDwn = new DropDownButton(items, imageButton);
         }
         if (this.toolbarItems.indexOf('Break') >= 0) {
@@ -89984,6 +89994,9 @@ class Toolbar$1 {
                 iconCss: 'e-icons e-de-ctnr-break',
                 select: this.onDropDownButtonSelect.bind(this),
             };
+            if (!isNullOrUndefined(this.breakDropDwn)) {
+                this.breakDropDwn = undefined;
+            }
             this.breakDropDwn = new DropDownButton(items, breakButton);
         }
         this.filePicker = createElement('input', {
@@ -89995,6 +90008,9 @@ class Toolbar$1 {
         this.imagePicker = createElement('input', {
             attrs: { type: 'file', accept: '.jpg,.jpeg,.png,.bmp' }, className: 'e-de-ctnr-file-picker'
         });
+        if (Browser.isIE) {
+            document.body.appendChild(this.imagePicker);
+        }
         if (this.toolbarItems.indexOf('LocalClipboard') >= 0) {
             this.toggleButton(id + CLIPBOARD_ID, this.container.enableLocalPaste);
         }
@@ -90013,6 +90029,9 @@ class Toolbar$1 {
                 cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                 select: this.onDropDownButtonSelect.bind(this)
             };
+            if (!isNullOrUndefined(this.restrictDropDwn)) {
+                this.restrictDropDwn = undefined;
+            }
             this.restrictDropDwn = new DropDownButton(items, restrictEditing);
         }
         if (this.toolbarItems.indexOf('FormFields') >= 0) {
@@ -90026,6 +90045,9 @@ class Toolbar$1 {
                 cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                 select: this.onDropDownButtonSelect.bind(this),
             };
+            if (!isNullOrUndefined(this.formFieldDropDown)) {
+                this.formFieldDropDown = undefined;
+            }
             this.formFieldDropDown = new DropDownButton(items, breakButton);
         }
     }

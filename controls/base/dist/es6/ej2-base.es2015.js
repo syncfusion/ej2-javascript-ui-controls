@@ -339,7 +339,7 @@ function print(element, printWindow) {
  */
 function formatUnit(value) {
     let result = value + '';
-    if (result === 'auto' || result.indexOf('%') !== -1 || result.indexOf('px') !== -1) {
+    if (result.match(/auto|%|px|vh|vm|vmax|vmin|em/)) {
         return result;
     }
     return result + 'px';
@@ -7260,7 +7260,7 @@ let Draggable = Draggable_1 = class Draggable extends Base {
                 }
             }
         }
-        if (this.preventDefault && !isUndefined(evt.changedTouches)) {
+        if (this.preventDefault && !isUndefined(evt.changedTouches) && evt.type !== 'touchstart') {
             evt.preventDefault();
         }
         this.element.setAttribute('aria-grabbed', 'true');
@@ -7356,8 +7356,8 @@ let Draggable = Draggable_1 = class Draggable extends Base {
             }
             this.getScrollableValues();
             let posValue = this.getProcessedPositionValue({
-                top: (pos.top - this.diffY - this.parentScrollY) + 'px',
-                left: (pos.left - this.diffX - this.parentScrollX) + 'px'
+                top: (pos.top - this.diffY - (this.clone ? 0 : this.parentScrollY)) + 'px',
+                left: (pos.left - this.diffX - (this.clone ? 0 : this.parentScrollX)) + 'px'
             });
             this.dragElePosition = { top: pos.top, left: pos.left };
             setStyleAttribute(dragTargetElement, this.getDragPosition({ position: 'absolute', left: posValue.left, top: posValue.top }));
@@ -7511,8 +7511,12 @@ let Draggable = Draggable_1 = class Draggable extends Base {
             draEleLeft = (left - iLeft) < 0 ? this.dragElePosition.left : (left - iLeft);
         }
         else {
-            draEleTop = top - iTop - this.parentScrollY;
-            draEleLeft = left - iLeft - this.parentScrollX;
+            draEleTop = top - iTop;
+            draEleLeft = left - iLeft;
+        }
+        if (!this.clone) {
+            draEleTop -= this.parentScrollY;
+            draEleLeft -= this.parentScrollX;
         }
         let dragValue = this.getProcessedPositionValue({ top: draEleTop + 'px', left: draEleLeft + 'px' });
         setStyleAttribute(helperElement, this.getDragPosition(dragValue));

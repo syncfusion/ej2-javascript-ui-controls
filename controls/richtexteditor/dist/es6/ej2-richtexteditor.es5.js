@@ -21274,7 +21274,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                 this.placeHolderWrapper.innerHTML = this.placeholder;
                 if (this.inputElement.textContent.length === 0 &&
                     !isNullOrUndefined(this.inputElement.firstChild) && this.inputElement.firstChild.nodeName === 'P' &&
-                    !isNullOrUndefined(this.inputElement.firstChild.firstChild) && this.inputElement.firstChild.firstChild.nodeName === 'BR') {
+                    !isNullOrUndefined(this.inputElement.firstChild.firstChild) && this.inputElement.firstChild.firstChild.nodeName === 'BR' &&
+                    this.inputElement.innerHTML !== '<p><br></p><p><br></p>') {
                     this.placeHolderWrapper.style.display = 'block';
                 }
                 else {

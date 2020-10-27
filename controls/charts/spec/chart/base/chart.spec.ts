@@ -451,6 +451,9 @@ describe('Chart Control', () => {
             ele.setAttribute('align', 'center');
             document.body.appendChild(ele);
             chart = new Chart({
+                primaryYAxis: {
+                    rangePadding: 'Round'
+                },
                 series: [
                     {
                         dataSource: seriesData1, xName: 'x', yName: 'y', fill: 'orange', opacity: 0.7,

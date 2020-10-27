@@ -158,4 +158,12 @@ export class SpreadsheetHelper extends TestHelper {
             this.getElement(refr).click();
         }
     }
+
+    public edit(address: string, value: string): void {
+        let spreadsheet: Spreadsheet = this.getInstance();
+        spreadsheet.selectRange(address);
+        (spreadsheet as any).editModule.startEdit();
+        (spreadsheet as any).editModule.editCellData.value = value;
+        (spreadsheet as any).editModule.endEdit();
+    }
 }

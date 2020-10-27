@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.44 (2020-10-27)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#F157882`- After editing the row using `updateRow` method, `getCurrentViewRecords` method updated properly.
+
 ## 18.3.42 (2020-10-20)
 
 ### TreeGrid

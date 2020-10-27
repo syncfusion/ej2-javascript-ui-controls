@@ -63,6 +63,7 @@ export interface IAriaOptions<T> {
     haspopup?: T;
     level?: T;
     colcount?: string;
+    rowcount?: string;
 }
 
 const config: IAriaOptions<string> = {
@@ -77,5 +78,6 @@ const config: IAriaOptions<string> = {
     dropeffect: 'aria-dropeffect',
     haspopup: 'aria-haspopup',
     level: 'aria-level',
-    colcount: 'aria-colcount'
+    colcount: 'aria-colcount',
+    rowcount: 'aria-rowcount'
 };

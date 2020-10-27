@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 18.3.44 (2020-10-27)
+
+### PDF Viewer
+
+#### New Features
+
+- `#293367` - Provided the support to preserve bookmark formatting styles.
+
+#### Bug Fixes
+
+- `#F157546` - Exception will no longer be thrown on applying the freetext annotation color the while saving the document.
+
 ## 18.3.40 (2020-10-13)
 
 ### PDF Viewer

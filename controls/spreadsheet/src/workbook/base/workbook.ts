@@ -1,5 +1,5 @@
 import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';
-import { initSheet, getSheet, getSheetIndexFromId, getSheetIndexByName, getSheetIndex } from './sheet';
+import { initSheet, getSheet, getSheetIndexFromId, getSheetIndexByName, getSheetIndex, Sheet } from './sheet';
 import { Event, ModuleDeclaration, merge, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
 import { getWorkbookRequiredModules } from '../common/module';
@@ -55,7 +55,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * ```
      * @default []
      */
-    @Property([])
+    @Collection<SheetModel>([], Sheet)
     public sheets: SheetModel[];
 
     /**
@@ -1092,5 +1092,14 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     public getAddressInfo(address: string): { sheetIndex: number, indices: number[] } {
         return getAddressInfo(this, address);
+    }
+
+    /**
+     * @hidden
+     */
+    public setSheetPropertyOnMute(sheet: SheetModel, prop: string, value: Object): void {
+        this.isProtectedOnChange = true;
+        sheet[prop] = value;
+        this.isProtectedOnChange = false;
     }
 }

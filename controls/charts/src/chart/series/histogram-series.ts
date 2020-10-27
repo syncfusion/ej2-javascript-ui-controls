@@ -88,16 +88,19 @@ export class HistogramSeries extends ColumnSeries {
         let pointsCount: number = 500;
         let del: number = (max - min) / (pointsCount - 1);
         let distributionLine: Element;
-        for (let i: number = 0; i < pointsCount; i++) {
-            xValue = min + i * del;
-            yValue = Math.exp(-(xValue - mean) * (xValue - mean) / (2 * sDValue * sDValue)) /
-                (sDValue * Math.sqrt(2 * Math.PI));
-            pointLocation = getPoint(
-                xValue, yValue * binWidth * yValuesCount, series.xAxis, series.yAxis,
-                series.chart.requireInvertedAxis, series
-            );
-            direction += startPoint + ' ' + (pointLocation.x) + ' ' + (pointLocation.y) + ' ';
-            startPoint = 'L';
+        let points: number = series.points.length;
+        if (points) {
+            for (let i: number = 0; i < pointsCount; i++) {
+                xValue = min + i * del;
+                yValue = Math.exp(-(xValue - mean) * (xValue - mean) / (2 * sDValue * sDValue)) /
+                    (sDValue * Math.sqrt(2 * Math.PI));
+                pointLocation = getPoint(
+                    xValue, yValue * binWidth * yValuesCount, series.xAxis, series.yAxis,
+                    series.chart.requireInvertedAxis, series
+                );
+                direction += startPoint + ' ' + (pointLocation.x) + ' ' + (pointLocation.y) + ' ';
+                startPoint = 'L';
+            }
         }
         distributionLine = series.chart.renderer.drawPath(
             new PathOption(

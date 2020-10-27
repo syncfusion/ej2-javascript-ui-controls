@@ -1,5 +1,5 @@
 /// <reference path='../../workbook/base/workbook-model.d.ts'/>
-import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclaration, Event } from '@syncfusion/ej2-base';
+import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclaration, Event, isUndefined } from '@syncfusion/ej2-base';
 import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { detach, select, closest, setStyleAttribute, EventHandler } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
@@ -23,8 +23,8 @@ import { SheetModel, getColumnsWidth, getSheetIndex, WorkbookHyperlink, Hyperlin
 import { BeforeHyperlinkArgs, AfterHyperlinkArgs, getCellAddress, FindOptions, ValidationModel } from './../../workbook/common/index';
 import { activeCellChanged, BeforeCellFormatArgs, afterHyperlinkCreate, getColIndex, CellStyleModel } from './../../workbook/index';
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, WorkbookInsert, WorkbookDelete, WorkbookMerge } from './../../workbook/index';
-import { getSheetNameFromAddress, DataBind, CellModel, beforeHyperlinkCreate } from './../../workbook/index';
-import { BeforeSortEventArgs, SortOptions, sortComplete, SortEventArgs } from './../../workbook/index';
+import { getSheetNameFromAddress, DataBind, CellModel, beforeHyperlinkCreate, DataSourceChangedEventArgs } from './../../workbook/index';
+import { BeforeSortEventArgs, SortOptions, sortComplete, SortEventArgs, dataSourceChanged } from './../../workbook/index';
 import { getSheetIndexFromId, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookSort } from './../../workbook/index';
 import { FilterOptions, FilterEventArgs, ProtectSettingsModel, findKeyUp } from './../../workbook/index';
 import { Workbook } from '../../workbook/base/workbook';
@@ -382,6 +382,23 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     @Event()
     public dataBound: EmitType<Object>;
+
+    /**
+     * Triggers during data changes when the data is provided as `dataSource` in the Spreadsheet.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *       dataSourceChanged: (args: DataSourceChangedEventArgs) => {
+     *       }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     * @event
+     */
+    @Event()
+    public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;
 
     /**
      * Triggers when the cell is being edited.
@@ -2030,16 +2047,39 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     // }
                     // if (newProp.sheets[sheetIdx].range) {
                     //     this.sheets[sheetIdx].range = newProp.sheets[sheetIdx].range;
-                    this.renderModule.refreshSheet();
-                    if (this.showSheetTabs) {
-                        Object.keys(newProp.sheets).forEach((sheetIdx: string): void => {
-                            this.notify(sheetNameUpdate, {
-                                items: this.element.querySelector('.e-sheet-tabs-items').children[sheetIdx],
-                                value: newProp.sheets[sheetIdx].name,
-                                idx: sheetIdx
+
+                    Object.keys(newProp.sheets).forEach((sheetIdx: string, index: number) => {
+                        let sheet: SheetModel = newProp.sheets[sheetIdx];
+                        if (sheet.ranges && Object.keys(sheet.ranges).length) {
+                            let ranges: string[] = Object.keys(sheet.ranges);
+                            let newRangeIdx: number;
+                            ranges.forEach((rangeIdx: string, idx: number) => {
+                                if (!sheet.ranges[rangeIdx].info) {
+                                    newRangeIdx = idx;
+                                }
                             });
-                        });
-                    }
+                            ranges.forEach((rangeIdx: string, idx: number) => {
+                                if (sheet.ranges[rangeIdx].dataSource && (isUndefined(newRangeIdx)
+                                    || (!isUndefined(newRangeIdx) && newRangeIdx === idx))) {
+                                    this.notify(dataSourceChanged, {
+                                        sheetIdx: sheetIdx, rangeIdx: rangeIdx,
+                                        isLastRange: ranges.length - 1 === idx
+                                    });
+                                }
+                            });
+                        } else {
+                            if (index === 0) {
+                                this.renderModule.refreshSheet();
+                            }
+                            if (this.showSheetTabs && sheet.name) {
+                                this.notify(sheetNameUpdate, {
+                                    items: this.element.querySelector('.e-sheet-tabs-items').children[sheetIdx],
+                                    value: sheet.name,
+                                    idx: sheetIdx
+                                });
+                            }
+                        }
+                    });
                     break;
                 case 'locale':
                     this.refresh();

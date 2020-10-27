@@ -319,7 +319,7 @@ class SfSidebar {
         this.windowWidth = null;
         let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') || this.targetElement;
         if (!isNOU(sibling)) {
-            sibling.style.margin = sibling.style.transform = '';
+            sibling.style.transform = ''; //sibling.style.margin - azure overflow issue
         }
         this.unWireEvents();
     }

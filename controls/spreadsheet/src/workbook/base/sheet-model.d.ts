@@ -1,4 +1,4 @@
-import { Workbook } from './workbook';import { Query, DataManager } from '@syncfusion/ej2-data';import { RowModel } from './row-model';import { ColumnModel } from './column-model';import { processIdx } from './data';import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel } from '../common/index';import { ProtectSettings } from '../common/index';import { isUndefined, ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { Row } from './row';import { Column } from './column';import { WorkbookModel } from './workbook-model';
+import { Workbook } from './workbook';import { Query, DataManager } from '@syncfusion/ej2-data';import { RowModel } from './row-model';import { ColumnModel } from './column-model';import { processIdx } from './data';import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange } from '../common/index';import { ProtectSettings } from '../common/index';import { isUndefined, ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { WorkbookModel } from './workbook-model';
 
 /**
  * Interface for a class Range
@@ -148,7 +148,7 @@ export interface SheetModel {
      * });
      * spreadsheet.appendTo('#Spreadsheet');
      * ```
-     * @default 'A1'
+     * @default 'A1:A1'
      */
     selectedRange?: string;
 

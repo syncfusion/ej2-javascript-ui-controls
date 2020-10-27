@@ -3,8 +3,8 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
-import { Segments, ConnectorConstraints, PortConstraints, PortVisibility } from '../../../src/diagram/enum/enum';
-import { Connector } from '../../../src/diagram/objects/connector';
+import { Segments, ConnectorConstraints, PortConstraints, PortVisibility, NodeConstraints } from '../../../src/diagram/enum/enum';
+import { Connector, OrthogonalSegment } from '../../../src/diagram/objects/connector';
 import { StraightSegmentModel } from '../../../src/diagram/objects/connector-model';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
@@ -13,6 +13,9 @@ import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { ConnectorEditing } from '../../../src/diagram/interaction/connector-editing';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
+import { StackPanel } from '../../../src/diagram/core/containers/stack-panel';
+import { ImageElement } from '../../../src/diagram/core/elements/image-element';
+import { TextElement } from '../../../src/diagram/core/elements/text-element';
 Diagram.Inject(UndoRedo);
 Diagram.Inject(ConnectorEditing, Snapping, ConnectorBridging);
 /**
@@ -1497,5 +1500,229 @@ describe('Diagram Control', () => {
         });
     });
 
+    describe('Target decorator is not connected properly', () => {
+
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let diagramCanvas: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'TargetDecoratorSegmentIssue' });
+            document.body.appendChild(ele);
+            function setNodeTemplate(obj: any) {
+                let content = new StackPanel();
+                let tcontent = new StackPanel();
+            
+                let innerStack = new StackPanel();
+                let child = [];
+                let tchild = [];
+            
+                for (var i = 0; i < obj.addInfo.length; i++) {
+                  content.id = obj.id + i + "_outerstack";
+                  content.orientation = "Vertical";
+                  content.padding = { left: 0, right: 0, top: 0, bottom: 0 };
+                  content.style.fill = 'transparent';
+                  tcontent.width = content.width;
+                  tcontent.horizontalAlignment = 'Stretch';
+            
+                  tcontent.id = obj.id + i + "_touterstack";
+                  tcontent.orientation = "Horizontal";
+                  tcontent.padding = { left: 0, right: 0, top: 0, bottom: 0 };
+                  tcontent.style.fill = '#0F1F3E';
+                  tcontent.style.strokeWidth = 0;
+                  innerStack.style.strokeColor = "none";
+                  innerStack.margin = { left: 0, right: 0, top: 0, bottom: 0 };
+                  innerStack.id = obj.id + i + "_innerstack";
+            
+            
+            
+                  let text = new TextElement();
+                  text.margin = { left: 15, right: 0, top: (i == 1 ? 5 : 0), bottom: 5 };
+                  text.content = obj.addInfo[i].content;
+                  text.style.color = "black";
+            
+                  text.style.fontFamily = "Muli-regular";
+                  text.style.strokeColor = "none";
+                  text.horizontalAlignment = "Left";
+                  text.style.fill = "none";
+                  text.id = obj.id + i + "_text1";
+                  if (i == 0) {
+                    text.margin = { left: 5, right: 0, top: 5, bottom: 5 };
+                    text.style.bold = true;
+                    text.style.color = "white";
+                    text.height = 25;
+            
+                    text.width = content.width;
+                    let imageElement = new ImageElement();
+                    imageElement.source = "assets/tbl.png";
+                    imageElement.height = 15;
+                    imageElement.width = 15;
+                    imageElement.margin.left = 5;
+                    imageElement.style.strokeColor = 'none';
+                    imageElement.id = obj.id + i + '_pk';
+            
+                    let innerStack2 = new StackPanel();
+                    innerStack2.id = obj.id + i + "innerStack11";
+                    innerStack2.orientation = "Horizontal";
+                    innerStack2.style.strokeColor = "transparent";
+                    innerStack2.horizontalAlignment = "Left";
+                    innerStack2.margin = { left: 0, right: 0, top: 0, bottom: 0 };
+                    innerStack2.children = [imageElement, text];
+                    tchild.push(innerStack2)
+                    tcontent.children = [imageElement, text];
+                  }
+            
+            
+            
+            
+                  if (obj.addInfo[i].isPrimary == true || obj.addInfo[i].isFor==true ) {
+                    let desigText = new TextElement();
+                    desigText.margin = { left: 0, right: 0, top: (i==1?5:0), bottom: 5 };
+                    desigText.content = obj.addInfo[i].content;
+                    desigText.style.color = "black";
+                    desigText.style.strokeColor = "none";
+                    desigText.style.fontSize = 13;
+                    desigText.style.fontFamily = "Muli-regular";
+                    desigText.style.fill = "none";
+                    desigText.horizontalAlignment = "Left";
+                    desigText.id = obj.id + i + "_desig";
+                    let imageElement = new ImageElement();
+                    imageElement.source = obj.addInfo[i].isPrimary ? "assets/fk.png" : "assets/pk.png";
+                    imageElement.height = 15;
+                    imageElement.width = 15;
+                    imageElement.style.strokeColor = 'none';
+                    imageElement.id = obj.id + i + '_pk';
+            
+            
+            
+                    let innerStack1= new StackPanel();
+                    innerStack1.id = obj.id + i + "innerStack11";
+                    innerStack1.orientation = "Horizontal";
+                    innerStack1.style.strokeColor = "transparent";
+                    innerStack1.horizontalAlignment = "Left";
+                    innerStack1.margin = { left: 0, right: 0, top: 0, bottom: 0 };
+                    innerStack1.children = [imageElement, desigText];
+                    child.push(innerStack1);
+                    //innerStack.children.push(innerStack1);
+                  }
+                  else if (i != 0)
+                  child.push(text);
+                  //innerStack.children.push(text);
+            
+                }
+                innerStack.children = child;
+                content.children = [tcontent, innerStack];
+                return content;
+            
+              }            
+            diagram = new Diagram({
+                width: "1200px", height: "500px",
+                nodes: [
+                    {
+                        addInfo:[
+                            {content: "ActiveSubscriptions"},
+                            {content: "ActiveID", isPrimary: true, isFor: false},
+                            {content: "SubscriptionID", isPrimary: false, isFor: true},
+                            {content: "TotalFailures", isPrimary: false, isFor: false},
+                            {content: "TotalNotifications", isPrimary: false, isFor: false},
+                            {content: "TotalSuccesses", isPrimary: false, isFor: false}
+                        ],
+                        borderColor: "black",
+                        borderWidth: 1,
+                        constraints: 7337966,
+                        id: "ActiveSubscriptions",
+                        offsetX: 1137.9453125,
+                        offsetY: -509.29999999999984,
+                        tooltip: {content: "ActiveSubscriptions"}
+                    },
+                    {
+                        addInfo:[
+                            {content: "Subscriptions"},
+                            {content: "DataSettings", isPrimary: false, isFor: false},
+                            {content: "DeliveryExtension", isPrimary: false, isFor: false},
+                            {content: "Description", isPrimary: false, isFor: false},
+                            {content: "EventType", isPrimary: false, isFor: false},
+                            {content: "ExtensionSettings", isPrimary: false, isFor: false},
+                            {content: "InactiveFlags", isPrimary: false, isFor: false},
+                            {content: "LastRunTime", isPrimary: false, isFor: false},
+                            {content: "LastStatus", isPrimary: false, isFor: false},
+                            {content: "Locale", isPrimary: false, isFor: false},
+                            {content: "MatchData", isPrimary: false, isFor: false},
+                            {content: "ModifiedByID", isPrimary: false, isFor: true},
+                            {content: "ModifiedDate", isPrimary: false, isFor: false},
+                            {content: "OwnerID", isPrimary: false, isFor: true},
+                            {content: "Parameters", isPrimary: false, isFor: false},
+                            {content: "Report_OID", isPrimary: false, isFor: true},
+                            {content: "ReportZone", isPrimary: false, isFor: false},
+                            {content: "SubscriptionID", isPrimary: true, isFor: false},
+                            {content: "Version", isPrimary: false, isFor: false}    
+                        ],
+                        borderColor: "black",
+                        borderWidth: 1,
+                        constraints: 7337966,
+                        id: "Subscriptions",
+                        offsetX: 723.21875,
+                        offsetY: 49.30000000000018,
+                        tooltip: {content: "Subscriptions"}
+                    }
+                ],
+                snapSettings: { constraints: SnapConstraints.None },
+                setNodeTemplate: setNodeTemplate,
+                getNodeDefaults: function(obj: NodeModel) {
+                    obj.style = { fill: '#26A0DA', strokeColor: 'white' };
+                    obj.constraints = NodeConstraints.Default | NodeConstraints.Tooltip;
+                    return obj;
+                  },
+                connectors: [
+                    {
+                        annotations: [{
+                            content: "SubscriptionID => SubscriptionID",
+                            style:{fill: "white"}
+                        }],
+                        cornerRadius: 7,
+                        id: "connect12",
+                        sourceID: "ActiveSubscriptions",
+                        style:{fill: "#A99B51", strokeColor: "#A99B51", strokeDashArray: "5,5"},
+                        targetDecorator:{ style: {strokeColor: "#A99B51", fill: "#A99B51"} },
+                        targetID: "Subscriptions",
+                        type: "Orthogonal",
+                        segments: [
+                            {type: "Orthogonal", length: 22.265625, direction: "Left"},
+                            {type: "Orthogonal", length: 470.1, direction: "Bottom"},
+                            {type: "Orthogonal", length: 20, direction: "Left"},
+                            {type: "Orthogonal", length: 20, direction: "Bottom"},
+                            {type: "Orthogonal", length: 180, direction: "Left"},
+                            {type: "Orthogonal", length: 68.5, direction: "Bottom"},
+                            {type: "Orthogonal", length: 72.453125, direction: "Left"}
+                        ]
+            
+                    }
+                ],
+            });
+
+            diagram.appendTo('#TargetDecoratorSegmentIssue');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking when previous segment of the last segment', (done: Function) => {
+            let connector: Connector = diagram.connectors[0] as Connector;
+			console.log("Target decorator is not connected properly");
+            console.log("connector.segments:"+connector.segments.length);
+            console.log("(connector.segments[6] as OrthogonalSegment).length:"+(connector.segments[6] as OrthogonalSegment).length);
+            expect(connector.segments.length == 8 && (connector.segments[6] as OrthogonalSegment).length != 72.453125).toBe(true);
+            done();
+        });
+    });
 
 });

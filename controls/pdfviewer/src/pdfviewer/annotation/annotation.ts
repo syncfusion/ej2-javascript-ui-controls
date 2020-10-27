@@ -2531,7 +2531,8 @@ export class Annotation {
             }
             if (this.pdfViewer.toolbar && this.pdfViewer.toolbar.annotationToolbarModule && !Browser.isDevice) {
                 // tslint:disable-next-line:max-line-length
-                if (this.pdfViewer.annotation.freeTextAnnotationModule && !this.pdfViewer.annotation.freeTextAnnotationModule.isInuptBoxInFocus) {
+                let isSkip: boolean = this.pdfViewer.toolbar.annotationToolbarModule.inkAnnotationSelected;
+                if (this.pdfViewer.annotation.freeTextAnnotationModule && !this.pdfViewer.annotation.freeTextAnnotationModule.isInuptBoxInFocus && !isSkip) {
                     this.pdfViewer.toolbar.annotationToolbarModule.enableAnnotationPropertiesTools(false);
                     this.pdfViewer.toolbar.annotationToolbarModule.enableFreeTextAnnotationPropertiesTools(false);
                 }

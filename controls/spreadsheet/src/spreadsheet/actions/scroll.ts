@@ -100,7 +100,7 @@ export class Scroll {
             let sheet: SheetModel = this.parent.getActiveSheet();
             top = skipHiddenIdx(sheet, top, true); left = skipHiddenIdx(sheet, left, true, 'columns');
         }
-        this.parent.getActiveSheet().topLeftCell = getCellAddress(top, left);
+        this.parent.setSheetPropertyOnMute(this.parent.getActiveSheet(), 'topLeftCell', getCellAddress(top, left));
     }
 
     private getRowOffset(scrollTop: number, scrollDown: boolean): IOffset {

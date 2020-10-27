@@ -4256,6 +4256,9 @@ let Slider = class Slider extends Component {
                     }
                 }
             });
+            if (this.isMaterialTooltip) {
+                this.setPreviousVal('change', this.value);
+            }
         }
     }
     setTooltipContent() {
@@ -5299,7 +5302,7 @@ let Slider = class Slider extends Component {
         let previous = eventName === 'change' ? this.previousVal : this.previousChanged;
         if (this.type !== 'Range') {
             this.setProperties({ 'value': this.handleVal1 }, true);
-            if (previous !== this.value) {
+            if (previous !== this.value && (!this.isMaterialTooltip || !this.initialTooltip)) {
                 this.trigger(eventName, this.changeEventArgs(eventName, e));
                 this.initialTooltip = true;
                 this.setPreviousVal(eventName, this.value);
@@ -5681,6 +5684,7 @@ let Slider = class Slider extends Component {
                 !this.getHandle().classList.contains(classNames.sliderTabHandle)) {
                 this.materialChange();
             }
+            this.sliderBarUp(evt);
             this.tooltipToggle(this.getHandle());
             return;
         }
@@ -5694,6 +5698,9 @@ let Slider = class Slider extends Component {
             this.rangeBar.style.transition = transition.rangeBar;
         }
         this.setHandlePosition(evt);
+        if (this.isMaterialTooltip) {
+            this.initialTooltip = false;
+        }
         this.changeEvent('changed', evt);
         if (this.type !== 'Default') {
             this.setRangeBar();

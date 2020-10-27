@@ -620,6 +620,8 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       extend(collectionObj, { element: [this.toastEle] }, true);
       this.toastCollection.push(collectionObj);
     }
+    // tslint:disable-next-line:no-any
+    if ((this as any).isReact) { this.renderReactTemplates(); }
   }
 
   /**
@@ -730,6 +732,8 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       element = <HTEle>(this.newestOnTop ? this.toastContainer.lastElementChild : this.toastContainer.firstElementChild);
     }
     this.destroyToast(element as HTEle);
+    // tslint:disable-next-line:no-any
+    if ((this as any).isReact) { this.clearTemplate(); }
   }
 
   private fetchEle(ele: HTEle, value: string, prob: string): HTEle {

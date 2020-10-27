@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.44 (2020-10-27)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+`#296208` - The issue with "the placeholder blinks when pressing enter key in the Rich Text Editor" has been resolved.
+
 ## 18.3.35 (2020-10-01)
 
 ### RichTextEditor

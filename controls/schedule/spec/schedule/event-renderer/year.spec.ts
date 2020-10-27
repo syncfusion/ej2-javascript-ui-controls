@@ -242,6 +242,19 @@ describe('Year and TimelineYear View Event Render Module', () => {
             expect(workCell.offsetHeight).toEqual(70);
         });
 
+        it('ScrollTo check', (done: DoneFn) => {
+            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            expect(contentArea.scrollLeft).toEqual(0);
+            schObj.scrollTo(null, new Date(2019, 1, 3));
+            setTimeout(
+                () => {
+                    expect(contentArea.scrollLeft).toEqual(60);
+                    expect(contentArea.scrollTop).toEqual(490);
+                    done();
+                },
+                400);
+        });
+
         it('Current date testing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-month-header.e-current-day').length).toEqual(1);
@@ -312,6 +325,18 @@ describe('Year and TimelineYear View Event Render Module', () => {
 
         it('Testing long spanned event in horizontal year view', () => {
             expect(schObj.element.querySelectorAll('[data-id="Appointment_1"]').length).toEqual(5);
+        });
+
+        it('ScrollTo check', (done: DoneFn) => {
+            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            expect(contentArea.scrollLeft).toEqual(0);
+            schObj.scrollTo(null, new Date(2019, 1, 3));
+            setTimeout(
+                () => {
+                    expect(contentArea.scrollLeft).toEqual(420);
+                    done();
+                },
+                400);
         });
     });
 

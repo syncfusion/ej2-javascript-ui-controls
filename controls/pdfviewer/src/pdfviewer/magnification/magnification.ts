@@ -311,65 +311,67 @@ export class Magnification {
      * Executes when the zoom or pinch operation is performed
      */
     private onZoomChanged(zoomValue: number): void {
-        if (this.pdfViewer.annotationModule) {
-            this.pdfViewer.annotationModule.closePopupMenu();
-        }
-        this.previousZoomFactor = this.zoomFactor;
-        this.zoomLevel = this.getZoomLevel(zoomValue);
-        this.zoomFactor = this.getZoomFactor(zoomValue);
-        if (this.zoomFactor <= 0.25) {
-            this.pdfViewerBase.isMinimumZoom = true;
-        } else {
-            this.pdfViewerBase.isMinimumZoom = false;
-        }
-        if (Browser.isDevice) {
-            if (this.isWebkitMobile) {
-                this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
-            } else {
-                this.pdfViewerBase.viewerContainer.style.overflowY = 'hidden';
+        if (zoomValue) {
+            if (this.pdfViewer.annotationModule) {
+                this.pdfViewer.annotationModule.closePopupMenu();
             }
-        } else {
-            this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
-        }
-        if (this.pdfViewerBase.pageCount > 0) {
-            if ((this.previousZoomFactor !== this.zoomFactor)) {
-                if (!this.isPinchZoomed) {
-                    this.magnifyPages();
+            this.previousZoomFactor = this.zoomFactor;
+            this.zoomLevel = this.getZoomLevel(zoomValue);
+            this.zoomFactor = this.getZoomFactor(zoomValue);
+            if (this.zoomFactor <= 0.25) {
+                this.pdfViewerBase.isMinimumZoom = true;
+            } else {
+                this.pdfViewerBase.isMinimumZoom = false;
+            }
+            if (Browser.isDevice) {
+                if (this.isWebkitMobile) {
+                    this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
                 } else {
-                    if (Browser.isDevice) {
-                        // tslint:disable-next-line:max-line-length
-                        this.pdfViewerBase.mobilePageNoContainer.style.left = (this.pdfViewer.element.clientWidth / 2) - (parseFloat(this.pdfViewerBase.mobilePageNoContainer.style.width) / 2) + 'px';
+                    this.pdfViewerBase.viewerContainer.style.overflowY = 'hidden';
+                }
+            } else {
+                this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
+            }
+            if (this.pdfViewerBase.pageCount > 0) {
+                if ((this.previousZoomFactor !== this.zoomFactor)) {
+                    if (!this.isPinchZoomed) {
+                        this.magnifyPages();
+                    } else {
+                        if (Browser.isDevice) {
+                            // tslint:disable-next-line:max-line-length
+                            this.pdfViewerBase.mobilePageNoContainer.style.left = (this.pdfViewer.element.clientWidth / 2) - (parseFloat(this.pdfViewerBase.mobilePageNoContainer.style.width) / 2) + 'px';
+                        }
+                        this.responsivePages();
                     }
-                    this.responsivePages();
+                }
+                if (!isBlazor()) {
+                    if (this.pdfViewer.toolbarModule) {
+                        this.pdfViewer.toolbarModule.updateZoomButtons();
+                    }
+                }
+                if (!this.isInitialLoading) {
+                    if (this.previousZoomFactor !== this.zoomFactor) {
+                        this.pdfViewer.zoomValue = this.zoomFactor * 100;
+                        this.pdfViewer.fireZoomChange();
+                    }
                 }
             }
             if (!isBlazor()) {
                 if (this.pdfViewer.toolbarModule) {
-                    this.pdfViewer.toolbarModule.updateZoomButtons();
+                    this.pdfViewer.toolbarModule.updateZoomPercentage(this.zoomFactor);
+                }
+                if (!this.isInitialLoading) {
+                    if (this.previousZoomFactor !== this.zoomFactor) {
+                        this.pdfViewer.zoomValue = this.zoomFactor * 100;
+                        this.pdfViewer.fireZoomChange();
+                    }
                 }
             }
-            if (!this.isInitialLoading) {
-                if (this.previousZoomFactor !== this.zoomFactor) {
-                    this.pdfViewer.zoomValue = this.zoomFactor * 100;
-                    this.pdfViewer.fireZoomChange();
-                }
+            if (Browser.isDevice && this.isPinchZoomed) {
+                // tslint:disable-next-line:radix
+                let zoomPercentage: string = parseInt((this.zoomFactor * 100).toString()) + '%';
+                this.pdfViewerBase.navigationPane.createTooltipMobile(zoomPercentage);
             }
-        }
-        if (!isBlazor()) {
-            if (this.pdfViewer.toolbarModule) {
-                this.pdfViewer.toolbarModule.updateZoomPercentage(this.zoomFactor);
-            }
-            if (!this.isInitialLoading) {
-                if (this.previousZoomFactor !== this.zoomFactor) {
-                    this.pdfViewer.zoomValue = this.zoomFactor * 100;
-                    this.pdfViewer.fireZoomChange();
-                }
-            }
-        }
-        if (Browser.isDevice && this.isPinchZoomed) {
-            // tslint:disable-next-line:radix
-            let zoomPercentage: string = parseInt((this.zoomFactor * 100).toString()) + '%';
-            this.pdfViewerBase.navigationPane.createTooltipMobile(zoomPercentage);
         }
     }
 

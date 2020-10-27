@@ -7,7 +7,7 @@ import { subtractThickness, valueToCoefficient, sum, redrawElement, isBreakLabel
 import { subArray, inside, appendChildElement } from '../../common/utils/helper';
 import { Thickness, logBase, createZoomingLabels, getElement, rotateTextSize } from '../../common/utils/helper';
 import { Size, Rect, measureText, TextOption, PathOption } from '@syncfusion/ej2-svg-base';
-import { textElement, textTrim, getRotatedRectangleCoordinates, isRotatedRectIntersect } from '../../common/utils/helper';
+import { textElement, textTrim, getRotatedRectangleCoordinates, isRotatedRectIntersect, isZoomSet } from '../../common/utils/helper';
 import { BorderModel } from '../../common/model/base-model';
 import { MajorGridLinesModel, MinorGridLinesModel, MajorTickLinesModel, MinorTickLinesModel } from './axis-model';
 import { IThemeStyle } from '../model/chart-interface';
@@ -636,7 +636,8 @@ export class CartesianAxisLayoutPanel {
      * @param rect 
      */
     private drawYAxisGridLine(axis: Axis, index: number, parent: Element, rect: Rect): void {
-
+        let isLogAxis: boolean = axis.valueType === 'Logarithmic';
+        let isCategoryAxis: boolean = axis.valueType.indexOf('Category') > -1;
         let tempInterval: number;
         let pointY: number = 0;
         let majorGrid: string = '';
@@ -652,7 +653,7 @@ export class CartesianAxisLayoutPanel {
         let ticks: number = isTickInside ? (rect.x - tickSize - axisLineSize) : (rect.x + tickSize + axisLineSize + scrollBarHeight);
         let length: number = axis.visibleLabels.length;
         let chartThemeStyle: IThemeStyle = this.chart.themeStyle;
-        if (axis.valueType.indexOf('Category') && axis.labelPlacement === 'BetweenTicks' && length > 0) {
+        if (axis.valueType.indexOf('Category') > -1 && axis.labelPlacement === 'BetweenTicks' && length > 0) {
             length += 1;
         }
         let minorGridLines: MinorGridLinesModel = axis.minorGridLines;
@@ -682,6 +683,9 @@ export class CartesianAxisLayoutPanel {
                     '_MajorTickLine_', i, parent, chartThemeStyle.majorTickLine
                 );
                 if ((minorGridLines.width > 0 || minorTickLines.width > 0) && axis.minorTicksPerInterval > 0) {
+                    if (i === 0 && isZoomSet(axis) && !isLogAxis && !isCategoryAxis) {
+                        this.renderMinorGridOnZooming(axis, tempInterval, rect, i, index, chartThemeStyle, parent);
+                    }
                     minorGridDirection = this.drawAxisMinorLine(axis, tempInterval, rect, i);
                     this.renderGridLine(
                         axis, index, minorGridDirection[0], minorGridLines, '_MinorGridLine_', i, this.element,
@@ -691,6 +695,11 @@ export class CartesianAxisLayoutPanel {
                         axis, index, minorGridDirection[1], minorTickLines, '_MinorTickLine_', i,
                         parent, chartThemeStyle.minorTickLine
                     );
+                    if (i === length - 1 && isZoomSet(axis) && isLogAxis && !isCategoryAxis) {
+                        this.renderMinorGridOnZooming(
+                            axis, (tempInterval + axis.visibleRange.interval), rect, i, index, chartThemeStyle, parent
+                        );
+                    }
                 }
             }
         }
@@ -916,6 +925,8 @@ export class CartesianAxisLayoutPanel {
      * @param rect 
      */
     private drawXAxisGridLine(axis: Axis, index: number, parent: Element, rect: Rect): void {
+        let isLogAxis: boolean = axis.valueType === 'Logarithmic';
+        let isCategoryAxis: boolean = axis.valueType.indexOf('Category') > -1;
         let tempInterval: number;
         let pointX: number = 0;
         let majorGrid: string = '';
@@ -962,6 +973,9 @@ export class CartesianAxisLayoutPanel {
                     parent, chartThemeStyle.majorTickLine
                 );
                 if (axis.minorTicksPerInterval > 0 && (axis.minorGridLines.width > 0 || axis.minorTickLines.width > 0)) {
+                    if (i === 0 && isZoomSet(axis) && !isLogAxis && !isCategoryAxis) {
+                        this.renderMinorGridOnZooming(axis, tempInterval, rect, i, index, chartThemeStyle, parent);
+                    }
                     minorDirection = this.drawAxisMinorLine(axis, tempInterval, rect, i);
                     this.renderGridLine(
                         axis, index, minorDirection[0], axis.minorGridLines, '_MinorGridLine_', i,
@@ -971,9 +985,37 @@ export class CartesianAxisLayoutPanel {
                         axis, index, minorDirection[1], axis.minorTickLines, '_MinorTickLine_',
                         i, parent, chartThemeStyle.minorTickLine
                     );
+                    if (i === length - 1 && isZoomSet(axis) && isLogAxis && !isCategoryAxis) {
+                        this.renderMinorGridOnZooming(
+                            axis, (tempInterval + axis.visibleRange.interval), rect, i, index, chartThemeStyle, parent
+                        );
+                    }
                 }
             }
         }
+    }
+    /**
+     * To render missing minor grid lines while zooming
+     * @param axis 
+     * @param tempInterval 
+     * @param rect 
+     * @param i 
+     * @param index 
+     * @param chartThemeStyle 
+     * @param parent 
+     */
+    private renderMinorGridOnZooming(
+        axis: Axis, tempInterval: number, rect: Rect, i: number, index: number, chartThemeStyle: IThemeStyle, parent: Element
+    ): void {
+        let minorDirection: string[] = this.drawAxisMinorLine(axis, tempInterval, rect, i, true);
+        this.renderGridLine(
+            axis, index, minorDirection[0], axis.minorGridLines, '_MinorGridLine_', -1,
+            this.element, chartThemeStyle.minorGridLine, axis.minorGridLines.dashArray
+        );
+        this.renderGridLine(
+            axis, index, minorDirection[1], axis.minorTickLines, '_MinorTickLine_',
+            -1, parent, chartThemeStyle.minorTickLine
+        );
     }
 
     /**
@@ -984,7 +1026,7 @@ export class CartesianAxisLayoutPanel {
      * @param labelIndex 
      */
     private drawAxisMinorLine(
-        axis: Axis, tempInterval: number, rect: Rect, labelIndex: number): string[] {
+        axis: Axis, tempInterval: number, rect: Rect, labelIndex: number, isFirstLabel?: boolean): string[] {
         let value: number = tempInterval;
         let coor: number = 0;
         let position: number = 0;
@@ -1008,7 +1050,7 @@ export class CartesianAxisLayoutPanel {
         }
         if (axis.orientation === 'Horizontal') {
             for (let j: number = 0; j < axis.minorTicksPerInterval; j++) {
-                value = this.findLogNumeric(axis, logPosition, logInterval, value, labelIndex);
+                value = this.findLogNumeric(axis, logPosition, value, labelIndex, isFirstLabel);
                 logPosition += logInterval;
                 if (inside(value, range)) {
                     position = ((value - range.min) / (range.max - range.min));
@@ -1022,9 +1064,8 @@ export class CartesianAxisLayoutPanel {
                 }
             }
         } else {
-            tickSize = axis.opposedPosition ? axis.minorTickLines.height : -axis.minorTickLines.height;
             for (let j: number = 0; j < axis.minorTicksPerInterval; j++) {
-                value = this.findLogNumeric(axis, logPosition, logInterval, value, labelIndex);
+                value = this.findLogNumeric(axis, logPosition, value, labelIndex, isFirstLabel);
                 if (inside(value, range)) {
                     position = ((value - range.min) / (range.max - range.min));
                     position = Math.ceil(((axis.isInversed ? (1 - position) : position)) * rect.height) * -1; // For inversed axis
@@ -1051,12 +1092,14 @@ export class CartesianAxisLayoutPanel {
      * @param value 
      * @param labelIndex 
      */
-    private findLogNumeric(axis: Axis, logPosition: number, logInterval: number, value: number, labelIndex: number): number {
+    private findLogNumeric(axis: Axis, logPosition: number, value: number, labelIndex: number, isFirstLabel?: boolean): number {
         let range: VisibleRangeModel = axis.visibleRange;
+        let tempValue: number;
         if (axis.valueType === 'Logarithmic') {
             value = logBase(logPosition, axis.logBase);
         } else if (axis.valueType === 'DateTime') {
-            value += axis.dateTimeInterval / (axis.minorTicksPerInterval + 1);
+            tempValue = axis.dateTimeInterval / (axis.minorTicksPerInterval + 1);
+            value = isFirstLabel ? (value - tempValue) : (value + tempValue);
         } else if (axis.valueType === 'DateTimeCategory') {
             let padding: number = axis.labelPlacement === 'BetweenTicks' ? 0.5 : 0;
             value += ((axis.visibleLabels[labelIndex + 1] ?
@@ -1065,7 +1108,8 @@ export class CartesianAxisLayoutPanel {
                     axis.visibleLabels[labelIndex].value - padding : axis.visibleRange.min)) /
                 (axis.minorTicksPerInterval + 1);
         } else {
-            value += range.interval / (axis.minorTicksPerInterval + 1);
+            tempValue = range.interval / (axis.minorTicksPerInterval + 1);
+            value = isFirstLabel ? (value - tempValue) : (value + tempValue);
         }
         return value;
     }

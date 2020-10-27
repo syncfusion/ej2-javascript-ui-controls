@@ -676,6 +676,7 @@ export class Parser {
                                 }
                                 j = j - 1;
                                 right = this.parent.substring(text, i + 1, j - i);
+                                right = this.parent.getCellFrom(right);
                             } else {
                                 j = j - 1;
                                 right = this.parent.substring(text, i + 1, j - i);

@@ -29,9 +29,6 @@ export class LineSeries extends LineBase {
         for (let point of visiblePoints) {
             point.regions = [];
             point.symbolLocations = [];
-            if (isPolar && !(point.visible)) {
-                continue;
-            }
             if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) {
                 direction += this.getLineDirection(prevPoint, point, series, isInverted, getCoordinate, startPoint);
                 startPoint = prevPoint ? 'L' : startPoint;

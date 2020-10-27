@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 18.3.44 (2020-10-27)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#296222` - Resolved table rendering issue when table contains merged cell.
+- `#297479` - Field result text with multiple lines are now inserted properly when track changes enabled.
+- `#296863` - Resolved script error when field code contains table.
+- `#296863` - Resolved paragraph renders outside the page in RTL format document issue.
+
 ## 18.3.42 (2020-10-20)
 
 ### Document Editor

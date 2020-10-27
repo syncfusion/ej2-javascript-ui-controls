@@ -804,6 +804,13 @@ export function setRange(axis: Axis): boolean {
     return (axis.minimum != null && axis.maximum != null);
 }
 /**
+ * To check whether the axis is zoomed or not.
+ * @param axis
+ */
+export function isZoomSet(axis: Axis): boolean {
+    return (axis.zoomFactor < 1 && axis.zoomPosition >= 0);
+}
+/**
  * Calculate desired interval for the axis.
  * @return {void}
  * @private

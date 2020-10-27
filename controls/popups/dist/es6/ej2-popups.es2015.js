@@ -1532,6 +1532,9 @@ function resizeEast(e) {
 function setMinHeight(minimumHeight) {
     minHeight = minimumHeight;
 }
+function setMaxWidth(value) {
+    maxWidth = value;
+}
 function removeResize() {
     let handlers = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
     for (let i = 0; i < handlers.length; i++) {
@@ -1758,9 +1761,11 @@ let Dialog = class Dialog extends Component {
                 resizing: this.onResizing.bind(this),
                 proxy: this
             });
+            this.wireWindowResizeEvent();
         }
         else {
             removeResize();
+            this.unWireWindowResizeEvent();
             if (this.isModal) {
                 this.element.classList.remove(DLG_RESTRICT_LEFT_VALUE);
             }
@@ -2572,6 +2577,9 @@ let Dialog = class Dialog extends Component {
             this.popupObj.zIndex = this.zIndex;
         }
     }
+    windowResizeHandler() {
+        setMaxWidth(this.targetEle.clientWidth);
+    }
     /**
      * Get the properties to be maintained in the persisted state.
      * @private
@@ -2648,6 +2656,12 @@ let Dialog = class Dialog extends Component {
         if (this.isReact) {
             this.clearTemplate();
         }
+    }
+    wireWindowResizeEvent() {
+        window.addEventListener('resize', this.windowResizeHandler.bind(this));
+    }
+    unWireWindowResizeEvent() {
+        window.addEventListener('resize', this.windowResizeHandler.bind(this));
     }
     /**
      * Binding event to the element while widget creation

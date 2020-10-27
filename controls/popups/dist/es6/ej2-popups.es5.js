@@ -1564,6 +1564,9 @@ function resizeEast(e) {
 function setMinHeight(minimumHeight) {
     minHeight = minimumHeight;
 }
+function setMaxWidth(value) {
+    maxWidth = value;
+}
 function removeResize() {
     var handlers = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
     for (var i = 0; i < handlers.length; i++) {
@@ -1815,9 +1818,11 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                 resizing: this.onResizing.bind(this),
                 proxy: this
             });
+            this.wireWindowResizeEvent();
         }
         else {
             removeResize();
+            this.unWireWindowResizeEvent();
             if (this.isModal) {
                 this.element.classList.remove(DLG_RESTRICT_LEFT_VALUE);
             }
@@ -2635,6 +2640,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             this.popupObj.zIndex = this.zIndex;
         }
     };
+    Dialog.prototype.windowResizeHandler = function () {
+        setMaxWidth(this.targetEle.clientWidth);
+    };
     /**
      * Get the properties to be maintained in the persisted state.
      * @private
@@ -2711,6 +2719,12 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         if (this.isReact) {
             this.clearTemplate();
         }
+    };
+    Dialog.prototype.wireWindowResizeEvent = function () {
+        window.addEventListener('resize', this.windowResizeHandler.bind(this));
+    };
+    Dialog.prototype.unWireWindowResizeEvent = function () {
+        window.addEventListener('resize', this.windowResizeHandler.bind(this));
     };
     /**
      * Binding event to the element while widget creation

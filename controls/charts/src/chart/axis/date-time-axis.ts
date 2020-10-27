@@ -1,6 +1,6 @@
 import { DateFormatOptions } from '@syncfusion/ej2-base';
 import { Axis, VisibleLabels } from '../axis/axis';
-import { setRange, triggerLabelRender } from '../../common/utils/helper';
+import { isZoomSet, setRange, triggerLabelRender } from '../../common/utils/helper';
 import { Size } from '@syncfusion/ej2-svg-base';
 import { RangeIntervalType } from '../../common/utils/enum';
 import { DoubleRange } from '../utils/double-range';
@@ -261,8 +261,8 @@ export class DateTime extends NiceInterval {
             delta: axis.actualRange.delta,
         };
         let isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
-        if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-            axis.calculateVisibleRange(this.chart);
+        if ((isZoomSet(axis)) && !isLazyLoad) {
+            axis.calculateVisibleRangeOnZooming(this.chart);
             axis.calculateAxisRange(size, this.chart);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateDateTimeNiceInterval(axis, size, axis.visibleRange.min, axis.visibleRange.max)

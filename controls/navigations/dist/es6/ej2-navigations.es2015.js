@@ -8782,6 +8782,7 @@ const INPUTGROUP = 'e-input-group';
 const TREEINPUT = 'e-tree-input';
 const EDITING = 'e-editing';
 const RTL$1 = 'e-rtl';
+const INTERACTION = 'e-interaction';
 const DRAGITEM = 'e-drag-item';
 const DROPPABLE = 'e-droppable';
 const DRAGGING = 'e-dragging';
@@ -9081,6 +9082,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
     }
     templateComplier(template) {
         if (template) {
+            this.element.classList.add(INTERACTION);
             try {
                 if (document.querySelectorAll(template).length) {
                     return compile(document.querySelector(template).innerHTML.trim());
@@ -9090,6 +9092,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 return compile(template);
             }
         }
+        this.element.classList.remove(INTERACTION);
         return undefined;
     }
     setDataBinding(changeDataSource) {
@@ -12070,6 +12073,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let node = (drop === true) ? draggedNode : dropLi;
         let index = node ? closest(node, '.e-list-parent') : null;
         let i = 0;
+        let position = null;
         dragParent = (obj.dragLi && dragParent === null) ? closest(dragLiParent, '.' + ROOT) : dragParent;
         dragParent = (drop === true) ? this.dragParent : dragParent;
         if (cloneEle) {
@@ -12095,6 +12099,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 }
             }
             indexValue = (dropTar !== 0) ? --indexValue : indexValue;
+            position = (iconClass == "e-drop-in") ? "Inside" : ((event.offsetY < 7) ? "Before" : "After");
         }
         if (dropTarget) {
             if (newParent.length === 0) {
@@ -12137,6 +12142,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             dropTarget: targetParent,
             dropIndicator: iconClass,
             target: target,
+            position: position,
         };
     }
     addFullRow(toAdd) {

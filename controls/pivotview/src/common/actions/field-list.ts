@@ -44,9 +44,12 @@ export class FieldList implements IAction {
             styles: 'position:' + (this.parent.enableRtl ? 'static' : 'absolute') + ';height:0;width:' + this.parent.element.style.width +
                 ';display:none'
         });
-        this.parent.element.parentElement.setAttribute('id', 'ContainerWrapper');
-        this.parent.element.parentElement.appendChild(this.element);
-        this.parent.element.parentElement.appendChild(this.parent.element);
+        let containerWrapper: HTMLElement = createElement('div', {
+            id: this.parent.element.id + 'containerwrapper'
+        });
+        this.parent.element.parentElement.appendChild(containerWrapper);
+        containerWrapper.appendChild(this.element);
+        containerWrapper.appendChild(this.parent.element);
         this.parent.pivotFieldListModule = new PivotFieldList({
             dataSourceSettings: {
                 providerType: this.parent.dataSourceSettings.providerType,

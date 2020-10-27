@@ -805,6 +805,9 @@ function resizeEast(e) {
 function setMinHeight(minimumHeight) {
     minHeight = minimumHeight;
 }
+function setMaxWidth(value) {
+    maxWidth = value;
+}
 function removeResize() {
     var handlers = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
     for (var i = 0; i < handlers.length; i++) {
@@ -819,6 +822,7 @@ exports.calculateRelativeBasedPosition = calculateRelativeBasedPosition;
 exports.calculatePosition = calculatePosition;
 exports.createResize = createResize;
 exports.setMinHeight = setMinHeight;
+exports.setMaxWidth = setMaxWidth;
 exports.removeResize = removeResize;
 
 return exports;

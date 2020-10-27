@@ -75,6 +75,7 @@ var DropDownList = /** @class */ (function (_super) {
     function DropDownList(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.previousValue = null;
+        _this.isListSearched = false;
         return _this;
     }
     
@@ -1338,6 +1339,7 @@ var DropDownList = /** @class */ (function (_super) {
         var _this = this;
         this.isTyped = true;
         this.activeIndex = null;
+        this.isListSearched = true;
         if (this.filterInput.parentElement.querySelector('.' + dropDownListClasses.clearIcon)) {
             var clearElement = this.filterInput.parentElement.querySelector('.' + dropDownListClasses.clearIcon);
             clearElement.style.visibility = this.filterInput.value === '' ? 'hidden' : 'visible';
@@ -2276,10 +2278,12 @@ var DropDownList = /** @class */ (function (_super) {
         }
     };
     DropDownList.prototype.checkData = function (newProp) {
-        if (newProp.dataSource && !sf.base.isNullOrUndefined(Object.keys(newProp.dataSource)) && this.itemTemplate && this.allowFiltering) {
+        if (newProp.dataSource && !sf.base.isNullOrUndefined(Object.keys(newProp.dataSource)) && this.itemTemplate && this.allowFiltering &&
+            !(this.isListSearched && (newProp.dataSource instanceof sf.data.DataManager))) {
             this.list = null;
             this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
         }
+        this.isListSearched = false;
         var isChangeValue = Object.keys(newProp).indexOf('value') !== -1 && sf.base.isNullOrUndefined(newProp.value);
         var isChangeText = Object.keys(newProp).indexOf('text') !== -1 && sf.base.isNullOrUndefined(newProp.text);
         if (this.getModuleName() !== 'autocomplete' && this.allowFiltering && (isChangeValue || isChangeText)) {

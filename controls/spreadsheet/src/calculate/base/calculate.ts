@@ -1294,17 +1294,13 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                                 i = i + 1;
                             }
                         }
-                        while (i < pFormula.length) {
-                            if (this.isUpperChar(pFormula[i])) {
+                        while (i < pFormula.length && this.isUpperChar(pFormula[i])) {
                                 s = s + pFormula[i];
                                 i = i + 1;
-                            }
                         }
-                        while (i < pFormula.length) {
-                            if (this.isDigit(pFormula[i])) {
+                        while (i < pFormula.length && this.isUpperChar(pFormula[i])) {
                                 s = s + pFormula[i];
                                 i = i + 1;
-                            }
                         }
                         s = sheet + this.getCellFrom(s);
                     } else {

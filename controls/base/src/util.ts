@@ -355,7 +355,7 @@ export function print(element: Element, printWindow?: Window): Window {
 export function formatUnit(value: number | string): string {
     let result: string = <string>value + '';
 
-    if (result === 'auto' || result.indexOf('%') !== -1 || result.indexOf('px') !== -1) {
+    if (result.match(/auto|%|px|vh|vm|vmax|vmin|em/)) {
         return result;
     }
 

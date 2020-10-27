@@ -264,8 +264,13 @@ class SfDatePicker {
             (this.popupObj.element && this.popupObj.element.contains(<HTMLElement>e.target)))) && e.type !== 'touchstart') {
             e.preventDefault();
         }
+        let clearElement = this.containerElement.querySelector('.e-clear-icon');
+        let selectedElement = this.tableBodyElement ? this.tableBodyElement.querySelector('.e-selected') : null ;
         let dateValue: string = this.options.value ? this.options.value.toString() : null;
         let target: HTMLElement = <HTMLElement>e.target;
+        if(target == clearElement && selectedElement) {
+           removeClass([this.tableBodyElement.querySelector('.e-selected')], SELECTED);
+        }
         if (!(closest(target, '.' + ROOT + '.' + POPUP_CONTAINER))
             && !closest(target, '.' + 'e-datetimepicker' + '.' + POPUP_CONTAINER)
             && !(closest(target, '.' + INPUTCONTAINER) === this.containerElement)

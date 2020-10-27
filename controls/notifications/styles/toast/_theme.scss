@@ -148,6 +148,15 @@
 
     .e-toast-close-icon {
       color: $toast-close-icon-color;
+
+      &.e-blazor-toast-close-icon,
+      &.e-blazor-toast-close-icon:focus,
+      &.e-blazor-toast-close-icon:active {
+        background-color: transparent;
+        border: 0;
+        box-shadow: none;
+        outline: 0;
+      }
     }
 
     .e-toast-message {

@@ -414,6 +414,10 @@ export function setMinHeight (minimumHeight: number): void {
     minHeight = minimumHeight;
 }
 
+export function setMaxWidth (value: number): void {
+    maxWidth = value;
+}
+
 export function removeResize(): void {
     let handlers: NodeListOf<HTMLElement> = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
     for (let i: number = 0; i < handlers.length; i++ ) {

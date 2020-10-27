@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.3.44 (2020-10-27)
+
+### TreeView
+
+#### New Features
+
+- `#295977` - Provided an option to identify the dragged node's dropping position which is relative to the dropped node.
+- `#F158142` - Now, the TreeView template node interaction is enabled.
+
 ## 18.3.42 (2020-10-20)
 
 ### TreeView

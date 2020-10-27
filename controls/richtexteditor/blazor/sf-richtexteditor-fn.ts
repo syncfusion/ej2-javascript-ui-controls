@@ -294,10 +294,9 @@ export class SfRichTextEditor {
         let topValue: number = 0;
         let rteHeightPercent: string = '';
         let heightPercent: boolean;
-        // let cntEle: HTMLElement = (this.sourceCodeModule.getPanel() &&
-        //     this.sourceCodeModule.getPanel().parentElement.style.display === 'block') ? this.sourceCodeModule.getPanel().parentElement :
-        //     <HTMLElement>this.getPanel();
-        let cntEle: HTMLElement = <HTMLElement>this.getPanel();
+        let sourceCodeEle: HTMLElement = this.element.querySelector('.e-rte-content .e-rte-srctextarea');
+        let cntEle: HTMLElement = (!isNOU(sourceCodeEle) &&
+            sourceCodeEle.parentElement.style.display === 'block') ? sourceCodeEle.parentElement : <HTMLElement>this.getPanel();
         let rteHeight: number = this.element.offsetHeight;
         if (this.element.offsetHeight === 0 && this.height !== 'auto' && !this.getToolbar()) {
             rteHeight = parseInt(this.height as string, 10);
@@ -311,13 +310,15 @@ export class SfRichTextEditor {
         let rzHeight: number = this.enableResize ? (!isNOU(rzHandle) ? (rzHandle.offsetHeight + 8) : 0) : 0;
         let expandPopHeight: number = this.getToolbar() ? this.toolbarModule.getExpandTBarPopHeight() : 0;
         if (this.toolbarSettings.type === 'Expand' && isExpand && target !== 'preview') {
-            heightValue = (this.height === 'auto' && rzHeight === 0) ? 'auto' : rteHeight - (tbHeight + expandPopHeight + rzHeight) + 'px';
+            heightValue = (this.height === 'auto' && rzHeight === 0 && !this.element.classList.contains('e-rte-full-screen')) ?
+            'auto' : rteHeight - (tbHeight + expandPopHeight + rzHeight) + 'px';
             topValue = (!this.toolbarSettings.enableFloating) ? expandPopHeight : 0;
         } else {
             if (this.height === 'auto' && !(this.element.classList.contains('e-rte-full-screen')) && !this.isResizeInitialized) {
                 heightValue = 'auto';
             } else {
-                heightValue = heightPercent ? rteHeightPercent : rteHeight - (tbHeight + rzHeight) + 'px';
+                heightValue = heightPercent ? rteHeightPercent : (this.element.classList.contains('e-rte-full-screen') ?
+                window.innerHeight : rteHeight) - (tbHeight + rzHeight) + 'px';
             }
         }
         setStyleAttribute(cntEle, { height: heightValue, marginTop: topValue + 'px' });

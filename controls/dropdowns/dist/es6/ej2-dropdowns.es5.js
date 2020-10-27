@@ -1436,6 +1436,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     function DropDownList(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.previousValue = null;
+        _this.isListSearched = false;
         return _this;
     }
     
@@ -2699,6 +2700,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         this.isTyped = true;
         this.activeIndex = null;
+        this.isListSearched = true;
         if (this.filterInput.parentElement.querySelector('.' + dropDownListClasses.clearIcon)) {
             var clearElement = this.filterInput.parentElement.querySelector('.' + dropDownListClasses.clearIcon);
             clearElement.style.visibility = this.filterInput.value === '' ? 'hidden' : 'visible';
@@ -3637,10 +3639,12 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DropDownList.prototype.checkData = function (newProp) {
-        if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource)) && this.itemTemplate && this.allowFiltering) {
+        if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource)) && this.itemTemplate && this.allowFiltering &&
+            !(this.isListSearched && (newProp.dataSource instanceof DataManager))) {
             this.list = null;
             this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
         }
+        this.isListSearched = false;
         var isChangeValue = Object.keys(newProp).indexOf('value') !== -1 && isNullOrUndefined(newProp.value);
         var isChangeText = Object.keys(newProp).indexOf('text') !== -1 && isNullOrUndefined(newProp.text);
         if (this.getModuleName() !== 'autocomplete' && this.allowFiltering && (isChangeValue || isChangeText)) {
@@ -12595,7 +12599,9 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
                 }
                 EventHandler.add(this.checkAllParent, 'mousedown', this.clickHandler, this);
             }
-            if (this.parent.list.classList.contains('e-nodata') || (this.parent.listData && this.parent.listData.length <= 1)) {
+            if (this.parent.list.classList.contains('e-nodata') || (this.parent.listData && this.parent.listData.length <= 1 &&
+                !this.parent.isDynamicDataChange) || (this.parent.isDynamicDataChange &&
+                !isNullOrUndefined(this.parent.value) && this.parent.value.length <= 1)) {
                 this.checkAllParent.style.display = 'none';
             }
             else {

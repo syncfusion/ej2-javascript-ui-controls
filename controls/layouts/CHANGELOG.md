@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.44 (2020-10-27)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#292627` - The issue "Panels are overlapped with each other during window resize" has been fixed.
+
 ## 18.3.40 (2020-10-13)
 
 ### Dashboard Layout

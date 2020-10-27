@@ -3991,7 +3991,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private getVisibleFrozenColumnsCount(): number {
         let visibleFrozenColumns: number = 0;
-        let col: Column[] = this.columns as Column[];
+        let col: Column[] = this.columnModel;
         for (let i: number = 0; i < this.frozenColumns; i++) {
             if (col[i].visible) {
                 visibleFrozenColumns++;

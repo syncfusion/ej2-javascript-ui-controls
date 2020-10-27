@@ -3,7 +3,7 @@ import { FontModel, BorderModel } from '../../common/model/base-model';
 import { Font, Border } from '../../common/model/base';
 import { Orientation, ChartRangePadding, SkeletonType, AxisPosition } from '../utils/enum';
 import { EdgeLabelPlacement, ValueType, IntervalType, LabelPlacement, LabelIntersectAction } from '../utils/enum';
-import { rotateTextSize, firstToLowerCase, valueToCoefficient, inside, isBreakLabel } from '../../common/utils/helper';
+import { rotateTextSize, firstToLowerCase, valueToCoefficient, inside, isBreakLabel, isZoomSet } from '../../common/utils/helper';
 import { Size, Rect, measureText } from '@syncfusion/ej2-svg-base';
 import { DoubleRange } from '../utils/double-range';
 import { Chart } from '../chart';
@@ -1005,8 +1005,8 @@ export class Axis extends ChildProperty<Axis> {
      * @return {void}
      * @private
      */
-    public calculateVisibleRange(chart: Chart): void {
-        if (this.zoomFactor < 1 || this.zoomPosition > 0) {
+    public calculateVisibleRangeOnZooming(chart: Chart): void {
+        if (isZoomSet(this)) {
             let baseRange: VisibleRangeModel = this.actualRange;
             let start: number;
             let end: number;

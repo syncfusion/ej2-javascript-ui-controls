@@ -14407,7 +14407,7 @@ var PivotChart = /** @class */ (function () {
                 }));
                 this.parent.toolbarModule.isMultiAxisChange = false;
             }
-            sf.charts.Chart.Inject(sf.charts.ColumnSeries, sf.charts.StackingColumnSeries, sf.charts.RangeColumnSeries, sf.charts.BarSeries, sf.charts.StackingBarSeries, sf.charts.ScatterSeries, sf.charts.BubbleSeries, sf.charts.LineSeries, sf.charts.StepLineSeries, sf.charts.SplineSeries, sf.charts.SplineAreaSeries, sf.charts.MultiColoredLineSeries, sf.charts.PolarSeries, sf.charts.RadarSeries, sf.charts.AreaSeries, sf.charts.RangeAreaSeries, sf.charts.StackingAreaSeries, sf.charts.StepAreaSeries, sf.charts.MultiColoredAreaSeries, sf.charts.ParetoSeries, sf.charts.Legend, sf.charts.Tooltip, sf.charts.Category, sf.charts.MultiLevelLabel, sf.charts.ScrollBar, sf.charts.Zoom, sf.charts.Export, sf.charts.Crosshair, sf.charts.Selection, sf.charts.StripLine);
+            sf.charts.Chart.Inject(sf.charts.ColumnSeries, sf.charts.StackingColumnSeries, sf.charts.RangeColumnSeries, sf.charts.BarSeries, sf.charts.StackingBarSeries, sf.charts.ScatterSeries, sf.charts.BubbleSeries, sf.charts.LineSeries, sf.charts.StepLineSeries, sf.charts.SplineSeries, sf.charts.SplineAreaSeries, sf.charts.MultiColoredLineSeries, sf.charts.PolarSeries, sf.charts.RadarSeries, sf.charts.AreaSeries, sf.charts.RangeAreaSeries, sf.charts.StackingAreaSeries, sf.charts.StepAreaSeries, sf.charts.MultiColoredAreaSeries, sf.charts.ParetoSeries, sf.charts.Legend, sf.charts.Tooltip, sf.charts.Category, sf.charts.MultiLevelLabel, sf.charts.ScrollBar, sf.charts.Zoom, sf.charts.Export, sf.charts.Crosshair, sf.charts.Selection, sf.charts.StripLine, sf.charts.DataLabel);
             sf.charts.AccumulationChart.Inject(sf.charts.PieSeries, sf.charts.FunnelSeries, sf.charts.PyramidSeries, sf.charts.AccumulationDataLabel, sf.charts.AccumulationLegend, sf.charts.AccumulationTooltip, sf.charts.Export);
             if (this.accumulationType.indexOf(type) > -1) {
                 this.parent.chart = new sf.charts.AccumulationChart({
@@ -23944,10 +23944,11 @@ var PivotView = /** @class */ (function (_super) {
         if (firstColWidth !== this.pivotColumns[0].width) {
             this.firstColWidth = this.pivotColumns[0].width;
             this.renderModule.resColWidth = parseInt(this.firstColWidth.toString());
-            var colWidth = this.renderModule.calculateColWidth(this.pivotColumns ? this.pivotColumns.length : 0);
-            for (var i = 1; i < this.pivotColumns.length; i++) {
-                this.pivotColumns[i].width = colWidth;
-            }
+            // TODO: To be considered on compact layout implementation
+            // let colWidth: number = this.renderModule.calculateColWidth(this.pivotColumns ? this.pivotColumns.length : 0);
+            // for (let i: number = 1; i < this.pivotColumns.length; i++) {
+            //     this.pivotColumns[i].width = colWidth;
+            // }
         }
         this.posCount = 0;
         this.setGridColumns(gridcolumns);
@@ -31941,9 +31942,12 @@ var FieldList = /** @class */ (function () {
             styles: 'position:' + (this.parent.enableRtl ? 'static' : 'absolute') + ';height:0;width:' + this.parent.element.style.width +
                 ';display:none'
         });
-        this.parent.element.parentElement.setAttribute('id', 'ContainerWrapper');
-        this.parent.element.parentElement.appendChild(this.element);
-        this.parent.element.parentElement.appendChild(this.parent.element);
+        var containerWrapper = sf.base.createElement('div', {
+            id: this.parent.element.id + 'containerwrapper'
+        });
+        this.parent.element.parentElement.appendChild(containerWrapper);
+        containerWrapper.appendChild(this.element);
+        containerWrapper.appendChild(this.parent.element);
         this.parent.pivotFieldListModule = new PivotFieldList({
             dataSourceSettings: {
                 providerType: this.parent.dataSourceSettings.providerType,

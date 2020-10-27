@@ -138,6 +138,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected isServerBlazor: boolean;
     private isServerIncrementalSearch: boolean;
     private isServerNavigation: boolean;
+    protected isListSearched: boolean = false;
 
     /**
      * Sets CSS classes to the root element of the component that allows customization of appearance.
@@ -1625,6 +1626,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected searchLists(e: KeyboardEventArgs): void {
         this.isTyped = true;
         this.activeIndex = null;
+        this.isListSearched = true;
         if (this.filterInput.parentElement.querySelector('.' + dropDownListClasses.clearIcon)) {
             let clearElement: HTMLElement = <HTMLElement>this.filterInput.parentElement.querySelector('.' + dropDownListClasses.clearIcon);
             clearElement.style.visibility = this.filterInput.value === '' ? 'hidden' : 'visible';
@@ -2543,10 +2545,12 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
     protected checkData(newProp?: DropDownListModel): void {
-        if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource)) && this.itemTemplate && this.allowFiltering) {
+        if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource)) && this.itemTemplate && this.allowFiltering &&
+            !(this.isListSearched && (newProp.dataSource instanceof DataManager))) {
             this.list = null;
             this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
         }
+        this.isListSearched = false;
         let isChangeValue: boolean = Object.keys(newProp).indexOf('value') !== -1 && isNullOrUndefined(newProp.value);
         let isChangeText: boolean = Object.keys(newProp).indexOf('text') !== -1 && isNullOrUndefined(newProp.text);
         if (this.getModuleName() !== 'autocomplete' && this.allowFiltering && (isChangeValue || isChangeText)) {

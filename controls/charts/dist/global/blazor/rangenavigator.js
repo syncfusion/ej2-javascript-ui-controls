@@ -794,7 +794,7 @@ var Double = /** @class */ (function () {
         if (this.chart.chartAreaType === 'Cartesian') {
             var isLazyLoad = sf.base.isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
             if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-                axis.calculateVisibleRange(this.chart);
+                axis.calculateVisibleRangeOnZooming(this.chart);
                 axis.calculateAxisRange(size, this.chart);
                 axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
                     this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
@@ -1581,8 +1581,8 @@ var Axis = /** @class */ (function (_super) {
      * @return {void}
      * @private
      */
-    Axis.prototype.calculateVisibleRange = function (chart) {
-        if (this.zoomFactor < 1 || this.zoomPosition > 0) {
+    Axis.prototype.calculateVisibleRangeOnZooming = function (chart) {
+        if (isZoomSet(this)) {
             var baseRange = this.actualRange;
             var start = void 0;
             var end = void 0;
@@ -2443,6 +2443,13 @@ function triggerLabelRender(chart, tempInterval, text, labelStyle, axis) {
  */
 function setRange(axis) {
     return (axis.minimum != null && axis.maximum != null);
+}
+/**
+ * To check whether the axis is zoomed or not.
+ * @param axis
+ */
+function isZoomSet(axis) {
+    return (axis.zoomFactor < 1 && axis.zoomPosition >= 0);
 }
 /**
  * Calculate desired interval for the axis.
@@ -3934,8 +3941,8 @@ var DateTime = /** @class */ (function (_super) {
             delta: axis.actualRange.delta,
         };
         var isLazyLoad = sf.base.isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
-        if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-            axis.calculateVisibleRange(this.chart);
+        if ((isZoomSet(axis)) && !isLazyLoad) {
+            axis.calculateVisibleRangeOnZooming(this.chart);
             axis.calculateAxisRange(size, this.chart);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateDateTimeNiceInterval(axis, size, axis.visibleRange.min, axis.visibleRange.max)
@@ -5524,9 +5531,6 @@ var LineSeries = /** @class */ (function (_super) {
             var point = visiblePoints_1[_i];
             point.regions = [];
             point.symbolLocations = [];
-            if (isPolar && !(point.visible)) {
-                continue;
-            }
             if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) {
                 direction += this.getLineDirection(prevPoint, point, series, isInverted, getCoordinate, startPoint);
                 startPoint = prevPoint ? 'L' : startPoint;

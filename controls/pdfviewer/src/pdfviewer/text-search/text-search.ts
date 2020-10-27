@@ -125,7 +125,7 @@ export class TextSearch {
         this.searchInput.addEventListener('blur', () => {
             this.searchInput.parentElement.classList.remove('e-input-focus');
         });
-        this.searchInput.addEventListener('keypress', this.searchKeypressHandler.bind(this));
+        this.searchInput.addEventListener('keydown', this.searchKeypressHandler.bind(this));
         this.searchBtn.addEventListener('click', this.searchClickHandler.bind(this));
         this.nextSearchBtn.addEventListener('click', this.nextButtonOnClick.bind(this));
         this.prevSearchBtn.addEventListener('click', this.prevButtonOnClick.bind(this));

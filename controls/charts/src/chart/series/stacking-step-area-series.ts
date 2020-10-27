@@ -89,41 +89,43 @@ export class StackingStepAreaSeries extends LineBase {
                 prevPoint = null;
             }
         }
-        // For category axis
-        if ((pointsLength > 1) && direction !== '') {
-            pointIndex = visiblePoint[pointsLength - 1].index;
-            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.endValues[pointIndex] };
-            secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
-            direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
-            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.startValues[pointIndex] };
-            secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
-            direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
+        if (direction !== '') {
+            // For category axis
+            if (pointsLength > 1) {
+                pointIndex = visiblePoint[pointsLength - 1].index;
+                start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.endValues[pointIndex] };
+                secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
+                direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
+                start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.startValues[pointIndex] };
+                secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
+                direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
+            }
+            // To close the stacked step area series path in reverse order
+            for (let j: number = pointsLength - 1; j >= startPoint; j--) {
+                let index: number;
+                if (visiblePoint[j].visible) {
+                    pointIndex = visiblePoint[j].index;
+                    point2 = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
+                    direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
+                }
+                if (j !== 0 && !visiblePoint[j - 1].visible) {
+                    index = this.getNextVisiblePointIndex(visiblePoint, j);
+                }
+                if (j !== 0) {
+                    validIndex = index ? index : j - 1;
+                    pointIndex = index ? visiblePoint[index].index : visiblePoint[j - 1].index;
+                    point3 = getPoint(
+                        visiblePoint[validIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
+                    direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point3.y) + ' ');
+                }
+            }
+            options = new PathOption(
+                stackSeries.chart.element.id + '_Series_' + stackSeries.index, stackSeries.interior,
+                stackSeries.border.width, stackSeries.border.color, stackSeries.opacity, stackSeries.dashArray, direction
+            );
+            this.appendLinePath(options, stackSeries, '');
+            this.renderMarker(stackSeries);
         }
-        // To close the stacked step area series path in reverse order
-        for (let j: number = pointsLength - 1; j >= startPoint; j--) {
-            let index: number;
-            if (visiblePoint[j].visible) {
-                pointIndex = visiblePoint[j].index;
-                point2 = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
-                direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
-            }
-            if (j !== 0 && !visiblePoint[j - 1].visible) {
-                index = this.getNextVisiblePointIndex(visiblePoint, j);
-            }
-            if (j !== 0) {
-                validIndex = index ? index : j - 1;
-                pointIndex = index ? visiblePoint[index].index : visiblePoint[j - 1].index;
-                point3 = getPoint(
-                    visiblePoint[validIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
-                direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point3.y) + ' ');
-            }
-        }
-        options = new PathOption(
-            stackSeries.chart.element.id + '_Series_' + stackSeries.index, stackSeries.interior,
-            stackSeries.border.width, stackSeries.border.color, stackSeries.opacity, stackSeries.dashArray, direction
-        );
-        this.appendLinePath(options, stackSeries, '');
-        this.renderMarker(stackSeries);
     }
     /**
      * Animates the series.

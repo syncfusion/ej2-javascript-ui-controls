@@ -94,7 +94,7 @@ export class KeyboardNavigation {
             } */
             if (isNavigate) {
                 this.scrollNavigation(scrollIdxes || actIdxes, scrollIdxes ? true : false);
-                sheet.activeCell = getRangeAddress(actIdxes);
+                this.parent.setSheetPropertyOnMute(sheet, 'activeCell', getRangeAddress(actIdxes));
                 this.parent.notify(cellNavigate, { range: actIdxes });
             }
         }

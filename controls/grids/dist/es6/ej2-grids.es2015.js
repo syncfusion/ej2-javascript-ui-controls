@@ -4507,7 +4507,8 @@ const config = {
     dropeffect: 'aria-dropeffect',
     haspopup: 'aria-haspopup',
     level: 'aria-level',
-    colcount: 'aria-colcount'
+    colcount: 'aria-colcount',
+    rowcount: 'aria-rowcount'
 };
 
 /**
@@ -5525,11 +5526,13 @@ class Render {
                 this.parent.hideSpinner();
             }
             this.parent.notify(toolbarRefresh, {});
+            this.setRowCount(this.parent.getCurrentViewRecords().length);
         });
     }
     /** @hidden */
     dataManagerFailure(e, args) {
         this.ariaService.setOptions(this.parent.getContent().querySelector('.e-content'), { busy: false, invalid: true });
+        this.setRowCount(1);
         this.parent.trigger(actionFailure, { error: e });
         this.parent.hideSpinner();
         if (args.requestType === 'save' || args.requestType === 'delete'
@@ -5539,6 +5542,12 @@ class Render {
         this.parent.currentViewData = [];
         this.renderEmptyRow();
         this.parent.log('actionfailure', { error: e });
+    }
+    setRowCount(dataRowCount) {
+        let gObj = this.parent;
+        this.ariaService.setOptions(this.parent.getHeaderTable(), {
+            rowcount: dataRowCount ? dataRowCount.toString() : '1'
+        });
     }
     isInfiniteEnd(args) {
         return this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache && args.requestType === 'delete';
@@ -13599,7 +13608,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     getVisibleFrozenColumnsCount() {
         let visibleFrozenColumns = 0;
-        let col = this.columns;
+        let col = this.columnModel;
         for (let i = 0; i < this.frozenColumns; i++) {
             if (col[i].visible) {
                 visibleFrozenColumns++;
@@ -23333,7 +23342,7 @@ class Resize {
                 tr.splice(tr.length / 2, tr.length / 2);
             }
         }
-        for (let i = tr.indexOf(rect.parentElement); i < tr.length; i++) {
+        for (let i = tr.indexOf(rect.parentElement); i < tr.length && i > -1; i++) {
             height += tr[i].offsetHeight;
         }
         let pos = this.calcPos(rect);

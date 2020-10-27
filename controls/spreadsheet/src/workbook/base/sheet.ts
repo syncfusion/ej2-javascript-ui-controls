@@ -4,11 +4,9 @@ import { RangeModel, SheetModel, UsedRangeModel } from './sheet-model';
 import { RowModel } from './row-model';
 import { ColumnModel } from './column-model';
 import { processIdx } from './data';
-import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel } from '../common/index';
+import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange } from '../common/index';
 import { ProtectSettings } from '../common/index';
 import { isUndefined, ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';
-import { Row } from './row';
-import { Column } from './column';
 import { WorkbookModel } from './workbook-model';
 
 /**
@@ -76,6 +74,50 @@ export class Range extends ChildProperty<Sheet> {
     public address: string;
 
 
+    protected setProperties(prop: object, muteOnChange: boolean): void {
+        let name: string = 'name';
+        let instance: string = 'instance';
+        let parentObj: string = 'parentObj';
+        let currRangeIdx: string = 'currRangeIdx';
+        let controlParent: string = 'controlParent';
+        if (this[parentObj].isComplexArraySetter && this[controlParent] && this[controlParent].isAngular) {
+            if (Object.keys(prop).length) {
+                if (this[parentObj][currRangeIdx] === undefined) {
+                    this[parentObj][currRangeIdx] = 0;
+                } else {
+                    this[parentObj][currRangeIdx] += 1;
+                }
+                let range: ExtendedRange = this[parentObj].ranges[this[parentObj][currRangeIdx]];
+                if (range && range.info) {
+                    (this as ExtendedRange).info = range.info;
+                }
+                setTimeout(() => {
+                    if (this[parentObj][currRangeIdx] !== undefined) {
+                        delete this[parentObj][currRangeIdx];
+                    }
+                });
+            } else if (this[controlParent].tagObjects[0].instance.hasChanges && !this[controlParent].tagObjects[0].instance.isInitChanges) {
+                let sheetIdx: number = this[controlParent].sheets.indexOf(this[parentObj]);
+                if (this[parentObj].changedRangeIdx === undefined) {
+                    let rangeIdx: number;
+                    let tagObjects: Object[] = this[controlParent].tagObjects[0].instance.list[sheetIdx].tagObjects;
+                    for (let i: number = 0; i < tagObjects.length; i++) {
+                        if (tagObjects[i][name] === 'ranges') {
+                            tagObjects[i][instance].list
+                                .forEach((range: { hasChanges: boolean }, idx: number) => {
+                                    if (range.hasChanges) {
+                                        rangeIdx = idx;
+                                    }
+                                });
+                            break;
+                        }
+                    }
+                    this[parentObj].changedRangeIdx = rangeIdx;
+                }
+            }
+        }
+        super.setProperties(prop, muteOnChange);
+    }
 }
 
 /**
@@ -108,21 +150,21 @@ export class Sheet extends ChildProperty<WorkbookModel> {
      * @default 0
      * @hidden
      */
-    @Property(0)
+    // @Property(0)
     public id: number;
 
     /**
      * Configures row and its properties for the sheet.
      * @default []
      */
-    @Collection([], Row)
+    @Property(null)
     public rows: RowModel[];
 
     /**
      * Configures column and its properties for the sheet.
      * @default []
      */
-    @Collection([], Column)
+    @Property([])
     public columns: ColumnModel[];
 
     /**
@@ -192,9 +234,9 @@ export class Sheet extends ChildProperty<WorkbookModel> {
      * });
      * spreadsheet.appendTo('#Spreadsheet');
      * ```
-     * @default 'A1'
+     * @default 'A1:A1'
      */
-    @Property('A1')
+    @Property('A1:A1')
     public selectedRange: string;
 
     /**
@@ -208,7 +250,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
      * Defines the used range of the sheet.
      * @default { rowIndex: 0, colIndex: 0 }
      */
-    @Complex<UsedRangeModel>({}, UsedRange)
+    @Property({})
     public usedRange: UsedRangeModel;
 
     /**
@@ -251,7 +293,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
      * @default []
      * @hidden
      */
-    @Property([])
+    // @Property([])
     public maxHgts: object[];
 }
 
@@ -313,7 +355,7 @@ export function getSheetIndexByName
  * @hidden
  */
 export function updateSelectedRange(context: Workbook, range: string, sheet: SheetModel = {}): void {
-    sheet.selectedRange = range;
+    context.setSheetPropertyOnMute(sheet, 'selectedRange', range);
 }
 
 /**
@@ -372,9 +414,9 @@ export function initSheet(context: Workbook, sheet?: SheetModel[]): void {
         sheet.colCount = isUndefined(sheet.colCount) ? 100 : sheet.colCount;
         sheet.topLeftCell = sheet.topLeftCell || 'A1';
         sheet.activeCell = sheet.activeCell || 'A1';
-        sheet.selectedRange = sheet.selectedRange || 'A1';
+        sheet.selectedRange = sheet.selectedRange || 'A1:A1';
         sheet.usedRange = sheet.usedRange || { rowIndex: 0, colIndex: 0 };
-        sheet.ranges = sheet.ranges ? initRangeSettings(sheet.ranges) : [];
+        context.setSheetPropertyOnMute(sheet, 'ranges', sheet.ranges ? sheet.ranges : []);
         sheet.rows = sheet.rows || [];
         sheet.columns = sheet.columns || [];
         sheet.showHeaders = isUndefined(sheet.showHeaders) ? true : sheet.showHeaders;

@@ -904,7 +904,7 @@ var Double = /** @class */ (function () {
         if (this.chart.chartAreaType === 'Cartesian') {
             var isLazyLoad = sf.base.isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
             if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-                axis.calculateVisibleRange(this.chart);
+                axis.calculateVisibleRangeOnZooming(this.chart);
                 axis.calculateAxisRange(size, this.chart);
                 axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
                     this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
@@ -1691,8 +1691,8 @@ var Axis = /** @class */ (function (_super) {
      * @return {void}
      * @private
      */
-    Axis.prototype.calculateVisibleRange = function (chart) {
-        if (this.zoomFactor < 1 || this.zoomPosition > 0) {
+    Axis.prototype.calculateVisibleRangeOnZooming = function (chart) {
+        if (isZoomSet(this)) {
             var baseRange = this.actualRange;
             var start = void 0;
             var end = void 0;
@@ -2577,6 +2577,13 @@ function triggerLabelRender(chart, tempInterval, text, labelStyle, axis) {
  */
 function setRange(axis) {
     return (axis.minimum != null && axis.maximum != null);
+}
+/**
+ * To check whether the axis is zoomed or not.
+ * @param axis
+ */
+function isZoomSet(axis) {
+    return (axis.zoomFactor < 1 && axis.zoomPosition >= 0);
 }
 /**
  * Calculate desired interval for the axis.
@@ -6335,7 +6342,7 @@ var AccumulationChart = /** @class */ (function (_super) {
         this.setMouseXY(e);
         this.trigger(chartMouseMove, { target: e.target.id, x: this.mouseX, y: this.mouseY });
         if (this.pointMove) {
-            this.triggerPointEvent(pointMove, e.target);
+            this.triggerPointEvent(pointMove, e.target, e);
         }
         if (this.accumulationLegendModule && this.legendSettings.visible) {
             this.accumulationLegendModule.move(e);
@@ -6387,17 +6394,18 @@ var AccumulationChart = /** @class */ (function (_super) {
         }
         this.trigger(chartMouseClick, { target: e.target.id, x: this.mouseX, y: this.mouseY });
         if (this.pointClick) {
-            this.triggerPointEvent(pointClick, e.target);
+            this.triggerPointEvent(pointClick, e.target, e);
         }
         return false;
     };
-    AccumulationChart.prototype.triggerPointEvent = function (event, element) {
+    AccumulationChart.prototype.triggerPointEvent = function (event, element, e) {
+        var evt = e;
         var indexes = indexFinder(element.id, true);
         if (indexes.series >= 0 && indexes.point >= 0) {
             this.trigger(event, { series: this.isBlazor ? {} : this.series[indexes.series],
                 point: this.series[indexes.series].points[indexes.point],
                 seriesIndex: indexes.series, pointIndex: indexes.point,
-                x: this.mouseX, y: this.mouseY });
+                x: this.mouseX, y: this.mouseY, pageX: evt.pageX, pageY: evt.pageY });
         }
     };
     /**

@@ -157,7 +157,9 @@ export class CheckBoxSelection {
                 }
                 EventHandler.add(this.checkAllParent, 'mousedown', this.clickHandler, this);
             }
-            if (this.parent.list.classList.contains('e-nodata') || (this.parent.listData && this.parent.listData.length <= 1)) {
+            if (this.parent.list.classList.contains('e-nodata') || (this.parent.listData && this.parent.listData.length <= 1 &&
+                !this.parent.isDynamicDataChange) || (this.parent.isDynamicDataChange &&
+                !isNullOrUndefined(this.parent.value) && this.parent.value.length <= 1)) {
                 this.checkAllParent.style.display = 'none';
             } else {
                 this.checkAllParent.style.display = 'block';

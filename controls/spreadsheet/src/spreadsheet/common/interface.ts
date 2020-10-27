@@ -132,7 +132,7 @@ export interface RefreshArgs {
  */
 export interface OpenOptions {
     /** Defines the file. */
-    file?: FileList | string;
+    file?: FileList | string | File;
 }
 
 /**
@@ -140,7 +140,7 @@ export interface OpenOptions {
  */
 export interface BeforeOpenEventArgs {
     /** Defines the file. */
-    file: FileList | string;
+    file: FileList | string | File;
     /** Defines the cancel option. */
     cancel: boolean;
     /** Defines the request data. */

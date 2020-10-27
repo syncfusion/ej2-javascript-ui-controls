@@ -509,7 +509,7 @@ export class Selection {
         }
         range = mergeArgs.range as number[];
         if (sheet.activeCell !== getCellAddress(range[0], range[1]) || isInit) {
-            sheet.activeCell = getCellAddress(range[0], range[1]);
+            this.parent.setSheetPropertyOnMute(sheet, 'activeCell', getCellAddress(range[0], range[1]));
             if (this.getActiveCell()) {
                 let offset: { left: IOffset, top: IOffset } = this.getOffset(range[2], range[3]);
                 if (isMergeRange) {

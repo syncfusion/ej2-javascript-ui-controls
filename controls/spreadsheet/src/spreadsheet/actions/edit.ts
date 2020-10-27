@@ -8,7 +8,7 @@ import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell } from '../
 import { getSheetNameFromAddress, getSheet } from '../../workbook/base/index';
 import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit } from '../common/index';
-import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber } from '../../workbook/index';
+import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber, dataChanged } from '../../workbook/index';
 import { checkConditionalFormat, initiateFormulaReference, initiateCur, clearCellRef, addressHandle } from '../common/event';
 import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit } from '../common/event';
 
@@ -394,6 +394,7 @@ export class Edit {
                     this.parent.clearRange(address, null, true);
                     this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range);
                     this.parent.notify(selectionComplete, {});
+                    this.parent.notify(dataChanged, { address: address, sheetIdx: this.parent.activeSheetIndex, action: 'delete' });
                 }
                 break;
         }
@@ -762,6 +763,7 @@ export class Edit {
                 eventArgs.formula = this.editCellData.formula;
             }
             eventArgs.originalEvent = event;
+            this.parent.notify(dataChanged, eventArgs);
             this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'cellSave' });
         }
         if (eventName !== 'cellSave') {

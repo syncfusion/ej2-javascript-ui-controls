@@ -1,5 +1,7 @@
 import { INode, IConnector, Layout, Bounds } from './layout-base';
 import { PointModel } from '../primitives/point-model';
+import { Connector } from '../objects/connector';
+import { LineDistribution, MatrixCellGroupObject } from '../interaction/line-distribution';
 
 /**
  * Connects diagram objects with layout algorithm
@@ -37,8 +39,8 @@ export class ComplexHierarchicalTree {
     }
 
     /**   @private  */
-    public doLayout(nodes: INode[], nameTable: {}, layout: Layout, viewPort: PointModel): void {
-        new HierarchicalLayoutUtil().doLayout(nodes, nameTable, layout, viewPort);
+    public doLayout(nodes: INode[], nameTable: {}, layout: Layout, viewPort: PointModel, lineDistribution: LineDistribution): void {
+        new HierarchicalLayoutUtil().doLayout(nodes, nameTable, layout, viewPort, lineDistribution);
     }
 
     public getLayoutNodesCollection(nodes: INode[]): INode[] {
@@ -239,18 +241,33 @@ class HierarchicalLayoutUtil {
      * Initializes the layouting process
      * @private
      */
-    public doLayout(nodes: INode[], nameTable: {}, layoutProp: Layout, viewPort: PointModel): void {
+    public doLayout(nodes: INode[], nameTable: {}, layoutProp: Layout, viewPort: PointModel, lineDistribution: LineDistribution): void {
         this.nameTable = nameTable;
         let layout: LayoutProp = {
             horizontalSpacing: layoutProp.horizontalSpacing, verticalSpacing: layoutProp.verticalSpacing,
             orientation: layoutProp.orientation, marginX: layoutProp.margin.left, marginY: layoutProp.margin.top
         };
+        if (lineDistribution) {
+            lineDistribution.edgeMapper = [];
+        }
+        let nodeWithMultiEdges: INode[] = [];
         this.vertices = [];
         let filledVertexSet: {} = {};
         for (let i: number = 0; i < nodes.length; i++) {
             let node: Vertex = this.createVertex(nodes[i], nodes[i].id, 0, 0, nodes[i].actualSize.width, nodes[i].actualSize.height);
             this.vertices.push(node);
+            if ((nodes[i] as INode).inEdges.length > 0 || (nodes[i] as INode).outEdges.length > 0) {
+                nodeWithMultiEdges.push((nodes[i] as INode));
+            }
             filledVertexSet[node.name] = node;
+            if (lineDistribution) {
+                let outEdges: string[] = nodes[i].outEdges.slice();
+                for (let j: number = 0; j < outEdges.length; j++) {
+                    let outEdge: Connector = nameTable[outEdges[j]];
+                    lineDistribution.setEdgeMapper({ key: outEdge, value: [] });
+                }
+            }
+
         }
         let hierarchyVertices: {}[] = [];
         let candidateRoots: Vertex[];
@@ -261,17 +278,32 @@ class HierarchicalLayoutUtil {
             this.traverse(candidateRoots[i], true, null, vertexSet, hierarchyVertices, filledVertexSet);
         }
         let limit: Margin = { marginX: 0, marginY: 0 };
+        let tmp: Vertex[] = [];
+        let checkLinear: boolean = false;
         for (let i: number = 0; i < hierarchyVertices.length; i++) {
             let vertexSet: {} = hierarchyVertices[i];
-            let tmp: Vertex[] = [];
+
             for (let key of Object.keys(vertexSet)) {
                 tmp.push(vertexSet[key]);
+            }
+            if (layoutProp.arrangement === 'Linear' && i === hierarchyVertices.length - 1) {
+                checkLinear = true;
             }
             let model: MultiParentModel = new MultiParentModel(this, tmp, candidateRoots, layout);
             this.cycleStage(model);
             this.layeringStage(model);
-            this.crossingStage(model);
-            limit = this.placementStage(model, limit.marginX, limit.marginY);
+
+
+            if ((lineDistribution && layoutProp.connectionPointOrigin === 'DifferentPoint') || checkLinear) {
+                let matrixModel: MatrixModelObject = this.matrixModel({ model: model, matrix: [], rowOffset: [] });
+                lineDistribution.arrangeElements(matrixModel, layoutProp);
+            } else {
+                if (layoutProp.arrangement === 'NonLinear') {
+                    this.crossingStage(model);
+                    limit = this.placementStage(model, limit.marginX, limit.marginY);
+                    tmp = [];
+                }
+            }
         }
         let modelBounds: Rect = this.getModelBounds(this.vertices);
         this.updateMargin(layoutProp, layout, modelBounds, viewPort);
@@ -294,9 +326,21 @@ class HierarchicalLayoutUtil {
                 dnode.offsetY += y - dnode.offsetY;
             }
         }
-        for (let i: number = 0; i < this.vertices.length; i++) {
-            this.isNodeOverLap(this.nameTable[this.vertices[i].name], layoutProp);
+        if (!checkLinear) {
+
+            for (let i: number = 0; i < this.vertices.length; i++) {
+                this.isNodeOverLap(this.nameTable[this.vertices[i].name], layoutProp);
+            }
         }
+        if ((lineDistribution && layoutProp.connectionPointOrigin === 'DifferentPoint')) {
+            lineDistribution.updateLayout(viewPort, modelBounds, layoutProp, layout, nodeWithMultiEdges, nameTable);
+        }
+    }
+    private matrixModel(options: MatrixModelObject): MatrixModelObject {
+        options.model = options.model;
+        options.matrix = options.matrix || [];
+        options.rowOffset = options.rowOffset || [];
+        return options;
     }
 
     private calculateRectValue(dnode: INode): Rect {
@@ -1102,7 +1146,7 @@ class MultiParentModel {
         for (let i: number = 0; i < vertices.length; i++) {
             internalVertices[i] = {
                 x: [], y: [], temp: [], cell: vertices[i],
-                id: vertices[i].name, connectsAsTarget: [], connectsAsSource: []
+                id: vertices[i].name, connectsAsTarget: [], connectsAsSource: [], type: 'internalVertex'
             };
             this.setDictionary(this.vertexMapper, vertices[i], internalVertices[i]);
             let conns: IConnector[] = layout.getEdges(vertices[i]);
@@ -1760,7 +1804,7 @@ class CrossReduction {
 /**
  * Each vertex means a node object in diagram
  */
-interface Vertex {
+export interface Vertex {
     value: string;
     geometry: Rect;
     name: string;
@@ -1769,6 +1813,20 @@ interface Vertex {
     outEdges: string[];
     layoutObjectId?: string;
 }
+/** @private */
+export interface MatrixModelObject {
+    model: MultiParentModel;
+    matrix: MatrixObject[];
+    rowOffset: number[];
+}
+
+/** @private */
+export interface MatrixObject {
+    key: number;
+    value: MatrixCellGroupObject[];
+}
+
+
 
 interface Margin {
     marginX: number;
@@ -1798,8 +1856,9 @@ interface PlacementStage {
 
 /**
  * Defines the edge that is used to maintain the relationship between internal vertices
+ * @private
  */
-interface IEdge {
+export interface IEdge {
     x?: number[];
     y?: number[];
     temp?: number[];
@@ -1818,8 +1877,9 @@ interface IEdge {
 
 /**
  * Defines the internal vertices that are used in positioning the objects
+ * @private
  */
-interface IVertex {
+export interface IVertex {
     x?: number[]; y?: number[];
     temp?: number[];
     cell?: Vertex;
@@ -1835,7 +1895,10 @@ interface IVertex {
     source?: IVertex;
     target?: IVertex;
     layoutObjectId?: string;
+    type?: string;
+    identicalSibiling?: string[];
 }
+
 
 interface VertexMapper {
     map: {};
@@ -1884,6 +1947,7 @@ export interface LayoutProp {
 }
 
 
+
 interface Rect {
     x: number;
     y: number;
@@ -1891,4 +1955,5 @@ interface Rect {
     height: number;
     right?: number;
     bottom?: number;
+    left?: number;
 }

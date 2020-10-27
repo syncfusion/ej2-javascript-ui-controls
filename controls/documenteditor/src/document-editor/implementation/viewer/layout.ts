@@ -788,14 +788,16 @@ export class Layout {
             while (elementBox) {
                 if (elementBox instanceof FieldElementBox) {
                     elementBox = this.documentHelper.selection.getNextValidElementForField(elementBox);
-                    if (!elementBox.line.paragraph.equals(paragraph)) {
+                    if (!isNullOrUndefined(elementBox) && !elementBox.line.paragraph.equals(paragraph)) {
                         return false;
                     }
                 }
                 if (elementBox instanceof TextElementBox || elementBox instanceof ImageElementBox) {
                     return true;
                 }
-                elementBox = elementBox.nextNode;
+                if (!isNullOrUndefined(elementBox)) {
+                    elementBox = elementBox.nextNode;
+                }
             }
         }
         return false;

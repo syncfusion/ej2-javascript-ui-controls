@@ -1146,10 +1146,10 @@ export class MeasureAnnotation {
     public calculateArea(points: PointModel[], id?: string, pageNumber?: number): string {
         // tslint:disable-next-line
         let values: any = this.getCurrentValues(id, pageNumber);
-        let area: number = this.getArea(points, values.factor) * values.ratio;
+        let area: number = this.getArea(points, values.factor, values.unit) * values.ratio;
         if (values.unit === 'ft_in') {
             // tslint:disable-next-line
-           let calculateValue: any = Math.round(area * 2 * 100) / 100;
+           let calculateValue: any = Math.round(area * 100) / 100;
            if (calculateValue >= 12) {
                 calculateValue = (Math.round(calculateValue / 12 * 100) / 100).toString();
                 calculateValue =  calculateValue.split('.');
@@ -1181,7 +1181,7 @@ export class MeasureAnnotation {
         return (Math.round(area * 100) / 100) + ' sq ' + values.unit;
     }
 
-    private getArea(points: PointModel[], factor: number): number {
+    private getArea(points: PointModel[], factor: number, unit: string): number {
         let area: number = 0;
         let j: number = points.length - 1;
         for (let i: number = 0; i < points.length; i++) {
@@ -1189,7 +1189,11 @@ export class MeasureAnnotation {
             area += (points[j].x * this.pixelToPointFactor * factor + points[i].x * this.pixelToPointFactor * factor) * (points[j].y * this.pixelToPointFactor * factor - points[i].y * this.pixelToPointFactor * factor);
             j = i;
         }
-        return (Math.abs((area) / 2.0));
+        if (unit === 'ft_in') {
+            return (Math.abs((area) * 2.0));
+        } else {
+            return (Math.abs((area) / 2.0));
+        }
     }
 
     /**
@@ -1199,11 +1203,11 @@ export class MeasureAnnotation {
         // tslint:disable-next-line
         let values: any = this.getCurrentValues(id, pageNumber);
         let depth: number = values.depth ? values.depth : this.volumeDepth;
-        let area: number = this.getArea(points, values.factor);
+        let area: number = this.getArea(points, values.factor, values.unit);
         let volume: number = area * ((depth * this.convertUnitToPoint(values.unit)) * values.factor) * values.ratio;
         if (values.unit === 'ft_in') {
             // tslint:disable-next-line
-            let calculateValue: any = Math.round(volume * 2 * 100) / 100;
+            let calculateValue: any = Math.round(volume * 100) / 100;
            if (calculateValue >= 12) {
                 calculateValue = (Math.round(calculateValue / 12 * 100) / 100).toString();
                 calculateValue = calculateValue.split('.');

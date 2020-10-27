@@ -1886,7 +1886,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.placeHolderWrapper.innerHTML = this.placeholder;
                 if (this.inputElement.textContent.length === 0 &&
                 !isNOU(this.inputElement.firstChild) && this.inputElement.firstChild.nodeName === 'P' &&
-                !isNOU(this.inputElement.firstChild.firstChild) && this.inputElement.firstChild.firstChild.nodeName === 'BR') {
+                !isNOU(this.inputElement.firstChild.firstChild) && this.inputElement.firstChild.firstChild.nodeName === 'BR' &&
+                this.inputElement.innerHTML !== '<p><br></p><p><br></p>') {
                     this.placeHolderWrapper.style.display = 'block';
                 } else {
                     this.placeHolderWrapper.style.display = 'none';

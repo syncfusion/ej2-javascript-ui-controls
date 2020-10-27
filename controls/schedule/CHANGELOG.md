@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.3.44 (2020-10-27)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#F158249` - Now `scrollTo()` support has been added in timeline year view.
+- `#292093` - An issue with setting the resize interval for event in `resizeStart` not resizing the event to its minimum interval value has been fixed.
+
 ## 18.3.42 (2020-10-20)
 
 ### Schedule
@@ -9,11 +18,11 @@
 #### Bug Fixes
 
 - `#293358` - An issue with the Scheduler events are not rendered in month view and the same events rendered in other views has been fixed.
-- `#292093` - An issue with setting the resize interval for event in `resizeStart` not resizing the event to its minimum interval value has been fixed.
 - `#286376` - An issue with refreshing the layout when setting `dataSource` dynamically using `setmodel` in Year view has been fixed.
 - `#286376` - An issue with view navigation when setting `dataSource` dynamically using `setmodel` in year view has been fixed.
 - `#294568` - An issue with all day spanned event is not rendered properly in the `TimelineYear` view has been fixed.
 - `#296098` - An issue with event click action on less duration events not deselecting the previously selected event has been fixed.
+- `#286199` - An issue with when destroying the child component used in the editor template the child component is destroyed multiple time has been fixed.
 
 ## 18.3.40 (2020-10-13)
 

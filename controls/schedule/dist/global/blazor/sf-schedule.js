@@ -584,7 +584,6 @@ var VerticalEvent = /** @class */ (function () {
                     this.parent.activeViewOptions.timeScale.slotCount * 60000)) * cellHeight) -
                 ((this.getTopStartDuration(ele) / (this.parent.activeViewOptions.timeScale.interval /
                     this.parent.activeViewOptions.timeScale.slotCount * 60000)) * cellHeight)) + 'px';
-            this.parent.eventBase.applyResourceColor(ele);
             this.parent.eventBase.wireAppointmentEvents(ele);
         }
         var allDayRowTop = this.parent.element.querySelector('.' + ALLDAY_ROW_CLASS).offsetTop;
@@ -611,7 +610,6 @@ var VerticalEvent = /** @class */ (function () {
                     ele.style.top = allDayRowTop + (DEFAULT_ALL_DAY_ROW_LENGTH$1 * appHeight) + 'px';
                     allDayRowHeight = (DEFAULT_ALL_DAY_ROW_LENGTH$1 * appHeight) + ADD_BORDER_LENGTH$1;
                 }
-                this.parent.eventBase.applyResourceColor(ele);
                 this.setAllDayRowHeight(allDayRowHeight);
             }
         }
@@ -1073,15 +1071,6 @@ var EventBase = /** @class */ (function () {
             this.removeSelectedAppointmentClass();
         }
     };
-    EventBase.prototype.applyResourceColor = function (ele) {
-        var color = this.getResourceColor(ele);
-        if (!sf.base.isNullOrUndefined(color)) {
-            ele.style.backgroundColor = color;
-        }
-    };
-    EventBase.prototype.getResourceColor = function (ele) {
-        return ele.getAttribute('data-color');
-    };
     EventBase.prototype.wireAppointmentEvents = function (element, isPreventCrud) {
         if (isPreventCrud === void 0) { isPreventCrud = false; }
         var isReadOnly = element.getAttribute('aria-readonly') === 'true';
@@ -1255,7 +1244,7 @@ var MonthEvent = /** @class */ (function (_super) {
                 var resIndex = this.getGroupIndex(ele);
                 var cellTd = this.getCellTd(resIndex, startTime);
                 var target = sf.base.closest(cellTd, 'tr');
-                this.monthHeaderHeight = cellTd.firstChild.offsetHeight;
+                this.monthHeaderHeight = cellTd.firstElementChild.offsetHeight;
                 var height = this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
                 if (this.parent.options.rowAutoHeight) {
                     this.updateCellHeight(target.firstElementChild, height);
@@ -1279,7 +1268,6 @@ var MonthEvent = /** @class */ (function (_super) {
                             });
                         }
                         if (ele.classList.contains('e-appointment')) {
-                            this.parent.eventBase.applyResourceColor(ele);
                             this.parent.eventBase.wireAppointmentEvents(ele);
                         }
                     }
@@ -1339,7 +1327,7 @@ var MonthEvent = /** @class */ (function (_super) {
         else {
             ele.style.left = (left + this.cellWidth) - BLOCK_INDICATOR_WIDTH + 'px';
         }
-        ele.style.top = cell.offsetTop + cell.firstChild.offsetTop + 22 + 'px';
+        ele.style.top = cell.offsetTop + cell.firstElementChild.offsetTop + 22 + 'px';
         ele.style.position = 'absolute';
     };
     MonthEvent.prototype.setMaxEventHeight = function (event, cell) {
@@ -1881,7 +1869,6 @@ var TimelineEvent = /** @class */ (function (_super) {
                             });
                         }
                         if (ele.classList.contains('e-appointment')) {
-                            this.parent.eventBase.applyResourceColor(ele);
                             this.parent.eventBase.wireAppointmentEvents(ele);
                         }
                         if (this.parent.options.rowAutoHeight) {
@@ -2630,7 +2617,6 @@ var Year = /** @class */ (function (_super) {
                         cellTop = cellData.offsetTop + cellHeader + (eventHeight * levelIndex) + EVENT_GAP;
                         height = eventHeight;
                         width = cellWidth;
-                        this.parent.eventBase.applyResourceColor(ele);
                     }
                     else {
                         cellTop = cellData.offsetTop + (cellHeight - ele.offsetHeight);
@@ -6326,12 +6312,12 @@ var SfSchedule = /** @class */ (function () {
                     this.quickPopup.dataBind();
                 }
             }
-            // if (this.parent.virtualScrollModule && (collide.indexOf('top') > -1 || collide.indexOf('bottom') > -1)) {
-            //     let element: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table');
-            //     let translateY: number = util.getTranslateY(element);
-            //     this.quickPopup.offsetY = translateY;
-            //     this.quickPopup.dataBind();
-            // }
+            if (this.virtualScrollModule && (collide.indexOf('top') > -1 || collide.indexOf('bottom') > -1)) {
+                var element = this.element.querySelector('.' + CONTENT_WRAP_CLASS + ' table');
+                var translateY = getTranslateY(element);
+                this.quickPopup.offsetY = translateY;
+                this.quickPopup.dataBind();
+            }
         }
         // if (isEventPopup) {
         //     this.applyEventColor();
@@ -6375,7 +6361,7 @@ var SfSchedule = /** @class */ (function () {
             var appointments = this.morePopup.element.querySelectorAll('.e-appointment');
             for (var i = 0; i < appointments.length; i++) {
                 var ele = appointments[i];
-                this.eventBase.applyResourceColor(ele);
+                this.eventBase.wireAppointmentEvents(ele, this.options.currentView === 'TimelineYear' ? true : false);
             }
             this.morePopup.relateTo = this.element.querySelector('.' + clsName + '[data-date="' + dataDate + '"]');
             this.morePopup.show();
@@ -6404,6 +6390,7 @@ var SfSchedule = /** @class */ (function () {
         this.dotNetRef.invokeMethodAsync('ErrorPositioning', toolTipPos, isQuickPopup);
     };
     SfSchedule.prototype.scrollTo = function (hour, scrollDate) {
+        scrollDate = sf.base.isNullOrUndefined(scrollDate) ? scrollDate : this.getDateTime(scrollDate);
         if (this.activeView.scrollToDate && sf.base.isNullOrUndefined(hour) && scrollDate) {
             this.activeView.scrollToDate(scrollDate);
         }
@@ -6575,6 +6562,7 @@ var Schedule = {
             }
             else {
                 new SfSchedule(element, options, viewOptions, dotnetRef);
+                dotnetRef.invokeMethodAsync('TriggerCreatedEvent');
             }
         }
     },

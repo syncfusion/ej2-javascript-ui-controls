@@ -3992,10 +3992,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (firstColWidth !== this.pivotColumns[0].width) {
             this.firstColWidth = this.pivotColumns[0].width;
             this.renderModule.resColWidth = parseInt(this.firstColWidth.toString());
-            let colWidth: number = this.renderModule.calculateColWidth(this.pivotColumns ? this.pivotColumns.length : 0);
-            for (let i: number = 1; i < this.pivotColumns.length; i++) {
-                this.pivotColumns[i].width = colWidth;
-            }
+            // TODO: To be considered on compact layout implementation
+            // let colWidth: number = this.renderModule.calculateColWidth(this.pivotColumns ? this.pivotColumns.length : 0);
+            // for (let i: number = 1; i < this.pivotColumns.length; i++) {
+            //     this.pivotColumns[i].width = colWidth;
+            // }
         }
         this.posCount = 0;
         this.setGridColumns(gridcolumns);

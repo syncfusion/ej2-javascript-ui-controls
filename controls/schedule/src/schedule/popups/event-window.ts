@@ -126,6 +126,9 @@ export class EventWindow {
     private resetEditorTemplate(): void {
         if (this.parent.editorTemplate) {
             resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
+            if (!isBlazor()) {
+                this.parent.resetTemplates(['editorTemplate']);
+            }
         }
     }
 

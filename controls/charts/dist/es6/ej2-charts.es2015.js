@@ -854,7 +854,7 @@ class Double {
         if (this.chart.chartAreaType === 'Cartesian') {
             let isLazyLoad = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
             if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-                axis.calculateVisibleRange(this.chart);
+                axis.calculateVisibleRangeOnZooming(this.chart);
                 axis.calculateAxisRange(size, this.chart);
                 axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
                     this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
@@ -1542,8 +1542,8 @@ class Axis extends ChildProperty {
      * @return {void}
      * @private
      */
-    calculateVisibleRange(chart) {
-        if (this.zoomFactor < 1 || this.zoomPosition > 0) {
+    calculateVisibleRangeOnZooming(chart) {
+        if (isZoomSet(this)) {
             let baseRange = this.actualRange;
             let start;
             let end;
@@ -2725,6 +2725,13 @@ function triggerLabelRender(chart, tempInterval, text, labelStyle, axis) {
  */
 function setRange(axis) {
     return (axis.minimum != null && axis.maximum != null);
+}
+/**
+ * To check whether the axis is zoomed or not.
+ * @param axis
+ */
+function isZoomSet(axis) {
+    return (axis.zoomFactor < 1 && axis.zoomPosition >= 0);
 }
 /**
  * Calculate desired interval for the axis.
@@ -4297,6 +4304,8 @@ class CartesianAxisLayoutPanel {
      * @param rect
      */
     drawYAxisGridLine(axis, index, parent, rect) {
+        let isLogAxis = axis.valueType === 'Logarithmic';
+        let isCategoryAxis = axis.valueType.indexOf('Category') > -1;
         let tempInterval;
         let pointY = 0;
         let majorGrid = '';
@@ -4312,7 +4321,7 @@ class CartesianAxisLayoutPanel {
         let ticks = isTickInside ? (rect.x - tickSize - axisLineSize) : (rect.x + tickSize + axisLineSize + scrollBarHeight);
         let length = axis.visibleLabels.length;
         let chartThemeStyle = this.chart.themeStyle;
-        if (axis.valueType.indexOf('Category') && axis.labelPlacement === 'BetweenTicks' && length > 0) {
+        if (axis.valueType.indexOf('Category') > -1 && axis.labelPlacement === 'BetweenTicks' && length > 0) {
             length += 1;
         }
         let minorGridLines = axis.minorGridLines;
@@ -4333,9 +4342,15 @@ class CartesianAxisLayoutPanel {
                     ' L ' + (ticks) + ' ' + pointY;
                 this.renderGridLine(axis, index, majorTick, axis.majorTickLines, '_MajorTickLine_', i, parent, chartThemeStyle.majorTickLine);
                 if ((minorGridLines.width > 0 || minorTickLines.width > 0) && axis.minorTicksPerInterval > 0) {
+                    if (i === 0 && isZoomSet(axis) && !isLogAxis && !isCategoryAxis) {
+                        this.renderMinorGridOnZooming(axis, tempInterval, rect, i, index, chartThemeStyle, parent);
+                    }
                     minorGridDirection = this.drawAxisMinorLine(axis, tempInterval, rect, i);
                     this.renderGridLine(axis, index, minorGridDirection[0], minorGridLines, '_MinorGridLine_', i, this.element, chartThemeStyle.minorGridLine, minorGridLines.dashArray);
                     this.renderGridLine(axis, index, minorGridDirection[1], minorTickLines, '_MinorTickLine_', i, parent, chartThemeStyle.minorTickLine);
+                    if (i === length - 1 && isZoomSet(axis) && isLogAxis && !isCategoryAxis) {
+                        this.renderMinorGridOnZooming(axis, (tempInterval + axis.visibleRange.interval), rect, i, index, chartThemeStyle, parent);
+                    }
                 }
             }
         }
@@ -4552,6 +4567,8 @@ class CartesianAxisLayoutPanel {
      * @param rect
      */
     drawXAxisGridLine(axis, index, parent, rect) {
+        let isLogAxis = axis.valueType === 'Logarithmic';
+        let isCategoryAxis = axis.valueType.indexOf('Category') > -1;
         let tempInterval;
         let pointX = 0;
         let majorGrid = '';
@@ -4591,12 +4608,33 @@ class CartesianAxisLayoutPanel {
                     + ' L ' + (pointX) + ' ' + ticks;
                 this.renderGridLine(axis, index, majorTick, axis.majorTickLines, '_MajorTickLine_', i, parent, chartThemeStyle.majorTickLine);
                 if (axis.minorTicksPerInterval > 0 && (axis.minorGridLines.width > 0 || axis.minorTickLines.width > 0)) {
+                    if (i === 0 && isZoomSet(axis) && !isLogAxis && !isCategoryAxis) {
+                        this.renderMinorGridOnZooming(axis, tempInterval, rect, i, index, chartThemeStyle, parent);
+                    }
                     minorDirection = this.drawAxisMinorLine(axis, tempInterval, rect, i);
                     this.renderGridLine(axis, index, minorDirection[0], axis.minorGridLines, '_MinorGridLine_', i, this.element, chartThemeStyle.minorGridLine, axis.minorGridLines.dashArray);
                     this.renderGridLine(axis, index, minorDirection[1], axis.minorTickLines, '_MinorTickLine_', i, parent, chartThemeStyle.minorTickLine);
+                    if (i === length - 1 && isZoomSet(axis) && isLogAxis && !isCategoryAxis) {
+                        this.renderMinorGridOnZooming(axis, (tempInterval + axis.visibleRange.interval), rect, i, index, chartThemeStyle, parent);
+                    }
                 }
             }
         }
+    }
+    /**
+     * To render missing minor grid lines while zooming
+     * @param axis
+     * @param tempInterval
+     * @param rect
+     * @param i
+     * @param index
+     * @param chartThemeStyle
+     * @param parent
+     */
+    renderMinorGridOnZooming(axis, tempInterval, rect, i, index, chartThemeStyle, parent) {
+        let minorDirection = this.drawAxisMinorLine(axis, tempInterval, rect, i, true);
+        this.renderGridLine(axis, index, minorDirection[0], axis.minorGridLines, '_MinorGridLine_', -1, this.element, chartThemeStyle.minorGridLine, axis.minorGridLines.dashArray);
+        this.renderGridLine(axis, index, minorDirection[1], axis.minorTickLines, '_MinorTickLine_', -1, parent, chartThemeStyle.minorTickLine);
     }
     /**
      * To calcualte the axis minor line
@@ -4605,7 +4643,7 @@ class CartesianAxisLayoutPanel {
      * @param rect
      * @param labelIndex
      */
-    drawAxisMinorLine(axis, tempInterval, rect, labelIndex) {
+    drawAxisMinorLine(axis, tempInterval, rect, labelIndex, isFirstLabel) {
         let value = tempInterval;
         let coor = 0;
         let position = 0;
@@ -4629,7 +4667,7 @@ class CartesianAxisLayoutPanel {
         }
         if (axis.orientation === 'Horizontal') {
             for (let j = 0; j < axis.minorTicksPerInterval; j++) {
-                value = this.findLogNumeric(axis, logPosition, logInterval, value, labelIndex);
+                value = this.findLogNumeric(axis, logPosition, value, labelIndex, isFirstLabel);
                 logPosition += logInterval;
                 if (inside(value, range)) {
                     position = ((value - range.min) / (range.max - range.min));
@@ -4644,9 +4682,8 @@ class CartesianAxisLayoutPanel {
             }
         }
         else {
-            tickSize = axis.opposedPosition ? axis.minorTickLines.height : -axis.minorTickLines.height;
             for (let j = 0; j < axis.minorTicksPerInterval; j++) {
-                value = this.findLogNumeric(axis, logPosition, logInterval, value, labelIndex);
+                value = this.findLogNumeric(axis, logPosition, value, labelIndex, isFirstLabel);
                 if (inside(value, range)) {
                     position = ((value - range.min) / (range.max - range.min));
                     position = Math.ceil(((axis.isInversed ? (1 - position) : position)) * rect.height) * -1; // For inversed axis
@@ -4672,13 +4709,15 @@ class CartesianAxisLayoutPanel {
      * @param value
      * @param labelIndex
      */
-    findLogNumeric(axis, logPosition, logInterval, value, labelIndex) {
+    findLogNumeric(axis, logPosition, value, labelIndex, isFirstLabel) {
         let range = axis.visibleRange;
+        let tempValue;
         if (axis.valueType === 'Logarithmic') {
             value = logBase(logPosition, axis.logBase);
         }
         else if (axis.valueType === 'DateTime') {
-            value += axis.dateTimeInterval / (axis.minorTicksPerInterval + 1);
+            tempValue = axis.dateTimeInterval / (axis.minorTicksPerInterval + 1);
+            value = isFirstLabel ? (value - tempValue) : (value + tempValue);
         }
         else if (axis.valueType === 'DateTimeCategory') {
             let padding = axis.labelPlacement === 'BetweenTicks' ? 0.5 : 0;
@@ -4689,7 +4728,8 @@ class CartesianAxisLayoutPanel {
                 (axis.minorTicksPerInterval + 1);
         }
         else {
-            value += range.interval / (axis.minorTicksPerInterval + 1);
+            tempValue = range.interval / (axis.minorTicksPerInterval + 1);
+            value = isFirstLabel ? (value - tempValue) : (value + tempValue);
         }
         return value;
     }
@@ -5568,6 +5608,7 @@ class SeriesBase extends ChildProperty {
         this.clipRect = new Rect(0, 0, 0, 0);
         /** @private */
         this.seriesType = 'XY';
+        this.isRectTypeSeries = false;
     }
     /**
      * Process data for the series.
@@ -5590,6 +5631,7 @@ class SeriesBase extends ChildProperty {
                     this.currentViewData = this.chart.paretoSeriesModule.performCumulativeCalculation(this.currentViewData, this);
                 }
             }
+            this.isRectTypeSeries = this.type.indexOf('Column') > -1 || this.type.indexOf('Bar') > -1;
         }
         let len = Object.keys(this.currentViewData).length;
         this.points = [];
@@ -5776,9 +5818,18 @@ class SeriesBase extends ChildProperty {
      * To get Y min max for the provided point seriesType XY
      */
     setXYMinMax(yValue) {
-        this.yMin = (this.yAxis.valueType === 'Logarithmic' || this.xAxis.valueType === 'Logarithmic') ?
-            Math.min(this.yMin, (isNullOrUndefined(yValue) || isNaN(yValue) || (yValue === 0)) ? this.yMin : yValue) :
-            Math.min(this.yMin, (isNullOrUndefined(yValue) || isNaN(yValue)) ? this.yMin : yValue);
+        let isLogAxis = (this.yAxis.valueType === 'Logarithmic' || this.xAxis.valueType === 'Logarithmic');
+        let isNegativeValue = yValue < 0;
+        let seriesMinY;
+        if (this.isRectTypeSeries && !setRange(this.yAxis)) {
+            seriesMinY = ((isLogAxis ? 1 : isNegativeValue ? yValue : 0));
+        }
+        else {
+            seriesMinY = yValue;
+        }
+        this.yMin = isLogAxis ?
+            Math.min(this.yMin, (isNullOrUndefined(seriesMinY) || isNaN(seriesMinY) || (seriesMinY === 0)) ? this.yMin : seriesMinY) :
+            Math.min(this.yMin, (isNullOrUndefined(seriesMinY) || isNaN(seriesMinY)) ? this.yMin : seriesMinY);
         this.yMax = Math.max(this.yMax, (isNullOrUndefined(yValue) || isNaN(yValue)) ? this.yMax : yValue);
     }
     /**
@@ -10715,8 +10766,8 @@ class DateTime extends NiceInterval {
             delta: axis.actualRange.delta,
         };
         let isLazyLoad = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
-        if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-            axis.calculateVisibleRange(this.chart);
+        if ((isZoomSet(axis)) && !isLazyLoad) {
+            axis.calculateVisibleRangeOnZooming(this.chart);
             axis.calculateAxisRange(size, this.chart);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateDateTimeNiceInterval(axis, size, axis.visibleRange.min, axis.visibleRange.max)
@@ -11069,7 +11120,7 @@ class Logarithmic extends Double {
         };
         let isLazyLoad = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
         if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-            axis.calculateVisibleRange(this.chart);
+            axis.calculateVisibleRangeOnZooming(this.chart);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateLogNiceInterval(axis.doubleRange.delta, size, axis)
                 : axis.visibleRange.interval;
@@ -11084,7 +11135,7 @@ class Logarithmic extends Double {
     calculateLogNiceInterval(delta, size, axis) {
         let actualDesiredIntervalsCount = getActualDesiredIntervalsCount(size, axis);
         let niceInterval = delta;
-        let minInterval = Math.pow(10, Math.floor(logBase(niceInterval, 10)));
+        let minInterval = Math.pow(axis.logBase, Math.floor(logBase(niceInterval, 10)));
         for (let j = 0, len = axis.intervalDivs.length; j < len; j++) {
             let currentInterval = minInterval * axis.intervalDivs[j];
             if (actualDesiredIntervalsCount < (delta / currentInterval)) {
@@ -11879,9 +11930,6 @@ class LineSeries extends LineBase {
         for (let point of visiblePoints) {
             point.regions = [];
             point.symbolLocations = [];
-            if (isPolar && !(point.visible)) {
-                continue;
-            }
             if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) {
                 direction += this.getLineDirection(prevPoint, point, series, isInverted, getCoordinate, startPoint);
                 startPoint = prevPoint ? 'L' : startPoint;
@@ -14299,37 +14347,39 @@ class StackingStepAreaSeries extends LineBase {
                 prevPoint = null;
             }
         }
-        // For category axis
-        if ((pointsLength > 1) && direction !== '') {
-            pointIndex = visiblePoint[pointsLength - 1].index;
-            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.endValues[pointIndex] };
-            secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
-            direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
-            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.startValues[pointIndex] };
-            secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
-            direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
+        if (direction !== '') {
+            // For category axis
+            if (pointsLength > 1) {
+                pointIndex = visiblePoint[pointsLength - 1].index;
+                start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.endValues[pointIndex] };
+                secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
+                direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
+                start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.startValues[pointIndex] };
+                secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
+                direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
+            }
+            // To close the stacked step area series path in reverse order
+            for (let j = pointsLength - 1; j >= startPoint; j--) {
+                let index;
+                if (visiblePoint[j].visible) {
+                    pointIndex = visiblePoint[j].index;
+                    point2 = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
+                    direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
+                }
+                if (j !== 0 && !visiblePoint[j - 1].visible) {
+                    index = this.getNextVisiblePointIndex(visiblePoint, j);
+                }
+                if (j !== 0) {
+                    validIndex = index ? index : j - 1;
+                    pointIndex = index ? visiblePoint[index].index : visiblePoint[j - 1].index;
+                    point3 = getPoint(visiblePoint[validIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
+                    direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point3.y) + ' ');
+                }
+            }
+            options = new PathOption(stackSeries.chart.element.id + '_Series_' + stackSeries.index, stackSeries.interior, stackSeries.border.width, stackSeries.border.color, stackSeries.opacity, stackSeries.dashArray, direction);
+            this.appendLinePath(options, stackSeries, '');
+            this.renderMarker(stackSeries);
         }
-        // To close the stacked step area series path in reverse order
-        for (let j = pointsLength - 1; j >= startPoint; j--) {
-            let index;
-            if (visiblePoint[j].visible) {
-                pointIndex = visiblePoint[j].index;
-                point2 = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
-                direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
-            }
-            if (j !== 0 && !visiblePoint[j - 1].visible) {
-                index = this.getNextVisiblePointIndex(visiblePoint, j);
-            }
-            if (j !== 0) {
-                validIndex = index ? index : j - 1;
-                pointIndex = index ? visiblePoint[index].index : visiblePoint[j - 1].index;
-                point3 = getPoint(visiblePoint[validIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
-                direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point3.y) + ' ');
-            }
-        }
-        options = new PathOption(stackSeries.chart.element.id + '_Series_' + stackSeries.index, stackSeries.interior, stackSeries.border.width, stackSeries.border.color, stackSeries.opacity, stackSeries.dashArray, direction);
-        this.appendLinePath(options, stackSeries, '');
-        this.renderMarker(stackSeries);
     }
     /**
      * Animates the series.
@@ -15751,13 +15801,16 @@ class HistogramSeries extends ColumnSeries {
         let pointsCount = 500;
         let del = (max - min) / (pointsCount - 1);
         let distributionLine;
-        for (let i = 0; i < pointsCount; i++) {
-            xValue = min + i * del;
-            yValue = Math.exp(-(xValue - mean) * (xValue - mean) / (2 * sDValue * sDValue)) /
-                (sDValue * Math.sqrt(2 * Math.PI));
-            pointLocation = getPoint(xValue, yValue * binWidth * yValuesCount, series.xAxis, series.yAxis, series.chart.requireInvertedAxis, series);
-            direction += startPoint + ' ' + (pointLocation.x) + ' ' + (pointLocation.y) + ' ';
-            startPoint = 'L';
+        let points = series.points.length;
+        if (points) {
+            for (let i = 0; i < pointsCount; i++) {
+                xValue = min + i * del;
+                yValue = Math.exp(-(xValue - mean) * (xValue - mean) / (2 * sDValue * sDValue)) /
+                    (sDValue * Math.sqrt(2 * Math.PI));
+                pointLocation = getPoint(xValue, yValue * binWidth * yValuesCount, series.xAxis, series.yAxis, series.chart.requireInvertedAxis, series);
+                direction += startPoint + ' ' + (pointLocation.x) + ' ' + (pointLocation.y) + ' ';
+                startPoint = 'L';
+            }
         }
         distributionLine = series.chart.renderer.drawPath(new PathOption(series.chart.element.id + '_Series_' + series.index + '_NDLine', 'transparent', 2, series.chart.themeStyle.errorBar, series.opacity, series.dashArray, direction), new Int32Array([series.clipRect.x, series.clipRect.y]));
         distributionLine.style.visibility = (!series.chart.enableCanvas) ? ((series.animation.enable &&
@@ -23953,7 +24006,7 @@ class MultiColoredAreaSeries extends MultiColoredSeries {
                 this.storePointLocation(point, series, isInverted, getPoint);
             }
         });
-        if (!rendered) {
+        if (!isNullOrUndefined(rendered) && !rendered) {
             direction = series.points.length > 1 ?
                 (direction + this.getAreaPathDirection(previous.xValue, origin, series, isInverted, getPoint, null, 'L')) : '';
             this.generatePathOption(options, series, previous, direction, '');
@@ -27189,7 +27242,7 @@ let AccumulationChart = class AccumulationChart extends Component {
         this.setMouseXY(e);
         this.trigger(chartMouseMove, { target: e.target.id, x: this.mouseX, y: this.mouseY });
         if (this.pointMove) {
-            this.triggerPointEvent(pointMove, e.target);
+            this.triggerPointEvent(pointMove, e.target, e);
         }
         if (this.accumulationLegendModule && this.legendSettings.visible) {
             this.accumulationLegendModule.move(e);
@@ -27241,17 +27294,18 @@ let AccumulationChart = class AccumulationChart extends Component {
         }
         this.trigger(chartMouseClick, { target: e.target.id, x: this.mouseX, y: this.mouseY });
         if (this.pointClick) {
-            this.triggerPointEvent(pointClick, e.target);
+            this.triggerPointEvent(pointClick, e.target, e);
         }
         return false;
     }
-    triggerPointEvent(event, element) {
+    triggerPointEvent(event, element, e) {
+        let evt = e;
         let indexes = indexFinder(element.id, true);
         if (indexes.series >= 0 && indexes.point >= 0) {
             this.trigger(event, { series: this.isBlazor ? {} : this.series[indexes.series],
                 point: this.series[indexes.series].points[indexes.point],
                 seriesIndex: indexes.series, pointIndex: indexes.point,
-                x: this.mouseX, y: this.mouseY });
+                x: this.mouseX, y: this.mouseY, pageX: evt.pageX, pageY: evt.pageY });
         }
     }
     /**
@@ -44087,5 +44141,5 @@ class SparklineTooltip {
  * Chart components exported.
  */
 
-export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, Double, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingStepAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, getVisiblePoints, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, LabelLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, Highlight, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, sharedTooltipRender, seriesRender, axisLabelRender, axisLabelClick, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointDoubleClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, bulletChartMouseClick, onZooming, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartLegendSettings, BulletChartTheme, getBulletThemeColor, BulletTooltip, BulletChartLegend, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
+export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, Double, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingStepAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, getVisiblePoints, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, isZoomSet, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, LabelLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, Highlight, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, sharedTooltipRender, seriesRender, axisLabelRender, axisLabelClick, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointDoubleClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, bulletChartMouseClick, onZooming, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartLegendSettings, BulletChartTheme, getBulletThemeColor, BulletTooltip, BulletChartLegend, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
 //# sourceMappingURL=ej2-charts.es2015.js.map

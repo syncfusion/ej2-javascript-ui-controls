@@ -302,15 +302,17 @@ var SfDialog = /** @class */ (function () {
                 maxHeight: this.targetEle.clientHeight,
                 minWidth: parseInt(computedWidth.slice(0, computedWidth.indexOf('p')), 10),
                 maxWidth: this.targetEle.clientWidth,
-                boundary: this.target === document.body ? null : this.targetEle,
+                boundary: (this.target === 'body' || this.target === 'document.body') ? null : this.targetEle,
                 resizeBegin: this.onResizeStart.bind(this),
                 resizeComplete: this.onResizeComplete.bind(this),
                 resizing: this.onResizing.bind(this),
                 proxy: this
             });
+            this.wireWindowResizeEvent();
         }
         else {
             sf.popups.removeResize();
+            this.unWireWindowResizeEvent();
             if (this.isModal) {
                 this.element.classList.remove(DLG_RESTRICT_LEFT);
             }
@@ -558,7 +560,6 @@ var SfDialog = /** @class */ (function () {
             sf.base.removeClass([(!sf.base.isNullOrUndefined(this.targetEle) ? this.targetEle : document.body)], SCROLL_DISABLED);
         }
         if (this.element.classList.contains(DLG_RESIZABLE)) {
-            sf.popups.removeResize();
             this.element.classList.remove(DLG_RESIZABLE);
         }
         if (this.element.classList.contains(DRAGGABLE)) {
@@ -597,6 +598,12 @@ var SfDialog = /** @class */ (function () {
     SfDialog.prototype.unBindEvent = function (element) {
         sf.base.EventHandler.remove(element, 'keydown', this.keyDown);
     };
+    SfDialog.prototype.wireWindowResizeEvent = function () {
+        window.addEventListener('resize', this.windowResizeHandler.bind(this));
+    };
+    SfDialog.prototype.unWireWindowResizeEvent = function () {
+        window.addEventListener('resize', this.windowResizeHandler.bind(this));
+    };
     /* Event handlers begin */
     SfDialog.prototype.popupCloseHandler = function () {
         var activeEle = document.activeElement;
@@ -606,6 +613,9 @@ var SfDialog = /** @class */ (function () {
         if (!sf.base.isNullOrUndefined(this.storeActiveElement) && !sf.base.isNullOrUndefined(this.storeActiveElement.focus)) {
             this.storeActiveElement.focus();
         }
+    };
+    SfDialog.prototype.windowResizeHandler = function () {
+        sf.popups.setMaxWidth(this.targetEle.clientWidth);
     };
     SfDialog.prototype.onResizeStart = function (args, dialogObj) {
         var evtArgs = this.getMouseEvtArgs(args);

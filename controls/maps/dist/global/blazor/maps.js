@@ -539,6 +539,10 @@ function renderTextElement(option, style, color, parent, isMinus) {
     var height;
     var htmlObject = renderer.createText(renderOptions, text);
     htmlObject.style['user-select'] = 'none';
+    htmlObject.style['font-family'] = style.fontFamily;
+    htmlObject.style['font-size'] = style.size;
+    htmlObject.style['font-weight'] = style.fontWeight;
+    htmlObject.style['font-color'] = style.color;
     htmlObject.style['-moz-user-select'] = 'none';
     htmlObject.style['-webkit-touch-callout'] = 'none';
     htmlObject.style['-webkit-user-select'] = 'none';
@@ -4939,7 +4943,6 @@ var LayerPanel = /** @class */ (function () {
                     }
                     else if (layer.key && layer.key.length > 1) {
                         var proxy_1 = _this;
-                        var markerGroupElement_1 = document.getElementById(_this.mapObject.element.id + '_Markers_Group');
                         var bing_1 = new BingMap(_this.mapObject);
                         var bingType = layer.bingMapType === 'AerialWithLabel' ? 'AerialWithLabelsOnDemand' : layer.bingMapType;
                         var url = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + bingType;
@@ -4952,6 +4955,7 @@ var LayerPanel = /** @class */ (function () {
                             var imageUrl = resource['imageUrl'];
                             var subDomains = resource['imageUrlSubdomains'];
                             var maxZoom = resource['zoomMax'];
+                            var markerGroupElement = document.getElementById(_this.mapObject.element.id + '_Markers_Group');
                             if (imageUrl !== null && imageUrl !== undefined && imageUrl !== bing_1.imageUrl) {
                                 bing_1.imageUrl = imageUrl;
                             }
@@ -4963,7 +4967,7 @@ var LayerPanel = /** @class */ (function () {
                             }
                             proxy_1.mapObject['bingMap'] = bing_1;
                             if (_this.mapObject.isBlazor) {
-                                if (!sf.base.isNullOrUndefined(markerGroupElement_1)) {
+                                if (!sf.base.isNullOrUndefined(markerGroupElement)) {
                                     removeElement(_this.mapObject.element.id + '_Markers_Group');
                                 }
                             }
@@ -5072,6 +5076,9 @@ var LayerPanel = /** @class */ (function () {
                 var getShapeColor_1 = void 0;
                 var fill = (shapeSettings.autofill) ? colors[i % colors.length] : shapeSettings.fill;
                 var opacity;
+                if (this_1.mapObject.isBlazor) {
+                    k = checkShapeDataFields(this_1.currentLayer.dataSource, currentShapeData['property'], this_1.currentLayer.shapeDataPath, this_1.currentLayer.shapePropertyPath, this_1.currentLayer);
+                }
                 if (shapeSettings.colorValuePath !== null && !sf.base.isNullOrUndefined(currentShapeData['property'])) {
                     k = checkShapeDataFields(this_1.currentLayer.dataSource, currentShapeData['property'], this_1.currentLayer.shapeDataPath, this_1.currentLayer.shapePropertyPath, this_1.currentLayer);
                     if (k !== null && shapeSettings.colorMapping.length === 0) {

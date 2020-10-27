@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.44 (2020-10-27)
+
+### ListView
+
+#### Bug Fixes
+
+- `#293803` - Provided hover support for ListView Virtualization.
+
 ## 18.3.35 (2020-10-01)
 
 ### ListView

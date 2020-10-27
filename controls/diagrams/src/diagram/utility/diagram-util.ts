@@ -547,7 +547,7 @@ export function intersect3(lineUtil1: Segment, lineUtil2: Segment): Intersection
     let na: number = (l2.x2 - l2.x1) * (l1.y1 - l2.y1) - (l2.y2 - l2.y1) * (l1.x1 - l2.x1);
     let nb: number = (l1.x2 - l1.x1) * (l1.y1 - l2.y1) - (l1.y2 - l1.y1) * (l1.x1 - l2.x1);
     /*( EJ2-42102 - Connector segments not update properly ) by sivakumar sekar - condition added to avoid bridging for
-    overlapping segments in the connectors and to validate whether the connector is intersecting over the other */
+     overlapping segments in the connectors and to validate whether the connector is intersecting over the other */
     if (d === 0 || ((lineUtil1.x1 === lineUtil2.x1 || lineUtil1.y1 === lineUtil2.y1) &&
         (lineUtil1.x2 === lineUtil2.x2 || lineUtil1.y2 === lineUtil2.y2) && ((na === 0 || nb === 0) && d > 0))) {
         return { enabled: false, intersectPt: point };
@@ -2215,8 +2215,8 @@ export function canMeasureDecoratorPath(objects: string[]): boolean {
 export function getPreviewSize(sourceElement: SymbolPaletteModel, clonedObject: Node, wrapper: DiagramElement): Size {
     let previewWidth: number;
     let previewHeight: number;
-    previewWidth = this.getSymbolSize(sourceElement as SymbolPaletteModel, clonedObject as Node, wrapper, 'width');
-    previewHeight = this.getSymbolSize(sourceElement as SymbolPaletteModel, clonedObject as Node, wrapper, 'height');
+    previewWidth = getSymbolSize(sourceElement as SymbolPaletteModel, clonedObject as Node, wrapper, 'width');
+    previewHeight = getSymbolSize(sourceElement as SymbolPaletteModel, clonedObject as Node, wrapper, 'height');
     return new Size(previewWidth, previewHeight);
 }
 

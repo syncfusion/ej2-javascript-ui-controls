@@ -21,7 +21,7 @@ import { ISeriesRenderEventArgs } from '../../chart/model/chart-interface';
 import { seriesRender } from '../../common/model/constants';
 import { Alignment, SeriesCategories } from '../../common/utils/enum';
 import { BoxPlotMode, Segment } from '../utils/enum';
-import { sort, getVisiblePoints } from '../../common/utils/helper';
+import { sort, getVisiblePoints, setRange } from '../../common/utils/helper';
 import { Browser } from '@syncfusion/ej2-base';
 import { StockSeries } from '../../stock-chart/index';
 
@@ -923,6 +923,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                         this.currentViewData, this);
                 }
             }
+            this.isRectTypeSeries = this.type.indexOf('Column') > -1 || this.type.indexOf('Bar') > -1;
         }
         let len: number = Object.keys(this.currentViewData).length;
         this.points = [];
@@ -1107,9 +1108,17 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      * To get Y min max for the provided point seriesType XY
      */
     private setXYMinMax(yValue: number): void {
-        this.yMin = (this.yAxis.valueType === 'Logarithmic' || this.xAxis.valueType === 'Logarithmic') ?
-        Math.min(this.yMin, (isNullOrUndefined(yValue) || isNaN(yValue) || (yValue === 0)) ? this.yMin : yValue) :
-        Math.min(this.yMin, (isNullOrUndefined(yValue) || isNaN(yValue)) ? this.yMin : yValue);
+        let isLogAxis: boolean = (this.yAxis.valueType === 'Logarithmic' || this.xAxis.valueType === 'Logarithmic');
+        let isNegativeValue: boolean = yValue < 0;
+        let seriesMinY: number;
+        if (this.isRectTypeSeries && !setRange(this.yAxis)) {
+            seriesMinY = ((isLogAxis ? 1 : isNegativeValue ? yValue : 0));
+        } else {
+            seriesMinY = yValue;
+        }
+        this.yMin = isLogAxis ?
+            Math.min(this.yMin, (isNullOrUndefined(seriesMinY) || isNaN(seriesMinY) || (seriesMinY === 0)) ? this.yMin : seriesMinY) :
+            Math.min(this.yMin, (isNullOrUndefined(seriesMinY) || isNaN(seriesMinY)) ? this.yMin : seriesMinY);
         this.yMax = Math.max(this.yMax, (isNullOrUndefined(yValue) || isNaN(yValue)) ? this.yMax : yValue);
     }
     /**
@@ -1280,6 +1289,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public sizeMax: number;
     /** @private */
     private recordsCount: number;
+    private isRectTypeSeries: boolean = false;
 }
 
 /**

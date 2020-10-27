@@ -57,6 +57,7 @@ const DRAGAREA: string = 'dragArea';
 const CSSCLASS: string = 'cssClass';
 const ANIMATION: string = 'animation';
 const EXPANDONTYPE: string = 'expandOnType';
+const ENABLERTL: string = 'enableRtl';
 const DISABLE: string = 'e-disable';
 const RIPPLE: string = 'e-ripple';
 const RIPPLEELMENT: string = 'e-ripple-element';
@@ -154,6 +155,10 @@ class SfTreeView {
             this.element.classList.remove(DISABLED);
             this.wireEvents();
         }
+    }
+
+    private setEnableRtl(): void {
+        this.options.enableRtl ? addClass([this.element], RTL) : removeClass([this.element], RTL);
     }
 
     private mouseDownHandler(e: MouseEvent): void {
@@ -381,9 +386,6 @@ class SfTreeView {
             this.isHelperElement = false;
         }
         this.dragStartAction = false;
-        if (this.isHelperElement) {
-            this.dropAction(this.dragStopEventArgs, true );
-        }
     }
 
     public dragStartActionContinue(): void {
@@ -403,13 +405,6 @@ class SfTreeView {
         }
     }
 
-    private updateElement(dragParentUl: Element, dragParentLi: Element): void {
-        if (dragParentLi && dragParentUl.childElementCount === 0) {
-            let dragIcon: Element = select('div.' + ICON, dragParentLi);
-            remove(dragParentUl);
-            remove(dragIcon);
-        }
-    }
     // tslint:disable
     private dropAction(e: any, isBlazorDrop?: boolean): void {
         let offsetY: number = e.event.offsetY;
@@ -520,7 +515,7 @@ class SfTreeView {
         let dragParentUl: Element = closest(dragLi, '.' + PARENTITEM);
         let dragParentLi: Element = closest(dragParentUl, '.' + LISTITEM);
         let dropParentLi: Element = closest(dropUl, '.' + LISTITEM);
-        let dropParentLiId: string = null;
+        let dropParentLiId: string = null, dragParentLiId: string = null;
         let pre: boolean;
         if (e.target.offsetHeight > 0 && e.event.offsetY > e.target.offsetHeight - 2) {
             pre = false;
@@ -533,18 +528,14 @@ class SfTreeView {
                 pre = false;
             }
         }
-        if ((e.target.classList.contains(EXPANDABLE)) || (e.target.classList.contains(COLLAPSIBLE))) {
-            let target: Element = e.target.closest('li');
-            dropUl.insertBefore(dragLi, pre ? target : target.nextElementSibling);
-        } else {
-            dropUl.insertBefore(dragLi, pre ? e.target : e.target.nextElementSibling);
-        }
         if (dropParentLi) {
             dropParentLiId = dropParentLi.getAttribute('data-uid');
         }
+        if (dragParentLi) {
+            dragParentLiId = dragParentLi.getAttribute('data-uid');
+        }
         let dragLiId: string = dragLi.getAttribute('data-uid');
-        this.dotNetRef.invokeMethodAsync('DropNodeAsSibling', dragLiId, dropLi.getAttribute('data-uid'), dropParentLiId, pre);
-        this.updateElement(dragParentUl, dragParentLi);
+        this.dotNetRef.invokeMethodAsync('DropNodeAsSibling', dragLiId, dropLi.getAttribute('data-uid'), dropParentLiId, pre, dragParentLiId);
         this.updateAriaLevel(dragLi);
     }
 
@@ -571,31 +562,23 @@ class SfTreeView {
         let dragParentLi: Element = closest(dragParentUl, '.' + LISTITEM);
         let dropParentUl: Element = closest(dropLi, '.' + PARENTITEM);
         let dropParentLi: Element = closest(dropParentUl, '.' + LISTITEM);
-        let dropParentLiId: string = null;
+        let dropParentLiId: string = null, dragParentLiId: string = null;
         let dragLiId: string = dragLi.getAttribute('data-uid');
         let dropLiId: string = dropLi.getAttribute("data-uid");
         if (dropParentLi) {
             dropParentLiId = dropParentLi.getAttribute('data-uid');
         }
-        if (e && (pos < 7) && !isCheck) {
-            dropParentUl.insertBefore(dragLi, dropLi);
-            this.dotNetRef.invokeMethodAsync('DropNodeAsSibling', dragLiId, dropLiId, dropParentLiId, true);
-        } else if (e && (e.target.offsetHeight > 0 && pos > (e.target.offsetHeight - 10)) && !isCheck) {
-            dropParentUl.insertBefore(dragLi, dropLi.nextElementSibling);
-            this.dotNetRef.invokeMethodAsync('DropNodeAsSibling', dragLiId, dropLiId, dropParentLiId, false);
-        } else {
-            this.dotNetRef.invokeMethodAsync('DropNodeAsChild', dragLiId, dropLiId);
+        if (dragParentLi) {
+            dragParentLiId = dragParentLi.getAttribute('data-uid');
         }
-        this.updateElement(dragParentUl, dragParentLi);
+        if (e && (pos < 7) && !isCheck) {
+            this.dotNetRef.invokeMethodAsync('DropNodeAsSibling', dragLiId, dropLiId, dropParentLiId, true, dragParentLiId);
+        } else if (e && (e.target.offsetHeight > 0 && pos > (e.target.offsetHeight - 10)) && !isCheck) {
+            this.dotNetRef.invokeMethodAsync('DropNodeAsSibling', dragLiId, dropLiId, dropParentLiId, false, dragParentLiId);
+        } else {
+            this.dotNetRef.invokeMethodAsync('DropNodeAsChild', dragLiId, dropLiId, dragParentLiId);
+        }
         this.updateAriaLevel(dragLi);
-    }
-
-    private getChildMapper(mapper: FieldsSettingsModel): FieldsSettingsModel {
-        return (typeof mapper.child === 'string' || isNOU(mapper.child)) ? mapper : mapper.child;
-    }
-
-    private updateMappingField(value: string): string {
-        return value.charAt(0).toLowerCase() + value.slice(1);
     }
 
     private dragCancelAction(virtualEle: HTMLElement): void {
@@ -1470,6 +1453,10 @@ class SfTreeView {
                     break;
                 case EXPANDONTYPE:
                     this.options.expandOnType = newProp.expandOnType;
+                    break;
+                case ENABLERTL:
+                    this.options.enableRtl = newProp.enableRtl;
+                    this.setEnableRtl();
                     break;
                 case ANIMATION:
                     this.options.animation = newProp.animation;

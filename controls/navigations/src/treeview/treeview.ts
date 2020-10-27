@@ -34,6 +34,7 @@ const INPUTGROUP: string = 'e-input-group';
 const TREEINPUT: string = 'e-tree-input';
 const EDITING: string = 'e-editing';
 const RTL: string = 'e-rtl';
+const INTERACTION: string = 'e-interaction';
 const DRAGITEM: string = 'e-drag-item';
 const DROPPABLE: string = 'e-droppable';
 const DRAGGING: string = 'e-dragging';
@@ -262,6 +263,13 @@ export interface DragAndDropEventArgs {
      * Return boolean value for preventing auto-expanding of parent node.
      */
     preventTargetExpand?: boolean;
+    /**
+     * Denotes the cloned element's drop position relative to the dropped node while dragging. The available values are,
+     *   1. Inside – Denotes that the cloned element will be appended as the child node of the dropped node.
+     *   2. Before - Denotes that the cloned element will be appended before the dropped node.
+     *   3. After - Denotes that the cloned element will be appended after the dropped node.
+     */
+    position: string;
 }
 
 /** 
@@ -1179,6 +1187,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private templateComplier(template: string): Function {
         if (template) {
             let e: Object;
+            this.element.classList.add(INTERACTION);
             try {
                 if (document.querySelectorAll(template).length) {
                     return compile(document.querySelector(template).innerHTML.trim());
@@ -1187,6 +1196,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 return compile(template);
             }
         }
+        this.element.classList.remove(INTERACTION);
         return undefined;
     }
 
@@ -4155,6 +4165,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             let node: Element = (drop === true) ? draggedNode : dropLi;
             let index: Element = node ? closest(node, '.e-list-parent') : null;
             let i: number = 0;
+            let position: string = null;
             dragParent = (obj.dragLi && dragParent === null) ? closest(dragLiParent, '.' + ROOT) : dragParent;
             dragParent = (drop === true) ? this.dragParent : dragParent;
             if (cloneEle) {
@@ -4179,6 +4190,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     }
                 }
                 indexValue = (dropTar !== 0) ? --indexValue : indexValue;
+                position = (iconClass == "e-drop-in") ? "Inside" : ((event.offsetY < 7) ? "Before" : "After");
             }
             if (dropTarget) {
                 if (newParent.length === 0) {
@@ -4219,6 +4231,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 dropTarget: targetParent,
                 dropIndicator: iconClass,
                 target: target,
+                position: position,
             };
         }
 

@@ -471,6 +471,8 @@ export class FormFields {
         this.currentTarget.className = 'e-pdfviewer-signatureformFields signature';
         this.updateDataInSession(this.currentTarget, annot.data, annot.bounds, signatureFontFamily, signatureFontSize);
         this.currentTarget.style.pointerEvents = 'none';
+        this.pdfViewerBase.signatureModule.hideSignaturePanel();
+        this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, annot.shapeAnnotationType, annot.bounds, annot.opacity );
     }
     private updateFormFieldsValue(event: MouseEvent): void {
         // tslint:disable-next-line

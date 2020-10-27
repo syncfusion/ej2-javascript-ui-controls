@@ -1839,7 +1839,8 @@ export class Editor {
             let textElement: TextElementBox = item.previousElement as TextElementBox;
             while (!isNullOrUndefined(textElement) && textElement instanceof TextElementBox) {
                 resultantText = textElement.text + resultantText;
-                textElement = textElement.previousElement.previousValidNodeForTracking as TextElementBox;
+                // tslint:disable-next-line:max-line-length
+                textElement = (!isNullOrUndefined(textElement.previousNode)) ? textElement.previousNode.previousValidNodeForTracking as TextElementBox : undefined;
             }
         }
         return resultantText;

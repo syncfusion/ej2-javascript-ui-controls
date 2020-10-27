@@ -100,6 +100,7 @@ export class Point extends ChildProperty<Point> {
         return Math.sqrt(Math.pow(pt2.x - pt1.x, 2) + Math.pow(pt2.y - pt1.y, 2));
     }
 
+
     /**   @private  */
     public static getLengthFromListOfPoints(points: PointModel[]): number {
         let length: number = 0;

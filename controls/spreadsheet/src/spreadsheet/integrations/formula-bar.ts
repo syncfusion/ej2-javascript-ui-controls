@@ -220,10 +220,14 @@ export class FormulaBar {
                             value = cell.formula;
                         }
                     }
+                    let eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
+                    this.parent.notify(editOperation, eventArgs);
+                    let isFormulaEdit: boolean = (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0) ||
+                        checkIsFormula(eventArgs.editedValue);
                     let formulaInp: HTMLTextAreaElement =
                         (<HTMLTextAreaElement>document.getElementById(this.parent.element.id + '_formula_input'));
                     formulaInp.value = value;
-                    if (!isNullOrUndefined(value)) {
+                    if (!isNullOrUndefined(value) && !isFormulaEdit) {
                         this.parent.notify(
                             editOperation, { action: 'refreshEditor', value: formulaInp.value, refreshEditorElem: true });
                     }

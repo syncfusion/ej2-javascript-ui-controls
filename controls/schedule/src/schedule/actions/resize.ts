@@ -146,6 +146,9 @@ export class Resize extends ActionBase {
         if (this.resizeEdges.left) {
             if (resizeValidation) {
                 let leftStyles: { [key: string]: Object } = this.getLeftRightStyles(e, true);
+                if (parseInt(leftStyles.width as string, 10) < 1) {
+                    return;
+                }
                 for (let cloneElement of this.actionObj.cloneElement) {
                     setStyleAttribute(cloneElement, leftStyles);
                     addClass([cloneElement], cls.LEFT_RESIZE_HANDLER);
@@ -156,6 +159,9 @@ export class Resize extends ActionBase {
         if (this.resizeEdges.right) {
             if (resizeValidation) {
                 let rightStyles: { [key: string]: Object } = this.getLeftRightStyles(e, false);
+                if (parseInt(rightStyles.width as string, 10) < 1) {
+                    return;
+                }
                 for (let cloneElement of this.actionObj.cloneElement) {
                     setStyleAttribute(cloneElement, rightStyles);
                     addClass([cloneElement], cls.RIGHT_RESIZE_HANDLER);
@@ -401,15 +407,12 @@ export class Resize extends ActionBase {
         let offsetWidth: number = targetWidth + (Math.ceil(pageWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth);
         let left: number = (this.parent.enableRtl) ? parseInt(this.actionObj.element.style.right, 10) : this.actionObj.clone.offsetLeft;
         if (isTimeViews) {
-            offsetWidth = targetWidth + (Math.ceil(pageWidth / slotInterval) * slotInterval);
-            offsetWidth = (Math.ceil((left + offsetWidth) / slotInterval) * slotInterval) - left;
+            offsetWidth = targetWidth + (isLeft ? (Math.ceil(pageWidth / slotInterval) * slotInterval) :
+                (Math.floor(pageWidth / slotInterval) * slotInterval));
             this.actionObj.event[this.parent.eventFields.isAllDay] = false;
         }
         let width: number = !isLeft && ((offsetWidth + this.actionObj.clone.offsetLeft > this.scrollArgs.width)) ?
-            this.actionObj.clone.offsetWidth : (offsetWidth < this.actionObj.cellWidth) ? this.actionObj.cellWidth : offsetWidth;
-        if (!isLeft && (offsetWidth === this.actionObj.cellWidth && Math.ceil(pageWidth / slotInterval) * slotInterval === 0)) {
-            width = -Math.floor(pageWidth / slotInterval) * slotInterval;
-        }
+            this.actionObj.clone.offsetWidth : (offsetWidth < this.actionObj.cellWidth) ? offsetWidth : offsetWidth;
         if (this.parent.enableRtl) {
             let rightValue: number = isTimelineView ? parseInt(this.actionObj.element.style.right, 10) :
                 -(offsetWidth - this.actionObj.cellWidth);

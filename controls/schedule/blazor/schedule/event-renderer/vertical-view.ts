@@ -55,7 +55,6 @@ export class VerticalEvent {
                     this.parent.activeViewOptions.timeScale.slotCount * 60000)) * cellHeight) -
                 ((this.getTopStartDuration(ele) / (this.parent.activeViewOptions.timeScale.interval /
                     this.parent.activeViewOptions.timeScale.slotCount * 60000)) * cellHeight)) + 'px';
-            this.parent.eventBase.applyResourceColor(ele);
             this.parent.eventBase.wireAppointmentEvents(ele);
         }
         let allDayRowTop: number = (this.parent.element.querySelector('.' + cls.ALLDAY_ROW_CLASS) as HTMLElement).offsetTop;
@@ -81,7 +80,6 @@ export class VerticalEvent {
                     ele.style.top = allDayRowTop + (DEFAULT_ALL_DAY_ROW_LENGTH * appHeight) + 'px';
                     allDayRowHeight = (DEFAULT_ALL_DAY_ROW_LENGTH * appHeight) + ADD_BORDER_LENGTH;
                 }
-                this.parent.eventBase.applyResourceColor(ele);
                 this.setAllDayRowHeight(allDayRowHeight);
             }
         }

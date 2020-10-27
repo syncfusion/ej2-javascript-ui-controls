@@ -551,6 +551,9 @@ export class FreeTextAnnotation {
 
     // tslint:disable-next-line
     private getRgbCode(colorString: string): any {
+        if (!colorString.match(/#([a-z0-9]+)/gi) && !colorString.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/)) {
+            colorString = this.pdfViewer.annotationModule.nameToHash(colorString);
+        }
         let stringArray: string[] = colorString.split(',');
         if (isNullOrUndefined(stringArray[1])) {
             let colorpick: ColorPicker = new ColorPicker();

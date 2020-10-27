@@ -16,7 +16,7 @@ import { Segment } from '../interaction/scroller';
  * Connector modules are used to dock and update the connectors
  */
 /** @private */
-export function findConnectorPoints(element: Connector, layoutOrientation?: LayoutOrientation): PointModel[] {
+export function findConnectorPoints(element: Connector, layoutOrientation?: LayoutOrientation, lineDistribution?: boolean): PointModel[] {
     let intermeditatePoints: PointModel[];
     let sourcePoint: PointModel;
     if (element.type === 'Straight' || !element.sourceWrapper) {
@@ -24,7 +24,7 @@ export function findConnectorPoints(element: Connector, layoutOrientation?: Layo
     } else {
         sourcePoint = element.sourceWrapper.corners.center;
     }
-    intermeditatePoints = terminateConnection(element, sourcePoint, element.targetPoint, layoutOrientation);
+    intermeditatePoints = terminateConnection(element, sourcePoint, element.targetPoint, layoutOrientation, lineDistribution);
     setLineEndPoint(element, intermeditatePoints[0], false);
     setLineEndPoint(element, intermeditatePoints[intermeditatePoints.length - 1], true);
     return intermeditatePoints;
@@ -69,7 +69,7 @@ function getDirection(source: End, target: End, layoutOrientation: LayoutOrienta
 }
 
 function terminateConnection(
-    element: Connector, srcPoint: PointModel, tarPoint: PointModel, layoutOrientation?: LayoutOrientation)
+    element: Connector, srcPoint: PointModel, tarPoint: PointModel, layoutOrientation?: LayoutOrientation, lineDistribution?: boolean)
     :
     PointModel[] {
     let sourceNode: DiagramElement = element.sourceWrapper;
@@ -142,7 +142,7 @@ function terminateConnection(
                 }
             }
         }
-        return defaultOrthoConnection(element, source.direction, target.direction, source.point, target.point);
+        return defaultOrthoConnection(element, source.direction, target.direction, source.point, target.point, lineDistribution);
     }
     //It will be called only when there is only one end node
     checkLastSegmentasTerminal(element);
@@ -727,7 +727,7 @@ export function swapBounds(object: DiagramElement, bounds: Corners, outerBounds:
     return bounds;
 }
 /* tslint:disable */
-function defaultOrthoConnection(ele: Connector, srcDir: Direction, tarDir: Direction, sPt: PointModel, tPt: PointModel): PointModel[] {
+function defaultOrthoConnection(ele: Connector, srcDir: Direction, tarDir: Direction, sPt: PointModel, tPt: PointModel, lineDistribution?: boolean): PointModel[] {
     let sourceEle: DiagramElement = ele.sourceWrapper; let targetEle: DiagramElement = ele.targetWrapper;
     let srcPort: DiagramElement = ele.sourcePortWrapper; let tarPort: DiagramElement = ele.targetPortWrapper;
     let intermeditatePoints: PointModel[] = []; let refPoint: PointModel; let seg: NoOfSegments; let srcCor: Corners = sourceEle.corners;
@@ -841,7 +841,7 @@ function defaultOrthoConnection(ele: Connector, srcDir: Direction, tarDir: Direc
                 let segment: OrthogonalSegment = new OrthogonalSegment(ele, 'segments', { type: 'Orthogonal' }, true);
                 ele.segments.push(segment);
             }
-            (ele.segments[0] as OrthogonalSegment).points = intermeditatePoints = findOrthoSegments(ele, source, target);
+            (ele.segments[0] as OrthogonalSegment).points = intermeditatePoints = findOrthoSegments(ele, source, target, undefined, lineDistribution);
         }
     }
     return intermeditatePoints;
@@ -973,28 +973,29 @@ function nodeOrPortToNode(ele: Connector, source: End, target: End): PointModel[
 
 function checkSourcePointInTarget(ele: Connector, source: End): void {
     if (ele.targetWrapper !== undefined && ele.targetPortWrapper === undefined) {
-        if (cornersPointsBeforeRotation(ele.targetWrapper).containsPoint(source.point)) {
+        let padding: number = 1;
+        if (cornersPointsBeforeRotation(ele.targetWrapper).containsPoint(source.point, padding)) {
             let target: DiagramElement = ele.targetWrapper;
             let segment: OrthogonalSegment = ele.segments[ele.segments.length - 2] as OrthogonalSegment;
             let lastPoint: PointModel = segment.points[segment.points.length - 1];
             let direction: Direction = getOppositeDirection(segment.direction) as Direction;
             if (direction === 'Bottom') {
-                if (lastPoint.y < target.corners.bottom) {
+                if (lastPoint.y < target.corners.bottom + padding) {
                     segment.points[segment.points.length - 1].y = target.corners.bottom + 20;
                     segment.length = Point.distancePoints(segment.points[0], segment.points[segment.points.length - 1]);
                 }
             } else if (direction === 'Top') {
-                if (lastPoint.y > target.corners.top) {
+                if (lastPoint.y > target.corners.top - padding) {
                     segment.points[segment.points.length - 1].y = target.corners.top - 20;
                     segment.length = Point.distancePoints(segment.points[0], segment.points[segment.points.length - 1]);
                 }
             } else if (direction === 'Left') {
-                if (lastPoint.x > target.corners.left) {
+                if (lastPoint.x > target.corners.left - padding) {
                     segment.points[segment.points.length - 1].x = target.corners.left - 20;
                     segment.length = Point.distancePoints(segment.points[0], segment.points[segment.points.length - 1]);
                 }
             } else if (direction === 'Right') {
-                if (lastPoint.x < target.corners.right) {
+                if (lastPoint.x < target.corners.right + padding) {
                     segment.points[segment.points.length - 1].x = target.corners.right + 20;
                     segment.length = Point.distancePoints(segment.points[0], segment.points[segment.points.length - 1]);
                 }
@@ -1120,7 +1121,7 @@ function findDirection(node: DiagramElement, source: End, target: End, ele: Conn
 }
 
 
-function findOrthoSegments(ele: Connector, source: End, target: End, extra?: number): PointModel[] {
+function findOrthoSegments(ele: Connector, source: End, target: End, extra?: number, lineDistribution?: boolean): PointModel[] {
     let swap: boolean = false;
     let intermeditatePoints: PointModel[] = []; let seg: NoOfSegments;
     swap = getSwapping(source.direction, target.direction);
@@ -1149,7 +1150,7 @@ function findOrthoSegments(ele: Connector, source: End, target: End, extra?: num
         seg = getTopToTopSegmentCount(ele, source, target);
     }
     if (swap) { swapPoints(source, target); }
-    intermeditatePoints = addOrthoSegments(ele, seg, source, target, extra);
+    intermeditatePoints = addOrthoSegments(ele, seg, source, target, extra, lineDistribution);
     return intermeditatePoints;
 }
 
@@ -1804,36 +1805,42 @@ function getTopToTopSegmentCount(element: Connector, source: End, target: End): 
     return pts;
 }
 
-function addOrthoSegments(element: Connector, seg: NoOfSegments, source: End, target: End, segLength?: number): PointModel[] {
+function addOrthoSegments(
+    element: Connector, seg: NoOfSegments, source: End, target: End, segLength?: number,
+    lineDistribution?: boolean): PointModel[] {
     let src: DiagramElement = element.sourceWrapper;
     let tar: DiagramElement = element.targetWrapper;
     let tarPort: DiagramElement = element.targetPortWrapper;
     let intermeditatePoints: PointModel[];
     let srcCorner: Corners = src.corners;
     let tarCorner: Corners = tar.corners;
-
+    let value: number;
     let extra: number = 20;
     if (source.direction !== target.direction || seg === NoOfSegments.Five) {
         if (source.direction === getOppositeDirection(target.direction) || seg === NoOfSegments.Three) {
             switch (source.direction) {
                 case 'Left':
                     if (srcCorner.middleLeft.x > tarCorner.middleRight.x) {
-                        extra = Math.min(extra, (srcCorner.middleLeft.x - tarCorner.middleRight.x) / 2);
+                        value = (srcCorner.middleLeft.x - tarCorner.middleRight.x) / 2;
+                        extra = !lineDistribution ? Math.min(extra, value) : value;
                     }
                     break;
                 case 'Right':
                     if (srcCorner.middleRight.x < tarCorner.middleLeft.x) {
-                        extra = Math.min(extra, (tarCorner.middleLeft.x - srcCorner.middleRight.x) / 2);
+                        value = (tarCorner.middleLeft.x - srcCorner.middleRight.x) / 2;
+                        extra = !lineDistribution ? Math.min(extra, value) : value;
                     }
                     break;
                 case 'Top':
                     if (srcCorner.topCenter.y > tarCorner.bottomCenter.y) {
-                        extra = Math.min(extra, (srcCorner.topCenter.y - tarCorner.bottomCenter.y) / 2);
+                        value = (srcCorner.topCenter.y - tarCorner.bottomCenter.y) / 2;
+                        extra = !lineDistribution ? Math.min(extra, value) : value;
                     }
                     break;
                 case 'Bottom':
                     if (srcCorner.bottomCenter.y < tarCorner.topCenter.y) {
-                        extra = Math.min(extra, (tarCorner.topCenter.y - srcCorner.bottomCenter.y) / 2);
+                        value = (tarCorner.topCenter.y - srcCorner.bottomCenter.y) / 2;
+                        extra = !lineDistribution ? Math.min(extra) : value;
                     }
                     break;
             }

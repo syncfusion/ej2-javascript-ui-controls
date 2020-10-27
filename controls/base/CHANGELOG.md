@@ -2,13 +2,23 @@
 
 ## [Unreleased]
 
-## 18.3.42 (2020-10-20)
+## 18.3.44 (2020-10-27)
 
 ### Common
 
 #### Bug Fixes
 
+- `I291462` - Resolved CSS Dimension Properties not accepts `viewport` and `em`.
 - `F158279` - Resolved `Draggable` element jumps out of the view while scrolling.
+- `I292035` - Resolved Touch functionality is not working with draggable.
+
+## 18.3.40 (2020-10-13)
+
+### Common
+
+#### Bug Fixes
+
+- `F16367` - Resolved `& ampersand` symbol produce the issue, while `enableHTMLSanitizer` set to true.
 
 ## 17.4.51 (2020-02-25)
 

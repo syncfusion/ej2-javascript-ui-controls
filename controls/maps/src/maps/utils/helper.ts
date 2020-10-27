@@ -608,6 +608,10 @@ export function renderTextElement(
     let height: number;
     let htmlObject: HTMLElement = <HTMLElement>renderer.createText(renderOptions, text);
     htmlObject.style['user-select'] = 'none';
+    htmlObject.style['font-family'] = style.fontFamily;
+    htmlObject.style['font-size'] = style.size;
+    htmlObject.style['font-weight'] = style.fontWeight;
+    htmlObject.style['font-color'] = style.color;
     htmlObject.style['-moz-user-select'] = 'none';
     htmlObject.style['-webkit-touch-callout'] = 'none';
     htmlObject.style['-webkit-user-select'] = 'none';

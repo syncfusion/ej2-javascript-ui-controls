@@ -68,7 +68,7 @@ export class Logarithmic extends Double {
         };
         let isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
         if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-            axis.calculateVisibleRange(this.chart);
+            axis.calculateVisibleRangeOnZooming(this.chart);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateLogNiceInterval(axis.doubleRange.delta, size, axis)
                 : axis.visibleRange.interval;
@@ -83,7 +83,7 @@ export class Logarithmic extends Double {
     protected calculateLogNiceInterval(delta: number, size: Size, axis: Axis): number {
         let actualDesiredIntervalsCount: number = getActualDesiredIntervalsCount(size, axis);
         let niceInterval: number = delta;
-        let minInterval: number = Math.pow(10, Math.floor(logBase(niceInterval, 10)));
+        let minInterval: number = Math.pow(axis.logBase, Math.floor(logBase(niceInterval, 10)));
         for (let j: number = 0, len: number = axis.intervalDivs.length; j < len; j++) {
             let currentInterval: number = minInterval * axis.intervalDivs[j];
             if (actualDesiredIntervalsCount < (delta / currentInterval)) {

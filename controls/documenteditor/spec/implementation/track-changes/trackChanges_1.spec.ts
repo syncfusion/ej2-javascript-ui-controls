@@ -405,3 +405,31 @@ console.log('Cut when trackchange disabled and paste text when track change is e
         expect(count).toBe(2);
     });
 });
+
+describe('Field result text with multiple lines', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+
+    it('Field result text with multiple lines Validation', () => {
+        editor.enableTrackChanges = true;
+        expect(() => { editor.editor.insertField("MERGEFIELD " + "Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational " + " * MERGEFORMAT", "Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational "); }).not.toThrowError();
+     });
+});

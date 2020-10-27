@@ -1,7 +1,7 @@
 import { DataManager, Query, Deferred, ReturnOption, QueryOptions } from '@syncfusion/ej2-data';
-import { Workbook, getCell, CellModel, RowModel, SheetModel, setCell } from '../base/index';
+import { Workbook, getCell, CellModel, RowModel, SheetModel, setCell, getSheetIndex } from '../base/index';
 import { getRangeIndexes, checkIsFormula, updateSheetFromDataSource, checkDateFormat, dataSourceChanged } from '../common/index';
-import { ExtendedSheet, ExtendedRange, AutoDetectInfo } from '../common/index';
+import { ExtendedSheet, ExtendedRange, AutoDetectInfo, getCellIndexes, dataChanged } from '../common/index';
 import { getFormatFromType } from './number-format';
 
 /**
@@ -20,12 +20,14 @@ export class DataBind {
     private addEventListener(): void {
         this.parent.on(updateSheetFromDataSource, this.updateSheetFromDataSourceHandler, this);
         this.parent.on(dataSourceChanged, this.dataSourceChangedHandler, this);
+        this.parent.on(dataChanged, this.dataChangedHandler, this);
     }
 
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(updateSheetFromDataSource, this.updateSheetFromDataSourceHandler);
             this.parent.off(dataSourceChanged, this.dataSourceChangedHandler);
+            this.parent.off(dataChanged, this.dataChangedHandler);
         }
     }
 
@@ -76,7 +78,7 @@ export class DataBind {
                 }
                 this.requestedInfo.push({ deferred: deferred, indexes: args.indexes, isNotLoaded: loadedInfo.isNotLoaded });
                 if (sRange >= 0 && loadedInfo.isNotLoaded && !isEndReached) {
-                    sRanges[k] = sRange; requestedRange.push(false);
+                    sRanges[k] = sRange; requestedRange[k] = false;
                     let query: Query = (range.query ? range.query : new Query()).clone();
                     dataManager.executeQuery(query.range(sRange, eRange >= count ? eRange : eRange + 1)
                         .requiresCount()).then((e: ReturnOption) => {
@@ -87,7 +89,7 @@ export class DataBind {
                             if (result.length) {
                                 if (!range.info.count) { count = e.count; range.info.count = e.count; }
                                 flds = Object.keys(result[0]);
-                                if (!range.info.fldLen) { range.info.fldLen = flds.length; }
+                                if (!range.info.fldLen) { range.info.fldLen = flds.length; range.info.flds = flds; }
                                 if (range.info.insertColumnRange) {
                                     let insertCount: number = 0;
                                     range.info.insertColumnRange.forEach((insertRange: number[]): void => {
@@ -315,24 +317,109 @@ export class DataBind {
     /**
      * Remove old data from sheet.
      */
-    private dataSourceChangedHandler(args: { oldProp: Workbook, sheetIdx: number, rangeIdx: number }): void {
-        let oldSheet: SheetModel = args.oldProp.sheets[args.sheetIdx];
+    private dataSourceChangedHandler(args: { oldProp: Workbook, sheetIdx: string, rangeIdx: string, isLastRange: boolean }): void {
         let row: RowModel;
         let sheet: SheetModel = this.parent.sheets[args.sheetIdx];
-        let oldRange: ExtendedRange = oldSheet && oldSheet.ranges && oldSheet.ranges[args.rangeIdx];
-        if (oldRange) {
-            let indexes: number[] = getRangeIndexes(oldRange.startCell);
-            (sheet.ranges[args.rangeIdx] as ExtendedRange).info.loadedRange = [];
-            oldRange.info.loadedRange.forEach((range: number[]) => {
-                for (let i: number = range[0]; i < range[1]; i++) {
-                    row = sheet.rows[i + indexes[0]];
-                    for (let j: number = indexes[1]; j < indexes[1] + oldRange.info.fldLen; j++) {
-                        row.cells[j].value = '';
+        let range: ExtendedRange = sheet.ranges[args.rangeIdx];
+        if (range && (this.checkRangeHasChanges(sheet, args.rangeIdx) || !range.info)) {
+            let showFieldAsHeader: boolean = range.showFieldAsHeader;
+            let indexes: number[] = getCellIndexes(range.startCell);
+            if (range.info) {
+                range.info.loadedRange.forEach((loadedRange: number[]) => {
+                    for (let i: number = loadedRange[0]; i <= loadedRange[1] && (i < range.info.count + (showFieldAsHeader ? 1 : 0)); i++) {
+                        row = sheet.rows[i + indexes[0]];
+                        if (row) {
+                            for (let j: number = indexes[1]; j < indexes[1] + range.info.fldLen; j++) {
+                                delete row.cells[j];
+                            }
+                        }
                     }
-                }
+                });
+                range.info = null;
+            }
+            interface Viewport { topIndex: number; bottomIndex: number; leftIndex: number; rightIndex: number; }
+            let viewport: Viewport = (this.parent as unknown as { viewport: Viewport }).viewport;
+            let refreshRange: number[] = [viewport.topIndex, viewport.leftIndex, viewport.bottomIndex, viewport.rightIndex];
+            let args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel> } = {
+                sheet: sheet as ExtendedSheet, indexes: refreshRange, promise:
+                    new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })
+            };
+            this.updateSheetFromDataSourceHandler(args);
+            args.promise.then(() => {
+                this.parent.notify('updateView', { indexes: refreshRange });
             });
         }
-        this.parent.notify('data-refresh', { sheetIdx: args.sheetIdx });
+    }
+
+    private checkRangeHasChanges(sheet: SheetModel, rangeIdx: string): boolean {
+        if ((this.parent as unknown as { isAngular: boolean }).isAngular) {
+            let changedRangeIdx: string = 'changedRangeIdx';
+            if (sheet[changedRangeIdx] === parseInt(rangeIdx, 10)) {
+                delete sheet[changedRangeIdx];
+                return true;
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * Triggers dataSourceChange event when cell data changes
+     */
+    private dataChangedHandler(args: {
+        sheetIdx: number, activeSheetIndex: number, address: string, startIndex: number, endIndex: number,
+        modelType: string, deletedModel: RowModel[]
+    }): void {
+        let changedData: Object[] = [{}];
+        let action: string;
+        let cell: CellModel;
+        let dataRange: number[];
+        let startCell: number[];
+        let isNewRow: boolean;
+        let inRange: boolean;
+        let sheetIdx: number = args.sheetIdx > -1 ? args.sheetIdx : args.activeSheetIndex > -1 ? args.activeSheetIndex
+            : getSheetIndex(this.parent, args.address.split('!')[0]);
+        let sheet: SheetModel = this.parent.sheets[sheetIdx];
+        let cellIndices: number[];
+        sheet.ranges.forEach((range: ExtendedRange, idx: number) => {
+            if (range.dataSource) {
+                startCell = getCellIndexes(range.startCell);
+                dataRange = [...startCell, startCell[0] + range.info.count, startCell[1] + range.info.fldLen - 1];
+                if (args.modelType === 'Row') {
+                    inRange = dataRange[0] <= args.startIndex && dataRange[2] >= args.startIndex;
+                } else {
+                    cellIndices = getCellIndexes(args.sheetIdx > -1 ? args.address : args.address.split('!')[1]);
+                    inRange = dataRange[0] <= cellIndices[0] && dataRange[2] >= cellIndices[0] && dataRange[1] <= cellIndices[1]
+                        && dataRange[3] >= cellIndices[1];
+                    if (dataRange[2] + 1 === cellIndices[0]) {
+                        isNewRow = true;
+                        range.info.count += 1;
+                    } else {
+                        isNewRow = false;
+                    }
+                }
+                if (inRange || isNewRow) {
+                    if (args.modelType === 'Row') {
+                        action = 'delete';
+                        args.deletedModel.forEach((row: RowModel, rowIdx: number) => {
+                            changedData[rowIdx] = {};
+                            row.cells.forEach((cell: CellModel, cellIdx: number) => {
+                                changedData[rowIdx][range.info.flds[cellIdx]] = (cell && cell.value) || null;
+                            });
+                        });
+                        range.info.count -= 1;
+                    } else {
+                        action = isNewRow ? 'add' : 'edit';
+                        range.info.flds.forEach((fld: string, idx: number) => {
+                            cell = getCell(cellIndices[0], idx, sheet);
+                            changedData[0][fld] = (cell && cell.value) || null;
+                        });
+                    }
+                    this.parent.trigger('dataSourceChanged', { data: changedData, action: action, rangeIndex: idx, sheetIndex: sheetIdx });
+                }
+            }
+        });
     }
 
     /**

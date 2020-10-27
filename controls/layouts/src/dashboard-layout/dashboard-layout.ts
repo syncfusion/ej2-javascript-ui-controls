@@ -1399,6 +1399,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         if (!cellElement) {
             return;
         }
+        if (this.checkMediaQuery()) {
+            this.calculateCellSize();
+        }
         let heightValue: number | string = this.getCellSize()[1];
         let widthValue: number | string = this.getCellSize()[0];
         let left: number = col === 0 ? 0 : (((col) * ((widthValue) + this.cellSpacing[0])));

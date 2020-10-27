@@ -1,5 +1,6 @@
 import { getPoint, withInRange, ChartLocation } from '../../common/utils/helper';
 import { PathOption } from '@syncfusion/ej2-svg-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { Axis } from '../../chart/axis/axis';
@@ -60,7 +61,7 @@ export class MultiColoredAreaSeries extends MultiColoredSeries {
                 this.storePointLocation(point, series, isInverted, getPoint);
             }
         });
-        if (!rendered) {
+        if (!isNullOrUndefined(rendered) && !rendered) {
             direction = series.points.length > 1 ?
                 (direction + this.getAreaPathDirection(previous.xValue, origin, series, isInverted, getPoint, null, 'L')) : '';
             this.generatePathOption(options, series, previous, direction, '');

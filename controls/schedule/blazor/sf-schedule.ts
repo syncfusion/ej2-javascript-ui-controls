@@ -20,6 +20,7 @@ let Schedule: object = {
                 element.blazor__instance.render(true);
             } else {
                 new SfSchedule(element, options, viewOptions, dotnetRef);
+                dotnetRef.invokeMethodAsync('TriggerCreatedEvent');
             }
         }
     },

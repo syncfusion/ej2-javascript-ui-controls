@@ -69,7 +69,7 @@ export class MonthEvent extends EventBase {
                 let resIndex: number = this.getGroupIndex(ele);
                 let cellTd: HTMLElement = this.getCellTd(resIndex, startTime);
                 let target: HTMLElement = closest(cellTd, 'tr') as HTMLElement;
-                this.monthHeaderHeight = (<HTMLElement>cellTd.firstChild).offsetHeight;
+                this.monthHeaderHeight = (<HTMLElement>cellTd.firstElementChild).offsetHeight;
                 let height: number =
                     this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
                 if (this.parent.options.rowAutoHeight) {
@@ -94,7 +94,6 @@ export class MonthEvent extends EventBase {
                             });
                         }
                         if (ele.classList.contains('e-appointment')) {
-                            this.parent.eventBase.applyResourceColor(ele);
                             this.parent.eventBase.wireAppointmentEvents(ele);
                         }
                     } else {
@@ -155,7 +154,7 @@ export class MonthEvent extends EventBase {
         } else {
             ele.style.left = (left + this.cellWidth) - BLOCK_INDICATOR_WIDTH + 'px';
         }
-        ele.style.top = cell.offsetTop + (<HTMLElement>cell.firstChild).offsetTop + 22 + 'px';
+        ele.style.top = cell.offsetTop + (<HTMLElement>cell.firstElementChild).offsetTop + 22 + 'px';
         ele.style.position = 'absolute';
     }
 

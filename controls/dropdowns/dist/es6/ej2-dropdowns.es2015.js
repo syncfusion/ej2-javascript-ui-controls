@@ -1394,6 +1394,7 @@ let DropDownList = class DropDownList extends DropDownBase {
     constructor(options, element) {
         super(options, element);
         this.previousValue = null;
+        this.isListSearched = false;
     }
     ;
     /**
@@ -2652,6 +2653,7 @@ let DropDownList = class DropDownList extends DropDownBase {
     searchLists(e) {
         this.isTyped = true;
         this.activeIndex = null;
+        this.isListSearched = true;
         if (this.filterInput.parentElement.querySelector('.' + dropDownListClasses.clearIcon)) {
             let clearElement = this.filterInput.parentElement.querySelector('.' + dropDownListClasses.clearIcon);
             clearElement.style.visibility = this.filterInput.value === '' ? 'hidden' : 'visible';
@@ -3582,10 +3584,12 @@ let DropDownList = class DropDownList extends DropDownBase {
         }
     }
     checkData(newProp) {
-        if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource)) && this.itemTemplate && this.allowFiltering) {
+        if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource)) && this.itemTemplate && this.allowFiltering &&
+            !(this.isListSearched && (newProp.dataSource instanceof DataManager))) {
             this.list = null;
             this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
         }
+        this.isListSearched = false;
         let isChangeValue = Object.keys(newProp).indexOf('value') !== -1 && isNullOrUndefined(newProp.value);
         let isChangeText = Object.keys(newProp).indexOf('text') !== -1 && isNullOrUndefined(newProp.text);
         if (this.getModuleName() !== 'autocomplete' && this.allowFiltering && (isChangeValue || isChangeText)) {
@@ -12433,7 +12437,9 @@ class CheckBoxSelection {
                 }
                 EventHandler.add(this.checkAllParent, 'mousedown', this.clickHandler, this);
             }
-            if (this.parent.list.classList.contains('e-nodata') || (this.parent.listData && this.parent.listData.length <= 1)) {
+            if (this.parent.list.classList.contains('e-nodata') || (this.parent.listData && this.parent.listData.length <= 1 &&
+                !this.parent.isDynamicDataChange) || (this.parent.isDynamicDataChange &&
+                !isNullOrUndefined(this.parent.value) && this.parent.value.length <= 1)) {
                 this.checkAllParent.style.display = 'none';
             }
             else {

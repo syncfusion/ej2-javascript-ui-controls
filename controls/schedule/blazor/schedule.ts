@@ -664,12 +664,12 @@ export class SfSchedule {
                     this.quickPopup.dataBind();
                 }
             }
-            // if (this.parent.virtualScrollModule && (collide.indexOf('top') > -1 || collide.indexOf('bottom') > -1)) {
-            //     let element: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table');
-            //     let translateY: number = util.getTranslateY(element);
-            //     this.quickPopup.offsetY = translateY;
-            //     this.quickPopup.dataBind();
-            // }
+            if (this.virtualScrollModule && (collide.indexOf('top') > -1 || collide.indexOf('bottom') > -1)) {
+                let element: HTMLElement = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table');
+                let translateY: number = util.getTranslateY(element);
+                this.quickPopup.offsetY = translateY;
+                this.quickPopup.dataBind();
+            }
         }
         // if (isEventPopup) {
         //     this.applyEventColor();
@@ -713,7 +713,7 @@ export class SfSchedule {
             let appointments: NodeListOf<HTMLElement> = this.morePopup.element.querySelectorAll('.e-appointment');
             for (let i: number = 0; i < appointments.length; i++) {
                 let ele: HTMLElement = appointments[i];
-                this.eventBase.applyResourceColor(ele);
+                this.eventBase.wireAppointmentEvents(ele, this.options.currentView === 'TimelineYear' ? true : false);
             }
             this.morePopup.relateTo = this.element.querySelector('.' + clsName + '[data-date="' + dataDate + '"]') as HTMLElement;
             this.morePopup.show();
@@ -741,6 +741,7 @@ export class SfSchedule {
         this.dotNetRef.invokeMethodAsync('ErrorPositioning', toolTipPos, isQuickPopup);
     }
     public scrollTo(hour: string, scrollDate?: Date): void {
+        scrollDate = isNullOrUndefined(scrollDate) ? scrollDate : this.getDateTime(scrollDate);
         if (this.activeView.scrollToDate && isNullOrUndefined(hour) && scrollDate) {
             this.activeView.scrollToDate(scrollDate);
         } else if (this.activeView.scrollToHour) {

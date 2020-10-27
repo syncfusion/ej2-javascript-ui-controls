@@ -5923,7 +5923,8 @@ var config = {
     dropeffect: 'aria-dropeffect',
     haspopup: 'aria-haspopup',
     level: 'aria-level',
-    colcount: 'aria-colcount'
+    colcount: 'aria-colcount',
+    rowcount: 'aria-rowcount'
 };
 
 var __extends$4 = (undefined && undefined.__extends) || (function () {
@@ -7114,11 +7115,13 @@ var Render = /** @class */ (function () {
                 _this.parent.hideSpinner();
             }
             _this.parent.notify(toolbarRefresh, {});
+            _this.setRowCount(_this.parent.getCurrentViewRecords().length);
         });
     };
     /** @hidden */
     Render.prototype.dataManagerFailure = function (e, args) {
         this.ariaService.setOptions(this.parent.getContent().querySelector('.e-content'), { busy: false, invalid: true });
+        this.setRowCount(1);
         this.parent.trigger(actionFailure, { error: e });
         this.parent.hideSpinner();
         if (args.requestType === 'save' || args.requestType === 'delete'
@@ -7128,6 +7131,12 @@ var Render = /** @class */ (function () {
         this.parent.currentViewData = [];
         this.renderEmptyRow();
         this.parent.log('actionfailure', { error: e });
+    };
+    Render.prototype.setRowCount = function (dataRowCount) {
+        var gObj = this.parent;
+        this.ariaService.setOptions(this.parent.getHeaderTable(), {
+            rowcount: dataRowCount ? dataRowCount.toString() : '1'
+        });
     };
     Render.prototype.isInfiniteEnd = function (args) {
         return this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache && args.requestType === 'delete';
@@ -15043,7 +15052,7 @@ var Grid = /** @class */ (function (_super) {
     };
     Grid.prototype.getVisibleFrozenColumnsCount = function () {
         var visibleFrozenColumns = 0;
-        var col = this.columns;
+        var col = this.columnModel;
         for (var i = 0; i < this.frozenColumns; i++) {
             if (col[i].visible) {
                 visibleFrozenColumns++;

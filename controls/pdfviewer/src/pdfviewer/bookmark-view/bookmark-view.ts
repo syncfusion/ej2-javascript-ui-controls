@@ -1,6 +1,6 @@
 import { PdfViewerBase, PdfViewer } from '../index';
 import { createElement, Browser, isBlazor } from '@syncfusion/ej2-base';
-import { TreeView, NodeSelectEventArgs } from '@syncfusion/ej2-navigations';
+import { TreeView, NodeSelectEventArgs, DrawNodeEventArgs } from '@syncfusion/ej2-navigations';
 import { ListView } from '@syncfusion/ej2-lists';
 import { AjaxHandler } from '../index';
 
@@ -16,6 +16,8 @@ export class BookmarkView {
     private bookmarkRequestHandler: AjaxHandler;
     // tslint:disable-next-line
     public bookmarks: any;
+    // tslint:disable-next-line
+    private bookmarkStyles: any;
     // tslint:disable-next-line
     public bookmarksDestination: any;
     /**
@@ -46,6 +48,10 @@ export class BookmarkView {
             // tslint:disable-next-line
             (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
         }
+        if (this.pdfViewer.enableBookmarkStyles) {
+            // tslint:disable-next-line
+            (jsonObject as any).bookmarkStyles = this.pdfViewer.enableBookmarkStyles;
+        }
         this.bookmarkRequestHandler = new AjaxHandler(this.pdfViewer);
         this.bookmarkRequestHandler.url = proxy.pdfViewer.serviceUrl + '/Bookmarks';
         this.bookmarkRequestHandler.responseType = 'json';
@@ -68,6 +74,7 @@ export class BookmarkView {
                 }
                 if (data && data.uniqueId === proxy.pdfViewerBase.documentId) {
                     proxy.bookmarks = { bookMark: data.Bookmarks };
+                    proxy.bookmarkStyles = data.Bookmarkstyles;
                     proxy.bookmarksDestination = { bookMarkDestination: data.BookmarksDestination };
                     if (isBlazor()) {
                         // tslint:disable-next-line
@@ -138,6 +145,7 @@ export class BookmarkView {
                     },
                     nodeTemplate: bookmarkIconView.outerHTML,
                     nodeSelected: this.nodeClick.bind(this),
+                    drawNode: this.bookmarkPanelBeforeOpen.bind(this)
                 });
                 this.treeObj.isStringTemplate = true;
                 if (this.pdfViewer.enableRtl) {
@@ -208,6 +216,37 @@ export class BookmarkView {
             this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(currentPageNumber);
         }
         return false;
+    }
+    private bookmarkPanelBeforeOpen = (args: DrawNodeEventArgs): void => {
+        if (this.pdfViewer.enableBookmarkStyles) {
+            for (let k: number = 0; k < this.bookmarkStyles.length; k++) {
+                if ((args.text.trim()) === (this.bookmarkStyles[k].Text.trim())) {
+                     // tslint:disable-next-line
+                    let element: any = args.node.lastElementChild;
+                    if (element) {
+                         // tslint:disable-next-line
+                        let fontStyle: any = this.bookmarkStyles[k].FontStyle.split(',');
+                        for (let n: number = 0; n < fontStyle.length; n++) {
+                            switch (fontStyle[n].trim()) {
+                                case 'Italic':
+                                    element.style.fontStyle = 'italic';
+                                    break;
+                                case 'Bold':
+                                    element.style.fontWeight = 'Bold';
+                            }
+                        }
+                         // tslint:disable-next-line
+                        let currentElement: any = element.getElementsByClassName('e-pv-bookmark-Title')[0];
+                        if (currentElement) {
+                            currentElement.style.color = this.bookmarkStyles[k].Color;
+                        } else {
+                            element.children[0].style.color = this.bookmarkStyles[k].Color;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     // tslint:disable-next-line

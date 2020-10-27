@@ -252,7 +252,7 @@ var showTablePopup = 'ShowTablePopup';
 var hideTablePopup = 'HideTablePopup';
 var showInlinePopup = 'ShowInlinePopup';
 var hideInlinePopup = 'HideInlinePopup';
-var refreshToolbarOverflow = 'RefreshToolbarOverflow';
+
 var updateUndoRedoStatus = 'UpdateUndoRedoStatus';
 var showImageDialog = 'ShowImageDialog';
 var closeImageDialog = 'CloseImageDialog';
@@ -1731,7 +1731,6 @@ var Toolbar = /** @class */ (function () {
     //#endregion
     //#region Event handler methods
     Toolbar.prototype.onRefresh = function () {
-        this.parent.dotNetRef.invokeMethodAsync(refreshToolbarOverflow);
         this.parent.setContentHeight('', true);
     };
     Toolbar.prototype.tbFocusHandler = function (e) {
@@ -15675,10 +15674,9 @@ var SfRichTextEditor = /** @class */ (function () {
         var topValue = 0;
         var rteHeightPercent = '';
         var heightPercent;
-        // let cntEle: HTMLElement = (this.sourceCodeModule.getPanel() &&
-        //     this.sourceCodeModule.getPanel().parentElement.style.display === 'block') ? this.sourceCodeModule.getPanel().parentElement :
-        //     <HTMLElement>this.getPanel();
-        var cntEle = this.getPanel();
+        var sourceCodeEle = this.element.querySelector('.e-rte-content .e-rte-srctextarea');
+        var cntEle = (!sf.base.isNullOrUndefined(sourceCodeEle) &&
+            sourceCodeEle.parentElement.style.display === 'block') ? sourceCodeEle.parentElement : this.getPanel();
         var rteHeight = this.element.offsetHeight;
         if (this.element.offsetHeight === 0 && this.height !== 'auto' && !this.getToolbar()) {
             rteHeight = parseInt(this.height, 10);
@@ -15692,7 +15690,8 @@ var SfRichTextEditor = /** @class */ (function () {
         var rzHeight = this.enableResize ? (!sf.base.isNullOrUndefined(rzHandle) ? (rzHandle.offsetHeight + 8) : 0) : 0;
         var expandPopHeight = this.getToolbar() ? this.toolbarModule.getExpandTBarPopHeight() : 0;
         if (this.toolbarSettings.type === 'Expand' && isExpand && target !== 'preview') {
-            heightValue = (this.height === 'auto' && rzHeight === 0) ? 'auto' : rteHeight - (tbHeight + expandPopHeight + rzHeight) + 'px';
+            heightValue = (this.height === 'auto' && rzHeight === 0 && !this.element.classList.contains('e-rte-full-screen')) ?
+                'auto' : rteHeight - (tbHeight + expandPopHeight + rzHeight) + 'px';
             topValue = (!this.toolbarSettings.enableFloating) ? expandPopHeight : 0;
         }
         else {
@@ -15700,7 +15699,8 @@ var SfRichTextEditor = /** @class */ (function () {
                 heightValue = 'auto';
             }
             else {
-                heightValue = heightPercent ? rteHeightPercent : rteHeight - (tbHeight + rzHeight) + 'px';
+                heightValue = heightPercent ? rteHeightPercent : (this.element.classList.contains('e-rte-full-screen') ?
+                    window.innerHeight : rteHeight) - (tbHeight + rzHeight) + 'px';
             }
         }
         sf.base.setStyleAttribute(cntEle, { height: heightValue, marginTop: topValue + 'px' });

@@ -318,17 +318,6 @@ export class EventBase {
         }
     }
 
-    public applyResourceColor(ele: HTMLElement): void {
-        let color: string = this.getResourceColor(ele);
-        if (!isNullOrUndefined(color)) {
-            ele.style.backgroundColor = color;
-        }
-    }
-
-    public getResourceColor(ele: HTMLElement): string {
-        return ele.getAttribute('data-color');
-    }
-
     public wireAppointmentEvents(element: HTMLElement, isPreventCrud: Boolean = false): void {
         let isReadOnly: boolean = element.getAttribute('aria-readonly') === 'true';
         EventHandler.clearEvents(element);

@@ -952,7 +952,7 @@ var Double = /** @class */ (function () {
         if (this.chart.chartAreaType === 'Cartesian') {
             var isLazyLoad = sf.base.isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
             if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-                axis.calculateVisibleRange(this.chart);
+                axis.calculateVisibleRangeOnZooming(this.chart);
                 axis.calculateAxisRange(size, this.chart);
                 axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
                     this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
@@ -1740,8 +1740,8 @@ var Axis = /** @class */ (function (_super) {
      * @return {void}
      * @private
      */
-    Axis.prototype.calculateVisibleRange = function (chart) {
-        if (this.zoomFactor < 1 || this.zoomPosition > 0) {
+    Axis.prototype.calculateVisibleRangeOnZooming = function (chart) {
+        if (isZoomSet(this)) {
             var baseRange = this.actualRange;
             var start = void 0;
             var end = void 0;
@@ -2952,6 +2952,13 @@ function triggerLabelRender(chart, tempInterval, text, labelStyle, axis) {
  */
 function setRange(axis) {
     return (axis.minimum != null && axis.maximum != null);
+}
+/**
+ * To check whether the axis is zoomed or not.
+ * @param axis
+ */
+function isZoomSet(axis) {
+    return (axis.zoomFactor < 1 && axis.zoomPosition >= 0);
 }
 /**
  * Calculate desired interval for the axis.
@@ -4564,6 +4571,8 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
      * @param rect
      */
     CartesianAxisLayoutPanel.prototype.drawYAxisGridLine = function (axis, index, parent, rect) {
+        var isLogAxis = axis.valueType === 'Logarithmic';
+        var isCategoryAxis = axis.valueType.indexOf('Category') > -1;
         var tempInterval;
         var pointY = 0;
         var majorGrid = '';
@@ -4579,7 +4588,7 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
         var ticks = isTickInside ? (rect.x - tickSize - axisLineSize) : (rect.x + tickSize + axisLineSize + scrollBarHeight);
         var length = axis.visibleLabels.length;
         var chartThemeStyle = this.chart.themeStyle;
-        if (axis.valueType.indexOf('Category') && axis.labelPlacement === 'BetweenTicks' && length > 0) {
+        if (axis.valueType.indexOf('Category') > -1 && axis.labelPlacement === 'BetweenTicks' && length > 0) {
             length += 1;
         }
         var minorGridLines = axis.minorGridLines;
@@ -4600,9 +4609,15 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
                     ' L ' + (ticks) + ' ' + pointY;
                 this.renderGridLine(axis, index, majorTick, axis.majorTickLines, '_MajorTickLine_', i, parent, chartThemeStyle.majorTickLine);
                 if ((minorGridLines.width > 0 || minorTickLines.width > 0) && axis.minorTicksPerInterval > 0) {
+                    if (i === 0 && isZoomSet(axis) && !isLogAxis && !isCategoryAxis) {
+                        this.renderMinorGridOnZooming(axis, tempInterval, rect, i, index, chartThemeStyle, parent);
+                    }
                     minorGridDirection = this.drawAxisMinorLine(axis, tempInterval, rect, i);
                     this.renderGridLine(axis, index, minorGridDirection[0], minorGridLines, '_MinorGridLine_', i, this.element, chartThemeStyle.minorGridLine, minorGridLines.dashArray);
                     this.renderGridLine(axis, index, minorGridDirection[1], minorTickLines, '_MinorTickLine_', i, parent, chartThemeStyle.minorTickLine);
+                    if (i === length - 1 && isZoomSet(axis) && isLogAxis && !isCategoryAxis) {
+                        this.renderMinorGridOnZooming(axis, (tempInterval + axis.visibleRange.interval), rect, i, index, chartThemeStyle, parent);
+                    }
                 }
             }
         }
@@ -4819,6 +4834,8 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
      * @param rect
      */
     CartesianAxisLayoutPanel.prototype.drawXAxisGridLine = function (axis, index, parent, rect) {
+        var isLogAxis = axis.valueType === 'Logarithmic';
+        var isCategoryAxis = axis.valueType.indexOf('Category') > -1;
         var tempInterval;
         var pointX = 0;
         var majorGrid = '';
@@ -4858,12 +4875,33 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
                     + ' L ' + (pointX) + ' ' + ticks;
                 this.renderGridLine(axis, index, majorTick, axis.majorTickLines, '_MajorTickLine_', i, parent, chartThemeStyle.majorTickLine);
                 if (axis.minorTicksPerInterval > 0 && (axis.minorGridLines.width > 0 || axis.minorTickLines.width > 0)) {
+                    if (i === 0 && isZoomSet(axis) && !isLogAxis && !isCategoryAxis) {
+                        this.renderMinorGridOnZooming(axis, tempInterval, rect, i, index, chartThemeStyle, parent);
+                    }
                     minorDirection = this.drawAxisMinorLine(axis, tempInterval, rect, i);
                     this.renderGridLine(axis, index, minorDirection[0], axis.minorGridLines, '_MinorGridLine_', i, this.element, chartThemeStyle.minorGridLine, axis.minorGridLines.dashArray);
                     this.renderGridLine(axis, index, minorDirection[1], axis.minorTickLines, '_MinorTickLine_', i, parent, chartThemeStyle.minorTickLine);
+                    if (i === length - 1 && isZoomSet(axis) && isLogAxis && !isCategoryAxis) {
+                        this.renderMinorGridOnZooming(axis, (tempInterval + axis.visibleRange.interval), rect, i, index, chartThemeStyle, parent);
+                    }
                 }
             }
         }
+    };
+    /**
+     * To render missing minor grid lines while zooming
+     * @param axis
+     * @param tempInterval
+     * @param rect
+     * @param i
+     * @param index
+     * @param chartThemeStyle
+     * @param parent
+     */
+    CartesianAxisLayoutPanel.prototype.renderMinorGridOnZooming = function (axis, tempInterval, rect, i, index, chartThemeStyle, parent) {
+        var minorDirection = this.drawAxisMinorLine(axis, tempInterval, rect, i, true);
+        this.renderGridLine(axis, index, minorDirection[0], axis.minorGridLines, '_MinorGridLine_', -1, this.element, chartThemeStyle.minorGridLine, axis.minorGridLines.dashArray);
+        this.renderGridLine(axis, index, minorDirection[1], axis.minorTickLines, '_MinorTickLine_', -1, parent, chartThemeStyle.minorTickLine);
     };
     /**
      * To calcualte the axis minor line
@@ -4872,7 +4910,7 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
      * @param rect
      * @param labelIndex
      */
-    CartesianAxisLayoutPanel.prototype.drawAxisMinorLine = function (axis, tempInterval, rect, labelIndex) {
+    CartesianAxisLayoutPanel.prototype.drawAxisMinorLine = function (axis, tempInterval, rect, labelIndex, isFirstLabel) {
         var value = tempInterval;
         var coor = 0;
         var position = 0;
@@ -4896,7 +4934,7 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
         }
         if (axis.orientation === 'Horizontal') {
             for (var j = 0; j < axis.minorTicksPerInterval; j++) {
-                value = this.findLogNumeric(axis, logPosition, logInterval, value, labelIndex);
+                value = this.findLogNumeric(axis, logPosition, value, labelIndex, isFirstLabel);
                 logPosition += logInterval;
                 if (inside(value, range)) {
                     position = ((value - range.min) / (range.max - range.min));
@@ -4911,9 +4949,8 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
             }
         }
         else {
-            tickSize = axis.opposedPosition ? axis.minorTickLines.height : -axis.minorTickLines.height;
             for (var j = 0; j < axis.minorTicksPerInterval; j++) {
-                value = this.findLogNumeric(axis, logPosition, logInterval, value, labelIndex);
+                value = this.findLogNumeric(axis, logPosition, value, labelIndex, isFirstLabel);
                 if (inside(value, range)) {
                     position = ((value - range.min) / (range.max - range.min));
                     position = Math.ceil(((axis.isInversed ? (1 - position) : position)) * rect.height) * -1; // For inversed axis
@@ -4939,13 +4976,15 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
      * @param value
      * @param labelIndex
      */
-    CartesianAxisLayoutPanel.prototype.findLogNumeric = function (axis, logPosition, logInterval, value, labelIndex) {
+    CartesianAxisLayoutPanel.prototype.findLogNumeric = function (axis, logPosition, value, labelIndex, isFirstLabel) {
         var range = axis.visibleRange;
+        var tempValue;
         if (axis.valueType === 'Logarithmic') {
             value = logBase(logPosition, axis.logBase);
         }
         else if (axis.valueType === 'DateTime') {
-            value += axis.dateTimeInterval / (axis.minorTicksPerInterval + 1);
+            tempValue = axis.dateTimeInterval / (axis.minorTicksPerInterval + 1);
+            value = isFirstLabel ? (value - tempValue) : (value + tempValue);
         }
         else if (axis.valueType === 'DateTimeCategory') {
             var padding = axis.labelPlacement === 'BetweenTicks' ? 0.5 : 0;
@@ -4956,7 +4995,8 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
                 (axis.minorTicksPerInterval + 1);
         }
         else {
-            value += range.interval / (axis.minorTicksPerInterval + 1);
+            tempValue = range.interval / (axis.minorTicksPerInterval + 1);
+            value = isFirstLabel ? (value - tempValue) : (value + tempValue);
         }
         return value;
     };
@@ -5886,6 +5926,7 @@ var SeriesBase = /** @class */ (function (_super) {
         _this.clipRect = new sf.svgbase.Rect(0, 0, 0, 0);
         /** @private */
         _this.seriesType = 'XY';
+        _this.isRectTypeSeries = false;
         return _this;
     }
     /**
@@ -5909,6 +5950,7 @@ var SeriesBase = /** @class */ (function (_super) {
                     this.currentViewData = this.chart.paretoSeriesModule.performCumulativeCalculation(this.currentViewData, this);
                 }
             }
+            this.isRectTypeSeries = this.type.indexOf('Column') > -1 || this.type.indexOf('Bar') > -1;
         }
         var len = Object.keys(this.currentViewData).length;
         this.points = [];
@@ -6095,9 +6137,18 @@ var SeriesBase = /** @class */ (function (_super) {
      * To get Y min max for the provided point seriesType XY
      */
     SeriesBase.prototype.setXYMinMax = function (yValue) {
-        this.yMin = (this.yAxis.valueType === 'Logarithmic' || this.xAxis.valueType === 'Logarithmic') ?
-            Math.min(this.yMin, (sf.base.isNullOrUndefined(yValue) || isNaN(yValue) || (yValue === 0)) ? this.yMin : yValue) :
-            Math.min(this.yMin, (sf.base.isNullOrUndefined(yValue) || isNaN(yValue)) ? this.yMin : yValue);
+        var isLogAxis = (this.yAxis.valueType === 'Logarithmic' || this.xAxis.valueType === 'Logarithmic');
+        var isNegativeValue = yValue < 0;
+        var seriesMinY;
+        if (this.isRectTypeSeries && !setRange(this.yAxis)) {
+            seriesMinY = ((isLogAxis ? 1 : isNegativeValue ? yValue : 0));
+        }
+        else {
+            seriesMinY = yValue;
+        }
+        this.yMin = isLogAxis ?
+            Math.min(this.yMin, (sf.base.isNullOrUndefined(seriesMinY) || isNaN(seriesMinY) || (seriesMinY === 0)) ? this.yMin : seriesMinY) :
+            Math.min(this.yMin, (sf.base.isNullOrUndefined(seriesMinY) || isNaN(seriesMinY)) ? this.yMin : seriesMinY);
         this.yMax = Math.max(this.yMax, (sf.base.isNullOrUndefined(yValue) || isNaN(yValue)) ? this.yMax : yValue);
     };
     /**
@@ -11244,8 +11295,8 @@ var DateTime = /** @class */ (function (_super) {
             delta: axis.actualRange.delta,
         };
         var isLazyLoad = sf.base.isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
-        if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-            axis.calculateVisibleRange(this.chart);
+        if ((isZoomSet(axis)) && !isLazyLoad) {
+            axis.calculateVisibleRangeOnZooming(this.chart);
             axis.calculateAxisRange(size, this.chart);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateDateTimeNiceInterval(axis, size, axis.visibleRange.min, axis.visibleRange.max)
@@ -11628,7 +11679,7 @@ var Logarithmic = /** @class */ (function (_super) {
         };
         var isLazyLoad = sf.base.isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
         if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-            axis.calculateVisibleRange(this.chart);
+            axis.calculateVisibleRangeOnZooming(this.chart);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateLogNiceInterval(axis.doubleRange.delta, size, axis)
                 : axis.visibleRange.interval;
@@ -11643,7 +11694,7 @@ var Logarithmic = /** @class */ (function (_super) {
     Logarithmic.prototype.calculateLogNiceInterval = function (delta, size, axis) {
         var actualDesiredIntervalsCount = getActualDesiredIntervalsCount(size, axis);
         var niceInterval = delta;
-        var minInterval = Math.pow(10, Math.floor(logBase(niceInterval, 10)));
+        var minInterval = Math.pow(axis.logBase, Math.floor(logBase(niceInterval, 10)));
         for (var j = 0, len = axis.intervalDivs.length; j < len; j++) {
             var currentInterval = minInterval * axis.intervalDivs[j];
             if (actualDesiredIntervalsCount < (delta / currentInterval)) {
@@ -12480,9 +12531,6 @@ var LineSeries = /** @class */ (function (_super) {
             var point = visiblePoints_1[_i];
             point.regions = [];
             point.symbolLocations = [];
-            if (isPolar && !(point.visible)) {
-                continue;
-            }
             if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) {
                 direction += this.getLineDirection(prevPoint, point, series, isInverted, getCoordinate, startPoint);
                 startPoint = prevPoint ? 'L' : startPoint;
@@ -15175,37 +15223,39 @@ var StackingStepAreaSeries = /** @class */ (function (_super) {
                 prevPoint = null;
             }
         }
-        // For category axis
-        if ((pointsLength > 1) && direction !== '') {
-            pointIndex = visiblePoint[pointsLength - 1].index;
-            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.endValues[pointIndex] };
-            secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
-            direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
-            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.startValues[pointIndex] };
-            secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
-            direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
+        if (direction !== '') {
+            // For category axis
+            if (pointsLength > 1) {
+                pointIndex = visiblePoint[pointsLength - 1].index;
+                start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.endValues[pointIndex] };
+                secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
+                direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
+                start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.startValues[pointIndex] };
+                secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
+                direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
+            }
+            // To close the stacked step area series path in reverse order
+            for (var j = pointsLength - 1; j >= startPoint; j--) {
+                var index = void 0;
+                if (visiblePoint[j].visible) {
+                    pointIndex = visiblePoint[j].index;
+                    point2 = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
+                    direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
+                }
+                if (j !== 0 && !visiblePoint[j - 1].visible) {
+                    index = this.getNextVisiblePointIndex(visiblePoint, j);
+                }
+                if (j !== 0) {
+                    validIndex = index ? index : j - 1;
+                    pointIndex = index ? visiblePoint[index].index : visiblePoint[j - 1].index;
+                    point3 = getPoint(visiblePoint[validIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
+                    direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point3.y) + ' ');
+                }
+            }
+            options = new sf.svgbase.PathOption(stackSeries.chart.element.id + '_Series_' + stackSeries.index, stackSeries.interior, stackSeries.border.width, stackSeries.border.color, stackSeries.opacity, stackSeries.dashArray, direction);
+            this.appendLinePath(options, stackSeries, '');
+            this.renderMarker(stackSeries);
         }
-        // To close the stacked step area series path in reverse order
-        for (var j = pointsLength - 1; j >= startPoint; j--) {
-            var index = void 0;
-            if (visiblePoint[j].visible) {
-                pointIndex = visiblePoint[j].index;
-                point2 = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
-                direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
-            }
-            if (j !== 0 && !visiblePoint[j - 1].visible) {
-                index = this.getNextVisiblePointIndex(visiblePoint, j);
-            }
-            if (j !== 0) {
-                validIndex = index ? index : j - 1;
-                pointIndex = index ? visiblePoint[index].index : visiblePoint[j - 1].index;
-                point3 = getPoint(visiblePoint[validIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
-                direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point3.y) + ' ');
-            }
-        }
-        options = new sf.svgbase.PathOption(stackSeries.chart.element.id + '_Series_' + stackSeries.index, stackSeries.interior, stackSeries.border.width, stackSeries.border.color, stackSeries.opacity, stackSeries.dashArray, direction);
-        this.appendLinePath(options, stackSeries, '');
-        this.renderMarker(stackSeries);
     };
     /**
      * Animates the series.
@@ -16807,13 +16857,16 @@ var HistogramSeries = /** @class */ (function (_super) {
         var pointsCount = 500;
         var del = (max - min) / (pointsCount - 1);
         var distributionLine;
-        for (var i = 0; i < pointsCount; i++) {
-            xValue = min + i * del;
-            yValue = Math.exp(-(xValue - mean) * (xValue - mean) / (2 * sDValue * sDValue)) /
-                (sDValue * Math.sqrt(2 * Math.PI));
-            pointLocation = getPoint(xValue, yValue * binWidth * yValuesCount, series.xAxis, series.yAxis, series.chart.requireInvertedAxis, series);
-            direction += startPoint + ' ' + (pointLocation.x) + ' ' + (pointLocation.y) + ' ';
-            startPoint = 'L';
+        var points = series.points.length;
+        if (points) {
+            for (var i = 0; i < pointsCount; i++) {
+                xValue = min + i * del;
+                yValue = Math.exp(-(xValue - mean) * (xValue - mean) / (2 * sDValue * sDValue)) /
+                    (sDValue * Math.sqrt(2 * Math.PI));
+                pointLocation = getPoint(xValue, yValue * binWidth * yValuesCount, series.xAxis, series.yAxis, series.chart.requireInvertedAxis, series);
+                direction += startPoint + ' ' + (pointLocation.x) + ' ' + (pointLocation.y) + ' ';
+                startPoint = 'L';
+            }
         }
         distributionLine = series.chart.renderer.drawPath(new sf.svgbase.PathOption(series.chart.element.id + '_Series_' + series.index + '_NDLine', 'transparent', 2, series.chart.themeStyle.errorBar, series.opacity, series.dashArray, direction), new Int32Array([series.clipRect.x, series.clipRect.y]));
         distributionLine.style.visibility = (!series.chart.enableCanvas) ? ((series.animation.enable &&
@@ -25444,7 +25497,7 @@ var MultiColoredAreaSeries = /** @class */ (function (_super) {
                 _this.storePointLocation(point, series, isInverted, getPoint);
             }
         });
-        if (!rendered) {
+        if (!sf.base.isNullOrUndefined(rendered) && !rendered) {
             direction = series.points.length > 1 ?
                 (direction + this.getAreaPathDirection(previous.xValue, origin, series, isInverted, getPoint, null, 'L')) : '';
             this.generatePathOption(options, series, previous, direction, '');
@@ -27266,6 +27319,7 @@ exports.pathAnimation = pathAnimation;
 exports.appendClipElement = appendClipElement;
 exports.triggerLabelRender = triggerLabelRender;
 exports.setRange = setRange;
+exports.isZoomSet = isZoomSet;
 exports.getActualDesiredIntervalsCount = getActualDesiredIntervalsCount;
 exports.templateAnimate = templateAnimate;
 exports.drawSymbol = drawSymbol;
