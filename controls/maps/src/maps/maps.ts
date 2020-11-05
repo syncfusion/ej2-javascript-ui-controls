@@ -1087,16 +1087,29 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public blazorTemplates(): void {
         for (let i: number = 0; i < this.layers.length; i++) {
-        let markerLength: number = this.layers[i].markerSettings.length - 1;
-        if (markerLength >= 0) {
-            if (this.layers[i].dataLabelSettings.visible || this.layers[i].markerSettings[markerLength].template) {
-              updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[i].dataLabelSettings);
-              for (let j: number = 0; j < this.layers[i].markerSettings.length; j++) {
-                updateBlazorTemplate(this.element.id + '_MarkerTemplate' + j, 'MarkerTemplate', this.layers[i].markerSettings[j]);
-              }
+            let markerLength: number = this.layers[i].markerSettings.length - 1;
+            if (markerLength >= 0) {
+                if (this.layers[i].dataLabelSettings.visible || this.layers[i].markerSettings[markerLength].template) {
+                    updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[i].dataLabelSettings);
+                    for (let j: number = 0; j < this.layers[i].markerSettings.length; j++) {
+                        let markerRendered: Function = () => {
+                            for (let x: number = 0; x < this.layers.length; x++) {
+                                let markerTemplateEle: HTMLElement =
+                                    document.getElementById(this.element.id + '_LayerIndex_' + x + '_Markers_Template_Group');
+                                if (!isNullOrUndefined(markerTemplateEle)) {
+                                    for (let z : number = 0; z < markerTemplateEle.childElementCount; z++) {
+                                        let markerTemplate: Element = <Element>markerTemplateEle.childNodes[z];
+                                        markerTemplate['style']['transform'] = 'translate(-50%, -50%)';
+                                    }
+                                }
+                            }
+                        };
+                        updateBlazorTemplate(this.element.id + '_MarkerTemplate' + j, 'MarkerTemplate',
+                                             this.layers[i].markerSettings[j], undefined, markerRendered);
+                    }
+                }
             }
         }
-      }
     }
 
     /**

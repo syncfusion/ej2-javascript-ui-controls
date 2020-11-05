@@ -212,8 +212,9 @@ export class MDXQuery {
             /* tslint:disable:max-line-length */
             let drillQueryObj: { query: string, collection: string[] } = this.getDrillQuery(dimensions, measureQuery, axis, drillInfo);
             query = (drillInfo && drillInfo.axis === axis ? '\nNON EMPTY ( ' + (this.drilledMembers.length > 0 ? 'HIERARCHIZE ({' : '') + drillQueryObj.query : query + (drillQueryObj.query !== '' ? ',' : '') + drillQueryObj.query);
+            let drillQuery: string = this.getAttributeDrillQuery(dimensions, measureQuery, axis, drillInfo);
             query = (this.valueAxis !== axis ? this.updateValueSortQuery(query, this.valueSortSettings) : query) +
-                (this.drilledMembers.length > 0 ? '})' : '') + (this.isPaging && axis === 'columns' && drillQueryObj.query !== '' ? '-' + drillQueryObj.collection.join('-') : '') + ')';
+                (this.isPaging ? ((drillQuery !== '' ? '-' : '') + drillQuery) : '') + (this.drilledMembers.length > 0 ? '})' : '') + (!this.isPaging ? ((drillQuery !== '' ? '-' : '') + drillQuery) : '') + ')';
         }
         // else if (!this.isMeasureAvail && measureQuery !== '' && this.valueAxis === axis) {
         //     query = 'NON EMPTY (' + (this.drilledMembers.length > 0 ? 'HIERARCHIZE({' : '') + measureQuery;
@@ -222,6 +223,127 @@ export class MDXQuery {
         // }
         /* tslint:enable:max-line-length */
         return query;
+    }
+    private static getAttributeDrillQuery(dimensions: IFieldOptions[], measureQuery: string, axis: string, drillInfo?: IDrilledItem): string {
+        let query: string = '';
+        let drilledMembers: IDrillOptions[] = [];
+        let isOnDemandDrill: boolean = false;
+        if (drillInfo && drillInfo.axis === axis && drillInfo.action.toLowerCase() === 'down') {
+            isOnDemandDrill = true;
+            drilledMembers = [{ name: drillInfo.fieldName, items: [drillInfo.memberName], delimiter: '~~' }];
+        } else {
+            drilledMembers = this.drilledMembers;
+        }
+        let measurePos: number = axis === this.valueAxis ? this.getMeasurePos(axis) : 0;
+        for (let field of drilledMembers) {
+            let isHierarchy: boolean = this.engine.fieldList[field.name] ? this.engine.fieldList[field.name].isHierarchy : false;
+            if (isHierarchy) {
+                for (let item of field.items) {
+                    let drillQuery: string[] = [];
+                    let drillInfo: string[] = item.split(field.delimiter ? field.delimiter : '~~');
+                    let result: { level: number, isDrill: boolean } = this.getDrillLevel(dimensions, drillInfo);
+                    let fieldPosition: number = this.getDimensionPos(axis, field.name);
+                    let index: number = dimensions.length - (measurePos > fieldPosition ? 1 : 0);
+                    let isExist: boolean = this.isPaging ? this.isAttributeMemberExist(field.name, item.split(field.delimiter ? field.delimiter : '~~'), field.delimiter, drillInfo, axis) : false;
+                    while (result.level > 0 && result.isDrill && (fieldPosition + 1) !== measurePos && !isExist) {
+                        let levelQuery: string[] = [];
+                        let i: number = 0;
+                        /* tslint:disable:max-line-length */
+                        while (i < dimensions.length) {
+                            if (dimensions[i].name.toLowerCase() === '[measures]') {
+                                if (measureQuery !== '') {
+                                    levelQuery.push('({{' + drillInfo[i] + '}})');
+                                }
+                            } else if (drillInfo[i] && (drillInfo[i].indexOf(dimensions[i].name) !== -1 ||
+                                (dimensions[i].isNamedSet && this.fieldList[dimensions[i].name] && drillInfo[i].indexOf(this.fieldList[dimensions[i].name].pid.split('Sets_')[1]) !== -1))) {
+                                levelQuery.push(this.getHierarchyQuery(drillInfo[i], false, false, false, result.level, true));
+                            } else if (!drillInfo[i] && dimensions[i]) {
+                                levelQuery.push(this.getHierarchyQuery(dimensions[i].name, ((this.isPaging && result.level === 2) || (!this.isPaging && index > i) ? true : false), dimensions[i].isNamedSet, dimensions[i].isCalculatedField, result.level, false));
+                            } else {
+                                levelQuery = [];
+                                break;
+                            }
+                            i++;
+                        }
+                        if (levelQuery.length > 0) {
+                            drillQuery.push('(' + levelQuery.join('*') + ')');
+                        }
+                        result.level--;
+                        index--;
+                    }
+                    if (drillQuery.length > 0) {
+                        query = query + (query !== '' ? '-' : '') + drillQuery.join(this.isPaging ? '+' : '-');
+                    }
+                }
+            }
+        }
+        return query;
+    }
+    public static getDimensionPos(axis: string, field: string): number {
+        let position: number = 0;
+        let dimensions: IFieldOptions[] = axis === 'rows' ? this.rows : this.columns;
+        for (let i: number = 0; i < dimensions.length; i++) {
+            if (dimensions[i].name === field) {
+                position = i;
+                break;
+            }
+        }
+        return position;
+    }
+    public static getMeasurePos(axis: string): number {
+        let position: number = 0;
+        let dimensions: IFieldOptions[] = axis === 'rows' ? this.rows : this.columns;
+        for (let i: number = 0; i < dimensions.length; i++) {
+            if (dimensions[i].name.indexOf('[Measures]') === 0) {
+                position = i;
+                break;
+            }
+        }
+        return position;
+    }
+    private static getDrillLevel(dimensions: IFieldOptions[], drillInfo: string[]): { level: number, isDrill: boolean } {
+        let level: number = dimensions.length;
+        let isDrill: boolean = false;
+        let i: number = 0;
+        while (i < dimensions.length) {
+            if (drillInfo[i] && drillInfo[i].indexOf(dimensions[i].name) !== -1) {
+                level -= 1;
+                if (dimensions[i + 1] && !(dimensions[i + 1].isNamedSet || dimensions[i + 1].name.indexOf('[Measures]') === 0 || (this.fieldList[dimensions[i + 1].name] && !this.fieldList[dimensions[i + 1].name].hasAllMember))) {
+                    isDrill = true;
+                }
+            } else if (dimensions[i].isNamedSet || dimensions[i].name.indexOf('[Measures]') === 0 || (this.fieldList[dimensions[i].name] && !this.fieldList[dimensions[i].name].hasAllMember)) {
+                level -= 1;
+            }
+            i++;
+        }
+        return { level: this.isPaging ? 2 : level, isDrill: isDrill };
+    }
+    private static getHierarchyQuery(name: string, isChildren: boolean, isNamedSet: boolean, isCalculatedField: boolean, level: number, isDrill: boolean): string {
+        name = isCalculatedField ? this.fieldList[name].tag : name;
+        return ((this.fieldList[name] && !this.fieldList[name].hasAllMember && !isNamedSet && !isCalculatedField) ? '((' + name + ').levels(0).AllMembers)' : (isNamedSet || isCalculatedField) ? ('({' + name + '})') : this.isPaging ? ('({' + name) + (isChildren ? '.CHILDREN})' : (!isDrill && level === 1) ? '.[All]})' : '})') : ('({DrilldownLevel({' + name + (isChildren ? '.CHILDREN' : '') + '},,,INCLUDE_CALC_MEMBERS' + ')})'));
+    }
+    private static isAttributeMemberExist(hierarchy: string, item: string[], delimiter: string, drillInfo: string[], axis: string): boolean {
+        item.splice(drillInfo.length - 1, 1);
+        let isAvailable: boolean = false;
+        if (item.join(delimiter) !== '' && !(this.isPaging && item.length === 1 && item.join(delimiter) === '[Measures]') && this.engine.fieldList[hierarchy] && this.engine.fieldList[hierarchy].hasAllMember) {
+            let hierarchyPosition: number = this.getDimensionPos(axis, hierarchy);
+            for (let i: number = 0; i < this.drilledMembers.length; i++) {
+                if (hierarchy !== this.drilledMembers[i].name) {
+                    let isHierarchy: boolean = this.engine.fieldList[this.drilledMembers[i].name] ? this.engine.fieldList[this.drilledMembers[i].name].isHierarchy : false;
+                    if (isHierarchy) {
+                        let fieldPosition: number = this.getDimensionPos(axis, this.drilledMembers[i].name);
+                        for (let j: number = 0; j < this.drilledMembers[i].items.length; j++) {
+                            let result: { level: number, isDrill: boolean } = this.getDrillLevel(axis === 'rows' ? this.rows : this.columns, this.drilledMembers[i].items[j].split(this.drilledMembers[i].delimiter ? this.drilledMembers[i].delimiter : '~~'));
+                            if ((this.isPaging ? (fieldPosition < hierarchyPosition && result.isDrill) : true) && (this.drilledMembers[i].items[j].indexOf(item.join(delimiter)) === 0 || item.join(delimiter).indexOf(this.drilledMembers[i].items[j]) === 0)) {
+                                isAvailable = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return isAvailable;
     }
     /* tslint:disable-next-line:max-line-length */
     private static getDrillQuery(dimensions: IFieldOptions[], measureQuery: string, axis: string, drillInfo?: IDrilledItem): { query: string, collection: string[] } {
@@ -237,76 +359,80 @@ export class MDXQuery {
             drilledMembers = this.drilledMembers;
         }
         for (let field of drilledMembers) {
-            for (let item of field.items) {
-                let drillQuery: string[] = [];
-                let rawQuery: string[] = [];
-                let i: number = 0;
-                let drillInfo: string[] = item.split(field.delimiter ? field.delimiter : '~~');
-                /* tslint:disable:max-line-length */
-                while (i < dimensions.length) {
-                    if (drillInfo[i] && drillInfo[i].indexOf(dimensions[i].name) !== -1) {
-                        if (drillInfo[drillInfo.length - 1].indexOf(dimensions[i].name) !== -1) {
-                            if (isOnDemandDrill) {
-                                onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '({' + drillInfo[i] + '.CHILDREN})';
+            let isHierarchy: boolean = this.engine.fieldList[field.name] ? this.engine.fieldList[field.name].isHierarchy : false;
+            if (!isHierarchy) {
+                for (let item of field.items) {
+                    let drillQuery: string[] = [];
+                    let rawQuery: string[] = [];
+                    let i: number = 0;
+                    let drillInfo: string[] = item.split(field.delimiter ? field.delimiter : '~~');
+                    let isExist: boolean = this.isAttributeMemberExist(field.name, item.split(field.delimiter ? field.delimiter : '~~'), (field.delimiter ? field.delimiter : '~~'), drillInfo, axis);
+                    /* tslint:disable:max-line-length */
+                    while (i < dimensions.length && !isExist) {
+                        if (drillInfo[i] && drillInfo[i].indexOf(dimensions[i].name) !== -1) {
+                            if (drillInfo[drillInfo.length - 1].indexOf(dimensions[i].name) !== -1) {
+                                if (isOnDemandDrill) {
+                                    onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '({' + drillInfo[i] + '.CHILDREN})';
+                                } else {
+                                    drillQuery.push('(' + drillInfo[i] + '.CHILDREN)');
+                                    rawQuery.push('(' + drillInfo[i] + ')');
+                                }
                             } else {
-                                drillQuery.push('(' + drillInfo[i] + '.CHILDREN)');
-                                rawQuery.push('(' + drillInfo[i] + ')');
+                                if (drillInfo[i].toLowerCase() === '[measures]' && measureQuery !== '') {
+                                    if (isOnDemandDrill) {
+                                        onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '(' + measureQuery + ')';
+                                    } else {
+                                        drillQuery.push('(' + measureQuery + ')');
+                                        rawQuery.push('(' + measureQuery + ')');
+                                    }
+                                } else if (drillInfo[i].toLowerCase().indexOf('[measures]') !== -1) {
+                                    if (isOnDemandDrill) {
+                                        onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '({' + drillInfo[i] + '})';
+                                    } else {
+                                        drillQuery.push('({' + drillInfo[i] + '})');
+                                        rawQuery.push('({' + drillInfo[i] + '})');
+                                    }
+                                } else {
+                                    if (isOnDemandDrill) {
+                                        onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '({' + drillInfo[i] + '})';
+                                    } else {
+                                        drillQuery.push('(' + drillInfo[i] + ')');
+                                        rawQuery.push('(' + drillInfo[i] + ')');
+                                    }
+                                }
                             }
-                        } else {
-                            if (drillInfo[i].toLowerCase() === '[measures]' && measureQuery !== '') {
+                        } else if (!drillInfo[i] && dimensions[i]) {
+                            if (dimensions[i].name.toLowerCase() === '[measures]' && measureQuery !== '') {
                                 if (isOnDemandDrill) {
                                     onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '(' + measureQuery + ')';
                                 } else {
                                     drillQuery.push('(' + measureQuery + ')');
                                     rawQuery.push('(' + measureQuery + ')');
                                 }
-                            } else if (drillInfo[i].toLowerCase().indexOf('[measures]') !== -1) {
-                                if (isOnDemandDrill) {
-                                    onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '({' + drillInfo[i] + '})';
-                                } else {
-                                    drillQuery.push('({' + drillInfo[i] + '})');
-                                    rawQuery.push('({' + drillInfo[i] + '})');
-                                }
                             } else {
                                 if (isOnDemandDrill) {
-                                    onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '({' + drillInfo[i] + '})';
+                                    onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '({' + this.getDimensionQuery(dimensions[i], axis) + '})';
                                 } else {
-                                    drillQuery.push('(' + drillInfo[i] + ')');
-                                    rawQuery.push('(' + drillInfo[i] + ')');
+                                    drillQuery.push('(' + this.getDimensionQuery(dimensions[i], axis) + ')');
+                                    rawQuery.push('(' + this.getDimensionQuery(dimensions[i], axis) + ')');
                                 }
-                            }
-                        }
-                    } else if (!drillInfo[i] && dimensions[i]) {
-                        if (dimensions[i].name.toLowerCase() === '[measures]' && measureQuery !== '') {
-                            if (isOnDemandDrill) {
-                                onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '(' + measureQuery + ')';
-                            } else {
-                                drillQuery.push('(' + measureQuery + ')');
-                                rawQuery.push('(' + measureQuery + ')');
                             }
                         } else {
-                            if (isOnDemandDrill) {
-                                onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '({' + this.getDimensionQuery(dimensions[i], axis) + '})';
-                            } else {
-                                drillQuery.push('(' + this.getDimensionQuery(dimensions[i], axis) + ')');
-                                rawQuery.push('(' + this.getDimensionQuery(dimensions[i], axis) + ')');
-                            }
+                            drillQuery = [];
+                            break;
                         }
-                    } else {
-                        drillQuery = [];
-                        break;
+                        i++;
                     }
-                    i++;
-                }
-                if (drillQuery.length > 0 && drillQuery.length < drillInfo.length) {
-                    drillQuery = [];
-                    rawQuery = [];
-                }
-                // query = query + (query !== '' && drillQuery.length > 0 ? ',' : '') + (drillQuery.length > 0 ? '(' + drillQuery.toString().replace(/\&/g, "&amp;") + ')' : '');
-                query = query + (query !== '' && drillQuery.length > 0 ? ',' : '') + (drillQuery.length > 0 ? '(' + drillQuery.toString() + ')' : '');
-                /* tslint:enable:max-line-length */
-                if (rawQuery.length > 0) {
-                    rawDrillQuery.push(('(' + rawQuery.toString() + ')'));
+                    if (drillQuery.length > 0 && drillQuery.length < drillInfo.length) {
+                        drillQuery = [];
+                        rawQuery = [];
+                    }
+                    // query = query + (query !== '' && drillQuery.length > 0 ? ',' : '') + (drillQuery.length > 0 ? '(' + drillQuery.toString().replace(/\&/g, "&amp;") + ')' : '');
+                    query = query + (query !== '' && drillQuery.length > 0 ? ',' : '') + (drillQuery.length > 0 ? '(' + drillQuery.toString() + ')' : '');
+                    /* tslint:enable:max-line-length */
+                    if (rawQuery.length > 0) {
+                        rawDrillQuery.push(('(' + rawQuery.toString() + ')'));
+                    }
                 }
             }
         }

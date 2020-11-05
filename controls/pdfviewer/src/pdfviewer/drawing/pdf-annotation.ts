@@ -5,7 +5,7 @@ import { Size } from '@syncfusion/ej2-drawings';
 import { PdfBoundsModel, PdfAnnotationBaseModel, PdfFontModel } from './pdf-annotation-model';
 import { Container } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationType } from './enum';
-import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel } from '../index';
+import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel, AllowedInteraction } from '../index';
 /**
  * The `PdfBounds` is base for annotation bounds.
  * @hidden
@@ -535,12 +535,17 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
      */
     @Complex<PdfBoundsModel>({ x: 0, y: 0 }, PdfBounds)
     public labelBounds: PdfBoundsModel;
-
     /**
      * specifies the custom data of the annotation.
      */
-    @Property(null)
-    public customData: object;
+   @Property(null)
+   public customData: object;
+    /** 
+     * specifies the allowed interactions of the locked annotation. 
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction;
+
 
     // tslint:disable-next-line:no-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {

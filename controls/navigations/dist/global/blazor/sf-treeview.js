@@ -62,6 +62,7 @@ var RIPPLE = 'e-ripple';
 var RIPPLEELMENT = 'e-ripple-element';
 var FULLROWSELECT = 'fullRowSelect';
 var FULLROWWRAP = 'e-fullrow-wrap';
+var INTERACTION = 'e-interaction';
 var SfTreeView = /** @class */ (function () {
     function SfTreeView(element, options, dotnetRef) {
         this.isHelperElement = true;
@@ -111,6 +112,9 @@ var SfTreeView = /** @class */ (function () {
         this.animationObj = new sf.base.Animation({});
         this.setDisabledMode(this.options.disabled);
         this.setMultiSelect(this.options.allowMultiSelection);
+        if (this.options.hasTemplate) {
+            this.element.classList.add(INTERACTION);
+        }
     };
     SfTreeView.prototype.setDisabledMode = function (isEnabled) {
         this.setDragAndDrop(this.options.allowDragAndDrop);

@@ -2230,7 +2230,7 @@ export class PivotEngine {
         if (this.fieldFilterMem[filterItem.name]) {
             rawHeaders = this.performFilterDeletion(headersInfo.headers, filterItem, headersInfo, filterObjects, 0);
         }
-        if (addPos.length > 0) {
+        if (addPos.length > 0 && headersInfo.fields.length > 0) {
             this.frameHeaderObjectsCollection = true;
             if (headersInfo.fields.filter((item) => { return item.showNoDataItems; }).length > 0) {
                 for (let i: number = 0; i < this.data.length; i++) {
@@ -2337,9 +2337,9 @@ export class PivotEngine {
         let field: IFieldOptions = fields[position];
         let showSubTotals: boolean = true;
         if (axis === 'column') {
-            showSubTotals = this.showSubTotals && this.showColumnSubTotals && field.showSubTotals;
+            showSubTotals = this.showSubTotals && this.showColumnSubTotals && field ? field.showSubTotals : true;
         } else {
-            showSubTotals = this.showSubTotals && this.showRowSubTotals && field.showSubTotals;
+            showSubTotals = this.showSubTotals && this.showRowSubTotals && field ? field.showSubTotals : true;
         }
         while (lenCnt < headers.length) {
             if (axis === 'row') {
@@ -2909,6 +2909,7 @@ export class PivotEngine {
                 let memInd: number = this.indexMatrix[position[pos]][childrens.index];
                 let slicedHeader: IAxisSet = slicedHeaders[orderedIndex[memInd]];
                 let value: string = (data as any)[position[pos]][this.fieldKeys[field] as any];
+                value = value === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(value)) : value;
                 let formattedValue: IAxisSet = (this.formatFields[field] &&
                     (['date', 'dateTime', 'time'].indexOf(this.formatFields[field].type) > -1)) ?
                     this.getFormattedValue(value as string, field) :
@@ -5459,6 +5460,10 @@ export interface IAxisSet {
      * It allows to set whether field is a namedset or not.
      */
     isNamedSet?: boolean;
+    /**
+     * It allows to set depth of the cell.
+     */
+    depth?: number;
 }
 /** 
  * Allows you to configure the drill information of a specific field item that used to display the pivot table.

@@ -63,6 +63,7 @@ const RIPPLE: string = 'e-ripple';
 const RIPPLEELMENT: string = 'e-ripple-element';
 const FULLROWSELECT: string = 'fullRowSelect';
 const FULLROWWRAP: string = 'e-fullrow-wrap';
+const INTERACTION: string = 'e-interaction';
 
 class SfTreeView {
     public element: BlazorTreeViewElement;
@@ -143,6 +144,7 @@ class SfTreeView {
         this.animationObj = new Animation({});
         this.setDisabledMode(this.options.disabled);
         this.setMultiSelect(this.options.allowMultiSelection);
+        if (this.options.hasTemplate) { this.element.classList.add(INTERACTION); }
     }
 
     public setDisabledMode(isEnabled: boolean): void {
@@ -1673,6 +1675,7 @@ interface ITreeViewOptions {
     allowDragAndDrop: boolean;
     fullRowSelect: boolean;
     cssClass: string;
+    hasTemplate: boolean;
 }
 
 interface BlazorTreeViewElement extends HTMLElement {

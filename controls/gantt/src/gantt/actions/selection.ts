@@ -304,6 +304,7 @@ export class Selection {
         this.parent.treeGrid.clearSelection();
         this.parent.selectedRowIndex = -1;
         this.selectedRowIndexes = [];
+        this.selectedClass = null;
         if (!isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems();
         }

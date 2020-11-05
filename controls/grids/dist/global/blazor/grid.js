@@ -13957,7 +13957,7 @@ var Grid = /** @class */ (function (_super) {
         if (this.isDetail()) {
             index++;
         }
-        if (this.allowRowDragAndDrop && sf.base.isNullOrUndefined(this.rowDropSettings.targetID)) {
+        if (this.isRowDragable() && sf.base.isNullOrUndefined(this.rowDropSettings.targetID)) {
             index++;
         }
         /**
@@ -14523,7 +14523,7 @@ var Grid = /** @class */ (function (_super) {
      * @hidden
      */
     Grid.prototype.isRowDragable = function () {
-        return this.allowRowDragAndDrop && !this.rowDropSettings.targetID;
+        return this.allowRowDragAndDrop && !this.rowDropSettings.targetID && !this.enableVirtualization;
     };
     /**
      * Changes the Grid column positions by field names.
@@ -15095,7 +15095,8 @@ var Grid = /** @class */ (function (_super) {
             parentsUntil(e.target, 'e-gridheader'))) && e.touches) {
             return;
         }
-        if (parentsUntil(e.target, 'e-gridheader') && this.allowRowDragAndDrop) {
+        if (parentsUntil(e.target, 'e-gridheader') && this.allowRowDragAndDrop &&
+            !(parentsUntil(e.target, 'e-filterbarcell'))) {
             e.preventDefault();
         }
         var args = this.getRowInfo(e.target);
@@ -20355,7 +20356,7 @@ var PagerMessage = /** @class */ (function () {
         }
         else {
             this.pageNoMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('currentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
-                    pagerObj.currentPage, pagerObj.totalPages || 0]) + ' ';
+                    pagerObj.currentPage, pagerObj.totalPages || 0, pagerObj.totalRecordsCount || 0]) + ' ';
             this.pageCountMsgElem.textContent = this.format(pagerObj.getLocalizedLabel(pagerObj.totalRecordsCount <= 1 ? 'totalItemInfo' : 'totalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
         }
         this.pageNoMsgElem.parentElement.setAttribute('aria-label', this.pageNoMsgElem.textContent + this.pageCountMsgElem.textContent);
@@ -21326,7 +21327,9 @@ var Page = /** @class */ (function () {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.addEventListener('created', this.handlers.created.bind(this));
+        if (this.parent.isReact) {
+            this.parent.addEventListener('created', this.handlers.created.bind(this));
+        }
         this.parent.on(initialLoad, this.handlers.load, this);
         this.parent.on(initialEnd, this.handlers.end, this); //For initial rendering
         this.parent.on(dataReady, this.handlers.ready, this);
@@ -21366,7 +21369,9 @@ var Page = /** @class */ (function () {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.removeEventListener('created', this.handlers.created);
+        if (this.parent.isReact) {
+            this.parent.removeEventListener('created', this.handlers.created);
+        }
         this.parent.off('pager-refresh', this.renderReactPagerTemplate);
         this.parent.off(initialLoad, this.handlers.load);
         this.parent.off(initialEnd, this.handlers.end); //For initial rendering
@@ -25090,7 +25095,7 @@ var RowDD = /** @class */ (function () {
     RowDD.prototype.removeFirstRowBorder = function (element) {
         if (this.parent.element.getElementsByClassName('e-firstrow-dragborder').length > 0 && element &&
             element.rowIndex !== 0) {
-            this.parent.element.getElementsByClassName('e-firstrow-dragborder')[0].remove();
+            sf.base.remove(this.parent.element.getElementsByClassName('e-firstrow-dragborder')[0]);
         }
     };
     RowDD.prototype.removeLastRowBorder = function (element) {
@@ -25098,7 +25103,7 @@ var RowDD = /** @class */ (function () {
             this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).getAttribute('data-uid') !==
                 element.getAttribute('data-uid');
         if (this.parent.element.getElementsByClassName('e-lastrow-dragborder').length > 0 && element && islastRowIndex) {
-            this.parent.element.getElementsByClassName('e-lastrow-dragborder')[0].remove();
+            sf.base.remove(this.parent.element.getElementsByClassName('e-lastrow-dragborder')[0]);
         }
     };
     RowDD.prototype.removeBorder = function (element) {
@@ -26826,7 +26831,7 @@ var Toolbar$1 = /** @class */ (function () {
         this.parent.element.insertBefore(this.element, this.parent.getHeaderContent());
     };
     Toolbar$$1.prototype.addReactToolbarPortals = function (args) {
-        if (this.parent.isReact) {
+        if (this.parent.isReact && args) {
             this.parent.portals = this.parent.portals.concat(args);
             this.parent.renderTemplates();
         }
@@ -34084,7 +34089,7 @@ var ExportValueFormatter = /** @class */ (function () {
         if (args.column.type === 'number' && args.column.format !== undefined && args.column.format !== '') {
             return args.value ? this.internationalization.getNumberFormat({ format: args.column.format })(args.value) : '';
         }
-        else if (args.column.type === 'boolean') {
+        else if (args.column.type === 'boolean' && args.value !== '') {
             return args.value ? 'true' : 'false';
             /* tslint:disable-next-line:max-line-length */
         }
@@ -34847,8 +34852,17 @@ var ExcelExport = /** @class */ (function () {
     ExcelExport.prototype.getAggreateValue = function (cellType, template, cell, row) {
         var templateFn = {};
         templateFn[sf.base.getEnumValue(exports.CellType, cell.cellType)] = sf.base.compile(template);
-        /* tslint:disable-next-line:max-line-length */
-        var txt = (templateFn[sf.base.getEnumValue(exports.CellType, cell.cellType)](row.data[cell.column.field ? cell.column.field : cell.column.columnName]));
+        var txt;
+        var data = row.data[cell.column.field ? cell.column.field : cell.column.columnName];
+        if (this.parent.isReact || this.parent.isVue) {
+            txt = (templateFn[sf.base.getEnumValue(exports.CellType, cell.cellType)](data, this.parent));
+            if (this.parent.isReact) {
+                this.parent.renderTemplates();
+            }
+        }
+        else {
+            txt = (templateFn[sf.base.getEnumValue(exports.CellType, cell.cellType)](data));
+        }
         return txt[0].textContent;
     };
     ExcelExport.prototype.mergeOptions = function (JSON1, JSON2) {
@@ -35812,7 +35826,7 @@ var PdfExport = /** @class */ (function () {
         }
         documentHeader.graphics.drawLine(pen, x1, y1, x2, y2);
     };
-    /* tslint:disable-next-line:no-any */ /* tslint:disable-next-line:max-line-length */
+    /* tslint:disable-next-line:no-any */ /* tslint:disable-next-line:max-line-length */ /* tslint:disable-next-line:max-func-body-length */
     PdfExport.prototype.processAggregates = function (sRows, pdfGrid, border, font, brush, backgroundBrush, isCaption, captionRow, groupIndex, isGroupedFooter) {
         for (var _i = 0, sRows_1 = sRows; _i < sRows_1.length; _i++) {
             var row = sRows_1[_i];
@@ -35869,8 +35883,17 @@ var PdfExport = /** @class */ (function () {
                         var result = this.getTemplateFunction(templateFn, i, leastCaptionSummaryIndex, cell);
                         templateFn = result.templateFunction;
                         leastCaptionSummaryIndex = result.leastCaptionSummaryIndex;
-                        /* tslint:disable-next-line:max-line-length */
-                        var txt = (templateFn[sf.base.getEnumValue(exports.CellType, cell.cellType)](row.data[cell.column.field ? cell.column.field : cell.column.columnName]));
+                        var txt = void 0;
+                        var data = row.data[cell.column.field ? cell.column.field : cell.column.columnName];
+                        if (this.parent.isReact || this.parent.isVue) {
+                            txt = (templateFn[sf.base.getEnumValue(exports.CellType, cell.cellType)](data, this.parent));
+                            if (this.parent.isReact) {
+                                this.parent.renderTemplates();
+                            }
+                        }
+                        else {
+                            txt = (templateFn[sf.base.getEnumValue(exports.CellType, cell.cellType)](data));
+                        }
                         value.push(txt[0].textContent);
                         isEmpty = false;
                     }
@@ -39114,6 +39137,7 @@ var ajaxErrorHandler = function (args, parent) {
 
 /**
  * Infinite Scrolling class
+ * @hidden
  */
 var InfiniteScroll = /** @class */ (function () {
     /**

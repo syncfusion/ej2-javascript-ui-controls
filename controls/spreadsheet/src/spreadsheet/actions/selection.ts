@@ -290,7 +290,7 @@ export class Selection {
         } else {
             this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]), e);
         }
-        if (isFormulaEdit) {
+        if (isFormulaEdit && this.parent.isEdit) {
             let range: string = this.parent.getActiveSheet().selectedRange;
             this.parent.notify(addressHandle, { range: range, isSelect: false });
         }
@@ -440,7 +440,7 @@ export class Selection {
                 this.initFormulaReferenceIndicator(range);
             }
         } else {
-            if (isFormulaEdit) {
+            if (isFormulaEdit && this.parent.isEdit) {
                 if (e && !(e.target as HTMLElement).classList.contains('e-spreadsheet-edit') && this.parent.isEdit) {
                     this.parent.notify(addressHandle, { range: getRangeAddress(range), isSelect: true });
                     this.initFormulaReferenceIndicator(range);

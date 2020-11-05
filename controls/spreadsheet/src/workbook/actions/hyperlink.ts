@@ -72,14 +72,14 @@ export class WorkbookHyperlink {
         }
         if (typeof (hyperlink) === 'string') {
             if (hyperlink.indexOf('http://') !== 0 && hyperlink.indexOf('https://') !== 0 && hyperlink.indexOf('ftp://') !== 0) {
-                hyperlink = hyperlink.indexOf('www.') === 0 ? 'http://' + hyperlink : hyperlink;
+                hyperlink = hyperlink.toLowerCase().indexOf('www.') === 0 ? 'http://' + hyperlink : hyperlink;
                 address = hyperlink;
             }
             sheet.rows[rowIdx].cells[colIdx].hyperlink = hyperlink;
         } else {
             address = hyperlink.address;
             if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
-                address = address.indexOf('www.') === 0 ? 'http://' + address : address;
+                address = address.toLowerCase().indexOf('www.') === 0 ? 'http://' + address : address;
             }
             sheet.rows[rowIdx].cells[colIdx].hyperlink = {
                 address: address,

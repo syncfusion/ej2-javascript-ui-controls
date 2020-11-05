@@ -1,7 +1,7 @@
 import { DataManager, Query, Deferred, ReturnOption, QueryOptions } from '@syncfusion/ej2-data';
-import { Workbook, getCell, CellModel, RowModel, SheetModel, setCell, getSheetIndex } from '../base/index';
+import { Workbook, getCell, CellModel, RowModel, SheetModel, setCell } from '../base/index';
 import { getRangeIndexes, checkIsFormula, updateSheetFromDataSource, checkDateFormat, dataSourceChanged } from '../common/index';
-import { ExtendedSheet, ExtendedRange, AutoDetectInfo, getCellIndexes, dataChanged } from '../common/index';
+import { ExtendedSheet, ExtendedRange, AutoDetectInfo, getCellIndexes, dataChanged, getCellAddress } from '../common/index';
 import { getFormatFromType } from './number-format';
 
 /**
@@ -369,54 +369,75 @@ export class DataBind {
      */
     private dataChangedHandler(args: {
         sheetIdx: number, activeSheetIndex: number, address: string, startIndex: number, endIndex: number,
-        modelType: string, deletedModel: RowModel[]
+        modelType: string, deletedModel: RowModel[], model: RowModel[], insertType: string, index: number
     }): void {
         let changedData: Object[] = [{}];
         let action: string;
         let cell: CellModel;
         let dataRange: number[];
         let startCell: number[];
-        let isNewRow: boolean;
         let inRange: boolean;
-        let sheetIdx: number = args.sheetIdx > -1 ? args.sheetIdx : args.activeSheetIndex > -1 ? args.activeSheetIndex
-            : getSheetIndex(this.parent, args.address.split('!')[0]);
+        let deleteRowDetails: { count: number, index: number };
+        let sheetIdx: number = this.parent.activeSheetIndex;
         let sheet: SheetModel = this.parent.sheets[sheetIdx];
         let cellIndices: number[];
         sheet.ranges.forEach((range: ExtendedRange, idx: number) => {
             if (range.dataSource) {
+                let isNewRow: boolean;
                 startCell = getCellIndexes(range.startCell);
                 dataRange = [...startCell, startCell[0] + range.info.count, startCell[1] + range.info.fldLen - 1];
                 if (args.modelType === 'Row') {
-                    inRange = dataRange[0] <= args.startIndex && dataRange[2] >= args.startIndex;
+                    if (args.insertType) {
+                        inRange = dataRange[0] < args.index && dataRange[2] >= args.index;
+                        cellIndices = [args.index];
+                        if (!inRange) {
+                            if ((dataRange[2] + 1 === args.index && args.insertType === 'below')) {
+                                isNewRow = true;
+                                range.info.count += args.model.length;
+                            } else if (dataRange[0] >= args.index) {
+                                range.startCell = getCellAddress(startCell[0] + args.model.length, startCell[1]);
+                            }
+                        } else {
+                            isNewRow = true;
+                            range.info.count += args.model.length;
+                        }
+                    } else {
+                        inRange = dataRange[0] <= args.startIndex && dataRange[2] >= args.startIndex;
+                        action = 'delete';
+                    }
                 } else {
                     cellIndices = getCellIndexes(args.sheetIdx > -1 ? args.address : args.address.split('!')[1]);
-                    inRange = dataRange[0] <= cellIndices[0] && dataRange[2] >= cellIndices[0] && dataRange[1] <= cellIndices[1]
-                        && dataRange[3] >= cellIndices[1];
-                    if (dataRange[2] + 1 === cellIndices[0]) {
-                        isNewRow = true;
-                        range.info.count += 1;
-                    } else {
-                        isNewRow = false;
-                    }
+                    inRange = ((range.showFieldAsHeader ? dataRange[0] + 1 : dataRange[0]) <= cellIndices[0])
+                        && dataRange[2] >= cellIndices[0] && dataRange[1] <= cellIndices[1] && dataRange[3] >= cellIndices[1];
                 }
                 if (inRange || isNewRow) {
-                    if (args.modelType === 'Row') {
-                        action = 'delete';
+                    if (args.modelType === 'Row' && !args.insertType) {
                         args.deletedModel.forEach((row: RowModel, rowIdx: number) => {
                             changedData[rowIdx] = {};
-                            row.cells.forEach((cell: CellModel, cellIdx: number) => {
-                                changedData[rowIdx][range.info.flds[cellIdx]] = (cell && cell.value) || null;
+                            range.info.flds.forEach((fld: string, idx: number) => {
+                                if (row.cells) {
+                                    cell = row.cells[startCell[1] + idx];
+                                    changedData[rowIdx][fld] = (cell && cell.value) || null;
+                                } else {
+                                    changedData[rowIdx][fld] = null;
+                                }
                             });
+                            range.info.count -= 1;
                         });
-                        range.info.count -= 1;
+                        deleteRowDetails = { count: args.deletedModel.length, index: args.endIndex };
                     } else {
                         action = isNewRow ? 'add' : 'edit';
-                        range.info.flds.forEach((fld: string, idx: number) => {
-                            cell = getCell(cellIndices[0], idx, sheet);
-                            changedData[0][fld] = (cell && cell.value) || null;
-                        });
+                        for (let i: number = 0; i < (isNewRow ? args.model.length : 1); i++) {
+                            changedData[i] = {};
+                            range.info.flds.forEach((fld: string, idx: number) => {
+                                cell = getCell(cellIndices[0], startCell[1] + idx, sheet);
+                                changedData[i][fld] = (cell && cell.value) || null;
+                            });
+                        }
                     }
                     this.parent.trigger('dataSourceChanged', { data: changedData, action: action, rangeIndex: idx, sheetIndex: sheetIdx });
+                } else if (deleteRowDetails && deleteRowDetails.count && dataRange[0] > deleteRowDetails.index) {
+                    range.startCell = getCellAddress(startCell[0] - deleteRowDetails.count, startCell[1]);
                 }
             }
         });

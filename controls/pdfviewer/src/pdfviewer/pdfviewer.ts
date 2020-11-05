@@ -12,7 +12,7 @@ import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 // tslint:disable-next-line:max-line-length
-import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction } from './base/types';
+import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -36,7 +36,7 @@ import { SelectorModel } from './drawing/selector-model';
 import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';
 import { renderAdornerLayer } from './drawing/dom-util';
 import { ThumbnailClickEventArgs } from './index';
-import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs } from './base';
+import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, CommentClickEventArgs } from './base';
 // tslint:disable-next-line:max-line-length
 import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 import { ContextMenuSettingsModel } from './pdfviewer-model';
@@ -3389,6 +3389,30 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public ajaxRequestInitiate: EmitType<AjaxRequestInitiateEventArgs>;
 
     /**
+     * Triggers when the comment is added for the annotation in the comment panel.
+     * @event
+     * @blazorProperty 'commentAdd'
+     */
+    @Event()
+    public commentAdd: EmitType<CommentClickEventArgs>;
+
+    /**
+     * Triggers when the comment is edited for the annotation in the comment panel.
+     * @event
+     * @blazorProperty 'commentEdit'
+     */
+    @Event()
+    public commentEdit: EmitType<CommentClickEventArgs>;
+
+    /**
+     * Triggers when the comment is deleted for the annotation in the comment panel.
+     * @event
+     * @blazorProperty 'commentDelete'
+     */
+    @Event()
+    public commentDelete: EmitType<CommentClickEventArgs>;
+
+    /**
      * PDF document annotation collection.
      * @private
      * @deprecated
@@ -3748,8 +3772,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Page': 'Page',
         'Add a comment': 'Add a comment',
         'Add a reply': 'Add a reply',
-        'Import Annotations': 'Import Annotations',
-        'Export Annotations': 'Export Annotations',
+        'Import Annotations': 'Import annotations from JSON file',
+        'Export Annotations': 'Export annotation to JSON file',
+        'Export XFDF': 'Export annotation to XFDF file',
+        'Import XFDF': 'Import annotations from XFDF file',
         'Add': 'Add',
         'Clear': 'Clear',
         'Bold': 'Bold',
@@ -3891,9 +3917,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns void
      */
     // tslint:disable-next-line
-    public importAnnotations(importData: any): void {
+    public importAnnotations(importData: any, annotationDataFormat?: AnnotationDataFormat): void {
         if (this.annotationModule) {
-            this.viewerBase.importAnnotations(importData);
+            if (importData.split('.')[1] === 'json') {
+                this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Json);
+            } else {
+                this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Xfdf);
+            }
         }
     }
 
@@ -3901,9 +3931,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Perform export annotations action in the PDF Viewer
      * @returns void
      */
-    public exportAnnotations(): void {
+    public exportAnnotations(annotationDataFormat?: AnnotationDataFormat): void {
         if (this.annotationModule) {
-            this.viewerBase.exportAnnotations();
+            if (annotationDataFormat && annotationDataFormat === 'XFdf') {
+                this.viewerBase.exportAnnotations(AnnotationDataFormat.Xfdf);
+            } else {
+                this.viewerBase.exportAnnotations(AnnotationDataFormat.Json);
+            }
         }
     }
 
@@ -3972,6 +4006,20 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
     }
 
+    /**
+     * reset all form fields data
+     * @returns void
+     */
+    public resetFormFields(): void {
+        this.formFieldsModule.resetFormFields();
+    }
+    /**
+     * clear all form fields data
+     * @returns void
+     */
+    public clearFormFields(): void {
+        this.formFieldsModule.clearFormFields();
+    }
     /**
      * To delete the annotation Collections in the PDF Document.
      * @returns void
@@ -4165,6 +4213,39 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             eventArgs.multiplePageCollection = multiPageCollection;
         }
         this.trigger('annotationRemove', eventArgs);
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireCommentAdd(text: string, annotation: any): void {
+        // tslint:disable-next-line:max-line-length
+        let eventArgs: CommentClickEventArgs = { name: 'CommentAdd', text: text, annotation: annotation };
+        // tslint:disable-next-line
+        this.trigger('commentAdd', eventArgs);
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireCommentEdit(text: string, annotation: any): void {
+        // tslint:disable-next-line:max-line-length
+        let eventArgs: CommentClickEventArgs = { name: 'CommentEdit', text: text, annotation: annotation };
+        // tslint:disable-next-line
+        this.trigger('commentEdit', eventArgs);
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireCommentDelete(text: string, annotation: any): void {
+        // tslint:disable-next-line:max-line-length
+        let eventArgs: CommentClickEventArgs = { name: 'CommentDelete', text: text, annotation: annotation };
+        // tslint:disable-next-line
+        this.trigger('commentDelete', eventArgs);
     }
 
     /**

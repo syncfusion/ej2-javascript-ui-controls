@@ -153,6 +153,7 @@ export class OlapEngine {
     private hideRowTotalsObject: { [key: string]: number } = {};
     private hideColumnTotalsObject: { [key: string]: number } = {};
     private sortObject: { [key: string]: string } = {};
+    private isColDrill: boolean = false;
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public renderEngine(dataSourceSettings?: IDataOptions, customProperties?: IOlapCustomProperties): void {
@@ -417,6 +418,7 @@ export class OlapEngine {
         }
         let startTupPos: number = tupPos;
         let pagingAllowFlag: boolean = true;
+        let lastMesPos: number = 0;
         while (tupPos < tuplesLength && pagingAllowFlag) {
             let members: NodeListOf<Element> = tuples[this.customArgs.action === 'down' ?
                 (tupPos - (this.customArgs.drillInfo.currentCell.ordinal + 1)) : tupPos].querySelectorAll('Member');
@@ -462,7 +464,8 @@ export class OlapEngine {
             }
             if ((tupPos === 0 && this.isPaging) ? gTotals.length === 0 :
                 (!availAllMember || allCount === lastAllCount || allStartPos !== lastAllStartPos || (members.length === 1 && measure))) {
-                let drillAllow: boolean = drillStartPos > -1 ? (allCount > 0 ? (allStartPos > drillStartPos) : true) : true;
+                let attrDrill: boolean = this.checkAttributeDrill(this.tupRowInfo[tupPos].drillInfo, 'rows');
+                let drillAllow: boolean = drillStartPos > -1 ? (allCount > 0 ? (attrDrill || allStartPos > drillStartPos) : true) : true;
                 /* tslint:disable-next-line:max-line-length */
                 drillAllow = (prevTupInfo && drillAllow && drillStartPos > -1) ?
                     (prevTupInfo.startDrillUniquename !== startDrillUniquename ? true :
@@ -470,7 +473,7 @@ export class OlapEngine {
                             prevTupInfo.measureName !== this.tupRowInfo[tupPos].measureName) &&
                             (allStartPos === (drillStartPos + 1) || this.tupRowInfo[tupPos].measurePosition === (drillStartPos + 1))))
                     : drillAllow;
-                let withoutAllAllow: boolean = (withoutAllStartPos > -1 && allCount > 0) ? (allStartPos > withoutAllEndPos) : true;
+                let withoutAllAllow: boolean = (withoutAllStartPos > -1 && allCount > 0) ? (attrDrill || allStartPos > withoutAllEndPos) : true;
                 if (members.length === allCount + (measure ? 1 : 0) && measure) {
                     let levelName: string = 'Grand Total.' + members[measurePos].querySelector('Caption').textContent;
                     gTotals.push({
@@ -507,55 +510,62 @@ export class OlapEngine {
                     while (memPos < members.length && pagingAllowFlag) {
                         let member: Element = members[memPos];
                         if (member.querySelector('UName').textContent !== prevUNArray[memPos] && typeColl[memPos] !== '2'
-                            && ((Object.keys(prevParent).length > 0 ? prevParent.isDrilled : withoutAllDrilled) ?
+                            && ((Object.keys(prevParent).length > 0 ? (prevParent.isDrilled && !this.fieldList[prevParent.hierarchy].isHierarchy) : withoutAllDrilled) ?
                                 (typeColl[memPos] === '3' && (allType[memPos - 1] && allType[memPos + 1] !== 0)) : true)) {
                             let lvl: number = Number(member.querySelector('LNum').textContent) -
                                 ((allType[memPos] && typeColl[memPos] !== '3') ? 1 : minLevel[memPos]);
                             /* tslint:disable-next-line:no-string-literal */
                             let isNamedSet: boolean = this.namedSetsPosition['row'][memPos] ? true : false;
                             let uniqueName: string = this.getUniqueName(member.querySelector('UName').textContent);
-                            (pivotValues[position] as IAxisSet[]) = [{
-                                axis: 'row',
-                                actualText: uniqueName,
-                                colIndex: 0,
-                                formattedText: (typeColl[memPos] === '3' && this.dataFields[uniqueName] &&
-                                    this.dataFields[uniqueName].caption) ? this.dataFields[uniqueName].caption :
-                                    member.querySelector('Caption').textContent,
-                                hasChild: Number(member.querySelector('CHILDREN_CARDINALITY').textContent) > 0 ? true : false,
-                                level: lvl,
-                                rowIndex: position,
-                                index: [],
-                                ordinal: tupPos,
-                                type: 'header',
-                                colSpan: 1,
-                                rowSpan: 1,
-                                memberType: Number(typeColl[memPos]),
-                                isDrilled: this.tupRowInfo[tupPos].drillInfo[memPos].isDrilled,
-                                parentUniqueName: member.querySelector('PARENT_UNIQUE_NAME') ?
-                                    member.querySelector('PARENT_UNIQUE_NAME').textContent : undefined,
-                                levelUniqueName: member.querySelector('LName').textContent,
-                                hierarchy: member.getAttribute('Hierarchy'),
-                                isNamedSet: isNamedSet,
-                                valueSort: { levelName: '', axis: member.getAttribute('Hierarchy') }
-                            }];
-                            prevParent = typeColl[memPos] !== '3' ? (pivotValues[position] as IAxisSet[])[0] : prevParent;
-                            if (!prevParent) {
-                                rowMembers.push(member.querySelector('Caption').textContent);
+                            let depth: number = this.getDepth(this.tupRowInfo[tupPos], uniqueName, Number(typeColl[memPos]));
+                            if (!(this.isPaging && pivotValues[lastMesPos][0] && this.fieldList[(pivotValues[lastMesPos][0] as IAxisSet).hierarchy] && this.fieldList[(pivotValues[lastMesPos][0] as IAxisSet).hierarchy].isHierarchy &&
+                                (pivotValues[lastMesPos][0] as IAxisSet).hasChild && !(pivotValues[lastMesPos][0] as IAxisSet).isDrilled && !this.rows[memPos].isNamedSet && (this.rows[memPos].name.indexOf('[Measures]') === 0 || (this.fieldList[member.getAttribute('Hierarchy')] && (this.fieldList[member.getAttribute('Hierarchy')].isHierarchy || this.fieldList[member.getAttribute('Hierarchy')].hasAllMember))) &&
+                                (pivotValues[lastMesPos][0] as IAxisSet).depth < depth)) {
+                                (pivotValues[position] as IAxisSet[]) = [{
+                                    axis: 'row',
+                                    actualText: uniqueName,
+                                    colIndex: 0,
+                                    formattedText: (typeColl[memPos] === '3' && this.dataFields[uniqueName] &&
+                                        this.dataFields[uniqueName].caption) ? this.dataFields[uniqueName].caption :
+                                        member.querySelector('Caption').textContent,
+                                    hasChild: (this.fieldList[member.getAttribute('Hierarchy')] && this.fieldList[member.getAttribute('Hierarchy')].isHierarchy && memPos < this.rows.length - 1 && !this.rows[memPos + 1].isNamedSet && this.rows[memPos + 1].name.indexOf('[Measures]') < 0 && this.fieldList[this.rows[memPos + 1].name] && this.fieldList[this.rows[memPos + 1].name].hasAllMember) ? true : Number(member.querySelector('CHILDREN_CARDINALITY').textContent) > 0 ? true : false,
+                                    level: lvl,
+                                    depth: depth,
+                                    rowIndex: position,
+                                    index: [],
+                                    ordinal: tupPos,
+                                    type: 'header',
+                                    colSpan: 1,
+                                    rowSpan: 1,
+                                    memberType: Number(typeColl[memPos]),
+                                    isDrilled: (this.fieldList[member.getAttribute('Hierarchy')] && this.fieldList[member.getAttribute('Hierarchy')].isHierarchy && !this.isAttributeDrill(member.getAttribute('Hierarchy'), this.tupRowInfo[tupPos].drillInfo, 'rows')) ? true : this.tupRowInfo[tupPos].drillInfo[memPos].isDrilled,
+                                    parentUniqueName: member.querySelector('PARENT_UNIQUE_NAME') ?
+                                        member.querySelector('PARENT_UNIQUE_NAME').textContent : undefined,
+                                    levelUniqueName: member.querySelector('LName').textContent,
+                                    hierarchy: member.getAttribute('Hierarchy'),
+                                    isNamedSet: isNamedSet,
+                                    valueSort: { levelName: '', axis: member.getAttribute('Hierarchy') }
+                                }];
+                                prevParent = typeColl[memPos] !== '3' ? (pivotValues[position] as IAxisSet[])[0] : prevParent;
+                                if (!prevParent) {
+                                    rowMembers.push(member.querySelector('Caption').textContent);
+                                }
+                                let levelName: string = this.getCaptionCollectionWithMeasure(this.tupRowInfo[tupPos]);
+                                (pivotValues[position] as IAxisSet[])[0].valueSort.levelName = levelName;
+                                (pivotValues[position] as IAxisSet[])[0].valueSort[levelName] = 1;
+                                valueContent[position - this.rowStartPos] = {} as IAxisSet[];
+                                valueContent[position - this.rowStartPos][0] = pivotValues[position][0] as IAxisSet;
+                                if (measure && measurePos > memPos) {
+                                    prevUNArray[measurePos] = '';
+                                }
+                                for (let pos: number = memPos + 1; pos < members.length; pos++) {
+                                    prevUNArray[pos] = '';
+                                }
+                                prevUNArray[memPos] = member.querySelector('UName').textContent;
+                                lastMesPos = Number(typeColl[memPos]) !== 3 ? position : lastMesPos;
+                                position++;
+                                lastMemPos = memPos;
                             }
-                            let levelName: string = this.getCaptionCollectionWithMeasure(this.tupRowInfo[tupPos]);
-                            (pivotValues[position] as IAxisSet[])[0].valueSort.levelName = levelName;
-                            (pivotValues[position] as IAxisSet[])[0].valueSort[levelName] = 1;
-                            valueContent[position - this.rowStartPos] = {} as IAxisSet[];
-                            valueContent[position - this.rowStartPos][0] = pivotValues[position][0] as IAxisSet;
-                            if (measure && measurePos > memPos) {
-                                prevUNArray[measurePos] = '';
-                            }
-                            for (let pos: number = memPos + 1; pos < members.length; pos++) {
-                                prevUNArray[pos] = '';
-                            }
-                            prevUNArray[memPos] = member.querySelector('UName').textContent;
-                            position++;
-                            lastMemPos = memPos;
                         } else if (typeColl[memPos] === '2') {
                             lastMemPos = memPos;
                         } else {
@@ -606,6 +616,34 @@ export class OlapEngine {
             this.onDemandDrillEngine = pivotValues;
         }
     }
+    private getDepth(tupInfo: ITupInfo, uniqueName: string, memberType: number): number {
+        let memberPosition: number = tupInfo.uNameCollection.indexOf(uniqueName);
+        let cropUName: string = tupInfo.uNameCollection.substring(0, memberPosition) +
+            (memberType === 3 ? '' : uniqueName);
+        let fieldSep: string[] = cropUName.split('::[').map((item: string) => {
+            return item[0] === '[' ? item : ('[' + item);
+        });
+        if (memberType === 3 && this.rowMeasurePos === fieldSep.length) {
+            fieldSep.push(uniqueName);
+        }
+        let nxtIndextCount: number = -1;
+        for (let fPos: number = 0; fPos < fieldSep.length; fPos++) {
+            let fieldMembers: string = fieldSep[fPos];
+            let membersCount: number = fieldMembers.split('~~').length;
+            nxtIndextCount += membersCount;
+        }
+        return nxtIndextCount;
+    }
+    private checkAttributeDrill(drillInfo: IDrillInfo[], axis: string) {
+        let isDrill: boolean = false;
+        for (let i: number = 0; i < drillInfo.length; i++) {
+            isDrill = this.isAttributeDrill(drillInfo[i].hierarchy, drillInfo, axis);
+            if (isDrill) {
+                break;
+            }
+        }
+        return isDrill;
+    }
     private frameTupCollection(
         members: NodeListOf<Element>, maxLevel: number[], tupPos: number, tupInfo: ITupInfo[],
         showSubTotals: boolean, hideTotalsObject: { [key: string]: number }, axis: string): number[] {
@@ -642,7 +680,9 @@ export class OlapEngine {
             /* tslint:disable-next-line:max-line-length */
             let parentUName: string = member.querySelector('PARENT_UNIQUE_NAME') ? member.querySelector('PARENT_UNIQUE_NAME').textContent : '';
             if (memberType === '2') {
-                allCount++;
+                if (!this.isPaging) {
+                    allCount++;
+                }
                 allStartPos = isNullOrUndefined(allStartPos) ? memPos : allStartPos;
             } else if (memberType === '3') {
                 measure = member;
@@ -838,8 +878,6 @@ export class OlapEngine {
         /* tslint:disable */
         let _this: any = this;
         /* tslint:enable */
-        /* tslint:disable-next-line:max-line-length */
-        maxLevel.map((item: number, pos: number) => { _this.colDepth = _this.colDepth + (allType[pos] === 0 ? (item + (1 - (minLevel[pos] > 1 ? 1 : minLevel[pos]))) : (item === 0 ? 1 : item)); });
         tupPos = 0;
         let position: number = 1;
         let lastAllStartPos: number;
@@ -863,6 +901,10 @@ export class OlapEngine {
             let drillEndPos: number = this.tupColumnInfo[tupPos].drillEndPos;
             let levelColl: number[] = this.tupColumnInfo[tupPos].levelCollection;
             let isStartCol: boolean = typeColl[0] === '2' ? false : (typeColl[0] === '3' ? typeColl[1] !== '2' : true);
+            let depth: number = 0;
+            /* tslint:disable-next-line:max-line-length */
+            maxLevel.map((item: number, pos: number) => { depth = depth + (allType[pos] === 0 ? (item + (1 - (minLevel[pos] > 1 ? 1 : minLevel[pos]))) : (item === 0 ? ((this.isPaging && typeColl[pos] === '2') ? 0 : 1) : item)); });
+            this.colDepth = this.colDepth > depth ? this.colDepth : depth;
             if (tupPos === 0 && members.length > (allCount + (measure ? 1 : 0))) {
                 withoutAllAvail = true;
                 isStartCol = (allCount > 0 && isStartCol) ? (allStartPos > withoutAllStartPos) : isStartCol;
@@ -890,7 +932,11 @@ export class OlapEngine {
                                 position, allCount, maxLevel, minLevel, allType, allStartPos, drillInfo, levelComp);
                         }
                         isSubTotIncluded = false;
-                        position++;
+                        if (!this.isColDrill) {
+                            position++;
+                        } else {
+                            this.isColDrill = false;
+                        }
                     } else if ((lastSavedInfo as ITupInfo).drillStartPos === drillStartPos ?
                         ((lastSavedInfo as ITupInfo).startDrillUniquename !== startDrillUniquename ||
                             (lastSavedInfo as ITupInfo).allCount === allCount) : true) {
@@ -913,7 +959,8 @@ export class OlapEngine {
                     lastRealTup = this.tupColumnInfo[tupPos];
                 }
             }
-            if (allCount > 0 && (withoutAllAvail ? (isStartCol && withoutAllEndPos < allStartPos) : true)) {
+            let attrDrill: boolean = this.checkAttributeDrill(this.tupColumnInfo[tupPos].drillInfo, 'columns');
+            if (allCount > 0 && (withoutAllAvail ? (isStartCol && (attrDrill || withoutAllEndPos < allStartPos)) : true)) {
                 if (allCount === (lastSavedInfo as ITupInfo).allCount || allStartPos !== (lastSavedInfo as ITupInfo).allStartPos) {
                     /* tslint:disable-next-line:max-line-length */
                     let endAllow: boolean = drillEndPos !== drillStartPos ? ((lastSavedInfo as ITupInfo).endDrillUniquename === endDrillUniquename) : true;
@@ -1127,7 +1174,7 @@ export class OlapEngine {
             let memberPos: number = 0;
             let memberDepth: number = 0;
             while (memberPos < members.length) {
-                memberDepth += (allType[memberPos] > 0 && this.tupColumnInfo[tupPos].measurePosition !== memberPos) ?
+                memberDepth += (allType[memberPos] > 0 && this.getMeasurePosition(this.tupColumnInfo[tupPos].uNameCollection, this.tupColumnInfo[tupPos].measurePosition) !== memberPos) ?
                     maxLevel[memberPos] :
                     (maxLevel[memberPos] + (1 - minLevel[memberPos]));
                 if (this.tupColumnInfo[tupPos].drillInfo[memberPos].isDrilled && this.tupColumnInfo[tupPos].showTotals) {
@@ -1174,31 +1221,40 @@ export class OlapEngine {
                     let levelName: string = (Object as any).values(colMembers).join('.');
                     let isNamedSet: boolean = this.namedSetsPosition['column'][memPos] ? true : false;
                     let uName: string = this.getUniqueName(member.querySelector('UName').textContent);
-                    (this.pivotValues[spanMemPos] as IAxisSet[])[position] = {
-                        axis: 'column',
-                        actualText: uName,
-                        colIndex: position,
-                        formattedText: (memberType === '3' && this.dataFields[uName] &&
-                            this.dataFields[uName].caption) ? this.dataFields[uName].caption :
-                            member.querySelector('Caption').textContent,
-                        hasChild: Number(member.querySelector('CHILDREN_CARDINALITY').textContent) > 0 ? true : false,
-                        level: memDup > 1 ? -1 : (Number(member.querySelector('LNum').textContent) - ((allType[memPos] && memberType !== '3') ? 1 : 0)),
-                        rowIndex: spanMemPos,
-                        ordinal: tupPos,
-                        memberType: Number(memberType),
-                        isDrilled: isDrilled || this.tupColumnInfo[tupPos].drillInfo[memPos].isDrilled,
-                        parentUniqueName: member.querySelector('PARENT_UNIQUE_NAME') ? member.querySelector('PARENT_UNIQUE_NAME').textContent : undefined,
-                        levelUniqueName: member.querySelector('LName').textContent,
-                        hierarchy: member.getAttribute('Hierarchy'),
-                        isNamedSet: isNamedSet,
-                        valueSort: { levelName: levelName, [levelName]: 1, axis: member.getAttribute('Hierarchy') }
-                        /* tslint:enable */
-                    };
-                    if (!this.headerContent[spanMemPos]) {
-                        this.headerContent[spanMemPos] = {} as IAxisSet[];
+                    let depth: number = this.getDepth(this.tupColumnInfo[tupPos], uName, Number(memberType));
+                    if (!(this.isPaging && this.pivotValues[spanMemPos - 1] && this.pivotValues[spanMemPos - 1][position] && this.fieldList[(this.pivotValues[spanMemPos - 1][position] as IAxisSet).hierarchy] && this.fieldList[(this.pivotValues[spanMemPos - 1][position] as IAxisSet).hierarchy].isHierarchy &&
+                        (this.pivotValues[spanMemPos - 1][position] as IAxisSet).hasChild && !(this.pivotValues[spanMemPos - 1][position] as IAxisSet).isDrilled && !this.columns[memPos].isNamedSet && this.fieldList[member.getAttribute('Hierarchy')] && (this.fieldList[member.getAttribute('Hierarchy')].isHierarchy || this.fieldList[member.getAttribute('Hierarchy')].hasAllMember) &&
+                        (this.pivotValues[spanMemPos - 1][position] as IAxisSet).depth < depth)) {
+                        (this.pivotValues[spanMemPos] as IAxisSet[])[position] = {
+                            axis: 'column',
+                            actualText: uName,
+                            colIndex: position,
+                            formattedText: (memberType === '3' && this.dataFields[uName] &&
+                                this.dataFields[uName].caption) ? this.dataFields[uName].caption :
+                                member.querySelector('Caption').textContent,
+                            hasChild: (this.fieldList[member.getAttribute('Hierarchy')] && this.fieldList[member.getAttribute('Hierarchy')].isHierarchy && memPos < this.columns.length - 1 && !this.columns[memPos + 1].isNamedSet && this.columns[memPos + 1].name.indexOf('[Measures]') < 0 && this.fieldList[this.columns[memPos + 1].name] && this.fieldList[this.columns[memPos + 1].name].hasAllMember) ? true : Number(member.querySelector('CHILDREN_CARDINALITY').textContent) > 0 ? true : false,
+                            level: memDup > 1 ? -1 : (Number(member.querySelector('LNum').textContent) - ((allType[memPos] && memberType !== '3') ? 1 : 0)),
+                            rowIndex: spanMemPos,
+                            ordinal: tupPos,
+                            memberType: Number(memberType),
+                            depth: depth,
+                            isDrilled: (this.fieldList[member.getAttribute('Hierarchy')] && this.fieldList[member.getAttribute('Hierarchy')].isHierarchy && !this.isAttributeDrill(member.getAttribute('Hierarchy'), this.tupColumnInfo[tupPos].drillInfo, 'columns')) ? true : (isDrilled || this.tupColumnInfo[tupPos].drillInfo[memPos].isDrilled),
+                            parentUniqueName: member.querySelector('PARENT_UNIQUE_NAME') ? member.querySelector('PARENT_UNIQUE_NAME').textContent : undefined,
+                            levelUniqueName: member.querySelector('LName').textContent,
+                            hierarchy: member.getAttribute('Hierarchy'),
+                            isNamedSet: isNamedSet,
+                            valueSort: { levelName: levelName, [levelName]: 1, axis: member.getAttribute('Hierarchy') }
+                            /* tslint:enable */
+                        };
+                        if (!this.headerContent[spanMemPos]) {
+                            this.headerContent[spanMemPos] = {} as IAxisSet[];
+                        }
+                        this.headerContent[spanMemPos][position] = (this.pivotValues[spanMemPos] as IAxisSet[])[position];
+                        spanMemPos++;
+                    } else {
+                        this.isColDrill = true;
+                        break;
                     }
-                    this.headerContent[spanMemPos][position] = (this.pivotValues[spanMemPos] as IAxisSet[])[position];
-                    spanMemPos++;
                 }
                 memPos++;
             }
@@ -1209,7 +1265,7 @@ export class OlapEngine {
                 let memberPos: number = 0;
                 let memberDepth: number = 0;
                 while (memberPos < this.tupColumnInfo[tupPos].allStartPos) {
-                    memberDepth += (allType[memberPos] > 0 && this.tupColumnInfo[tupPos].measurePosition !== memberPos) ?
+                    memberDepth += (allType[memberPos] > 0 && this.getMeasurePosition(this.tupColumnInfo[tupPos].uNameCollection, this.tupColumnInfo[tupPos].measurePosition) !== memberPos) ?
                         maxLevel[memberPos] :
                         (maxLevel[memberPos] + (1 - minLevel[memberPos]));
                     memberPos++;
@@ -1224,6 +1280,43 @@ export class OlapEngine {
                 (this.pivotValues[memberDepth - 1] as IAxisSet[])[position - 1].ordinal = tupPos;
             }
         }
+    }
+
+    private isAttributeDrill(hierarchy: string, drillInfo: IDrillInfo[], axis: string): boolean {
+        let isDrill: boolean = false;
+        let isAdjacent: boolean = this.isAdjacentToMeasure(hierarchy, axis);
+        if (!isAdjacent) {
+            for (let i: number = 0; i < this.drilledMembers.length; i++) {
+                if (this.drilledMembers[i].name === hierarchy) {
+                    for (let j: number = 0; j < this.drilledMembers[i].items.length; j++) {
+                        let drillItems: string[] = this.drilledMembers[i].items[j].split(this.drilledMembers[i].delimiter);
+                        let levelName: string = '';
+                        for (let k: number = 0; k < drillItems.length; k++) {
+                            if (drillInfo[k] && drillInfo[k].uName) {
+                                levelName = levelName + (levelName === '' ? '' : this.drilledMembers[i].delimiter) + drillInfo[k].uName;
+                            }
+                        }
+                        if (levelName === this.drilledMembers[i].items[j]) {
+                            isDrill = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return isDrill;
+    }
+
+    private isAdjacentToMeasure(hierarchy: string, axis: string): boolean {
+        let isAdjacent: boolean = false;
+        let fields: IFieldOptions[] = axis === 'rows' ? this.rows : this.columns;
+        for (let i: number = 0; i < fields.length; i++) {
+            if (fields[i].name === hierarchy && fields[i + 1] && (fields[i + 1].name === '[Measures]' || fields[i + 1].isNamedSet || (this.fieldList[fields[i + 1].name] && !this.fieldList[fields[i + 1].name].hasAllMember))) {
+                isAdjacent = true;
+                break;
+            }
+        }
+        return isAdjacent;
     }
 
     private getDrilledParent(childMember: Element, parentLevel: number, savedCollection: { [key: number]: Element }): void {
@@ -1536,9 +1629,20 @@ export class OlapEngine {
         let hasLastMeasure: boolean = uniqueName.indexOf(currentCell.actualText.toString() + '::[Measures]') > -1;
         uniqueName = uniqueName.substring(0, uniqueName.indexOf(currentCell.actualText.toString())) +
             currentCell.actualText.toString();
-        let measureAvail: boolean = uniqueName.split('::[').length <= currentTuple.measurePosition;
+        let measureAvail: boolean = uniqueName.split('::[').length <= this.getMeasurePosition(uniqueName, currentTuple.measurePosition);
         uniqueName = uniqueName + ((hasLastMeasure || measureAvail) ? ('::' + currentTuple.measureName) : '');
         return uniqueName;
+    }
+    private getMeasurePosition(uniqueName: string, measurePosition: number): number {
+        let position: number = measurePosition;
+        let collection: string[] = uniqueName.split('::[');
+        for (let i: number = 0; i < collection.length; i++) {
+            if (collection[i] && collection[i].indexOf('Measures') > -1) {
+                position = i;
+                break;
+            }
+        }
+        return position;
     }
     private sortRowHeaders(headers: IAxisSet[]): IAxisSet[] {
         if (headers.length > 0 && headers[0].memberType !== 3 && !headers[0].isNamedSet) {
@@ -1584,7 +1688,7 @@ export class OlapEngine {
                     i++;
                 }
             }
-            if (tuple.measurePosition >= (uniqueNameColl.split('::[').length - 1)) {
+            if (this.getMeasurePosition(uniqueNameColl, tuple.measurePosition) >= (uniqueNameColl.split('::[').length - 1)) {
                 if (sepPos[sepPos.length - 2] > -1) {
                     parentString = uniqueNameColl.substring(0, sepPos[sepPos.length - 2]) + sepObjects[sepPos[sepPos.length - 1]] +
                         tuple.measureName;
@@ -1671,9 +1775,9 @@ export class OlapEngine {
                         spanCollection[rowPos][colPos] = spanCollection[rowPos + 1] ? (spanCollection[rowPos + 1][colPos] + 1) : 1;
                         /* tslint:disable-next-line:max-line-length */
                         if (rowPos === 0 || (currCell.memberType === 1 && currCell.level > -1 && nextRowCell.memberType === 1 && nextRowCell.level === -1)) {
-                            currCell.rowSpan = currCell.isDrilled ? 1 : (spanCollection[rowPos + 1][colPos] + 1);
+                            currCell.rowSpan = (currCell.isDrilled && ((this.fieldList[currCell.hierarchy] && this.fieldList[currCell.hierarchy].isHierarchy) ? currCell.hasChild : true)) ? 1 : (spanCollection[rowPos + 1][colPos] + 1);
                             /* tslint:disable-next-line:max-line-length */
-                            nextRowCell.rowSpan = (nextRowCell.isDrilled && nextRowCell.level === -1) ? spanCollection[rowPos + 1][colPos] : nextRowCell.rowSpan;
+                            nextRowCell.rowSpan = (nextRowCell.isDrilled && ((this.fieldList[nextRowCell.hierarchy] && this.fieldList[nextRowCell.hierarchy].isHierarchy) ? nextRowCell.hasChild : true) && nextRowCell.level === -1) ? spanCollection[rowPos + 1][colPos] : nextRowCell.rowSpan;
                         } else {
                             if (currCell.memberType === 3) {
                                 currCell.rowSpan = 1;
@@ -1682,14 +1786,14 @@ export class OlapEngine {
                             }
                         }
                         rowflag = true;
-                    } else if (currCell.isDrilled && currCell.level === -1 && nextRowCell.memberType === 2) {
+                    } else if (currCell.isDrilled && ((this.fieldList[currCell.hierarchy] && this.fieldList[currCell.hierarchy].isHierarchy) ? currCell.hasChild : true) && currCell.level === -1 && nextRowCell.memberType === 2) {
                         spanCollection[rowPos][colPos] = spanCollection[rowPos + 1] ? (spanCollection[rowPos + 1][colPos] + 1) : 1;
                         currCell.rowSpan = -1;
                         rowflag = true;
                     } else {
                         currCell.rowSpan = rowPos === 0 ? spanCollection[rowPos][colPos] : -1;
                         /* tslint:disable-next-line:max-line-length */
-                        nextRowCell.rowSpan = ((nextRowCell.level > -1 && !nextRowCell.isDrilled) || (currCell.memberType !== 2 && nextRowCell.memberType === 2)) ? spanCollection[rowPos + 1][colPos] : 1;
+                        nextRowCell.rowSpan = ((nextRowCell.level > -1 && !(nextRowCell.isDrilled && ((this.fieldList[nextRowCell.hierarchy] && this.fieldList[nextRowCell.hierarchy].isHierarchy) ? nextRowCell.hasChild : true))) || (currCell.memberType !== 2 && nextRowCell.memberType === 2)) ? spanCollection[rowPos + 1][colPos] : 1;
                     }
                 } else {
                     currCell.rowSpan = (currCell.level > -1 || this.rowStartPos === 1) ? spanCollection[rowPos][colPos] : -1;
@@ -1724,66 +1828,68 @@ export class OlapEngine {
             let columns: IAxisSet[] = this.pivotValues[rowPos] as IAxisSet[];
             let rowOrdinal: number = columns[0].ordinal;
             for (let colPos: number = 1; colPos < (this.pivotValues[0] as IAxisSet[]).length; colPos++) {
-                let colOrdinal: number = (this.pivotValues[this.colDepth - 1] as IAxisSet[])[colPos].ordinal;
-                let lastColCell: IAxisSet = (this.pivotValues[this.colDepth - 1][colPos] as IAxisSet);
-                let measure: string | number = columns[0].memberType === 3 ? columns[0].actualText.toString() :
-                    ((this.tupColumnInfo[lastColCell.ordinal] && this.tupColumnInfo[lastColCell.ordinal].measure) ?
-                        this.tupColumnInfo[lastColCell.ordinal].measure.querySelector('UName').textContent :
-                        columns[0].actualText);
-                if (columns[0].type === 'header') {
-                    columns[colPos] = {
-                        axis: 'value',
-                        actualText: this.getUniqueName(measure as string),
-                        formattedText: '',
-                        value: 0,
-                        colIndex: colPos,
-                        rowIndex: rowPos
-                    };
-                } else {
-                    let valElement: Element;
-                    let formattedText: string;
-                    let value: string = '0';
-                    let measureName: string = this.getUniqueName(measure as string);
-                    let showTotals: boolean = true;
-                    if (this.tupRowInfo[rowOrdinal]) {
-                        showTotals = this.tupRowInfo[rowOrdinal].showTotals;
+                if ((this.pivotValues[this.colDepth - 1] as IAxisSet[])[colPos]) {
+                    let colOrdinal: number = (this.pivotValues[this.colDepth - 1] as IAxisSet[])[colPos].ordinal;
+                    let lastColCell: IAxisSet = (this.pivotValues[this.colDepth - 1][colPos] as IAxisSet);
+                    let measure: string | number = columns[0].memberType === 3 ? columns[0].actualText.toString() :
+                        ((this.tupColumnInfo[lastColCell.ordinal] && this.tupColumnInfo[lastColCell.ordinal].measure) ?
+                            this.tupColumnInfo[lastColCell.ordinal].measure.querySelector('UName').textContent :
+                            columns[0].actualText);
+                    if (columns[0].type === 'header') {
+                        columns[colPos] = {
+                            axis: 'value',
+                            actualText: this.getUniqueName(measure as string),
+                            formattedText: '',
+                            value: 0,
+                            colIndex: colPos,
+                            rowIndex: rowPos
+                        };
                     } else {
-                        showTotals = this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals;
+                        let valElement: Element;
+                        let formattedText: string;
+                        let value: string = '0';
+                        let measureName: string = this.getUniqueName(measure as string);
+                        let showTotals: boolean = true;
+                        if (this.tupRowInfo[rowOrdinal]) {
+                            showTotals = this.tupRowInfo[rowOrdinal].showTotals;
+                        } else {
+                            showTotals = this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals;
+                        }
+                        valElement = valCollection[(rowOrdinal - startRowOrdinal) * colLength + colOrdinal];
+                        formattedText = !showTotals ? '' :
+                            ((!isNullOrUndefined(valElement) && !isNullOrUndefined(valElement.querySelector('FmtValue'))) ?
+                                valElement.querySelector('FmtValue').textContent : this.emptyCellTextContent);
+                        value = !showTotals ? '0' :
+                            ((!isNullOrUndefined(valElement) && !isNullOrUndefined(valElement.querySelector('Value'))) ?
+                                valElement.querySelector('Value').textContent : null);
+                        formattedText = showTotals && !isNullOrUndefined(value) ?
+                            this.getFormattedValue(Number(value), measureName, (formattedText !== '' ? formattedText : value)) :
+                            formattedText;
+                        let isSum: boolean = (this.tupColumnInfo[colOrdinal] ? (this.tupColumnInfo[colOrdinal].allCount > 0 ||
+                            this.tupColumnInfo[colOrdinal].drillStartPos > -1) : true) ||
+                            (this.tupRowInfo[rowOrdinal] ? (this.tupRowInfo[rowOrdinal].allCount > 0 ||
+                                this.tupRowInfo[rowOrdinal].drillStartPos > -1) : true);
+                        /* tslint:disable */
+                        let isGrand: boolean = (this.tupRowInfo[rowOrdinal] ? (this.tupRowInfo[rowOrdinal].measurePosition === 0 ? this.tupRowInfo[rowOrdinal].allStartPos === 1 : this.tupRowInfo[rowOrdinal].allStartPos === 0) : false) ||
+                            (this.tupColumnInfo[colOrdinal] ? (this.tupColumnInfo[colOrdinal].measurePosition === 0 ? this.tupColumnInfo[colOrdinal].allStartPos === 1 : this.tupColumnInfo[colOrdinal].allStartPos === 0) : false);
+                        /* tslint:enable */
+                        columns[colPos] = {
+                            axis: 'value',
+                            actualText: measureName,
+                            formattedText: formattedText,
+                            colOrdinal: colOrdinal,
+                            rowOrdinal: rowOrdinal,
+                            columnHeaders: this.tupColumnInfo[colOrdinal] ? this.tupColumnInfo[colOrdinal].captionCollection : '',
+                            rowHeaders: this.tupRowInfo[rowOrdinal] ? this.tupRowInfo[rowOrdinal].captionCollection : '',
+                            value: !isNullOrUndefined(value) ? Number(value) : null,
+                            colIndex: colPos,
+                            rowIndex: rowPos,
+                            isSum: isSum,
+                            isGrandSum: isGrand
+                        };
                     }
-                    valElement = valCollection[(rowOrdinal - startRowOrdinal) * colLength + colOrdinal];
-                    formattedText = !showTotals ? '' :
-                        ((!isNullOrUndefined(valElement) && !isNullOrUndefined(valElement.querySelector('FmtValue'))) ?
-                            valElement.querySelector('FmtValue').textContent : this.emptyCellTextContent);
-                    value = !showTotals ? '0' :
-                        ((!isNullOrUndefined(valElement) && !isNullOrUndefined(valElement.querySelector('Value'))) ?
-                            valElement.querySelector('Value').textContent : null);
-                    formattedText = showTotals && !isNullOrUndefined(value) ?
-                        this.getFormattedValue(Number(value), measureName, (formattedText !== '' ? formattedText : value)) :
-                        formattedText;
-                    let isSum: boolean = (this.tupColumnInfo[colOrdinal] ? (this.tupColumnInfo[colOrdinal].allCount > 0 ||
-                        this.tupColumnInfo[colOrdinal].drillStartPos > -1) : true) ||
-                        (this.tupRowInfo[rowOrdinal] ? (this.tupRowInfo[rowOrdinal].allCount > 0 ||
-                            this.tupRowInfo[rowOrdinal].drillStartPos > -1) : true);
-                    /* tslint:disable */
-                    let isGrand: boolean = (this.tupRowInfo[rowOrdinal] ? (this.tupRowInfo[rowOrdinal].measurePosition === 0 ? this.tupRowInfo[rowOrdinal].allStartPos === 1 : this.tupRowInfo[rowOrdinal].allStartPos === 0) : false) ||
-                        (this.tupColumnInfo[colOrdinal] ? (this.tupColumnInfo[colOrdinal].measurePosition === 0 ? this.tupColumnInfo[colOrdinal].allStartPos === 1 : this.tupColumnInfo[colOrdinal].allStartPos === 0) : false);
-                    /* tslint:enable */
-                    columns[colPos] = {
-                        axis: 'value',
-                        actualText: measureName,
-                        formattedText: formattedText,
-                        colOrdinal: colOrdinal,
-                        rowOrdinal: rowOrdinal,
-                        columnHeaders: this.tupColumnInfo[colOrdinal] ? this.tupColumnInfo[colOrdinal].captionCollection : '',
-                        rowHeaders: this.tupRowInfo[rowOrdinal] ? this.tupRowInfo[rowOrdinal].captionCollection : '',
-                        value: !isNullOrUndefined(value) ? Number(value) : null,
-                        colIndex: colPos,
-                        rowIndex: rowPos,
-                        isSum: isSum,
-                        isGrandSum: isGrand
-                    };
+                    this.valueContent[rowPos - this.rowStartPos][colPos] = columns[colPos];
                 }
-                this.valueContent[rowPos - this.rowStartPos][colPos] = columns[colPos];
             }
         }
     }
@@ -2003,16 +2109,18 @@ export class OlapEngine {
         });
         let joinArray: string[] = [];
         for (let memPos: number = 0; memPos <= fieldPos; memPos++) {
-            if ((isWithoutAllMember || this.isPaging) && memPos === fieldPos) {
-                let splitLevels: string[] = memberArray[memPos].split('~~');
-                let drillLevel: number = splitLevels.indexOf(memberName);
-                let cropLevels: string[] = [];
-                for (let lPos: number = 0; lPos <= drillLevel; lPos++) {
-                    cropLevels.push(splitLevels[lPos]);
+            if (memberArray[memPos]) {
+                if ((isWithoutAllMember || this.isPaging) && memPos === fieldPos) {
+                    let splitLevels: string[] = memberArray[memPos].split('~~');
+                    let drillLevel: number = splitLevels.indexOf(memberName);
+                    let cropLevels: string[] = [];
+                    for (let lPos: number = 0; lPos <= drillLevel; lPos++) {
+                        cropLevels.push(splitLevels[lPos]);
+                    }
+                    joinArray[joinArray.length] = cropLevels.length > 0 ? cropLevels.join('~~') : memberArray[memPos];
+                } else {
+                    joinArray[joinArray.length] = memberArray[memPos];
                 }
-                joinArray[joinArray.length] = cropLevels.length > 0 ? cropLevels.join('~~') : memberArray[memPos];
-            } else {
-                joinArray[joinArray.length] = memberArray[memPos];
             }
         }
         uNameCollection = joinArray.join('::');
@@ -2055,8 +2163,10 @@ export class OlapEngine {
             let set: string = '';
             for (let pos: number = 0; pos <= fieldPos; pos++) {
                 let field: string = fields[pos];
-                let members: string[] = field.split('~~');
-                set = set + (set !== '' ? '~~' : '') + members[members.length - 1];
+                if (field) {
+                    let members: string[] = field.split('~~');
+                    set = set + (set !== '' ? '~~' : '') + members[members.length - 1];
+                }
             }
             drillSets[set] = set;
         }

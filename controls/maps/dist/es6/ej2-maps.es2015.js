@@ -720,7 +720,7 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
                         indexCollection = indexCollection.filter((item, index, value) => value.indexOf(item) === index);
                         let container = maps.element.getBoundingClientRect();
                         tempX = tempX - container['left'];
-                        tempY = (tempY - ((maps.availableSize.height < container['height']) ?
+                        tempY = maps.isBlazor ? tempY - container['top'] : (tempY - ((maps.availableSize.height < container['height']) ?
                             container['top'] : (container['bottom'] - container['top'])));
                         let translate = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
                         let transPoint = (maps.isTileMap) ? { x: 0, y: 0 } : (maps.translatePoint.x !== 0) ?
@@ -3783,13 +3783,18 @@ class Marker {
                         if (currentLayer.markerClusterSettings.allowClustering) {
                             this.maps.svgObject.appendChild(this.markerSVGObject);
                             this.maps.element.appendChild(this.maps.svgObject);
-                            clusterTemplate(currentLayer, this.markerSVGObject, this.maps, layerIndex, this.markerSVGObject, layerElement, true, false);
+                            if (currentLayer.layerType !== 'OSM' || !this.maps.zoomSettings.enable) {
+                                clusterTemplate(currentLayer, this.markerSVGObject, this.maps, layerIndex, this.markerSVGObject, layerElement, true, false);
+                            }
+                            else {
+                                layerElement.appendChild(this.markerSVGObject);
+                            }
                             this.maps.renderReactTemplates();
                         }
                     }
                     if (markerTemplateEle.childElementCount === (markerData.length - markerCount - nullCount) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
                         getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
-                        if (currentLayer.markerClusterSettings.allowClustering) {
+                        if ((currentLayer.markerClusterSettings.allowClustering && currentLayer.layerType !== 'OSM') || !this.maps.zoomSettings.enable) {
                             clusterTemplate(currentLayer, markerTemplateEle, this.maps, layerIndex, this.markerSVGObject, layerElement, false, false);
                             this.maps.renderReactTemplates();
                         }
@@ -5423,17 +5428,17 @@ class LayerPanel {
                     element1.style.visibility = 'hidden';
                 }
                 let animateElement;
-                if (!document.getElementById('animated_tiles') && element) {
-                    if (!isNullOrUndefined(document.getElementById(this.mapObject.element.id + '_animated_tiles'))) {
-                        document.getElementById(this.mapObject.element.id + '_animated_tiles').id = this.mapObject.element.id +
-                            '_animated_tiles_old';
-                    }
+                if (!document.getElementById(this.mapObject.element.id + '_animated_tiles') && element) {
                     animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
                     element.appendChild(animateElement);
                 }
                 else {
                     if (type !== 'Pan' && element1 && element) {
                         element1.appendChild(element.children[0]);
+                        if (!isNullOrUndefined(document.getElementById(this.mapObject.element.id + '_animated_tiles'))) {
+                            document.getElementById(this.mapObject.element.id + '_animated_tiles').id =
+                                this.mapObject.element.id + '_animated_tiles_old';
+                        }
                         animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
                         element.appendChild(animateElement);
                     }
@@ -6187,7 +6192,18 @@ let Maps = class Maps extends Component {
                 if (this.layers[i].dataLabelSettings.visible || this.layers[i].markerSettings[markerLength].template) {
                     updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[i].dataLabelSettings);
                     for (let j = 0; j < this.layers[i].markerSettings.length; j++) {
-                        updateBlazorTemplate(this.element.id + '_MarkerTemplate' + j, 'MarkerTemplate', this.layers[i].markerSettings[j]);
+                        let markerRendered = () => {
+                            for (let x = 0; x < this.layers.length; x++) {
+                                let markerTemplateEle = document.getElementById(this.element.id + '_LayerIndex_' + x + '_Markers_Template_Group');
+                                if (!isNullOrUndefined(markerTemplateEle)) {
+                                    for (let z = 0; z < markerTemplateEle.childElementCount; z++) {
+                                        let markerTemplate$$1 = markerTemplateEle.childNodes[z];
+                                        markerTemplate$$1['style']['transform'] = 'translate(-50%, -50%)';
+                                    }
+                                }
+                            }
+                        };
+                        updateBlazorTemplate(this.element.id + '_MarkerTemplate' + j, 'MarkerTemplate', this.layers[i].markerSettings[j], undefined, markerRendered);
                     }
                 }
             }

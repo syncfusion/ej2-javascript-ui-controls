@@ -642,6 +642,7 @@ class SfTooltip {
     }
 
     private onMouseMove(event: MouseEvent & TouchEvent): void {
+        if (!this.tooltipEle) { return; }
         let eventPageX: number = 0; let eventPageY: number = 0;
         if (event.type.indexOf('touch') > -1) {
             event.preventDefault();

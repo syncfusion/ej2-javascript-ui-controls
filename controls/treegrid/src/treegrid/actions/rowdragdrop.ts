@@ -536,6 +536,7 @@ export class RowDD {
                 this.dropPosition = 'Invalid';
             }
             setValue('dropPosition', this.dropPosition, args);
+            args.dropIndex = args.dropIndex === args.fromIndex ? this.getTargetIdx(args.target.parentElement) : args.dropIndex;
             tObj.trigger(events.rowDrop, args);
             if (!args.cancel) {
                 if (!isCountRequired(this.parent)) {
@@ -676,6 +677,14 @@ export class RowDD {
                 if (this.dropPosition !== 'Invalid') {
                     if (!tObj.rowDropSettings.targetID || isByMethod) {
                         this.deleteDragRow();
+                    }
+                    if (this.draggedRecord === this.droppedRecord) {
+                        let correctIndex: number = this.getTargetIdx((<HTMLElement>args.target).offsetParent.parentElement);
+                        if (isNaN(correctIndex)) {
+                            correctIndex = this.getTargetIdx(args.target.parentElement);
+                        }
+                        recordIndex = args.dropIndex = correctIndex;
+                        droppedRecord = this.droppedRecord = this.parent.getCurrentViewRecords()[args.dropIndex];
                     }
                     let recordIndex1: number = this.treeGridData.indexOf(droppedRecord);
                     this.dropAtTop(recordIndex1, isSelfReference, i);

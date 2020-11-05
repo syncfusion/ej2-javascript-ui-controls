@@ -3069,7 +3069,7 @@ class PivotEngine {
         if (this.fieldFilterMem[filterItem.name]) {
             rawHeaders = this.performFilterDeletion(headersInfo.headers, filterItem, headersInfo, filterObjects, 0);
         }
-        if (addPos.length > 0) {
+        if (addPos.length > 0 && headersInfo.fields.length > 0) {
             this.frameHeaderObjectsCollection = true;
             if (headersInfo.fields.filter((item) => { return item.showNoDataItems; }).length > 0) {
                 for (let i = 0; i < this.data.length; i++) {
@@ -3179,10 +3179,10 @@ class PivotEngine {
         let field = fields[position];
         let showSubTotals = true;
         if (axis === 'column') {
-            showSubTotals = this.showSubTotals && this.showColumnSubTotals && field.showSubTotals;
+            showSubTotals = this.showSubTotals && this.showColumnSubTotals && field ? field.showSubTotals : true;
         }
         else {
-            showSubTotals = this.showSubTotals && this.showRowSubTotals && field.showSubTotals;
+            showSubTotals = this.showSubTotals && this.showRowSubTotals && field ? field.showSubTotals : true;
         }
         while (lenCnt < headers.length) {
             if (axis === 'row') {
@@ -3760,6 +3760,7 @@ class PivotEngine {
                 let memInd = this.indexMatrix[position[pos]][childrens.index];
                 let slicedHeader = slicedHeaders[orderedIndex[memInd]];
                 let value = data[position[pos]][this.fieldKeys[field]];
+                value = value === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(value)) : value;
                 let formattedValue = (this.formatFields[field] &&
                     (['date', 'dateTime', 'time'].indexOf(this.formatFields[field].type) > -1)) ?
                     this.getFormattedValue(value, field) :
@@ -5329,6 +5330,8 @@ const rowDeselected = 'rowDeselected';
 const beginDrillThrough = 'beginDrillThrough';
 /** @hidden */
 const editCompleted = 'editCompleted';
+/** @hidden */
+const multiLevelLabelClick = 'multiLevelLabelClick';
 /** @hidden */
 const saveReport = 'saveReport';
 /** @hidden */
@@ -7604,7 +7607,7 @@ class Render {
                 let fieldSep = cropUName.split('::[').map((item) => {
                     return item[0] === '[' ? item : ('[' + item);
                 });
-                if (cell.memberType === 3 && rowMeasurePos === fieldSep.length) {
+                if (cell.memberType === 3 && rowMeasurePos) {
                     fieldSep.push(cell.actualText.toString());
                 }
                 let nxtIndextCount = -1;
@@ -7614,7 +7617,7 @@ class Render {
                     let fieldMembers = fieldSep[fPos];
                     let membersCount = fieldMembers.split('~~').length;
                     nxtIndextCount += membersCount;
-                    let hasChild = Number(tupInfo.members[fPos].querySelector('CHILDREN_CARDINALITY').textContent) > 0;
+                    let hasChild = tupInfo.typeCollection[fPos] !== '2' ? (this.engine.fieldList[tupInfo.members[fPos].getAttribute('Hierarchy')] && this.engine.fieldList[tupInfo.members[fPos].getAttribute('Hierarchy')].isHierarchy && fPos < this.parent.dataSourceSettings.rows.length - 1 && !this.parent.dataSourceSettings.rows[fPos + 1].isNamedSet && this.parent.dataSourceSettings.rows[fPos + 1].name.indexOf('[Measures]') < 0 && this.engine.fieldList[this.parent.dataSourceSettings.rows[fPos + 1].name] && this.engine.fieldList[this.parent.dataSourceSettings.rows[fPos + 1].name].hasAllMember) ? true : Number(tupInfo.members[fPos].querySelector('CHILDREN_CARDINALITY').textContent) > 0 : false;
                     lastIndextCount += (fPos > 0 && prevHasChild && !hasChild) ? 1 : 0;
                     prevHasChild = hasChild;
                 }
@@ -13787,11 +13790,14 @@ class PivotChart {
         let lastHierarchy = '';
         let lastDimension = '';
         let memberCell;
+        let drillDimension = '';
+        let isDrill = false;
         if (this.parent.dataType === 'olap') {
             levelPos = this.groupHierarchyWithLevels(pivotValues);
             lastHierarchy = this.fieldPosition[this.fieldPosition.length - 1];
             lastDimension = (this.measurePos === (this.fieldPosition.length - 1) && this.fieldPosition.length > 1) ?
                 this.fieldPosition[this.fieldPosition.length - 2] : lastHierarchy;
+            drillDimension = lastDimension;
         }
         for (let rKey of rKeys) {
             let rowIndex = Number(rKey);
@@ -13804,7 +13810,9 @@ class PivotChart {
                     let fieldPos = -1;
                     let currrentLevel = firstRowCell.level;
                     if (this.parent.dataType === 'olap') {
-                        fieldPos = tupInfo.uNameCollection.split('::[').length - 1;
+                        isDrill = firstRowCell.hierarchy === '[Measures]' ? isDrill : this.isAttributeDrill(firstRowCell.hierarchy, tupInfo.drillInfo);
+                        drillDimension = drillDimension === lastDimension ? lastDimension : (firstRowCell.hierarchy === '[Measures]' || firstRowCell.isNamedSet || (this.engineModule.fieldList[firstRowCell.hierarchy] && !this.engineModule.fieldList[firstRowCell.hierarchy].hasAllMember)) ? lastDimension : drillDimension;
+                        fieldPos = tupInfo.drillInfo.length - 1;
                         if (firstRowCell.memberType !== 3 && (tupInfo.measureName ?
                             tupInfo.measureName === this.dataSourceSettings.values[0].name : true)) {
                             firstLevelUName = firstLevelUName === undefined ? firstRowCell.levelUniqueName : firstLevelUName;
@@ -13818,7 +13826,8 @@ class PivotChart {
                                         levelCollection[firstRowCell.levelUniqueName])) : integratedLevel;
                             levelCollection[firstRowCell.levelUniqueName] = integratedLevel;
                             currrentLevel = integratedLevel;
-                            indexCount += (prevCell && lastDimension === prevCell.hierarchy && !prevCell.isDrilled) ? 1 : 0;
+                            indexCount += (prevCell && drillDimension === prevCell.hierarchy && !(prevCell.isDrilled && prevCell.hasChild)) ? 1 : 0;
+                            drillDimension = isDrill ? firstRowCell.hierarchy : lastDimension;
                             prevLevel = integratedLevel;
                             prevCell = firstRowCell;
                         }
@@ -13872,14 +13881,14 @@ class PivotChart {
                         let measureAllow = cell.rowHeaders === '' ? this.dataSourceSettings.rows.length === 0 : true;
                         let actualText = (this.parent.dataType === 'olap' && tupInfo && tupInfo.measureName) ?
                             tupInfo.measureName : cell.actualText;
-                        if (!totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
+                        if (!cell.isGrandSum && !totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
                             actualText !== '' && ((chartSettings.enableMultiAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0) ? true : actualText === this.currentMeasure)) {
                             if (isNullOrUndefined(firstRowCell.members)) {
                                 firstRowCell.members = [];
                             }
-                            if (this.parent.dataType === 'olap' ? (lastHierarchy === firstRowCell.hierarchy ?
+                            if (this.parent.dataType === 'olap' ? ((lastHierarchy === firstRowCell.hierarchy || isDrill) ?
                                 ((firstRowCell.memberType === 3 && prevMemberCell) ?
-                                    (fieldPos === this.measurePos ? prevMemberCell.isDrilled : true) : firstRowCell.isDrilled) : true)
+                                    (fieldPos === this.measurePos ? (prevMemberCell.isDrilled && prevMemberCell.hasChild) : true) : (firstRowCell.isDrilled && firstRowCell.hasChild)) : true)
                                 : (((firstRowCell.type === 'value' && prevMemberCell) ?
                                     prevMemberCell.members.length > 0 : firstRowCell.members.length > 0) || !measureAllow)) {
                                 break;
@@ -14813,7 +14822,7 @@ class PivotChart {
             if ((levels.length !== 0) && (levels.indexOf(pivotValue.formattedText.toString()) === (levels.length - 1))) {
                 if (pivotValue.hasChild && !pivotValue.isNamedSet && levelCol.indexOf(pivotValue.level) < 0 &&
                     (level ? level >= pivotValue.level : (level === 0 ? (pivotValue.level === 0) : true))) {
-                    if (!pivotValue.isDrilled) {
+                    if (!(pivotValue.isDrilled && pivotValue.hasChild)) {
                         menuItem.push({
                             key: rowIndex,
                             type: 'expand',
@@ -14938,8 +14947,15 @@ class PivotChart {
         this.parent.trigger(chartAxisLabelRender, args);
     }
     multiLevelLabelClick(args) {
+        let eventArgs = {
+            axis: args.axis,
+            text: args.text,
+            cell: !isNullOrUndefined(args.customAttributes) ? args.customAttributes.cell : undefined,
+            cancel: false
+        };
+        this.parent.trigger(multiLevelLabelClick, eventArgs);
         /* tslint:disable-next-line:no-any */
-        if (args.customAttributes && args.customAttributes.hasChild && !args.customAttributes.cell.isNamedSet) {
+        if (!eventArgs.cancel && args.customAttributes && args.customAttributes.hasChild && !args.customAttributes.cell.isNamedSet) {
             if (this.parent.dataType === 'olap') {
                 this.parent.onDrill(undefined, args.customAttributes);
             }
@@ -15041,6 +15057,27 @@ class PivotChart {
         pivot.parent.allowServerDataBinding = true;
         pivot.parent.renderPivotGrid();
         //});
+    }
+    isAttributeDrill(hierarchy, drillInfo) {
+        let isDrill = false;
+        for (let i = 0; i < this.dataSourceSettings.drilledMembers.length; i++) {
+            if (this.dataSourceSettings.drilledMembers[i].name === hierarchy) {
+                for (let j = 0; j < this.dataSourceSettings.drilledMembers[i].items.length; j++) {
+                    let drillItems = this.dataSourceSettings.drilledMembers[i].items[j].split(this.dataSourceSettings.drilledMembers[i].delimiter);
+                    let levelName = '';
+                    for (let k = 0; k < drillItems.length; k++) {
+                        if (drillInfo[k] && drillInfo[k].uName) {
+                            levelName = levelName + (levelName === '' ? '' : this.dataSourceSettings.drilledMembers[i].delimiter) + (drillInfo[k].uName.indexOf('[Measures]') > -1 ? '[Measures]' : drillInfo[k].uName);
+                        }
+                    }
+                    if (levelName === this.dataSourceSettings.drilledMembers[i].items[j]) {
+                        isDrill = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return isDrill;
     }
     load(args) {
         if (args.chart.zoomModule) {
@@ -16812,6 +16849,9 @@ __decorate$3([
 ], ChartSettings.prototype, "axisLabelRender", void 0);
 __decorate$3([
     Event()
+], ChartSettings.prototype, "multiLevelLabelClick", void 0);
+__decorate$3([
+    Event()
 ], ChartSettings.prototype, "chartMouseClick", void 0);
 __decorate$3([
     Event()
@@ -17020,8 +17060,9 @@ class MDXQuery {
             /* tslint:disable:max-line-length */
             let drillQueryObj = this.getDrillQuery(dimensions, measureQuery, axis, drillInfo);
             query = (drillInfo && drillInfo.axis === axis ? '\nNON EMPTY ( ' + (this.drilledMembers.length > 0 ? 'HIERARCHIZE ({' : '') + drillQueryObj.query : query + (drillQueryObj.query !== '' ? ',' : '') + drillQueryObj.query);
+            let drillQuery = this.getAttributeDrillQuery(dimensions, measureQuery, axis, drillInfo);
             query = (this.valueAxis !== axis ? this.updateValueSortQuery(query, this.valueSortSettings) : query) +
-                (this.drilledMembers.length > 0 ? '})' : '') + (this.isPaging && axis === 'columns' && drillQueryObj.query !== '' ? '-' + drillQueryObj.collection.join('-') : '') + ')';
+                (this.isPaging ? ((drillQuery !== '' ? '-' : '') + drillQuery) : '') + (this.drilledMembers.length > 0 ? '})' : '') + (!this.isPaging ? ((drillQuery !== '' ? '-' : '') + drillQuery) : '') + ')';
         }
         // else if (!this.isMeasureAvail && measureQuery !== '' && this.valueAxis === axis) {
         //     query = 'NON EMPTY (' + (this.drilledMembers.length > 0 ? 'HIERARCHIZE({' : '') + measureQuery;
@@ -17030,6 +17071,130 @@ class MDXQuery {
         // }
         /* tslint:enable:max-line-length */
         return query;
+    }
+    static getAttributeDrillQuery(dimensions, measureQuery, axis, drillInfo) {
+        let query = '';
+        let drilledMembers = [];
+        if (drillInfo && drillInfo.axis === axis && drillInfo.action.toLowerCase() === 'down') {
+            drilledMembers = [{ name: drillInfo.fieldName, items: [drillInfo.memberName], delimiter: '~~' }];
+        }
+        else {
+            drilledMembers = this.drilledMembers;
+        }
+        let measurePos = axis === this.valueAxis ? this.getMeasurePos(axis) : 0;
+        for (let field of drilledMembers) {
+            let isHierarchy = this.engine.fieldList[field.name] ? this.engine.fieldList[field.name].isHierarchy : false;
+            if (isHierarchy) {
+                for (let item of field.items) {
+                    let drillQuery = [];
+                    let drillInfo = item.split(field.delimiter ? field.delimiter : '~~');
+                    let result = this.getDrillLevel(dimensions, drillInfo);
+                    let fieldPosition = this.getDimensionPos(axis, field.name);
+                    let index = dimensions.length - (measurePos > fieldPosition ? 1 : 0);
+                    let isExist = this.isPaging ? this.isAttributeMemberExist(field.name, item.split(field.delimiter ? field.delimiter : '~~'), field.delimiter, drillInfo, axis) : false;
+                    while (result.level > 0 && result.isDrill && (fieldPosition + 1) !== measurePos && !isExist) {
+                        let levelQuery = [];
+                        let i = 0;
+                        /* tslint:disable:max-line-length */
+                        while (i < dimensions.length) {
+                            if (dimensions[i].name.toLowerCase() === '[measures]') {
+                                if (measureQuery !== '') {
+                                    levelQuery.push('({{' + drillInfo[i] + '}})');
+                                }
+                            }
+                            else if (drillInfo[i] && (drillInfo[i].indexOf(dimensions[i].name) !== -1 ||
+                                (dimensions[i].isNamedSet && this.fieldList[dimensions[i].name] && drillInfo[i].indexOf(this.fieldList[dimensions[i].name].pid.split('Sets_')[1]) !== -1))) {
+                                levelQuery.push(this.getHierarchyQuery(drillInfo[i], false, false, false, result.level, true));
+                            }
+                            else if (!drillInfo[i] && dimensions[i]) {
+                                levelQuery.push(this.getHierarchyQuery(dimensions[i].name, ((this.isPaging && result.level === 2) || (!this.isPaging && index > i) ? true : false), dimensions[i].isNamedSet, dimensions[i].isCalculatedField, result.level, false));
+                            }
+                            else {
+                                levelQuery = [];
+                                break;
+                            }
+                            i++;
+                        }
+                        if (levelQuery.length > 0) {
+                            drillQuery.push('(' + levelQuery.join('*') + ')');
+                        }
+                        result.level--;
+                        index--;
+                    }
+                    if (drillQuery.length > 0) {
+                        query = query + (query !== '' ? '-' : '') + drillQuery.join(this.isPaging ? '+' : '-');
+                    }
+                }
+            }
+        }
+        return query;
+    }
+    static getDimensionPos(axis, field) {
+        let position = 0;
+        let dimensions = axis === 'rows' ? this.rows : this.columns;
+        for (let i = 0; i < dimensions.length; i++) {
+            if (dimensions[i].name === field) {
+                position = i;
+                break;
+            }
+        }
+        return position;
+    }
+    static getMeasurePos(axis) {
+        let position = 0;
+        let dimensions = axis === 'rows' ? this.rows : this.columns;
+        for (let i = 0; i < dimensions.length; i++) {
+            if (dimensions[i].name.indexOf('[Measures]') === 0) {
+                position = i;
+                break;
+            }
+        }
+        return position;
+    }
+    static getDrillLevel(dimensions, drillInfo) {
+        let level = dimensions.length;
+        let isDrill = false;
+        let i = 0;
+        while (i < dimensions.length) {
+            if (drillInfo[i] && drillInfo[i].indexOf(dimensions[i].name) !== -1) {
+                level -= 1;
+                if (dimensions[i + 1] && !(dimensions[i + 1].isNamedSet || dimensions[i + 1].name.indexOf('[Measures]') === 0 || (this.fieldList[dimensions[i + 1].name] && !this.fieldList[dimensions[i + 1].name].hasAllMember))) {
+                    isDrill = true;
+                }
+            }
+            else if (dimensions[i].isNamedSet || dimensions[i].name.indexOf('[Measures]') === 0 || (this.fieldList[dimensions[i].name] && !this.fieldList[dimensions[i].name].hasAllMember)) {
+                level -= 1;
+            }
+            i++;
+        }
+        return { level: this.isPaging ? 2 : level, isDrill: isDrill };
+    }
+    static getHierarchyQuery(name, isChildren, isNamedSet, isCalculatedField, level, isDrill) {
+        name = isCalculatedField ? this.fieldList[name].tag : name;
+        return ((this.fieldList[name] && !this.fieldList[name].hasAllMember && !isNamedSet && !isCalculatedField) ? '((' + name + ').levels(0).AllMembers)' : (isNamedSet || isCalculatedField) ? ('({' + name + '})') : this.isPaging ? ('({' + name) + (isChildren ? '.CHILDREN})' : (!isDrill && level === 1) ? '.[All]})' : '})') : ('({DrilldownLevel({' + name + (isChildren ? '.CHILDREN' : '') + '},,,INCLUDE_CALC_MEMBERS' + ')})'));
+    }
+    static isAttributeMemberExist(hierarchy, item, delimiter, drillInfo, axis) {
+        item.splice(drillInfo.length - 1, 1);
+        let isAvailable = false;
+        if (item.join(delimiter) !== '' && !(this.isPaging && item.length === 1 && item.join(delimiter) === '[Measures]') && this.engine.fieldList[hierarchy] && this.engine.fieldList[hierarchy].hasAllMember) {
+            let hierarchyPosition = this.getDimensionPos(axis, hierarchy);
+            for (let i = 0; i < this.drilledMembers.length; i++) {
+                if (hierarchy !== this.drilledMembers[i].name) {
+                    let isHierarchy = this.engine.fieldList[this.drilledMembers[i].name] ? this.engine.fieldList[this.drilledMembers[i].name].isHierarchy : false;
+                    if (isHierarchy) {
+                        let fieldPosition = this.getDimensionPos(axis, this.drilledMembers[i].name);
+                        for (let j = 0; j < this.drilledMembers[i].items.length; j++) {
+                            let result = this.getDrillLevel(axis === 'rows' ? this.rows : this.columns, this.drilledMembers[i].items[j].split(this.drilledMembers[i].delimiter ? this.drilledMembers[i].delimiter : '~~'));
+                            if ((this.isPaging ? (fieldPosition < hierarchyPosition && result.isDrill) : true) && (this.drilledMembers[i].items[j].indexOf(item.join(delimiter)) === 0 || item.join(delimiter).indexOf(this.drilledMembers[i].items[j]) === 0)) {
+                                isAvailable = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return isAvailable;
     }
     /* tslint:disable-next-line:max-line-length */
     static getDrillQuery(dimensions, measureQuery, axis, drillInfo) {
@@ -17046,25 +17211,58 @@ class MDXQuery {
             drilledMembers = this.drilledMembers;
         }
         for (let field of drilledMembers) {
-            for (let item of field.items) {
-                let drillQuery = [];
-                let rawQuery = [];
-                let i = 0;
-                let drillInfo = item.split(field.delimiter ? field.delimiter : '~~');
-                /* tslint:disable:max-line-length */
-                while (i < dimensions.length) {
-                    if (drillInfo[i] && drillInfo[i].indexOf(dimensions[i].name) !== -1) {
-                        if (drillInfo[drillInfo.length - 1].indexOf(dimensions[i].name) !== -1) {
-                            if (isOnDemandDrill) {
-                                onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '({' + drillInfo[i] + '.CHILDREN})';
+            let isHierarchy = this.engine.fieldList[field.name] ? this.engine.fieldList[field.name].isHierarchy : false;
+            if (!isHierarchy) {
+                for (let item of field.items) {
+                    let drillQuery = [];
+                    let rawQuery = [];
+                    let i = 0;
+                    let drillInfo = item.split(field.delimiter ? field.delimiter : '~~');
+                    let isExist = this.isAttributeMemberExist(field.name, item.split(field.delimiter ? field.delimiter : '~~'), (field.delimiter ? field.delimiter : '~~'), drillInfo, axis);
+                    /* tslint:disable:max-line-length */
+                    while (i < dimensions.length && !isExist) {
+                        if (drillInfo[i] && drillInfo[i].indexOf(dimensions[i].name) !== -1) {
+                            if (drillInfo[drillInfo.length - 1].indexOf(dimensions[i].name) !== -1) {
+                                if (isOnDemandDrill) {
+                                    onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '({' + drillInfo[i] + '.CHILDREN})';
+                                }
+                                else {
+                                    drillQuery.push('(' + drillInfo[i] + '.CHILDREN)');
+                                    rawQuery.push('(' + drillInfo[i] + ')');
+                                }
                             }
                             else {
-                                drillQuery.push('(' + drillInfo[i] + '.CHILDREN)');
-                                rawQuery.push('(' + drillInfo[i] + ')');
+                                if (drillInfo[i].toLowerCase() === '[measures]' && measureQuery !== '') {
+                                    if (isOnDemandDrill) {
+                                        onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '(' + measureQuery + ')';
+                                    }
+                                    else {
+                                        drillQuery.push('(' + measureQuery + ')');
+                                        rawQuery.push('(' + measureQuery + ')');
+                                    }
+                                }
+                                else if (drillInfo[i].toLowerCase().indexOf('[measures]') !== -1) {
+                                    if (isOnDemandDrill) {
+                                        onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '({' + drillInfo[i] + '})';
+                                    }
+                                    else {
+                                        drillQuery.push('({' + drillInfo[i] + '})');
+                                        rawQuery.push('({' + drillInfo[i] + '})');
+                                    }
+                                }
+                                else {
+                                    if (isOnDemandDrill) {
+                                        onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '({' + drillInfo[i] + '})';
+                                    }
+                                    else {
+                                        drillQuery.push('(' + drillInfo[i] + ')');
+                                        rawQuery.push('(' + drillInfo[i] + ')');
+                                    }
+                                }
                             }
                         }
-                        else {
-                            if (drillInfo[i].toLowerCase() === '[measures]' && measureQuery !== '') {
+                        else if (!drillInfo[i] && dimensions[i]) {
+                            if (dimensions[i].name.toLowerCase() === '[measures]' && measureQuery !== '') {
                                 if (isOnDemandDrill) {
                                     onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '(' + measureQuery + ')';
                                 }
@@ -17073,61 +17271,32 @@ class MDXQuery {
                                     rawQuery.push('(' + measureQuery + ')');
                                 }
                             }
-                            else if (drillInfo[i].toLowerCase().indexOf('[measures]') !== -1) {
-                                if (isOnDemandDrill) {
-                                    onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '({' + drillInfo[i] + '})';
-                                }
-                                else {
-                                    drillQuery.push('({' + drillInfo[i] + '})');
-                                    rawQuery.push('({' + drillInfo[i] + '})');
-                                }
-                            }
                             else {
                                 if (isOnDemandDrill) {
-                                    onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '({' + drillInfo[i] + '})';
+                                    onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '({' + this.getDimensionQuery(dimensions[i], axis) + '})';
                                 }
                                 else {
-                                    drillQuery.push('(' + drillInfo[i] + ')');
-                                    rawQuery.push('(' + drillInfo[i] + ')');
+                                    drillQuery.push('(' + this.getDimensionQuery(dimensions[i], axis) + ')');
+                                    rawQuery.push('(' + this.getDimensionQuery(dimensions[i], axis) + ')');
                                 }
-                            }
-                        }
-                    }
-                    else if (!drillInfo[i] && dimensions[i]) {
-                        if (dimensions[i].name.toLowerCase() === '[measures]' && measureQuery !== '') {
-                            if (isOnDemandDrill) {
-                                onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '(' + measureQuery + ')';
-                            }
-                            else {
-                                drillQuery.push('(' + measureQuery + ')');
-                                rawQuery.push('(' + measureQuery + ')');
                             }
                         }
                         else {
-                            if (isOnDemandDrill) {
-                                onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '({' + this.getDimensionQuery(dimensions[i], axis) + '})';
-                            }
-                            else {
-                                drillQuery.push('(' + this.getDimensionQuery(dimensions[i], axis) + ')');
-                                rawQuery.push('(' + this.getDimensionQuery(dimensions[i], axis) + ')');
-                            }
+                            drillQuery = [];
+                            break;
                         }
+                        i++;
                     }
-                    else {
+                    if (drillQuery.length > 0 && drillQuery.length < drillInfo.length) {
                         drillQuery = [];
-                        break;
+                        rawQuery = [];
                     }
-                    i++;
-                }
-                if (drillQuery.length > 0 && drillQuery.length < drillInfo.length) {
-                    drillQuery = [];
-                    rawQuery = [];
-                }
-                // query = query + (query !== '' && drillQuery.length > 0 ? ',' : '') + (drillQuery.length > 0 ? '(' + drillQuery.toString().replace(/\&/g, "&amp;") + ')' : '');
-                query = query + (query !== '' && drillQuery.length > 0 ? ',' : '') + (drillQuery.length > 0 ? '(' + drillQuery.toString() + ')' : '');
-                /* tslint:enable:max-line-length */
-                if (rawQuery.length > 0) {
-                    rawDrillQuery.push(('(' + rawQuery.toString() + ')'));
+                    // query = query + (query !== '' && drillQuery.length > 0 ? ',' : '') + (drillQuery.length > 0 ? '(' + drillQuery.toString().replace(/\&/g, "&amp;") + ')' : '');
+                    query = query + (query !== '' && drillQuery.length > 0 ? ',' : '') + (drillQuery.length > 0 ? '(' + drillQuery.toString() + ')' : '');
+                    /* tslint:enable:max-line-length */
+                    if (rawQuery.length > 0) {
+                        rawDrillQuery.push(('(' + rawQuery.toString() + ')'));
+                    }
                 }
             }
         }
@@ -17467,6 +17636,7 @@ class OlapEngine {
         this.hideRowTotalsObject = {};
         this.hideColumnTotalsObject = {};
         this.sortObject = {};
+        this.isColDrill = false;
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     renderEngine(dataSourceSettings, customProperties) {
@@ -17728,6 +17898,7 @@ class OlapEngine {
         }
         let startTupPos = tupPos;
         let pagingAllowFlag = true;
+        let lastMesPos = 0;
         while (tupPos < tuplesLength && pagingAllowFlag) {
             let members = tuples[this.customArgs.action === 'down' ?
                 (tupPos - (this.customArgs.drillInfo.currentCell.ordinal + 1)) : tupPos].querySelectorAll('Member');
@@ -17773,7 +17944,8 @@ class OlapEngine {
             }
             if ((tupPos === 0 && this.isPaging) ? gTotals.length === 0 :
                 (!availAllMember || allCount === lastAllCount || allStartPos !== lastAllStartPos || (members.length === 1 && measure))) {
-                let drillAllow = drillStartPos > -1 ? (allCount > 0 ? (allStartPos > drillStartPos) : true) : true;
+                let attrDrill = this.checkAttributeDrill(this.tupRowInfo[tupPos].drillInfo, 'rows');
+                let drillAllow = drillStartPos > -1 ? (allCount > 0 ? (attrDrill || allStartPos > drillStartPos) : true) : true;
                 /* tslint:disable-next-line:max-line-length */
                 drillAllow = (prevTupInfo && drillAllow && drillStartPos > -1) ?
                     (prevTupInfo.startDrillUniquename !== startDrillUniquename ? true :
@@ -17781,7 +17953,7 @@ class OlapEngine {
                             prevTupInfo.measureName !== this.tupRowInfo[tupPos].measureName) &&
                             (allStartPos === (drillStartPos + 1) || this.tupRowInfo[tupPos].measurePosition === (drillStartPos + 1))))
                     : drillAllow;
-                let withoutAllAllow = (withoutAllStartPos > -1 && allCount > 0) ? (allStartPos > withoutAllEndPos) : true;
+                let withoutAllAllow = (withoutAllStartPos > -1 && allCount > 0) ? (attrDrill || allStartPos > withoutAllEndPos) : true;
                 if (members.length === allCount + (measure ? 1 : 0) && measure) {
                     let levelName = 'Grand Total.' + members[measurePos].querySelector('Caption').textContent;
                     gTotals.push({
@@ -17819,55 +17991,62 @@ class OlapEngine {
                     while (memPos < members.length && pagingAllowFlag) {
                         let member = members[memPos];
                         if (member.querySelector('UName').textContent !== prevUNArray[memPos] && typeColl[memPos] !== '2'
-                            && ((Object.keys(prevParent).length > 0 ? prevParent.isDrilled : withoutAllDrilled) ?
+                            && ((Object.keys(prevParent).length > 0 ? (prevParent.isDrilled && !this.fieldList[prevParent.hierarchy].isHierarchy) : withoutAllDrilled) ?
                                 (typeColl[memPos] === '3' && (allType[memPos - 1] && allType[memPos + 1] !== 0)) : true)) {
                             let lvl = Number(member.querySelector('LNum').textContent) -
                                 ((allType[memPos] && typeColl[memPos] !== '3') ? 1 : minLevel[memPos]);
                             /* tslint:disable-next-line:no-string-literal */
                             let isNamedSet = this.namedSetsPosition['row'][memPos] ? true : false;
                             let uniqueName = this.getUniqueName(member.querySelector('UName').textContent);
-                            pivotValues[position] = [{
-                                    axis: 'row',
-                                    actualText: uniqueName,
-                                    colIndex: 0,
-                                    formattedText: (typeColl[memPos] === '3' && this.dataFields[uniqueName] &&
-                                        this.dataFields[uniqueName].caption) ? this.dataFields[uniqueName].caption :
-                                        member.querySelector('Caption').textContent,
-                                    hasChild: Number(member.querySelector('CHILDREN_CARDINALITY').textContent) > 0 ? true : false,
-                                    level: lvl,
-                                    rowIndex: position,
-                                    index: [],
-                                    ordinal: tupPos,
-                                    type: 'header',
-                                    colSpan: 1,
-                                    rowSpan: 1,
-                                    memberType: Number(typeColl[memPos]),
-                                    isDrilled: this.tupRowInfo[tupPos].drillInfo[memPos].isDrilled,
-                                    parentUniqueName: member.querySelector('PARENT_UNIQUE_NAME') ?
-                                        member.querySelector('PARENT_UNIQUE_NAME').textContent : undefined,
-                                    levelUniqueName: member.querySelector('LName').textContent,
-                                    hierarchy: member.getAttribute('Hierarchy'),
-                                    isNamedSet: isNamedSet,
-                                    valueSort: { levelName: '', axis: member.getAttribute('Hierarchy') }
-                                }];
-                            prevParent = typeColl[memPos] !== '3' ? pivotValues[position][0] : prevParent;
-                            if (!prevParent) {
-                                rowMembers.push(member.querySelector('Caption').textContent);
+                            let depth = this.getDepth(this.tupRowInfo[tupPos], uniqueName, Number(typeColl[memPos]));
+                            if (!(this.isPaging && pivotValues[lastMesPos][0] && this.fieldList[pivotValues[lastMesPos][0].hierarchy] && this.fieldList[pivotValues[lastMesPos][0].hierarchy].isHierarchy &&
+                                pivotValues[lastMesPos][0].hasChild && !pivotValues[lastMesPos][0].isDrilled && !this.rows[memPos].isNamedSet && (this.rows[memPos].name.indexOf('[Measures]') === 0 || (this.fieldList[member.getAttribute('Hierarchy')] && (this.fieldList[member.getAttribute('Hierarchy')].isHierarchy || this.fieldList[member.getAttribute('Hierarchy')].hasAllMember))) &&
+                                pivotValues[lastMesPos][0].depth < depth)) {
+                                pivotValues[position] = [{
+                                        axis: 'row',
+                                        actualText: uniqueName,
+                                        colIndex: 0,
+                                        formattedText: (typeColl[memPos] === '3' && this.dataFields[uniqueName] &&
+                                            this.dataFields[uniqueName].caption) ? this.dataFields[uniqueName].caption :
+                                            member.querySelector('Caption').textContent,
+                                        hasChild: (this.fieldList[member.getAttribute('Hierarchy')] && this.fieldList[member.getAttribute('Hierarchy')].isHierarchy && memPos < this.rows.length - 1 && !this.rows[memPos + 1].isNamedSet && this.rows[memPos + 1].name.indexOf('[Measures]') < 0 && this.fieldList[this.rows[memPos + 1].name] && this.fieldList[this.rows[memPos + 1].name].hasAllMember) ? true : Number(member.querySelector('CHILDREN_CARDINALITY').textContent) > 0 ? true : false,
+                                        level: lvl,
+                                        depth: depth,
+                                        rowIndex: position,
+                                        index: [],
+                                        ordinal: tupPos,
+                                        type: 'header',
+                                        colSpan: 1,
+                                        rowSpan: 1,
+                                        memberType: Number(typeColl[memPos]),
+                                        isDrilled: (this.fieldList[member.getAttribute('Hierarchy')] && this.fieldList[member.getAttribute('Hierarchy')].isHierarchy && !this.isAttributeDrill(member.getAttribute('Hierarchy'), this.tupRowInfo[tupPos].drillInfo, 'rows')) ? true : this.tupRowInfo[tupPos].drillInfo[memPos].isDrilled,
+                                        parentUniqueName: member.querySelector('PARENT_UNIQUE_NAME') ?
+                                            member.querySelector('PARENT_UNIQUE_NAME').textContent : undefined,
+                                        levelUniqueName: member.querySelector('LName').textContent,
+                                        hierarchy: member.getAttribute('Hierarchy'),
+                                        isNamedSet: isNamedSet,
+                                        valueSort: { levelName: '', axis: member.getAttribute('Hierarchy') }
+                                    }];
+                                prevParent = typeColl[memPos] !== '3' ? pivotValues[position][0] : prevParent;
+                                if (!prevParent) {
+                                    rowMembers.push(member.querySelector('Caption').textContent);
+                                }
+                                let levelName = this.getCaptionCollectionWithMeasure(this.tupRowInfo[tupPos]);
+                                pivotValues[position][0].valueSort.levelName = levelName;
+                                pivotValues[position][0].valueSort[levelName] = 1;
+                                valueContent[position - this.rowStartPos] = {};
+                                valueContent[position - this.rowStartPos][0] = pivotValues[position][0];
+                                if (measure && measurePos > memPos) {
+                                    prevUNArray[measurePos] = '';
+                                }
+                                for (let pos = memPos + 1; pos < members.length; pos++) {
+                                    prevUNArray[pos] = '';
+                                }
+                                prevUNArray[memPos] = member.querySelector('UName').textContent;
+                                lastMesPos = Number(typeColl[memPos]) !== 3 ? position : lastMesPos;
+                                position++;
+                                lastMemPos = memPos;
                             }
-                            let levelName = this.getCaptionCollectionWithMeasure(this.tupRowInfo[tupPos]);
-                            pivotValues[position][0].valueSort.levelName = levelName;
-                            pivotValues[position][0].valueSort[levelName] = 1;
-                            valueContent[position - this.rowStartPos] = {};
-                            valueContent[position - this.rowStartPos][0] = pivotValues[position][0];
-                            if (measure && measurePos > memPos) {
-                                prevUNArray[measurePos] = '';
-                            }
-                            for (let pos = memPos + 1; pos < members.length; pos++) {
-                                prevUNArray[pos] = '';
-                            }
-                            prevUNArray[memPos] = member.querySelector('UName').textContent;
-                            position++;
-                            lastMemPos = memPos;
                         }
                         else if (typeColl[memPos] === '2') {
                             lastMemPos = memPos;
@@ -17921,6 +18100,34 @@ class OlapEngine {
             this.onDemandDrillEngine = pivotValues;
         }
     }
+    getDepth(tupInfo, uniqueName, memberType) {
+        let memberPosition = tupInfo.uNameCollection.indexOf(uniqueName);
+        let cropUName = tupInfo.uNameCollection.substring(0, memberPosition) +
+            (memberType === 3 ? '' : uniqueName);
+        let fieldSep = cropUName.split('::[').map((item) => {
+            return item[0] === '[' ? item : ('[' + item);
+        });
+        if (memberType === 3 && this.rowMeasurePos === fieldSep.length) {
+            fieldSep.push(uniqueName);
+        }
+        let nxtIndextCount = -1;
+        for (let fPos = 0; fPos < fieldSep.length; fPos++) {
+            let fieldMembers = fieldSep[fPos];
+            let membersCount = fieldMembers.split('~~').length;
+            nxtIndextCount += membersCount;
+        }
+        return nxtIndextCount;
+    }
+    checkAttributeDrill(drillInfo, axis) {
+        let isDrill = false;
+        for (let i = 0; i < drillInfo.length; i++) {
+            isDrill = this.isAttributeDrill(drillInfo[i].hierarchy, drillInfo, axis);
+            if (isDrill) {
+                break;
+            }
+        }
+        return isDrill;
+    }
     frameTupCollection(members, maxLevel, tupPos, tupInfo, showSubTotals, hideTotalsObject, axis) {
         let memPos = 0;
         let allCount = 0;
@@ -17955,7 +18162,9 @@ class OlapEngine {
             /* tslint:disable-next-line:max-line-length */
             let parentUName = member.querySelector('PARENT_UNIQUE_NAME') ? member.querySelector('PARENT_UNIQUE_NAME').textContent : '';
             if (memberType === '2') {
-                allCount++;
+                if (!this.isPaging) {
+                    allCount++;
+                }
                 allStartPos = isNullOrUndefined(allStartPos) ? memPos : allStartPos;
             }
             else if (memberType === '3') {
@@ -18148,10 +18357,6 @@ class OlapEngine {
             }
         }
         /* tslint:disable */
-        let _this = this;
-        /* tslint:enable */
-        /* tslint:disable-next-line:max-line-length */
-        maxLevel.map((item, pos) => { _this.colDepth = _this.colDepth + (allType[pos] === 0 ? (item + (1 - (minLevel[pos] > 1 ? 1 : minLevel[pos]))) : (item === 0 ? 1 : item)); });
         tupPos = 0;
         let position = 1;
         let lastSavedInfo = {};
@@ -18171,6 +18376,10 @@ class OlapEngine {
             let drillEndPos = this.tupColumnInfo[tupPos].drillEndPos;
             let levelColl = this.tupColumnInfo[tupPos].levelCollection;
             let isStartCol = typeColl[0] === '2' ? false : (typeColl[0] === '3' ? typeColl[1] !== '2' : true);
+            let depth = 0;
+            /* tslint:disable-next-line:max-line-length */
+            maxLevel.map((item, pos) => { depth = depth + (allType[pos] === 0 ? (item + (1 - (minLevel[pos] > 1 ? 1 : minLevel[pos]))) : (item === 0 ? ((this.isPaging && typeColl[pos] === '2') ? 0 : 1) : item)); });
+            this.colDepth = this.colDepth > depth ? this.colDepth : depth;
             if (tupPos === 0 && members.length > (allCount + (measure ? 1 : 0))) {
                 withoutAllAvail = true;
                 isStartCol = (allCount > 0 && isStartCol) ? (allStartPos > withoutAllStartPos) : isStartCol;
@@ -18197,7 +18406,12 @@ class OlapEngine {
                             position = this.mergeTotCollection(position, allCount, maxLevel, minLevel, allType, allStartPos, drillInfo, levelComp);
                         }
                         isSubTotIncluded = false;
-                        position++;
+                        if (!this.isColDrill) {
+                            position++;
+                        }
+                        else {
+                            this.isColDrill = false;
+                        }
                     }
                     else if (lastSavedInfo.drillStartPos === drillStartPos ?
                         (lastSavedInfo.startDrillUniquename !== startDrillUniquename ||
@@ -18220,7 +18434,8 @@ class OlapEngine {
                     lastRealTup = this.tupColumnInfo[tupPos];
                 }
             }
-            if (allCount > 0 && (withoutAllAvail ? (isStartCol && withoutAllEndPos < allStartPos) : true)) {
+            let attrDrill = this.checkAttributeDrill(this.tupColumnInfo[tupPos].drillInfo, 'columns');
+            if (allCount > 0 && (withoutAllAvail ? (isStartCol && (attrDrill || withoutAllEndPos < allStartPos)) : true)) {
                 if (allCount === lastSavedInfo.allCount || allStartPos !== lastSavedInfo.allStartPos) {
                     /* tslint:disable-next-line:max-line-length */
                     let endAllow = drillEndPos !== drillStartPos ? (lastSavedInfo.endDrillUniquename === endDrillUniquename) : true;
@@ -18428,7 +18643,7 @@ class OlapEngine {
             let memberPos = 0;
             let memberDepth = 0;
             while (memberPos < members.length) {
-                memberDepth += (allType[memberPos] > 0 && this.tupColumnInfo[tupPos].measurePosition !== memberPos) ?
+                memberDepth += (allType[memberPos] > 0 && this.getMeasurePosition(this.tupColumnInfo[tupPos].uNameCollection, this.tupColumnInfo[tupPos].measurePosition) !== memberPos) ?
                     maxLevel[memberPos] :
                     (maxLevel[memberPos] + (1 - minLevel[memberPos]));
                 if (this.tupColumnInfo[tupPos].drillInfo[memberPos].isDrilled && this.tupColumnInfo[tupPos].showTotals) {
@@ -18475,31 +18690,41 @@ class OlapEngine {
                     let levelName = Object.values(colMembers).join('.');
                     let isNamedSet = this.namedSetsPosition['column'][memPos] ? true : false;
                     let uName = this.getUniqueName(member.querySelector('UName').textContent);
-                    this.pivotValues[spanMemPos][position] = {
-                        axis: 'column',
-                        actualText: uName,
-                        colIndex: position,
-                        formattedText: (memberType === '3' && this.dataFields[uName] &&
-                            this.dataFields[uName].caption) ? this.dataFields[uName].caption :
-                            member.querySelector('Caption').textContent,
-                        hasChild: Number(member.querySelector('CHILDREN_CARDINALITY').textContent) > 0 ? true : false,
-                        level: memDup > 1 ? -1 : (Number(member.querySelector('LNum').textContent) - ((allType[memPos] && memberType !== '3') ? 1 : 0)),
-                        rowIndex: spanMemPos,
-                        ordinal: tupPos,
-                        memberType: Number(memberType),
-                        isDrilled: isDrilled || this.tupColumnInfo[tupPos].drillInfo[memPos].isDrilled,
-                        parentUniqueName: member.querySelector('PARENT_UNIQUE_NAME') ? member.querySelector('PARENT_UNIQUE_NAME').textContent : undefined,
-                        levelUniqueName: member.querySelector('LName').textContent,
-                        hierarchy: member.getAttribute('Hierarchy'),
-                        isNamedSet: isNamedSet,
-                        valueSort: { levelName: levelName, [levelName]: 1, axis: member.getAttribute('Hierarchy') }
-                        /* tslint:enable */
-                    };
-                    if (!this.headerContent[spanMemPos]) {
-                        this.headerContent[spanMemPos] = {};
+                    let depth = this.getDepth(this.tupColumnInfo[tupPos], uName, Number(memberType));
+                    if (!(this.isPaging && this.pivotValues[spanMemPos - 1] && this.pivotValues[spanMemPos - 1][position] && this.fieldList[this.pivotValues[spanMemPos - 1][position].hierarchy] && this.fieldList[this.pivotValues[spanMemPos - 1][position].hierarchy].isHierarchy &&
+                        this.pivotValues[spanMemPos - 1][position].hasChild && !this.pivotValues[spanMemPos - 1][position].isDrilled && !this.columns[memPos].isNamedSet && this.fieldList[member.getAttribute('Hierarchy')] && (this.fieldList[member.getAttribute('Hierarchy')].isHierarchy || this.fieldList[member.getAttribute('Hierarchy')].hasAllMember) &&
+                        this.pivotValues[spanMemPos - 1][position].depth < depth)) {
+                        this.pivotValues[spanMemPos][position] = {
+                            axis: 'column',
+                            actualText: uName,
+                            colIndex: position,
+                            formattedText: (memberType === '3' && this.dataFields[uName] &&
+                                this.dataFields[uName].caption) ? this.dataFields[uName].caption :
+                                member.querySelector('Caption').textContent,
+                            hasChild: (this.fieldList[member.getAttribute('Hierarchy')] && this.fieldList[member.getAttribute('Hierarchy')].isHierarchy && memPos < this.columns.length - 1 && !this.columns[memPos + 1].isNamedSet && this.columns[memPos + 1].name.indexOf('[Measures]') < 0 && this.fieldList[this.columns[memPos + 1].name] && this.fieldList[this.columns[memPos + 1].name].hasAllMember) ? true : Number(member.querySelector('CHILDREN_CARDINALITY').textContent) > 0 ? true : false,
+                            level: memDup > 1 ? -1 : (Number(member.querySelector('LNum').textContent) - ((allType[memPos] && memberType !== '3') ? 1 : 0)),
+                            rowIndex: spanMemPos,
+                            ordinal: tupPos,
+                            memberType: Number(memberType),
+                            depth: depth,
+                            isDrilled: (this.fieldList[member.getAttribute('Hierarchy')] && this.fieldList[member.getAttribute('Hierarchy')].isHierarchy && !this.isAttributeDrill(member.getAttribute('Hierarchy'), this.tupColumnInfo[tupPos].drillInfo, 'columns')) ? true : (isDrilled || this.tupColumnInfo[tupPos].drillInfo[memPos].isDrilled),
+                            parentUniqueName: member.querySelector('PARENT_UNIQUE_NAME') ? member.querySelector('PARENT_UNIQUE_NAME').textContent : undefined,
+                            levelUniqueName: member.querySelector('LName').textContent,
+                            hierarchy: member.getAttribute('Hierarchy'),
+                            isNamedSet: isNamedSet,
+                            valueSort: { levelName: levelName, [levelName]: 1, axis: member.getAttribute('Hierarchy') }
+                            /* tslint:enable */
+                        };
+                        if (!this.headerContent[spanMemPos]) {
+                            this.headerContent[spanMemPos] = {};
+                        }
+                        this.headerContent[spanMemPos][position] = this.pivotValues[spanMemPos][position];
+                        spanMemPos++;
                     }
-                    this.headerContent[spanMemPos][position] = this.pivotValues[spanMemPos][position];
-                    spanMemPos++;
+                    else {
+                        this.isColDrill = true;
+                        break;
+                    }
                 }
                 memPos++;
             }
@@ -18512,7 +18737,7 @@ class OlapEngine {
                 let memberPos = 0;
                 let memberDepth = 0;
                 while (memberPos < this.tupColumnInfo[tupPos].allStartPos) {
-                    memberDepth += (allType[memberPos] > 0 && this.tupColumnInfo[tupPos].measurePosition !== memberPos) ?
+                    memberDepth += (allType[memberPos] > 0 && this.getMeasurePosition(this.tupColumnInfo[tupPos].uNameCollection, this.tupColumnInfo[tupPos].measurePosition) !== memberPos) ?
                         maxLevel[memberPos] :
                         (maxLevel[memberPos] + (1 - minLevel[memberPos]));
                     memberPos++;
@@ -18528,6 +18753,41 @@ class OlapEngine {
                 this.pivotValues[memberDepth - 1][position - 1].ordinal = tupPos;
             }
         }
+    }
+    isAttributeDrill(hierarchy, drillInfo, axis) {
+        let isDrill = false;
+        let isAdjacent = this.isAdjacentToMeasure(hierarchy, axis);
+        if (!isAdjacent) {
+            for (let i = 0; i < this.drilledMembers.length; i++) {
+                if (this.drilledMembers[i].name === hierarchy) {
+                    for (let j = 0; j < this.drilledMembers[i].items.length; j++) {
+                        let drillItems = this.drilledMembers[i].items[j].split(this.drilledMembers[i].delimiter);
+                        let levelName = '';
+                        for (let k = 0; k < drillItems.length; k++) {
+                            if (drillInfo[k] && drillInfo[k].uName) {
+                                levelName = levelName + (levelName === '' ? '' : this.drilledMembers[i].delimiter) + drillInfo[k].uName;
+                            }
+                        }
+                        if (levelName === this.drilledMembers[i].items[j]) {
+                            isDrill = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return isDrill;
+    }
+    isAdjacentToMeasure(hierarchy, axis) {
+        let isAdjacent = false;
+        let fields = axis === 'rows' ? this.rows : this.columns;
+        for (let i = 0; i < fields.length; i++) {
+            if (fields[i].name === hierarchy && fields[i + 1] && (fields[i + 1].name === '[Measures]' || fields[i + 1].isNamedSet || (this.fieldList[fields[i + 1].name] && !this.fieldList[fields[i + 1].name].hasAllMember))) {
+                isAdjacent = true;
+                break;
+            }
+        }
+        return isAdjacent;
     }
     getDrilledParent(childMember, parentLevel, savedCollection) {
         let childlevel = Number(childMember.querySelector('LNum').textContent);
@@ -18848,9 +19108,20 @@ class OlapEngine {
         let hasLastMeasure = uniqueName.indexOf(currentCell.actualText.toString() + '::[Measures]') > -1;
         uniqueName = uniqueName.substring(0, uniqueName.indexOf(currentCell.actualText.toString())) +
             currentCell.actualText.toString();
-        let measureAvail = uniqueName.split('::[').length <= currentTuple.measurePosition;
+        let measureAvail = uniqueName.split('::[').length <= this.getMeasurePosition(uniqueName, currentTuple.measurePosition);
         uniqueName = uniqueName + ((hasLastMeasure || measureAvail) ? ('::' + currentTuple.measureName) : '');
         return uniqueName;
+    }
+    getMeasurePosition(uniqueName, measurePosition) {
+        let position = measurePosition;
+        let collection = uniqueName.split('::[');
+        for (let i = 0; i < collection.length; i++) {
+            if (collection[i] && collection[i].indexOf('Measures') > -1) {
+                position = i;
+                break;
+            }
+        }
+        return position;
     }
     sortRowHeaders(headers) {
         if (headers.length > 0 && headers[0].memberType !== 3 && !headers[0].isNamedSet) {
@@ -18899,7 +19170,7 @@ class OlapEngine {
                     i++;
                 }
             }
-            if (tuple.measurePosition >= (uniqueNameColl.split('::[').length - 1)) {
+            if (this.getMeasurePosition(uniqueNameColl, tuple.measurePosition) >= (uniqueNameColl.split('::[').length - 1)) {
                 if (sepPos[sepPos.length - 2] > -1) {
                     parentString = uniqueNameColl.substring(0, sepPos[sepPos.length - 2]) + sepObjects[sepPos[sepPos.length - 1]] +
                         tuple.measureName;
@@ -18992,9 +19263,9 @@ class OlapEngine {
                         spanCollection[rowPos][colPos] = spanCollection[rowPos + 1] ? (spanCollection[rowPos + 1][colPos] + 1) : 1;
                         /* tslint:disable-next-line:max-line-length */
                         if (rowPos === 0 || (currCell.memberType === 1 && currCell.level > -1 && nextRowCell.memberType === 1 && nextRowCell.level === -1)) {
-                            currCell.rowSpan = currCell.isDrilled ? 1 : (spanCollection[rowPos + 1][colPos] + 1);
+                            currCell.rowSpan = (currCell.isDrilled && ((this.fieldList[currCell.hierarchy] && this.fieldList[currCell.hierarchy].isHierarchy) ? currCell.hasChild : true)) ? 1 : (spanCollection[rowPos + 1][colPos] + 1);
                             /* tslint:disable-next-line:max-line-length */
-                            nextRowCell.rowSpan = (nextRowCell.isDrilled && nextRowCell.level === -1) ? spanCollection[rowPos + 1][colPos] : nextRowCell.rowSpan;
+                            nextRowCell.rowSpan = (nextRowCell.isDrilled && ((this.fieldList[nextRowCell.hierarchy] && this.fieldList[nextRowCell.hierarchy].isHierarchy) ? nextRowCell.hasChild : true) && nextRowCell.level === -1) ? spanCollection[rowPos + 1][colPos] : nextRowCell.rowSpan;
                         }
                         else {
                             if (currCell.memberType === 3) {
@@ -19006,7 +19277,7 @@ class OlapEngine {
                         }
                         rowflag = true;
                     }
-                    else if (currCell.isDrilled && currCell.level === -1 && nextRowCell.memberType === 2) {
+                    else if (currCell.isDrilled && ((this.fieldList[currCell.hierarchy] && this.fieldList[currCell.hierarchy].isHierarchy) ? currCell.hasChild : true) && currCell.level === -1 && nextRowCell.memberType === 2) {
                         spanCollection[rowPos][colPos] = spanCollection[rowPos + 1] ? (spanCollection[rowPos + 1][colPos] + 1) : 1;
                         currCell.rowSpan = -1;
                         rowflag = true;
@@ -19014,7 +19285,7 @@ class OlapEngine {
                     else {
                         currCell.rowSpan = rowPos === 0 ? spanCollection[rowPos][colPos] : -1;
                         /* tslint:disable-next-line:max-line-length */
-                        nextRowCell.rowSpan = ((nextRowCell.level > -1 && !nextRowCell.isDrilled) || (currCell.memberType !== 2 && nextRowCell.memberType === 2)) ? spanCollection[rowPos + 1][colPos] : 1;
+                        nextRowCell.rowSpan = ((nextRowCell.level > -1 && !(nextRowCell.isDrilled && ((this.fieldList[nextRowCell.hierarchy] && this.fieldList[nextRowCell.hierarchy].isHierarchy) ? nextRowCell.hasChild : true))) || (currCell.memberType !== 2 && nextRowCell.memberType === 2)) ? spanCollection[rowPos + 1][colPos] : 1;
                     }
                 }
                 else {
@@ -19049,68 +19320,70 @@ class OlapEngine {
             let columns = this.pivotValues[rowPos];
             let rowOrdinal = columns[0].ordinal;
             for (let colPos = 1; colPos < this.pivotValues[0].length; colPos++) {
-                let colOrdinal = this.pivotValues[this.colDepth - 1][colPos].ordinal;
-                let lastColCell = this.pivotValues[this.colDepth - 1][colPos];
-                let measure = columns[0].memberType === 3 ? columns[0].actualText.toString() :
-                    ((this.tupColumnInfo[lastColCell.ordinal] && this.tupColumnInfo[lastColCell.ordinal].measure) ?
-                        this.tupColumnInfo[lastColCell.ordinal].measure.querySelector('UName').textContent :
-                        columns[0].actualText);
-                if (columns[0].type === 'header') {
-                    columns[colPos] = {
-                        axis: 'value',
-                        actualText: this.getUniqueName(measure),
-                        formattedText: '',
-                        value: 0,
-                        colIndex: colPos,
-                        rowIndex: rowPos
-                    };
-                }
-                else {
-                    let valElement;
-                    let formattedText;
-                    let value = '0';
-                    let measureName = this.getUniqueName(measure);
-                    let showTotals = true;
-                    if (this.tupRowInfo[rowOrdinal]) {
-                        showTotals = this.tupRowInfo[rowOrdinal].showTotals;
+                if (this.pivotValues[this.colDepth - 1][colPos]) {
+                    let colOrdinal = this.pivotValues[this.colDepth - 1][colPos].ordinal;
+                    let lastColCell = this.pivotValues[this.colDepth - 1][colPos];
+                    let measure = columns[0].memberType === 3 ? columns[0].actualText.toString() :
+                        ((this.tupColumnInfo[lastColCell.ordinal] && this.tupColumnInfo[lastColCell.ordinal].measure) ?
+                            this.tupColumnInfo[lastColCell.ordinal].measure.querySelector('UName').textContent :
+                            columns[0].actualText);
+                    if (columns[0].type === 'header') {
+                        columns[colPos] = {
+                            axis: 'value',
+                            actualText: this.getUniqueName(measure),
+                            formattedText: '',
+                            value: 0,
+                            colIndex: colPos,
+                            rowIndex: rowPos
+                        };
                     }
                     else {
-                        showTotals = this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals;
+                        let valElement;
+                        let formattedText;
+                        let value = '0';
+                        let measureName = this.getUniqueName(measure);
+                        let showTotals = true;
+                        if (this.tupRowInfo[rowOrdinal]) {
+                            showTotals = this.tupRowInfo[rowOrdinal].showTotals;
+                        }
+                        else {
+                            showTotals = this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals;
+                        }
+                        valElement = valCollection[(rowOrdinal - startRowOrdinal) * colLength + colOrdinal];
+                        formattedText = !showTotals ? '' :
+                            ((!isNullOrUndefined(valElement) && !isNullOrUndefined(valElement.querySelector('FmtValue'))) ?
+                                valElement.querySelector('FmtValue').textContent : this.emptyCellTextContent);
+                        value = !showTotals ? '0' :
+                            ((!isNullOrUndefined(valElement) && !isNullOrUndefined(valElement.querySelector('Value'))) ?
+                                valElement.querySelector('Value').textContent : null);
+                        formattedText = showTotals && !isNullOrUndefined(value) ?
+                            this.getFormattedValue(Number(value), measureName, (formattedText !== '' ? formattedText : value)) :
+                            formattedText;
+                        let isSum = (this.tupColumnInfo[colOrdinal] ? (this.tupColumnInfo[colOrdinal].allCount > 0 ||
+                            this.tupColumnInfo[colOrdinal].drillStartPos > -1) : true) ||
+                            (this.tupRowInfo[rowOrdinal] ? (this.tupRowInfo[rowOrdinal].allCount > 0 ||
+                                this.tupRowInfo[rowOrdinal].drillStartPos > -1) : true);
+                        /* tslint:disable */
+                        let isGrand = (this.tupRowInfo[rowOrdinal] ? (this.tupRowInfo[rowOrdinal].measurePosition === 0 ? this.tupRowInfo[rowOrdinal].allStartPos === 1 : this.tupRowInfo[rowOrdinal].allStartPos === 0) : false) ||
+                            (this.tupColumnInfo[colOrdinal] ? (this.tupColumnInfo[colOrdinal].measurePosition === 0 ? this.tupColumnInfo[colOrdinal].allStartPos === 1 : this.tupColumnInfo[colOrdinal].allStartPos === 0) : false);
+                        /* tslint:enable */
+                        columns[colPos] = {
+                            axis: 'value',
+                            actualText: measureName,
+                            formattedText: formattedText,
+                            colOrdinal: colOrdinal,
+                            rowOrdinal: rowOrdinal,
+                            columnHeaders: this.tupColumnInfo[colOrdinal] ? this.tupColumnInfo[colOrdinal].captionCollection : '',
+                            rowHeaders: this.tupRowInfo[rowOrdinal] ? this.tupRowInfo[rowOrdinal].captionCollection : '',
+                            value: !isNullOrUndefined(value) ? Number(value) : null,
+                            colIndex: colPos,
+                            rowIndex: rowPos,
+                            isSum: isSum,
+                            isGrandSum: isGrand
+                        };
                     }
-                    valElement = valCollection[(rowOrdinal - startRowOrdinal) * colLength + colOrdinal];
-                    formattedText = !showTotals ? '' :
-                        ((!isNullOrUndefined(valElement) && !isNullOrUndefined(valElement.querySelector('FmtValue'))) ?
-                            valElement.querySelector('FmtValue').textContent : this.emptyCellTextContent);
-                    value = !showTotals ? '0' :
-                        ((!isNullOrUndefined(valElement) && !isNullOrUndefined(valElement.querySelector('Value'))) ?
-                            valElement.querySelector('Value').textContent : null);
-                    formattedText = showTotals && !isNullOrUndefined(value) ?
-                        this.getFormattedValue(Number(value), measureName, (formattedText !== '' ? formattedText : value)) :
-                        formattedText;
-                    let isSum = (this.tupColumnInfo[colOrdinal] ? (this.tupColumnInfo[colOrdinal].allCount > 0 ||
-                        this.tupColumnInfo[colOrdinal].drillStartPos > -1) : true) ||
-                        (this.tupRowInfo[rowOrdinal] ? (this.tupRowInfo[rowOrdinal].allCount > 0 ||
-                            this.tupRowInfo[rowOrdinal].drillStartPos > -1) : true);
-                    /* tslint:disable */
-                    let isGrand = (this.tupRowInfo[rowOrdinal] ? (this.tupRowInfo[rowOrdinal].measurePosition === 0 ? this.tupRowInfo[rowOrdinal].allStartPos === 1 : this.tupRowInfo[rowOrdinal].allStartPos === 0) : false) ||
-                        (this.tupColumnInfo[colOrdinal] ? (this.tupColumnInfo[colOrdinal].measurePosition === 0 ? this.tupColumnInfo[colOrdinal].allStartPos === 1 : this.tupColumnInfo[colOrdinal].allStartPos === 0) : false);
-                    /* tslint:enable */
-                    columns[colPos] = {
-                        axis: 'value',
-                        actualText: measureName,
-                        formattedText: formattedText,
-                        colOrdinal: colOrdinal,
-                        rowOrdinal: rowOrdinal,
-                        columnHeaders: this.tupColumnInfo[colOrdinal] ? this.tupColumnInfo[colOrdinal].captionCollection : '',
-                        rowHeaders: this.tupRowInfo[rowOrdinal] ? this.tupRowInfo[rowOrdinal].captionCollection : '',
-                        value: !isNullOrUndefined(value) ? Number(value) : null,
-                        colIndex: colPos,
-                        rowIndex: rowPos,
-                        isSum: isSum,
-                        isGrandSum: isGrand
-                    };
+                    this.valueContent[rowPos - this.rowStartPos][colPos] = columns[colPos];
                 }
-                this.valueContent[rowPos - this.rowStartPos][colPos] = columns[colPos];
             }
         }
     }
@@ -19334,17 +19607,19 @@ class OlapEngine {
         });
         let joinArray = [];
         for (let memPos = 0; memPos <= fieldPos; memPos++) {
-            if ((isWithoutAllMember || this.isPaging) && memPos === fieldPos) {
-                let splitLevels = memberArray[memPos].split('~~');
-                let drillLevel = splitLevels.indexOf(memberName);
-                let cropLevels = [];
-                for (let lPos = 0; lPos <= drillLevel; lPos++) {
-                    cropLevels.push(splitLevels[lPos]);
+            if (memberArray[memPos]) {
+                if ((isWithoutAllMember || this.isPaging) && memPos === fieldPos) {
+                    let splitLevels = memberArray[memPos].split('~~');
+                    let drillLevel = splitLevels.indexOf(memberName);
+                    let cropLevels = [];
+                    for (let lPos = 0; lPos <= drillLevel; lPos++) {
+                        cropLevels.push(splitLevels[lPos]);
+                    }
+                    joinArray[joinArray.length] = cropLevels.length > 0 ? cropLevels.join('~~') : memberArray[memPos];
                 }
-                joinArray[joinArray.length] = cropLevels.length > 0 ? cropLevels.join('~~') : memberArray[memPos];
-            }
-            else {
-                joinArray[joinArray.length] = memberArray[memPos];
+                else {
+                    joinArray[joinArray.length] = memberArray[memPos];
+                }
             }
         }
         uNameCollection = joinArray.join('::');
@@ -19387,8 +19662,10 @@ class OlapEngine {
             let set = '';
             for (let pos = 0; pos <= fieldPos; pos++) {
                 let field = fields[pos];
-                let members = field.split('~~');
-                set = set + (set !== '' ? '~~' : '') + members[members.length - 1];
+                if (field) {
+                    let members = field.split('~~');
+                    set = set + (set !== '' ? '~~' : '') + members[members.length - 1];
+                }
             }
             drillSets[set] = set;
         }
@@ -21453,6 +21730,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         this.chartLoad = this.chartSettings.load ? this.chartSettings.load : undefined;
         this.chartResized = this.chartSettings.resized ? this.chartSettings.resized : undefined;
         this.chartAxisLabelRender = this.chartSettings.axisLabelRender ? this.chartSettings.axisLabelRender : undefined;
+        this.multiLevelLabelClick = this.chartSettings.multiLevelLabelClick ? this.chartSettings.multiLevelLabelClick : undefined;
         this.chartPointClick = this.chartSettings.pointClick ? this.chartSettings.pointClick : undefined;
         this.contextMenuClick = this.gridSettings.contextMenuClick ? this.gridSettings.contextMenuClick : undefined;
         this.contextMenuOpen = this.gridSettings.contextMenuOpen ? this.gridSettings.contextMenuOpen : undefined;
@@ -22642,21 +22920,40 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             pivotview: isBlazor() ? undefined : pivot,
             cancel: false
         };
+        let isAttributeHierarchy = this.olapEngineModule.fieldList[drillInfo.fieldName] && this.olapEngineModule.fieldList[drillInfo.fieldName].isHierarchy;
         let fieldPos = tupInfo.drillInfo.map((item) => { return item.hierarchy; }).indexOf(currentCell.hierarchy.toString());
+        let clonedMembers = PivotUtil.cloneDrillMemberSettings(this.dataSourceSettings.drilledMembers);
         if (drillInfo && drillInfo.action === 'down') {
-            this.olapEngineModule.drilledSets[currentCell.actualText] = tupInfo.members[fieldPos];
-            let fields = drillInfo.memberName.split('::[').map((item) => {
-                return item[0] === '[' ? item : ('[' + item);
-            });
+            let fields = tupInfo.drillInfo.map((item) => { return item.uName; });
             let member = '';
             for (let pos = 0; pos <= fieldPos; pos++) {
                 let field = fields[pos];
                 let members = field.split('~~');
                 member = member + (member !== '' ? '~~' : '') + members[members.length - 1];
             }
+            let drillSets = this.olapEngineModule.getDrilledSets(drillInfo.memberName, currentCell, (this.olapEngineModule.fieldList[currentCell.hierarchy] && !this.olapEngineModule.fieldList[currentCell.hierarchy].hasAllMember) ? currentCell.valueSort.levelName.split(this.dataSourceSettings.valueSortSettings.headerDelimiter).length - 1 : fieldPos, axis);
+            let keys = Object.keys(drillSets);
+            for (let key of keys) {
+                let drillSet = drillSets[key];
+                for (let i = 0, cnt = clonedMembers.length; i < cnt; i++) {
+                    let drillMembers = clonedMembers[i];
+                    let memberItem = drillSet;
+                    if (drillMembers.delimiter) {
+                        memberItem = memberItem.replace(/~~/g, drillMembers.delimiter);
+                    }
+                    let items = [];
+                    for (let itemPos = 0; itemPos < drillMembers.items.length; itemPos++) {
+                        if (drillMembers.items[itemPos].indexOf(memberItem) !== 0) {
+                            items[items.length] = drillMembers.items[itemPos];
+                        }
+                    }
+                    drillMembers.items = items;
+                }
+            }
+            this.olapEngineModule.drilledSets[currentCell.actualText] = tupInfo.members[fieldPos];
             drillInfo.memberName = member;
             let drillItem = [];
-            for (let field of this.dataSourceSettings.drilledMembers) {
+            for (let field of clonedMembers) {
                 if (field.name === drillInfo.fieldName) {
                     drillItem.push(field);
                 }
@@ -22669,17 +22966,29 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 if (index === -1) {
                     drillItem[0].items.push(member);
                 }
+                if (isAttributeHierarchy) {
+                    let i = 0;
+                    while (i < drillItem[0].items.length) {
+                        if (drillItem[0].items[i] === member) {
+                            drillItem[0].items.splice(i, 1);
+                        }
+                        else {
+                            ++i;
+                        }
+                    }
+                }
             }
-            else {
+            else if (!isAttributeHierarchy) {
                 let drilledMember = { name: drillInfo.fieldName, items: [member], delimiter: '~~' };
-                if (!this.dataSourceSettings.drilledMembers) {
-                    this.dataSourceSettings.drilledMembers = [drilledMember];
+                if (!clonedMembers) {
+                    clonedMembers = [drilledMember];
                 }
                 else {
-                    this.dataSourceSettings.drilledMembers.push(drilledMember);
+                    clonedMembers.push(drilledMember);
                 }
             }
             drillArgs.drillInfo.memberName = member;
+            this.setProperties({ dataSourceSettings: { drilledMembers: clonedMembers } }, true);
             pivot.trigger(drill, drillArgs, (observedArgs) => {
                 if (!observedArgs.cancel) {
                     this.olapEngineModule.updateDrilledInfo(this.dataSourceSettings);
@@ -22700,29 +23009,63 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             delete this.olapEngineModule.drilledSets[currentCell.actualText];
             let drillSets = this.olapEngineModule.getDrilledSets(drillInfo.memberName, currentCell, fieldPos, axis);
             let keys = Object.keys(drillSets);
+            let fields = tupInfo.drillInfo.map((item) => { return item.uName; });
+            let member = '';
+            for (let pos = 0; pos <= fieldPos; pos++) {
+                let field = fields[pos];
+                let members = field.split('~~');
+                member = member + (member !== '' ? '~~' : '') + members[members.length - 1];
+            }
             for (let key of keys) {
                 let drillSet = drillSets[key];
-                for (let i = 0, cnt = this.dataSourceSettings.drilledMembers.length; i < cnt; i++) {
-                    let drillItem = this.dataSourceSettings.drilledMembers[i];
+                let drillItemCollection = [];
+                for (let i = 0, cnt = clonedMembers.length; i < cnt; i++) {
+                    let drillItem = clonedMembers[i];
                     let member = drillSet;
+                    if (drillItem.name === drillInfo.fieldName) {
+                        drillItemCollection.push(drillItem);
+                    }
                     if (drillItem.delimiter) {
                         member = drillSet.replace(/~~/g, drillItem.delimiter);
                     }
-                    let items = [];
-                    for (let itemPos = 0; itemPos < drillItem.items.length; itemPos++) {
-                        if (drillItem.items[itemPos].indexOf(member) !== 0) {
-                            items[items.length] = drillItem.items[itemPos];
+                    if (!isAttributeHierarchy) {
+                        let items = [];
+                        for (let itemPos = 0; itemPos < drillItem.items.length; itemPos++) {
+                            if (drillItem.items[itemPos].indexOf(member) !== 0) {
+                                items[items.length] = drillItem.items[itemPos];
+                            }
+                        }
+                        drillItem.items = items;
+                    }
+                }
+                if (isAttributeHierarchy) {
+                    if (drillItemCollection.length > 0) {
+                        if (drillItemCollection[0].delimiter) {
+                            member = member.replace(/~~/g, drillItemCollection[0].delimiter);
+                        }
+                        let index = PivotUtil.inArray(member, drillItemCollection[0].items);
+                        if (index === -1) {
+                            drillItemCollection[0].items.push(member);
                         }
                     }
-                    drillItem.items = items;
+                    else {
+                        let drilledMember = { name: drillInfo.fieldName, items: [member], delimiter: '~~' };
+                        if (!clonedMembers) {
+                            clonedMembers = [drilledMember];
+                        }
+                        else {
+                            clonedMembers.push(drilledMember);
+                        }
+                    }
                 }
             }
             let drilledMembers = [];
-            for (let fields of this.dataSourceSettings.drilledMembers) {
+            for (let fields of clonedMembers) {
                 if (fields.items.length > 0) {
                     drilledMembers.push(fields);
                 }
             }
+            this.setProperties({ dataSourceSettings: { drilledMembers: clonedMembers } }, true);
             pivot.trigger(drill, drillArgs, (observedArgs) => {
                 if (!observedArgs.cancel) {
                     this.setProperties({ dataSourceSettings: { drilledMembers: drilledMembers } }, true);
@@ -24608,6 +24951,9 @@ __decorate([
 __decorate([
     Event()
 ], PivotView.prototype, "chartAxisLabelRender", void 0);
+__decorate([
+    Event()
+], PivotView.prototype, "multiLevelLabelClick", void 0);
 __decorate([
     Event()
 ], PivotView.prototype, "chartPointClick", void 0);
@@ -35209,5 +35555,5 @@ class Grouping {
  * Export PivotGrid components
  */
 
-export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, Common, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, fieldDrop, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelecting, drill, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, editCompleted, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, aggregateCellInfo, contextMenuClick, contextMenuOpen, fieldListRefreshed, conditionalFormatting, beforePdfExport, beforeExcelExport, memberFiltering, calculatedFieldCreate, memberEditorOpen, fieldRemove, numberFormatting, aggregateMenuOpen, fieldDragStart, chartPointClick, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, initFormatting, initGrouping, Theme, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, NumberFormatting, Grouping, PivotEngine, PivotUtil, OlapEngine, MDXQuery };
+export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, Common, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, fieldDrop, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelecting, drill, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, editCompleted, multiLevelLabelClick, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, aggregateCellInfo, contextMenuClick, contextMenuOpen, fieldListRefreshed, conditionalFormatting, beforePdfExport, beforeExcelExport, memberFiltering, calculatedFieldCreate, memberEditorOpen, fieldRemove, numberFormatting, aggregateMenuOpen, fieldDragStart, chartPointClick, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, initFormatting, initGrouping, Theme, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, NumberFormatting, Grouping, PivotEngine, PivotUtil, OlapEngine, MDXQuery };
 //# sourceMappingURL=ej2-pivotview.es2015.js.map

@@ -253,18 +253,21 @@ var DropDownButton = /** @__PURE__ @class */ (function (_super) {
     /**
      * Removes the items from the menu.
      * @param  { string[] } items - Specifies an array of string to remove the items.
+     * @param { string } isUniqueId - Set `true` if specified items is a collection of unique id.
      * @returns {void}.
      */
-    DropDownButton.prototype.removeItems = function (items) {
+    DropDownButton.prototype.removeItems = function (items, isUniqueId) {
+        var refresh = false;
         for (var i = 0, len = items.length; i < len; i++) {
             for (var j = 0, len_1 = this.items.length; j < len_1; j++) {
-                if (items[i] === this.items[j].text) {
+                if (items[i] === (isUniqueId ? this.items[j].id : this.items[j].text)) {
                     this.items.splice(j, 1);
+                    refresh = true;
                     break;
                 }
             }
         }
-        if (!this.canOpen()) {
+        if (refresh && this.getULElement()) {
             this.createItems();
         }
     };
@@ -629,7 +632,7 @@ var DropDownButton = /** @__PURE__ @class */ (function (_super) {
                     this.dropDown.dataBind();
                     break;
                 case 'items':
-                    if (!this.canOpen()) {
+                    if (this.getULElement()) {
                         this.createItems();
                     }
                     break;
@@ -801,10 +804,11 @@ var SplitButton = /** @__PURE__ @class */ (function (_super) {
     /**
      * Removes the items from the menu.
      * @param  { string[] } items - Specifies an array of string to remove the items.
+     * @param { string } isUniqueId - Set `true` if specified items is a collection of unique id.
      * @returns {void}.
      */
-    SplitButton.prototype.removeItems = function (items) {
-        _super.prototype.removeItems.call(this, items);
+    SplitButton.prototype.removeItems = function (items, isUniqueId) {
+        _super.prototype.removeItems.call(this, items, isUniqueId);
         this.secondaryBtnObj.items = this.items;
     };
     SplitButton.prototype.initWrapper = function () {

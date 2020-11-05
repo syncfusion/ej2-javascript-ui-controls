@@ -510,12 +510,18 @@ var ListBase;
         let curFields = extend({}, ListBase.defaultMappedFields, fields);
         let compiledString = compile(template);
         let liCollection = [];
+        let value;
         let id = generateId(); // generate id for drop-down-list option.
         for (let i = 0; i < dataSource.length; i++) {
             let fieldData = getFieldValues(dataSource[i], curFields);
             let curItem = dataSource[i];
             let isHeader = curItem.isHeader;
-            let value = fieldData[curFields.value];
+            if (typeof dataSource[i] === 'string' || typeof dataSource[i] === 'number') {
+                value = curItem;
+            }
+            else {
+                value = fieldData[curFields.value];
+            }
             if (curOpt.itemCreating && typeof curOpt.itemCreating === 'function') {
                 let curData = {
                     dataSource: dataSource,
@@ -528,14 +534,24 @@ var ListBase;
             }
             if (curOpt.itemCreating && typeof curOpt.itemCreating === 'function') {
                 fieldData = getFieldValues(dataSource[i], curFields);
-                value = fieldData[curFields.value];
+                if (typeof dataSource[i] === 'string' || typeof dataSource[i] === 'number') {
+                    value = curItem;
+                }
+                else {
+                    value = fieldData[curFields.value];
+                }
             }
             let li = createElement('li', {
                 id: id + '-' + i,
                 className: isHeader ? cssClass.group : cssClass.li, attrs: { role: 'presentation' }
             });
             if (isHeader) {
-                li.innerText = fieldData[curFields.text];
+                if (typeof dataSource[i] === 'string' || typeof dataSource[i] === 'number') {
+                    li.innerText = curItem;
+                }
+                else {
+                    li.innerText = fieldData[curFields.text];
+                }
             }
             else {
                 const currentID = isHeader ? curOpt.groupTemplateID : curOpt.templateID;

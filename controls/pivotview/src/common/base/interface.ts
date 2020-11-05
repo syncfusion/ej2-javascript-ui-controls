@@ -7,7 +7,7 @@ import { Grid, ExcelStyle, CellSelectionMode, SelectionType, CheckboxSelectionTy
 import { Column, ExcelExportProperties } from '@syncfusion/ej2-grids';
 import { CellSelectingEventArgs, ColumnModel, ExcelHAlign, ExcelVAlign } from '@syncfusion/ej2-grids';
 import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
-import { SeriesModel, ExportType } from '@syncfusion/ej2-charts';
+import { SeriesModel, ExportType, Axis } from '@syncfusion/ej2-charts';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { SummaryTypes } from '../../base/types';
 import { PivotView } from '../../pivotview';
@@ -321,6 +321,20 @@ export interface DrillThroughEventArgs {
     gridColumns?: ColumnModel[];
     /** Defines an option to restrict the drill-through operation. */
     cancel?: boolean;
+}
+
+/**
+ * The event argument which holds the information of the clicked multi-level label.
+ */
+export interface MultiLevelLabelClickEventArgs {
+    /** Defines the chart axis. */
+    axis: Axis;
+    /** Defines the clicked label text. */
+    text: string;
+    /** Defines an option to restrict the drill up/down operation. */
+    cancel?: boolean;
+    /** Defines the pivot cell of the clicked label. */
+    cell: IAxisSet;
 }
 
 /**
@@ -754,7 +768,7 @@ export interface CellTemplateArgs {
     /** Defines the cell element */
     targetCell?: HTMLElement;
     /** Defines the cell Information */
-    cellInfo?: IAxisSet
+    cellInfo?: IAxisSet;
 }
 
 /**

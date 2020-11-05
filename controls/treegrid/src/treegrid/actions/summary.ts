@@ -184,7 +184,13 @@ export class Aggregate {
         let cellElement: Element = createElement('td', {
             className: 'e-summary'
         });
-        appendChildren(cellElement, tempObj.fn(single[summaryColumn.columnName], this.parent, tempObj.property));
+        if ((<{ isReact?: boolean }>this.parent).isReact) {
+            let renderReactTemplates: string = 'renderReactTemplates';
+            tempObj.fn(single[summaryColumn.columnName], this.parent, tempObj.property, '', null, null, cellElement);
+            this.parent[renderReactTemplates]();
+        } else {
+            appendChildren(cellElement, tempObj.fn(single[summaryColumn.columnName], this.parent, tempObj.property));
+        }
         let value: string = single[summaryColumn.columnName][summaryKey];
         let summaryValue: string;
         if (cellElement.innerHTML.indexOf(value) === -1) {

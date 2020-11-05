@@ -1,4 +1,4 @@
-import { PdfViewer } from '../index';
+import { AnnotationDataFormat, PdfViewer } from '../index';
 import { PdfViewerBase } from '../index';
 import { createElement, Browser, isBlazor } from '@syncfusion/ej2-base';
 import { Toolbar as Tool, ItemModel, ClickEventArgs, MenuItemModel, ContextMenu as Context } from '@syncfusion/ej2-navigations';
@@ -34,6 +34,7 @@ export class NavigationPane {
     private isTooltipCreated: boolean = false;
     private isThumbnail: boolean = false;
     private annotationInputElement: HTMLElement;
+    private annotationXFdfInputElement: HTMLElement;
     private annotationContextMenu: MenuItemModel[] = [];
     private isCommentPanelShow: boolean = false;
     private commentPanelWidthMin: number = 300;
@@ -280,6 +281,7 @@ export class NavigationPane {
         this.pdfViewerBase.mainContainer.appendChild(this.commentPanelResizer);
         this.createCommentPanelResizeIcon();
         this.createFileElement(this.commentPanelContainer);
+        this.createXFdfFileElement(this.commentPanelContainer);
     }
 
     private createCommentPanelTitleContainer(): void {
@@ -322,7 +324,9 @@ export class NavigationPane {
         // tslint:disable-next-line:max-line-length
         this.annotationContextMenu = [
             { text: this.pdfViewer.localeObj.getConstant('Export Annotations') },
-            { text: this.pdfViewer.localeObj.getConstant('Import Annotations') }];
+            { text: this.pdfViewer.localeObj.getConstant('Import Annotations') },
+            { text: this.pdfViewer.localeObj.getConstant('Export XFDF')},
+            { text: this.pdfViewer.localeObj.getConstant('Import XFDF')}];
         let annotationMenuElement: HTMLElement = createElement('ul', { id: this.pdfViewer.element.id + '_annotation_context_menu' });
         this.pdfViewer.element.appendChild(annotationMenuElement);
         this.annotationMenuObj = new Context({
@@ -350,11 +354,18 @@ export class NavigationPane {
         if (args.item) {
             switch (args.item.text) {
                 case this.pdfViewer.localeObj.getConstant('Export Annotations'):
-                    this.pdfViewerBase.exportAnnotations();
+                    this.pdfViewerBase.exportAnnotations(AnnotationDataFormat.Json);
                     break;
                 case this.pdfViewer.localeObj.getConstant('Import Annotations'):
                     this.importAnnotationIconClick(args);
                     break;
+                case this.pdfViewer.localeObj.getConstant('Export XFDF'):
+                    this.pdfViewerBase.exportAnnotations(AnnotationDataFormat.Xfdf);
+                    break;
+                case this.pdfViewer.localeObj.getConstant('Import XFDF'):
+                    this.importXFdfAnnotationIconClick(args);
+                    break;
+
                 default:
                     break;
             }
@@ -369,8 +380,24 @@ export class NavigationPane {
         this.annotationInputElement.addEventListener('change', this.loadImportAnnotation);
     }
 
+    private createXFdfFileElement(toolbarElement: HTMLElement): void {
+        // tslint:disable-next-line:max-line-length
+        this.annotationXFdfInputElement = createElement('input', { id: this.pdfViewer.element.id + '_annotationXFdfUploadElement', styles: 'position:fixed; left:-100em', attrs: { 'type': 'file', 'aria-label': 'upload elements' } });
+        this.annotationXFdfInputElement.setAttribute('accept', '.xfdf');
+        toolbarElement.appendChild(this.annotationXFdfInputElement);
+        this.annotationXFdfInputElement.addEventListener('change', this.loadImportAnnotation);
+    }
+
     private importAnnotationIconClick(args: ClickEventArgs): void {
         this.annotationInputElement.click();
+        if (Browser.isDevice) {
+            (args.originalEvent.target as HTMLElement).blur();
+            this.pdfViewerBase.focusViewerContainer();
+        }
+    }
+
+    private importXFdfAnnotationIconClick(args: ClickEventArgs): void {
+        this.annotationXFdfInputElement.click();
         if (Browser.isDevice) {
             (args.originalEvent.target as HTMLElement).blur();
             this.pdfViewerBase.focusViewerContainer();
@@ -399,7 +426,22 @@ export class NavigationPane {
                             if (annotationData) {
                                 // tslint:disable-next-line
                                 let jsonData: any = JSON.parse(annotationData);
-                                this.pdfViewerBase.importAnnotations(jsonData);
+                                this.pdfViewerBase.importAnnotations(jsonData, AnnotationDataFormat.Json);
+                            }
+                        }
+                    };
+                } else if (uploadedFile.name.split('.xfdf').length > 1 && uploadedFileType.includes('xfdf')) {
+                    let reader: FileReader = new FileReader();
+                    reader.readAsDataURL(uploadedFile);
+                    // tslint:disable-next-line
+                    reader.onload = (e: any): void => {
+                        if (e.currentTarget.result) {
+                            let importFile: string =  e.currentTarget.result.split(',')[1];
+                            // tslint:disable-next-line
+                            let annotationData: any =  atob(importFile);
+                            if (annotationData) {
+                                // tslint:disable-next-line:max-line-length
+                                this.pdfViewerBase.importAnnotations(importFile, AnnotationDataFormat.Xfdf);
                             }
                         }
                     };

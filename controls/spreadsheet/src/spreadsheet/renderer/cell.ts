@@ -169,12 +169,12 @@ export class CellRenderer implements ICellRenderer {
             let address: string; if (typeof (args.cell.hyperlink) === 'string') {
                 address = args.cell.hyperlink;
                 if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
-                    args.cell.hyperlink = address.indexOf('www.') === 0 ? 'http://' + address : address;
+                    args.cell.hyperlink = address.toLowerCase().indexOf('www.') === 0 ? 'http://' + address : address;
                 }
             } else {
                 address = args.cell.hyperlink.address;
                 if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
-                    args.cell.hyperlink.address = address.indexOf('www.') === 0 ? 'http://' + address : address;
+                    args.cell.hyperlink.address = address.toLowerCase().indexOf('www.') === 0 ? 'http://' + address : address;
                 }
             }
             this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });

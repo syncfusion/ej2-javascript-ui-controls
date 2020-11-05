@@ -748,13 +748,13 @@ export enum ConnectionPointOrigin {
 /**
  * Defines the child nodes need to arranged in linear manner in layout 
  * Linear - Child nodes will be arranged in linear manner
- * NonLinear - Child nodes will be arranged in not linear manner
+ * Nonlinear - Child nodes will be arranged in not linear manner
  */
 export enum ChildArrangement {
     /** Linear - Child nodes will be arranged in linear manner */
     Linear = 'Linear',
-    /** NonLinear - Child nodes will be arranged in not linear manner */
-    NonLinear = 'NonLinear',
+    /** Nonlinear - Child nodes will be arranged in not linear manner */
+    Nonlinear = 'Nonlinear',
 
 }
 

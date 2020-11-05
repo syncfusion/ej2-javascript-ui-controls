@@ -2085,6 +2085,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         var handleContent = '.' + DLG_HEADER_CONTENT;
         this.dragObj = new Draggable(this.element, {
             clone: false,
+            isDragScroll: true,
             abort: '.e-dlg-closeicon-btn',
             handle: handleContent,
             dragStart: function (event) {

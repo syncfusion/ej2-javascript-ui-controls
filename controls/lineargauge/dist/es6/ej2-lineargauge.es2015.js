@@ -476,6 +476,28 @@ function measureText(text, font) {
     //remove(htmlObject);
     return size;
 }
+/**
+ * @private
+ * Trim the title text
+ */
+function textTrim(maxWidth, text, font) {
+    let label = text;
+    let size = measureText(text, font).width;
+    if (size > maxWidth) {
+        let textLength = text.length;
+        for (let i = textLength - 1; i >= 0; --i) {
+            label = text.substring(0, i) + '...';
+            size = measureText(label, font).width;
+            if (size <= maxWidth || label.length < 4) {
+                if (label.length < 4) {
+                    label = ' ';
+                }
+                return label;
+            }
+        }
+    }
+    return label;
+}
 /** @private */
 function withInRange(value, start, end, max, min, type) {
     let withIn;
@@ -714,10 +736,12 @@ class TextOption extends CustomizeOption {
 }
 /** @private */
 class VisibleLabels {
-    constructor(text, value, size) {
+    constructor(text, value, size, x, y) {
         this.text = text;
         this.value = value;
         this.size = size;
+        this.x = x;
+        this.y = y;
     }
 }
 /** @private */
@@ -1280,14 +1304,13 @@ class AxisRenderer extends Animations {
         axisObject.appendChild(this.gauge.renderer.drawPath(options));
     }
     drawAxisLabels(axis, axisObject) {
+        // tslint:disable:max-line-length
         let options;
         let pointX;
         let pointY;
         let rect = axis.lineBounds;
         let bounds = axis.labelBounds;
         let tick = axis.majorTickBounds;
-        // let tick: Rect = axis.labelStyle.position === axis.minorTicks.position && axis.minorTicks.position !== axis.majorTicks.position ?
-        //     axis.minorTickBounds : axis.majorTickBounds;
         let labelSize;
         let range = axis.visibleRange;
         let anchor;
@@ -1296,25 +1319,99 @@ class AxisRenderer extends Animations {
         let fontColor = this.gauge.themeStyle.labelColor;
         let labelColor;
         let offset = axis.labelStyle.offset;
+        let labelLength = axis.visibleLabels.length - 1;
         let labelElement = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_AxisLabelsGroup' });
         for (let i = 0; i < axis.visibleLabels.length; i++) {
             labelSize = axis.visibleLabels[i].size;
-            labelColor = axis.labelStyle.useRangeColor ? getRangeColor(axis.visibleLabels[i].value, axis.ranges) :
-                null;
+            labelColor = axis.labelStyle.useRangeColor ? getRangeColor(axis.visibleLabels[i].value, axis.ranges) : null;
             labelColor = isNullOrUndefined(labelColor) ? (axis.labelStyle.font.color || fontColor) : labelColor;
             if (this.gauge.orientation === 'Vertical') {
-                pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) *
-                    rect.height) + rect.y;
-                pointX = axis.labelStyle.position === 'Auto' ?
-                    (!axis.opposedPosition ? (tick.x - labelSize.width - padding) + offset : bounds.x) : bounds.x;
+                pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) * rect.height) + rect.y;
+                pointX = axis.labelStyle.position === 'Auto' ? (!axis.opposedPosition ? (tick.x - labelSize.width - padding) + offset : bounds.x) : bounds.x;
                 pointY += (labelSize.height / 4);
+                axis.visibleLabels[i].x = pointX;
+                axis.visibleLabels[i].y = pointY;
             }
             else {
-                pointX = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) *
-                    rect.width) + rect.x;
-                pointY = bounds.y;
-                anchor = 'middle';
-                baseline = '';
+                if ((i === 0 || i === labelLength) && this.gauge.edgeLabelPlacement !== 'None') {
+                    if (this.gauge.edgeLabelPlacement === 'Shift') {
+                        pointX = i === 0 ? (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) * rect.width) + rect.x + (!axis.isInversed ? (axis.visibleLabels[i].size.width / 2) : (-axis.visibleLabels[i].size.width / 2))
+                            : (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) * rect.width) + rect.x - (!axis.isInversed ? (axis.visibleLabels[i].size.width / 2) : (-axis.visibleLabels[i].size.width / 2));
+                        if (this.gauge.allowMargin) {
+                            if (i === labelLength) {
+                                if (!axis.isInversed && (pointX - (axis.visibleLabels[i].size.width / 2)) < (axis.visibleLabels[i - 1].x + (axis.visibleLabels[i - 1].size.width / 2))) {
+                                    pointX += (axis.visibleLabels[i].size.width / 2);
+                                }
+                                else if (axis.isInversed && (pointX + (axis.visibleLabels[i].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
+                                    pointX -= (axis.visibleLabels[i].size.width / 2);
+                                }
+                            }
+                        }
+                    }
+                    else if (this.gauge.edgeLabelPlacement === 'Trim') {
+                        pointX = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) * rect.width) + rect.x;
+                        if (i === labelLength) {
+                            if (!this.gauge.allowMargin) {
+                                if (!axis.isInversed && this.gauge.margin.right <= 10) {
+                                    let maxWidth = axis.visibleLabels[i].size.width * 0.75;
+                                    axis.visibleLabels[i].text = textTrim(maxWidth, axis.visibleLabels[i].text, axis.labelStyle.font);
+                                }
+                                else if (axis.isInversed && (pointX + (axis.visibleLabels[i].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
+                                    let maxWidth = axis.visibleLabels[i].size.width - ((pointX + (axis.visibleLabels[i].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
+                                    axis.visibleLabels[i].text = textTrim(maxWidth, axis.visibleLabels[i].text, axis.labelStyle.font);
+                                }
+                            }
+                            else {
+                                if (axis.isInversed && (pointX + (axis.visibleLabels[i].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
+                                    let width = axis.visibleLabels[i].size.width - ((pointX + (axis.visibleLabels[i].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
+                                    axis.visibleLabels[i].text = textTrim(width, axis.visibleLabels[i].text, axis.labelStyle.font);
+                                }
+                                else if (!axis.isInversed && (pointX - (axis.visibleLabels[i].size.width / 2)) < (axis.visibleLabels[i - 1].x + (axis.visibleLabels[i - 1].size.width / 2))) {
+                                    let width = axis.visibleLabels[i].size.width - ((axis.visibleLabels[i - 1].x + (axis.visibleLabels[i - 1].size.width / 2)) - (pointX - (axis.visibleLabels[i].size.width / 2)) + 2);
+                                    axis.visibleLabels[i].text = textTrim(width, axis.visibleLabels[i].text, axis.labelStyle.font);
+                                }
+                            }
+                        }
+                    }
+                    else if (this.gauge.edgeLabelPlacement === 'Auto') {
+                        if (!this.gauge.allowMargin) {
+                            pointX = i === labelLength ? (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) * rect.width) + rect.x - (!axis.isInversed ? (axis.visibleLabels[i].size.width / 2) : (-axis.visibleLabels[i].size.width / 2)) :
+                                (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) * rect.width) + rect.x + (!axis.isInversed ? (axis.visibleLabels[i].size.width / 2) : (-axis.visibleLabels[i].size.width / 2));
+                            if (i === labelLength) {
+                                if (!axis.isInversed && (pointX - (axis.visibleLabels[i].size.width / 2)) < (axis.visibleLabels[i - 1].x + (axis.visibleLabels[i - 1].size.width / 2))) {
+                                    pointX += (axis.visibleLabels[i].size.width / 2);
+                                    let maxWidth = axis.visibleLabels[i].size.width * 0.75;
+                                    axis.visibleLabels[i].text = textTrim(maxWidth, axis.visibleLabels[i].text, axis.labelStyle.font);
+                                }
+                                else if (axis.isInversed && (pointX + (axis.visibleLabels[i].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
+                                    pointX -= (axis.visibleLabels[i].size.width / 2);
+                                    let widthValue = axis.visibleLabels[i].size.width - ((pointX + (axis.visibleLabels[i].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
+                                    axis.visibleLabels[i].text = textTrim(widthValue, axis.visibleLabels[i].text, axis.labelStyle.font);
+                                }
+                            }
+                        }
+                        else {
+                            pointX = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) * rect.width) + rect.x;
+                            if (i === labelLength && axis.isInversed && (pointX + (axis.visibleLabels[i].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
+                                let labelWidth = axis.visibleLabels[i].size.width - ((pointX + (axis.visibleLabels[i].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
+                                axis.visibleLabels[i].text = textTrim(labelWidth, axis.visibleLabels[i].text, axis.labelStyle.font);
+                            }
+                        }
+                    }
+                    pointY = bounds.y;
+                    axis.visibleLabels[i].x = pointX;
+                    axis.visibleLabels[i].y = pointY;
+                    anchor = 'middle';
+                    baseline = '';
+                }
+                else {
+                    pointX = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) * rect.width) + rect.x;
+                    pointY = bounds.y;
+                    anchor = 'middle';
+                    baseline = '';
+                    axis.visibleLabels[i].x = pointX;
+                    axis.visibleLabels[i].y = pointY;
+                }
             }
             axis.labelStyle.font.fontFamily = this.gauge.themeStyle.labelFontFamily || axis.labelStyle.font.fontFamily;
             options = new TextOption(this.gauge.element.id + '_AxisLabel_' + i, pointX, pointY, anchor, axis.visibleLabels[i].text, null, baseline);
@@ -3625,6 +3722,9 @@ __decorate([
     Property('Vertical')
 ], LinearGauge.prototype, "orientation", void 0);
 __decorate([
+    Property('None')
+], LinearGauge.prototype, "edgeLabelPlacement", void 0);
+__decorate([
     Property(false)
 ], LinearGauge.prototype, "allowPrint", void 0);
 __decorate([
@@ -3966,5 +4066,5 @@ class PdfExport {
  * LinearGauge component exported.
  */
 
-export { LinearGauge, Font, Margin, Border, Annotation, Container, RangeTooltip, TooltipSettings, Line, Label, Range, Tick, Pointer, Axis, stringToNumber, measureText, withInRange, convertPixelToValue, getPathToRect, getElement, removeElement, isPointerDrag, valueToCoefficient, getFontStyle, textFormatter, formatValue, getLabelFormat, getTemplateFunction, getElementOffset, triggerDownload, VisibleRange, GaugeLocation, Size, Rect, CustomizeOption, PathOption, RectOption, TextOption, VisibleLabels, Align, textElement, calculateNiceInterval, getActualDesiredIntervalsCount, getPointer, getRangeColor, getMousePosition, getRangePalette, calculateShapes, getBox, Annotations, GaugeTooltip, Print, ImageExport, PdfExport, ColorStop, GradientPosition, LinearGradient, RadialGradient, Gradient };
+export { LinearGauge, Font, Margin, Border, Annotation, Container, RangeTooltip, TooltipSettings, Line, Label, Range, Tick, Pointer, Axis, stringToNumber, measureText, textTrim, withInRange, convertPixelToValue, getPathToRect, getElement, removeElement, isPointerDrag, valueToCoefficient, getFontStyle, textFormatter, formatValue, getLabelFormat, getTemplateFunction, getElementOffset, triggerDownload, VisibleRange, GaugeLocation, Size, Rect, CustomizeOption, PathOption, RectOption, TextOption, VisibleLabels, Align, textElement, calculateNiceInterval, getActualDesiredIntervalsCount, getPointer, getRangeColor, getMousePosition, getRangePalette, calculateShapes, getBox, Annotations, GaugeTooltip, Print, ImageExport, PdfExport, ColorStop, GradientPosition, LinearGradient, RadialGradient, Gradient };
 //# sourceMappingURL=ej2-lineargauge.es2015.js.map

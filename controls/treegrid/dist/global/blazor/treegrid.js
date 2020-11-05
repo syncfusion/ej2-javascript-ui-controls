@@ -1539,6 +1539,10 @@ var Render = /** @class */ (function () {
     Render.prototype.updateTreeCell = function (args, cellElement, container) {
         var treeColumn = this.parent.columns[this.parent.treeColumnIndex];
         var templateFn = 'templateFn';
+        var colindex = args.column.index;
+        if (sf.base.isNullOrUndefined(treeColumn.field)) {
+            args.cell.setAttribute('aria-colindex', colindex + '');
+        }
         if (treeColumn.field === args.column.field && !sf.base.isNullOrUndefined(treeColumn.template)) {
             args.column.template = treeColumn.template;
             args.column[templateFn] = sf.grids.templateCompiler(args.column.template);
@@ -4485,8 +4489,9 @@ var TreeGrid = /** @class */ (function (_super) {
         var temp;
         var field;
         var gridColumns = sf.base.isNullOrUndefined(column) ? this.grid.getColumns() : column;
-        if (this.treeColumnIndex !== -1 && !sf.base.isNullOrUndefined(gridColumns[this.treeColumnIndex].template)) {
-            temp = gridColumns[this.treeColumnIndex].template;
+        if (this.treeColumnIndex !== -1 && this.columns[this.treeColumnIndex] &&
+            !sf.base.isNullOrUndefined(this.columns[this.treeColumnIndex].template)) {
+            temp = this.columns[this.treeColumnIndex].template;
             field = gridColumns[this.treeColumnIndex].field;
         }
         this.columnModel = [];
@@ -6019,7 +6024,7 @@ function removeChildRecords(childRecords, modifiedData, action, key, control, is
                 for (var i = 0; i < keys.length; i++) {
                     if (childRecords[j].hasOwnProperty(keys[i]) && (control.editSettings.mode !== 'Cell' || keys[i] === columnName)) {
                         editedData[keys[i]] = editedData.taskData[keys[i]] = childRecords[j][keys[i]] = modifiedData[keys[i]];
-                        if (control.editSettings.mode === 'Cell') {
+                        if (control.grid.editSettings.mode === 'Normal' && control.editSettings.mode === 'Cell') {
                             var editModule = 'editModule';
                             control.grid.editModule[editModule].editRowIndex = modifiedData.index;
                             control.grid.editModule[editModule].updateCurrentViewData(modifiedData);
@@ -6659,6 +6664,7 @@ var RowDD$1 = /** @class */ (function () {
                     this.dropPosition = 'Invalid';
                 }
                 sf.base.setValue('dropPosition', this.dropPosition, args);
+                args.dropIndex = args.dropIndex === args.fromIndex ? this.getTargetIdx(args.target.parentElement) : args.dropIndex;
                 tObj.trigger(rowDrop, args);
                 if (!args.cancel) {
                     if (!isCountRequired(this.parent)) {
@@ -6800,6 +6806,14 @@ var RowDD$1 = /** @class */ (function () {
                 if (this.dropPosition !== 'Invalid') {
                     if (!tObj.rowDropSettings.targetID || isByMethod) {
                         this.deleteDragRow();
+                    }
+                    if (this.draggedRecord === this.droppedRecord) {
+                        var correctIndex = this.getTargetIdx(args.target.offsetParent.parentElement);
+                        if (isNaN(correctIndex)) {
+                            correctIndex = this.getTargetIdx(args.target.parentElement);
+                        }
+                        recordIndex = args.dropIndex = correctIndex;
+                        droppedRecord = this.droppedRecord = this.parent.getCurrentViewRecords()[args.dropIndex];
                     }
                     var recordIndex1 = this.treeGridData.indexOf(droppedRecord);
                     this.dropAtTop(recordIndex1, isSelfReference, i);
@@ -8298,7 +8312,14 @@ var Aggregate$1 = /** @class */ (function () {
         var cellElement = sf.base.createElement('td', {
             className: 'e-summary'
         });
-        sf.grids.appendChildren(cellElement, tempObj.fn(single[summaryColumn.columnName], this.parent, tempObj.property));
+        if (this.parent.isReact) {
+            var renderReactTemplates = 'renderReactTemplates';
+            tempObj.fn(single[summaryColumn.columnName], this.parent, tempObj.property, '', null, null, cellElement);
+            this.parent[renderReactTemplates]();
+        }
+        else {
+            sf.grids.appendChildren(cellElement, tempObj.fn(single[summaryColumn.columnName], this.parent, tempObj.property));
+        }
         var value = single[summaryColumn.columnName][summaryKey];
         var summaryValue;
         if (cellElement.innerHTML.indexOf(value) === -1) {
@@ -10470,6 +10491,7 @@ var VirtualScroll$1 = /** @class */ (function () {
             record: row.record,
             count: this.parent.flatData.length
         };
+        this.parent.grid.clearSelection();
         var requestType = sf.base.getValue('isCollapseAll', this.parent) ? 'collapseAll' : 'refresh';
         sf.base.getValue('grid.renderModule', this.parent).dataManagerSuccess(ret, { requestType: requestType });
     };

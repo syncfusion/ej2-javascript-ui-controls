@@ -97,6 +97,11 @@ export class GanttChart {
     }
     private renderChartElements(): void {
         this.parent.chartRowsModule.renderChartRows();
+        if (this.parent.predecessorModule && this.parent.taskFields.dependency) {
+            this.parent.connectorLineIds = [];
+            this.parent.updatedConnectorLineCollection = [];
+            this.parent.predecessorModule.createConnectorLinesCollection();
+        }
         this.parent.connectorLineModule.renderConnectorLines(this.parent.updatedConnectorLineCollection);
         if (this.parent.viewType === 'ResourceView' && this.parent.showOverAllocation) {
             this.renderOverAllocationContainer();
@@ -129,7 +134,7 @@ export class GanttChart {
         }
         return ((recordIndex + 1) * this.parent.rowHeight);
     }
-     /*get height for range bar*/
+    /*get height for range bar*/
     private getRangeHeight(data: IGanttData): number {
         if (!data.expanded && data.hasChildRecords) {
             return (this.parent.rowHeight - Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight)));
@@ -201,10 +206,13 @@ export class GanttChart {
         this.scrollObject.
             setHeight(this.parent.ganttHeight - this.chartTimelineContainer.offsetHeight - toolbarHeight);
     }
-
-    private updateWidthAndHeight(): void {
+    /**
+     * @private
+     */
+    public updateWidthAndHeight(): void {
         //empty row height
         let emptydivHeight: number = isBlazor() ? 39 : 36;
+        this.parent.updateContentHeight();
         let emptyHeight: number = this.parent.contentHeight === 0 ? emptydivHeight : this.parent.contentHeight;
         this.chartBodyContent.style.height = formatUnit(emptyHeight);
         //let element: HTMLElement = this.chartTimelineContainer.querySelector('.' + cls.timelineHeaderTableContainer);
@@ -828,7 +836,7 @@ export class GanttChart {
         }
         /* tslint:disable-next-line:no-any */
         this.focusedRowIndex = $target.closest('.e-rowcell') ? ($target.parentElement as any).rowIndex :
-        /* tslint:disable-next-line:no-any */
+            /* tslint:disable-next-line:no-any */
             $target.closest('.e-chart-row') ? ($target.closest('.e-chart-row') as any).rowIndex : -1;
         let isTab: boolean = (e.action === 'tab') ? true : false;
         let nextElement: Element | string = this.getNextElement($target, isTab);
@@ -838,12 +846,12 @@ export class GanttChart {
         }
         if (typeof nextElement !== 'string') {
             if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell') ||
-            $target.classList.contains('e-headercell')) {
+                $target.classList.contains('e-headercell') || $target.closest('.e-segmented-taskbar')) {
                 e.preventDefault();
             }
             if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell')) ||
                 $target.classList.contains('e-headercell')) {
-                    this.parent.treeGrid.grid.notify('key-pressed', e);
+                this.parent.treeGrid.grid.notify('key-pressed', e);
             }
             if (!isInEditedState) {
                 if (nextElement) {
@@ -883,6 +891,15 @@ export class GanttChart {
             }
             nextElement = isTab ? nextElement.nextElementSibling : nextElement.previousElementSibling;
         }
+        if (!isNullOrUndefined(nextElement) && (nextElement.classList.contains('e-taskbar-main-container')
+            || nextElement.classList.contains('e-right-connectorpoint-outer-div'))) {
+            let record: IGanttData = this.parent.currentViewData[this.focusedRowIndex];
+            if (!isNullOrUndefined(record.ganttProperties.segments) && record.ganttProperties.segments.length > 0) {
+                nextElement = nextElement.classList.contains('e-right-connectorpoint-outer-div')
+                    ? nextElement.parentElement.nextElementSibling
+                    : nextElement.getElementsByClassName('e-gantt-child-taskbar-inner-div')[0];
+            }
+        }
         if (this.validateNextElement(nextElement)) {
             return nextElement;
         } else {
@@ -910,7 +927,8 @@ export class GanttChart {
                         return rowElement.getElementsByClassName('e-left-label-container')[0];
                     }
                 }
-            } else if ($target.parentElement.classList.contains('e-chart-row-cell')) {
+            } else if ($target.parentElement.classList.contains('e-chart-row-cell') ||
+                $target.parentElement.parentElement.classList.contains('e-chart-row-cell')) {
                 let childElement: Element;
                 /* tslint:disable-next-line:no-any */
                 rowIndex = (closest($target, '.e-chart-row') as any).rowIndex;
@@ -983,21 +1001,26 @@ export class GanttChart {
             if (element.classList.contains('e-left-label-container') ||
                 element.classList.contains('e-right-label-container')) {
                 childElement = element.getElementsByTagName('span')[0];
-            } else if (element.classList.contains('e-taskbar-main-container')) {
+            } else if (element.classList.contains('e-taskbar-main-container')
+                || element.classList.contains('e-gantt-child-taskbar-inner-div')) {
                 /* tslint:disable-next-line:no-any */
                 let rowIndex: number = (closest(element, '.e-chart-row') as any).rowIndex;
                 let data: IGanttData = this.parent.currentViewData[rowIndex];
                 let className: string = data.hasChildRecords ? data.ganttProperties.isAutoSchedule ? 'e-gantt-parent-taskbar' :
-                'e-manualparent-main-container' :
-                    data.ganttProperties.isMilestone ? 'e-gantt-milestone' : 'e-gantt-child-taskbar';
+                    'e-manualparent-main-container' :
+                    data.ganttProperties.isMilestone ? 'e-gantt-milestone' : !isNullOrUndefined(data.ganttProperties.segments)
+                        && data.ganttProperties.segments.length > 0 ? 'e-segmented-taskbar' : 'e-gantt-child-taskbar';
                 childElement = element.getElementsByClassName(className)[0];
+                if (isNullOrUndefined(childElement)) {
+                    childElement = element;
+                }
             }
             if (focus === 'add' && !isNullOrUndefined(childElement)) {
                 element.setAttribute('tabIndex', '0');
                 addClass([childElement], 'e-active-container');
                 element.focus();
                 this.focusedElement = childElement as HTMLElement;
-            }  else if (!isNullOrUndefined(childElement)) {
+            } else if (!isNullOrUndefined(childElement)) {
                 removeClass([childElement], 'e-active-container');
                 element.setAttribute('tabIndex', '-1');
                 element.blur();

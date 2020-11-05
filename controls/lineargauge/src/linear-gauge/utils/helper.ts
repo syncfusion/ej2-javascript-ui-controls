@@ -50,6 +50,30 @@ export function measureText(text: string, font: FontModel): Size {
     return size;
 }
 
+/**
+ * @private
+ * Trim the title text
+ */
+export function textTrim(maxWidth: number, text: string, font: FontModel): string {
+    let label: string = text;
+    let size: number = measureText(text, font).width;
+    if (size > maxWidth) {
+        let textLength: number = text.length;
+        for (let i: number = textLength - 1; i >= 0; --i) {
+            label = text.substring(0, i) + '...';
+            size = measureText(label, font).width;
+            if (size <= maxWidth || label.length < 4) {
+                if (label.length < 4) {
+                    label = ' ';
+                }
+                return label;
+            }
+        }
+    }
+    return label;
+}
+
+
 /** @private */
 export function withInRange(value: number, start: number, end: number, max: number, min: number, type: string): boolean {
     let withIn: boolean;
@@ -369,11 +393,15 @@ export class VisibleLabels {
     public text: string;
     public value: number;
     public size: Size;
+    public x?: number;
+    public y?: number;
     public angle: number;
-    constructor(text: string, value: number, size: Size) {
+    constructor(text: string, value: number, size: Size, x?: number, y?: number) {
         this.text = text;
         this.value = value;
         this.size = size;
+        this.x = x;
+        this.y = y;
     }
 }
 

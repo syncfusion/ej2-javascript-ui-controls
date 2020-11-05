@@ -314,7 +314,7 @@ export class InkAnnotation {
                     // tslint:disable-next-line
                     let data: any = currentAnnotation.PathData;
                     if (isImport) {
-                        if (currentAnnotation.IsPathData) {
+                        if (currentAnnotation.IsPathData || currentAnnotation.PathData.split('command').length <= 1) {
                             data = currentAnnotation.PathData;
                         } else {
                             data = getPathString(JSON.parse(currentAnnotation.PathData));
@@ -324,12 +324,14 @@ export class InkAnnotation {
                     // tslint:disable-next-line
                     let selectorSettings: any = currentAnnotation.AnnotationSelectorSettings ? currentAnnotation.AnnotationSelectorSettings : this.getSelector(currentAnnotation, 'Ink');
                     let customData: object = currentAnnotation.customData ? currentAnnotation.customData : this.pdfViewer.inkAnnotationSettings.customData;
+                    // tslint:disable-next-line:max-line-length
+                    currentAnnotation.allowedInteractions = currentAnnotation.AllowedInteractions ? currentAnnotation.AllowedInteractions :  this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(currentAnnotation);
                     annot = {
                         // tslint:disable-next-line:max-line-length
                         id: 'ink' + this.pdfViewerBase.inkCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: data,
                         shapeAnnotationType: 'Ink', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, annotName: currentAnnotation.AnnotName,
                         // tslint:disable-next-line:max-line-length
-                        comments: this.pdfViewer.annotationModule.getAnnotationComments(currentAnnotation.Comments, currentAnnotation, currentAnnotation.Author), author: currentAnnotation.Author, subject: currentAnnotation.Subject, modifiedDate: currentAnnotation.ModifiedDate,
+                        comments: this.pdfViewer.annotationModule.getAnnotationComments(currentAnnotation.Comments, currentAnnotation, currentAnnotation.Author), author: currentAnnotation.Author, allowedInteractions: currentAnnotation.allowedInteractions, subject: currentAnnotation.Subject, modifiedDate: currentAnnotation.ModifiedDate,
                         // tslint:disable-next-line:max-line-length
                         review: { state: '', stateModel: '', modifiedDate: currentAnnotation.ModifiedDate, author: currentAnnotation.Author }, notes: currentAnnotation.Note, annotationSettings: { isLock: isLock },
                         annotationSelectorSettings: selectorSettings, customData: customData
@@ -506,6 +508,8 @@ export class InkAnnotation {
             let currentHeight: number = (bounds.Height);
             let customData: object = currentAnnotation.customData;
             // tslint:disable-next-line
+            let allowedInteractions: any = currentAnnotation.AllowedInteractions ? currentAnnotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(currentAnnotation);
+            // tslint:disable-next-line
             let data: any = currentAnnotation.PathData;
             if (isImport) {
                 data = getPathString(JSON.parse(currentAnnotation.PathData));
@@ -516,7 +520,7 @@ export class InkAnnotation {
                 // tslint:disable-next-line:max-line-length
                 shapeAnnotationType: 'Ink', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, annotationId: currentAnnotation.AnnotName,
                 // tslint:disable-next-line:max-line-length
-                customData: customData, comments: this.pdfViewer.annotationModule.getAnnotationComments(currentAnnotation.Comments, currentAnnotation, currentAnnotation.Author), author: currentAnnotation.Author, subject: currentAnnotation.Subject, modifiedDate: currentAnnotation.ModifiedDate,
+                customData: customData, comments: this.pdfViewer.annotationModule.getAnnotationComments(currentAnnotation.Comments, currentAnnotation, currentAnnotation.Author), author: currentAnnotation.Author, allowedInteractions: allowedInteractions, subject: currentAnnotation.Subject, modifiedDate: currentAnnotation.ModifiedDate,
                 review: { state: '', stateModel: '', modifiedDate: currentAnnotation.ModifiedDate, author: currentAnnotation.Author }, notes: currentAnnotation.Note,
 
             };

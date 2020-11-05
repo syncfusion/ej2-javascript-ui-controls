@@ -1765,14 +1765,14 @@ var ConnectionPointOrigin;
 /**
  * Defines the child nodes need to arranged in linear manner in layout
  * Linear - Child nodes will be arranged in linear manner
- * NonLinear - Child nodes will be arranged in not linear manner
+ * Nonlinear - Child nodes will be arranged in not linear manner
  */
 var ChildArrangement;
 (function (ChildArrangement) {
     /** Linear - Child nodes will be arranged in linear manner */
     ChildArrangement["Linear"] = "Linear";
-    /** NonLinear - Child nodes will be arranged in not linear manner */
-    ChildArrangement["NonLinear"] = "NonLinear";
+    /** Nonlinear - Child nodes will be arranged in not linear manner */
+    ChildArrangement["Nonlinear"] = "Nonlinear";
 })(ChildArrangement || (ChildArrangement = {}));
 /**
  * Defines the constraints to enable/disable certain features of connector.
@@ -21964,7 +21964,7 @@ __decorate$22([
     Property('SamePoint')
 ], Layout.prototype, "connectionPointOrigin", void 0);
 __decorate$22([
-    Property('NonLinear')
+    Property('Nonlinear')
 ], Layout.prototype, "arrangement", void 0);
 __decorate$22([
     Property(30)
@@ -54507,7 +54507,7 @@ class HierarchicalLayoutUtil {
                 lineDistribution.arrangeElements(matrixModel, layoutProp);
             }
             else {
-                if (layoutProp.arrangement === 'NonLinear') {
+                if (layoutProp.arrangement === 'Nonlinear') {
                     this.crossingStage(model);
                     limit = this.placementStage(model, limit.marginX, limit.marginY);
                     tmp = [];

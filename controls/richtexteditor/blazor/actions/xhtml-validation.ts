@@ -26,7 +26,35 @@ export class XhtmlValidation {
             this.ImageTags();
             this.removeTags();
             this.RemoveUnsupported();
+            this.parent.inputElement.innerHTML = this.selfEncloseValidation(this.parent.inputElement.innerHTML);
         }
+    }
+    public selfEncloseValidation(currentValue: string): string {
+        currentValue = currentValue.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/&nbsp;/gi, ' ').replace(/ /g, ' ');
+        let valueTemp: RegExpExecArray;
+        let valueDupe: string[] = [];
+        let valueOriginal: string[] = [];
+        let imgRegexp: RegExp[] = [ /<img(.*?)>/gi, /<area(.*?)>/gi, /<base(.*?)>/gi, /<col (.*?)>/gi, /<embed(.*?)>/gi,
+        /<input(.*?)>/gi, /<link(.*?)>/gi, /<meta(.*?)>/gi, /<param(.*?)>/gi, /<source(.*?)>/gi,
+        /<track(.*?)>/gi, /<wbr(.*?)>/gi ];
+        for (let j: number = 0; j < imgRegexp.length; j++) {
+            valueTemp = imgRegexp[j].exec(currentValue);
+            while ((valueTemp) !== null) {
+                valueDupe.push(valueTemp[0].toString());
+                valueTemp = imgRegexp[j].exec(currentValue);
+            }
+            valueOriginal = valueDupe.slice(0);
+            for (let i: number = 0; i < valueDupe.length; i++) {
+                if (valueDupe[i].indexOf('/') === -1 || valueDupe[i].lastIndexOf('/') !== valueDupe[i].length - 2) {
+                    valueDupe[i] = valueDupe[i].substr(0, valueDupe[i].length - 1) + ' /' +
+                    valueDupe[i].substr(valueDupe[i].length - 1, valueDupe[i].length);
+                }
+            }
+            for (let g: number = 0; g <= valueDupe.length - 1; g++) {
+                currentValue = currentValue.replace(valueOriginal[g], valueDupe[g]);
+            }
+        }
+        return currentValue;
     }
     private AddRootElement(): void {
         if ((this.parent.inputElement.childNodes.length === 1 && this.parent.inputElement.firstChild.nodeName !== 'DIV') ||

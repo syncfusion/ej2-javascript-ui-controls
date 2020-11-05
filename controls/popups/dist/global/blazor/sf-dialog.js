@@ -43,6 +43,7 @@ var SfDialog = /** @class */ (function () {
         this.calculatezIndex = (this.zIndex === 1000);
         this.render();
         this.dotNetRef.invokeMethodAsync('CreatedEvent', null);
+        this.element.classList.remove('e-blazor-hidden');
         if (this.visible) {
             this.dotNetRef.invokeMethodAsync('ShowDialog', null);
         }
@@ -223,6 +224,7 @@ var SfDialog = /** @class */ (function () {
         var proxy = this;
         this.dragObj = new sf.base.Draggable(this.element, {
             clone: false,
+            isDragScroll: true,
             abort: '.' + DLG_CLOSE_ICON_BTN,
             handle: '.' + DLG_HEADER_CONTENT,
             dragStart: function (e) {

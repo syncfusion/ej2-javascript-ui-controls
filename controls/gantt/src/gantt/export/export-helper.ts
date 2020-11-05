@@ -230,6 +230,11 @@ export class ExportHelper {
             let taskbar: PdfGanttTaskbarCollection = this.gantt.taskbar.add();
             let ganttProp: ITaskData = data.ganttProperties;
             taskbar.left = ganttProp.left;
+            taskbar.width = ganttProp.width;
+            if (taskbar.left < 0) {
+                taskbar.width = taskbar.width + taskbar.left;
+                taskbar.left = 0;
+            }
             taskbar.progress = ganttProp.progress;
             taskbar.isScheduledTask = isScheduledTask(ganttProp);
             if (isScheduledTask) {
@@ -248,7 +253,6 @@ export class ExportHelper {
             }
             taskbar.startDate = ganttProp.startDate;
             taskbar.endDate = ganttProp.endDate;
-            taskbar.width = ganttProp.width;
             taskbar.height = this.parent.chartRowsModule.taskBarHeight;
             taskbar.isMilestone = ganttProp.isMilestone;
             taskbar.milestoneColor = new PdfColor(this.ganttStyle.taskbar.milestoneColor);

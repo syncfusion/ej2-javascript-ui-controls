@@ -175,6 +175,10 @@ export class Render {
     private updateTreeCell(args: QueryCellInfoEventArgs, cellElement: HTMLElement, container: Element): void {
         let treeColumn: Column = this.parent.columns[this.parent.treeColumnIndex] as Column;
         let templateFn: string = 'templateFn';
+        let colindex: number = args.column.index;
+        if (isNullOrUndefined(treeColumn.field)) {
+            args.cell.setAttribute('aria-colindex', colindex + '');
+        }
         if (treeColumn.field === args.column.field && !isNullOrUndefined(treeColumn.template)) {
             args.column.template = treeColumn.template;
             args.column[templateFn] = templateCompiler(args.column.template);

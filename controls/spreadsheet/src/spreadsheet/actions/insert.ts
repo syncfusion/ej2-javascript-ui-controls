@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { beginAction, completeAction, insertSheetTab, skipHiddenIdx, refreshImagePosition } from '../common/index';
-import { insert, InsertDeleteEventArgs, } from '../../workbook/common/index';
+import { insert, InsertDeleteEventArgs, dataChanged } from '../../workbook/common/index';
 import { SheetModel, CellModel, getCell } from '../../workbook/index';
 
 /**
@@ -40,7 +40,7 @@ export class Insert {
                     } else {
                         this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, rowIndex: args.index, colIndex: 0, refresh: 'Row' });
                     }
-
+                    this.parent.notify(dataChanged, args);
                     this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
                 }
                 break;

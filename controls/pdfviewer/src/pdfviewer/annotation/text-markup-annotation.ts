@@ -1,7 +1,8 @@
 import {
     PdfViewer, PdfViewerBase, IRectangle, ISelection, AnnotationType, IPageAnnotations, ICommentsCollection,
     IReviewCollection,
-    ISize
+    ISize,
+    AllowedInteraction
 } from '../index';
 import { createElement, Browser, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { ColorPicker, ChangeEventArgs } from '@syncfusion/ej2-inputs';
@@ -42,6 +43,7 @@ export interface ITextMarkupAnnotation {
     annotationAddMode: string;
     // tslint:disable-next-line
     annotationSettings?: any;
+    allowedInteractions?: AllowedInteraction;
 }
 
 /**
@@ -506,8 +508,10 @@ export class TextMarkupAnnotation {
                             annotation.AnnotationSettings = this.getAnnotationSettings(annotation.TextMarkupAnnotationType);
                         }
                         // tslint:disable-next-line:max-line-length
+                        annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.Allowedinteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+                        // tslint:disable-next-line:max-line-length
                         annotationObject = {
-                            textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
+                            textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, allowedInteractions: annotation.allowedInteractions, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
                             // tslint:disable-next-line:max-line-length
                             annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber,
                             textMarkupContent: '', textMarkupStartIndex: 0, textMarkupEndIndex: 0, annotationSelectorSettings: this.getSettings(annotation),
@@ -965,6 +969,8 @@ export class TextMarkupAnnotation {
         this.underlineOpacity = this.pdfViewer.underlineSettings.opacity;
         this.strikethroughOpacity = this.pdfViewer.strikethroughSettings.opacity;
         this.annotationAddMode = 'UI Drawn Annotation';
+        // tslint:disable-next-line
+        let allowedInteractions: any;
         if (context) {
             context.setLineDash([]);
             switch (type) {
@@ -973,8 +979,9 @@ export class TextMarkupAnnotation {
                     subject = 'Highlight';
                     // tslint:disable-next-line:max-line-length
                     author = (this.pdfViewer.highlightSettings.author !== 'Guest' && this.pdfViewer.highlightSettings.author) ? this.pdfViewer.highlightSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+                    allowedInteractions = this.pdfViewer.highlightSettings.allowedInteractions ? this.pdfViewer.highlightSettings.allowedInteractions : 'None';
                     // tslint:disable-next-line:max-line-length
-                    annotation = this.getAddedAnnotation(type, this.highlightColor, this.highlightOpacity, bounds, author, subject, modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect);
+                    annotation = this.getAddedAnnotation(type, this.highlightColor, this.highlightOpacity, bounds, author, subject, modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions);
                     if (annotation) {
                         this.renderHighlightAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor);
                     }
@@ -984,8 +991,9 @@ export class TextMarkupAnnotation {
                     subject = 'Strikethrough';
                     // tslint:disable-next-line:max-line-length
                     author = (this.pdfViewer.strikethroughSettings.author !== 'Guest' &&  this.pdfViewer.strikethroughSettings.author) ? this.pdfViewer.strikethroughSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+                    allowedInteractions = this.pdfViewer.strikethroughSettings.allowedInteractions ? this.pdfViewer.strikethroughSettings.allowedInteractions : 'None';
                     // tslint:disable-next-line:max-line-length
-                    annotation = this.getAddedAnnotation(type, this.strikethroughColor, this.strikethroughOpacity, bounds, author, subject, modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect);
+                    annotation = this.getAddedAnnotation(type, this.strikethroughColor, this.strikethroughOpacity, bounds, author, subject, modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions);
                     if (annotation) {
                         // tslint:disable-next-line:max-line-length
                         this.renderStrikeoutAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, pageNumber);
@@ -996,8 +1004,9 @@ export class TextMarkupAnnotation {
                     subject = 'Underline';
                     // tslint:disable-next-line:max-line-length
                     author = (this.pdfViewer.underlineSettings.author !== 'Guest' && this.pdfViewer.underlineSettings.author) ? this.pdfViewer.underlineSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+                    allowedInteractions = this.pdfViewer.underlineSettings.allowedInteractions ? this.pdfViewer.underlineSettings.allowedInteractions : 'None';
                     // tslint:disable-next-line:max-line-length
-                    annotation = this.getAddedAnnotation(type, this.underlineColor, this.underlineOpacity, bounds, author, subject, modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect);
+                    annotation = this.getAddedAnnotation(type, this.underlineColor, this.underlineOpacity, bounds, author, subject, modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions);
                     if (annotation) {
                     // tslint:disable-next-line:max-line-length   
                         this.renderUnderlineAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, pageNumber);
@@ -2345,7 +2354,7 @@ export class TextMarkupAnnotation {
 
     // tslint:disable-next-line:max-line-length
     // tslint:disable-next-line
-    private getAddedAnnotation(type: string, color: string, opacity: number, bounds: any, author: string, subject: string, predefinedDate: string, note: string, rect: any, pageNumber: number, textContent: string, startIndex: number, endIndex: number, isMultiSelect?: boolean): ITextMarkupAnnotation {
+    private getAddedAnnotation(type: string, color: string, opacity: number, bounds: any, author: string, subject: string, predefinedDate: string, note: string, rect: any, pageNumber: number, textContent: string, startIndex: number, endIndex: number, isMultiSelect?: boolean, allowedInteractions?:any): ITextMarkupAnnotation {
         let date: Date = new Date();
         // tslint:disable-next-line:max-line-length
         let modifiedDate: string = predefinedDate ? predefinedDate : date.toLocaleString();
@@ -2358,7 +2367,7 @@ export class TextMarkupAnnotation {
         let annotationSettings: object =  this.getAnnotationSettings(type);
         let annotation: ITextMarkupAnnotation = {
             // tslint:disable-next-line:max-line-length
-            textMarkupAnnotationType: type, color: color, opacity: opacity, bounds: bounds, author: author, subject: subject, modifiedDate: modifiedDate, note: note, rect: rect,
+            textMarkupAnnotationType: type, color: color, opacity: opacity, bounds: bounds, author: author, allowedInteractions: allowedInteractions, subject: subject, modifiedDate: modifiedDate, note: note, rect: rect,
             annotName: annotationName, comments: [], review: { state: '', stateModel: '', author: author, modifiedDate: modifiedDate }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber,
                // tslint:disable-next-line:max-line-length
             textMarkupContent: textContent, textMarkupStartIndex: startIndex, textMarkupEndIndex: endIndex, isMultiSelect: isMultiSelect, annotationSelectorSettings: this.getSelector(type),
@@ -2466,9 +2475,11 @@ export class TextMarkupAnnotation {
             annotation.AnnotationSettings = this.getAnnotationSettings(annotation.TextMarkupAnnotationType);
         }
         // tslint:disable-next-line:max-line-length
+        annotation.allowedInteractions = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+        // tslint:disable-next-line:max-line-length
         annotationObject = {
             // tslint:disable-next-line:max-line-length
-            textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
+            textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, opacity: annotation.Opacity, allowedInteractions: annotation.allowedInteractions, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
             annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
             shapeAnnotationType: 'textMarkup',
             pageNumber: pageNumber, textMarkupContent: '', textMarkupStartIndex: 0,
@@ -2487,9 +2498,11 @@ export class TextMarkupAnnotation {
     public updateTextMarkupAnnotationCollections(annotation: any, pageNumber: number): any {
         // tslint:disable-next-line
         let annotationObject: any = null;
+        // tslint:disable-next-line:max-line-length
+        annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
         annotationObject = {
             // tslint:disable-next-line:max-line-length
-            textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
+            textMarkupAnnotationType: annotation.TextMarkupAnnotationType, allowedInteractions: annotation.allowedInteractions, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
             annotationId: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber, isMultiSelect: annotation.IsMultiSelect, annotNameCollection: annotation.AnnotNameCollection, annotpageNumbers: annotation.AnnotpageNumbers, customData: this.pdfViewer.annotation.getCustomData(annotation)
         };
         return annotationObject;

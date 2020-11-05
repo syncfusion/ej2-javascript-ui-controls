@@ -244,6 +244,13 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public tabIndex: number;
 
     /**
+     * Enables and disables left, right, top and bottom spacing in the circular gauge.
+     * @default true
+     */
+    @Property(true)
+    public allowMargin: boolean;
+
+    /**
      * Sets and gets the options for customizing the legend of the circular gauge.
      */
     @Complex<LegendSettingsModel>({}, LegendSettings)
@@ -995,6 +1002,103 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     }
 
     /**
+     * To calculate the spacing of the circular gauge element.
+     */
+    private radiusAndCenterCalculation(top : number, left : number, width : number, height : number, 
+        radius : number, titleHeight : number, isUpperAngle : boolean, isLowerAngle : boolean, 
+        isFullPercent : boolean, radiusPercent : number, isUpper : boolean, isLower : boolean): void {
+        let rect: Rect; let bottom : number = this.margin.bottom + this.border.width; let minRadius : number;
+        let widthRadius : number; let centerX: number; let centerY: number;
+        if (this.moveToCenter && this.axes.length === 1 &&
+            isNullOrUndefined(this.centerX) && isNullOrUndefined(this.centerY)) {
+            rect = new Rect(left, top, width, height);
+        } else {
+            if (!this.allowMargin) {
+                if (!isNullOrUndefined(this.legendModule) && (width > height) && (this.legendSettings.position === 'Top' || this.legendSettings.position === 'Bottom')) {
+                    minRadius = Math.min(width, height) / 2;
+                    rect = new Rect(
+                        (left + (width / 2) - minRadius), (top + (height / 2) - minRadius),
+                        minRadius * 2, minRadius * 2
+                    );
+                } else {
+                    if (width > height && (isLowerAngle && isLower || isUpperAngle && isUpper)) {
+                        widthRadius = ((width)/ 2);
+                        let heightValue : number = isUpper && isLower ? (height / 2)  : (height * (3 / 4));
+                        if (widthRadius > heightValue) {
+                            widthRadius =  heightValue;
+                        }
+                        rect = new Rect(
+                            (left + (width / 2) - widthRadius), (top + (height / 2) - widthRadius),
+                            widthRadius * 2, widthRadius * 2
+                        );
+                    } else {
+                        if (height > width) {
+                            let heightRadius : number = height / 2;
+                            rect = new Rect((left + (width / 2) - radius), (top + (height / 2) - heightRadius), radius * 2, heightRadius * 2);
+                        } else {
+                            rect = new Rect(
+                                (left + (width / 2) - radius), (top + (height / 2) - radius),
+                                radius * 2, radius * 2
+                            );
+                        }
+                        
+                    }
+                }
+            } else {
+                rect = new Rect(
+                    (left + (width / 2) - radius), (top + (height / 2) - radius),
+                    radius * 2, radius * 2
+                );
+            }
+        }
+        this.gaugeRect = rect;
+        if (this.legendModule && this.legendSettings.visible) {
+            this.legendModule.getLegendOptions(this.axes as Axis[]);
+            this.legendModule.calculateLegendBounds(this.gaugeRect, this.availableSize);
+        }
+        if (!this.allowMargin) {
+            if (!isNullOrUndefined(this.legendModule) && (isUpperAngle || isLowerAngle) && (width > height) && (this.legendSettings.position === 'Top' || this.legendSettings.position === 'Bottom')) {
+                let difference : number = height - this.gaugeRect.height;
+                this.gaugeRect.width =  width - ((this.availableSize.width - this.gaugeRect.width) / 2);
+                this.gaugeRect.y = this.gaugeRect.y - difference;
+                this.gaugeRect.height = this.gaugeRect.height + difference + ((this.availableSize.height - this.gaugeRect.height) / 2);
+            }
+            else if (!isNullOrUndefined(this.legendModule) && (isUpperAngle || isLowerAngle) && (width > height)&& (this.legendSettings.position === 'Left' || this.legendSettings.position === 'Right')) {
+                let difference : number = this.gaugeRect.height - this.gaugeRect.width;
+                this.gaugeRect.x = this.legendSettings.position === 'Right'
+                ? this.gaugeRect.x + this.margin.right : this.gaugeRect.x;
+                this.gaugeRect.width = this.legendSettings.position === 'Left' ? 
+                Math.abs(width - ((this.availableSize.width - this.gaugeRect.width + difference)  / 2)) 
+                : Math.abs(width - ((this.availableSize.width - this.gaugeRect.width) / 2) - 10);
+            }
+            centerX = this.centerX !== null ?
+                stringToNumber(this.centerX, this.availableSize.width) : this.gaugeRect.x + (this.gaugeRect.width / 2);
+            if ((isUpperAngle || isLowerAngle) && !isNullOrUndefined(this.legendModule)) {                
+                centerX = (this.legendSettings.position === 'Top' || this.legendSettings.position === 'Bottom')
+                    ? this.availableSize.width / 2 : this.legendSettings.position === 'Right' ? (this.gaugeRect.width / 2) + this.margin.right :
+                    centerX;
+            }
+            centerY = ((isUpperAngle || isLowerAngle) ? (isUpperAngle ?
+                    (( (this.gaugeRect.height * (3/4) + this.gaugeRect.y) - bottom))
+                    : (((this.gaugeRect.height * (1 / 4)) + (this.gaugeRect.y)) )) : this.gaugeRect.y + (this.gaugeRect.height / 2));
+            centerY = !isFullPercent && (isUpperAngle || isLowerAngle) ? (this.gaugeRect.height / 2) + this.gaugeRect.y + (radiusPercent * (3 / 4) * (1 / 2)) : centerY;
+            if (!isNullOrUndefined(this.axes) && this.axes.length > 1 && !isNullOrUndefined(this.midPoint)) {
+                isUpper = isUpperAngle ? isUpperAngle : isUpper;
+                isLower = isLowerAngle ? isLowerAngle : isLower;
+                if (isUpper && isLower) {
+                    centerY = (this.availableSize.height / 2) - bottom;
+                }
+            }
+        } else {
+            centerX = this.centerX !== null ?
+            stringToNumber(this.centerX, this.availableSize.width) : this.gaugeRect.x + (this.gaugeRect.width / 2);
+            centerY =  this.centerY !== null ?
+            stringToNumber(this.centerY, this.availableSize.height) : this.gaugeRect.y + (this.gaugeRect.height / 2);
+        }
+        this.midPoint = new GaugeLocation(centerX, centerY);
+    }
+
+    /**
      * Method to calculate the availble size for circular gauge.
      */
     private calculateBounds(): void {
@@ -1005,29 +1109,35 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             titleHeight = measureText(this.title, this.titleStyle).height + padding;
         }
         let top: number = margin.top + titleHeight + this.border.width;
-        let left: number = margin.left + this.border.width;
+        let bottom : number = margin.bottom + this.border.width;
+        let left: number = margin.left + this.border.width; let isUpper : boolean = false ; let isLower : boolean = false;
         let width: number = this.availableSize.width - left - margin.right - this.border.width;
         let height: number = this.availableSize.height - top - this.border.width - margin.bottom;
         let radius: number = Math.min(width, height) / 2;
         if (this.moveToCenter && this.axes.length === 1 &&
             isNullOrUndefined(this.centerX) && isNullOrUndefined(this.centerY)) {
             rect = new Rect(left, top, width, height);
+        }  
+        if (!this.allowMargin) {
+            for (var j = 0; j < this.axes.length; j++) {
+                let isUpperAngle : boolean = 270 <= this.axes[j].startAngle && this.axes[j].startAngle <= 360 &&
+                0 <= this.axes[j].endAngle && this.axes[j].endAngle <= 90;
+                let isLowerAngle : boolean = 90 >= this.axes[j].startAngle && this.axes[j].startAngle <= 180 &&
+                180 <= this.axes[j].endAngle && 270 <= this.axes[j].endAngle && 0 !== this.axes[j].startAngle &&
+                360 !== this.axes[j].endAngle;
+                isUpper = isUpperAngle ? isUpperAngle : isUpper;
+                isLower = isLowerAngle ? isLowerAngle : isLower;
+                let isFullPercent : boolean = this.axes[j].radius !== null ?  parseInt(this.axes[0].radius.split('%')[0]) >= 100 : true;   
+                let radiusPercent : number = this.axes[j].radius !== null ? radius * (parseInt(this.axes[0].radius.split('%')[0]) / 100) : radius;
+                this.radiusAndCenterCalculation(top, left, width, height, radius, titleHeight, isUpperAngle, isLowerAngle, isFullPercent, radiusPercent, isUpper, isLower);
+            }
         } else {
             rect = new Rect(
                 (left + (width / 2) - radius), (top + (height / 2) - radius),
                 radius * 2, radius * 2
             );
+            this.radiusAndCenterCalculation(top, left, width, height, radius, titleHeight, false, false, null, null, false, false);
         }
-        this.gaugeRect = rect;
-        if (this.legendModule && this.legendSettings.visible) {
-            this.legendModule.getLegendOptions(this.axes as Axis[]);
-            this.legendModule.calculateLegendBounds(this.gaugeRect, this.availableSize);
-        }
-        let centerX: number = this.centerX !== null ?
-            stringToNumber(this.centerX, this.availableSize.width) : this.gaugeRect.x + (this.gaugeRect.width / 2);
-        let centerY: number = this.centerY !== null ?
-            stringToNumber(this.centerY, this.availableSize.height) : this.gaugeRect.y + (this.gaugeRect.height / 2);
-        this.midPoint = new GaugeLocation(centerX, centerY);
         this.gaugeAxisLayoutPanel.measureAxis(this.gaugeRect);
     }
 
@@ -1147,6 +1257,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             }
         });
         this.isProtectedOnChange = true;
+        pointer.previousValue = pointer.currentValue;
         pointer.currentValue = value;
         pointer.value = value;
         this.isProtectedOnChange = false;

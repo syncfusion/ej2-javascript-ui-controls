@@ -1042,6 +1042,81 @@ describe('Waterfall Series', () => {
             chartObj.dataBind();
         });
     });
+    describe('Checking connector lines', () => {
+        let chart: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: HTMLElement;
+        element = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chart = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'Category',
+                        majorGridLines: { width: 0 },
+                        plotOffset: 20
+                    },
+                    //Initializing Primary Y Axis
+                    primaryYAxis: {
+                        minimum: 0, maximum: 10, interval: 2,
+                        majorGridLines: { width: 0 },
+                        title: 'Expenditure'
+                    },
+                    //Initializing Chart Series
+                    series: [{
+                        dataSource: [{ x: 'Rating', y: 0 }, { x: 'Importance', y: 0 },
+                        { x: 'Benchmark', y: 6 }, { x: 'Result' }],
+                        width: 2, negativeFillColor: '#e56590',
+                        xName: 'x', yName: 'y', intermediateSumIndexes: [3], sumIndexes: [4],
+                        columnWidth: 0.9,
+                        type: 'Waterfall', animation: { enable: true },
+                        marker: {
+                            dataLabel: { visible: true, font: { color: '#ffffff' } }
+                        }, connector: { color: '#5F6A6A', width: 2 }
+                    }],
+                    chartArea: { border: { width: 0 } },
+                    title: 'Company Revenue and Profit',
+                    legendSettings: { visible: false },
+                    width: '100%',
+                });
+            chart.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            chart.destroy();
+            element.remove();
+        });
+
+        it('Checking connector line with start point value 0', (done: Function) => {
+            loaded = (args: Object): void => {
+                let series: HTMLElement = document.getElementById('container_Series_0_Connector_');
+                let d: string = series.getAttribute('d');
+                expect(
+                    (d === 'M 14.45625000000004 368.5 L 563.7937499999999 368.5 '+
+                    'M 303.58124999999995 368.5 L 852.91875 368.5 M 592.70625 147.4 L 1142.04375 147.4 ') ||
+                    (d === 'M 8.318750000000009 372.5 L 324.43125 372.5 M 174.69374999999997 372.5 L 490.80625000000003 372.5 '+
+                    'M 341.06874999999997 149 L 657.18125 149 ')).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Checking connector line with start point value 0 chart is transposed', (done: Function) => {
+            loaded = (args: Object): void => {
+                let series: HTMLElement = document.getElementById('container_Series_0_Connector_');
+                let d: string = series.getAttribute('d');
+                expect(
+                    (d === 'M 0 300.69375 L 0 156.05624999999998 M 0 222.06875000000002 '+
+                    'L 0 79.93124999999999 M 703.5 148.44375000000002 L 703.5 3.8062499999999866 ') ||
+                    (d === 'M 0 307.60625000000005 L 0 159.64374999999998 M 0 229.73125000000002 L 0 81.76874999999998 '+
+                    'M 410.09999999999997 151.85625000000002 L 410.09999999999997 3.893749999999986 ')).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.isTransposed = true;
+            chart.refresh();
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

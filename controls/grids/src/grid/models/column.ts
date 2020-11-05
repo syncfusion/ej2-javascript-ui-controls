@@ -103,8 +103,8 @@ export class Column {
     /**    
      * It is used to change display value with the given format and does not affect the original data.  
      * Gets the format from the user which can be standard or custom 
-     * [`number`](../common/internationalization/#number-formatting/) 
-     * and [`date`](../common/internationalization/#number-formatting/) formats.  
+     * [`number`](../base/internationalization/#number-formatting/) 
+     * and [`date`](../base/internationalization/#date-formatting/) formats.  
      * @default null
      * @aspType string
      * @blazorType string
@@ -120,7 +120,7 @@ export class Column {
 
     /**
      * Defines the column template that renders customized element in each cell of the column.
-     * It accepts either [template string](../../common/template-engine/) or HTML element ID.   
+     * It accepts either [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID.   
      * @default null    
      */
 

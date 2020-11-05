@@ -1354,6 +1354,38 @@ describe('TreeGrid base module', () => {
     });
   });
 
+  describe('Checking template column Expand/Collapse', () => {
+    let gridObj: TreeGrid;
+    let rows: HTMLTableRowElement[];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          columns: [
+            { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right' },
+            {
+                headerText: 'Template', textAlign: 'Center',
+                template: '<button id="button">Button</button>', width: 90
+            }
+            ],
+        },
+        done
+      );
+    });
+    it('Checking Expand/Collapse action when the template column is marked as treeColumnIndex ', () => {
+      rows = gridObj.getRows();
+      gridObj.collapseRow(rows[0] as HTMLTableRowElement);
+      expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
+      gridObj.expandRow(rows[0] as HTMLTableRowElement);
+      expect((rows[1] as HTMLTableRowElement).style.display).toBe('table-row');
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

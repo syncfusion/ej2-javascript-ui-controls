@@ -70,3 +70,259 @@ describe('Word export line spacing validation', () => {
     //    expect(editor.selection.start.paragraph.paragraphFormat.lineSpacingType).toBe('Exactly');
     //});
 });
+let ShapeExport:any ={
+    "sections": [
+      {
+        "blocks": [
+          {
+            "rows": [
+              {
+                "rowFormat": {
+                  "allowBreakAcrossPages": true,
+                  "isHeader": false,
+                  "height": 1.0,
+                  "heightType": "AtLeast",
+                  "borders": {},
+                  "leftMargin": 5.4,
+                  "rightMargin": 5.4,
+                  "topMargin": 0.0,
+                  "bottomMargin": 0.0
+                },
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "characterFormat": {
+                          "fontFamily": "Arial",
+                          "fontColor": "#00000000",
+                          "fontFamilyBidi": "Arial"
+                        },
+                        "paragraphFormat": {
+                          "styleName": "Normal"
+                        },
+                        "inlines": [
+                          {
+                            "shapeId": 1,
+                            "name": "Zone de texte 2",
+                            "alternativeText": null,
+                            "title": "",
+                            "visible": true,
+                            "width": 177.75,
+                            "height": 24.0,
+                            "widthScale": 100.0,
+                            "heightScale": 100.0,
+                            "lineFormat": {
+                              "lineFormatType": "None",
+                              "color": "#000000FF",
+                              "weight": 1.0,
+                              "lineStyle": "Solid"
+                            },
+                            "verticalPosition": 10.7,
+                            "verticalOrigin": "Paragraph",
+                            "verticalAlignment": "None",
+                            "horizontalPosition": 31.75,
+                            "horizontalOrigin": "Margin",
+                            "horizontalAlignment": "None",
+                            "zOrderPosition": 251660288,
+                            "allowOverlap": true,
+                            "layoutInCell": true,
+                            "lockAnchor": false,
+                            "autoShapeType": "Rectangle",
+                            "textFrame": {
+                              "textVerticalAlignment": "Top",
+                              "leftMargin": 0.00041852362,
+                              "rightMargin": 0.00041852362,
+                              "topMargin": 0.00021761812,
+                              "bottomMargin": 0.00021761812,
+                              "blocks": [
+                                {
+                                  "characterFormat": {
+                                    "fontFamily": "Arial",
+                                    "fontColor": "#00000000",
+                                    "fontFamilyBidi": "Arial"
+                                  },
+                                  "paragraphFormat": {
+                                    "afterSpacing": 0.0,
+                                    "textAlignment": "Center",
+                                    "styleName": "Normal"
+                                  },
+                                  "inlines": [
+                                    {
+                                      "hasFieldEnd": true,
+                                      "characterFormat": {
+                                        "fontFamily": "Arial",
+                                        "fontColor": "#00000000",
+                                        "fontFamilyBidi": "Arial"
+                                      },
+                                      "fieldType": 0
+                                    },
+                                    {
+                                      "text": " MERGEFIELD destinataire_ModeEnvoie ",
+                                      "characterFormat": {
+                                        "fontFamily": "Arial",
+                                        "fontColor": "#00000000",
+                                        "fontFamilyBidi": "Arial"
+                                      }
+                                    },
+                                    {
+                                      "fieldType": 2
+                                    },
+                                    {
+                                      "text": "«destinataire_ModeEnvoie»",
+                                      "characterFormat": {
+                                        "fontFamily": "Arial",
+                                        "fontColor": "#00000000",
+                                        "fontFamilyBidi": "Arial"
+                                      }
+                                    },
+                                    {
+                                      "fieldType": 1
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "cellFormat": {
+                      "leftMargin": 5.400000095367432,
+                      "rightMargin": 5.400000095367432,
+                      "topMargin": 0.0,
+                      "bottomMargin": 0.0,
+                      "columnSpan": 1,
+                      "rowSpan": 1,
+                      "preferredWidth": 233.64999389648438,
+                      "preferredWidthType": "Point",
+                      "verticalAlignment": "Top",
+                      "isSamePaddingAsTable": false,
+                      "borders": {},
+                      "shading": {
+                        "texture": "TextureNone"
+                      },
+                      "cellWidth": 233.64999389648438
+                    }
+                  }
+                ]
+              }
+            ],
+            "title": null,
+            "description": null,
+            "tableFormat": {
+              "allowAutoFit": false,
+              "leftMargin": 5.400000095367432,
+              "rightMargin": 5.400000095367432,
+              "topMargin": 0.0,
+              "bottomMargin": 0.0,
+              "leftIndent": 0.0,
+              "tableAlignment": "Left",
+              "preferredWidthType": "Auto",
+              "borders": { },
+              "bidi": false,
+              "horizontalPositionAbs": "Left",
+              "horizontalPosition": 0.0
+            }
+          },
+          {
+            "characterFormat": {
+              "fontFamily": "Arial",
+              "fontColor": "#00000000",
+              "fontFamilyBidi": "Arial"
+            },
+            "paragraphFormat": {
+              "afterSpacing": 0.0,
+              "styleName": "Normal"
+            },
+            "inlines": [
+              {
+                "name": "_GoBack",
+                "bookmarkType": 0
+              },
+              {
+                "name": "_GoBack",
+                "bookmarkType": 1
+              }
+            ]
+          }
+        ],
+        "headersFooters": {},
+        "sectionFormat": {
+          "headerDistance": 35.400001525878906,
+          "footerDistance": 35.400001525878906,
+          "pageWidth": 595.2999877929688,
+          "pageHeight": 841.9000244140625,
+          "leftMargin": 70.8499984741211,
+          "rightMargin": 70.8499984741211,
+          "topMargin": 70.8499984741211,
+          "bottomMargin": 70.8499984741211,
+          "differentFirstPage": true,
+          "differentOddAndEvenPages": false,
+          "bidi": false,
+          "restartPageNumbering": false,
+          "pageStartingNumber": 0
+        }
+      }
+    ],
+    "characterFormat": {
+      "bold": false,
+      "italic": false,
+      "strikethrough": "None",
+      "baselineAlignment": "Normal",
+      "fontSize": 11.0,
+      "fontFamily": "Calibri",
+      "fontColor": "#00000000",
+      "fontSizeBidi": 11.0,
+      "fontFamilyBidi": "Arial"
+    },
+    "paragraphFormat": {
+      "leftIndent": 0.0,
+      "rightIndent": 0.0,
+      "firstLineIndent": 0.0,
+      "beforeSpacing": 0.0,
+      "afterSpacing": 8.0,
+      "lineSpacing": 1.0791666507720947,
+      "lineSpacingType": "Multiple",
+      "textAlignment": "Left"
+    },
+    "background": {
+      "color": "#FFFFFFFF"
+    },
+    "styles": {},
+    "defaultTabWidth": 35.400001525878906,
+    "formatting": false,
+    "trackChanges": false,
+    "protectionType": "NoProtection",
+    "enforcement": false,
+    "dontUseHTMLParagraphAutoSpacing": false,
+    "alignTablesRowByRow": false,
+    "formFieldShading": true
+ };
+
+ describe('Word export TextBox Shape validation', () => {
+    let editor: DocumentEditor;
+    beforeAll((): void => {
+        document.body.appendChild(createElement('div', { id: 'container' }));
+        DocumentEditor.Inject(Editor, Selection, WordExport, SfdtExport,EditorHistory);
+       editor = new DocumentEditor({enableEditorHistory:true, enableWordExport: true, enableEditor: true, isReadOnly: false, enableSelection: true, enableSfdtExport: true });
+        editor.acceptTab = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('TextBox Shape validation', () => {
+        editor.open(JSON.stringify(ShapeExport));
+      expect(()=>{editor.save('Shape', 'Docx');}).not.toThrowError();
+    });
+});

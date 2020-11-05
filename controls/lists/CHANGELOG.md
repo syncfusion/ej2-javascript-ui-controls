@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.47 (2020-11-05)
+
+### ListBase
+
+#### New Features
+
+- `#291708`- Provided string and integer array support for data source property in ListBase.
+
 ## 18.3.44 (2020-10-27)
 
 ### ListView

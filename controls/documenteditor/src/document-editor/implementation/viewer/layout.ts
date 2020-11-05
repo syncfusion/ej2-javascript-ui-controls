@@ -618,6 +618,10 @@ export class Layout {
                         bookmrkElement.reference = element;
                         element.reference = bookmrkElement;
                     }
+                } else if (element.bookmarkType === 0 && this.documentHelper.bookmarks.containsKey(element.name)) {
+                    if (isNullOrUndefined(element.reference)) {
+                        this.documentHelper.bookmarks.remove(element.name);
+                    }
                 }
             }
             if (element instanceof ContentControl && this.documentHelper.contentControlCollection.indexOf(element) === -1) {

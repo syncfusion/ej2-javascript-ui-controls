@@ -13,7 +13,7 @@ import { ActiveElements, findActiveElement } from '../drawing/action';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 import { renderAdornerLayer } from '../drawing/dom-util';
 import { FreeTextAnnotation } from '../annotation/free-text-annotation';
-import { AnnotationResizerLocation } from './types';
+import { AnnotationDataFormat, AnnotationResizerLocation } from './types';
 import { cloneObject } from '../drawing/drawing-util';
 import { IContextMenu, MouseDownEventArgs } from './interfaces';
 import { BlazorContextMenu } from './blazor-context-menu';
@@ -2261,7 +2261,7 @@ public mouseDownHandler(event: MouseEvent): void {
             // tslint:disable-next-line:max-line-length
             if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.freeTextAnnotationModule && this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus ) {
                 this.isFreeTextContextMenu = true;
-                // tslint:disable-next-line:max-line-length 
+                // tslint:disable-next-line:max-line-length
                 if (this.pdfViewer.annotation.freeTextAnnotationModule && !this.pdfViewer.annotation.freeTextAnnotationModule.isTextSelected) {
                     disabledItems.push('Cut');
                     disabledItems.push('Copy');
@@ -2278,7 +2278,7 @@ public mouseDownHandler(event: MouseEvent): void {
                 hidenItems.push('Comment');
                 hidenItems.push('DeleteContext');
             } else  if (isClickWithinSelectionBounds && this.pdfViewer.textSelectionModule ) {
-                    // tslint:disable-next-line:max-line-length 
+                    // tslint:disable-next-line:max-line-length
                     if ((!(event.target as HTMLElement).classList.contains('e-pv-maintaincontent') && (event.target as HTMLElement).classList.contains('e-pv-text') || (event.target as HTMLElement).classList.contains('e-pv-text-layer'))) {
                         if (this.checkIsNormalText()) {
                             isCancel = true;
@@ -4638,6 +4638,27 @@ public mouseDownHandler(event: MouseEvent): void {
             }
         }
     }
+
+    private downloadExportedXFdfAnnotation(blobUrl: string): void {
+        // tslint:disable-next-line
+        let Url: any = URL || webkitURL;
+        blobUrl = Url.createObjectURL(blobUrl);
+        let anchorElement: HTMLElement = createElement('a');
+        if (anchorElement.click) {
+            (anchorElement as HTMLAnchorElement).href = blobUrl;
+            (anchorElement as HTMLAnchorElement).target = '_parent';
+            if ('download' in anchorElement) {
+                if (this.pdfViewer.exportAnnotationFileName !== null) {
+                    (anchorElement as HTMLAnchorElement).download = this.pdfViewer.exportAnnotationFileName.split('.')[0] + '.xfdf';
+                } else {
+                    (anchorElement as HTMLAnchorElement).download = this.pdfViewer.fileName.split('.')[0] + '.xfdf';
+                }
+            }
+            (document.body || document.documentElement).appendChild(anchorElement);
+            anchorElement.click();
+            anchorElement.parentNode.removeChild(anchorElement);
+        }
+    }
     /**
      * @private
      */
@@ -5910,7 +5931,7 @@ public mouseDownHandler(event: MouseEvent): void {
 
                 this.action = this.findToolToActivate(obj, this.currentPosition);
                 // tslint:disable-next-line
-                if (obj && (obj as any).annotationSettings && (obj as any).annotationSettings.isLock) {     
+                if (obj && (obj as any).annotationSettings && (obj as any).annotationSettings.isLock) {
                     if (this.action === 'Select') {
                         if (this.pdfViewer.annotationModule.checkAllowedInteractions('Select', obj)) {
                             this.action = this.action;
@@ -6529,33 +6550,41 @@ public mouseDownHandler(event: MouseEvent): void {
      * @private
      */
     // tslint:disable-next-line
-    public importAnnotations(importData: any): void {
+    public importAnnotations(importData: any, annotationDataFormat?: AnnotationDataFormat): void {
         if (this.pdfViewer.annotationModule) {
-            this.createRequestForImportAnnotations(importData);
+            this.createRequestForImportAnnotations(importData, annotationDataFormat);
         }
     }
 
     /**
      * @private
      */
-    public exportAnnotations(): void {
+    public exportAnnotations(annotationDataFormat?: AnnotationDataFormat): void {
         if (this.pdfViewer.annotationModule) {
             let isAnnotations: boolean = this.updateExportItem();
             if (isAnnotations) {
-                this.createRequestForExportAnnotations();
+                this.createRequestForExportAnnotations(false, annotationDataFormat);
             }
         }
     }
 
     // tslint:disable-next-line
-    private createRequestForExportAnnotations(isObject?: boolean): any {
+    private createRequestForExportAnnotations(isObject?: boolean, annotationDataFormat?: AnnotationDataFormat): any {
         let proxy: PdfViewerBase = this;
         let promise: Promise<Blob> = new Promise((resolve: Function, reject: Function) => {
             // tslint:disable-next-line
             let jsonObject: any;
-            // tslint:disable-next-line:max-line-length
-            jsonObject = { hashId: proxy.hashId, action: 'ExportAnnotations', pdfAnnotation: proxy.createAnnotationJsonData(), elementId: proxy.pdfViewer.element.id };
-            proxy.pdfViewer.fireExportStart(jsonObject.pdfAnnotation);
+            if (annotationDataFormat === 'Json') {
+                // tslint:disable-next-line:max-line-length
+               jsonObject = { hashId: proxy.hashId, action: 'ExportAnnotations', pdfAnnotation: proxy.createAnnotationJsonData(), elementId: proxy.pdfViewer.element.id, annotationDataFormat: annotationDataFormat };
+               proxy.pdfViewer.fireExportStart(jsonObject.pdfAnnotation);
+
+           } else {
+               jsonObject = this.constructJsonDownload();
+               jsonObject.annotationDataFormat = annotationDataFormat;
+               // tslint:disable-next-line
+               jsonObject['action'] = 'ExportAnnotations';
+           }
             if (proxy.jsonDocumentId) {
                 // tslint:disable-next-line
                 (jsonObject as any).document = proxy.jsonDocumentId;
@@ -6592,22 +6621,34 @@ public mouseDownHandler(event: MouseEvent): void {
                                 proxy.pdfViewer.fireExportFailed(jsonObject.pdfAnnotation, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
                             }
                         } else {
-                            if (data.split('base64,')[1]) {
-                                let blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/json');
-                                if (Browser.isIE || Browser.info.name === 'edge') {
-                                    if (proxy.pdfViewer.exportAnnotationFileName !== null) {
-                                        window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.exportAnnotationFileName.split('.')[0]);
+                            if (annotationDataFormat === 'Json') {
+                                if (data.split('base64,')[1]) {
+                                    let blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/json');
+                                    if (Browser.isIE || Browser.info.name === 'edge') {
+                                        if (proxy.pdfViewer.exportAnnotationFileName !== null) {
+                                            // tslint:disable-next-line:max-line-length
+                                            window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.exportAnnotationFileName.split('.')[0]);
+                                        } else {
+                                            window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0]);
+                                        }
                                     } else {
-                                        window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0]);
+                                        proxy.downloadExportAnnotationJson(blobUrl);
                                     }
+                                    proxy.updateDocumentAnnotationCollections();
                                 } else {
-                                    proxy.downloadExportAnnotationJson(blobUrl);
+                                    proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('Export Failed'));
+                                    // tslint:disable-next-line:max-line-length
+                                    proxy.pdfViewer.fireExportFailed(jsonObject.pdfAnnotation, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
                                 }
-                                proxy.updateDocumentAnnotationCollections();
                             } else {
-                                proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('Export Failed'));
-                                // tslint:disable-next-line:max-line-length
-                                proxy.pdfViewer.fireExportFailed(jsonObject.pdfAnnotation, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
+                                if (data.split('base64,')[1]) {
+                                    let blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/vnd.adobe.xfdf');
+                                    proxy.downloadExportedXFdfAnnotation(blobUrl);
+                                } else {
+                                    proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('Export Failed'));
+                                    // tslint:disable-next-line:max-line-length
+                                    proxy.pdfViewer.fireExportFailed(jsonObject.pdfAnnotation, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
+                                }
                             }
                         }
                     }
@@ -6652,7 +6693,7 @@ public mouseDownHandler(event: MouseEvent): void {
     }
 
     // tslint:disable-next-line
-    private createRequestForImportAnnotations(importData: any): void {
+    private createRequestForImportAnnotations(importData: any, annotationDataFormat?: AnnotationDataFormat): void {
         let jsonObject: object;
         let proxy: PdfViewerBase = this;
         if (typeof importData === 'object') {
@@ -6662,8 +6703,13 @@ public mouseDownHandler(event: MouseEvent): void {
             proxy.pdfViewer.fireImportSuccess(importData.pdfAnnotation);
         } else {
             proxy.pdfViewer.fireImportStart(importData);
-            // tslint:disable-next-line:max-line-length
-            jsonObject = { fileName: importData, action: 'ImportAnnotations', elementId: proxy.pdfViewer.element.id };
+            if (annotationDataFormat === 'Json') {
+                // tslint:disable-next-line:max-line-length
+                jsonObject = { fileName: importData, action: 'ImportAnnotations', elementId: proxy.pdfViewer.element.id };
+            } else {
+                // tslint:disable-next-line:max-line-length
+                jsonObject = { importedData: importData, action: 'ImportAnnotations', elementId: proxy.pdfViewer.element.id,  hashId: this.hashId, uniqueId: this.documentId };
+            }
             if (proxy.jsonDocumentId) {
                 // tslint:disable-next-line
                 (jsonObject as any).document = proxy.jsonDocumentId;

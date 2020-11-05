@@ -85,7 +85,9 @@ export class ConnectorLine {
                 (Math.floor(this.parent.chartRowsModule.milestoneHeight)) : childGanttRecord.width;
             connectorObj.parentIndex = parentIndex;
             connectorObj.childIndex = childIndex;
-            connectorObj.rowHeight = this.parent.rowHeight;
+            let rowHeight: number = this.parent.ganttChartModule.getChartRows()[0] &&
+                this.parent.ganttChartModule.getChartRows()[0].getBoundingClientRect().height;
+            connectorObj.rowHeight = rowHeight && !isNaN(rowHeight) ? rowHeight : this.parent.rowHeight;
             connectorObj.type = predecessor.type;
             let parentId: string = this.parent.viewType === 'ResourceView' ? parentGanttRecord.taskId : parentGanttRecord.rowUniqueID;
             let childId: string = this.parent.viewType === 'ResourceView' ? childGanttRecord.taskId : childGanttRecord.rowUniqueID;

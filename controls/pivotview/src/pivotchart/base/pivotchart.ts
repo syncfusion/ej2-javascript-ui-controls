@@ -16,11 +16,11 @@ import { createElement, remove, isNullOrUndefined, isBlazor } from '@syncfusion/
 import { ChartSettingsModel } from '../../pivotview/model/chartsettings-model';
 import { PivotView } from '../../pivotview';
 import {
-    RowHeaderPositionGrouping, ChartSeriesType, ChartSeriesCreatedEventArgs, RowHeaderLevelGrouping, ChartLabelInfo, DrillArgs
+    RowHeaderPositionGrouping, ChartSeriesType, ChartSeriesCreatedEventArgs, RowHeaderLevelGrouping, ChartLabelInfo, DrillArgs, MultiLevelLabelClickEventArgs
 } from '../../common';
 import { DrillOptionsModel } from '../../pivotview/model/datasourcesettings-model';
 import { PivotUtil } from '../../base/util';
-import { OlapEngine, ITupInfo } from '../../base/olap/engine';
+import { OlapEngine, ITupInfo, IDrillInfo } from '../../base/olap/engine';
 import { SummaryTypes } from '../../base/types';
 import { ContextMenu, ContextMenuModel, MenuItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
@@ -169,11 +169,14 @@ export class PivotChart {
         let lastHierarchy: string = '';
         let lastDimension: string = '';
         let memberCell: IAxisSet;
+        let drillDimension: string = '';
+        let isDrill: boolean = false;
         if (this.parent.dataType === 'olap') {
             levelPos = this.groupHierarchyWithLevels(pivotValues as any);
             lastHierarchy = this.fieldPosition[this.fieldPosition.length - 1];
             lastDimension = (this.measurePos === (this.fieldPosition.length - 1) && this.fieldPosition.length > 1) ?
                 this.fieldPosition[this.fieldPosition.length - 2] : lastHierarchy;
+            drillDimension = lastDimension;
         }
         for (let rKey of rKeys) {
             let rowIndex: number = Number(rKey);
@@ -186,7 +189,9 @@ export class PivotChart {
                     let fieldPos: number = -1;
                     let currrentLevel: number = firstRowCell.level;
                     if (this.parent.dataType === 'olap') {
-                        fieldPos = tupInfo.uNameCollection.split('::[').length - 1;
+                        isDrill = firstRowCell.hierarchy === '[Measures]' ? isDrill : this.isAttributeDrill(firstRowCell.hierarchy, tupInfo.drillInfo);
+                        drillDimension = drillDimension === lastDimension ? lastDimension : (firstRowCell.hierarchy === '[Measures]' || firstRowCell.isNamedSet || (this.engineModule.fieldList[firstRowCell.hierarchy] && !(this.engineModule as OlapEngine).fieldList[firstRowCell.hierarchy].hasAllMember)) ? lastDimension : drillDimension;
+                        fieldPos = tupInfo.drillInfo.length - 1;
                         if (firstRowCell.memberType !== 3 && (tupInfo.measureName ?
                             tupInfo.measureName === this.dataSourceSettings.values[0].name : true)) {
                             firstLevelUName = firstLevelUName === undefined ? firstRowCell.levelUniqueName : firstLevelUName;
@@ -200,7 +205,8 @@ export class PivotChart {
                                         levelCollection[firstRowCell.levelUniqueName])) : integratedLevel;
                             levelCollection[firstRowCell.levelUniqueName] = integratedLevel;
                             currrentLevel = integratedLevel;
-                            indexCount += (prevCell && lastDimension === prevCell.hierarchy && !prevCell.isDrilled) ? 1 : 0;
+                            indexCount += (prevCell && drillDimension === prevCell.hierarchy && !(prevCell.isDrilled && prevCell.hasChild)) ? 1 : 0;
+                            drillDimension = isDrill ? firstRowCell.hierarchy : lastDimension;
                             prevLevel = integratedLevel;
                             prevCell = firstRowCell;
                         }
@@ -251,14 +257,14 @@ export class PivotChart {
                         let measureAllow: boolean = cell.rowHeaders === '' ? this.dataSourceSettings.rows.length === 0 : true;
                         let actualText: any = (this.parent.dataType === 'olap' && tupInfo && tupInfo.measureName) ?
                             tupInfo.measureName : cell.actualText;
-                        if (!totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
+                        if (!cell.isGrandSum && !totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
                             actualText !== '' && ((chartSettings.enableMultiAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0) ? true : actualText === this.currentMeasure)) {
                             if (isNullOrUndefined(firstRowCell.members)) {
                                 firstRowCell.members = [];
                             }
-                            if (this.parent.dataType === 'olap' ? (lastHierarchy === firstRowCell.hierarchy ?
+                            if (this.parent.dataType === 'olap' ? ((lastHierarchy === firstRowCell.hierarchy || isDrill) ?
                                 ((firstRowCell.memberType === 3 && prevMemberCell) ?
-                                    (fieldPos === this.measurePos ? prevMemberCell.isDrilled : true) : firstRowCell.isDrilled) : true)
+                                    (fieldPos === this.measurePos ? (prevMemberCell.isDrilled && prevMemberCell.hasChild) : true) : (firstRowCell.isDrilled && firstRowCell.hasChild)) : true)
                                 : (((firstRowCell.type === 'value' && prevMemberCell) ?
                                     prevMemberCell.members.length > 0 : firstRowCell.members.length > 0) || !measureAllow)) {
                                 break;
@@ -1188,7 +1194,7 @@ export class PivotChart {
             if ((levels.length !== 0) && (levels.indexOf(pivotValue.formattedText.toString()) === (levels.length - 1))) {
                 if (pivotValue.hasChild && !pivotValue.isNamedSet && levelCol.indexOf(pivotValue.level) < 0 &&
                     (level ? level >= pivotValue.level : (level === 0 ? (pivotValue.level === 0) : true))) {
-                    if (!pivotValue.isDrilled) {
+                    if (!(pivotValue.isDrilled && pivotValue.hasChild)) {
                         menuItem.push({
                             key: rowIndex,
                             type: 'expand',
@@ -1308,8 +1314,15 @@ export class PivotChart {
     }
 
     private multiLevelLabelClick(args: IMultiLevelLabelClickEventArgs): void {
+        let eventArgs: MultiLevelLabelClickEventArgs = {
+            axis: args.axis,
+            text: args.text,
+            cell: !isNullOrUndefined(args.customAttributes) ? (args.customAttributes as any).cell : undefined,
+            cancel: false
+        };
+        this.parent.trigger(events.multiLevelLabelClick, eventArgs);
         /* tslint:disable-next-line:no-any */
-        if (args.customAttributes && (args.customAttributes as any).hasChild && !(args.customAttributes as any).cell.isNamedSet) {
+        if (!eventArgs.cancel && args.customAttributes && (args.customAttributes as any).hasChild && !(args.customAttributes as any).cell.isNamedSet) {
             if (this.parent.dataType === 'olap') {
                 this.parent.onDrill(undefined, args.customAttributes as ChartLabelInfo);
             } else {
@@ -1407,6 +1420,28 @@ export class PivotChart {
         pivot.parent.allowServerDataBinding = true;
         pivot.parent.renderPivotGrid();
         //});
+    }
+
+    private isAttributeDrill(hierarchy: string, drillInfo: IDrillInfo[]): boolean {
+        let isDrill: boolean = false;
+        for (let i: number = 0; i < this.dataSourceSettings.drilledMembers.length; i++) {
+            if (this.dataSourceSettings.drilledMembers[i].name === hierarchy) {
+                for (let j: number = 0; j < this.dataSourceSettings.drilledMembers[i].items.length; j++) {
+                    let drillItems: string[] = this.dataSourceSettings.drilledMembers[i].items[j].split(this.dataSourceSettings.drilledMembers[i].delimiter);
+                    let levelName: string = '';
+                    for (let k: number = 0; k < drillItems.length; k++) {
+                        if (drillInfo[k] && drillInfo[k].uName) {
+                            levelName = levelName + (levelName === '' ? '' : this.dataSourceSettings.drilledMembers[i].delimiter) + (drillInfo[k].uName.indexOf('[Measures]') > -1 ? '[Measures]' : drillInfo[k].uName);
+                        }
+                    }
+                    if (levelName === this.dataSourceSettings.drilledMembers[i].items[j]) {
+                        isDrill = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return isDrill;
     }
 
     private load(args: ILoadedEventArgs): void {

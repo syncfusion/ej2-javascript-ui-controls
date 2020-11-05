@@ -103,10 +103,9 @@ class SfListView {
         if (this.enableVirtualization) {
             EventHandler.add(this.element, 'scroll', this.scrollHandler, this);
             if (this.isWindow) { window.addEventListener('scroll', this.scrollHandler.bind(this)); }
-        } else {
-            EventHandler.add(this.element, 'mouseover', this.mouseHoverHandler, this);
-            EventHandler.add(this.element, 'mouseout', this.mouseOutHandler, this);
         }
+        EventHandler.add(this.element, 'mouseover', this.mouseHoverHandler, this);
+        EventHandler.add(this.element, 'mouseout', this.mouseOutHandler, this);
     }
     private unWireEvents(): void {
         EventHandler.remove(this.element, 'keydown', this.keyActionHandler);
@@ -115,10 +114,9 @@ class SfListView {
         if (this.enableVirtualization) {
             EventHandler.remove(this.element, 'scroll', this.scrollHandler);
             if (this.isWindow) { window.removeEventListener('scroll', this.scrollHandler.bind(this)); }
-        } else {
-            EventHandler.remove(this.element, 'mouseover', this.mouseHoverHandler);
-            EventHandler.remove(this.element, 'mouseout', this.mouseOutHandler);
         }
+        EventHandler.remove(this.element, 'mouseover', this.mouseHoverHandler);
+        EventHandler.remove(this.element, 'mouseout', this.mouseOutHandler);
         this.touchModule.destroy();
     }
 

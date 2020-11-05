@@ -124,7 +124,9 @@ export type DialogFieldType =
     /** Defines tab as notes editor */
     'Notes' |
     /** Defines tab as custom column editor */
-    'Custom';
+    'Custom' |
+    /** Defines tab as task segments editor */
+    'Segments';
 
 /**
  * Defines filter type of Gantt

@@ -96,7 +96,8 @@ export class Range extends ChildProperty<Sheet> {
                         delete this[parentObj][currRangeIdx];
                     }
                 });
-            } else if (this[controlParent].tagObjects[0].instance.hasChanges && !this[controlParent].tagObjects[0].instance.isInitChanges) {
+            } else if (this[controlParent].tagObjects[0].instance && this[controlParent].tagObjects[0].instance.hasChanges
+                && !this[controlParent].tagObjects[0].instance.isInitChanges) {
                 let sheetIdx: number = this[controlParent].sheets.indexOf(this[parentObj]);
                 if (this[parentObj].changedRangeIdx === undefined) {
                     let rangeIdx: number;

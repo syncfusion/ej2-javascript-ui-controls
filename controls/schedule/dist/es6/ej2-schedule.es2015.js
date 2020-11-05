@@ -4635,18 +4635,34 @@ class EventBase {
         return target;
     }
     getGroupIndexFromEvent(eventData) {
-        let levelName = this.parent.resourceCollection.slice(-1)[0].name;
-        let levelIndex = this.parent.resourceCollection.length - 1;
-        let idField = this.parent.resourceCollection.slice(-1)[0].field;
+        let levelIndex;
+        let resource;
+        let levelName;
+        let idField;
+        for (let i = this.parent.resourceBase.resourceCollection.length - 1; i >= 0; i--) {
+            let resourceData = eventData[this.parent.resourceBase.resourceCollection[i].field];
+            if (!isNullOrUndefined(resourceData)) {
+                resource = this.parent.resourceBase.resourceCollection[i];
+                levelIndex = i;
+                levelName = resource.name;
+                idField = resource.field;
+                break;
+            }
+        }
+        if (isNullOrUndefined(levelName) && isNullOrUndefined(levelIndex)) {
+            levelName = this.parent.resourceCollection.slice(-1)[0].name;
+            levelIndex = this.parent.resourceCollection.length - 1;
+            idField = this.parent.resourceCollection.slice(-1)[0].field;
+            resource = this.parent.resourceCollection.filter((e, index) => {
+                if (e.name === levelName) {
+                    levelIndex = index;
+                    return e;
+                }
+                return null;
+            })[0];
+        }
         let id = ((eventData[idField] instanceof Array) ?
             eventData[idField][0] : eventData[idField]);
-        let resource = this.parent.resourceCollection.filter((e, index) => {
-            if (e.name === levelName) {
-                levelIndex = index;
-                return e;
-            }
-            return null;
-        })[0];
         if (levelIndex > 0) {
             let parentField = this.parent.resourceCollection[levelIndex - 1].field;
             return this.parent.resourceBase.getIndexFromResourceId(id, levelName, resource, eventData, parentField);
@@ -9938,7 +9954,8 @@ class EventWindow {
     resetEditorTemplate() {
         if (this.parent.editorTemplate) {
             resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
-            if (!isBlazor()) {
+            // tslint:disable-next-line:no-any
+            if (!isBlazor() && !this.parent.isReact) {
                 this.parent.resetTemplates(['editorTemplate']);
             }
         }
@@ -10111,11 +10128,14 @@ class EventWindow {
     renderFormElements(form, args) {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
-                if (this.recurrenceEditor) {
-                    this.recurrenceEditor.destroy();
-                    this.recurrenceEditor = null;
+                // tslint:disable-next-line:no-any
+                if (!this.parent.isReact) {
+                    if (this.recurrenceEditor) {
+                        this.recurrenceEditor.destroy();
+                        this.recurrenceEditor = null;
+                    }
+                    this.destroyComponents();
                 }
-                this.destroyComponents();
                 let formElements = [].slice.call(form.children);
                 for (let element of formElements) {
                     remove(element);
@@ -11875,7 +11895,6 @@ class Render {
     }
     initializeLayout(viewName) {
         if (this.parent.activeView) {
-            this.parent.resetTemplates();
             this.parent.activeView.removeEventListener();
             this.parent.activeView.destroy();
         }

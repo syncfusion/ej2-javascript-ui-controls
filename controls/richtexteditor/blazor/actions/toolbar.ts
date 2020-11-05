@@ -184,6 +184,7 @@ export class Toolbar {
     //#endregion
     //#region Event handler methods
     private onRefresh(): void {
+        this.parent.dotNetRef.invokeMethodAsync(events.refreshToolbarOverflow);
         this.parent.setContentHeight('', true);
     }
     private tbFocusHandler(e: Event): void {

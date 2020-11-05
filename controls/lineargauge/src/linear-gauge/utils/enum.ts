@@ -126,6 +126,28 @@ export type Orientation =
     'Vertical';
 
 /**
+ * Defines the placement of the label in linear gauge.
+ * @private
+ */
+export type LabelPlacement =
+    /**
+     * Specifies that the first and last labels to be placed at the default position.
+     */
+    'None' |
+    /**
+     * Specifies that the first and last labels to be shifted within the axis.
+     */
+    'Shift' |
+    /**
+     * Specifies that the first and last labels to be trimmed.
+     */
+    'Trim' |
+    /**
+     * Specifies that the first and last labels must trim or shift automatically.
+     */
+    'Auto';
+
+/**
  * Defines the container type.
  */
 export type ContainerType =

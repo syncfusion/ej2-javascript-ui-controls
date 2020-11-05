@@ -247,6 +247,12 @@ export class TextSelection {
         return null;
     }
 
+    /**
+     * Select the target text region in the PDF document of the given bounds. 
+     * @param  {number} pageNumbers - Specifies the page number 
+     * @param  {IRectangle[]} bounds -  Specifies the bounds of the texts.
+     * @returns void
+     */
     public selectTextRegion(pageNumbers: number, bounds: IRectangle[]): void {
         // tslint:disable-next-line
         let element: any = null;
@@ -2003,7 +2009,8 @@ export class TextSelection {
     }
 
     /**
-     * @private
+     * Copy the selected text in the PDF Document. 
+     * @returns void
      */
     public copyText(): void {
         let selectionText: string = '';

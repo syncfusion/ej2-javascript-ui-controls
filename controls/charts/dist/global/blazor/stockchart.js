@@ -2315,19 +2315,21 @@ function logBase(value, base) {
     return Math.log(value) / Math.log(base);
 }
 /** @private */
-function showTooltip(text, x, y, areaWidth, id, element, isTouch) {
+function showTooltip(text, x, y, areaWidth, id, element, isTouch, isTitleOrLegendEnabled) {
     //let id1: string = 'EJ2_legend_tooltip';
     var tooltip = document.getElementById(id);
-    var width = sf.svgbase.measureText(text, {
+    var size = sf.svgbase.measureText(text, {
         fontFamily: 'Segoe UI', size: '12px',
         fontStyle: 'Normal', fontWeight: 'Regular'
-    }).width + 5;
+    });
+    var width = size.width + 5;
     x = (x + width > areaWidth) ? x - (width + 15) : x;
+    y = isTitleOrLegendEnabled ? (y - size.height / 2) : y + 15;
     if (!tooltip) {
         tooltip = sf.base.createElement('div', {
             innerHTML: text,
             id: id,
-            styles: 'top:' + (y + 15).toString() + 'px;left:' + (x + 15).toString() +
+            styles: 'top:' + (y).toString() + 'px;left:' + (x + 15).toString() +
                 'px;background-color: rgb(255, 255, 255) !important; color:black !important; ' +
                 'position:absolute;border:1px solid rgb(112, 112, 112); padding-left : 3px; padding-right : 2px;' +
                 'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: "Segoe UI"'
@@ -2340,7 +2342,7 @@ function showTooltip(text, x, y, areaWidth, id, element, isTouch) {
     }
     else {
         tooltip.innerHTML = text;
-        tooltip.style.top = (y + 15).toString() + 'px';
+        tooltip.style.top = (y).toString() + 'px';
         tooltip.style.left = (x + 15).toString() + 'px';
     }
     if (isTouch) {
@@ -13129,7 +13131,8 @@ var Chart$1 = /** @class */ (function (_super) {
         var targetId = event.target.id;
         if (((targetId.indexOf('AxisLabel') > -1) || targetId.indexOf('Axis_MultiLevelLabel') > -1) &&
             (event.target.textContent.indexOf('...') > -1)) {
-            showTooltip(this.findAxisLabel(targetId), x, y, this.element.offsetWidth, this.element.id + '_EJ2_AxisLabel_Tooltip', getElement$1(this.element.id + '_Secondary_Element'), isTouch);
+            var isTitleOrLegendEnabled = (this.legendSettings.visible || this.primaryXAxis.title === '');
+            showTooltip(this.findAxisLabel(targetId), x, y, this.element.offsetWidth, this.element.id + '_EJ2_AxisLabel_Tooltip', getElement$1(this.element.id + '_Secondary_Element'), isTouch, isTitleOrLegendEnabled);
         }
         else {
             removeElement(this.element.id + '_EJ2_AxisLabel_Tooltip');
@@ -18939,23 +18942,49 @@ var WaterfallSeries = /** @class */ (function (_super) {
                 if (prevRegion !== null) {
                     var prevLeft = isInversed ? prevRegion.x : prevRegion.y;
                     var currentLeft = isInversed ? currentRegion.x : currentRegion.y;
-                    var prevBottom = isInversed ? prevRegion.x + prevRegion.width : prevRegion.y + prevRegion.height;
-                    var currentBottom = isInversed ?
-                        currentRegion.x + currentRegion.width : currentRegion.y + currentRegion.height;
+                    var prevBottom = void 0;
+                    var currentBottom = void 0;
+                    var currentYValue = currentRegion.y;
+                    var currentXValue = currentRegion.x;
+                    var beforePoint = series.points[point.index - 1];
+                    if (point.yValue === 0) {
+                        prevBottom = isInversed ? prevRegion.x + prevRegion.width : prevRegion.y + prevRegion.height;
+                        currentBottom = isInversed ?
+                            point.symbolLocations[0].x : point.symbolLocations[0].y;
+                    }
+                    else {
+                        prevBottom = isInversed ? (beforePoint.yValue === 0) ?
+                            beforePoint.symbolLocations[0].x : prevRegion.x + prevRegion.width : (beforePoint.yValue === 0) ?
+                            beforePoint.symbolLocations[0].y : prevRegion.y + prevRegion.height;
+                        currentBottom = isInversed ?
+                            currentRegion.x + currentRegion.width : currentRegion.y + currentRegion.height;
+                    }
                     if (Math.round(prevLeft) === Math.round(currentLeft) ||
                         Math.round(prevBottom) === Math.round(currentLeft)) {
-                        y = isInversed ? currentRegion.x : currentRegion.y;
+                        y = isInversed ? (currentRegion.x === 0 && prevRegion.x === 0) ? currentBottom : currentRegion.x : currentRegion.y;
+                        y = (point.yValue === 0) ?
+                            (isInversed ? point.symbolLocations[0].x : point.symbolLocations[0].y) : y;
                     }
                     else {
                         y = currentBottom;
                     }
                     if (isInversed) {
+                        if (beforePoint.yValue === 0) {
+                            prevRegion.y = ((prevRegion.y + prevRegion.height / 2) + (rect.height / 2)) - prevRegion.height;
+                        }
+                        if (point.yValue === 0) {
+                            currentYValue = ((currentRegion.y + currentRegion.height / 2) - (rect.height / 2));
+                        }
                         direction = direction.concat('M' + ' ' + y + ' ' + (prevRegion.y + prevRegion.height) + ' ' +
-                            'L' + ' ' + y + ' ' + currentRegion.y + ' ');
+                            'L' + ' ' + y + ' ' + currentYValue + ' ');
                     }
                     else {
+                        if (beforePoint.yValue === 0) {
+                            prevRegion.x = ((prevRegion.x + prevRegion.width / 2) - (rect.width / 2));
+                            currentXValue = ((currentRegion.x + currentRegion.width / 2) + (rect.width / 2)) - currentRegion.width;
+                        }
                         direction = direction.concat('M' + ' ' + prevRegion.x + ' ' + y + ' ' +
-                            'L' + ' ' + (currentRegion.x + currentRegion.width) + ' ' + y + ' ');
+                            'L' + ' ' + (currentXValue + currentRegion.width) + ' ' + y + ' ');
                     }
                 }
                 prevRegion = point.regions[0];

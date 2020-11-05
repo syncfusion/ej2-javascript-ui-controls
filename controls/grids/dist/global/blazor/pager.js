@@ -327,7 +327,7 @@ var PagerMessage = /** @class */ (function () {
         }
         else {
             this.pageNoMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('currentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
-                    pagerObj.currentPage, pagerObj.totalPages || 0]) + ' ';
+                    pagerObj.currentPage, pagerObj.totalPages || 0, pagerObj.totalRecordsCount || 0]) + ' ';
             this.pageCountMsgElem.textContent = this.format(pagerObj.getLocalizedLabel(pagerObj.totalRecordsCount <= 1 ? 'totalItemInfo' : 'totalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
         }
         this.pageNoMsgElem.parentElement.setAttribute('aria-label', this.pageNoMsgElem.textContent + this.pageCountMsgElem.textContent);
@@ -14884,7 +14884,7 @@ var Grid = /** @class */ (function (_super) {
         if (this.isDetail()) {
             index++;
         }
-        if (this.allowRowDragAndDrop && sf.base.isNullOrUndefined(this.rowDropSettings.targetID)) {
+        if (this.isRowDragable() && sf.base.isNullOrUndefined(this.rowDropSettings.targetID)) {
             index++;
         }
         /**
@@ -15450,7 +15450,7 @@ var Grid = /** @class */ (function (_super) {
      * @hidden
      */
     Grid.prototype.isRowDragable = function () {
-        return this.allowRowDragAndDrop && !this.rowDropSettings.targetID;
+        return this.allowRowDragAndDrop && !this.rowDropSettings.targetID && !this.enableVirtualization;
     };
     /**
      * Changes the Grid column positions by field names.
@@ -16022,7 +16022,8 @@ var Grid = /** @class */ (function (_super) {
             parentsUntil(e.target, 'e-gridheader'))) && e.touches) {
             return;
         }
-        if (parentsUntil(e.target, 'e-gridheader') && this.allowRowDragAndDrop) {
+        if (parentsUntil(e.target, 'e-gridheader') && this.allowRowDragAndDrop &&
+            !(parentsUntil(e.target, 'e-filterbarcell'))) {
             e.preventDefault();
         }
         var args = this.getRowInfo(e.target);

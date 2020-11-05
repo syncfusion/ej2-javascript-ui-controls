@@ -13,7 +13,7 @@ import { IResizeEventArgs, IValueChangeEventArgs, IThemeStyle, IPrintEventArgs, 
 import { Size, valueToCoefficient, calculateShapes, stringToNumber, removeElement, getElement, VisibleRange } from './utils/helper';
 import { measureText, Rect, TextOption, textElement, GaugeLocation, RectOption, PathOption } from './utils/helper';
 import { getBox, withInRange, getPointer, convertPixelToValue, isPointerDrag } from './utils/helper';
-import { Orientation, LinearGaugeTheme } from './utils/enum';
+import { Orientation, LinearGaugeTheme, LabelPlacement } from './utils/enum';
 import { dragEnd, dragMove, dragStart } from './model/constant';
 import { AxisLayoutPanel } from './axes/axis-panel';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
@@ -112,6 +112,13 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      */
     @Property('Vertical')
     public orientation: Orientation;
+
+    /**
+     * Specifies the placement of the label in linear gauge.
+     * @default None
+     */
+    @Property('None')
+    public edgeLabelPlacement: LabelPlacement;
 
     /**
      * Enables or disables the print functionality in linear gauge.

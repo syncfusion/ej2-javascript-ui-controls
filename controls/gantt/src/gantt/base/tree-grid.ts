@@ -109,8 +109,10 @@ export class GanttTreeGrid {
         outer.parentNode.removeChild(outer);
         return scrollbarWidth;
     }
-
-    private ensureScrollBar(): void {
+    /**
+     * @private
+     */
+    public ensureScrollBar(): void {
         let content: HTMLElement = this.getContentDiv();
         let headerDiv: HTMLElement = this.getHeaderDiv();
         let scrollWidth: number = this.getScrollbarWidth();

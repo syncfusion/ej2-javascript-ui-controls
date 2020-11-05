@@ -110,20 +110,22 @@ export function logBase(value: number, base: number): number {
 /** @private */
 export function showTooltip(
     text: string, x: number, y: number, areaWidth: number, id: string, element: Element,
-    isTouch?: boolean
+    isTouch?: boolean, isTitleOrLegendEnabled?: boolean
 ): void {
     //let id1: string = 'EJ2_legend_tooltip';
     let tooltip: HTMLElement = document.getElementById(id);
-    let width: number = measureText(text, {
+    let size: Size = measureText(text, {
         fontFamily: 'Segoe UI', size: '12px',
         fontStyle: 'Normal', fontWeight: 'Regular'
-    }).width + 5;
+    });
+    let width: number = size.width + 5;
     x = (x + width > areaWidth) ? x - (width + 15) : x;
+    y = isTitleOrLegendEnabled ? (y - size.height / 2) : y + 15;
     if (!tooltip) {
         tooltip = createElement('div', {
             innerHTML: text,
             id: id,
-            styles: 'top:' + (y + 15).toString() + 'px;left:' + (x + 15).toString() +
+            styles: 'top:' + (y).toString() + 'px;left:' + (x + 15).toString() +
                 'px;background-color: rgb(255, 255, 255) !important; color:black !important; ' +
                 'position:absolute;border:1px solid rgb(112, 112, 112); padding-left : 3px; padding-right : 2px;' +
                 'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: "Segoe UI"'
@@ -135,7 +137,7 @@ export function showTooltip(
         }
     } else {
         tooltip.innerHTML = text;
-        tooltip.style.top = (y + 15).toString() + 'px';
+        tooltip.style.top = (y).toString() + 'px';
         tooltip.style.left = (x + 15).toString() + 'px';
     }
     if (isTouch) {

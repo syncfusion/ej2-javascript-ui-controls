@@ -10,6 +10,7 @@
 
 - `#F158249` - Now `scrollTo()` support has been added in timeline year view.
 - `#292093` - An issue with setting the resize interval for event in `resizeStart` not resizing the event to its minimum interval value has been fixed.
+- `#299079` - An issue with Custom editor window throws script error has been fixed.
 
 ## 18.3.42 (2020-10-20)
 
@@ -23,6 +24,7 @@
 - `#294568` - An issue with all day spanned event is not rendered properly in the `TimelineYear` view has been fixed.
 - `#296098` - An issue with event click action on less duration events not deselecting the previously selected event has been fixed.
 - `#286199` - An issue with when destroying the child component used in the editor template the child component is destroyed multiple time has been fixed.
+- `#297720` - An issue with creating an event for the resource parent work cells using `addEvent` method has been fixed.
 
 ## 18.3.40 (2020-10-13)
 

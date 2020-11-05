@@ -335,6 +335,13 @@ export class SfRichTextEditor {
             this.autoResize();
         }
     }
+    public getXhtml(): string {
+        let currentValue: string = this.value;
+        if (this.enableXhtml) {
+            currentValue = this.htmlEditorModule.xhtmlValidation.selfEncloseValidation(currentValue);
+        }
+        return currentValue;
+    }
     public getPanel(): Element {
         return this.contentPanel;
     }
@@ -451,6 +458,8 @@ export class SfRichTextEditor {
         }
         this.setPlaceHolder();
         this.observer.notify(events.contentChanged, {});
+        this.value = this.inputElement.innerHTML;
+        this.dotNetRef.invokeMethodAsync('UpdateValue', this.value);
     }
     private htmlPurifier(
         command: CommandName, value?: string | HTMLElement | ILinkCommandsArgs |
@@ -1115,9 +1124,8 @@ export class SfRichTextEditor {
         this.observer.on(events.contentChanged, this.contentChanged, this);
         this.observer.on(events.modelChanged, this.refresh, this);
         this.observer.on(events.resizeInitialized, this.updateResizeFlag, this);
-        if (!this.readonly && !this.enabled) {
-            this.bindEvents();
-        }
+        if (this.readonly && this.enabled) { return; }
+        this.bindEvents();
     }
     private bindEvents(): void {
         this.keyboardModule = new KeyboardEvents(this.inputElement, {

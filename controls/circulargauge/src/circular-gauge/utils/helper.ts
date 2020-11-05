@@ -270,6 +270,8 @@ export function getPathArc(
     let insideStartRadius: number = !isNullOrUndefined(range) && range.position === 'Cross' && axis.direction === 'AntiClockWise' ?
         radius + ((startWidth - endWidth) / 2) : radius;
     if (startWidth !== undefined && endWidth !== undefined) {
+        endRadius = start === Math.round(end) ? startRadius : endRadius;
+        insideEndRadius = start === Math.round(end) && range.position === 'Cross' ? insideStartRadius : insideEndRadius;
         return getRangePath(
             getLocationFromAngle(start, insideStartRadius, center),
             getLocationFromAngle(end, insideEndRadius, center),

@@ -291,7 +291,7 @@ export class ShowHide {
                 beforeViewportIdx.sort((i: number, j: number): number => { return i - j; });
                 if (this.parent.scrollSettings.enableVirtualization && beforeViewportIdx[0] < this.parent.getThreshold('col')) {
                     let rowIdx: number = getCellIndexes(sheet.topLeftCell)[0] + 1;
-                    sheet.topLeftCell = `A${rowIdx}`;
+                    this.parent.setSheetPropertyOnMute(sheet, 'topLeftCell', `A${rowIdx}`);
                     this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, rowIndex: this.parent.viewport.topIndex, colIndex: 0,
                         refresh: 'Column' });
                     this.parent.selectRange(sheet.selectedRange);

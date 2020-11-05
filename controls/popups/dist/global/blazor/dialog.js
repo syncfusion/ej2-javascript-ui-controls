@@ -513,6 +513,7 @@ var Dialog = /** @class */ (function (_super) {
         var handleContent = '.' + DLG_HEADER_CONTENT;
         this.dragObj = new sf.base.Draggable(this.element, {
             clone: false,
+            isDragScroll: true,
             abort: '.e-dlg-closeicon-btn',
             handle: handleContent,
             dragStart: function (event) {

@@ -4692,18 +4692,34 @@ var EventBase = /** @__PURE__ @class */ (function () {
         return target;
     };
     EventBase.prototype.getGroupIndexFromEvent = function (eventData) {
-        var levelName = this.parent.resourceCollection.slice(-1)[0].name;
-        var levelIndex = this.parent.resourceCollection.length - 1;
-        var idField = this.parent.resourceCollection.slice(-1)[0].field;
+        var levelIndex;
+        var resource;
+        var levelName;
+        var idField;
+        for (var i = this.parent.resourceBase.resourceCollection.length - 1; i >= 0; i--) {
+            var resourceData = eventData[this.parent.resourceBase.resourceCollection[i].field];
+            if (!isNullOrUndefined(resourceData)) {
+                resource = this.parent.resourceBase.resourceCollection[i];
+                levelIndex = i;
+                levelName = resource.name;
+                idField = resource.field;
+                break;
+            }
+        }
+        if (isNullOrUndefined(levelName) && isNullOrUndefined(levelIndex)) {
+            levelName = this.parent.resourceCollection.slice(-1)[0].name;
+            levelIndex = this.parent.resourceCollection.length - 1;
+            idField = this.parent.resourceCollection.slice(-1)[0].field;
+            resource = this.parent.resourceCollection.filter(function (e, index) {
+                if (e.name === levelName) {
+                    levelIndex = index;
+                    return e;
+                }
+                return null;
+            })[0];
+        }
         var id = ((eventData[idField] instanceof Array) ?
             eventData[idField][0] : eventData[idField]);
-        var resource = this.parent.resourceCollection.filter(function (e, index) {
-            if (e.name === levelName) {
-                levelIndex = index;
-                return e;
-            }
-            return null;
-        })[0];
         if (levelIndex > 0) {
             var parentField = this.parent.resourceCollection[levelIndex - 1].field;
             return this.parent.resourceBase.getIndexFromResourceId(id, levelName, resource, eventData, parentField);
@@ -10185,7 +10201,8 @@ var EventWindow = /** @__PURE__ @class */ (function () {
     EventWindow.prototype.resetEditorTemplate = function () {
         if (this.parent.editorTemplate) {
             resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
-            if (!isBlazor()) {
+            // tslint:disable-next-line:no-any
+            if (!isBlazor() && !this.parent.isReact) {
                 this.parent.resetTemplates(['editorTemplate']);
             }
         }
@@ -10360,11 +10377,14 @@ var EventWindow = /** @__PURE__ @class */ (function () {
     EventWindow.prototype.renderFormElements = function (form, args) {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
-                if (this.recurrenceEditor) {
-                    this.recurrenceEditor.destroy();
-                    this.recurrenceEditor = null;
+                // tslint:disable-next-line:no-any
+                if (!this.parent.isReact) {
+                    if (this.recurrenceEditor) {
+                        this.recurrenceEditor.destroy();
+                        this.recurrenceEditor = null;
+                    }
+                    this.destroyComponents();
                 }
-                this.destroyComponents();
                 var formElements = [].slice.call(form.children);
                 for (var _i = 0, formElements_1 = formElements; _i < formElements_1.length; _i++) {
                     var element = formElements_1[_i];
@@ -12162,7 +12182,6 @@ var Render = /** @__PURE__ @class */ (function () {
     };
     Render.prototype.initializeLayout = function (viewName) {
         if (this.parent.activeView) {
-            this.parent.resetTemplates();
             this.parent.activeView.removeEventListener();
             this.parent.activeView.destroy();
         }

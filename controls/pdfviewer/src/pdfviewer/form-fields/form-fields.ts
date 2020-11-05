@@ -1162,6 +1162,82 @@ export class FormFields {
         }
     }
 
+    public resetFormFields(): void {
+         let formFieldData: FormFieldModel[] = this.pdfViewer.formFieldCollections;
+         for (let i: number = 0; i < formFieldData.length; i++) {
+             let currentData: FormFieldModel = formFieldData[i];
+             this.currentTarget = document.getElementById(currentData.id);
+             if (currentData.type === 'Textbox') {
+               this.currentTarget.value = currentData.value;
+             } else if (currentData.type === 'RadioButton') {
+                this.currentTarget.checked = currentData.value;
+                if (currentData.value) {
+                    this.updateDataInSession(this.currentTarget);
+                }
+             } else if (currentData.type === 'DropDown') {
+                this.currentTarget.value = currentData.value;
+             } else if (currentData.type === 'CheckBox') {
+               this.currentTarget.checked = currentData.value;
+             } else if (currentData.type === 'SignatureField') {
+               // tslint:disable-next-line
+               let annotation: PdfAnnotationBaseModel = (this.pdfViewer.nameTable as any)[currentData.id];
+               if (annotation) {
+                   if (this.currentTarget && this.currentTarget.className === 'e-pdfviewer-signatureformFields signature') {
+                       this.currentTarget.className = 'e-pdfviewer-signatureformFields';
+                       this.currentTarget.style.pointerEvents = '';
+                       this.updateDataInSession(this.currentTarget, '');
+                   }
+                   this.pdfViewer.remove(annotation);
+                   this.pdfViewer.renderDrawing();
+               }
+             }
+             if (currentData.type !== 'RadioButton' && currentData.type !== 'SignatureField') {
+                 this.updateDataInSession(this.currentTarget);
+             }
+            }
+    }
+
+    public clearFormFields(): void {
+         // tslint:disable-next-line
+         let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
+         // tslint:disable-next-line
+         let formFieldsData: any = JSON.parse(data);
+         let isFirstRadio: boolean = true;
+         for (let m: number = 0; m < formFieldsData.length; m++) {
+            // tslint:disable-next-line
+            let currentData: any = formFieldsData[m];
+            // tslint:disable-next-line
+            this.currentTarget = document.getElementById(currentData.uniqueID);
+            if (currentData.Name === 'Textbox') {
+                this.currentTarget.value = '';
+            }else if (currentData.Name === 'RadioButton') {
+                if (isFirstRadio) {
+                    this.currentTarget.checked = true;
+                    this.updateDataInSession (this.currentTarget);
+                    isFirstRadio = false;
+                }
+            }else if (currentData.Name === 'DropDown') {
+                this.currentTarget.value = currentData.TextList[0];
+            }else if (currentData.Name === 'CheckBox') {
+                this.currentTarget.checked = false;
+            }else if (currentData.Name === 'SignatureField') {
+                // tslint:disable-next-line
+                let annotation: PdfAnnotationBaseModel = (this.pdfViewer.nameTable as any)[currentData.uniqueID];
+                if (annotation) {
+                    if (this.currentTarget && this.currentTarget.className === 'e-pdfviewer-signatureformFields signature') {
+                        this.currentTarget.className = 'e-pdfviewer-signatureformFields';
+                        this.currentTarget.style.pointerEvents = '';
+                        this.updateDataInSession(this.currentTarget, '');
+                    }
+                    this.pdfViewer.remove(annotation);
+                    this.pdfViewer.renderDrawing();
+                }
+            }
+            if (currentData.Name !== 'SignatureField' && currentData.Name !== 'ink' && currentData.Name !== 'RadioButton') {
+            this.updateDataInSession (this.currentTarget);
+            }
+         }
+    }
     /**
      * @private
      */

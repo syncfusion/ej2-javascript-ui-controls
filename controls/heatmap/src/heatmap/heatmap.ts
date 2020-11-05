@@ -67,6 +67,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Triggers when click the heat map cell.
+     * {% codeBlock src='heatmap/tooltipRender/index.md' %}{% endcodeBlock %}
      * @event
      * @blazorProperty 'TooltipRendering'
      */
@@ -91,6 +92,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Triggers before each heatmap cell renders.
+     * {% codeBlock src='heatmap/cellRender/index.md' %}{% endcodeBlock %}
      * @deprecated
      * @event
      * @blazorProperty 'CellRendering'
@@ -127,6 +129,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Specifies the datasource settings for heat map.
+     * {% codeBlock src='heatmap/dataSourceSettings/index.md' %}{% endcodeBlock %}
      */
     @Complex<DataModel>({}, Data)
     public dataSourceSettings : DataModel;
@@ -140,6 +143,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Enable or disable the selection of multiple cells in heatmap
+     * {% codeBlock src='heatmap/allowSelection/index.md' %}{% endcodeBlock %}
      * @default false
      */
 
@@ -155,6 +159,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Title of heat map
+     * {% codeBlock src='heatmap/titleSettings/index.md' %}{% endcodeBlock %}
      * @default ''
      */
     @Complex<TitleModel>({ text: '', textStyle: Theme.heatMapTitleFont }, Title)
@@ -169,6 +174,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Options for customizing the legend of the heat map
+     * {% codeBlock src='heatmap/legendSettings/index.md' %}{% endcodeBlock %}
      * @default ''
      */
     @Complex<LegendSettingsModel>({}, LegendSettings)
@@ -176,12 +182,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Options for customizing the cell color of the heat map
+     * {% codeBlock src='heatmap/paletteSettings/index.md' %}{% endcodeBlock %}
      */
     @Complex<PaletteSettingsModel>({}, PaletteSettings)
     public paletteSettings: PaletteSettingsModel;
 
     /**
      * Options for customizing the ToolTipSettings property  of the heat map
+     * {% codeBlock src='heatmap/tooltipSettings/index.md' %}{% endcodeBlock %}
      */
     @Complex<TooltipSettingsModel>({}, TooltipSettings)
     public tooltipSettings: TooltipSettingsModel;
@@ -195,6 +203,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Options to customize the heat map cell
+     * {% codeBlock src='heatmap/cellSettings/index.md' %}{% endcodeBlock %}
      */
 
     @Complex<CellSettingsModel>({}, CellSettings)
@@ -210,6 +219,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Triggers before heat map load.
+     * {% codeBlock src='heatmap/load/index.md' %}{% endcodeBlock %}
      * @event
      * @blazorProperty 'OnLoad'
      */
@@ -226,6 +236,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Triggers before the legend is rendered.
+     * {% codeBlock src='heatmap/legendRender/index.md' %}{% endcodeBlock %}
      * @deprecated
      * @event
      * @blazorProperty 'LegendRendering'
@@ -583,8 +594,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     break;
                 case 'cellSettings':
                     this.updateBubbleHelperProperty();
-                    if (this.legendModule && ((newProp.cellSettings.tileType !==
-                        oldProp.cellSettings.tileType) || (newProp.cellSettings.bubbleType !== oldProp.cellSettings.bubbleType))) {
+                    if (this.legendModule && ((newProp.cellSettings.tileType !== (oldProp.cellSettings
+                        !== undefined && oldProp.cellSettings.tileType))
+                        || (newProp.cellSettings.bubbleType !== oldProp.cellSettings.bubbleType))) {
                         this.legendOnLoad = true;
                         this.legendModule.updateLegendRangeCollections();
                     }
@@ -612,7 +624,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     break;
                 case 'legendSettings':
                     this.updateBubbleHelperProperty();
-                    if (this.legendVisibilityByCellType && (((newProp.legendSettings.visible !== oldProp.legendSettings.visible) ||
+                    if (this.legendVisibilityByCellType && (((newProp.legendSettings.visible !==
+                        (oldProp.legendSettings !== undefined && oldProp.legendSettings.visible)) ||
                         (newProp.legendSettings.enableSmartLegend !== oldProp.legendSettings.enableSmartLegend)))) {
                         this.legendOnLoad = true;
                         this.legendModule.updateLegendRangeCollections();
@@ -782,6 +795,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * To destroy the widget
+     * {% codeBlock src='heatmap/destroy/index.md' %}{% endcodeBlock %}
      * @method destroy
      * @return {void}.
      * @member of Heatmap
@@ -1726,6 +1740,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * To clear the multi cell selection
+     * {% codeBlock src='heatmap/clearSelection/index.md' %}{% endcodeBlock %}
      */
     public clearSelection(): void {
         if (!this.enableCanvasRendering && this.allowSelection) {

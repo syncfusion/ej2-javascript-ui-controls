@@ -2740,9 +2740,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let targetId: string = (<HTMLElement>event.target).id;
         if (((targetId.indexOf('AxisLabel') > -1) || targetId.indexOf('Axis_MultiLevelLabel') > -1) &&
             ((<HTMLElement>event.target).textContent.indexOf('...') > -1)) {
+            let isTitleOrLegendEnabled: boolean = (this.legendSettings.visible || this.primaryXAxis.title === '');
             showTooltip(
                 this.findAxisLabel(targetId), x, y, this.element.offsetWidth, this.element.id + '_EJ2_AxisLabel_Tooltip',
-                getElement(this.element.id + '_Secondary_Element'), isTouch
+                getElement(this.element.id + '_Secondary_Element'), isTouch, isTitleOrLegendEnabled
             );
         } else {
             removeElement(this.element.id + '_EJ2_AxisLabel_Tooltip');

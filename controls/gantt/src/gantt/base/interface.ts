@@ -142,12 +142,34 @@ export interface ITaskData {
     workTimelineRanges?: IWorkTimelineRanges[];
     /** Defines overlap index. */
     eOverlapIndex?: number;
+     /** Defines task segments. */
+    segments?: ITaskSegment[];
     /**
      * Defines shared task unique ids.
      */
     sharedTaskUniqueIds?: string[];
 }
 
+export interface ITaskSegment {
+    /** Defines start date of the segment */
+    startDate?: Date;
+    /** Defines end date of the segment */
+    endDate?: Date;
+    /** Defines the duration of the segment. */
+    duration?: number;
+    /** Defines the width of a segment. */
+    width?: number;
+    /** Defines the progress width of a segment. */
+    progressWidth?: number;
+    /** Defines the left position of a segment. */
+    left?: number;
+    /** Defines the segment index */
+    segmentIndex?: number;
+    /** Defines the duration between 2 segments */
+    offsetDuration?: number;
+    /** Set for displaying progress in split taskbar */
+    showProgress?: boolean;
+}
 export interface IWorkTimelineRanges {
     /** Defines start date of task */
     startDate?: Date;
@@ -634,6 +656,10 @@ export interface ActionBeginArgs extends IDependencyEventArgs {
      * @isGenericType true
      */
     newTaskData?: object;
+    /** Defines the split date on context click action */
+    splitDate?: Date;
+    /** Defines the array of merge items indexes on context click action */
+    mergeSegmentIndexes?: {firstSegmentIndex: number, secondSegmentIndex: number}[];
     /** Defines the record index. */
     recordIndex?: number;
     /** Defines the action. */

@@ -40,9 +40,10 @@ function getSwapKey(obj) {
 function isRemoteData(dataSource) {
     if (dataSource instanceof sf.data.DataManager) {
         var adaptor = dataSource.adaptor;
-        return (adaptor instanceof sf.data.ODataAdaptor ||
+        return (adaptor instanceof sf.data.ODataAdaptor || (adaptor instanceof sf.data.ODataV4Adaptor) ||
             (adaptor instanceof sf.data.WebApiAdaptor) || (adaptor instanceof sf.data.WebMethodAdaptor) ||
-            (adaptor instanceof sf.data.CacheAdaptor) || adaptor instanceof sf.data.UrlAdaptor);
+            (adaptor instanceof sf.data.CacheAdaptor) || (adaptor instanceof sf.data.RemoteSaveAdaptor) ||
+            (adaptor instanceof sf.data.JsonAdaptor) || adaptor instanceof sf.data.UrlAdaptor);
     }
     return false;
 }
@@ -329,7 +330,9 @@ var DateProcessor = /** @class */ (function () {
                 this.calculateDuration(ganttData);
             }
             if (!sf.base.isNullOrUndefined(ganttProp.duration)) {
-                tempEndDate = this.getEndDate(ganttProp.startDate, ganttProp.duration, ganttProp.durationUnit, ganttProp, false);
+                var duration = !sf.base.isNullOrUndefined(ganttProp.segments) && ganttProp.segments.length > 0 ?
+                    this.totalDuration(ganttProp.segments) : ganttProp.duration;
+                tempEndDate = this.getEndDate(ganttProp.startDate, duration, ganttProp.durationUnit, ganttProp, false);
             }
             this.parent.setRecordValue('endDate', tempEndDate, ganttProp, true);
         }
@@ -337,13 +340,26 @@ var DateProcessor = /** @class */ (function () {
             this.parent.dataOperation.updateMappingData(ganttData, 'endDate');
         }
     };
+    DateProcessor.prototype.totalDuration = function (segments) {
+        var duration = 0;
+        for (var i = 0; i < segments.length; i++) {
+            duration += segments[i].duration + segments[i].offsetDuration;
+        }
+        return duration;
+    };
     /**
      * To calculate duration from start date and end date
      * @param {IGanttData} ganttData - Defines the gantt data.
      */
     DateProcessor.prototype.calculateDuration = function (ganttData) {
         var ganttProperties = ganttData.ganttProperties;
-        var tDuration = this.getDuration(ganttProperties.startDate, ganttProperties.endDate, ganttProperties.durationUnit, ganttProperties.isAutoSchedule, ganttProperties.isMilestone);
+        var tDuration;
+        if (!sf.base.isNullOrUndefined(ganttProperties.segments) && ganttProperties.segments.length > 0) {
+            tDuration = this.parent.editModule.taskbarEditModule.sumOfDuration(ganttProperties.segments);
+        }
+        else {
+            tDuration = this.getDuration(ganttProperties.startDate, ganttProperties.endDate, ganttProperties.durationUnit, ganttProperties.isAutoSchedule, ganttProperties.isMilestone);
+        }
         this.parent.setRecordValue('duration', tDuration, ganttProperties, true);
         var col = this.parent.columnByField[this.parent.columnMapping.duration];
         if (!sf.base.isNullOrUndefined(this.parent.editModule) && !sf.base.isNullOrUndefined(this.parent.editModule.cellEditModule) &&
@@ -1345,6 +1361,13 @@ var TaskProcessor = /** @class */ (function (_super) {
         else {
             hierarchicalData = this.dataArray;
         }
+        if (this.parent.taskFields.segmentId) {
+            this.segmentCollection = new sf.data.DataManager(this.parent.segmentData).executeLocal(new sf.data.Query()
+                .group(this.parent.taskFields.segmentId));
+            if (!this.parent.taskFields.segments) {
+                this.parent.taskFields.segments = 'Segments';
+            }
+        }
         if (this.parent.viewType !== 'ProjectView') {
             var resources = sf.base.extend([], [], this.parent.resources, true);
             var unassignedTasks = [];
@@ -1437,48 +1460,60 @@ var TaskProcessor = /** @class */ (function (_super) {
         }
     };
     TaskProcessor.prototype.prepareRecordCollection = function (data, level, parentItem) {
+        var _this = this;
         var length = data.length;
-        for (var i = 0; i < length; i++) {
+        var _loop_3 = function (i) {
             var tempData = data[i];
-            var ganttData = this.createRecord(tempData, level, parentItem, true);
-            ganttData.index = this.recordIndex++;
-            this.parent.ids[ganttData.index] = ganttData.ganttProperties.rowUniqueID;
-            this.parent.flatData.push(ganttData);
-            this.parent.setTaskIds(ganttData);
-            var childData = tempData[this.parent.taskFields.child];
-            if (this.parent.viewType === 'ResourceView' && sf.base.isNullOrUndefined(childData)
+            if (!sf.base.isNullOrUndefined(this_3.parent.taskFields.segmentId)) {
+                var segmentData = this_3.segmentCollection.
+                    filter(function (x) { return x.key === tempData[_this.parent.taskFields.id]; });
+                if (segmentData.length > 0) {
+                    tempData[this_3.parent.taskFields.segments] = segmentData[0].items;
+                }
+            }
+            var ganttData = this_3.createRecord(tempData, level, parentItem, true);
+            ganttData.index = this_3.recordIndex++;
+            this_3.parent.ids[ganttData.index] = ganttData.ganttProperties.rowUniqueID;
+            this_3.parent.flatData.push(ganttData);
+            this_3.parent.setTaskIds(ganttData);
+            var childData = tempData[this_3.parent.taskFields.child];
+            if (this_3.parent.viewType === 'ResourceView' && sf.base.isNullOrUndefined(childData)
                 && sf.base.isNullOrUndefined(ganttData.parentItem) && ganttData.level === 0) {
                 var ganttProp = ganttData.ganttProperties;
                 var parentData = ganttData;
-                this.parent.setRecordValue(ganttProp.isAutoSchedule ? 'startDate' : 'autoStartDate', null, parentData.ganttProperties, true);
-                this.parent.setRecordValue(ganttProp.isAutoSchedule ? 'endDate' : 'autoEndDate', null, parentData.ganttProperties, true);
+                this_3.parent.setRecordValue(ganttProp.isAutoSchedule ? 'startDate' : 'autoStartDate', null, parentData.ganttProperties, true);
+                this_3.parent.setRecordValue(ganttProp.isAutoSchedule ? 'endDate' : 'autoEndDate', null, parentData.ganttProperties, true);
                 var parentProgress = 0;
                 var parentProp = parentData.ganttProperties;
-                this.parent.setRecordValue('isMilestone', false, parentProp, true);
+                this_3.parent.setRecordValue('isMilestone', false, parentProp, true);
                 if (parentProp.isAutoSchedule) {
-                    this.calculateDuration(parentData);
+                    this_3.calculateDuration(parentData);
                 }
-                this.updateWorkWithDuration(parentData);
+                this_3.updateWorkWithDuration(parentData);
                 var parentWork = parentProp.work;
-                this.parent.setRecordValue('work', parentWork, parentProp, true);
-                this.parent.setRecordValue('taskType', 'FixedDuration', parentProp, true);
-                if (!sf.base.isNullOrUndefined(this.parent.taskFields.type)) {
-                    this.updateMappingData(parentData, 'type');
+                this_3.parent.setRecordValue('work', parentWork, parentProp, true);
+                this_3.parent.setRecordValue('taskType', 'FixedDuration', parentProp, true);
+                if (!sf.base.isNullOrUndefined(this_3.parent.taskFields.type)) {
+                    this_3.updateMappingData(parentData, 'type');
                 }
-                this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
-                this.parent.setRecordValue('totalProgress', 0, parentProp, true);
-                this.parent.setRecordValue('totalDuration', 0, parentProp, true);
+                this_3.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
+                this_3.parent.setRecordValue('totalProgress', 0, parentProp, true);
+                this_3.parent.setRecordValue('totalDuration', 0, parentProp, true);
                 if (!parentProp.isAutoSchedule) {
-                    this.parent.setRecordValue('autoDuration', this.calculateAutoDuration(parentProp), parentProp, true);
-                    this.updateAutoWidthLeft(parentData);
+                    this_3.parent.setRecordValue('autoDuration', this_3.calculateAutoDuration(parentProp), parentProp, true);
+                    this_3.updateAutoWidthLeft(parentData);
                 }
-                this.resetDependency(parentData);
-                this.updateWidthLeft(parentData);
-                this.updateTaskData(parentData);
+                this_3.resetDependency(parentData);
+                this_3.updateWidthLeft(parentData);
+                this_3.updateTaskData(parentData);
             }
             if (!sf.base.isNullOrUndefined(childData) && childData.length > 0) {
-                this.prepareRecordCollection(childData, ganttData.level + 1, ganttData);
+                this_3.prepareRecordCollection(childData, ganttData.level + 1, ganttData);
             }
+        };
+        var this_3 = this;
+        for (var i = 0; i < length; i++) {
+            _loop_3(i);
         }
     };
     /**
@@ -1612,7 +1647,115 @@ var TaskProcessor = /** @class */ (function (_super) {
             this.parent.setRecordValue('rowUniqueID', uniqueId, ganttProperties, true);
             this.parent.setRecordValue('sharedTaskUniqueIds', [], ganttProperties, true);
         }
+        if (this.parent.allowUnscheduledTasks && ganttData.ganttProperties.startDate
+            && (ganttData.ganttProperties.endDate || ganttData.ganttProperties.duration)) {
+            this.parent.setRecordValue('segments', this.setSegmentsInfo(ganttData, true), ganttProperties, true);
+            this.parent.dataOperation.updateMappingData(ganttData, 'segments');
+            if (!isLoad) {
+                this.updateWidthLeft(ganttData);
+            }
+        }
         return ganttData;
+    };
+    TaskProcessor.prototype.sortSegmentsData = function (segments, onLoad, ganttProp) {
+        var _this = this;
+        if (onLoad) {
+            segments.sort(function (a, b) {
+                return a[_this.parent.taskFields.startDate].getTime() - b[_this.parent.taskFields.startDate].getTime();
+            });
+        }
+        else {
+            segments.sort(function (a, b) {
+                return a.startDate.getTime() - b.startDate.getTime();
+            });
+        }
+        return segments;
+    };
+    TaskProcessor.prototype.setSegmentsInfo = function (data, onLoad) {
+        var taskSettings = this.parent.taskFields;
+        var ganttSegments = [];
+        var segments;
+        var sumOfDuration = 0;
+        var remainingDuration = 0;
+        if (!sf.base.isNullOrUndefined(this.parent.taskFields.segments)) {
+            segments = onLoad ? data.taskData[this.parent.taskFields.segments] : data.ganttProperties.segments;
+            if (!sf.base.isNullOrUndefined(segments) && segments.length > 1) {
+                this.sortSegmentsData(segments, onLoad, data.ganttProperties);
+                for (var i = 0; i < segments.length; i++) {
+                    var segment = segments[i];
+                    var startDate = onLoad ? segment[taskSettings.startDate] : segment.startDate;
+                    var endDate = onLoad ? segment[taskSettings.endDate] : segment.endDate;
+                    var duration = onLoad ? segment[taskSettings.duration] : segment.duration;
+                    startDate = i === 0 ? new Date(data.ganttProperties.startDate.getTime()) : startDate;
+                    startDate = this.checkStartDate(startDate, data.ganttProperties, false);
+                    if (!sf.base.isNullOrUndefined(duration)) {
+                        endDate = this.getEndDate(startDate, duration, data.ganttProperties.durationUnit, data.ganttProperties, false);
+                    }
+                    else {
+                        endDate = this.checkEndDate(endDate, data.ganttProperties, false);
+                        duration = this.getDuration(startDate, endDate, data.ganttProperties.durationUnit, data.ganttProperties.isAutoSchedule, data.ganttProperties.isMilestone);
+                    }
+                    if (taskSettings.duration) {
+                        remainingDuration = data.ganttProperties.duration - sumOfDuration;
+                        if (remainingDuration <= 0) {
+                            continue;
+                        }
+                        duration = i === segments.length - 1 ? remainingDuration : remainingDuration > 0 &&
+                            duration > remainingDuration ? remainingDuration : duration;
+                        endDate = this.getEndDate(startDate, duration, data.ganttProperties.durationUnit, data.ganttProperties, false);
+                    }
+                    else if (!taskSettings.duration && taskSettings.endDate) {
+                        endDate = (!sf.base.isNullOrUndefined(data.ganttProperties.endDate)) && endDate.getTime() >
+                            data.ganttProperties.endDate.getTime() && i !== segments.length - 1 ? endDate : data.ganttProperties.endDate;
+                        duration = this.getDuration(startDate, endDate, data.ganttProperties.durationUnit, data.ganttProperties.isAutoSchedule, data.ganttProperties.isMilestone);
+                        if (ganttSegments.length > 0 && endDate.getTime() < startDate.getTime()
+                            && endDate.getTime() <= data.ganttProperties.endDate.getTime()) {
+                            ganttSegments[i - 1].duration = this.getDuration(ganttSegments[i - 1].startDate, data.ganttProperties.endDate, data.ganttProperties.durationUnit, data.ganttProperties.isAutoSchedule, data.ganttProperties.isMilestone);
+                            continue;
+                        }
+                    }
+                    segment = {};
+                    if (!(startDate && endDate) || !(startDate && duration)) {
+                        break;
+                    }
+                    sumOfDuration += duration;
+                    segment.startDate = startDate;
+                    segment.endDate = endDate;
+                    segment.duration = duration;
+                    segment.width = 0;
+                    segment.left = 0;
+                    segment.segmentIndex = i;
+                    ganttSegments.push(segment);
+                    if (!sf.base.isNullOrUndefined(ganttSegments[i - 1])) {
+                        var offsetDuration = this.getDuration(ganttSegments[i - 1].endDate, ganttSegments[i].startDate, data.ganttProperties.durationUnit, data.ganttProperties.isAutoSchedule, data.ganttProperties.isMilestone);
+                        segment.offsetDuration = offsetDuration;
+                        if (offsetDuration < 1) {
+                            segment.startDate = this.getEndDate(ganttSegments[i - 1].endDate, 1, data.ganttProperties.durationUnit, data.ganttProperties, false);
+                            segment.startDate = this.checkStartDate(segment.startDate, data.ganttProperties, false);
+                            segment.endDate = this.getEndDate(segment.startDate, segment.duration, data.ganttProperties.durationUnit, data.ganttProperties, false);
+                            segment.endDate = segment.endDate > data.ganttProperties.endDate ? data.ganttProperties.endDate
+                                : segment.endDate;
+                            segment.offsetDuration = 1;
+                        }
+                    }
+                    else {
+                        segment.offsetDuration = 0;
+                    }
+                }
+                this.parent.setRecordValue('duration', sumOfDuration, data.ganttProperties, true);
+                this.parent.setRecordValue('endDate', ganttSegments[ganttSegments.length - 1].endDate, data.ganttProperties, true);
+                if (!sf.base.isNullOrUndefined(taskSettings.endDate)) {
+                    this.parent.setRecordValue(this.parent.taskFields.endDate, ganttSegments[ganttSegments.length - 1].endDate, data, true);
+                }
+            }
+        }
+        if (ganttSegments.length > 1) {
+            this.parent.setRecordValue('segments', ganttSegments, data.ganttProperties, true);
+        }
+        else {
+            ganttSegments = null;
+        }
+        return ganttSegments;
     };
     /**
      * Method to calculate work based on resource unit and duration.
@@ -1744,6 +1887,8 @@ var TaskProcessor = /** @class */ (function (_super) {
         duration = sf.base.isNullOrUndefined(duration) || duration === '' ? null : duration;
         var startDate = this.getDateFromFormat(data[taskSettings.startDate], true);
         var endDate = this.getDateFromFormat(data[taskSettings.endDate], true);
+        var segments = taskSettings.segments ? (data[taskSettings.segments] ||
+            ganttData.taskData[taskSettings.segments]) : null;
         var isMileStone = taskSettings.milestone ? data[taskSettings.milestone] ? true : false : false;
         var durationMapping = data[taskSettings.durationUnit] ? data[taskSettings.durationUnit] : '';
         this.parent.setRecordValue('durationUnit', this.validateDurationUnitMapping(durationMapping), ganttProperties, true);
@@ -1778,6 +1923,9 @@ var TaskProcessor = /** @class */ (function (_super) {
                 this.parent.setRecordValue('startDate', this.getProjectStartDate(ganttProperties, isLoad), ganttProperties, true);
                 this.calculateEndDate(ganttData);
             }
+        }
+        if (!sf.base.isNullOrUndefined(segments)) {
+            this.parent.setRecordValue('segments', this.setSegmentsInfo(ganttData, true), ganttProperties, true);
         }
         if (ganttProperties.duration === 0) {
             this.parent.setRecordValue('isMilestone', true, ganttProperties, true);
@@ -2127,6 +2275,43 @@ var TaskProcessor = /** @class */ (function (_super) {
             return 0;
         }
     };
+    TaskProcessor.prototype.getSplitTaskWidth = function (sDate, duration, data) {
+        var startDate = new Date(sDate.getTime());
+        var endDate = new Date((this.getEndDate(startDate, duration, data.ganttProperties.durationUnit, data.ganttProperties, false).getTime()));
+        var tierViewMode = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
+            this.parent.timelineModule.topTier;
+        if (tierViewMode === 'Day') {
+            if (this.getSecondsInDecimal(startDate) === this.parent.defaultStartTime) {
+                startDate.setHours(0, 0, 0, 0);
+            }
+            if (this.getSecondsInDecimal(endDate) === this.parent.defaultEndTime) {
+                endDate.setHours(24);
+            }
+            if (this.getSecondsInDecimal(endDate) === this.parent.defaultStartTime) {
+                endDate.setHours(0, 0, 0, 0);
+            }
+        }
+        return ((this.getTimeDifference(startDate, endDate) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
+    };
+    TaskProcessor.prototype.getSplitTaskLeft = function (sDate, segmentTaskStartDate) {
+        var stDate = new Date(sDate.getTime());
+        var tierViewMode = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
+            this.parent.timelineModule.topTier;
+        if (tierViewMode === 'Day') {
+            if (this.getSecondsInDecimal(stDate) === this.parent.defaultStartTime) {
+                stDate.setHours(0, 0, 0, 0);
+            }
+            if (this.getSecondsInDecimal(segmentTaskStartDate) === this.parent.defaultStartTime) {
+                segmentTaskStartDate.setHours(0, 0, 0, 0);
+            }
+        }
+        if (segmentTaskStartDate) {
+            return (stDate.getTime() - segmentTaskStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
+        }
+        else {
+            return 0;
+        }
+    };
     /**
      *
      * @param ganttData
@@ -2136,7 +2321,7 @@ var TaskProcessor = /** @class */ (function (_super) {
     TaskProcessor.prototype.updateMappingData = function (ganttData, fieldName) {
         var columnMapping = this.parent.columnMapping;
         var ganttProp = ganttData.ganttProperties;
-        if (sf.base.isNullOrUndefined(columnMapping[fieldName]) && fieldName !== 'taskType') {
+        if (sf.base.isNullOrUndefined(columnMapping[fieldName]) && fieldName !== 'taskType' && fieldName !== 'segments') {
             return;
         }
         if (fieldName === 'predecessorName') {
@@ -2178,10 +2363,34 @@ var TaskProcessor = /** @class */ (function (_super) {
             this.parent.setRecordValue('taskData.' + columnMapping[fieldName], !ganttProp.isAutoSchedule, ganttData);
             this.parent.setRecordValue(columnMapping[fieldName], !ganttProp.isAutoSchedule, ganttData);
         }
+        else if (fieldName === 'segments') {
+            this.parent.setRecordValue('taskData.' + this.parent.taskFields.segments, this.segmentTaskData(ganttProp.segments), ganttData);
+        }
         else {
             this.parent.setRecordValue('taskData.' + columnMapping[fieldName], ganttProp[fieldName], ganttData);
             this.parent.setRecordValue(columnMapping[fieldName], ganttProp[fieldName], ganttData);
         }
+    };
+    TaskProcessor.prototype.segmentTaskData = function (segments) {
+        var userData = [];
+        var taskSettings = this.parent.taskFields;
+        if (sf.base.isNullOrUndefined(segments)) {
+            return null;
+        }
+        for (var i = 0; i < segments.length; i++) {
+            var taskData = {};
+            if (!sf.base.isNullOrUndefined(taskSettings.startDate)) {
+                taskData[this.parent.taskFields.startDate] = segments[i].startDate;
+            }
+            if (!sf.base.isNullOrUndefined(taskSettings.endDate)) {
+                taskData[this.parent.taskFields.endDate] = segments[i].endDate;
+            }
+            if (!sf.base.isNullOrUndefined(taskSettings.duration)) {
+                taskData[this.parent.taskFields.duration] = Number(segments[i].duration);
+            }
+            userData.push(taskData);
+        }
+        return userData;
     };
     /**
      * Method to update the task data resource values
@@ -2216,7 +2425,7 @@ var TaskProcessor = /** @class */ (function (_super) {
                 }
             }
             var data_1 = [];
-            var _loop_3 = function (k) {
+            var _loop_4 = function (k) {
                 resourceData.filter(function (resourceInfo) {
                     /* tslint:disable-next-line */
                     if (resourceInfo[resourceSettings.id] === preTaskResources[k][resourceSettings.id]) {
@@ -2225,7 +2434,7 @@ var TaskProcessor = /** @class */ (function (_super) {
                 });
             };
             for (var k = 0; k < preTaskResources.length; k++) {
-                _loop_3(k);
+                _loop_4(k);
             }
             this.parent.setRecordValue('taskData.' + this.parent.taskFields.resourceInfo, data_1, ganttData);
         }
@@ -2381,7 +2590,7 @@ var TaskProcessor = /** @class */ (function (_super) {
         var resourceUnitMapping = this.parent.resourceFields.unit;
         var resourceGroup = this.parent.resourceFields.group;
         var resources = [];
-        var _loop_4 = function (count) {
+        var _loop_5 = function (count) {
             var resource = resourceData.filter(function (resourceInfo) {
                 if (typeof (resourceIdCollection[count]) === 'object' &&
                     resourceIdCollection[count][resourceIDMapping] === resourceInfo[resourceIDMapping]) {
@@ -2401,7 +2610,7 @@ var TaskProcessor = /** @class */ (function (_super) {
             }
         };
         for (var count = 0; count < resourceIdCollection.length; count++) {
-            _loop_4(count);
+            _loop_5(count);
         }
         this.updateResourceUnit(resources);
         return resources;
@@ -2888,6 +3097,44 @@ var TaskProcessor = /** @class */ (function (_super) {
      */
     TaskProcessor.prototype.updateWidthLeft = function (data) {
         var ganttRecord = data.ganttProperties;
+        // task endDate may be changed in segment calculation so this must be calculated first.
+        // task width calculating was based on endDate     
+        if (!sf.base.isNullOrUndefined(ganttRecord.segments) && ganttRecord.segments.length > 0) {
+            var segments = ganttRecord.segments;
+            var fixedWidth = true;
+            var totalTaskWidth = this.parent.editModule.taskbarEditModule.splitTasksDuration(segments) * this.parent.perDayWidth;
+            var totalProgressWidth = this.parent.dataOperation.getProgressWidth(totalTaskWidth, ganttRecord.progress);
+            for (var i = 0; i < segments.length; i++) {
+                var segment = segments[i];
+                if (i === 0 && !sf.base.isNullOrUndefined(ganttRecord.startDate) &&
+                    segment.startDate.getTime() !== ganttRecord.startDate.getTime()) {
+                    segment.startDate = ganttRecord.startDate;
+                    var endDate = this.parent.dataOperation.getEndDate(segment.startDate, segment.duration, ganttRecord.durationUnit, ganttRecord, false);
+                    segment.endDate = this.parent.dataOperation.checkEndDate(endDate, ganttRecord, false);
+                    this.parent.chartRowsModule.incrementSegments(segments, 0, data);
+                }
+                segment.width = this.getSplitTaskWidth(segment.startDate, segment.duration, data);
+                segment.showProgress = false;
+                segment.progressWidth = -1;
+                if (i !== 0) {
+                    var pStartDate = new Date(ganttRecord.startDate.getTime());
+                    segment.left = this.getSplitTaskLeft(segment.startDate, pStartDate);
+                }
+                if (totalProgressWidth > 0 && totalProgressWidth > segment.width) {
+                    totalProgressWidth = totalProgressWidth - segment.width;
+                    segment.progressWidth = segment.width;
+                    segment.showProgress = false;
+                }
+                else if (fixedWidth) {
+                    segment.progressWidth = totalProgressWidth;
+                    segment.showProgress = true;
+                    totalProgressWidth = totalProgressWidth - segment.width;
+                    fixedWidth = false;
+                }
+            }
+            this.parent.setRecordValue('segments', ganttRecord.segments, ganttRecord, true);
+            this.parent.dataOperation.updateMappingData(data, 'segments');
+        }
         this.parent.setRecordValue('width', this.parent.dataOperation.calculateWidth(data), ganttRecord, true);
         this.parent.setRecordValue('left', this.parent.dataOperation.calculateLeft(ganttRecord), ganttRecord, true);
         this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth((ganttRecord.isAutoSchedule || !data.hasChildRecords ? ganttRecord.width : ganttRecord.autoWidth), ganttRecord.progress), ganttRecord, true);
@@ -3378,6 +3625,11 @@ var GanttChart = /** @class */ (function () {
     };
     GanttChart.prototype.renderChartElements = function () {
         this.parent.chartRowsModule.renderChartRows();
+        if (this.parent.predecessorModule && this.parent.taskFields.dependency) {
+            this.parent.connectorLineIds = [];
+            this.parent.updatedConnectorLineCollection = [];
+            this.parent.predecessorModule.createConnectorLinesCollection();
+        }
         this.parent.connectorLineModule.renderConnectorLines(this.parent.updatedConnectorLineCollection);
         if (this.parent.viewType === 'ResourceView' && this.parent.showOverAllocation) {
             this.renderOverAllocationContainer();
@@ -3478,9 +3730,13 @@ var GanttChart = /** @class */ (function () {
         this.scrollObject.
             setHeight(this.parent.ganttHeight - this.chartTimelineContainer.offsetHeight - toolbarHeight);
     };
+    /**
+     * @private
+     */
     GanttChart.prototype.updateWidthAndHeight = function () {
         //empty row height
         var emptydivHeight = sf.base.isBlazor() ? 39 : 36;
+        this.parent.updateContentHeight();
         var emptyHeight = this.parent.contentHeight === 0 ? emptydivHeight : this.parent.contentHeight;
         this.chartBodyContent.style.height = sf.base.formatUnit(emptyHeight);
         //let element: HTMLElement = this.chartTimelineContainer.querySelector('.' + cls.timelineHeaderTableContainer);
@@ -4099,7 +4355,7 @@ var GanttChart = /** @class */ (function () {
         }
         if (typeof nextElement !== 'string') {
             if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell') ||
-                $target.classList.contains('e-headercell')) {
+                $target.classList.contains('e-headercell') || $target.closest('.e-segmented-taskbar')) {
                 e.preventDefault();
             }
             if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell')) ||
@@ -4146,6 +4402,15 @@ var GanttChart = /** @class */ (function () {
             }
             nextElement = isTab ? nextElement.nextElementSibling : nextElement.previousElementSibling;
         }
+        if (!sf.base.isNullOrUndefined(nextElement) && (nextElement.classList.contains('e-taskbar-main-container')
+            || nextElement.classList.contains('e-right-connectorpoint-outer-div'))) {
+            var record = this.parent.currentViewData[this.focusedRowIndex];
+            if (!sf.base.isNullOrUndefined(record.ganttProperties.segments) && record.ganttProperties.segments.length > 0) {
+                nextElement = nextElement.classList.contains('e-right-connectorpoint-outer-div')
+                    ? nextElement.parentElement.nextElementSibling
+                    : nextElement.getElementsByClassName('e-gantt-child-taskbar-inner-div')[0];
+            }
+        }
         if (this.validateNextElement(nextElement)) {
             return nextElement;
         }
@@ -4180,7 +4445,8 @@ var GanttChart = /** @class */ (function () {
                     }
                 }
             }
-            else if ($target.parentElement.classList.contains('e-chart-row-cell')) {
+            else if ($target.parentElement.classList.contains('e-chart-row-cell') ||
+                $target.parentElement.parentElement.classList.contains('e-chart-row-cell')) {
                 var childElement = void 0;
                 /* tslint:disable-next-line:no-any */
                 rowIndex = sf.base.closest($target, '.e-chart-row').rowIndex;
@@ -4257,14 +4523,19 @@ var GanttChart = /** @class */ (function () {
                 element.classList.contains('e-right-label-container')) {
                 childElement = element.getElementsByTagName('span')[0];
             }
-            else if (element.classList.contains('e-taskbar-main-container')) {
+            else if (element.classList.contains('e-taskbar-main-container')
+                || element.classList.contains('e-gantt-child-taskbar-inner-div')) {
                 /* tslint:disable-next-line:no-any */
                 var rowIndex = sf.base.closest(element, '.e-chart-row').rowIndex;
                 var data = this.parent.currentViewData[rowIndex];
                 var className = data.hasChildRecords ? data.ganttProperties.isAutoSchedule ? 'e-gantt-parent-taskbar' :
                     'e-manualparent-main-container' :
-                    data.ganttProperties.isMilestone ? 'e-gantt-milestone' : 'e-gantt-child-taskbar';
+                    data.ganttProperties.isMilestone ? 'e-gantt-milestone' : !sf.base.isNullOrUndefined(data.ganttProperties.segments)
+                        && data.ganttProperties.segments.length > 0 ? 'e-segmented-taskbar' : 'e-gantt-child-taskbar';
                 childElement = element.getElementsByClassName(className)[0];
+                if (sf.base.isNullOrUndefined(childElement)) {
+                    childElement = element;
+                }
             }
             if (focus === 'add' && !sf.base.isNullOrUndefined(childElement)) {
                 element.setAttribute('tabIndex', '0');
@@ -5702,6 +5973,9 @@ var GanttTreeGrid = /** @class */ (function () {
         outer.parentNode.removeChild(outer);
         return scrollbarWidth;
     };
+    /**
+     * @private
+     */
     GanttTreeGrid.prototype.ensureScrollBar = function () {
         var content = this.getContentDiv();
         var headerDiv = this.getHeaderDiv();
@@ -6796,6 +7070,12 @@ var TaskFields = /** @class */ (function (_super) {
     __decorate$12([
         sf.base.Property(null)
     ], TaskFields.prototype, "type", void 0);
+    __decorate$12([
+        sf.base.Property(null)
+    ], TaskFields.prototype, "segments", void 0);
+    __decorate$12([
+        sf.base.Property(null)
+    ], TaskFields.prototype, "segmentId", void 0);
     return TaskFields;
 }(sf.base.ChildProperty));
 
@@ -7018,21 +7298,38 @@ var ResourceFields = /** @class */ (function (_super) {
  * Export all generated models for complex settings
  */
 
+var __extends$18 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 /**
  * To render the chart rows in Gantt
  */
-var ChartRows = /** @class */ (function () {
+var ChartRows = /** @class */ (function (_super) {
+    __extends$18(ChartRows, _super);
     function ChartRows(ganttObj) {
-        this.taskBarHeight = 0;
-        this.milestoneHeight = 0;
-        this.milesStoneRadius = 0;
-        this.baselineTop = 0;
-        this.baselineHeight = 3;
-        this.touchLeftConnectorpoint = '';
-        this.touchRightConnectorpoint = '';
-        this.parent = ganttObj;
-        this.initPublicProp();
-        this.addEventListener();
+        var _this = _super.call(this, ganttObj) || this;
+        _this.taskBarHeight = 0;
+        _this.milestoneHeight = 0;
+        _this.milesStoneRadius = 0;
+        _this.baselineTop = 0;
+        _this.baselineHeight = 3;
+        _this.touchLeftConnectorpoint = '';
+        _this.touchRightConnectorpoint = '';
+        _this.dropSplit = false;
+        _this.parent = ganttObj;
+        _this.initPublicProp();
+        _this.addEventListener();
+        return _this;
     }
     /**
      * To initialize the public property.
@@ -7130,7 +7427,8 @@ var ChartRows = /** @class */ (function () {
                 labelString = this.getTaskLabel(this.parent.labelSettings.taskLabel);
                 labelString = labelString === 'isCustomTemplate' ? this.parent.labelSettings.taskLabel : labelString;
             }
-            var template = (data.ganttProperties.startDate && data.ganttProperties.endDate
+            var template = !sf.base.isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length > 0 ?
+                this.splitTaskbar(data, labelString) : (data.ganttProperties.startDate && data.ganttProperties.endDate
                 && data.ganttProperties.duration) ? ('<div class="' + childTaskBarInnerDiv + ' ' + traceChildTaskBar + ' ' + (data.ganttProperties.isAutoSchedule ?
                 '' : manualChildTaskBar) + '"' +
                 'style="width:' + data.ganttProperties.width + 'px;height:' +
@@ -7164,6 +7462,314 @@ var ChartRows = /** @class */ (function () {
             childTaskbarNode = this.createDivElement(template);
         }
         return childTaskbarNode;
+    };
+    ChartRows.prototype.splitTaskbar = function (data, labelString) {
+        var splitTasks = '';
+        for (var i = 0; i < data.ganttProperties.segments.length; i++) {
+            var segment = data.ganttProperties.segments[i];
+            var segmentPosition = (i === 0) ? 'e-segment-first' : (i === data.ganttProperties.segments.length - 1)
+                ? 'e-segment-last' : 'e-segment-inprogress';
+            splitTasks += (
+            //split taskbar        
+            '<div class="' + childTaskBarInnerDiv + ' ' + segmentPosition + ' ' + traceChildTaskBar + ' ' +
+                ' e-segmented-taskbar' +
+                '"style="width:' + segment.width + 'px;position: absolute; left:' + segment.left + 'px;height:' +
+                (this.taskBarHeight) + 'px; overflow: initial;" data-segment-index = "' + i + '" aria-label = "' +
+                this.generateSpiltTaskAriaLabel(segment, data.ganttProperties) + '"> ' +
+                this.getSplitTaskbarLeftResizerNode() +
+                //split progress bar
+                '<div class="' + childProgressBarInnerDiv + ' ' + traceChildProgressBar + ' ' +
+                '" style="border-style:' + (segment.progressWidth ? 'solid;' : 'none;') +
+                'display:' + (segment.progressWidth >= 0 ? 'block;' : 'none;') +
+                'width:' + segment.progressWidth + 'px;height:100%;' +
+                'border-top-right-radius:' + this.getSplitTaskBorderRadius(segment) + 'px;' +
+                'border-bottom-right-radius:' + this.getSplitTaskBorderRadius(segment) + 'px;">' +
+                // progress label
+                '<span class="' + taskLabel + '" style="line-height:' +
+                (this.taskBarHeight - 1) + 'px;display:' + (segment.showProgress ? 'inline;' : 'none;') +
+                'height:' + this.taskBarHeight + 'px;">' + labelString + '</span>' +
+                '</div>' +
+                this.getSplitTaskbarRightResizerNode(segment) +
+                (segment.showProgress ? this.getSplitProgressResizerNode(segment) : '') +
+                '</div></div>');
+        }
+        return splitTasks;
+    };
+    ChartRows.prototype.getSplitTaskbarLeftResizerNode = function () {
+        var lResizerLeft = -(this.parent.isAdaptive ? 12 : 2);
+        var template = '<div class="' + taskBarLeftResizer + ' ' + icon + '"' +
+            ' style="left:' + lResizerLeft + 'px;height:' + (this.taskBarHeight) + 'px;"></div>';
+        return template;
+    };
+    ChartRows.prototype.getSplitTaskbarRightResizerNode = function (segment) {
+        var rResizerLeft = this.parent.isAdaptive ? -2 : -10;
+        var template = '<div class="' + taskBarRightResizer + ' ' + icon + '"' +
+            ' style="left:' + (segment.width + rResizerLeft) + 'px;' +
+            'height:' + (this.taskBarHeight) + 'px;"></div>';
+        return template;
+    };
+    ChartRows.prototype.getSplitProgressResizerNode = function (segment) {
+        var template = '<div class="' + childProgressResizer + '"' +
+            ' style="left:' + (segment.progressWidth - 6) + 'px;margin-top:' +
+            (this.taskBarHeight - 4) + 'px;"><div class="' + progressBarHandler + '"' +
+            '><div class="' + progressHandlerElement + '"></div>' +
+            '<div class="' + progressBarHandlerAfter + '"></div></div>';
+        return template;
+    };
+    ChartRows.prototype.getSegmentIndex = function (splitStartDate, record) {
+        var segmentIndex = -1;
+        var ganttProp = record.ganttProperties;
+        var segments = ganttProp.segments;
+        if (!sf.base.isNullOrUndefined(segments)) {
+            segments.sort(function (a, b) {
+                return a.startDate.getTime() - b.startDate.getTime();
+            });
+            var length_1 = segments.length;
+            for (var i = 0; i < length_1; i++) {
+                var segment = segments[i];
+                // To find if user tend to split the start date of a main taskbar
+                // purpose of this to restrict the split action
+                if (splitStartDate.getTime() === ganttProp.startDate.getTime()) {
+                    this.dropSplit = true;
+                    segmentIndex = 0;
+                    // To find the if user tend to split the first date of already segmented task.
+                    // purpose of this to move on day of a segment
+                }
+                else if (splitStartDate.getTime() === segment.startDate.getTime()) {
+                    this.dropSplit = true;
+                    var sDate = segment.startDate;
+                    sDate.setDate(sDate.getDate() + 1);
+                    sDate = segment.startDate = this.parent.dataOperation.checkStartDate(sDate, ganttProp, false);
+                    segment.startDate = sDate;
+                    var eDate = segment.endDate;
+                    eDate = this.parent.dataOperation.getEndDate(sDate, segment.duration, ganttProp.durationUnit, ganttProp, false);
+                    segment.endDate = eDate;
+                    if (i === segments.length - 1) {
+                        this.parent.setRecordValue('endDate', eDate, ganttProp, true);
+                    }
+                    this.incrementSegments(segments, i, record);
+                    segmentIndex = segment.segmentIndex;
+                    // To find if the user tend to split the segment and find the segment index 
+                }
+                else {
+                    segment.endDate = this.parent.dataOperation.getEndDate(segment.startDate, segment.duration, ganttProp.durationUnit, ganttProp, false);
+                    if (splitStartDate.getTime() >= segment.startDate.getTime() && splitStartDate.getTime() <= segment.endDate.getTime()) {
+                        segmentIndex = segment.segmentIndex;
+                    }
+                }
+                this.parent.setRecordValue('segments', ganttProp.segments, ganttProp, true);
+            }
+        }
+        return segmentIndex;
+    };
+    ChartRows.prototype.mergeTask = function (taskId, segmentIndexes) {
+        var mergeArrayLength = segmentIndexes.length;
+        var taskFields = this.parent.taskFields;
+        var mergeData = this.parent.flatData.filter(function (x) {
+            if (x[taskFields.id] === taskId) {
+                return x;
+            }
+            else {
+                return null;
+            }
+        })[0];
+        var segments = mergeData.ganttProperties.segments;
+        segmentIndexes = segmentIndexes.sort(function (a, b) {
+            return b.firstSegmentIndex - a.firstSegmentIndex;
+        });
+        for (var arrayLength = 0; arrayLength < mergeArrayLength; arrayLength++) {
+            var segment = void 0;
+            var firstSegment = segments[segmentIndexes[arrayLength].firstSegmentIndex];
+            var secondSegment = segments[segmentIndexes[arrayLength].secondSegmentIndex];
+            var duration = firstSegment.duration + secondSegment.duration;
+            var endDate = this.parent.dataOperation.getEndDate(firstSegment.startDate, duration, mergeData.ganttProperties.durationUnit, mergeData.ganttProperties, false);
+            segment = {
+                startDate: firstSegment.startDate,
+                endDate: endDate,
+                duration: duration
+            };
+            var insertIndex = segmentIndexes[arrayLength].firstSegmentIndex;
+            segments.splice(insertIndex, 2, segment);
+            this.parent.setRecordValue('segments', segments, mergeData.ganttProperties, true);
+            this.parent.dataOperation.updateMappingData(mergeData, 'segments');
+            if (segments.length === 1) {
+                this.parent.setRecordValue('endDate', endDate, mergeData.ganttProperties, true);
+                this.parent.setRecordValue('segments', null, mergeData.ganttProperties, true);
+                this.parent.dataOperation.updateMappingData(mergeData, 'segments');
+            }
+            else if (mergeData.ganttProperties.endDate !== segments[segments.length - 1].endDate) {
+                this.parent.setRecordValue('endDate', segments[segments.length - 1].endDate, mergeData.ganttProperties, true);
+            }
+        }
+        this.refreshChartAfterSegment(mergeData, 'mergeSegment');
+    };
+    ChartRows.prototype.refreshChartAfterSegment = function (data, requestType) {
+        this.parent.setRecordValue('segments', this.parent.dataOperation.setSegmentsInfo(data, false), data.ganttProperties, true);
+        this.parent.dataOperation.updateMappingData(data, 'segments');
+        this.parent.dataOperation.updateWidthLeft(data);
+        if (this.parent.predecessorModule && this.parent.taskFields.dependency) {
+            this.parent.predecessorModule.updatedRecordsDateByPredecessor();
+            this.parent.connectorLineEditModule.removePreviousConnectorLines(this.parent.flatData);
+            this.parent.connectorLineEditModule.refreshEditedRecordConnectorLine(this.parent.flatData);
+            this.refreshRecords(this.parent.currentViewData);
+        }
+        else {
+            this.refreshRow(this.parent.currentViewData.indexOf(data));
+        }
+        var tr = this.ganttChartTableBody.querySelectorAll('tr')[this.parent.currentViewData.indexOf(data)];
+        this.triggerQueryTaskbarInfoByIndex(tr, data);
+        this.parent.selectionModule.clearSelection();
+        var args = {
+            requestType: requestType,
+            rowData: data
+        };
+        this.parent.trigger('actionComplete', args);
+    };
+    /**
+     * public method to split task bar.
+     * @public
+     */
+    ChartRows.prototype.splitTask = function (taskId, splitDates) {
+        var taskFields = this.parent.taskFields;
+        var splitDate = splitDates;
+        var splitRecord = this.parent.flatData.filter(function (x) {
+            if (x[taskFields.id] === taskId) {
+                return x;
+            }
+            else {
+                return null;
+            }
+        })[0];
+        var ganttProp = splitRecord.ganttProperties;
+        this.dropSplit = false;
+        var segmentIndex = -1;
+        var segments = ganttProp.segments;
+        if (sf.base.isNullOrUndefined(splitDates.length) || splitDates.length < 0) {
+            var splitStartDate = this.parent.dataOperation.checkStartDate(splitDate, ganttProp, false);
+            if (splitStartDate.getTime() !== ganttProp.startDate.getTime()) {
+                if (ganttProp.isAutoSchedule) {
+                    if (!sf.base.isNullOrUndefined(segments)) {
+                        segmentIndex = this.getSegmentIndex(splitStartDate, splitRecord);
+                    }
+                    //check atleast one day difference is there to split
+                    if (this.dropSplit === false && splitDate.getTime() > ganttProp.startDate.getTime() &&
+                        splitDate.getTime() < ganttProp.endDate.getTime()) {
+                        segments = segmentIndex !== -1 ? segments : [];
+                        var startDate = segmentIndex !== -1 ?
+                            segments[segmentIndex].startDate : new Date(ganttProp.startDate.getTime());
+                        var endDate = segmentIndex !== -1 ? segments[segmentIndex].endDate : new Date(ganttProp.endDate.getTime());
+                        var segmentDuration = this.parent.dataOperation.getDuration(startDate, endDate, ganttProp.durationUnit, ganttProp.isAutoSchedule, ganttProp.isMilestone);
+                        this.parent.setRecordValue('segments', this.splitSegmentedTaskbar(startDate, endDate, splitDate, segmentIndex, segments, splitRecord, segmentDuration), ganttProp, true);
+                        if (segmentIndex !== -1) {
+                            this.incrementSegments(segments, segmentIndex + 1, splitRecord);
+                        }
+                        this.parent.setRecordValue('endDate', segments[segments.length - 1].endDate, ganttProp, true);
+                        if (this.parent.taskFields.endDate) {
+                            this.parent.dataOperation.updateMappingData(splitRecord, 'endDate');
+                        }
+                    }
+                    this.refreshChartAfterSegment(splitRecord, 'splitTaskbar');
+                }
+            }
+        }
+        else {
+            splitDates.sort();
+            this.parent.setRecordValue('segments', this.constructSegments(splitDates, splitRecord.ganttProperties), splitRecord.ganttProperties, true);
+            this.refreshChartAfterSegment(splitRecord, 'splitTask');
+        }
+    };
+    ChartRows.prototype.constructSegments = function (dates, taskData) {
+        var segmentsArray = [];
+        var segment;
+        var startDate = new Date();
+        var endDate;
+        var duration;
+        for (var i = 0; i < dates.length + 1; i++) {
+            startDate = i === 0 ? taskData.startDate : startDate;
+            startDate = this.parent.dataOperation.checkStartDate(startDate, taskData, false);
+            endDate = i !== dates.length ? new Date(dates[i].getTime()) > taskData.endDate ? taskData.endDate
+                : new Date(dates[i].getTime()) : taskData.endDate;
+            endDate = this.parent.dataOperation.checkEndDate(endDate, taskData, false);
+            duration = this.parent.dataOperation.getDuration(startDate, endDate, taskData.durationUnit, taskData.isAutoSchedule, taskData.isMilestone);
+            if (endDate.getTime() >= startDate.getTime()) {
+                segment = {
+                    startDate: startDate,
+                    endDate: endDate,
+                    duration: duration
+                };
+                segmentsArray.push(segment);
+            }
+            if (i === dates.length) {
+                break;
+            }
+            startDate = new Date(dates[i].getTime());
+            startDate.setDate(dates[i].getDate() + 1);
+        }
+        return segmentsArray;
+    };
+    ChartRows.prototype.splitSegmentedTaskbar = function (startDate, endDate, splitDate, segmentIndex, segments, ganttData, segmentDuration) {
+        var ganttProp = ganttData.ganttProperties;
+        var taskFields = this.parent.taskFields;
+        startDate = this.parent.dataOperation.checkStartDate(startDate, ganttProp, false);
+        var segmentEndDate = new Date(splitDate.getTime());
+        segmentEndDate = this.parent.dataOperation.checkEndDate(segmentEndDate, ganttProp, false);
+        var checkClickState = this.parent.nonWorkingDayIndex.indexOf(splitDate.getDay());
+        var increment = checkClickState === -1 ? 0 : checkClickState === 0 ? 1 : 2;
+        for (var i = 0; i < 2; i++) {
+            var segment = {
+                startDate: startDate,
+                endDate: segmentEndDate,
+                duration: this.parent.dataOperation.getDuration(startDate, segmentEndDate, ganttProp.durationUnit, ganttProp.isAutoSchedule, ganttProp.isMilestone),
+                offsetDuration: 1
+            };
+            if (segmentIndex !== -1) {
+                segments.splice(segmentIndex, 1);
+                segmentIndex = -1;
+            }
+            segments.push(segment);
+            startDate = new Date(splitDate.getTime());
+            startDate.setDate(startDate.getDate() + 1 + increment);
+            startDate = this.parent.dataOperation.checkStartDate(startDate, ganttProp, false);
+            segmentEndDate = new Date(endDate.getTime());
+            segmentEndDate.setDate(segmentEndDate.getDate() + 1);
+            var endDateState = this.parent.nonWorkingDayIndex.indexOf(segmentEndDate.getDay());
+            if (endDateState !== -1) {
+                var diff = segmentDuration - segment.duration;
+                segmentEndDate =
+                    this.parent.dataOperation.getEndDate(startDate, diff, ganttProp.durationUnit, ganttProp, false);
+            }
+            else {
+                segmentEndDate = this.parent.dataOperation.checkEndDate(segmentEndDate, ganttProp, false);
+            }
+        }
+        segments.sort(function (a, b) {
+            return a.startDate.getTime() - b.startDate.getTime();
+        });
+        return segments;
+    };
+    ChartRows.prototype.incrementSegments = function (segments, segmentIndex, ganttData) {
+        var ganttProp = ganttData.ganttProperties;
+        for (var i = segmentIndex + 1; i < segments.length; i++) {
+            var segment = segments[i];
+            var endDate = void 0;
+            var startDate = i !== 0 ? new Date(segments[i - 1].endDate.getTime()) : new Date(segment.startDate.getTime());
+            startDate = this.parent.dataOperation.getEndDate(startDate, segment.offsetDuration, ganttProp.durationUnit, ganttProp, false);
+            startDate = this.parent.dataOperation.checkStartDate(startDate, ganttProp, false);
+            segment.startDate = startDate;
+            endDate = segment.endDate = this.parent.dataOperation.getEndDate(startDate, segment.duration, ganttProp.durationUnit, ganttProp, false);
+            segment.endDate = endDate;
+            if (i === segments.length - 1) {
+                this.parent.setRecordValue('endDate', endDate, ganttProp, true);
+                if (this.parent.taskFields.endDate) {
+                    this.parent.dataOperation.updateMappingData(ganttData, 'endDate');
+                }
+            }
+        }
+        segments.sort(function (a, b) {
+            return a.startDate.getTime() - b.startDate.getTime();
+        });
+        this.parent.setRecordValue('segments', segments, ganttProp, true);
+        this.parent.dataOperation.updateMappingData(ganttData, 'segments');
     };
     /**
      * To get milestone node.
@@ -7645,6 +8251,15 @@ var ChartRows = /** @class */ (function () {
             return 0;
         }
     };
+    ChartRows.prototype.getSplitTaskBorderRadius = function (data) {
+        var diff = data.width - data.progressWidth;
+        if (diff <= 4) {
+            return 4 - diff;
+        }
+        else {
+            return 0;
+        }
+    };
     ChartRows.prototype.taskNameWidth = function (ganttData) {
         ganttData = this.templateData;
         var ganttProp = ganttData.ganttProperties;
@@ -7713,9 +8328,9 @@ var ChartRows = /** @class */ (function () {
         ganttData = this.templateData;
         var resource = null;
         if (!sf.base.isNullOrUndefined(ganttData.ganttProperties.resourceInfo)) {
-            var length_1 = ganttData.ganttProperties.resourceInfo.length;
-            if (length_1 > 0) {
-                for (var i = 0; i < length_1; i++) {
+            var length_2 = ganttData.ganttProperties.resourceInfo.length;
+            if (length_2 > 0) {
+                for (var i = 0; i < length_2; i++) {
                     var resourceName = ganttData.ganttProperties.resourceInfo[i][this.parent.resourceFields.name];
                     var resourceUnit = ganttData.ganttProperties.resourceInfo[i][this.parent.resourceFields.unit];
                     if (resourceUnit !== 100) {
@@ -7861,7 +8476,8 @@ var ChartRows = /** @class */ (function () {
             var childTaskbarLeftResizeNode = null;
             if (!sf.base.isNullOrUndefined(scheduledTask)) {
                 if (scheduledTask || this.templateData.ganttProperties.duration) {
-                    if (scheduledTask) {
+                    if (scheduledTask && (sf.base.isNullOrUndefined(this.templateData.ganttProperties.segments)
+                        || this.templateData.ganttProperties.segments.length <= 0)) {
                         childTaskbarProgressResizeNode = this.childTaskbarProgressResizer();
                         childTaskbarLeftResizeNode = this.childTaskbarLeftResizer();
                         childTaskbarRightResizeNode = this.childTaskbarRightResizer();
@@ -7872,7 +8488,19 @@ var ChartRows = /** @class */ (function () {
                     taskbarContainerNode[0].appendChild([].slice.call(childTaskbarLeftResizeNode)[0]);
                 }
                 if (childTaskbarTemplateNode && childTaskbarTemplateNode.length > 0) {
-                    taskbarContainerNode[0].appendChild([].slice.call(childTaskbarTemplateNode)[0]);
+                    if (this.templateData.ganttProperties.segments && this.templateData.ganttProperties.segments.length > 0) {
+                        var length_3 = this.templateData.ganttProperties.segments.length;
+                        var segmentConnector = null;
+                        var connector = ('<div class="e-gantt-split-container-line"></div>');
+                        segmentConnector = this.createDivElement(connector);
+                        taskbarContainerNode[0].appendChild([].slice.call(segmentConnector)[0]);
+                        for (var i_1 = 0; i_1 < length_3; i_1++) {
+                            taskbarContainerNode[0].appendChild([].slice.call(childTaskbarTemplateNode)[0]);
+                        }
+                    }
+                    else {
+                        taskbarContainerNode[0].appendChild([].slice.call(childTaskbarTemplateNode)[0]);
+                    }
                 }
                 if (childTaskbarProgressResizeNode) {
                     taskbarContainerNode[0].appendChild([].slice.call(childTaskbarProgressResizeNode)[0]);
@@ -7940,7 +8568,17 @@ var ChartRows = /** @class */ (function () {
             trElement = this.ganttChartTableBody.querySelectorAll('tr')[index];
             taskbarElement = trElement.querySelector('.' + taskBarMainContainer);
             data = this.parent.currentViewData[index];
-            this.triggerQueryTaskbarInfoByIndex(trElement, data);
+            var segmentLength = !sf.base.isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length;
+            if (segmentLength > 0) {
+                for (var i = 0; i < segmentLength; i++) {
+                    var segmentedTasks = trElement.getElementsByClassName('e-segmented-taskbar');
+                    var segmentElement = segmentedTasks[i];
+                    this.triggerQueryTaskbarInfoByIndex(segmentElement, data);
+                }
+            }
+            else {
+                this.triggerQueryTaskbarInfoByIndex(trElement, data);
+            }
         }
     };
     /**
@@ -7952,13 +8590,14 @@ var ChartRows = /** @class */ (function () {
     ChartRows.prototype.triggerQueryTaskbarInfoByIndex = function (trElement, data) {
         var _this = this;
         var taskbarElement;
-        taskbarElement = trElement.querySelector('.' + taskBarMainContainer);
+        taskbarElement = !sf.base.isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length > 0 ? trElement :
+            trElement.querySelector('.' + taskBarMainContainer);
         var rowElement;
         var triggerTaskbarElement;
         var args = {
             data: data,
             rowElement: trElement,
-            taskbarElement: trElement.querySelector('.' + taskBarMainContainer),
+            taskbarElement: taskbarElement,
             taskbarType: data.hasChildRecords ? 'ParentTask' : data.ganttProperties.isMilestone ? 'Milestone' : 'ChildTask'
         };
         var classCollections = this.getClassName(args);
@@ -7969,12 +8608,18 @@ var ChartRows = /** @class */ (function () {
                 getComputedStyle(trElement.querySelector(classCollections[1])).borderBottomColor : null;
         }
         else {
-            args.taskbarBgColor = taskbarElement.querySelector(classCollections[0]) ?
-                getComputedStyle(taskbarElement.querySelector(classCollections[0])).backgroundColor : null;
-            args.taskbarBorderColor = taskbarElement.querySelector(classCollections[0]) ?
-                getComputedStyle(taskbarElement.querySelector(classCollections[0])).borderColor : null;
-            args.progressBarBgColor = taskbarElement.querySelector(classCollections[1]) ?
-                getComputedStyle(taskbarElement.querySelector(classCollections[1])).backgroundColor : null;
+            var childTask = taskbarElement.querySelector(classCollections[0]);
+            var progressTask = taskbarElement.querySelector(classCollections[1]);
+            args.taskbarBgColor = sf.base.isNullOrUndefined(childTask) ? null : taskbarElement.classList.contains(traceChildTaskBar) ?
+                getComputedStyle(taskbarElement).backgroundColor :
+                getComputedStyle(taskbarElement.querySelector(classCollections[0])).backgroundColor;
+            args.taskbarBorderColor = sf.base.isNullOrUndefined(childTask) ? null : taskbarElement.classList.contains(traceChildTaskBar) ?
+                getComputedStyle(taskbarElement).backgroundColor :
+                getComputedStyle(taskbarElement.querySelector(classCollections[0])).borderColor;
+            args.progressBarBgColor = sf.base.isNullOrUndefined(progressTask) ? null :
+                taskbarElement.classList.contains(traceChildProgressBar) ?
+                    getComputedStyle(taskbarElement).backgroundColor :
+                    getComputedStyle(taskbarElement.querySelector(classCollections[1])).backgroundColor;
             // args.progressBarBorderColor = taskbarElement.querySelector(progressBarClass) ?
             //     getComputedStyle(taskbarElement.querySelector(progressBarClass)).borderColor : null;
             args.baselineColor = trElement.querySelector('.' + baselineBar) ?
@@ -8029,6 +8674,18 @@ var ChartRows = /** @class */ (function () {
             if (taskbarElement.querySelector(classCollections[1]) &&
                 getComputedStyle(taskbarElement.querySelector(classCollections[1])).backgroundColor !== args.progressBarBgColor) {
                 taskbarElement.querySelector(classCollections[1]).style.backgroundColor = args.progressBarBgColor;
+            }
+            if (taskbarElement.classList.contains(traceChildTaskBar) &&
+                getComputedStyle(taskbarElement).backgroundColor !== args.taskbarBgColor) {
+                taskbarElement.style.backgroundColor = args.taskbarBgColor;
+            }
+            if (taskbarElement.classList.contains(traceChildTaskBar) &&
+                getComputedStyle(taskbarElement).borderColor !== args.taskbarBorderColor) {
+                taskbarElement.style.borderColor = args.taskbarBorderColor;
+            }
+            if (taskbarElement.classList.contains(traceChildProgressBar) &&
+                getComputedStyle(taskbarElement).backgroundColor !== args.progressBarBgColor) {
+                taskbarElement.style.backgroundColor = args.progressBarBgColor;
             }
             // if (taskbarElement.querySelector(progressBarClass) &&
             //     getComputedStyle(taskbarElement.querySelector(progressBarClass)).borderColor !== args.progressBarBorderColor) {
@@ -8107,6 +8764,17 @@ var ChartRows = /** @class */ (function () {
                     this.parent.dataOperation.updateOverlappingValues(data);
                     this.parent.ganttChartModule.renderRangeContainer([data]);
                 }
+            }
+            var segmentLength = !sf.base.isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length;
+            if (segmentLength > 0) {
+                for (var i = 0; i < segmentLength; i++) {
+                    var segmentedTasks = tr.getElementsByClassName('e-segmented-taskbar');
+                    var segmentElement = segmentedTasks[i];
+                    this.triggerQueryTaskbarInfoByIndex(segmentElement, data);
+                }
+            }
+            else {
+                this.triggerQueryTaskbarInfoByIndex(tr, data);
             }
             this.triggerQueryTaskbarInfoByIndex(tr, data);
             /* tslint:disable-next-line */
@@ -8209,6 +8877,26 @@ var ChartRows = /** @class */ (function () {
         }
         return defaultValue;
     };
+    ChartRows.prototype.generateSpiltTaskAriaLabel = function (data, ganttProp) {
+        var defaultValue = '';
+        var startDateConstant = this.parent.localeObj.getConstant('startDate');
+        var endDateConstant = this.parent.localeObj.getConstant('endDate');
+        var durationConstant = this.parent.localeObj.getConstant('duration');
+        var startDateVal = data.startDate;
+        var endDateVal = data.endDate;
+        var durationVal = data.duration;
+        if (startDateVal) {
+            defaultValue += startDateConstant + ' ' + this.parent.getFormatedDate(startDateVal) + ' ';
+        }
+        if (endDateVal) {
+            defaultValue += endDateConstant + ' ' + this.parent.getFormatedDate(endDateVal) + ' ';
+        }
+        if (durationVal) {
+            defaultValue += durationConstant + ' '
+                + this.parent.getDurationString(durationVal, ganttProp.durationUnit);
+        }
+        return defaultValue;
+    };
     ChartRows.prototype.generateTaskLabelAriaLabel = function (type) {
         var label$$1 = '';
         if (type === 'left' && this.parent.labelSettings.leftLabel && !this.leftTaskLabelTemplateFunction) {
@@ -8222,7 +8910,7 @@ var ChartRows = /** @class */ (function () {
         return label$$1;
     };
     return ChartRows;
-}());
+}(DateProcessor));
 
 var Dependency = /** @class */ (function () {
     function Dependency(gantt) {
@@ -8602,10 +9290,11 @@ var Dependency = /** @class */ (function () {
             var startDate = this.getPredecessorDate(childGanttRecord, childPredecessor);
             this.parent.setRecordValue('startDate', startDate, childRecordProperty, true);
             this.parent.dataOperation.updateMappingData(childGanttRecord, 'startDate');
-            this.dateValidateModule.calculateEndDate(childGanttRecord);
-            this.parent.setRecordValue('left', this.parent.dataOperation.calculateLeft(childRecordProperty), childRecordProperty, true);
-            this.parent.setRecordValue('width', this.parent.dataOperation.calculateWidth(childGanttRecord), childRecordProperty, true);
-            this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth(childRecordProperty.width, childRecordProperty.progress), childRecordProperty, true);
+            var segments = childGanttRecord.ganttProperties.segments;
+            if (sf.base.isNullOrUndefined(segments)) {
+                this.dateValidateModule.calculateEndDate(childGanttRecord);
+            }
+            this.parent.dataOperation.updateWidthLeft(childGanttRecord);
             if (childGanttRecord.parentItem && this.parent.getParentTask(childGanttRecord.parentItem).ganttProperties.isAutoSchedule
                 && this.parent.isInPredecessorValidation) {
                 this.parent.dataOperation.updateParentItems(childGanttRecord.parentItem);
@@ -8966,7 +9655,9 @@ var ConnectorLine = /** @class */ (function () {
                 (Math.floor(this.parent.chartRowsModule.milestoneHeight)) : childGanttRecord.width;
             connectorObj.parentIndex = parentIndex;
             connectorObj.childIndex = childIndex;
-            connectorObj.rowHeight = this.parent.rowHeight;
+            var rowHeight = this.parent.ganttChartModule.getChartRows()[0] &&
+                this.parent.ganttChartModule.getChartRows()[0].getBoundingClientRect().height;
+            connectorObj.rowHeight = rowHeight && !isNaN(rowHeight) ? rowHeight : this.parent.rowHeight;
             connectorObj.type = predecessor.type;
             var parentId = this.parent.viewType === 'ResourceView' ? parentGanttRecord.taskId : parentGanttRecord.rowUniqueID;
             var childId = this.parent.viewType === 'ResourceView' ? childGanttRecord.taskId : childGanttRecord.rowUniqueID;
@@ -10840,9 +11531,40 @@ var Gantt = /** @class */ (function (_super) {
                 eventName: 'keydown'
             });
         }
+        /* tslint:disable-next-line:no-any */
+        sf.base.EventHandler.add(window, 'resize', this.windowResize, this);
+    };
+    /**
+     * @private
+     * Method trigger while user perform window resize.
+     */
+    Gantt.prototype.windowResize = function () {
+        if (!sf.base.isNullOrUndefined(this.element)) {
+            this.ganttChartModule.updateWidthAndHeight(); // Updating chart scroll conatiner height for row mismatch
+            this.treeGridModule.ensureScrollBar();
+            if (this.predecessorModule && this.taskFields.dependency) {
+                this.updateRowHeightInConnectorLine(this.updatedConnectorLineCollection);
+                this.connectorLineModule.renderConnectorLines(this.updatedConnectorLineCollection);
+            }
+        }
     };
     Gantt.prototype.keyActionHandler = function (e) {
         this.focusModule.onKeyPress(e);
+    };
+    /**
+     * @private
+     * Method for updating row height value in connector line collections
+     */
+    Gantt.prototype.updateRowHeightInConnectorLine = function (collection) {
+        if (collection && collection.length) {
+            var rowHeight = this.ganttChartModule.getChartRows()[0]
+                && this.ganttChartModule.getChartRows()[0].getBoundingClientRect().height;
+            if (rowHeight && !isNaN(rowHeight)) {
+                for (var count = 0; count < collection.length; count++) {
+                    collection[count].rowHeight = rowHeight;
+                }
+            }
+        }
     };
     /**
      * @private
@@ -10887,7 +11609,14 @@ var Gantt = /** @class */ (function (_super) {
      */
     Gantt.prototype.updateContentHeight = function () {
         var expandedRecords = this.getExpandedRecords(this.currentViewData);
-        this.contentHeight = expandedRecords.length * this.rowHeight;
+        var height;
+        if (!sf.base.isNullOrUndefined(this.ganttChartModule.getChartRows()[0])) {
+            height = this.ganttChartModule.getChartRows()[0].getBoundingClientRect().height;
+        }
+        else {
+            height = this.rowHeight;
+        }
+        this.contentHeight = expandedRecords.length * height;
     };
     /**
      * To get expand status.
@@ -11158,11 +11887,6 @@ var Gantt = /** @class */ (function (_super) {
             this.hideSpinner();
             sf.base.setValue('isGanttCreated', true, args);
             this.renderComplete();
-        }
-        if (this.predecessorModule && this.taskFields.dependency) {
-            this.connectorLineIds = [];
-            this.updatedConnectorLineCollection = [];
-            this.predecessorModule.createConnectorLinesCollection();
         }
         this.notify('recordsUpdated', {});
         this.trigger('dataBound', args);
@@ -11435,6 +12159,8 @@ var Gantt = /** @class */ (function (_super) {
         this.element.innerHTML = '';
         this.isTreeGridRendered = false;
         this.resetTemplates();
+        /* tslint:disable-next-line:no-any */
+        sf.base.EventHandler.remove(window, 'resize', this.windowResize);
     };
     /**
      * Method to get taskbarHeight.
@@ -11792,7 +12518,12 @@ var Gantt = /** @class */ (function (_super) {
             unassignedTask: 'Unassigned Task',
             group: 'Group',
             indent: 'Indent',
-            outdent: 'Outdent'
+            outdent: 'Outdent',
+            segments: 'Segments',
+            splitTask: 'Split Task',
+            mergeTask: 'Merge Task',
+            left: 'Left',
+            right: 'Right',
         };
         if (sf.base.isBlazor()) {
             var blazorLocale = {
@@ -12026,6 +12757,26 @@ var Gantt = /** @class */ (function (_super) {
         if (isFrom !== 'beforeAdd') {
             this.notify('selectRowByIndex', {});
         }
+    };
+    /**
+     * Split the taskbar into segment by the given date
+     * @param  {string} taskId - Defines the id of a task to be split.
+     * @param  {string} splitDate - Defines in which date the taskbar must be split up.
+     * @return {void}
+     * @public
+     */
+    Gantt.prototype.splitTask = function (taskId, splitDate) {
+        this.chartRowsModule.splitTask(taskId, splitDate);
+    };
+    /**
+     * merge the split taskbar with the given segment indexes.
+     * @param  {string} taskId - Defines the id of a task to be split.
+     * @param  {string} segmentIndexes - Defines the object array of indexes which must be merged.
+     * @return {void}
+     * @public
+     */
+    Gantt.prototype.mergeTask = function (taskId, segmentIndexes) {
+        this.chartRowsModule.mergeTask(taskId, segmentIndexes);
     };
     /**
      * Changes the TreeGrid column positions by field names.
@@ -12799,6 +13550,9 @@ var Gantt = /** @class */ (function (_super) {
             if (!sf.base.isNullOrUndefined(taskfields.parentID) && data[taskfields.parentID]) {
                 data[taskfields.parentID] = null;
             }
+            if (!sf.base.isNullOrUndefined(taskfields.segments)) {
+                data[taskfields.segments] = null;
+            }
             if (!sf.base.isNullOrUndefined(this.contextMenuModule) &&
                 this.contextMenuModule.isOpen &&
                 this.contextMenuModule.item === 'Milestone') {
@@ -12980,6 +13734,9 @@ var Gantt = /** @class */ (function (_super) {
     __decorate([
         sf.base.Property([])
     ], Gantt.prototype, "resources", void 0);
+    __decorate([
+        sf.base.Property([])
+    ], Gantt.prototype, "segmentData", void 0);
     __decorate([
         sf.base.Property(null)
     ], Gantt.prototype, "connectorLineBackground", void 0);
@@ -13551,6 +14308,24 @@ var CellEdit = /** @class */ (function () {
         this.parent.dataOperation.updateMappingData(ganttData, 'duration');
         this.updateEditedRecord(args);
     };
+    CellEdit.prototype.validateEndDateWithSegments = function (ganttProp) {
+        var ganttSegments = [];
+        var segments = ganttProp.segments;
+        for (var i = 0; i < segments.length; i++) {
+            var segment = segments[i];
+            var endDate = segment.endDate;
+            endDate = (!sf.base.isNullOrUndefined(ganttProp.endDate)) && endDate.getTime() <
+                ganttProp.endDate.getTime() && i !== segments.length - 1 ? endDate : ganttProp.endDate;
+            segment.duration = this.parent.dataOperation.getDuration(segment.startDate, endDate, ganttProp.durationUnit, ganttProp.isAutoSchedule, ganttProp.isMilestone);
+            if (segments.length > 0 && endDate.getTime() < segment.startDate.getTime()
+                && endDate.getTime() <= ganttProp.endDate.getTime()) {
+                segments[i - 1].duration = this.parent.dataOperation.getDuration(segments[i - 1].startDate, ganttProp.endDate, ganttProp.durationUnit, ganttProp.isAutoSchedule, ganttProp.isMilestone);
+                continue;
+            }
+            ganttSegments.push(segment);
+        }
+        return ganttSegments;
+    };
     /**
      * To update task end date cell with new value
      * @param args
@@ -13579,6 +14354,9 @@ var CellEdit = /** @class */ (function () {
             else if (!sf.base.isNullOrUndefined(ganttProb.duration) && sf.base.isNullOrUndefined(ganttProb.startDate)) {
                 this.parent.setRecordValue('startDate', this.parent.dateValidationModule.getStartDate(ganttProb.endDate, ganttProb.duration, ganttProb.durationUnit, ganttProb), ganttProb, true);
             }
+            if (!sf.base.isNullOrUndefined(ganttProb.segments)) {
+                ganttProb.segments = this.validateEndDateWithSegments(ganttProb);
+            }
             if (this.compareDatesFromRecord(ganttProb) === -1) {
                 this.parent.dateValidationModule.calculateDuration(args.data);
             }
@@ -13589,6 +14367,10 @@ var CellEdit = /** @class */ (function () {
             if (ganttProb.isMilestone) {
                 this.parent.setRecordValue('startDate', this.parent.dateValidationModule.checkStartDate(ganttProb.startDate, ganttProb), ganttProb, true);
             }
+        }
+        if (!sf.base.isNullOrUndefined(args.data.ganttProperties.segments) && args.data.ganttProperties.segments.length > 0) {
+            this.parent.setRecordValue('segments', this.parent.dataOperation.setSegmentsInfo(args.data, false), args.data.ganttProperties, true);
+            this.parent.dataOperation.updateMappingData(args.data, 'segments');
         }
         this.parent.dataOperation.updateWidthLeft(args.data);
         this.parent.dataOperation.updateMappingData(args.data, 'startDate');
@@ -13630,6 +14412,10 @@ var CellEdit = /** @class */ (function () {
                 this.parent.setRecordValue('isMilestone', false, ganttProb, true);
                 this.parent.setRecordValue('startDate', this.parent.dateValidationModule.checkStartDate(ganttProb.startDate, ganttProb), ganttProb, true);
             }
+            if (!sf.base.isNullOrUndefined(ganttProb.segments) && ganttProb.segments.length > 0) {
+                this.parent.setRecordValue('segments', this.parent.dataOperation.setSegmentsInfo(args.data, false), ganttProb, true);
+                this.parent.dataOperation.updateMappingData(args.data, 'segments');
+            }
             this.parent.setRecordValue('isMilestone', (ganttProb.duration === 0 ? true : false), ganttProb, true);
             this.parent.dateValidationModule.calculateEndDate(args.data);
         }
@@ -13646,6 +14432,9 @@ var CellEdit = /** @class */ (function () {
         var ganttRecord = args.data;
         this.parent.setRecordValue('progress', (ganttRecord[this.parent.taskFields.progress] > 100 ? 100 : ganttRecord[this.parent.taskFields.progress]), ganttRecord.ganttProperties, true);
         this.parent.setRecordValue('taskData.' + this.parent.taskFields.progress, (ganttRecord[this.parent.taskFields.progress] > 100 ? 100 : ganttRecord[this.parent.taskFields.progress]), args.data);
+        if (!sf.base.isNullOrUndefined(args.data.ganttProperties.segments) && args.data.ganttProperties.segments.length > 0) {
+            this.parent.editModule.taskbarEditModule.updateSegmentProgress(args.data.ganttProperties);
+        }
         if (!args.data.hasChildRecords) {
             var width = ganttRecord.ganttProperties.isAutoSchedule ? ganttRecord.ganttProperties.width :
                 ganttRecord.ganttProperties.autoWidth;
@@ -13806,7 +14595,7 @@ var EditTooltip = /** @class */ (function () {
         var _this = this;
         this.toolTipObj = new sf.popups.Tooltip({
             opensOn: opensOn,
-            content: this.getTooltipText(),
+            content: this.getTooltipText(-1),
             position: 'TopRight',
             mouseTrail: mouseTrail,
             cssClass: ganttTooltip,
@@ -13845,11 +14634,11 @@ var EditTooltip = /** @class */ (function () {
      * @return {void}
      * @private
      */
-    EditTooltip.prototype.showHideTaskbarEditTooltip = function (bool) {
+    EditTooltip.prototype.showHideTaskbarEditTooltip = function (bool, segmentIndex) {
         if (bool && this.parent.tooltipSettings.showTooltip) {
             this.createTooltip('Custom', false);
             this.parent.tooltipModule.toolTipObj.close();
-            this.updateTooltip();
+            this.updateTooltip(segmentIndex);
             if (this.taskbarEdit.connectorSecondAction === 'ConnectorPointLeftDrag') {
                 this.toolTipObj.open(this.taskbarEdit.connectorSecondElement.querySelector('.' + connectorPointLeft));
             }
@@ -13870,34 +14659,37 @@ var EditTooltip = /** @class */ (function () {
      * @return {void}
      * @private
      */
-    EditTooltip.prototype.updateTooltip = function () {
+    EditTooltip.prototype.updateTooltip = function (segmentIndex) {
+        var ganttProp = this.taskbarEdit.taskBarEditRecord.ganttProperties;
+        var taskWidth = segmentIndex === -1 ? ganttProp.width :
+            ganttProp.segments[segmentIndex].width;
+        var progressWidth = segmentIndex === -1 ? ganttProp.progressWidth :
+            ganttProp.segments[segmentIndex].progressWidth;
+        var left = segmentIndex === -1 ? ganttProp.left : ganttProp.left + ganttProp.segments[segmentIndex].left;
         if (!sf.base.isNullOrUndefined(this.toolTipObj)) {
             if (this.taskbarEdit.taskBarEditAction === 'ConnectorPointLeftDrag' ||
                 this.taskbarEdit.taskBarEditAction === 'ConnectorPointRightDrag') {
-                this.toolTipObj.content = this.getTooltipText();
+                this.toolTipObj.content = this.getTooltipText(segmentIndex);
                 this.toolTipObj.offsetY = -3;
             }
             else {
-                this.toolTipObj.content = this.getTooltipText();
+                this.toolTipObj.content = this.getTooltipText(segmentIndex);
                 this.toolTipObj.refresh(this.taskbarEdit.taskBarEditElement);
                 if (this.taskbarEdit.taskBarEditAction === 'LeftResizing') {
-                    this.toolTipObj.offsetX = -this.taskbarEdit.taskBarEditRecord.ganttProperties.width;
+                    this.toolTipObj.offsetX = -taskWidth;
                 }
                 else if (this.taskbarEdit.taskBarEditAction === 'RightResizing' ||
                     this.taskbarEdit.taskBarEditAction === 'ParentResizing') {
                     this.toolTipObj.offsetX = 0;
                 }
                 else if (this.taskbarEdit.taskBarEditAction === 'ProgressResizing') {
-                    this.toolTipObj.offsetX = -(this.taskbarEdit.taskBarEditRecord.ganttProperties.width -
-                        this.taskbarEdit.taskBarEditRecord.ganttProperties.progressWidth);
+                    this.toolTipObj.offsetX = -(taskWidth - progressWidth);
                 }
                 else if (this.taskbarEdit.taskBarEditAction === 'MilestoneDrag') {
                     this.toolTipObj.offsetX = -(this.parent.chartRowsModule.milestoneHeight / 2);
                 }
-                else if (this.taskbarEdit.taskBarEditRecord.ganttProperties.width > 5) {
-                    this.toolTipObj.offsetX = -(this.taskbarEdit.taskBarEditRecord.ganttProperties.width +
-                        this.taskbarEdit.taskBarEditRecord.ganttProperties.left -
-                        this.taskbarEdit.tooltipPositionX);
+                else if (taskWidth > 5) {
+                    this.toolTipObj.offsetX = -(taskWidth + left - this.taskbarEdit.tooltipPositionX);
                 }
             }
         }
@@ -13907,10 +14699,14 @@ var EditTooltip = /** @class */ (function () {
      * @return {void}
      * @private
      */
-    EditTooltip.prototype.getTooltipText = function () {
+    EditTooltip.prototype.getTooltipText = function (segmentIndex) {
         var tooltipString = '';
         var instance = this.parent.globalize;
         var editRecord = this.taskbarEdit.taskBarEditRecord.ganttProperties;
+        if (!sf.base.isNullOrUndefined(editRecord.segments) && editRecord.segments.length > 0 && segmentIndex !== -1
+            && this.taskbarEdit.taskBarEditAction !== 'ProgressResizing') {
+            editRecord = editRecord.segments[segmentIndex];
+        }
         if (this.parent.tooltipSettings.editing) {
             var templateNode = this.parent.tooltipModule.templateCompiler(this.parent.tooltipSettings.editing, this.parent, editRecord, 'TooltipEditingTemplate');
             tooltipString = templateNode[0];
@@ -13961,18 +14757,46 @@ var EditTooltip = /** @class */ (function () {
     return EditTooltip;
 }());
 
+var __extends$19 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __assign$2 = (undefined && undefined.__assign) || function () {
+    __assign$2 = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign$2.apply(this, arguments);
+};
 /**
  * File for handling taskbar editing operation in Gantt.
  */
-var TaskbarEdit = /** @class */ (function () {
+var TaskbarEdit = /** @class */ (function (_super) {
+    __extends$19(TaskbarEdit, _super);
     function TaskbarEdit(ganttObj) {
-        this.isMouseDragged = false;
-        this.dependencyCancel = false;
-        this.editElement = null;
-        this.parent = ganttObj;
-        this.initPublicProp();
-        this.wireEvents();
-        this.editTooltip = new EditTooltip(this.parent, this);
+        var _this = _super.call(this, ganttObj) || this;
+        _this.isMouseDragged = false;
+        _this.dependencyCancel = false;
+        _this.editElement = null;
+        _this.segmentIndex = -1;
+        _this.parent = ganttObj;
+        _this.initPublicProp();
+        _this.wireEvents();
+        _this.editTooltip = new EditTooltip(_this.parent, _this);
+        return _this;
     }
     TaskbarEdit.prototype.wireEvents = function () {
         this.parent.on('chartMouseDown', this.mouseDownHandler, this);
@@ -14007,7 +14831,7 @@ var TaskbarEdit = /** @class */ (function () {
         this.touchEdit = false;
     };
     TaskbarEdit.prototype.mouseDownHandler = function (e) {
-        if (this.parent.editSettings.allowTaskbarEditing) {
+        if (this.parent.editSettings.allowTaskbarEditing && !this.parent.readOnly) {
             this.canDrag = false;
             if (this.parent.isAdaptive && this.taskBarEditElement) {
                 var targetElement = this.getElementByPosition(e);
@@ -14169,11 +14993,25 @@ var TaskbarEdit = /** @class */ (function () {
         }
         else {
             element = parentsUntil$1(target, taskBarMainContainer);
+            if (!sf.base.isNullOrUndefined(element) && !target.classList.contains('e-connectorpoint-left') &&
+                !target.classList.contains('e-connectorpoint-right')) {
+                var currentRecord = this.parent.ganttChartModule.getRecordByTaskBar(element);
+                if (!sf.base.isNullOrUndefined(currentRecord.ganttProperties.segments) && currentRecord.ganttProperties.segments.length > 0) {
+                    element = parentsUntil$1(target, childTaskBarInnerDiv);
+                }
+            }
         }
         if (this.parent.editSettings.allowTaskbarEditing && element) {
             this.showHideTaskBarEditingElements(element, this.taskBarEditElement);
             this.editElement = element;
             this.taskBarEditElement = element;
+            var index = this.taskBarEditElement.getAttribute('data-segment-index');
+            if (!sf.base.isNullOrUndefined(index)) {
+                this.segmentIndex = Number(index);
+            }
+            else {
+                this.segmentIndex = -1;
+            }
             this.taskBarEditRecord = this.parent.ganttChartModule.getRecordByTaskBar(this.taskBarEditElement);
             if (e.type === 'mousedown' || e.type === 'touchstart' || e.type === 'click') {
                 this.roundOffDuration = true;
@@ -14235,7 +15073,10 @@ var TaskbarEdit = /** @class */ (function () {
                 sf.base.addClass([element.querySelector('.' + taskBarLeftResizer)], [leftResizeGripper]);
                 sf.base.addClass([element.querySelector('.' + taskBarRightResizer)], [rightResizeGripper]);
                 if (isShowProgressResizer) {
-                    sf.base.addClass([element.querySelector('.' + childProgressResizer)], [progressResizeGripper]);
+                    var progresElement = !sf.base.isNullOrUndefined(element.querySelector('.' + childProgressResizer)) ? true : false;
+                    if (progresElement) {
+                        sf.base.addClass([element.querySelector('.' + childProgressResizer)], [progressResizeGripper]);
+                    }
                 }
             }
             else if (this.parent.isAdaptive && isShowProgressResizer) {
@@ -14249,9 +15090,13 @@ var TaskbarEdit = /** @class */ (function () {
                 sf.base.addClass(this.parent.ganttChartModule.scrollElement.querySelectorAll('.' + connectorLineContainer), [connectorLineZIndex]);
             }
             if (!sf.base.isNullOrUndefined(this.parent.taskFields.dependency)
-                && element.querySelector('.' + connectorPointLeft) && isShowProgressResizer) {
-                sf.base.addClass([element.querySelector('.' + connectorPointLeft)], [connectorPointLeftHover]);
-                sf.base.addClass([element.querySelector('.' + connectorPointRight)], [connectorPointRightHover]);
+                && (element.querySelector('.' + connectorPointLeft)
+                    || element.parentElement.querySelector('.' + connectorPointLeft))
+                && isShowProgressResizer) {
+                var connectorElement = !sf.base.isNullOrUndefined(element.querySelector('.' + connectorPointLeft)) ?
+                    element : element.parentElement;
+                sf.base.addClass([connectorElement.querySelector('.' + connectorPointLeft)], [connectorPointLeftHover]);
+                sf.base.addClass([connectorElement.querySelector('.' + connectorPointRight)], [connectorPointRightHover]);
             }
         }
         else if (!fadeConnectorLine) {
@@ -14266,9 +15111,12 @@ var TaskbarEdit = /** @class */ (function () {
                 }
             }
             if (!sf.base.isNullOrUndefined(this.parent.taskFields.dependency)
-                && secondElement.querySelector('.' + connectorPointLeft)) {
-                sf.base.removeClass([secondElement.querySelector('.' + connectorPointLeft)], [connectorPointLeftHover]);
-                sf.base.removeClass([secondElement.querySelector('.' + connectorPointRight)], [connectorPointRightHover]);
+                && (secondElement.querySelector('.' + connectorPointLeft)
+                    || secondElement.parentElement.querySelector('.' + connectorPointLeft))) {
+                var connectorElement = !sf.base.isNullOrUndefined(secondElement.querySelector('.' + connectorPointLeft)) ?
+                    secondElement : secondElement.parentElement;
+                sf.base.removeClass([connectorElement.querySelector('.' + connectorPointLeft)], [connectorPointLeftHover]);
+                sf.base.removeClass([connectorElement.querySelector('.' + connectorPointRight)], [connectorPointRightHover]);
             }
             else if (this.parent.isAdaptive) {
                 var record = this.parent.ganttChartModule.getRecordByTaskBar(secondElement);
@@ -14352,7 +15200,7 @@ var TaskbarEdit = /** @class */ (function () {
             this.previousItem = this.parent.timelineModule.extendFunction(item, this.previousItemProperty);
             if (this.taskBarEditAction !== 'ConnectorPointLeftDrag' &&
                 this.taskBarEditAction !== 'ConnectorPointRightDrag') {
-                this.editTooltip.showHideTaskbarEditTooltip(true);
+                this.editTooltip.showHideTaskbarEditTooltip(true, this.segmentIndex);
             }
             this.taskBarEditElement.setAttribute('aria-grabbed', 'true');
         }
@@ -14431,7 +15279,7 @@ var TaskbarEdit = /** @class */ (function () {
             }
             this.setItemPosition();
             this.updateEditedItem();
-            this.editTooltip.updateTooltip();
+            this.editTooltip.updateTooltip(this.segmentIndex);
             if (isMouseClick) {
                 this.taskBarEditedAction(e);
             }
@@ -14538,20 +15386,54 @@ var TaskbarEdit = /** @class */ (function () {
      */
     TaskbarEdit.prototype.enableDragging = function (e) {
         var item = this.taskBarEditRecord.ganttProperties;
-        var diffrenceWidth = 0;
-        if (this.mouseDownX > this.mouseMoveX) {
-            diffrenceWidth = this.mouseDownX - this.mouseMoveX;
-            if (diffrenceWidth > 0) {
-                this.parent.setRecordValue('left', this.previousItem.left - diffrenceWidth, item, true);
+        var differenceWidth = 0;
+        if (this.taskBarEditElement.classList.contains('e-segmented-taskbar') &&
+            !this.taskBarEditElement.classList.contains('e-segment-first')) {
+            var segments = this.taskBarEditRecord.ganttProperties.segments.map(function (e) { return (__assign$2({}, e)); });
+            var segment = segments[this.segmentIndex];
+            if (this.mouseDownX > this.mouseMoveX) {
+                differenceWidth = sf.base.isNullOrUndefined(this.previousMouseMove) ?
+                    (this.mouseDownX - this.mouseMoveX) : (this.previousMouseMove - this.mouseMoveX);
+                this.previousMouseMove = this.mouseMoveX;
+                segment.left = segment.left - differenceWidth;
             }
+            else {
+                differenceWidth = sf.base.isNullOrUndefined(this.previousMouseMove) ?
+                    (this.mouseMoveX - this.mouseDownX) : (this.mouseMoveX - this.previousMouseMove);
+                this.previousMouseMove = this.mouseMoveX;
+                segment.left = segment.left + differenceWidth;
+            }
+            var previousSegment = segments[this.segmentIndex - 1];
+            var nextSegment = segments[this.segmentIndex + 1];
+            var left = void 0;
+            if (this.taskBarEditElement.classList.contains('e-segment-inprogress')) {
+                left = segment.left < (previousSegment.left + previousSegment.width) ? (previousSegment.left + previousSegment.width) :
+                    ((segment.width + segment.left) > (nextSegment.left)) ? nextSegment.left - segment.width : segment.left;
+            }
+            else {
+                left = segment.left < (previousSegment.left + previousSegment.width) ? (previousSegment.left + previousSegment.width) :
+                    (item.left + segment.width + segment.left) >= this.parent.timelineModule.totalTimelineWidth ?
+                        (this.parent.timelineModule.totalTimelineWidth - segment.width) : segment.left;
+            }
+            segment.left = left;
+            this.parent.setRecordValue('segments', segments, item, true);
+            this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'segments');
         }
         else {
-            diffrenceWidth = this.mouseMoveX - this.mouseDownX;
-            this.parent.setRecordValue('left', this.previousItem.left + diffrenceWidth, item, true);
+            if (this.mouseDownX > this.mouseMoveX) {
+                differenceWidth = this.mouseDownX - this.mouseMoveX;
+                if (differenceWidth > 0) {
+                    this.parent.setRecordValue('left', this.previousItem.left - differenceWidth, item, true);
+                }
+            }
+            else {
+                differenceWidth = this.mouseMoveX - this.mouseDownX;
+                this.parent.setRecordValue('left', this.previousItem.left + differenceWidth, item, true);
+            }
+            var left = item.left < 0 ? 0 : (item.left + item.width) >= this.parent.timelineModule.totalTimelineWidth ?
+                (this.parent.timelineModule.totalTimelineWidth - item.width) : item.left;
+            this.parent.setRecordValue('left', left, item, true);
         }
-        var left = item.left < 0 ? 0 : (item.left + item.width) >= this.parent.timelineModule.totalTimelineWidth ?
-            (this.parent.timelineModule.totalTimelineWidth - item.width) : item.left;
-        this.parent.setRecordValue('left', left, item, true);
     };
     /**
      * To update left and width while perform progress resize operation.
@@ -14610,40 +15492,142 @@ var TaskbarEdit = /** @class */ (function () {
      */
     TaskbarEdit.prototype.enableLeftResizing = function (e) {
         var item = this.taskBarEditRecord.ganttProperties;
-        var diffrenceWidth = 0;
-        if (this.mouseDownX > this.mouseMoveX) {
-            if (this.mouseMoveX < (item.left + item.width)) {
-                diffrenceWidth = this.mouseDownX - this.mouseMoveX;
-                if (item.left > 0) {
-                    this.parent.setRecordValue('left', this.previousItem.left - diffrenceWidth, item, true);
-                    this.parent.setRecordValue('width', this.previousItem.width + diffrenceWidth, item, true);
+        var differenceWidth = 0;
+        if (this.taskBarEditElement.classList.contains('e-segmented-taskbar')) {
+            this.enableSplitTaskLeftResize(item);
+        }
+        else {
+            if (this.mouseDownX > this.mouseMoveX) {
+                if (this.mouseMoveX < (item.left + item.width)) {
+                    differenceWidth = this.mouseDownX - this.mouseMoveX;
+                    if (item.left > 0) {
+                        this.parent.setRecordValue('left', this.previousItem.left - differenceWidth, item, true);
+                        this.parent.setRecordValue('width', this.previousItem.width + differenceWidth, item, true);
+                    }
+                }
+                else {
+                    if (this.mouseMoveX > (item.left + item.width)) {
+                        differenceWidth = this.mouseDownX - this.mouseMoveX;
+                        this.parent.setRecordValue('left', this.previousItem.left - differenceWidth, item, true);
+                        this.parent.setRecordValue('width', 3, item, true);
+                    }
                 }
             }
             else {
-                if (this.mouseMoveX > (item.left + item.width)) {
-                    diffrenceWidth = this.mouseDownX - this.mouseMoveX;
-                    this.parent.setRecordValue('left', this.previousItem.left - diffrenceWidth, item, true);
+                if (this.mouseMoveX < (item.left + item.width)) {
+                    differenceWidth = this.mouseMoveX - this.mouseDownX;
+                    if ((item.left) < (item.left + item.width) &&
+                        ((this.previousItem.left + differenceWidth) <= (this.previousItem.left + this.previousItem.width))) {
+                        this.parent.setRecordValue('left', this.previousItem.left + differenceWidth, item, true);
+                        this.parent.setRecordValue('width', this.previousItem.width - differenceWidth, item, true);
+                    }
+                }
+                else {
+                    differenceWidth = this.mouseMoveX - this.mouseDownX;
+                    this.parent.setRecordValue('left', this.previousItem.left + differenceWidth, item, true);
                     this.parent.setRecordValue('width', 3, item, true);
+                }
+            }
+            this.updateEditPosition(e, item);
+            this.parent.setRecordValue('left', (this.previousItem.left + this.previousItem.width - item.width), item, true);
+        }
+    };
+    TaskbarEdit.prototype.enableSplitTaskLeftResize = function (item) {
+        var segments = this.taskBarEditRecord.ganttProperties.segments.map(function (e) { return (__assign$2({}, e)); });
+        var segment = segments[this.segmentIndex];
+        var differenceWidth = 0;
+        //when decrease the left and increase the width
+        if (this.mouseDownX > this.mouseMoveX) {
+            if (this.mouseMoveX < (item.left + segment.width + segment.left)) {
+                differenceWidth = sf.base.isNullOrUndefined(this.previousMouseMove) ?
+                    (this.mouseDownX - this.mouseMoveX) : (this.previousMouseMove - this.mouseMoveX);
+                this.previousMouseMove = this.mouseMoveX;
+                // when resize other than 0th segment
+                if (segment.left > 0) {
+                    segment.left = segment.left - differenceWidth;
+                    segment.width = segment.width + differenceWidth;
+                    if (this.segmentIndex !== 0) {
+                        var previousSegment = segments[this.segmentIndex - 1];
+                        if ((item.left + segment.left) < (item.left + previousSegment.left + previousSegment.width)) {
+                            var left = item.left + previousSegment.left + previousSegment.width;
+                            var difference = (item.left + previousSegment.left + previousSegment.width) - (item.left + segment.left);
+                            segment.width -= difference;
+                            segment.left = segment.left + difference;
+                        }
+                    }
+                }
+                else if (segment.left <= 0 && this.segmentIndex === 0) {
+                    this.parent.setRecordValue('left', item.left - differenceWidth, item, true);
+                    this.parent.setRecordValue('width', item.width + differenceWidth, item, true);
+                    segment.width = segment.width + differenceWidth;
+                    for (var i = 1; i < item.segments.length; i++) {
+                        var segment_1 = segments[i];
+                        segment_1.left = segment_1.left + differenceWidth;
+                    }
+                }
+            }
+            else {
+                if (this.mouseMoveX > (item.left + segment.width + segment.left)) {
+                    differenceWidth = sf.base.isNullOrUndefined(this.previousMouseMove) ?
+                        (this.mouseDownX - this.mouseMoveX) : (this.previousMouseMove - this.mouseMoveX);
+                    this.previousMouseMove = this.mouseMoveX;
+                    segment.left = segment.left - differenceWidth;
+                    segment.width = this.parent.perDayWidth;
                 }
             }
         }
         else {
-            if (this.mouseMoveX < (item.left + item.width)) {
-                diffrenceWidth = this.mouseMoveX - this.mouseDownX;
-                if ((item.left) < (item.left + item.width) &&
-                    ((this.previousItem.left + diffrenceWidth) <= (this.previousItem.left + this.previousItem.width))) {
-                    this.parent.setRecordValue('left', this.previousItem.left + diffrenceWidth, item, true);
-                    this.parent.setRecordValue('width', this.previousItem.width - diffrenceWidth, item, true);
+            // when increase left value and decrease width of segment
+            if (this.mouseMoveX < (item.left + segment.width + segment.left - this.parent.perDayWidth)) {
+                differenceWidth = sf.base.isNullOrUndefined(this.previousMouseMove) ?
+                    (this.mouseMoveX - this.mouseDownX) : (this.mouseMoveX - this.previousMouseMove);
+                this.previousMouseMove = this.mouseMoveX;
+                // when decrease the first segment width
+                if (this.segmentIndex === 0 && segment.left <= 0) {
+                    this.parent.setRecordValue('left', item.left + differenceWidth, item, true);
+                    this.parent.setRecordValue('width', item.width - differenceWidth, item, true);
+                    segment.width = segment.width - differenceWidth;
+                    for (var i = 1; i < item.segments.length; i++) {
+                        var segment_2 = segments[i];
+                        segment_2.left = segment_2.left - differenceWidth;
+                    }
+                    // when decrease remaining segments
                 }
+                else if ((segment.left) < (segment.left + segment.width) &&
+                    ((segment.left + differenceWidth) <= (segment.left + segment.width))) {
+                    segment.left = segment.left + differenceWidth;
+                    segment.width = segment.width - differenceWidth;
+                }
+                // when mouse move goes beyond one day width of task bar.
             }
             else {
-                diffrenceWidth = this.mouseMoveX - this.mouseDownX;
-                this.parent.setRecordValue('left', this.previousItem.left + diffrenceWidth, item, true);
-                this.parent.setRecordValue('width', 3, item, true);
+                if (this.mouseMoveX < (item.left + segment.left + segment.width)) {
+                    if (segment.width > this.parent.perDayWidth) {
+                        differenceWidth = sf.base.isNullOrUndefined(this.previousMouseMove) ?
+                            (this.mouseMoveX - this.mouseDownX) : (this.mouseMoveX - this.previousMouseMove);
+                        this.previousMouseMove = this.mouseMoveX;
+                        var singleDayDifference = (segment.width - differenceWidth) < this.parent.perDayWidth ?
+                            this.parent.perDayWidth > segment.width ?
+                                this.parent.perDayWidth - segment.width : segment.width - this.parent.perDayWidth : 0;
+                        differenceWidth -= singleDayDifference;
+                        if (this.segmentIndex === 0) {
+                            this.parent.setRecordValue('width', item.width - differenceWidth, item, true);
+                            this.parent.setRecordValue('left', item.left + differenceWidth, item, true);
+                            for (var i = 1; i < item.segments.length; i++) {
+                                var segment_3 = segments[i];
+                                segment_3.left = segment_3.left - differenceWidth;
+                            }
+                        }
+                        else {
+                            segment.left = segment.left + differenceWidth;
+                            segment.width = segment.width - differenceWidth;
+                        }
+                    }
+                }
             }
         }
-        this.updateEditPosition(e, item);
-        this.parent.setRecordValue('left', (this.previousItem.left + this.previousItem.width - item.width), item, true);
+        this.parent.setRecordValue('segments', segments, item, true);
+        this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'segments');
     };
     /**
      * Update mouse position and edited item value
@@ -14676,25 +15660,67 @@ var TaskbarEdit = /** @class */ (function () {
      */
     TaskbarEdit.prototype.enableRightResizing = function (e) {
         var item = this.taskBarEditRecord.ganttProperties;
-        var diffrenceWidth = 0;
-        if (this.mouseDownX > this.mouseMoveX) {
-            if (this.mouseMoveX > item.left && (this.mouseDownX - this.mouseMoveX) > 3) {
-                diffrenceWidth = this.mouseDownX - this.mouseMoveX;
-                this.parent.setRecordValue('width', this.previousItem.width - diffrenceWidth, item, true);
-            }
-            else {
-                if (this.mouseMoveX < item.left) {
-                    this.parent.setRecordValue('width', 3, item, true);
+        var differenceWidth = 0;
+        if (this.taskBarEditElement.classList.contains('e-segmented-taskbar')) {
+            var segments = this.taskBarEditRecord.ganttProperties.segments.map(function (e) { return (__assign$2({}, e)); });
+            var segment = segments[this.segmentIndex];
+            if (this.mouseDownX > this.mouseMoveX) {
+                if (this.mouseMoveX > (item.left + segment.left) && (this.mouseDownX - this.mouseMoveX) > 3) {
+                    differenceWidth = sf.base.isNullOrUndefined(this.previousMouseMove) ?
+                        (this.mouseDownX - this.mouseMoveX) : (this.previousMouseMove - this.mouseMoveX);
+                    this.previousMouseMove = this.mouseMoveX;
+                    segment.width = segment.width - differenceWidth;
+                }
+                else {
+                    if (this.mouseMoveX < (item.left + segment.left)) {
+                        segment.width = this.parent.perDayWidth;
+                    }
                 }
             }
+            else {
+                if (this.mouseMoveX > segment.left) {
+                    differenceWidth = sf.base.isNullOrUndefined(this.previousMouseMove) ?
+                        (this.mouseMoveX - this.mouseDownX) : (this.mouseMoveX - this.previousMouseMove);
+                    this.previousMouseMove = this.mouseMoveX;
+                    segment.width = segment.width + differenceWidth;
+                }
+            }
+            var width = void 0;
+            var nextSegment = this.segmentIndex !== segments.length - 1 ? segments[this.segmentIndex + 1] : null;
+            if (!sf.base.isNullOrUndefined(nextSegment)) {
+                if (!this.taskBarEditElement.classList.contains('e-segment-last')) {
+                    width = (segment.left + segment.width) > nextSegment.left ? (nextSegment.left - segment.left) : segment.width;
+                }
+                segment.width = width;
+            }
+            if (this.segmentIndex === item.segments.length - 1) {
+                if (this.segmentIndex === 0) {
+                    this.parent.setRecordValue('width', segment.width, item, true);
+                }
+            }
+            this.parent.setRecordValue('segments', segments, item, true);
+            this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'segments');
         }
         else {
-            if (this.mouseMoveX > item.left) {
-                diffrenceWidth = this.mouseMoveX - this.mouseDownX;
-                this.parent.setRecordValue('width', this.previousItem.width + diffrenceWidth, item, true);
+            if (this.mouseDownX > this.mouseMoveX) {
+                if (this.mouseMoveX > item.left && (this.mouseDownX - this.mouseMoveX) > 3) {
+                    differenceWidth = this.mouseDownX - this.mouseMoveX;
+                    this.parent.setRecordValue('width', this.previousItem.width - differenceWidth, item, true);
+                }
+                else {
+                    if (this.mouseMoveX < item.left) {
+                        this.parent.setRecordValue('width', 3, item, true);
+                    }
+                }
             }
+            else {
+                if (this.mouseMoveX > item.left) {
+                    differenceWidth = this.mouseMoveX - this.mouseDownX;
+                    this.parent.setRecordValue('width', this.previousItem.width + differenceWidth, item, true);
+                }
+            }
+            this.updateEditPosition(e, item);
         }
-        this.updateEditPosition(e, item);
     };
     /**
      * To updated startDate and endDate while perform taskbar edit operation.
@@ -14712,58 +15738,182 @@ var TaskbarEdit = /** @class */ (function () {
                 this.parent.setRecordValue('progress', this.getProgressPercent(item.width, item.progressWidth), item, true);
                 break;
             case 'LeftResizing':
-                left = this.getRoundOffStartLeft(item, this.roundOffDuration);
-                projectStartDate = this.getDateByLeft(left);
-                if (sf.base.isNullOrUndefined(item.endDate)) {
-                    endDate = this.parent.dateValidationModule.getValidEndDate(item);
-                    this.parent.setRecordValue('endDate', endDate, item, true);
+                if (this.segmentIndex === -1) {
+                    left = this.getRoundOffStartLeft(item, this.roundOffDuration);
+                    projectStartDate = this.getDateByLeft(left);
+                    if (sf.base.isNullOrUndefined(item.endDate)) {
+                        endDate = this.parent.dateValidationModule.getValidEndDate(item);
+                        this.parent.setRecordValue('endDate', endDate, item, true);
+                    }
+                    startDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
+                    this.parent.setRecordValue('startDate', new Date(startDate.getTime()), item, true);
+                    if (this.parent.dateValidationModule.compareDates(item.startDate, item.endDate) === 0
+                        && sf.base.isNullOrUndefined(item.isMilestone) && item.isMilestone === false && item.duration === 0) {
+                        this.parent.setRecordValue('duration', 1, item, true);
+                    }
+                    if (item.isMilestone) {
+                        this.parent.setRecordValue('endDate', new Date(startDate.getTime()), item, true);
+                    }
+                    this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
+                    this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
                 }
-                startDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
-                this.parent.setRecordValue('startDate', new Date(startDate.getTime()), item, true);
-                if (this.parent.dateValidationModule.compareDates(item.startDate, item.endDate) === 0
-                    && sf.base.isNullOrUndefined(item.isMilestone) && item.isMilestone === false && item.duration === 0) {
-                    this.parent.setRecordValue('duration', 1, item, true);
+                else {
+                    this.updateSplitLeftResize(item);
                 }
-                if (item.isMilestone) {
-                    this.parent.setRecordValue('endDate', new Date(startDate.getTime()), item, true);
-                }
-                this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
-                this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
                 break;
             case 'RightResizing':
             case 'ParentResizing':
-                left = this.getRoundOffEndLeft(item, this.roundOffDuration);
-                var tempEndDate = this.getDateByLeft(left);
-                if (sf.base.isNullOrUndefined(item.startDate)) {
-                    startDate = this.parent.dateValidationModule.getValidStartDate(item);
-                    this.parent.setRecordValue('startDate', startDate, item, true);
+                if (this.segmentIndex === -1) {
+                    left = this.getRoundOffEndLeft(item, this.roundOffDuration);
+                    var tempEndDate = this.getDateByLeft(left);
+                    if (sf.base.isNullOrUndefined(item.startDate)) {
+                        startDate = this.parent.dateValidationModule.getValidStartDate(item);
+                        this.parent.setRecordValue('startDate', startDate, item, true);
+                    }
+                    var tempdate = sf.base.isNullOrUndefined(item.startDate) ? startDate : item.startDate;
+                    endDate = item.isMilestone ? tempdate :
+                        this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
+                    this.parent.setRecordValue('endDate', new Date(endDate.getTime()), item, true);
+                    this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
+                    this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
                 }
-                var tempdate = sf.base.isNullOrUndefined(item.startDate) ? startDate : item.startDate;
-                endDate = item.isMilestone ? tempdate :
-                    this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
-                this.parent.setRecordValue('endDate', new Date(endDate.getTime()), item, true);
-                this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
-                this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
+                else {
+                    this.updateSplitRightResizing(item);
+                }
                 break;
             case 'ParentDrag':
             case 'ChildDrag':
             case 'MilestoneDrag':
             case 'ManualParentDrag':
-                left = this.getRoundOffStartLeft(item, this.roundOffDuration);
-                projectStartDate = this.getDateByLeft(left);
-                if (!sf.base.isNullOrUndefined(item.endDate) && sf.base.isNullOrUndefined(item.startDate)) {
-                    endDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
-                    endDate = this.parent.dateValidationModule.checkEndDate(endDate, this.taskBarEditRecord.ganttProperties);
-                    this.parent.setRecordValue('endDate', endDate, item, true);
+                if (this.segmentIndex === -1 || this.segmentIndex === 0) {
+                    this.updateChildDrag(item);
                 }
                 else {
-                    this.parent.setRecordValue('startDate', this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null), item, true);
-                    if (!sf.base.isNullOrUndefined(item.duration)) {
-                        this.parent.dateValidationModule.calculateEndDate(this.taskBarEditRecord);
-                    }
+                    this.setSplitTaskDrag(item);
                 }
                 break;
         }
+    };
+    TaskbarEdit.prototype.updateChildDrag = function (item) {
+        var left;
+        var projectStartDate;
+        var endDate;
+        left = this.getRoundOffStartLeft(item, this.roundOffDuration);
+        projectStartDate = this.getDateByLeft(left);
+        if (this.segmentIndex === 0) {
+            this.parent.setRecordValue('startDate', this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null), item, true);
+            item.segments[0].startDate = projectStartDate;
+            item.segments[0].endDate = this.parent.dataOperation.getEndDate(item.segments[0].startDate, item.segments[0].duration, item.durationUnit, item, false);
+            this.parent.setRecordValue('segments', item.segments, item, true);
+            this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'segments');
+            this.parent.chartRowsModule.incrementSegments(item.segments, 0, this.taskBarEditRecord);
+            this.parent.setRecordValue('endDate', item.segments[item.segments.length - 1].endDate, item, true);
+        }
+        else {
+            if (!sf.base.isNullOrUndefined(item.endDate) && sf.base.isNullOrUndefined(item.startDate)) {
+                endDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
+                endDate = this.parent.dateValidationModule.checkEndDate(endDate, this.taskBarEditRecord.ganttProperties);
+                this.parent.setRecordValue('endDate', endDate, item, true);
+            }
+            else {
+                this.parent.setRecordValue('startDate', this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null), item, true);
+                if (!sf.base.isNullOrUndefined(item.duration)) {
+                    this.parent.dateValidationModule.calculateEndDate(this.taskBarEditRecord);
+                }
+            }
+        }
+    };
+    TaskbarEdit.prototype.updateSplitLeftResize = function (item) {
+        var segment = item.segments[this.segmentIndex];
+        var left = this.segmentIndex === 0 ? this.getRoundOffStartLeft(item, this.roundOffDuration) :
+            this.getRoundOffStartLeft(segment, this.roundOffDuration);
+        var projectStartDate = this.segmentIndex === 0 ? this.getDateByLeft(left) : this.getDateByLeft(item.left + left);
+        var startDate = this.parent.dataOperation.checkStartDate(projectStartDate, item, false);
+        var duration = this.parent.dataOperation.getDuration(startDate, segment.endDate, item.durationUnit, item.isAutoSchedule, item.isMilestone);
+        segment.startDate = new Date(startDate.getTime());
+        segment.duration = duration;
+        this.parent.setRecordValue('duration', this.sumOfDuration(item.segments), item, true);
+        if (this.segmentIndex === 0) {
+            this.parent.setRecordValue('startDate', segment.startDate, item, true);
+        }
+        this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
+        if (!sf.base.isNullOrUndefined(item.segments[this.segmentIndex - 1])) {
+            var segmentOffsetDuration = this.parent.dataOperation.getDuration(item.segments[this.segmentIndex - 1].endDate, item.segments[this.segmentIndex].startDate, item.durationUnit, item.isAutoSchedule, item.isMilestone);
+            segment.offsetDuration = segmentOffsetDuration;
+        }
+        this.parent.setRecordValue('segments', item.segments, item, true);
+        this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'segments');
+    };
+    TaskbarEdit.prototype.updateSplitRightResizing = function (item) {
+        var segment = item.segments[this.segmentIndex];
+        var left = this.getRoundOffEndLeft(item, this.roundOffDuration);
+        var tempEndDate = this.getDateByLeft(left);
+        var endDate = this.parent.dataOperation.checkEndDate(tempEndDate, item, false);
+        var duration = this.parent.dataOperation.getDuration(segment.startDate, endDate, item.durationUnit, item.isAutoSchedule, item.isMilestone);
+        segment.endDate = new Date(endDate.getTime());
+        segment.duration = duration;
+        // update next segment offset duration
+        if (!sf.base.isNullOrUndefined(item.segments[this.segmentIndex + 1])) {
+            var nextSegment = item.segments[this.segmentIndex + 1];
+            var segmentOffset = this.parent.dataOperation.getDuration(item.segments[this.segmentIndex].endDate, nextSegment.startDate, item.durationUnit, item.isAutoSchedule, item.isMilestone);
+            segment.offsetDuration = segmentOffset;
+        }
+        this.parent.setRecordValue('segments', item.segments, item, true);
+        this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'segments');
+        this.parent.setRecordValue('duration', this.sumOfDuration(item.segments), item, true);
+        this.parent.setRecordValue('endDate', item.segments[item.segments.length - 1].endDate, item, true);
+        this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
+    };
+    TaskbarEdit.prototype.sumOfDuration = function (segments) {
+        var duration = 0;
+        for (var i = 0; i < segments.length; i++) {
+            var segment = segments[i];
+            duration += segment.duration;
+        }
+        return duration;
+    };
+    TaskbarEdit.prototype.splitTasksDuration = function (segments) {
+        var duration = 0;
+        for (var i = 0; i < segments.length; i++) {
+            var segment = segments[i];
+            var sDate = segment.startDate;
+            var eDate = segment.endDate;
+            duration += Math.ceil(this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24));
+        }
+        return duration;
+    };
+    TaskbarEdit.prototype.setSplitTaskDrag = function (item) {
+        var segment = item.segments[this.segmentIndex];
+        var left = this.getRoundOffStartLeft(segment, this.roundOffDuration);
+        var projectStartDate = this.getDateByLeft(item.left + left);
+        projectStartDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
+        segment.startDate = projectStartDate;
+        segment.endDate = this.parent.dataOperation.getEndDate(segment.startDate, segment.duration, item.durationUnit, item, false);
+        segment.duration = this.parent.dataOperation.getDuration(segment.startDate, segment.endDate, item.durationUnit, item.isAutoSchedule, item.isMilestone);
+        this.parent.setRecordValue('duration', this.sumOfDuration(item.segments), item, true);
+        this.parent.setRecordValue('endDate', item.segments[item.segments.length - 1].endDate, item, true);
+        if (!sf.base.isNullOrUndefined(this.parent.taskFields.endDate)) {
+            this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'endDate');
+        }
+        //set offset if previous record present
+        if (!sf.base.isNullOrUndefined(item.segments[this.segmentIndex - 1])) {
+            var offsetDuration = this.parent.dataOperation.getDuration(item.segments[this.segmentIndex - 1].endDate, item.segments[this.segmentIndex].startDate, item.durationUnit, item.isAutoSchedule, item.isMilestone);
+            if (segment.startDate.getDay() === 1 && offsetDuration === 0 && !this.parent.includeWeekend) {
+                offsetDuration = 1;
+            }
+            segment.offsetDuration = offsetDuration;
+        }
+        //set next record  offset if present
+        if (!sf.base.isNullOrUndefined(item.segments[this.segmentIndex + 1])) {
+            var nextSegment = item.segments[this.segmentIndex + 1];
+            var offsetDuration = this.parent.dataOperation.getDuration(item.segments[this.segmentIndex].endDate, nextSegment.startDate, item.durationUnit, item.isAutoSchedule, item.isMilestone);
+            if (nextSegment.startDate.getDay() === 1 && offsetDuration === 0 && !this.parent.includeWeekend) {
+                offsetDuration = 1;
+            }
+            nextSegment.offsetDuration = offsetDuration;
+        }
+        this.parent.setRecordValue('segments', item.segments, item, true);
+        this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'segments');
     };
     /**
      * To get roundoff enddate.
@@ -14774,6 +15924,10 @@ var TaskbarEdit = /** @class */ (function () {
         var tierMode = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
             this.parent.timelineModule.topTier;
         var totalLeft = ganttRecord.width + ganttRecord.left;
+        if (this.segmentIndex !== -1) {
+            var segment = ganttRecord.segments[this.segmentIndex];
+            totalLeft = totalLeft - ganttRecord.width + segment.width + segment.left;
+        }
         var remainingContribution = (1 / (this.parent.timelineModule.getIncrement(this.getDateByLeft(totalLeft), 1, 'Day') / (1000 * 60 * 60 * 24)));
         var remainingLeft = this.parent.perDayWidth - (this.parent.perDayWidth / remainingContribution);
         var positionValue = remainingLeft / this.parent.perDayWidth;
@@ -14827,7 +15981,8 @@ var TaskbarEdit = /** @class */ (function () {
      * @private
      */
     TaskbarEdit.prototype.getRoundOffStartLeft = function (ganttRecord, isRoundOff) {
-        var left = ganttRecord.left;
+        var left = sf.base.isNullOrUndefined(ganttRecord) ? ganttRecord.left
+            : ganttRecord.left;
         var tierMode = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
             this.parent.timelineModule.topTier;
         var remainingContribution = (1 / (this.parent.timelineModule.getIncrement(this.getDateByLeft(left), 1, 'Day') / (1000 * 60 * 60 * 24)));
@@ -14912,12 +16067,17 @@ var TaskbarEdit = /** @class */ (function () {
      */
     TaskbarEdit.prototype.setItemPosition = function () {
         var item = this.taskBarEditRecord.ganttProperties;
+        var segment = !sf.base.isNullOrUndefined(item.segments) ? item.segments[this.segmentIndex] : null;
         var width = this.taskBarEditAction === 'MilestoneDrag' || item.isMilestone ?
             this.parent.chartRowsModule.milestoneHeight : item.width;
         var rightResizer = this.parent.isAdaptive ? (width - 2) : (width - 10);
+        if (!sf.base.isNullOrUndefined(segment)) {
+            rightResizer = this.parent.isAdaptive ? (segment.width - 2) : (segment.width - 10);
+        }
         /* tslint:disable-next-line */
         var taskBarMainContainer$$1 = (!this.taskBarEditElement.classList.contains(taskBarMainContainer)) ? sf.base.closest(this.taskBarEditElement, 'tr.' + chartRow)
             .querySelector('.' + taskBarMainContainer) : this.taskBarEditElement;
+        var segmentedTaskBarContainer = this.taskBarEditElement.classList.contains('e-segmented-taskbar');
         var leftLabelContainer$$1 = sf.base.closest(this.taskBarEditElement, 'tr.' + chartRow)
             .querySelector('.' + leftLabelContainer);
         var rightLabelContainer$$1 = sf.base.closest(this.taskBarEditElement, 'tr.' + chartRow)
@@ -14936,9 +16096,24 @@ var TaskbarEdit = /** @class */ (function () {
         if (this.taskBarEditAction !== 'ConnectorPointRightDrag' &&
             this.taskBarEditAction !== 'ConnectorPointLeftDrag') {
             if (this.taskBarEditAction !== 'ParentResizing' && this.taskBarEditAction !== 'ManualParentDrag') {
+                if (segmentedTaskBarContainer && !sf.base.isNullOrUndefined(item.segments)
+                    && (this.taskBarEditAction === 'RightResizing' || this.segmentIndex !== 0)) {
+                    this.taskBarEditElement.style.width = (segment.width) + 'px';
+                    this.taskBarEditElement.style.left = (segment.left) + 'px';
+                }
                 taskBarMainContainer$$1.style.width = (width) + 'px';
                 taskBarMainContainer$$1.style.left = (item.left) + 'px';
                 leftLabelContainer$$1.style.width = (item.left) + 'px';
+                if (this.taskBarEditAction === 'LeftResizing' && this.segmentIndex === 0) {
+                    var parent_1 = this.taskBarEditElement.parentElement;
+                    var segmentedTasks = parent_1.getElementsByClassName('e-segmented-taskbar');
+                    for (var i = 0; i < item.segments.length; i++) {
+                        var segment_4 = item.segments[i];
+                        var segmentElement = segmentedTasks[i];
+                        segmentElement.style.width = (segment_4.width) + 'px';
+                        segmentElement.style.left = (segment_4.left) + 'px';
+                    }
+                }
                 if (!sf.base.isNullOrUndefined(rightLabelContainer$$1)) {
                     rightLabelContainer$$1.style.left = (item.left + width) + 'px';
                 }
@@ -14954,20 +16129,24 @@ var TaskbarEdit = /** @class */ (function () {
                 }
             }
             else if (this.taskBarEditAction === 'ProgressResizing') {
-                traceChildTaskBar$$1.style.left = (item.left + item.progressWidth - 10) + 'px';
-                if (!sf.base.isNullOrUndefined(traceChildProgressBar$$1)) {
-                    traceChildProgressBar$$1.style.width = item.progressWidth + 'px';
-                    traceChildProgressBar$$1.style.borderBottomRightRadius = this.progressBorderRadius + 'px';
-                    traceChildProgressBar$$1.style.borderTopRightRadius = this.progressBorderRadius + 'px';
-                    childProgressResizer$$1.style.left = item.progressWidth - 8 + 'px';
+                if (this.segmentIndex === -1) {
+                    traceChildTaskBar$$1.style.left = (item.left + item.progressWidth - 10) + 'px';
+                    if (!sf.base.isNullOrUndefined(traceChildProgressBar$$1)) {
+                        traceChildProgressBar$$1.style.width = item.progressWidth + 'px';
+                        traceChildProgressBar$$1.style.borderBottomRightRadius = this.progressBorderRadius + 'px';
+                        traceChildProgressBar$$1.style.borderTopRightRadius = this.progressBorderRadius + 'px';
+                        childProgressResizer$$1.style.left = item.progressWidth - 8 + 'px';
+                    }
                 }
             }
-            else if (this.taskBarEditAction === 'RightResizing') {
+            else if (this.taskBarEditAction === 'RightResizing' && !sf.base.isNullOrUndefined(traceChildTaskBar$$1)) {
                 traceChildTaskBar$$1.style.width = (width) + 'px';
                 if (!sf.base.isNullOrUndefined(traceChildProgressBar$$1)) {
                     traceChildProgressBar$$1.style.width = (item.progressWidth) + 'px';
                     taskBarRightResizer$$1.style.left = rightResizer + 'px';
-                    childProgressResizer$$1.style.left = (item.progressWidth - 10) + 'px';
+                    if (!sf.base.isNullOrUndefined(childProgressResizer$$1)) {
+                        childProgressResizer$$1.style.left = (item.progressWidth - 10) + 'px';
+                    }
                 }
             }
             else if (this.taskBarEditAction === 'ParentDrag') {
@@ -14986,13 +16165,22 @@ var TaskbarEdit = /** @class */ (function () {
                 manualParentTaskbar.style.left = (item.left - item.autoLeft) + 'px';
             }
             else {
-                if (!sf.base.isNullOrUndefined(traceChildTaskBar$$1)) {
+                if (!sf.base.isNullOrUndefined(traceChildTaskBar$$1) && !segmentedTaskBarContainer) {
                     traceChildTaskBar$$1.style.width = (width) + 'px';
                 }
                 if (!sf.base.isNullOrUndefined(traceChildProgressBar$$1)) {
                     taskBarRightResizer$$1.style.left = rightResizer + 'px';
                     traceChildProgressBar$$1.style.width = (item.progressWidth) + 'px';
-                    childProgressResizer$$1.style.left = item.progressWidth - 10 + 'px';
+                    if (!sf.base.isNullOrUndefined(childProgressResizer$$1)) {
+                        childProgressResizer$$1.style.left = item.progressWidth - 10 + 'px';
+                    }
+                }
+                if (segmentedTaskBarContainer) {
+                    taskBarRightResizer$$1.style.left = rightResizer + 'px';
+                    traceChildProgressBar$$1.style.width = (segment.progressWidth) + 'px';
+                    if (!sf.base.isNullOrUndefined(childProgressResizer$$1)) {
+                        childProgressResizer$$1.style.left = segment.progressWidth - 10 + 'px';
+                    }
                 }
             }
         }
@@ -15004,7 +16192,8 @@ var TaskbarEdit = /** @class */ (function () {
      */
     TaskbarEdit.prototype.mouseUpHandler = function (e) {
         var mouseDragged = this.isMouseDragged;
-        this.editTooltip.showHideTaskbarEditTooltip(false);
+        this.previousMouseMove = null;
+        this.editTooltip.showHideTaskbarEditTooltip(false, this.segmentIndex);
         if (this.taskBarEditAction && this.isMouseDragged) {
             if (!this.dragMouseLeave && this.taskBarEditedAction) {
                 this.taskBarEditedAction(e);
@@ -15078,6 +16267,27 @@ var TaskbarEdit = /** @class */ (function () {
     TaskbarEdit.prototype.cancelTaskbarEditActionInMouseLeave = function () {
         this.parent.editModule.reUpdatePreviousRecords(true);
     };
+    TaskbarEdit.prototype.updateSegmentProgress = function (taskData) {
+        var segments = taskData.segments;
+        var fixedWidth = true;
+        var totalTaskWidth = this.splitTasksDuration(segments) * this.parent.perDayWidth;
+        var totalProgressWidth = this.parent.dataOperation.getProgressWidth(totalTaskWidth, taskData.progress);
+        for (var i = 0; i < segments.length; i++) {
+            var segment = segments[i];
+            delete segment.progressWidth;
+            if (totalProgressWidth > 0 && totalProgressWidth > segment.width) {
+                totalProgressWidth = totalProgressWidth - segment.width;
+                segment.progressWidth = segment.width;
+                segment.showProgress = false;
+            }
+            else if (fixedWidth) {
+                segment.progressWidth = totalProgressWidth;
+                segment.showProgress = true;
+                totalProgressWidth = totalProgressWidth - segment.width;
+                fixedWidth = false;
+            }
+        }
+    };
     /**
      * To trigger taskbar edited event.
      * @return {void}
@@ -15093,9 +16303,60 @@ var TaskbarEdit = /** @class */ (function () {
                 if (ganttRecord.parentItem) {
                     this.parent.editModule.updateParentProgress(ganttRecord.parentItem);
                 }
+                if (!sf.base.isNullOrUndefined(taskData.segments)) {
+                    this.updateSegmentProgress(taskData);
+                }
             }
         }
         else {
+            var segments = args.data.ganttProperties.segments;
+            if (!sf.base.isNullOrUndefined(segments) && segments.length > 0
+                && ((this.taskBarEditAction === 'LeftResizing' && this.segmentIndex !== 0)
+                    || (this.taskBarEditAction === 'ChildDrag' && this.segmentIndex !== 0)
+                    || (this.taskBarEditAction === 'RightResizing'))) {
+                var segment = segments[this.segmentIndex];
+                var ganttProp = this.taskBarEditRecord.ganttProperties;
+                var length_1 = segments.length;
+                var previousSegment = this.segmentIndex === 0 ? null
+                    : segments[this.segmentIndex - 1];
+                var nextSegment = this.segmentIndex === segments.length - 1 ? null
+                    : segments[this.segmentIndex + 1];
+                var sDate = !sf.base.isNullOrUndefined(nextSegment) ?
+                    new Date(nextSegment.startDate.getTime()) : this.parent.cloneProjectEndDate;
+                var eDate = !sf.base.isNullOrUndefined(previousSegment) ?
+                    new Date(previousSegment.endDate.getTime()) : this.parent.cloneProjectStartDate;
+                sDate.setHours(0, 0, 0, 0);
+                eDate.setHours(0, 0, 0, 0);
+                var cStartDate = new Date(segment.startDate.getTime());
+                var cEndDate = new Date(segment.endDate.getTime());
+                cStartDate.setDate(cStartDate.getDate() - 1);
+                cEndDate.setDate(cEndDate.getDate() + 1);
+                cStartDate.setHours(0, 0, 0, 0);
+                cEndDate.setHours(0, 0, 0, 0);
+                if (cStartDate.getTime() <= eDate.getTime()) {
+                    var segmentIndexes = [
+                        { 'firstSegmentIndex': previousSegment.segmentIndex, 'secondSegmentIndex': segment.segmentIndex }
+                    ];
+                    this.parent.chartRowsModule.mergeTask(ganttProp.taskId, segmentIndexes);
+                }
+                else if (cEndDate.getTime() >= sDate.getTime() && this.segmentIndex !== segments.length - 1) {
+                    var segmentIndexes = [
+                        { 'firstSegmentIndex': segment.segmentIndex, 'secondSegmentIndex': nextSegment.segmentIndex }
+                    ];
+                    this.parent.chartRowsModule.mergeTask(ganttProp.taskId, segmentIndexes);
+                }
+                else if (cEndDate.getTime() >= sDate.getTime()) {
+                    segment.endDate.setDate(this.parent.cloneProjectEndDate.getDate() - 1);
+                    segment.startDate = this.parent.dataOperation.getStartDate(segment.endDate, segment.duration, ganttProp.durationUnit, ganttProp);
+                    for (var i = segments.length - 2; i >= 0; i++) {
+                        var segment_5 = segments[i];
+                        var eDate_1 = segment_5.endDate;
+                        eDate_1.setDate(eDate_1.getDate() - segment_5.offsetDuration);
+                        segment_5.endDate = eDate_1;
+                        segment_5.startDate = this.parent.dataOperation.getStartDate(segment_5.endDate, segment_5.duration, ganttProp.durationUnit, ganttProp);
+                    }
+                }
+            }
             this.parent.dataOperation.updateWidthLeft(args.data);
         }
         this.parent.dataOperation.updateTaskData(ganttRecord);
@@ -15182,7 +16443,7 @@ var TaskbarEdit = /** @class */ (function () {
             this.showHideTaskBarEditingElements(element, this.highlightedSecondElement, true);
         }
         if (sf.base.isNullOrUndefined(this.connectorSecondAction) && !sf.base.isNullOrUndefined(this.connectorSecondElement)) {
-            this.editTooltip.showHideTaskbarEditTooltip(false);
+            this.editTooltip.showHideTaskbarEditTooltip(false, this.segmentIndex);
             sf.base.removeClass([this.connectorSecondElement.querySelector('.' + connectorPointLeft)], [connectorPointAllowBlock]);
             sf.base.removeClass([this.connectorSecondElement.querySelector('.' + connectorPointRight)], [connectorPointAllowBlock]);
         }
@@ -15238,7 +16499,7 @@ var TaskbarEdit = /** @class */ (function () {
         args.isValidLink = !isValidLink && args.isValidLink ? false : args.isValidLink;
         if (args.isValidLink) {
             if (!this.editTooltip.toolTipObj && !this.parent.isAdaptive) {
-                this.editTooltip.showHideTaskbarEditTooltip(true);
+                this.editTooltip.showHideTaskbarEditTooltip(true, this.segmentIndex);
             }
             if (this.editTooltip.toolTipObj) {
                 this.parent.connectorLineModule.tooltipTable.innerHTML = this.parent.connectorLineModule.getConnectorLineTooltipInnerTd(this.parent.editModule.taskbarEditModule.taskBarEditRecord.ganttProperties.taskName, this.parent.editModule.taskbarEditModule.fromPredecessorText, '', '');
@@ -15319,7 +16580,7 @@ var TaskbarEdit = /** @class */ (function () {
         this.parent.editModule.taskbarEditModule = undefined;
     };
     return TaskbarEdit;
-}());
+}(DateProcessor));
 
 /**
  *
@@ -15450,6 +16711,7 @@ var DialogEdit = /** @class */ (function () {
         var dialogFields = [];
         var fieldItem = {};
         var fields;
+        var taskFields = this.parent.taskFields;
         var columnMapping = this.parent.columnMapping;
         if (Object.keys(columnMapping).length !== 0) {
             fieldItem.type = 'General';
@@ -15475,6 +16737,11 @@ var DialogEdit = /** @class */ (function () {
             if (this.parent.columnByField[columnMapping.notes.valueOf()].visible !== false) {
                 fieldItem.type = 'Notes';
             }
+            dialogFields.push(fieldItem);
+        }
+        if (!sf.base.isNullOrUndefined(sf.base.getValue('segments', taskFields))) {
+            fieldItem = {};
+            fieldItem.type = 'Segments';
             dialogFields.push(fieldItem);
         }
         if (this.parent.customColumns.length > 0) {
@@ -15822,6 +17089,16 @@ var DialogEdit = /** @class */ (function () {
                     tabItem.content = 'General';
                     this.beforeOpenArgs[tabItem.content] = this.getFieldsModel(dialogField.fields);
                 }
+                else if (dialogField.type === 'Segments') {
+                    if (sf.base.isNullOrUndefined(tasks.segments)) {
+                        continue;
+                    }
+                    if (sf.base.isNullOrUndefined(dialogField.headerText)) {
+                        dialogField.headerText = this.localeObj.getConstant('segments');
+                    }
+                    tabItem.content = 'Segments';
+                    this.beforeOpenArgs[tabItem.content] = this.getSegmentsModel(dialogField.fields);
+                }
                 else if (dialogField.type === 'Dependency') {
                     if (sf.base.isNullOrUndefined(tasks.dependency)) {
                         continue;
@@ -15931,6 +17208,16 @@ var DialogEdit = /** @class */ (function () {
         }
         else if (id === ganttObj.element.id + 'NotesTabContainer') {
             ganttObj.element.querySelector('#' + id).ej2_instances[0].refresh();
+        }
+        else if (id === ganttObj.element.id + 'SegmentsTabContainer') {
+            if (sf.base.isNullOrUndefined(this.beforeOpenArgs.rowData.ganttProperties.startDate)) {
+                ganttObj.element.querySelector('#' + id).ej2_instances[0]
+                    .enableToolbarItems([this.parent.element.id + 'SegmentsTabContainer' + '_add'], false);
+            }
+            else {
+                ganttObj.element.querySelector('#' + id).ej2_instances[0]
+                    .enableToolbarItems([this.parent.element.id + 'SegmentsTabContainer' + '_add'], true);
+            }
         }
     };
     DialogEdit.prototype.responsiveTabContent = function (id, ganttObj) {
@@ -16080,23 +17367,30 @@ var DialogEdit = /** @class */ (function () {
         }
         var cellValue = inputElement.value;
         var colName = targetId.replace(ganttObj.element.id, '');
-        this.validateScheduleValuesByCurrentField(colName, cellValue, this.editedRecord);
-        var ganttProp = currentData.ganttProperties;
-        var tasks = ganttObj.taskFields;
-        if (!sf.base.isNullOrUndefined(tasks.startDate)) {
-            this.updateScheduleFields(dialog, ganttProp, 'startDate');
+        if (colName.search('Segments') === 0) {
+            colName = colName.replace('SegmentsTabContainer', '');
+            this.validateSegmentFields(ganttObj, colName, cellValue, args);
+            return true;
         }
-        if (!sf.base.isNullOrUndefined(tasks.endDate)) {
-            this.updateScheduleFields(dialog, ganttProp, 'endDate');
+        else {
+            this.validateScheduleValuesByCurrentField(colName, cellValue, this.editedRecord);
+            var ganttProp = currentData.ganttProperties;
+            var tasks = ganttObj.taskFields;
+            if (!sf.base.isNullOrUndefined(tasks.startDate)) {
+                this.updateScheduleFields(dialog, ganttProp, 'startDate');
+            }
+            if (!sf.base.isNullOrUndefined(tasks.endDate)) {
+                this.updateScheduleFields(dialog, ganttProp, 'endDate');
+            }
+            if (!sf.base.isNullOrUndefined(tasks.duration)) {
+                this.updateScheduleFields(dialog, ganttProp, 'duration');
+            }
+            if (!sf.base.isNullOrUndefined(tasks.work)) {
+                this.updateScheduleFields(dialog, ganttProp, 'work');
+            }
+            this.dialogEditValidationFlag = false;
+            return true;
         }
-        if (!sf.base.isNullOrUndefined(tasks.duration)) {
-            this.updateScheduleFields(dialog, ganttProp, 'duration');
-        }
-        if (!sf.base.isNullOrUndefined(tasks.work)) {
-            this.updateScheduleFields(dialog, ganttProp, 'work');
-        }
-        this.dialogEditValidationFlag = false;
-        return true;
     };
     DialogEdit.prototype.updateScheduleFields = function (dialog, ganttProp, ganttField) {
         var ganttObj = this.parent;
@@ -16214,6 +17508,9 @@ var DialogEdit = /** @class */ (function () {
                     this.parent.dateValidationModule.calculateStartDate(ganttData);
                 }
                 else {
+                    if (!sf.base.isNullOrUndefined(ganttProp.segments) && ganttProp.segments.length > 0) {
+                        ganttProp.segments = this.parent.editModule.cellEditModule.validateEndDateWithSegments(ganttProp);
+                    }
                     this.parent.dateValidationModule.calculateDuration(ganttData);
                 }
             }
@@ -16297,6 +17594,176 @@ var DialogEdit = /** @class */ (function () {
         }
         return true;
     };
+    DialogEdit.prototype.getSegmentsModel = function (fields) {
+        var _this = this;
+        var taskSettings = this.parent.taskFields;
+        if (sf.base.isNullOrUndefined(fields) || fields.length === 0) {
+            fields = [];
+            if (!sf.base.isNullOrUndefined(taskSettings.startDate)) {
+                fields.push('startDate');
+            }
+            if (!sf.base.isNullOrUndefined(taskSettings.endDate)) {
+                fields.push('endDate');
+            }
+            if (!sf.base.isNullOrUndefined(taskSettings.duration)) {
+                fields.push('duration');
+            }
+        }
+        var segmentInputModel = {};
+        segmentInputModel.editSettings = {
+            allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal', newRowPosition: 'Bottom'
+        };
+        segmentInputModel.locale = this.parent.locale;
+        segmentInputModel.dataSource = [];
+        segmentInputModel.rowHeight = this.parent.isAdaptive ? 48 : null;
+        segmentInputModel.toolbar = [
+            {
+                id: this.parent.element.id + 'SegmentsTabContainer' + '_add', prefixIcon: 'e-add',
+                tooltipText: this.localeObj.getConstant('add'), align: 'Right',
+                text: this.parent.isAdaptive ? '' : this.localeObj.getConstant('add')
+            },
+            {
+                id: this.parent.element.id + 'SegmentsTabContainer' + '_delete', prefixIcon: 'e-delete',
+                tooltipText: this.localeObj.getConstant('delete'), align: 'Right',
+                text: this.parent.isAdaptive ? '' : this.localeObj.getConstant('delete')
+            },
+        ];
+        var gridColumns = [];
+        var _loop_1 = function (i) {
+            var gridColumn = {};
+            var generalTabString = 'General';
+            switch (fields[i]) {
+                case 'startDate':
+                case 'endDate':
+                    gridColumn = {
+                        field: fields[i], headerText: this_1.localeObj.getConstant(fields[i]), editType: 'stringedit', width: '200px',
+                        edit: {
+                            write: function (args) {
+                                var datePickerModel = _this.beforeOpenArgs[generalTabString][_this.parent.taskFields[fields[i]]];
+                                var value = args.rowData[args.column.field];
+                                sf.base.setValue('value', value, datePickerModel);
+                                var datePicker = new sf.calendars.DatePicker(datePickerModel);
+                                datePicker.appendTo(args.element);
+                            },
+                            read: function (args) {
+                                var ej2Instance = args.ej2_instances[0];
+                                return ej2Instance.value;
+                            }
+                        },
+                        format: this_1.parent.getDateFormat()
+                    };
+                    if (fields[i] === 'startDate') {
+                        gridColumn.validationRules = { required: true };
+                    }
+                    gridColumns.push(gridColumn);
+                    break;
+                case 'duration':
+                    gridColumn = {
+                        field: fields[i], headerText: this_1.localeObj.getConstant(fields[i]), editType: 'stringedit', width: '100px',
+                        edit: {
+                            write: function (args) {
+                                var inputTextModel = _this.beforeOpenArgs[generalTabString][_this.parent.taskFields[fields[i]]];
+                                inputTextModel.floatLabelType = 'Never';
+                                var value = args.rowData[args.column.field];
+                                if (!sf.base.isNullOrUndefined(value)) {
+                                    sf.base.setValue('value', value, inputTextModel);
+                                }
+                                else {
+                                    sf.base.setValue('value', null, inputTextModel);
+                                }
+                                sf.base.setValue('value', value, inputTextModel);
+                                var inputModel = new sf.inputs.TextBox(inputTextModel);
+                                inputModel.appendTo(args.element);
+                            },
+                            read: function (args) {
+                                var ej2Instance = args.ej2_instances[0];
+                                return ej2Instance.value.toString();
+                            }
+                        },
+                    };
+                    gridColumns.push(gridColumn);
+                    break;
+            }
+        };
+        var this_1 = this;
+        for (var i = 0; i < fields.length; i++) {
+            _loop_1(i);
+        }
+        segmentInputModel.columns = gridColumns;
+        segmentInputModel.height = this.parent.isAdaptive ? '100%' : '153px';
+        return segmentInputModel;
+    };
+    DialogEdit.prototype.getGridColumnByField = function (fieldName, columns) {
+        var column;
+        for (var i = 0; i < columns.length; i++) {
+            if (columns[i].field === fieldName) {
+                column = columns[i];
+            }
+        }
+        return column;
+    };
+    DialogEdit.prototype.updateSegmentField = function (columnName, args, segment) {
+        var dialog = this.parent.editModule.dialogModule.dialog;
+        var gridModel = sf.base.getValue('Segments', this.beforeOpenArgs);
+        var col = this.getGridColumnByField(columnName, gridModel.columns);
+        var tempValue;
+        var ganttId = this.parent.element.id;
+        tempValue = segment[columnName];
+        var inputValue;
+        if (col.editType === 'stringedit') {
+            inputValue = dialog.querySelector('#' + ganttId + 'SegmentsTabContainer' + columnName)
+                .ej2_instances[0];
+        }
+        else if (col.editType === 'datepickeredit') {
+            inputValue = dialog.querySelector('#' + ganttId + 'SegmentsTabContainer' + columnName)
+                .ej2_instances[0];
+        }
+        if (inputValue.value !== tempValue.toString()) {
+            inputValue.value = tempValue;
+            inputValue.dataBind();
+        }
+    };
+    DialogEdit.prototype.validateSegmentFields = function (ganttObj, columnName, cellValue, args) {
+        var taskSettings = this.parent.taskFields;
+        if (!sf.base.isNullOrUndefined(taskSettings.duration) && taskSettings.duration.toLowerCase() === columnName.toLowerCase()) {
+            if (!sf.base.isNullOrUndefined(cellValue) && cellValue !== '') {
+                this.selectedSegment.duration = Number(cellValue);
+                var endDate = ganttObj.dataOperation.getEndDate(this.selectedSegment.startDate, Number(cellValue), this.editedRecord.ganttProperties.durationUnit, this.editedRecord.ganttProperties, false);
+                endDate = ganttObj.dataOperation.checkEndDate(endDate, this.editedRecord.ganttProperties, false);
+                this.selectedSegment.endDate = endDate;
+            }
+        }
+        if (!sf.base.isNullOrUndefined(taskSettings.startDate) && taskSettings.startDate.toLowerCase() === columnName.toLowerCase()) {
+            if (cellValue !== '') {
+                var startDate = this.parent.dateValidationModule.getDateFromFormat(cellValue);
+                startDate = this.parent.dateValidationModule.checkStartDate(startDate);
+                this.selectedSegment.startDate = startDate;
+                if (!sf.base.isNullOrUndefined(taskSettings.endDate)) {
+                    this.selectedSegment.endDate = this.parent.dataOperation.getEndDate(startDate, this.selectedSegment.duration, this.editedRecord.ganttProperties.durationUnit, this.editedRecord.ganttProperties, false);
+                }
+            }
+        }
+        if (!sf.base.isNullOrUndefined(taskSettings.endDate) && taskSettings.endDate.toLowerCase() === columnName.toLowerCase()) {
+            if (cellValue !== '') {
+                var endDate = this.parent.dateValidationModule.getDateFromFormat(cellValue);
+                if (endDate.getHours() === 0 && ganttObj.defaultEndTime !== 86400) {
+                    this.parent.dateValidationModule.setTime(ganttObj.defaultEndTime, endDate);
+                }
+                endDate = this.parent.dateValidationModule.checkEndDate(endDate, this.editedRecord.ganttProperties);
+                this.selectedSegment.endDate = endDate;
+                this.selectedSegment.duration = this.parent.dataOperation.getDuration(this.selectedSegment.startDate, this.selectedSegment.endDate, this.editedRecord.ganttProperties.durationUnit, true, false, true);
+            }
+        }
+        if (!sf.base.isNullOrUndefined(taskSettings.startDate)) {
+            this.updateSegmentField('startDate', args, this.selectedSegment);
+        }
+        if (!sf.base.isNullOrUndefined(taskSettings.endDate)) {
+            this.updateSegmentField('endDate', args, this.selectedSegment);
+        }
+        if (!sf.base.isNullOrUndefined(taskSettings.duration)) {
+            this.updateSegmentField('duration', args, this.selectedSegment);
+        }
+    };
     DialogEdit.prototype.getPredecessorModel = function (fields) {
         if (sf.base.isNullOrUndefined(fields) || fields.length === 0) {
             fields = ['ID', 'Name', 'Type', 'Offset', 'UniqueId'];
@@ -16345,7 +17812,8 @@ var DialogEdit = /** @class */ (function () {
             else if (fields[i].toLowerCase() === 'offset') {
                 column = {
                     field: 'offset', headerText: this.localeObj.getConstant('offset'), editType: 'stringedit',
-                    defaultValue: '0 days', validationRules: { required: true }, width: '100px'
+                    defaultValue: this.parent.dataOperation.getDurationString(0, this.beforeOpenArgs.rowData.ganttProperties.durationUnit),
+                    validationRules: { required: true }, width: '100px'
                 };
                 columns.push(column);
             }
@@ -16477,7 +17945,78 @@ var DialogEdit = /** @class */ (function () {
             else if (item.content === 'Notes') {
                 item.content = this.renderNotesTab(item.content);
             }
+            else if (item.content === 'Segments') {
+                item.content = this.renderSegmentsTab(item.content);
+            }
         }
+    };
+    DialogEdit.prototype.segmentGridActionBegin = function (args) {
+        var taskFields = this.parent.taskFields;
+        var itemName = 'Segments';
+        var gridModel = this.beforeOpenArgs[itemName];
+        if (args.requestType === 'add' || args.requestType === 'beginEdit' || args.requestType === 'save') {
+            var isEdit = args.requestType === 'add' ? false : true;
+            var gridData = gridModel.dataSource;
+            var selectedItem = sf.base.getValue('rowData', args);
+            var startDate = this.beforeOpenArgs.rowData.ganttProperties.startDate;
+            if (!sf.base.isNullOrUndefined(startDate)) {
+                if (args.requestType === 'add') {
+                    var arg = {};
+                    var sDate = sf.base.getValue('startDate', selectedItem);
+                    var eDate = sf.base.getValue('endDate', selectedItem);
+                    var duration = sf.base.getValue('duration', selectedItem);
+                    var startDate_1 = !sf.base.isNullOrUndefined(gridData) && gridData.length > 0 ?
+                        !sf.base.isNullOrUndefined(taskFields.endDate) ? new Date(sf.base.getValue('endDate', gridData[0]).getTime()) :
+                            new Date(sf.base.getValue('startDate', gridData[0]).getTime()) :
+                        !sf.base.isNullOrUndefined(this.beforeOpenArgs.rowData.ganttProperties.startDate) &&
+                            new Date(this.beforeOpenArgs.rowData.ganttProperties.startDate.getTime());
+                    startDate_1.setHours(0, 0, 0, 0);
+                    if (!sf.base.isNullOrUndefined(gridData) && gridData.length > 0) {
+                        startDate_1.setDate(startDate_1.getDate() + 2);
+                    }
+                    sDate = this.parent.dataOperation.checkStartDate(startDate_1);
+                    eDate = this.parent.dateValidationModule.getDateFromFormat(sDate);
+                    if (eDate.getHours() === 0 && this.parent.defaultEndTime !== 86400) {
+                        this.parent.dateValidationModule.setTime(this.parent.defaultEndTime, eDate);
+                    }
+                    eDate = !sf.base.isNullOrUndefined(taskFields.endDate) && !sf.base.isNullOrUndefined(gridData) && gridData.length <= 0 ?
+                        this.beforeOpenArgs.rowData.ganttProperties.endDate : eDate;
+                    duration = !sf.base.isNullOrUndefined(taskFields.duration) && !sf.base.isNullOrUndefined(gridData) && gridData.length <= 0 ?
+                        this.beforeOpenArgs.rowData.ganttProperties.duration : 1;
+                    arg = {
+                        startDate: sDate,
+                        endDate: eDate,
+                        duration: duration
+                    };
+                    args.rowData = arg;
+                }
+            }
+            this.selectedSegment = args.rowData;
+            // if (args.requestType === 'save') {
+            //     // let duration: string = 'duration';
+            //     // let tempDuration: Object = this.parent.dataOperation.getDurationValue(args.data[duration]);
+            //     // args.data[duration] = getValue('duration', tempDuration);
+            //     this.selectedSegment = !isNullOrUndefined(this.editedRecord.ganttProperties.segments[args.rowIndex]) ?
+            //         this.editedRecord.ganttProperties.segments[args.rowIndex] : !isNullOrUndefined(gridData[args.rowIndex]) ?
+            //             gridData[args.rowIndex] : gridData;
+            // }
+        }
+    };
+    DialogEdit.prototype.renderSegmentsTab = function (itemName) {
+        var ganttObj = this.parent;
+        var gridModel = this.beforeOpenArgs[itemName];
+        var ganttData = this.beforeOpenArgs.rowData;
+        var preData = [];
+        if (this.isEdit) {
+            preData = sf.base.isNullOrUndefined(ganttData.ganttProperties.segments) ? [] : ganttData.ganttProperties.segments;
+        }
+        gridModel.dataSource = preData;
+        gridModel.actionBegin = this.segmentGridActionBegin.bind(this);
+        sf.grids.Grid.Inject(sf.grids.Edit, sf.grids.Page, sf.grids.Toolbar, sf.grids.ForeignKey);
+        var gridObj = new sf.grids.Grid(gridModel);
+        var divElement = this.createDivElement('', ganttObj.element.id + '' + itemName + 'TabContainer');
+        gridObj.appendTo(divElement);
+        return divElement;
     };
     DialogEdit.prototype.renderGeneralTab = function (itemName) {
         var ganttObj = this.parent;
@@ -16625,8 +18164,8 @@ var DialogEdit = /** @class */ (function () {
             var isEdit_1 = args.requestType === 'add' ? false : true;
             this.idCollection = sf.base.extend([], [], this.preTableCollection, true);
             var gridData_1 = gridModel.dataSource;
-            var _loop_1 = function (i) {
-                this_1.idCollection.forEach(function (data, index) {
+            var _loop_2 = function (i) {
+                this_2.idCollection.forEach(function (data, index) {
                     if (data.id === sf.base.getValue('id', gridData_1[i])) {
                         var selectedItem = sf.base.getValue('rowData', args);
                         if (isEdit_1 && sf.base.getValue('id', selectedItem) === data.id) {
@@ -16636,9 +18175,9 @@ var DialogEdit = /** @class */ (function () {
                     }
                 });
             };
-            var this_1 = this;
+            var this_2 = this;
             for (var i = 0; i <= gridData_1.length; i++) {
-                _loop_1(i);
+                _loop_2(i);
             }
         }
     };
@@ -16929,6 +18468,9 @@ var DialogEdit = /** @class */ (function () {
                 else if (id.indexOf('Custom') !== -1) {
                     this.updateCustomTab(element);
                 }
+                else if (id === 'Segments') {
+                    this.updateSegmentsData(element, this.beforeOpenArgs.rowData);
+                }
             }
         }
         if (this.isEdit) {
@@ -16964,6 +18506,40 @@ var DialogEdit = /** @class */ (function () {
             }
         }
         return true;
+    };
+    DialogEdit.prototype.updateSegmentTaskData = function (dataSource) {
+        var userData = [];
+        var taskSettings = this.parent.taskFields;
+        for (var i = 0; i < dataSource.length; i++) {
+            var taskData = {};
+            if (!sf.base.isNullOrUndefined(taskSettings.startDate)) {
+                taskData[this.parent.taskFields.startDate] = dataSource[i].startDate;
+            }
+            if (!sf.base.isNullOrUndefined(taskSettings.endDate)) {
+                taskData[this.parent.taskFields.endDate] = dataSource[i].endDate;
+            }
+            if (!sf.base.isNullOrUndefined(taskSettings.duration)) {
+                taskData[this.parent.taskFields.duration] = Number(dataSource[i].duration);
+                dataSource[i].duration = taskData[this.parent.taskFields.duration];
+            }
+            userData.push(taskData);
+        }
+        if (!this.isEdit) {
+            this.addedRecord[taskSettings.segments] = userData;
+        }
+        else {
+            this.rowData.ganttProperties.segments = dataSource;
+            this.parent.setRecordValue('segments', this.parent.dataOperation.setSegmentsInfo(this.rowData, false), this.rowData.ganttProperties, true);
+            this.parent.setRecordValue('taskData.' + this.parent.taskFields.segments, userData, this.rowData);
+        }
+    };
+    DialogEdit.prototype.updateSegmentsData = function (segmentForm, data) {
+        var gridObj = segmentForm.ej2_instances[0];
+        if (gridObj.isEdit) {
+            gridObj.endEdit();
+        }
+        var dataSource = gridObj.currentViewData;
+        this.updateSegmentTaskData(dataSource);
     };
     DialogEdit.prototype.updateGeneralTab = function (generalForm, isCustom) {
         var ganttObj = this.parent;
@@ -18395,7 +19971,7 @@ var Edit$2 = /** @class */ (function () {
             }
             else if ([tasks.progress, tasks.notes, tasks.durationUnit, tasks.expandState,
                 tasks.milestone, tasks.name, tasks.baselineStartDate,
-                tasks.baselineEndDate, tasks.id].indexOf(key) !== -1) {
+                tasks.baselineEndDate, tasks.id, tasks.segments].indexOf(key) !== -1) {
                 var column = ganttObj.columnByField[key];
                 /* tslint:disable-next-line */
                 var value = data[key];
@@ -18408,6 +19984,9 @@ var Edit$2 = /** @class */ (function () {
                 }
                 else if (key === tasks.name) {
                     ganttPropKey = 'taskName';
+                }
+                else if (key === tasks.segments) {
+                    ganttPropKey = 'segments';
                 }
                 if (!sf.base.isNullOrUndefined(ganttPropKey)) {
                     ganttObj.setRecordValue(ganttPropKey, value, ganttData.ganttProperties, true);
@@ -19028,7 +20607,15 @@ var Edit$2 = /** @class */ (function () {
                     };
                     /* tslint:disable-next-line */
                     var query = _this.parent.query instanceof sf.data.Query ? _this.parent.query : new sf.data.Query();
-                    var crud = data.saveChanges(updatedData, _this.parent.taskFields.id, null, query);
+                    var crud = null;
+                    var dataAdaptor = data.adaptor;
+                    if ((dataAdaptor instanceof sf.data.WebApiAdaptor && dataAdaptor instanceof sf.data.ODataAdaptor) || data.dataSource.batchUrl) {
+                        crud = data.saveChanges(updatedData, _this.parent.taskFields.id, null, query);
+                    }
+                    else {
+                        var changedRecords = 'changedRecords';
+                        crud = data.update(_this.parent.taskFields.id, updatedData[changedRecords], null, query);
+                    }
                     crud.then(function (e) { return _this.dmSuccess(e, args); })
                         .catch(function (e) { return _this.dmFailure(e, args); });
                 }
@@ -19791,6 +21378,7 @@ var Edit$2 = /** @class */ (function () {
             }
         }
     };
+    /* tslint:disable-next-line:max-line-length */
     Edit$$1.prototype.initiateDeleteAction = function (args) {
         var _this = this;
         this.parent.showSpinner();
@@ -19818,19 +21406,38 @@ var Edit$2 = /** @class */ (function () {
             }
             else {
                 if (isRemoteData(_this.parent.dataSource)) {
-                    var data = _this.parent.dataSource;
-                    var updatedData = {
+                    var data_1 = _this.parent.dataSource;
+                    var updatedData_1 = {
                         /* tslint:disable-next-line */
                         deletedRecords: sf.base.isBlazor() ? getTaskData(blazorArgs.data) : getTaskData(eventArgs.data),
                         changedRecords: sf.base.isBlazor() ? blazorArgs.modifiedTaskData : eventArgs.modifiedTaskData
                     };
                     if (sf.base.isBlazor()) {
                         var blazAddedRec = 'addedRecords';
-                        updatedData[blazAddedRec] = [];
+                        updatedData_1[blazAddedRec] = [];
                     }
-                    var crud = data.saveChanges(updatedData, _this.parent.taskFields.id);
-                    crud.then(function (e) { return _this.deleteSuccess(args); })
-                        .catch(function (e) { return _this.dmFailure(e, args); });
+                    var adaptor = data_1.adaptor;
+                    if ((adaptor instanceof sf.data.WebApiAdaptor && adaptor instanceof sf.data.ODataAdaptor) || data_1.dataSource.batchUrl) {
+                        var crud = data_1.saveChanges(updatedData_1, _this.parent.taskFields.id);
+                        crud.then(function (e) { return _this.deleteSuccess(args); })
+                            .catch(function (e) { return _this.dmFailure(e, args); });
+                    }
+                    else {
+                        var query_1 = _this.parent.query instanceof sf.data.Query ? _this.parent.query : new sf.data.Query();
+                        var deletedRecords = 'deletedRecords';
+                        var deleteCrud = null;
+                        for (var i = 0; i < updatedData_1[deletedRecords].length; i++) {
+                            /* tslint:disable-next-line */
+                            deleteCrud = data_1.remove(_this.parent.taskFields.id, updatedData_1[deletedRecords][i], null, query_1);
+                        }
+                        deleteCrud.then(function (e) {
+                            var changedRecords = 'changedRecords';
+                            /* tslint:disable-next-line */
+                            var updateCrud = data_1.update(_this.parent.taskFields.id, updatedData_1[changedRecords], null, query_1);
+                            updateCrud.then(function (e) { return _this.deleteSuccess(args); })
+                                .catch(function (e) { return _this.dmFailure(e, args); });
+                        }).catch(function (e) { return _this.dmFailure(e, args); });
+                    }
                 }
                 else {
                     _this.deleteSuccess(args);
@@ -20186,6 +21793,9 @@ var Edit$2 = /** @class */ (function () {
                     if (this.addRowSelectedItem.ganttProperties.predecessor) {
                         this.updatePredecessorOnIndentOutdent(this.addRowSelectedItem);
                     }
+                    if (!sf.base.isNullOrUndefined(this.addRowSelectedItem.ganttProperties.segments)) {
+                        this.addRowSelectedItem.ganttProperties.segments = null;
+                    }
                 }
                 this.recordCollectionUpdate(childIndex + 1, recordIndex, updatedCollectionIndex, record, parentItem);
                 break;
@@ -20253,6 +21863,7 @@ var Edit$2 = /** @class */ (function () {
         // this.parent.updatedConnectorLineCollection = [];
         // this.parent.connectorLineIds = [];
         // this.parent.predecessorModule.createConnectorLinesCollection(this.parent.flatData);
+        this.parent.treeGrid.parentData = [];
         this.parent.treeGrid.refresh();
     };
     /**
@@ -20325,6 +21936,7 @@ var Edit$2 = /** @class */ (function () {
      * @private
      */
     /* tslint:disable-next-line:max-func-body-length */
+    /* tslint:disable-next-line:max-line-length */
     Edit$$1.prototype.addRecord = function (data, rowPosition, rowIndex) {
         var _this = this;
         if (this.parent.editModule && this.parent.editSettings.allowAdding) {
@@ -20389,38 +22001,69 @@ var Edit$2 = /** @class */ (function () {
                         _this._resetProperties();
                     }
                     if (isRemoteData(_this.parent.dataSource)) {
-                        var data_1 = _this.parent.dataSource;
-                        var updatedData = {
+                        var data_2 = _this.parent.dataSource;
+                        var updatedData_2 = {
                             addedRecords: [args.newTaskData],
                             changedRecords: args.modifiedTaskData
                         };
                         var prevID_1 = args.data.ganttProperties.taskId.toString();
                         /* tslint:disable-next-line */
-                        var query = _this.parent.query instanceof sf.data.Query ? _this.parent.query : new sf.data.Query();
-                        var crud = data_1.saveChanges(updatedData, _this.parent.taskFields.id, null, query);
-                        crud.then(function (e) {
-                            if (_this.parent.taskFields.id && !sf.base.isNullOrUndefined(e.addedRecords[0][_this.parent.taskFields.id]) &&
-                                e.addedRecords[0][_this.parent.taskFields.id].toString() !== prevID_1) {
-                                _this.parent.setRecordValue('taskId', e.addedRecords[0][_this.parent.taskFields.id], args.data.ganttProperties, true);
-                                _this.parent.setRecordValue('taskData.' + _this.parent.taskFields.id, e.addedRecords[0][_this.parent.taskFields.id], args.data);
-                                _this.parent.setRecordValue(_this.parent.taskFields.id, e.addedRecords[0][_this.parent.taskFields.id], args.data);
-                                _this.parent.setRecordValue('rowUniqueID', e.addedRecords[0][_this.parent.taskFields.id].toString(), args.data.ganttProperties, true);
-                                var idsIndex = _this.parent.ids.indexOf(prevID_1);
-                                if (idsIndex !== -1) {
-                                    _this.parent.ids[idsIndex] = e.addedRecords[0][_this.parent.taskFields.id].toString();
+                        var query_2 = _this.parent.query instanceof sf.data.Query ? _this.parent.query : new sf.data.Query();
+                        var adaptor = data_2.adaptor;
+                        if ((adaptor instanceof sf.data.WebApiAdaptor && adaptor instanceof sf.data.ODataAdaptor) || data_2.dataSource.batchUrl) {
+                            /* tslint:disable-next-line */
+                            var crud = data_2.saveChanges(updatedData_2, _this.parent.taskFields.id, null, query_2);
+                            crud.then(function (e) {
+                                if (_this.parent.taskFields.id && !sf.base.isNullOrUndefined(e.addedRecords[0][_this.parent.taskFields.id]) &&
+                                    e.addedRecords[0][_this.parent.taskFields.id].toString() !== prevID_1) {
+                                    _this.parent.setRecordValue('taskId', e.addedRecords[0][_this.parent.taskFields.id], args.data.ganttProperties, true);
+                                    _this.parent.setRecordValue('taskData.' + _this.parent.taskFields.id, e.addedRecords[0][_this.parent.taskFields.id], args.data);
+                                    _this.parent.setRecordValue(_this.parent.taskFields.id, e.addedRecords[0][_this.parent.taskFields.id], args.data);
+                                    _this.parent.setRecordValue('rowUniqueID', e.addedRecords[0][_this.parent.taskFields.id].toString(), args.data.ganttProperties, true);
+                                    var idsIndex = _this.parent.ids.indexOf(prevID_1);
+                                    if (idsIndex !== -1) {
+                                        _this.parent.ids[idsIndex] = e.addedRecords[0][_this.parent.taskFields.id].toString();
+                                    }
                                 }
-                            }
-                            if (cAddedRecord_1.level === 0) {
-                                _this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord_1);
-                            }
-                            _this.updateTreeGridUniqueID(cAddedRecord_1, 'add');
-                            _this.refreshNewlyAddedRecord(args, cAddedRecord_1);
-                            _this._resetProperties();
-                        }).catch(function (e) {
-                            _this.removeAddedRecord();
-                            _this.dmFailure(e, args);
-                            _this._resetProperties();
-                        });
+                                _this.updateNewRecord(cAddedRecord_1, args);
+                            }).catch(function (e) {
+                                _this.removeAddedRecord();
+                                _this.dmFailure(e, args);
+                                _this._resetProperties();
+                            });
+                        }
+                        else {
+                            var addedRecords = 'addedRecords';
+                            var insertCrud = data_2.insert(updatedData_2[addedRecords], null, query_2);
+                            insertCrud.then(function (e) {
+                                var changedRecords = 'changedRecords';
+                                var addedRecords = e[0];
+                                /* tslint:disable-next-line */
+                                var updateCrud = data_2.update(_this.parent.taskFields.id, updatedData_2[changedRecords], null, query_2);
+                                updateCrud.then(function (e) {
+                                    if (_this.parent.taskFields.id && !sf.base.isNullOrUndefined(addedRecords[_this.parent.taskFields.id]) &&
+                                        addedRecords[_this.parent.taskFields.id].toString() !== prevID_1) {
+                                        _this.parent.setRecordValue('taskId', addedRecords[_this.parent.taskFields.id], args.data.ganttProperties, true);
+                                        _this.parent.setRecordValue('taskData.' + _this.parent.taskFields.id, addedRecords[_this.parent.taskFields.id], args.data);
+                                        _this.parent.setRecordValue(_this.parent.taskFields.id, addedRecords[_this.parent.taskFields.id], args.data);
+                                        _this.parent.setRecordValue('rowUniqueID', addedRecords[_this.parent.taskFields.id].toString(), args.data.ganttProperties, true);
+                                        var idIndex = _this.parent.ids.indexOf(prevID_1);
+                                        if (idIndex !== -1) {
+                                            _this.parent.ids[idIndex] = addedRecords[_this.parent.taskFields.id].toString();
+                                        }
+                                    }
+                                    _this.updateNewRecord(cAddedRecord_1, args);
+                                }).catch(function (e) {
+                                    _this.removeAddedRecord();
+                                    _this.dmFailure(e, args);
+                                    _this._resetProperties();
+                                });
+                            }).catch(function (e) {
+                                _this.removeAddedRecord();
+                                _this.dmFailure(e, args);
+                                _this._resetProperties();
+                            });
+                        }
                     }
                     else {
                         _this.updateRealDataSource(args.data, rowPosition);
@@ -20444,6 +22087,14 @@ var Edit$2 = /** @class */ (function () {
                 }
             });
         }
+    };
+    Edit$$1.prototype.updateNewRecord = function (cAddedRecord, args) {
+        if (cAddedRecord.level === 0) {
+            this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
+        }
+        this.updateTreeGridUniqueID(cAddedRecord, 'add');
+        this.refreshNewlyAddedRecord(args, cAddedRecord);
+        this._resetProperties();
     };
     /**
      * Method to reset the flag after adding new record
@@ -20672,6 +22323,11 @@ var Edit$2 = /** @class */ (function () {
                                 this.ganttData.splice(recordIndex1 + c + 1, 0, this.draggedRecord.taskData);
                             }
                             this.treeGridData.splice(recordIndex1 + c + 1, 0, this.draggedRecord);
+                            var idIndex = this.parent.ids.indexOf(this.draggedRecord[this.parent.taskFields.id].toString());
+                            if (idIndex !== recordIndex1 + c + 1) {
+                                this.parent.ids.splice(idIndex, 1);
+                                this.parent.ids.splice(recordIndex1 + c + 1, 0, this.draggedRecord[this.parent.taskFields.id].toString());
+                            }
                         }
                         this.parent.setRecordValue('parentItem', this.treeGridData[recordIndex1].parentItem, draggedRec);
                         this.parent.setRecordValue('parentUniqueID', this.treeGridData[recordIndex1].parentUniqueID, draggedRec);
@@ -20734,7 +22390,15 @@ var Edit$2 = /** @class */ (function () {
             };
             /* tslint:disable-next-line */
             var queryValue = this.parent.query instanceof sf.data.Query ? this.parent.query : new sf.data.Query();
-            var crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, queryValue);
+            var crud = null;
+            var adaptor = data.adaptor;
+            if ((adaptor instanceof sf.data.WebApiAdaptor && adaptor instanceof sf.data.ODataAdaptor) || data.dataSource.batchUrl) {
+                crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, queryValue);
+            }
+            else {
+                var changedRecords = 'changedRecords';
+                crud = data.update(this.parent.taskFields.id, updatedData[changedRecords], null, queryValue);
+            }
             crud.then(function (e) { return _this.indentSuccess(e, args); })
                 .catch(function (e) { return _this.indentFailure(e); });
         }
@@ -20837,6 +22501,11 @@ var Edit$2 = /** @class */ (function () {
                 this.ganttData.splice(childRecordsLength, 0, this.draggedRecord.taskData);
             }
             this.treeGridData.splice(childRecordsLength, 0, this.draggedRecord);
+            var idIndex = this.parent.ids.indexOf(this.draggedRecord[this.parent.taskFields.id].toString());
+            if (idIndex !== childRecordsLength) {
+                this.parent.ids.splice(idIndex, 1);
+                this.parent.ids.splice(childRecordsLength, 0, this.draggedRecord[this.parent.taskFields.id].toString());
+            }
             this.recordLevel();
             if (this.draggedRecord.hasChildRecords) {
                 this.updateChildRecord(this.draggedRecord, childRecordsLength, this.droppedRecord.expanded);
@@ -21012,6 +22681,10 @@ var Edit$2 = /** @class */ (function () {
             droppedRec.childRecords.splice(droppedRec.childRecords.length, 0, draggedRec);
             if (!sf.base.isNullOrUndefined(draggedRec) && !obj.taskFields.parentID && !sf.base.isNullOrUndefined(droppedRec.taskData[childItem])) {
                 droppedRec.taskData[obj.taskFields.child].splice(droppedRec.childRecords.length, 0, draggedRec.taskData);
+            }
+            if (!sf.base.isNullOrUndefined(droppedRec.ganttProperties.segments) && droppedRec.ganttProperties.segments.length > 0) {
+                droppedRec.ganttProperties.segments = null;
+                droppedRec.taskData[obj.taskFields.segments] = null;
             }
             if (!draggedRec.hasChildRecords) {
                 draggedRec.level = droppedRec.level + 1;
@@ -21726,6 +23399,7 @@ var Selection$1 = /** @class */ (function () {
         this.parent.treeGrid.clearSelection();
         this.parent.selectedRowIndex = -1;
         this.selectedRowIndexes = [];
+        this.selectedClass = null;
         if (!sf.base.isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems();
         }
@@ -22724,6 +24398,7 @@ var DayMarkers = /** @class */ (function () {
 var ContextMenu$2 = /** @class */ (function () {
     function ContextMenu$$1(parent) {
         var _this = this;
+        this.segmentIndex = -1;
         this.headerContextMenuClick = function (args) {
             var gridRow = sf.base.closest(args.event.target, '.e-row');
             var chartRow$$1 = sf.base.closest(args.event.target, '.e-chart-row');
@@ -22877,16 +24552,74 @@ var ContextMenu$2 = /** @class */ (function () {
             case 'Outdent':
                 this.parent.outdent();
                 break;
+            case 'Left':
+            case 'Right':
+                this.mergeCall(this.item);
+                break;
+            case 'SplitTask':
+                this.splitTaskCall(args);
+                break;
         }
         args.type = 'Content';
         args.rowData = this.rowData;
         this.parent.trigger('contextMenuClick', args);
+    };
+    ContextMenu$$1.prototype.splitTaskCall = function (args) {
+        var _this = this;
+        var taskSettings = this.parent.taskFields;
+        var currentClickedDate = this.getClickedDate(args.element);
+        currentClickedDate.setHours(0, 0, 0, 0);
+        var eventArgs = {
+            rowData: this.rowData,
+            requestType: 'splitTaskbar',
+            splitDate: currentClickedDate,
+            cancel: false
+        };
+        this.parent.trigger('actionBegin', eventArgs, function (eventArgs) {
+            _this.parent.chartRowsModule.splitTask(_this.rowData[taskSettings.id], currentClickedDate);
+        });
+    };
+    ContextMenu$$1.prototype.mergeCall = function (item) {
+        var _this = this;
+        var taskSettings = this.parent.taskFields;
+        var segments = this.rowData.ganttProperties.segments;
+        var firstSegment = item === 'Right' ? this.segmentIndex : segments[this.segmentIndex - 1].segmentIndex;
+        var secondSegment = item === 'Left' ? this.segmentIndex : segments[this.segmentIndex + 1].segmentIndex;
+        var segmentIndexes = [
+            { 'firstSegmentIndex': firstSegment, 'secondSegmentIndex': secondSegment }
+        ];
+        var eventArgs = {
+            rowData: this.rowData,
+            mergeSegmentIndexes: segmentIndexes,
+            requestType: 'mergeSegment',
+            cancel: false
+        };
+        this.parent.trigger('actionBegin', eventArgs, function (eventArgs) {
+            _this.parent.chartRowsModule.mergeTask(_this.rowData[taskSettings.id], segmentIndexes);
+        });
+    };
+    ContextMenu$$1.prototype.getClickedDate = function (element) {
+        var taskSettings = this.parent.taskFields;
+        // context menu click position
+        var containerPosition = this.parent.getOffsetRect(element);
+        // task left position
+        var pageLeft = this.parent.element.offsetLeft + this.parent.ganttChartModule.chartElement.offsetLeft +
+            this.rowData.ganttProperties.left - this.parent.ganttChartModule.scrollElement.scrollLeft;
+        // difference from task start date to current click position. 
+        var currentTaskDifference = this.clickedPosition - pageLeft;
+        var splitTaskDuration = Math.ceil(currentTaskDifference / this.parent.perDayWidth);
+        var startDate = this.rowData.ganttProperties.startDate;
+        var contextMenuClickDate = this.parent.dataOperation.getEndDate(startDate, splitTaskDuration, this.rowData.ganttProperties.durationUnit, this.rowData, false);
+        return contextMenuClickDate;
     };
     ContextMenu$$1.prototype.contextMenuBeforeOpen = function (args) {
         var _this = this;
         var target = args.event ? args.event.target :
             !this.parent.focusModule ? this.parent.focusModule.getActiveElement() :
                 this.parent.ganttChartModule.targetElement;
+        if (!sf.base.isNullOrUndefined(args.element) && args.element.id === this.parent.element.id + '_contextmenu') {
+            this.clickedPosition = sf.base.getValue('event', args).clientX;
+        }
         args.gridRow = sf.base.closest(target, '.e-row');
         args.chartRow = sf.base.closest(target, '.e-chart-row');
         var menuElement = sf.base.closest(target, '.e-gantt');
@@ -22964,6 +24697,7 @@ var ContextMenu$2 = /** @class */ (function () {
     ContextMenu$$1.prototype.updateItemStatus = function (item, target) {
         var key = this.getKeyFromId(item.id);
         var editForm$$1 = sf.base.closest(target, editForm);
+        var ind = this.parent.selectionModule.getSelectedRowIndexes()[0];
         if (editForm$$1) {
             if (!(key === 'Save' || key === 'Cancel')) {
                 this.hideItems.push(item.text);
@@ -23046,7 +24780,6 @@ var ContextMenu$2 = /** @class */ (function () {
                     }
                     break;
                 case 'Outdent':
-                    var ind = this.parent.selectionModule.getSelectedRowIndexes()[0];
                     var isSelect = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
                         this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
                     if (!this.parent.editSettings.allowEditing || ind === -1 || ind === 0 || !isSelect ||
@@ -23054,7 +24787,44 @@ var ContextMenu$2 = /** @class */ (function () {
                         this.hideItems.push(item.text);
                     }
                     break;
+                case 'SplitTask':
+                    var taskSettings = this.parent.taskFields;
+                    if (sf.base.isNullOrUndefined(taskSettings.segments) || this.parent.currentViewData[ind].hasChildRecords) {
+                        this.hideItems.push(item.text);
+                    }
+                    break;
+                case 'MergeTask':
+                    this.mergeItemVisiblity(target, item);
+                    break;
             }
+        }
+    };
+    ContextMenu$$1.prototype.mergeItemVisiblity = function (target, item) {
+        var subMenu = [];
+        var taskfields = this.parent.taskFields;
+        var currentClickedDate = this.getClickedDate(target);
+        this.segmentIndex = this.parent.chartRowsModule.getSegmentIndex(currentClickedDate, this.rowData);
+        var segments = this.rowData.ganttProperties.segments;
+        if (!sf.base.isNullOrUndefined(segments) && segments.length > 0) {
+            if (sf.base.isNullOrUndefined(taskfields.segments) && this.segmentIndex === -1) {
+                this.hideItems.push(item.text);
+            }
+            else {
+                if (this.segmentIndex === 0) {
+                    subMenu.push(this.createItemModel(content, 'Right', this.getLocale('right')));
+                }
+                else if (this.segmentIndex === segments.length - 1) {
+                    subMenu.push(this.createItemModel(content, 'Left', this.getLocale('left')));
+                }
+                else {
+                    subMenu.push(this.createItemModel(content, 'Right', this.getLocale('right')));
+                    subMenu.push(this.createItemModel(content, 'Left', this.getLocale('left')));
+                }
+                item.items = subMenu;
+            }
+        }
+        else {
+            this.hideItems.push(item.text);
         }
     };
     ContextMenu$$1.prototype.updateItemVisibility = function (text) {
@@ -23159,6 +24929,13 @@ var ContextMenu$2 = /** @class */ (function () {
                 contentMenuItem.items = [];
                 contentMenuItem.items.push({});
                 break;
+            case 'SplitTask':
+                contentMenuItem = this.createItemModel(content, item, this.getLocale('splitTask'));
+                break;
+            case 'MergeTask':
+                contentMenuItem = this.createItemModel(content, item, this.getLocale('mergeTask'));
+                contentMenuItem.items = [];
+                contentMenuItem.items.push({});
         }
         if (contentMenuItem) {
             this.contentMenuItems.push(contentMenuItem);
@@ -23187,7 +24964,7 @@ var ContextMenu$2 = /** @class */ (function () {
         return ['AutoFitAll', 'AutoFit',
             'TaskInformation', 'DeleteTask', 'Save', 'Cancel',
             'SortAscending', 'SortDescending', 'Add',
-            'DeleteDependency', 'Convert', 'TaskMode', 'Indent', 'Outdent'
+            'DeleteDependency', 'Convert', 'TaskMode', 'Indent', 'Outdent', 'SplitTask', 'MergeTask'
         ];
     };
     /**
@@ -24624,7 +26401,7 @@ var PdfTreeGridStyle = /** @class */ (function () {
     return PdfTreeGridStyle;
 }());
 
-var __extends$18 = (undefined && undefined.__extends) || (function () {
+var __extends$20 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -24641,7 +26418,7 @@ var __extends$18 = (undefined && undefined.__extends) || (function () {
  *
  */
 var PdfTreeGridLayouter = /** @class */ (function (_super) {
-    __extends$18(PdfTreeGridLayouter, _super);
+    __extends$20(PdfTreeGridLayouter, _super);
     function PdfTreeGridLayouter(baseFormat) {
         var _this = _super.call(this, baseFormat) || this;
         _this.columnRanges = [];
@@ -25007,7 +26784,7 @@ var PdfTreeGridLayouter = /** @class */ (function (_super) {
     return PdfTreeGridLayouter;
 }(sf.pdfexport.ElementLayouter));
 var PdfTreeGridLayoutResult = /** @class */ (function (_super) {
-    __extends$18(PdfTreeGridLayoutResult, _super);
+    __extends$20(PdfTreeGridLayoutResult, _super);
     /**
      * Constructor
      * @private
@@ -25021,7 +26798,7 @@ var PdfTreeGridLayoutResult = /** @class */ (function (_super) {
  * `PdfGridLayoutFormat` class represents a flexible grid that consists of columns and rows.
  */
 var PdfTreeGridLayoutFormat = /** @class */ (function (_super) {
-    __extends$18(PdfTreeGridLayoutFormat, _super);
+    __extends$20(PdfTreeGridLayoutFormat, _super);
     /**
      * Initializes a new instance of the `PdfGridLayoutFormat` class.
      * @private
@@ -25039,7 +26816,7 @@ var PdfTreeGridLayoutFormat = /** @class */ (function (_super) {
     return PdfTreeGridLayoutFormat;
 }(sf.pdfexport.PdfLayoutFormat));
 
-var __extends$19 = (undefined && undefined.__extends) || (function () {
+var __extends$21 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -25056,7 +26833,7 @@ var __extends$19 = (undefined && undefined.__extends) || (function () {
  * PdfTreeGrid Class for EJ2-PDF
  */
 var PdfTreeGrid = /** @class */ (function (_super) {
-    __extends$19(PdfTreeGrid, _super);
+    __extends$21(PdfTreeGrid, _super);
     function PdfTreeGrid() {
         var _this = _super.call(this) || this;
         _this.treeGridSize = new sf.pdfexport.SizeF(0, 0);
@@ -26415,6 +28192,11 @@ var ExportHelper = /** @class */ (function () {
             var taskbar = _this.gantt.taskbar.add();
             var ganttProp = data.ganttProperties;
             taskbar.left = ganttProp.left;
+            taskbar.width = ganttProp.width;
+            if (taskbar.left < 0) {
+                taskbar.width = taskbar.width + taskbar.left;
+                taskbar.left = 0;
+            }
             taskbar.progress = ganttProp.progress;
             taskbar.isScheduledTask = isScheduledTask(ganttProp);
             if (isScheduledTask) {
@@ -26436,7 +28218,6 @@ var ExportHelper = /** @class */ (function () {
             }
             taskbar.startDate = ganttProp.startDate;
             taskbar.endDate = ganttProp.endDate;
-            taskbar.width = ganttProp.width;
             taskbar.height = _this.parent.chartRowsModule.taskBarHeight;
             taskbar.isMilestone = ganttProp.isMilestone;
             taskbar.milestoneColor = new sf.pdfexport.PdfColor(_this.ganttStyle.taskbar.milestoneColor);
@@ -26726,8 +28507,8 @@ var ExportValueFormatter = /** @class */ (function () {
     return ExportValueFormatter;
 }());
 
-var __assign$3 = (undefined && undefined.__assign) || function () {
-    __assign$3 = Object.assign || function(t) {
+var __assign$4 = (undefined && undefined.__assign) || function () {
+    __assign$4 = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
             s = arguments[i];
             for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
@@ -26735,7 +28516,7 @@ var __assign$3 = (undefined && undefined.__assign) || function () {
         }
         return t;
     };
-    return __assign$3.apply(this, arguments);
+    return __assign$4.apply(this, arguments);
 };
 /**
  * @hidden
@@ -26816,7 +28597,7 @@ var PdfGanttTaskbarCollection = /** @class */ (function () {
             //Task start and end date both are in the range of header split up start and end date
             if (detail.startDate <= startDate && endDate <= detail.endDate) {
                 if (!this.isStartPoint) {
-                    this.taskStartPoint = __assign$3({}, startPoint);
+                    this.taskStartPoint = __assign$4({}, startPoint);
                     this.isStartPoint = true;
                 }
                 if (!this.isScheduledTask && this.unscheduledTaskBy !== 'duration') {
@@ -26838,7 +28619,7 @@ var PdfGanttTaskbarCollection = /** @class */ (function () {
             //Task start date is in the range of header split up start and end date
             else if (detail.startDate <= startDate && detail.endDate >= startDate && !(endDate < detail.endDate)) {
                 if (!this.isStartPoint) {
-                    this.taskStartPoint = __assign$3({}, startPoint);
+                    this.taskStartPoint = __assign$4({}, startPoint);
                     this.isStartPoint = true;
                 }
                 var renderWidth = 0;
@@ -26871,7 +28652,7 @@ var PdfGanttTaskbarCollection = /** @class */ (function () {
             //Task end date is in the range of header split up start and end date 
             else if (endDate <= detail.endDate && detail.startDate <= endDate && !this.isCompleted) {
                 if (!this.isStartPoint) {
-                    this.taskStartPoint = __assign$3({}, startPoint);
+                    this.taskStartPoint = __assign$4({}, startPoint);
                     this.isStartPoint = true;
                 }
                 taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(taskbar.left + 0.5), startPoint.y + adjustHeight, pixelToPoint(taskbar.width), pixelToPoint(taskbar.height));
@@ -26888,7 +28669,7 @@ var PdfGanttTaskbarCollection = /** @class */ (function () {
             //So the task is takes entire width of page.
             else if (startDate < detail.startDate && endDate > detail.endDate) {
                 if (!this.isStartPoint) {
-                    this.taskStartPoint = __assign$3({}, startPoint);
+                    this.taskStartPoint = __assign$4({}, startPoint);
                     this.isStartPoint = true;
                 }
                 taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(taskbar.left) + 0.5, startPoint.y + adjustHeight, pixelToPoint(detail.totalWidth), pixelToPoint(taskbar.height));
@@ -27037,7 +28818,7 @@ var PdfGanttTaskbarCollection = /** @class */ (function () {
         if (detail.startDate <= this.startDate && this.startDate <= detail.endDate) {
             var taskGraphics = page.graphics;
             var pageIndex = page.section.indexOf(page);
-            this.taskStartPoint = __assign$3({}, startPoint);
+            this.taskStartPoint = __assign$4({}, startPoint);
             var milestonePen = new sf.pdfexport.PdfPen(this.milestoneColor);
             var adjustHeight = pixelToPoint(((this.parent.rowHeight - this.height) / 2.0));
             var milestoneBrush = new sf.pdfexport.PdfSolidBrush(this.milestoneColor);
@@ -27229,8 +29010,8 @@ var PdfTimeline = /** @class */ (function () {
     return PdfTimeline;
 }());
 
-var __assign$4 = (undefined && undefined.__assign) || function () {
-    __assign$4 = Object.assign || function(t) {
+var __assign$5 = (undefined && undefined.__assign) || function () {
+    __assign$5 = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
             s = arguments[i];
             for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
@@ -27238,7 +29019,7 @@ var __assign$4 = (undefined && undefined.__assign) || function () {
         }
         return t;
     };
-    return __assign$4.apply(this, arguments);
+    return __assign$5.apply(this, arguments);
 };
 /**
  * @hidden
@@ -27386,8 +29167,8 @@ var PdfGanttPredecessor = /** @class */ (function () {
         /* tslint:disable-next-line */
         var point1, point2, point3, point4, point5, point6;
         point1 = point2 = point3 = point4 = point5 = point6 = new sf.pdfexport.PointF();
-        var parentTaskpoint = __assign$4({}, parentTask.taskStartPoint);
-        var childTaskpoint = __assign$4({}, childTask.taskStartPoint);
+        var parentTaskpoint = __assign$5({}, parentTask.taskStartPoint);
+        var childTaskpoint = __assign$5({}, childTask.taskStartPoint);
         parentY = parentTaskpoint.y + parentPageData.startPoint.y;
         childY = childTaskpoint.y + childPageData.startPoint.y;
         var ffpoint1 = new sf.pdfexport.PointF(pixelToPoint(this.parentLeft + this.parentWidth), parentY + midPoint);
@@ -27530,9 +29311,9 @@ var PdfGanttPredecessor = /** @class */ (function () {
     PdfGanttPredecessor.prototype.drawLine = function (page, startPoint, endPoint) {
         var pdfPages = this.pdfGantt.result.page.section.getPages();
         var graphics = page.graphics;
-        var newEndPoint = __assign$4({}, endPoint);
-        var newStartPoint = __assign$4({}, endPoint);
-        var checkStartPoint = __assign$4({}, endPoint);
+        var newEndPoint = __assign$5({}, endPoint);
+        var newStartPoint = __assign$5({}, endPoint);
+        var checkStartPoint = __assign$5({}, endPoint);
         var pageData = this.pdfGantt.pdfPageDetail[page.section.indexOf(page) - this.pdfGantt.chartPageIndex];
         var pageRect = new sf.pdfexport.RectangleF(pageData.startPoint.x, pageData.startPoint.y, pageData.width, pageData.height);
         var startPointCheck = this.contains(pageRect, startPoint.x, startPoint.y);
@@ -27651,7 +29432,7 @@ var PdfGanttPredecessor = /** @class */ (function () {
     return PdfGanttPredecessor;
 }());
 
-var __extends$20 = (undefined && undefined.__extends) || (function () {
+var __extends$22 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -27664,8 +29445,8 @@ var __extends$20 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __assign$2 = (undefined && undefined.__assign) || function () {
-    __assign$2 = Object.assign || function(t) {
+var __assign$3 = (undefined && undefined.__assign) || function () {
+    __assign$3 = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
             s = arguments[i];
             for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
@@ -27673,13 +29454,13 @@ var __assign$2 = (undefined && undefined.__assign) || function () {
         }
         return t;
     };
-    return __assign$2.apply(this, arguments);
+    return __assign$3.apply(this, arguments);
 };
 /**
  *
  */
 var PdfGantt = /** @class */ (function (_super) {
-    __extends$20(PdfGantt, _super);
+    __extends$22(PdfGantt, _super);
     function PdfGantt(parent) {
         var _this = _super.call(this) || this;
         _this.exportProps = {};
@@ -27878,7 +29659,7 @@ var PdfGantt = /** @class */ (function (_super) {
                     pageData = {};
                     pageData.height = cumulativeHeight;
                     pageData.pageStartX = pageStartX;
-                    pageData.startPoint = __assign$2({}, pagePoint);
+                    pageData.startPoint = __assign$3({}, pagePoint);
                     pageData.width = pixelToPoint(detail.totalWidth);
                     _this.pdfPageDetail.push(pageData);
                     pagePoint.y += pageData.height;
@@ -27899,7 +29680,7 @@ var PdfGantt = /** @class */ (function (_super) {
             pageData = {};
             pageData.height = cumulativeHeight;
             pageData.pageStartX = pageStartX;
-            pageData.startPoint = __assign$2({}, pagePoint);
+            pageData.startPoint = __assign$3({}, pagePoint);
             pageData.width = pixelToPoint(detail.totalWidth);
             _this.pdfPageDetail.push(pageData);
             pagePoint.x += pageData.width;

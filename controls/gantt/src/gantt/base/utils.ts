@@ -3,7 +3,7 @@
  */
 import { isNullOrUndefined, extend, getValue } from '@syncfusion/ej2-base';
 import { AdaptorOptions, DataManager, UrlAdaptor, WebApiAdaptor, ODataAdaptor } from '@syncfusion/ej2-data';
-import { WebMethodAdaptor, CacheAdaptor } from '@syncfusion/ej2-data';
+import { WebMethodAdaptor, CacheAdaptor, RemoteSaveAdaptor, ODataV4Adaptor, JsonAdaptor } from '@syncfusion/ej2-data';
 import { ITaskData, IGanttData } from './interface';
 
 /** @hidden */
@@ -41,9 +41,10 @@ export function getSwapKey(obj: Object): object {
 export function isRemoteData(dataSource: object): boolean {
     if (dataSource instanceof DataManager) {
         let adaptor: AdaptorOptions = dataSource.adaptor;
-        return (adaptor instanceof ODataAdaptor ||
+        return (adaptor instanceof ODataAdaptor || (adaptor instanceof ODataV4Adaptor) ||
             (adaptor instanceof WebApiAdaptor) || (adaptor instanceof WebMethodAdaptor) ||
-            (adaptor instanceof CacheAdaptor) || adaptor instanceof UrlAdaptor);
+            (adaptor instanceof CacheAdaptor) || (adaptor instanceof RemoteSaveAdaptor) ||
+            (adaptor instanceof JsonAdaptor) || adaptor instanceof UrlAdaptor);
     }
     return false;
 }

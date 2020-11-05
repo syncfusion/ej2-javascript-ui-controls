@@ -31,6 +31,7 @@ export interface HeatMapModel extends ComponentModel{
 
     /**
      * Triggers when click the heat map cell.
+     * {% codeBlock src='heatmap/tooltipRender/index.md' %}{% endcodeBlock %}
      * @event
      * @blazorProperty 'TooltipRendering'
      */
@@ -52,6 +53,7 @@ export interface HeatMapModel extends ComponentModel{
 
     /**
      * Triggers before each heatmap cell renders.
+     * {% codeBlock src='heatmap/cellRender/index.md' %}{% endcodeBlock %}
      * @deprecated
      * @event
      * @blazorProperty 'CellRendering'
@@ -84,6 +86,7 @@ export interface HeatMapModel extends ComponentModel{
 
     /**
      * Specifies the datasource settings for heat map.
+     * {% codeBlock src='heatmap/dataSourceSettings/index.md' %}{% endcodeBlock %}
      */
     dataSourceSettings?: DataModel;
 
@@ -95,6 +98,7 @@ export interface HeatMapModel extends ComponentModel{
 
     /**
      * Enable or disable the selection of multiple cells in heatmap
+     * {% codeBlock src='heatmap/allowSelection/index.md' %}{% endcodeBlock %}
      * @default false
      */
 
@@ -108,6 +112,7 @@ export interface HeatMapModel extends ComponentModel{
 
     /**
      * Title of heat map
+     * {% codeBlock src='heatmap/titleSettings/index.md' %}{% endcodeBlock %}
      * @default ''
      */
     titleSettings?: TitleModel;
@@ -120,17 +125,20 @@ export interface HeatMapModel extends ComponentModel{
 
     /**
      * Options for customizing the legend of the heat map
+     * {% codeBlock src='heatmap/legendSettings/index.md' %}{% endcodeBlock %}
      * @default ''
      */
     legendSettings?: LegendSettingsModel;
 
     /**
      * Options for customizing the cell color of the heat map
+     * {% codeBlock src='heatmap/paletteSettings/index.md' %}{% endcodeBlock %}
      */
     paletteSettings?: PaletteSettingsModel;
 
     /**
      * Options for customizing the ToolTipSettings property  of the heat map
+     * {% codeBlock src='heatmap/tooltipSettings/index.md' %}{% endcodeBlock %}
      */
     tooltipSettings?: TooltipSettingsModel;
 
@@ -142,6 +150,7 @@ export interface HeatMapModel extends ComponentModel{
 
     /**
      * Options to customize the heat map cell
+     * {% codeBlock src='heatmap/cellSettings/index.md' %}{% endcodeBlock %}
      */
 
     cellSettings?: CellSettingsModel;
@@ -155,6 +164,7 @@ export interface HeatMapModel extends ComponentModel{
 
     /**
      * Triggers before heat map load.
+     * {% codeBlock src='heatmap/load/index.md' %}{% endcodeBlock %}
      * @event
      * @blazorProperty 'OnLoad'
      */
@@ -169,6 +179,7 @@ export interface HeatMapModel extends ComponentModel{
 
     /**
      * Triggers before the legend is rendered.
+     * {% codeBlock src='heatmap/legendRender/index.md' %}{% endcodeBlock %}
      * @deprecated
      * @event
      * @blazorProperty 'LegendRendering'

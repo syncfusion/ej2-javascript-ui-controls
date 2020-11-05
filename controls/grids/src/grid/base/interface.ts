@@ -500,6 +500,7 @@ export interface IGrid extends Component<HTMLElement> {
     enableHeaderFocus?: boolean;
     renderTemplates?: Function;
     isReact?: boolean;
+    isVue?: boolean;
 
     /**
      * @hidden
@@ -835,9 +836,13 @@ export interface NotifyArgs {
 }
 
 export interface LazyLoadArgs {
+    /** Defines expand/collapse caption row details. */
     groupInfo?: Row<Column>;
+    /** Defines whether get rows from group cache or make a request. */
     enableCaching?: boolean;
+    /** Cancel the expand/collapse action. */
     cancel?: boolean;
+    /** Defines the caption row element. */
     captionRowElement?: HTMLTableRowElement;
 }
 
@@ -1245,9 +1250,13 @@ export interface ExportDetailDataBoundEventArgs {
 }
 
 export interface AggregateQueryCellInfoEventArgs {
+    /** Defines the row data associated with this cell. */
     row?: Object ;
+    /** Defines the type of the cell */
     type?: AggregateTemplateType ;
+    /** Defines the data of the current cell */
     data?: object ;
+    /** Defines the style of the current cell. */
     style?: object;
 }
 
@@ -2460,6 +2469,9 @@ export interface CaptionTemplateContext {
     headerText?: string;
 }
 
+/**
+ * @hidden
+ */
 export interface ActionArgs {
     /**
      * @blazorType string

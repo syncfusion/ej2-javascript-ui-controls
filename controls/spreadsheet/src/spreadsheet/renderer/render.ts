@@ -86,7 +86,7 @@ export class Render {
                 if (args.rowIndex !== indexes[0]) {
                     let topLeftCell: number[] = getCellIndexes(sheet.topLeftCell);
                     if (topLeftCell[0] === args.rowIndex) {
-                        sheet.topLeftCell = getCellAddress(indexes[0], topLeftCell[1]);
+                        this.parent.setSheetPropertyOnMute(sheet, 'topLeftCell', getCellAddress(indexes[0], topLeftCell[1]));
                     }
                     args.rowIndex = indexes[0];
                 }
@@ -96,7 +96,7 @@ export class Render {
                 if (args.colIndex !== indexes[0]) {
                     let topLeftCell: number[] = getCellIndexes(sheet.topLeftCell);
                     if (topLeftCell[1] === args.colIndex) {
-                        sheet.topLeftCell = getCellAddress(topLeftCell[0], indexes[0]);
+                        this.parent.setSheetPropertyOnMute(sheet, 'topLeftCell', getCellAddress(topLeftCell[0], indexes[0]));
                     }
                     args.colIndex = indexes[0];
                 }

@@ -125,4 +125,16 @@ export interface TaskFieldsModel {
      */
     type?: string;
 
+    /**
+     * To map segments details of a task from data source
+     * @default null      
+     */
+    segments?: string;
+
+    /**
+     * To map segment id details of a task from data source
+     * @default null      
+     */
+    segmentId?: string;
+
 }

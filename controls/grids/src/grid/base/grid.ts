@@ -639,7 +639,7 @@ export class GroupSettings extends ChildProperty<GroupSettings> {
     /**    
      * The Caption Template allows user to display the string or HTML element in group caption.
      * > It accepts either the
-     * [template string](http://ej2.syncfusion.com/documentation/common/template-engine/) or the HTML element ID.
+     * [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or the HTML element ID.
      * @default ''
      */
     @Property()
@@ -1061,8 +1061,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public enableAutoFill: boolean;
 
     /**
-     * Enables or disables the key board interaction of Grid.          
-     * @hidden 
+     * Enables or disables the key board interaction of Grid.
      * @default true     
      */
     @Property(true)
@@ -1403,7 +1402,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * > * It accepts either [template string](../../common/template-engine/) or HTML element ID.   
      * > * The row template must be a table row.  
      * 
-     * > Check the [`Row Template`](grid/row/) customization.
+     * > Check the [`Row Template`](../../grid/row/) customization.
      */
     @Property()
     public rowTemplate: string;
@@ -1420,7 +1419,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**    
      * Defines Grid options to render child Grid. 
-     * It requires the [`queryString`](grid/#querystring-string) for parent 
+     * It requires the [`queryString`](/#querystring) for parent 
      * and child relationship. 
      * 
      * > Check the [`Child Grid`](../../grid/hierarchy-grid/) for its configuration.
@@ -1458,9 +1457,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**    
      * It is used to render grid table rows. 
      * If the `dataSource` is an array of JavaScript objects, 
-     * then Grid will create instance of [`DataManager`](https://ej2.syncfusion.com/documentation/data/api-dataManager.html) 
+     * then Grid will create instance of [`DataManager`](https://ej2.syncfusion.com/documentation/api/data/dataManager/) 
      * from this `dataSource`. 
-     * If the `dataSource` is an existing [`DataManager`](https://ej2.syncfusion.com/documentation/data/api-dataManager.html),
+     * If the `dataSource` is an existing [`DataManager`](https://ej2.syncfusion.com/documentation/api/data/dataManager/),
      *  the Grid will not initialize a new one. 
      * 
      * > Check the available [`Adaptors`](../../data/adaptors/) to customize the data operation.
@@ -3804,7 +3803,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.isDetail()) {
             index++;
         }
-        if (this.allowRowDragAndDrop && isNullOrUndefined(this.rowDropSettings.targetID)) {
+        if (this.isRowDragable() && isNullOrUndefined(this.rowDropSettings.targetID)) {
             index++;
         }
         /**
@@ -4422,7 +4421,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public isRowDragable(): boolean {
-        return this.allowRowDragAndDrop && !this.rowDropSettings.targetID;
+        return this.allowRowDragAndDrop && !this.rowDropSettings.targetID && !this.enableVirtualization;
     }
 
 
@@ -5015,7 +5014,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 parentsUntil(e.target as Element, 'e-gridheader'))) && e.touches) {
             return;
         }
-        if (parentsUntil(e.target as Element, 'e-gridheader') && this.allowRowDragAndDrop) {
+        if (parentsUntil(e.target as Element, 'e-gridheader') && this.allowRowDragAndDrop && 
+            !(parentsUntil(e.target as Element, 'e-filterbarcell'))) {
             e.preventDefault();
         }
         let args: RecordClickEventArgs = this.getRowInfo(e.target as Element) as RecordClickEventArgs;

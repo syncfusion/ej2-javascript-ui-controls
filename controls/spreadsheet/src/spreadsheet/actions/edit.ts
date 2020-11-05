@@ -256,9 +256,9 @@ export class Edit {
                         }
                         let isFirefoxExceptionkeys: boolean = (keyCode === this.keyCodes.FIREFOXEQUALPLUS) ||
                             (keyCode === this.keyCodes.FIREFOXMINUS);
-                        let isF2Edit: boolean = (!e.shiftKey && !e.ctrlKey && keyCode === this.keyCodes.F2);
+                        let isF2Edit: boolean = (!e.shiftKey && !e.ctrlKey && !e.metaKey && keyCode === this.keyCodes.F2);
                         let isBackSpace: boolean = keyCode === this.keyCodes.BACKSPACE;
-                        if ((!e.ctrlKey && !e.altKey && (
+                        if ((!e.ctrlKey && !e.metaKey && !e.altKey && (
                             (!e.shiftKey && keyCode === this.keyCodes.SPACE) || isAlphabet || isNumeric ||
                             isNumpadKeys || isSymbolkeys || (Browser.info.name === 'mozilla' && isFirefoxExceptionkeys)
                         )) || isF2Edit || isBackSpace) {
@@ -282,7 +282,7 @@ export class Edit {
                     || (keyCode === this.keyCodes.DELETE) || (keyCode === this.keyCodes.BACKSPACE) || (keyCode === this.keyCodes.SPACE)
                     || (keyCode >= this.keyCodes.FIRSTNUMPAD && keyCode <= this.keyCodes.LASTNUMPAD) ||
                     (keyCode >= this.keyCodes.SYMBOLSETONESTART && keyCode <= this.keyCodes.SYMBOLSETONEEND)
-                    || (keyCode >= 219 && keyCode <= 222) || (!e.shiftKey && !e.ctrlKey && keyCode === this.keyCodes.F2))
+                    || (keyCode >= 219 && keyCode <= 222) || (!e.shiftKey && !e.ctrlKey && !e.metaKey && keyCode === this.keyCodes.F2))
                     && (keyCode !== 67) && (keyCode !== 89) && (keyCode !== 90)) {
                     if (sheet.protectSettings.insertLink && keyCode === 75) {
                         return;

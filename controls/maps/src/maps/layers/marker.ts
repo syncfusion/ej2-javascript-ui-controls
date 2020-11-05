@@ -144,14 +144,18 @@ export class Marker {
                         if (currentLayer.markerClusterSettings.allowClustering) {
                             this.maps.svgObject.appendChild(this.markerSVGObject);
                             this.maps.element.appendChild(this.maps.svgObject);
-                            clusterTemplate(currentLayer, this.markerSVGObject,
-                                this.maps, layerIndex, this.markerSVGObject, layerElement, true, false);
+                            if (currentLayer.layerType !== 'OSM' || !this.maps.zoomSettings.enable) {
+                                clusterTemplate(currentLayer, this.markerSVGObject,
+                                    this.maps, layerIndex, this.markerSVGObject, layerElement, true, false);
+                            } else {
+                                layerElement.appendChild(this.markerSVGObject);
+                            }
                             (this.maps as any).renderReactTemplates();
                         }
                     }
                     if (markerTemplateEle.childElementCount === (markerData.length - markerCount - nullCount) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
                         getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
-                        if (currentLayer.markerClusterSettings.allowClustering) {
+                        if ((currentLayer.markerClusterSettings.allowClustering && currentLayer.layerType !== 'OSM') || !this.maps.zoomSettings.enable) {
                             clusterTemplate(currentLayer, markerTemplateEle, this.maps,
                                 layerIndex, this.markerSVGObject, layerElement, false, false);
                             (this.maps as any).renderReactTemplates();

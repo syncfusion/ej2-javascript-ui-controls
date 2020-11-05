@@ -784,7 +784,6 @@ function titlePositionX(width, leftPadding, rightPadding, titleStyle) {
 }
 /**
  * Internal class size for height and width
- * @private
  */
 class Size {
     constructor(width, height) {
@@ -835,7 +834,6 @@ class CurrentRect {
 }
 /**
  * Class to define the details of selected cell.
- * @private
  */
 class SelectedCellDetails {
     constructor(value, xLabel, yLabel, xValue, yValue, cellElement, xPosition, yPosition, width, height, x, y) {
@@ -6555,8 +6553,9 @@ let HeatMap = class HeatMap extends Component {
                     break;
                 case 'cellSettings':
                     this.updateBubbleHelperProperty();
-                    if (this.legendModule && ((newProp.cellSettings.tileType !==
-                        oldProp.cellSettings.tileType) || (newProp.cellSettings.bubbleType !== oldProp.cellSettings.bubbleType))) {
+                    if (this.legendModule && ((newProp.cellSettings.tileType !== (oldProp.cellSettings
+                        !== undefined && oldProp.cellSettings.tileType))
+                        || (newProp.cellSettings.bubbleType !== oldProp.cellSettings.bubbleType))) {
                         this.legendOnLoad = true;
                         this.legendModule.updateLegendRangeCollections();
                     }
@@ -6585,7 +6584,8 @@ let HeatMap = class HeatMap extends Component {
                     break;
                 case 'legendSettings':
                     this.updateBubbleHelperProperty();
-                    if (this.legendVisibilityByCellType && (((newProp.legendSettings.visible !== oldProp.legendSettings.visible) ||
+                    if (this.legendVisibilityByCellType && (((newProp.legendSettings.visible !==
+                        (oldProp.legendSettings !== undefined && oldProp.legendSettings.visible)) ||
                         (newProp.legendSettings.enableSmartLegend !== oldProp.legendSettings.enableSmartLegend)))) {
                         this.legendOnLoad = true;
                         this.legendModule.updateLegendRangeCollections();
@@ -6754,6 +6754,7 @@ let HeatMap = class HeatMap extends Component {
     }
     /**
      * To destroy the widget
+     * {% codeBlock src='heatmap/destroy/index.md' %}{% endcodeBlock %}
      * @method destroy
      * @return {void}.
      * @member of Heatmap
@@ -7642,6 +7643,7 @@ let HeatMap = class HeatMap extends Component {
     }
     /**
      * To clear the multi cell selection
+     * {% codeBlock src='heatmap/clearSelection/index.md' %}{% endcodeBlock %}
      */
     clearSelection() {
         if (!this.enableCanvasRendering && this.allowSelection) {

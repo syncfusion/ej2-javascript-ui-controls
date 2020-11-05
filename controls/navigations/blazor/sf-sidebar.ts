@@ -122,6 +122,13 @@ class SfSidebar {
     }
 
     private transitionEnd(value: Event): void {
+        if (this.enableDock && !this.isOpen) {
+            let dimension : string = this.position === LEFT ? '-100' : '100';
+            let transform : string = this.position === LEFT ? this.setDimension(this.dockSize) :  '-' + this.setDimension(this.dockSize);
+            let widthValue: string =  'z-index: ' + this.element.style.zIndex + ';' + ' width: ' + this.element.style.width + ';';
+            let dockStyle : string =  widthValue + ' transform: translateX(' + dimension + '%) translateX(' + transform + ')';
+            this.element.setAttribute('style', dockStyle);
+        }
         this.dotnetRef.invokeMethodAsync('SetDock');
         if (!isNOU(value) && value.target === this.element) {
             this.dotnetRef.invokeMethodAsync('TriggerChange', this.isOpen, value);
@@ -319,7 +326,7 @@ class SfSidebar {
         this.windowWidth = null;
         let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') || this.targetElement;
         if (!isNOU(sibling)) {
-            sibling.style.transform = ''; //sibling.style.margin - azure overflow issue
+            sibling.style.margin = sibling.style.transform = '';
         }
         this.unWireEvents();
     }

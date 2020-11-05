@@ -637,6 +637,8 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /** @private */
     public currentValue: number;
+    /** @private */
+    public previousValue: number;
 
     /** @private */
     public pathElement: Element[];

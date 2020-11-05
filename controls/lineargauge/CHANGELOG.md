@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 18.3.47 (2020-11-05)
+
+### LinearGauge
+
+#### New Features
+
+- `#285386` - `edgeLabelPlacement` property is exposed to handle the collision of first and last label with other axis labels.
+
 ## 18.3.35 (2020-10-01)
 
 ### LinearGauge

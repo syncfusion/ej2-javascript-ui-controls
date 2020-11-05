@@ -415,6 +415,18 @@
         margin-top: 3px;
       }
 
+      .e-gantt-split-container-line {
+        border-color: inherit;
+        border-top-style: dotted;
+        border-top-width: 2px;
+        height: 0;
+        left: 2px;
+        pointer-events: none;
+        position: absolute;
+        top: 50%;
+        width: 98%;
+      }
+
       .e-gantt-child-taskbar-inner-div,
       .e-gantt-parent-taskbar-inner-div {
         border-spacing: 0;

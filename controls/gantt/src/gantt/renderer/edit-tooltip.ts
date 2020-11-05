@@ -27,7 +27,7 @@ export class EditTooltip {
         this.toolTipObj = new Tooltip(
             {
                 opensOn: opensOn,
-                content: this.getTooltipText(),
+                content: this.getTooltipText(-1),
                 position: 'TopRight',
                 mouseTrail: mouseTrail,
                 cssClass: cls.ganttTooltip,
@@ -68,11 +68,11 @@ export class EditTooltip {
      * @return {void}
      * @private
      */
-    public showHideTaskbarEditTooltip(bool: boolean): void {
+    public showHideTaskbarEditTooltip(bool: boolean, segmentIndex: number): void {
         if (bool && this.parent.tooltipSettings.showTooltip) {
             this.createTooltip('Custom', false);
             this.parent.tooltipModule.toolTipObj.close();
-            this.updateTooltip();
+            this.updateTooltip(segmentIndex);
             if (this.taskbarEdit.connectorSecondAction === 'ConnectorPointLeftDrag') {
                 this.toolTipObj.open(
                     this.taskbarEdit.connectorSecondElement.querySelector('.' + cls.connectorPointLeft) as HTMLElement);
@@ -93,29 +93,35 @@ export class EditTooltip {
      * @return {void}
      * @private
      */
-    public updateTooltip(): void {
+    public updateTooltip(segmentIndex: number): void {
+        let ganttProp: ITaskData = this.taskbarEdit.taskBarEditRecord.ganttProperties;
+        let taskWidth: number = segmentIndex === -1 ? ganttProp.width :
+            ganttProp.segments[segmentIndex].width;
+
+        let progressWidth: number = segmentIndex === -1 ? ganttProp.progressWidth :
+            ganttProp.segments[segmentIndex].progressWidth;
+
+        let left: number = segmentIndex === -1 ? ganttProp.left : ganttProp.left + ganttProp.segments[segmentIndex].left;
+
         if (!isNullOrUndefined(this.toolTipObj)) {
             if (this.taskbarEdit.taskBarEditAction === 'ConnectorPointLeftDrag' ||
                 this.taskbarEdit.taskBarEditAction === 'ConnectorPointRightDrag') {
-                this.toolTipObj.content = this.getTooltipText();
+                this.toolTipObj.content = this.getTooltipText(segmentIndex);
                 this.toolTipObj.offsetY = -3;
             } else {
-                this.toolTipObj.content = this.getTooltipText();
+                this.toolTipObj.content = this.getTooltipText(segmentIndex);
                 this.toolTipObj.refresh(this.taskbarEdit.taskBarEditElement as HTMLElement);
                 if (this.taskbarEdit.taskBarEditAction === 'LeftResizing') {
-                    this.toolTipObj.offsetX = -this.taskbarEdit.taskBarEditRecord.ganttProperties.width;
+                    this.toolTipObj.offsetX = -taskWidth;
                 } else if (this.taskbarEdit.taskBarEditAction === 'RightResizing' ||
-                 this.taskbarEdit.taskBarEditAction === 'ParentResizing') {
+                    this.taskbarEdit.taskBarEditAction === 'ParentResizing') {
                     this.toolTipObj.offsetX = 0;
                 } else if (this.taskbarEdit.taskBarEditAction === 'ProgressResizing') {
-                    this.toolTipObj.offsetX = -(this.taskbarEdit.taskBarEditRecord.ganttProperties.width -
-                        this.taskbarEdit.taskBarEditRecord.ganttProperties.progressWidth);
+                    this.toolTipObj.offsetX = -(taskWidth - progressWidth);
                 } else if (this.taskbarEdit.taskBarEditAction === 'MilestoneDrag') {
                     this.toolTipObj.offsetX = -(this.parent.chartRowsModule.milestoneHeight / 2);
-                } else if (this.taskbarEdit.taskBarEditRecord.ganttProperties.width > 5) {
-                    this.toolTipObj.offsetX = -(this.taskbarEdit.taskBarEditRecord.ganttProperties.width +
-                        this.taskbarEdit.taskBarEditRecord.ganttProperties.left -
-                        this.taskbarEdit.tooltipPositionX);
+                } else if (taskWidth > 5) {
+                    this.toolTipObj.offsetX = -(taskWidth + left - this.taskbarEdit.tooltipPositionX);
                 }
             }
         }
@@ -126,10 +132,14 @@ export class EditTooltip {
      * @return {void}
      * @private
      */
-    private getTooltipText(): string | HTMLElement {
+    private getTooltipText(segmentIndex: number): string | HTMLElement {
         let tooltipString: string | HTMLElement = '';
         let instance: Internationalization = this.parent.globalize;
-        let editRecord: ITaskData = this.taskbarEdit.taskBarEditRecord.ganttProperties;
+        let editRecord: ITaskData = this.taskbarEdit.taskBarEditRecord.ganttProperties as ITaskData;
+        if (!isNullOrUndefined(editRecord.segments) && editRecord.segments.length > 0 && segmentIndex !== -1
+            && this.taskbarEdit.taskBarEditAction !== 'ProgressResizing') {
+            editRecord = editRecord.segments[segmentIndex];
+        }
         if (this.parent.tooltipSettings.editing) {
             let templateNode: NodeList = this.parent.tooltipModule.templateCompiler(
                 this.parent.tooltipSettings.editing, this.parent, editRecord, 'TooltipEditingTemplate');
@@ -137,14 +147,14 @@ export class EditTooltip {
         } else {
             switch (this.taskbarEdit.taskBarEditAction) {
                 case 'ProgressResizing':
-                    tooltipString = this.parent.localeObj.getConstant('progress') + ' : ' + editRecord.progress;
+                    tooltipString = this.parent.localeObj.getConstant('progress') + ' : ' + (editRecord as ITaskData).progress;
                     break;
                 case 'LeftResizing':
                     tooltipString = this.parent.localeObj.getConstant('startDate') + ' : ';
                     tooltipString += instance.formatDate(
                         editRecord.startDate, { format: this.parent.getDateFormat() });
                     tooltipString += '<br/>' + this.parent.localeObj.getConstant('duration') + ' : ' +
-                        this.parent.getDurationString(editRecord.duration, editRecord.durationUnit);
+                        this.parent.getDurationString(editRecord.duration, (editRecord as ITaskData).durationUnit);
                     break;
                 case 'RightResizing':
                 case 'ParentResizing':
@@ -152,7 +162,7 @@ export class EditTooltip {
                     tooltipString += instance.formatDate(
                         editRecord.endDate, { format: this.parent.getDateFormat() });
                     tooltipString += '<br/>' + this.parent.localeObj.getConstant('duration') + ' : ' +
-                        this.parent.getDurationString(editRecord.duration, editRecord.durationUnit);
+                        this.parent.getDurationString(editRecord.duration, (editRecord as ITaskData).durationUnit);
                     break;
                 case 'ChildDrag':
                 case 'ParentDrag':

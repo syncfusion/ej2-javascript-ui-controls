@@ -468,7 +468,7 @@ export class SheetRender implements IRenderer {
                 if (model.rowSpan < 0) {
                     this.parent.notify(checkMerge, <CellRenderArgs>{ td: cell, rowIdx: indexes[0], colIdx: indexes[1], isRow: true });
                     if (this.parent.viewport.topIndex >= range[0]) {
-                        this.refreshPrevMerge(range[2] + 1, indexes[1]);
+                        this.refreshPrevMerge(range[0] + 1, indexes[1]);
                     }
                 }
                 if (firstcell && ((firstcell as HTMLTableCellElement).colSpan || (firstcell as HTMLTableCellElement).rowSpan)) {
@@ -476,7 +476,7 @@ export class SheetRender implements IRenderer {
                 }
             } else if (model.rowSpan > 1) {
                 let prevTopIdx: number = range[2] + 1;
-                if (indexes[0] + model.rowSpan > prevTopIdx && indexes[0] < prevTopIdx) {
+                if (indexes[0] + model.rowSpan - 1 > prevTopIdx && indexes[0] < prevTopIdx) {
                     this.refreshPrevMerge(prevTopIdx, indexes[1]);
                 }
             }

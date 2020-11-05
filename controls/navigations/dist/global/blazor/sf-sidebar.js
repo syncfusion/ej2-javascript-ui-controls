@@ -100,6 +100,13 @@ var SfSidebar = /** @class */ (function () {
         sf.base.EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
     };
     SfSidebar.prototype.transitionEnd = function (value) {
+        if (this.enableDock && !this.isOpen) {
+            var dimension = this.position === LEFT ? '-100' : '100';
+            var transform = this.position === LEFT ? this.setDimension(this.dockSize) : '-' + this.setDimension(this.dockSize);
+            var widthValue = 'z-index: ' + this.element.style.zIndex + ';' + ' width: ' + this.element.style.width + ';';
+            var dockStyle = widthValue + ' transform: translateX(' + dimension + '%) translateX(' + transform + ')';
+            this.element.setAttribute('style', dockStyle);
+        }
         this.dotnetRef.invokeMethodAsync('SetDock');
         if (!sf.base.isNullOrUndefined(value) && value.target === this.element) {
             this.dotnetRef.invokeMethodAsync('TriggerChange', this.isOpen, value);
@@ -301,7 +308,7 @@ var SfSidebar = /** @class */ (function () {
         this.windowWidth = null;
         var sibling = document.querySelector('.e-main-content') || this.targetElement;
         if (!sf.base.isNullOrUndefined(sibling)) {
-            sibling.style.transform = ''; //sibling.style.margin - azure overflow issue
+            sibling.style.margin = sibling.style.transform = '';
         }
         this.unWireEvents();
     };

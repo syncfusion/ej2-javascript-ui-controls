@@ -4,7 +4,7 @@ import { TaskFieldsModel, EditSettingsModel, ResourceFieldsModel } from '../mode
 import { IGanttData, ITaskData, ITaskbarEditedEventArgs, IValidateArgs, IParent, IPredecessor } from '../base/interface';
 import { IActionBeginEventArgs, ITaskAddedEventArgs, ITaskDeletedEventArgs, RowDropEventArgs } from '../base/interface';
 import { ColumnModel, Column as GanttColumn } from '../models/column';
-import { DataManager, DataUtil, Query } from '@syncfusion/ej2-data';
+import { DataManager, DataUtil, Query, AdaptorOptions, ODataAdaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { ReturnType, RecordDoubleClickEventArgs, Row, Column, IEditCell, EJ2Intance, getUid } from '@syncfusion/ej2-grids';
 import { getSwapKey, isScheduledTask, getTaskData, isRemoteData, getIndex } from '../base/utils';
 import { RowPosition } from '../base/enum';
@@ -456,7 +456,7 @@ export class Edit {
                 //..
             } else if ([tasks.progress, tasks.notes, tasks.durationUnit, tasks.expandState,
             tasks.milestone, tasks.name, tasks.baselineStartDate,
-            tasks.baselineEndDate, tasks.id].indexOf(key) !== -1) {
+            tasks.baselineEndDate, tasks.id, tasks.segments].indexOf(key) !== -1) {
                 let column: ColumnModel = ganttObj.columnByField[key];
                 /* tslint:disable-next-line */
                 let value: any = data[key];
@@ -468,6 +468,8 @@ export class Edit {
                     ganttPropKey = 'taskId';
                 } else if (key === tasks.name) {
                     ganttPropKey = 'taskName';
+                } else if (key === tasks.segments) {
+                    ganttPropKey = 'segments';
                 }
                 if (!isNullOrUndefined(ganttPropKey)) {
                     ganttObj.setRecordValue(ganttPropKey, value, ganttData.ganttProperties, true);
@@ -1112,7 +1114,14 @@ export class Edit {
                     };
                     /* tslint:disable-next-line */
                     let query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
-                    let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
+                    let crud: Promise<Object> = null;
+                    let dataAdaptor: AdaptorOptions = data.adaptor;
+                    if ((dataAdaptor instanceof WebApiAdaptor && dataAdaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
+                        crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
+                    } else {
+                        let changedRecords: string = 'changedRecords';
+                        crud = data.update(this.parent.taskFields.id, updatedData[changedRecords], null, query) as Promise<Object>;
+                    }
                     crud.then((e: ReturnType) => this.dmSuccess(e, args))
                         .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
                 } else {
@@ -1869,7 +1878,7 @@ export class Edit {
             }
         }
     }
-
+    /* tslint:disable-next-line:max-line-length */
     private initiateDeleteAction(args: ITaskDeletedEventArgs): void {
         this.parent.showSpinner();
         let eventArgs: IActionBeginEventArgs = {};
@@ -1905,9 +1914,27 @@ export class Edit {
                         let blazAddedRec: string = 'addedRecords';
                         updatedData[blazAddedRec] = [];
                     }
-                    let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id) as Promise<Object>;
-                    crud.then((e: ReturnType) => this.deleteSuccess(args))
-                        .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
+                    let adaptor: AdaptorOptions = data.adaptor;
+                    if ((adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
+                        let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id) as Promise<Object>;
+                        crud.then((e: ReturnType) => this.deleteSuccess(args))
+                            .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
+                    } else {
+                        let query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
+                        let deletedRecords: string = 'deletedRecords';
+                        let deleteCrud: Promise<Object> = null;
+                        for (let i: number = 0; i < updatedData[deletedRecords].length; i++) {
+                            /* tslint:disable-next-line */
+                            deleteCrud = data.remove(this.parent.taskFields.id, updatedData[deletedRecords][i], null, query) as Promise<Object>;
+                        }
+                        deleteCrud.then((e: ReturnType) => {
+                            let changedRecords: string = 'changedRecords';
+                            /* tslint:disable-next-line */
+                            let updateCrud: Promise<Object> = data.update(this.parent.taskFields.id, updatedData[changedRecords], null, query) as Promise<Object>;
+                            updateCrud.then((e: ReturnType) => this.deleteSuccess(args))
+                                .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
+                        }).catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
+                    }
                 } else {
                     this.deleteSuccess(args);
                 }
@@ -2260,6 +2287,9 @@ export class Edit {
                     if (this.addRowSelectedItem.ganttProperties.predecessor) {
                         this.updatePredecessorOnIndentOutdent(this.addRowSelectedItem);
                     }
+                    if (!isNullOrUndefined(this.addRowSelectedItem.ganttProperties.segments)) {
+                        this.addRowSelectedItem.ganttProperties.segments = null;
+                    }
                 }
                 this.recordCollectionUpdate(childIndex + 1, recordIndex, updatedCollectionIndex, record, parentItem);
                 break;
@@ -2331,6 +2361,7 @@ export class Edit {
         // this.parent.updatedConnectorLineCollection = [];
         // this.parent.connectorLineIds = [];
         // this.parent.predecessorModule.createConnectorLinesCollection(this.parent.flatData);
+        this.parent.treeGrid.parentData = [];
         this.parent.treeGrid.refresh();
     }
 
@@ -2401,6 +2432,7 @@ export class Edit {
      * @private
      */
     /* tslint:disable-next-line:max-func-body-length */
+    /* tslint:disable-next-line:max-line-length */
     public addRecord(data?: Object | IGanttData, rowPosition?: RowPosition, rowIndex?: number): void {
         if (this.parent.editModule && this.parent.editSettings.allowAdding) {
             let selectedRowIndex: number = isNullOrUndefined(rowIndex) || isNaN(parseInt(rowIndex.toString(), 10)) ?
@@ -2409,7 +2441,7 @@ export class Edit {
                         this.parent.selectionModule.selectedRowIndexes.length === 1 ?
                         this.parent.selectionModule.selectedRowIndexes[0] :
                         this.parent.selectionSettings.mode === 'Cell' &&
-                        this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ?
+                            this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ?
                             this.parent.selectionModule.getSelectedRowCellIndexes()[0].rowIndex : null : null : rowIndex;
             this.addRowSelectedItem = isNullOrUndefined(selectedRowIndex) ? null : this.parent.currentViewData[selectedRowIndex];
             rowPosition = isNullOrUndefined(rowPosition) ? this.parent.editSettings.newRowPosition : rowPosition;
@@ -2472,35 +2504,70 @@ export class Edit {
                         let prevID: string = args.data.ganttProperties.taskId.toString();
                         /* tslint:disable-next-line */
                         let query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
-                        let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
-                        crud.then((e: { addedRecords: Object[], changedRecords: Object[] }) => {
-                            if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
-                                e.addedRecords[0][this.parent.taskFields.id].toString() !== prevID) {
-                                this.parent.setRecordValue(
-                                    'taskId', e.addedRecords[0][this.parent.taskFields.id], args.data.ganttProperties, true);
-                                this.parent.setRecordValue(
-                                    'taskData.' + this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
-                                this.parent.setRecordValue(
-                                    this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
-                                this.parent.setRecordValue(
-                                    'rowUniqueID', e.addedRecords[0][this.parent.taskFields.id].toString(),
-                                    args.data.ganttProperties, true);
-                                let idsIndex: number = this.parent.ids.indexOf(prevID);
-                                if (idsIndex !== -1) {
-                                    this.parent.ids[idsIndex] = e.addedRecords[0][this.parent.taskFields.id].toString();
+                        let adaptor: AdaptorOptions = data.adaptor;
+                        if ((adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
+                            /* tslint:disable-next-line */
+                            let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
+                            crud.then((e: { addedRecords: Object[], changedRecords: Object[] }) => {
+                                if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
+                                    e.addedRecords[0][this.parent.taskFields.id].toString() !== prevID) {
+                                    this.parent.setRecordValue(
+                                        'taskId', e.addedRecords[0][this.parent.taskFields.id], args.data.ganttProperties, true);
+                                    this.parent.setRecordValue(
+                                        'taskData.' + this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
+                                    this.parent.setRecordValue(
+                                        this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
+                                    this.parent.setRecordValue(
+                                        'rowUniqueID', e.addedRecords[0][this.parent.taskFields.id].toString(),
+                                        args.data.ganttProperties, true);
+                                    let idsIndex: number = this.parent.ids.indexOf(prevID);
+                                    if (idsIndex !== -1) {
+                                        this.parent.ids[idsIndex] = e.addedRecords[0][this.parent.taskFields.id].toString();
+                                    }
                                 }
-                            }
-                            if (cAddedRecord.level === 0) {
-                                this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
-                            }
-                            this.updateTreeGridUniqueID(cAddedRecord, 'add');
-                            this.refreshNewlyAddedRecord(args, cAddedRecord);
-                            this._resetProperties();
-                        }).catch((e: { result: Object[] }) => {
-                            this.removeAddedRecord();
-                            this.dmFailure(e as { result: Object[] }, args);
-                            this._resetProperties();
-                        });
+                                this.updateNewRecord(cAddedRecord, args);
+                            }).catch((e: { result: Object[] }) => {
+                                this.removeAddedRecord();
+                                this.dmFailure(e as { result: Object[] }, args);
+                                this._resetProperties();
+                            });
+                        } else {
+                            let addedRecords: string = 'addedRecords';
+                            let insertCrud: Promise<Object> = data.insert(updatedData[addedRecords], null, query) as Promise<Object>;
+                            insertCrud.then((e: ReturnType) => {
+                                let changedRecords: string = 'changedRecords';
+                                let addedRecords: Object = e[0];
+                                /* tslint:disable-next-line */
+                                let updateCrud: Promise<Object> = data.update(this.parent.taskFields.id, updatedData[changedRecords], null, query) as Promise<Object>;
+                                updateCrud.then((e: ReturnType) => {
+                                    if (this.parent.taskFields.id && !isNullOrUndefined(addedRecords[this.parent.taskFields.id]) &&
+                                        addedRecords[this.parent.taskFields.id].toString() !== prevID) {
+                                        this.parent.setRecordValue(
+                                            'taskId', addedRecords[this.parent.taskFields.id], args.data.ganttProperties, true);
+                                        this.parent.setRecordValue(
+                                            'taskData.' + this.parent.taskFields.id, addedRecords[this.parent.taskFields.id], args.data);
+                                        this.parent.setRecordValue(
+                                            this.parent.taskFields.id, addedRecords[this.parent.taskFields.id], args.data);
+                                        this.parent.setRecordValue(
+                                            'rowUniqueID', addedRecords[this.parent.taskFields.id].toString(),
+                                            args.data.ganttProperties, true);
+                                        let idIndex: number = this.parent.ids.indexOf(prevID);
+                                        if (idIndex !== -1) {
+                                            this.parent.ids[idIndex] = addedRecords[this.parent.taskFields.id].toString();
+                                        }
+                                    }
+                                    this.updateNewRecord(cAddedRecord, args);
+                                }).catch((e: { result: Object[] }) => {
+                                    this.removeAddedRecord();
+                                    this.dmFailure(e as { result: Object[] }, args);
+                                    this._resetProperties();
+                                });
+                            }).catch((e: { result: Object[] }) => {
+                                this.removeAddedRecord();
+                                this.dmFailure(e as { result: Object[] }, args);
+                                this._resetProperties();
+                            });
+                        }
                     } else {
                         this.updateRealDataSource(args.data, rowPosition);
                         if (cAddedRecord.level === 0) {
@@ -2522,6 +2589,14 @@ export class Edit {
                 }
             });
         }
+    }
+    private updateNewRecord(cAddedRecord: IGanttData, args: ITaskAddedEventArgs): void {
+        if (cAddedRecord.level === 0) {
+            this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
+        }
+        this.updateTreeGridUniqueID(cAddedRecord, 'add');
+        this.refreshNewlyAddedRecord(args, cAddedRecord);
+        this._resetProperties();
     }
     /**
      * Method to reset the flag after adding new record
@@ -2741,7 +2816,11 @@ export class Edit {
                                 (this.ganttData as IGanttData[]).splice(recordIndex1 + c + 1, 0, this.draggedRecord.taskData);
                             }
                             this.treeGridData.splice(recordIndex1 + c + 1, 0, this.draggedRecord);
-
+                            let idIndex: number = this.parent.ids.indexOf(this.draggedRecord[this.parent.taskFields.id].toString());
+                            if (idIndex !== recordIndex1 + c + 1) {
+                                this.parent.ids.splice(idIndex, 1);
+                                this.parent.ids.splice(recordIndex1 + c + 1, 0, this.draggedRecord[this.parent.taskFields.id].toString());
+                            }
                         }
                         this.parent.setRecordValue('parentItem', this.treeGridData[recordIndex1].parentItem, draggedRec);
                         this.parent.setRecordValue('parentUniqueID', this.treeGridData[recordIndex1].parentUniqueID, draggedRec);
@@ -2804,7 +2883,14 @@ export class Edit {
             };
             /* tslint:disable-next-line */
             let queryValue: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
-            let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, queryValue) as Promise<Object>;
+            let crud: Promise<Object> = null;
+            let adaptor: AdaptorOptions = data.adaptor;
+            if ((adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
+                crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, queryValue) as Promise<Object>;
+            } else {
+                let changedRecords: string = 'changedRecords';
+                crud = data.update(this.parent.taskFields.id, updatedData[changedRecords], null, queryValue) as Promise<Object>;
+            }
             crud.then((e: ReturnType) => this.indentSuccess(e, args))
                 .catch((e: { result: Object[] }) => this.indentFailure(e as { result: Object[] }));
         } else {
@@ -2900,6 +2986,11 @@ export class Edit {
                 (this.ganttData as IGanttData[]).splice(childRecordsLength, 0, this.draggedRecord.taskData);
             }
             this.treeGridData.splice(childRecordsLength, 0, this.draggedRecord);
+            let idIndex: number = this.parent.ids.indexOf(this.draggedRecord[this.parent.taskFields.id].toString());
+            if (idIndex !== childRecordsLength) {
+                this.parent.ids.splice(idIndex, 1);
+                this.parent.ids.splice(childRecordsLength, 0, this.draggedRecord[this.parent.taskFields.id].toString());
+            }
             this.recordLevel();
             if (this.draggedRecord.hasChildRecords) {
                 this.updateChildRecord(this.draggedRecord, childRecordsLength, this.droppedRecord.expanded);
@@ -3073,6 +3164,10 @@ export class Edit {
             droppedRec.childRecords.splice(droppedRec.childRecords.length, 0, draggedRec);
             if (!isNullOrUndefined(draggedRec) && !obj.taskFields.parentID && !isNullOrUndefined(droppedRec.taskData[childItem])) {
                 droppedRec.taskData[obj.taskFields.child].splice(droppedRec.childRecords.length, 0, draggedRec.taskData);
+            }
+            if (!isNullOrUndefined(droppedRec.ganttProperties.segments) && droppedRec.ganttProperties.segments.length > 0) {
+                droppedRec.ganttProperties.segments = null;
+                droppedRec.taskData[obj.taskFields.segments] = null;
             }
             if (!draggedRec.hasChildRecords) {
                 draggedRec.level = droppedRec.level + 1;

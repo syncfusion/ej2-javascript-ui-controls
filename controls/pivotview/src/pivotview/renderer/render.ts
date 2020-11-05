@@ -16,7 +16,7 @@ import { HyperCellClickEventArgs, PivotCellSelectedEventArgs, QueryCellInfoEvent
 import { AggregateMenuOpenEventArgs, BeforeExportEventArgs, PivotColumn, ExcelRow } from '../../common/base/interface';
 import { AggregateMenu } from '../../common/popups/aggregate-menu';
 import { SummaryTypes } from '../../base/types';
-import { OlapEngine, ITupInfo } from '../../base/olap/engine';
+import { OlapEngine, ITupInfo, IOlapFieldListOptions } from '../../base/olap/engine';
 import { PivotUtil } from '../../base/util';
 import { SelectedCellsInfo } from '../../common/popups/grouping';
 import { AggregateTypes } from '../../common/base/enum';
@@ -1152,7 +1152,7 @@ export class Render {
                 let fieldSep: string[] = cropUName.split('::[').map((item: string) => {
                     return item[0] === '[' ? item : ('[' + item);
                 });
-                if (cell.memberType === 3 && rowMeasurePos === fieldSep.length) {
+                if (cell.memberType === 3 && rowMeasurePos) {
                     fieldSep.push(cell.actualText.toString());
                 }
                 let nxtIndextCount: number = -1;
@@ -1162,7 +1162,7 @@ export class Render {
                     let fieldMembers: string = fieldSep[fPos];
                     let membersCount: number = fieldMembers.split('~~').length;
                     nxtIndextCount += membersCount;
-                    let hasChild: boolean = Number(tupInfo.members[fPos].querySelector('CHILDREN_CARDINALITY').textContent) > 0;
+                    let hasChild: boolean = tupInfo.typeCollection[fPos] !== '2' ? (this.engine.fieldList[tupInfo.members[fPos].getAttribute('Hierarchy')] && (this.engine.fieldList as IOlapFieldListOptions)[tupInfo.members[fPos].getAttribute('Hierarchy')].isHierarchy && fPos < this.parent.dataSourceSettings.rows.length - 1 && !this.parent.dataSourceSettings.rows[fPos + 1].isNamedSet && this.parent.dataSourceSettings.rows[fPos + 1].name.indexOf('[Measures]') < 0 && (this.engine.fieldList as IOlapFieldListOptions)[this.parent.dataSourceSettings.rows[fPos + 1].name] && (this.engine.fieldList as IOlapFieldListOptions)[this.parent.dataSourceSettings.rows[fPos + 1].name].hasAllMember) ? true : Number(tupInfo.members[fPos].querySelector('CHILDREN_CARDINALITY').textContent) > 0 : false;
                     lastIndextCount += (fPos > 0 && prevHasChild && !hasChild) ? 1 : 0;
                     prevHasChild = hasChild;
                 }

@@ -4,15 +4,18 @@ import { Gantt } from '../base/gantt';
 import { isScheduledTask } from '../base/utils';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import * as cls from '../base/css-constants';
-import { IGanttData, IQueryTaskbarInfoEventArgs, IParent, IIndicator, ITaskData } from '../base/interface';
+import { DateProcessor } from '../base/date-processor';
+import { IGanttData, IQueryTaskbarInfoEventArgs, IParent, IIndicator, ITaskData, ITaskSegment } from '../base/interface';
 import { Row, Column } from '@syncfusion/ej2-grids';
+import { TaskFieldsModel } from '../models/models';
+import { CObject } from '../base/enum';
 /**
  * To render the chart rows in Gantt
  */
-export class ChartRows {
+export class ChartRows extends DateProcessor {
     public ganttChartTableBody: Element;
     public taskTable: HTMLElement;
-    private parent: Gantt;
+    protected parent: Gantt;
     public taskBarHeight: number = 0;
     public milestoneHeight: number = 0;
     private milesStoneRadius: number = 0;
@@ -32,8 +35,10 @@ export class ChartRows {
     private connectorPointMargin: number;
     public taskBarMarginTop: number;
     public milestoneMarginTop: number;
+    private dropSplit: boolean = false;
 
     constructor(ganttObj?: Gantt) {
+        super(ganttObj);
         this.parent = ganttObj;
         this.initPublicProp();
         this.addEventListener();
@@ -144,43 +149,387 @@ export class ChartRows {
                 labelString = this.getTaskLabel(this.parent.labelSettings.taskLabel);
                 labelString = labelString === 'isCustomTemplate' ? this.parent.labelSettings.taskLabel : labelString;
             }
-            let template: string = (data.ganttProperties.startDate && data.ganttProperties.endDate
-                && data.ganttProperties.duration) ? (
+            let template: string = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length > 0 ?
+                this.splitTaskbar(data, labelString) : (data.ganttProperties.startDate && data.ganttProperties.endDate
+                    && data.ganttProperties.duration) ? (
                     '<div class="' + cls.childTaskBarInnerDiv + ' ' + cls.traceChildTaskBar + ' ' + (data.ganttProperties.isAutoSchedule ?
                         '' :  cls.manualChildTaskBar) + '"' +
-                    'style="width:' + data.ganttProperties.width + 'px;height:' +
-                    (this.taskBarHeight) + 'px;">' + '<div class="' + cls.childProgressBarInnerDiv + ' ' +
-                    cls.traceChildProgressBar + ' ' + (data.ganttProperties.isAutoSchedule ?
-                        '' : cls.manualChildProgressBar) + '"' +
-                    ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
-                    'width:' + data.ganttProperties.progressWidth + 'px;height:100%;' +
-                    'border-top-right-radius:' + this.getBorderRadius(data.ganttProperties) + 'px;' +
-                    'border-bottom-right-radius:' + this.getBorderRadius(data.ganttProperties) + 'px;">' +
-                    '<span class="' + cls.taskLabel + '" style="line-height:' +
-                    (this.taskBarHeight - 1) + 'px; text-align:' + (this.parent.viewType === 'ResourceView' ? 'left;' : '') +
-                    'display:' + (this.parent.viewType === 'ResourceView' ? 'inline-flex;' : '') +
-                    'width:' + (this.parent.viewType === 'ResourceView' ? (data.ganttProperties.width - 10) : '') + 'px; height:' +
-                    this.taskBarHeight + 'px;">' + labelString + '</span></div></div>') :
-                (data.ganttProperties.startDate && !data.ganttProperties.endDate && !data.ganttProperties.duration) ? (
-                    '<div class="' + cls.childProgressBarInnerDiv + ' ' + cls.traceChildTaskBar + ' ' +
-                    cls.unscheduledTaskbarLeft + ' ' + (data.ganttProperties.isAutoSchedule ?
-                        '' :  cls.manualChildTaskBar) + '"' +
-                    'style="left:' + data.ganttProperties.left + 'px; height:' + this.taskBarHeight + 'px;"></div>') :
-                    (data.ganttProperties.endDate && !data.ganttProperties.startDate && !data.ganttProperties.duration) ?
-                        ('<div class="' + cls.childProgressBarInnerDiv + ' ' + cls.traceChildTaskBar + ' ' +
-                            cls.unscheduledTaskbarRight + ' ' + (data.ganttProperties.isAutoSchedule ?
-                                '' : cls.manualChildTaskBar) + '"' +
-                            'style="left:' + data.ganttProperties.left + 'px; height:' + this.taskBarHeight + 'px;"></div>') :
-                        (data.ganttProperties.duration && !data.ganttProperties.startDate && !data.ganttProperties.endDate) ?
+                        'style="width:' + data.ganttProperties.width + 'px;height:' +
+                        (this.taskBarHeight) + 'px;">' + '<div class="' + cls.childProgressBarInnerDiv + ' ' +
+                        cls.traceChildProgressBar + ' ' + (data.ganttProperties.isAutoSchedule ?
+                            '' : cls.manualChildProgressBar) + '"' +
+                        ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
+                        'width:' + data.ganttProperties.progressWidth + 'px;height:100%;' +
+                        'border-top-right-radius:' + this.getBorderRadius(data.ganttProperties) + 'px;' +
+                        'border-bottom-right-radius:' + this.getBorderRadius(data.ganttProperties) + 'px;">' +
+                        '<span class="' + cls.taskLabel + '" style="line-height:' +
+                        (this.taskBarHeight - 1) + 'px; text-align:' + (this.parent.viewType === 'ResourceView' ? 'left;' : '') +
+                        'display:' + (this.parent.viewType === 'ResourceView' ? 'inline-flex;' : '') +
+                        'width:' + (this.parent.viewType === 'ResourceView' ? (data.ganttProperties.width - 10) : '') + 'px; height:' +
+                        this.taskBarHeight + 'px;">' + labelString + '</span></div></div>') :
+                    (data.ganttProperties.startDate && !data.ganttProperties.endDate && !data.ganttProperties.duration) ? (
+                        '<div class="' + cls.childProgressBarInnerDiv + ' ' + cls.traceChildTaskBar + ' ' +
+                        cls.unscheduledTaskbarLeft + ' ' + (data.ganttProperties.isAutoSchedule ?
+                            '' : cls.manualChildTaskBar) + '"' +
+                        'style="left:' + data.ganttProperties.left + 'px; height:' + this.taskBarHeight + 'px;"></div>') :
+                        (data.ganttProperties.endDate && !data.ganttProperties.startDate && !data.ganttProperties.duration) ?
                             ('<div class="' + cls.childProgressBarInnerDiv + ' ' + cls.traceChildTaskBar + ' ' +
-                                cls.unscheduledTaskbar + ' ' + (data.ganttProperties.isAutoSchedule ?
+                                cls.unscheduledTaskbarRight + ' ' + (data.ganttProperties.isAutoSchedule ?
                                     '' : cls.manualChildTaskBar) + '"' +
-                                'style="left:' + data.ganttProperties.left + 'px; width:' + data.ganttProperties.width + 'px;' +
-                                ' height:' + this.taskBarHeight + 'px;"></div>') : '';
+                                'style="left:' + data.ganttProperties.left + 'px; height:' + this.taskBarHeight + 'px;"></div>') :
+                            (data.ganttProperties.duration && !data.ganttProperties.startDate && !data.ganttProperties.endDate) ?
+                                ('<div class="' + cls.childProgressBarInnerDiv + ' ' + cls.traceChildTaskBar + ' ' +
+                                    cls.unscheduledTaskbar + ' ' + (data.ganttProperties.isAutoSchedule ?
+                                        '' : cls.manualChildTaskBar) + '"' +
+                                    'style="left:' + data.ganttProperties.left + 'px; width:' + data.ganttProperties.width + 'px;' +
+                                    ' height:' + this.taskBarHeight + 'px;"></div>') : '';
 
             childTaskbarNode = this.createDivElement(template);
         }
         return childTaskbarNode;
+    }
+
+    private splitTaskbar(data: IGanttData, labelString: string): string {
+        let splitTasks: string = '';
+        let width: number = 0;
+        for (let i: number = 0; i < data.ganttProperties.segments.length; i++) {
+            let segment: ITaskSegment = data.ganttProperties.segments[i];
+            let segmentPosition: string = (i === 0) ? 'e-segment-first' : (i === data.ganttProperties.segments.length - 1)
+                ? 'e-segment-last' : 'e-segment-inprogress';
+            splitTasks += (
+                //split taskbar        
+                '<div class="' + cls.childTaskBarInnerDiv + ' ' + segmentPosition + ' ' + cls.traceChildTaskBar + ' ' +
+                ' e-segmented-taskbar' +
+                '"style="width:' + segment.width + 'px;position: absolute; left:' + segment.left + 'px;height:' +
+                (this.taskBarHeight) + 'px; overflow: initial;" data-segment-index = "' + i + '" aria-label = "' +
+                this.generateSpiltTaskAriaLabel(segment, data.ganttProperties) + '"> ' +
+                this.getSplitTaskbarLeftResizerNode() +
+                //split progress bar
+                '<div class="' + cls.childProgressBarInnerDiv + ' ' + cls.traceChildProgressBar + ' ' +
+
+                '" style="border-style:' + (segment.progressWidth ? 'solid;' : 'none;') +
+                'display:' + (segment.progressWidth >= 0 ? 'block;' : 'none;') +
+                'width:' + segment.progressWidth + 'px;height:100%;' +
+                'border-top-right-radius:' + this.getSplitTaskBorderRadius(segment) + 'px;' +
+                'border-bottom-right-radius:' + this.getSplitTaskBorderRadius(segment) + 'px;">' +
+                // progress label
+                '<span class="' + cls.taskLabel + '" style="line-height:' +
+                (this.taskBarHeight - 1) + 'px;display:' + (segment.showProgress ? 'inline;' : 'none;') +
+                'height:' + this.taskBarHeight + 'px;">' + labelString + '</span>' +
+                '</div>' +
+
+                this.getSplitTaskbarRightResizerNode(segment) +
+                (segment.showProgress ? this.getSplitProgressResizerNode(segment) : '') +
+                '</div></div>');
+        }
+        return splitTasks;
+    }
+
+    private getSplitTaskbarLeftResizerNode(): string {
+        let lResizerLeft: number = -(this.parent.isAdaptive ? 12 : 2);
+        let template: string = '<div class="' + cls.taskBarLeftResizer + ' ' + cls.icon + '"' +
+            ' style="left:' + lResizerLeft + 'px;height:' + (this.taskBarHeight) + 'px;"></div>';
+        return template;
+    }
+
+    private getSplitTaskbarRightResizerNode(segment: ITaskSegment): string {
+        let rResizerLeft: number = this.parent.isAdaptive ? -2 : -10;
+        let template: string = '<div class="' + cls.taskBarRightResizer + ' ' + cls.icon + '"' +
+            ' style="left:' + (segment.width + rResizerLeft) + 'px;' +
+            'height:' + (this.taskBarHeight) + 'px;"></div>';
+        return template;
+    }
+
+    private getSplitProgressResizerNode(segment: ITaskSegment): string {
+        let template: string = '<div class="' + cls.childProgressResizer + '"' +
+            ' style="left:' + (segment.progressWidth - 6) + 'px;margin-top:' +
+            (this.taskBarHeight - 4) + 'px;"><div class="' + cls.progressBarHandler + '"' +
+            '><div class="' + cls.progressHandlerElement + '"></div>' +
+            '<div class="' + cls.progressBarHandlerAfter + '"></div></div>';
+        return template;
+    }
+
+    public getSegmentIndex(splitStartDate: Date, record: IGanttData): number {
+        let segmentIndex: number = -1;
+        let ganttProp: ITaskData = record.ganttProperties;
+        let segments: ITaskSegment[] = ganttProp.segments;
+        if (!isNullOrUndefined(segments)) {
+            segments.sort((a: ITaskSegment, b: ITaskSegment) => {
+                return a.startDate.getTime() - b.startDate.getTime();
+            });
+            let length: number = segments.length;
+            for (let i: number = 0; i < length; i++) {
+                let segment: ITaskSegment = segments[i];
+                // To find if user tend to split the start date of a main taskbar
+                // purpose of this to restrict the split action
+                if (splitStartDate.getTime() === ganttProp.startDate.getTime()) {
+                    this.dropSplit = true;
+                    segmentIndex = 0;
+                    // To find the if user tend to split the first date of already segmented task.
+                    // purpose of this to move on day of a segment
+                } else if (splitStartDate.getTime() === segment.startDate.getTime()) {
+                    this.dropSplit = true;
+                    let sDate: Date = segment.startDate;
+                    sDate.setDate(sDate.getDate() + 1);
+                    sDate = segment.startDate = this.parent.dataOperation.checkStartDate(sDate, ganttProp, false);
+                    segment.startDate = sDate;
+                    let eDate: Date = segment.endDate;
+                    eDate = this.parent.dataOperation.getEndDate(
+                        sDate, segment.duration, ganttProp.durationUnit, ganttProp, false
+                    );
+                    segment.endDate = eDate;
+                    if (i === segments.length - 1) {
+                        this.parent.setRecordValue('endDate', eDate, ganttProp, true);
+                    }
+                    this.incrementSegments(segments, i, record);
+                    segmentIndex = segment.segmentIndex;
+                    // To find if the user tend to split the segment and find the segment index 
+                } else {
+                    segment.endDate = this.parent.dataOperation.getEndDate(
+                        segment.startDate, segment.duration, ganttProp.durationUnit, ganttProp, false
+                    );
+                    if (splitStartDate.getTime() >= segment.startDate.getTime() && splitStartDate.getTime() <= segment.endDate.getTime()) {
+                        segmentIndex = segment.segmentIndex;
+                    }
+                }
+                this.parent.setRecordValue('segments', ganttProp.segments, ganttProp, true);
+            }
+        }
+        return segmentIndex;
+    }
+
+    public mergeTask(taskId: number | string, segmentIndexes: { firstSegmentIndex: number, secondSegmentIndex: number }[]): void {
+        let indexes: { firstSegmentIndex: number, secondSegmentIndex: number }[] = segmentIndexes;
+        let mergeArrayLength: number = segmentIndexes.length;
+        let taskFields: TaskFieldsModel = this.parent.taskFields;
+        let mergeData: IGanttData = this.parent.flatData.filter((x: IGanttData): IGanttData => {
+            if (x[taskFields.id] === taskId) {
+                return x;
+            } else {
+                return null;
+            }
+        })[0];
+        let segments: ITaskSegment[] = mergeData.ganttProperties.segments;
+        segmentIndexes = segmentIndexes.sort((a: { firstSegmentIndex: number, secondSegmentIndex: number },
+            b: { firstSegmentIndex: number, secondSegmentIndex: number }): number => {
+            return b.firstSegmentIndex - a.firstSegmentIndex;
+        });
+        for (let arrayLength: number = 0; arrayLength < mergeArrayLength; arrayLength++) {
+            let segment: ITaskSegment;
+            let firstSegment: ITaskSegment = segments[segmentIndexes[arrayLength].firstSegmentIndex];
+            let secondSegment: ITaskSegment = segments[segmentIndexes[arrayLength].secondSegmentIndex];
+            let duration: number = firstSegment.duration + secondSegment.duration;
+            let endDate: Date = this.parent.dataOperation.getEndDate(
+                firstSegment.startDate, duration, mergeData.ganttProperties.durationUnit, mergeData.ganttProperties, false
+            );
+            segment = {
+                startDate: firstSegment.startDate,
+                endDate: endDate,
+                duration: duration
+            };
+            let insertIndex: number = segmentIndexes[arrayLength].firstSegmentIndex;
+            segments.splice(insertIndex, 2, segment);
+            this.parent.setRecordValue('segments', segments, mergeData.ganttProperties, true);
+            this.parent.dataOperation.updateMappingData(mergeData, 'segments');
+            if (segments.length === 1) {
+                this.parent.setRecordValue('endDate', endDate, mergeData.ganttProperties, true);
+                this.parent.setRecordValue('segments', null, mergeData.ganttProperties, true);
+                this.parent.dataOperation.updateMappingData(mergeData, 'segments');
+            } else if (mergeData.ganttProperties.endDate !== segments[segments.length - 1].endDate) {
+                this.parent.setRecordValue('endDate', segments[segments.length - 1].endDate, mergeData.ganttProperties, true);
+            }
+        }
+        this.refreshChartAfterSegment(mergeData, 'mergeSegment');
+    }
+
+    private refreshChartAfterSegment(data: IGanttData, requestType: string): void {
+        this.parent.setRecordValue('segments', this.parent.dataOperation.setSegmentsInfo(data, false), data.ganttProperties, true);
+        this.parent.dataOperation.updateMappingData(data, 'segments');
+        this.parent.dataOperation.updateWidthLeft(data);
+        if (this.parent.predecessorModule && this.parent.taskFields.dependency) {
+            this.parent.predecessorModule.updatedRecordsDateByPredecessor();
+            this.parent.connectorLineEditModule.removePreviousConnectorLines(this.parent.flatData);
+            this.parent.connectorLineEditModule.refreshEditedRecordConnectorLine(this.parent.flatData);
+            this.refreshRecords(this.parent.currentViewData);
+        } else {
+            this.refreshRow(this.parent.currentViewData.indexOf(data));
+        }
+        let tr: Element = this.ganttChartTableBody.querySelectorAll('tr')[this.parent.currentViewData.indexOf(data)];
+        this.triggerQueryTaskbarInfoByIndex(tr, data);
+        this.parent.selectionModule.clearSelection();
+        let args: CObject = {
+            requestType: requestType,
+            rowData: data
+        };
+        this.parent.trigger('actionComplete', args);
+    }
+
+    /**
+     * public method to split task bar.
+     * @public
+     */
+
+    public splitTask(taskId: number | string, splitDates: Date | Date[]): void {
+        let taskFields: TaskFieldsModel = this.parent.taskFields;
+        let splitDate: Date = splitDates as Date;
+        let splitRecord: IGanttData = this.parent.flatData.filter((x: IGanttData): IGanttData => {
+            if (x[taskFields.id] === taskId) {
+                return x;
+            } else {
+                return null;
+            }
+        })[0];
+        let ganttProp: ITaskData = splitRecord.ganttProperties;
+        this.dropSplit = false;
+        let segmentIndex: number = -1;
+        let segments: ITaskSegment[] = ganttProp.segments;
+        if (isNullOrUndefined((splitDates as Date[]).length) || (splitDates as Date[]).length < 0) {
+            let splitStartDate: Date = this.parent.dataOperation.checkStartDate(splitDate, ganttProp, false);
+            if (splitStartDate.getTime() !== ganttProp.startDate.getTime()) {
+                if (ganttProp.isAutoSchedule) {
+                    if (!isNullOrUndefined(segments)) {
+                        segmentIndex = this.getSegmentIndex(splitStartDate, splitRecord);
+                    }
+                    //check atleast one day difference is there to split
+                    if (this.dropSplit === false && (splitDate as Date).getTime() > ganttProp.startDate.getTime() &&
+                        (splitDate as Date).getTime() < ganttProp.endDate.getTime()) {
+                        segments = segmentIndex !== -1 ? segments : [];
+                        let startDate: Date = segmentIndex !== -1 ?
+                            segments[segmentIndex].startDate : new Date(ganttProp.startDate.getTime());
+                        let endDate: Date = segmentIndex !== -1 ? segments[segmentIndex].endDate : new Date(ganttProp.endDate.getTime());
+                        let segmentDuration: number = this.parent.dataOperation.getDuration(
+                            startDate, endDate, ganttProp.durationUnit, ganttProp.isAutoSchedule, ganttProp.isMilestone
+                        );
+                        this.parent.setRecordValue(
+                            'segments', this.splitSegmentedTaskbar(
+                                startDate, endDate, splitDate, segmentIndex, segments, splitRecord, segmentDuration
+                            ),
+                            ganttProp, true
+                        );
+                        if (segmentIndex !== -1) {
+                            this.incrementSegments(segments, segmentIndex + 1, splitRecord);
+                        }
+                        this.parent.setRecordValue('endDate', segments[segments.length - 1].endDate, ganttProp, true);
+                        if (this.parent.taskFields.endDate) {
+                            this.parent.dataOperation.updateMappingData(splitRecord, 'endDate');
+                        }
+                    }
+                    this.refreshChartAfterSegment(splitRecord, 'splitTaskbar');
+                }
+            }
+        } else {
+            (splitDates as Date[]).sort();
+            this.parent.setRecordValue(
+                'segments', this.constructSegments(
+                    splitDates as Date[], splitRecord.ganttProperties
+                ),
+                splitRecord.ganttProperties, true
+            );
+            this.refreshChartAfterSegment(splitRecord, 'splitTask');
+        }
+    }
+
+    private constructSegments(dates: Date[], taskData: ITaskData): ITaskSegment[] {
+        let segmentsArray: ITaskSegment[] = [];
+        let segment: ITaskSegment;
+        let startDate: Date = new Date();
+        let endDate: Date;
+        let duration: number;
+        for (let i: number = 0; i < dates.length + 1; i++) {
+            startDate = i === 0 ? taskData.startDate : startDate;
+            startDate = this.parent.dataOperation.checkStartDate(startDate, taskData, false);
+            endDate = i !== dates.length ? new Date(dates[i].getTime()) > taskData.endDate ? taskData.endDate
+                : new Date(dates[i].getTime()) : taskData.endDate;
+            endDate = this.parent.dataOperation.checkEndDate(endDate, taskData, false);
+            duration = this.parent.dataOperation.getDuration(
+                startDate, endDate, taskData.durationUnit, taskData.isAutoSchedule, taskData.isMilestone
+            );
+            if (endDate.getTime() >= startDate.getTime()) {
+                segment = {
+                    startDate: startDate,
+                    endDate: endDate,
+                    duration: duration
+                };
+                segmentsArray.push(segment);
+            }
+            if (i === dates.length) {
+                break;
+            }
+            startDate = new Date(dates[i].getTime());
+            startDate.setDate(dates[i].getDate() + 1);
+        }
+        return segmentsArray;
+    }
+
+    private splitSegmentedTaskbar(
+        startDate: Date, endDate: Date, splitDate: Date, segmentIndex: number, segments: ITaskSegment[], ganttData: IGanttData,
+        segmentDuration: number): ITaskSegment[] {
+        let ganttProp: ITaskData = ganttData.ganttProperties;
+        let taskFields: TaskFieldsModel = this.parent.taskFields;
+        startDate = this.parent.dataOperation.checkStartDate(startDate, ganttProp, false);
+        let segmentEndDate: Date = new Date(splitDate.getTime());
+        segmentEndDate = this.parent.dataOperation.checkEndDate(segmentEndDate, ganttProp, false);
+        let checkClickState: number = this.parent.nonWorkingDayIndex.indexOf(splitDate.getDay());
+        let increment: number = checkClickState === -1 ? 0 : checkClickState === 0 ? 1 : 2;
+        for (let i: number = 0; i < 2; i++) {
+            let segment: ITaskSegment = {
+                startDate: startDate,
+                endDate: segmentEndDate,
+                duration: this.parent.dataOperation.getDuration(
+                    startDate, segmentEndDate, ganttProp.durationUnit,
+                    ganttProp.isAutoSchedule, ganttProp.isMilestone),
+                offsetDuration: 1
+            };
+            if (segmentIndex !== -1) {
+                segments.splice(segmentIndex, 1);
+                segmentIndex = -1;
+            }
+            segments.push(segment);
+            startDate = new Date(splitDate.getTime());
+            startDate.setDate(startDate.getDate() + 1 + increment);
+            startDate = this.parent.dataOperation.checkStartDate(startDate, ganttProp, false);
+            segmentEndDate = new Date(endDate.getTime());
+            segmentEndDate.setDate(segmentEndDate.getDate() + 1);
+            let endDateState: number = this.parent.nonWorkingDayIndex.indexOf(segmentEndDate.getDay());
+            if (endDateState !== -1) {
+                let diff: number = segmentDuration - segment.duration;
+                segmentEndDate =
+                    this.parent.dataOperation.getEndDate(startDate, diff, ganttProp.durationUnit, ganttProp, false);
+            } else {
+                segmentEndDate = this.parent.dataOperation.checkEndDate(segmentEndDate, ganttProp, false);
+            }
+        }
+        segments.sort((a: ITaskSegment, b: ITaskSegment) => {
+            return a.startDate.getTime() - b.startDate.getTime();
+        });
+        return segments;
+    }
+
+    public incrementSegments(segments: ITaskSegment[], segmentIndex: number, ganttData: IGanttData): void {
+        let ganttProp: ITaskData = ganttData.ganttProperties;
+        for (let i: number = segmentIndex + 1; i < segments.length; i++) {
+            let segment: ITaskSegment = segments[i];
+            let endDate: Date;
+            let startDate: Date = i !== 0 ? new Date(segments[i - 1].endDate.getTime()) : new Date(segment.startDate.getTime());
+            startDate = this.parent.dataOperation.getEndDate(startDate, segment.offsetDuration, ganttProp.durationUnit, ganttProp, false);
+            startDate = this.parent.dataOperation.checkStartDate(startDate, ganttProp, false);
+            segment.startDate = startDate;
+            endDate = segment.endDate = this.parent.dataOperation.getEndDate(
+                startDate, segment.duration, ganttProp.durationUnit, ganttProp, false
+            );
+            segment.endDate = endDate;
+            if (i === segments.length - 1) {
+                this.parent.setRecordValue('endDate', endDate, ganttProp, true);
+                if (this.parent.taskFields.endDate) {
+                    this.parent.dataOperation.updateMappingData(ganttData, 'endDate');
+                }
+            }
+        }
+        segments.sort((a: ITaskSegment, b: ITaskSegment) => {
+            return a.startDate.getTime() - b.startDate.getTime();
+        });
+        this.parent.setRecordValue('segments', segments, ganttProp, true);
+        this.parent.dataOperation.updateMappingData(ganttData, 'segments');
     }
 
     /**
@@ -324,28 +673,28 @@ export class ChartRows {
         let taskbarHeight: number = (this.taskBarHeight / 2 - 1);
         let innerDiv: string = (data.ganttProperties.startDate && data.ganttProperties.endDate && data.ganttProperties.duration) ?
             ('<div class="' + cls.manualParentTaskBar + '" style="width:' + data.ganttProperties.width + 'px;' + 'height:' +
-            taskbarHeight / 5 + 'px;border-left-width:' + taskbarHeight / 5 +
-            'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>') :
+                taskbarHeight / 5 + 'px;border-left-width:' + taskbarHeight / 5 +
+                'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>') :
             (!data.ganttProperties.startDate && !data.ganttProperties.endDate && data.ganttProperties.duration) ?
-            ('<div class="' + cls.manualParentTaskBar + ' ' + cls.traceManualUnscheduledTask +
-            '" style="width:' + data.ganttProperties.width + 'px;' + 'height:' +
-            (taskbarHeight / 5 + 1) + 'px;border-left-width:' + taskbarHeight / 5 +
-            'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>') : ('<div class="' +
+                ('<div class="' + cls.manualParentTaskBar + ' ' + cls.traceManualUnscheduledTask +
+                    '" style="width:' + data.ganttProperties.width + 'px;' + 'height:' +
+                    (taskbarHeight / 5 + 1) + 'px;border-left-width:' + taskbarHeight / 5 +
+                    'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>') : ('<div class="' +
             cls.manualParentTaskBar + ' ' + (data.ganttProperties.startDate ? cls.unscheduledTaskbarLeft : cls.unscheduledTaskbarRight) +
-            '" style="width:' + data.ganttProperties.width + 'px;' + 'height:' +
-            taskbarHeight * 2 + 'px;border-left-width:' + taskbarHeight / 5 +
-            'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>');
+                        '" style="width:' + data.ganttProperties.width + 'px;' + 'height:' +
+                        taskbarHeight * 2 + 'px;border-left-width:' + taskbarHeight / 5 +
+                        'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>');
         let template: string = '<div class="' + cls.manualParentMainContainer + '"' +
             'style=left:' + (data.ganttProperties.left - data.ganttProperties.autoLeft) + 'px;' +
             'width:' + data.ganttProperties.width + 'px;' +
             'height:' + taskbarHeight + 'px;>' + innerDiv + ((data.ganttProperties.startDate && data.ganttProperties.endDate &&
-            data.ganttProperties.duration) || data.ganttProperties.duration ? '<div class="e-gantt-manualparenttaskbar-left" style=' +
-            '"height:' + taskbarHeight + 'px;border-left-width:' + taskbarHeight / 5 +
-            'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>' +
-            '<div class="e-gantt-manualparenttaskbar-right" style=' +
-            'left:' + (data.ganttProperties.width - taskbarHeight / 5) + 'px;height:' +
-            (taskbarHeight) + 'px;border-right-width:' + taskbarHeight / 5 + 'px;border-bottom:' +
-            taskbarHeight / 5 + 'px solid transparent;>' + '</div></div>' : '');
+                data.ganttProperties.duration) || data.ganttProperties.duration ? '<div class="e-gantt-manualparenttaskbar-left" style=' +
+                '"height:' + taskbarHeight + 'px;border-left-width:' + taskbarHeight / 5 +
+                'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>' +
+                '<div class="e-gantt-manualparenttaskbar-right" style=' +
+                'left:' + (data.ganttProperties.width - taskbarHeight / 5) + 'px;height:' +
+                (taskbarHeight) + 'px;border-right-width:' + taskbarHeight / 5 + 'px;border-bottom:' +
+                taskbarHeight / 5 + 'px solid transparent;>' + '</div></div>' : '');
         let milestoneTemplate: string = '<div class="' + cls.manualParentMilestone + '" style="position:absolute;left:' +
             (data.ganttProperties.left - data.ganttProperties.autoLeft - (this.milestoneHeight / 2)) +
             'px;width:' + (this.milesStoneRadius * 2) +
@@ -386,9 +735,9 @@ export class ChartRows {
             let template: string = '<div class="' + cls.parentTaskBarInnerDiv + ' ' +
                 this.getExpandClass(data) + ' ' + cls.traceParentTaskBar + '"' +
                 ' style="width:' + (data.ganttProperties.isAutoSchedule ? data.ganttProperties.width :
-                     data.ganttProperties.autoWidth) + 'px;height:' + (data.ganttProperties.isAutoSchedule ? this.taskBarHeight :
+                    data.ganttProperties.autoWidth) + 'px;height:' + (data.ganttProperties.isAutoSchedule ? this.taskBarHeight :
                         (tHeight * 3)) + 'px;margin-top:' + (data.ganttProperties.isAutoSchedule ? '' :
-                        (tHeight * 2)) + 'px;">' +
+                            (tHeight * 2)) + 'px;">' +
                 '<div class="' + cls.parentProgressBarInnerDiv + ' ' + this.getExpandClass(data) + ' ' + cls.traceParentProgressBar + '"' +
                 ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
                 'width:' + data.ganttProperties.progressWidth + 'px;' +
@@ -406,7 +755,7 @@ export class ChartRows {
                 (this.milesStoneRadius) + 'px;border-right-width:' + this.milesStoneRadius + 'px; border-left-width:' +
                 this.milesStoneRadius + 'px; border-top-width:' + this.milesStoneRadius + 'px;"></div></div>';
             parentTaskbarNode = this.createDivElement(data.ganttProperties.isMilestone ?
-                 data.ganttProperties.isAutoSchedule ? milestoneTemplate : '' : template);
+                data.ganttProperties.isAutoSchedule ? milestoneTemplate : '' : template);
         }
         return parentTaskbarNode;
     }
@@ -549,18 +898,18 @@ export class ChartRows {
     private taskbarContainer(): NodeList {
         let data: IGanttData = this.templateData;
         let manualParent: boolean = this.parent.editModule && this.parent.editSettings.allowTaskbarEditing &&
-        this.parent.editModule.taskbarEditModule.taskBarEditAction === 'ParentResizing' ?
-         true : false;
+            this.parent.editModule.taskbarEditModule.taskBarEditAction === 'ParentResizing' ?
+            true : false;
         let template: string = '<div class="' + cls.taskBarMainContainer + ' ' +
             this.parent.getUnscheduledTaskClass(data.ganttProperties) + ' ' +
             ((data.ganttProperties.cssClass) ? data.ganttProperties.cssClass : '') + '" ' +
             ' tabindex="-1" style="' + ((data.ganttProperties.isMilestone && !manualParent) ?
-             ('width:' + this.milestoneHeight + 'px;height:' +
-                this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
-                    (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width +
+                ('width:' + this.milestoneHeight + 'px;height:' +
+                    this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
+                        (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width +
                      'px;margin-top:' + this.taskBarMarginTop + 'px;left:' + (!data.hasChildRecords || data.ganttProperties.isAutoSchedule ?
                          data.ganttProperties.left : data.ganttProperties.autoLeft) + 'px;height:' +
-                        this.taskBarHeight + 'px;cursor:' + (data.ganttProperties.isAutoSchedule ? 'move;' : 'auto;'))) + '"></div>';
+                            this.taskBarHeight + 'px;cursor:' + (data.ganttProperties.isAutoSchedule ? 'move;' : 'auto;'))) + '"></div>';
         return this.createDivElement(template);
     }
 
@@ -680,6 +1029,14 @@ export class ChartRows {
         }
     }
 
+    private getSplitTaskBorderRadius(data: ITaskSegment): number {
+        let diff: number = data.width - data.progressWidth;
+        if (diff <= 4) {
+            return 4 - diff;
+        } else {
+            return 0;
+        }
+    }
     private taskNameWidth(ganttData: IGanttData): string {
         ganttData = this.templateData;
         let ganttProp: ITaskData = ganttData.ganttProperties;
@@ -688,8 +1045,8 @@ export class ChartRows {
             width = (ganttData.ganttProperties.left - (this.parent.getTaskbarHeight() / 2));
         } else if (ganttData.hasChildRecords && !ganttProp.isAutoSchedule) {
             if (!this.parent.allowUnscheduledTasks) {
-            width = (ganttProp.autoStartDate.getTime() < ganttProp.startDate.getTime()) ?
-                ganttProp.autoLeft : ganttProp.left;
+                width = (ganttProp.autoStartDate.getTime() < ganttProp.startDate.getTime()) ?
+                    ganttProp.autoLeft : ganttProp.left;
             } else {
                 width = ganttProp.left < ganttProp.autoLeft ? ganttProp.left : ganttProp.autoLeft;
             }
@@ -891,7 +1248,8 @@ export class ChartRows {
             let childTaskbarLeftResizeNode: NodeList = null;
             if (!isNullOrUndefined(scheduledTask)) {
                 if (scheduledTask || this.templateData.ganttProperties.duration) {
-                    if (scheduledTask) {
+                    if (scheduledTask && (isNullOrUndefined(this.templateData.ganttProperties.segments)
+                        || this.templateData.ganttProperties.segments.length <= 0)) {
                         childTaskbarProgressResizeNode = this.childTaskbarProgressResizer();
                         childTaskbarLeftResizeNode = this.childTaskbarLeftResizer();
                         childTaskbarRightResizeNode = this.childTaskbarRightResizer();
@@ -902,7 +1260,18 @@ export class ChartRows {
                     taskbarContainerNode[0].appendChild([].slice.call(childTaskbarLeftResizeNode)[0]);
                 }
                 if (childTaskbarTemplateNode && childTaskbarTemplateNode.length > 0) {
-                    taskbarContainerNode[0].appendChild([].slice.call(childTaskbarTemplateNode)[0]);
+                    if (this.templateData.ganttProperties.segments && this.templateData.ganttProperties.segments.length > 0) {
+                        let length: number = this.templateData.ganttProperties.segments.length;
+                        let segmentConnector: NodeList = null;
+                        let connector: string = ('<div class="e-gantt-split-container-line"></div>');
+                        segmentConnector = this.createDivElement(connector);
+                        taskbarContainerNode[0].appendChild([].slice.call(segmentConnector)[0]);
+                        for (let i: number = 0; i < length; i++) {
+                            taskbarContainerNode[0].appendChild([].slice.call(childTaskbarTemplateNode)[0]);
+                        }
+                    } else {
+                        taskbarContainerNode[0].appendChild([].slice.call(childTaskbarTemplateNode)[0]);
+                    }
                 }
                 if (childTaskbarProgressResizeNode) {
                     taskbarContainerNode[0].appendChild([].slice.call(childTaskbarProgressResizeNode)[0]);
@@ -971,7 +1340,17 @@ export class ChartRows {
             trElement = this.ganttChartTableBody.querySelectorAll('tr')[index];
             taskbarElement = trElement.querySelector('.' + cls.taskBarMainContainer);
             data = this.parent.currentViewData[index];
-            this.triggerQueryTaskbarInfoByIndex(trElement, data);
+            let segmentLength: number = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length;
+            if (segmentLength > 0) {
+                for (let i: number = 0; i < segmentLength; i++) {
+                    let segmentedTasks: HTMLCollectionOf<HTMLElement> =
+                        trElement.getElementsByClassName('e-segmented-taskbar') as HTMLCollectionOf<HTMLElement>;
+                    let segmentElement: HTMLElement = segmentedTasks[i] as HTMLElement;
+                    this.triggerQueryTaskbarInfoByIndex(segmentElement, data);
+                }
+            } else {
+                this.triggerQueryTaskbarInfoByIndex(trElement, data);
+            }
         }
     }
     /**
@@ -982,13 +1361,14 @@ export class ChartRows {
      */
     public triggerQueryTaskbarInfoByIndex(trElement: Element, data: IGanttData): void {
         let taskbarElement: Element;
-        taskbarElement = trElement.querySelector('.' + cls.taskBarMainContainer);
+        taskbarElement = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length > 0 ? trElement :
+            trElement.querySelector('.' + cls.taskBarMainContainer);
         let rowElement: Element;
         let triggerTaskbarElement: Element;
         let args: IQueryTaskbarInfoEventArgs = {
             data: data,
             rowElement: trElement,
-            taskbarElement: trElement.querySelector('.' + cls.taskBarMainContainer),
+            taskbarElement: taskbarElement,
             taskbarType: data.hasChildRecords ? 'ParentTask' : data.ganttProperties.isMilestone ? 'Milestone' : 'ChildTask'
         };
         let classCollections: string[] = this.getClassName(args);
@@ -998,12 +1378,18 @@ export class ChartRows {
             args.baselineColor = trElement.querySelector(classCollections[1]) ?
                 getComputedStyle(trElement.querySelector(classCollections[1])).borderBottomColor : null;
         } else {
-            args.taskbarBgColor = taskbarElement.querySelector(classCollections[0]) ?
-                getComputedStyle(taskbarElement.querySelector(classCollections[0])).backgroundColor : null;
-            args.taskbarBorderColor = taskbarElement.querySelector(classCollections[0]) ?
-                getComputedStyle(taskbarElement.querySelector(classCollections[0])).borderColor : null;
-            args.progressBarBgColor = taskbarElement.querySelector(classCollections[1]) ?
-                getComputedStyle(taskbarElement.querySelector(classCollections[1])).backgroundColor : null;
+            let childTask: HTMLElement = taskbarElement.querySelector(classCollections[0]);
+            let progressTask: HTMLElement = taskbarElement.querySelector(classCollections[1]);
+            args.taskbarBgColor = isNullOrUndefined(childTask) ? null : taskbarElement.classList.contains(cls.traceChildTaskBar) ?
+                getComputedStyle(taskbarElement).backgroundColor :
+                getComputedStyle(taskbarElement.querySelector(classCollections[0])).backgroundColor;
+            args.taskbarBorderColor = isNullOrUndefined(childTask) ? null : taskbarElement.classList.contains(cls.traceChildTaskBar) ?
+                getComputedStyle(taskbarElement).backgroundColor :
+                getComputedStyle(taskbarElement.querySelector(classCollections[0])).borderColor;
+            args.progressBarBgColor = isNullOrUndefined(progressTask) ? null :
+                taskbarElement.classList.contains(cls.traceChildProgressBar) ?
+                    getComputedStyle(taskbarElement).backgroundColor :
+                    getComputedStyle(taskbarElement.querySelector(classCollections[1])).backgroundColor;
             // args.progressBarBorderColor = taskbarElement.querySelector(progressBarClass) ?
             //     getComputedStyle(taskbarElement.querySelector(progressBarClass)).borderColor : null;
             args.baselineColor = trElement.querySelector('.' + cls.baselineBar) ?
@@ -1022,7 +1408,7 @@ export class ChartRows {
             triggerTaskbarElement = args.taskbarElement;
         }
         this.parent.trigger('queryTaskbarInfo', args, (taskbarArgs: IQueryTaskbarInfoEventArgs) => {
-        this.updateQueryTaskbarInfoArgs(taskbarArgs, rowElement, triggerTaskbarElement);
+            this.updateQueryTaskbarInfoArgs(taskbarArgs, rowElement, triggerTaskbarElement);
         });
     }
 
@@ -1059,6 +1445,21 @@ export class ChartRows {
                 getComputedStyle(taskbarElement.querySelector(classCollections[1])).backgroundColor !== args.progressBarBgColor) {
                 (taskbarElement.querySelector(classCollections[1]) as HTMLElement).style.backgroundColor = args.progressBarBgColor;
             }
+
+            if (taskbarElement.classList.contains(cls.traceChildTaskBar) &&
+                getComputedStyle(taskbarElement).backgroundColor !== args.taskbarBgColor) {
+                (taskbarElement as HTMLElement).style.backgroundColor = args.taskbarBgColor;
+            }
+
+            if (taskbarElement.classList.contains(cls.traceChildTaskBar) &&
+                getComputedStyle(taskbarElement).borderColor !== args.taskbarBorderColor) {
+                (taskbarElement as HTMLElement).style.borderColor = args.taskbarBorderColor;
+            }
+
+            if (taskbarElement.classList.contains(cls.traceChildProgressBar) &&
+                getComputedStyle(taskbarElement).backgroundColor !== args.progressBarBgColor) {
+                (taskbarElement as HTMLElement).style.backgroundColor = args.progressBarBgColor;
+            }
             // if (taskbarElement.querySelector(progressBarClass) &&
             //     getComputedStyle(taskbarElement.querySelector(progressBarClass)).borderColor !== args.progressBarBorderColor) {
             //     (taskbarElement.querySelector(progressBarClass) as HTMLElement).style.borderColor = args.progressBarBorderColor;
@@ -1090,9 +1491,9 @@ export class ChartRows {
     private getClassName(args: IQueryTaskbarInfoEventArgs): string[] {
         let classCollection: string[] = [];
         classCollection.push('.' + (args.taskbarType === 'ParentTask' ?
-        cls.traceParentTaskBar : args.taskbarType === 'ChildTask' ? cls.traceChildTaskBar : cls.milestoneTop));
+            cls.traceParentTaskBar : args.taskbarType === 'ChildTask' ? cls.traceChildTaskBar : cls.milestoneTop));
         classCollection.push('.' + (args.taskbarType === 'ParentTask' ?
-        cls.traceParentProgressBar : args.taskbarType === 'ChildTask' ? cls.traceChildProgressBar : cls.baselineMilestoneTop));
+            cls.traceParentProgressBar : args.taskbarType === 'ChildTask' ? cls.traceChildProgressBar : cls.baselineMilestoneTop));
         return classCollection;
     }
     /**
@@ -1127,7 +1528,7 @@ export class ChartRows {
         if (index !== -1 && selectedItem) {
             let data: IGanttData = selectedItem;
             if (this.parent.viewType === 'ResourceView' && data.hasChildRecords && !data.expanded && this.parent.enableMultiTaskbar) {
-               tr.replaceChild(this.getResourceParent(data).childNodes[0], tr.childNodes[0]);
+                tr.replaceChild(this.getResourceParent(data).childNodes[0], tr.childNodes[0]);
             } else {
                 tr.replaceChild(this.getGanttChartRow(index, data).childNodes[0], tr.childNodes[0]);
             }
@@ -1138,6 +1539,17 @@ export class ChartRows {
                     this.parent.dataOperation.updateOverlappingValues(data);
                     this.parent.ganttChartModule.renderRangeContainer([data]);
                 }
+            }
+            let segmentLength: number = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length;
+            if (segmentLength > 0) {
+                for (let i: number = 0; i < segmentLength; i++) {
+                    let segmentedTasks: HTMLCollectionOf<HTMLElement> =
+                        (tr as Element).getElementsByClassName('e-segmented-taskbar') as HTMLCollectionOf<HTMLElement>;
+                    let segmentElement: HTMLElement = segmentedTasks[i] as HTMLElement;
+                    this.triggerQueryTaskbarInfoByIndex(segmentElement, data);
+                }
+            } else {
+                this.triggerQueryTaskbarInfoByIndex(tr as Element, data);
             }
             this.triggerQueryTaskbarInfoByIndex(tr as Element, data);
             /* tslint:disable-next-line */
@@ -1167,7 +1579,7 @@ export class ChartRows {
                 addClass([cloneElement], 'collpse-parent-border');
                 let id: string = chartRows[i].querySelector('.' + cls.taskBarMainContainer).getAttribute('rowUniqueId');
                 let ganttData: IGanttData = this.parent.getRecordByID(id);
-                let zIndex: string =  (ganttData.ganttProperties.eOverlapIndex).toString();
+                let zIndex: string = (ganttData.ganttProperties.eOverlapIndex).toString();
                 let cloneChildElement: HTMLElement = cloneElement.cloneNode(true) as HTMLElement;
                 cloneChildElement.style.zIndex = zIndex;
                 parentTrNode[0].childNodes[0].childNodes[0].childNodes[0].appendChild(cloneChildElement);
@@ -1241,6 +1653,27 @@ export class ChartRows {
                 defaultValue += durationConstant + ' '
                     + this.parent.getDurationString(durationVal, data.ganttProperties.durationUnit);
             }
+        }
+        return defaultValue;
+    }
+
+    private generateSpiltTaskAriaLabel(data: ITaskSegment, ganttProp: ITaskData): string {
+        let defaultValue: string = '';
+        let startDateConstant: string = this.parent.localeObj.getConstant('startDate');
+        let endDateConstant: string = this.parent.localeObj.getConstant('endDate');
+        let durationConstant: string = this.parent.localeObj.getConstant('duration');
+        let startDateVal: Date = data.startDate;
+        let endDateVal: Date = data.endDate;
+        let durationVal: number = data.duration;
+        if (startDateVal) {
+            defaultValue += startDateConstant + ' ' + this.parent.getFormatedDate(startDateVal) + ' ';
+        }
+        if (endDateVal) {
+            defaultValue += endDateConstant + ' ' + this.parent.getFormatedDate(endDateVal) + ' ';
+        }
+        if (durationVal) {
+            defaultValue += durationConstant + ' '
+                + this.parent.getDurationString(durationVal, ganttProp.durationUnit);
         }
         return defaultValue;
     }

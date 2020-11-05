@@ -25,7 +25,7 @@ import { PivotSeriesModel, PivotAxisModel, PivotTooltipSettingsModel, PivotZoomS
 import { PivotPieChartCenterModel, PivotChartDataLabelModel, PivotChartConnectorStyleModel } from './chartsettings-model';
 import { ChartSeriesType, ChartSelectionMode } from '../../common';
 import { Theme } from '../../common/base/themes';
-import { OffsetModel as PivotChartOffsetModel } from '../../common/base/interface';
+import { MultiLevelLabelClickEventArgs, OffsetModel as PivotChartOffsetModel } from '../../common/base/interface';
 import { LabelPosition } from '../../common/base/enum';
 
 /**
@@ -3886,6 +3886,14 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
       */
      @Event()
      public axisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
+
+     /**
+      * It triggers when clicked multi-level label.
+      * @event
+      * @deprecated
+      */
+     @Event()
+     public multiLevelLabelClick: EmitType<MultiLevelLabelClickEventArgs>;
 
      /**
       * It triggers on clicking the pivot chart.

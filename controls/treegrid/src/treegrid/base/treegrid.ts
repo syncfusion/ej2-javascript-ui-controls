@@ -3125,8 +3125,9 @@ private getGridEditSettings(): GridEditModel {
     let temp: string;
     let field: string;
     let gridColumns: GridColumn[] = isNullOrUndefined(column) ? this.grid.getColumns() : column;
-    if (this.treeColumnIndex !== -1 && !isNullOrUndefined(gridColumns[this.treeColumnIndex].template)) {
-      temp = gridColumns[this.treeColumnIndex].template;
+    if (this.treeColumnIndex !== -1 && this.columns[this.treeColumnIndex] &&
+                    !isNullOrUndefined((this.columns[this.treeColumnIndex] as Column).template)) {
+      temp = (this.columns[this.treeColumnIndex] as Column).template;
       field = gridColumns[this.treeColumnIndex].field;
     }
     this.columnModel = [];

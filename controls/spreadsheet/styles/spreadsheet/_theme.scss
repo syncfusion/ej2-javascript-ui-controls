@@ -597,6 +597,9 @@
     & .e-lbdatabar:hover,
     & .e-pdatabar:hover {
       background-color: $ele-hover-color;
+      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' {
+        background-color: $dark-ele-hover-color;
+      }
     }
 
     & .e-bdatabar {
@@ -639,6 +642,9 @@
     & .e-gy:hover,
     & .e-yg:hover {
       background-color: $ele-hover-color;
+      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' {
+        background-color: $dark-ele-hover-color;
+      }
     }
 
     & .e-gyr {
@@ -697,6 +703,9 @@
     & .e-is5,
     & .e-is7 {
       background-color: $ele-hover-color;
+      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' {
+        background-color: $ele-color;
+      }
     }
 
     & .e-is2,
@@ -704,10 +713,16 @@
     & .e-is6,
     & .e-is8 {
       background-color: $cell-background;
+      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' {
+        background-color: $dark-ele-color;
+      }
     }
 
     & .e-is-wrapper:hover {
       background-color: $ele-hover-color;
+      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' {
+        background-color: $dark-ele-hover-color;
+      }
     }
   }
 

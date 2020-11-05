@@ -42,11 +42,7 @@ describe('Dynamic data binding - ', () => {
 
     it('Checking dataChangeEventArgs', (done: Function) => {
         helper.edit('A12', 'Shirts');
-        expect(dataChangeArgs.action).toBe('add');
-        expect(dataChangeArgs.rangeIndex).toBe(0);
-        expect(dataChangeArgs.sheetIndex).toBe(0);
-        expect(dataChangeArgs.data[0]['Item Name']).toBe('Shirts');
-        expect(dataChangeArgs.data[0]['Date']).toBeNull();
+        expect(dataChangeArgs).toBeUndefined();
 
         helper.edit('E8', '13');
         expect(dataChangeArgs.action).toBe('edit');
@@ -71,6 +67,29 @@ describe('Dynamic data binding - ', () => {
                 expect(spreadsheet.getCell(10, 0).innerText).toBe('Shirts');
                 done();
             });
+        });
+    });
+
+    it('Checking dataChangeEventArgs for Insert row', (done: Function) => {
+        let spreadsheet: any = helper.getInstance();
+        spreadsheet.workbookinsertModule.insertModel({ start: 10, end: 10, insertType: 'below', modelType: 'Row', name: 'insertModel', isAction: true, model: spreadsheet.getActiveSheet() });
+        expect(dataChangeArgs.action).toBe('add');
+        expect(dataChangeArgs.data[0]['Price']).toBeNull();
+        helper.edit('A10', 'Jersy');
+        expect(dataChangeArgs.action).toBe('edit');
+        expect(dataChangeArgs.data[0]['Item Name']).toBe('Jersy');
+
+        dataChangeArgs = null;
+        spreadsheet.workbookinsertModule.insertModel({ start: 0, end: 0, insertType: 'above', modelType: 'Row', name: 'insertModel', isAction: true, model: spreadsheet.getActiveSheet() });
+
+        setTimeout(() => {
+            expect(dataChangeArgs).toBeNull();
+            expect(spreadsheet.sheets[0].ranges[0].startCell).toEqual('A2');
+            spreadsheet.workbookinsertModule.insertModel({ start: 2, end: 2, insertType: 'below', modelType: 'Row', name: 'insertModel', isAction: true, model: spreadsheet.getActiveSheet() });
+            expect(dataChangeArgs.action).toBe('add');
+            spreadsheet.workbookinsertModule.insertModel({ start: 2, end: 3, insertType: 'below', modelType: 'Row', name: 'insertModel', isAction: true, model: spreadsheet.getActiveSheet() });
+            expect(dataChangeArgs.data.length).toEqual(2);
+            done();
         });
     });
 });

@@ -133,4 +133,16 @@ export class TaskFields extends ChildProperty<TaskFields> {
      */
     @Property(null)
     public type: string;
+    /** 
+     * To map segments details of a task from data source
+     * @default null      
+     */
+    @Property(null)
+    public segments: string;
+    /** 
+     * To map segment id details of a task from data source
+     * @default null      
+     */
+    @Property(null)
+    public segmentId: string;
 }

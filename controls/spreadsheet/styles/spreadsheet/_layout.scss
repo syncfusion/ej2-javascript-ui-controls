@@ -1533,8 +1533,12 @@
       overflow: visible;
       padding: 0;
 
-      & .e-menu-item {
-        background-color: $cell-background;
+      & .e-menu-item,
+      & .e-menu-item.e-focused {
+        background-color: $ele-color;
+        @if $sheet-skin != 'bootstrap-dark' and $sheet-skin != 'fabric-dark' and $sheet-skin != 'material-dark' {
+          background-color: $cell-background;
+        }
         height: auto;
         line-height: 0;
         padding: 0;
@@ -1574,8 +1578,12 @@
       overflow: visible;
       padding: 0;
 
-      & .e-menu-item {
-        background-color: $cell-background;
+      & .e-menu-item,
+      & .e-menu-item.e-focused {
+        background-color: $ele-color;
+        @if $sheet-skin != 'bootstrap-dark' and $sheet-skin != 'fabric-dark' and $sheet-skin != 'material-dark' {
+          background-color: $cell-background;
+        }
         height: auto;
         line-height: 0;
         padding: 0;

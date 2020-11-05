@@ -42,8 +42,9 @@ export class WorkbookInsert {
             }
             let curIdx: number = index + model.length;
             for (let i: number = 0; i <= args.model.usedRange.colIndex; i++) {
-                if (args.model.rows[curIdx] && args.model.rows[curIdx].cells[i] && args.model.rows[curIdx].cells[i].rowSpan !== undefined &&
-                    args.model.rows[curIdx].cells[i].rowSpan < 0 && args.model.rows[curIdx].cells[i].colSpan === undefined) {
+                if (args.model.rows[curIdx] && args.model.rows[curIdx].cells && args.model.rows[curIdx].cells[i] &&
+                    args.model.rows[curIdx].cells[i].rowSpan !== undefined && args.model.rows[curIdx].cells[i].rowSpan < 0 &&
+                    args.model.rows[curIdx].cells[i].colSpan === undefined) {
                     this.parent.notify(insertMerge, <MergeArgs>{
                         range: [curIdx, i, curIdx, i], insertCount: model.length,
                         insertModel: 'Row'
@@ -114,7 +115,7 @@ export class WorkbookInsert {
         }
         this.parent.notify(insert, {
             model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetIndex:
-                args.activeSheetIndex, sheetCount: this.parent.sheets.length
+                args.activeSheetIndex, sheetCount: this.parent.sheets.length, insertType: args.insertType
         });
     }
     private setInsertInfo(sheet: SheetModel, startIndex: number, count: number, totalKey: string, modelType: ModelType = 'Row'): void {

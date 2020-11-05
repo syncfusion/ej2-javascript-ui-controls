@@ -134,6 +134,12 @@ export interface CircularGaugeModel extends ComponentModel{
     tabIndex?: number;
 
     /**
+     * Enables and disables left, right, top and bottom spacing in the circular gauge.
+     * @default true
+     */
+    allowMargin?: boolean;
+
+    /**
      * Sets and gets the options for customizing the legend of the circular gauge.
      */
     legendSettings?: LegendSettingsModel;

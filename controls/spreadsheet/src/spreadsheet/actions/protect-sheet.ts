@@ -58,7 +58,7 @@ export class ProtectSheet {
         if (!args.isActive) {
             this.createDialogue();
         } else {
-            this.parent.getActiveSheet().isProtected = false;
+            this.parent.setSheetPropertyOnMute(this.parent.getActiveSheet(), 'isProtected', false);
             this.parent.notify(updateToggleItem, { props: 'Protect' });
             this.parent.notify(protectSheet, { isActive: args.isActive });
             this.parent.notify(protectSelection, null);
@@ -80,7 +80,7 @@ export class ProtectSheet {
         });
         let protectHeaderCntent: HTMLElement = this.parent.createElement('div', {className: 'e-protect-content',
             innerHTML: l10n.getConstant('ProtectAllowUser')});
-        this.parent.getActiveSheet().isProtected = false;
+        this.parent.setSheetPropertyOnMute(this.parent.getActiveSheet(), 'isProtected', false);
         let checkbox: CheckBox = new CheckBox({checked: true, label: l10n.getConstant('ProtectContent'), cssClass: 'e-protect-checkbox'});
         let listViewElement: HTMLElement = this.parent.createElement('div', {className: 'e-protect-option-list',
             id: this.parent.element.id + '_option_list' });
@@ -146,7 +146,7 @@ export class ProtectSheet {
     private selectOption(): void {
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
         let selectedItems: SelectedCollection = this.optionList.getSelectedItems() as SelectedCollection;
-        this.parent.getActiveSheet().isProtected = true;
+        this.parent.setSheetPropertyOnMute(this.parent.getActiveSheet(), 'isProtected', true);
         let protectSettings: {[key: string]: boolean} = { selectCells: selectedItems.text.indexOf(l10n.getConstant('SelectCells')) > -1,
              formatCells: selectedItems.text.indexOf(l10n.getConstant('FormatCells')) > -1,
              formatRows: selectedItems.text.indexOf(l10n.getConstant('FormatRows')) > -1,

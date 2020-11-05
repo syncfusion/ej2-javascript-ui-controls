@@ -1,7 +1,7 @@
 /**
  * Predecessor calculation goes here
  */
-import { IGanttData, ITaskData, IPredecessor, IConnectorLineObject } from '../base/interface';
+import { IGanttData, ITaskData, IPredecessor, IConnectorLineObject, ITaskSegment } from '../base/interface';
 import { TaskFieldsModel } from '../models/models';
 import { DateProcessor } from '../base/date-processor';
 import { Gantt } from '../base/gantt';
@@ -370,7 +370,7 @@ export class Dependency {
             return;
         }
         if (this.parent.isInPredecessorValidation && (childGanttRecord.ganttProperties.isAutoSchedule ||
-             this.parent.validateManualTasksOnLinking)) {
+            this.parent.validateManualTasksOnLinking)) {
             let childRecordProperty: ITaskData = childGanttRecord.ganttProperties;
             let currentTaskId: string = this.parent.viewType === 'ResourceView' ? childRecordProperty.taskId.toString()
                 : childRecordProperty.rowUniqueID.toString();
@@ -381,22 +381,12 @@ export class Dependency {
             let startDate: Date = this.getPredecessorDate(childGanttRecord, childPredecessor);
             this.parent.setRecordValue('startDate', startDate, childRecordProperty, true);
             this.parent.dataOperation.updateMappingData(childGanttRecord, 'startDate');
-            this.dateValidateModule.calculateEndDate(childGanttRecord);
-            this.parent.setRecordValue(
-                'left',
-                this.parent.dataOperation.calculateLeft(childRecordProperty),
-                childRecordProperty,
-                true);
-            this.parent.setRecordValue(
-                'width',
-                this.parent.dataOperation.calculateWidth(childGanttRecord),
-                childRecordProperty,
-                true);
-            this.parent.setRecordValue(
-                'progressWidth',
-                this.parent.dataOperation.getProgressWidth(childRecordProperty.width, childRecordProperty.progress),
-                childRecordProperty,
-                true);
+            let segments: ITaskSegment[] = childGanttRecord.ganttProperties.segments;
+            if (isNullOrUndefined(segments)) {
+                this.dateValidateModule.calculateEndDate(childGanttRecord);
+            }
+            this.parent.dataOperation.updateWidthLeft(childGanttRecord);
+
             if (childGanttRecord.parentItem && this.parent.getParentTask(childGanttRecord.parentItem).ganttProperties.isAutoSchedule
                 && this.parent.isInPredecessorValidation) {
                 this.parent.dataOperation.updateParentItems(childGanttRecord.parentItem);

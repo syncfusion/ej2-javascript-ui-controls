@@ -208,10 +208,11 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Removes the items from the menu.
      * @param  { string[] } items - Specifies an array of string to remove the items.
+     * @param { string } isUniqueId - Set `true` if specified items is a collection of unique id.
      * @returns {void}.
      */
-    public removeItems(items: string[]): void {
-        super.removeItems(items);
+    public removeItems(items: string[], isUniqueId?: boolean): void {
+        super.removeItems(items, isUniqueId);
         this.secondaryBtnObj.items = this.items;
     }
 

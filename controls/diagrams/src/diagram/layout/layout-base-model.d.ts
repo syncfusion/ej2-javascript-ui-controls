@@ -26,7 +26,7 @@ export interface LayoutModel {
 
     /**
      * connect the node's without overlapping in automatic layout
-     * @default 'NonLinear'
+     * @default 'Nonlinear'
      */
     arrangement?: ChildArrangement;
 

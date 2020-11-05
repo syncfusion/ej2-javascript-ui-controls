@@ -590,7 +590,9 @@ export class Clipboard {
         let cellStyle: CellStyleModel = {};
         if (td.classList.length || td.getAttribute('style')) {
             if (td.classList.length) {
-                styles.push(ele.querySelector('style').innerHTML.split(td.classList[0])[1].split('{')[1].split('}')[0]);
+                if (ele.querySelector('style').innerHTML.indexOf(td.classList[0]) > -1) {
+                    styles.push(ele.querySelector('style').innerHTML.split(td.classList[0])[1].split('{')[1].split('}')[0]);
+                }
             }
             if (td.getAttribute('style')) {
                 styles.push(td.getAttribute('style'));

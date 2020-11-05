@@ -1,5 +1,6 @@
 import {
-    PdfViewer, PdfViewerBase, IPageAnnotations, IPoint, AnnotationType as AnnotType, ICommentsCollection, IReviewCollection
+    // tslint:disable-next-line
+    PdfViewer, PdfViewerBase, IPageAnnotations, IPoint, AnnotationType as AnnotType, ICommentsCollection, IReviewCollection, AllowedInteraction
 } from '../..';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ColorPicker } from '@syncfusion/ej2-inputs';
@@ -43,6 +44,7 @@ export interface IFreeTextAnnotation {
     annotationSelectorSettings: AnnotationSelectorSettingsModel;
     // tslint:disable-next-line
     annotationSettings?: any;
+    allowedInteractions?: AllowedInteraction;
 }
 
 /**
@@ -298,6 +300,8 @@ export class FreeTextAnnotation {
                         annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
                         let annot: PdfAnnotationBaseModel;
                         // tslint:disable-next-line
+                        annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions :  this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+                        // tslint:disable-next-line
                         annot = {
                             author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, id: 'freetext' + i,
                             rotateAngle: annotation.Rotate, dynamicText: annotation.MarkupText, strokeColor: annotation.StrokeColor,
@@ -316,7 +320,8 @@ export class FreeTextAnnotation {
                             // tslint:disable-next-line:max-line-length
                             font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline },
                             annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings,
-                            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode: annotation.annotationAddMode
+                            // tslint:disable-next-line
+                            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode: annotation.annotationAddMode, allowedInteractions: annotation.allowedInteractions,
                         };
                         if (isImportAction) {
                             annot.id = annotation.AnnotName;
@@ -954,9 +959,11 @@ export class FreeTextAnnotation {
             // tslint:disable-next-line:max-line-length
             annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
             let annot: PdfAnnotationBaseModel;
+            // tslint:disable-next-line:max-line-length
+            annotation.allowedInteractions = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
             // tslint:disable-next-line
             annot = {
-                author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, id: 'freetext',
+                author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, id: 'freetext',
                 rotateAngle: annotation.Rotate, dynamicText: annotation.MarkupText, strokeColor: annotation.StrokeColor,
                 thickness: annotation.Thickness, fillColor: annotation.FillColor,
                 bounds: {
@@ -995,10 +1002,13 @@ export class FreeTextAnnotation {
             }
             // tslint:disable-next-line:max-line-length
             annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
+            // tslint:disable-next-line:max-line-length
+            annotation.allowedInteractions = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
             // tslint:disable-next-line
             let annot: any;
+            // tslint:disable-next-line
             annot = {
-                author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, id: 'freetext',
+                author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, id: 'freetext',
                 rotateAngle: annotation.Rotate, dynamicText: annotation.MarkupText, strokeColor: annotation.StrokeColor,
                 thickness: annotation.Thickness, fillColor: annotation.FillColor,
                 bounds: {

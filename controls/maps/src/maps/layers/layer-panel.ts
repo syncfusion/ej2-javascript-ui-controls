@@ -957,16 +957,16 @@ export class LayerPanel {
                   element1.style.visibility = 'hidden';
                 }
                 let animateElement: HTMLElement;
-                if (!document.getElementById('animated_tiles') && element) {
-                    if (!isNullOrUndefined(document.getElementById(this.mapObject.element.id + '_animated_tiles'))) {
-                        document.getElementById(this.mapObject.element.id + '_animated_tiles').id = this.mapObject.element.id +
-                        '_animated_tiles_old';
-                    }
+                if (!document.getElementById(this.mapObject.element.id + '_animated_tiles') && element) {
                     animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
                     element.appendChild(animateElement);
                 } else {
                     if (type !== 'Pan' && element1 && element) {
                         element1.appendChild(element.children[0]);
+                        if (!isNullOrUndefined(document.getElementById(this.mapObject.element.id + '_animated_tiles'))) {
+                            document.getElementById(this.mapObject.element.id + '_animated_tiles').id =
+                                this.mapObject.element.id + '_animated_tiles_old';
+                        }
                         animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
                         element.appendChild(animateElement);
                     } else {

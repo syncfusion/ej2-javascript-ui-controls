@@ -770,7 +770,7 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
                         indexCollection = indexCollection.filter(function (item, index, value) { return value.indexOf(item) === index; });
                         var container = maps.element.getBoundingClientRect();
                         tempX = tempX - container['left'];
-                        tempY = (tempY - ((maps.availableSize.height < container['height']) ?
+                        tempY = maps.isBlazor ? tempY - container['top'] : (tempY - ((maps.availableSize.height < container['height']) ?
                             container['top'] : (container['bottom'] - container['top'])));
                         var translate = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
                         var transPoint = (maps.isTileMap) ? { x: 0, y: 0 } : (maps.translatePoint.x !== 0) ?
@@ -3999,13 +3999,18 @@ var Marker = /** @__PURE__ @class */ (function () {
                         if (currentLayer.markerClusterSettings.allowClustering) {
                             _this.maps.svgObject.appendChild(_this.markerSVGObject);
                             _this.maps.element.appendChild(_this.maps.svgObject);
-                            clusterTemplate(currentLayer, _this.markerSVGObject, _this.maps, layerIndex, _this.markerSVGObject, layerElement, true, false);
+                            if (currentLayer.layerType !== 'OSM' || !_this.maps.zoomSettings.enable) {
+                                clusterTemplate(currentLayer, _this.markerSVGObject, _this.maps, layerIndex, _this.markerSVGObject, layerElement, true, false);
+                            }
+                            else {
+                                layerElement.appendChild(_this.markerSVGObject);
+                            }
                             _this.maps.renderReactTemplates();
                         }
                     }
                     if (markerTemplateEle.childElementCount === (markerData.length - markerCount - nullCount) && getElementByID(_this.maps.element.id + '_Secondary_Element')) {
                         getElementByID(_this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
-                        if (currentLayer.markerClusterSettings.allowClustering) {
+                        if ((currentLayer.markerClusterSettings.allowClustering && currentLayer.layerType !== 'OSM') || !_this.maps.zoomSettings.enable) {
                             clusterTemplate(currentLayer, markerTemplateEle, _this.maps, layerIndex, _this.markerSVGObject, layerElement, false, false);
                             _this.maps.renderReactTemplates();
                         }
@@ -5663,17 +5668,17 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                     element1.style.visibility = 'hidden';
                 }
                 var animateElement;
-                if (!document.getElementById('animated_tiles') && element) {
-                    if (!isNullOrUndefined(document.getElementById(_this.mapObject.element.id + '_animated_tiles'))) {
-                        document.getElementById(_this.mapObject.element.id + '_animated_tiles').id = _this.mapObject.element.id +
-                            '_animated_tiles_old';
-                    }
+                if (!document.getElementById(_this.mapObject.element.id + '_animated_tiles') && element) {
                     animateElement = createElement('div', { id: _this.mapObject.element.id + '_animated_tiles' });
                     element.appendChild(animateElement);
                 }
                 else {
                     if (type !== 'Pan' && element1 && element) {
                         element1.appendChild(element.children[0]);
+                        if (!isNullOrUndefined(document.getElementById(_this.mapObject.element.id + '_animated_tiles'))) {
+                            document.getElementById(_this.mapObject.element.id + '_animated_tiles').id =
+                                _this.mapObject.element.id + '_animated_tiles_old';
+                        }
                         animateElement = createElement('div', { id: _this.mapObject.element.id + '_animated_tiles' });
                         element.appendChild(animateElement);
                     }
@@ -6457,13 +6462,25 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Maps.prototype.blazorTemplates = function () {
+        var _this = this;
         for (var i = 0; i < this.layers.length; i++) {
             var markerLength = this.layers[i].markerSettings.length - 1;
             if (markerLength >= 0) {
                 if (this.layers[i].dataLabelSettings.visible || this.layers[i].markerSettings[markerLength].template) {
                     updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[i].dataLabelSettings);
                     for (var j = 0; j < this.layers[i].markerSettings.length; j++) {
-                        updateBlazorTemplate(this.element.id + '_MarkerTemplate' + j, 'MarkerTemplate', this.layers[i].markerSettings[j]);
+                        var markerRendered = function () {
+                            for (var x = 0; x < _this.layers.length; x++) {
+                                var markerTemplateEle = document.getElementById(_this.element.id + '_LayerIndex_' + x + '_Markers_Template_Group');
+                                if (!isNullOrUndefined(markerTemplateEle)) {
+                                    for (var z = 0; z < markerTemplateEle.childElementCount; z++) {
+                                        var markerTemplate$$1 = markerTemplateEle.childNodes[z];
+                                        markerTemplate$$1['style']['transform'] = 'translate(-50%, -50%)';
+                                    }
+                                }
+                            }
+                        };
+                        updateBlazorTemplate(this.element.id + '_MarkerTemplate' + j, 'MarkerTemplate', this.layers[i].markerSettings[j], undefined, markerRendered);
                     }
                 }
             }

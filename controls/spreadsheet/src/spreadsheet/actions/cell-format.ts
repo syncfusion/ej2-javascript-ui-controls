@@ -1,7 +1,7 @@
 import { Spreadsheet, ICellRenderer, clearViewer, beginAction } from '../../spreadsheet/index';
 import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, initialLoad } from '../common/index';
 import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, CellStyleExtendedModel, CellModel} from '../../workbook/index';
-import { SheetModel, isHiddenRow, getCell, getColumnWidth, getRangeIndexes, getSheetIndex } from '../../workbook/index';
+import { SheetModel, isHiddenRow, getCell, getColumnWidth, getRangeIndexes, getSheetIndex, clearCFRule } from '../../workbook/index';
 import {  wrapEvent, getRangeAddress, ClearOptions,  clear } from '../../workbook/index';
 import { removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
@@ -203,6 +203,7 @@ export class CellFormat {
             this.parent.notify(beginAction, { action: 'beforeClear', eventArgs: eventArgs });
         }
         if (options.type === 'Clear Formats' || options.type === 'Clear All') {
+            this.parent.notify(clearCFRule, { range: range, isPublic: false });
             for (sRIdx; sRIdx <= eRIdx; sRIdx++) {
                 sCIdx = rangeIdx[1];
                 eCIdx = rangeIdx[3];

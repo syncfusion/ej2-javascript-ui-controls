@@ -301,7 +301,7 @@ export class ExportValueFormatter {
         }
         if (args.column.type === 'number' && args.column.format !== undefined && args.column.format !== '') {
             return args.value ? this.internationalization.getNumberFormat({ format: args.column.format })(args.value) : '';
-        } else if (args.column.type === 'boolean') {
+        } else if (args.column.type === 'boolean' && args.value !== '') {
             return args.value ? 'true' : 'false';
             /* tslint:disable-next-line:max-line-length */
         } else if ((args.column.type === 'date' || args.column.type === 'datetime' || args.column.type === 'time') && args.column.format !== undefined) {

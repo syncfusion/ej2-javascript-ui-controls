@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { PointModel, DecoratorShapes } from '@syncfusion/ej2-drawings';import { Point } from '@syncfusion/ej2-drawings';import { Size } from '@syncfusion/ej2-drawings';import { Container } from '@syncfusion/ej2-drawings';import { PdfAnnotationType } from './enum';import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel } from '../index';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { PointModel, DecoratorShapes } from '@syncfusion/ej2-drawings';import { Point } from '@syncfusion/ej2-drawings';import { Size } from '@syncfusion/ej2-drawings';import { Container } from '@syncfusion/ej2-drawings';import { PdfAnnotationType } from './enum';import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel, AllowedInteraction } from '../index';
 
 /**
  * Interface for a class PdfBounds
@@ -462,6 +462,11 @@ export interface PdfAnnotationBaseModel {
      * specifies the custom data of the annotation.
      */
     customData?: object;
+
+    /**
+     * specifies the allowed interactions of the locked annotation. 
+     */
+    allowedInteractions?: AllowedInteraction;
 
 }
 

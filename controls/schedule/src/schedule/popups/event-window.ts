@@ -126,7 +126,8 @@ export class EventWindow {
     private resetEditorTemplate(): void {
         if (this.parent.editorTemplate) {
             resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
-            if (!isBlazor()) {
+            // tslint:disable-next-line:no-any
+            if (!isBlazor() && !(this as any).parent.isReact) {
                 this.parent.resetTemplates(['editorTemplate']);
             }
         }
@@ -307,11 +308,14 @@ export class EventWindow {
     private renderFormElements(form: HTMLFormElement, args?: Object): void {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
-                if (this.recurrenceEditor) {
-                    this.recurrenceEditor.destroy();
-                    this.recurrenceEditor = null;
+                // tslint:disable-next-line:no-any
+                if (!(this as any).parent.isReact) {
+                    if (this.recurrenceEditor) {
+                        this.recurrenceEditor.destroy();
+                        this.recurrenceEditor = null;
+                    }
+                    this.destroyComponents();
                 }
-                this.destroyComponents();
                 let formElements: HTMLElement[] = [].slice.call(form.children);
                 for (let element of formElements) {
                     remove(element);

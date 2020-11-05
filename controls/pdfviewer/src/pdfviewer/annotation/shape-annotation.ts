@@ -1,6 +1,6 @@
 import {
     PdfViewer, PdfViewerBase, IRectangle, IPageAnnotations, IPoint, ICommentsCollection, IReviewCollection,
-    AnnotationType as AnnotType, LineHeadStyle, ShapeLabelSettingsModel
+    AnnotationType as AnnotType, LineHeadStyle, ShapeLabelSettingsModel, AllowedInteraction
 } from '../../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ColorPicker } from '@syncfusion/ej2-inputs';
@@ -52,6 +52,7 @@ export interface IShapeAnnotation {
     // tslint:disable-next-line
     annotationSettings?: any;
     customData: object;
+    allowedInteractions?: AllowedInteraction;
 }
 
 /**
@@ -224,8 +225,10 @@ export class ShapeAnnotation {
                         // tslint:disable-next-line:max-line-length
                         annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
                         // tslint:disable-next-line:max-line-length
+                        annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+                        // tslint:disable-next-line:max-line-length
                         annotationObject = {
-                            id: 'shape' + this.shapeCount, shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
+                            id: 'shape' + this.shapeCount, shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
                             // tslint:disable-next-line:max-line-length
                             note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, thickness: annotation.Thickness, rectangleDifference: annotation.RectangleDifference,
                             borderStyle: annotation.BorderStyle, borderDashArray: annotation.BorderDashArray, rotateAngle: annotation.RotateAngle, isCloudShape: annotation.IsCloudShape,
@@ -249,7 +252,7 @@ export class ShapeAnnotation {
                         annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ? annotation.AnnotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
                         annot = {
                             // tslint:disable-next-line:max-line-length
-                            id: 'shape' + this.shapeCount, shapeAnnotationType: this.getShapeType(annotationObject), author: annotationObject.author, modifiedDate: annotationObject.modifiedDate, annotName: annotationObject.annotName,
+                            id: 'shape' + this.shapeCount, shapeAnnotationType: this.getShapeType(annotationObject), author: annotationObject.author, allowedInteractions: annotationObject.allowedInteractions, modifiedDate: annotationObject.modifiedDate, annotName: annotationObject.annotName,
                             subject: annotationObject.subject, notes: annotationObject.note, fillColor: annotationObject.fillColor, strokeColor: annotationObject.strokeColor, opacity: annotationObject.opacity,
                             // tslint:disable-next-line:max-line-length
                             thickness: annotationObject.thickness, borderStyle: annotationObject.borderStyle, borderDashArray: borderDashArray, rotateAngle: parseFloat(annotationObject.rotateAngle.split('Angle')[1]), comments: annotationObject.comments, review: annotationObject.review,                            isCloudShape: annotationObject.isCloudShape, cloudIntensity: annotationObject.cloudIntensity, taregetDecoraterShapes: this.pdfViewer.annotation.getArrowType(annotationObject.lineHeadEnd),
@@ -594,7 +597,6 @@ export class ShapeAnnotation {
         }
         // tslint:disable-next-line
         let annotations: Array<any> = new Array();
-        let colorpick: ColorPicker = new ColorPicker();
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
             annotations[j] = [];
         }
@@ -696,7 +698,7 @@ export class ShapeAnnotation {
         let annotationSettings: any = this.pdfViewer.annotationModule.findAnnotationSettings(annotationModel, true);
         return {
             // tslint:disable-next-line:max-line-length
-            id: annotationModel.id, shapeAnnotationType: this.getShapeAnnotType(annotationModel.shapeAnnotationType), author: annotationModel.author, subject: annotationModel.subject, note: annotationModel.notes,
+            id: annotationModel.id, shapeAnnotationType: this.getShapeAnnotType(annotationModel.shapeAnnotationType), author: annotationModel.author, allowedInteractions: this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotationModel),  subject: annotationModel.subject, note: annotationModel.notes,
             strokeColor: annotationModel.strokeColor, annotName: annotationName, comments: [], review: { state: '', stateModel: '', modifiedDate: date.toLocaleString(), author: annotationModel.author},
             fillColor: annotationModel.fillColor, opacity: annotationModel.opacity, thickness: annotationModel.thickness,
             // tslint:disable-next-line:max-line-length
@@ -803,8 +805,10 @@ export class ShapeAnnotation {
         // tslint:disable-next-line:max-line-length
         annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
         // tslint:disable-next-line:max-line-length
+        annotation.allowedInteractions =  this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+        // tslint:disable-next-line:max-line-length
         annotationObject = {
-            id: 'shape', shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
+            id: 'shape', shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
             // tslint:disable-next-line:max-line-length
             note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, thickness: annotation.Thickness, rectangleDifference: annotation.RectangleDifference,
             borderStyle: annotation.BorderStyle, borderDashArray: annotation.BorderDashArray, rotateAngle: annotation.RotateAngle, isCloudShape: annotation.IsCloudShape,
@@ -848,8 +852,10 @@ export class ShapeAnnotation {
         // tslint:disable-next-line:max-line-length
         annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
         // tslint:disable-next-line:max-line-length
+        annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+        // tslint:disable-next-line:max-line-length
         annotationObject = {
-            id: 'shape', shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
+            id: 'shape', shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
             // tslint:disable-next-line:max-line-length
             note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, thickness: annotation.Thickness, rectangleDifference: annotation.RectangleDifference,
             borderStyle: annotation.BorderStyle, borderDashArray: annotation.BorderDashArray, rotateAngle: annotation.RotateAngle, isCloudShape: annotation.IsCloudShape,

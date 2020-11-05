@@ -13,7 +13,7 @@ import { Tooltip, TooltipEventArgs, createSpinner, showSpinner, hideSpinner } fr
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
 import { AxisFields } from '../../common/grouping-bar/axis-field-renderer';
-import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, PivotColumn, ChartLabelInfo, EditCompletedEventArgs } from '../../common/base/interface';
+import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, PivotColumn, ChartLabelInfo, EditCompletedEventArgs, MultiLevelLabelClickEventArgs } from '../../common/base/interface';
 import { FetchReportArgs, LoadReportArgs, RenameReportArgs, RemoveReportArgs, ToolbarArgs } from '../../common/base/interface';
 import { PdfCellRenderArgs, NewReportArgs, ChartSeriesCreatedEventArgs, AggregateEventArgs } from '../../common/base/interface';
 import { ResizeInfo, ScrollInfo, ColumnRenderEventArgs, PivotCellSelectedEventArgs, SaveReportArgs } from '../../common/base/interface';
@@ -1291,6 +1291,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     @Event()
     protected chartAxisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
 
+    /**
+     * @hidden
+     * @deprecated
+     */
+    @Event()
+    protected multiLevelLabelClick: EmitType<MultiLevelLabelClickEventArgs>;
+
     /** @hidden */
     @Event()
     protected chartPointClick: EmitType<IPointEventArgs>;
@@ -2172,6 +2179,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.chartLoad = this.chartSettings.load ? this.chartSettings.load : undefined;
         this.chartResized = this.chartSettings.resized ? this.chartSettings.resized : undefined;
         this.chartAxisLabelRender = this.chartSettings.axisLabelRender ? this.chartSettings.axisLabelRender : undefined;
+        this.multiLevelLabelClick = this.chartSettings.multiLevelLabelClick ? this.chartSettings.multiLevelLabelClick : undefined;
         this.chartPointClick = this.chartSettings.pointClick ? this.chartSettings.pointClick : undefined;
         this.contextMenuClick = this.gridSettings.contextMenuClick ? this.gridSettings.contextMenuClick : undefined;
         this.contextMenuOpen = this.gridSettings.contextMenuOpen ? this.gridSettings.contextMenuOpen : undefined;
@@ -3355,21 +3363,41 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             pivotview: isBlazor() ? undefined : pivot,
             cancel: false
         };
+        let isAttributeHierarchy: boolean = this.olapEngineModule.fieldList[drillInfo.fieldName] && this.olapEngineModule.fieldList[drillInfo.fieldName].isHierarchy;
         let fieldPos: number = tupInfo.drillInfo.map((item: IDrillInfo) => { return item.hierarchy; }).indexOf(currentCell.hierarchy.toString());
+        let clonedMembers: IDrillOptions[] = PivotUtil.cloneDrillMemberSettings(this.dataSourceSettings.drilledMembers);
         if (drillInfo && drillInfo.action === 'down') {
-            this.olapEngineModule.drilledSets[currentCell.actualText] = tupInfo.members[fieldPos] as HTMLElement;
-            let fields: string[] = drillInfo.memberName.split('::[').map((item: string) => {
-                return item[0] === '[' ? item : ('[' + item);
-            });
+            let fields: string[] = tupInfo.drillInfo.map((item: IDrillInfo) => { return item.uName; });
             let member: string = '';
             for (let pos: number = 0; pos <= fieldPos; pos++) {
                 let field: string = fields[pos];
                 let members: string[] = field.split('~~');
                 member = member + (member !== '' ? '~~' : '') + members[members.length - 1];
             }
+            let drillSets: { [key: string]: string } =
+                this.olapEngineModule.getDrilledSets(drillInfo.memberName, currentCell, (this.olapEngineModule.fieldList[currentCell.hierarchy] && !this.olapEngineModule.fieldList[currentCell.hierarchy].hasAllMember) ? (currentCell.valueSort.levelName as string).split(this.dataSourceSettings.valueSortSettings.headerDelimiter).length - 1 : fieldPos, axis);
+            let keys: string[] = Object.keys(drillSets);
+            for (let key of keys) {
+                let drillSet: string = drillSets[key];
+                for (let i: number = 0, cnt: number = clonedMembers.length; i < cnt; i++) {
+                    let drillMembers: IDrillOptions = clonedMembers[i];
+                    let memberItem: string = drillSet;
+                    if (drillMembers.delimiter) {
+                        memberItem = memberItem.replace(/~~/g, drillMembers.delimiter);
+                    }
+                    let items: string[] = [];
+                    for (let itemPos: number = 0; itemPos < drillMembers.items.length; itemPos++) {
+                        if (drillMembers.items[itemPos].indexOf(memberItem) !== 0) {
+                            items[items.length] = drillMembers.items[itemPos];
+                        }
+                    }
+                    drillMembers.items = items;
+                }
+            }
+            this.olapEngineModule.drilledSets[currentCell.actualText] = tupInfo.members[fieldPos] as HTMLElement;
             drillInfo.memberName = member;
             let drillItem: IDrillOptions[] = [];
-            for (let field of this.dataSourceSettings.drilledMembers) {
+            for (let field of clonedMembers) {
                 if (field.name === drillInfo.fieldName) {
                     drillItem.push(field);
                 }
@@ -3382,15 +3410,26 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 if (index === -1) {
                     drillItem[0].items.push(member);
                 }
-            } else {
+                if (isAttributeHierarchy) {
+                    let i: number = 0;
+                    while (i < drillItem[0].items.length) {
+                        if (drillItem[0].items[i] === member) {
+                            drillItem[0].items.splice(i, 1);
+                        } else {
+                            ++i;
+                        }
+                    }
+                }
+            } else if (!isAttributeHierarchy) {
                 let drilledMember: IDrillOptions = { name: drillInfo.fieldName, items: [member], delimiter: '~~' };
-                if (!this.dataSourceSettings.drilledMembers) {
-                    this.dataSourceSettings.drilledMembers = [drilledMember];
+                if (!clonedMembers) {
+                    clonedMembers = [drilledMember];
                 } else {
-                    this.dataSourceSettings.drilledMembers.push(drilledMember);
+                    clonedMembers.push(drilledMember);
                 }
             }
             drillArgs.drillInfo.memberName = member;
+            this.setProperties({ dataSourceSettings: { drilledMembers: clonedMembers } }, true);
             pivot.trigger(events.drill, drillArgs, (observedArgs: DrillArgs) => {
                 if (!observedArgs.cancel) {
                     this.olapEngineModule.updateDrilledInfo(this.dataSourceSettings as IDataOptions);
@@ -3410,29 +3449,61 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             let drillSets: { [key: string]: string } =
                 this.olapEngineModule.getDrilledSets(drillInfo.memberName, currentCell, fieldPos, axis);
             let keys: string[] = Object.keys(drillSets);
+            let fields: string[] = tupInfo.drillInfo.map((item: IDrillInfo) => { return item.uName; });
+            let member: string = '';
+            for (let pos: number = 0; pos <= fieldPos; pos++) {
+                let field: string = fields[pos];
+                let members: string[] = field.split('~~');
+                member = member + (member !== '' ? '~~' : '') + members[members.length - 1];
+            }
             for (let key of keys) {
                 let drillSet: string = drillSets[key];
-                for (let i: number = 0, cnt: number = this.dataSourceSettings.drilledMembers.length; i < cnt; i++) {
-                    let drillItem: IDrillOptions = this.dataSourceSettings.drilledMembers[i];
+                let drillItemCollection: IDrillOptions[] = [];
+                for (let i: number = 0, cnt: number = clonedMembers.length; i < cnt; i++) {
+                    let drillItem: IDrillOptions = clonedMembers[i];
                     let member: string = drillSet;
+                    if (drillItem.name === drillInfo.fieldName) {
+                        drillItemCollection.push(drillItem);
+                    }
                     if (drillItem.delimiter) {
                         member = drillSet.replace(/~~/g, drillItem.delimiter);
                     }
-                    let items: string[] = [];
-                    for (let itemPos: number = 0; itemPos < drillItem.items.length; itemPos++) {
-                        if (drillItem.items[itemPos].indexOf(member) !== 0) {
-                            items[items.length] = drillItem.items[itemPos];
+                    if (!isAttributeHierarchy) {
+                        let items: string[] = [];
+                        for (let itemPos: number = 0; itemPos < drillItem.items.length; itemPos++) {
+                            if (drillItem.items[itemPos].indexOf(member) !== 0) {
+                                items[items.length] = drillItem.items[itemPos];
+                            }
+                        }
+                        drillItem.items = items;
+                    }
+                }
+                if (isAttributeHierarchy) {
+                    if (drillItemCollection.length > 0) {
+                        if (drillItemCollection[0].delimiter) {
+                            member = member.replace(/~~/g, drillItemCollection[0].delimiter);
+                        }
+                        let index: number = PivotUtil.inArray(member, drillItemCollection[0].items);
+                        if (index === -1) {
+                            drillItemCollection[0].items.push(member);
+                        }
+                    } else {
+                        let drilledMember: IDrillOptions = { name: drillInfo.fieldName, items: [member], delimiter: '~~' };
+                        if (!clonedMembers) {
+                            clonedMembers = [drilledMember];
+                        } else {
+                            clonedMembers.push(drilledMember);
                         }
                     }
-                    drillItem.items = items;
                 }
             }
             let drilledMembers: DrillOptionsModel[] = [];
-            for (let fields of this.dataSourceSettings.drilledMembers) {
+            for (let fields of clonedMembers) {
                 if (fields.items.length > 0) {
                     drilledMembers.push(fields);
                 }
             }
+            this.setProperties({ dataSourceSettings: { drilledMembers: clonedMembers } }, true);
             pivot.trigger(events.drill, drillArgs, (observedArgs: DrillArgs) => {
                 if (!observedArgs.cancel) {
                     this.setProperties({ dataSourceSettings: { drilledMembers: drilledMembers } }, true);

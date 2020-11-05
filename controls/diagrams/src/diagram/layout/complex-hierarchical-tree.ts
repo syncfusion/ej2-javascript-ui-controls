@@ -298,7 +298,7 @@ class HierarchicalLayoutUtil {
                 let matrixModel: MatrixModelObject = this.matrixModel({ model: model, matrix: [], rowOffset: [] });
                 lineDistribution.arrangeElements(matrixModel, layoutProp);
             } else {
-                if (layoutProp.arrangement === 'NonLinear') {
+                if (layoutProp.arrangement === 'Nonlinear') {
                     this.crossingStage(model);
                     limit = this.placementStage(model, limit.marginX, limit.marginY);
                     tmp = [];

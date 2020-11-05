@@ -512,12 +512,18 @@ exports.cssClass = {
         var curFields = sf.base.extend({}, ListBase.defaultMappedFields, fields);
         var compiledString = sf.base.compile(template);
         var liCollection = [];
+        var value;
         var id = generateId(); // generate id for drop-down-list option.
         for (var i = 0; i < dataSource.length; i++) {
             var fieldData = getFieldValues(dataSource[i], curFields);
             var curItem = dataSource[i];
             var isHeader = curItem.isHeader;
-            var value = fieldData[curFields.value];
+            if (typeof dataSource[i] === 'string' || typeof dataSource[i] === 'number') {
+                value = curItem;
+            }
+            else {
+                value = fieldData[curFields.value];
+            }
             if (curOpt.itemCreating && typeof curOpt.itemCreating === 'function') {
                 var curData = {
                     dataSource: dataSource,
@@ -530,14 +536,24 @@ exports.cssClass = {
             }
             if (curOpt.itemCreating && typeof curOpt.itemCreating === 'function') {
                 fieldData = getFieldValues(dataSource[i], curFields);
-                value = fieldData[curFields.value];
+                if (typeof dataSource[i] === 'string' || typeof dataSource[i] === 'number') {
+                    value = curItem;
+                }
+                else {
+                    value = fieldData[curFields.value];
+                }
             }
             var li = createElement('li', {
                 id: id + '-' + i,
                 className: isHeader ? exports.cssClass.group : exports.cssClass.li, attrs: { role: 'presentation' }
             });
             if (isHeader) {
-                li.innerText = fieldData[curFields.text];
+                if (typeof dataSource[i] === 'string' || typeof dataSource[i] === 'number') {
+                    li.innerText = curItem;
+                }
+                else {
+                    li.innerText = fieldData[curFields.text];
+                }
             }
             else {
                 var currentID = isHeader ? curOpt.groupTemplateID : curOpt.templateID;

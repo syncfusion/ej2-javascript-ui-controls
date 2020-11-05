@@ -456,7 +456,7 @@ var SfToolbar = /** @class */ (function () {
                 this.setAttr(items[i].htmlAttributes, innerItem);
             }
             if (items[i].type === 'Button') {
-                sf.base.EventHandler.clearEvents(innerItem);
+                sf.base.EventHandler.remove(innerItem, 'click', this.itemClick);
                 sf.base.EventHandler.add(innerItem, 'click', this.itemClick, this);
             }
             if (this.tbarEle.indexOf(innerItem) === -1) {

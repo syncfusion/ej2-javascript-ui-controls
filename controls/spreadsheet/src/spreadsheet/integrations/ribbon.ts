@@ -174,7 +174,7 @@ export class Ribbon {
         if (this.parent.allowConditionalFormat) {
             items.find((x: RibbonItemModel) => x.header && x.header.text === l10n.getConstant('Home')).content.push(
                 { type: 'Separator', id: id + '_separator_10' },
-                { template: this.getCFDBB(id), tooltipText: 'Conditional Formatting', id: id + '_conditionalformatting' });
+                { template: this.getCFDBB(id), tooltipText: l10n.getConstant('ConditionalFormatting'), id: id + '_conditionalformatting' });
         }
         if (this.parent.allowCellFormatting) {
             items.find((x: RibbonItemModel) => x.header && x.header.text === l10n.getConstant('Home')).content.push(
@@ -415,6 +415,9 @@ export class Ribbon {
         let oBar: HTMLElement = this.parent.createElement('span', { id: 'OrangeDataBar', className: 'e-odatabar e-databar-icon' });
         let lBBar: HTMLElement = this.parent.createElement('span', { id: 'LightBlueDataBar', className: 'e-lbdatabar e-databar-icon' });
         let pBar: HTMLElement = this.parent.createElement('span', { id: 'PurpleDataBar', className: 'e-pdatabar e-databar-icon' });
+        bBar.title = l10n.getConstant('BlueDataBar'); gBar.title = l10n.getConstant('GreenDataBar');
+        rBar.title = l10n.getConstant('RedDataBar'); oBar.title = l10n.getConstant('OrangeDataBar');
+        lBBar.title = l10n.getConstant('LightblueDataBar'); pBar.title = l10n.getConstant('PurpleDataBar');
         db1.appendChild(bBar); db1.appendChild(gBar); db1.appendChild(rBar);
         db2.appendChild(oBar); db2.appendChild(lBBar); db2.appendChild(pBar);
         this.cFMenu.createElement = this.parent.createElement;
@@ -437,6 +440,12 @@ export class Ribbon {
         let wg: HTMLElement = this.parent.createElement('span', { id: 'WGColorScale', className: 'e-wg e-colorscale-icon' });
         let gy: HTMLElement = this.parent.createElement('span', { id: 'GYColorScale', className: 'e-gy e-colorscale-icon' });
         let yg: HTMLElement = this.parent.createElement('span', { id: 'YGColorScale', className: 'e-yg e-colorscale-icon' });
+        gyr.title = l10n.getConstant('GYRColorScale'); ryg.title = l10n.getConstant('RYGColorScale');
+        gwr.title = l10n.getConstant('GWRColorScale'); rwg.title = l10n.getConstant('RWGColorScale');
+        bwr.title = l10n.getConstant('BWRColorScale'); rwb.title = l10n.getConstant('RWBColorScale');
+        wr.title = l10n.getConstant('WRColorScale'); rw.title = l10n.getConstant('RWColorScale');
+        gw.title = l10n.getConstant('GWColorScale'); wg.title = l10n.getConstant('WGColorScale');
+        gy.title = l10n.getConstant('GYColorScale'); yg.title = l10n.getConstant('YGColorScale');
         cs1.appendChild(gyr); cs1.appendChild(ryg); cs1.appendChild(gwr); cs1.appendChild(rwg);
         cs2.appendChild(bwr); cs2.appendChild(rwb); cs2.appendChild(wr); cs2.appendChild(rw);
         cs3.appendChild(gw); cs3.appendChild(wg); cs3.appendChild(gy); cs3.appendChild(yg);
@@ -450,6 +459,11 @@ export class Ribbon {
         let is6: HTMLElement = this.parent.createElement('div', { id: 'is6', className: 'e-is6' });
         let is7: HTMLElement = this.parent.createElement('div', { id: 'is7', className: 'e-is7', innerHTML: 'Ratings' });
         let is8: HTMLElement = this.parent.createElement('div', { id: 'is8', className: 'e-is8' });
+        is1.title = l10n.getConstant('GYColorScale'); is2.title = l10n.getConstant('YGColorScale');
+        is3.title = l10n.getConstant('GYColorScale'); is4.title = l10n.getConstant('YGColorScale');
+        is5.title = l10n.getConstant('GYColorScale'); is6.title = l10n.getConstant('YGColorScale');
+        is7.title = l10n.getConstant('GYColorScale'); is8.title = l10n.getConstant('YGColorScale');
+
         iconSets.appendChild(is1); iconSets.appendChild(is2); iconSets.appendChild(is3); iconSets.appendChild(is4);
         iconSets.appendChild(is5); iconSets.appendChild(is6); iconSets.appendChild(is7); iconSets.appendChild(is8);
         let directional1: HTMLElement = this.parent.createElement('div', { id: 'ThreeArrows', className: 'e-3arrows e-is-wrapper' });
@@ -460,6 +474,10 @@ export class Ribbon {
         let directional5: HTMLElement = this.parent.createElement('div', { id: 'FourArrows', className: 'e-4arrows e-is-wrapper' });
         let directional6: HTMLElement = this.parent.createElement('div', { id: 'FiveArrowsGray', className: 'e-5arrowsgray e-is-wrapper' });
         let directional7: HTMLElement = this.parent.createElement('div', { id: 'FiveArrows', className: 'e-5arrows e-is-wrapper' });
+        directional1.title = l10n.getConstant('ThreeArrowsColor'); directional2.title = l10n.getConstant('ThreeArrowsGray');
+        directional3.title = l10n.getConstant('ThreeTriangles'); directional4.title = l10n.getConstant('FourArrowsColor');
+        directional5.title = l10n.getConstant('FourArrowsGray'); directional6.title = l10n.getConstant('FiveArrowsColor');
+        directional7.title = l10n.getConstant('FiveArrowsGray');
         is2.appendChild(directional1); is2.appendChild(directional2); is2.appendChild(directional3); is2.appendChild(directional4);
         is2.appendChild(directional5);
         is2.appendChild(directional6); is2.appendChild(directional7);
@@ -471,16 +489,24 @@ export class Ribbon {
         let shapes4: HTMLElement =
          this.parent.createElement('div', { id: 'FourTrafficLights', className: 'e-4trafficlights e-is-wrapper' });
         let shapes5: HTMLElement = this.parent.createElement('div', { id: 'FourRedToBlack', className: 'e-4redtoblack e-is-wrapper' });
+        shapes1.title = l10n.getConstant('ThreeTrafficLights1'); shapes2.title = l10n.getConstant('ThreeTrafficLights2');
+        shapes3.title = l10n.getConstant('ThreeSigns'); shapes4.title = l10n.getConstant('FourTrafficLights');
+        shapes5.title = l10n.getConstant('RedToBlack');
         is4.appendChild(shapes1); is4.appendChild(shapes2); is4.appendChild(shapes3); is4.appendChild(shapes4); is4.appendChild(shapes5);
         let indicators1: HTMLElement = this.parent.createElement('div', { id: 'ThreeSymbols', className: 'e-3symbols e-is-wrapper' });
         let indicators2: HTMLElement = this.parent.createElement('div', { id: 'ThreeSymbols2', className: 'e-3symbols2 e-is-wrapper' });
         let indicators3: HTMLElement = this.parent.createElement('div', { id: 'ThreeFlags', className: 'e-3flags e-is-wrapper' });
+        indicators1.title = l10n.getConstant('ThreeSymbols1'); indicators2.title = l10n.getConstant('ThreeSymbols2');
+        indicators3.title = l10n.getConstant('ThreeFlags');
         is6.appendChild(indicators1); is6.appendChild(indicators2); is6.appendChild(indicators3);
         let ratings1: HTMLElement = this.parent.createElement('div', { id: 'ThreeStars', className: 'e-3stars e-is-wrapper' });
         let ratings2: HTMLElement = this.parent.createElement('div', { id: 'FourRating', className: 'e-4rating e-is-wrapper' });
         let ratings3: HTMLElement = this.parent.createElement('div', { id: 'FiveQuarters', className: 'e-5quarters e-is-wrapper' });
         let ratings4: HTMLElement = this.parent.createElement('div', { id: 'FiveRating', className: 'e-5rating e-is-wrapper' });
         let ratings5: HTMLElement = this.parent.createElement('div', { id: 'FiveBoxes', className: 'e-5boxes e-is-wrapper' });
+        ratings1.title = l10n.getConstant('ThreeStars'); ratings2.title = l10n.getConstant('FourRatings');
+        ratings3.title = l10n.getConstant('FiveQuarters'); ratings4.title = l10n.getConstant('FiveRatings');
+        ratings5.title = l10n.getConstant('FiveBoxes');
         is8.appendChild(ratings1); is8.appendChild(ratings2); is8.appendChild(ratings3);
         is8.appendChild(ratings4); is8.appendChild(ratings5);
 
@@ -1594,7 +1620,7 @@ export class Ribbon {
                     };
                     this.parent.notify(completeAction, { eventArgs: evtHArgs, action: 'headers' });
                     if (evtHArgs.cancel) { return; }
-                    sheet.showHeaders = !sheet.showHeaders;
+                    this.parent.setSheetPropertyOnMute(sheet, 'showHeaders', !sheet.showHeaders);
                     (this.parent.serviceLocator.getService('sheet') as IRenderer).showHideHeaders();
                     this.toggleRibbonItems({ props: 'Headers', activeTab: this.ribbon.selectedTab });
                     this.parent.element.focus();
@@ -1607,13 +1633,12 @@ export class Ribbon {
                     };
                     this.parent.notify(completeAction, { eventArgs: evtglArgs, action: 'gridLines' });
                     if (evtglArgs.cancel) { return; }
-                    sheet.showGridLines = !sheet.showGridLines;
+                    this.parent.setSheetPropertyOnMute(sheet, 'showGridLines', !sheet.showGridLines);
                     this.toggleRibbonItems({ props: 'GridLines', activeTab: this.ribbon.selectedTab });
                     this.parent.element.focus();
                     break;
                 case parentId + '_protect':
-                    sheet.isProtected = !sheet.isProtected;
-                    this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
+                    this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected);
                     let isActive: boolean = false;
                     sheet.isProtected ? isActive = false : isActive = true;
                     this.parent.notify(applyProtect, { isActive: isActive, id: parentId + '_protect' });

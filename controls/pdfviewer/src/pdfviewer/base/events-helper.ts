@@ -277,6 +277,20 @@ export interface AnnotationRemoveEventArgs extends BaseEventArgs {
 }
 
 /**
+ * This event arguments provides the necessary information about comment event.
+ */
+export interface CommentClickEventArgs extends BaseEventArgs {
+    /**
+     * Gets the text
+     */
+    text: string;
+    /**
+     * specifies the annotation for the comment.
+     */
+    annotation: string;
+}
+
+/**
  * This event arguments provides the necessary information about annotation properties change event.
  */
 export interface AnnotationPropertiesChangeEventArgs extends BaseEventArgs {

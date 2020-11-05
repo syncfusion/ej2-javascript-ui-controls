@@ -274,6 +274,7 @@ export interface InsertDeleteModelArgs {
     end?: number;
     isAction?: boolean;
     modelType: ModelType;
+    insertType?: string;
     columnCellsModel?: RowModel[];
     activeSheetIndex?: number;
     checkCount?: number;
@@ -327,6 +328,7 @@ export interface InsertDeleteEventArgs {
     model?: RowModel[] | ColumnModel[] | CellModel[];
     index?: number;
     modelType?: ModelType;
+    insertType?: string;
     isAction?: boolean;
     startIndex?: number;
     endIndex?: number;

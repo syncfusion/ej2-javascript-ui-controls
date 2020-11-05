@@ -137,13 +137,15 @@ export class ContextMenu {
                 case id + '_insert_row_above': case id + '_delete_row':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                     this.parent.notify(`${args.item.id.substr(id.length + 1, 6)}Model`, <InsertDeleteModelArgs>{ model:
-                        this.parent.getActiveSheet(), start: indexes[0], end: indexes[2], modelType: 'Row', isAction: true });
+                        this.parent.getActiveSheet(), start: indexes[0], end: indexes[2], modelType: 'Row', isAction: true,
+                        insertType: 'above' });
                     this.parent.element.focus();
                     break;
                 case id + '_insert_row_below':
                     indexes = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
                     this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent.getActiveSheet(), start:
-                        indexes[2] + 1, end: indexes[2] + 1 + (indexes[2] - indexes[0]), modelType: 'Row', isAction: true });
+                        indexes[2] + 1, end: indexes[2] + 1 + (indexes[2] - indexes[0]), modelType: 'Row', isAction: true,
+                        insertType: 'below' });
                     this.parent.element.focus();
                     break;
                 case id + '_insert_column_before': case id + '_delete_column':
@@ -171,7 +173,8 @@ export class ContextMenu {
                     this.parent.removeHyperlink(this.parent.getActiveSheet().selectedRange);
                     break;
                 case id + '_protect':
-                    let sheet: SheetModel = this.parent.getActiveSheet(); sheet.isProtected = !sheet.isProtected; let isActive: boolean;
+                    let sheet: SheetModel = this.parent.getActiveSheet();
+                    this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected); let isActive: boolean;
                     sheet.isProtected ? isActive = false : isActive = true;  this.parent.notify(applyProtect, { isActive: isActive });
                     break;
             }

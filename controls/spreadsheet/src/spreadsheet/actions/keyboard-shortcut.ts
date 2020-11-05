@@ -33,7 +33,7 @@ export class KeyboardShortcut {
     }
 
     private keyDownHandler(e: KeyboardEvent): void {
-        if (e.ctrlKey) {
+        if (e.ctrlKey || e.metaKey) {
             if (!closest(e.target as Element, '.e-find-dlg')) {
                 if ([79, 83, 65].indexOf(e.keyCode) > -1) {
                     e.preventDefault();

@@ -22,7 +22,7 @@ export class HtmlEditor {
     private rangeCollection: Range[] = [];
     private nodeSelectionObj: NodeSelection;
     private toolbarUpdate: HtmlToolbarStatus;
-    private xhtmlValidation: XhtmlValidation;
+    public xhtmlValidation: XhtmlValidation;
 
     constructor(parent?: SfRichTextEditor) {
         this.parent = parent;

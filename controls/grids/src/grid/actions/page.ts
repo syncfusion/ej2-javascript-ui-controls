@@ -281,7 +281,9 @@ export class Page implements IAction {
             created: this.created
         };
         if (this.parent.isDestroyed) { return; }
-        this.parent.addEventListener('created', this.handlers.created.bind(this));
+        if (this.parent.isReact) {
+            this.parent.addEventListener('created', this.handlers.created.bind(this));
+        }
         this.parent.on(events.initialLoad, this.handlers.load, this);
         this.parent.on(events.initialEnd, this.handlers.end, this); //For initial rendering
         this.parent.on(events.dataReady, this.handlers.ready, this);
@@ -323,7 +325,9 @@ export class Page implements IAction {
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.removeEventListener('created', this.handlers.created);
+        if (this.parent.isReact) {
+            this.parent.removeEventListener('created', this.handlers.created);
+        }
         this.parent.off('pager-refresh', this.renderReactPagerTemplate);
         this.parent.off(events.initialLoad, this.handlers.load);
         this.parent.off(events.initialEnd, this.handlers.end); //For initial rendering

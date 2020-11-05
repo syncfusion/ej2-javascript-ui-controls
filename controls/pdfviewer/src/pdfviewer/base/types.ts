@@ -211,3 +211,11 @@ export enum AllowedInteraction  {
  * Enum type for signature mode for signature fields
  */
 export type SignatureFitMode = 'Default' | 'Stretch' ;
+
+/**
+ * Enum type for export annotation file types
+ */
+export enum AnnotationDataFormat {
+    Json = 'Json',
+    Xfdf = 'XFdf',
+}

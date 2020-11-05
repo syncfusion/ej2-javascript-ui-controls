@@ -252,7 +252,7 @@ var showTablePopup = 'ShowTablePopup';
 var hideTablePopup = 'HideTablePopup';
 var showInlinePopup = 'ShowInlinePopup';
 var hideInlinePopup = 'HideInlinePopup';
-
+var refreshToolbarOverflow = 'RefreshToolbarOverflow';
 var updateUndoRedoStatus = 'UpdateUndoRedoStatus';
 var showImageDialog = 'ShowImageDialog';
 var closeImageDialog = 'CloseImageDialog';
@@ -1731,6 +1731,7 @@ var Toolbar = /** @class */ (function () {
     //#endregion
     //#region Event handler methods
     Toolbar.prototype.onRefresh = function () {
+        this.parent.dotNetRef.invokeMethodAsync(refreshToolbarOverflow);
         this.parent.setContentHeight('', true);
     };
     Toolbar.prototype.tbFocusHandler = function (e) {
@@ -4507,7 +4508,35 @@ var XhtmlValidation = /** @class */ (function () {
             this.ImageTags();
             this.removeTags();
             this.RemoveUnsupported();
+            this.parent.inputElement.innerHTML = this.selfEncloseValidation(this.parent.inputElement.innerHTML);
         }
+    };
+    XhtmlValidation.prototype.selfEncloseValidation = function (currentValue) {
+        currentValue = currentValue.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/&nbsp;/gi, ' ').replace(/ /g, ' ');
+        var valueTemp;
+        var valueDupe = [];
+        var valueOriginal = [];
+        var imgRegexp = [/<img(.*?)>/gi, /<area(.*?)>/gi, /<base(.*?)>/gi, /<col (.*?)>/gi, /<embed(.*?)>/gi,
+            /<input(.*?)>/gi, /<link(.*?)>/gi, /<meta(.*?)>/gi, /<param(.*?)>/gi, /<source(.*?)>/gi,
+            /<track(.*?)>/gi, /<wbr(.*?)>/gi];
+        for (var j = 0; j < imgRegexp.length; j++) {
+            valueTemp = imgRegexp[j].exec(currentValue);
+            while ((valueTemp) !== null) {
+                valueDupe.push(valueTemp[0].toString());
+                valueTemp = imgRegexp[j].exec(currentValue);
+            }
+            valueOriginal = valueDupe.slice(0);
+            for (var i = 0; i < valueDupe.length; i++) {
+                if (valueDupe[i].indexOf('/') === -1 || valueDupe[i].lastIndexOf('/') !== valueDupe[i].length - 2) {
+                    valueDupe[i] = valueDupe[i].substr(0, valueDupe[i].length - 1) + ' /' +
+                        valueDupe[i].substr(valueDupe[i].length - 1, valueDupe[i].length);
+                }
+            }
+            for (var g = 0; g <= valueDupe.length - 1; g++) {
+                currentValue = currentValue.replace(valueOriginal[g], valueDupe[g]);
+            }
+        }
+        return currentValue;
     };
     XhtmlValidation.prototype.AddRootElement = function () {
         if ((this.parent.inputElement.childNodes.length === 1 && this.parent.inputElement.firstChild.nodeName !== 'DIV') ||
@@ -15717,6 +15746,13 @@ var SfRichTextEditor = /** @class */ (function () {
             this.autoResize();
         }
     };
+    SfRichTextEditor.prototype.getXhtml = function () {
+        var currentValue = this.value;
+        if (this.enableXhtml) {
+            currentValue = this.htmlEditorModule.xhtmlValidation.selfEncloseValidation(currentValue);
+        }
+        return currentValue;
+    };
     SfRichTextEditor.prototype.getPanel = function () {
         return this.contentPanel;
     };
@@ -15828,6 +15864,8 @@ var SfRichTextEditor = /** @class */ (function () {
         }
         this.setPlaceHolder();
         this.observer.notify(contentChanged, {});
+        this.value = this.inputElement.innerHTML;
+        this.dotNetRef.invokeMethodAsync('UpdateValue', this.value);
     };
     SfRichTextEditor.prototype.htmlPurifier = function (command, value) {
         if (this.editorMode === 'HTML') {
@@ -16518,9 +16556,10 @@ var SfRichTextEditor = /** @class */ (function () {
         this.observer.on(contentChanged, this.contentChanged, this);
         this.observer.on(modelChanged, this.refresh, this);
         this.observer.on(resizeInitialized, this.updateResizeFlag, this);
-        if (!this.readonly && !this.enabled) {
-            this.bindEvents();
+        if (this.readonly && this.enabled) {
+            return;
         }
+        this.bindEvents();
     };
     SfRichTextEditor.prototype.bindEvents = function () {
         this.keyboardModule = new KeyboardEvents$1(this.inputElement, {
@@ -17031,181 +17070,264 @@ var RichTextEditor = {
         }
     },
     updateProperties: function (element, options) {
-        element.blazor__instance.updateContext(options);
+        if (element) {
+            element.blazor__instance.updateContext(options);
+        }
     },
     setPanelValue: function (element, value) {
-        element.blazor__instance.setPanelValue(value);
+        if (element) {
+            element.blazor__instance.setPanelValue(value);
+        }
     },
     toolbarItemClick: function (element, args, id, targetType) {
-        element.blazor__instance.toolbarItemClick(args, id, targetType);
+        if (element) {
+            element.blazor__instance.toolbarItemClick(args, id, targetType);
+        }
     },
     toolbarClick: function (element, id) {
-        element.blazor__instance.toolbarClick(id);
+        if (element) {
+            element.blazor__instance.toolbarClick(id);
+        }
     },
     dropDownBeforeOpen: function (element, args) {
-        element.blazor__instance.dropDownBeforeOpen(args);
+        if (element) {
+            element.blazor__instance.dropDownBeforeOpen(args);
+        }
     },
     dropDownClose: function (element, args) {
-        element.blazor__instance.dropDownClose(args);
+        if (element) {
+            element.blazor__instance.dropDownClose(args);
+        }
     },
     dropDownButtonItemSelect: function (element, args) {
-        element.blazor__instance.dropDownSelect(args);
+        if (element) {
+            element.blazor__instance.dropDownSelect(args);
+        }
     },
     colorDropDownBeforeOpen: function (element) {
-        element.blazor__instance.colorDropDownBeforeOpen();
+        if (element) {
+            element.blazor__instance.colorDropDownBeforeOpen();
+        }
     },
     colorIconSelected: function (element, args, value) {
-        element.blazor__instance.colorIconSelected(args, value);
+        if (element) {
+            element.blazor__instance.colorIconSelected(args, value);
+        }
     },
     colorPickerChanged: function (element, args, value) {
-        element.blazor__instance.colorChanged(args, value);
+        if (element) {
+            element.blazor__instance.colorChanged(args, value);
+        }
     },
     cancelLinkDialog: function (element) {
-        element.blazor__instance.cancelLinkDialog();
+        if (element) {
+            element.blazor__instance.cancelLinkDialog();
+        }
     },
     cancelImageDialog: function (element) {
-        element.blazor__instance.cancelImageDialog();
+        if (element) {
+            element.blazor__instance.cancelImageDialog();
+        }
     },
     linkDialogClosed: function (element) {
-        element.blazor__instance.linkDialogClosed();
+        if (element) {
+            element.blazor__instance.linkDialogClosed();
+        }
     },
     dialogClosed: function (element, type) {
-        element.blazor__instance.dialogClosed(type);
+        if (element) {
+            element.blazor__instance.dialogClosed(type);
+        }
     },
     insertLink: function (element, args) {
-        element.blazor__instance.insertLink(args);
+        if (element) {
+            element.blazor__instance.insertLink(args);
+        }
     },
     invokeImageBrowse: function (element) {
-        element.blazor__instance.invokeImageBrowse();
+        if (element) {
+            element.blazor__instance.invokeImageBrowse();
+        }
     },
     countCalculate: function (element) {
-        element.blazor__instance.countCalculate();
+        if (element) {
+            element.blazor__instance.countCalculate();
+        }
     },
     imageRemoving: function (element) {
-        element.blazor__instance.imageRemoving();
+        if (element) {
+            element.blazor__instance.imageRemoving();
+        }
     },
     uploadSuccess: function (element, url, altText) {
-        element.blazor__instance.uploadSuccess(url, altText);
+        if (element) {
+            element.blazor__instance.uploadSuccess(url, altText);
+        }
     },
     imageSelected: function (element) {
-        element.blazor__instance.imageSelected();
+        if (element) {
+            element.blazor__instance.imageSelected();
+        }
     },
     imageUploadComplete: function (element, base64Str, altText) {
-        element.blazor__instance.imageUploadComplete(base64Str, altText);
+        if (element) {
+            element.blazor__instance.imageUploadComplete(base64Str, altText);
+        }
     },
     imageUploadChange: function (element, url, isStream) {
-        element.blazor__instance.imageUploadChange(url, isStream);
+        if (element) {
+            element.blazor__instance.imageUploadChange(url, isStream);
+        }
     },
     dropUploadChange: function (element, url, isStream) {
-        element.blazor__instance.dropUploadChange(url, isStream);
+        if (element) {
+            element.blazor__instance.dropUploadChange(url, isStream);
+        }
     },
     insertImage: function (element) {
-        element.blazor__instance.insertImage();
+        if (element) {
+            element.blazor__instance.insertImage();
+        }
     },
     imageDialogOpened: function (element) {
-        element.blazor__instance.imageDialogOpened();
+        if (element) {
+            element.blazor__instance.imageDialogOpened();
+        }
     },
     imageDialogClosed: function (element) {
-        element.blazor__instance.imageDialogClosed();
+        if (element) {
+            element.blazor__instance.imageDialogClosed();
+        }
     },
     propertyChangeHandler: function (element, option) {
-        element.blazor__instance.propertyChangeHandler(option);
+        if (element) {
+            element.blazor__instance.propertyChangeHandler(option);
+        }
     },
     insertTable: function (element, row, column) {
-        element.blazor__instance.insertTable(row, column);
+        if (element) {
+            element.blazor__instance.insertTable(row, column);
+        }
     },
     applyTableProperties: function (element, model) {
-        element.blazor__instance.applyTableProperties(model);
+        if (element) {
+            element.blazor__instance.applyTableProperties(model);
+        }
     },
     createTablePopupOpened: function (element) {
-        element.blazor__instance.createTablePopupOpened();
+        if (element) {
+            element.blazor__instance.createTablePopupOpened();
+        }
     },
     pasteContent: function (element, pasteOption) {
-        element.blazor__instance.pasteContent(pasteOption);
+        if (element) {
+            element.blazor__instance.pasteContent(pasteOption);
+        }
     },
     imageDropInitialized: function (element, isStream) {
-        element.blazor__instance.imageDropInitialized(isStream);
+        if (element) {
+            element.blazor__instance.imageDropInitialized(isStream);
+        }
     },
     preventEditable: function (element) {
-        element.blazor__instance.preventEditable();
+        if (element) {
+            element.blazor__instance.preventEditable();
+        }
     },
     enableEditable: function (element) {
-        element.blazor__instance.enableEditable();
+        if (element) {
+            element.blazor__instance.enableEditable();
+        }
     },
     removeDroppedImage: function (element) {
-        element.blazor__instance.removeDroppedImage();
+        if (element) {
+            element.blazor__instance.removeDroppedImage();
+        }
     },
     dropUploadSuccess: function (element, url, altText) {
-        element.blazor__instance.dropUploadSuccess(url, altText);
+        if (element) {
+            element.blazor__instance.dropUploadSuccess(url, altText);
+        }
     },
     executeCommand: function (element, commandName, value, option) {
-        element.blazor__instance.executeCommand(commandName, value, option);
+        if (element) {
+            element.blazor__instance.executeCommand(commandName, value, option);
+        }
     },
     getCharCount: function (element) {
-        return element.blazor__instance.getCharCount();
+        return element && element.blazor__instance.getCharCount();
     },
     focusIn: function (element) {
-        return element.blazor__instance.focusIn();
+        return element && element.blazor__instance.focusIn();
     },
     focusOut: function (element) {
-        return element.blazor__instance.focusOut();
+        return element && element.blazor__instance.focusOut();
     },
     getContent: function (element) {
-        return element.blazor__instance.getContent();
+        return element && element.blazor__instance.getContent();
     },
     getHtml: function (element) {
-        return element.blazor__instance.getHtml();
+        return element && element.blazor__instance.getHtml();
     },
     getSelectedHtml: function (element) {
-        return element.blazor__instance.getSelectedHtml();
+        return element && element.blazor__instance.getSelectedHtml();
     },
     getSelection: function (element) {
-        return element.blazor__instance.getSelection();
+        return element && element.blazor__instance.getSelection();
     },
     getText: function (element) {
-        return element.blazor__instance.getText();
+        return element && element.blazor__instance.getText();
     },
     print: function (element) {
-        return element.blazor__instance.print();
+        return element && element.blazor__instance.print();
     },
     refreshUI: function (element) {
-        return element.blazor__instance.refreshUI();
+        return element && element.blazor__instance.refreshUI();
     },
     sanitizeHtml: function (element, value) {
-        return element.blazor__instance.sanitizeHtml(value);
+        return element && element.blazor__instance.sanitizeHtml(value);
     },
     selectAll: function (element) {
-        return element.blazor__instance.selectAll();
+        return element && element.blazor__instance.selectAll();
     },
     selectRange: function (element, range) {
-        return element.blazor__instance.selectRange(range);
+        return element && element.blazor__instance.selectRange(range);
     },
     showFullScreen: function (element) {
-        return element.blazor__instance.showFullScreen();
+        return element && element.blazor__instance.showFullScreen();
     },
     showSourceCode: function (element) {
-        return element.blazor__instance.showSourceCode();
+        return element && element.blazor__instance.showSourceCode();
     },
     insertAlt: function (element, altText) {
-        return element.blazor__instance.insertAlt(altText);
+        return element && element.blazor__instance.insertAlt(altText);
     },
     insertSize: function (element, width, height) {
-        return element.blazor__instance.insertSize(width, height);
+        return element && element.blazor__instance.insertSize(width, height);
     },
     insertImageLink: function (element, url, target) {
-        return element.blazor__instance.insertImageLink(url, target);
+        return element && element.blazor__instance.insertImageLink(url, target);
     },
     updateContentHeight: function (element) {
-        return element.blazor__instance.setContentHeight();
+        return element && element.blazor__instance.setContentHeight();
     },
     saveSelection: function (element) {
-        element.blazor__instance.saveSelection();
+        if (element) {
+            element.blazor__instance.saveSelection();
+        }
     },
     restoreSelection: function (element) {
-        element.blazor__instance.restoreSelection();
+        if (element) {
+            element.blazor__instance.restoreSelection();
+        }
+    },
+    getXhtml: function (element) {
+        return element && element.blazor__instance.getXhtml();
     },
     destroy: function (element) {
-        element.blazor__instance.destroy();
+        if (element) {
+            element.blazor__instance.destroy();
+        }
     }
 };
 

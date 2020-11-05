@@ -333,7 +333,7 @@ function linear() {
     if (linear1.checked) {
         diagram.layout.arrangement = ChildArrangement.Linear
     } else {
-        diagram.layout.arrangement = ChildArrangement.NonLinear
+        diagram.layout.arrangement = ChildArrangement.Nonlinear
     }
 }
 

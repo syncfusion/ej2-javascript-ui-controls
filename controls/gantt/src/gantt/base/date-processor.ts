@@ -1,5 +1,5 @@
 import { isNullOrUndefined, getValue, setValue } from '@syncfusion/ej2-base';
-import { IGanttData, IWorkingTimeRange, ITaskData, IIndicator } from './interface';
+import { IGanttData, IWorkingTimeRange, ITaskData, IIndicator, ITaskSegment } from './interface';
 import { HolidayModel, DayWorkingTimeModel, EventMarkerModel } from '../models/models';
 import { ColumnModel as GanttColumnModel } from '../models/column';
 import { TextBox } from '@syncfusion/ej2-inputs';
@@ -234,7 +234,9 @@ export class DateProcessor {
                 this.calculateDuration(ganttData);
             }
             if (!isNullOrUndefined(ganttProp.duration)) {
-                tempEndDate = this.getEndDate(ganttProp.startDate, ganttProp.duration, ganttProp.durationUnit, ganttProp, false);
+                let duration: number = !isNullOrUndefined(ganttProp.segments) && ganttProp.segments.length > 0 ?
+                    this.totalDuration(ganttProp.segments) : ganttProp.duration;
+                tempEndDate = this.getEndDate(ganttProp.startDate, duration, ganttProp.durationUnit, ganttProp, false);
             }
             this.parent.setRecordValue('endDate', tempEndDate, ganttProp, true);
         }
@@ -242,15 +244,28 @@ export class DateProcessor {
             this.parent.dataOperation.updateMappingData(ganttData, 'endDate');
         }
     }
+
+    public totalDuration(segments: ITaskSegment[]): number {
+        let duration: number = 0;
+        for (let i: number = 0; i < segments.length; i++) {
+            duration += segments[i].duration + segments[i].offsetDuration;
+        }
+        return duration;
+    }
     /**
      * To calculate duration from start date and end date
      * @param {IGanttData} ganttData - Defines the gantt data. 
      */
     public calculateDuration(ganttData: IGanttData): void {
         let ganttProperties: ITaskData = ganttData.ganttProperties;
-        let tDuration: number = this.getDuration(
-            ganttProperties.startDate, ganttProperties.endDate, ganttProperties.durationUnit,
-            ganttProperties.isAutoSchedule, ganttProperties.isMilestone);
+        let tDuration: number;
+        if (!isNullOrUndefined(ganttProperties.segments) && ganttProperties.segments.length > 0) {
+            tDuration = this.parent.editModule.taskbarEditModule.sumOfDuration(ganttProperties.segments);
+        } else {
+            tDuration = this.getDuration(
+                ganttProperties.startDate, ganttProperties.endDate, ganttProperties.durationUnit,
+                ganttProperties.isAutoSchedule, ganttProperties.isMilestone);
+        }
         this.parent.setRecordValue('duration', tDuration, ganttProperties, true);
         let col: GanttColumnModel = this.parent.columnByField[this.parent.columnMapping.duration];
         if (!isNullOrUndefined(this.parent.editModule) && !isNullOrUndefined(this.parent.editModule.cellEditModule) &&
@@ -998,10 +1013,10 @@ export class DateProcessor {
      * @private
      */
     public calculateProjectDates(editArgs?: Object): void {
-        let sDate: Date =  typeof this.parent.projectStartDate === 'string' ?
-         new Date(this.parent.projectStartDate as string) : this.parent.projectStartDate;
-        let eDate: Date =  typeof this.parent.projectEndDate === 'string' ?
-         new Date(this.parent.projectEndDate as string) : this.parent.projectEndDate;
+        let sDate: Date = typeof this.parent.projectStartDate === 'string' ?
+            new Date(this.parent.projectStartDate as string) : this.parent.projectStartDate;
+        let eDate: Date = typeof this.parent.projectEndDate === 'string' ?
+            new Date(this.parent.projectEndDate as string) : this.parent.projectEndDate;
         let projectStartDate: Date = this.parent.timelineModule.isZooming && this.parent.cloneProjectStartDate
             ? this.getDateFromFormat(this.parent.cloneProjectStartDate) : this.getDateFromFormat(sDate);
         let projectEndDate: Date = this.parent.timelineModule.isZooming && this.parent.cloneProjectEndDate

@@ -478,7 +478,7 @@ export class RowDD {
     private removeFirstRowBorder(element: Element): void {
         if (this.parent.element.getElementsByClassName('e-firstrow-dragborder').length > 0 && element &&
             (element as HTMLTableRowElement).rowIndex !== 0) {
-            this.parent.element.getElementsByClassName('e-firstrow-dragborder')[0].remove();
+            remove(this.parent.element.getElementsByClassName('e-firstrow-dragborder')[0]);
         }
     }
 
@@ -487,7 +487,7 @@ export class RowDD {
             this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).getAttribute('data-uid') !==
             element.getAttribute('data-uid');
         if (this.parent.element.getElementsByClassName('e-lastrow-dragborder').length > 0 && element && islastRowIndex) {
-            this.parent.element.getElementsByClassName('e-lastrow-dragborder')[0].remove();
+            remove(this.parent.element.getElementsByClassName('e-lastrow-dragborder')[0]);
         }
     }
 

@@ -219,18 +219,21 @@ let DropDownButton = class DropDownButton extends Component {
     /**
      * Removes the items from the menu.
      * @param  { string[] } items - Specifies an array of string to remove the items.
+     * @param { string } isUniqueId - Set `true` if specified items is a collection of unique id.
      * @returns {void}.
      */
-    removeItems(items) {
+    removeItems(items, isUniqueId) {
+        let refresh = false;
         for (let i = 0, len = items.length; i < len; i++) {
             for (let j = 0, len = this.items.length; j < len; j++) {
-                if (items[i] === this.items[j].text) {
+                if (items[i] === (isUniqueId ? this.items[j].id : this.items[j].text)) {
                     this.items.splice(j, 1);
+                    refresh = true;
                     break;
                 }
             }
         }
-        if (!this.canOpen()) {
+        if (refresh && this.getULElement()) {
             this.createItems();
         }
     }
@@ -592,7 +595,7 @@ let DropDownButton = class DropDownButton extends Component {
                     this.dropDown.dataBind();
                     break;
                 case 'items':
-                    if (!this.canOpen()) {
+                    if (this.getULElement()) {
                         this.createItems();
                     }
                     break;
@@ -749,10 +752,11 @@ let SplitButton = class SplitButton extends DropDownButton {
     /**
      * Removes the items from the menu.
      * @param  { string[] } items - Specifies an array of string to remove the items.
+     * @param { string } isUniqueId - Set `true` if specified items is a collection of unique id.
      * @returns {void}.
      */
-    removeItems(items) {
-        super.removeItems(items);
+    removeItems(items, isUniqueId) {
+        super.removeItems(items, isUniqueId);
         this.secondaryBtnObj.items = this.items;
     }
     initWrapper() {

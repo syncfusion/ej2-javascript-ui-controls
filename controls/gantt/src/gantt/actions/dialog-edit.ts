@@ -2,7 +2,9 @@ import { remove, extend, isNullOrUndefined, createElement, L10n, getValue, setVa
 import { DataManager, DataUtil } from '@syncfusion/ej2-data';
 import { Dialog, PositionDataModel, DialogModel } from '@syncfusion/ej2-popups';
 import { Tab, TabModel, TabItemModel, SelectEventArgs } from '@syncfusion/ej2-navigations';
-import { Grid, Edit, Toolbar as GridToolbar, Page, GridModel, GridActionEventArgs, getObject } from '@syncfusion/ej2-grids';
+import {
+    Grid, Edit, Toolbar as GridToolbar, Page, GridModel, GridActionEventArgs, getObject, ActionEventArgs
+} from '@syncfusion/ej2-grids';
 import {
     ColumnModel as GridColumnModel, ForeignKey,
     getActualProperties, RowSelectEventArgs
@@ -16,8 +18,10 @@ import {
 import { AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, TaskFieldsModel, ResourceFieldsModel } from '../models/models';
 import { CObject } from '../base/enum';
 import { ColumnModel as GanttColumnModel } from '../models/column';
-import { TextBox, NumericTextBox, NumericTextBoxModel, MaskedTextBox } from '@syncfusion/ej2-inputs';
-import { IGanttData, ITaskData, IDependencyEditData, IPredecessor, ITaskbarEditedEventArgs, ActionBeginArgs } from '../base/interface';
+import { TextBox, NumericTextBox, NumericTextBoxModel, MaskedTextBox, TextBoxModel } from '@syncfusion/ej2-inputs';
+import {
+    IGanttData, ITaskData, ITaskSegment, IDependencyEditData, IPredecessor, ITaskbarEditedEventArgs, ActionBeginArgs
+} from '../base/interface';
 import { CheckBox, CheckBoxModel } from '@syncfusion/ej2-buttons';
 import { DatePicker, DateTimePicker, DatePickerModel } from '@syncfusion/ej2-calendars';
 import { DropDownList, ComboBox, ComboBoxModel, ChangeEventArgs, DropDownListModel } from '@syncfusion/ej2-dropdowns';
@@ -67,6 +71,7 @@ export class DialogEdit {
     private addedRecord: object = null;
     private dialogEditValidationFlag: boolean = false;
     private tabObj: Tab;
+    private selectedSegment: ITaskSegment;
     public ganttResources: Object[] = [];
     /**
      * @private
@@ -187,6 +192,7 @@ export class DialogEdit {
         let dialogFields: AddDialogFieldSettingsModel[] = [];
         let fieldItem: AddDialogFieldSettingsModel = {};
         let fields: string[];
+        let taskFields: TaskFieldsModel = this.parent.taskFields;
         let columnMapping: { [key: string]: string; } = this.parent.columnMapping;
         if (Object.keys(columnMapping).length !== 0) {
             fieldItem.type = 'General';
@@ -212,6 +218,11 @@ export class DialogEdit {
             if (this.parent.columnByField[columnMapping.notes.valueOf()].visible !== false) {
                 fieldItem.type = 'Notes';
             }
+            dialogFields.push(fieldItem);
+        }
+        if (!isNullOrUndefined(getValue('segments', taskFields))) {
+            fieldItem = {};
+            fieldItem.type = 'Segments';
             dialogFields.push(fieldItem);
         }
         if (this.parent.customColumns.length > 0) {
@@ -315,7 +326,7 @@ export class DialogEdit {
             if (!isNullOrUndefined(selectedRowId)) {
                 this.openEditDialog(selectedRowId);
             }
-         }
+        }
     }
     /**
      * @param taskId 
@@ -542,6 +553,15 @@ export class DialogEdit {
                     }
                     tabItem.content = 'General';
                     this.beforeOpenArgs[tabItem.content] = this.getFieldsModel(dialogField.fields);
+                } else if (dialogField.type === 'Segments') {
+                    if (isNullOrUndefined(tasks.segments)) {
+                        continue;
+                    }
+                    if (isNullOrUndefined(dialogField.headerText)) {
+                        dialogField.headerText = this.localeObj.getConstant('segments');
+                    }
+                    tabItem.content = 'Segments';
+                    this.beforeOpenArgs[tabItem.content] = this.getSegmentsModel(dialogField.fields);
                 } else if (dialogField.type === 'Dependency') {
                     if (isNullOrUndefined(tasks.dependency)) {
                         continue;
@@ -648,6 +668,15 @@ export class DialogEdit {
             }
         } else if (id === ganttObj.element.id + 'NotesTabContainer') {
             ((<EJ2Instance>ganttObj.element.querySelector('#' + id)).ej2_instances[0] as RichTextEditor).refresh();
+        } else if (id === ganttObj.element.id + 'SegmentsTabContainer') {
+            if (isNullOrUndefined((this.beforeOpenArgs.rowData as IGanttData).ganttProperties.startDate)) {
+                ((<EJ2Instance>ganttObj.element.querySelector('#' + id)).ej2_instances[0] as Grid)
+                .enableToolbarItems([this.parent.element.id + 'SegmentsTabContainer' + '_add'], false);
+            } else {
+                ((<EJ2Instance>ganttObj.element.querySelector('#' + id)).ej2_instances[0] as Grid)
+                .enableToolbarItems([this.parent.element.id + 'SegmentsTabContainer' + '_add'], true);
+            }
+
         }
     }
 
@@ -795,23 +824,29 @@ export class DialogEdit {
         }
         let cellValue: string = inputElement.value;
         let colName: string = targetId.replace(ganttObj.element.id, '');
-        this.validateScheduleValuesByCurrentField(colName, cellValue, this.editedRecord);
-        let ganttProp: ITaskData = currentData.ganttProperties;
-        let tasks: TaskFieldsModel = ganttObj.taskFields;
-        if (!isNullOrUndefined(tasks.startDate)) {
-            this.updateScheduleFields(dialog, ganttProp, 'startDate');
+        if (colName.search('Segments') === 0) {
+            colName = colName.replace('SegmentsTabContainer', '');
+            this.validateSegmentFields(ganttObj, colName, cellValue, args);
+            return true;
+        } else {
+            this.validateScheduleValuesByCurrentField(colName, cellValue, this.editedRecord);
+            let ganttProp: ITaskData = currentData.ganttProperties;
+            let tasks: TaskFieldsModel = ganttObj.taskFields;
+            if (!isNullOrUndefined(tasks.startDate)) {
+                this.updateScheduleFields(dialog, ganttProp, 'startDate');
+            }
+            if (!isNullOrUndefined(tasks.endDate)) {
+                this.updateScheduleFields(dialog, ganttProp, 'endDate');
+            }
+            if (!isNullOrUndefined(tasks.duration)) {
+                this.updateScheduleFields(dialog, ganttProp, 'duration');
+            }
+            if (!isNullOrUndefined(tasks.work)) {
+                this.updateScheduleFields(dialog, ganttProp, 'work');
+            }
+            this.dialogEditValidationFlag = false;
+            return true;
         }
-        if (!isNullOrUndefined(tasks.endDate)) {
-            this.updateScheduleFields(dialog, ganttProp, 'endDate');
-        }
-        if (!isNullOrUndefined(tasks.duration)) {
-            this.updateScheduleFields(dialog, ganttProp, 'duration');
-        }
-        if (!isNullOrUndefined(tasks.work)) {
-            this.updateScheduleFields(dialog, ganttProp, 'work');
-        }
-        this.dialogEditValidationFlag = false;
-        return true;
     }
 
     private updateScheduleFields(dialog: HTMLElement, ganttProp: ITaskData, ganttField: string): void {
@@ -824,9 +859,9 @@ export class DialogEdit {
         if (col.editType === 'stringedit') {
             let textBox: TextBox = <TextBox>(<EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
             tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as Function)() :
-            !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function)
-            (columnName, ganttObj.editModule.dialogModule.editedRecord, col) :
-            this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
+                !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function)
+                    (columnName, ganttObj.editModule.dialogModule.editedRecord, col) :
+                    this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
             if (textBox.value !== tempValue.toString() && taskField.duration === columnName) {
                 textBox.value = tempValue as string;
                 textBox.dataBind();
@@ -920,6 +955,9 @@ export class DialogEdit {
                 } else if (isNullOrUndefined(ganttProp.startDate)) {
                     this.parent.dateValidationModule.calculateStartDate(ganttData);
                 } else {
+                    if (!isNullOrUndefined(ganttProp.segments) && ganttProp.segments.length > 0) {
+                        ganttProp.segments = this.parent.editModule.cellEditModule.validateEndDateWithSegments(ganttProp);
+                    }
                     this.parent.dateValidationModule.calculateDuration(ganttData);
                 }
             } else {
@@ -998,7 +1036,183 @@ export class DialogEdit {
         }
         return true;
     }
+    private getSegmentsModel(fields: string[]): Object {
+        let taskSettings: TaskFieldsModel = this.parent.taskFields;
+        if (isNullOrUndefined(fields) || fields.length === 0) {
+            fields = [];
+            if (!isNullOrUndefined(taskSettings.startDate)) {
+                fields.push('startDate');
+            }
+            if (!isNullOrUndefined(taskSettings.endDate)) {
+                fields.push('endDate');
+            }
+            if (!isNullOrUndefined(taskSettings.duration)) {
+                fields.push('duration');
+            }
+        }
+        let segmentInputModel: GridModel = {};
+        segmentInputModel.editSettings = {
+            allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal', newRowPosition: 'Bottom'
+        };
+        segmentInputModel.locale = this.parent.locale;
+        segmentInputModel.dataSource = [];
+        segmentInputModel.rowHeight = this.parent.isAdaptive ? 48 : null;
+        segmentInputModel.toolbar = [
+            {
+                id: this.parent.element.id + 'SegmentsTabContainer' + '_add', prefixIcon: 'e-add',
+                tooltipText: this.localeObj.getConstant('add'), align: 'Right',
+                text: this.parent.isAdaptive ? '' : this.localeObj.getConstant('add')
+            },
+            {
+                id: this.parent.element.id + 'SegmentsTabContainer' + '_delete', prefixIcon: 'e-delete',
+                tooltipText: this.localeObj.getConstant('delete'), align: 'Right',
+                text: this.parent.isAdaptive ? '' : this.localeObj.getConstant('delete')
+            },
+        ];
+        let gridColumns: GridColumnModel[] = [];
+        for (let i: number = 0; i < fields.length; i++) {
+            let gridColumn: GridColumnModel = {};
+            let generalTabString: string = 'General';
+            switch (fields[i]) {
+                case 'startDate':
+                case 'endDate':
+                    gridColumn = {
+                        field: fields[i], headerText: this.localeObj.getConstant(fields[i]), editType: 'stringedit', width: '200px',
+                        edit: {
+                            write: (args: CObject): void => {
+                                let datePickerModel: object = this.beforeOpenArgs[generalTabString][this.parent.taskFields[fields[i]]];
+                                let value: string = args.rowData[(args.column as GridColumnModel).field];
+                                setValue('value', value, datePickerModel);
+                                let datePicker: DatePicker = new DatePicker(datePickerModel);
+                                datePicker.appendTo(args.element as HTMLElement);
+                            },
+                            read: (args: HTMLElement): Date => {
+                                let ej2Instance: DatePickerModel =
+                                    <CObject>(<EJ2Instance>args).ej2_instances[0];
+                                return ej2Instance.value as Date;
+                            }
 
+                        },
+                        format: this.parent.getDateFormat()
+                    };
+                    if (fields[i] === 'startDate') {
+                        gridColumn.validationRules = { required: true };
+                    }
+                    gridColumns.push(gridColumn);
+                    break;
+                case 'duration':
+                    gridColumn = {
+                        field: fields[i], headerText: this.localeObj.getConstant(fields[i]), editType: 'stringedit', width: '100px',
+                        edit: {
+                            write: (args: CObject): void => {
+                                let inputTextModel: object = this.beforeOpenArgs[generalTabString][this.parent.taskFields[fields[i]]];
+                                (inputTextModel as TextBox).floatLabelType = 'Never';
+                                let value: string = args.rowData[(args.column as GridColumnModel).field];
+                                if (!isNullOrUndefined(value)) {
+                                    setValue('value', value, inputTextModel);
+                                } else {
+                                    setValue('value', null, inputTextModel);
+                                }
+                                setValue('value', value, inputTextModel);
+                                let inputModel: TextBox = new TextBox(inputTextModel);
+                                inputModel.appendTo(args.element as HTMLElement);
+                            },
+                            read: (args: HTMLElement): string => {
+                                let ej2Instance: TextBoxModel =
+                                    <CObject>(<EJ2Instance>args).ej2_instances[0];
+                                return ej2Instance.value.toString();
+                            }
+                        },
+                    };
+                    gridColumns.push(gridColumn);
+                    break;
+            }
+        }
+        segmentInputModel.columns = gridColumns;
+        segmentInputModel.height = this.parent.isAdaptive ? '100%' : '153px';
+        return segmentInputModel;
+    }
+    private getGridColumnByField(fieldName: string, columns: GridColumnModel[]): GridColumnModel {
+        let column: GridColumnModel;
+        for (let i: number = 0; i < columns.length; i++) {
+            if (columns[i].field === fieldName) {
+                column = columns[i];
+            }
+        }
+        return column;
+    }
+    private updateSegmentField(columnName: string, args: CObject, segment: ITaskSegment): void {
+        let dialog: HTMLElement = this.parent.editModule.dialogModule.dialog;
+        let gridModel: GridModel = getValue('Segments', this.beforeOpenArgs) as GridModel;
+        let col: GridColumnModel = this.getGridColumnByField(columnName, gridModel.columns as GridColumnModel[]);
+        let tempValue: string | Date | number;
+        let ganttId: string = this.parent.element.id;
+        tempValue = segment[columnName];
+        let inputValue: TextBox | DatePicker;
+
+        if (col.editType === 'stringedit') {
+            inputValue = <TextBox>(<EJ2Instance>dialog.querySelector('#' + ganttId + 'SegmentsTabContainer' + columnName))
+                .ej2_instances[0] as TextBox;
+        } else if (col.editType === 'datepickeredit') {
+            inputValue = <DatePicker>(<EJ2Instance>dialog.querySelector('#' + ganttId + 'SegmentsTabContainer' + columnName))
+                .ej2_instances[0] as DatePicker;
+        }
+        if (inputValue.value !== tempValue.toString()) {
+            inputValue.value = tempValue as string;
+            inputValue.dataBind();
+        }
+    }
+    private validateSegmentFields(ganttObj: Gantt, columnName: string, cellValue: string, args: CObject): void {
+        let taskSettings: TaskFieldsModel = this.parent.taskFields;
+        if (!isNullOrUndefined(taskSettings.duration) && taskSettings.duration.toLowerCase() === columnName.toLowerCase()) {
+            if (!isNullOrUndefined(cellValue) && cellValue !== '') {
+                this.selectedSegment.duration = Number(cellValue);
+                let endDate: Date = ganttObj.dataOperation.getEndDate(
+                    this.selectedSegment.startDate, Number(cellValue), this.editedRecord.ganttProperties.durationUnit,
+                    this.editedRecord.ganttProperties, false
+                );
+                endDate = ganttObj.dataOperation.checkEndDate(endDate, this.editedRecord.ganttProperties, false);
+                this.selectedSegment.endDate = endDate;
+            }
+        }
+        if (!isNullOrUndefined(taskSettings.startDate) && taskSettings.startDate.toLowerCase() === columnName.toLowerCase()) {
+            if (cellValue !== '') {
+                let startDate: Date = this.parent.dateValidationModule.getDateFromFormat(cellValue);
+                startDate = this.parent.dateValidationModule.checkStartDate(startDate);
+                this.selectedSegment.startDate = startDate;
+
+                if (!isNullOrUndefined(taskSettings.endDate)) {
+                    this.selectedSegment.endDate = this.parent.dataOperation.getEndDate(
+                        startDate, this.selectedSegment.duration, this.editedRecord.ganttProperties.durationUnit,
+                        this.editedRecord.ganttProperties, false
+                    );
+                }
+            }
+        }
+        if (!isNullOrUndefined(taskSettings.endDate) && taskSettings.endDate.toLowerCase() === columnName.toLowerCase()) {
+            if (cellValue !== '') {
+                let endDate: Date = this.parent.dateValidationModule.getDateFromFormat(cellValue);
+                if (endDate.getHours() === 0 && ganttObj.defaultEndTime !== 86400) {
+                    this.parent.dateValidationModule.setTime(ganttObj.defaultEndTime, endDate);
+                }
+                endDate = this.parent.dateValidationModule.checkEndDate(endDate, this.editedRecord.ganttProperties);
+                this.selectedSegment.endDate = endDate;
+                this.selectedSegment.duration = this.parent.dataOperation.getDuration(
+                    this.selectedSegment.startDate, this.selectedSegment.endDate, this.editedRecord.ganttProperties.durationUnit,
+                    true, false, true
+                );
+            }
+        }
+        if (!isNullOrUndefined(taskSettings.startDate)) {
+            this.updateSegmentField('startDate', args, this.selectedSegment);
+        }
+        if (!isNullOrUndefined(taskSettings.endDate)) {
+            this.updateSegmentField('endDate', args, this.selectedSegment);
+        }
+        if (!isNullOrUndefined(taskSettings.duration)) {
+            this.updateSegmentField('duration', args, this.selectedSegment);
+        }
+    }
     private getPredecessorModel(fields: string[]): Object {
         if (isNullOrUndefined(fields) || fields.length === 0) {
             fields = ['ID', 'Name', 'Type', 'Offset', 'UniqueId'];
@@ -1044,7 +1258,9 @@ export class DialogEdit {
             } else if (fields[i].toLowerCase() === 'offset') {
                 column = {
                     field: 'offset', headerText: this.localeObj.getConstant('offset'), editType: 'stringedit',
-                    defaultValue: '0 days', validationRules: { required: true }, width: '100px'
+                    defaultValue: this.parent.dataOperation.getDurationString(
+                        0, (this.beforeOpenArgs.rowData as IGanttData).ganttProperties.durationUnit),
+                    validationRules: { required: true }, width: '100px'
                 };
                 columns.push(column);
             } else if (fields[i].toLowerCase() === 'uniqueid') {
@@ -1170,8 +1386,79 @@ export class DialogEdit {
                 index++;
             } else if (item.content === 'Notes') {
                 item.content = this.renderNotesTab(item.content);
+            } else if (item.content === 'Segments') {
+                item.content = this.renderSegmentsTab(item.content);
             }
         }
+    }
+    private segmentGridActionBegin(args: ActionEventArgs): void {
+        let taskFields: TaskFieldsModel = this.parent.taskFields;
+        let itemName: string = 'Segments';
+        let gridModel: GridModel = this.beforeOpenArgs[itemName] as GridModel;
+        if (args.requestType === 'add' || args.requestType === 'beginEdit' || args.requestType === 'save') {
+            let isEdit: boolean = args.requestType === 'add' ? false : true;
+            let gridData: Object[] = gridModel.dataSource as object[];
+            let selectedItem: object = getValue('rowData', args);
+            let startDate: Date = (this.beforeOpenArgs.rowData as IGanttData).ganttProperties.startDate;
+            if (!isNullOrUndefined(startDate)) {
+                if (args.requestType === 'add') {
+                    let arg: Object = {};
+                    let sDate: Date = getValue('startDate', selectedItem);
+                    let eDate: Date = getValue('endDate', selectedItem);
+                    let duration: number = getValue('duration', selectedItem);
+                    let startDate: Date = !isNullOrUndefined(gridData) && gridData.length > 0 ?
+                        !isNullOrUndefined(taskFields.endDate) ? new Date((getValue('endDate', gridData[0]) as Date).getTime()) :
+                            new Date((getValue('startDate', gridData[0]) as Date).getTime()) :
+                        !isNullOrUndefined((this.beforeOpenArgs.rowData as IGanttData).ganttProperties.startDate) &&
+                        new Date((this.beforeOpenArgs.rowData as IGanttData).ganttProperties.startDate.getTime());
+                    startDate.setHours(0, 0, 0, 0);
+                    if (!isNullOrUndefined(gridData) && gridData.length > 0) {
+                        startDate.setDate(startDate.getDate() + 2);
+                    }
+                    sDate = this.parent.dataOperation.checkStartDate(startDate);
+                    eDate = this.parent.dateValidationModule.getDateFromFormat(sDate);
+                    if (eDate.getHours() === 0 && this.parent.defaultEndTime !== 86400) {
+                        this.parent.dateValidationModule.setTime(this.parent.defaultEndTime, eDate);
+                    }
+                    eDate = !isNullOrUndefined(taskFields.endDate) && !isNullOrUndefined(gridData) && gridData.length <= 0 ?
+                        (this.beforeOpenArgs.rowData as IGanttData).ganttProperties.endDate : eDate;
+
+                    duration = !isNullOrUndefined(taskFields.duration) && !isNullOrUndefined(gridData) && gridData.length <= 0 ?
+                        (this.beforeOpenArgs.rowData as IGanttData).ganttProperties.duration : 1;
+                    arg = {
+                        startDate: sDate,
+                        endDate: eDate,
+                        duration: duration
+                    };
+                    args.rowData = arg;
+                }
+            }
+            this.selectedSegment = args.rowData;
+            // if (args.requestType === 'save') {
+            //     // let duration: string = 'duration';
+            //     // let tempDuration: Object = this.parent.dataOperation.getDurationValue(args.data[duration]);
+            //     // args.data[duration] = getValue('duration', tempDuration);
+            //     this.selectedSegment = !isNullOrUndefined(this.editedRecord.ganttProperties.segments[args.rowIndex]) ?
+            //         this.editedRecord.ganttProperties.segments[args.rowIndex] : !isNullOrUndefined(gridData[args.rowIndex]) ?
+            //             gridData[args.rowIndex] : gridData;
+            // }
+        }
+    }
+    private renderSegmentsTab(itemName: string): HTMLElement {
+        let ganttObj: Gantt = this.parent;
+        let gridModel: GridModel = this.beforeOpenArgs[itemName];
+        let ganttData: IGanttData = this.beforeOpenArgs.rowData;
+        let preData: ITaskSegment[] = [];
+        if (this.isEdit) {
+            preData = isNullOrUndefined(ganttData.ganttProperties.segments) ? [] : ganttData.ganttProperties.segments;
+        }
+        gridModel.dataSource = preData;
+        gridModel.actionBegin = this.segmentGridActionBegin.bind(this);
+        Grid.Inject(Edit, Page, GridToolbar, ForeignKey);
+        let gridObj: Grid = new Grid(gridModel);
+        let divElement: HTMLElement = this.createDivElement('', ganttObj.element.id + '' + itemName + 'TabContainer');
+        gridObj.appendTo(divElement);
+        return divElement;
     }
     private renderGeneralTab(itemName: string): HTMLElement {
         let ganttObj: Gantt = this.parent;
@@ -1299,7 +1586,7 @@ export class DialogEdit {
     }
 
     private gridActionBegin(args: GridActionEventArgs): void {
-        let itemName: string =  'Dependency';
+        let itemName: string = 'Dependency';
         let gridModel: GridModel = this.beforeOpenArgs[itemName] as GridModel;
         if (args.requestType === 'add' || args.requestType === 'beginEdit') {
             let isEdit: boolean = args.requestType === 'add' ? false : true;
@@ -1594,6 +1881,8 @@ export class DialogEdit {
                     this.updateResourceTab(element);
                 } else if (id.indexOf('Custom') !== -1) {
                     this.updateCustomTab(element);
+                } else if (id === 'Segments') {
+                    this.updateSegmentsData(element, this.beforeOpenArgs.rowData);
                 }
             }
         }
@@ -1628,6 +1917,47 @@ export class DialogEdit {
         }
         return true;
     }
+
+    private updateSegmentTaskData(dataSource: ITaskSegment[]): void {
+        let userData: ITaskSegment[] = [];
+        let taskSettings: TaskFieldsModel = this.parent.taskFields;
+        for (let i: number = 0; i < dataSource.length; i++) {
+            let taskData: Object = {};
+
+            if (!isNullOrUndefined(taskSettings.startDate)) {
+                taskData[this.parent.taskFields.startDate] = dataSource[i].startDate;
+            }
+            if (!isNullOrUndefined(taskSettings.endDate)) {
+                taskData[this.parent.taskFields.endDate] = dataSource[i].endDate;
+            }
+            if (!isNullOrUndefined(taskSettings.duration)) {
+                taskData[this.parent.taskFields.duration] = Number(dataSource[i].duration);
+                dataSource[i].duration = taskData[this.parent.taskFields.duration];
+            }
+            userData.push(taskData);
+        }
+        if (!this.isEdit) {
+            this.addedRecord[taskSettings.segments] = userData;
+        } else {
+            this.rowData.ganttProperties.segments = dataSource;
+            this.parent.setRecordValue(
+                'segments', this.parent.dataOperation.setSegmentsInfo(this.rowData, false), this.rowData.ganttProperties, true
+            );
+            this.parent.setRecordValue(
+                'taskData.' + this.parent.taskFields.segments,
+                userData,
+                this.rowData);
+        }
+    }
+    private updateSegmentsData(segmentForm: HTMLElement, data: IGanttData): void {
+        let gridObj: Grid = <Grid>(<EJ2Instance>segmentForm).ej2_instances[0];
+        if (gridObj.isEdit) {
+            gridObj.endEdit();
+        }
+        let dataSource: ITaskSegment[] = <ITaskSegment[]>gridObj.currentViewData;
+        this.updateSegmentTaskData(dataSource);
+    }
+
     private updateGeneralTab(generalForm: HTMLElement, isCustom: boolean): void {
         let ganttObj: Gantt = this.parent;
         let childNodes: NodeList = generalForm.childNodes;
@@ -1650,7 +1980,7 @@ export class DialogEdit {
                     } else {
                         tasksData[fieldName] = (column.edit.read as Function)(inputElement, controlObj.value);
                     }
-                   } else if (isCustom && column.editType === 'booleanedit') {
+                } else if (isCustom && column.editType === 'booleanedit') {
                     if (inputElement.checked === true) {
                         tasksData[fieldName] = true;
                     } else {

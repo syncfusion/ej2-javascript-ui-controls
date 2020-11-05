@@ -4,6 +4,18 @@
 
 ## [Unreleased]
 
+## 18.3.44 (2020-10-27)
+
+### CircularGauge
+
+#### New Features
+
+- `#292493` - `allowMargin` property is exposed to reduce the white space around the circular gauge.
+
+#### Bug Fixes
+
+- `#298451` - Width of the circular gauge will now set properly during responsiveness.
+
 ## 18.3.35 (2020-10-01)
 
 ### CircularGauge

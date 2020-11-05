@@ -141,7 +141,7 @@ export class InputElement {
      * @private
      */
     // tslint:disable-next-line
-    public calculateLabelBounds(bounds: any): any {
+    public calculateLabelBounds(bounds: any, pageIndex?: number): any {
         // tslint:disable-next-line
         let labelBounds: any = {};
         if (bounds) {
@@ -150,6 +150,10 @@ export class InputElement {
             let labelWidth: number = 0;
             let labelHeight: number = 24.6;
             let labelMaxWidth: number = 151;
+            if (pageIndex === undefined) {
+                pageIndex = this.pdfViewerBase.currentPageNumber - 1;
+            }
+            let rotation: number = this.pdfViewerBase.pageSize[pageIndex].rotation;
             if (bounds.width) {
                 // tslint:disable-next-line:max-line-length
                 labelWidth = (bounds.width / 2);
@@ -163,8 +167,13 @@ export class InputElement {
                 // tslint:disable-next-line:max-line-length
                 labelTop = (bounds.top + (bounds.height / 2) - (labelHeight / 2));
             }
-            // tslint:disable-next-line:max-line-length             
-            labelBounds = { left: labelLeft, top: labelTop, width: labelWidth, height: labelHeight, right: 0, bottom: 0 };
+            if (rotation === 1 || rotation === 3) {
+                // tslint:disable-next-line:max-line-length
+                labelBounds = { left: labelLeft, top: labelTop, width: (labelWidth - labelHeight) + (labelWidth / 2), height: (labelHeight * 2) + labelWidth, right: 0, bottom: 0 };
+            } else {
+                // tslint:disable-next-line:max-line-length
+                labelBounds = { left: labelLeft, top: labelTop, width: labelWidth, height: labelHeight, right: 0, bottom: 0 };
+            }
         }
         return labelBounds;
     }

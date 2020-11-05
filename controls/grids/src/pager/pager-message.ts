@@ -48,7 +48,7 @@ export class PagerMessage implements IRender {
         } else {
             this.pageNoMsgElem.textContent = this.format(
                 pagerObj.getLocalizedLabel('currentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
-                    pagerObj.currentPage, pagerObj.totalPages || 0]) + ' ';
+                    pagerObj.currentPage, pagerObj.totalPages || 0, pagerObj.totalRecordsCount || 0]) + ' ';
             this.pageCountMsgElem.textContent = this.format(
                 pagerObj.getLocalizedLabel(pagerObj.totalRecordsCount <= 1 ? 'totalItemInfo' : 'totalItemsInfo'),
                 [pagerObj.totalRecordsCount || 0]);

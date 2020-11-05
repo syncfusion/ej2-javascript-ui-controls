@@ -1495,50 +1495,75 @@ class DataBind {
         let cell;
         let dataRange;
         let startCell;
-        let isNewRow;
         let inRange;
-        let sheetIdx = args.sheetIdx > -1 ? args.sheetIdx : args.activeSheetIndex > -1 ? args.activeSheetIndex
-            : getSheetIndex(this.parent, args.address.split('!')[0]);
+        let deleteRowDetails;
+        let sheetIdx = this.parent.activeSheetIndex;
         let sheet = this.parent.sheets[sheetIdx];
         let cellIndices;
         sheet.ranges.forEach((range, idx) => {
             if (range.dataSource) {
+                let isNewRow;
                 startCell = getCellIndexes(range.startCell);
                 dataRange = [...startCell, startCell[0] + range.info.count, startCell[1] + range.info.fldLen - 1];
                 if (args.modelType === 'Row') {
-                    inRange = dataRange[0] <= args.startIndex && dataRange[2] >= args.startIndex;
+                    if (args.insertType) {
+                        inRange = dataRange[0] < args.index && dataRange[2] >= args.index;
+                        cellIndices = [args.index];
+                        if (!inRange) {
+                            if ((dataRange[2] + 1 === args.index && args.insertType === 'below')) {
+                                isNewRow = true;
+                                range.info.count += args.model.length;
+                            }
+                            else if (dataRange[0] >= args.index) {
+                                range.startCell = getCellAddress(startCell[0] + args.model.length, startCell[1]);
+                            }
+                        }
+                        else {
+                            isNewRow = true;
+                            range.info.count += args.model.length;
+                        }
+                    }
+                    else {
+                        inRange = dataRange[0] <= args.startIndex && dataRange[2] >= args.startIndex;
+                        action = 'delete';
+                    }
                 }
                 else {
                     cellIndices = getCellIndexes(args.sheetIdx > -1 ? args.address : args.address.split('!')[1]);
-                    inRange = dataRange[0] <= cellIndices[0] && dataRange[2] >= cellIndices[0] && dataRange[1] <= cellIndices[1]
-                        && dataRange[3] >= cellIndices[1];
-                    if (dataRange[2] + 1 === cellIndices[0]) {
-                        isNewRow = true;
-                        range.info.count += 1;
-                    }
-                    else {
-                        isNewRow = false;
-                    }
+                    inRange = ((range.showFieldAsHeader ? dataRange[0] + 1 : dataRange[0]) <= cellIndices[0])
+                        && dataRange[2] >= cellIndices[0] && dataRange[1] <= cellIndices[1] && dataRange[3] >= cellIndices[1];
                 }
                 if (inRange || isNewRow) {
-                    if (args.modelType === 'Row') {
-                        action = 'delete';
+                    if (args.modelType === 'Row' && !args.insertType) {
                         args.deletedModel.forEach((row, rowIdx) => {
                             changedData[rowIdx] = {};
-                            row.cells.forEach((cell, cellIdx) => {
-                                changedData[rowIdx][range.info.flds[cellIdx]] = (cell && cell.value) || null;
+                            range.info.flds.forEach((fld, idx) => {
+                                if (row.cells) {
+                                    cell = row.cells[startCell[1] + idx];
+                                    changedData[rowIdx][fld] = (cell && cell.value) || null;
+                                }
+                                else {
+                                    changedData[rowIdx][fld] = null;
+                                }
                             });
+                            range.info.count -= 1;
                         });
-                        range.info.count -= 1;
+                        deleteRowDetails = { count: args.deletedModel.length, index: args.endIndex };
                     }
                     else {
                         action = isNewRow ? 'add' : 'edit';
-                        range.info.flds.forEach((fld, idx) => {
-                            cell = getCell(cellIndices[0], idx, sheet);
-                            changedData[0][fld] = (cell && cell.value) || null;
-                        });
+                        for (let i = 0; i < (isNewRow ? args.model.length : 1); i++) {
+                            changedData[i] = {};
+                            range.info.flds.forEach((fld, idx) => {
+                                cell = getCell(cellIndices[0], startCell[1] + idx, sheet);
+                                changedData[i][fld] = (cell && cell.value) || null;
+                            });
+                        }
                     }
                     this.parent.trigger('dataSourceChanged', { data: changedData, action: action, rangeIndex: idx, sheetIndex: sheetIdx });
+                }
+                else if (deleteRowDetails && deleteRowDetails.count && dataRange[0] > deleteRowDetails.index) {
+                    range.startCell = getCellAddress(startCell[0] - deleteRowDetails.count, startCell[1]);
                 }
             }
         });
@@ -9892,7 +9917,7 @@ class WorkbookHyperlink {
         }
         if (typeof (hyperlink) === 'string') {
             if (hyperlink.indexOf('http://') !== 0 && hyperlink.indexOf('https://') !== 0 && hyperlink.indexOf('ftp://') !== 0) {
-                hyperlink = hyperlink.indexOf('www.') === 0 ? 'http://' + hyperlink : hyperlink;
+                hyperlink = hyperlink.toLowerCase().indexOf('www.') === 0 ? 'http://' + hyperlink : hyperlink;
                 address = hyperlink;
             }
             sheet.rows[rowIdx].cells[colIdx].hyperlink = hyperlink;
@@ -9900,7 +9925,7 @@ class WorkbookHyperlink {
         else {
             address = hyperlink.address;
             if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
-                address = address.indexOf('www.') === 0 ? 'http://' + address : address;
+                address = address.toLowerCase().indexOf('www.') === 0 ? 'http://' + address : address;
             }
             sheet.rows[rowIdx].cells[colIdx].hyperlink = {
                 address: address,
@@ -9968,8 +9993,9 @@ class WorkbookInsert {
             }
             let curIdx = index + model.length;
             for (let i = 0; i <= args.model.usedRange.colIndex; i++) {
-                if (args.model.rows[curIdx] && args.model.rows[curIdx].cells[i] && args.model.rows[curIdx].cells[i].rowSpan !== undefined &&
-                    args.model.rows[curIdx].cells[i].rowSpan < 0 && args.model.rows[curIdx].cells[i].colSpan === undefined) {
+                if (args.model.rows[curIdx] && args.model.rows[curIdx].cells && args.model.rows[curIdx].cells[i] &&
+                    args.model.rows[curIdx].cells[i].rowSpan !== undefined && args.model.rows[curIdx].cells[i].rowSpan < 0 &&
+                    args.model.rows[curIdx].cells[i].colSpan === undefined) {
                     this.parent.notify(insertMerge, {
                         range: [curIdx, i, curIdx, i], insertCount: model.length,
                         insertModel: 'Row'
@@ -10055,7 +10081,7 @@ class WorkbookInsert {
             this.parent.notify(workbookFormulaOperation, eventArgs);
         }
         this.parent.notify(insert, {
-            model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length
+            model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length, insertType: args.insertType
         });
     }
     setInsertInfo(sheet, startIndex, count, totalKey, modelType = 'Row') {
@@ -11539,11 +11565,10 @@ class WorkbookProtectSheet {
     }
     protectsheetHandler(args) {
         let sheet = this.parent.getActiveSheet();
-        sheet.protectSettings.selectCells = args.selectCells;
-        sheet.protectSettings.formatCells = args.formatCells;
-        sheet.protectSettings.formatColumns = args.formatColumns;
-        sheet.protectSettings.formatRows = args.formatRows;
-        sheet.protectSettings.insertLink = args.insertLink;
+        this.parent.setSheetPropertyOnMute(sheet, 'protectSettings', {
+            selectCells: args.selectCells, formatCells: args.formatCells,
+            formatColumns: args.formatColumns, formatRows: args.formatRows, insertLink: args.insertLink
+        });
         this.parent.notify(protectSheetWorkBook, sheet.protectSettings);
         this.parent.notify(updateToggle, { props: 'Protect' });
     }
@@ -11554,7 +11579,7 @@ class WorkbookProtectSheet {
         }
         sheet.protectSettings.formatCells = sheet.protectSettings.formatColumns = false;
         sheet.protectSettings.formatRows = sheet.protectSettings.selectCells = false;
-        sheet.isProtected = false;
+        this.parent.setSheetPropertyOnMute(sheet, 'isProtected', false);
         this.parent.notify(protectSheetWorkBook, sheet.protectSettings);
         this.parent.notify(updateToggle, { props: 'Protect' });
     }
@@ -12513,7 +12538,7 @@ class WorkbookConditionalFormat {
         let indexes = getRangeIndexes(range);
         let cfrCount;
         if (!sheet.conditionalFormats) {
-            sheet.conditionalFormats = [];
+            this.parent.setSheetPropertyOnMute(sheet, 'conditionalFormats', []);
         }
         cfrCount = sheet.conditionalFormats.length;
         sheet.conditionalFormats[cfrCount] = conditionalFormat;
@@ -13682,7 +13707,8 @@ class Range extends ChildProperty {
                     }
                 });
             }
-            else if (this[controlParent].tagObjects[0].instance.hasChanges && !this[controlParent].tagObjects[0].instance.isInitChanges) {
+            else if (this[controlParent].tagObjects[0].instance && this[controlParent].tagObjects[0].instance.hasChanges
+                && !this[controlParent].tagObjects[0].instance.isInitChanges) {
                 let sheetIdx = this[controlParent].sheets.indexOf(this[parentObj]);
                 if (this[parentObj].changedRangeIdx === undefined) {
                     let rangeIdx;
@@ -15767,10 +15793,10 @@ function updateAction(options, spreadsheet, isRedo) {
             });
             break;
         case 'gridLines':
-            spreadsheet.sheets[eventArgs.sheetIdx].showGridLines = eventArgs.isShow;
+            spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.sheetIdx], 'showGridLines', eventArgs.isShow);
             break;
         case 'headers':
-            spreadsheet.sheets[eventArgs.sheetIdx].showHeaders = eventArgs.isShow;
+            spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.sheetIdx], 'showHeaders', eventArgs.isShow);
             break;
         case 'resize':
         case 'resizeToFit':
@@ -15792,7 +15818,7 @@ function updateAction(options, spreadsheet, isRedo) {
             }
             break;
         case 'renameSheet':
-            spreadsheet.sheets[eventArgs.index - 1].name = eventArgs.value;
+            spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.index - 1], 'name', eventArgs.value);
             break;
         case 'removeSheet':
             spreadsheet.notify(removeSheetTab, {
@@ -16626,7 +16652,9 @@ class Clipboard {
         let cellStyle = {};
         if (td.classList.length || td.getAttribute('style')) {
             if (td.classList.length) {
-                styles.push(ele.querySelector('style').innerHTML.split(td.classList[0])[1].split('{')[1].split('}')[0]);
+                if (ele.querySelector('style').innerHTML.indexOf(td.classList[0]) > -1) {
+                    styles.push(ele.querySelector('style').innerHTML.split(td.classList[0])[1].split('{')[1].split('}')[0]);
+                }
             }
             if (td.getAttribute('style')) {
                 styles.push(td.getAttribute('style'));
@@ -16896,9 +16924,9 @@ class Edit {
                         }
                         let isFirefoxExceptionkeys = (keyCode === this.keyCodes.FIREFOXEQUALPLUS) ||
                             (keyCode === this.keyCodes.FIREFOXMINUS);
-                        let isF2Edit = (!e.shiftKey && !e.ctrlKey && keyCode === this.keyCodes.F2);
+                        let isF2Edit = (!e.shiftKey && !e.ctrlKey && !e.metaKey && keyCode === this.keyCodes.F2);
                         let isBackSpace = keyCode === this.keyCodes.BACKSPACE;
-                        if ((!e.ctrlKey && !e.altKey && ((!e.shiftKey && keyCode === this.keyCodes.SPACE) || isAlphabet || isNumeric ||
+                        if ((!e.ctrlKey && !e.metaKey && !e.altKey && ((!e.shiftKey && keyCode === this.keyCodes.SPACE) || isAlphabet || isNumeric ||
                             isNumpadKeys || isSymbolkeys || (Browser.info.name === 'mozilla' && isFirefoxExceptionkeys))) || isF2Edit || isBackSpace) {
                             if (isF2Edit) {
                                 this.isNewValueEdit = false;
@@ -16926,7 +16954,7 @@ class Edit {
                     || (keyCode === this.keyCodes.DELETE) || (keyCode === this.keyCodes.BACKSPACE) || (keyCode === this.keyCodes.SPACE)
                     || (keyCode >= this.keyCodes.FIRSTNUMPAD && keyCode <= this.keyCodes.LASTNUMPAD) ||
                     (keyCode >= this.keyCodes.SYMBOLSETONESTART && keyCode <= this.keyCodes.SYMBOLSETONEEND)
-                    || (keyCode >= 219 && keyCode <= 222) || (!e.shiftKey && !e.ctrlKey && keyCode === this.keyCodes.F2))
+                    || (keyCode >= 219 && keyCode <= 222) || (!e.shiftKey && !e.ctrlKey && !e.metaKey && keyCode === this.keyCodes.F2))
                     && (keyCode !== 67) && (keyCode !== 89) && (keyCode !== 90)) {
                     if (sheet.protectSettings.insertLink && keyCode === 75) {
                         return;
@@ -17837,7 +17865,7 @@ class Selection {
         else {
             this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]), e);
         }
-        if (isFormulaEdit) {
+        if (isFormulaEdit && this.parent.isEdit) {
             let range = this.parent.getActiveSheet().selectedRange;
             this.parent.notify(addressHandle, { range: range, isSelect: false });
         }
@@ -17978,7 +18006,7 @@ class Selection {
             }
         }
         else {
-            if (isFormulaEdit) {
+            if (isFormulaEdit && this.parent.isEdit) {
                 if (e && !e.target.classList.contains('e-spreadsheet-edit') && this.parent.isEdit) {
                     this.parent.notify(addressHandle, { range: getRangeAddress(range), isSelect: true });
                     this.initFormulaReferenceIndicator(range);
@@ -18712,7 +18740,7 @@ class VirtualScroll {
         }
         else {
             if (!this.parent.scrollSettings.isFinite) {
-                sheet.rowCount = domCount;
+                this.parent.setSheetPropertyOnMute(sheet, 'rowCount', domCount);
             }
             this.scroll[this.parent.activeSheetIndex].rowCount = sheet.rowCount;
             height = 1;
@@ -18721,7 +18749,7 @@ class VirtualScroll {
         let size;
         if (sheet.colCount > domCount || sheet.usedRange.colIndex > domCount - 1) {
             if (!this.parent.scrollSettings.isFinite && sheet.colCount <= sheet.usedRange.colIndex) {
-                sheet.colCount = sheet.usedRange.colIndex + 1;
+                this.parent.setSheetPropertyOnMute(sheet, 'colCount', sheet.usedRange.colIndex + 1);
             }
             size = getColumnsWidth(sheet, 0, domCount - 1);
             this.setScrollCount(sheet.colCount, 'col');
@@ -18729,7 +18757,7 @@ class VirtualScroll {
         }
         else {
             if (!this.parent.scrollSettings.isFinite) {
-                sheet.colCount = domCount;
+                this.parent.setSheetPropertyOnMute(sheet, 'colCount', domCount);
             }
             size = getColumnsWidth(sheet, 0, sheet.colCount - 1);
             this.scroll[this.parent.activeSheetIndex].colCount = sheet.colCount;
@@ -19044,7 +19072,7 @@ class VirtualScroll {
     updateColumnWidth(args) {
         if (args.refresh === 'Column') {
             this.content.style.width = '';
-            let width = this.content.querySelector('tr').getBoundingClientRect().width;
+            let width = getColumnsWidth(this.parent.getActiveSheet(), this.parent.viewport.leftIndex, this.parent.viewport.rightIndex);
             if (this.parent.getActiveSheet().showHeaders) {
                 this.colHeader.style.width = width + 'px';
             }
@@ -19068,7 +19096,7 @@ class VirtualScroll {
                 this.scroll[this.parent.activeSheetIndex].rowCount = args.index + 1;
                 this.updateVTrack(this.rowHeader, height, 'height');
                 if (this.scroll[this.parent.activeSheetIndex].rowCount > sheet.rowCount) {
-                    sheet.rowCount = this.scroll[this.parent.activeSheetIndex].rowCount;
+                    this.parent.setSheetPropertyOnMute(sheet, 'rowCount', this.scroll[this.parent.activeSheetIndex].rowCount);
                 }
             }
         }
@@ -19079,7 +19107,7 @@ class VirtualScroll {
                 this.scroll[this.parent.activeSheetIndex].colCount = args.index + 1;
                 this.updateVTrack(this.colHeader, width, 'width');
                 if (this.scroll[this.parent.activeSheetIndex].colCount > sheet.colCount) {
-                    sheet.colCount = this.scroll[this.parent.activeSheetIndex].colCount;
+                    this.parent.setSheetPropertyOnMute(sheet, 'colCount', this.scroll[this.parent.activeSheetIndex].colCount);
                 }
             }
         }
@@ -19392,7 +19420,7 @@ class KeyboardShortcut {
         }
     }
     keyDownHandler(e) {
-        if (e.ctrlKey) {
+        if (e.ctrlKey || e.metaKey) {
             if (!closest(e.target, '.e-find-dlg')) {
                 if ([79, 83, 65].indexOf(e.keyCode) > -1) {
                     e.preventDefault();
@@ -19719,6 +19747,7 @@ class CellFormat {
             this.parent.notify(beginAction, { action: 'beforeClear', eventArgs: eventArgs });
         }
         if (options.type === 'Clear Formats' || options.type === 'Clear All') {
+            this.parent.notify(clearCFRule, { range: range, isPublic: false });
             for (sRIdx; sRIdx <= eRIdx; sRIdx++) {
                 sCIdx = rangeIdx[1];
                 eCIdx = rangeIdx[3];
@@ -20819,7 +20848,7 @@ class ShowHide {
                 beforeViewportIdx.sort((i, j) => { return i - j; });
                 if (this.parent.scrollSettings.enableVirtualization && beforeViewportIdx[0] < this.parent.getThreshold('col')) {
                     let rowIdx = getCellIndexes(sheet.topLeftCell)[0] + 1;
-                    sheet.topLeftCell = `A${rowIdx}`;
+                    this.parent.setSheetPropertyOnMute(sheet, 'topLeftCell', `A${rowIdx}`);
                     this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, rowIndex: this.parent.viewport.topIndex, colIndex: 0,
                         refresh: 'Column' });
                     this.parent.selectRange(sheet.selectedRange);
@@ -21443,7 +21472,7 @@ class SpreadsheetHyperlink {
         let rowIdx = args.rowIdx;
         let colIdx = args.colIdx;
         let hyperEle = this.parent.createElement('a', { className: 'e-hyperlink e-hyperlink-style' });
-        if (!isNullOrUndefined(cell.hyperlink) && !td.querySelector('a')) {
+        if (!isNullOrUndefined(cell.hyperlink)) {
             let hyperlink = cell.hyperlink;
             if (typeof (hyperlink) === 'string') {
                 if (hyperlink.indexOf('http://') === -1 && hyperlink.indexOf('https://') === -1 &&
@@ -22343,6 +22372,7 @@ class Insert {
                     else {
                         this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, rowIndex: args.index, colIndex: 0, refresh: 'Row' });
                     }
+                    this.parent.notify(dataChanged, args);
                     this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
                 }
                 break;
@@ -23519,7 +23549,7 @@ class ProtectSheet {
             this.createDialogue();
         }
         else {
-            this.parent.getActiveSheet().isProtected = false;
+            this.parent.setSheetPropertyOnMute(this.parent.getActiveSheet(), 'isProtected', false);
             this.parent.notify(updateToggleItem, { props: 'Protect' });
             this.parent.notify(protectSheet, { isActive: args.isActive });
             this.parent.notify(protectSelection, null);
@@ -23542,7 +23572,7 @@ class ProtectSheet {
         });
         let protectHeaderCntent = this.parent.createElement('div', { className: 'e-protect-content',
             innerHTML: l10n.getConstant('ProtectAllowUser') });
-        this.parent.getActiveSheet().isProtected = false;
+        this.parent.setSheetPropertyOnMute(this.parent.getActiveSheet(), 'isProtected', false);
         let checkbox = new CheckBox({ checked: true, label: l10n.getConstant('ProtectContent'), cssClass: 'e-protect-checkbox' });
         let listViewElement = this.parent.createElement('div', { className: 'e-protect-option-list',
             id: this.parent.element.id + '_option_list' });
@@ -23605,7 +23635,7 @@ class ProtectSheet {
     selectOption() {
         let l10n = this.parent.serviceLocator.getService(locale);
         let selectedItems = this.optionList.getSelectedItems();
-        this.parent.getActiveSheet().isProtected = true;
+        this.parent.setSheetPropertyOnMute(this.parent.getActiveSheet(), 'isProtected', true);
         let protectSettings = { selectCells: selectedItems.text.indexOf(l10n.getConstant('SelectCells')) > -1,
             formatCells: selectedItems.text.indexOf(l10n.getConstant('FormatCells')) > -1,
             formatRows: selectedItems.text.indexOf(l10n.getConstant('FormatRows')) > -1,
@@ -26599,7 +26629,7 @@ class Ribbon$$1 {
                 ]
             }];
         if (this.parent.allowConditionalFormat) {
-            items.find((x) => x.header && x.header.text === l10n.getConstant('Home')).content.push({ type: 'Separator', id: id + '_separator_10' }, { template: this.getCFDBB(id), tooltipText: 'Conditional Formatting', id: id + '_conditionalformatting' });
+            items.find((x) => x.header && x.header.text === l10n.getConstant('Home')).content.push({ type: 'Separator', id: id + '_separator_10' }, { template: this.getCFDBB(id), tooltipText: l10n.getConstant('ConditionalFormatting'), id: id + '_conditionalformatting' });
         }
         if (this.parent.allowCellFormatting) {
             items.find((x) => x.header && x.header.text === l10n.getConstant('Home')).content.push({ type: 'Separator', id: id + '_separator_10' }, { template: this.getClearDDB(id), tooltipText: l10n.getConstant('Clear'), id: id + '_clear' });
@@ -26845,6 +26875,12 @@ class Ribbon$$1 {
         let oBar = this.parent.createElement('span', { id: 'OrangeDataBar', className: 'e-odatabar e-databar-icon' });
         let lBBar = this.parent.createElement('span', { id: 'LightBlueDataBar', className: 'e-lbdatabar e-databar-icon' });
         let pBar = this.parent.createElement('span', { id: 'PurpleDataBar', className: 'e-pdatabar e-databar-icon' });
+        bBar.title = l10n.getConstant('BlueDataBar');
+        gBar.title = l10n.getConstant('GreenDataBar');
+        rBar.title = l10n.getConstant('RedDataBar');
+        oBar.title = l10n.getConstant('OrangeDataBar');
+        lBBar.title = l10n.getConstant('LightblueDataBar');
+        pBar.title = l10n.getConstant('PurpleDataBar');
         db1.appendChild(bBar);
         db1.appendChild(gBar);
         db1.appendChild(rBar);
@@ -26871,6 +26907,18 @@ class Ribbon$$1 {
         let wg = this.parent.createElement('span', { id: 'WGColorScale', className: 'e-wg e-colorscale-icon' });
         let gy = this.parent.createElement('span', { id: 'GYColorScale', className: 'e-gy e-colorscale-icon' });
         let yg = this.parent.createElement('span', { id: 'YGColorScale', className: 'e-yg e-colorscale-icon' });
+        gyr.title = l10n.getConstant('GYRColorScale');
+        ryg.title = l10n.getConstant('RYGColorScale');
+        gwr.title = l10n.getConstant('GWRColorScale');
+        rwg.title = l10n.getConstant('RWGColorScale');
+        bwr.title = l10n.getConstant('BWRColorScale');
+        rwb.title = l10n.getConstant('RWBColorScale');
+        wr.title = l10n.getConstant('WRColorScale');
+        rw.title = l10n.getConstant('RWColorScale');
+        gw.title = l10n.getConstant('GWColorScale');
+        wg.title = l10n.getConstant('WGColorScale');
+        gy.title = l10n.getConstant('GYColorScale');
+        yg.title = l10n.getConstant('YGColorScale');
         cs1.appendChild(gyr);
         cs1.appendChild(ryg);
         cs1.appendChild(gwr);
@@ -26892,6 +26940,14 @@ class Ribbon$$1 {
         let is6 = this.parent.createElement('div', { id: 'is6', className: 'e-is6' });
         let is7 = this.parent.createElement('div', { id: 'is7', className: 'e-is7', innerHTML: 'Ratings' });
         let is8 = this.parent.createElement('div', { id: 'is8', className: 'e-is8' });
+        is1.title = l10n.getConstant('GYColorScale');
+        is2.title = l10n.getConstant('YGColorScale');
+        is3.title = l10n.getConstant('GYColorScale');
+        is4.title = l10n.getConstant('YGColorScale');
+        is5.title = l10n.getConstant('GYColorScale');
+        is6.title = l10n.getConstant('YGColorScale');
+        is7.title = l10n.getConstant('GYColorScale');
+        is8.title = l10n.getConstant('YGColorScale');
         iconSets.appendChild(is1);
         iconSets.appendChild(is2);
         iconSets.appendChild(is3);
@@ -26907,6 +26963,13 @@ class Ribbon$$1 {
         let directional5 = this.parent.createElement('div', { id: 'FourArrows', className: 'e-4arrows e-is-wrapper' });
         let directional6 = this.parent.createElement('div', { id: 'FiveArrowsGray', className: 'e-5arrowsgray e-is-wrapper' });
         let directional7 = this.parent.createElement('div', { id: 'FiveArrows', className: 'e-5arrows e-is-wrapper' });
+        directional1.title = l10n.getConstant('ThreeArrowsColor');
+        directional2.title = l10n.getConstant('ThreeArrowsGray');
+        directional3.title = l10n.getConstant('ThreeTriangles');
+        directional4.title = l10n.getConstant('FourArrowsColor');
+        directional5.title = l10n.getConstant('FourArrowsGray');
+        directional6.title = l10n.getConstant('FiveArrowsColor');
+        directional7.title = l10n.getConstant('FiveArrowsGray');
         is2.appendChild(directional1);
         is2.appendChild(directional2);
         is2.appendChild(directional3);
@@ -26919,6 +26982,11 @@ class Ribbon$$1 {
         let shapes3 = this.parent.createElement('div', { id: 'ThreeSigns', className: 'e-3signs e-is-wrapper' });
         let shapes4 = this.parent.createElement('div', { id: 'FourTrafficLights', className: 'e-4trafficlights e-is-wrapper' });
         let shapes5 = this.parent.createElement('div', { id: 'FourRedToBlack', className: 'e-4redtoblack e-is-wrapper' });
+        shapes1.title = l10n.getConstant('ThreeTrafficLights1');
+        shapes2.title = l10n.getConstant('ThreeTrafficLights2');
+        shapes3.title = l10n.getConstant('ThreeSigns');
+        shapes4.title = l10n.getConstant('FourTrafficLights');
+        shapes5.title = l10n.getConstant('RedToBlack');
         is4.appendChild(shapes1);
         is4.appendChild(shapes2);
         is4.appendChild(shapes3);
@@ -26927,6 +26995,9 @@ class Ribbon$$1 {
         let indicators1 = this.parent.createElement('div', { id: 'ThreeSymbols', className: 'e-3symbols e-is-wrapper' });
         let indicators2 = this.parent.createElement('div', { id: 'ThreeSymbols2', className: 'e-3symbols2 e-is-wrapper' });
         let indicators3 = this.parent.createElement('div', { id: 'ThreeFlags', className: 'e-3flags e-is-wrapper' });
+        indicators1.title = l10n.getConstant('ThreeSymbols1');
+        indicators2.title = l10n.getConstant('ThreeSymbols2');
+        indicators3.title = l10n.getConstant('ThreeFlags');
         is6.appendChild(indicators1);
         is6.appendChild(indicators2);
         is6.appendChild(indicators3);
@@ -26935,6 +27006,11 @@ class Ribbon$$1 {
         let ratings3 = this.parent.createElement('div', { id: 'FiveQuarters', className: 'e-5quarters e-is-wrapper' });
         let ratings4 = this.parent.createElement('div', { id: 'FiveRating', className: 'e-5rating e-is-wrapper' });
         let ratings5 = this.parent.createElement('div', { id: 'FiveBoxes', className: 'e-5boxes e-is-wrapper' });
+        ratings1.title = l10n.getConstant('ThreeStars');
+        ratings2.title = l10n.getConstant('FourRatings');
+        ratings3.title = l10n.getConstant('FiveQuarters');
+        ratings4.title = l10n.getConstant('FiveRatings');
+        ratings5.title = l10n.getConstant('FiveBoxes');
         is8.appendChild(ratings1);
         is8.appendChild(ratings2);
         is8.appendChild(ratings3);
@@ -28120,7 +28196,7 @@ class Ribbon$$1 {
                     if (evtHArgs.cancel) {
                         return;
                     }
-                    sheet.showHeaders = !sheet.showHeaders;
+                    this.parent.setSheetPropertyOnMute(sheet, 'showHeaders', !sheet.showHeaders);
                     this.parent.serviceLocator.getService('sheet').showHideHeaders();
                     this.toggleRibbonItems({ props: 'Headers', activeTab: this.ribbon.selectedTab });
                     this.parent.element.focus();
@@ -28135,13 +28211,12 @@ class Ribbon$$1 {
                     if (evtglArgs.cancel) {
                         return;
                     }
-                    sheet.showGridLines = !sheet.showGridLines;
+                    this.parent.setSheetPropertyOnMute(sheet, 'showGridLines', !sheet.showGridLines);
                     this.toggleRibbonItems({ props: 'GridLines', activeTab: this.ribbon.selectedTab });
                     this.parent.element.focus();
                     break;
                 case parentId + '_protect':
-                    sheet.isProtected = !sheet.isProtected;
-                    this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
+                    this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected);
                     let isActive = false;
                     sheet.isProtected ? isActive = false : isActive = true;
                     this.parent.notify(applyProtect, { isActive: isActive, id: parentId + '_protect' });
@@ -29741,7 +29816,7 @@ class SheetTabs {
         }
         else {
             if (this.parent.sheets[args.idx].state === 'Hidden') {
-                this.parent.sheets[args.idx].state = 'Visible';
+                this.parent.setSheetPropertyOnMute(this.parent.sheets[args.idx], 'state', 'Visible');
                 this.tabInstance.items[args.idx].cssClass = '';
                 this.tabInstance.items = this.tabInstance.items;
                 this.tabInstance.dataBind();
@@ -29845,7 +29920,7 @@ class SheetTabs {
                 }
                 let items = this.removeRenameInput(target);
                 if (this.tabInstance.items[idx].header.text !== value) {
-                    this.parent.sheets[idx].name = value;
+                    this.parent.setSheetPropertyOnMute(this.parent.sheets[idx], 'name', value);
                     this.updateSheetName({ value: value, idx: idx, items: items });
                 }
                 if (e.type === 'keydown' || (closest(e.target, '.e-spreadsheet'))) {
@@ -29882,7 +29957,7 @@ class SheetTabs {
         }
     }
     hideSheet() {
-        this.parent.getActiveSheet().state = 'Hidden';
+        this.parent.setSheetPropertyOnMute(this.parent.getActiveSheet(), 'state', 'Hidden');
         this.tabInstance.items[this.parent.activeSheetIndex].cssClass = 'e-hide';
         this.tabInstance.items = this.tabInstance.items;
         this.tabInstance.dataBind();
@@ -30451,12 +30526,14 @@ class ContextMenu$1 {
                 case id + '_insert_row_above':
                 case id + '_delete_row':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-                    this.parent.notify(`${args.item.id.substr(id.length + 1, 6)}Model`, { model: this.parent.getActiveSheet(), start: indexes[0], end: indexes[2], modelType: 'Row', isAction: true });
+                    this.parent.notify(`${args.item.id.substr(id.length + 1, 6)}Model`, { model: this.parent.getActiveSheet(), start: indexes[0], end: indexes[2], modelType: 'Row', isAction: true,
+                        insertType: 'above' });
                     this.parent.element.focus();
                     break;
                 case id + '_insert_row_below':
                     indexes = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
-                    this.parent.notify(insertModel, { model: this.parent.getActiveSheet(), start: indexes[2] + 1, end: indexes[2] + 1 + (indexes[2] - indexes[0]), modelType: 'Row', isAction: true });
+                    this.parent.notify(insertModel, { model: this.parent.getActiveSheet(), start: indexes[2] + 1, end: indexes[2] + 1 + (indexes[2] - indexes[0]), modelType: 'Row', isAction: true,
+                        insertType: 'below' });
                     this.parent.element.focus();
                     break;
                 case id + '_insert_column_before':
@@ -30484,7 +30561,7 @@ class ContextMenu$1 {
                     break;
                 case id + '_protect':
                     let sheet = this.parent.getActiveSheet();
-                    sheet.isProtected = !sheet.isProtected;
+                    this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected);
                     let isActive;
                     sheet.isProtected ? isActive = false : isActive = true;
                     this.parent.notify(applyProtect, { isActive: isActive });
@@ -32672,7 +32749,46 @@ let defaultLocale = {
     DefinedNames: 'Defined Names',
     EnterTheTextToDisplay: 'Enter the text to display',
     EnterTheUrl: 'Enter the URL',
-    Image: 'Image'
+    Image: 'Image',
+    ConditionalFormatting: 'Conditional Formatting',
+    BlueDataBar: 'Blue Data Bar',
+    GreenDataBar: 'Green Data Bar',
+    RedDataBar: 'Red Data Bar',
+    OrangeDataBar: 'Orange Data Bar',
+    LightblueDataBar: 'Light blue Data Bar',
+    PurpleDataBar: 'Purple Data Bar',
+    GYRColorScale: 'Green - Yellow - Red Color Scale',
+    RYGColorScale: 'Red - Yellow - Green Color Scale',
+    GWRColorScale: 'Green - White - Red Color Scale',
+    RWGColorScale: 'Red - White - Green Color Scale',
+    BWRColorScale: 'Blue - White - Red Color Scale',
+    RWBColorScale: 'Red - White - Blue Color Scale',
+    WRColorScale: 'White - Red Color Scale',
+    RWColorScale: 'Red - White Color Scale',
+    GWColorScale: 'Green - White Color Scale',
+    WGColorScale: 'White - Green Color Scale',
+    GYColorScale: 'Green - Yellow Color Scale',
+    YGColorScale: 'Yellow - Green Color Scale',
+    ThreeArrowsColor: '3 Arrows (Colored)',
+    ThreeArrowsGray: '3 Arrows (Gray)',
+    ThreeTriangles: '3 Triangles',
+    FourArrowsColor: '4 Arrows (Gray)',
+    FourArrowsGray: '4 Arrows (Colored)',
+    FiveArrowsColor: '5 Arrows (Gray)',
+    FiveArrowsGray: '5 Arrows (Colored)',
+    ThreeTrafficLights1: '3 Traffic Lights (Unrimmed)',
+    ThreeTrafficLights2: '3 Traffic Lights (Rimmed)',
+    ThreeSigns: '3 Signs',
+    FourTrafficLights: '4 Traffic Lights',
+    RedToBlack: 'Red To Black',
+    ThreeSymbols1: '3 Symbols (Circled)',
+    ThreeSymbols2: '3 Symbols (Uncircled)',
+    ThreeFlags: '3 Flags',
+    ThreeStars: '3 Stars',
+    FourRatings: '4 Ratings',
+    FiveQuarters: '5 Quarters',
+    FiveRatings: '5 Ratings',
+    FiveBoxes: '5 Boxes',
 };
 
 /**
@@ -33201,7 +33317,7 @@ class SheetRender {
                 if (model.rowSpan < 0) {
                     this.parent.notify(checkMerge, { td: cell, rowIdx: indexes[0], colIdx: indexes[1], isRow: true });
                     if (this.parent.viewport.topIndex >= range[0]) {
-                        this.refreshPrevMerge(range[2] + 1, indexes[1]);
+                        this.refreshPrevMerge(range[0] + 1, indexes[1]);
                     }
                 }
                 if (firstcell && (firstcell.colSpan || firstcell.rowSpan)) {
@@ -33210,7 +33326,7 @@ class SheetRender {
             }
             else if (model.rowSpan > 1) {
                 let prevTopIdx = range[2] + 1;
-                if (indexes[0] + model.rowSpan > prevTopIdx && indexes[0] < prevTopIdx) {
+                if (indexes[0] + model.rowSpan - 1 > prevTopIdx && indexes[0] < prevTopIdx) {
                     this.refreshPrevMerge(prevTopIdx, indexes[1]);
                 }
             }
@@ -33609,13 +33725,13 @@ class CellRenderer {
             if (typeof (args.cell.hyperlink) === 'string') {
                 address = args.cell.hyperlink;
                 if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
-                    args.cell.hyperlink = address.indexOf('www.') === 0 ? 'http://' + address : address;
+                    args.cell.hyperlink = address.toLowerCase().indexOf('www.') === 0 ? 'http://' + address : address;
                 }
             }
             else {
                 address = args.cell.hyperlink.address;
                 if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
-                    args.cell.hyperlink.address = address.indexOf('www.') === 0 ? 'http://' + address : address;
+                    args.cell.hyperlink.address = address.toLowerCase().indexOf('www.') === 0 ? 'http://' + address : address;
                 }
             }
             this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
@@ -33840,7 +33956,7 @@ class Render {
                 if (args.rowIndex !== indexes[0]) {
                     let topLeftCell = getCellIndexes(sheet.topLeftCell);
                     if (topLeftCell[0] === args.rowIndex) {
-                        sheet.topLeftCell = getCellAddress(indexes[0], topLeftCell[1]);
+                        this.parent.setSheetPropertyOnMute(sheet, 'topLeftCell', getCellAddress(indexes[0], topLeftCell[1]));
                     }
                     args.rowIndex = indexes[0];
                 }
@@ -33850,7 +33966,7 @@ class Render {
                 if (args.colIndex !== indexes[0]) {
                     let topLeftCell = getCellIndexes(sheet.topLeftCell);
                     if (topLeftCell[1] === args.colIndex) {
-                        sheet.topLeftCell = getCellAddress(topLeftCell[0], indexes[0]);
+                        this.parent.setSheetPropertyOnMute(sheet, 'topLeftCell', getCellAddress(topLeftCell[0], indexes[0]));
                     }
                     args.colIndex = indexes[0];
                 }
@@ -34481,11 +34597,11 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
             sheet = getSheetIndex(this, sheet);
         }
         if (sheet) {
-            this.sheets[sheet].isProtected = true;
-            this.sheets[sheet].protectSettings = protectSettings;
+            this.setSheetPropertyOnMute(this.sheets[sheet], 'isProtected', true);
+            this.setSheetPropertyOnMute(this.sheets[sheet], 'protectSettings', protectSettings);
         }
         sheet = this.getActiveSheet().index;
-        this.getActiveSheet().isProtected = true;
+        this.setSheetPropertyOnMute(this.getActiveSheet(), 'isProtected', true);
         super.protectSheet(sheet, protectSettings);
     }
     /**
@@ -34570,8 +34686,8 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
             }
             if (idx !== this.activeSheetIndex) {
                 let activeCell = addrArr[1].split(':')[0];
-                this.sheets[idx].activeCell = activeCell;
-                this.sheets[idx].selectedRange = addrArr[1];
+                this.setSheetPropertyOnMute(this.sheets[idx], 'activeCell', activeCell);
+                this.setSheetPropertyOnMute(this.sheets[idx], 'selectedRange', addrArr[1]);
                 let cellIndex = getCellIndexes(activeCell);
                 if (cellIndex[0] < this.viewport.rowCount) {
                     cellIndex[0] = 0;
@@ -34579,7 +34695,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
                 if (cellIndex[1] < this.viewport.colCount) {
                     cellIndex[1] = 0;
                 }
-                this.sheets[idx].topLeftCell = getCellAddress(cellIndex[0], cellIndex[1]);
+                this.setSheetPropertyOnMute(this.sheets[idx], 'topLeftCell', getCellAddress(cellIndex[0], cellIndex[1]));
                 this.activeSheetIndex = idx;
                 this.dataBind();
                 return;
@@ -35363,7 +35479,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
             index = this.skipHiddenSheets(index, initIdx, ++hiddenCount);
         }
         if (hiddenCount === this.sheets.length) {
-            this.sheets[0].state = 'Visible';
+            this.setSheetPropertyOnMute(this.sheets[0], 'state', 'Visible');
             return 0;
         }
         return index;

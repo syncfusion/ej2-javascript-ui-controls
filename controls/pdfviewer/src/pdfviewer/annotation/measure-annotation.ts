@@ -9,7 +9,7 @@ import { Dialog } from '@syncfusion/ej2-popups';
 import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { PointModel, Point } from '@syncfusion/ej2-drawings';
 import { ICommentsCollection, IReviewCollection } from './sticky-notes-annotation';
-import { LineHeadStyle, CalibrationUnit } from '../base';
+import { LineHeadStyle, CalibrationUnit, AllowedInteraction } from '../base';
 import { AnnotationSelectorSettingsModel } from '../pdfviewer-model';
 
 /**
@@ -60,6 +60,7 @@ export interface IMeasureShapeAnnotation {
     // tslint:disable-next-line
     annotationSettings?: any;
     customData: object;
+    allowedInteractions?: AllowedInteraction;
 }
 
 /**
@@ -277,6 +278,8 @@ export class MeasureAnnotation {
                         }
                         // tslint:disable-next-line:max-line-length
                         annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
+                        // tslint:disable-next-line:max-line-length
+                        annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
                         let measureObject: IMeasure = {
                             // tslint:disable-next-line:max-line-length
                             ratio: annotation.Calibrate.Ratio, x: this.getNumberFormatArray(annotation.Calibrate.X), distance: this.getNumberFormatArray(annotation.Calibrate.Distance), area: this.getNumberFormatArray(annotation.Calibrate.Area), angle: this.getNumberFormatArray(annotation.Calibrate.Angle), volume: this.getNumberFormatArray(annotation.Calibrate.Volume),
@@ -287,7 +290,7 @@ export class MeasureAnnotation {
                         }
                         annotationObject = {
                             // tslint:disable-next-line:max-line-length
-                            id: 'measure' + this.measureShapeCount, shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
+                            id: 'measure' + this.measureShapeCount, shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
                             note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, thickness: annotation.Thickness, rectangleDifference: annotation.RectangleDifference,
                             // tslint:disable-next-line:max-line-length
                             borderStyle: annotation.BorderStyle, borderDashArray: annotation.BorderDashArray, rotateAngle: annotation.RotateAngle, isCloudShape: annotation.IsCloudShape,
@@ -313,9 +316,11 @@ export class MeasureAnnotation {
                         }
                         // tslint:disable-next-line:max-line-length
                         annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ? annotation.AnnotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+                        // tslint:disable-next-line:max-line-length
+                        annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
                         annot = {
                             // tslint:disable-next-line:max-line-length
-                            id: 'measure' + this.measureShapeCount, shapeAnnotationType: this.getShapeType(annotationObject), author: annotationObject.author, modifiedDate: annotationObject.modifiedDate,
+                            id: 'measure' + this.measureShapeCount, shapeAnnotationType: this.getShapeType(annotationObject), author: annotationObject.author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotationObject.modifiedDate,
                             subject: annotationObject.subject, notes: annotationObject.note, fillColor: annotationObject.fillColor, strokeColor: annotationObject.strokeColor, opacity: annotationObject.opacity,
                             // tslint:disable-next-line:max-line-length
                             thickness: annotationObject.thickness, borderStyle: annotationObject.borderStyle, borderDashArray: annotationObject.borderDashArray.toString(), rotateAngle: parseFloat(annotationObject.rotateAngle.split('Angle')[1]),
@@ -508,9 +513,11 @@ export class MeasureAnnotation {
         }
         // tslint:disable-next-line
         let annotationSettings: any = this.pdfViewer.annotationModule.findAnnotationSettings(annotationModel, true);
+        // tslint:disable-next-line
+        let allowedInteractions: any = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotationModel);
         return {
             // tslint:disable-next-line:max-line-length
-            id: annotationModel.id, shapeAnnotationType: this.getShapeAnnotType(annotationModel.measureType), author: annotationModel.author,
+            id: annotationModel.id, shapeAnnotationType: this.getShapeAnnotType(annotationModel.measureType), author: annotationModel.author, allowedInteractions: allowedInteractions,
             subject: annotationModel.subject, note: annotationModel.notes, strokeColor: annotationModel.strokeColor,
             fillColor: annotationModel.fillColor, opacity: annotationModel.opacity, thickness: annotationModel.thickness,
             // tslint:disable-next-line:max-line-length
@@ -662,7 +669,6 @@ export class MeasureAnnotation {
         }
         // tslint:disable-next-line
         let annotations: Array<any> = new Array();
-        let colorpick: ColorPicker = new ColorPicker();
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
             annotations[j] = [];
         }
@@ -690,7 +696,7 @@ export class MeasureAnnotation {
                         pageAnnotationObject.annotations[z].calibrate = this.getStringifiedMeasure(pageAnnotationObject.annotations[z].calibrate);
                         if (pageAnnotationObject.annotations[z].enableShapeLabel === true) {
                             // tslint:disable-next-line:max-line-length
-                            pageAnnotationObject.annotations[z].labelBounds = JSON.stringify(this.pdfViewer.annotationModule.inputElementModule.calculateLabelBounds(JSON.parse(pageAnnotationObject.annotations[z].bounds)));
+                            pageAnnotationObject.annotations[z].labelBounds = JSON.stringify(this.pdfViewer.annotationModule.inputElementModule.calculateLabelBounds(JSON.parse(pageAnnotationObject.annotations[z].bounds), pageAnnotationObject.pageIndex));
                             let labelFillColorString: string = pageAnnotationObject.annotations[z].labelFillColor;
                             pageAnnotationObject.annotations[z].labelFillColor = JSON.stringify(this.getRgbCode(labelFillColorString));
                             let labelBorderColorString: string = pageAnnotationObject.annotations[z].labelBorderColor;

@@ -711,6 +711,9 @@ var SfTooltip = /** @class */ (function () {
         this.clear();
     };
     SfTooltip.prototype.onMouseMove = function (event) {
+        if (!this.tooltipEle) {
+            return;
+        }
         var eventPageX = 0;
         var eventPageY = 0;
         if (event.type.indexOf('touch') > -1) {

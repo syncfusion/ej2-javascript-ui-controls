@@ -727,8 +727,16 @@ export class ExcelExport {
                              cell: Cell<AggregateColumnModel>, row: Row<AggregateColumnModel>): string {
         let templateFn: { [x: string]: Function } = {};
         templateFn[getEnumValue(CellType, cell.cellType)] = compile(template);
-        /* tslint:disable-next-line:max-line-length */
-        let txt: NodeList = (templateFn[getEnumValue(CellType, cell.cellType)](row.data[cell.column.field ? cell.column.field : cell.column.columnName]));
+        let txt: NodeList;
+        let data: Object = row.data[cell.column.field ? cell.column.field : cell.column.columnName];
+        if (this.parent.isReact || this.parent.isVue) {
+            txt = (templateFn[getEnumValue(CellType, cell.cellType)](data, this.parent));
+            if (this.parent.isReact) {
+                this.parent.renderTemplates();
+            }
+        } else {
+            txt = (templateFn[getEnumValue(CellType, cell.cellType)](data));
+        }
         return (<Text>txt[0]).textContent;
     }
 

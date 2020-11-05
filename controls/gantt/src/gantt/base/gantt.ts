@@ -1,7 +1,7 @@
 import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit, Browser } from '@syncfusion/ej2-base';
 import { Internationalization, extend, getValue, isObjectArray, isObject, setValue, isUndefined, isBlazor } from '@syncfusion/ej2-base';
-import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, remove } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append } from '@syncfusion/ej2-base';
+import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, EventHandler } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append, remove } from '@syncfusion/ej2-base';
 import { createSpinner, showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';
 import { RowDragEventArgs } from '@syncfusion/ej2-grids';
 import { GanttModel } from './gantt-model';
@@ -544,6 +544,12 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property([])
     public resources: Object[];
+    /**
+     * Defines segment collection assigned for tasks.
+     * @default []
+     */
+    @Property([])
+    public segmentData: Object[];
     /**
      * Defines background color of dependency lines.
      * @default null
@@ -1529,9 +1535,40 @@ export class Gantt extends Component<HTMLElement>
                     eventName: 'keydown'
                 });
         }
+        /* tslint:disable-next-line:no-any */
+        EventHandler.add(window as any, 'resize', this.windowResize, this);
+    }
+    /**
+     * @private
+     * Method trigger while user perform window resize.
+     */
+    public windowResize(): void {
+        if (!isNullOrUndefined(this.element)) {
+            this.ganttChartModule.updateWidthAndHeight(); // Updating chart scroll conatiner height for row mismatch
+            this.treeGridModule.ensureScrollBar();
+            if (this.predecessorModule && this.taskFields.dependency) {
+                this.updateRowHeightInConnectorLine(this.updatedConnectorLineCollection);
+                this.connectorLineModule.renderConnectorLines(this.updatedConnectorLineCollection);
+            }
+        }
     }
     public keyActionHandler(e: KeyboardEventArgs): void {
         this.focusModule.onKeyPress(e);
+    }
+    /**
+     * @private
+     * Method for updating row height value in connector line collections
+     */
+    private updateRowHeightInConnectorLine(collection: IConnectorLineObject[]): void {
+        if (collection && collection.length) {
+            let rowHeight: number = this.ganttChartModule.getChartRows()[0]
+                && this.ganttChartModule.getChartRows()[0].getBoundingClientRect().height;
+            if (rowHeight && !isNaN(rowHeight)) {
+                for (let count: number = 0; count < collection.length; count++) {
+                    collection[count].rowHeight = rowHeight;
+                }
+            }
+        }
     }
     /**
      * @private
@@ -1575,7 +1612,13 @@ export class Gantt extends Component<HTMLElement>
      */
     public updateContentHeight(): void {
         let expandedRecords: IGanttData[] = this.getExpandedRecords(this.currentViewData);
-        this.contentHeight = expandedRecords.length * this.rowHeight;
+        let height: number;
+        if (!isNullOrUndefined(this.ganttChartModule.getChartRows()[0])) {
+            height = this.ganttChartModule.getChartRows()[0].getBoundingClientRect().height;
+        } else {
+            height = this.rowHeight;
+        }
+        this.contentHeight = expandedRecords.length * height;
     }
     /**
      * To get expand status.
@@ -1838,11 +1881,6 @@ export class Gantt extends Component<HTMLElement>
             this.hideSpinner();
             setValue('isGanttCreated', true, args);
             this.renderComplete();
-        }
-        if (this.predecessorModule && this.taskFields.dependency) {
-            this.connectorLineIds = [];
-            this.updatedConnectorLineCollection = [];
-            this.predecessorModule.createConnectorLinesCollection();
         }
         this.notify('recordsUpdated', {});
         this.trigger('dataBound', args);
@@ -2116,6 +2154,8 @@ export class Gantt extends Component<HTMLElement>
         this.element.innerHTML = '';
         this.isTreeGridRendered = false;
         this.resetTemplates();
+        /* tslint:disable-next-line:no-any */
+        EventHandler.remove(window as any, 'resize', this.windowResize);
     }
     /**
      * Method to get taskbarHeight.
@@ -2475,8 +2515,12 @@ export class Gantt extends Component<HTMLElement>
             unassignedTask: 'Unassigned Task',
             group: 'Group',
             indent: 'Indent',
-            outdent: 'Outdent'
-
+            outdent: 'Outdent',
+            segments: 'Segments',
+            splitTask: 'Split Task',
+            mergeTask: 'Merge Task',
+            left: 'Left',
+            right: 'Right',
         };
         if (isBlazor()) {
             let blazorLocale: Object = {
@@ -2723,6 +2767,29 @@ export class Gantt extends Component<HTMLElement>
         if (isFrom !== 'beforeAdd') {
             this.notify('selectRowByIndex', {});
         }
+    }
+
+    /**
+     * Split the taskbar into segment by the given date
+     * @param  {string} taskId - Defines the id of a task to be split.
+     * @param  {string} splitDate - Defines in which date the taskbar must be split up.
+     * @return {void}
+     * @public
+     */
+
+    public splitTask(taskId: string, splitDate: Date | Date[]): void {
+        this.chartRowsModule.splitTask(taskId, splitDate);
+    }
+
+    /**
+     * merge the split taskbar with the given segment indexes.
+     * @param  {string} taskId - Defines the id of a task to be split.
+     * @param  {string} segmentIndexes - Defines the object array of indexes which must be merged.
+     * @return {void}
+     * @public
+     */
+    public mergeTask(taskId: string, segmentIndexes: { firstSegmentIndex: number, secondSegmentIndex: number }[]): void {
+        this.chartRowsModule.mergeTask(taskId, segmentIndexes);
     }
 
     /**
@@ -3497,6 +3564,9 @@ export class Gantt extends Component<HTMLElement>
             if (!isNullOrUndefined(taskfields.parentID) && data[taskfields.parentID]) {
                 data[taskfields.parentID] = null;
             }
+            if (!isNullOrUndefined(taskfields.segments)) {
+                data[taskfields.segments] = null;
+            }
             if (!isNullOrUndefined(this.contextMenuModule) &&
                 this.contextMenuModule.isOpen &&
                 this.contextMenuModule.item === 'Milestone') {
@@ -3554,7 +3624,7 @@ export class Gantt extends Component<HTMLElement>
         // tslint:disable-next-line:no-any
         if ((this as any).isReact) {
             this.renderReactTemplates();
-        }
+    }
     }
     /**
      * To reset the react templates

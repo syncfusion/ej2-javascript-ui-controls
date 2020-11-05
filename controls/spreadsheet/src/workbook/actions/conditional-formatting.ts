@@ -48,7 +48,7 @@ export class WorkbookConditionalFormat {
         let indexes: number[] = getRangeIndexes(range);
         let cfrCount: number;
         if (!sheet.conditionalFormats) {
-            sheet.conditionalFormats = [] as ConditionalFormatModel[];
+            this.parent.setSheetPropertyOnMute(sheet, 'conditionalFormats', []);
         }
         cfrCount = sheet.conditionalFormats.length;
         sheet.conditionalFormats[cfrCount] = conditionalFormat;

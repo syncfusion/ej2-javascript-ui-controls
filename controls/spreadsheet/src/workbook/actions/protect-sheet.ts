@@ -19,11 +19,10 @@ export class WorkbookProtectSheet {
     }
     private protectsheetHandler(args: ProtectSettings): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
-        sheet.protectSettings.selectCells = args.selectCells;
-        sheet.protectSettings.formatCells = args.formatCells;
-        sheet.protectSettings.formatColumns = args.formatColumns;
-        sheet.protectSettings.formatRows = args.formatRows;
-        sheet.protectSettings.insertLink = args.insertLink;
+        this.parent.setSheetPropertyOnMute(sheet, 'protectSettings', {
+            selectCells: args.selectCells, formatCells: args.formatCells,
+            formatColumns: args.formatColumns, formatRows: args.formatRows, insertLink: args.insertLink
+        });
         this.parent.notify(protectSheetWorkBook, sheet.protectSettings);
         this.parent.notify(updateToggle, { props: 'Protect' });
     }
@@ -35,7 +34,7 @@ export class WorkbookProtectSheet {
         }
         sheet.protectSettings.formatCells = sheet.protectSettings.formatColumns = false;
         sheet.protectSettings.formatRows = sheet.protectSettings.selectCells = false;
-        sheet.isProtected = false;
+        this.parent.setSheetPropertyOnMute(sheet, 'isProtected', false);
         this.parent.notify(protectSheetWorkBook, sheet.protectSettings);
         this.parent.notify(updateToggle, { props: 'Protect' });
     }

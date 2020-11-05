@@ -895,7 +895,6 @@ function titlePositionX(width, leftPadding, rightPadding, titleStyle) {
 }
 /**
  * Internal class size for height and width
- * @private
  */
 var Size = /** @__PURE__ @class */ (function () {
     function Size(width, height) {
@@ -952,7 +951,6 @@ var CurrentRect = /** @__PURE__ @class */ (function () {
 }());
 /**
  * Class to define the details of selected cell.
- * @private
  */
 var SelectedCellDetails = /** @__PURE__ @class */ (function () {
     function SelectedCellDetails(value, xLabel, yLabel, xValue, yValue, cellElement, xPosition, yPosition, width, height, x, y) {
@@ -6824,8 +6822,9 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'cellSettings':
                     this.updateBubbleHelperProperty();
-                    if (this.legendModule && ((newProp.cellSettings.tileType !==
-                        oldProp.cellSettings.tileType) || (newProp.cellSettings.bubbleType !== oldProp.cellSettings.bubbleType))) {
+                    if (this.legendModule && ((newProp.cellSettings.tileType !== (oldProp.cellSettings
+                        !== undefined && oldProp.cellSettings.tileType))
+                        || (newProp.cellSettings.bubbleType !== oldProp.cellSettings.bubbleType))) {
                         this.legendOnLoad = true;
                         this.legendModule.updateLegendRangeCollections();
                     }
@@ -6854,7 +6853,8 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'legendSettings':
                     this.updateBubbleHelperProperty();
-                    if (this.legendVisibilityByCellType && (((newProp.legendSettings.visible !== oldProp.legendSettings.visible) ||
+                    if (this.legendVisibilityByCellType && (((newProp.legendSettings.visible !==
+                        (oldProp.legendSettings !== undefined && oldProp.legendSettings.visible)) ||
                         (newProp.legendSettings.enableSmartLegend !== oldProp.legendSettings.enableSmartLegend)))) {
                         this.legendOnLoad = true;
                         this.legendModule.updateLegendRangeCollections();
@@ -7023,6 +7023,7 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To destroy the widget
+     * {% codeBlock src='heatmap/destroy/index.md' %}{% endcodeBlock %}
      * @method destroy
      * @return {void}.
      * @member of Heatmap
@@ -7914,6 +7915,7 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To clear the multi cell selection
+     * {% codeBlock src='heatmap/clearSelection/index.md' %}{% endcodeBlock %}
      */
     HeatMap.prototype.clearSelection = function () {
         if (!this.enableCanvasRendering && this.allowSelection) {

@@ -1,6 +1,6 @@
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
-import { PdfViewer, PdfViewerBase, IPageAnnotations, ICommentsCollection, IReviewCollection } from '../../index';
+import { PdfViewer, PdfViewerBase, IPageAnnotations, ICommentsCollection, IReviewCollection, AllowedInteraction } from '../../index';
 import { splitArrayCollection, processPathData } from '@syncfusion/ej2-drawings';
 import { AnnotationSelectorSettings } from '../pdfviewer';
 import { AnnotationSelectorSettingsModel } from '../pdfviewer-model';
@@ -37,6 +37,7 @@ export interface IStampAnnotation {
     // tslint:disable-next-line
     annotationSettings?: any;
     customData: object;
+    allowedInteractions?: AllowedInteraction;
 }
 interface IRectangles {
     height: number;
@@ -406,6 +407,8 @@ export class StampAnnotation {
                 annotation.Author = author;
                 // tslint:disable-next-line
                 let customData: any = existingAnnotation['CustomData'];
+                // tslint:disable-next-line
+                annotation.allowedInteractions = existingAnnotation['AllowedInteractions'];
                 annotation.CustomData = customData;
                 if (annotation.Author === null) {
                     // tslint:disable-next-line:max-line-length
@@ -444,7 +447,8 @@ export class StampAnnotation {
                 // tslint:disable-next-line:max-line-length
                 shapeAnnotationType: 'Stamp', strokeColor: annotation.strokeColor, fillColor: annotation.fillColor, opacity: annotation.Opacity, stampFillColor: annotation.stampFillColor, stampStrokeColor: annotation.stampStrokeColor, rotateAngle: annotation.RotateAngle, isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText, annotName: annotation.AnnotName, notes: annotation.Note,
                 comments: annotation.Comments, review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, subject: annotation.iconName,
-                annotationSelectorSettings: annotation.AnnotationSelectorSettings, annotationSettings: annotation.AnnotationSettings,
+                // tslint:disable-next-line
+                annotationSelectorSettings: annotation.AnnotationSelectorSettings, annotationSettings: annotation.AnnotationSettings, allowedInteractions: annotation.allowedInteractions,
                 annotationAddMode: existingAnnotation.annotationAddMode
             };
             annotationObject = {
@@ -455,7 +459,7 @@ export class StampAnnotation {
                 rotateAngle: annotation.RotateAngle, creationDate: annotation.creationDate, pageNumber: pageIndex, icon: annotation.iconName, stampAnnotationPath: csData, randomId: 'stamp' + this.pdfViewerBase.customStampCount, isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText,
                 bounds: { left: X, top: Y, width: annotation.width, height: annotation.height, }, annotName: annotation.AnnotName, comments: annotation.Comments, review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp',
                 // tslint:disable-next-line:max-line-length
-                annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation)
+                annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation), allowedInteractions: annotation.allowedInteractions
             };
             this.storeStampInSession(pageIndex, annotationObject);
             this.pdfViewer.add(annot as PdfAnnotationBase);
@@ -610,11 +614,15 @@ export class StampAnnotation {
         let author: string;
         // tslint:disable-next-line
         let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.customStampSettings);
+        // tslint:disable-next-line
+        let allowedInteractions: any = this.pdfViewer.stampSettings.allowedInteractions ? this.pdfViewer.stampSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
         if (isExistingStamp) {
             annotationName = annotation.AnnotName;
             author = annotation.Author;
             // tslint:disable-next-line:max-line-length
             annotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.customStampSettings);
+            // tslint:disable-next-line:max-line-length
+            allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
             if (author === null) {
                 // tslint:disable-next-line:max-line-length
                 author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.customStampSettings.author ? this.pdfViewer.customStampSettings.author : 'Guest';
@@ -630,17 +638,18 @@ export class StampAnnotation {
         let annotationAddMode: string = annotation ? annotation.annotationAddMode : 'UI Drawn Annotation ';
         annot = {
             // tslint:disable-next-line:max-line-length
-            id: 'stamp' + this.pdfViewerBase.customStampCount, bounds: { x: position.left, y: position.top, width: position.width, height: position.height }, pageIndex: pageIndex, data: image.src, modifiedDate: modifiedDate,
+            id: 'stamp' + this.pdfViewerBase.customStampCount, allowedInteractions: allowedInteractions, bounds: { x: position.left, y: position.top, width: position.width, height: position.height }, pageIndex: pageIndex, data: image.src, modifiedDate: modifiedDate,
             shapeAnnotationType: 'Image', opacity: opacity, rotateAngle: RotationAngle, annotName: annotationName, comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: author },
             annotationSettings: annotationSettings, annotationAddMode: annotationAddMode, signatureName: annotName
         };
         this.currentStampAnnotation = annot;
         // tslint:disable-next-line
         let annotationSelectorSettings: any = this.pdfViewer.stampSettings.annotationSelectorSettings ? this.pdfViewer.stampSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+        
         if (isExistingStamp) {
             annotationObject = {
                 // tslint:disable-next-line:max-line-length
-                stampAnnotationType: 'image', author: author, modifiedDate: modifiedDate, subject: '',
+                stampAnnotationType: 'image', author: author, allowedInteractions: allowedInteractions, modifiedDate: modifiedDate, subject: '',
                 note: annotation.Note, strokeColor: '', fillColor: '', opacity: opacity,
                 // tslint:disable-next-line:max-line-length
                 rotateAngle: '0', creationDate: currentDate, pageNumber: pageIndex, icon: '', stampAnnotationPath: image.src, randomId: 'stamp' + this.pdfViewerBase.customStampCount,
@@ -1107,6 +1116,7 @@ export class StampAnnotation {
         // tslint:disable-next-line
         let stampName: any = annotation['IsDynamic'];
         annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stampSettings);
+        annotation.allowedInteractions = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
         if (annotation.Subject && stampName) {
             stampAnnotation = this.retrieveDynamicStampAnnotation(annotation.Subject);
             isDynamic = true;
@@ -1123,7 +1133,7 @@ export class StampAnnotation {
             annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.customStampSettings);
             annotationObject = {
                 // tslint:disable-next-line:max-line-length
-                stampAnnotationType: 'image', author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
+                stampAnnotationType: 'image', author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, allowedInteractions: annotation.allowedInteractions,
                 note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, stampFillcolor: annotation.FillColor,
                 // tslint:disable-next-line:max-line-length
                 rotateAngle: annotation.RotateAngle, creationDate: annotation.ModifiedDate, pageNumber: pageNumber, icon: '', stampAnnotationPath: this.findImageData(annotation.Apperarance), randomId: 'image', isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: ' ',
@@ -1164,6 +1174,8 @@ export class StampAnnotation {
         let stampAnnotation: any;
         // tslint:disable-next-line
         let stampName: any = annotation['IsDynamic'];
+        // tslint:disable-next-line
+        annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
         if (annotation.Subject && stampName) {
             stampAnnotation = this.retrieveDynamicStampAnnotation(annotation.Subject);
         } else if (annotation.Subject) {
@@ -1173,7 +1185,7 @@ export class StampAnnotation {
             annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.customStampSettings);
             annotationObject = {
                 // tslint:disable-next-line:max-line-length
-                stampAnnotationType: 'image', author: annotation.Author, modifiedDate: annotation.ModifiedDate,
+                stampAnnotationType: 'image', author: annotation.Author, modifiedDate: annotation.ModifiedDate, allowedInteractions: annotation.allowedInteractions,
                 note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, stampFillcolor: annotation.StampFillColor,
                 // tslint:disable-next-line:max-line-length
                 rotateAngle: annotation.RotateAngle, pageNumber: pageNumber, randomId: 'stamp', isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText,
@@ -1185,9 +1197,11 @@ export class StampAnnotation {
         if (stampAnnotation) {
             // tslint:disable-next-line:max-line-length
             annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stampSettings);
+            // tslint:disable-next-line:max-line-length
+            annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
             annotationObject = {
                 // tslint:disable-next-line:max-line-length
-                stampAnnotationType: 'path', author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
+                stampAnnotationType: 'path', author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
                 note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, stampFillcolor: annotation.StampFillColor,
                 // tslint:disable-next-line:max-line-length
                 rotateAngle: annotation.RotateAngle, creationDate: stampAnnotation.creationDate, pageNumber: pageNumber, icon: stampAnnotation.iconName, stampAnnotationPath: stampAnnotation.pathdata, randomId: 'stamp', isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText,

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.47 (2020-11-05)
+
+### SplitButton
+
+#### New Features
+
+- `#299063` - Provided support to remove the items in split button using item id.
+
 ## 18.3.40 (2020-10-13)
 
 ### SplitButton

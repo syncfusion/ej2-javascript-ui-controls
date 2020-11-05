@@ -85,10 +85,8 @@ var SfListView = /** @class */ (function () {
                 window.addEventListener('scroll', this.scrollHandler.bind(this));
             }
         }
-        else {
-            sf.base.EventHandler.add(this.element, 'mouseover', this.mouseHoverHandler, this);
-            sf.base.EventHandler.add(this.element, 'mouseout', this.mouseOutHandler, this);
-        }
+        sf.base.EventHandler.add(this.element, 'mouseover', this.mouseHoverHandler, this);
+        sf.base.EventHandler.add(this.element, 'mouseout', this.mouseOutHandler, this);
     };
     SfListView.prototype.unWireEvents = function () {
         sf.base.EventHandler.remove(this.element, 'keydown', this.keyActionHandler);
@@ -100,10 +98,8 @@ var SfListView = /** @class */ (function () {
                 window.removeEventListener('scroll', this.scrollHandler.bind(this));
             }
         }
-        else {
-            sf.base.EventHandler.remove(this.element, 'mouseover', this.mouseHoverHandler);
-            sf.base.EventHandler.remove(this.element, 'mouseout', this.mouseOutHandler);
-        }
+        sf.base.EventHandler.remove(this.element, 'mouseover', this.mouseHoverHandler);
+        sf.base.EventHandler.remove(this.element, 'mouseout', this.mouseOutHandler);
         this.touchModule.destroy();
     };
     SfListView.prototype.swipeActionHandler = function (e) {

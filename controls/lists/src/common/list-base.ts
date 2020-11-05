@@ -556,7 +556,7 @@ export namespace ListBase {
      * @param  {ListBaseOptions} options? - Specifies listbase option for fields.
      */
     export function renderContentTemplate(
-        createElement: createElementParams, template: string, dataSource: { [key: string]: Object }[],
+        createElement: createElementParams, template: string, dataSource: { [key: string]: Object }[] | string[] | number[],
         // tslint:disable-next-line
         fields?: FieldsMapping, options?: ListBaseOptions, componentInstance?: any): HTMLElement {
         cssClass = getModuleClass(defaultListBaseOptions.moduleName);
@@ -565,12 +565,17 @@ export namespace ListBase {
         let curFields: FieldsMapping = extend({}, defaultMappedFields, fields);
         let compiledString: Function = compile(template);
         let liCollection: HTMLElement[] = [];
+        let value: string;
         let id: string = generateId(); // generate id for drop-down-list option.
         for (let i: number = 0; i < dataSource.length; i++) {
             let fieldData: { [key: string]: Object } = <{ [key: string]: Object }>getFieldValues(dataSource[i], curFields);
-            let curItem: { [key: string]: Object } = dataSource[i];
+            let curItem: { [key: string]: Object } | string | number = dataSource[i];
             let isHeader: Object = (curItem as { isHeader: Object } & { [key: string]: Object }).isHeader;
-            let value: string = fieldData[curFields.value] as string;
+            if (typeof dataSource[i] === 'string' || typeof dataSource[i] === 'number') {
+                value = curItem as string;
+            } else {
+                value = fieldData[curFields.value] as string;
+            }
             if (curOpt.itemCreating && typeof curOpt.itemCreating === 'function') {
                 let curData: object = {
                     dataSource: dataSource,
@@ -583,14 +588,22 @@ export namespace ListBase {
             }
             if (curOpt.itemCreating && typeof curOpt.itemCreating === 'function') {
                 fieldData = <{ [key: string]: Object }>getFieldValues(dataSource[i], curFields);
-                value = fieldData[curFields.value] as string;
+                if (typeof dataSource[i] === 'string' || typeof dataSource[i] === 'number') {
+                    value = curItem as string;
+                } else {
+                    value = fieldData[curFields.value] as string;
+                }
             }
             let li: HTMLElement = createElement('li', {
                 id: id + '-' + i,
                 className: isHeader ? cssClass.group : cssClass.li, attrs: { role: 'presentation' }
             });
             if (isHeader) {
-                li.innerText = fieldData[curFields.text] as string;
+                if (typeof dataSource[i] === 'string' || typeof dataSource[i] === 'number') {
+                    li.innerText = curItem as string;
+                } else {
+                   li.innerText = fieldData[curFields.text] as string;
+                }
             } else {
                 const currentID: string = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
                 if (isHeader) {

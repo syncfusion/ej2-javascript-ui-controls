@@ -27,7 +27,6 @@ export class Render {
 
     private initializeLayout(viewName: View): void {
         if (this.parent.activeView) {
-            this.parent.resetTemplates();
             this.parent.activeView.removeEventListener();
             this.parent.activeView.destroy();
         }

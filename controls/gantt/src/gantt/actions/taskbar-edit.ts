@@ -1,14 +1,17 @@
 import { isNullOrUndefined, createElement, extend, addClass, remove, removeClass, closest, merge } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { parentsUntil } from '../base/utils';
-import { IGanttData, ITaskData, ITaskbarEditedEventArgs, IDependencyEventArgs, MousePoint, IPredecessor } from '../base/interface';
+import {
+    IGanttData, ITaskData, ITaskbarEditedEventArgs, IDependencyEventArgs, MousePoint, IPredecessor, ITaskSegment
+} from '../base/interface';
+import { DateProcessor } from '../base/date-processor';
 import * as cls from '../base/css-constants';
 import { EditTooltip } from '../renderer/edit-tooltip';
 
 /**
  * File for handling taskbar editing operation in Gantt.
  */
-export class TaskbarEdit {
+export class TaskbarEdit extends DateProcessor {
     protected parent: Gantt;
     public taskBarEditElement: Element;
     public taskBarEditRecord: IGanttData;
@@ -45,8 +48,11 @@ export class TaskbarEdit {
     private editElement: Element = null;
     public touchEdit: boolean;
     private prevZIndex: string;
+    private previousMouseMove: number;
+    public segmentIndex: number = -1;
 
     constructor(ganttObj?: Gantt) {
+        super(ganttObj);
         this.parent = ganttObj;
         this.initPublicProp();
         this.wireEvents();
@@ -88,7 +94,7 @@ export class TaskbarEdit {
     }
 
     private mouseDownHandler(e: PointerEvent): void {
-        if (this.parent.editSettings.allowTaskbarEditing) {
+        if (this.parent.editSettings.allowTaskbarEditing && !this.parent.readOnly) {
             this.canDrag = false;
             if (this.parent.isAdaptive && this.taskBarEditElement) {
                 let targetElement: Element = this.getElementByPosition(e);
@@ -245,11 +251,24 @@ export class TaskbarEdit {
             element = parentsUntil(target, cls.manualParentMilestone);
         } else {
             element = parentsUntil(target, cls.taskBarMainContainer);
+            if (!isNullOrUndefined(element) && !target.classList.contains('e-connectorpoint-left') &&
+                !target.classList.contains('e-connectorpoint-right')) {
+                let currentRecord: IGanttData = this.parent.ganttChartModule.getRecordByTaskBar(element);
+                if (!isNullOrUndefined(currentRecord.ganttProperties.segments) && currentRecord.ganttProperties.segments.length > 0) {
+                    element = parentsUntil(target, cls.childTaskBarInnerDiv);
+                }
+            }
         }
         if (this.parent.editSettings.allowTaskbarEditing && element) {
             this.showHideTaskBarEditingElements(element, this.taskBarEditElement);
             this.editElement = element;
             this.taskBarEditElement = element;
+            let index: string = this.taskBarEditElement.getAttribute('data-segment-index');
+            if (!isNullOrUndefined(index)) {
+                this.segmentIndex = Number(index);
+            } else {
+                this.segmentIndex = -1;
+            }
             this.taskBarEditRecord = this.parent.ganttChartModule.getRecordByTaskBar(this.taskBarEditElement);
             if (e.type === 'mousedown' || e.type === 'touchstart' || e.type === 'click') {
                 this.roundOffDuration = true;
@@ -309,7 +328,10 @@ export class TaskbarEdit {
                 addClass([element.querySelector('.' + cls.taskBarLeftResizer)], [cls.leftResizeGripper]);
                 addClass([element.querySelector('.' + cls.taskBarRightResizer)], [cls.rightResizeGripper]);
                 if (isShowProgressResizer) {
-                    addClass([element.querySelector('.' + cls.childProgressResizer)], [cls.progressResizeGripper]);
+                    let progresElement: boolean = !isNullOrUndefined(element.querySelector('.' + cls.childProgressResizer)) ? true : false;
+                    if (progresElement) {
+                        addClass([element.querySelector('.' + cls.childProgressResizer)], [cls.progressResizeGripper]);
+                    }
                 }
             } else if (this.parent.isAdaptive && isShowProgressResizer) {
                 let record: IGanttData = this.parent.ganttChartModule.getRecordByTaskBar(element);
@@ -323,11 +345,16 @@ export class TaskbarEdit {
                     this.parent.ganttChartModule.scrollElement.querySelectorAll('.' + cls.connectorLineContainer), [cls.connectorLineZIndex]);
             }
             if (!isNullOrUndefined(this.parent.taskFields.dependency)
-                && element.querySelector('.' + cls.connectorPointLeft) && isShowProgressResizer) {
+                && (element.querySelector('.' + cls.connectorPointLeft)
+                    || element.parentElement.querySelector('.' + cls.connectorPointLeft))
+                && isShowProgressResizer) {
+                let connectorElement: Element = !isNullOrUndefined(element.querySelector('.' + cls.connectorPointLeft)) ?
+                    element : element.parentElement;
+
                 addClass(
-                    [element.querySelector('.' + cls.connectorPointLeft)], [cls.connectorPointLeftHover]);
+                    [connectorElement.querySelector('.' + cls.connectorPointLeft)], [cls.connectorPointLeftHover]);
                 addClass(
-                    [element.querySelector('.' + cls.connectorPointRight)], [cls.connectorPointRightHover]);
+                    [connectorElement.querySelector('.' + cls.connectorPointRight)], [cls.connectorPointRightHover]);
             }
         } else if (!fadeConnectorLine) {
             removeClass(
@@ -342,11 +369,14 @@ export class TaskbarEdit {
                 }
             }
             if (!isNullOrUndefined(this.parent.taskFields.dependency)
-                && secondElement.querySelector('.' + cls.connectorPointLeft)) {
+                && (secondElement.querySelector('.' + cls.connectorPointLeft)
+                    || secondElement.parentElement.querySelector('.' + cls.connectorPointLeft))) {
+                let connectorElement: Element = !isNullOrUndefined(secondElement.querySelector('.' + cls.connectorPointLeft)) ?
+                    secondElement : secondElement.parentElement;
                 removeClass(
-                    [secondElement.querySelector('.' + cls.connectorPointLeft)], [cls.connectorPointLeftHover]);
+                    [connectorElement.querySelector('.' + cls.connectorPointLeft)], [cls.connectorPointLeftHover]);
                 removeClass(
-                    [secondElement.querySelector('.' + cls.connectorPointRight)], [cls.connectorPointRightHover]);
+                    [connectorElement.querySelector('.' + cls.connectorPointRight)], [cls.connectorPointRightHover]);
             } else if (this.parent.isAdaptive) {
                 let record: IGanttData = this.parent.ganttChartModule.getRecordByTaskBar(secondElement);
                 if (record && record.hasChildRecords) {
@@ -429,7 +459,7 @@ export class TaskbarEdit {
             this.previousItem = this.parent.timelineModule.extendFunction(item, this.previousItemProperty) as ITaskData;
             if (this.taskBarEditAction !== 'ConnectorPointLeftDrag' &&
                 this.taskBarEditAction !== 'ConnectorPointRightDrag') {
-                this.editTooltip.showHideTaskbarEditTooltip(true);
+                this.editTooltip.showHideTaskbarEditTooltip(true, this.segmentIndex);
             }
             this.taskBarEditElement.setAttribute('aria-grabbed', 'true');
         }
@@ -502,7 +532,7 @@ export class TaskbarEdit {
             }
             this.setItemPosition();
             this.updateEditedItem();
-            this.editTooltip.updateTooltip();
+            this.editTooltip.updateTooltip(this.segmentIndex);
             if (isMouseClick) {
                 this.taskBarEditedAction(e);
             }
@@ -609,19 +639,50 @@ export class TaskbarEdit {
      */
     private enableDragging(e: PointerEvent): void {
         let item: ITaskData = this.taskBarEditRecord.ganttProperties;
-        let diffrenceWidth: number = 0;
-        if (this.mouseDownX > this.mouseMoveX) {
-            diffrenceWidth = this.mouseDownX - this.mouseMoveX;
-            if (diffrenceWidth > 0) {
-                this.parent.setRecordValue('left', this.previousItem.left - diffrenceWidth, item, true);
+        let differenceWidth: number = 0;
+        if (this.taskBarEditElement.classList.contains('e-segmented-taskbar') &&
+            !this.taskBarEditElement.classList.contains('e-segment-first')) {
+            let segments: ITaskSegment[] = this.taskBarEditRecord.ganttProperties.segments.map((e: ITaskSegment) => ({ ...e }));
+            let segment: ITaskSegment = segments[this.segmentIndex];
+            if (this.mouseDownX > this.mouseMoveX) {
+                differenceWidth = isNullOrUndefined(this.previousMouseMove) ?
+                    (this.mouseDownX - this.mouseMoveX) : (this.previousMouseMove - this.mouseMoveX);
+                this.previousMouseMove = this.mouseMoveX;
+                segment.left = segment.left - differenceWidth;
+            } else {
+                differenceWidth = isNullOrUndefined(this.previousMouseMove) ?
+                    (this.mouseMoveX - this.mouseDownX) : (this.mouseMoveX - this.previousMouseMove);
+                this.previousMouseMove = this.mouseMoveX;
+                segment.left = segment.left + differenceWidth;
             }
+            let previousSegment: ITaskSegment = segments[this.segmentIndex - 1];
+            let nextSegment: ITaskSegment = segments[this.segmentIndex + 1];
+            let left: number;
+            if (this.taskBarEditElement.classList.contains('e-segment-inprogress')) {
+                left = segment.left < (previousSegment.left + previousSegment.width) ? (previousSegment.left + previousSegment.width) :
+                    ((segment.width + segment.left) > (nextSegment.left)) ? nextSegment.left - segment.width : segment.left;
+            } else {
+                left = segment.left < (previousSegment.left + previousSegment.width) ? (previousSegment.left + previousSegment.width) :
+                    (item.left + segment.width + segment.left) >= this.parent.timelineModule.totalTimelineWidth ?
+                        (this.parent.timelineModule.totalTimelineWidth - segment.width) : segment.left;
+            }
+            segment.left = left;
+            this.parent.setRecordValue('segments', segments, item, true);
+            this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'segments');
         } else {
-            diffrenceWidth = this.mouseMoveX - this.mouseDownX;
-            this.parent.setRecordValue('left', this.previousItem.left + diffrenceWidth, item, true);
+            if (this.mouseDownX > this.mouseMoveX) {
+                differenceWidth = this.mouseDownX - this.mouseMoveX;
+                if (differenceWidth > 0) {
+                    this.parent.setRecordValue('left', this.previousItem.left - differenceWidth, item, true);
+                }
+            } else {
+                differenceWidth = this.mouseMoveX - this.mouseDownX;
+                this.parent.setRecordValue('left', this.previousItem.left + differenceWidth, item, true);
+            }
+            let left: number = item.left < 0 ? 0 : (item.left + item.width) >= this.parent.timelineModule.totalTimelineWidth ?
+                (this.parent.timelineModule.totalTimelineWidth - item.width) : item.left;
+            this.parent.setRecordValue('left', left, item, true);
         }
-        let left: number = item.left < 0 ? 0 : (item.left + item.width) >= this.parent.timelineModule.totalTimelineWidth ?
-            (this.parent.timelineModule.totalTimelineWidth - item.width) : item.left;
-        this.parent.setRecordValue('left', left, item, true);
     }
 
     /**
@@ -676,38 +737,134 @@ export class TaskbarEdit {
      */
     private enableLeftResizing(e: PointerEvent): void {
         let item: ITaskData = this.taskBarEditRecord.ganttProperties;
-        let diffrenceWidth: number = 0;
-        if (this.mouseDownX > this.mouseMoveX) {
-            if (this.mouseMoveX < (item.left + item.width)) {
-                diffrenceWidth = this.mouseDownX - this.mouseMoveX;
-                if (item.left > 0) {
-                    this.parent.setRecordValue('left', this.previousItem.left - diffrenceWidth, item, true);
-                    this.parent.setRecordValue('width', this.previousItem.width + diffrenceWidth, item, true);
+        let differenceWidth: number = 0;
+        if (this.taskBarEditElement.classList.contains('e-segmented-taskbar')) {
+            this.enableSplitTaskLeftResize(item);
+        } else {
+            if (this.mouseDownX > this.mouseMoveX) {
+                if (this.mouseMoveX < (item.left + item.width)) {
+                    differenceWidth = this.mouseDownX - this.mouseMoveX;
+                    if (item.left > 0) {
+                        this.parent.setRecordValue('left', this.previousItem.left - differenceWidth, item, true);
+                        this.parent.setRecordValue('width', this.previousItem.width + differenceWidth, item, true);
+                    }
+                } else {
+                    if (this.mouseMoveX > (item.left + item.width)) {
+                        differenceWidth = this.mouseDownX - this.mouseMoveX;
+                        this.parent.setRecordValue('left', this.previousItem.left - differenceWidth, item, true);
+                        this.parent.setRecordValue('width', 3, item, true);
+                    }
                 }
             } else {
-                if (this.mouseMoveX > (item.left + item.width)) {
-                    diffrenceWidth = this.mouseDownX - this.mouseMoveX;
-                    this.parent.setRecordValue('left', this.previousItem.left - diffrenceWidth, item, true);
+                if (this.mouseMoveX < (item.left + item.width)) {
+                    differenceWidth = this.mouseMoveX - this.mouseDownX;
+                    if ((item.left) < (item.left + item.width) &&
+                        ((this.previousItem.left + differenceWidth) <= (this.previousItem.left + this.previousItem.width))) {
+                        this.parent.setRecordValue('left', this.previousItem.left + differenceWidth, item, true);
+                        this.parent.setRecordValue('width', this.previousItem.width - differenceWidth, item, true);
+                    }
+                } else {
+                    differenceWidth = this.mouseMoveX - this.mouseDownX;
+                    this.parent.setRecordValue('left', this.previousItem.left + differenceWidth, item, true);
                     this.parent.setRecordValue('width', 3, item, true);
                 }
             }
-        } else {
-            if (this.mouseMoveX < (item.left + item.width)) {
-                diffrenceWidth = this.mouseMoveX - this.mouseDownX;
-                if ((item.left) < (item.left + item.width) &&
-                    ((this.previousItem.left + diffrenceWidth) <= (this.previousItem.left + this.previousItem.width))) {
-                    this.parent.setRecordValue('left', this.previousItem.left + diffrenceWidth, item, true);
-                    this.parent.setRecordValue('width', this.previousItem.width - diffrenceWidth, item, true);
+            this.updateEditPosition(e, item);
+            this.parent.setRecordValue(
+                'left', (this.previousItem.left + this.previousItem.width - item.width), item, true);
+        }
+    }
+    private enableSplitTaskLeftResize(item: ITaskData): void {
+        let segments: ITaskSegment[] = this.taskBarEditRecord.ganttProperties.segments.map((e: ITaskSegment) => ({ ...e }));
+        let segment: ITaskSegment = segments[this.segmentIndex];
+        let differenceWidth: number = 0;
+        //when decrease the left and increase the width
+        if (this.mouseDownX > this.mouseMoveX) {
+            if (this.mouseMoveX < (item.left + segment.width + segment.left)) {
+                differenceWidth = isNullOrUndefined(this.previousMouseMove) ?
+                    (this.mouseDownX - this.mouseMoveX) : (this.previousMouseMove - this.mouseMoveX);
+                this.previousMouseMove = this.mouseMoveX;
+                // when resize other than 0th segment
+                if (segment.left > 0) {
+                    segment.left = segment.left - differenceWidth;
+                    segment.width = segment.width + differenceWidth;
+                    if (this.segmentIndex !== 0) {
+                        let previousSegment: ITaskSegment = segments[this.segmentIndex - 1];
+                        if ((item.left + segment.left) < (item.left + previousSegment.left + previousSegment.width)) {
+                            let left: number = item.left + previousSegment.left + previousSegment.width;
+                            let difference: number =
+                                (item.left + previousSegment.left + previousSegment.width) - (item.left + segment.left);
+                            segment.width -= difference;
+                            segment.left = segment.left + difference;
+                        }
+                    }
+                } else if (segment.left <= 0 && this.segmentIndex === 0) {
+                    this.parent.setRecordValue('left', item.left - differenceWidth, item, true);
+                    this.parent.setRecordValue('width', item.width + differenceWidth, item, true);
+                    segment.width = segment.width + differenceWidth;
+                    for (let i: number = 1; i < item.segments.length; i++) {
+                        let segment: ITaskSegment = segments[i];
+                        segment.left = segment.left + differenceWidth;
+                    }
                 }
             } else {
-                diffrenceWidth = this.mouseMoveX - this.mouseDownX;
-                this.parent.setRecordValue('left', this.previousItem.left + diffrenceWidth, item, true);
-                this.parent.setRecordValue('width', 3, item, true);
+                if (this.mouseMoveX > (item.left + segment.width + segment.left)) {
+                    differenceWidth = isNullOrUndefined(this.previousMouseMove) ?
+                        (this.mouseDownX - this.mouseMoveX) : (this.previousMouseMove - this.mouseMoveX);
+                    this.previousMouseMove = this.mouseMoveX;
+                    segment.left = segment.left - differenceWidth;
+                    segment.width = this.parent.perDayWidth;
+                }
+            }
+        } else {
+            // when increase left value and decrease width of segment
+            if (this.mouseMoveX < (item.left + segment.width + segment.left - this.parent.perDayWidth)) {
+                differenceWidth = isNullOrUndefined(this.previousMouseMove) ?
+                    (this.mouseMoveX - this.mouseDownX) : (this.mouseMoveX - this.previousMouseMove);
+                this.previousMouseMove = this.mouseMoveX;
+                // when decrease the first segment width
+                if (this.segmentIndex === 0 && segment.left <= 0) {
+                    this.parent.setRecordValue('left', item.left + differenceWidth, item, true);
+                    this.parent.setRecordValue('width', item.width - differenceWidth, item, true);
+                    segment.width = segment.width - differenceWidth;
+                    for (let i: number = 1; i < item.segments.length; i++) {
+                        let segment: ITaskSegment = segments[i];
+                        segment.left = segment.left - differenceWidth;
+                    }
+                    // when decrease remaining segments
+                } else if ((segment.left) < (segment.left + segment.width) &&
+                    ((segment.left + differenceWidth) <= (segment.left + segment.width))) {
+                    segment.left = segment.left + differenceWidth;
+                    segment.width = segment.width - differenceWidth;
+                }
+                // when mouse move goes beyond one day width of task bar.
+            } else {
+                if (this.mouseMoveX < (item.left + segment.left + segment.width)) {
+                    if (segment.width > this.parent.perDayWidth) {
+                        differenceWidth = isNullOrUndefined(this.previousMouseMove) ?
+                            (this.mouseMoveX - this.mouseDownX) : (this.mouseMoveX - this.previousMouseMove);
+                        this.previousMouseMove = this.mouseMoveX;
+                        let singleDayDifference: number = (segment.width - differenceWidth) < this.parent.perDayWidth ?
+                            this.parent.perDayWidth > segment.width ?
+                                this.parent.perDayWidth - segment.width : segment.width - this.parent.perDayWidth : 0;
+                        differenceWidth -= singleDayDifference;
+                        if (this.segmentIndex === 0) {
+                            this.parent.setRecordValue('width', item.width - differenceWidth, item, true);
+                            this.parent.setRecordValue('left', item.left + differenceWidth, item, true);
+                            for (let i: number = 1; i < item.segments.length; i++) {
+                                let segment: ITaskSegment = segments[i];
+                                segment.left = segment.left - differenceWidth;
+                            }
+                        } else {
+                            segment.left = segment.left + differenceWidth;
+                            segment.width = segment.width - differenceWidth;
+                        }
+                    }
+                }
             }
         }
-        this.updateEditPosition(e, item);
-        this.parent.setRecordValue(
-            'left', (this.previousItem.left + this.previousItem.width - item.width), item, true);
+        this.parent.setRecordValue('segments', segments, item, true);
+        this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'segments');
     }
     /**
      * Update mouse position and edited item value
@@ -741,25 +898,63 @@ export class TaskbarEdit {
      */
     private enableRightResizing(e: PointerEvent): void {
         let item: ITaskData = this.taskBarEditRecord.ganttProperties;
-        let diffrenceWidth: number = 0;
-        if (this.mouseDownX > this.mouseMoveX) {
-            if (this.mouseMoveX > item.left && (this.mouseDownX - this.mouseMoveX) > 3) {
-                diffrenceWidth = this.mouseDownX - this.mouseMoveX;
-                this.parent.setRecordValue('width', this.previousItem.width - diffrenceWidth, item, true);
+        let differenceWidth: number = 0;
+        if (this.taskBarEditElement.classList.contains('e-segmented-taskbar')) {
+            let segments: ITaskSegment[] = this.taskBarEditRecord.ganttProperties.segments.map((e: ITaskSegment) => ({ ...e }));
+            let segment: ITaskSegment = segments[this.segmentIndex];
+            if (this.mouseDownX > this.mouseMoveX) {
+                if (this.mouseMoveX > (item.left + segment.left) && (this.mouseDownX - this.mouseMoveX) > 3) {
+                    differenceWidth = isNullOrUndefined(this.previousMouseMove) ?
+                        (this.mouseDownX - this.mouseMoveX) : (this.previousMouseMove - this.mouseMoveX);
+                    this.previousMouseMove = this.mouseMoveX;
+                    segment.width = segment.width - differenceWidth;
+                } else {
+                    if (this.mouseMoveX < (item.left + segment.left)) {
+                        segment.width = this.parent.perDayWidth;
+                    }
+                }
             } else {
-                if (this.mouseMoveX < item.left) {
-                    this.parent.setRecordValue('width', 3, item, true);
+                if (this.mouseMoveX > segment.left) {
+                    differenceWidth = isNullOrUndefined(this.previousMouseMove) ?
+                        (this.mouseMoveX - this.mouseDownX) : (this.mouseMoveX - this.previousMouseMove);
+                    this.previousMouseMove = this.mouseMoveX;
+                    segment.width = segment.width + differenceWidth;
                 }
             }
-        } else {
-            if (this.mouseMoveX > item.left) {
-                diffrenceWidth = this.mouseMoveX - this.mouseDownX;
-                this.parent.setRecordValue('width', this.previousItem.width + diffrenceWidth, item, true);
+            let width: number;
+            let nextSegment: ITaskSegment = this.segmentIndex !== segments.length - 1 ? segments[this.segmentIndex + 1] : null;
+            if (!isNullOrUndefined(nextSegment)) {
+                if (!this.taskBarEditElement.classList.contains('e-segment-last')) {
+                    width = (segment.left + segment.width) > nextSegment.left ? (nextSegment.left - segment.left) : segment.width;
+                }
+                segment.width = width;
             }
+            if (this.segmentIndex === item.segments.length - 1) {
+                if (this.segmentIndex === 0) {
+                    this.parent.setRecordValue('width', segment.width, item, true);
+                }
+            }
+            this.parent.setRecordValue('segments', segments, item, true);
+            this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'segments');
+        } else {
+            if (this.mouseDownX > this.mouseMoveX) {
+                if (this.mouseMoveX > item.left && (this.mouseDownX - this.mouseMoveX) > 3) {
+                    differenceWidth = this.mouseDownX - this.mouseMoveX;
+                    this.parent.setRecordValue('width', this.previousItem.width - differenceWidth, item, true);
+                } else {
+                    if (this.mouseMoveX < item.left) {
+                        this.parent.setRecordValue('width', 3, item, true);
+                    }
+                }
+            } else {
+                if (this.mouseMoveX > item.left) {
+                    differenceWidth = this.mouseMoveX - this.mouseDownX;
+                    this.parent.setRecordValue('width', this.previousItem.width + differenceWidth, item, true);
+                }
+            }
+            this.updateEditPosition(e, item);
         }
-        this.updateEditPosition(e, item);
     }
-
 
     /**
      * To updated startDate and endDate while perform taskbar edit operation.
@@ -781,63 +976,221 @@ export class TaskbarEdit {
                     true);
                 break;
             case 'LeftResizing':
-                left = this.getRoundOffStartLeft(item, this.roundOffDuration);
-                projectStartDate = this.getDateByLeft(left);
-                if (isNullOrUndefined(item.endDate)) {
-                    endDate = this.parent.dateValidationModule.getValidEndDate(item);
-                    this.parent.setRecordValue('endDate', endDate, item, true);
+                if (this.segmentIndex === -1) {
+                    left = this.getRoundOffStartLeft(item, this.roundOffDuration);
+                    projectStartDate = this.getDateByLeft(left);
+                    if (isNullOrUndefined(item.endDate)) {
+                        endDate = this.parent.dateValidationModule.getValidEndDate(item);
+                        this.parent.setRecordValue('endDate', endDate, item, true);
+                    }
+                    startDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
+                    this.parent.setRecordValue('startDate', new Date(startDate.getTime()), item, true);
+                    if (this.parent.dateValidationModule.compareDates(item.startDate, item.endDate) === 0
+                        && isNullOrUndefined(item.isMilestone) && item.isMilestone === false && item.duration === 0) {
+                        this.parent.setRecordValue('duration', 1, item, true);
+                    }
+                    if (item.isMilestone) {
+                        this.parent.setRecordValue('endDate', new Date(startDate.getTime()), item, true);
+                    }
+                    this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
+                    this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
+                } else {
+                    this.updateSplitLeftResize(item);
                 }
-                startDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
-                this.parent.setRecordValue('startDate', new Date(startDate.getTime()), item, true);
-                if (this.parent.dateValidationModule.compareDates(item.startDate, item.endDate) === 0
-                    && isNullOrUndefined(item.isMilestone) && item.isMilestone === false && item.duration === 0) {
-                    this.parent.setRecordValue('duration', 1, item, true);
-                }
-                if (item.isMilestone) {
-                    this.parent.setRecordValue('endDate', new Date(startDate.getTime()), item, true);
-                }
-                this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
-                this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
+
                 break;
             case 'RightResizing':
             case 'ParentResizing':
-                left = this.getRoundOffEndLeft(item, this.roundOffDuration);
-                let tempEndDate: Date = this.getDateByLeft(left);
-                if (isNullOrUndefined(item.startDate)) {
-                    startDate = this.parent.dateValidationModule.getValidStartDate(item);
-                    this.parent.setRecordValue('startDate', startDate, item, true);
+                if (this.segmentIndex === -1) {
+                    left = this.getRoundOffEndLeft(item, this.roundOffDuration);
+                    let tempEndDate: Date = this.getDateByLeft(left);
+                    if (isNullOrUndefined(item.startDate)) {
+                        startDate = this.parent.dateValidationModule.getValidStartDate(item);
+                        this.parent.setRecordValue('startDate', startDate, item, true);
+                    }
+                    let tempdate: Date = isNullOrUndefined(item.startDate) ? startDate : item.startDate;
+                    endDate = item.isMilestone ? tempdate :
+                        this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
+                    this.parent.setRecordValue('endDate', new Date(endDate.getTime()), item, true);
+                    this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
+                    this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
+                } else {
+                    this.updateSplitRightResizing(item);
                 }
-                let tempdate: Date = isNullOrUndefined(item.startDate) ? startDate : item.startDate;
-                endDate = item.isMilestone ? tempdate :
-                    this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
-                this.parent.setRecordValue('endDate', new Date(endDate.getTime()), item, true);
-                this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
-                this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
                 break;
             case 'ParentDrag':
             case 'ChildDrag':
             case 'MilestoneDrag':
             case 'ManualParentDrag':
-                left = this.getRoundOffStartLeft(item, this.roundOffDuration);
-                projectStartDate = this.getDateByLeft(left);
-                if (!isNullOrUndefined(item.endDate) && isNullOrUndefined(item.startDate)) {
-                    endDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
-                    endDate = this.parent.dateValidationModule.checkEndDate(endDate, this.taskBarEditRecord.ganttProperties);
-                    this.parent.setRecordValue('endDate', endDate, item, true);
+                if (this.segmentIndex === -1 || this.segmentIndex === 0) {
+                    this.updateChildDrag(item);
                 } else {
-                    this.parent.setRecordValue(
-                        'startDate',
-                        this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null),
-                        item,
-                        true);
-                    if (!isNullOrUndefined(item.duration)) {
-                        this.parent.dateValidationModule.calculateEndDate(this.taskBarEditRecord);
-                    }
+                    this.setSplitTaskDrag(item);
                 }
                 break;
         }
     }
+    private updateChildDrag(item: ITaskData): void {
+        let left: number;
+        let projectStartDate: Date;
+        let endDate: Date;
+        let startDate: Date;
+        left = this.getRoundOffStartLeft(item, this.roundOffDuration);
+        projectStartDate = this.getDateByLeft(left);
+        if (this.segmentIndex === 0) {
+            this.parent.setRecordValue(
+                'startDate',
+                this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null),
+                item,
+                true);
+            item.segments[0].startDate = projectStartDate;
+            item.segments[0].endDate = this.parent.dataOperation.getEndDate(
+                item.segments[0].startDate, item.segments[0].duration, item.durationUnit, item, false);
+            this.parent.setRecordValue('segments', item.segments, item, true);
+            this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'segments');
+            this.parent.chartRowsModule.incrementSegments(item.segments, 0, this.taskBarEditRecord);
+            this.parent.setRecordValue(
+                'endDate',
+                item.segments[item.segments.length - 1].endDate,
+                item,
+                true);
+        } else {
+            if (!isNullOrUndefined(item.endDate) && isNullOrUndefined(item.startDate)) {
+                endDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
+                endDate = this.parent.dateValidationModule.checkEndDate(endDate, this.taskBarEditRecord.ganttProperties);
+                this.parent.setRecordValue('endDate', endDate, item, true);
+            } else {
+                this.parent.setRecordValue(
+                    'startDate',
+                    this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null),
+                    item,
+                    true);
+                if (!isNullOrUndefined(item.duration)) {
+                    this.parent.dateValidationModule.calculateEndDate(this.taskBarEditRecord);
+                }
+            }
+        }
+    }
+    private updateSplitLeftResize(item: ITaskData): void {
+        let segment: ITaskSegment = item.segments[this.segmentIndex];
+        let left: number = this.segmentIndex === 0 ? this.getRoundOffStartLeft(item, this.roundOffDuration) :
+            this.getRoundOffStartLeft(segment, this.roundOffDuration);
+        let projectStartDate: Date = this.segmentIndex === 0 ? this.getDateByLeft(left) : this.getDateByLeft(item.left + left);
 
+        let startDate: Date = this.parent.dataOperation.checkStartDate(projectStartDate, item, false);
+        let duration: number = this.parent.dataOperation.getDuration(
+            startDate, segment.endDate, item.durationUnit,
+            item.isAutoSchedule, item.isMilestone);
+
+        segment.startDate = new Date(startDate.getTime());
+        segment.duration = duration;
+        this.parent.setRecordValue('duration', this.sumOfDuration(item.segments), item, true);
+        if (this.segmentIndex === 0) {
+            this.parent.setRecordValue('startDate', segment.startDate, item, true);
+        }
+        this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
+
+        if (!isNullOrUndefined(item.segments[this.segmentIndex - 1])) {
+            let segmentOffsetDuration: number = this.parent.dataOperation.getDuration(
+                item.segments[this.segmentIndex - 1].endDate, item.segments[this.segmentIndex].startDate, item.durationUnit,
+                item.isAutoSchedule, item.isMilestone);
+            segment.offsetDuration = segmentOffsetDuration;
+        }
+        this.parent.setRecordValue('segments', item.segments, item, true);
+        this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'segments');
+    }
+    private updateSplitRightResizing(item: ITaskData): void {
+        let segment: ITaskSegment = item.segments[this.segmentIndex];
+        let left: number = this.getRoundOffEndLeft(item, this.roundOffDuration);
+        let tempEndDate: Date = this.getDateByLeft(left);
+        let endDate: Date = this.parent.dataOperation.checkEndDate(tempEndDate, item, false);
+        let duration: number = this.parent.dataOperation.getDuration(
+            segment.startDate, endDate, item.durationUnit,
+            item.isAutoSchedule, item.isMilestone);
+        segment.endDate = new Date(endDate.getTime());
+        segment.duration = duration;
+        // update next segment offset duration
+        if (!isNullOrUndefined(item.segments[this.segmentIndex + 1])) {
+            let nextSegment: ITaskSegment = item.segments[this.segmentIndex + 1];
+            let segmentOffset: number = this.parent.dataOperation.getDuration(
+                item.segments[this.segmentIndex].endDate, nextSegment.startDate, item.durationUnit,
+                item.isAutoSchedule, item.isMilestone);
+            segment.offsetDuration = segmentOffset;
+        }
+        this.parent.setRecordValue('segments', item.segments, item, true);
+        this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'segments');
+        this.parent.setRecordValue('duration', this.sumOfDuration(item.segments), item, true);
+        this.parent.setRecordValue(
+            'endDate',
+            item.segments[item.segments.length - 1].endDate,
+            item,
+            true);
+        this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
+    }
+    public sumOfDuration(segments: ITaskSegment[]): number {
+        let duration: number = 0;
+        for (let i: number = 0; i < segments.length; i++) {
+            let segment: ITaskSegment = segments[i];
+            duration += segment.duration;
+        }
+        return duration;
+    }
+    public splitTasksDuration(segments: ITaskSegment[]): number {
+        let duration: number = 0;
+        for (let i: number = 0; i < segments.length; i++) {
+            let segment: ITaskSegment = segments[i];
+            let sDate: Date = segment.startDate;
+            let eDate: Date = segment.endDate;
+            duration += Math.ceil(this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24));
+        }
+        return duration;
+    }
+    private setSplitTaskDrag(item: ITaskData): void {
+        let segment: ITaskSegment = item.segments[this.segmentIndex];
+        let left: number = this.getRoundOffStartLeft(segment, this.roundOffDuration);
+        let projectStartDate: Date = this.getDateByLeft(item.left + left);
+        projectStartDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
+        segment.startDate = projectStartDate;
+        segment.endDate = this.parent.dataOperation.getEndDate(
+            segment.startDate, segment.duration, item.durationUnit, item, false
+        );
+        segment.duration = this.parent.dataOperation.getDuration(
+            segment.startDate, segment.endDate, item.durationUnit, item.isAutoSchedule, item.isMilestone
+        );
+        this.parent.setRecordValue('duration', this.sumOfDuration(item.segments), item, true);
+        this.parent.setRecordValue(
+            'endDate',
+            item.segments[item.segments.length - 1].endDate,
+            item,
+            true);
+        if (!isNullOrUndefined(this.parent.taskFields.endDate)) {
+            this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'endDate');
+        }
+
+        //set offset if previous record present
+        if (!isNullOrUndefined(item.segments[this.segmentIndex - 1])) {
+            let offsetDuration: number = this.parent.dataOperation.getDuration(
+                item.segments[this.segmentIndex - 1].endDate, item.segments[this.segmentIndex].startDate, item.durationUnit,
+                item.isAutoSchedule, item.isMilestone);
+            if (segment.startDate.getDay() === 1 && offsetDuration === 0 && !this.parent.includeWeekend) {
+                offsetDuration = 1;
+            }
+            segment.offsetDuration = offsetDuration;
+        }
+        //set next record  offset if present
+        if (!isNullOrUndefined(item.segments[this.segmentIndex + 1])) {
+            let nextSegment: ITaskSegment = item.segments[this.segmentIndex + 1];
+            let offsetDuration: number = this.parent.dataOperation.getDuration(
+                item.segments[this.segmentIndex].endDate, nextSegment.startDate, item.durationUnit,
+                item.isAutoSchedule, item.isMilestone);
+            if (nextSegment.startDate.getDay() === 1 && offsetDuration === 0 && !this.parent.includeWeekend) {
+                offsetDuration = 1;
+            }
+            nextSegment.offsetDuration = offsetDuration;
+        }
+        this.parent.setRecordValue('segments', item.segments, item, true);
+        this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'segments');
+    }
     /**
      * To get roundoff enddate.
      * @return {number}
@@ -847,6 +1200,10 @@ export class TaskbarEdit {
         let tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
             this.parent.timelineModule.topTier;
         let totalLeft: number = ganttRecord.width + ganttRecord.left;
+        if (this.segmentIndex !== -1) {
+            let segment: ITaskSegment = ganttRecord.segments[this.segmentIndex];
+            totalLeft = totalLeft - ganttRecord.width + segment.width + segment.left;
+        }
         let remainingContribution: number =
             (1 / (this.parent.timelineModule.getIncrement(this.getDateByLeft(totalLeft), 1, 'Day') / (1000 * 60 * 60 * 24)));
         let remainingLeft: number = this.parent.perDayWidth - (this.parent.perDayWidth / remainingContribution);
@@ -896,8 +1253,9 @@ export class TaskbarEdit {
      * @return {number}
      * @private
      */
-    public getRoundOffStartLeft(ganttRecord: ITaskData, isRoundOff: Boolean): number {
-        let left: number = ganttRecord.left;
+    public getRoundOffStartLeft(ganttRecord: ITaskData | ITaskSegment, isRoundOff: Boolean): number {
+        let left: number = isNullOrUndefined(ganttRecord as ITaskData) ? (ganttRecord as ITaskSegment).left
+            : (ganttRecord as ITaskData).left;
         let tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
             this.parent.timelineModule.topTier;
         let remainingContribution: number =
@@ -982,12 +1340,17 @@ export class TaskbarEdit {
      */
     private setItemPosition(): void {
         let item: ITaskData = this.taskBarEditRecord.ganttProperties;
+        let segment: ITaskSegment = !isNullOrUndefined(item.segments) ? item.segments[this.segmentIndex] : null;
         let width: number = this.taskBarEditAction === 'MilestoneDrag' || item.isMilestone ?
             this.parent.chartRowsModule.milestoneHeight : item.width;
         let rightResizer: number = this.parent.isAdaptive ? (width - 2) : (width - 10);
+        if (!isNullOrUndefined(segment)) {
+            rightResizer = this.parent.isAdaptive ? (segment.width - 2) : (segment.width - 10);
+        }
         /* tslint:disable-next-line */
         let taskBarMainContainer: HTMLElement = (!this.taskBarEditElement.classList.contains(cls.taskBarMainContainer)) ? closest(this.taskBarEditElement, 'tr.' + cls.chartRow)
             .querySelector('.' + cls.taskBarMainContainer) as HTMLElement : this.taskBarEditElement as HTMLElement;
+        let segmentedTaskBarContainer: boolean = this.taskBarEditElement.classList.contains('e-segmented-taskbar');
         let leftLabelContainer: HTMLElement = closest(this.taskBarEditElement, 'tr.' + cls.chartRow)
             .querySelector('.' + cls.leftLabelContainer) as HTMLElement;
         let rightLabelContainer: HTMLElement = closest(this.taskBarEditElement, 'tr.' + cls.chartRow)
@@ -1015,9 +1378,27 @@ export class TaskbarEdit {
         if (this.taskBarEditAction !== 'ConnectorPointRightDrag' &&
             this.taskBarEditAction !== 'ConnectorPointLeftDrag') {
             if (this.taskBarEditAction !== 'ParentResizing' && this.taskBarEditAction !== 'ManualParentDrag') {
+                if (segmentedTaskBarContainer && !isNullOrUndefined(item.segments)
+                    && (this.taskBarEditAction === 'RightResizing' || this.segmentIndex !== 0)) {
+
+                    (this.taskBarEditElement as HTMLElement).style.width = (segment.width) + 'px';
+                    (this.taskBarEditElement as HTMLElement).style.left = (segment.left) + 'px';
+                }
                 taskBarMainContainer.style.width = (width) + 'px';
                 taskBarMainContainer.style.left = (item.left) + 'px';
                 leftLabelContainer.style.width = (item.left) + 'px';
+                if (this.taskBarEditAction === 'LeftResizing' && this.segmentIndex === 0) {
+                    let parent: HTMLElement = this.taskBarEditElement.parentElement;
+                    let segmentedTasks: HTMLCollectionOf<HTMLElement> =
+                        parent.getElementsByClassName('e-segmented-taskbar') as HTMLCollectionOf<HTMLElement>;
+                    for (let i: number = 0; i < item.segments.length; i++) {
+                        let segment: ITaskSegment = item.segments[i];
+                        let segmentElement: HTMLElement = segmentedTasks[i] as HTMLElement;
+                        (segmentElement as HTMLElement).style.width = (segment.width) + 'px';
+                        (segmentElement as HTMLElement).style.left = (segment.left) + 'px';
+                    }
+                }
+
                 if (!isNullOrUndefined(rightLabelContainer)) {
                     rightLabelContainer.style.left = (item.left + width) + 'px';
                 }
@@ -1032,19 +1413,23 @@ export class TaskbarEdit {
                     rightLabelContainer.style.left = (item.left + (width / 2)) + 'px';
                 }
             } else if (this.taskBarEditAction === 'ProgressResizing') {
-                traceChildTaskBar.style.left = (item.left + item.progressWidth - 10) + 'px';
-                if (!isNullOrUndefined(traceChildProgressBar)) {
-                    traceChildProgressBar.style.width = item.progressWidth + 'px';
-                    traceChildProgressBar.style.borderBottomRightRadius = this.progressBorderRadius + 'px';
-                    traceChildProgressBar.style.borderTopRightRadius = this.progressBorderRadius + 'px';
-                    childProgressResizer.style.left = item.progressWidth - 8 + 'px';
+                if (this.segmentIndex === -1) {
+                    traceChildTaskBar.style.left = (item.left + item.progressWidth - 10) + 'px';
+                    if (!isNullOrUndefined(traceChildProgressBar)) {
+                        traceChildProgressBar.style.width = item.progressWidth + 'px';
+                        traceChildProgressBar.style.borderBottomRightRadius = this.progressBorderRadius + 'px';
+                        traceChildProgressBar.style.borderTopRightRadius = this.progressBorderRadius + 'px';
+                        childProgressResizer.style.left = item.progressWidth - 8 + 'px';
+                    }
                 }
-            } else if (this.taskBarEditAction === 'RightResizing') {
+            } else if (this.taskBarEditAction === 'RightResizing' && !isNullOrUndefined(traceChildTaskBar)) {
                 traceChildTaskBar.style.width = (width) + 'px';
                 if (!isNullOrUndefined(traceChildProgressBar)) {
                     traceChildProgressBar.style.width = (item.progressWidth) + 'px';
                     taskBarRightResizer.style.left = rightResizer + 'px';
-                    childProgressResizer.style.left = (item.progressWidth - 10) + 'px';
+                    if (!isNullOrUndefined(childProgressResizer)) {
+                        childProgressResizer.style.left = (item.progressWidth - 10) + 'px';
+                    }
                 }
             } else if (this.taskBarEditAction === 'ParentDrag') {
                 if (!isNullOrUndefined(traceParentTaskBar)) {
@@ -1059,13 +1444,22 @@ export class TaskbarEdit {
             } else if (this.taskBarEditAction === 'ManualParentDrag') {
                 manualParentTaskbar.style.left = (item.left - item.autoLeft) + 'px';
             } else {
-                if (!isNullOrUndefined(traceChildTaskBar)) {
+                if (!isNullOrUndefined(traceChildTaskBar) && !segmentedTaskBarContainer) {
                     traceChildTaskBar.style.width = (width) + 'px';
                 }
                 if (!isNullOrUndefined(traceChildProgressBar)) {
                     taskBarRightResizer.style.left = rightResizer + 'px';
                     traceChildProgressBar.style.width = (item.progressWidth) + 'px';
-                    childProgressResizer.style.left = item.progressWidth - 10 + 'px';
+                    if (!isNullOrUndefined(childProgressResizer)) {
+                        childProgressResizer.style.left = item.progressWidth - 10 + 'px';
+                    }
+                }
+                if (segmentedTaskBarContainer) {
+                    taskBarRightResizer.style.left = rightResizer + 'px';
+                    traceChildProgressBar.style.width = (segment.progressWidth) + 'px';
+                    if (!isNullOrUndefined(childProgressResizer)) {
+                        childProgressResizer.style.left = segment.progressWidth - 10 + 'px';
+                    }
                 }
             }
         }
@@ -1078,7 +1472,8 @@ export class TaskbarEdit {
      */
     public mouseUpHandler(e: PointerEvent): void {
         let mouseDragged: boolean = this.isMouseDragged;
-        this.editTooltip.showHideTaskbarEditTooltip(false);
+        this.previousMouseMove = null;
+        this.editTooltip.showHideTaskbarEditTooltip(false, this.segmentIndex);
         if (this.taskBarEditAction && this.isMouseDragged) {
             if (!this.dragMouseLeave && this.taskBarEditedAction) {
                 this.taskBarEditedAction(e);
@@ -1153,6 +1548,27 @@ export class TaskbarEdit {
         this.parent.editModule.reUpdatePreviousRecords(true);
     }
 
+    public updateSegmentProgress(taskData: ITaskData): void {
+        let segments: ITaskSegment[] = taskData.segments;
+        let fixedWidth: boolean = true;
+        let totalTaskWidth: number = this.splitTasksDuration(segments) * this.parent.perDayWidth;
+        let totalProgressWidth: number = this.parent.dataOperation.getProgressWidth(totalTaskWidth, taskData.progress);
+        for (let i: number = 0; i < segments.length; i++) {
+            let segment: ITaskSegment = segments[i];
+            delete segment.progressWidth;
+            if (totalProgressWidth > 0 && totalProgressWidth > segment.width) {
+                totalProgressWidth = totalProgressWidth - segment.width;
+                segment.progressWidth = segment.width;
+                segment.showProgress = false;
+            } else if (fixedWidth) {
+                segment.progressWidth = totalProgressWidth;
+                segment.showProgress = true;
+                totalProgressWidth = totalProgressWidth - segment.width;
+                fixedWidth = false;
+            }
+        }
+    }
+
     /**
      * To trigger taskbar edited event.
      * @return {void}
@@ -1172,8 +1588,58 @@ export class TaskbarEdit {
                 if (ganttRecord.parentItem) {
                     this.parent.editModule.updateParentProgress(ganttRecord.parentItem);
                 }
+                if (!isNullOrUndefined(taskData.segments)) {
+                    this.updateSegmentProgress(taskData);
+                }
             }
         } else {
+            let segments: ITaskSegment[] = args.data.ganttProperties.segments;
+            if (!isNullOrUndefined(segments) && segments.length > 0
+                && ((this.taskBarEditAction === 'LeftResizing' && this.segmentIndex !== 0)
+                    || (this.taskBarEditAction === 'ChildDrag' && this.segmentIndex !== 0)
+                    || (this.taskBarEditAction === 'RightResizing'))) {
+                let segment: ITaskSegment = segments[this.segmentIndex];
+                let ganttProp: ITaskData = this.taskBarEditRecord.ganttProperties;
+                let length: number = segments.length;
+                let previousSegment: ITaskSegment = this.segmentIndex === 0 ? null
+                    : segments[this.segmentIndex - 1];
+                let nextSegment: ITaskSegment = this.segmentIndex === segments.length - 1 ? null
+                    : segments[this.segmentIndex + 1];
+                let sDate: Date = !isNullOrUndefined(nextSegment) ?
+                    new Date(nextSegment.startDate.getTime()) : this.parent.cloneProjectEndDate;
+                let eDate: Date = !isNullOrUndefined(previousSegment) ?
+                    new Date(previousSegment.endDate.getTime()) : this.parent.cloneProjectStartDate;
+                sDate.setHours(0, 0, 0, 0); eDate.setHours(0, 0, 0, 0);
+                let cStartDate: Date = new Date(segment.startDate.getTime());
+                let cEndDate: Date = new Date(segment.endDate.getTime());
+                cStartDate.setDate(cStartDate.getDate() - 1); cEndDate.setDate(cEndDate.getDate() + 1);
+                cStartDate.setHours(0, 0, 0, 0); cEndDate.setHours(0, 0, 0, 0);
+                if (cStartDate.getTime() <= eDate.getTime()) {
+                    let segmentIndexes: { firstSegmentIndex: number, secondSegmentIndex: number }[] = [
+                        { 'firstSegmentIndex': previousSegment.segmentIndex, 'secondSegmentIndex': segment.segmentIndex }
+                    ];
+                    this.parent.chartRowsModule.mergeTask
+                        (ganttProp.taskId, segmentIndexes);
+                } else if (cEndDate.getTime() >= sDate.getTime() && this.segmentIndex !== segments.length - 1) {
+                    let segmentIndexes: { firstSegmentIndex: number, secondSegmentIndex: number }[] = [
+                        { 'firstSegmentIndex': segment.segmentIndex, 'secondSegmentIndex': nextSegment.segmentIndex }
+                    ];
+                    this.parent.chartRowsModule.mergeTask
+                        (ganttProp.taskId, segmentIndexes);
+                } else if (cEndDate.getTime() >= sDate.getTime()) {
+                    segment.endDate.setDate(this.parent.cloneProjectEndDate.getDate() - 1);
+                    segment.startDate = this.parent.dataOperation.getStartDate(
+                        segment.endDate, segment.duration, ganttProp.durationUnit, ganttProp);
+                    for (let i: number = segments.length - 2; i >= 0; i++) {
+                        let segment: ITaskSegment = segments[i];
+                        let eDate: Date = segment.endDate;
+                        eDate.setDate(eDate.getDate() - segment.offsetDuration);
+                        segment.endDate = eDate;
+                        segment.startDate = this.parent.dataOperation.getStartDate(
+                            segment.endDate, segment.duration, ganttProp.durationUnit, ganttProp);
+                    }
+                }
+            }
             this.parent.dataOperation.updateWidthLeft(args.data);
         }
         this.parent.dataOperation.updateTaskData(ganttRecord);
@@ -1269,7 +1735,7 @@ export class TaskbarEdit {
             this.showHideTaskBarEditingElements(element, this.highlightedSecondElement, true);
         }
         if (isNullOrUndefined(this.connectorSecondAction) && !isNullOrUndefined(this.connectorSecondElement)) {
-            this.editTooltip.showHideTaskbarEditTooltip(false);
+            this.editTooltip.showHideTaskbarEditTooltip(false, this.segmentIndex);
             removeClass([this.connectorSecondElement.querySelector('.' + cls.connectorPointLeft)], [cls.connectorPointAllowBlock]);
             removeClass([this.connectorSecondElement.querySelector('.' + cls.connectorPointRight)], [cls.connectorPointAllowBlock]);
         }
@@ -1327,7 +1793,7 @@ export class TaskbarEdit {
         args.isValidLink = !isValidLink && args.isValidLink ? false : args.isValidLink;
         if (args.isValidLink) {
             if (!this.editTooltip.toolTipObj && !this.parent.isAdaptive) {
-                this.editTooltip.showHideTaskbarEditTooltip(true);
+                this.editTooltip.showHideTaskbarEditTooltip(true, this.segmentIndex);
             }
             if (this.editTooltip.toolTipObj) {
                 this.parent.connectorLineModule.tooltipTable.innerHTML = this.parent.connectorLineModule.getConnectorLineTooltipInnerTd(

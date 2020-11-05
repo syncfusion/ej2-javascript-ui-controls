@@ -1064,6 +1064,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         let handleContent: string = '.' + DLG_HEADER_CONTENT;
         this.dragObj = new Draggable(this.element, {
             clone: false,
+            isDragScroll: true,
             abort: '.e-dlg-closeicon-btn',
             handle: handleContent,
             dragStart: (event: Object & BlazorDragEventArgs) => {

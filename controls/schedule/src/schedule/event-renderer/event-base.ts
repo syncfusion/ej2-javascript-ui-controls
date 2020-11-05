@@ -546,18 +546,34 @@ export class EventBase {
     }
 
     public getGroupIndexFromEvent(eventData: { [key: string]: Object }): number {
-        let levelName: string = this.parent.resourceCollection.slice(-1)[0].name;
-        let levelIndex: number = this.parent.resourceCollection.length - 1;
-        let idField: string = this.parent.resourceCollection.slice(-1)[0].field;
+        let levelIndex: number;
+        let resource: ResourcesModel;
+        let levelName: string;
+        let idField: string;
+        for (let i: number = this.parent.resourceBase.resourceCollection.length - 1; i >= 0; i--) {
+            let resourceData: Object | string | number = eventData[this.parent.resourceBase.resourceCollection[i].field];
+            if (!isNullOrUndefined(resourceData)) {
+                resource = this.parent.resourceBase.resourceCollection[i];
+                levelIndex = i;
+                levelName = resource.name;
+                idField = resource.field;
+                break;
+            }
+        }
+        if (isNullOrUndefined(levelName) && isNullOrUndefined(levelIndex)) {
+            levelName = this.parent.resourceCollection.slice(-1)[0].name;
+            levelIndex = this.parent.resourceCollection.length - 1;
+            idField = this.parent.resourceCollection.slice(-1)[0].field;
+            resource = this.parent.resourceCollection.filter((e: ResourcesModel, index: number) => {
+                if (e.name === levelName) {
+                    levelIndex = index;
+                    return e;
+                }
+                return null;
+            })[0];
+        }
         let id: number = ((eventData[idField] instanceof Array) ?
             (eventData[idField] as { [key: string]: Object })[0] : eventData[idField]) as number;
-        let resource: ResourcesModel = this.parent.resourceCollection.filter((e: ResourcesModel, index: number) => {
-            if (e.name === levelName) {
-                levelIndex = index;
-                return e;
-            }
-            return null;
-        })[0];
         if (levelIndex > 0) {
             let parentField: string = this.parent.resourceCollection[levelIndex - 1].field;
             return this.parent.resourceBase.getIndexFromResourceId(id, levelName, resource, eventData, parentField);

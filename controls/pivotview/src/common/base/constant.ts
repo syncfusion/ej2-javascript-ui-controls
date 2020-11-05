@@ -66,6 +66,8 @@ export const beginDrillThrough: string = 'beginDrillThrough';
 /** @hidden */
 export const editCompleted: string = 'editCompleted';
 /** @hidden */
+export const multiLevelLabelClick: string = 'multiLevelLabelClick';
+/** @hidden */
 export const saveReport: string = 'saveReport';
 /** @hidden */
 export const fetchReport: string = 'fetchReport';

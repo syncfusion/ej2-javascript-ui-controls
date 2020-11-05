@@ -3113,7 +3113,7 @@ export class WordExport {
         if (shape.lineFormat.lineFormatType !== 'None') {
             writer.writeStartElement('a', 'solidFill', this.aNamespace);
             writer.writeStartElement('a', 'srgbClr', this.aNamespace);
-            writer.writeAttributeString(undefined, 'val', undefined, shape.lineFormat.color);
+            writer.writeAttributeString(undefined, 'val', undefined, this.getColor(shape.lineFormat.color));
             writer.writeEndElement();
             writer.writeEndElement();
             writer.writeStartElement('a', 'round', this.aNamespace);
@@ -3136,11 +3136,23 @@ export class WordExport {
             writer.writeEndElement();
         }
         writer.writeStartElement('wps', 'bodyPr', this.wpShapeNamespace);
-        if (shape.textFrame) {
-            writer.writeAttributeString(undefined, 'lIns', undefined, shape.textFrame.leftMargin.toString());
-            writer.writeAttributeString(undefined, 'tIns', undefined, shape.textFrame.topMargin.toString());
-            writer.writeAttributeString(undefined, 'rIns', undefined, shape.textFrame.rightMargin.toString());
-            writer.writeAttributeString(undefined, 'bIns', undefined, shape.textFrame.bottomMargin.toString());
+        if (!isNullOrUndefined(shape.textFrame)) {
+            if (shape.textFrame.leftMargin >= 0) {
+                writer.writeAttributeString(undefined, 'lIns', undefined, (Math.round(shape.textFrame.leftMargin).toString()));
+            }
+            if (shape.textFrame.topMargin >= 0) {
+                writer.writeAttributeString(undefined, 'tIns', undefined, (Math.round(shape.textFrame.topMargin).toString()));
+            }
+            if (shape.textFrame.rightMargin >= 0) {
+                writer.writeAttributeString(undefined, 'rIns', undefined, (Math.round(shape.textFrame.rightMargin).toString()));
+            }
+            if (shape.textFrame.bottomMargin >= 0) {
+                writer.writeAttributeString(undefined, 'bIns', undefined, (Math.round(shape.textFrame.bottomMargin).toString()));
+            }
+            writer.writeAttributeString(undefined, 'anchor', undefined, 't');
+            writer.writeAttributeString(undefined, 'anchorCtr', undefined, '0');
+
+
         }
         writer.writeEndElement();
         writer.writeEndElement();

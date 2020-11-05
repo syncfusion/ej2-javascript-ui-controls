@@ -163,7 +163,7 @@ export class Toolbar {
     }
 
     private addReactToolbarPortals(args: Object[]): void {
-        if (this.parent.isReact) {
+        if (this.parent.isReact && args) {
             (<{ portals?: Object[] }>this.parent).portals = (<{ portals?: Object[] }>this.parent).portals.concat(args);
             this.parent.renderTemplates();
         }

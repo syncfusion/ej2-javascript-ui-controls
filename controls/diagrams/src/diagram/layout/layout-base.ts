@@ -37,9 +37,9 @@ export class Layout extends ChildProperty<Layout> {
 
     /**
      * connect the node's without overlapping in automatic layout
-     * @default 'NonLinear'
+     * @default 'Nonlinear'
      */
-    @Property('NonLinear')
+    @Property('Nonlinear')
     public arrangement: ChildArrangement;
 
     /**

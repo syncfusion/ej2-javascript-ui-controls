@@ -2025,6 +2025,7 @@ let Dialog = class Dialog extends Component {
         let handleContent = '.' + DLG_HEADER_CONTENT;
         this.dragObj = new Draggable(this.element, {
             clone: false,
+            isDragScroll: true,
             abort: '.e-dlg-closeicon-btn',
             handle: handleContent,
             dragStart: (event) => {

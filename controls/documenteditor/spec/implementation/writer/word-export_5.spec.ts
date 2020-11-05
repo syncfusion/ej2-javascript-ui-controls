@@ -1294,6 +1294,6 @@ console.log('Serialize AutoShape StraightConnector validation');
         expect((writer as any).bufferText.indexOf('<a:off x="0" y="0"')).not.toBe(-1);
         expect((writer as any).bufferText.indexOf('<a:ext cx="6410325" cy="0"')).not.toBe(-1);
         expect((writer as any).bufferText.indexOf('<a:prstGeom prst="straightConnector1"')).not.toBe(-1);
-        expect((writer as any).bufferText.indexOf('<a:srgbClr val="000000"')).toBe(-1);
+        expect((writer as any).bufferText.indexOf('<a:srgbClr val="000000"')).not.toBe(-1);
     });
 });

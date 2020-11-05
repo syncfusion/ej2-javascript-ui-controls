@@ -1247,4 +1247,62 @@ describe('Circular-Gauge Control', () => {
             gauge.refresh();
         });
     });
+    describe('Allow Margin Feature', () => {
+        let gauge: CircularGauge;
+        let ele: HTMLElement;
+        let svg: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'gauge' });
+            document.body.appendChild(ele);
+            gauge = new CircularGauge({
+                height: '500',
+                width: '400',
+                allowMargin:false,
+                axes: [{
+                    startAngle: 270,
+                    endAngle: 90,
+                    majorTicks: {
+                        width: 0
+                    },
+                    lineStyle: { width: 8 },
+                    minorTicks: {
+                        width: 0
+                    },
+                    labelStyle: {
+                        font: {
+                            fontFamily: 'Roboto',
+                            size: '12px',
+                            fontWeight: 'Regular'
+                        },
+                    },
+                    pointers: [{
+                        value: 60,
+                        radius: '60%',
+                        pointerWidth: 7,
+                        cap: {
+                            radius: 8,
+                            border: { width: 0 }
+                        },
+                        needleTail: {
+                            length: '25%'
+                        }
+                    }]
+                }]
+            },
+                '#gauge'
+        );
+    });
+        afterAll((): void => {
+            gauge.destroy();
+            ele.remove();
+        });
+        it('Checking allow Margin', (done: Function) => {
+            gauge.loaded = (args:ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_Axis_0_Label_0')
+                expect(svg.textContent == '1').toBe(false);
+                done();
+            };
+            gauge.refresh();
+        });
+    });
 });

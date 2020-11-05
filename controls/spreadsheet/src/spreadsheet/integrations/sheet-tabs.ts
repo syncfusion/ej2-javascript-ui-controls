@@ -210,7 +210,7 @@ export class SheetTabs {
             args.idx = this.parent.skipHiddenSheets(args.idx);
         } else {
             if (this.parent.sheets[args.idx].state === 'Hidden') {
-                this.parent.sheets[args.idx].state = 'Visible';
+                this.parent.setSheetPropertyOnMute(this.parent.sheets[args.idx], 'state', 'Visible');
                 this.tabInstance.items[args.idx].cssClass = '';
                 this.tabInstance.items = this.tabInstance.items;
                 this.tabInstance.dataBind();
@@ -306,7 +306,7 @@ export class SheetTabs {
                 }
                 let items: Element = this.removeRenameInput(target);
                 if (this.tabInstance.items[idx].header.text !== value) {
-                    this.parent.sheets[idx].name = value;
+                    this.parent.setSheetPropertyOnMute(this.parent.sheets[idx], 'name', value);
                     this.updateSheetName({ value: value, idx: idx, items: items });
                 }
                 if (e.type === 'keydown' || (closest(e.target as Element, '.e-spreadsheet'))) { this.parent.element.focus(); }
@@ -341,7 +341,7 @@ export class SheetTabs {
     }
 
     private hideSheet(): void {
-        this.parent.getActiveSheet().state = 'Hidden';
+        this.parent.setSheetPropertyOnMute(this.parent.getActiveSheet(), 'state', 'Hidden');
         this.tabInstance.items[this.parent.activeSheetIndex].cssClass = 'e-hide';
         this.tabInstance.items = this.tabInstance.items; this.tabInstance.dataBind();
         this.tabInstance.selectedItem = this.parent.skipHiddenSheets(

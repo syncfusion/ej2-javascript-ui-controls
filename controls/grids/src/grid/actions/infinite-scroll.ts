@@ -14,6 +14,7 @@ import { Action } from '../base/enum';
 
 /**
  * Infinite Scrolling class
+ * @hidden
  */
 export class InfiniteScroll implements IAction {
     private parent: IGrid;

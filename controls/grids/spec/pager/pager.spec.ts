@@ -432,4 +432,64 @@ describe('Pager base module', () => {
         });
 
     });
+    
+     describe('Custom pager text tested', () => {
+        let pagerObj: Pager;
+        let elem: HTMLElement = createElement('div', { id: 'Pager' });
+        beforeAll((done: Function) => {
+            L10n.load({
+                'de-DE': {
+                    'pager': {
+                        'currentPageInfo': '{0} of {1} pages - {2}',
+                        'totalItemsInfo': '',
+  
+                    }
+                }
+            });
+            let created: EmitType<Object> = () => { done(); };
+            document.body.appendChild(elem);
+            pagerObj = new Pager(
+                {
+                    totalRecordsCount: 100, currentPage: 8, pageCount: 5, pageSize: 5, locale: 'de-DE',
+                    created: created
+                });
+
+            pagerObj.appendTo('#Pager');
+        });
+
+        it('pager text testing', () => {
+            expect(pagerObj.element.querySelector('.e-pagenomsg').textContent).toBe('8 of 20 pages - 100 ');
+        });
+
+        it('totalRecordsCount testing', () => {
+            pagerObj.totalRecordsCount = 200;
+            pagerObj.dataBind();
+            expect(pagerObj.element.querySelector('.e-pagenomsg').textContent).toBe('8 of 40 pages - 200 ');
+        });
+
+        it('pageSize testing', () => {
+            pagerObj.pageSize = 6;
+            pagerObj.dataBind();
+            expect(pagerObj.element.querySelector('.e-pagenomsg').textContent).toBe('8 of 34 pages - 200 ');
+        });
+
+        it('totalRecordsCount testing', () => {
+            pagerObj.totalRecordsCount = 400;
+            pagerObj.dataBind();
+            expect(pagerObj.element.querySelector('.e-pagenomsg').textContent).toBe('8 of 67 pages - 400 ');
+        });
+
+        it('pageSize testing', () => {
+            pagerObj.pageSize = 10;
+            pagerObj.dataBind();
+            expect(pagerObj.element.querySelector('.e-pagenomsg').textContent).toBe('8 of 40 pages - 400 ');
+        });
+
+        afterAll(() => {
+            pagerObj.destroy();
+            elem.remove();
+            pagerObj = elem = null;
+        });
+    });
+    
 });

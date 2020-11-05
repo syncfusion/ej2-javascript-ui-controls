@@ -661,10 +661,10 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
             });
             break;
         case 'gridLines':
-            spreadsheet.sheets[eventArgs.sheetIdx].showGridLines = eventArgs.isShow;
+            spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.sheetIdx], 'showGridLines', eventArgs.isShow);
             break;
         case 'headers':
-            spreadsheet.sheets[eventArgs.sheetIdx].showHeaders = eventArgs.isShow;
+            spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.sheetIdx], 'showHeaders', eventArgs.isShow);
             break;
         case 'resize':
         case 'resizeToFit':
@@ -683,7 +683,7 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
             }
             break;
         case 'renameSheet':
-            spreadsheet.sheets[eventArgs.index - 1].name = eventArgs.value;
+            spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.index - 1], 'name', eventArgs.value);
             break;
         case 'removeSheet':
             spreadsheet.notify(removeSheetTab, {

@@ -517,7 +517,7 @@ export interface GroupSettingsModel {
     /**
      * The Caption Template allows user to display the string or HTML element in group caption.
      * > It accepts either the
-     * [template string](http://ej2.syncfusion.com/documentation/common/template-engine/) or the HTML element ID.
+     * [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or the HTML element ID.
      * @default ''
      */
     captionTemplate?: string;
@@ -667,8 +667,7 @@ export interface GridModel extends ComponentModel{
     enableAutoFill?: boolean;
 
     /**
-     * Enables or disables the key board interaction of Grid.          
-     * @hidden 
+     * Enables or disables the key board interaction of Grid.
      * @default true     
      */
     allowKeyboard?: boolean;
@@ -974,7 +973,7 @@ export interface GridModel extends ComponentModel{
      * > * It accepts either [template string](../../common/template-engine/) or HTML element ID.   
      * > * The row template must be a table row.  
      * 
-     * > Check the [`Row Template`](grid/row/) customization.
+     * > Check the [`Row Template`](../../grid/row/) customization.
      */
     rowTemplate?: string;
 
@@ -989,7 +988,7 @@ export interface GridModel extends ComponentModel{
 
     /**
      * Defines Grid options to render child Grid. 
-     * It requires the [`queryString`](grid/#querystring-string) for parent 
+     * It requires the [`queryString`](/#querystring) for parent 
      * and child relationship. 
      * 
      * > Check the [`Child Grid`](../../grid/hierarchy-grid/) for its configuration.
@@ -1023,9 +1022,9 @@ export interface GridModel extends ComponentModel{
     /**
      * It is used to render grid table rows. 
      * If the `dataSource` is an array of JavaScript objects, 
-     * then Grid will create instance of [`DataManager`](https://ej2.syncfusion.com/documentation/data/api-dataManager.html) 
+     * then Grid will create instance of [`DataManager`](https://ej2.syncfusion.com/documentation/api/data/dataManager/) 
      * from this `dataSource`. 
-     * If the `dataSource` is an existing [`DataManager`](https://ej2.syncfusion.com/documentation/data/api-dataManager.html),
+     * If the `dataSource` is an existing [`DataManager`](https://ej2.syncfusion.com/documentation/api/data/dataManager/),
      *  the Grid will not initialize a new one. 
      * 
      * > Check the available [`Adaptors`](../../data/adaptors/) to customize the data operation.

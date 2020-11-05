@@ -1,6 +1,6 @@
 import { isNullOrUndefined as isNOU, getValue, isBlazor, getElement, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
-import { ITaskData, ITaskbarEditedEventArgs, IGanttData, CellEditArgs } from '../base/interface';
+import { ITaskData, ITaskbarEditedEventArgs, IGanttData, CellEditArgs, ITaskSegment } from '../base/interface';
 import { ColumnModel } from '../models/column';
 import { EJ2Intance } from '@syncfusion/ej2-grids';
 import { TaskFieldsModel, EditDialogFieldSettingsModel, ResourceFieldsModel } from '../models/models';
@@ -133,7 +133,7 @@ export class CellEdit {
         let previousValue: object = getValue('previousData', args);
         let editedValue: object = this.parent.allowUnscheduledTasks ? data[column.field] : ((isNullOrUndefined(data[column.field])
             || data[column.field] === '') && (this.parent.taskFields.duration === column.field ||
-            this.parent.taskFields.startDate === column.field || this.parent.taskFields.endDate === column.field)) ? previousValue
+                this.parent.taskFields.startDate === column.field || this.parent.taskFields.endDate === column.field)) ? previousValue
             : data[column.field];
         if (!isNOU(data)) {
             data[column.field] = previousValue;
@@ -240,6 +240,31 @@ export class CellEdit {
         this.updateEditedRecord(args);
     }
 
+    public validateEndDateWithSegments(ganttProp: ITaskData): ITaskSegment[] {
+        let duration: number = 0;
+        let ganttSegments: ITaskSegment[] = [];
+        let segments: ITaskSegment[] = ganttProp.segments;
+        for (let i: number = 0; i < segments.length; i++) {
+            let segment: ITaskSegment = segments[i];
+            let endDate: Date = segment.endDate;
+            endDate = (!isNullOrUndefined(ganttProp.endDate)) && endDate.getTime() <
+                ganttProp.endDate.getTime() && i !== segments.length - 1 ? endDate : ganttProp.endDate;
+            segment.duration = this.parent.dataOperation.getDuration(
+                segment.startDate, endDate, ganttProp.durationUnit, ganttProp.isAutoSchedule,
+                ganttProp.isMilestone
+            );
+            if (segments.length > 0 && endDate.getTime() < segment.startDate.getTime()
+                && endDate.getTime() <= ganttProp.endDate.getTime()) {
+                segments[i - 1].duration = this.parent.dataOperation.getDuration(
+                    segments[i - 1].startDate, ganttProp.endDate, ganttProp.durationUnit,
+                    ganttProp.isAutoSchedule, ganttProp.isMilestone);
+                continue;
+            }
+            ganttSegments.push(segment);
+        }
+        return ganttSegments;
+    }
+
     /**
      * To update task end date cell with new value
      * @param args 
@@ -271,6 +296,9 @@ export class CellEdit {
                     true
                 );
             }
+            if (!isNullOrUndefined(ganttProb.segments)) {
+                ganttProb.segments = this.validateEndDateWithSegments(ganttProb);
+            }
             if (this.compareDatesFromRecord(ganttProb) === -1) {
                 this.parent.dateValidationModule.calculateDuration(args.data);
             } else {
@@ -285,6 +313,12 @@ export class CellEdit {
                     true
                 );
             }
+        }
+        if (!isNullOrUndefined(args.data.ganttProperties.segments) && args.data.ganttProperties.segments.length > 0) {
+            this.parent.setRecordValue(
+                'segments', this.parent.dataOperation.setSegmentsInfo(args.data, false), args.data.ganttProperties, true
+            );
+            this.parent.dataOperation.updateMappingData(args.data, 'segments');
         }
         this.parent.dataOperation.updateWidthLeft(args.data);
         this.parent.dataOperation.updateMappingData(args.data, 'startDate');
@@ -335,6 +369,10 @@ export class CellEdit {
                     true
                 );
             }
+            if (!isNullOrUndefined(ganttProb.segments) && ganttProb.segments.length > 0) {
+                this.parent.setRecordValue('segments', this.parent.dataOperation.setSegmentsInfo(args.data, false), ganttProb, true);
+                this.parent.dataOperation.updateMappingData(args.data, 'segments');
+            }
             this.parent.setRecordValue('isMilestone', (ganttProb.duration === 0 ? true : false), ganttProb, true);
             this.parent.dateValidationModule.calculateEndDate(args.data);
         }
@@ -357,9 +395,12 @@ export class CellEdit {
             'taskData.' + this.parent.taskFields.progress,
             (ganttRecord[this.parent.taskFields.progress] > 100 ? 100 : ganttRecord[this.parent.taskFields.progress]),
             args.data);
+        if (!isNullOrUndefined(args.data.ganttProperties.segments) && args.data.ganttProperties.segments.length > 0) {
+            this.parent.editModule.taskbarEditModule.updateSegmentProgress(args.data.ganttProperties);
+        }
         if (!args.data.hasChildRecords) {
             let width: number = ganttRecord.ganttProperties.isAutoSchedule ? ganttRecord.ganttProperties.width :
-             ganttRecord.ganttProperties.autoWidth;
+                ganttRecord.ganttProperties.autoWidth;
             this.parent.setRecordValue(
                 'progressWidth',
                 this.parent.dataOperation.getProgressWidth(width, ganttRecord.ganttProperties.progress),
@@ -449,7 +490,7 @@ export class CellEdit {
             this.parent.editModule.updateResourceRelatedFields(args.data, 'resource');
             if (this.parent.viewType === 'ResourceView') {
                 this.parent.editModule.dialogModule.isResourceUpdate = true;
-                this.parent.editModule.dialogModule.previousResource =  previousResource;
+                this.parent.editModule.dialogModule.previousResource = previousResource;
             }
             this.updateEditedRecord(args);
         }

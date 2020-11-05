@@ -1366,7 +1366,7 @@ export interface Activity {
                     //connectionPointOrigin:"DifferentPoint",
                     connectionPointOrigin :ConnectionPointOrigin.DifferentPoint,
                     horizontalSpacing: 32,
-                    arrangement:ChildArrangement.NonLinear,
+                    arrangement:ChildArrangement.Nonlinear,
                     verticalSpacing: 32,
                     //orientation: "LeftToRight",
                     margin: { left: 48, right: 48, top: 48, bottom: 48 },
@@ -1494,7 +1494,7 @@ function linear() {
     if (linear1.checked) {
         diagram.layout.arrangement = ChildArrangement.Linear
     } else {
-        diagram.layout.arrangement = ChildArrangement.NonLinear
+        diagram.layout.arrangement = ChildArrangement.Nonlinear
     }
 }
 

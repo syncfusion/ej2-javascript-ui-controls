@@ -755,7 +755,7 @@ export class PdfExport {
         }
         documentHeader.graphics.drawLine(pen, x1, y1, x2, y2);
     }
-    /* tslint:disable-next-line:no-any *//* tslint:disable-next-line:max-line-length */
+    /* tslint:disable-next-line:no-any *//* tslint:disable-next-line:max-line-length *//* tslint:disable-next-line:max-func-body-length */
     private processAggregates(sRows: Row<AggregateColumnModel>[], pdfGrid: PdfGrid, border: PdfBorders, font: PdfFont,
                               brush: PdfSolidBrush, backgroundBrush: PdfSolidBrush, isCaption: boolean, captionRow?: PdfGridRow, groupIndex?: number, isGroupedFooter?: boolean): void {
         for (let row of sRows) {
@@ -810,8 +810,16 @@ export class PdfExport {
                         let result: any = this.getTemplateFunction(templateFn, i, leastCaptionSummaryIndex, cell);
                         templateFn = result.templateFunction;
                         leastCaptionSummaryIndex = result.leastCaptionSummaryIndex;
-                        /* tslint:disable-next-line:max-line-length */
-                        let txt: NodeList = (templateFn[getEnumValue(CellType, cell.cellType)](row.data[cell.column.field ? cell.column.field : cell.column.columnName]));
+                        let txt: NodeList;
+                        let data: Object = row.data[cell.column.field ? cell.column.field : cell.column.columnName];
+                        if (this.parent.isReact || this.parent.isVue) {
+                            txt = (templateFn[getEnumValue(CellType, cell.cellType)](data, this.parent));
+                            if (this.parent.isReact) {
+                                this.parent.renderTemplates();
+                            }
+                        } else {
+                            txt = (templateFn[getEnumValue(CellType, cell.cellType)](data));
+                        }
                         value.push((<Text>txt[0]).textContent);
                         isEmpty = false;
                     } else {

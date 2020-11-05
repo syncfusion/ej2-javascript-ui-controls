@@ -220,18 +220,20 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     /**
      * Removes the items from the menu.
      * @param  { string[] } items - Specifies an array of string to remove the items.
+     * @param { string } isUniqueId - Set `true` if specified items is a collection of unique id.
      * @returns {void}.
      */
-    public removeItems(items: string[]): void {
-            for (let i: number = 0, len: number = items.length; i < len; i++) {
-                for (let j: number = 0, len: number = this.items.length; j < len; j++) {
-                    if (items[i] === this.items[j].text) {
-                        this.items.splice(j, 1);
-                        break;
-                    }
+    public removeItems(items: string[], isUniqueId?: boolean): void {
+        let refresh: boolean = false;
+        for (let i: number = 0, len: number = items.length; i < len; i++) {
+            for (let j: number = 0, len: number = this.items.length; j < len; j++) {
+                if (items[i] === (isUniqueId ? this.items[j].id : this.items[j].text)) {
+                    this.items.splice(j, 1); refresh = true;
+                    break;
                 }
             }
-            if (!this.canOpen()) { this.createItems(); }
+        }
+        if (refresh && this.getULElement()) { this.createItems(); }
     }
 
     private createPopup(): void {
@@ -597,9 +599,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                     this.dropDown.dataBind();
                     break;
                 case 'items':
-                    if (!this.canOpen()) {
-                        this.createItems();
-                    }
+                    if (this.getULElement()) { this.createItems(); }
                     break;
             }
         }

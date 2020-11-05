@@ -50,7 +50,7 @@ export class PointerRenderer {
             this['draw' + pointer.type + 'Pointer'](axis, axisIndex, pointerIndex, childElement, gauge);
             this.setPointerValue(axis, pointer, pointer.currentValue);
             pointerElement.appendChild(childElement);
-            if (animate) {
+            if (animate || pointer.animation.enable) {
                 this.doPointerAnimation(pointer, axis);
             }
         });
@@ -346,7 +346,7 @@ export class PointerRenderer {
      * @return {void}
      */
     private doPointerAnimation(pointer: Pointer, axis: Axis): void {
-        let startValue: number = axis.visibleRange.min;
+        let startValue: number = !isNullOrUndefined(pointer.previousValue) ? pointer.previousValue : axis.visibleRange.min;
         let endValue: number = pointer.currentValue;
         if (pointer.animation.enable && startValue !== endValue && this.gauge.animatePointer) {
             pointer.pathElement.map((element: Element) => {

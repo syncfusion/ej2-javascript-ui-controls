@@ -42,7 +42,7 @@ export class VirtualScroll {
             this.setScrollCount(sheet.rowCount, 'row');
             height = getRowsHeight(sheet, 0, this.scroll[this.parent.activeSheetIndex].rowCount - 1);
         } else {
-            if (!this.parent.scrollSettings.isFinite) { sheet.rowCount = domCount; }
+            if (!this.parent.scrollSettings.isFinite) { this.parent.setSheetPropertyOnMute(sheet, 'rowCount', domCount); }
             this.scroll[this.parent.activeSheetIndex].rowCount = sheet.rowCount;
             height = 1;
         }
@@ -50,13 +50,13 @@ export class VirtualScroll {
         let size: number;
         if (sheet.colCount > domCount || sheet.usedRange.colIndex > domCount - 1) {
             if (!this.parent.scrollSettings.isFinite && sheet.colCount <= sheet.usedRange.colIndex) {
-                sheet.colCount = sheet.usedRange.colIndex + 1;
+                this.parent.setSheetPropertyOnMute(sheet, 'colCount', sheet.usedRange.colIndex + 1);
             }
             size = getColumnsWidth(sheet, 0, domCount - 1);
             this.setScrollCount(sheet.colCount, 'col');
             width = size + getColumnsWidth(sheet, domCount, this.scroll[this.parent.activeSheetIndex].colCount - 1);
         } else {
-            if (!this.parent.scrollSettings.isFinite) { sheet.colCount = domCount; }
+            if (!this.parent.scrollSettings.isFinite) { this.parent.setSheetPropertyOnMute(sheet, 'colCount', domCount); }
             size = getColumnsWidth(sheet, 0, sheet.colCount - 1);
             this.scroll[this.parent.activeSheetIndex].colCount = sheet.colCount; width = size;
         }
@@ -347,7 +347,8 @@ export class VirtualScroll {
     private updateColumnWidth(args: { refresh: RefreshType }): void {
         if (args.refresh === 'Column') {
             this.content.style.width = '';
-            let width: number = this.content.querySelector('tr').getBoundingClientRect().width;
+            let width: number = getColumnsWidth(
+                this.parent.getActiveSheet(), this.parent.viewport.leftIndex, this.parent.viewport.rightIndex);
             if (this.parent.getActiveSheet().showHeaders) { this.colHeader.style.width = width + 'px'; }
             this.content.style.width = width + 'px';
         }
@@ -367,7 +368,7 @@ export class VirtualScroll {
                 this.scroll[this.parent.activeSheetIndex].rowCount = args.index + 1;
                 this.updateVTrack(this.rowHeader, height, 'height');
                 if (this.scroll[this.parent.activeSheetIndex].rowCount > sheet.rowCount) {
-                    sheet.rowCount = this.scroll[this.parent.activeSheetIndex].rowCount;
+                    this.parent.setSheetPropertyOnMute(sheet, 'rowCount', this.scroll[this.parent.activeSheetIndex].rowCount);
                 }
             }
         } else {
@@ -377,7 +378,7 @@ export class VirtualScroll {
                 this.scroll[this.parent.activeSheetIndex].colCount = args.index + 1;
                 this.updateVTrack(this.colHeader, width, 'width');
                 if (this.scroll[this.parent.activeSheetIndex].colCount > sheet.colCount) {
-                    sheet.colCount = this.scroll[this.parent.activeSheetIndex].colCount;
+                    this.parent.setSheetPropertyOnMute(sheet, 'colCount', this.scroll[this.parent.activeSheetIndex].colCount);
                 }
             }
         }

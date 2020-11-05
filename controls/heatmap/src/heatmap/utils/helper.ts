@@ -75,7 +75,6 @@ export function titlePositionX(width: number, leftPadding: number, rightPadding:
 
 /**
  * Internal class size for height and width
- * @private
  */
 export class Size {
     /**
@@ -166,7 +165,6 @@ export class CurrentRect {
 
 /**
  * Class to define the details of selected cell.
- * @private
  */
 export class SelectedCellDetails {
     public value: number | BubbleTooltipData[];

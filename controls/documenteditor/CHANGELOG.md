@@ -2,6 +2,41 @@
 
 ## [Unreleased]
 
+## 18.3.47 (2020-11-05)
+
+### Document Editor
+
+#### New Features
+
+- `#281067`, `#279595` - Added partial lock and edit support.
+
+#### Bug Fixes
+
+- `#296222` - Resolved table rendering issue when table contains merged cell.
+- `#297479` - Field result text with multiple lines are now inserted properly when track changes enabled.
+- `#296863` - Resolved script error when field code contains table.
+- `#281339` - Resolved paragraph renders outside the page in RTL format document issue.
+- Resolved script error Navigating to the specified bookmark.
+- `#296222` - Resolved exporting issue when exporting document with shape.
+- `#294306` - Resolved page number update issue when page contains page field.
+- `#295176` - Ctrl + V now works properly in Edge.
+- `#296782`, `#296781` - Resolved issue on cursor visibility when cursor is in editable region.
+- `#293369` - Document with merged cell is now exported properly.
+- `#294261` - Accepting or rejecting changes were now preserved in restrict editing.
+- `#292726` - Row header was now repeated properly for each page.
+- `#281339` - Numbered list in the RTL was now rendered properly.
+- `#295753` - Sections with restart page number now updated properly.
+- `#293980` - Skipped form field insertion in header and footer similar to MS Word.
+- `#294075`,`#293472` - Resolved table border rendering issue.
+- `#291766` - Resolved file picker not opening issue in IE.
+- `#296842` - Resolved issue on selecting a merge field.
+- `#292515` - Polish characters are now working properly in IE.
+- `#291766` - Resolved script error on loading a document with text wrapped image.
+- `#292515` - Resolved toolbar rendering issue in IE.
+- `#289186`,`#293172` - Text box with none style is now exported properly.
+- `#291766` - Resolved issue on table rendering black.
+- `#293342`,`#295176` - Ctrl + V now works properly in IE.
+
 ## 18.3.44 (2020-10-27)
 
 ### Document Editor
@@ -11,7 +46,9 @@
 - `#296222` - Resolved table rendering issue when table contains merged cell.
 - `#297479` - Field result text with multiple lines are now inserted properly when track changes enabled.
 - `#296863` - Resolved script error when field code contains table.
-- `#296863` - Resolved paragraph renders outside the page in RTL format document issue.
+- `#281339` - Resolved paragraph renders outside the page in RTL format document issue.
+- Resolved script error Navigating to the specified bookmark.
+- `#296222` - Resolved exporting issue when exporting document with shape.
 
 ## 18.3.42 (2020-10-20)
 

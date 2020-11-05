@@ -13440,7 +13440,7 @@ let Grid = Grid_1 = class Grid extends Component {
         if (this.isDetail()) {
             index++;
         }
-        if (this.allowRowDragAndDrop && isNullOrUndefined(this.rowDropSettings.targetID)) {
+        if (this.isRowDragable() && isNullOrUndefined(this.rowDropSettings.targetID)) {
             index++;
         }
         /**
@@ -14005,7 +14005,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @hidden
      */
     isRowDragable() {
-        return this.allowRowDragAndDrop && !this.rowDropSettings.targetID;
+        return this.allowRowDragAndDrop && !this.rowDropSettings.targetID && !this.enableVirtualization;
     }
     /**
      * Changes the Grid column positions by field names.
@@ -14573,7 +14573,8 @@ let Grid = Grid_1 = class Grid extends Component {
             parentsUntil(e.target, 'e-gridheader'))) && e.touches) {
             return;
         }
-        if (parentsUntil(e.target, 'e-gridheader') && this.allowRowDragAndDrop) {
+        if (parentsUntil(e.target, 'e-gridheader') && this.allowRowDragAndDrop &&
+            !(parentsUntil(e.target, 'e-filterbarcell'))) {
             e.preventDefault();
         }
         let args = this.getRowInfo(e.target);
@@ -19757,7 +19758,7 @@ class PagerMessage {
         }
         else {
             this.pageNoMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('currentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
-                    pagerObj.currentPage, pagerObj.totalPages || 0]) + ' ';
+                    pagerObj.currentPage, pagerObj.totalPages || 0, pagerObj.totalRecordsCount || 0]) + ' ';
             this.pageCountMsgElem.textContent = this.format(pagerObj.getLocalizedLabel(pagerObj.totalRecordsCount <= 1 ? 'totalItemInfo' : 'totalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
         }
         this.pageNoMsgElem.parentElement.setAttribute('aria-label', this.pageNoMsgElem.textContent + this.pageCountMsgElem.textContent);
@@ -20707,7 +20708,9 @@ class Page {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.addEventListener('created', this.handlers.created.bind(this));
+        if (this.parent.isReact) {
+            this.parent.addEventListener('created', this.handlers.created.bind(this));
+        }
         this.parent.on(initialLoad, this.handlers.load, this);
         this.parent.on(initialEnd, this.handlers.end, this); //For initial rendering
         this.parent.on(dataReady, this.handlers.ready, this);
@@ -20747,7 +20750,9 @@ class Page {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.removeEventListener('created', this.handlers.created);
+        if (this.parent.isReact) {
+            this.parent.removeEventListener('created', this.handlers.created);
+        }
         this.parent.off('pager-refresh', this.renderReactPagerTemplate);
         this.parent.off(initialLoad, this.handlers.load);
         this.parent.off(initialEnd, this.handlers.end); //For initial rendering
@@ -24397,7 +24402,7 @@ class RowDD {
     removeFirstRowBorder(element) {
         if (this.parent.element.getElementsByClassName('e-firstrow-dragborder').length > 0 && element &&
             element.rowIndex !== 0) {
-            this.parent.element.getElementsByClassName('e-firstrow-dragborder')[0].remove();
+            remove(this.parent.element.getElementsByClassName('e-firstrow-dragborder')[0]);
         }
     }
     removeLastRowBorder(element) {
@@ -24405,7 +24410,7 @@ class RowDD {
             this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).getAttribute('data-uid') !==
                 element.getAttribute('data-uid');
         if (this.parent.element.getElementsByClassName('e-lastrow-dragborder').length > 0 && element && islastRowIndex) {
-            this.parent.element.getElementsByClassName('e-lastrow-dragborder')[0].remove();
+            remove(this.parent.element.getElementsByClassName('e-lastrow-dragborder')[0]);
         }
     }
     removeBorder(element) {
@@ -26118,7 +26123,7 @@ class Toolbar$1 {
         this.parent.element.insertBefore(this.element, this.parent.getHeaderContent());
     }
     addReactToolbarPortals(args) {
-        if (this.parent.isReact) {
+        if (this.parent.isReact && args) {
             this.parent.portals = this.parent.portals.concat(args);
             this.parent.renderTemplates();
         }
@@ -33207,7 +33212,7 @@ class ExportValueFormatter {
         if (args.column.type === 'number' && args.column.format !== undefined && args.column.format !== '') {
             return args.value ? this.internationalization.getNumberFormat({ format: args.column.format })(args.value) : '';
         }
-        else if (args.column.type === 'boolean') {
+        else if (args.column.type === 'boolean' && args.value !== '') {
             return args.value ? 'true' : 'false';
             /* tslint:disable-next-line:max-line-length */
         }
@@ -33959,8 +33964,17 @@ class ExcelExport {
     getAggreateValue(cellType, template, cell, row) {
         let templateFn = {};
         templateFn[getEnumValue(CellType, cell.cellType)] = compile(template);
-        /* tslint:disable-next-line:max-line-length */
-        let txt = (templateFn[getEnumValue(CellType, cell.cellType)](row.data[cell.column.field ? cell.column.field : cell.column.columnName]));
+        let txt;
+        let data = row.data[cell.column.field ? cell.column.field : cell.column.columnName];
+        if (this.parent.isReact || this.parent.isVue) {
+            txt = (templateFn[getEnumValue(CellType, cell.cellType)](data, this.parent));
+            if (this.parent.isReact) {
+                this.parent.renderTemplates();
+            }
+        }
+        else {
+            txt = (templateFn[getEnumValue(CellType, cell.cellType)](data));
+        }
         return txt[0].textContent;
     }
     mergeOptions(JSON1, JSON2) {
@@ -34909,7 +34923,7 @@ class PdfExport {
         }
         documentHeader.graphics.drawLine(pen, x1, y1, x2, y2);
     }
-    /* tslint:disable-next-line:no-any */ /* tslint:disable-next-line:max-line-length */
+    /* tslint:disable-next-line:no-any */ /* tslint:disable-next-line:max-line-length */ /* tslint:disable-next-line:max-func-body-length */
     processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, isCaption, captionRow, groupIndex, isGroupedFooter) {
         for (let row of sRows) {
             let leastCaptionSummaryIndex = -1;
@@ -34965,8 +34979,17 @@ class PdfExport {
                         let result = this.getTemplateFunction(templateFn, i, leastCaptionSummaryIndex, cell);
                         templateFn = result.templateFunction;
                         leastCaptionSummaryIndex = result.leastCaptionSummaryIndex;
-                        /* tslint:disable-next-line:max-line-length */
-                        let txt = (templateFn[getEnumValue(CellType, cell.cellType)](row.data[cell.column.field ? cell.column.field : cell.column.columnName]));
+                        let txt;
+                        let data = row.data[cell.column.field ? cell.column.field : cell.column.columnName];
+                        if (this.parent.isReact || this.parent.isVue) {
+                            txt = (templateFn[getEnumValue(CellType, cell.cellType)](data, this.parent));
+                            if (this.parent.isReact) {
+                                this.parent.renderTemplates();
+                            }
+                        }
+                        else {
+                            txt = (templateFn[getEnumValue(CellType, cell.cellType)](data));
+                        }
                         value.push(txt[0].textContent);
                         isEmpty = false;
                     }
@@ -38120,6 +38143,7 @@ let ajaxErrorHandler = (args, parent) => {
 
 /**
  * Infinite Scrolling class
+ * @hidden
  */
 class InfiniteScroll {
     /**

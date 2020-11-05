@@ -826,11 +826,11 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             sheet = getSheetIndex(this, sheet);
         }
         if (sheet) {
-            this.sheets[sheet].isProtected = true;
-            this.sheets[sheet].protectSettings = protectSettings;
+            this.setSheetPropertyOnMute(this.sheets[sheet], 'isProtected', true);
+            this.setSheetPropertyOnMute(this.sheets[sheet], 'protectSettings', protectSettings);
         }
         sheet = this.getActiveSheet().index;
-        this.getActiveSheet().isProtected = true;
+        this.setSheetPropertyOnMute(this.getActiveSheet(), 'isProtected', true);
         super.protectSheet(sheet, protectSettings);
     }
 
@@ -913,12 +913,12 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             if (idx === undefined) { return; }
             if (idx !== this.activeSheetIndex) {
                 let activeCell: string = addrArr[1].split(':')[0];
-                this.sheets[idx].activeCell = activeCell;
-                this.sheets[idx].selectedRange = addrArr[1];
+                this.setSheetPropertyOnMute(this.sheets[idx], 'activeCell', activeCell);
+                this.setSheetPropertyOnMute(this.sheets[idx], 'selectedRange', addrArr[1]);
                 let cellIndex: number[] = getCellIndexes(activeCell);
                 if (cellIndex[0] < this.viewport.rowCount) { cellIndex[0] = 0; }
                 if (cellIndex[1] < this.viewport.colCount) { cellIndex[1] = 0; }
-                this.sheets[idx].topLeftCell = getCellAddress(cellIndex[0], cellIndex[1]);
+                this.setSheetPropertyOnMute(this.sheets[idx], 'topLeftCell', getCellAddress(cellIndex[0], cellIndex[1]));
                 this.activeSheetIndex = idx; this.dataBind();
                 return;
             }
@@ -1702,7 +1702,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             index = this.skipHiddenSheets(index, initIdx, ++hiddenCount);
         }
         if (hiddenCount === this.sheets.length) {
-            this.sheets[0].state = 'Visible';
+            this.setSheetPropertyOnMute(this.sheets[0], 'state', 'Visible');
             return 0;
         }
         return index;

@@ -486,6 +486,44 @@ describe('TreeGrid Pager module', () => {
           destroy(gridObj);
         });
       });
+      describe('Checking template position', () => {
+        let gridObj: TreeGrid;
+        let rows: HTMLTableRowElement[];
+        let dataBound: ()=> void;
+        beforeAll((done: Function) => {
+          gridObj = createGrid(
+            {
+              dataSource: sampleData,
+              childMapping: 'subtasks',
+              allowPaging: true,
+              treeColumnIndex: 1,
+              columns: [
+                { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right' },
+                {
+                    field:'taskName', headerText: 'Template', textAlign: 'Center',
+                    template: '<button id="button">Button</button>', width: 90
+                },
+                { field: 'duration', headerText: 'Duration', width: 60, textAlign: 'Right' }
+                ],
+            },
+            done
+          );
+        });
+        it('Checking template position when the template column is marked as treeColumnIndex with paging', (done: Function) => {
+            let rows: HTMLTableRowElement[] = gridObj.getRows();
+            gridObj.collapsed = function (args: RowCollapsedEventArgs) {
+                rows = gridObj.getRows();
+                expect(rows[1].cells[0].innerText).toBe('6');
+                expect(rows[0].cells[1].innerHTML.indexOf('Button')).toBeGreaterThan(0);
+                done();
+            };
+            gridObj.collapseRow(rows[0] as HTMLTableRowElement);
+      
+        });
+        afterAll(() => {
+          destroy(gridObj);
+        });
+      });
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

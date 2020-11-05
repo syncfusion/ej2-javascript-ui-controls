@@ -59,21 +59,46 @@ export class WaterfallSeries extends ColumnBase {
                 if (prevRegion !== null) {
                     let prevLeft: number = isInversed ? prevRegion.x : prevRegion.y;
                     let currentLeft: number = isInversed ? currentRegion.x : currentRegion.y;
-                    let prevBottom: number = isInversed ? prevRegion.x + prevRegion.width : prevRegion.y + prevRegion.height;
-                    let currentBottom: number = isInversed ?
-                        currentRegion.x + currentRegion.width : currentRegion.y + currentRegion.height;
+                    let prevBottom: number;
+                    let currentBottom: number;
+                    let currentYValue: number = currentRegion.y;
+                    let currentXValue: number = currentRegion.x;
+                    let beforePoint: Points = series.points[point.index - 1];
+                    if (point.yValue === 0) {
+                        prevBottom = isInversed ? prevRegion.x + prevRegion.width : prevRegion.y + prevRegion.height;
+                        currentBottom = isInversed ?
+                            point.symbolLocations[0].x : point.symbolLocations[0].y;
+                    } else {
+                        prevBottom = isInversed ? (beforePoint.yValue === 0) ?
+                            beforePoint.symbolLocations[0].x : prevRegion.x + prevRegion.width : (beforePoint.yValue === 0) ?
+                            beforePoint.symbolLocations[0].y : prevRegion.y + prevRegion.height;
+                        currentBottom = isInversed ?
+                            currentRegion.x + currentRegion.width : currentRegion.y + currentRegion.height;
+                    }
                     if (Math.round(prevLeft) === Math.round(currentLeft) ||
                         Math.round(prevBottom) === Math.round(currentLeft)) {
-                        y = isInversed ? currentRegion.x : currentRegion.y;
+                        y = isInversed ? (currentRegion.x === 0 && prevRegion.x === 0) ? currentBottom : currentRegion.x : currentRegion.y;
+                        y = (point.yValue === 0) ?
+                            (isInversed ? point.symbolLocations[0].x : point.symbolLocations[0].y) : y;
                     } else {
                         y = currentBottom;
                     }
                     if (isInversed) {
+                        if (beforePoint.yValue === 0) {
+                            prevRegion.y = ((prevRegion.y + prevRegion.height / 2) + (rect.height / 2)) - prevRegion.height;
+                        }
+                        if (point.yValue === 0) {
+                            currentYValue = ((currentRegion.y + currentRegion.height / 2) - (rect.height / 2));
+                        }
                         direction = direction.concat('M' + ' ' + y + ' ' + (prevRegion.y + prevRegion.height) + ' ' +
-                            'L' + ' ' + y + ' ' + currentRegion.y + ' ');
+                            'L' + ' ' + y + ' ' + currentYValue + ' ');
                     } else {
+                        if (beforePoint.yValue === 0) {
+                            prevRegion.x = ((prevRegion.x + prevRegion.width / 2) - (rect.width / 2));
+                            currentXValue = ((currentRegion.x + currentRegion.width / 2) + (rect.width / 2)) - currentRegion.width;
+                        }
                         direction = direction.concat('M' + ' ' + prevRegion.x + ' ' + y + ' ' +
-                            'L' + ' ' + (currentRegion.x + currentRegion.width) + ' ' + y + ' ');
+                            'L' + ' ' + (currentXValue + currentRegion.width) + ' ' + y + ' ');
                     }
                 }
                 prevRegion = point.regions[0];
