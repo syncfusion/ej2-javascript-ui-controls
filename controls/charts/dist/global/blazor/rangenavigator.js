@@ -1227,7 +1227,7 @@ var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var axisPadding = 10;
+var axisPadding = 5;
 /**
  * Configures the `rows` of the chart.
  */
@@ -1517,7 +1517,7 @@ var Axis = /** @class */ (function (_super) {
         }
         var diff;
         var value;
-        var labelSize = titleSize + innerPadding + axisPadding +
+        var labelSize = titleSize + innerPadding + axisPadding + this.labelPadding +
             ((this.orientation === 'Vertical') ? this.maxLabelSize.width : this.maxLabelSize.height) + this.multiLevelLabelHeight;
         if (crossAxis && this.placeNextToAxisLine) {
             var range = crossAxis.visibleRange;
@@ -2657,7 +2657,9 @@ function createTemplate(childElement, pointIndex, content, chart, point, series,
             }
         }
         // tslint:disable-next-line:no-any
-        chart.renderReactTemplates();
+        if (chart.isReact) {
+            chart.renderReactTemplates();
+        }
     }
     catch (e) {
         return childElement;
@@ -6456,7 +6458,10 @@ var RangeNavigator = /** @class */ (function (_super) {
     RangeNavigator.prototype.removeSvg = function () {
         if (getElement(this.element.id + '_Secondary_Element')) {
             sf.base.remove(getElement(this.element.id + '_Secondary_Element'));
-            this.clearTemplate();
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.clearTemplate();
+            }
         }
         var removeLength = 0;
         if (this.svgObject) {
@@ -6798,7 +6803,10 @@ var RangeNavigator = /** @class */ (function (_super) {
      */
     RangeNavigator.prototype.destroy = function () {
         this.unWireEvents();
-        this.clearTemplate();
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         this.rangeSlider.destroy();
         _super.prototype.destroy.call(this);
         this.element.innerHTML = '';

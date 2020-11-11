@@ -880,4 +880,40 @@ describe('Grid checkbox selection functionality', () => {
             gridObj = chkAll = null;
         });
     });
+    
+    describe('EJ2-43529 checkboxOnly selection not working properly after perform editing', () => {
+        let gridObj: Grid;
+        let rows: Element[];
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowPaging: true,
+                    selectionSettings: { checkboxOnly: true },
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                    columns: [
+                        { type: 'checkbox', allowEditing: false, width: 120 },
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right', minWidth: 10 },
+                        { field: 'Freight', width: 125, minWidth: 10 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 },
+                    ],
+                }, done);
+        });
+
+        it('checking row selection with checkboxOnly', () => {
+            gridObj.selectRow(0, true);
+            rows = gridObj.getRows();
+            let row: HTMLElement = gridObj.getContent().querySelectorAll('.e-row')[0] as HTMLElement;
+            gridObj.keyboardModule.keyAction({ action: 'f2', preventDefault: preventDefault, target: row } as any);
+            (gridObj.element.querySelector('.e-checkselect') as any).click();
+            expect(gridObj.getSelectedRecords().length).toBe(1);
+            expect(rows[1].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

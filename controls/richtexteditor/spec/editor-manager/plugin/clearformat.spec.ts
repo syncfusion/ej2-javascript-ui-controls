@@ -183,6 +183,6 @@ describe('Clear Format commands', () => {
         let node2: HTMLElement = document.getElementById('paragraph10');
         domSelection.setSelectionText(document, node1, node1, 0, 1);
         ClearFormat.clear(document, divElement);
-        expect(document.querySelectorAll('table').length === 0).toBe(true);
+        expect(document.querySelectorAll('table').length === 1).toBe(true);
     });
 });

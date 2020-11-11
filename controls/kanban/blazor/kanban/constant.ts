@@ -88,6 +88,4 @@ export const SWIMLANE_TREE_CLASS: string = 'e-swimlane-tree';
 
 export const WINDOW_WIDTH: string = 'WindowWidth';
 
-export const TOOLTIP_CLASS: string = 'e-kanban-tooltip';
-
 export const TOOLTIP_TEXT_CLASS: string = 'e-tooltip-text';

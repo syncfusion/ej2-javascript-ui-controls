@@ -299,6 +299,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                     li.classList.add('e-blank-icon');
                 }
             }
+            if (item.disabled) { li.classList.add('e-disabled'); }
             eventArgs = { item: item, element: li as HTMLElement };
             this.trigger('beforeItemRender', eventArgs);
             ul.appendChild(li);

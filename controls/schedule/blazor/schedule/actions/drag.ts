@@ -77,7 +77,8 @@ export class DragAndDrop extends ActionBase {
         }
         let cellHeight: number = (this.actionObj.cellHeight / this.actionObj.slotInterval) * this.actionObj.interval;
         let leftValue: string = formatUnit(0);
-        if (this.parent.isTimelineView() || this.parent.options.currentView === 'Month') {
+        if (this.parent.isTimelineView() || this.parent.options.currentView === 'Month' ||
+            (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable)) {
             leftValue = formatUnit(this.actionObj.clone.offsetLeft);
         }
         let topValue: string;
@@ -196,7 +197,8 @@ export class DragAndDrop extends ActionBase {
                     this.timelineEventModule = new TimelineEvent(this.parent, 'hour');
                 }
             }
-            if (this.parent.options.currentView === 'Month') {
+            if (this.parent.options.currentView === 'Month' ||
+                (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable)) {
                 this.updateOriginalElement(this.actionObj.clone);
                 this.cloneEventDetail = (this.actionObj.clone as HTMLElement).querySelector('.e-appointment-details');
                 this.monthEvent = new MonthEvent(this.parent);
@@ -344,7 +346,8 @@ export class DragAndDrop extends ActionBase {
             this.actionObj.cellWidth = this.isHeaderRows ? this.timelineEventModule.cellWidth : this.actionObj.cellWidth;
             this.calculateTimelineTime(e);
         } else {
-            if (this.parent.options.currentView === 'Month') {
+            if (this.parent.options.currentView === 'Month' ||
+                (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable)) {
                 this.calculateVerticalDate(e);
             } else {
                 this.calculateVerticalTime(e);
@@ -836,7 +839,7 @@ export class DragAndDrop extends ActionBase {
                 let currentIndex: number = Math.floor(left / this.actionObj.cellWidth);
                 targetDate = new Date(this.timelineEventModule.dateRender[currentIndex + index].getTime());
             }
-            let timeDiff: number = targetDate.getTime() - (new Date (event.startTime as Date)).getTime();
+            let timeDiff: number = targetDate.getTime() - (new Date(event.startTime as Date)).getTime();
             if (this.isTimelineDayProcess) {
                 this.cursorPointIndex = Math.abs(Math.ceil(timeDiff / (util.MS_PER_DAY)));
             } else {

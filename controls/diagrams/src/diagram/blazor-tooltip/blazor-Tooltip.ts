@@ -15,16 +15,19 @@ import { Effect } from '@syncfusion/ej2-base';
 export type TipPointerPosition = 'Auto' | 'Start' | 'Middle' | 'End';
 
 /**
+ * Animation options that are common for both open and close actions of the Tooltip
  *  @private
  */
 export class BlazorAnimation extends ChildProperty<BlazorAnimation> {
     /**
      * Animation settings to be applied on the Tooltip, while it is being shown over the target.
+     * @ignoreapilink
      */
     @Property<TooltipAnimationSettings>({ effect: 'FadeIn', duration: 150, delay: 0 })
     public open: TooltipAnimationSettings;
     /**
      * Animation settings to be applied on the Tooltip, when it is closed.
+     * @ignoreapilink
      */
     @Property<TooltipAnimationSettings>({ effect: 'FadeOut', duration: 150, delay: 0 })
     public close: TooltipAnimationSettings;

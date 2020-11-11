@@ -23,16 +23,21 @@ export class FullScreen {
             this.parent.quickToolbarModule.hideQuickToolbars();
         }
         this.scrollableParent = getScrollableParent(this.parent.element);
-        this.parent.dotNetRef.invokeMethodAsync(
-            // @ts-ignore-start
-            events.actionBeginEvent, { requestType: 'Maximize', cancel: false }).then((fullScreenArgs: ActionBeginEventArgs) => {
-            // @ts-ignore-end
-            if (!fullScreenArgs.cancel) {
-                this.toggleParentOverflow(true);
-                this.parent.setContentHeight();
-                this.parent.dotNetRef.invokeMethodAsync(events.actionCompleteEvent, { requestType: 'Maximize' });
-            }
-        });
+        if (this.parent.actionBeginEnabled) {
+            this.parent.dotNetRef.invokeMethodAsync(
+                // @ts-ignore-start
+                events.actionBeginEvent, { requestType: 'Maximize', cancel: false }).then((fullScreenArgs: ActionBeginEventArgs) => {
+                // @ts-ignore-end
+                if (!fullScreenArgs.cancel) {
+                    this.showActionBeginCallback();
+                }
+            });
+        } else { this.showActionBeginCallback(); }
+    }
+    private showActionBeginCallback(): void {
+        this.toggleParentOverflow(true);
+        this.parent.setContentHeight();
+        this.invokeActionComplete('Maximize');
     }
     public hideFullScreen(event?: MouseEvent | KeyboardEventArgs): void {
         if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
@@ -42,15 +47,23 @@ export class FullScreen {
         for (let i: number = 0; i < elem.length; i++) {
             removeClass([elem[i]], [CLS_RTE_OVERFLOW]);
         }
-        this.parent.dotNetRef.invokeMethodAsync(
-            // @ts-ignore-start
-            events.actionBeginEvent, { requestType: 'Minimize', cancel: false }).then((fullScreenArgs: ActionBeginEventArgs) => {
-            // @ts-ignore-end
-            if (!fullScreenArgs.cancel) {
-                this.parent.setContentHeight();
-                this.parent.dotNetRef.invokeMethodAsync(events.actionCompleteEvent, { requestType: 'Minimize' });
-            }
-        });
+        if (this.parent.actionBeginEnabled) {
+            this.parent.dotNetRef.invokeMethodAsync(
+                // @ts-ignore-start
+                events.actionBeginEvent, { requestType: 'Minimize', cancel: false }).then((fullScreenArgs: ActionBeginEventArgs) => {
+                // @ts-ignore-end
+                if (!fullScreenArgs.cancel) { this.hideActionBeginCallback(); }
+            });
+        } else { this.hideActionBeginCallback(); }
+    }
+    private hideActionBeginCallback(): void {
+        this.parent.setContentHeight();
+        this.invokeActionComplete('Minimize');
+    }
+    private invokeActionComplete(type: string): void {
+        if (this.parent.actionCompleteEnabled) {
+            this.parent.dotNetRef.invokeMethodAsync(events.actionCompleteEvent, { requestType: type });
+        }
     }
     private toggleParentOverflow(isAdd: boolean): void {
         if (isNullOrUndefined(this.scrollableParent)) { return; }

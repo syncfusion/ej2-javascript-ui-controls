@@ -126,10 +126,6 @@ export class EventWindow {
     private resetEditorTemplate(): void {
         if (this.parent.editorTemplate) {
             resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
-            // tslint:disable-next-line:no-any
-            if (!isBlazor() && !(this as any).parent.isReact) {
-                this.parent.resetTemplates(['editorTemplate']);
-            }
         }
     }
 

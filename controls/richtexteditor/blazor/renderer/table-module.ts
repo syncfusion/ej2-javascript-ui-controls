@@ -422,13 +422,13 @@ export class Table {
                 EventHandler.add(this.helper, Browser.touchStartEvent, this.resizeStart, this);
             } else {
                 let args: ResizeArgs = { requestType: 'Table' };
-                // @ts-ignore-start
-                this.parent.dotNetRef.invokeMethodAsync('ResizeStartEvent', args).then((resizeStartArgs: ResizeArgs) => {
-                    // @ts-ignore-end
-                    if (resizeStartArgs.cancel) {
-                        this.cancelResizeAction();
-                    }
-                });
+                if (this.parent.onResizeStartEnabled) {
+                    // @ts-ignore-start
+                    this.parent.dotNetRef.invokeMethodAsync('ResizeStartEvent', args).then((resizeStartArgs: ResizeArgs) => {
+                        // @ts-ignore-end
+                        if (resizeStartArgs.cancel) { this.cancelResizeAction(); }
+                    });
+                }
             }
             EventHandler.add(this.parent.getDocument(), Browser.touchMoveEvent, this.resizing, this);
             EventHandler.add(this.parent.getDocument(), Browser.touchEndEvent, this.resizeEnd, this);
@@ -503,7 +503,7 @@ export class Table {
             this.moveEle = null;
         }
         let args: ResizeArgs = { requestType: 'Table' };
-        this.parent.dotNetRef.invokeMethodAsync('ResizeStopEvent', args);
+        if (this.parent.onResizeStopEnabled) { this.parent.dotNetRef.invokeMethodAsync('ResizeStopEvent', args); }
         this.parent.formatter.saveData();
     }
     private resizeBtnInit(): { [key: string]: boolean } {

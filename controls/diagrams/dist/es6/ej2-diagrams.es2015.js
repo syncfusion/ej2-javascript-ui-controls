@@ -7155,6 +7155,7 @@ var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
+ * Animation options that are common for both open and close actions of the Tooltip
  *  @private
  */
 class BlazorAnimation extends ChildProperty {
@@ -14216,7 +14217,7 @@ function preventArrayDefaults(clonedObject, defaultObject, model, property) {
                     clonedObject[property][i].wrapper = null;
                 }
                 if (property !== 'dataManager') {
-                    clonedObject[property][i] = preventDefaults(clonedObject[property][i], model[property][i], (defaultObject[property] !== undefined ? defaultObject[property][i] : undefined));
+                    clonedObject[property][i] = preventDefaults(clonedObject[property][i], model[property][i], (defaultObject[property] !== undefined ? defaultObject[property][i] : []));
                     if (JSON.stringify(clonedObject[property][i]) === '[]' ||
                         JSON.stringify(clonedObject[property][i]) === '{}' ||
                         clonedObject[property][i] === undefined) {
@@ -15413,9 +15414,11 @@ let updatePathElement = (anglePoints, connector) => {
 };
 /** @private */
 let checkPort = (node, element) => {
-    for (let i = 0; i < node.ports.length; i++) {
-        if (node.ports[i].id === element.id.split('_')[1]) {
-            return true;
+    if (node instanceof Node) {
+        for (let i = 0; i < node.ports.length; i++) {
+            if (node.ports[i].id === element.id.split('_')[1]) {
+                return true;
+            }
         }
     }
     return false;
@@ -18742,6 +18745,8 @@ function getInternalProperties(propName) {
             return ['nodeId'];
         case 'shape':
             return ['hasHeader'];
+        case 'layers':
+            return ['objectZIndex'];
     }
     return [];
 }
@@ -24323,7 +24328,7 @@ class ConnectorDrawingTool extends ConnectTool {
                 this.drawingObject = this.commandHandler.drawObject(connector);
             }
             args.source = this.drawingObject;
-            if ((args.target || (args.actualObject && args.sourceWrapper && checkPort(args.actualObject, args.sourceWrapper)))
+            if (((args.target && args.target instanceof Node) || (args.actualObject && args.sourceWrapper && checkPort(args.actualObject, args.sourceWrapper)))
                 && (this.endPoint !== 'ConnectorTargetEnd' || (canInConnect(args.target)))) {
                 this.commandHandler.connect(this.endPoint, args);
             }
@@ -40932,6 +40937,9 @@ class Diagram extends Component {
                 }
                 if (!targetNode || (canInConnect(targetNode) || (actualObject.targetPortID !== '' && canPortInConnect(inPort)))) {
                     actualObject.targetPortWrapper = target ? this.getWrapper(target, newProp.targetPortID) : undefined;
+                }
+                else if (actualObject.targetPortID === '' && !canInConnect(targetNode)) {
+                    actualObject.targetPortWrapper = undefined;
                 }
             }
             if (newProp.flip !== undefined) {

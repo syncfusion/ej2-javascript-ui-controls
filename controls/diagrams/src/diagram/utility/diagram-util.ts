@@ -975,7 +975,7 @@ function preventArrayDefaults(clonedObject: object, defaultObject: object, model
                 if (property !== 'dataManager') {
                     clonedObject[property][i] = preventDefaults(
                         clonedObject[property][i], model[property][i],
-                        (defaultObject[property] !== undefined ? defaultObject[property][i] : undefined)
+                        (defaultObject[property] !== undefined ? defaultObject[property][i] : [])
                     );
                     if (JSON.stringify(clonedObject[property][i]) === '[]' ||
                         JSON.stringify(clonedObject[property][i]) === '{}' ||
@@ -2159,9 +2159,11 @@ export let updatePathElement: Function = (anglePoints: PointModel[], connector: 
 };
 /** @private */
 export let checkPort: Function = (node: Node, element: DiagramElement): boolean => {
-    for (let i: number = 0; i < node.ports.length; i++) {
-        if (node.ports[i].id === element.id.split('_')[1]) {
-            return true;
+    if (node instanceof Node) {
+        for (let i: number = 0; i < node.ports.length; i++) {
+            if (node.ports[i].id === element.id.split('_')[1]) {
+                return true;
+            }
         }
     }
     return false;

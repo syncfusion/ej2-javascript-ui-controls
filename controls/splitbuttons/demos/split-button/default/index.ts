@@ -18,6 +18,7 @@ let data: ItemModel[] = [
     },
     {
         text: 'Count numbers',
+        disabled: true
     },
     {
         text: 'Min'
@@ -36,12 +37,7 @@ btnObj1.appendTo('#textbtn');
 let btnObj2: SplitButton = new SplitButton({
     items: data,
     content: 'Autosum',
-    iconCss: 'e-sb-icons e-sum',
-    beforeItemRender: (args: MenuEventArgs) => {
-        if (args.item.text === 'Count numbers') {
-            args.element.classList.add('e-disabled');
-        }
-    }
+    iconCss: 'e-sb-icons e-sum'
 });
 btnObj2.appendTo('#icontextbtn');
 

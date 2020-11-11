@@ -137,6 +137,9 @@ var Item = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property('')
     ], Item.prototype, "url", void 0);
+    __decorate([
+        Property(false)
+    ], Item.prototype, "disabled", void 0);
     return Item;
 }(ChildProperty));
 
@@ -335,6 +338,9 @@ var DropDownButton = /** @__PURE__ @class */ (function (_super) {
                 if (showIcon && !item.separator) {
                     li.classList.add('e-blank-icon');
                 }
+            }
+            if (item.disabled) {
+                li.classList.add('e-disabled');
             }
             eventArgs = { item: item, element: li };
             this.trigger('beforeItemRender', eventArgs);

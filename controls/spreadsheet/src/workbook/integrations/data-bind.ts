@@ -330,7 +330,9 @@ export class DataBind {
                         row = sheet.rows[i + indexes[0]];
                         if (row) {
                             for (let j: number = indexes[1]; j < indexes[1] + range.info.fldLen; j++) {
-                                delete row.cells[j];
+                                if (row.cells && row.cells[i]) {
+                                    delete row.cells[j];
+                                }
                             }
                         }
                     }
@@ -385,10 +387,12 @@ export class DataBind {
             if (range.dataSource) {
                 let isNewRow: boolean;
                 startCell = getCellIndexes(range.startCell);
-                dataRange = [...startCell, startCell[0] + range.info.count, startCell[1] + range.info.fldLen - 1];
+                dataRange = [...startCell, startCell[0] + range.info.count + (range.showFieldAsHeader ? 0 : -1),
+                startCell[1] + range.info.fldLen - 1];
                 if (args.modelType === 'Row') {
                     if (args.insertType) {
-                        inRange = dataRange[0] < args.index && dataRange[2] >= args.index;
+                        inRange = ((!range.showFieldAsHeader && args.insertType === 'above') ? dataRange[0] <= args.index
+                            : dataRange[0] < args.index) && dataRange[2] >= args.index;
                         cellIndices = [args.index];
                         if (!inRange) {
                             if ((dataRange[2] + 1 === args.index && args.insertType === 'below')) {

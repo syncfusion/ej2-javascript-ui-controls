@@ -43,13 +43,13 @@ export class Resize {
         this.wireResizeEvents();
         this.parent.observer.notify(events.resizeInitialized, {});
         let args: ResizeArgs = { requestType: 'editor' };
-        // @ts-ignore-start
-        this.parent.dotNetRef.invokeMethodAsync(events.resizeStartEvent, args).then((resizeStartArgs: ResizeArgs) => {
-            // @ts-ignore-end
-            if (resizeStartArgs.cancel) {
-                this.unwireResizeEvents();
-            }
-        });
+        if (this.parent.onResizeStartEnabled) {
+            // @ts-ignore-start
+            this.parent.dotNetRef.invokeMethodAsync(events.resizeStartEvent, args).then((resizeStartArgs: ResizeArgs) => {
+                // @ts-ignore-end
+                if (resizeStartArgs.cancel) { this.unwireResizeEvents(); }
+            });
+        }
     }
     private performResize(e?: MouseEvent | TouchEvent | PointerEvent): void {
         let args: ResizeArgs = { requestType: 'editor' };
@@ -68,7 +68,7 @@ export class Resize {
         this.parent.refresh();
         this.unwireResizeEvents();
         let args: ResizeArgs = { requestType: 'editor' };
-        this.parent.dotNetRef.invokeMethodAsync(events.resizeStopEvent, args);
+        if (this.parent.onResizeStopEnabled) { this.parent.dotNetRef.invokeMethodAsync(events.resizeStopEvent, args); }
     }
     private getEventType(e: string): string {
         return (e.indexOf('mouse') > -1) ? 'mouse' : 'touch';

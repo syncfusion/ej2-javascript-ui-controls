@@ -352,7 +352,9 @@ export interface AssistantsDetails {
     /** returns the assistant in the string collection  */
     assistants: string[];
 }
-
+/**
+ * Defines the tree information for the layout
+ */
 export interface TreeInfo {
     orientation?: SubTreeOrientation;
     type?: SubTreeAlignments;

@@ -906,7 +906,7 @@ export class CartesianAxisLayoutPanel {
         let y: number = rect.y + rect.height * 0.5;
 
         let options: TextOption = new TextOption(
-            chart.element.id + '_AxisTitle_' + index, x, y - this.padding, 'middle',
+            chart.element.id + '_AxisTitle_' + index, x, y - axis.labelPadding, 'middle',
             axis.title, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation
         );
         options.text = textTrim( axis.updatedRect.height, options.text as string, axis.titleStyle);
@@ -1125,7 +1125,7 @@ export class CartesianAxisLayoutPanel {
     // tslint:disable-next-line:max-func-body-length
     public drawXAxisLabels(axis: Axis, index: number, parent: Element, rect: Rect): void {
         let chart: Chart = this.chart; let pointX: number = 0; let pointY: number = 0;
-        let labelSpace: number = axis.labelPadding;
+        let labelSpace: number = axis.labelPadding; let labelHeight: number;
         let elementSize: Size; let labelPadding: number; let anchor: string; let pixel: number = 10;
         let labelElement: Element = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
         let islabelInside: boolean = axis.labelPosition === 'Inside'; let isOpposed: boolean = axis.opposedPosition;
@@ -1142,6 +1142,9 @@ export class CartesianAxisLayoutPanel {
             && (axis.zoomFactor < 1 || axis.zoomPosition > 0)) ? axis.scrollBarHeight : 0;
         let newPoints: ChartLocation[][] = []; let isRotatedLabelIntersect: boolean = false;
         padding += (angle === 90 || angle === 270 || angle === -90 || angle === -270) ? (islabelInside ? 5 : -5) : 0;
+        let isEndAnchor: boolean = ((!isOpposed && !islabelInside) || (isOpposed && islabelInside)) ?
+            ((360 >= angle && angle >= 180) || (-1 >= angle && angle >= -180)) :
+            ((1 <= angle && angle <= 180) || (-181 >= angle && angle >= -360));
         for (let i: number = 0, len: number = length; i < len; i++) {
             label = axis.visibleLabels[i];
             isAxisBreakLabel = isBreakLabel(label.originalText);
@@ -1151,7 +1154,9 @@ export class CartesianAxisLayoutPanel {
             labelWidth = isAxisBreakLabel ? label.breakLabelSize.width : elementSize.width;
             width = ((axis.labelIntersectAction === 'Trim' || axis.labelIntersectAction === 'Wrap') && angle === 0 &&
                     labelWidth > intervalLength) ? intervalLength : labelWidth;
-            pointX -= width / 2;
+            labelHeight = elementSize.height / 4;
+            pointX -= (angle === 0) ? (width / 2) : (angle === -90 || angle === 270 ? -labelHeight :
+                (angle === 90 || angle === -270) ? labelHeight : 0);
             if (axis.labelStyle.textAlignment === 'Far') {
                 pointX = pointX + width - pixel;
             } else if (axis.labelStyle.textAlignment === 'Near') {
@@ -1161,17 +1166,16 @@ export class CartesianAxisLayoutPanel {
             }
 
             if (islabelInside && angle) {
-                pointY = isOpposed ? (rect.y + padding) : (rect.y - padding);
+                pointY = isOpposed ? (rect.y + padding + labelHeight) : (rect.y - padding - labelHeight);
             } else {
                 labelPadding = ((isOpposed && !islabelInside) || (!isOpposed && islabelInside)) ?
-                    -(padding + scrollBarHeight + (angle ? ((elementSize.height * 0.5) + (2 * axis.maxLabelSize.height / 5)) :
-                        (label.index > 1 ? (2 * (elementSize.height / 4)) : 0))) :
-                    padding + scrollBarHeight + (angle ? (axis.maxLabelSize.height * 0.5) : (3 * (elementSize.height / 4)));
+                    -(padding + scrollBarHeight + (angle ? labelHeight : (label.index > 1 ? (2 * labelHeight) : 0))) :
+                    padding + scrollBarHeight + ((angle ? 1 : 3) * labelHeight);
                 pointY = (rect.y + (labelPadding * label.index));
             }
-            anchor = chart.isRtlEnabled ? 'end' : '';
+            anchor = (chart.isRtlEnabled || isEndAnchor) ? 'end' : '';
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor);
-            if (axis.edgeLabelPlacement) {
+            if (axis.edgeLabelPlacement && (angle === 0)) {
                 switch (axis.edgeLabelPlacement) {
                     case 'None':
                         break;
@@ -1202,19 +1206,13 @@ export class CartesianAxisLayoutPanel {
             }
             previousEnd = axis.isInversed ? options.x : options.x + width;
             if (angle !== 0) {
-                rotateSize = this.getRotateText(isAxisBreakLabel, axis, label, angle, chart);
-                diffHeight = islabelInside ? rotateSize.height :
-                    axis.maxLabelSize.height - Math.ceil(rotateSize.height);
-                yLocation = axis.opposedPosition ? diffHeight * 0.5 : - diffHeight * 0.5;
-                options.transform = 'rotate(' + angle + ',' + (pointX + width * 0.5 + anglePadding) + ','
-                    + (pointY + yLocation) + ')';
-                options.y = isAxisBreakLabel ? options.y +
-                    (isOpposed ? (4 * label.text.length) : -(4 * label.text.length)) : options.y + yLocation;
-                let height: number = (pointY + yLocation) - (options.y - ((label.size.height / 2) + 10));
+                options.transform = 'rotate(' + angle + ',' + pointX + ',' + pointY + ')';
+                options.y = isAxisBreakLabel ? options.y + (isOpposed ? (4 * label.text.length) : -(4 * label.text.length)) : options.y;
+                let height: number = (pointY) - (options.y - ((label.size.height / 2) + 10));
                 let rect: Rect = new Rect(options.x, options.y - ((label.size.height / 2) - 5), label.size.width, height);
                 let rectCoordinates: ChartLocation[] = this.getRectanglePoints(rect);
-                let rectCenterX: number = pointX + width * 0.5 + anglePadding;
-                let rectCenterY: number = (pointY + yLocation) - (height / 2);
+                let rectCenterX: number = pointX;
+                let rectCenterY: number = (pointY) - (height / 2);
                 newPoints.push(getRotatedRectangleCoordinates(rectCoordinates, rectCenterX, rectCenterY, angle));
                 isRotatedLabelIntersect = false;
                 for (let index: number = i; index > 0; index--) {
@@ -1366,7 +1364,7 @@ export class CartesianAxisLayoutPanel {
      */
     private findAxisLabel(axis: Axis, label: string, width: number): string {
         return(axis.labelIntersectAction === 'Trim' ?
-               ((axis.angle === 0 && !axis.enableTrim) ? textTrim(width, label, axis.labelStyle) : label) : label);
+               ((axis.angle % 360 === 0 && !axis.enableTrim) ? textTrim(width, label, axis.labelStyle) : label) : label);
     }
 
     /**
@@ -1382,7 +1380,7 @@ export class CartesianAxisLayoutPanel {
         let scrollBarHeight: number = isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight : 0;
         let padding: number = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
             (axis.labelPosition === 'Inside' ? 0 :
-                axis.maxLabelSize.height + axis.multiLevelLabelHeight + this.padding);
+                axis.maxLabelSize.height + axis.multiLevelLabelHeight + axis.labelPadding);
 
         padding = axis.opposedPosition ? -(padding + elementSize.height / 4 + scrollBarHeight) : (padding + (3 *
             elementSize.height / 4) + scrollBarHeight);

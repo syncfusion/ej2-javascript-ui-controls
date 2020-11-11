@@ -143,7 +143,8 @@ export class ActionBase {
         let cloneElement: HTMLElement = cloneWrapper.children[0] as HTMLElement;
         let cloneClassLists: string[] = [cls.CLONE_ELEMENT_CLASS];
         cloneClassLists.push((this.actionObj.action === 'drag') ? cls.DRAG_CLONE_CLASS : cls.RESIZE_CLONE_CLASS);
-        if (this.parent.options.currentView === 'Month' || this.parent.options.currentView === 'TimelineMonth') {
+        if (this.parent.options.currentView === 'Month' || this.parent.options.currentView === 'TimelineMonth' ||
+            (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable)) {
             cloneClassLists.push(cls.MONTH_CLONE_ELEMENT_CLASS);
         }
         addClass([cloneElement], cloneClassLists);
@@ -161,7 +162,8 @@ export class ActionBase {
 
     public removeCloneElementClasses(): void {
         let elements: HTMLElement[] = this.actionObj.originalElement;
-        if (this.parent.options.currentView === 'Month') {
+        if (this.parent.options.currentView === 'Month' ||
+            (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable)) {
             elements = [].slice.call(this.parent.element.querySelectorAll('.' + cls.EVENT_ACTION_CLASS));
         }
         removeClass(elements, cls.EVENT_ACTION_CLASS);

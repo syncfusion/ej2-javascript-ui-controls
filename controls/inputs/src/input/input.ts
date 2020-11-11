@@ -70,6 +70,7 @@ export namespace Input {
         if (!isNullOrUndefined(args.element) && args.element.tagName === 'TEXTAREA') {
             addClass([inputObject.container], CLASSNAMES.TEXTAREA);
         }
+        validateInputType(inputObject.container, args.element);
         inputObject = setPropertyValue(args, inputObject);
         privateInputObj = inputObject;
         return inputObject;
@@ -762,6 +763,14 @@ export namespace Input {
         wrap.appendChild(button);
         _internalRipple(true, container, button);
         return button;
+    }
+
+    export function validateInputType (containerElement : HTMLElement, input : HTMLInputElement | HTMLTextAreaElement) : void {
+        if (input.type === 'hidden') {
+            containerElement.classList.add('e-hidden');
+        } else if (containerElement.classList.contains('e-hidden')) {
+            containerElement.classList.remove('e-hidden');
+        }
     }
 }
 interface ClassNames {

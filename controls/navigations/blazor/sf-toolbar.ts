@@ -773,6 +773,12 @@ class SfToolbar {
             this.element.setAttribute('aria-haspopup', 'true');
         } else {
             let popupEle: HTEle = this.popObj.element;
+            if (this.options.overflowMode === 'Extended') {
+                let eleStyle: CSSStyleDeclaration = window.getComputedStyle(this.element);
+                this.popObj.width = parseFloat(eleStyle.width) + ((parseFloat(eleStyle.borderRightWidth)) * 2);
+                this.popObj.offsetX = 0;
+                this.popObj.dataBind();
+            }
             setStyle(popupEle, { maxHeight: '', display: 'block' });
             setStyle(popupEle, { maxHeight: popupEle.offsetHeight + 'px', display: '' });
         }

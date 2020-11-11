@@ -9,8 +9,6 @@ import { NotifyEventArgs } from '../base/interface';
  * Month view events render
  */
 export const ADD_EMPTY_LENGTH: number = 5;
-const EVENT_GAP: number = 0;
-const EVENT_TOP: number = 10;
 const BLOCK_INDICATOR_WIDTH: number = 24;
 export class MonthEvent extends EventBase {
     public dateRender: Date[];
@@ -25,6 +23,7 @@ export class MonthEvent extends EventBase {
     public maxHeight: boolean;
     public withIndicator: boolean;
     public maxOrIndicator: boolean;
+    private eventTop: number;
 
     constructor(parent: SfSchedule) {
         super(parent);
@@ -35,101 +34,76 @@ export class MonthEvent extends EventBase {
         this.maxOrIndicator = (this.maxHeight || this.withIndicator);
         this.moreIndicatorHeight =
             (this.parent.options.rowAutoHeight && this.parent.options.ignoreWhitespace) ? 0 : this.moreIndicatorHeight;
+        this.eventTop = this.parent.options.currentView === 'Month' ? 10 : 0;
     }
 
     public renderAppointments(): void {
-        if (this.parent.options.currentView === 'Month') {
-            let eventsClass: string = '.' + cls.APPOINTMENT_CLASS + ', .' + cls.MORE_INDICATOR_CLASS;
-            let blockEventClass: string = '.' + cls.BLOCK_APPOINTMENT_CLASS + ', .' + cls.BLOCK_INDICATOR_CLASS;
-            let elementList: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(eventsClass + ', ' + blockEventClass));
-            let workcell: HTMLElement = this.parent.element.querySelector('.e-work-cells');
-            if (!workcell) {
-                return;
-            }
-            let conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+        let eventsClass: string = '.' + cls.APPOINTMENT_CLASS + ', .' + cls.MORE_INDICATOR_CLASS;
+        let blockEventClass: string = '.' + cls.BLOCK_APPOINTMENT_CLASS + ', .' + cls.BLOCK_INDICATOR_CLASS;
+        let elementList: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(eventsClass + ', ' + blockEventClass));
+        let workcell: HTMLElement = this.parent.element.querySelector('.e-work-cells');
+        if (!workcell) {
+            return;
+        }
+        let conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+        if (this.parent.options.rowAutoHeight) {
+            this.parent.uiStateValues.top = conWrap.scrollTop;
+            this.parent.uiStateValues.left = conWrap.scrollLeft;
+        }
+        this.removeHeightProperty(cls.CONTENT_TABLE_CLASS);
+        this.cellHeight = workcell.getBoundingClientRect().height;
+        this.cellWidth = workcell.getBoundingClientRect().width;
+        let currentPanel: HTMLElement = this.parent.element.querySelector('.e-current-panel');
+        let appHeight: number = util.getElementHeightFromClass(currentPanel, cls.APPOINTMENT_CLASS);
+        this.dateRender = this.parent.activeView.renderDates;
+        for (let i: number = 0; i < elementList.length; i++) {
+            let ele: HTMLElement = elementList[i] as HTMLElement;
+            this.removedPositionedStyles(ele);
+            let startTime: Date = this.getStartTime(ele);
+            let overlapCount: number = this.getOverLapCount(ele);
+            let diffInDays: number = this.getDataCount(ele);
+            let appWidth: number = (diffInDays * this.cellWidth) - 5;
+            let appLeft: number = 0;
+            let appRight: number = 0;
+            let resIndex: number = this.getGroupIndex(ele);
+            let cellTd: HTMLElement = this.getCellTd(resIndex, startTime);
+            let target: HTMLElement = closest(cellTd, 'tr') as HTMLElement;
+            this.monthHeaderHeight = this.parent.options.currentView === 'Month' ? (<HTMLElement>cellTd.firstElementChild).offsetHeight : 0;
+            let height: number =
+                this.monthHeaderHeight + ((overlapCount + 1) * appHeight) + this.moreIndicatorHeight;
             if (this.parent.options.rowAutoHeight) {
-                this.parent.uiStateValues.top = conWrap.scrollTop;
-                this.parent.uiStateValues.left = conWrap.scrollLeft;
+                this.updateCellHeight(<HTMLElement>target.firstElementChild, height);
             }
-            this.removeHeightProperty(cls.CONTENT_TABLE_CLASS);
-            this.cellHeight = workcell.getBoundingClientRect().height;
-            this.cellWidth = workcell.getBoundingClientRect().width;
-            let currentPanel: HTMLElement = this.parent.element.querySelector('.e-current-panel');
-            let appHeight: number = util.getElementHeightFromClass(currentPanel, cls.APPOINTMENT_CLASS);
-            this.dateRender = this.parent.activeView.renderDates;
-            for (let i: number = 0; i < elementList.length; i++) {
-                let ele: HTMLElement = elementList[i] as HTMLElement;
-                this.removedPositionedStyles(ele);
-                let startTime: Date = this.getStartTime(ele);
-                let overlapCount: number = this.getOverLapCount(ele);
-                let diffInDays: number = this.getDataCount(ele);
-                let appWidth: number = (diffInDays * this.cellWidth) - 5;
-                let appLeft: number = 0;
-                let appRight: number = 0;
-                let resIndex: number = this.getGroupIndex(ele);
-                let cellTd: HTMLElement = this.getCellTd(resIndex, startTime);
-                let target: HTMLElement = closest(cellTd, 'tr') as HTMLElement;
-                this.monthHeaderHeight = (<HTMLElement>cellTd.firstElementChild).offsetHeight;
-                let height: number =
-                    this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
-                if (this.parent.options.rowAutoHeight) {
-                    this.updateCellHeight(<HTMLElement>target.firstElementChild, height);
-                }
-                let top: number = cellTd.offsetTop;
-                let appTop: number = this.monthHeaderHeight + ((ele.classList.contains('e-block-appointment')) ? top :
-                    (top + EVENT_GAP) + (overlapCount * (appHeight + EVENT_GAP))) + EVENT_TOP;
-                appLeft = (this.parent.options.enableRtl) ? 0 : cellTd.offsetLeft;
-                appRight = (this.parent.options.enableRtl) ? cellTd.parentElement.offsetWidth - cellTd.offsetLeft - this.cellWidth : 0;
-                if (!ele.classList.contains('e-more-indicator')) {
-                    if (!ele.classList.contains('e-block-indicator')) {
+            let top: number = cellTd.offsetTop;
+            let appTop: number = this.monthHeaderHeight + ((ele.classList.contains('e-block-appointment')) ? top :
+                top + (overlapCount * appHeight)) + this.eventTop;
+            appLeft = (this.parent.options.enableRtl) ? 0 : cellTd.offsetLeft;
+            appRight = (this.parent.options.enableRtl) ? cellTd.parentElement.offsetWidth - cellTd.offsetLeft - this.cellWidth : 0;
+            if (!ele.classList.contains('e-more-indicator')) {
+                if (!ele.classList.contains('e-block-indicator')) {
+                    setStyleAttribute(ele, {
+                        'width': appWidth + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
+                    });
+                    if (this.maxOrIndicator) {
+                        this.setMaxEventHeight(ele, cellTd);
+                    }
+                    if (ele.classList.contains('e-block-appointment')) {
                         setStyleAttribute(ele, {
-                            'width': appWidth + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
+                            'height': (<HTMLElement>cellTd).offsetHeight - (appTop - cellTd.offsetTop) + 'px'
                         });
-                        if (this.maxOrIndicator) {
-                            this.setMaxEventHeight(ele, cellTd);
-                        }
-                        if (ele.classList.contains('e-block-appointment')) {
-                            setStyleAttribute(ele, {
-                                'height': (<HTMLElement>cellTd).offsetHeight - (appTop - cellTd.offsetTop) + 'px'
-                            });
-                        }
-                        if (ele.classList.contains('e-appointment')) {
-                            this.parent.eventBase.wireAppointmentEvents(ele);
-                        }
-                    } else {
-                        this.updateBlockIndicator(ele, appRight, appLeft, cellTd);
-
+                    }
+                    if (ele.classList.contains('e-appointment')) {
+                        this.parent.eventBase.wireAppointmentEvents(ele);
                     }
                 } else {
-                    this.updateMoreIndicator(ele, appRight, appLeft, top);
+                    this.updateBlockIndicator(ele, appRight, appLeft, cellTd);
+
                 }
-            }
-            this.updateRowHeight(appHeight);
-        } else if (!this.parent.activeViewOptions.timeScale.enable) {
-            let workcell: HTMLElement = this.parent.element.querySelector('.e-work-cells');
-            if (!workcell) {
-                return;
-            }
-            let contentTableWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS);
-            let disableTimeElementList: HTMLElement[] =
-                [].slice.call(contentTableWrap.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
-            let appointmentHeight: number = disableTimeElementList.length > 0 ? disableTimeElementList[0].offsetHeight : 0;
-            for (let i: number = 0; i < disableTimeElementList.length; i++) {
-                let ele: HTMLElement = disableTimeElementList[i] as HTMLElement;
-                let rowCount: number = this.getRowCount(ele);
-                let totalLength: number = this.getTotalLength(ele);
-                ele.style.top = rowCount * appointmentHeight + 'px';
-                ele.style.width = (workcell.getBoundingClientRect().width * totalLength) - 10 + 'px';
-                this.parent.eventBase.wireAppointmentEvents(ele);
-            }
-            if (disableTimeElementList.length > 0) {
-                let moreIndicatorList: HTMLElement[] = [].slice.call(contentTableWrap.querySelectorAll('.' + cls.MORE_INDICATOR_CLASS));
-                for (let i: number = 0; i < moreIndicatorList.length; i++) {
-                    let ele: HTMLElement = moreIndicatorList[i];
-                    ele.style.top = 8 * appointmentHeight + 'px';
-                }
+            } else {
+                this.updateMoreIndicator(ele, appRight, appLeft, top);
             }
         }
+        this.updateRowHeight(appHeight);
     }
 
     public removedPositionedStyles(ele: HTMLElement): void {
@@ -159,7 +133,8 @@ export class MonthEvent extends EventBase {
     }
 
     public setMaxEventHeight(event: HTMLElement, cell: HTMLElement): void {
-        let headerHeight: number = util.getOuterHeight(cell.querySelector('.' + cls.DATE_HEADER_CLASS));
+        let headerHeight: number = this.parent.options.currentView === 'Month' ?
+            util.getOuterHeight(cell.querySelector('.' + cls.DATE_HEADER_CLASS)) : 0;
         let height: number = (cell.offsetHeight - headerHeight) - (this.maxHeight ? 0 : this.moreIndicatorHeight);
         setStyleAttribute(event, { 'height': height + 'px', 'align-items': 'center' });
     }
@@ -240,7 +215,7 @@ export class MonthEvent extends EventBase {
             let appLeft: number = (this.parent.options.enableRtl) ? 0 : cellTd.offsetLeft;
             let appRight: number = (this.parent.options.enableRtl) ?
                 cellTd.parentElement.offsetWidth - cellTd.offsetLeft - this.cellWidth : 0;
-            let appTop: number = cellTd.offsetTop + this.monthHeaderHeight + EVENT_TOP;
+            let appTop: number = cellTd.offsetTop + this.monthHeaderHeight + this.eventTop;
             setStyleAttribute(element, {
                 'width': width + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'height': height + 'px', 'top': appTop + 'px'
             });
@@ -258,7 +233,7 @@ export class MonthEvent extends EventBase {
             let appRight: number = (this.parent.options.enableRtl) ?
                 cellTd.parentElement.offsetWidth - cellTd.offsetLeft - this.cellWidth : 0;
             let top: number = this.monthHeaderHeight +
-                ((<HTMLElement>cellTd).offsetTop + EVENT_GAP) + (overlapCount * (appHeight + EVENT_GAP)) + EVENT_TOP;
+                (<HTMLElement>cellTd).offsetTop + (overlapCount * appHeight) + this.eventTop;
             setStyleAttribute(element, {
                 'left': appLeft + 'px', 'right': appRight + 'px', 'top': top + 'px'
             });

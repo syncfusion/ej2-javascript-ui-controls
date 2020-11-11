@@ -233,7 +233,7 @@ export class Image {
                 }
                 imgElement.classList.remove(classes.CLS_RTE_DRAG_IMAGE);
                 imgElement.addEventListener('load', () => {
-                    this.parent.dotNetRef.invokeMethodAsync(events.actionCompleteEvent, null);
+                    if (this.parent.actionCompleteEnabled) { this.parent.dotNetRef.invokeMethodAsync(events.actionCompleteEvent, null); }
                 });
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.parent.getDocument());
                 let args: MouseEvent = e as MouseEvent;
@@ -272,7 +272,7 @@ export class Image {
         range.selectNodeContents(this.droppedImage);
         this.parent.formatter.editorManager.nodeSelection.setRange(this.parent.getDocument(), range);
         this.droppedImage.addEventListener('load', () => {
-            this.parent.dotNetRef.invokeMethodAsync(events.actionCompleteEvent, null);
+            if (this.parent.actionCompleteEnabled) { this.parent.dotNetRef.invokeMethodAsync(events.actionCompleteEvent, null); }
         });
     }
     public removeDroppedImage(): void {
@@ -840,7 +840,7 @@ export class Image {
             this.quickToolObj.hideImageQTBar();
         }
         this.cancelResizeAction();
-        if (isNOU(keyCode)) {
+        if (isNOU(keyCode) && this.parent.imageDeleteEnabled) {
             this.parent.dotNetRef.invokeMethodAsync('AfterImageDeleteEvent', args);
         }
     }
@@ -1196,7 +1196,7 @@ export class Image {
                 let args: AfterImageDeleteEventArgs = {
                     src: (this.deletedImg[i] as HTMLElement).getAttribute('src')
                 };
-                this.parent.dotNetRef.invokeMethodAsync('AfterImageDeleteEvent', args);
+                if (this.parent.imageDeleteEnabled) { this.parent.dotNetRef.invokeMethodAsync('AfterImageDeleteEvent', args); }
             }
         }
     }
@@ -1230,13 +1230,13 @@ export class Image {
                 addClass([this.imgResizeDiv], 'e-mob-span');
             } else {
                 let args: ResizeArgs = { requestType: 'Images' };
-                // @ts-ignore-start
-                this.parent.dotNetRef.invokeMethodAsync('ResizeStartEvent', args).then((resizeStartArgs: ResizeArgs) => {
-                    // @ts-ignore-end
-                    if (resizeStartArgs.cancel) {
-                        this.cancelResizeAction();
-                    }
-                });
+                if (this.parent.onResizeStartEnabled) {
+                    // @ts-ignore-start
+                    this.parent.dotNetRef.invokeMethodAsync('ResizeStartEvent', args).then((resizeStartArgs: ResizeArgs) => {
+                        // @ts-ignore-end
+                        if (resizeStartArgs.cancel) { this.cancelResizeAction(); }
+                    });
+                }
             }
             EventHandler.add(this.parent.getDocument(), Browser.touchEndEvent, this.resizeEnd, this);
         }
@@ -1268,7 +1268,7 @@ export class Image {
         this.imgEle.parentElement.style.cursor = 'auto';
         if (Browser.isDevice) { removeClass([(e.target as HTMLElement).parentElement], 'e-mob-span'); }
         let args: ResizeArgs = { requestType: 'Images' };
-        this.parent.dotNetRef.invokeMethodAsync('ResizeStopEvent', args);
+        if (this.parent.onResizeStopEnabled) { this.parent.dotNetRef.invokeMethodAsync('ResizeStopEvent', args); }
         this.parent.formatter.editorManager.observer.on(events.checkUndo, this.undoStack, this);
         this.parent.formatter.saveData();
     }

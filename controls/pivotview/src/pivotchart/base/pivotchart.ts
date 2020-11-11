@@ -320,6 +320,9 @@ export class PivotChart {
             this.currentColumn = (columnKeys.indexOf(columnHeader + ' | ' + this.currentMeasure) > -1 && columnHeader !== undefined) ? columnHeader + ' | ' + this.currentMeasure : columnKeys[0];
             let currentSeries: AccumulationSeriesModel = {};
             currentSeries = this.persistSettings.chartSeries ? this.frameChartSeries(this.persistSettings.chartSeries) as AccumulationSeriesModel : currentSeries;
+            if ((isNullOrUndefined(currentSeries.palettes) || currentSeries.palettes.length == 0) && !isNullOrUndefined(this.persistSettings.palettes) && this.persistSettings.palettes.length > 0) {
+                currentSeries.palettes = this.persistSettings.palettes;
+            }
             currentSeries.dataSource = this.columnGroupObject[this.currentColumn];
             currentSeries.xName = 'x';
             currentSeries.yName = 'y';
@@ -353,6 +356,9 @@ export class PivotChart {
             for (let key of columnKeys) {
                 let currentSeries: SeriesModel = {};
                 currentSeries = this.persistSettings.chartSeries ? this.frameChartSeries(this.persistSettings.chartSeries) as SeriesModel : currentSeries;
+                if (!isNullOrUndefined((currentSeries as any).palettes) && (currentSeries as any).palettes.length > 0 && (isNullOrUndefined(this.persistSettings.palettes) || this.persistSettings.palettes.length == 0)) {
+                    this.chartSettings.palettes = (currentSeries as any).palettes;
+                }
                 currentSeries.dataSource = this.columnGroupObject[key];
                 currentSeries.xName = 'x';
                 currentSeries.yName = 'y';

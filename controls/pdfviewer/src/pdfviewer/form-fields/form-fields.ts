@@ -451,7 +451,7 @@ export class FormFields {
             // tslint:disable-next-line
             if (this.pdfViewer.signatureFitMode === 'Default') {
                 // tslint:disable-next-line
-                let signatureBounds: any = this.checkSignatureWidth(this.pdfViewerBase.signatureModule.outputString);
+                let signatureBounds: any = this.updateSignatureAspectRatio(this.pdfViewerBase.signatureModule.outputString);
                 bounds = { x: currentLeft + signatureBounds.left, y: currentTop + signatureBounds.top, width: signatureBounds.width, height: signatureBounds.height };
             } else {
                 bounds = { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight };
@@ -541,8 +541,11 @@ export class FormFields {
         let currentTarget: any = event.target;
         this.updateDataInSession(currentTarget);
     }
+    /**
+     * @private
+     */
     // tslint:disable-next-line
-    private checkSignatureWidth(data: any): any {
+    public updateSignatureAspectRatio(data: any, isSignature?: boolean): any {
         // tslint:disable-next-line
         let collectionData: any = processPathData(data);
         // tslint:disable-next-line
@@ -551,6 +554,9 @@ export class FormFields {
         let minimumY: number = -1;
         let maximumX: number = -1;
         let maximumY: number = -1;
+        let signatureCanvas: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
+        let signatureCavasWidth: number = 0;
+        let signatureCavasHeight: number = 0;
         for (let m: number = 0; m < csData.length; m++) {
             // tslint:disable-next-line
             let val: any = csData[m];
@@ -582,22 +588,40 @@ export class FormFields {
                 }
             }
         }
+        signatureCavasWidth = signatureCanvas.clientWidth;
+        signatureCavasHeight = signatureCanvas.clientHeight;
         let newdifferenceX: number = maximumX - minimumX;
         let newdifferenceY: number = maximumY - minimumY;
-        let ratioX: number = newdifferenceX / 650;
-        let ratioY: number = newdifferenceY / 300;
+        let ratioX: number = newdifferenceX / signatureCavasWidth;
+        let ratioY: number = newdifferenceY / signatureCavasHeight;
         let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
-        // tslint:disable-next-line
-        let currentWidth: number = parseFloat(this.currentTarget.style.width) / zoomvalue;
-        // tslint:disable-next-line
-        let currentHeight: number = parseFloat(this.currentTarget.style.height) / zoomvalue;
-        let currentLeftDiff: number = (650 - newdifferenceX) / 2;
-        let currentTopDiff: number = (300 - newdifferenceY) / 2;
-        currentLeftDiff = (currentLeftDiff / 650) * currentWidth;
-        currentTopDiff = (currentTopDiff / 300) * currentHeight;
+        let currentWidth: number = 0;
+        let currentHeight: number = 0;
+        if (isSignature) {
+            currentWidth = this.pdfViewer.handWrittenSignatureSettings.width ? this.pdfViewer.handWrittenSignatureSettings.width : 150;
+            currentHeight = this.pdfViewer.handWrittenSignatureSettings.height ? this.pdfViewer.handWrittenSignatureSettings.height : 100;
+        } else {
+            // tslint:disable-next-line
+            currentWidth = parseFloat(this.currentTarget.style.width) / zoomvalue;
+            // tslint:disable-next-line
+            currentHeight = parseFloat(this.currentTarget.style.height) / zoomvalue;
+        }
+        let currentLeftDiff: number = (signatureCavasWidth - newdifferenceX) / 2;
+        let currentTopDiff: number = (signatureCavasHeight - newdifferenceY) / 2;
+        currentLeftDiff = (currentLeftDiff / signatureCavasWidth) * currentWidth;
+        currentTopDiff = (currentTopDiff / signatureCavasHeight) * currentHeight;
         currentWidth = currentWidth * ratioX;
         currentHeight = currentHeight * ratioY;
-        return { left: currentLeftDiff, top: currentTopDiff, width: currentWidth, height: currentHeight };
+        if (isSignature) {
+            let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
+            let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
+            let currentLeft: number = ((parseFloat(pageDiv.style.width) / 2) - (currentWidth / 2)) / zoomvalue;
+            // tslint:disable-next-line:max-line-length
+            let currentTop : number = ((parseFloat(pageDiv.style.height) / 2) - (currentHeight / 2)) / zoomvalue;
+            return { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight };
+        } else {
+            return { left: currentLeftDiff, top: currentTopDiff, width: currentWidth, height: currentHeight };
+        }
     }
     /**
      * @private

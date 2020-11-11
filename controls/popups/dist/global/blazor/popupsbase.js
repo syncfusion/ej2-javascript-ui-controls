@@ -808,6 +808,9 @@ function setMinHeight(minimumHeight) {
 function setMaxWidth(value) {
     maxWidth = value;
 }
+function setMaxHeight(value) {
+    maxHeight = value;
+}
 function removeResize() {
     var handlers = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
     for (var i = 0; i < handlers.length; i++) {
@@ -823,6 +826,7 @@ exports.calculatePosition = calculatePosition;
 exports.createResize = createResize;
 exports.setMinHeight = setMinHeight;
 exports.setMaxWidth = setMaxWidth;
+exports.setMaxHeight = setMaxHeight;
 exports.removeResize = removeResize;
 
 return exports;

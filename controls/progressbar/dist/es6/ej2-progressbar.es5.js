@@ -574,6 +574,10 @@ var AnnotationBase = /** @__PURE__ @class */ (function () {
         }
         else if (this.control.redraw) {
             removeElement(annotationElement.id);
+            // tslint:disable-next-line:no-any
+            if (this.control.isReact) {
+                this.control.clearTemplate();
+            }
         }
     };
     AnnotationBase.prototype.setElementStyle = function (location, element, parentElement) {
@@ -589,6 +593,10 @@ var AnnotationBase = /** @__PURE__ @class */ (function () {
             argsData.content.style.transform = 'translate(-50%, -50%)';
             argsData.content.setAttribute('aria-label', 'Annotation');
             parentElement.appendChild(argsData.content);
+            // tslint:disable-next-line:no-any
+            if (this.control.isReact) {
+                this.control.renderReactTemplates();
+            }
         }
     };
     AnnotationBase.prototype.Location = function (radius, angle) {
@@ -2498,6 +2506,10 @@ var ProgressBar = /** @__PURE__ @class */ (function (_super) {
         this.unWireEvents();
         _super.prototype.destroy.call(this);
         this.removeSvg();
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         this.svgObject = null;
         this.element.classList.remove('e-progressbar');
         if (!this.refreshing) {

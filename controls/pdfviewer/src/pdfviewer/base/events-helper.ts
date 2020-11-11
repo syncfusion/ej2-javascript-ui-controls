@@ -803,6 +803,14 @@ export interface BookmarkClickEventArgs extends BaseEventArgs {
      * Position of the bookmark content
      */
     position: number;
+    /**
+     * Title of the bookmark
+     */
+    text: string;
+    /**
+     * Get the fileName from Launch action
+     */
+    fileName: string;
 }
 /**
  * This event arguments provide the necessary information about text selection start event.

@@ -62,6 +62,7 @@ var CLASSNAMES = {
         if (!sf.base.isNullOrUndefined(args.element) && args.element.tagName === 'TEXTAREA') {
             sf.base.addClass([inputObject.container], CLASSNAMES.TEXTAREA);
         }
+        validateInputType(inputObject.container, args.element);
         inputObject = setPropertyValue(args, inputObject);
         return inputObject;
     }
@@ -777,6 +778,15 @@ var CLASSNAMES = {
         return button;
     }
     Input.appendSpan = appendSpan;
+    function validateInputType(containerElement, input) {
+        if (input.type === 'hidden') {
+            containerElement.classList.add('e-hidden');
+        }
+        else if (containerElement.classList.contains('e-hidden')) {
+            containerElement.classList.remove('e-hidden');
+        }
+    }
+    Input.validateInputType = validateInputType;
 })(exports.Input || (exports.Input = {}));
 
 return exports;

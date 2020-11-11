@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.48 (2020-11-11)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#F159413` - The issue with "Script error occurs when dynamically updating the panels using V-for" has been fixed.
+
 ## 18.3.44 (2020-10-27)
 
 ### Dashboard Layout

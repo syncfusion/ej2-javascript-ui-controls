@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.48 (2020-11-11)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#297364`, `#298482`, `#298691`, `#299181` - Handwritten signature aspect ratio is now maintained properly in PDF Viewer.
+
 ## 18.3.44 (2020-10-27)
 
 ### PDF Viewer

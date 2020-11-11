@@ -27,7 +27,7 @@ export interface ResizeClasses {
  * Resize handler
  */
 
- export class Resize {
+export class Resize {
 
     private content: HTMLDivElement;
     private header: HTMLDivElement;
@@ -49,7 +49,7 @@ export interface ResizeClasses {
         this.widthService = new ColumnWidthService(this.parent);
     }
 
-    
+
     /** 
      * Resize by field names. 
      * @param  {string|string[]} fName - Defines the field name.  
@@ -326,7 +326,7 @@ export interface ResizeClasses {
             if (!this.helper) {
                 if (this.getScrollBarWidth() === 0) {
                     for (let col of this.refreshColumnWidth()) {
-                        this.widthService.setColumnWidth(col);
+                        this.widthService.setColumnWidth(col, null, null, false);
                     }
                     this.widthService.setWidthToTable();
                 }
@@ -419,7 +419,7 @@ export interface ResizeClasses {
 
     private getColData(column: Column, mousemove: number): { [key: string]: number } {
         return {
-            width: parseFloat(isNullOrUndefined(this.widthService.getWidth(column)) || this.widthService.getWidth(column) === 'auto'  ? '0'
+            width: parseFloat(isNullOrUndefined(this.widthService.getWidth(column)) || this.widthService.getWidth(column) === 'auto' ? '0'
                 : this.widthService.getWidth(column).toString()) + mousemove,
             minWidth: column.minWidth ? parseFloat(column.minWidth.toString()) : null,
             maxWidth: column.maxWidth ? parseFloat(column.maxWidth.toString()) : null
@@ -714,4 +714,4 @@ export interface ResizeClasses {
     private timeoutHandler(): void {
         this.tapped = null;
     }
- }
+}

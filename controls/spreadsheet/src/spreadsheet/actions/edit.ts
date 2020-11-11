@@ -406,6 +406,8 @@ export class Edit {
                 let sheet: SheetModel = this.parent.getActiveSheet();
                 let formulaRefIndicator : HTMLElement = this.parent.element.querySelector('.e-formularef-indicator');
                 this.isCellEdit = trgtElem.classList.contains('e-spreadsheet-edit');
+                let isFormula: boolean = checkIsFormula(this.editCellData.value) ||
+                        (this.editCellData.value && this.editCellData.value.toString().indexOf('=') === 0);
                 if (trgtElem.classList.contains('e-cell') || trgtElem.classList.contains('e-header-cell') ||
                     trgtElem.classList.contains('e-selectall') || closest(trgtElem, '.e-toolbar-item.e-active')) {
                     if (this.isAltEnter) {
@@ -416,8 +418,6 @@ export class Edit {
                             this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
                         }
                     }
-                    let isFormula: boolean = checkIsFormula(this.editCellData.value) ||
-                        (this.editCellData.value && this.editCellData.value.toString().indexOf('=') === 0);
                     if (!isFormula) {
                         this.endEdit(false, e);
                     } else {
@@ -480,7 +480,7 @@ export class Edit {
                         }
                     }
                 } else {
-                    if (this.editCellData.value === this.editorElem.textContent && this.editorElem.textContent.indexOf('(') !==
+                    if (isFormula && this.editCellData.value === this.editorElem.textContent && this.editorElem.textContent.indexOf('(') !==
                         this.editorElem.textContent.length - 1) {
                         if (this.editCellData.sheetIndex === sheet.id - 1) {
                             let curPos: number = window.getSelection().focusOffset;

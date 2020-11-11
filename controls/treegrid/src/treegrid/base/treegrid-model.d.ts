@@ -221,7 +221,7 @@ export interface TreeGridModel extends ComponentModel{
 
     /**
    * Configures the TreeGrid aggregate rows.
-   * > Check the [`Aggregates`](../../treegrid/aggregates/) for its configuration.
+   * > Check the [`Aggregates`](../../treegrid/aggregate/) for its configuration.
    * @default []
    */
     aggregates?: AggregateRowModel[];
@@ -244,7 +244,8 @@ export interface TreeGridModel extends ComponentModel{
     /**
    * The detail template allows you to show or hide additional information about a particular row.
    *
-   * > It accepts either the [template string](../../common/template-engine/) or the HTML element ID.
+   * > It accepts either the [template string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals) 
+   * or the HTML element ID.
    *
    */
     detailTemplate?: string;
@@ -340,7 +341,8 @@ export interface TreeGridModel extends ComponentModel{
     /**
      * The row template that renders customized rows from the given template. 
      * By default, TreeGrid renders a table row for every data source item.
-     * > * It accepts either [template string](../../common/template-engine/) or HTML element ID.   
+     * > * It accepts either [template string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals)
+     * or HTML element ID.   
      * > * The row template must be a table row.  
      * 
      * > Check the [`Row Template`](../../treegrid/row) customization.
@@ -868,7 +870,7 @@ export interface TreeGridModel extends ComponentModel{
     /**
    * If `allowExcelExport` set to true, then it will allow the user to export treegrid to Excel file.
    * 
-   * > Check the [`ExcelExport`](../../treegrid/excel-exporting/) to configure exporting document.
+   * > Check the [`ExcelExport`](../../treegrid/excel-export/) to configure exporting document.
    * @default false    
    */
     allowExcelExport?: boolean;

@@ -2902,4 +2902,41 @@ describe('TextBox ', () => {
             expect(inputObj.textboxWrapper.container.classList.contains('e-valid-input')).toBe(true);
         });
     });
+    describe('EJ2-42714 - When hidden type textbox is rendered, wrapper is visible', function () {
+        let inputObj: any;
+        beforeEach(function () {
+            let inputElement: HTMLElement = createElement('input', { id: 'textbox' });
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function () {
+            if (inputObj) {
+                inputObj.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('htmlAttribute type as hidden', () => {
+            inputObj = new TextBox({
+                 htmlAttributes:{'type' : 'hidden'}
+            });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.getAttribute('type')).toBe('hidden');
+            expect(inputObj.textboxWrapper.container.classList.contains('e-hidden')).toBe(true);
+        });
+        it('htmlAttribute type as hidden and text', () => {
+            inputObj = new TextBox({
+                 htmlAttributes:{'type' : 'hidden'}
+            });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.getAttribute('type')).toBe('hidden');
+            expect(inputObj.textboxWrapper.container.classList.contains('e-hidden')).toBe(true);
+            inputObj.htmlAttributes = {'type' : 'text'};
+            inputObj.dataBind();
+            expect(inputObj.element.getAttribute('type')).toBe('text');
+            expect(inputObj.textboxWrapper.container.classList.contains('e-hidden')).toBe(false);
+            inputObj.htmlAttributes = {'type' : 'hidden'};
+            inputObj.dataBind();
+            expect(inputObj.element.getAttribute('type')).toBe('hidden');
+            expect(inputObj.textboxWrapper.container.classList.contains('e-hidden')).toBe(true);
+        });
+    });
 })

@@ -787,13 +787,12 @@ export class TextMarkupAnnotation {
                     if (annotationList) {
                         for (let z: number = 0; z < annotationList.length; z++) {
                             if (annotationList[z].annotName === currentAnnot) {
-                                let date: Date = new Date();
                                 if (property === 'Color') {
                                     annotationList[z].color = value;
                                 } else {
                                     annotationList[z].opacity = value;
                                 }
-                                annotationList[z].modifiedDate = date.toLocaleString();
+                                annotationList[z].modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                                 this.currentAnnotationIndex = z;
                                 if (status === null || status === 'changed') {
                                     // tslint:disable-next-line:max-line-length
@@ -851,8 +850,7 @@ export class TextMarkupAnnotation {
                         pageAnnotations[i].textMarkupContent = pageBounds[currentIndex].textContent;
                         pageAnnotations[i].textMarkupStartIndex = pageBounds[currentIndex].startIndex;
                         pageAnnotations[i].textMarkupEndIndex = pageBounds[currentIndex].endIndex;
-                        let date: Date = new Date();
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
+                        pageAnnotations[i].modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                         annotation = pageAnnotations[i];
                     }
                 }
@@ -961,7 +959,7 @@ export class TextMarkupAnnotation {
         let author: string = 'Guest';
         let subject: string;
         let context: CanvasRenderingContext2D = this.getPageContext(pageNumber);
-        let modifiedDate: string = new Date().toLocaleString();
+        let modifiedDate: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
         this.highlightColor = this.pdfViewer.highlightSettings.color;
         this.underlineColor = this.pdfViewer.underlineSettings.color;
         this.strikethroughColor = this.pdfViewer.strikethroughSettings.color;
@@ -1346,7 +1344,6 @@ export class TextMarkupAnnotation {
         if (pageAnnotations) {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
                 if (JSON.stringify(this.currentTextMarkupAnnotation) === JSON.stringify(pageAnnotations[i])) {
-                    let date: Date = new Date();
                     if (property === 'Color') {
                         pageAnnotations[i].color = value;
                     } else if (property === 'Opacity') {
@@ -1354,7 +1351,7 @@ export class TextMarkupAnnotation {
                     } else if (property === 'AnnotationSettings') {
                         pageAnnotations[i].annotationSettings = { isLock: value };
                     }
-                    pageAnnotations[i].modifiedDate = date.toLocaleString();
+                    pageAnnotations[i].modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                     this.currentAnnotationIndex = i;
                     if (status === null || status === 'changed') {
                         // tslint:disable-next-line:max-line-length
@@ -1416,7 +1413,7 @@ export class TextMarkupAnnotation {
             }
             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAnnotationModifiedDate(annotation, null, true);
             if (isUndoAction) {
-                annotation.modifiedDate = new Date().toLocaleString();
+                annotation.modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             }
         }
         this.clearCurrentAnnotation();
@@ -2355,9 +2352,8 @@ export class TextMarkupAnnotation {
     // tslint:disable-next-line:max-line-length
     // tslint:disable-next-line
     private getAddedAnnotation(type: string, color: string, opacity: number, bounds: any, author: string, subject: string, predefinedDate: string, note: string, rect: any, pageNumber: number, textContent: string, startIndex: number, endIndex: number, isMultiSelect?: boolean, allowedInteractions?:any): ITextMarkupAnnotation {
-        let date: Date = new Date();
         // tslint:disable-next-line:max-line-length
-        let modifiedDate: string = predefinedDate ? predefinedDate : date.toLocaleString();
+        let modifiedDate: string = predefinedDate ? predefinedDate : this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
         let annotationName: string = this.pdfViewer.annotation.createGUID();
         let commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('textMarkup', pageNumber + 1, type);
         if (commentsDivid) {

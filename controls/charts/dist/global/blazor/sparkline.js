@@ -1813,7 +1813,7 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var axisPadding = 10;
+var axisPadding = 5;
 /**
  * Configures the `rows` of the chart.
  */
@@ -2103,7 +2103,7 @@ var Axis = /** @class */ (function (_super) {
         }
         var diff;
         var value;
-        var labelSize = titleSize + innerPadding + axisPadding +
+        var labelSize = titleSize + innerPadding + axisPadding + this.labelPadding +
             ((this.orientation === 'Vertical') ? this.maxLabelSize.width : this.maxLabelSize.height) + this.multiLevelLabelHeight;
         if (crossAxis && this.placeNextToAxisLine) {
             var range = crossAxis.visibleRange;

@@ -478,11 +478,14 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let ul: Element = this.createItems(this.items as objColl);
         append(Array.prototype.slice.call(ul.children), this.element);
         this.element.classList.add('e-menu-parent');
-        if (this.isMenu && this.enableScrolling) {
-            let wrapper: HTMLElement = this.getWrapper() as HTMLElement;
-            this.element.classList.contains('e-vertical') ?
-                addScrolling(this.createElement, wrapper, this.element, 'vscroll', this.enableRtl)
-                : addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
+        if (this.isMenu) {
+            if (!this.hamburgerMode && this.element.classList.contains('e-vertical')) { this.setBlankIconStyle(this.element); }
+            if (this.enableScrolling) {
+                let wrapper: HTMLElement = this.getWrapper() as HTMLElement;
+                this.element.classList.contains('e-vertical') ?
+                    addScrolling(this.createElement, wrapper, this.element, 'vscroll', this.enableRtl)
+                    : addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
+            }
         }
     }
 
@@ -1091,6 +1094,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             this.popupWrapper.style.top = this.top + 'px'; this.popupWrapper.style.left = 0 + 'px';
                             this.toggleAnimation(this.popupWrapper);
                         } else {
+                            this.setBlankIconStyle(this.popupWrapper);
                             this.wireKeyboardEvent(this.popupWrapper); rippleEffect(this.popupWrapper, { selector: '.' + ITEM });
                             this.popupWrapper.style.left = this.left + 'px'; this.popupWrapper.style.top = this.top + 'px';
                             let animationOptions: AnimationModel = this.animationSettings.effect !== 'None' ? {
@@ -1100,6 +1104,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             this.popupObj.show(animationOptions, this.lItem as HTMLElement);
                         }
                     } else {
+                        this.setBlankIconStyle(this.uList);
                         this.setPosition(this.lItem, this.uList, this.top, this.left); this.toggleAnimation(this.uList);
                     }
                 }
@@ -1118,6 +1123,28 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 cul.children[index].classList.add(FOCUSED); (cul.children[index] as HTMLElement).focus();
             }
         });
+    }
+
+    protected setBlankIconStyle(menu: HTMLElement): void {
+        let blankIconList: HTMLElement[] = [].slice.call(menu.getElementsByClassName('e-blankicon'));
+        if (!blankIconList.length) { return; }
+        let iconLi: HTMLElement = menu.querySelector('.e-menu-item:not(.e-blankicon):not(.e-separator)') as HTMLElement;
+        let icon: HTMLElement = iconLi.querySelector('.e-menu-icon') as HTMLElement;
+        if (!icon) { return; }
+        let cssProp: { padding: string, margin: string } =  this.enableRtl ? { padding: 'paddingRight', margin: 'marginLeft' } :
+            { padding: 'paddingLeft', margin: 'marginRight' };
+        let iconCssProps: CSSStyleDeclaration = getComputedStyle(icon);
+        let iconSize: number = parseInt(iconCssProps.fontSize, 10);
+        if (!!parseInt(iconCssProps.width, 10) && parseInt(iconCssProps.width, 10) > iconSize) {
+            iconSize = parseInt(iconCssProps.width, 10);
+        }
+        // tslint:disable
+        let size: string = `${iconSize + parseInt(
+            (iconCssProps as any)[cssProp.margin], 10) + parseInt((getComputedStyle(iconLi) as any)[cssProp.padding], 10)}px`;
+        blankIconList.forEach((li: HTMLElement): void => {
+            (li.style as any)[cssProp.padding] = size;
+        });
+        // tslint:enable
     }
 
     private checkScrollOffset(e: MouseEvent | KeyboardEvent): void {

@@ -6567,6 +6567,9 @@ class Render {
             e.querySelector('colGroup').innerHTML =
                 this.parent.grid.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup').innerHTML;
             this.parent.grid.width = this.calculateGridWidth();
+            if (!this.gridSettings.allowAutoResizing && this.parent.showGroupingBar && this.parent.groupingBarModule && this.parent.element.querySelector('.' + GROUPING_BAR_CLASS)) {
+                this.parent.groupingBarModule.refreshUI();
+            }
             if (!this.parent.isScrolling) {
                 this.calculateGridHeight(true);
             }
@@ -6613,7 +6616,7 @@ class Render {
             dataSource: isEmpty ? this.frameEmptyData() : this.frameDataSource('value'),
             columns: isEmpty ? this.frameEmptyColumns() : this.frameStackedHeaders(),
             height: isEmpty ? 'auto' : this.calculateGridHeight(),
-            width: isEmpty ? this.parent.width : this.calculateGridWidth(),
+            width: isEmpty ? (this.gridSettings.allowAutoResizing ? this.parent.width : 400) : this.calculateGridWidth(),
             locale: parent.locale,
             enableRtl: parent.enableRtl,
             allowExcelExport: parent.allowExcelExport,
@@ -7952,8 +7955,9 @@ class Render {
             Number(this.parent.width);
         parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth) - 2;
         colCount = colCount - 1;
+        this.isOverflows = !((colCount * this.gridSettings.columnWidth) < parWidth);
         let colWidth = (colCount * this.gridSettings.columnWidth) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
-        return Math.floor(colWidth);
+        return (!this.isOverflows && !this.gridSettings.allowAutoResizing) ? this.gridSettings.columnWidth : Math.floor(colWidth);
     }
     resizeColWidth(colCount) {
         let parWidth = isNaN(this.parent.width) ? (this.parent.width.toString().indexOf('%') > -1 ?
@@ -7961,8 +7965,9 @@ class Render {
             Number(this.parent.width);
         colCount = colCount - 1;
         parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth) - 2;
+        this.isOverflows = !((colCount * this.gridSettings.columnWidth) < parWidth);
         let colWidth = (colCount * this.gridSettings.columnWidth) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
-        return Math.floor(colWidth);
+        return (!this.isOverflows && !this.gridSettings.allowAutoResizing) ? this.gridSettings.columnWidth : Math.floor(colWidth);
     }
     calculateGridWidth() {
         let parWidth = this.parent.width;
@@ -7979,7 +7984,7 @@ class Render {
         else {
             parWidth = this.gridSettings.width;
         }
-        return parWidth;
+        return (!this.isOverflows && !this.gridSettings.allowAutoResizing) ? this.parent.totColWidth : parWidth;
     }
     /** @hidden */
     calculateGridHeight(elementCreated) {
@@ -11332,6 +11337,9 @@ __decorate$2([
     Property(true)
 ], GridSettings.prototype, "allowResizing", void 0);
 __decorate$2([
+    Property(true)
+], GridSettings.prototype, "allowAutoResizing", void 0);
+__decorate$2([
     Property(null)
 ], GridSettings.prototype, "rowHeight", void 0);
 __decorate$2([
@@ -13944,6 +13952,9 @@ class PivotChart {
             this.currentColumn = (columnKeys.indexOf(columnHeader + ' | ' + this.currentMeasure) > -1 && columnHeader !== undefined) ? columnHeader + ' | ' + this.currentMeasure : columnKeys[0];
             let currentSeries = {};
             currentSeries = this.persistSettings.chartSeries ? this.frameChartSeries(this.persistSettings.chartSeries) : currentSeries;
+            if ((isNullOrUndefined(currentSeries.palettes) || currentSeries.palettes.length == 0) && !isNullOrUndefined(this.persistSettings.palettes) && this.persistSettings.palettes.length > 0) {
+                currentSeries.palettes = this.persistSettings.palettes;
+            }
             currentSeries.dataSource = this.columnGroupObject[this.currentColumn];
             currentSeries.xName = 'x';
             currentSeries.yName = 'y';
@@ -13981,6 +13992,9 @@ class PivotChart {
             for (let key of columnKeys) {
                 let currentSeries = {};
                 currentSeries = this.persistSettings.chartSeries ? this.frameChartSeries(this.persistSettings.chartSeries) : currentSeries;
+                if (!isNullOrUndefined(currentSeries.palettes) && currentSeries.palettes.length > 0 && (isNullOrUndefined(this.persistSettings.palettes) || this.persistSettings.palettes.length == 0)) {
+                    this.chartSettings.palettes = currentSeries.palettes;
+                }
                 currentSeries.dataSource = this.columnGroupObject[key];
                 currentSeries.xName = 'x';
                 currentSeries.yName = 'y';
@@ -16376,6 +16390,9 @@ __decorate$3([
 __decorate$3([
     Property('Linear')
 ], PivotSeries.prototype, "pyramidMode", void 0);
+__decorate$3([
+    Property([])
+], PivotSeries.prototype, "palettes", void 0);
 __decorate$3([
     Property(0)
 ], PivotSeries.prototype, "startAngle", void 0);
@@ -32756,6 +32773,7 @@ class Toolbar$2 {
             enableRtl: this.parent.enableRtl,
             items: this.getItems(),
             allowKeyboard: false,
+            width: !this.parent.gridSettings.allowAutoResizing ? (this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2)) : 'auto'
         });
         this.toolbar.isStringTemplate = true;
         let viewStr = 'viewContainerRef';

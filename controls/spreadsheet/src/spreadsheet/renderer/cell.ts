@@ -1,13 +1,13 @@
 import { Spreadsheet } from '../base/index';
 import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, checkConditionalFormat } from '../common/index';
-import { hasTemplate, createHyperlinkElement, checkPrevMerge, getTextHeight, createImageElement } from '../common/index';
+import { hasTemplate, createHyperlinkElement, checkPrevMerge, createImageElement } from '../common/index';
 import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { CellStyleExtendedModel } from '../../workbook/common/index';
 import { CellModel, SheetModel, getCell, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol } from '../../workbook/base/index';
 import { getRowHeight, setRowHeight } from '../../workbook/base/index';
 import { addClass, attributes, getNumberDependable, extend, compile, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent, cFRender } from '../../workbook/common/event';
-import { getTypeFromFormat, wrap as wrapText } from '../../workbook/index';
+import { getTypeFromFormat} from '../../workbook/index';
 import { checkIsFormula } from '../../workbook/common/util';
 /**
  * CellRenderer class which responsible for building cell content.
@@ -71,10 +71,10 @@ export class CellRenderer implements ICellRenderer {
         if (cellValue.indexOf('\n') > -1 && !isWrap) {
             let splitVal: string[] = cellValue.split('\n');
             if (splitVal.length > 1) {
-                wrapText(args.address, true, this.parent);
-                let ht: number = getTextHeight(this.parent, args.cell.style || this.parent.cellStyle, splitVal.length);
-                this.parent.setRowHeight(ht, args.rowIdx, this.parent.activeSheetIndex + 1, true);
-                this.parent.getRow(args.rowIdx, this.parent.getRowHeaderTable()).style.height = `${ht}px`;
+                this.parent.notify(wrapEvent, {
+                    range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, initial: true, sheet:
+                        this.parent.getActiveSheet(), td: args.td, row: args.row, hRow: args.hRow
+                });
             }
         }
         return evtArgs.element;

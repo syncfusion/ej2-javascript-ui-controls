@@ -397,7 +397,7 @@ describe('Chart Control', () => {
             expect(label.textContent).toEqual('11 Aug 2000 12 : 0 AM');
             chart.dataBind();
             label = document.getElementById('chartContainer0_AxisLabel_16');
-            expect(label === null).toBe(true); // Label is overlapping
+            expect(label !== null).toBe(true);
             done();
         });
         it('checking custom label format and skeleton, type priority', (done: Function) => {
@@ -405,7 +405,7 @@ describe('Chart Control', () => {
             chart.primaryXAxis.skeleton = 'medium';
             chart.primaryXAxis.skeletonType = 'Date';
             let label: HTMLElement = document.getElementById('chartContainer0_AxisLabel_16');
-            expect(label === null).toBe(true); // Label is overlapping
+            expect(label !== null).toBe(true);
             chart.dataBind();
             label = document.getElementById('chartContainer0_AxisLabel_0');
             expect(label.textContent).toEqual('Aug 11, 2000');

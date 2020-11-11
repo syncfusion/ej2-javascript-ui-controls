@@ -353,14 +353,13 @@ export class FreeTextAnnotation {
      * @private
      */
     public setAnnotationType(type: AnnotType): void {
-        let date: Date = new Date();
         this.pdfViewerBase.disableTextSelectionMode();
         switch (type) {
             case 'FreeText':
                 this.currentAnnotationMode = 'FreeText';
                 this.updateTextProperties();
                 // tslint:disable-next-line:max-line-length
-                let modifiedDateRect: string = date.toLocaleString();
+                let modifiedDateRect: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                 this.pdfViewer.drawingObject = {
                     shapeAnnotationType: 'FreeText', strokeColor: this.borderColor,
                     fillColor: this.fillColor, opacity: this.opacity, notes: '',
@@ -389,58 +388,35 @@ export class FreeTextAnnotation {
                     if (property === 'bounds') {
                         // tslint:disable-next-line:max-line-length
                         pageAnnotations[i].bounds = { left: annotationBase.bounds.x, top: annotationBase.bounds.y, width: annotationBase.bounds.width, height: annotationBase.bounds.height, right: annotationBase.bounds.right, bottom: annotationBase.bounds.bottom };
-                        let date: Date = new Date();
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'fill') {
                         pageAnnotations[i].fillColor = annotationBase.wrapper.children[0].style.fill;
-                        let date: Date = new Date();
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'stroke') {
                         pageAnnotations[i].strokeColor = annotationBase.wrapper.children[0].style.strokeColor;
-                        let date: Date = new Date();
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'opacity') {
                         pageAnnotations[i].opacity = annotationBase.wrapper.children[0].style.opacity;
-                        let date: Date = new Date();
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'thickness') {
                         pageAnnotations[i].thickness = annotationBase.wrapper.children[0].style.strokeWidth;
-                        let date: Date = new Date();
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'notes') {
                         pageAnnotations[i].note = annotationBase.notes;
-                        let date: Date = new Date();
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'delete') {
                         currentAnnotObject = pageAnnotations.splice(i, 1)[0];
                         break;
                     } else if (property === 'dynamicText') {
                         pageAnnotations[i].dynamicText = annotationBase.dynamicText;
-                        let date: Date = new Date();
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'fontColor') {
                         pageAnnotations[i].fontColor = annotationBase.fontColor;
-                        let date: Date = new Date();
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'fontSize') {
                         pageAnnotations[i].fontSize = annotationBase.fontSize;
-                        let date: Date = new Date();
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'fontFamily') {
                         pageAnnotations[i].fontFamily = annotationBase.fontFamily;
-                        let date: Date = new Date();
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'textPropertiesChange') {
                         // tslint:disable-next-line:max-line-length
                         pageAnnotations[i].font = { isBold: annotationBase.font.isBold, isItalic: annotationBase.font.isItalic, isStrikeout: annotationBase.font.isStrikeout, isUnderline: annotationBase.font.isUnderline };
-                        let date: Date = new Date();
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'textAlign') {
                         pageAnnotations[i].textAlign = annotationBase.textAlign;
-                        let date: Date = new Date();
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     }
-                    this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[i], pageNumber);
+                    // tslint:disable-next-line:max-line-length
+                    pageAnnotations[i].modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                 }
             }
             this.manageAnnotations(pageAnnotations, pageNumber);
@@ -595,7 +571,8 @@ export class FreeTextAnnotation {
             let inputValue: string = this.inputBoxElement.value;
             let isNewlyAdded: boolean = false;
             if (this.isNewFreeTextAnnot === true) {
-                let currentDateString: string = new Date().toLocaleString();
+                // tslint:disable-next-line:max-line-length
+                let currentDateString: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                 let annotationName: string = this.pdfViewer.annotation.createGUID();
                 this.isNewFreeTextAnnot = false;
                 isNewlyAdded = true;

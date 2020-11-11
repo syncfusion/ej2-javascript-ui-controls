@@ -199,7 +199,7 @@ export class BaseTooltip extends ChartData {
             }
         }
         // tslint:disable-next-line:no-any
-        (this.chart as any).renderReactTemplates();
+        if ((this.chart as any).isReact) { (this.chart as any).renderReactTemplates(); }
     }
 
     private findPalette() : string[] {
@@ -299,7 +299,7 @@ export class BaseTooltip extends ChartData {
         let tooltipElement: HTMLElement =  this.getElement(this.element.id + '_tooltip');
         this.stopAnimation();
         // tslint:disable-next-line:no-any
-        (this.chart as any).clearTemplate();
+        if ((this.chart as any).isReact) { (this.chart as any).clearTemplate(); }
         if (tooltipElement && this.previousPoints.length > 0) {
             this.toolTipInterval = setTimeout(
                 (): void => {

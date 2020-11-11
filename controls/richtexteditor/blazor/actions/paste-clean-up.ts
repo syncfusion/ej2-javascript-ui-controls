@@ -247,7 +247,6 @@ export class PasteCleanup {
                 saveUrl: this.parent.insertImageSettings.saveUrl
             },
             cssClass: CLS_RTE_DIALOG_UPLOAD,
-            dropArea: this.parent.inputElement,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             success: (e: object) => {
                 setTimeout(() => { this.popupClose(popupObj, imgElem, e); }, 900);
@@ -258,10 +257,21 @@ export class PasteCleanup {
             beforeUpload: (args: BeforeUploadEventArgs) => {
                 beforeUploadArgs = JSON.parse(JSON.stringify(args));
                 beforeUploadArgs.filesData = this.rawFile;
-                // @ts-ignore-start
-                this.parent.dotNetRef.invokeMethodAsync(events.beforeUpload, args).then((beforeUploadArgs: ImageUploadingEventArgs) => {
-                    if (beforeUploadArgs.cancel) { return; }
-                    // @ts-ignore-end
+                if (!this.parent.beforeUploadImageEnabled) { return false; }
+                return new Promise((resolve: Function) => {
+                    this.parent.dotNetRef.invokeMethodAsync(
+                        // @ts-ignore-start
+                        events.beforeUpload, beforeUploadArgs).then((args: ImageUploadingEventArgs) => {
+                        if (args.cancel) { return; }
+                        /* tslint:disable */
+                        (this.uploadObj as any).currentRequestHeader = args.currentRequest ?
+                            args.currentRequest : (this.uploadObj as any).currentRequestHeader;
+                        (this.uploadObj as any).customFormDatas = args.customFormData && args.customFormData.length > 0 ?
+                            args.customFormData : (this.uploadObj as any).customFormDatas;
+                            /* tslint:enable */
+                        // @ts-ignore-end
+                        resolve();
+                    });
                 });
             },
             failure: (e: Object) => {
@@ -301,6 +311,7 @@ export class PasteCleanup {
         (this.uploadObj as any).createFileList(fileData);
         (this.uploadObj as any).filesData.push(fileData[0]);
         /* tslint:enable */
+        this.rawFile = fileData;
         this.uploadObj.upload(fileData);
         (popupObj.element.getElementsByClassName(classes.CLS_FILE_SELECT_WRAP)[0] as HTMLElement).style.display = 'none';
         detach(popupObj.element.querySelector('.' + CLS_RTE_DIALOG_UPLOAD + ' .' + classes.CLS_FILE_SELECT_WRAP) as HTMLElement);
@@ -311,25 +322,38 @@ export class PasteCleanup {
         if (popupObj) {
             popupObj.close();
         }
-        this.parent.dotNetRef.invokeMethodAsync(events.pasteImageUploadFailed, e);
+        if (this.parent.onImageUploadFailedEnabled) { this.parent.dotNetRef.invokeMethodAsync(events.pasteImageUploadFailed, e); }
         this.uploadObj.destroy();
         this.uploadObj = undefined;
     }
     private popupClose(popupObj: Popup, imgElem: Element, e: Object): void {
         this.parent.inputElement.contentEditable = 'true';
-        // @ts-ignore-start
-        this.parent.dotNetRef.invokeMethodAsync(events.pasteImageUploadSuccess, e).then((beforeUploadArgs: ImageUploadingEventArgs) => {
-            // @ts-ignore-end
-            if (!isNOU(this.parent.insertImageSettings.path)) {
-                let url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
-                (imgElem as HTMLImageElement).src = url;
-                imgElem.setAttribute('alt', (e as MetaData).file.name);
-            }
-        });
+        if (this.parent.onImageUploadSuccessEnabled) {
+            // @ts-ignore-start
+            this.parent.dotNetRef.invokeMethodAsync(events.pasteImageUploadSuccess, e).then((args: ImageSuccessEventArgs) => {
+                // @ts-ignore-end
+                this.pasteUploadSuccessCallback(imgElem, e, args);
+            });
+        } else { this.pasteUploadSuccessCallback(imgElem, e); }
         popupObj.close();
         (imgElem as HTMLElement).style.opacity = '1';
         this.uploadObj.destroy();
         this.uploadObj = undefined;
+    }
+    // @ts-ignore-start
+    private pasteUploadSuccessCallback(imgElem: Element, e: Object, args?: ImageSuccessEventArgs): void {
+        // @ts-ignore-end
+        if (!isNOU(this.parent.insertImageSettings.path)) {
+            if (!isNOU(args) && !isNOU(args.file) && !isNOU(args.file.name)) {
+                let url: string = this.parent.insertImageSettings.path + args.file.name;
+                (imgElem as HTMLImageElement).src = url;
+                imgElem.setAttribute('alt', args.file.name);
+            } else {
+                let url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
+                (imgElem as HTMLImageElement).src = url;
+                imgElem.setAttribute('alt', (e as MetaData).file.name);
+            }
+        }
     }
     private refreshPopup(imageElement: HTMLElement, popupObj: Popup): void {
         let imgPosition: number = this.parent.iframeSettings.enable ? this.parent.element.offsetTop +

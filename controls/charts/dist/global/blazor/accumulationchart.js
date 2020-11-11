@@ -1337,7 +1337,7 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var axisPadding = 10;
+var axisPadding = 5;
 /**
  * Configures the `rows` of the chart.
  */
@@ -1627,7 +1627,7 @@ var Axis = /** @class */ (function (_super) {
         }
         var diff;
         var value;
-        var labelSize = titleSize + innerPadding + axisPadding +
+        var labelSize = titleSize + innerPadding + axisPadding + this.labelPadding +
             ((this.orientation === 'Vertical') ? this.maxLabelSize.width : this.maxLabelSize.height) + this.multiLevelLabelHeight;
         if (crossAxis && this.placeNextToAxisLine) {
             var range = crossAxis.visibleRange;
@@ -2793,7 +2793,9 @@ function createTemplate(childElement, pointIndex, content, chart, point, series,
             }
         }
         // tslint:disable-next-line:no-any
-        chart.renderReactTemplates();
+        if (chart.isReact) {
+            chart.renderReactTemplates();
+        }
     }
     catch (e) {
         return childElement;
@@ -6196,21 +6198,24 @@ var AccumulationChart = /** @class */ (function (_super) {
     AccumulationChart.prototype.setMouseXY = function (e) {
         var pageX;
         var pageY;
-        var svgRect = getElement(this.element.id + '_svg').getBoundingClientRect();
-        var rect = this.element.getBoundingClientRect();
-        if (e.type.indexOf('touch') > -1) {
-            this.isTouch = true;
-            var touchArg = e;
-            pageY = touchArg.changedTouches[0].clientY;
-            pageX = touchArg.changedTouches[0].clientX;
+        var svgRectElement = getElement(this.element.id + '_svg');
+        if (svgRectElement && this.element) {
+            var svgRect = svgRectElement.getBoundingClientRect();
+            var rect = this.element.getBoundingClientRect();
+            if (e.type.indexOf('touch') > -1) {
+                this.isTouch = true;
+                var touchArg = e;
+                pageY = touchArg.changedTouches[0].clientY;
+                pageX = touchArg.changedTouches[0].clientX;
+            }
+            else {
+                this.isTouch = e.pointerType === 'touch' || e.pointerType === '2';
+                pageX = e.clientX;
+                pageY = e.clientY;
+            }
+            this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+            this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
         }
-        else {
-            this.isTouch = e.pointerType === 'touch' || e.pointerType === '2';
-            pageX = e.clientX;
-            pageY = e.clientY;
-        }
-        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
-        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
     };
     /**
      * Handles the mouse end.
@@ -9348,7 +9353,9 @@ var BaseTooltip = /** @class */ (function (_super) {
             }
         }
         // tslint:disable-next-line:no-any
-        this.chart.renderReactTemplates();
+        if (this.chart.isReact) {
+            this.chart.renderReactTemplates();
+        }
     };
     BaseTooltip.prototype.findPalette = function () {
         var colors = [];
@@ -9440,7 +9447,9 @@ var BaseTooltip = /** @class */ (function (_super) {
         var tooltipElement = this.getElement(this.element.id + '_tooltip');
         this.stopAnimation();
         // tslint:disable-next-line:no-any
-        this.chart.clearTemplate();
+        if (this.chart.isReact) {
+            this.chart.clearTemplate();
+        }
         if (tooltipElement && this.previousPoints.length > 0) {
             this.toolTipInterval = setTimeout(function () {
                 if (_this.svgTooltip) {

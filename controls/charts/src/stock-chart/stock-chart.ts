@@ -1033,10 +1033,13 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * To find mouse x, y for aligned chart element svg position
      */
     private setMouseXY(pageX: number, pageY: number): void {
-        let svgRect: ClientRect = getElement(this.element.id + '_stockChart_chart').getBoundingClientRect();
-        let rect: ClientRect = this.element.getBoundingClientRect();
-        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
-        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+        let svgRectElement: Element = getElement(this.element.id + '_stockChart_chart');
+        if (this.element && svgRectElement) {
+            let stockRect: ClientRect = this.element.getBoundingClientRect();
+            let svgRect: ClientRect = svgRectElement.getBoundingClientRect();
+            this.mouseX = (pageX - stockRect.left) - Math.max(svgRect.left - stockRect.left, 0);
+            this.mouseY = (pageY - stockRect.top) - Math.max(svgRect.top - stockRect.top, 0);
+        }
     }
 
     /**

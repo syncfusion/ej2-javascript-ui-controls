@@ -201,7 +201,8 @@ export class Column {
 
     /**
      * Defines the column template that renders customized element in each cell of the column.
-     * It accepts either [template string](../../../common/template-engine/) or HTML element ID.
+     * It accepts either [template string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals)
+     * or HTML element ID.
      * @default null
      */
 

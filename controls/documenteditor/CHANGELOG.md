@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.3.48 (2020-11-11)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#294075` - Resolved table bottom border rendering issue when table contains merged cell.
+- `#292515` - Resolved context menu position issue in IE11.
+
 ## 18.3.47 (2020-11-05)
 
 ### Document Editor

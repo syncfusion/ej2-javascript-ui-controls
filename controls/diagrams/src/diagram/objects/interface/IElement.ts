@@ -280,7 +280,10 @@ export interface IBlazorSegmentCollectionChangeEventArgs {
     /** returns whether to cancel the change or not */
     cancel: boolean;
 }
-
+/**
+ * UserHandleEventsArgs notifies while the user handle gets clicked.
+ * 
+ */
 export interface UserHandleEventsArgs {
     /** returns the user handle object */
     element: UserHandleModel;
@@ -984,6 +987,7 @@ export interface IDropEventArgs {
  * Interface for command 
  */
 export interface ICommandExecuteEventArgs {
+    /** Sets the key value, on recognition of which the command will be executed */
     gesture: KeyGestureModel;
 }
 

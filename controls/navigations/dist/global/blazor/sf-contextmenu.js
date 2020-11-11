@@ -231,14 +231,15 @@ var SfContextMenu = /** @class */ (function () {
         var left = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
         var top = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
         // tslint:disable-next-line:no-any
-        this.dotnetRef.invokeMethodAsync(OPENMENU, Math.ceil(left), Math.ceil(top)).then(function (rtl) { return _this.contextMenuPosition(left, top, rtl, false); });
+        this.dotnetRef.invokeMethodAsync(OPENMENU, Math.ceil(left), Math.ceil(top)).then(function (rtl) { return _this.contextMenuPosition(left, top, rtl, false, false); });
     };
-    SfContextMenu.prototype.contextMenuPosition = function (left, top, rtl, subMenu) {
+    SfContextMenu.prototype.contextMenuPosition = function (left, top, rtl, subMenu, manualOpen) {
         this.removeEventListener();
         var cmenu = this.hideMenu(true);
         if (!cmenu) {
             return;
         }
+        this.setBlankIconStyle(cmenu, rtl);
         var cmenuOffset = cmenu.getBoundingClientRect();
         var cmenuWidth = this.getMenuWidth(cmenu, cmenuOffset.width, rtl);
         if (subMenu && sf.base.Browser.isDevice) {
@@ -246,16 +247,18 @@ var SfContextMenu = /** @class */ (function () {
             cmenu.style.visibility = EMPTY;
             return;
         }
-        if (top + cmenuOffset.height > document.documentElement.clientHeight) {
-            var newTop = document.documentElement.clientHeight - cmenuOffset.height - 20;
-            if (newTop > document.documentElement.clientTop) {
-                top = newTop;
+        if (!manualOpen) {
+            if (top + cmenuOffset.height > document.documentElement.clientHeight) {
+                var newTop = document.documentElement.clientHeight - cmenuOffset.height - 20;
+                if (newTop > document.documentElement.clientTop) {
+                    top = newTop;
+                }
             }
-        }
-        if (left + cmenuWidth > document.documentElement.clientWidth) {
-            var newLeft = document.documentElement.clientWidth - cmenuWidth - 20;
-            if (newLeft > document.documentElement.clientLeft) {
-                left = newLeft;
+            if (left + cmenuWidth > document.documentElement.clientWidth) {
+                var newLeft = document.documentElement.clientWidth - cmenuWidth - 20;
+                if (newLeft > document.documentElement.clientLeft) {
+                    left = newLeft;
+                }
             }
         }
         this.element.style.top = Math.ceil(top + 1) + PIXEL;
@@ -265,6 +268,33 @@ var SfContextMenu = /** @class */ (function () {
         cmenu.style.visibility = EMPTY;
         cmenu.focus();
         this.addEventListener();
+    };
+    SfContextMenu.prototype.setBlankIconStyle = function (menu, isRtl) {
+        var blankIconList = [].slice.call(menu.getElementsByClassName('e-blankicon'));
+        var cssProp = isRtl ? { padding: 'paddingRight', cssSelector: 'padding-right', margin: 'marginLeft' } : { padding: 'paddingLeft', cssSelector: 'padding-left', margin: 'marginRight' };
+        [].slice.call(menu.querySelectorAll('.e-menu-item[style~="' + cssProp.cssSelector + '"]:not(.e-blankicon)')).forEach(function (li) {
+            // tslint:disable-next-line:no-any
+            li.style[cssProp.padding] = EMPTY;
+        });
+        if (!blankIconList.length) {
+            return;
+        }
+        var iconLi = menu.querySelector('.e-menu-item:not(.e-blankicon):not(.e-separator)');
+        var icon = iconLi.querySelector('.e-menu-icon');
+        if (!icon) {
+            return;
+        }
+        var iconCssProps = getComputedStyle(icon);
+        var iconSize = parseInt(iconCssProps.fontSize, 10);
+        if (!!parseInt(iconCssProps.width, 10) && parseInt(iconCssProps.width, 10) > iconSize) {
+            iconSize = parseInt(iconCssProps.width, 10);
+        }
+        // tslint:disable
+        var size = iconSize + parseInt(iconCssProps[cssProp.margin], 10) + parseInt(getComputedStyle(iconLi)[cssProp.padding], 10) + "px";
+        blankIconList.forEach(function (li) {
+            li.style[cssProp.padding] = size;
+        });
+        // tslint:enable
     };
     SfContextMenu.prototype.getMenuWidth = function (cmenu, width, isRtl) {
         var caretIcon = cmenu.getElementsByClassName(CARET)[0];
@@ -379,6 +409,7 @@ var SfContextMenu = /** @class */ (function () {
         var parentOffset = parentLi.getBoundingClientRect();
         var containerOffset = this.element.getBoundingClientRect();
         var menu = cmenu.classList.contains(MENU) ? cmenu : sf.base.select(DOT + MENU, cmenu);
+        this.setBlankIconStyle(menu, isRtl);
         var curUlOffset = menu.getBoundingClientRect();
         var cmenuWidth = this.getMenuWidth(menu, curUlOffset.width, isRtl);
         var left;
@@ -470,9 +501,9 @@ var ContextMenu = {
             new SfContextMenu(element, target, filter, dotnetRef);
         }
     },
-    contextMenuPosition: function (element, left, top, isRtl, subMenu) {
+    contextMenuPosition: function (element, left, top, isRtl, subMenu, isOpen) {
         if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
-            element.blazor__instance.contextMenuPosition(left, top, isRtl, subMenu);
+            element.blazor__instance.contextMenuPosition(left, top, isRtl, subMenu, isOpen);
         }
     },
     subMenuPosition: function (element, isRtl, showOnClick, isNull) {

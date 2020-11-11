@@ -143,10 +143,6 @@
       }
    }
 
-    .e-summarycell {
-      pointer-events: none;
-    }
-
     #{if(&, '&', '*')}.e-grid.e-print-grid-layout .e-icons {
       display: inline-block;
     }

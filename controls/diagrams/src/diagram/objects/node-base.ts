@@ -79,6 +79,7 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
+     * @ignoreapilink
      */
     @Complex<SymbolPaletteInfoModel>({}, SymbolPaletteInfo)
     public symbolInfo: SymbolPaletteInfoModel;

@@ -1456,7 +1456,6 @@ export class PdfViewerBase {
             this.pinchZoomStorage = [];
         }
         if (isTriggerEvent && this.pageCount > 0) {
-            this.pdfViewer.downloadFileName = null;
             this.pdfViewer.fireDocumentUnload(this.pdfViewer.fileName);
         }
         this.pdfViewer.fileName = null;
@@ -2643,7 +2642,7 @@ public mouseDownHandler(event: MouseEvent): void {
         }
     }
 
-    private viewerContainerOnMouseWheel = (event: MouseWheelEvent): void => {
+    private viewerContainerOnMouseWheel = (event: WheelEvent): void => {
         this.isViewerMouseWheel = true;
         if (this.getRerenderCanvasCreated()) {
             event.preventDefault();
@@ -4418,7 +4417,9 @@ public mouseDownHandler(event: MouseEvent): void {
         }
         // tslint:disable-next-line:max-line-length
         if (this.pdfViewer.magnificationModule && this.pdfViewer.magnificationModule.fitType === 'fitToPage' && this.currentPageNumber > 0) {
-            this.viewerContainer.scrollTop = this.pageSize[this.currentPageNumber - 1].top * this.getZoomFactor();
+            if (this.pageSize[this.currentPageNumber - 1]) {
+                this.viewerContainer.scrollTop = this.pageSize[this.currentPageNumber - 1].top * this.getZoomFactor();
+            }
         }
         this.renderElementsVirtualScroll(this.currentPageNumber);
         // tslint:disable-next-line:max-line-length
@@ -6643,7 +6644,11 @@ public mouseDownHandler(event: MouseEvent): void {
                             } else {
                                 if (data.split('base64,')[1]) {
                                     let blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/vnd.adobe.xfdf');
-                                    proxy.downloadExportedXFdfAnnotation(blobUrl);
+                                    if (Browser.isIE || Browser.info.name === 'edge') {
+                                        window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0] + '.xfdf');
+                                    } else {
+                                        proxy.downloadExportedXFdfAnnotation(blobUrl);
+                                    }
                                 } else {
                                     proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('Export Failed'));
                                     // tslint:disable-next-line:max-line-length

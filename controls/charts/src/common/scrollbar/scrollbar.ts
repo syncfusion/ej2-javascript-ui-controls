@@ -179,7 +179,7 @@ export class ScrollBar {
             let currentX: number = this.moveLength(this.previousXY, this.previousRectX);
             elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
             this.positionThumb(elem.thumbRectX, elem.thumbRectWidth);
-            this.setZoomFactorPosition(elem.thumbRectX, elem.thumbRectWidth);
+            this.setZoomFactorPosition(elem.thumbRectX, elem.thumbRectWidth, false);
             if (this.isLazyLoad) {
                 let thumbMove: string = elem.thumbRectX > this.previousRectX ? 'RightMove' : 'LeftMove';
                 let args: IScrollEventArgs = this.calculateLazyRange(elem.thumbRectX, elem.thumbRectWidth, thumbMove);
@@ -241,7 +241,7 @@ export class ScrollBar {
      * @param currentX
      * @param currentWidth
      */
-    private setZoomFactorPosition(currentX: number, currentWidth: number): void {
+    private setZoomFactorPosition(currentX: number, currentWidth: number, isRequire: boolean = true): void {
         let axis: Axis = this.axis;
         this.isScrollUI = true;
         let circleRadius: number = 8;
@@ -252,8 +252,8 @@ export class ScrollBar {
             ? axis.rect.height : this.width);
         this.zoomFactor = (currentWidth + (currentScrollWidth >= this.width ? circleRadius + circleWidth : 0)) / (this.isVertical
             ? axis.rect.height : this.width);
-        axis.zoomPosition = this.zoomPosition;
-        axis.zoomFactor = this.zoomFactor;
+        axis.zoomPosition = this.zoomPosition < 0 ? 0 : this.zoomPosition > 0.9 ? 1 : this.zoomPosition;
+        axis.zoomFactor = isRequire ? this.zoomFactor : axis.zoomFactor;
     }
     /**
      * Handles the mouse move on scrollbar
@@ -291,7 +291,7 @@ export class ScrollBar {
                 elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
                 this.positionThumb(elem.thumbRectX, elem.thumbRectWidth);
                 this.previousXY = mouseXY;
-                this.setZoomFactorPosition(currentX, elem.thumbRectWidth);
+                this.setZoomFactorPosition(currentX, elem.thumbRectWidth, false);
             }
             this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor, currentRange));
         } else if (this.isResizeLeft || this.isResizeRight) {

@@ -2452,18 +2452,24 @@ var Uploader = /** @class */ (function (_super) {
         if (eventArgs.fileData.statusCode === '5') {
             return;
         }
-        var liElement = this.getLiElement(eventArgs.fileData);
-        liElement.querySelector('.' + STATUS).innerHTML = this.localizedTexts('fileUploadCancel');
-        liElement.querySelector('.' + STATUS).classList.add(UPLOAD_FAILED);
         eventArgs.fileData.statusCode = '5';
         eventArgs.fileData.status = this.localizedTexts('fileUploadCancel');
-        this.pauseButton = this.createElement('span', { className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex } });
-        var removeIcon = liElement.querySelector('.' + REMOVE_ICON);
-        removeIcon.parentElement.insertBefore(this.pauseButton, removeIcon);
-        this.pauseButton.setAttribute('title', this.localizedTexts('retry'));
-        /* istanbul ignore next */
-        this.pauseButton.addEventListener('click', function (e) { _this.reloadcanceledFile(e, file, liElement); }, false);
-        this.checkActionButtonStatus();
+        var liElement = this.getLiElement(eventArgs.fileData);
+        if (liElement) {
+            if (!sf.base.isNullOrUndefined(liElement.querySelector('.' + STATUS))) {
+                liElement.querySelector('.' + STATUS).innerHTML = this.localizedTexts('fileUploadCancel');
+                liElement.querySelector('.' + STATUS).classList.add(UPLOAD_FAILED);
+            }
+            this.pauseButton = this.createElement('span', { className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex } });
+            var removeIcon = liElement.querySelector('.' + REMOVE_ICON);
+            if (removeIcon) {
+                removeIcon.parentElement.insertBefore(this.pauseButton, removeIcon);
+            }
+            this.pauseButton.setAttribute('title', this.localizedTexts('retry'));
+            /* istanbul ignore next */
+            this.pauseButton.addEventListener('click', function (e) { _this.reloadcanceledFile(e, file, liElement); }, false);
+            this.checkActionButtonStatus();
+        }
     };
     Uploader.prototype.checkChunkUpload = function () {
         return (this.asyncSettings.chunkSize <= 0 || sf.base.isNullOrUndefined(this.asyncSettings.chunkSize)) ? false : true;

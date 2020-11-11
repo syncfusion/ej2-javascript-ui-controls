@@ -50,7 +50,6 @@ class SfContextMenu {
         this.addContextMenuEvent();
         EventHandler.add(this.element, KEYDOWN, this.keyDownHandler, this);
     }
-
     private addContextMenuEvent(add: boolean = true): void {
         let target: HTMLElement;
         if (this.target) {
@@ -95,22 +94,18 @@ class SfContextMenu {
             }
         }
     }
-
     private scrollHandler(): void {
         if (select(DOT + MENU, this.element)) {
             this.dotnetRef.invokeMethodAsync(CLOSE, 0, false, true, false);
         }
     }
-
     private touchHandler(e: TapEventArgs): void {
         this.cmenuHandler(e.originalEvent);
     }
-
     private keyDownHandler(e: KeyboardEvent): void {
         e.preventDefault();
         keyActionHandler(this.element, e.target as Element, e.keyCode, this.menuId);
     }
-
     private cmenuHandler(e: MouseEventArgs): void {
         if (this.filter) {
             let canOpen: boolean = false;
@@ -125,13 +120,13 @@ class SfContextMenu {
         let top: number = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
         // tslint:disable-next-line:no-any
         (this.dotnetRef.invokeMethodAsync(OPENMENU, Math.ceil(left), Math.ceil(top)) as any).then(
-            (rtl: boolean): void => this.contextMenuPosition(left, top, rtl, false));
+            (rtl: boolean): void => this.contextMenuPosition(left, top, rtl, false, false));
     }
-
-    public contextMenuPosition(left: number, top: number, rtl: boolean, subMenu: boolean): void {
+    public contextMenuPosition(left: number, top: number, rtl: boolean, subMenu: boolean, manualOpen: boolean): void {
         this.removeEventListener();
         let cmenu: HTMLElement = this.hideMenu(true);
         if (!cmenu) { return; }
+        this.setBlankIconStyle(cmenu, rtl);
         let cmenuOffset: ClientRect = cmenu.getBoundingClientRect();
         let cmenuWidth: number = this.getMenuWidth(cmenu, cmenuOffset.width, rtl);
         if (subMenu && Browser.isDevice) {
@@ -139,13 +134,15 @@ class SfContextMenu {
             cmenu.style.visibility = EMPTY;
             return;
         }
-        if (top + cmenuOffset.height > document.documentElement.clientHeight) {
-            let newTop: number = document.documentElement.clientHeight - cmenuOffset.height - 20;
-            if (newTop > document.documentElement.clientTop) { top = newTop; }
-        }
-        if (left + cmenuWidth > document.documentElement.clientWidth) {
-            let newLeft: number = document.documentElement.clientWidth - cmenuWidth - 20;
-            if (newLeft > document.documentElement.clientLeft) { left = newLeft; }
+        if (!manualOpen) {
+            if (top + cmenuOffset.height > document.documentElement.clientHeight) {
+                let newTop: number = document.documentElement.clientHeight - cmenuOffset.height - 20;
+                if (newTop > document.documentElement.clientTop) { top = newTop; }
+            }
+            if (left + cmenuWidth > document.documentElement.clientWidth) {
+                let newLeft: number = document.documentElement.clientWidth - cmenuWidth - 20;
+                if (newLeft > document.documentElement.clientLeft) { left = newLeft; }
+            }
         }
         this.element.style.top = Math.ceil(top + 1) + PIXEL;
         this.element.style.left = Math.ceil(left + 1) + PIXEL;
@@ -155,23 +152,45 @@ class SfContextMenu {
         cmenu.focus();
         this.addEventListener();
     }
-
+    private setBlankIconStyle(menu: HTMLElement, isRtl: boolean): void {
+        let blankIconList: HTMLElement[] = [].slice.call(menu.getElementsByClassName('e-blankicon'));
+        let cssProp: { padding: string, cssSelector: string, margin: string } =  isRtl ? { padding: 'paddingRight', cssSelector:
+            'padding-right', margin: 'marginLeft' } : { padding: 'paddingLeft', cssSelector: 'padding-left', margin: 'marginRight' };
+        [].slice.call(menu.querySelectorAll(
+            '.e-menu-item[style~="' + cssProp.cssSelector + '"]:not(.e-blankicon)')).forEach((li: HTMLElement): void => {
+            // tslint:disable-next-line:no-any
+            (li.style as any)[cssProp.padding] = EMPTY;
+        });
+        if (!blankIconList.length) { return; }
+        let iconLi: HTMLElement = menu.querySelector('.e-menu-item:not(.e-blankicon):not(.e-separator)') as HTMLElement;
+        let icon: HTMLElement = iconLi.querySelector('.e-menu-icon') as HTMLElement;
+        if (!icon) { return; }
+        let iconCssProps: CSSStyleDeclaration = getComputedStyle(icon);
+        let iconSize: number = parseInt(iconCssProps.fontSize, 10);
+        if (!!parseInt(iconCssProps.width, 10) && parseInt(iconCssProps.width, 10) > iconSize) {
+            iconSize = parseInt(iconCssProps.width, 10);
+        }
+        // tslint:disable
+        let size: string = `${iconSize + parseInt(
+            (iconCssProps as any)[cssProp.margin], 10) + parseInt((getComputedStyle(iconLi) as any)[cssProp.padding], 10)}px`;
+        blankIconList.forEach((li: HTMLElement): void => {
+            (li.style as any)[cssProp.padding] = size;
+        });
+        // tslint:enable
+    }
     public getMenuWidth(cmenu: Element, width: number, isRtl: boolean): number {
         let caretIcon: HTMLElement = cmenu.getElementsByClassName(CARET)[0] as HTMLElement;
         if (caretIcon) { width += parseInt(getComputedStyle(caretIcon)[isRtl ? 'marginRight' : 'marginLeft'], 10); }
         return width < 120 ? 120 : width;
     }
-
     private addEventListener(): void {
         EventHandler.add(document, MOUSEDOWN, this.mouseDownHandler, this);
         EventHandler.add(document, MOUSEOVER, this.mouseOverHandler, this);
     }
-
     private removeEventListener(): void {
         EventHandler.remove(document, MOUSEDOWN, this.mouseDownHandler);
         EventHandler.remove(document, MOUSEOVER, this.mouseOverHandler);
     }
-
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
         if (!select(DOT + MENU, this.element)) { this.removeEventListener(); return; }
         if (!closest(e.target as Element, HASH + this.element.id) && (isNullOrUndefined(this.menuId) ||
@@ -179,7 +198,6 @@ class SfContextMenu {
             this.dotnetRef.invokeMethodAsync(CLOSE, 0, false, true, false);
         }
     }
-
     private mouseOverHandler(e: MouseEvent): void {
         if (!select(DOT + MENU, this.element)) { this.removeEventListener(); return; }
         let target: Element = e.target as Element; let menus: HTMLElement[] = [].slice.call(selectAll(DOT + MENU, this.element));
@@ -213,7 +231,6 @@ class SfContextMenu {
             if (lastChild) { lastChild.focus(); }
         }
     }
-
     private destroyMenuScroll(menu: Element): void {
         if (!select(SCROLLMENU, this.element)) { return; }
         let menuElement: BlazorMenuElement = select(this.menuId) as BlazorMenuElement;
@@ -223,7 +240,6 @@ class SfContextMenu {
             if (!isNullOrUndefined(menuInstance)) { menuInstance.destroyScroll(NONE, menu); }
         }
     }
-
     public hideMenu(first?: boolean): HTMLElement {
         let cMenu: HTMLElement;
         if (first) {
@@ -240,7 +256,6 @@ class SfContextMenu {
         cMenu.classList.remove(TRANSPARENT);
         return cMenu;
     }
-
     public subMenuPosition(cmenu: HTMLElement, isRtl: boolean, showOnClick: boolean, isNull: boolean, scrollHeight?: number): void {
         if (!cmenu) { return; }
         let menus: HTMLElement[] = selectAll(DOT + MENU, this.element);
@@ -248,6 +263,7 @@ class SfContextMenu {
         let parentOffset: ClientRect = parentLi.getBoundingClientRect();
         let containerOffset: ClientRect = this.element.getBoundingClientRect();
         let menu: HTMLElement = cmenu.classList.contains(MENU) ? cmenu : select(DOT + MENU, cmenu);
+        this.setBlankIconStyle(menu, isRtl);
         let curUlOffset: ClientRect = menu.getBoundingClientRect();
         let cmenuWidth: number = this.getMenuWidth(menu, curUlOffset.width, isRtl);
         let left: number; let borderLeft: number;
@@ -286,12 +302,10 @@ class SfContextMenu {
         focusedLi ? focusedLi.focus() : menu.focus();
         if (isNull) { this.openAsMenu = true; this.removeEventListener(); this.addEventListener(); }
     }
-
     public getLastMenu(): HTMLElement {
         let menus: HTMLElement[] = selectAll(DOT + MENU, this.element);
         return menus.length ? menus[menus.length - 1] : null;
     }
-
     public onPropertyChanged(key: string, result: string): void {
         switch (key) {
             case TARGET:
@@ -304,7 +318,6 @@ class SfContextMenu {
                 break;
         }
     }
-
     public destroy(refElement: HTMLElement): void {
         this.removeEventListener();
         this.addContextMenuEvent(false);
@@ -316,7 +329,6 @@ class SfContextMenu {
             document.body.removeChild(this.element);
         }
     }
-
     public updateProperty(showItemOnClick: boolean, menu?: HTMLElement): void {
         if (menu) { this.menuId = HASH + menu.id; }
         if (!showItemOnClick) {
@@ -336,9 +348,9 @@ let ContextMenu: object = {
     initialize(element: BlazorMenuElement, target: string, filter: string, dotnetRef: BlazorDotnetObject): void {
         if (!isNullOrUndefined(element)) { new SfContextMenu(element, target, filter, dotnetRef); }
     },
-    contextMenuPosition(element: BlazorMenuElement, left: number, top: number, isRtl: boolean, subMenu: boolean): void {
+    contextMenuPosition(element: BlazorMenuElement, left: number, top: number, isRtl: boolean, subMenu: boolean, isOpen: boolean): void {
         if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
-            element.blazor__instance.contextMenuPosition(left, top, isRtl, subMenu);
+            element.blazor__instance.contextMenuPosition(left, top, isRtl, subMenu, isOpen);
         }
     },
     subMenuPosition(element: BlazorMenuElement, isRtl: boolean, showOnClick: boolean, isNull?: boolean): void {

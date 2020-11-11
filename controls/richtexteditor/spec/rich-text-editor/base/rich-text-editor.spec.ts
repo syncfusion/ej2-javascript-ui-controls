@@ -2919,6 +2919,24 @@ describe("RTE ExecuteCommand public method testing", () => {
         rteObj.executeCommand("insertHTML", videosrc);
         expect(rteObj.inputElement.querySelectorAll('video').length).toBe(2);
     });
+
+    it('Insert HR tag using InsertHTML', () => {
+        rteObj.value = `<div><p id="lastPNode">Last node</p></div>`;
+        rteObj.dataBind();
+        let cuspoint = document.getElementById('lastPNode');
+        setCursorPoint(document, cuspoint.childNodes[0] as Element ,7);
+        rteObj.executeCommand("insertHTML", '<div><hr></div>');
+        expect(rteObj.inputElement.querySelectorAll('hr').length === 1).toBe(true);
+    });
+
+    it('Insert HR tag using InsertHorizontalRule', () => {
+        rteObj.value = `<div><p id="lastNode">Last node</p></div>`;
+        rteObj.dataBind();
+        let cuspoint = document.getElementById('lastNode');
+        setCursorPoint(document, cuspoint.childNodes[0] as Element ,7);
+        rteObj.executeCommand("insertHorizontalRule");
+        expect(rteObj.inputElement.querySelectorAll('hr').length === 1).toBe(true);
+    });
 });
 
 describe("RTE content remove issue", () => {
@@ -3744,7 +3762,7 @@ describe('EJ2-26359 Clear Format is not working after applied selection and pare
         let item: HTMLElement = rteElement.querySelector("#" + controlId + '_toolbar_ClearFormat');
         dispatchEvent(item, 'mousedown');
         item.click();
-        let expectedHTML: string = `<p>The rich text editor is WYSIWYG ("what you see is what you get") editor useful to create and edit content, and return the valid HTML markup or markdown of the content</p><p>Table</p><p>Inserts the manages table.</p><p>column 1<br>column 2</p><p><br></p><p>Toolbar</p><p>Toolbar contains commands to align the text, insert link, insert image, insert list, undo/redo operations, HTML view, etc </p><p>Toolbar is fully customizable</p><p>Image.</p><p>Allows you to insert images from an online source as well as the local computer</p><p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline"></p>`;
+        let expectedHTML: string = `<p>The rich text editor is WYSIWYG ("what you see is what you get") editor useful to create and edit content, and return the valid HTML markup or markdown of the content</p><p>Table</p><p>Inserts the manages table.</p><table class="e-rte-table" style="width: 100%;"><tbody><tr><td style="width: 50%;" class=""><p>column 1<br></p><p>column 2</p></td><td style="width: 50%;"><p><br></p></td></tr></tbody></table><p>Toolbar</p><p>Toolbar contains commands to align the text, insert link, insert image, insert list, undo/redo operations, HTML view, etc </p><p>Toolbar is fully customizable</p><p>Image.</p><p>Allows you to insert images from an online source as well as the local computer</p><p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline"></p>`;
         expect(expectedHTML === rteObj.inputElement.innerHTML).toBe(true);
     });
     afterAll(() => {

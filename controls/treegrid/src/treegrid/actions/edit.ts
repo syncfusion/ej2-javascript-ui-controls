@@ -6,8 +6,8 @@ import { ITreeData, CellSaveEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { isNullOrUndefined, extend, setValue, removeClass, KeyboardEventArgs, addClass, getValue, isBlazor } from '@syncfusion/ej2-base';
 import { updateBlazorTemplate } from '@syncfusion/ej2-base';
-import { DataManager, Deferred, RemoteSaveAdaptor, AdaptorOptions } from '@syncfusion/ej2-data';
-import { findChildrenRecords, getParentData, isRemoteData  } from '../utils';
+import { DataManager, Deferred, RemoteSaveAdaptor, AdaptorOptions, Query } from '@syncfusion/ej2-data';
+import { findChildrenRecords, getParentData, isCountRequired, isRemoteData  } from '../utils';
 import { editAction, updateParentRow } from './crud-actions';
 import { RowPosition } from '../enum';
 import { BatchEdit } from './batch-edit';
@@ -71,6 +71,7 @@ export class Edit {
         this.parent.on('actionComplete', this.editActionEvents, this);
         this.parent.grid.on(events.doubleTap, this.recordDoubleClick, this);
         this.parent.grid.on('dblclick', this.gridDblClick, this);
+        this.parent.grid.on('recordAdded', this.customCellSave, this);
         this.parent.on('savePreviousRowPosition', this.savePreviousRowPosition, this);
         // this.parent.on(events.beforeDataBound, this.beforeDataBound, this);
         this.parent.grid.on(events.beforeStartEdit, this.beforeStartEdit, this);
@@ -110,6 +111,7 @@ export class Edit {
         this.parent.off(events.cellEdit, this.cellEdit);
         this.parent.off('actionBegin', this.editActionEvents);
         this.parent.off('actionComplete', this.editActionEvents);
+        this.parent.grid.off('recordAdded', this.customCellSave);
         this.parent.grid.off(events.doubleTap, this.recordDoubleClick);
         this.parent.off('savePreviousRowPosition', this.savePreviousRowPosition);
         this.parent.grid.off(events.beforeStartEdit, this.beforeStartEdit);
@@ -233,7 +235,7 @@ export class Edit {
       });
     }
     if (this.doubleClickTarget && (this.doubleClickTarget.classList.contains('e-treegridexpand') ||
-      this.doubleClickTarget.classList.contains('e-treegridcollapse'))) {
+      this.doubleClickTarget.classList.contains('e-treegridcollapse') || this.doubleClickTarget.classList.contains('e-summarycell'))) {
       args.cancel = true; this.doubleClickTarget = null;
       return;
     }
@@ -261,13 +263,7 @@ export class Edit {
   private batchCancel(e: BatchCancelArgs): void {
     if (this.parent.editSettings.mode === 'Cell') {
       let cellDetails: RowInfo = getValue('editModule.cellDetails', this.parent.grid.editModule);
-      let selectRowIndex: number = cellDetails.rowIndex;
-      let treeCell : HTMLElement;
-      if (this.parent.allowRowDragAndDrop === true && !(this.parent.rowDropSettings.targetID)) {
-        treeCell = this.parent.getRows()[selectRowIndex].cells[this.parent.treeColumnIndex + 1];
-      } else {
-          treeCell = this.parent.getRows()[selectRowIndex].cells[this.parent.treeColumnIndex];
-      }
+      let treeCell : HTMLElement = this.parent.getCellFromIndex(cellDetails.rowIndex, this.parent.treeColumnIndex) as HTMLElement;
       this.parent.renderModule.cellRender({
         data: cellDetails.rowData,
         cell: treeCell,
@@ -280,6 +276,15 @@ export class Edit {
       this.parent.notify('batchCancelAction', {});
     }
   }
+
+
+  private customCellSave(args: ActionEventArgs): void {
+    if (isCountRequired(this.parent) && this.parent.editSettings.mode === 'Cell' && args.action === 'edit') {
+      this.updateCell(args, args.rowIndex);
+      this.afterCellSave(args, args.row as HTMLTableRowElement, args.rowIndex);
+    }
+  }
+
     private cellSave(args: CellSaveArgs): void {
       if (this.parent.editSettings.mode === 'Cell' && this.parent.element.querySelector('form')) {
           args.cancel = true;
@@ -288,7 +293,6 @@ export class Edit {
           setValue('isEditCollapse', true, this.parent);
           args.rowData[args.columnName] = args.value;
           let row: HTMLTableRowElement;
-          let mRow: HTMLTableRowElement;
           if (isNullOrUndefined(args.cell)) {
             row = this.parent.grid.editModule[editModule].form.parentElement.parentNode;
           } else {
@@ -301,7 +305,7 @@ export class Edit {
                  if (e[primaryKeys[0]] === args.rowData[primaryKeys[0]]) { rowIndex = i; return; }
                 });
           } else {
-            rowIndex = (this.parent.getRows().indexOf(row) === -1 && this.parent.frozenColumns > 0) ?
+            rowIndex = (this.parent.getRows().indexOf(row) === -1 && (this.parent.getFrozenColumns() > 0)) ?
                        this.parent.grid.getMovableRows().indexOf(row) : this.parent.getRows().indexOf(row);
           }
           let arg: CellSaveEventArgs = {};
@@ -315,39 +319,68 @@ export class Edit {
               this.isTabLastRow = true;
             }
             this.blazorTemplates(args);
-            this.updateCell(args, rowIndex);
-            if (this.parent.grid.aggregateModule) {
-              this.parent.grid.aggregateModule.refresh(args.rowData);
+            if (!isRemoteData(this.parent) &&
+                !(this.parent.dataSource instanceof DataManager && this.parent.dataSource.adaptor instanceof RemoteSaveAdaptor )) {
+              if (isCountRequired(this.parent)) {
+                let eventPromise: string = 'eventPromise';
+                let editArgs: ActionEventArgs = { requestType : 'save', data : args.rowData, action : 'edit', row : row,
+                rowIndex : rowIndex, rowData : args.rowData, columnName : args.columnName,
+                filterChoiceCount: null, excelSearchOperator: null };
+                this.parent.grid.getDataModule()[eventPromise](editArgs, this.parent.grid.query);
+              } else {
+                this.updateCell(args, rowIndex);
+                this.afterCellSave(args, row, rowIndex);
+              }
+            } else if (isRemoteData(this.parent) ||
+                       (this.parent.dataSource instanceof DataManager && this.parent.dataSource.adaptor instanceof RemoteSaveAdaptor )) {
+              let query: Query = this.parent.grid.query;
+              let crud: Promise<object> = <Promise<object>>(this.parent.grid.dataSource as DataManager).update(primaryKeys[0], args.rowData,
+                                                                                                               query.fromTable,
+                                                                                                               query, args.previousValue);
+              crud.then((e: object) => {
+                if (!isNullOrUndefined(e)) {
+                  args.rowData[args.columnName] = e[args.columnName];
+                }
+                this.updateCell(args, rowIndex);
+                this.afterCellSave(args, row, rowIndex);
+              });
             }
-            this.parent.grid.editModule.destroyWidgets([this.parent.grid.getColumnByField(args.columnName)]);
-            this.parent.grid.editModule.formObj.destroy();
-            if (this.keyPress !== 'tab' && this.keyPress !== 'shiftTab') {
-              this.updateGridEditMode('Normal');
-              this.isOnBatch = false;
-            }
-            this.enableToolbarItems('save');
-            if (this.parent.frozenColumns > 0) {
-              mRow = <HTMLTableRowElement>this.parent.grid.getMovableRows()[rowIndex];
-              removeClass([mRow], ['e-editedrow', 'e-batchrow']);
-              removeClass(mRow.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
-            }
-            removeClass([row], ['e-editedrow', 'e-batchrow']);
-            removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
-            this.parent.grid.focusModule.restoreFocus();
-            editAction({ value: <ITreeData>args.rowData, action: 'edit' }, this.parent, this.isSelfReference,
-                       this.addRowIndex, this.selectedIndex, args.columnName);
-            if ((row.rowIndex === this.parent.getCurrentViewRecords().length - 1) && this.keyPress === 'enter') {
-              this.keyPress = null;
-            }
-            let saveArgs: CellSaveEventArgs = {
-              type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
-              previousData: args.previousValue, row: row, target: (args.cell as HTMLElement)
-            };
-            this.parent.trigger(events.actionComplete, saveArgs);
           } else {
             this.parent.grid.isEdit = true;
           }
       }
+    }
+
+    private afterCellSave(args: CellSaveArgs, row: HTMLTableRowElement, rowIndex: number ): void {
+      let mRow: HTMLTableRowElement;
+      if (this.parent.grid.aggregateModule) {
+        this.parent.grid.aggregateModule.refresh(args.rowData);
+      }
+      this.parent.grid.editModule.destroyWidgets([this.parent.grid.getColumnByField(args.columnName)]);
+      this.parent.grid.editModule.formObj.destroy();
+      if (this.keyPress !== 'tab' && this.keyPress !== 'shiftTab') {
+        this.updateGridEditMode('Normal');
+        this.isOnBatch = false;
+      }
+      this.enableToolbarItems('save');
+      if (this.parent.getFrozenColumns() > 0) {
+        mRow = <HTMLTableRowElement>this.parent.grid.getMovableRows()[rowIndex];
+        removeClass([mRow], ['e-editedrow', 'e-batchrow']);
+        removeClass(mRow.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
+      }
+      removeClass([row], ['e-editedrow', 'e-batchrow']);
+      removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
+      this.parent.grid.focusModule.restoreFocus();
+      editAction({ value: <ITreeData>args.rowData, action: 'edit' }, this.parent, this.isSelfReference,
+                 this.addRowIndex, this.selectedIndex, args.columnName);
+      if ((row.rowIndex === this.parent.getCurrentViewRecords().length - 1) && this.keyPress === 'enter') {
+        this.keyPress = null;
+      }
+      let saveArgs: CellSaveEventArgs = {
+        type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
+        previousData: args.previousValue, row: row, target: (args.cell as HTMLElement)
+      };
+      this.parent.trigger(events.actionComplete, saveArgs);
     }
 
     private lastCellTab(formObj: Element): void {

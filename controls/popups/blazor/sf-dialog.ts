@@ -2,7 +2,7 @@ import { Browser, addClass, removeClass, createElement, Draggable, extend, forma
 import { EventHandler, setStyleAttribute, BlazorDotnetObject, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { BlazorDragEventArgs, MouseEventArgs, select } from '@syncfusion/ej2-base';
 import { Popup, getZindexPartial } from '../src/popup/popup';
-import { createResize, removeResize, setMinHeight, setMaxWidth } from '../src/common/resize';
+import { createResize, removeResize, setMinHeight, setMaxWidth, setMaxHeight } from '../src/common/resize';
 
 const TAB: number = 9;
 const ENTER: number = 13;
@@ -561,7 +561,7 @@ class SfDialog {
         window.addEventListener('resize', this.windowResizeHandler.bind(this));
     }
     private unWireWindowResizeEvent(): void {
-        window.addEventListener('resize', this.windowResizeHandler.bind(this));
+        window.removeEventListener('resize', this.windowResizeHandler.bind(this));
     }
     /* Event handlers begin */
     public popupCloseHandler(): void {
@@ -573,6 +573,8 @@ class SfDialog {
     }
     private windowResizeHandler(): void {
         setMaxWidth(this.targetEle.clientWidth);
+        setMaxHeight(this.targetEle.clientHeight);
+        this.setMaxHeight();
     }
     private onResizeStart(args: ResizeMouseEventArgs | ResizeTouchEventArgs, dialogObj: { [key: string]: Object }): void {
         let evtArgs: { [key: string]: string | number | boolean } = this.getMouseEvtArgs(args as MouseEventArgs);

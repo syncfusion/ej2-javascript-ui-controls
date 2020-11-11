@@ -807,6 +807,12 @@ var SfToolbar = /** @class */ (function () {
         }
         else {
             var popupEle = this.popObj.element;
+            if (this.options.overflowMode === 'Extended') {
+                var eleStyle = window.getComputedStyle(this.element);
+                this.popObj.width = parseFloat(eleStyle.width) + ((parseFloat(eleStyle.borderRightWidth)) * 2);
+                this.popObj.offsetX = 0;
+                this.popObj.dataBind();
+            }
             sf.base.setStyleAttribute(popupEle, { maxHeight: '', display: 'block' });
             sf.base.setStyleAttribute(popupEle, { maxHeight: popupEle.offsetHeight + 'px', display: '' });
         }

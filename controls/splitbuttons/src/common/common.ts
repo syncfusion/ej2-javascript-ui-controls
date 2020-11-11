@@ -131,6 +131,13 @@ export class Item extends ChildProperty<Item> {
      */
     @Property('')
     public url: string;
+
+    /**
+     * Used to enable or disable the item.
+     * @default false
+     */
+    @Property(false)
+    public disabled: boolean;
 }
 
 /**

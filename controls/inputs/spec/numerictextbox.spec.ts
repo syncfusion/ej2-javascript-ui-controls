@@ -5889,4 +5889,40 @@ describe('Change Event testing', () => {
             expect(changeCount).toBe(1);
        });
     });
+    describe('EJ2-42714 - When hidden type textbox is rendered, wrapper is visible', function () {
+        let inputObj: any;
+        beforeEach(function () {
+            let inputElement: HTMLElement = createElement('input', { id: 'numericTextbox' });
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function () {
+            if (inputObj) {
+                inputObj.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('htmlAttribute type as hidden', () => {
+            inputObj = new NumericTextBox({
+                 htmlAttributes:{'type' : 'hidden'}
+            });
+            inputObj.appendTo('#numericTextbox');
+            expect(inputObj.element.getAttribute('type')).toBe('hidden');
+            expect(inputObj.container.classList.contains('e-hidden')).toBe(true);
+        });
+        it('htmlAttribute type as hidden and text', () => {
+            inputObj = new NumericTextBox({
+                 htmlAttributes:{'type' : 'hidden'}
+            });
+            inputObj.appendTo('#numericTextbox');
+            expect(inputObj.element.getAttribute('type')).toBe('hidden');
+            expect(inputObj.container.classList.contains('e-hidden')).toBe(true);
+            inputObj.htmlAttributes = {'type' : 'text'};
+            inputObj.dataBind();
+            expect(inputObj.element.getAttribute('type')).toBe('text');
+            expect(inputObj.container.classList.contains('e-hidden')).toBe(false);
+            inputObj.htmlAttributes = {'type' : 'hidden'};
+            inputObj.dataBind();
+            expect(inputObj.container.classList.contains('e-hidden')).toBe(true);
+        });
+    });    
 });

@@ -23,7 +23,7 @@ import { textWrap } from '../../common/utils/helper';
 import { ScrollBar } from '../../common/scrollbar/scrollbar';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
-const axisPadding: number = 10;
+const axisPadding: number = 5;
 
 /**
  * Configures the `rows` of the chart.
@@ -943,7 +943,7 @@ export class Axis extends ChildProperty<Axis> {
         }
         let diff: number;
         let value: number;
-        let labelSize: number = titleSize + innerPadding + axisPadding +
+        let labelSize: number = titleSize + innerPadding + axisPadding + this.labelPadding +
             ((this.orientation === 'Vertical') ? this.maxLabelSize.width : this.maxLabelSize.height) + this.multiLevelLabelHeight;
         if (crossAxis && this.placeNextToAxisLine) {
             let range: VisibleRangeModel = crossAxis.visibleRange;

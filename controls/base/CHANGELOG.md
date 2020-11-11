@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.48 (2020-11-11)
+
+### Common
+
+#### Bug Fixes
+
+- Resolved `Accuracy` issue - while drag faster, Cursor and clone element have some distance gap.
+
 ## 18.3.44 (2020-10-27)
 
 ### Common

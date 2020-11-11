@@ -2798,6 +2798,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let checkCursor: boolean; let args: Object = { requestType: 'refresh' };
         if (this.isDestroyed) { return; }
         this.log('module_missing');
+        if (this.isEllipsisTooltip()) {
+            this.toolTipObj.close();
+        }
         let properties: string[] = Object.keys(newProp);
         if (properties.indexOf('columns') > -1) {
             this.updateColumnObject(); requireGridRefresh = true;
@@ -3012,6 +3015,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     this.notify(events.dataSourceModified, {});
                     if (!requireGridRefresh) {
                         this.renderModule.refresh();
+                        if (this.isCheckBoxSelection) {
+                            this.notify(events.beforeRefreshOnDataChange, {});
+                        }
                     }
                 }
                 this.scrollRefresh();
@@ -5211,11 +5217,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private keyActionHandler(e: KeyArg): void {
-        this.keyPress = e.action !== 'space';
         if (this.isChildGrid(e) ||
             (this.isEdit && e.action !== 'escape' && e.action !== 'enter' && e.action !== 'shiftEnter'
                 && e.action !== 'tab' && e.action !== 'shiftTab')) {
             return;
+        } else {
+            this.keyPress = true;
         }
         if (this.allowKeyboard) {
             if (e.action === 'ctrlPlusP') {

@@ -619,6 +619,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.setProperties({ value: this.checkDateValue(new Date(this.checkInValue(this.value))) }, true);
         this.setProperties({ min: this.checkDateValue(new Date(this.checkInValue(this.min))) }, true);
         this.setProperties({ max: this.checkDateValue(new Date(this.checkInValue(this.max))) }, true);
+        this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkInValue(this.scrollTo))) }, true);
         if (this.angularTag !== null) { this.validationAttribute(this.element, this.inputElement); }
         this.updateHtmlAttributeToElement();
         this.checkAttributes(false); //check the input element attributes
@@ -2667,7 +2668,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     if (!this.isBlazorServer) {
                         if (this.checkDateValue(new Date(this.checkInValue(newProp.scrollTo)))) {
                             if (this.popupWrapper) { this.setScrollTo(); }
-                            this.setProperties({ scrollTo: newProp.scrollTo }, true);
+                            this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkInValue(newProp.scrollTo))) }, true);
                         } else {
                             this.setProperties({ scrollTo: null }, true);
                         }

@@ -157,32 +157,23 @@ export class Signature {
      * @private
      */
     public addSignature(): void {
-        let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
         let annot: PdfAnnotationBaseModel;
         if (this.pdfViewerBase.isToolbarSignClicked) {
             let annotationName: string = this.pdfViewer.annotation.createGUID();
             this.pdfViewerBase.currentSignatureAnnot = null;
             this.pdfViewerBase.isSignatureAdded = true;
             let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
-            let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
-            let currentLeft: number = 0;
-            let currentTop: number = 0;
-            // tslint:disable-next-line:max-line-length
-            let currentWidth: number = this.pdfViewer.handWrittenSignatureSettings.width ? this.pdfViewer.handWrittenSignatureSettings.width : 100;
-            // tslint:disable-next-line:max-line-length
-            let currentHeight: number = this.pdfViewer.handWrittenSignatureSettings.height ? this.pdfViewer.handWrittenSignatureSettings.height : 100;
             // tslint:disable-next-line:max-line-length
             let thickness: number = this.pdfViewer.handWrittenSignatureSettings.thickness ? this.pdfViewer.handWrittenSignatureSettings.thickness : 1;
             // tslint:disable-next-line:max-line-length
             let opacity: number = this.pdfViewer.handWrittenSignatureSettings.opacity ? this.pdfViewer.handWrittenSignatureSettings.opacity : 1;
             // tslint:disable-next-line:max-line-length
             let strokeColor: string = this.pdfViewer.handWrittenSignatureSettings.strokeColor ? this.pdfViewer.handWrittenSignatureSettings.strokeColor : '#000000';
-            currentLeft = ((parseFloat(pageDiv.style.width) / 2) - (currentWidth / 2)) / zoomvalue;
-            // tslint:disable-next-line:max-line-length
-            currentTop = ((parseFloat(pageDiv.style.height) / 2) - (currentHeight / 2)) / zoomvalue;
+            // tslint:disable-next-line
+            let signatureBounds: any = this.pdfViewer.formFieldsModule.updateSignatureAspectRatio(this.outputString, true);
             annot = {
                 // tslint:disable-next-line:max-line-length
-                id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: this.outputString,
+                id: 'sign' + this.pdfViewerBase.signatureCount, bounds: signatureBounds, pageIndex: pageIndex, data: this.outputString,
                 shapeAnnotationType: 'HandWrittenSignature', opacity: opacity, strokeColor: strokeColor, thickness: thickness, signatureName: annotationName,
             };
             // tslint:disable-next-line

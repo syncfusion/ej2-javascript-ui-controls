@@ -250,7 +250,7 @@ var SfTooltip = /** @class */ (function () {
         orgdescribedby ? sf.base.attributes(target, { 'aria-describedby': orgdescribedby }) : target.removeAttribute('aria-describedby');
     };
     SfTooltip.prototype.clear = function () {
-        if (this.tooltipEle) {
+        if (this.tooltipEle && this.isPopupHidden) {
             sf.base.removeClass([this.tooltipEle], POPUP_CLOSE);
             sf.base.addClass([this.tooltipEle], POPUP_OPEN);
         }
@@ -293,7 +293,9 @@ var SfTooltip = /** @class */ (function () {
     SfTooltip.prototype.restoreElement = function (target) {
         this.unwireMouseEvents(target);
         if (!sf.base.isNullOrUndefined(sf.base.getAttributeOrDefault(target, 'data-content', null))) {
-            sf.base.attributes(target, { 'title': sf.base.getAttributeOrDefault(target, 'data-content', null) });
+            if (this.hasTitle) {
+                sf.base.attributes(target, { 'title': sf.base.getAttributeOrDefault(target, 'data-content', null) });
+            }
             target.removeAttribute('data-content');
         }
         this.removeDescribedBy(target);
@@ -762,9 +764,15 @@ var SfTooltip = /** @class */ (function () {
         }
     };
     SfTooltip.prototype.renderContent = function (target) {
-        if (target && !sf.base.isNullOrUndefined(sf.base.getAttributeOrDefault(target, 'title', null))) {
-            sf.base.attributes(target, { 'data-content': sf.base.getAttributeOrDefault(target, 'title', null) });
+        var title = sf.base.getAttributeOrDefault(target, 'title', null);
+        var dataTitle = sf.base.getAttributeOrDefault(target, 'data-title', null);
+        if (!sf.base.isNullOrUndefined(title) && target) {
+            sf.base.attributes(target, { 'data-content': title });
+            this.hasTitle = true;
             target.removeAttribute('title');
+        }
+        else if (!sf.base.isNullOrUndefined(dataTitle) && target) {
+            sf.base.attributes(target, { 'data-content': dataTitle });
         }
         if (!this.properties.content) {
             var tooltipContent = this.tooltipEle.querySelector('.' + TIPCONTENT);

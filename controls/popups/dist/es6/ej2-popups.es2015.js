@@ -1535,6 +1535,9 @@ function setMinHeight(minimumHeight) {
 function setMaxWidth(value) {
     maxWidth = value;
 }
+function setMaxHeight(value) {
+    maxHeight = value;
+}
 function removeResize() {
     let handlers = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
     for (let i = 0; i < handlers.length; i++) {
@@ -2580,6 +2583,8 @@ let Dialog = class Dialog extends Component {
     }
     windowResizeHandler() {
         setMaxWidth(this.targetEle.clientWidth);
+        setMaxHeight(this.targetEle.clientHeight);
+        this.setMaxHeight();
     }
     /**
      * Get the properties to be maintained in the persisted state.
@@ -2662,7 +2667,7 @@ let Dialog = class Dialog extends Component {
         window.addEventListener('resize', this.windowResizeHandler.bind(this));
     }
     unWireWindowResizeEvent() {
-        window.addEventListener('resize', this.windowResizeHandler.bind(this));
+        window.removeEventListener('resize', this.windowResizeHandler.bind(this));
     }
     /**
      * Binding event to the element while widget creation

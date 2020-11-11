@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.48 (2020-11-11)
+
+### DropDownButton
+
+#### New Features
+
+- `#287701` - Provided `disabled` property in item model to enable / disable the items.
+
 ## 18.3.47 (2020-11-05)
 
 ### SplitButton

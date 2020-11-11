@@ -4,7 +4,6 @@ import {
 import { Popup, PopupModel } from '@syncfusion/ej2-popups';
 import { DragAndDrop } from './drag';
 import { Keyboard } from './keyboard';
-import { KanbanTooltip } from './tooltip';
 import { KanbanTouch } from './touch';
 import { BlazorKanbanElement, ScrollPosition, ScrollOffset } from './interface';
 import * as cls from './constant';
@@ -20,7 +19,6 @@ export class SfKanban {
     public isAdaptive: Boolean;
     public dragAndDropModule: DragAndDrop;
     public keyboardModule: Keyboard;
-    public tooltipModule: KanbanTooltip;
     public columnToggleArray: string[];
     public selectionArray: string[];
     public lastCardSelection: Element;
@@ -32,7 +30,6 @@ export class SfKanban {
     private touchModule: KanbanTouch;
     public scrollPosition: ScrollPosition;
     private allowDragAndDrop: boolean;
-    private enableTooltip: boolean;
     private allowKeyboard: boolean;
     private enableRtl: boolean;
     private height: string;
@@ -72,9 +69,6 @@ export class SfKanban {
         }
         if (this.allowKeyboard) {
             this.keyboardModule = new Keyboard(this);
-        }
-        if (this.enableTooltip) {
-            this.tooltipModule = new KanbanTooltip(this);
         }
         this.scrollPosition.content = { left: 0, top: 0 };
         this.initializeSwimlaneTree();
@@ -353,9 +347,6 @@ export class SfKanban {
         }
         if (this.keyboardModule) {
             this.keyboardModule.destroy();
-        }
-        if (this.enableTooltip) {
-            this.tooltipModule.destroy();
         }
         this.unWireEvents();
     }

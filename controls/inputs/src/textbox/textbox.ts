@@ -271,6 +271,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                     this.updateHTMLAttrToWrapper();
                     let attributes: NamedNodeMap = this.element.attributes;
                     this.checkAttributes(true);
+                    Input.validateInputType(this.textboxWrapper.container, this.element);
                     break;
                 case 'readonly':
                     Input.setReadonly(this.readonly, this.respectiveElement);
@@ -278,6 +279,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 case 'type':
                     if (this.respectiveElement.tagName !== 'TEXTAREA') {
                     this.respectiveElement.setAttribute('type', this.type);
+                    Input.validateInputType(this.textboxWrapper.container, this.element);
                     this.raiseChangeEvent();
                     }
                     break;

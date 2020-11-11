@@ -81,6 +81,14 @@ let Grid: object = {
             }
         }
     },
+    focusExcelInput(element: BlazorGridElement, celluid: string) {
+        let excelPopup: HTMLElement = document.querySelector("#" + celluid + "_excelDlg");
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance) && !isNullOrUndefined(excelPopup)) {
+            setTimeout(() => {
+                (excelPopup.querySelector("#" + element.id + "_SearchBox") as HTMLElement).focus();
+            }, 10);
+        }
+    },
     refreshOnDataChange(element: BlazorGridElement) {
         if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.virtualContentModule.refreshOnDataChange();

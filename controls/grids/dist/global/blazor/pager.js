@@ -1160,6 +1160,8 @@ var groupCollapse = 'group-collapse';
 var beforeCheckboxRenderer = 'beforeCheckboxRenderer';
 /** @hidden */
 var refreshHandlers = 'refreshResizeHandlers';
+/** @hidden */
+var beforeRefreshOnDataChange = 'before-refresh-on-data-change';
 
 /**
  * Defines types of Cell
@@ -3195,7 +3197,7 @@ var RowModelGenerator = /** @class */ (function () {
     RowModelGenerator.prototype.generateRows = function (data, args) {
         var rows = [];
         var startIndex = this.parent.enableVirtualization && args ? args.startIndex : 0;
-        startIndex = this.parent.enableInfiniteScrolling ? this.getInfiniteIndex(args) : startIndex;
+        startIndex = this.parent.enableInfiniteScrolling && args ? this.getInfiniteIndex(args) : startIndex;
         for (var i = 0, len = Object.keys(data).length; i < len; i++, startIndex++) {
             rows[i] = this.generateRow(data[i], startIndex);
         }
@@ -6310,6 +6312,9 @@ var GroupCaptionCellRenderer = /** @class */ (function (_super) {
                     templateCompiler(gObj.groupSettings.captionTemplate)(data, this.parent, 'captionTemplate', tempID, null, null, node);
                     this.parent.renderTemplates();
                 }
+                else if (this.parent.isVue) {
+                    result = templateCompiler(gObj.groupSettings.captionTemplate)(data, this.parent);
+                }
                 else {
                     result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
                 }
@@ -6999,7 +7004,6 @@ var Render = /** @class */ (function () {
         e.actionArgs = args;
         var isInfiniteDelete = this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache
             && (args.requestType === 'delete' || (args.requestType === 'save' && this.parent.infiniteScrollModule.requestType === 'add'));
-        this.parent.getDataModule().isQueryInvokedFromData = false;
         // tslint:disable-next-line:max-func-body-length
         gObj.trigger(beforeDataBound, e, function (dataArgs) {
             if (dataArgs.cancel) {
@@ -7116,6 +7120,7 @@ var Render = /** @class */ (function () {
             }
             _this.parent.notify(toolbarRefresh, {});
             _this.setRowCount(_this.parent.getCurrentViewRecords().length);
+            _this.parent.getDataModule().isQueryInvokedFromData = false;
         });
     };
     /** @hidden */
@@ -9024,8 +9029,6 @@ var Selection = /** @class */ (function () {
             _this.removed = isRemoved;
             if (isRowSelected && _this.selectionSettings.persistSelection && !(_this.selectionSettings.checkboxMode === 'ResetOnRowClick')) {
                 _this.clearSelectedRow(index);
-                isRemoved = true;
-                _this.removed = isRemoved;
                 _this.selectRowCallBack();
             }
             else if (!isRowSelected && _this.selectionSettings.persistSelection &&
@@ -9035,7 +9038,8 @@ var Selection = /** @class */ (function () {
             if (_this.selectionSettings.checkboxMode === 'ResetOnRowClick') {
                 _this.clearSelection();
             }
-            if (!_this.selectionSettings.persistSelection || _this.selectionSettings.checkboxMode === 'ResetOnRowClick') {
+            if (!_this.selectionSettings.persistSelection || _this.selectionSettings.checkboxMode === 'ResetOnRowClick' ||
+                (!_this.parent.isCheckBoxSelection && _this.selectionSettings.persistSelection)) {
                 _this.selectRowCheck = true;
                 _this.clearRow();
             }
@@ -9219,7 +9223,7 @@ var Selection = /** @class */ (function () {
         var selectedMovableRow = !this.isSingleSel() ? this.getSelectedMovableRow(rowIndexes[0]) :
             this.getSelectedMovableRow(rowIndexes[rowIndexes.length - 1]);
         var frzCols = gObj.getFrozenColumns();
-        if (!this.isRowType() || this.isEditing()) {
+        if ((!this.isRowType() || this.isEditing()) && !this.selectionSettings.checkboxOnly) {
             return;
         }
         var args;
@@ -9350,12 +9354,13 @@ var Selection = /** @class */ (function () {
         }
     };
     Selection.prototype.clearSelectedRow = function (index) {
-        if (this.target) {
-            var selectedEle = this.target.parentElement;
+        if (this.toggle) {
+            var selectedEle = this.parent.getRowByIndex(index);
             if (!this.disableUI) {
                 selectedEle.removeAttribute('aria-selected');
                 this.addRemoveClassesForRow(selectedEle, false, true, 'e-selectionbackground', 'e-active');
             }
+            this.removed = true;
             this.updatePersistCollection(selectedEle, false);
             this.updateCheckBoxes(selectedEle);
             this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(index), 1);
@@ -11805,6 +11810,7 @@ var Selection = /** @class */ (function () {
         this.onDataBoundFunction = this.onDataBound.bind(this);
         this.parent.addEventListener(dataBound, this.onDataBoundFunction);
         this.parent.on(contentReady, this.checkBoxSelectionChanged, this);
+        this.parent.on(beforeRefreshOnDataChange, this.initPerisistSelection, this);
         this.parent.on(onEmpty, this.setCheckAllForEmptyGrid, this);
         this.actionCompleteFunc = this.actionCompleteHandler.bind(this);
         this.parent.addEventListener(actionComplete, this.actionCompleteFunc);
@@ -11822,6 +11828,7 @@ var Selection = /** @class */ (function () {
         this.parent.removeEventListener(actionComplete, this.actionCompleteFunc);
         this.parent.off(onEmpty, this.setCheckAllForEmptyGrid);
         this.parent.off(click, this.clickHandler);
+        this.parent.off(beforeRefreshOnDataChange, this.initPerisistSelection);
     };
     Selection.prototype.setCheckAllForEmptyGrid = function () {
         var checkAllBox = this.getCheckAllBox();
@@ -13897,6 +13904,9 @@ var Grid = /** @class */ (function (_super) {
             return;
         }
         this.log('module_missing');
+        if (this.isEllipsisTooltip()) {
+            this.toolTipObj.close();
+        }
         var properties = Object.keys(newProp);
         if (properties.indexOf('columns') > -1) {
             this.updateColumnObject();
@@ -14146,6 +14156,9 @@ var Grid = /** @class */ (function (_super) {
                     this.notify(dataSourceModified, {});
                     if (!requireGridRefresh) {
                         this.renderModule.refresh();
+                        if (this.isCheckBoxSelection) {
+                            this.notify(beforeRefreshOnDataChange, {});
+                        }
                     }
                 }
                 this.scrollRefresh();
@@ -16218,11 +16231,13 @@ var Grid = /** @class */ (function (_super) {
         }
     };
     Grid.prototype.keyActionHandler = function (e) {
-        this.keyPress = e.action !== 'space';
         if (this.isChildGrid(e) ||
             (this.isEdit && e.action !== 'escape' && e.action !== 'enter' && e.action !== 'shiftEnter'
                 && e.action !== 'tab' && e.action !== 'shiftTab')) {
             return;
+        }
+        else {
+            this.keyPress = true;
         }
         if (this.allowKeyboard) {
             if (e.action === 'ctrlPlusP') {

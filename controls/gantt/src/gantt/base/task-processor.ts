@@ -49,11 +49,9 @@ export class TaskProcessor extends DateProcessor {
             this.parent.renderGantt(isChange);
         } else if (this.parent.dataSource instanceof DataManager) {
             this.initDataSource(isChange);
-        } else if (this.parent.dataSource.length > 0) {
+        } else {
             this.dataArray = this.parent.dataSource;
             this.cloneDataSource();
-            this.parent.renderGantt(isChange);
-        } else {
             this.parent.renderGantt(isChange);
         }
     }

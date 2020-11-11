@@ -5,7 +5,7 @@ import { Selection } from '../../src/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from './../test-helper.spec';
 import { ContextMenu } from '../../src/document-editor/implementation/context-menu';
-import { ParagraphWidget, BodyWidget, LineWidget, ImageElementBox, TextElementBox } from '../../src/index';
+import { ParagraphWidget, BodyWidget, LineWidget, ImageElementBox, TextElementBox, TableWidget, TableRowWidget, TableCellWidget } from '../../src/index';
 import { WSectionFormat } from '../../src/document-editor/implementation/format/section-format';
 import { EditorHistory } from '../../src/document-editor/implementation/editor-history/editor-history';
 import { ImageResizer } from '../../src/index';
@@ -685,5 +685,46 @@ console.log('Restrict editing in drop down form field');
         editor.editor.insertText('HELLO');
         let text: string = (((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text;
         expect(text).toBe('HELLO');
+    });
+});
+describe('Update top border validation', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:100%' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        //destroy validation
+        editor.destroy();
+        editor = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Update top border validation', () => {
+        editor.openBlank();
+        editor.editor.insertTable(4, 4);
+        editor.selection.handleDownKey();
+        editor.selection.handleDownKey();
+        editor.selection.handleDownKey();
+        editor.selection.handleControlShiftLeftKey();
+        editor.selection.handleControlShiftLeftKey();
+        editor.selection.handleControlShiftLeftKey();
+        editor.selection.handleControlShiftLeftKey();
+        editor.editor.mergeCells();
+        editor.selection.handleHomeKey();
+        let cell: TableCellWidget = ((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[3] as TableRowWidget).childWidgets[0] as TableCellWidget;
+        expect(cell.updatedTopBorders.length).toBe(1);
     });
 });

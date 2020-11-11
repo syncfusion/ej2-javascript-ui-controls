@@ -410,12 +410,16 @@ function resizeEast(e: any): void {
 }
 
 /* istanbul ignore next */
-export function setMinHeight (minimumHeight: number): void {
+export function setMinHeight(minimumHeight: number): void {
     minHeight = minimumHeight;
 }
 
-export function setMaxWidth (value: number): void {
+export function setMaxWidth(value: number): void {
     maxWidth = value;
+}
+
+export function setMaxHeight(value: number): void {
+    maxHeight = value;
 }
 
 export function removeResize(): void {

@@ -137,6 +137,9 @@ var Item = /** @class */ (function (_super) {
     __decorate([
         sf.base.Property('')
     ], Item.prototype, "url", void 0);
+    __decorate([
+        sf.base.Property(false)
+    ], Item.prototype, "disabled", void 0);
     return Item;
 }(sf.base.ChildProperty));
 

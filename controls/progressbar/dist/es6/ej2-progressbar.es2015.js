@@ -514,6 +514,10 @@ class AnnotationBase {
         }
         else if (this.control.redraw) {
             removeElement(annotationElement.id);
+            // tslint:disable-next-line:no-any
+            if (this.control.isReact) {
+                this.control.clearTemplate();
+            }
         }
     }
     setElementStyle(location, element, parentElement) {
@@ -529,6 +533,10 @@ class AnnotationBase {
             argsData.content.style.transform = 'translate(-50%, -50%)';
             argsData.content.setAttribute('aria-label', 'Annotation');
             parentElement.appendChild(argsData.content);
+            // tslint:disable-next-line:no-any
+            if (this.control.isReact) {
+                this.control.renderReactTemplates();
+            }
         }
     }
     Location(radius, angle) {
@@ -2388,6 +2396,10 @@ let ProgressBar = class ProgressBar extends Component {
         this.unWireEvents();
         super.destroy();
         this.removeSvg();
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         this.svgObject = null;
         this.element.classList.remove('e-progressbar');
         if (!this.refreshing) {

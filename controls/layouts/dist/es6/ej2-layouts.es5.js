@@ -4994,12 +4994,12 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                     this.setProperties({ allowPushing: newProp.allowPushing }, true);
                     break;
                 case 'panels':
-                    if (!newProp.columns && !this.restrictDynamicUpdate && newProp.panels[0] instanceof Panel) {
+                    if (!newProp.columns && !this.restrictDynamicUpdate && (newProp.panels[0] && newProp.panels.length > 0)) {
                         this.isRenderComplete = false;
                         this.updatePanelsDynamically(newProp.panels);
                         this.isRenderComplete = true;
                     }
-                    else if (!(newProp.panels[0] instanceof Panel)) {
+                    else if (!(newProp.panels[0] && newProp.panels.length)) {
                         this.updatePanelsDynamically(this.panels);
                     }
                     else {

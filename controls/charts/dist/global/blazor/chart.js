@@ -1386,7 +1386,7 @@ var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var axisPadding = 10;
+var axisPadding = 5;
 /**
  * Configures the `rows` of the chart.
  */
@@ -1676,7 +1676,7 @@ var Axis = /** @class */ (function (_super) {
         }
         var diff;
         var value;
-        var labelSize = titleSize + innerPadding + axisPadding +
+        var labelSize = titleSize + innerPadding + axisPadding + this.labelPadding +
             ((this.orientation === 'Vertical') ? this.maxLabelSize.width : this.maxLabelSize.height) + this.multiLevelLabelHeight;
         if (crossAxis && this.placeNextToAxisLine) {
             var range = crossAxis.visibleRange;
@@ -3178,7 +3178,9 @@ function createTemplate(childElement, pointIndex, content, chart, point, series,
             }
         }
         // tslint:disable-next-line:no-any
-        chart.renderReactTemplates();
+        if (chart.isReact) {
+            chart.renderReactTemplates();
+        }
     }
     catch (e) {
         return childElement;
@@ -4822,7 +4824,7 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
         padding = axis.opposedPosition ? padding + axis.scrollBarHeight : -padding - axis.scrollBarHeight;
         var x = rect.x + padding;
         var y = rect.y + rect.height * 0.5;
-        var options = new sf.svgbase.TextOption(chart.element.id + '_AxisTitle_' + index, x, y - this.padding, 'middle', axis.title, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation);
+        var options = new sf.svgbase.TextOption(chart.element.id + '_AxisTitle_' + index, x, y - axis.labelPadding, 'middle', axis.title, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation);
         options.text = textTrim(axis.updatedRect.height, options.text, axis.titleStyle);
         var element = textElement(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
         element.setAttribute('tabindex', axis.tabIndex.toString());
@@ -5016,6 +5018,7 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
         var pointX = 0;
         var pointY = 0;
         var labelSpace = axis.labelPadding;
+        var labelHeight;
         var elementSize;
         var labelPadding;
         var anchor;
@@ -5025,13 +5028,9 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
         var isOpposed = axis.opposedPosition;
         var tickSpace = axis.labelPosition === axis.tickPosition ? axis.majorTickLines.height : 0;
         var padding = tickSpace + labelSpace + axis.lineStyle.width * 0.5;
-        var rotateSize;
-        var diffHeight;
         var angle = axis.angle % 360;
         //I264474: Fix for X axis labels are not rendered in center of tick marks when angle is 270
-        var anglePadding = ((angle === 90 || angle === -270) ? -4 : (angle === -90 || angle === 270) ? 4 : 0);
         var options;
-        var yLocation;
         var labelWidth;
         var previousEnd = axis.isInversed ? (rect.x + rect.width) : rect.x;
         var width = 0;
@@ -5044,6 +5043,9 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
         var newPoints = [];
         var isRotatedLabelIntersect = false;
         padding += (angle === 90 || angle === 270 || angle === -90 || angle === -270) ? (islabelInside ? 5 : -5) : 0;
+        var isEndAnchor = ((!isOpposed && !islabelInside) || (isOpposed && islabelInside)) ?
+            ((360 >= angle && angle >= 180) || (-1 >= angle && angle >= -180)) :
+            ((1 <= angle && angle <= 180) || (-181 >= angle && angle >= -360));
         for (var i = 0, len = length; i < len; i++) {
             label = axis.visibleLabels[i];
             isAxisBreakLabel = isBreakLabel(label.originalText);
@@ -5053,7 +5055,9 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
             labelWidth = isAxisBreakLabel ? label.breakLabelSize.width : elementSize.width;
             width = ((axis.labelIntersectAction === 'Trim' || axis.labelIntersectAction === 'Wrap') && angle === 0 &&
                 labelWidth > intervalLength) ? intervalLength : labelWidth;
-            pointX -= width / 2;
+            labelHeight = elementSize.height / 4;
+            pointX -= (angle === 0) ? (width / 2) : (angle === -90 || angle === 270 ? -labelHeight :
+                (angle === 90 || angle === -270) ? labelHeight : 0);
             if (axis.labelStyle.textAlignment === 'Far') {
                 pointX = pointX + width - pixel;
             }
@@ -5064,18 +5068,17 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
                 pointX = pointX;
             }
             if (islabelInside && angle) {
-                pointY = isOpposed ? (rect.y + padding) : (rect.y - padding);
+                pointY = isOpposed ? (rect.y + padding + labelHeight) : (rect.y - padding - labelHeight);
             }
             else {
                 labelPadding = ((isOpposed && !islabelInside) || (!isOpposed && islabelInside)) ?
-                    -(padding + scrollBarHeight + (angle ? ((elementSize.height * 0.5) + (2 * axis.maxLabelSize.height / 5)) :
-                        (label.index > 1 ? (2 * (elementSize.height / 4)) : 0))) :
-                    padding + scrollBarHeight + (angle ? (axis.maxLabelSize.height * 0.5) : (3 * (elementSize.height / 4)));
+                    -(padding + scrollBarHeight + (angle ? labelHeight : (label.index > 1 ? (2 * labelHeight) : 0))) :
+                    padding + scrollBarHeight + ((angle ? 1 : 3) * labelHeight);
                 pointY = (rect.y + (labelPadding * label.index));
             }
-            anchor = chart.isRtlEnabled ? 'end' : '';
+            anchor = (chart.isRtlEnabled || isEndAnchor) ? 'end' : '';
             options = new sf.svgbase.TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor);
-            if (axis.edgeLabelPlacement) {
+            if (axis.edgeLabelPlacement && (angle === 0)) {
                 switch (axis.edgeLabelPlacement) {
                     case 'None':
                         break;
@@ -5109,19 +5112,13 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
             }
             previousEnd = axis.isInversed ? options.x : options.x + width;
             if (angle !== 0) {
-                rotateSize = this.getRotateText(isAxisBreakLabel, axis, label, angle, chart);
-                diffHeight = islabelInside ? rotateSize.height :
-                    axis.maxLabelSize.height - Math.ceil(rotateSize.height);
-                yLocation = axis.opposedPosition ? diffHeight * 0.5 : -diffHeight * 0.5;
-                options.transform = 'rotate(' + angle + ',' + (pointX + width * 0.5 + anglePadding) + ','
-                    + (pointY + yLocation) + ')';
-                options.y = isAxisBreakLabel ? options.y +
-                    (isOpposed ? (4 * label.text.length) : -(4 * label.text.length)) : options.y + yLocation;
-                var height = (pointY + yLocation) - (options.y - ((label.size.height / 2) + 10));
+                options.transform = 'rotate(' + angle + ',' + pointX + ',' + pointY + ')';
+                options.y = isAxisBreakLabel ? options.y + (isOpposed ? (4 * label.text.length) : -(4 * label.text.length)) : options.y;
+                var height = (pointY) - (options.y - ((label.size.height / 2) + 10));
                 var rect_1 = new sf.svgbase.Rect(options.x, options.y - ((label.size.height / 2) - 5), label.size.width, height);
                 var rectCoordinates = this.getRectanglePoints(rect_1);
-                var rectCenterX = pointX + width * 0.5 + anglePadding;
-                var rectCenterY = (pointY + yLocation) - (height / 2);
+                var rectCenterX = pointX;
+                var rectCenterY = (pointY) - (height / 2);
                 newPoints.push(getRotatedRectangleCoordinates(rectCoordinates, rectCenterX, rectCenterY, angle));
                 isRotatedLabelIntersect = false;
                 for (var index_1 = i; index_1 > 0; index_1--) {
@@ -5275,7 +5272,7 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
      */
     CartesianAxisLayoutPanel.prototype.findAxisLabel = function (axis, label, width) {
         return (axis.labelIntersectAction === 'Trim' ?
-            ((axis.angle === 0 && !axis.enableTrim) ? textTrim(width, label, axis.labelStyle) : label) : label);
+            ((axis.angle % 360 === 0 && !axis.enableTrim) ? textTrim(width, label, axis.labelStyle) : label) : label);
     };
     /**
      * X-Axis Title function performed
@@ -5290,7 +5287,7 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
         var scrollBarHeight = sf.base.isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight : 0;
         var padding = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
             (axis.labelPosition === 'Inside' ? 0 :
-                axis.maxLabelSize.height + axis.multiLevelLabelHeight + this.padding);
+                axis.maxLabelSize.height + axis.multiLevelLabelHeight + axis.labelPadding);
         padding = axis.opposedPosition ? -(padding + elementSize.height / 4 + scrollBarHeight) : (padding + (3 *
             elementSize.height / 4) + scrollBarHeight);
         var options = new sf.svgbase.TextOption(chart.element.id + '_AxisTitle_' + index, rect.x + rect.width * 0.5, rect.y + padding, 'middle', axis.title);
@@ -9534,7 +9531,10 @@ var Chart = /** @class */ (function (_super) {
          */
         if (this.element) {
             this.unWireEvents();
-            this.clearTemplate();
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.clearTemplate();
+            }
             _super.prototype.destroy.call(this);
             if (!this.enableCanvas) {
                 this.removeSvg();
@@ -9658,10 +9658,12 @@ var Chart = /** @class */ (function (_super) {
      * To find mouse x, y for aligned chart element svg position
      */
     Chart.prototype.setMouseXY = function (pageX, pageY) {
-        var svgRect = getElement$1(this.svgId).getBoundingClientRect();
-        var rect = this.element.getBoundingClientRect();
-        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
-        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
+        if (getElement$1(this.svgId)) {
+            var svgRect = getElement$1(this.svgId).getBoundingClientRect();
+            var rect = this.element.getBoundingClientRect();
+            this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+            this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
+        }
     };
     /**
      * Export method for the chart.
@@ -10338,7 +10340,10 @@ var Chart = /** @class */ (function (_super) {
             return null;
         }
         removeElement(this.element.id + '_Secondary_Element');
-        this.clearTemplate();
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         var removeLength = 0;
         if (this.zoomModule && this.zoomModule.pinchTarget) {
             this.zoomModule.pinchTarget.id = '';
@@ -10629,7 +10634,10 @@ var Chart = /** @class */ (function (_super) {
             }
             if (refreshBounds) {
                 this.enableCanvas ? this.createChartSvg() : this.removeSvg();
-                this.clearTemplate();
+                // tslint:disable-next-line:no-any
+                if (this.isReact) {
+                    this.clearTemplate();
+                }
                 this.refreshAxis();
                 this.refreshBound();
                 this.trigger('loaded', { chart: this.isBlazor ? {} : this });
@@ -12146,16 +12154,17 @@ var StripLine = /** @class */ (function () {
      */
     StripLine.prototype.renderText = function (stripline, rect, id, parent, chart, axis) {
         var textSize = sf.svgbase.measureText(stripline.text, stripline.textStyle);
-        var textMid = 3 * (textSize.height / 8);
+        var isRotationNull = (stripline.rotation === null);
+        var textMid = isRotationNull ? 3 * (textSize.height / 8) : 0;
         var ty = rect.y + (rect.height / 2) + textMid;
-        var rotation = (stripline.rotation === null) ? ((axis.orientation === 'Vertical') ? 0 : -90) : stripline.rotation;
+        var rotation = isRotationNull ? ((axis.orientation === 'Vertical') ? 0 : -90) : stripline.rotation;
         var tx = rect.x + (rect.width / 2);
         var anchor;
         var padding = 5;
         if (axis.orientation === 'Horizontal') {
             tx = this.getTextStart(tx + (textMid * this.factor(stripline.horizontalAlignment)), rect.width, stripline.horizontalAlignment);
-            ty = this.getTextStart(ty - textMid, rect.height, stripline.verticalAlignment);
-            anchor = this.invertAlignment(stripline.verticalAlignment);
+            ty = this.getTextStart(ty - textMid, rect.height, stripline.verticalAlignment) + (isRotationNull ? 0 : (textSize.height / 4));
+            anchor = isRotationNull ? this.invertAlignment(stripline.verticalAlignment) : stripline.horizontalAlignment;
         }
         else {
             tx = this.getTextStart(tx, rect.width, stripline.horizontalAlignment);
@@ -19543,7 +19552,9 @@ var BaseTooltip = /** @class */ (function (_super) {
             }
         }
         // tslint:disable-next-line:no-any
-        this.chart.renderReactTemplates();
+        if (this.chart.isReact) {
+            this.chart.renderReactTemplates();
+        }
     };
     BaseTooltip.prototype.findPalette = function () {
         var colors = [];
@@ -19635,7 +19646,9 @@ var BaseTooltip = /** @class */ (function (_super) {
         var tooltipElement = this.getElement(this.element.id + '_tooltip');
         this.stopAnimation();
         // tslint:disable-next-line:no-any
-        this.chart.clearTemplate();
+        if (this.chart.isReact) {
+            this.chart.clearTemplate();
+        }
         if (tooltipElement && this.previousPoints.length > 0) {
             this.toolTipInterval = setTimeout(function () {
                 if (_this.svgTooltip) {
@@ -26469,7 +26482,7 @@ var ScrollBar = /** @class */ (function () {
             var currentX = this.moveLength(this.previousXY, this.previousRectX);
             elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
             this.positionThumb(elem.thumbRectX, elem.thumbRectWidth);
-            this.setZoomFactorPosition(elem.thumbRectX, elem.thumbRectWidth);
+            this.setZoomFactorPosition(elem.thumbRectX, elem.thumbRectWidth, false);
             if (this.isLazyLoad) {
                 var thumbMove = elem.thumbRectX > this.previousRectX ? 'RightMove' : 'LeftMove';
                 var args = this.calculateLazyRange(elem.thumbRectX, elem.thumbRectWidth, thumbMove);
@@ -26530,7 +26543,8 @@ var ScrollBar = /** @class */ (function () {
      * @param currentX
      * @param currentWidth
      */
-    ScrollBar.prototype.setZoomFactorPosition = function (currentX, currentWidth) {
+    ScrollBar.prototype.setZoomFactorPosition = function (currentX, currentWidth, isRequire) {
+        if (isRequire === void 0) { isRequire = true; }
         var axis = this.axis;
         this.isScrollUI = true;
         var circleRadius = 8;
@@ -26541,8 +26555,8 @@ var ScrollBar = /** @class */ (function () {
             ? axis.rect.height : this.width);
         this.zoomFactor = (currentWidth + (currentScrollWidth >= this.width ? circleRadius + circleWidth : 0)) / (this.isVertical
             ? axis.rect.height : this.width);
-        axis.zoomPosition = this.zoomPosition;
-        axis.zoomFactor = this.zoomFactor;
+        axis.zoomPosition = this.zoomPosition < 0 ? 0 : this.zoomPosition > 0.9 ? 1 : this.zoomPosition;
+        axis.zoomFactor = isRequire ? this.zoomFactor : axis.zoomFactor;
     };
     /**
      * Handles the mouse move on scrollbar
@@ -26581,7 +26595,7 @@ var ScrollBar = /** @class */ (function () {
                 elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
                 this.positionThumb(elem.thumbRectX, elem.thumbRectWidth);
                 this.previousXY = mouseXY;
-                this.setZoomFactorPosition(currentX, elem.thumbRectWidth);
+                this.setZoomFactorPosition(currentX, elem.thumbRectWidth, false);
             }
             this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor, currentRange));
         }

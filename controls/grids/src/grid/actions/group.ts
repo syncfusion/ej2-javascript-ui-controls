@@ -882,7 +882,7 @@ export class Group implements IAction {
                                 type: events.actionBegin
                             };
                         } else {
-                            args = { requestType: 'ungrouping', type: events.actionBegin };
+                            args = { columnName: this.colName, requestType: 'ungrouping', type: events.actionBegin };
                         }
                         if (!this.groupSettings.showGroupedColumn) {
                             let columns: string[] = e.oldProperties[prop];

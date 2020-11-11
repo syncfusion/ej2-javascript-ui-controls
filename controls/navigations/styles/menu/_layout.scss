@@ -25,10 +25,6 @@
 
           & .e-menu-item {
             display: list-item;
-
-            &.e-blankicon {
-              padding-left: $menu-blank-icon;
-            }
           }
 
           & .e-separator {
@@ -245,6 +241,14 @@
     }
   }
 
+  .e-menu-container:not(.e-hamburger):not(.e-rtl) .e-menu {
+    &.e-vertical {
+      & .e-blankicon {
+        padding-left: $menu-blank-icon;
+      }
+    }
+  }
+
   .e-rtl.e-menu-wrapper ul,
   .e-rtl.e-menu-container ul {
     & .e-menu-item {
@@ -265,17 +269,17 @@
       }
     }
 
-    &.e-vertical {
-      & .e-menu-item {
-        &.e-blankicon {
-          padding-right: $menu-blank-icon;
-        }
-      }
-    }
-
     &.e-ul {
       & .e-menu-item {
         @include rtl-li-size;
+      }
+    }
+  }
+
+  .e-rtl.e-menu-container:not(.e-hamburger) .e-menu {
+    &.e-vertical {
+      & .e-blankicon {
+        padding-right: $menu-blank-icon;
       }
     }
   }
@@ -323,10 +327,6 @@
           &.e-separator {
             @include separator-bigger-size;
           }
-
-          &.e-blankicon {
-            padding-left: $menu-blank-icon-bigger;
-          }
         }
       }
     }
@@ -353,6 +353,15 @@
           margin-right: $cmenu-icon-margin-right;
           width: 1em;
         }
+      }
+    }
+  }
+
+  .e-bigger .e-menu-container:not(.e-hamburger):not(.e-rtl) .e-menu,
+  .e-bigger.e-menu-container:not(.e-hamburger):not(.e-rtl) .e-menu {
+    &.e-vertical {
+      & .e-blankicon {
+        padding-left: $menu-blank-icon-bigger;
       }
     }
   }
@@ -412,14 +421,6 @@
       }
     }
 
-    &.e-vertical {
-      & .e-menu-item {
-        &.e-blankicon {
-          padding-right: $menu-blank-icon-bigger;
-        }
-      }
-    }
-
     &.e-ul {
       & .e-menu-item {
         & .e-menu-icon {
@@ -438,6 +439,15 @@
         &.e-blankicon {
           @include bigger-rtl-blank-icon;
         }
+      }
+    }
+  }
+
+  .e-bigger .e-rtl.e-menu-container:not(.e-hamburger) .e-menu,
+  .e-bigger.e-rtl.e-menu-container:not(.e-hamburger) .e-menu {
+    &.e-vertical {
+      & .e-blankicon {
+        padding-right: $menu-blank-icon-bigger;
       }
     }
   }

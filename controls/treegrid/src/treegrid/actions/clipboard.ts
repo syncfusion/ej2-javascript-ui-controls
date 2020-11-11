@@ -7,6 +7,7 @@ import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { BeforeCopyEventArgs, Clipboard as GridClipboard } from '@syncfusion/ej2-grids';
 /**
  * The `Clipboard` module is used to handle clipboard copy action.
+ * @hidden
  */
 export class TreeClipboard extends GridClipboard {
     private treeGridParent: TreeGrid;

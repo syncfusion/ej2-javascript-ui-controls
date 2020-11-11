@@ -55,15 +55,15 @@ export class Formatter {
                 extend(args, args, items, true);
                 delete args.item;
                 args.originalEvent = { ...args.originalEvent, target: null };
-                // @ts-ignore-start
-                self.dotNetRef.invokeMethodAsync(eventConstant.actionBeginEvent, args).then((actionBeginArgs: ActionBeginEventArgs) => {
-                    // @ts-ignore-end
-                    if (actionBeginArgs.cancel) {
-                        if (action === 'paste' || action === 'cut' || action === 'copy') {
-                            event.preventDefault();
+                if (self.actionBeginEnabled) {
+                    // @ts-ignore-start
+                    self.dotNetRef.invokeMethodAsync(eventConstant.actionBeginEvent, args).then((actionBeginArgs: ActionBeginEventArgs) => {
+                        // @ts-ignore-end
+                        if (args.cancel) {
+                            if (action === 'paste' || action === 'cut' || action === 'copy') { event.preventDefault(); }
                         }
-                    }
-                });
+                    });
+                }
             }
             let isTableModule: boolean = isNullOrUndefined(self.tableModule) ? true : self.tableModule ?
                 self.tableModule.ensureInsideTableList : false;
@@ -81,36 +81,15 @@ export class Formatter {
                 && args.name === 'colorPickerChanged'))) {
             args.originalEvent = { ...args.originalEvent, target: null };
             extend(args, args, { requestType: args.item.subCommand, cancel: false }, true);
-            // @ts-ignore-start
-            self.dotNetRef.invokeMethodAsync(eventConstant.actionBeginEvent, args).then((actionBeginArgs: ActionBeginEventArgs) => {
-                // @ts-ignore-end
-                if (!actionBeginArgs.cancel) {
-                    if (this.getUndoRedoStack().length === 0 && args.item.command !== 'Links'
-                        && args.item.command !== 'Images') {
-                        this.saveData();
-                    }
-                    self.isBlur = false;
-                    (self.getEditPanel() as HTMLElement).focus();
-                    if (self.editorMode === 'HTML') {
-                        saveSelection.restore();
-                    }
-                    let command: string = args.item.subCommand.toLocaleLowerCase();
-                    if (command === 'paste' || command === 'cut' || command === 'copy') {
-                        self.clipboardAction(command, event);
-                    } else {
-                        this.editorManager.observer.notify(CONSTANT.checkUndo, { subCommand: args.item.subCommand });
-                        this.editorManager.execCommand(
-                            args.item.command,
-                            args.item.subCommand,
-                            event, this.onSuccess.bind(this, self),
-                            (args.item as IDropDownItemModel).value,
-                            args.item.subCommand === 'Pre' && args.name === 'dropDownSelect' ?
-                                { name: args.name } : value,
-                            ('#' + '' + ' iframe')
-                        );
-                    }
-                }
-            });
+            if (self.actionBeginEnabled) {
+                // @ts-ignore-start
+                self.dotNetRef.invokeMethodAsync(eventConstant.actionBeginEvent, args).then((actionBeginArgs: ActionBeginEventArgs) => {
+                    // @ts-ignore-end
+                    if (!actionBeginArgs.cancel) { this.actionBeginCallBack(self, args, saveSelection, event, value); }
+                });
+            } else {
+                this.actionBeginCallBack(self, args, saveSelection, event, value);
+            }
         }
         if (isNullOrUndefined(event) || event && (event as KeyboardEventArgs).action !== 'copy') {
             this.enableUndo(self);
@@ -138,24 +117,15 @@ export class Formatter {
         this.successArgs = { ...events };
         delete (events as IHtmlFormatterCallBack).elements;
         delete (events as IHtmlFormatterCallBack).range;
-        // @ts-ignore-start
-        self.dotNetRef.invokeMethodAsync(eventConstant.actionCompleteEvent, events).then((callbackArgs: ActionCompleteEventArgs) => {
-            // @ts-ignore-end
-            self.setPlaceHolder();
-            if (callbackArgs.requestType === 'Images' || callbackArgs.requestType === 'Links' && callbackArgs.editorMode === 'HTML') {
-                let args: IHtmlFormatterCallBack = this.successArgs as IHtmlFormatterCallBack;
-                if (callbackArgs.requestType === 'Links' && callbackArgs.event &&
-                    (callbackArgs.event as KeyboardEvent).type === 'keydown' &&
-                    (callbackArgs.event as KeyboardEvent).keyCode === 32) {
-                    return;
-                }
-                self.observer.notify(CONSTANT.insertCompleted, {
-                    args: args.event, type: callbackArgs.requestType, isNotify: true,
-                    elements: args.elements
-                } as IShowPopupArgs);
-            }
-            self.autoResize();
-        });
+        if (self.actionCompleteEnabled) {
+            // @ts-ignore-start
+            self.dotNetRef.invokeMethodAsync(eventConstant.actionCompleteEvent, events).then((callbackArgs: ActionCompleteEventArgs) => {
+                // @ts-ignore-end
+                this.actionCompleteCallBack(self, callbackArgs);
+            });
+        } else {
+            this.actionCompleteCallBack(self, events as ActionCompleteEventArgs);
+        }
     }
     public saveData(e?: KeyboardEvent | MouseEvent | IUndoCallBack): void {
         this.editorManager.undoRedoManager.saveData(e);
@@ -178,5 +148,45 @@ export class Formatter {
                 }
             }
         }
+    }
+    private actionBeginCallBack(
+        self: SfRichTextEditor, args: ActionBeginEventArgs, selection: NodeSelection,
+        event: MouseEvent | KeyboardEvent, value: IItemCollectionArgs): void {
+        if (this.getUndoRedoStack().length === 0 && args.item.command !== 'Links'
+            && args.item.command !== 'Images') {
+            this.saveData();
+        }
+        self.isBlur = false;
+        (self.getEditPanel() as HTMLElement).focus();
+        if (self.editorMode === 'HTML') {
+            selection.restore();
+        }
+        let command: string = args.item.subCommand.toLocaleLowerCase();
+        if (command === 'paste' || command === 'cut' || command === 'copy') {
+            self.clipboardAction(command, event);
+        } else {
+            this.editorManager.observer.notify(CONSTANT.checkUndo, { subCommand: args.item.subCommand });
+            this.editorManager.execCommand(
+                args.item.command,
+                args.item.subCommand,
+                event, this.onSuccess.bind(this, self),
+                (args.item as IDropDownItemModel).value,
+                args.item.subCommand === 'Pre' && args.name === 'dropDownSelect' ?
+                    { name: args.name } : value,
+                ('#' + '' + ' iframe')
+            );
+        }
+    }
+    private actionCompleteCallBack(self: SfRichTextEditor, args: ActionCompleteEventArgs): void {
+        self.setPlaceHolder();
+        if (args.requestType === 'Images' || args.requestType === 'Links' && args.editorMode === 'HTML') {
+            let successArgs: IHtmlFormatterCallBack = this.successArgs as IHtmlFormatterCallBack;
+            if (args.requestType === 'Links' && args.event && (args.event as KeyboardEvent).type === 'keydown' &&
+                (args.event as KeyboardEvent).keyCode === 32) { return; }
+            self.observer.notify(CONSTANT.insertCompleted, {
+                args: successArgs.event, type: args.requestType, isNotify: true, elements: successArgs.elements
+            } as IShowPopupArgs);
+        }
+        self.autoResize();
     }
 }

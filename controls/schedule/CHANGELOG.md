@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.48 (2020-11-11)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#299517` - An issue with the `displayName` property not working in the Agenda view and the `MonthAgenda` view has been fixed.
+
 ## 18.3.44 (2020-10-27)
 
 ### Schedule

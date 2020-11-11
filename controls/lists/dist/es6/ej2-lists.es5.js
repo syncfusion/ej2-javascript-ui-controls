@@ -4391,31 +4391,46 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
             _this.trigger('drag', { event: e.event, element: _this.element, target: e.target });
             var newInst = _this.getSortableInstance(e.target);
             var target = _this.getSortableElement(e.target, newInst);
-            if ((_this.isValidTarget(target, newInst) || e.target.className.indexOf('e-list-group-item') > -1) && _this.curTarget !== target &&
-                (newInst.placeHolderElement ? newInst.placeHolderElement !== e.target : true)) {
+            if ((_this.isValidTarget(target, newInst) || e.target.className.indexOf('e-list-group-item') > -1) && (_this.curTarget !== target ||
+                !isNullOrUndefined(newInst.placeHolder)) && (newInst.placeHolderElement ? newInst.placeHolderElement !== e.target :
+                true)) {
                 if (e.target.className.indexOf('e-list-group-item') > -1) {
                     target = e.target;
                 }
                 _this.curTarget = target;
+                if (_this.target === target) {
+                    return;
+                }
                 var oldIdx = _this.getIndex(newInst.placeHolderElement, newInst);
-                oldIdx = isNullOrUndefined(oldIdx) ? _this.getIndex(_this.target) :
-                    _this.getIndex(target, newInst) < oldIdx || !oldIdx ? oldIdx : oldIdx - 1;
-                newInst.placeHolderElement = _this.getPlaceHolder(target, newInst);
-                var newIdx = _this.getIndex(target, newInst);
-                var idx = newInst.element !== _this.element ? newIdx : oldIdx < newIdx ? newIdx + 1 : newIdx;
-                if (newInst.placeHolderElement) {
+                var placeHolder = _this.getPlaceHolder(target, newInst);
+                var newIdx = void 0;
+                if (placeHolder) {
+                    oldIdx = isNullOrUndefined(oldIdx) ? _this.getIndex(_this.target) : oldIdx;
+                    newIdx = _this.getIndex(target, newInst, e.event);
+                    var isPlaceHolderPresent = _this.isPlaceHolderPresent(newInst);
+                    if (isPlaceHolderPresent && oldIdx === newIdx) {
+                        return;
+                    }
+                    if (isPlaceHolderPresent) {
+                        remove(newInst.placeHolderElement);
+                    }
+                    newInst.placeHolderElement = placeHolder;
                     if (e.target.className.indexOf('e-list-group-item') > -1) {
                         newInst.element.insertBefore(newInst.placeHolderElement, newInst.element.children[newIdx]);
                     }
-                    else if (newInst.element !== _this.element && idx === newInst.element.childElementCount - 1) {
+                    else if (newInst.element !== _this.element && newIdx === newInst.element.childElementCount) {
                         newInst.element.appendChild(newInst.placeHolderElement);
                     }
                     else {
-                        newInst.element.insertBefore(newInst.placeHolderElement, newInst.element.children[idx]);
+                        newInst.element.insertBefore(newInst.placeHolderElement, newInst.element.children[newIdx]);
                     }
                     _this.refreshDisabled(oldIdx, newIdx, newInst);
                 }
                 else {
+                    oldIdx = isNullOrUndefined(oldIdx) ? _this.getIndex(_this.target) :
+                        _this.getIndex(target, newInst) < oldIdx || !oldIdx ? oldIdx : oldIdx - 1;
+                    newIdx = _this.getIndex(target, newInst);
+                    var idx = newInst.element !== _this.element ? newIdx : oldIdx < newIdx ? newIdx + 1 : newIdx;
                     _this.updateItemClass(newInst);
                     newInst.element.insertBefore(_this.target, newInst.element.children[idx]);
                     _this.refreshDisabled(oldIdx, newIdx, newInst);
@@ -4471,7 +4486,8 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
             var curIdx;
             var handled;
             prevIdx = _this.getIndex(_this.target);
-            if (_this.isPlaceHolderPresent(dropInst)) {
+            var isPlaceHolderPresent = _this.isPlaceHolderPresent(dropInst);
+            if (isPlaceHolderPresent) {
                 var curIdx_1 = _this.getIndex(dropInst.placeHolderElement, dropInst);
                 var args = { previousIndex: prevIdx, currentIndex: curIdx_1, target: e.target, droppedElement: _this.target,
                     helper: e.helper, cancel: false, handled: false };
@@ -4496,11 +4512,11 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
             dropInst = _this.getSortableInstance(e.target);
             curIdx = dropInst.element.childElementCount;
             prevIdx = _this.getIndex(_this.target);
-            if (dropInst.element === e.target) {
-                var beforeDropArgs = { previousIndex: prevIdx, currentIndex: curIdx, target: e.target,
-                    droppedElement: _this.target, helper: e.helper, cancel: false };
+            if (dropInst.element === e.target || (!isPlaceHolderPresent && _this.curTarget === _this.target)) {
+                var beforeDropArgs = { previousIndex: prevIdx, currentIndex: _this.curTarget === _this.target ? prevIdx : curIdx,
+                    target: e.target, droppedElement: _this.target, helper: e.helper, cancel: false };
                 _this.trigger('beforeDrop', beforeDropArgs, function (observedArgs) {
-                    if (!observedArgs.cancel) {
+                    if (dropInst.element === e.target && !observedArgs.cancel) {
                         _this.updateItemClass(dropInst);
                         dropInst.element.appendChild(_this.target);
                         _this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: curIdx,
@@ -4543,12 +4559,9 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
     };
     Sortable.prototype.getPlaceHolder = function (target, instance) {
         if (instance.placeHolder) {
-            if (this.isPlaceHolderPresent(instance)) {
-                remove(instance.placeHolderElement);
-            }
-            instance.placeHolderElement = instance.placeHolder({ element: instance.element, grabbedElement: this.target, target: target });
-            instance.placeHolderElement.classList.add('e-sortable-placeholder');
-            return instance.placeHolderElement;
+            var placeHolderElement = instance.placeHolder({ element: instance.element, grabbedElement: this.target, target: target });
+            placeHolderElement.classList.add('e-sortable-placeholder');
+            return placeHolderElement;
         }
         return null;
     };
@@ -4596,12 +4609,25 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    Sortable.prototype.getIndex = function (target, instance) {
+    Sortable.prototype.getIndex = function (target, instance, e) {
         if (instance === void 0) { instance = this; }
         var idx;
+        var placeHolderPresent;
         [].slice.call(instance.element.children).forEach(function (element, index) {
+            if (element.classList.contains('e-sortable-placeholder')) {
+                placeHolderPresent = true;
+            }
             if (element === target) {
                 idx = index;
+                if (!isNullOrUndefined(e)) {
+                    if (placeHolderPresent) {
+                        idx -= 1;
+                    }
+                    var offset = target.getBoundingClientRect();
+                    var clientY = offset.bottom - ((offset.bottom - offset.top) / 2);
+                    idx = e.clientY <= clientY ? idx : idx + 1;
+                }
+                return;
             }
         });
         return idx;

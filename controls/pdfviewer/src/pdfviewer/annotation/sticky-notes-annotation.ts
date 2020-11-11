@@ -204,7 +204,6 @@ export class StickyNotesAnnotation {
                     notes: annotation.notes, opacity: annotation.opacity, id: annotation.annotName, shapeAnnotationType: 'StickyNotes', strokeColor: 'transparent', stampStrokeColor: '', pageIndex: annotation.pageIndex,
                 };
             } else {
-                let date: Date = new Date();
                 annotationName = this.pdfViewer.annotation.createGUID();
                 commentsDivid = proxy.addComments('sticky', pageIndex + 1);
                 document.getElementById(commentsDivid).id = annotationName;
@@ -212,7 +211,7 @@ export class StickyNotesAnnotation {
                 let annotationSelectorSettings: any = this.pdfViewer.stickyNotesSettings.annotationSelectorSettings ? this.pdfViewer.stickyNotesSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
                 annot = {
                     // tslint:disable-next-line:max-line-length
-                    bounds: { x: X, y: Y, width: width, height: height }, pageIndex: pageIndex, data: image.src, modifiedDate: date.toLocaleString(),
+                    bounds: { x: X, y: Y, width: width, height: height }, pageIndex: pageIndex, data: image.src, modifiedDate: this.getDateAndTime(),
                     shapeAnnotationType: 'StickyNotes', strokeColor: 'transparent', stampStrokeColor: '', annotName: annotationName, id: annotationName, opacity: this.opacity
                 };
                 if (proxy.pdfViewer.toolbarModule.isAddComment) {
@@ -233,7 +232,7 @@ export class StickyNotesAnnotation {
                 let allowedInteractions: any = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
                 annotationObject = {
                     // tslint:disable-next-line:max-line-length
-                    author: author, allowedInteractions: allowedInteractions, modifiedDate: date.toLocaleString(), subject: 'Sticky Note', shapeAnnotationType: 'sticky',
+                    author: author, allowedInteractions: allowedInteractions, modifiedDate: this.getDateAndTime(), subject: 'Sticky Note', shapeAnnotationType: 'sticky',
                     // tslint:disable-next-line:max-line-length
                     note: '', opacity: this.opacity, pathData: '', state: '', stateModel: '', color: 'rgba(255,255,0)', comments: [], annotName: annotationName,
                     // tslint:disable-next-line:max-line-length
@@ -2205,7 +2204,8 @@ export class StickyNotesAnnotation {
                                     if (currentAnnotation.enableShapeLabel) {
                                         currentAnnotation.labelContent = text;
                                     }
-                                    currentAnnotation.modifiedDate = new Date().toLocaleString();
+                                    // tslint:disable-next-line:max-line-length
+                                    currentAnnotation.modifiedDate = this.getDateAndTime();
                                     if (!isMeasure) {
                                         this.updateUndoRedoCollections(currentAnnotation, pageIndex);
                                     } else {
@@ -2227,6 +2227,16 @@ export class StickyNotesAnnotation {
             }
         }
     }
+
+    /**
+     * @private
+     */
+    public getDateAndTime(): string {
+        let date: Date = new Date();
+        // tslint:disable-next-line:max-line-length
+        let dateTime: string = date.getMonth() + 1 + '/' + date.toString().split(' ')[2] + '/' + date.getFullYear() + ', ' + date.toLocaleTimeString();
+        return dateTime;
+    };
 
     // tslint:disable-next-line
     private modifyCommentsProperty(text: string, annotName: string, parentElement: string, previousValue?: any): any {
@@ -2262,24 +2272,24 @@ export class StickyNotesAnnotation {
             }
             // tslint:disable-next-line
             let clonedObject: any = cloneObject(currentAnnotation);
-            let date: Date = new Date();
             if (currentAnnotation.comments.length > 0) {
                 let isComment: boolean = false;
                 for (let j: number = 0; j < currentAnnotation.comments.length; j++) {
                     if (currentAnnotation.comments[j].annotName === annotName) {
                         isComment = true;
                         currentAnnotation.comments[j].note = text;
-                        currentAnnotation.comments[j].modifiedDate = date.toLocaleString();
+                        // tslint:disable-next-line:max-line-length
+                        currentAnnotation.comments[j].modifiedDate = this.getDateAndTime();
                     }
                 }
                 // tslint:disable-next-line:max-line-length
-                let newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: 'Comments', comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: date.toLocaleString(), review: { state: '', stateModel: '', modifiedDate: date.toLocaleString(), author: author } };
+                let newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: 'Comments', comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author } };
                 if (!isComment) {
                     currentAnnotation.comments[currentAnnotation.comments.length] = newArray;
                 }
             } else {
                 // tslint:disable-next-line:max-line-length
-                let newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: 'Comments', comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: date.toLocaleString(), review: { state: '', stateModel: '', modifiedDate: date.toLocaleString(), author: author } };
+                let newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: 'Comments', comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author } };
                 currentAnnotation.comments[currentAnnotation.comments.length] = newArray;
             }
             // tslint:disable-next-line:max-line-length
@@ -2331,10 +2341,9 @@ export class StickyNotesAnnotation {
             }
             // tslint:disable-next-line
             let clonedObject: any = cloneObject(currentAnnotation);
-            let date: Date = new Date();
             if (statusElement.parentElement.firstChild.id === statusElement.id) {
                 // tslint:disable-next-line:max-line-length
-                currentAnnotation.review = { state: text, stateModel: 'Review', author: author, modifiedDate: date.toLocaleString(), annotId: statusElement.id };
+                currentAnnotation.review = { state: text, stateModel: 'Review', author: author, modifiedDate: this.getDateAndTime(), annotId: statusElement.id };
                 currentAnnotation.state = text;
                 currentAnnotation.stateModel = 'Review';
                 // tslint:disable-next-line:max-line-length
@@ -2347,7 +2356,7 @@ export class StickyNotesAnnotation {
                         currentAnnotation.comments[j].state = text;
                         currentAnnotation.comments[j].stateModel = 'Review';
                         // tslint:disable-next-line:max-line-length
-                        currentAnnotation.comments[j].review = { state: text, stateModel: 'Review', author: author, modifiedDate: date.toLocaleString(), annotId: statusElement.id };
+                        currentAnnotation.comments[j].review = { state: text, stateModel: 'Review', author: author, modifiedDate: this.getDateAndTime(), annotId: statusElement.id };
                         // tslint:disable-next-line:max-line-length
                         this.pdfViewer.annotation.addAction(pageIndex, null, currentAnnotation, 'Status Property Added', '', clonedObj, currentAnnotation.comments[j]);
                     }
@@ -2988,19 +2997,12 @@ export class StickyNotesAnnotation {
         if (date !== '') {
             // tslint:disable-next-line
             let time: number = parseInt(date.split(' ')[1].split(':')[0]);
+            let minutes: string = date.split(' ')[1].split(':')[1];
             let month: string[] = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             if (date.split(' ').length === 3) {
-                modifiedTime = time + ':' + date.split(' ')[1].split(':')[1] + ' ' + date.split(' ')[2];
+                modifiedTime = time + ':' + minutes + ' ' + date.split(' ')[2];
             } else {
-                if (time >= 12) {
-                    if (time === 12) {
-                        modifiedTime = time + ':' + date.split(' ')[1].split(':')[1] + ' PM';
-                    } else {
-                        modifiedTime = (time - 12) + ':' + date.split(' ')[1].split(':')[1] + ' PM';
-                    }
-                } else {
-                    modifiedTime = time + ':' + date.split(' ')[1].split(':')[1] + ' AM';
-                }
+                modifiedTime = this.updateModifiedTime(time, minutes);
             }
             // tslint:disable-next-line
             let monthNumber: any = parseInt(date.split(' ')[0].split('/')[0]);
@@ -3014,11 +3016,33 @@ export class StickyNotesAnnotation {
         return modifiedDateTime;
     }
 
+    private updateModifiedTime(time: number, minutes: string): string {
+        let modifiedTime: string;
+        if (time >= 12) {
+            if (time === 12) {
+                modifiedTime = time + ':' + minutes + ' PM';
+            } else {
+                modifiedTime = (time - 12) + ':' + minutes + ' PM';
+            }
+        } else {
+            modifiedTime = time + ':' + minutes + ' AM';
+        }
+        return modifiedTime;
+    };
+
     private setModifiedDate(): string {
         let date: Date = new Date();
+        let modifiedTime: string;
         let modifiedDate: string = date.toString().split(' ').splice(1, 2).join(' ');
-        let modifiedTime: string = date.toLocaleTimeString().split(' ')[0].split(':').splice(0, 2).join(':')
-            + ' ' + date.toLocaleTimeString().split(' ')[1];
+        if (date.toLocaleTimeString().split(' ').length === 2) {
+            // tslint:disable-next-line:max-line-length
+            modifiedTime = date.toLocaleTimeString().split(' ')[0].split(':').splice(0, 2).join(':') + ' ' + date.toLocaleTimeString().split(' ')[1];
+        } else {
+            // tslint:disable-next-line
+            let time: number = parseInt(date.toLocaleTimeString().split(':')[0]);
+            let minutes: string = date.toLocaleTimeString().split(':')[1];
+            modifiedTime = this.updateModifiedTime(time, minutes);
+        }
         let modifiedDateTime: string = modifiedDate + ', ' + modifiedTime;
         return modifiedDateTime;
     }

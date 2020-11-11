@@ -6671,6 +6671,9 @@ var Render = /** @class */ (function () {
             e.querySelector('colGroup').innerHTML =
                 this.parent.grid.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup').innerHTML;
             this.parent.grid.width = this.calculateGridWidth();
+            if (!this.gridSettings.allowAutoResizing && this.parent.showGroupingBar && this.parent.groupingBarModule && this.parent.element.querySelector('.' + GROUPING_BAR_CLASS)) {
+                this.parent.groupingBarModule.refreshUI();
+            }
             if (!this.parent.isScrolling) {
                 this.calculateGridHeight(true);
             }
@@ -6717,7 +6720,7 @@ var Render = /** @class */ (function () {
             dataSource: isEmpty ? this.frameEmptyData() : this.frameDataSource('value'),
             columns: isEmpty ? this.frameEmptyColumns() : this.frameStackedHeaders(),
             height: isEmpty ? 'auto' : this.calculateGridHeight(),
-            width: isEmpty ? this.parent.width : this.calculateGridWidth(),
+            width: isEmpty ? (this.gridSettings.allowAutoResizing ? this.parent.width : 400) : this.calculateGridWidth(),
             locale: parent.locale,
             enableRtl: parent.enableRtl,
             allowExcelExport: parent.allowExcelExport,
@@ -8068,8 +8071,9 @@ var Render = /** @class */ (function () {
             Number(this.parent.width);
         parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth) - 2;
         colCount = colCount - 1;
+        this.isOverflows = !((colCount * this.gridSettings.columnWidth) < parWidth);
         var colWidth = (colCount * this.gridSettings.columnWidth) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
-        return Math.floor(colWidth);
+        return (!this.isOverflows && !this.gridSettings.allowAutoResizing) ? this.gridSettings.columnWidth : Math.floor(colWidth);
     };
     Render.prototype.resizeColWidth = function (colCount) {
         var parWidth = isNaN(this.parent.width) ? (this.parent.width.toString().indexOf('%') > -1 ?
@@ -8077,8 +8081,9 @@ var Render = /** @class */ (function () {
             Number(this.parent.width);
         colCount = colCount - 1;
         parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth) - 2;
+        this.isOverflows = !((colCount * this.gridSettings.columnWidth) < parWidth);
         var colWidth = (colCount * this.gridSettings.columnWidth) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
-        return Math.floor(colWidth);
+        return (!this.isOverflows && !this.gridSettings.allowAutoResizing) ? this.gridSettings.columnWidth : Math.floor(colWidth);
     };
     Render.prototype.calculateGridWidth = function () {
         var parWidth = this.parent.width;
@@ -8095,7 +8100,7 @@ var Render = /** @class */ (function () {
         else {
             parWidth = this.gridSettings.width;
         }
-        return parWidth;
+        return (!this.isOverflows && !this.gridSettings.allowAutoResizing) ? this.parent.totColWidth : parWidth;
     };
     /** @hidden */
     Render.prototype.calculateGridHeight = function (elementCreated) {
@@ -11596,6 +11601,9 @@ var GridSettings = /** @class */ (function (_super) {
         sf.base.Property(true)
     ], GridSettings.prototype, "allowResizing", void 0);
     __decorate$2([
+        sf.base.Property(true)
+    ], GridSettings.prototype, "allowAutoResizing", void 0);
+    __decorate$2([
         sf.base.Property(null)
     ], GridSettings.prototype, "rowHeight", void 0);
     __decorate$2([
@@ -14243,6 +14251,9 @@ var PivotChart = /** @class */ (function () {
             this.currentColumn = (columnKeys.indexOf(columnHeader + ' | ' + this.currentMeasure) > -1 && columnHeader !== undefined) ? columnHeader + ' | ' + this.currentMeasure : columnKeys[0];
             var currentSeries = {};
             currentSeries = this.persistSettings.chartSeries ? this.frameChartSeries(this.persistSettings.chartSeries) : currentSeries;
+            if ((sf.base.isNullOrUndefined(currentSeries.palettes) || currentSeries.palettes.length == 0) && !sf.base.isNullOrUndefined(this.persistSettings.palettes) && this.persistSettings.palettes.length > 0) {
+                currentSeries.palettes = this.persistSettings.palettes;
+            }
             currentSeries.dataSource = this.columnGroupObject[this.currentColumn];
             currentSeries.xName = 'x';
             currentSeries.yName = 'y';
@@ -14281,6 +14292,9 @@ var PivotChart = /** @class */ (function () {
                 var key = columnKeys_1[_i];
                 var currentSeries = {};
                 currentSeries = this.persistSettings.chartSeries ? this.frameChartSeries(this.persistSettings.chartSeries) : currentSeries;
+                if (!sf.base.isNullOrUndefined(currentSeries.palettes) && currentSeries.palettes.length > 0 && (sf.base.isNullOrUndefined(this.persistSettings.palettes) || this.persistSettings.palettes.length == 0)) {
+                    this.chartSettings.palettes = currentSeries.palettes;
+                }
                 currentSeries.dataSource = this.columnGroupObject[key];
                 currentSeries.xName = 'x';
                 currentSeries.yName = 'y';
@@ -16903,6 +16917,9 @@ var PivotSeries = /** @class */ (function (_super) {
     __decorate$3([
         sf.base.Property('Linear')
     ], PivotSeries.prototype, "pyramidMode", void 0);
+    __decorate$3([
+        sf.base.Property([])
+    ], PivotSeries.prototype, "palettes", void 0);
     __decorate$3([
         sf.base.Property(0)
     ], PivotSeries.prototype, "startAngle", void 0);
@@ -33558,6 +33575,7 @@ var Toolbar$2 = /** @class */ (function () {
             enableRtl: this.parent.enableRtl,
             items: this.getItems(),
             allowKeyboard: false,
+            width: !this.parent.gridSettings.allowAutoResizing ? (this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2)) : 'auto'
         });
         this.toolbar.isStringTemplate = true;
         var viewStr = 'viewContainerRef';

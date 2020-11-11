@@ -161,7 +161,8 @@ export class DialogEditRender {
         let tbody: Element = this.parent.createElement('tbody');
         let cols: Column[] = gObj.getColumns() as Column[];
         for (let i: number = 0; i < cols.length; i++) {
-            if (this.parent.editModule.checkColumnIsGrouped(cols[i]) || cols[i].commands || cols[i].commandsTemplate) {
+            if (this.parent.editModule.checkColumnIsGrouped(cols[i]) || cols[i].commands || cols[i].commandsTemplate ||
+                cols[i].type === 'checkbox') {
                 continue;
             }
             let tr: Element = this.parent.createElement('tr');

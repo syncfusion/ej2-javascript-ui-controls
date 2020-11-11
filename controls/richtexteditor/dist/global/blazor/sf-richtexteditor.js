@@ -386,13 +386,15 @@ var Resize = /** @class */ (function () {
         this.wireResizeEvents();
         this.parent.observer.notify(resizeInitialized, {});
         var args = { requestType: 'editor' };
-        // @ts-ignore-start
-        this.parent.dotNetRef.invokeMethodAsync(resizeStartEvent, args).then(function (resizeStartArgs) {
-            // @ts-ignore-end
-            if (resizeStartArgs.cancel) {
-                _this.unwireResizeEvents();
-            }
-        });
+        if (this.parent.onResizeStartEnabled) {
+            // @ts-ignore-start
+            this.parent.dotNetRef.invokeMethodAsync(resizeStartEvent, args).then(function (resizeStartArgs) {
+                // @ts-ignore-end
+                if (resizeStartArgs.cancel) {
+                    _this.unwireResizeEvents();
+                }
+            });
+        }
     };
     Resize.prototype.performResize = function (e) {
         var boundRect = this.parent.element.getBoundingClientRect();
@@ -411,7 +413,9 @@ var Resize = /** @class */ (function () {
         this.parent.refresh();
         this.unwireResizeEvents();
         var args = { requestType: 'editor' };
-        this.parent.dotNetRef.invokeMethodAsync(resizeStopEvent, args);
+        if (this.parent.onResizeStopEnabled) {
+            this.parent.dotNetRef.invokeMethodAsync(resizeStopEvent, args);
+        }
     };
     Resize.prototype.getEventType = function (e) {
         return (e.indexOf('mouse') > -1) ? 'mouse' : 'touch';
@@ -2623,13 +2627,15 @@ var Table = /** @class */ (function () {
             }
             else {
                 var args = { requestType: 'Table' };
-                // @ts-ignore-start
-                this.parent.dotNetRef.invokeMethodAsync('ResizeStartEvent', args).then(function (resizeStartArgs) {
-                    // @ts-ignore-end
-                    if (resizeStartArgs.cancel) {
-                        _this.cancelResizeAction();
-                    }
-                });
+                if (this.parent.onResizeStartEnabled) {
+                    // @ts-ignore-start
+                    this.parent.dotNetRef.invokeMethodAsync('ResizeStartEvent', args).then(function (resizeStartArgs) {
+                        // @ts-ignore-end
+                        if (resizeStartArgs.cancel) {
+                            _this.cancelResizeAction();
+                        }
+                    });
+                }
             }
             sf.base.EventHandler.add(this.parent.getDocument(), sf.base.Browser.touchMoveEvent, this.resizing, this);
             sf.base.EventHandler.add(this.parent.getDocument(), sf.base.Browser.touchEndEvent, this.resizeEnd, this);
@@ -2708,7 +2714,9 @@ var Table = /** @class */ (function () {
             this.moveEle = null;
         }
         var args = { requestType: 'Table' };
-        this.parent.dotNetRef.invokeMethodAsync('ResizeStopEvent', args);
+        if (this.parent.onResizeStopEnabled) {
+            this.parent.dotNetRef.invokeMethodAsync('ResizeStopEvent', args);
+        }
         this.parent.formatter.saveData();
     };
     Table.prototype.resizeBtnInit = function () {
@@ -3315,7 +3323,9 @@ var Image = /** @class */ (function () {
                 }
                 imgElement.classList.remove(CLS_RTE_DRAG_IMAGE);
                 imgElement.addEventListener('load', function () {
-                    _this.parent.dotNetRef.invokeMethodAsync(actionCompleteEvent, null);
+                    if (_this.parent.actionCompleteEnabled) {
+                        _this.parent.dotNetRef.invokeMethodAsync(actionCompleteEvent, null);
+                    }
                 });
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.parent.getDocument());
                 var args = e;
@@ -3355,7 +3365,9 @@ var Image = /** @class */ (function () {
         range.selectNodeContents(this.droppedImage);
         this.parent.formatter.editorManager.nodeSelection.setRange(this.parent.getDocument(), range);
         this.droppedImage.addEventListener('load', function () {
-            _this.parent.dotNetRef.invokeMethodAsync(actionCompleteEvent, null);
+            if (_this.parent.actionCompleteEnabled) {
+                _this.parent.dotNetRef.invokeMethodAsync(actionCompleteEvent, null);
+            }
         });
     };
     Image.prototype.removeDroppedImage = function () {
@@ -3953,7 +3965,7 @@ var Image = /** @class */ (function () {
             this.quickToolObj.hideImageQTBar();
         }
         this.cancelResizeAction();
-        if (sf.base.isNullOrUndefined(keyCode)) {
+        if (sf.base.isNullOrUndefined(keyCode) && this.parent.imageDeleteEnabled) {
             this.parent.dotNetRef.invokeMethodAsync('AfterImageDeleteEvent', args);
         }
     };
@@ -4316,7 +4328,9 @@ var Image = /** @class */ (function () {
                 var args = {
                     src: this.deletedImg[i].getAttribute('src')
                 };
-                this.parent.dotNetRef.invokeMethodAsync('AfterImageDeleteEvent', args);
+                if (this.parent.imageDeleteEnabled) {
+                    this.parent.dotNetRef.invokeMethodAsync('AfterImageDeleteEvent', args);
+                }
             }
         }
     };
@@ -4364,13 +4378,15 @@ var Image = /** @class */ (function () {
             }
             else {
                 var args = { requestType: 'Images' };
-                // @ts-ignore-start
-                this.parent.dotNetRef.invokeMethodAsync('ResizeStartEvent', args).then(function (resizeStartArgs) {
-                    // @ts-ignore-end
-                    if (resizeStartArgs.cancel) {
-                        _this.cancelResizeAction();
-                    }
-                });
+                if (this.parent.onResizeStartEnabled) {
+                    // @ts-ignore-start
+                    this.parent.dotNetRef.invokeMethodAsync('ResizeStartEvent', args).then(function (resizeStartArgs) {
+                        // @ts-ignore-end
+                        if (resizeStartArgs.cancel) {
+                            _this.cancelResizeAction();
+                        }
+                    });
+                }
             }
             sf.base.EventHandler.add(this.parent.getDocument(), sf.base.Browser.touchEndEvent, this.resizeEnd, this);
         }
@@ -4407,7 +4423,9 @@ var Image = /** @class */ (function () {
             sf.base.removeClass([e.target.parentElement], 'e-mob-span');
         }
         var args = { requestType: 'Images' };
-        this.parent.dotNetRef.invokeMethodAsync('ResizeStopEvent', args);
+        if (this.parent.onResizeStopEnabled) {
+            this.parent.dotNetRef.invokeMethodAsync('ResizeStopEvent', args);
+        }
         this.parent.formatter.editorManager.observer.on(checkUndo, this.undoStack, this);
         this.parent.formatter.saveData();
     };
@@ -5189,7 +5207,7 @@ var NodeSelection = /** @class */ (function () {
         for (; index--; null) {
             node = node && node.childNodes[num[index]];
         }
-        if (node && constant >= 0) {
+        if (node && constant >= 0 && node.nodeName !== 'html') {
             range[isvalid ? 'setStart' : 'setEnd'](node, constant);
         }
         return range;
@@ -6240,15 +6258,17 @@ var Formatter = /** @class */ (function () {
                 sf.base.extend(args, args, items, true);
                 delete args.item;
                 args.originalEvent = __assign$2({}, args.originalEvent, { target: null });
-                // @ts-ignore-start
-                self.dotNetRef.invokeMethodAsync(actionBeginEvent, args).then(function (actionBeginArgs) {
-                    // @ts-ignore-end
-                    if (actionBeginArgs.cancel) {
-                        if (action_1 === 'paste' || action_1 === 'cut' || action_1 === 'copy') {
-                            event.preventDefault();
+                if (self.actionBeginEnabled) {
+                    // @ts-ignore-start
+                    self.dotNetRef.invokeMethodAsync(actionBeginEvent, args).then(function (actionBeginArgs) {
+                        // @ts-ignore-end
+                        if (args.cancel) {
+                            if (action_1 === 'paste' || action_1 === 'cut' || action_1 === 'copy') {
+                                event.preventDefault();
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
             var isTableModule = sf.base.isNullOrUndefined(self.tableModule) ? true : self.tableModule ?
                 self.tableModule.ensureInsideTableList : false;
@@ -6267,30 +6287,18 @@ var Formatter = /** @class */ (function () {
                 && args.name === 'colorPickerChanged'))) {
             args.originalEvent = __assign$2({}, args.originalEvent, { target: null });
             sf.base.extend(args, args, { requestType: args.item.subCommand, cancel: false }, true);
-            // @ts-ignore-start
-            self.dotNetRef.invokeMethodAsync(actionBeginEvent, args).then(function (actionBeginArgs) {
-                // @ts-ignore-end
-                if (!actionBeginArgs.cancel) {
-                    if (_this.getUndoRedoStack().length === 0 && args.item.command !== 'Links'
-                        && args.item.command !== 'Images') {
-                        _this.saveData();
+            if (self.actionBeginEnabled) {
+                // @ts-ignore-start
+                self.dotNetRef.invokeMethodAsync(actionBeginEvent, args).then(function (actionBeginArgs) {
+                    // @ts-ignore-end
+                    if (!actionBeginArgs.cancel) {
+                        _this.actionBeginCallBack(self, args, saveSelection, event, value);
                     }
-                    self.isBlur = false;
-                    self.getEditPanel().focus();
-                    if (self.editorMode === 'HTML') {
-                        saveSelection.restore();
-                    }
-                    var command = args.item.subCommand.toLocaleLowerCase();
-                    if (command === 'paste' || command === 'cut' || command === 'copy') {
-                        self.clipboardAction(command, event);
-                    }
-                    else {
-                        _this.editorManager.observer.notify(checkUndo$1, { subCommand: args.item.subCommand });
-                        _this.editorManager.execCommand(args.item.command, args.item.subCommand, event, _this.onSuccess.bind(_this, self), args.item.value, args.item.subCommand === 'Pre' && args.name === 'dropDownSelect' ?
-                            { name: args.name } : value, ('#' + '' + ' iframe'));
-                    }
-                }
-            });
+                });
+            }
+            else {
+                this.actionBeginCallBack(self, args, saveSelection, event, value);
+            }
         }
         if (sf.base.isNullOrUndefined(event) || event && event.action !== 'copy') {
             this.enableUndo(self);
@@ -6320,24 +6328,16 @@ var Formatter = /** @class */ (function () {
         this.successArgs = __assign$2({}, events);
         delete events.elements;
         delete events.range;
-        // @ts-ignore-start
-        self.dotNetRef.invokeMethodAsync(actionCompleteEvent, events).then(function (callbackArgs) {
-            // @ts-ignore-end
-            self.setPlaceHolder();
-            if (callbackArgs.requestType === 'Images' || callbackArgs.requestType === 'Links' && callbackArgs.editorMode === 'HTML') {
-                var args = _this.successArgs;
-                if (callbackArgs.requestType === 'Links' && callbackArgs.event &&
-                    callbackArgs.event.type === 'keydown' &&
-                    callbackArgs.event.keyCode === 32) {
-                    return;
-                }
-                self.observer.notify(insertCompleted$1, {
-                    args: args.event, type: callbackArgs.requestType, isNotify: true,
-                    elements: args.elements
-                });
-            }
-            self.autoResize();
-        });
+        if (self.actionCompleteEnabled) {
+            // @ts-ignore-start
+            self.dotNetRef.invokeMethodAsync(actionCompleteEvent, events).then(function (callbackArgs) {
+                // @ts-ignore-end
+                _this.actionCompleteCallBack(self, callbackArgs);
+            });
+        }
+        else {
+            this.actionCompleteCallBack(self, events);
+        }
     };
     Formatter.prototype.saveData = function (e) {
         this.editorManager.undoRedoManager.saveData(e);
@@ -6361,6 +6361,40 @@ var Formatter = /** @class */ (function () {
                 }
             }
         }
+    };
+    Formatter.prototype.actionBeginCallBack = function (self, args, selection, event, value) {
+        if (this.getUndoRedoStack().length === 0 && args.item.command !== 'Links'
+            && args.item.command !== 'Images') {
+            this.saveData();
+        }
+        self.isBlur = false;
+        self.getEditPanel().focus();
+        if (self.editorMode === 'HTML') {
+            selection.restore();
+        }
+        var command = args.item.subCommand.toLocaleLowerCase();
+        if (command === 'paste' || command === 'cut' || command === 'copy') {
+            self.clipboardAction(command, event);
+        }
+        else {
+            this.editorManager.observer.notify(checkUndo$1, { subCommand: args.item.subCommand });
+            this.editorManager.execCommand(args.item.command, args.item.subCommand, event, this.onSuccess.bind(this, self), args.item.value, args.item.subCommand === 'Pre' && args.name === 'dropDownSelect' ?
+                { name: args.name } : value, ('#' + '' + ' iframe'));
+        }
+    };
+    Formatter.prototype.actionCompleteCallBack = function (self, args) {
+        self.setPlaceHolder();
+        if (args.requestType === 'Images' || args.requestType === 'Links' && args.editorMode === 'HTML') {
+            var successArgs = this.successArgs;
+            if (args.requestType === 'Links' && args.event && args.event.type === 'keydown' &&
+                args.event.keyCode === 32) {
+                return;
+            }
+            self.observer.notify(insertCompleted$1, {
+                args: successArgs.event, type: args.requestType, isNotify: true, elements: successArgs.elements
+            });
+        }
+        self.autoResize();
     };
     return Formatter;
 }());
@@ -8629,7 +8663,7 @@ var InsertHtml = /** @class */ (function () {
         for (var i = 0; i < emptyElements.length; i++) {
             if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR' &&
                 emptyElements[i].tagName !== 'IFRAME' && emptyElements[i].tagName !== 'TD' &&
-                emptyElements[i].tagName !== 'SOURCE') {
+                emptyElements[i].tagName !== 'SOURCE' && emptyElements[i].tagName !== 'HR') {
                 var detachableElement = this.findDetachEmptyElem(emptyElements[i]);
                 if (!sf.base.isNullOrUndefined(detachableElement)) {
                     sf.base.detach(detachableElement);
@@ -10230,7 +10264,13 @@ var ClearFormat = /** @class */ (function () {
         var nodes = nodeSelection.getInsertNodeCollection(range);
         var save = nodeSelection.save(range, docElement);
         if (!isCollapsed) {
-            var preNode = nodeCutter.GetSpliceNode(range, nodes[0]);
+            var preNode = void 0;
+            if (nodes[0].nodeName === 'BR' && sf.base.closest(nodes[0], 'table')) {
+                preNode = nodeCutter.GetSpliceNode(range, sf.base.closest(nodes[0], 'table'));
+            }
+            else {
+                preNode = nodeCutter.GetSpliceNode(range, nodes[nodes.length > 1 && nodes[0].nodeName === 'IMG' ? 1 : 0]);
+            }
             if (nodes.length === 1) {
                 nodeSelection.setSelectionContents(docElement, preNode);
                 range = nodeSelection.getRange(docElement);
@@ -10238,7 +10278,7 @@ var ClearFormat = /** @class */ (function () {
             else {
                 var i = 1;
                 var lastText = nodes[nodes.length - i];
-                while (nodes[nodes.length - i].nodeName === 'BR') {
+                while (nodes.length <= i && nodes[nodes.length - i].nodeName === 'BR') {
                     i++;
                     lastText = nodes[nodes.length - i];
                 }
@@ -10419,12 +10459,10 @@ var ClearFormat = /** @class */ (function () {
     ClearFormat.BLOCK_TAGS = ['address', 'article', 'aside', 'blockquote',
         'details', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer',
         'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'li', 'main', 'nav',
-        'noscript', 'ol', 'p', 'pre', 'section', 'table', 'tbody', 'td', 'tfoot', 'th',
-        'thead', 'tr', 'ul'];
+        'noscript', 'ol', 'p', 'pre', 'section', 'ul'];
     ClearFormat.NONVALID_PARENT_TAGS = ['thead', 'tbody', 'ul', 'ol', 'table', 'tfoot', 'tr'];
     ClearFormat.IGNORE_PARENT_TAGS = ['ul', 'ol', 'table'];
-    ClearFormat.NONVALID_TAGS = ['thead', 'tbody', 'figcaption', 'td', 'tr',
-        'th', 'tfoot', 'figcaption', 'li'];
+    ClearFormat.NONVALID_TAGS = ['thead', 'tbody', 'figcaption', 'td', 'tr', 'th', 'tfoot', 'figcaption', 'li'];
     return ClearFormat;
 }());
 
@@ -11727,16 +11765,24 @@ var FullScreen = /** @class */ (function () {
             this.parent.quickToolbarModule.hideQuickToolbars();
         }
         this.scrollableParent = sf.popups.getScrollableParent(this.parent.element);
-        this.parent.dotNetRef.invokeMethodAsync(
-        // @ts-ignore-start
-        actionBeginEvent, { requestType: 'Maximize', cancel: false }).then(function (fullScreenArgs) {
-            // @ts-ignore-end
-            if (!fullScreenArgs.cancel) {
-                _this.toggleParentOverflow(true);
-                _this.parent.setContentHeight();
-                _this.parent.dotNetRef.invokeMethodAsync(actionCompleteEvent, { requestType: 'Maximize' });
-            }
-        });
+        if (this.parent.actionBeginEnabled) {
+            this.parent.dotNetRef.invokeMethodAsync(
+            // @ts-ignore-start
+            actionBeginEvent, { requestType: 'Maximize', cancel: false }).then(function (fullScreenArgs) {
+                // @ts-ignore-end
+                if (!fullScreenArgs.cancel) {
+                    _this.showActionBeginCallback();
+                }
+            });
+        }
+        else {
+            this.showActionBeginCallback();
+        }
+    };
+    FullScreen.prototype.showActionBeginCallback = function () {
+        this.toggleParentOverflow(true);
+        this.parent.setContentHeight();
+        this.invokeActionComplete('Maximize');
     };
     FullScreen.prototype.hideFullScreen = function (event) {
         var _this = this;
@@ -11747,15 +11793,28 @@ var FullScreen = /** @class */ (function () {
         for (var i = 0; i < elem.length; i++) {
             sf.base.removeClass([elem[i]], [CLS_RTE_OVERFLOW]);
         }
-        this.parent.dotNetRef.invokeMethodAsync(
-        // @ts-ignore-start
-        actionBeginEvent, { requestType: 'Minimize', cancel: false }).then(function (fullScreenArgs) {
-            // @ts-ignore-end
-            if (!fullScreenArgs.cancel) {
-                _this.parent.setContentHeight();
-                _this.parent.dotNetRef.invokeMethodAsync(actionCompleteEvent, { requestType: 'Minimize' });
-            }
-        });
+        if (this.parent.actionBeginEnabled) {
+            this.parent.dotNetRef.invokeMethodAsync(
+            // @ts-ignore-start
+            actionBeginEvent, { requestType: 'Minimize', cancel: false }).then(function (fullScreenArgs) {
+                // @ts-ignore-end
+                if (!fullScreenArgs.cancel) {
+                    _this.hideActionBeginCallback();
+                }
+            });
+        }
+        else {
+            this.hideActionBeginCallback();
+        }
+    };
+    FullScreen.prototype.hideActionBeginCallback = function () {
+        this.parent.setContentHeight();
+        this.invokeActionComplete('Minimize');
+    };
+    FullScreen.prototype.invokeActionComplete = function (type) {
+        if (this.parent.actionCompleteEnabled) {
+            this.parent.dotNetRef.invokeMethodAsync(actionCompleteEvent, { requestType: type });
+        }
     };
     FullScreen.prototype.toggleParentOverflow = function (isAdd) {
         if (sf.base.isNullOrUndefined(this.scrollableParent)) {
@@ -12153,79 +12212,86 @@ var BaseQuickToolbar = /** @class */ (function () {
     };
     BaseQuickToolbar.prototype.showPopup = function (x, y, target, type) {
         var _this = this;
-        this.parent.dotNetRef.invokeMethodAsync(
-        // @ts-ignore-start
-        beforeQuickToolbarOpenEvent).then(function (args) {
-            // @ts-ignore-end
-            if (!args.cancel) {
-                var editPanelTop = void 0;
-                var editPanelHeight = void 0;
-                var bodyStyle = window.getComputedStyle(document.body);
-                var bodyRight = parseFloat(bodyStyle.marginRight.split('px')[0]) + parseFloat(bodyStyle.paddingRight.split('px')[0]);
-                var windowHeight = window.innerHeight;
-                var windowWidth = window.innerWidth;
-                var parent_1 = _this.parent.element;
-                var toolbarAvail = !sf.base.isNullOrUndefined(_this.parent.getToolbar());
-                var tbHeight = toolbarAvail && _this.parent.toolbarModule.getToolbarHeight();
-                var expTBHeight = toolbarAvail && _this.parent.toolbarModule.getExpandTBarPopHeight();
-                var tBarHeight = (toolbarAvail) ? (tbHeight + expTBHeight) : 0;
-                sf.base.addClass([_this.element], [CLS_HIDE]);
-                if (sf.base.Browser.isDevice && !isIDevice()) {
-                    sf.base.addClass([_this.parent.getToolbar()], [CLS_HIDE]);
+        if (this.parent.onQuickTbOpenEnabled) {
+            // @ts-ignore-start
+            this.parent.dotNetRef.invokeMethodAsync(beforeQuickToolbarOpenEvent).then(function (args) {
+                // @ts-ignore-end
+                if (!args.cancel) {
+                    _this.onQuickTbOpenCallback(x, y, target, type);
                 }
-                if (_this.parent.iframeSettings.enable) {
-                    var cntEle = _this.parent.getPanel().contentWindow;
-                    editPanelTop = cntEle.pageYOffset;
-                    editPanelHeight = cntEle.innerHeight;
-                }
-                else {
-                    var cntEle = sf.base.closest(target, '.' + CLS_RTE_CONTENT);
-                    editPanelTop = (cntEle) ? cntEle.scrollTop : 0;
-                    editPanelHeight = (cntEle) ? cntEle.offsetHeight : 0;
-                }
-                if (!_this.parent.inlineMode.enable && !sf.base.closest(target, 'table')) {
-                    // this.parent.disableToolbarItem(this.parent.toolbarSettings.items as string[]);
-                    // this.parent.enableToolbarItem(['Undo', 'Redo']);
-                }
-                sf.base.append([_this.element], document.body);
-                _this.popupObj.position.X = x + 20;
-                _this.popupObj.position.Y = y + ((_this.parent.iframeSettings.enable) ? 35 : 20);
-                _this.popupObj.dataBind();
-                _this.popupObj.element.classList.add(CLS_POPUP_OPEN);
-                var showPopupData = {
-                    x: x, y: y,
-                    target: target,
-                    editTop: editPanelTop,
-                    editHeight: editPanelHeight,
-                    popup: _this.popupObj.element,
-                    popHeight: _this.popupObj.element.offsetHeight,
-                    popWidth: _this.popupObj.element.offsetWidth,
-                    parentElement: parent_1,
-                    bodyRightSpace: bodyRight,
-                    windowY: window.pageYOffset,
-                    windowHeight: windowHeight,
-                    windowWidth: windowWidth,
-                    parentData: parent_1.getBoundingClientRect(),
-                    tBarElementHeight: tBarHeight
-                };
-                if (target.tagName === 'IMG') {
-                    _this.setPosition(showPopupData);
-                }
-                if (!_this.parent.inlineMode.enable) {
-                    _this.checkCollision(showPopupData, 'parent', '');
-                }
-                _this.checkCollision(showPopupData, 'document', ((_this.parent.inlineMode.enable) ? 'inline' : ''));
-                _this.popupObj.element.classList.remove(CLS_POPUP_OPEN);
-                sf.base.removeClass([_this.element], [CLS_HIDE]);
-                _this.popupObj.show({ name: 'ZoomIn', duration: (sf.base.Browser.isIE ? 250 : 400) });
-                sf.base.setStyleAttribute(_this.element, {
-                    maxWidth: _this.parent.element.offsetWidth + 'px'
-                });
-                sf.base.addClass([_this.element], [CLS_POP]);
-                _this.isDOMElement = true;
-                _this.parent.dotNetRef.invokeMethodAsync(updateClass, _this.popupObj.element.classList.toString(), type);
-            }
+            });
+        }
+        else {
+            this.onQuickTbOpenCallback(x, y, target, type);
+        }
+    };
+    BaseQuickToolbar.prototype.onQuickTbOpenCallback = function (x, y, target, type) {
+        var editPanelTop;
+        var editPanelHeight;
+        var bodyStyle = window.getComputedStyle(document.body);
+        var bodyRight = parseFloat(bodyStyle.marginRight.split('px')[0]) + parseFloat(bodyStyle.paddingRight.split('px')[0]);
+        var windowHeight = window.innerHeight;
+        var windowWidth = window.innerWidth;
+        var parent = this.parent.element;
+        var toolbarAvail = !sf.base.isNullOrUndefined(this.parent.getToolbar());
+        var tbHeight = toolbarAvail && this.parent.toolbarModule.getToolbarHeight();
+        var expTBHeight = toolbarAvail && this.parent.toolbarModule.getExpandTBarPopHeight();
+        var tBarHeight = (toolbarAvail) ? (tbHeight + expTBHeight) : 0;
+        sf.base.addClass([this.element], [CLS_HIDE]);
+        if (sf.base.Browser.isDevice && !isIDevice()) {
+            sf.base.addClass([this.parent.getToolbar()], [CLS_HIDE]);
+        }
+        if (this.parent.iframeSettings.enable) {
+            var cntEle = this.parent.getPanel().contentWindow;
+            editPanelTop = cntEle.pageYOffset;
+            editPanelHeight = cntEle.innerHeight;
+        }
+        else {
+            var cntEle = sf.base.closest(target, '.' + CLS_RTE_CONTENT);
+            editPanelTop = (cntEle) ? cntEle.scrollTop : 0;
+            editPanelHeight = (cntEle) ? cntEle.offsetHeight : 0;
+        }
+        if (!this.parent.inlineMode.enable && !sf.base.closest(target, 'table')) {
+            // this.parent.disableToolbarItem(this.parent.toolbarSettings.items as string[]);
+            // this.parent.enableToolbarItem(['Undo', 'Redo']);
+        }
+        sf.base.append([this.element], document.body);
+        this.popupObj.position.X = x + 20;
+        this.popupObj.position.Y = y + ((this.parent.iframeSettings.enable) ? 35 : 20);
+        this.popupObj.dataBind();
+        this.popupObj.element.classList.add(CLS_POPUP_OPEN);
+        var showPopupData = {
+            x: x, y: y,
+            target: target,
+            editTop: editPanelTop,
+            editHeight: editPanelHeight,
+            popup: this.popupObj.element,
+            popHeight: this.popupObj.element.offsetHeight,
+            popWidth: this.popupObj.element.offsetWidth,
+            parentElement: parent,
+            bodyRightSpace: bodyRight,
+            windowY: window.pageYOffset,
+            windowHeight: windowHeight,
+            windowWidth: windowWidth,
+            parentData: parent.getBoundingClientRect(),
+            tBarElementHeight: tBarHeight
+        };
+        if (target.tagName === 'IMG') {
+            this.setPosition(showPopupData);
+        }
+        if (!this.parent.inlineMode.enable) {
+            this.checkCollision(showPopupData, 'parent', '');
+        }
+        this.checkCollision(showPopupData, 'document', ((this.parent.inlineMode.enable) ? 'inline' : ''));
+        this.popupObj.element.classList.remove(CLS_POPUP_OPEN);
+        sf.base.removeClass([this.element], [CLS_HIDE]);
+        this.popupObj.show({ name: 'ZoomIn', duration: (sf.base.Browser.isIE ? 250 : 400) });
+        sf.base.setStyleAttribute(this.element, {
+            maxWidth: this.parent.element.offsetWidth + 'px'
         });
+        sf.base.addClass([this.element], [CLS_POP]);
+        this.isDOMElement = true;
+        this.parent.dotNetRef.invokeMethodAsync(updateClass, this.popupObj.element.classList.toString(), type);
     };
     BaseQuickToolbar.prototype.hidePopup = function () {
         var viewSourcePanel = this.parent.viewSourceModule.getViewPanel();
@@ -12248,7 +12314,9 @@ var BaseQuickToolbar = /** @class */ (function () {
             sf.base.removeClass([this.element], [CLS_POP]);
             this.popupObj.element.removeAttribute('style');
             this.popupObj.destroy();
-            this.parent.dotNetRef.invokeMethodAsync(quickToolbarCloseEvent);
+            if (this.parent.quickTbClosedEnabled) {
+                this.parent.dotNetRef.invokeMethodAsync(quickToolbarCloseEvent);
+            }
         }
     };
     BaseQuickToolbar.prototype.updateStatus = function (args) {
@@ -12780,7 +12848,6 @@ var PasteCleanup = /** @class */ (function () {
                 saveUrl: this.parent.insertImageSettings.saveUrl
             },
             cssClass: CLS_RTE_DIALOG_UPLOAD,
-            dropArea: this.parent.inputElement,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             success: function (e) {
                 setTimeout(function () { _this.popupClose(popupObj, imgElem, e); }, 900);
@@ -12791,12 +12858,25 @@ var PasteCleanup = /** @class */ (function () {
             beforeUpload: function (args) {
                 beforeUploadArgs = JSON.parse(JSON.stringify(args));
                 beforeUploadArgs.filesData = _this.rawFile;
-                // @ts-ignore-start
-                _this.parent.dotNetRef.invokeMethodAsync(beforeUpload, args).then(function (beforeUploadArgs) {
-                    if (beforeUploadArgs.cancel) {
-                        return;
-                    }
-                    // @ts-ignore-end
+                if (!_this.parent.beforeUploadImageEnabled) {
+                    return false;
+                }
+                return new Promise(function (resolve) {
+                    _this.parent.dotNetRef.invokeMethodAsync(
+                    // @ts-ignore-start
+                    beforeUpload, beforeUploadArgs).then(function (args) {
+                        if (args.cancel) {
+                            return;
+                        }
+                        /* tslint:disable */
+                        _this.uploadObj.currentRequestHeader = args.currentRequest ?
+                            args.currentRequest : _this.uploadObj.currentRequestHeader;
+                        _this.uploadObj.customFormDatas = args.customFormData && args.customFormData.length > 0 ?
+                            args.customFormData : _this.uploadObj.customFormDatas;
+                        /* tslint:enable */
+                        // @ts-ignore-end
+                        resolve();
+                    });
                 });
             },
             failure: function (e) {
@@ -12836,6 +12916,7 @@ var PasteCleanup = /** @class */ (function () {
         this.uploadObj.createFileList(fileData);
         this.uploadObj.filesData.push(fileData[0]);
         /* tslint:enable */
+        this.rawFile = fileData;
         this.uploadObj.upload(fileData);
         popupObj.element.getElementsByClassName(CLS_FILE_SELECT_WRAP)[0].style.display = 'none';
         sf.base.detach(popupObj.element.querySelector('.' + CLS_RTE_DIALOG_UPLOAD + ' .' + CLS_FILE_SELECT_WRAP));
@@ -12846,26 +12927,45 @@ var PasteCleanup = /** @class */ (function () {
         if (popupObj) {
             popupObj.close();
         }
-        this.parent.dotNetRef.invokeMethodAsync(pasteImageUploadFailed, e);
+        if (this.parent.onImageUploadFailedEnabled) {
+            this.parent.dotNetRef.invokeMethodAsync(pasteImageUploadFailed, e);
+        }
         this.uploadObj.destroy();
         this.uploadObj = undefined;
     };
     PasteCleanup.prototype.popupClose = function (popupObj, imgElem, e) {
         var _this = this;
         this.parent.inputElement.contentEditable = 'true';
-        // @ts-ignore-start
-        this.parent.dotNetRef.invokeMethodAsync(pasteImageUploadSuccess, e).then(function (beforeUploadArgs) {
-            // @ts-ignore-end
-            if (!sf.base.isNullOrUndefined(_this.parent.insertImageSettings.path)) {
-                var url = _this.parent.insertImageSettings.path + e.file.name;
-                imgElem.src = url;
-                imgElem.setAttribute('alt', e.file.name);
-            }
-        });
+        if (this.parent.onImageUploadSuccessEnabled) {
+            // @ts-ignore-start
+            this.parent.dotNetRef.invokeMethodAsync(pasteImageUploadSuccess, e).then(function (args) {
+                // @ts-ignore-end
+                _this.pasteUploadSuccessCallback(imgElem, e, args);
+            });
+        }
+        else {
+            this.pasteUploadSuccessCallback(imgElem, e);
+        }
         popupObj.close();
         imgElem.style.opacity = '1';
         this.uploadObj.destroy();
         this.uploadObj = undefined;
+    };
+    // @ts-ignore-start
+    PasteCleanup.prototype.pasteUploadSuccessCallback = function (imgElem, e, args) {
+        // @ts-ignore-end
+        if (!sf.base.isNullOrUndefined(this.parent.insertImageSettings.path)) {
+            if (!sf.base.isNullOrUndefined(args) && !sf.base.isNullOrUndefined(args.file) && !sf.base.isNullOrUndefined(args.file.name)) {
+                var url = this.parent.insertImageSettings.path + args.file.name;
+                imgElem.src = url;
+                imgElem.setAttribute('alt', args.file.name);
+            }
+            else {
+                var url = this.parent.insertImageSettings.path + e.file.name;
+                imgElem.src = url;
+                imgElem.setAttribute('alt', e.file.name);
+            }
+        }
     };
     PasteCleanup.prototype.refreshPopup = function (imageElement, popupObj) {
         var imgPosition = this.parent.iframeSettings.enable ? this.parent.element.offsetTop +
@@ -15541,7 +15641,21 @@ var SfRichTextEditor = /** @class */ (function () {
         this.floatingToolbarOffset = 0;
         this.enableHtmlEncode = false;
         this.isInitial = false;
+        this.blurEnabled = false;
+        this.focusEnabled = false;
         this.undoRedoStatus = false;
+        this.createdEnabled = false;
+        this.actionBeginEnabled = false;
+        this.imageDeleteEnabled = false;
+        this.onResizeStopEnabled = false;
+        this.quickTbClosedEnabled = false;
+        this.quickTbOpenedEnabled = false;
+        this.onQuickTbOpenEnabled = false;
+        this.onResizeStartEnabled = false;
+        this.actionCompleteEnabled = false;
+        this.beforeUploadImageEnabled = false;
+        this.onImageUploadFailedEnabled = false;
+        this.onImageUploadSuccessEnabled = false;
         this.inlineCloseItems = ['CreateLink', 'Image', 'CreateTable', 'Maximize', 'Minimize'];
         if (sf.base.isNullOrUndefined(element)) {
             return;
@@ -15606,7 +15720,9 @@ var SfRichTextEditor = /** @class */ (function () {
         this.setPanelValue(this.value);
         this.observer.notify(initialEnd, {});
         this.wireEvents();
-        this.dotNetRef.invokeMethodAsync('CreatedEvent');
+        if (this.createdEnabled) {
+            this.dotNetRef.invokeMethodAsync('CreatedEvent');
+        }
     };
     SfRichTextEditor.prototype.isUndoRedoStatus = function () {
         for (var i = 0; i < this.toolbarSettings.items.length; i++) {
@@ -16683,7 +16799,9 @@ var SfRichTextEditor = /** @class */ (function () {
             }
             this.defaultResize(e, false);
             var args = { isInteracted: Object.keys(e).length === 0 ? false : true };
-            this.dotNetRef.invokeMethodAsync('FocusEvent', args);
+            if (this.focusEnabled) {
+                this.dotNetRef.invokeMethodAsync('FocusEvent', args);
+            }
             if (!sf.base.isNullOrUndefined(this.saveInterval) && this.saveInterval > 0 && !this.autoSaveOnIdle) {
                 this.timeInterval = setInterval(this.updateValueOnIdle.bind(this), this.saveInterval);
             }
@@ -16731,7 +16849,9 @@ var SfRichTextEditor = /** @class */ (function () {
             dispatchEvent(this.valueContainer, 'focusout');
             this.defaultResize(e, true);
             var args = { isInteracted: Object.keys(e).length === 0 ? false : true };
-            this.dotNetRef.invokeMethodAsync('BlurEvent', args);
+            if (this.blurEnabled) {
+                this.dotNetRef.invokeMethodAsync('BlurEvent', args);
+            }
             if (!sf.base.isNullOrUndefined(this.timeInterval)) {
                 clearInterval(this.timeInterval);
                 this.timeInterval = null;

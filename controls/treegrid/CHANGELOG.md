@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 18.3.48 (2020-11-11)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#F158886` - Cell editing with frozen columns works fine.
+- `#299761` - Treegrid column width renders fine in Internet Explorer when Virtualization is enabled.
+
+#### New Features
+
+- `#293514` - Provided the Cell Editing support for Remote Data Binding.
+
 ## 18.3.47 (2020-11-05)
 
 ### TreeGrid

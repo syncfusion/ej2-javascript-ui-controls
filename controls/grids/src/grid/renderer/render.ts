@@ -446,7 +446,6 @@ export class Render {
         (<{ actionArgs?: NotifyArgs }>e).actionArgs = args;
         let isInfiniteDelete: boolean = this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache
             && (args.requestType === 'delete' || (args.requestType === 'save' && this.parent.infiniteScrollModule.requestType === 'add'));
-        this.parent.getDataModule().isQueryInvokedFromData = false;
         // tslint:disable-next-line:max-func-body-length
         gObj.trigger(events.beforeDataBound, e, (dataArgs: ReturnType) => {
             if ((<{ cancel?: boolean }>dataArgs).cancel) {
@@ -557,6 +556,7 @@ export class Render {
             }
             this.parent.notify(events.toolbarRefresh, {});
             this.setRowCount(this.parent.getCurrentViewRecords().length);
+            this.parent.getDataModule().isQueryInvokedFromData = false;
         });
     }
 

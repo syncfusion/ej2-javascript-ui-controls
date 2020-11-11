@@ -44,6 +44,8 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
                     let tempID: string = gObj.element.id + 'captionTemplate';
                     templateCompiler(gObj.groupSettings.captionTemplate)(data, this.parent, 'captionTemplate', tempID, null, null, node);
                     this.parent.renderTemplates();
+                } else if (this.parent.isVue) {
+                    result = templateCompiler(gObj.groupSettings.captionTemplate)(data, this.parent);
                 } else {
                     result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
                 }

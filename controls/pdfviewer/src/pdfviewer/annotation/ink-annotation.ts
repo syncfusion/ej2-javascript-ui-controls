@@ -133,7 +133,7 @@ export class InkAnnotation {
         let annot: any;
         if (this.pdfViewerBase.isToolbarInkClicked) {
             let annotationName: string = this.pdfViewer.annotation.createGUID();
-            let modifiedDate: string = new Date().toLocaleString();
+            let modifiedDate: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             let pageIndex: number = !isNaN(pageNumber) ? pageNumber : this.pdfViewerBase.currentPageNumber - 1;
             let thickness: number = this.pdfViewer.inkAnnotationSettings.thickness ? this.pdfViewer.inkAnnotationSettings.thickness : 1;
             // tslint:disable-next-line:max-line-length
@@ -453,21 +453,17 @@ export class InkAnnotation {
                         pageAnnotations[i].bounds = { x: annotationBase.wrapper.bounds.left, y: annotationBase.wrapper.bounds.top, width: annotationBase.bounds.width, height: annotationBase.bounds.height };
                     } else if (property === 'stroke') {
                         pageAnnotations[i].strokeColor = annotationBase.wrapper.children[0].style.strokeColor;
-                        let date: Date = new Date();
                     } else if (property === 'opacity') {
                         pageAnnotations[i].opacity = annotationBase.wrapper.children[0].style.opacity;
-                        let date: Date = new Date();
                     } else if (property === 'thickness') {
                         pageAnnotations[i].thickness = annotationBase.wrapper.children[0].style.strokeWidth;
-                        let date: Date = new Date();
                     } else if (property === 'notes') {
                         pageAnnotations[i].notes = annotationBase.notes;
-                        let date: Date = new Date();
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'delete') {
                         currentAnnotObject = pageAnnotations.splice(i, 1)[0];
                         break;
                     }
+                    pageAnnotations[i].modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                     this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[i], pageNumber);
                 }
             }

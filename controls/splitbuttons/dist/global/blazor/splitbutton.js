@@ -194,6 +194,9 @@ var DropDownButton = /** @class */ (function (_super) {
                     li.classList.add('e-blank-icon');
                 }
             }
+            if (item.disabled) {
+                li.classList.add('e-disabled');
+            }
             eventArgs = { item: item, element: li };
             this.trigger('beforeItemRender', eventArgs);
             ul.appendChild(li);

@@ -925,4 +925,110 @@ describe('checkbox retained after cell edit and cancel', () => {
     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
 });
+
+  describe('EJ2-43565 - Cell Edit with frozen Columns', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+          editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Cell' },
+          frozenColumns: 1,
+          columns: [
+            { field: 'taskName', headerText: 'Task Name' },
+            { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+            { field: 'progress', headerText: 'Progress' },
+            { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+          ]
+        },
+        done
+      );
+    });
+    it('Edit Movable Cell', () => {
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getCellFromIndex(0, 2).dispatchEvent(event);
+      gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = '101';
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      expect((gridObj.getMovableRows()[0].getElementsByClassName('e-rowcell')[1] as HTMLElement).innerText == "101").toBe(true);
+    });
+    it('Edit Frozen Cell', () => {
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getCellFromIndex(0, 0).dispatchEvent(event);
+      gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'Planning Completed';
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      expect((gridObj.getRows()[0].getElementsByClassName('e-rowcell')[0] as HTMLElement).innerText == "Planning Completed").toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-43565 - Cell Edit with isFrozen property', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+          editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Cell' },
+          columns: [
+            { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+            { field: 'taskName', headerText: 'Task Name', width: 200, isFrozen: true },
+            { field: 'progress', headerText: 'Progress' },
+            { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+          ]
+        },
+        done
+      );
+    });
+    it('Edit Frozen Cell', () => {
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getCellFromIndex(0, 0).dispatchEvent(event);
+      gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'Planning Completed';
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      expect((gridObj.getRows()[0].getElementsByClassName('e-rowcell')[0] as HTMLElement).innerText == "Planning Completed").toBe(true);
+    });
+    it('Edit Movable Cell', () => {
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getCellFromIndex(0, 2).dispatchEvent(event);
+      gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = '101';
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      expect((gridObj.getMovableRows()[0].getElementsByClassName('e-rowcell')[1] as HTMLElement).innerText == "101").toBe(true);
+    });
+    it('Edit another Movable Cell', () => {
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getCellFromIndex(0, 3).dispatchEvent(event);
+      gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = '51';
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      expect((gridObj.getMovableRows()[0].getElementsByClassName('e-rowcell')[2] as HTMLElement).innerText == "51").toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 });

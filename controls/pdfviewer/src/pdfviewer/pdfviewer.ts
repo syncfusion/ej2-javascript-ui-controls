@@ -1907,7 +1907,7 @@ export class HandWrittenSignatureSettings extends ChildProperty<HandWrittenSigna
     /**
      * specified the width of the annotation.
      */
-    @Property(100)
+    @Property(150)
     public width: number;
 
     /**
@@ -2806,7 +2806,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of handWrittenSignature.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, strokeColor: '#000000', width: 100, height: 100, thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'] })
+    @Property({ opacity: 1, strokeColor: '#000000', width: 150, height: 100, thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'] })
     public handWrittenSignatureSettings: HandWrittenSignatureSettingsModel;
 
     /**
@@ -3919,11 +3919,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     // tslint:disable-next-line
     public importAnnotations(importData: any, annotationDataFormat?: AnnotationDataFormat): void {
         if (this.annotationModule) {
-            if (importData.split('.')[1] === 'json') {
-                this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Json);
-            } else {
-                this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Xfdf);
-            }
+           if (typeof(importData) === 'string') {
+               if (importData.split('.')[1] === 'json') {
+                  this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Json);
+               } else {
+                  this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Xfdf);
+               }
+           } else {
+                this.viewerBase.importAnnotations(importData);
+           }
         }
     }
 
@@ -4541,8 +4545,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      * @private
      */
-    public fireBookmarkClick(pageNumber: number, position: number): void {
-        let eventArgs: BookmarkClickEventArgs = { name: 'bookmarkClick', pageNumber: pageNumber , position: position};
+    public fireBookmarkClick(pageNumber: number, position: number, text: string, fileName: string ): void {
+        // tslint:disable-next-line
+        let eventArgs: BookmarkClickEventArgs = { name: 'bookmarkClick', pageNumber: pageNumber , position: position, text: text, fileName: fileName};
         this.trigger('bookmarkClick', eventArgs);
     }
     /**

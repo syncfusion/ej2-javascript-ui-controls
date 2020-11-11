@@ -1154,6 +1154,7 @@ var NumericTextBox = /** @class */ (function (_super) {
                     this.updateHTMLAttrToWrapper();
                     this.updateDataAttribute(true);
                     this.checkAttributes(true);
+                    sf.inputs.Input.validateInputType(this.container, this.element);
                     break;
                 case 'placeholder':
                     sf.inputs.Input.setPlaceholder(newProp.placeholder, this.element);

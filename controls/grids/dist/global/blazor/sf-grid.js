@@ -1396,7 +1396,8 @@ var ColumnWidthService = /** @class */ (function () {
             }
         }
     };
-    ColumnWidthService.prototype.setColumnWidth = function (column, index, module) {
+    ColumnWidthService.prototype.setColumnWidth = function (column, index, module, allowStopEvent) {
+        if (allowStopEvent === void 0) { allowStopEvent = true; }
         if (this.parent.getColumns().length < 1) {
             return;
         }
@@ -1411,7 +1412,9 @@ var ColumnWidthService = /** @class */ (function () {
             if ((this.parent.options.allowResizing && module === 'resize') || (this.parent.options.frozenColumns && this.parent.options.allowResizing)) {
                 this.setWidthToTable();
             }
-            this.parent.dotNetRef.invokeMethodAsync("ColumnWidthChanged", { index: columnIndex, width: cWidth, columnUid: column.uid });
+            if (allowStopEvent) {
+                this.parent.dotNetRef.invokeMethodAsync("ColumnWidthChanged", { index: columnIndex, width: cWidth, columnUid: column.uid });
+            }
         }
     };
     ColumnWidthService.prototype.setWidth = function (width, index, clear) {
@@ -1903,7 +1906,7 @@ var Resize = /** @class */ (function () {
                 if (this.getScrollBarWidth() === 0) {
                     for (var _i = 0, _a = this.refreshColumnWidth(); _i < _a.length; _i++) {
                         var col = _a[_i];
-                        this.widthService.setColumnWidth(col);
+                        this.widthService.setColumnWidth(col, null, null, false);
                     }
                     this.widthService.setWidthToTable();
                 }
@@ -2669,6 +2672,7 @@ var ColumnMenu = /** @class */ (function () {
         this.uid = uid;
         var e = this.parent.getColumnHeaderByUid(uid).querySelector('.e-columnmenu');
         var columnMenuElement = document.getElementsByClassName("e-" + this.parent.element.id + "-column-menu")[0];
+        columnMenuElement.style.position = 'absolute';
         var element = columnMenuElement.getElementsByTagName('ul')[0];
         if (!sf.base.isNullOrUndefined(element)) {
             var pos = { top: 0, left: 0 };
@@ -2702,6 +2706,32 @@ var ColumnMenu = /** @class */ (function () {
         }
     };
     
+    ColumnMenu.prototype.setPosition = function () {
+        var columnMenuElement = document.getElementsByClassName("e-" + this.parent.element.id + "-column-menu")[0];
+        var element = !sf.base.isNullOrUndefined(columnMenuElement) ? columnMenuElement.getElementsByTagName('ul')[0] : null;
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(this.uid)) {
+            var e = this.parent.getColumnHeaderByUid(this.uid).querySelector('.e-columnmenu');
+            var headerCell = this.getHeaderCell(e);
+            var btnOffset = headerCell.getBoundingClientRect();
+            var left = btnOffset.left + pageXOffset;
+            var top_1 = btnOffset.bottom + pageYOffset;
+            var popupOffset = element.getBoundingClientRect();
+            var docElement = document.documentElement;
+            if (btnOffset.bottom + popupOffset.height > docElement.clientHeight) {
+                if (top_1 - btnOffset.height - popupOffset.height > docElement.clientTop) {
+                    top_1 = top_1 - btnOffset.height - popupOffset.height;
+                }
+            }
+            if (btnOffset.left + popupOffset.width > docElement.clientWidth) {
+                if (btnOffset.right - popupOffset.width > docElement.clientLeft) {
+                    left = (left + btnOffset.width) - popupOffset.width;
+                }
+            }
+            left = left - element.getBoundingClientRect().width + btnOffset.width;
+            columnMenuElement.style.left = Math.ceil(left + 1) + 'px';
+            columnMenuElement.style.top = Math.ceil(top_1 + 1) + 'px';
+        }
+    };
     ColumnMenu.prototype.appendFilter = function (e) {
         var _this = this;
         var showdialog = false;
@@ -5033,6 +5063,7 @@ var SfGrid = /** @class */ (function () {
         this.content = this.element.querySelector('.e-gridcontent .e-content');
         this.footer = this.element.querySelector('.e-summarycontent');
         this.initModules();
+        this.addScrollEvents(true);
     }
     SfGrid.prototype.initModules = function () {
         this.scrollModule = new Scroll(this);
@@ -5093,6 +5124,24 @@ var SfGrid = /** @class */ (function () {
         this.columnModel = [];
         this.updateColumnModel(this.options.columns);
         return this.columnModel;
+    };
+    SfGrid.prototype.addScrollEvents = function (add) {
+        if (this.options.showColumnMenu) {
+            var elements = sf.popups.getScrollableParent(this.element);
+            for (var i = 0; i < elements.length; i++) {
+                if (elements[i] instanceof HTMLElement) {
+                    add ? sf.base.EventHandler.add(elements[i], 'scroll', this.scrollHandler, this) :
+                        sf.base.EventHandler.remove(elements[i], 'scroll', this.scrollHandler);
+                }
+            }
+            add ? sf.base.EventHandler.add(this.content, 'scroll', this.scrollHandler, this) :
+                sf.base.EventHandler.remove(this.content, 'scroll', this.scrollHandler);
+        }
+    };
+    SfGrid.prototype.scrollHandler = function (e) {
+        if (!sf.base.isNullOrUndefined(this.element) && !sf.base.isNullOrUndefined(this.element.blazor__instance)) {
+            return this.element.blazor__instance.columnMenuModule.setPosition();
+        }
     };
     SfGrid.prototype.updateColumnModel = function (columns) {
         for (var i = 0, len = columns.length; i < len; i++) {
@@ -5434,7 +5483,9 @@ var SfGrid = /** @class */ (function () {
     SfGrid.prototype.documentClickHandler = function (e) {
         var popupElement = parentsUntil(e.target, 'e-popup-open');
         var CCButton = parentsUntil(e.target, 'e-cc-toolbar');
-        if (!popupElement && !(e.target.classList.contains('e-cc-cancel')) && !(e.target.classList.contains('e-choosercheck')) && !(e.target.classList.contains('e-fltrcheck')) && !(e.target.classList.contains('e-icon-filter')) && !CCButton && (this.element.querySelectorAll('.e-filter-popup.e-popup-open').length || this.element.querySelectorAll('.e-ccdlg.e-popup-open').length)) {
+        var datetimePicker = parentsUntil(e.target, 'e-datepicker');
+        var daterangePicker = parentsUntil(e.target, 'e-daterangepicker') || parentsUntil(e.target, 'e-zoomin');
+        if (!popupElement && !datetimePicker && !daterangePicker && !(e.target.classList.contains('e-cc-cancel')) && !(e.target.classList.contains('e-choosercheck')) && !(e.target.classList.contains('e-fltrcheck')) && !(e.target.classList.contains('e-icon-filter')) && !CCButton && (this.element.querySelectorAll('.e-filter-popup.e-popup-open').length || this.element.querySelectorAll('.e-ccdlg.e-popup-open').length)) {
             this.dotNetRef.invokeMethodAsync('FilterPopupClose');
         }
     };
@@ -5572,6 +5623,7 @@ var SfGrid = /** @class */ (function () {
     };
     SfGrid.prototype.destroy = function () {
         this.unWireEvents();
+        this.addScrollEvents(false);
         this.toolTipModule.destroy();
         this.keyModule.destroy();
         this.virtualContentModule.removeEventListener();
@@ -5734,6 +5786,14 @@ var Grid = {
             else {
                 instance.virtualContentModule.focusCell(cell, action);
             }
+        }
+    },
+    focusExcelInput: function (element, celluid) {
+        var excelPopup = document.querySelector("#" + celluid + "_excelDlg");
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance) && !sf.base.isNullOrUndefined(excelPopup)) {
+            setTimeout(function () {
+                excelPopup.querySelector("#" + element.id + "_SearchBox").focus();
+            }, 10);
         }
     },
     refreshOnDataChange: function (element) {

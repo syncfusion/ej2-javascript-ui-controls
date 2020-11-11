@@ -1046,7 +1046,7 @@ export function createTemplate(
             }
         }
         // tslint:disable-next-line:no-any
-        (chart as any).renderReactTemplates();
+        if ((chart as any).isReact) { (chart as any).renderReactTemplates(); }
     } catch (e) {
         return childElement;
     }

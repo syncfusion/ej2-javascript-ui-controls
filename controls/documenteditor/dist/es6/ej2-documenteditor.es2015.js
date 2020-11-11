@@ -13639,7 +13639,7 @@ class Renderer {
         // tslint:disable-next-line:max-line-length
         this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
         // }
-        if (tableCell.updatedTopBorders && tableCell.updatedTopBorders.length > 0) {
+        if (tableCell.updatedTopBorders && tableCell.updatedTopBorders.length > 1) {
             let cellX = cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2;
             let cellY = cellWidget.y - cellWidget.margin.top + lineWidth / 2;
             for (let a = 0; a < tableCell.updatedTopBorders.length; a++) {
@@ -27768,8 +27768,10 @@ class ContextMenu$1 {
             yPos = point.y;
         }
         else {
-            yPos = event.y + document.body.scrollTop + document.documentElement.scrollTop;
-            xPos = event.x + document.body.scrollLeft + document.documentElement.scrollLeft;
+            // tslint:disable-next-line:max-line-length
+            yPos = ((Browser.isIE) ? event.clientY : event.y) + document.body.scrollTop + document.documentElement.scrollTop;
+            // tslint:disable-next-line:max-line-length
+            xPos = ((Browser.isIE) ? event.clientX : event.x) + document.body.scrollLeft + document.documentElement.scrollLeft;
         }
         if (this.showHideElements(this.documentHelper.selection)) {
             if (isTouch) {

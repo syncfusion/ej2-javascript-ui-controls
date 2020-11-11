@@ -1306,12 +1306,9 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
         else if (this.parent.dataSource instanceof DataManager) {
             this.initDataSource(isChange);
         }
-        else if (this.parent.dataSource.length > 0) {
+        else {
             this.dataArray = this.parent.dataSource;
             this.cloneDataSource();
-            this.parent.renderGantt(isChange);
-        }
-        else {
             this.parent.renderGantt(isChange);
         }
     };
@@ -4760,6 +4757,7 @@ var Timeline = /** @__PURE__ @class */ (function () {
         if (this.isZooming || this.isZoomToFit) {
             var args = {
                 requestType: this.isZoomIn ? 'AfterZoomIn' : this.isZoomToFit ? 'AfterZoomToProject' : 'AfterZoomOut',
+                timeline: this.parent.currentZoomingLevel
             };
             this.parent.trigger('actionComplete', args);
         }
@@ -7427,33 +7425,46 @@ var ChartRows = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             var labelString = '';
+            var taskLabel$$1 = '';
+            var taskbarInnerDiv = void 0;
+            var progressDiv = void 0;
+            if (data.ganttProperties.startDate && data.ganttProperties.endDate
+                && data.ganttProperties.duration) {
+                taskbarInnerDiv = this.createDivElement('<div class="' + childTaskBarInnerDiv + ' ' + traceChildTaskBar +
+                    ' ' + (data.ganttProperties.isAutoSchedule ? '' : manualChildTaskBar) + '"' +
+                    'style="width:' + data.ganttProperties.width + 'px;height:' +
+                    (this.taskBarHeight) + 'px;"></div>');
+                progressDiv = this.createDivElement('<div class="' + childProgressBarInnerDiv + ' ' +
+                    traceChildProgressBar + ' ' + (data.ganttProperties.isAutoSchedule ?
+                    '' : manualChildProgressBar) + '"' +
+                    ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
+                    'width:' + data.ganttProperties.progressWidth + 'px;height:100%;' +
+                    'border-top-right-radius:' + this.getBorderRadius(data.ganttProperties) + 'px;' +
+                    'border-bottom-right-radius:' + this.getBorderRadius(data.ganttProperties) + 'px;">' +
+                    '</div>');
+            }
             if (this.taskLabelTemplateFunction) {
-                var taskLabelTemplateNode = this.taskLabelTemplateFunction(extend({ index: i }, data), this.parent, 'TaskLabelTemplate', this.getTemplateID('TaskLabelTemplate'), false);
-                var tempDiv = createElement('div');
-                tempDiv.appendChild(taskLabelTemplateNode[0]);
-                labelString = tempDiv.innerHTML;
+                var taskLabelTemplateNode = this.taskLabelTemplateFunction(extend({ index: i }, data), this.parent, 'TaskLabelTemplate', this.getTemplateID('TaskLabelTemplate'), false, undefined, progressDiv[0]);
+                if (taskLabelTemplateNode && taskLabelTemplateNode.length > 0) {
+                    var tempDiv = createElement('div');
+                    tempDiv.appendChild(taskLabelTemplateNode[0]);
+                    labelString = tempDiv.innerHTML;
+                }
             }
             else {
                 labelString = this.getTaskLabel(this.parent.labelSettings.taskLabel);
                 labelString = labelString === 'isCustomTemplate' ? this.parent.labelSettings.taskLabel : labelString;
             }
+            if (labelString) {
+                taskLabel$$1 = '<span class="' + taskLabel + '" style="line-height:' +
+                    (this.taskBarHeight - 1) + 'px; text-align:' + (this.parent.viewType === 'ResourceView' ? 'left;' : '') +
+                    'display:' + (this.parent.viewType === 'ResourceView' ? 'inline-flex;' : '') +
+                    'width:' + (this.parent.viewType === 'ResourceView' ? (data.ganttProperties.width - 10) : '') + 'px; height:' +
+                    this.taskBarHeight + 'px;">' + labelString + '</span>';
+            }
             var template = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length > 0 ?
                 this.splitTaskbar(data, labelString) : (data.ganttProperties.startDate && data.ganttProperties.endDate
-                && data.ganttProperties.duration) ? ('<div class="' + childTaskBarInnerDiv + ' ' + traceChildTaskBar + ' ' + (data.ganttProperties.isAutoSchedule ?
-                '' : manualChildTaskBar) + '"' +
-                'style="width:' + data.ganttProperties.width + 'px;height:' +
-                (this.taskBarHeight) + 'px;">' + '<div class="' + childProgressBarInnerDiv + ' ' +
-                traceChildProgressBar + ' ' + (data.ganttProperties.isAutoSchedule ?
-                '' : manualChildProgressBar) + '"' +
-                ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
-                'width:' + data.ganttProperties.progressWidth + 'px;height:100%;' +
-                'border-top-right-radius:' + this.getBorderRadius(data.ganttProperties) + 'px;' +
-                'border-bottom-right-radius:' + this.getBorderRadius(data.ganttProperties) + 'px;">' +
-                '<span class="' + taskLabel + '" style="line-height:' +
-                (this.taskBarHeight - 1) + 'px; text-align:' + (this.parent.viewType === 'ResourceView' ? 'left;' : '') +
-                'display:' + (this.parent.viewType === 'ResourceView' ? 'inline-flex;' : '') +
-                'width:' + (this.parent.viewType === 'ResourceView' ? (data.ganttProperties.width - 10) : '') + 'px; height:' +
-                this.taskBarHeight + 'px;">' + labelString + '</span></div></div>') :
+                && data.ganttProperties.duration) ? (taskLabel$$1) :
                 (data.ganttProperties.startDate && !data.ganttProperties.endDate && !data.ganttProperties.duration) ? ('<div class="' + childProgressBarInnerDiv + ' ' + traceChildTaskBar + ' ' +
                     unscheduledTaskbarLeft + ' ' + (data.ganttProperties.isAutoSchedule ?
                     '' : manualChildTaskBar) + '"' +
@@ -7469,7 +7480,19 @@ var ChartRows = /** @__PURE__ @class */ (function (_super) {
                                 '' : manualChildTaskBar) + '"' +
                                 'style="left:' + data.ganttProperties.left + 'px; width:' + data.ganttProperties.width + 'px;' +
                                 ' height:' + this.taskBarHeight + 'px;"></div>') : '';
-            childTaskbarNode = this.createDivElement(template);
+            if (data.ganttProperties.startDate && data.ganttProperties.endDate && data.ganttProperties.duration &&
+                isNullOrUndefined(data.ganttProperties.segments)) {
+                if (template !== '' && !isNullOrUndefined(progressDiv) && progressDiv.length > 0) {
+                    progressDiv[0].appendChild([].slice.call(this.createDivElement(template))[0]);
+                }
+                if (!isNullOrUndefined(taskbarInnerDiv) && taskbarInnerDiv.length > 0) {
+                    taskbarInnerDiv[0].appendChild([].slice.call(progressDiv)[0]);
+                }
+                childTaskbarNode = taskbarInnerDiv;
+            }
+            else {
+                childTaskbarNode = this.createDivElement(template);
+            }
         }
         return childTaskbarNode;
     };
@@ -7857,7 +7880,7 @@ var ChartRows = /** @__PURE__ @class */ (function (_super) {
         leftLabelNode[0].setAttribute('aria-label', this.generateTaskLabelAriaLabel('left'));
         var leftLabelTemplateNode = null;
         if (this.leftTaskLabelTemplateFunction) {
-            leftLabelTemplateNode = this.leftTaskLabelTemplateFunction(extend({ index: i }, this.templateData), this.parent, 'LeftLabelTemplate', this.getTemplateID('LeftLabelTemplate'), false);
+            leftLabelTemplateNode = this.leftTaskLabelTemplateFunction(extend({ index: i }, this.templateData), this.parent, 'LeftLabelTemplate', this.getTemplateID('LeftLabelTemplate'), false, undefined, leftLabelNode[0]);
         }
         else {
             var field = this.parent.labelSettings.leftLabel;
@@ -7895,7 +7918,7 @@ var ChartRows = /** @__PURE__ @class */ (function (_super) {
         rightLabelNode[0].setAttribute('aria-label', this.generateTaskLabelAriaLabel('right'));
         var rightLabelTemplateNode = null;
         if (this.rightTaskLabelTemplateFunction) {
-            rightLabelTemplateNode = this.rightTaskLabelTemplateFunction(extend({ index: i }, this.templateData), this.parent, 'RightLabelTemplate', this.getTemplateID('RightLabelTemplate'), false);
+            rightLabelTemplateNode = this.rightTaskLabelTemplateFunction(extend({ index: i }, this.templateData), this.parent, 'RightLabelTemplate', this.getTemplateID('RightLabelTemplate'), false, undefined, rightLabelNode[0]);
         }
         else {
             var field = this.parent.labelSettings.rightLabel;
@@ -7961,32 +7984,41 @@ var ChartRows = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             var labelString = '';
-            if (this.taskLabelTemplateFunction) {
-                var parentTaskLabelNode = this.taskLabelTemplateFunction(extend({ index: i }, data), this.parent, 'TaskLabelTemplate', this.getTemplateID('TaskLabelTemplate'), false);
-                var div = createElement('div');
-                div.appendChild(parentTaskLabelNode[0]);
-                labelString = div.innerHTML;
-            }
-            else {
-                labelString = this.getTaskLabel(this.parent.labelSettings.taskLabel);
-                labelString = labelString === 'isCustomTemplate' ? this.parent.labelSettings.taskLabel : labelString;
-            }
+            var labelDiv = void 0;
             var tHeight = this.taskBarHeight / 5;
-            var template = '<div class="' + parentTaskBarInnerDiv + ' ' +
+            var template = this.createDivElement('<div class="' + parentTaskBarInnerDiv + ' ' +
                 this.getExpandClass(data) + ' ' + traceParentTaskBar + '"' +
                 ' style="width:' + (data.ganttProperties.isAutoSchedule ? data.ganttProperties.width :
                 data.ganttProperties.autoWidth) + 'px;height:' + (data.ganttProperties.isAutoSchedule ? this.taskBarHeight :
                 (tHeight * 3)) + 'px;margin-top:' + (data.ganttProperties.isAutoSchedule ? '' :
                 (tHeight * 2)) + 'px;">' +
-                '<div class="' + parentProgressBarInnerDiv + ' ' + this.getExpandClass(data) + ' ' + traceParentProgressBar + '"' +
+                '</div>');
+            var progressBarInnerDiv = this.createDivElement('<div class="' + parentProgressBarInnerDiv + ' ' +
+                this.getExpandClass(data) + ' ' + traceParentProgressBar + '"' +
                 ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
                 'width:' + data.ganttProperties.progressWidth + 'px;' +
                 'border-top-right-radius:' + this.getBorderRadius(data) + 'px;' +
-                'border-bottom-right-radius:' + this.getBorderRadius(data) + 'px;height:100%;"><span class="' +
-                taskLabel + '" style="line-height:' +
-                (this.taskBarHeight - 1) + 'px; display:' + (this.parent.viewType === 'ResourceView' ? 'inline-flex;' : '') + 'width:' +
-                (this.parent.viewType === 'ResourceView' ? (data.ganttProperties.width - 10) : '') + 'px; height:' +
-                this.taskBarHeight + 'px;">' + labelString + '</span></div></div>';
+                'border-bottom-right-radius:' + this.getBorderRadius(data) + 'px;height:100%;"></div>');
+            if (this.taskLabelTemplateFunction) {
+                var parentTaskLabelNode = this.taskLabelTemplateFunction(extend({ index: i }, data), this.parent, 'TaskLabelTemplate', this.getTemplateID('TaskLabelTemplate'), false, undefined, progressBarInnerDiv[0]);
+                if (parentTaskLabelNode && parentTaskLabelNode.length > 0) {
+                    var div = createElement('div');
+                    div.appendChild(parentTaskLabelNode[0]);
+                    labelString = div.innerHTML;
+                }
+            }
+            else {
+                labelString = this.getTaskLabel(this.parent.labelSettings.taskLabel);
+                labelString = labelString === 'isCustomTemplate' ? this.parent.labelSettings.taskLabel : labelString;
+            }
+            if (labelString !== '') {
+                labelDiv = this.createDivElement('<span class="' +
+                    taskLabel + '" style="line-height:' +
+                    (this.taskBarHeight - 1) + 'px; display:' + (this.parent.viewType === 'ResourceView' ? 'inline-flex;' : '') + 'width:' +
+                    (this.parent.viewType === 'ResourceView' ? (data.ganttProperties.width - 10) : '') + 'px; height:' +
+                    this.taskBarHeight + 'px;">' + labelString + '</span>');
+                progressBarInnerDiv[0].appendChild([].slice.call(labelDiv)[0]);
+            }
             var milestoneTemplate = '<div class="' + parentMilestone + '" style="position:absolute;">' +
                 '<div class="' + parentMilestoneTop + '" style="border-right-width:' +
                 this.milesStoneRadius + 'px;border-left-width:' + this.milesStoneRadius + 'px;border-bottom-width:' +
@@ -7994,8 +8026,9 @@ var ChartRows = /** @__PURE__ @class */ (function (_super) {
                 '<div class="' + parentMilestoneBottom + '" style="top:' +
                 (this.milesStoneRadius) + 'px;border-right-width:' + this.milesStoneRadius + 'px; border-left-width:' +
                 this.milesStoneRadius + 'px; border-top-width:' + this.milesStoneRadius + 'px;"></div></div>';
-            parentTaskbarNode = this.createDivElement(data.ganttProperties.isMilestone ?
-                data.ganttProperties.isAutoSchedule ? milestoneTemplate : '' : template);
+            template[0].appendChild([].slice.call(progressBarInnerDiv)[0]);
+            parentTaskbarNode = data.ganttProperties.isMilestone ?
+                this.createDivElement(data.ganttProperties.isAutoSchedule ? milestoneTemplate : '') : template;
         }
         return parentTaskbarNode;
     };
@@ -16479,11 +16512,11 @@ var TaskbarEdit = /** @__PURE__ @class */ (function (_super) {
         if (this.connectorSecondAction) {
             if (this.connectorSecondAction === 'ConnectorPointLeftDrag') {
                 predecessor += 'S';
-                currentTarget = 'Start';
+                currentTarget = 'start';
             }
             else if (this.connectorSecondAction === 'ConnectorPointRightDrag') {
                 predecessor += 'F';
-                currentTarget = 'Finish';
+                currentTarget = 'finish';
             }
         }
         if (isNullOrUndefined(toItem)) {
@@ -16515,7 +16548,7 @@ var TaskbarEdit = /** @__PURE__ @class */ (function (_super) {
                 this.parent.connectorLineModule.tooltipTable.innerHTML = this.parent.connectorLineModule.getConnectorLineTooltipInnerTd(this.parent.editModule.taskbarEditModule.taskBarEditRecord.ganttProperties.taskName, this.parent.editModule.taskbarEditModule.fromPredecessorText, '', '');
                 var table = this.parent.connectorLineModule.tooltipTable.querySelector('#toPredecessor').querySelectorAll('td');
                 table[1].innerText = toItem.taskName;
-                table[2].innerText = currentTarget;
+                table[2].innerText = this.parent.localeObj.getConstant(currentTarget);
                 var tooltipElement = this.parent.connectorLineModule.tooltipTable.parentElement.parentElement;
                 if (tooltipElement.offsetTop + tooltipElement.offsetHeight > e.pageY) {
                     tooltipElement.style.top = (e.pageY - tooltipElement.offsetHeight - 20) + 'px';
@@ -20619,7 +20652,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                     var query = _this.parent.query instanceof Query ? _this.parent.query : new Query();
                     var crud = null;
                     var dataAdaptor = data.adaptor;
-                    if ((dataAdaptor instanceof WebApiAdaptor && dataAdaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
+                    if (!(dataAdaptor instanceof WebApiAdaptor && dataAdaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
                         crud = data.saveChanges(updatedData, _this.parent.taskFields.id, null, query);
                     }
                     else {
@@ -21427,7 +21460,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                         updatedData_1[blazAddedRec] = [];
                     }
                     var adaptor = data_1.adaptor;
-                    if ((adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data_1.dataSource.batchUrl) {
+                    if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data_1.dataSource.batchUrl) {
                         var crud = data_1.saveChanges(updatedData_1, _this.parent.taskFields.id);
                         crud.then(function (e) { return _this.deleteSuccess(args); })
                             .catch(function (e) { return _this.dmFailure(e, args); });
@@ -22020,7 +22053,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                         /* tslint:disable-next-line */
                         var query_2 = _this.parent.query instanceof Query ? _this.parent.query : new Query();
                         var adaptor = data_2.adaptor;
-                        if ((adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data_2.dataSource.batchUrl) {
+                        if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data_2.dataSource.batchUrl) {
                             /* tslint:disable-next-line */
                             var crud = data_2.saveChanges(updatedData_2, _this.parent.taskFields.id, null, query_2);
                             crud.then(function (e) {
@@ -22402,7 +22435,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             var queryValue = this.parent.query instanceof Query ? this.parent.query : new Query();
             var crud = null;
             var adaptor = data.adaptor;
-            if ((adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
+            if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
                 crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, queryValue);
             }
             else {

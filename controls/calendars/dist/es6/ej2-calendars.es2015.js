@@ -9158,6 +9158,7 @@ let TimePicker = class TimePicker extends Component {
         this.setProperties({ value: this.checkDateValue(new Date(this.checkInValue(this.value))) }, true);
         this.setProperties({ min: this.checkDateValue(new Date(this.checkInValue(this.min))) }, true);
         this.setProperties({ max: this.checkDateValue(new Date(this.checkInValue(this.max))) }, true);
+        this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkInValue(this.scrollTo))) }, true);
         if (this.angularTag !== null) {
             this.validationAttribute(this.element, this.inputElement);
         }
@@ -11322,7 +11323,7 @@ let TimePicker = class TimePicker extends Component {
                             if (this.popupWrapper) {
                                 this.setScrollTo();
                             }
-                            this.setProperties({ scrollTo: newProp.scrollTo }, true);
+                            this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkInValue(newProp.scrollTo))) }, true);
                         }
                         else {
                             this.setProperties({ scrollTo: null }, true);
@@ -11604,6 +11605,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         super.updateHtmlAttributeToWrapper();
         this.bindInputEvents();
         this.setValue();
+        this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkValue(this.scrollTo))) }, true);
         this.previousDateTime = this.value && new Date(+this.value);
         if (this.element.tagName === 'EJS-DATETIMEPICKER') {
             this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
@@ -12775,7 +12777,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
                         if (this.dateTimeWrapper) {
                             this.setScrollTo();
                         }
-                        this.setProperties({ scrollTo: newProp.scrollTo }, true);
+                        this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkValue(newProp.scrollTo))) }, true);
                     }
                     else {
                         this.setProperties({ scrollTo: null }, true);

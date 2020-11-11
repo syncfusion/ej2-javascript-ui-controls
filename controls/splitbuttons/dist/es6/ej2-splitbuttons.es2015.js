@@ -119,6 +119,9 @@ __decorate([
 __decorate([
     Property('')
 ], Item.prototype, "url", void 0);
+__decorate([
+    Property(false)
+], Item.prototype, "disabled", void 0);
 
 /**
  * Common modules
@@ -304,6 +307,9 @@ let DropDownButton = class DropDownButton extends Component {
                 if (showIcon && !item.separator) {
                     li.classList.add('e-blank-icon');
                 }
+            }
+            if (item.disabled) {
+                li.classList.add('e-disabled');
             }
             eventArgs = { item: item, element: li };
             this.trigger('beforeItemRender', eventArgs);

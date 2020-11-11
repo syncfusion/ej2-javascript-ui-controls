@@ -254,14 +254,14 @@ export class HeaderRenderer {
                 break;
             case 'agenda':
                 view = {
-                    align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-agenda', text: this.l10n.getConstant('agenda'),
-                    cssClass: 'e-views e-agenda'
+                    align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-agenda',
+                    text: displayName || this.l10n.getConstant('agenda'), cssClass: 'e-views e-agenda'
                 };
                 break;
             case 'monthagenda':
                 view = {
                     align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-month-agenda',
-                    text: this.l10n.getConstant('monthAgenda'), cssClass: 'e-views e-month-agenda'
+                    text: displayName || this.l10n.getConstant('monthAgenda'), cssClass: 'e-views e-month-agenda'
                 };
                 break;
             case 'timelineday':

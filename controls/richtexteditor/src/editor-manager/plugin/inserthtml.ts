@@ -321,7 +321,7 @@ export class InsertHtml {
         for (let i: number = 0; i < emptyElements.length; i++) {
             if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR' &&
             emptyElements[i].tagName !== 'IFRAME' && emptyElements[i].tagName !== 'TD' &&
-            emptyElements[i].tagName !== 'SOURCE') {
+            emptyElements[i].tagName !== 'SOURCE' && emptyElements[i].tagName !== 'HR') {
                 let detachableElement: HTMLElement = this.findDetachEmptyElem(emptyElements[i]);
                 if (!isNOU(detachableElement)) { detach(detachableElement); }
             }

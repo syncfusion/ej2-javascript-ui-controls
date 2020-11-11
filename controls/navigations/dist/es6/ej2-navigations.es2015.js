@@ -1168,11 +1168,16 @@ let MenuBase = class MenuBase extends Component {
         let ul = this.createItems(this.items);
         append(Array.prototype.slice.call(ul.children), this.element);
         this.element.classList.add('e-menu-parent');
-        if (this.isMenu && this.enableScrolling) {
-            let wrapper = this.getWrapper();
-            this.element.classList.contains('e-vertical') ?
-                addScrolling(this.createElement, wrapper, this.element, 'vscroll', this.enableRtl)
-                : addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
+        if (this.isMenu) {
+            if (!this.hamburgerMode && this.element.classList.contains('e-vertical')) {
+                this.setBlankIconStyle(this.element);
+            }
+            if (this.enableScrolling) {
+                let wrapper = this.getWrapper();
+                this.element.classList.contains('e-vertical') ?
+                    addScrolling(this.createElement, wrapper, this.element, 'vscroll', this.enableRtl)
+                    : addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
+            }
         }
     }
     wireEvents() {
@@ -1820,6 +1825,7 @@ let MenuBase = class MenuBase extends Component {
                             this.toggleAnimation(this.popupWrapper);
                         }
                         else {
+                            this.setBlankIconStyle(this.popupWrapper);
                             this.wireKeyboardEvent(this.popupWrapper);
                             rippleEffect(this.popupWrapper, { selector: '.' + ITEM });
                             this.popupWrapper.style.left = this.left + 'px';
@@ -1832,6 +1838,7 @@ let MenuBase = class MenuBase extends Component {
                         }
                     }
                     else {
+                        this.setBlankIconStyle(this.uList);
                         this.setPosition(this.lItem, this.uList, this.top, this.left);
                         this.toggleAnimation(this.uList);
                     }
@@ -1856,6 +1863,30 @@ let MenuBase = class MenuBase extends Component {
                 cul.children[index].focus();
             }
         });
+    }
+    setBlankIconStyle(menu) {
+        let blankIconList = [].slice.call(menu.getElementsByClassName('e-blankicon'));
+        if (!blankIconList.length) {
+            return;
+        }
+        let iconLi = menu.querySelector('.e-menu-item:not(.e-blankicon):not(.e-separator)');
+        let icon = iconLi.querySelector('.e-menu-icon');
+        if (!icon) {
+            return;
+        }
+        let cssProp = this.enableRtl ? { padding: 'paddingRight', margin: 'marginLeft' } :
+            { padding: 'paddingLeft', margin: 'marginRight' };
+        let iconCssProps = getComputedStyle(icon);
+        let iconSize = parseInt(iconCssProps.fontSize, 10);
+        if (!!parseInt(iconCssProps.width, 10) && parseInt(iconCssProps.width, 10) > iconSize) {
+            iconSize = parseInt(iconCssProps.width, 10);
+        }
+        // tslint:disable
+        let size = `${iconSize + parseInt(iconCssProps[cssProp.margin], 10) + parseInt(getComputedStyle(iconLi)[cssProp.padding], 10)}px`;
+        blankIconList.forEach((li) => {
+            li.style[cssProp.padding] = size;
+        });
+        // tslint:enable
     }
     checkScrollOffset(e) {
         let wrapper = this.getWrapper();
@@ -6769,9 +6800,15 @@ let Menu = class Menu extends MenuBase {
                     }
                     if (newProp.hamburgerMode) {
                         this.element.parentElement.classList.add(HAMBURGER);
+                        [].slice.call(this.element.getElementsByClassName('e-blankicon')).forEach((li) => {
+                            li.style[this.enableRtl ? 'paddingRight' : 'paddingLeft'] = '';
+                        });
                     }
                     else {
                         this.element.parentElement.classList.remove(HAMBURGER);
+                        if (this.orientation === 'Vertical') {
+                            this.setBlankIconStyle(this.element);
+                        }
                     }
                     if (this.orientation === 'Vertical') {
                         if (!this.target) {

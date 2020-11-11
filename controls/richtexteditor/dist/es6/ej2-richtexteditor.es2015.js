@@ -8210,7 +8210,7 @@ class NodeSelection {
         for (; index--; null) {
             node = node && node.childNodes[num[index]];
         }
-        if (node && constant >= 0) {
+        if (node && constant >= 0 && node.nodeName !== 'html') {
             range[isvalid ? 'setStart' : 'setEnd'](node, constant);
         }
         return range;
@@ -10533,7 +10533,7 @@ class InsertHtml {
         for (let i = 0; i < emptyElements.length; i++) {
             if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR' &&
                 emptyElements[i].tagName !== 'IFRAME' && emptyElements[i].tagName !== 'TD' &&
-                emptyElements[i].tagName !== 'SOURCE') {
+                emptyElements[i].tagName !== 'SOURCE' && emptyElements[i].tagName !== 'HR') {
                 let detachableElement = this.findDetachEmptyElem(emptyElements[i]);
                 if (!isNullOrUndefined(detachableElement)) {
                     detach(detachableElement);
@@ -12338,7 +12338,13 @@ class ClearFormat$1 {
         let nodes = nodeSelection.getInsertNodeCollection(range);
         let save = nodeSelection.save(range, docElement);
         if (!isCollapsed) {
-            let preNode = nodeCutter.GetSpliceNode(range, nodes[0]);
+            let preNode;
+            if (nodes[0].nodeName === 'BR' && closest(nodes[0], 'table')) {
+                preNode = nodeCutter.GetSpliceNode(range, closest(nodes[0], 'table'));
+            }
+            else {
+                preNode = nodeCutter.GetSpliceNode(range, nodes[nodes.length > 1 && nodes[0].nodeName === 'IMG' ? 1 : 0]);
+            }
             if (nodes.length === 1) {
                 nodeSelection.setSelectionContents(docElement, preNode);
                 range = nodeSelection.getRange(docElement);
@@ -12346,7 +12352,7 @@ class ClearFormat$1 {
             else {
                 let i = 1;
                 let lastText = nodes[nodes.length - i];
-                while (nodes[nodes.length - i].nodeName === 'BR') {
+                while (nodes.length <= i && nodes[nodes.length - i].nodeName === 'BR') {
                     i++;
                     lastText = nodes[nodes.length - i];
                 }
@@ -12528,12 +12534,10 @@ class ClearFormat$1 {
 ClearFormat$1.BLOCK_TAGS = ['address', 'article', 'aside', 'blockquote',
     'details', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer',
     'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'li', 'main', 'nav',
-    'noscript', 'ol', 'p', 'pre', 'section', 'table', 'tbody', 'td', 'tfoot', 'th',
-    'thead', 'tr', 'ul'];
+    'noscript', 'ol', 'p', 'pre', 'section', 'ul'];
 ClearFormat$1.NONVALID_PARENT_TAGS = ['thead', 'tbody', 'ul', 'ol', 'table', 'tfoot', 'tr'];
 ClearFormat$1.IGNORE_PARENT_TAGS = ['ul', 'ol', 'table'];
-ClearFormat$1.NONVALID_TAGS = ['thead', 'tbody', 'figcaption', 'td', 'tr',
-    'th', 'tfoot', 'figcaption', 'li'];
+ClearFormat$1.NONVALID_TAGS = ['thead', 'tbody', 'figcaption', 'td', 'tr', 'th', 'tfoot', 'figcaption', 'li'];
 
 /**
  * Clear Format EXEC internal component

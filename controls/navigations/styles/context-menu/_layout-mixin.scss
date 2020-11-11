@@ -83,10 +83,6 @@
     @include separator-size;
     margin: $cmenu-seperator-padding;
   }
-
-  &.e-blankicon {
-    padding-left: $cmenu-blank-icon;
-  }
 }
 
 @mixin separator-size {
@@ -128,7 +124,6 @@
 
   &.e-blankicon {
     padding-left: $cmenu-caret-blank-icon;
-    padding-right: $cmenu-blank-icon;
 
     &.e-menu-caret-icon {
       padding-left: $cmenu-caret-li-padding;
@@ -159,15 +154,10 @@
   &.e-separator {
     @include separator-bigger-size;
   }
-
-  &.e-blankicon {
-    padding-left: $cmenu-blank-icon-bigger;
-  }
 }
 
 @mixin bigger-rtl-blank-icon {
   padding-left: $cmenu-caret-blank-icon;
-  padding-right: $cmenu-blank-icon-bigger;
 
   &.e-menu-caret-icon {
     padding-left: $cmenu-caret-li-padding;

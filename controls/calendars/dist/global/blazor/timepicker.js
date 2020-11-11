@@ -244,6 +244,7 @@ var TimePicker = /** @class */ (function (_super) {
         this.setProperties({ value: this.checkDateValue(new Date(this.checkInValue(this.value))) }, true);
         this.setProperties({ min: this.checkDateValue(new Date(this.checkInValue(this.min))) }, true);
         this.setProperties({ max: this.checkDateValue(new Date(this.checkInValue(this.max))) }, true);
+        this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkInValue(this.scrollTo))) }, true);
         if (this.angularTag !== null) {
             this.validationAttribute(this.element, this.inputElement);
         }
@@ -2416,7 +2417,7 @@ var TimePicker = /** @class */ (function (_super) {
                             if (this.popupWrapper) {
                                 this.setScrollTo();
                             }
-                            this.setProperties({ scrollTo: newProp.scrollTo }, true);
+                            this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkInValue(newProp.scrollTo))) }, true);
                         }
                         else {
                             this.setProperties({ scrollTo: null }, true);

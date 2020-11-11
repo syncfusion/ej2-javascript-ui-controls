@@ -36,4 +36,10 @@ export interface ItemModel {
      */
     url?: string;
 
+    /**
+     * Used to enable or disable the item.
+     * @default false
+     */
+    disabled?: boolean;
+
 }

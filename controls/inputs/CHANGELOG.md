@@ -2,13 +2,23 @@
 
 ## [Unreleased]
 
-## 18.3.47 (2020-11-05)
+## 18.3.48 (2020-11-11)
+
+### Uploader
+
+#### Bug Fixes
+
+- `#299628` - Issue with "cancelling the file uploading inside the uploading event doesn't work when set `showFileList` property value as false" has been resolved.
+
+## 18.3.44 (2020-10-27)
 
 ### Range Slider
 
 #### Bug Fixes
 
 - `#294975` - Issue with Slider's handle staying large in size when clicking out of the screen has been fixed.
+
+- `#296636` - Issue with "Tooltip with Slider is not working properly" has been fixed.
 
 ## 18.3.35 (2020-10-01)
 

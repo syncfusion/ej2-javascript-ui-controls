@@ -149,6 +149,13 @@ export class GridSettings extends ChildProperty<GridSettings> {
      public allowResizing: boolean;
 
      /**
+      * Allows the columns to be fit to the component's width.
+      * @default true
+      */
+     @Property(true)
+     public allowAutoResizing: boolean;
+
+     /**
       * Allow to set height to the pivot table rows commonly. 
       * > By default, the rowHeight property is set as 36 pixels for desktop layout and 48 pixels for mobile layout. 
       * The height of the column headers alone may vary when grouping bar feature is enabled.

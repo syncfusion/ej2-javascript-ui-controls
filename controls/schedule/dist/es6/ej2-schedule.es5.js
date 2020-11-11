@@ -977,14 +977,14 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
                 break;
             case 'agenda':
                 view = {
-                    align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-agenda', text: this.l10n.getConstant('agenda'),
-                    cssClass: 'e-views e-agenda'
+                    align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-agenda',
+                    text: displayName || this.l10n.getConstant('agenda'), cssClass: 'e-views e-agenda'
                 };
                 break;
             case 'monthagenda':
                 view = {
                     align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-month-agenda',
-                    text: this.l10n.getConstant('monthAgenda'), cssClass: 'e-views e-month-agenda'
+                    text: displayName || this.l10n.getConstant('monthAgenda'), cssClass: 'e-views e-month-agenda'
                 };
                 break;
             case 'timelineday':
@@ -8445,7 +8445,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         }
         this.parent.renderTemplates();
         var isEventPopup = this.quickPopup.element.querySelector('.' + EVENT_POPUP_CLASS);
-        var popupType = this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo';
+        var popupType = this.parent.isAdaptive ? 'ViewEventInfo' : isEventPopup ? 'EditEventInfo' : 'QuickInfo';
         var eventProp = {
             type: popupType, cancel: false, data: extend({}, this.getDataFromTarget(target), null, true),
             target: target, element: this.quickPopup.element
@@ -8665,7 +8665,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         }
         var isEventPopup = this.quickPopup.element.querySelector('.' + EVENT_POPUP_CLASS);
         var args = {
-            type: this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo',
+            type: this.parent.isAdaptive ? 'ViewEventInfo' : isEventPopup ? 'EditEventInfo' : 'QuickInfo',
             cancel: false, data: popupData, element: this.quickPopup.element,
             target: (isCellPopup ? this.parent.activeCellsData.element : this.parent.activeEventData.element)
         };
@@ -10201,10 +10201,6 @@ var EventWindow = /** @__PURE__ @class */ (function () {
     EventWindow.prototype.resetEditorTemplate = function () {
         if (this.parent.editorTemplate) {
             resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
-            // tslint:disable-next-line:no-any
-            if (!isBlazor() && !this.parent.isReact) {
-                this.parent.resetTemplates(['editorTemplate']);
-            }
         }
     };
     EventWindow.prototype.refresh = function () {
@@ -14870,7 +14866,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      */
     Schedule.prototype.resetTemplates = function (templates) {
         // tslint:disable-next-line:no-any
-        if (this.isReact || (templates && templates.length > 0)) {
+        if (this.isReact) {
             this.clearTemplate(templates);
         }
     };

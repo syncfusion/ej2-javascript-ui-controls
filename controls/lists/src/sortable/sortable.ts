@@ -111,11 +111,10 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
     }
     private getPlaceHolder(target: HTMLElement, instance: Sortable): HTMLElement {
         if (instance.placeHolder) {
-            if (this.isPlaceHolderPresent(instance)) { remove(instance.placeHolderElement); }
-            instance.placeHolderElement = instance.placeHolder(
+            let placeHolderElement: HTMLElement = instance.placeHolder(
                 { element: instance.element, grabbedElement: this.target, target: target });
-            instance.placeHolderElement.classList.add('e-sortable-placeholder');
-            return instance.placeHolderElement;
+            placeHolderElement.classList.add('e-sortable-placeholder');
+            return placeHolderElement;
         }
         return null;
     }
@@ -142,28 +141,37 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
     private onDrag: Function = (e: { target: HTMLElement, event: MouseEventArgs }) => {
         this.trigger('drag', { event: e.event, element: this.element, target: e.target });
         let newInst: Sortable = this.getSortableInstance(e.target); let target: HTMLElement = this.getSortableElement(e.target, newInst);
-        if ((this.isValidTarget(target, newInst) || e.target.className.indexOf('e-list-group-item') > -1) && this.curTarget !== target &&
-            (newInst.placeHolderElement ? newInst.placeHolderElement !== e.target : true )) {
+        if ((this.isValidTarget(target, newInst) || e.target.className.indexOf('e-list-group-item') > -1) && (this.curTarget !== target ||
+            !isNullOrUndefined(newInst.placeHolder)) && (newInst.placeHolderElement ? newInst.placeHolderElement !== e.target :
+            true )) {
             if (e.target.className.indexOf('e-list-group-item') > -1) {
                 target = e.target;
             }
             this.curTarget = target;
+            if (this.target === target) { return; }
             let oldIdx: number = this.getIndex(newInst.placeHolderElement, newInst);
-            oldIdx = isNullOrUndefined(oldIdx) ? this.getIndex(this.target) :
-                this.getIndex(target, newInst) < oldIdx || !oldIdx ? oldIdx : oldIdx - 1;
-            newInst.placeHolderElement = this.getPlaceHolder(target, newInst);
-            let newIdx: number = this.getIndex(target, newInst);
-            let idx: number = newInst.element !== this.element ? newIdx : oldIdx < newIdx ? newIdx + 1 : newIdx;
-            if (newInst.placeHolderElement) {
+            let placeHolder: HTMLElement = this.getPlaceHolder(target, newInst);
+            let newIdx: number;
+            if (placeHolder) {
+                oldIdx = isNullOrUndefined(oldIdx) ? this.getIndex(this.target) : oldIdx;
+                newIdx = this.getIndex(target, newInst, e.event);
+                let isPlaceHolderPresent: boolean = this.isPlaceHolderPresent(newInst);
+                if (isPlaceHolderPresent && oldIdx === newIdx) { return; }
+                if (isPlaceHolderPresent) { remove(newInst.placeHolderElement); }
+                newInst.placeHolderElement = placeHolder;
                 if (e.target.className.indexOf('e-list-group-item') > -1) {
                     newInst.element.insertBefore(newInst.placeHolderElement, newInst.element.children[newIdx]);
-                } else if (newInst.element !== this.element && idx === newInst.element.childElementCount - 1) {
+                } else if (newInst.element !== this.element && newIdx === newInst.element.childElementCount) {
                     newInst.element.appendChild(newInst.placeHolderElement);
                 } else {
-                    newInst.element.insertBefore(newInst.placeHolderElement, newInst.element.children[idx]);
+                    newInst.element.insertBefore(newInst.placeHolderElement, newInst.element.children[newIdx]);
                 }
                 this.refreshDisabled(oldIdx, newIdx, newInst);
             } else {
+                oldIdx = isNullOrUndefined(oldIdx) ? this.getIndex(this.target) :
+                    this.getIndex(target, newInst) < oldIdx || !oldIdx ? oldIdx : oldIdx - 1;
+                newIdx = this.getIndex(target, newInst);
+                let idx: number = newInst.element !== this.element ? newIdx : oldIdx < newIdx ? newIdx + 1 : newIdx;
                 this.updateItemClass(newInst);
                 newInst.element.insertBefore(this.target, newInst.element.children[idx]);
                 this.refreshDisabled(oldIdx, newIdx, newInst);
@@ -173,7 +181,7 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
             }
         }
         newInst = this.getSortableInstance(this.curTarget);
-        if (isNullOrUndefined(target) &&  e.target !== newInst.placeHolderElement) {
+        if (isNullOrUndefined(target) && e.target !== newInst.placeHolderElement) {
             if (this.isPlaceHolderPresent(newInst)) { this.removePlaceHolder(newInst); }
         } else {
             let placeHolders: Element[] = [].slice.call(document.getElementsByClassName('e-sortable-placeholder')); let inst: Sortable;
@@ -218,11 +226,19 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
             }
         }
     }
-    private getIndex(target: Element, instance: Sortable = this): number {
-        let idx: number;
+    private getIndex(target: Element, instance: Sortable = this, e?: MouseEventArgs): number {
+        let idx: number; let placeHolderPresent: boolean;
         [].slice.call(instance.element.children).forEach((element: HTMLElement, index: number): void => {
+            if (element.classList.contains('e-sortable-placeholder')) { placeHolderPresent = true; }
             if (element === target) {
                 idx =  index;
+                if (!isNullOrUndefined(e)) {
+                    if (placeHolderPresent) { idx -= 1; }
+                    let offset: ClientRect = target.getBoundingClientRect();
+                    let clientY: number = offset.bottom - ((offset.bottom - offset.top) / 2);
+                    idx = e.clientY <= clientY ? idx : idx + 1;
+                }
+                return;
             }
         });
         return idx;
@@ -264,7 +280,8 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
     private onDragStop: Function = (e: { target: HTMLElement, event: MouseEvent & TouchEvent, helper: Element }) => {
         let dropInst: Sortable = this.getSortableInstance(this.curTarget); let prevIdx: number; let curIdx: number; let handled: boolean;
         prevIdx = this.getIndex(this.target);
-        if (this.isPlaceHolderPresent(dropInst)) {
+        let isPlaceHolderPresent: boolean = this.isPlaceHolderPresent(dropInst);
+        if (isPlaceHolderPresent) {
             let curIdx: number = this.getIndex(dropInst.placeHolderElement, dropInst);
             let args: DropEventArgs = { previousIndex: prevIdx, currentIndex: curIdx, target: e.target, droppedElement: this.target,
                 helper: e.helper, cancel: false, handled: false };
@@ -289,11 +306,11 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
         dropInst = this.getSortableInstance(e.target);
         curIdx = dropInst.element.childElementCount;
         prevIdx = this.getIndex(this.target);
-        if (dropInst.element === e.target) {
-            let beforeDropArgs: DropEventArgs = { previousIndex: prevIdx, currentIndex: curIdx, target: e.target,
-                droppedElement: this.target, helper: e.helper, cancel: false };
+        if (dropInst.element === e.target || (!isPlaceHolderPresent && this.curTarget === this.target)) {
+            let beforeDropArgs: DropEventArgs = { previousIndex: prevIdx, currentIndex: this.curTarget === this.target ? prevIdx : curIdx,
+                target: e.target, droppedElement: this.target, helper: e.helper, cancel: false };
             this.trigger('beforeDrop', beforeDropArgs, (observedArgs: DropEventArgs) => {
-                if (!observedArgs.cancel) {
+                if (dropInst.element === e.target && !observedArgs.cancel) {
                     this.updateItemClass(dropInst);
                     dropInst.element.appendChild(this.target);
                     this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: curIdx,

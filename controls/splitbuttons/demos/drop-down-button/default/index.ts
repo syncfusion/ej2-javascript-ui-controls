@@ -27,7 +27,8 @@ let items: ItemModel[] = [
     },
     {
         text: 'Important',
-        iconCss: 'ddb-icons e-important'
+        iconCss: 'ddb-icons e-important',
+        disabled: true
     },
     {
         text: 'More Filters',
@@ -74,12 +75,7 @@ let data1: ItemModel[] = [
 let menuOptions: DropDownButtonModel = {
     items: items,
     iconCss: 'e-icons e-filter',
-    iconPosition: 'Left',
-    beforeItemRender: (args: MenuEventArgs) => {
-        if (args.item.text === 'Important') {
-            args.element.classList.add('e-disabled');
-        }
-    }
+    iconPosition: 'Left'
 };
 
 let items1: ItemModel[] = [

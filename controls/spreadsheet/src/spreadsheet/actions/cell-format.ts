@@ -128,7 +128,7 @@ export class CellFormat {
     }
     private setLeftBorder(
         border: string, cell: HTMLElement, rowIdx: number, colIdx: number, row: Element, actionUpdate: boolean, first: string): void {
-        if (first.includes('Column')) { return; }
+        if (first && first.includes('Column')) { return; }
         let prevCell: HTMLElement = this.parent.getCell(rowIdx, colIdx - 1, <HTMLTableRowElement>row);
         if (prevCell) {
             if (actionUpdate && border !== '' && colIdx === this.parent.viewport.leftIndex) {
@@ -142,7 +142,7 @@ export class CellFormat {
     private setTopBorder(
         border: string, cell: HTMLElement, rowIdx: number, colIdx: number, pRow: HTMLElement, pHRow: HTMLElement, actionUpdate: boolean,
         first: string, lastCell: boolean, manualUpdate: boolean): void {
-        if (first.includes('Row')) { return; }
+        if (first && first.includes('Row')) { return; }
         let prevCell: HTMLElement = this.parent.getCell(rowIdx - 1, colIdx, <HTMLTableRowElement>pRow);
         if (prevCell) {
             if (isHiddenRow(this.parent.getActiveSheet(), rowIdx - 1)) {

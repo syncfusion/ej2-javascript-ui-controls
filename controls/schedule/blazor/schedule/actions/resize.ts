@@ -96,7 +96,8 @@ export class Resize extends ActionBase {
             this.actionObj.start = eventObj.startTime as Date;
             this.actionObj.end = eventObj.endTime as Date;
             this.actionObj.originalElement = this.getOriginalElement(this.actionObj.element);
-            if (this.parent.options.currentView === 'Month') {
+            if (this.parent.options.currentView === 'Month' ||
+                (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable)) {
                 this.daysVariation = -1;
                 this.cloneEventDetail = (this.actionObj.element as HTMLElement).querySelector('.e-appointment-details');
                 this.monthEvent = new MonthEvent(this.parent);
@@ -124,7 +125,8 @@ export class Resize extends ActionBase {
     }
 
     public updateResizingDirection(e: MouseEvent & TouchEvent): void {
-        if (this.parent.options.currentView === 'Month') {
+        if (this.parent.options.currentView === 'Month' ||
+            (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable)) {
             this.monthResizing();
             return;
         }
@@ -366,7 +368,8 @@ export class Resize extends ActionBase {
         let pageWidth: number = isLeft ? (this.actionObj.X - this.actionObj.pageX) : (this.actionObj.pageX - this.actionObj.X);
         let targetWidth: number = isTimelineView ?
             (this.actionObj.element.offsetWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth :
-            this.parent.options.currentView === 'Month' ? this.actionObj.element.offsetWidth :
+            this.parent.options.currentView === 'Month' ||
+                (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable) ? this.actionObj.element.offsetWidth :
                 Math.ceil(this.actionObj.element.offsetWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth;
         let offsetWidth: number = targetWidth + (Math.ceil(pageWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth);
         let left: number = (this.parent.options.enableRtl) ? parseInt(this.actionObj.element.style.right, 10) :

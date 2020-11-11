@@ -975,14 +975,14 @@ class HeaderRenderer {
                 break;
             case 'agenda':
                 view = {
-                    align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-agenda', text: this.l10n.getConstant('agenda'),
-                    cssClass: 'e-views e-agenda'
+                    align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-agenda',
+                    text: displayName || this.l10n.getConstant('agenda'), cssClass: 'e-views e-agenda'
                 };
                 break;
             case 'monthagenda':
                 view = {
                     align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-month-agenda',
-                    text: this.l10n.getConstant('monthAgenda'), cssClass: 'e-views e-month-agenda'
+                    text: displayName || this.l10n.getConstant('monthAgenda'), cssClass: 'e-views e-month-agenda'
                 };
                 break;
             case 'timelineday':
@@ -8236,7 +8236,7 @@ class QuickPopups {
         }
         this.parent.renderTemplates();
         let isEventPopup = this.quickPopup.element.querySelector('.' + EVENT_POPUP_CLASS);
-        let popupType = this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo';
+        let popupType = this.parent.isAdaptive ? 'ViewEventInfo' : isEventPopup ? 'EditEventInfo' : 'QuickInfo';
         let eventProp = {
             type: popupType, cancel: false, data: extend({}, this.getDataFromTarget(target), null, true),
             target: target, element: this.quickPopup.element
@@ -8454,7 +8454,7 @@ class QuickPopups {
         }
         let isEventPopup = this.quickPopup.element.querySelector('.' + EVENT_POPUP_CLASS);
         let args = {
-            type: this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo',
+            type: this.parent.isAdaptive ? 'ViewEventInfo' : isEventPopup ? 'EditEventInfo' : 'QuickInfo',
             cancel: false, data: popupData, element: this.quickPopup.element,
             target: (isCellPopup ? this.parent.activeCellsData.element : this.parent.activeEventData.element)
         };
@@ -9954,10 +9954,6 @@ class EventWindow {
     resetEditorTemplate() {
         if (this.parent.editorTemplate) {
             resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
-            // tslint:disable-next-line:no-any
-            if (!isBlazor() && !this.parent.isReact) {
-                this.parent.resetTemplates(['editorTemplate']);
-            }
         }
     }
     refresh() {
@@ -14300,7 +14296,7 @@ let Schedule = class Schedule extends Component {
      */
     resetTemplates(templates) {
         // tslint:disable-next-line:no-any
-        if (this.isReact || (templates && templates.length > 0)) {
+        if (this.isReact) {
             this.clearTemplate(templates);
         }
     }

@@ -62,6 +62,7 @@ class SfMenu {
             if (args.scrollHeight) { menu = addScrolling(createElement, args.popup, menu, VSCROLL, args.isRtl, args.scrollHeight); }
         }
         let ul: HTMLElement = menu.classList.contains(MENUPARENT) ? menu : select(DOT + MENUPARENT, menu);
+        args.popup.blazor__instance.setBlankIconStyle(ul, args.isRtl);
         let menuOffset: ClientRect = ul.getBoundingClientRect();
         let width: number = args.popup.blazor__instance.getMenuWidth(ul, menuOffset.width, args.isRtl);
         if (args.isVertical) {

@@ -198,8 +198,12 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
                     }
                     if (newProp.hamburgerMode) {
                         this.element.parentElement.classList.add(HAMBURGER);
+                        [].slice.call(this.element.getElementsByClassName('e-blankicon')).forEach((li: HTMLElement): void => {
+                            li.style[this.enableRtl ? 'paddingRight' : 'paddingLeft'] = '';
+                        });
                     } else {
                         this.element.parentElement.classList.remove(HAMBURGER);
+                        if (this.orientation === 'Vertical') { this.setBlankIconStyle(this.element); }
                     }
                     if (this.orientation === 'Vertical') {
                         if (!this.target) { this.element.previousElementSibling.classList.add(VMENU); }

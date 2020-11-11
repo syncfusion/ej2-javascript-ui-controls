@@ -95,6 +95,7 @@ var TextBox = /** @class */ (function (_super) {
                     this.updateHTMLAttrToWrapper();
                     var attributes = this.element.attributes;
                     this.checkAttributes(true);
+                    sf.inputs.Input.validateInputType(this.textboxWrapper.container, this.element);
                     break;
                 case 'readonly':
                     sf.inputs.Input.setReadonly(this.readonly, this.respectiveElement);
@@ -102,6 +103,7 @@ var TextBox = /** @class */ (function (_super) {
                 case 'type':
                     if (this.respectiveElement.tagName !== 'TEXTAREA') {
                         this.respectiveElement.setAttribute('type', this.type);
+                        sf.inputs.Input.validateInputType(this.textboxWrapper.container, this.element);
                         this.raiseChangeEvent();
                     }
                     break;

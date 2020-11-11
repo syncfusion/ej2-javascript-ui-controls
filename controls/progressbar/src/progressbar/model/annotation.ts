@@ -43,6 +43,8 @@ export class AnnotationBase {
             this.setElementStyle(location, annotationElement, parentElement);
         } else if (this.control.redraw) {
             removeElement(annotationElement.id);
+            // tslint:disable-next-line:no-any
+            if ((this.control as any).isReact) { (this.control as any).clearTemplate(); }
         }
     }
     public setElementStyle(
@@ -60,6 +62,8 @@ export class AnnotationBase {
             argsData.content.style.transform = 'translate(-50%, -50%)';
             argsData.content.setAttribute('aria-label', 'Annotation');
             parentElement.appendChild(argsData.content);
+            // tslint:disable-next-line:no-any
+            if ((this.control as any).isReact) { (this.control as any).renderReactTemplates(); }
         }
     }
     private Location(radius: string, angle: number): {top: number, left: number} {

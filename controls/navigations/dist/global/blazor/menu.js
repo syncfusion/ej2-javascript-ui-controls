@@ -1239,11 +1239,16 @@ var MenuBase = /** @class */ (function (_super) {
         var ul = this.createItems(this.items);
         sf.base.append(Array.prototype.slice.call(ul.children), this.element);
         this.element.classList.add('e-menu-parent');
-        if (this.isMenu && this.enableScrolling) {
-            var wrapper = this.getWrapper();
-            this.element.classList.contains('e-vertical') ?
-                addScrolling(this.createElement, wrapper, this.element, 'vscroll', this.enableRtl)
-                : addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
+        if (this.isMenu) {
+            if (!this.hamburgerMode && this.element.classList.contains('e-vertical')) {
+                this.setBlankIconStyle(this.element);
+            }
+            if (this.enableScrolling) {
+                var wrapper = this.getWrapper();
+                this.element.classList.contains('e-vertical') ?
+                    addScrolling(this.createElement, wrapper, this.element, 'vscroll', this.enableRtl)
+                    : addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
+            }
         }
     };
     MenuBase.prototype.wireEvents = function () {
@@ -1904,6 +1909,7 @@ var MenuBase = /** @class */ (function (_super) {
                             _this.toggleAnimation(_this.popupWrapper);
                         }
                         else {
+                            _this.setBlankIconStyle(_this.popupWrapper);
                             _this.wireKeyboardEvent(_this.popupWrapper);
                             sf.base.rippleEffect(_this.popupWrapper, { selector: '.' + ITEM });
                             _this.popupWrapper.style.left = _this.left + 'px';
@@ -1916,6 +1922,7 @@ var MenuBase = /** @class */ (function (_super) {
                         }
                     }
                     else {
+                        _this.setBlankIconStyle(_this.uList);
                         _this.setPosition(_this.lItem, _this.uList, _this.top, _this.left);
                         _this.toggleAnimation(_this.uList);
                     }
@@ -1940,6 +1947,30 @@ var MenuBase = /** @class */ (function (_super) {
                 cul.children[index].focus();
             }
         });
+    };
+    MenuBase.prototype.setBlankIconStyle = function (menu) {
+        var blankIconList = [].slice.call(menu.getElementsByClassName('e-blankicon'));
+        if (!blankIconList.length) {
+            return;
+        }
+        var iconLi = menu.querySelector('.e-menu-item:not(.e-blankicon):not(.e-separator)');
+        var icon = iconLi.querySelector('.e-menu-icon');
+        if (!icon) {
+            return;
+        }
+        var cssProp = this.enableRtl ? { padding: 'paddingRight', margin: 'marginLeft' } :
+            { padding: 'paddingLeft', margin: 'marginRight' };
+        var iconCssProps = getComputedStyle(icon);
+        var iconSize = parseInt(iconCssProps.fontSize, 10);
+        if (!!parseInt(iconCssProps.width, 10) && parseInt(iconCssProps.width, 10) > iconSize) {
+            iconSize = parseInt(iconCssProps.width, 10);
+        }
+        // tslint:disable
+        var size = iconSize + parseInt(iconCssProps[cssProp.margin], 10) + parseInt(getComputedStyle(iconLi)[cssProp.padding], 10) + "px";
+        blankIconList.forEach(function (li) {
+            li.style[cssProp.padding] = size;
+        });
+        // tslint:enable
     };
     MenuBase.prototype.checkScrollOffset = function (e) {
         var wrapper = this.getWrapper();
@@ -3206,6 +3237,7 @@ var Menu = /** @class */ (function (_super) {
      * @returns void
      */
     Menu.prototype.onPropertyChanged = function (newProp, oldProp) {
+        var _this = this;
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
@@ -3242,9 +3274,15 @@ var Menu = /** @class */ (function (_super) {
                     }
                     if (newProp.hamburgerMode) {
                         this.element.parentElement.classList.add(HAMBURGER);
+                        [].slice.call(this.element.getElementsByClassName('e-blankicon')).forEach(function (li) {
+                            li.style[_this.enableRtl ? 'paddingRight' : 'paddingLeft'] = '';
+                        });
                     }
                     else {
                         this.element.parentElement.classList.remove(HAMBURGER);
+                        if (this.orientation === 'Vertical') {
+                            this.setBlankIconStyle(this.element);
+                        }
                     }
                     if (this.orientation === 'Vertical') {
                         if (!this.target) {

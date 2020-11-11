@@ -24,6 +24,7 @@ export class ColumnMenu  {
         this.uid = uid;
         let e: HTMLElement = this.parent.getColumnHeaderByUid(uid).querySelector('.e-columnmenu');
         let columnMenuElement: Element = document.getElementsByClassName(`e-${this.parent.element.id}-column-menu`)[0];
+        (columnMenuElement as HTMLElement).style.position = 'absolute';
         let element: HTMLElement = columnMenuElement.getElementsByTagName('ul')[0];
         if(!isNullOrUndefined(element)) {
         let pos:  {left: number; top: number;}= { top: 0, left: 0 };
@@ -55,6 +56,33 @@ export class ColumnMenu  {
         return { Left: 1, Top: 1 };
       }
     };
+
+    public setPosition(): void {
+        let columnMenuElement: Element = document.getElementsByClassName(`e-${this.parent.element.id}-column-menu`)[0];
+        let element: HTMLElement = !isNullOrUndefined(columnMenuElement) ? columnMenuElement.getElementsByTagName('ul')[0] : null;
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(this.uid)) {
+            let e: HTMLElement = this.parent.getColumnHeaderByUid(this.uid).querySelector('.e-columnmenu');
+            let headerCell: Element = this.getHeaderCell(e);
+            let btnOffset: ClientRect = headerCell.getBoundingClientRect();
+            let left: number = btnOffset.left + pageXOffset;
+            let top: number = btnOffset.bottom + pageYOffset;
+            let popupOffset: ClientRect = element.getBoundingClientRect();
+            let docElement: HTMLElement = document.documentElement;
+            if (btnOffset.bottom + popupOffset.height > docElement.clientHeight) {
+                if (top - btnOffset.height - popupOffset.height > docElement.clientTop) {
+                    top = top - btnOffset.height - popupOffset.height;
+                }
+            }
+            if (btnOffset.left + popupOffset.width > docElement.clientWidth) {
+                if (btnOffset.right - popupOffset.width > docElement.clientLeft) {
+                    left = (left + btnOffset.width) - popupOffset.width;
+                }
+            }
+            left = left - element.getBoundingClientRect().width + btnOffset.width;
+            (columnMenuElement as HTMLElement).style.left = Math.ceil(left + 1) + 'px';
+            (columnMenuElement as HTMLElement).style.top = Math.ceil(top + 1) + 'px';
+        }
+    }
 
     private appendFilter(e : Event): void {
         var showdialog = false;

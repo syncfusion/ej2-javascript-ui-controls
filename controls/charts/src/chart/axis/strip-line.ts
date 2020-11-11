@@ -274,9 +274,10 @@ export class StripLine {
         stripline: StripLineSettingsModel, rect: Rect, id: string, parent: Element, chart: Chart, axis: Axis
     ): void {
         let textSize: Size = measureText(stripline.text, stripline.textStyle);
-        let textMid: number = 3 * (textSize.height / 8);
+        let isRotationNull: boolean = (stripline.rotation === null);
+        let textMid: number = isRotationNull ? 3 * (textSize.height / 8) : 0;
         let ty: number = rect.y + (rect.height / 2) + textMid;
-        let rotation: number = (stripline.rotation === null) ? ((axis.orientation === 'Vertical') ? 0 : -90) : stripline.rotation;
+        let rotation: number = isRotationNull ? ((axis.orientation === 'Vertical') ? 0 : -90) : stripline.rotation;
         let tx: number = rect.x + (rect.width / 2);
         let anchor: Anchor;
         let padding: number = 5;
@@ -285,8 +286,8 @@ export class StripLine {
                 tx + (textMid * this.factor(stripline.horizontalAlignment)),
                 rect.width, stripline.horizontalAlignment
             );
-            ty = this.getTextStart(ty - textMid, rect.height, stripline.verticalAlignment);
-            anchor = this.invertAlignment(stripline.verticalAlignment);
+            ty = this.getTextStart(ty - textMid, rect.height, stripline.verticalAlignment) + (isRotationNull ? 0 : (textSize.height / 4));
+            anchor = isRotationNull ? this.invertAlignment(stripline.verticalAlignment) : stripline.horizontalAlignment;
 
         } else {
             tx = this.getTextStart(tx, rect.width, stripline.horizontalAlignment);

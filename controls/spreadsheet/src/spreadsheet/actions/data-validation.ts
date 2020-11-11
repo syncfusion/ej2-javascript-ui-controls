@@ -233,8 +233,10 @@ export class DataValidation {
                             operator = cell.validation.operator;
                             value1 = cell.validation.value1;
                             value2 = cell.validation.value2;
-                            ignoreBlank = cell.validation.ignoreBlank;
-                            inCellDropDown = cell.validation.inCellDropDown;
+                            ignoreBlank = !isNullOrUndefined(cell.validation.ignoreBlank) ?
+                                cell.validation.ignoreBlank : ignoreBlank;
+                            inCellDropDown = !isNullOrUndefined(cell.validation.inCellDropDown) ?
+                                cell.validation.inCellDropDown : inCellDropDown;
                         }
                     }
                 }
@@ -670,7 +672,7 @@ export class DataValidation {
         let value2: string | number = cell.validation.value2;
         let opt: string = cell.validation.operator;
         let type: string = cell.validation.type;
-        let ignoreBlank: boolean = cell.validation.ignoreBlank;
+        let ignoreBlank: boolean = !isNullOrUndefined(cell.validation.ignoreBlank) ? cell.validation.ignoreBlank : true;
         let formValidation: { isValidate: boolean, errorMsg: string } = this.formatValidation(args.value, type);
         isValidate = formValidation.isValidate;
         errorMsg = formValidation.errorMsg;

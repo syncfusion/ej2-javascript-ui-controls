@@ -745,8 +745,7 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
         return zeros.substr(0, suffixLen < 0 ? 0 : suffixLen) + resultSuffix;
     };
     WorkbookNumberFormat.prototype.applyNumberFormat = function (args, intl) {
-        args.format = args.format === '' ? getFormatFromType('Number') : args.format;
-        args.format = args.format.toString().split('_)').join(' ').split('_(').join(' ').split('[Red]').join('');
+        args.format = this.isCustomFormat(args.format.toString());
         var formatArr = args.format.toString().split(';');
         if (Number(args.value) >= 0) {
             args.format = formatArr[0];
@@ -757,6 +756,14 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
         return intl.formatNumber(Number(args.value), {
             format: args.format
         });
+    };
+    WorkbookNumberFormat.prototype.isCustomFormat = function (format) {
+        if (format === '_-* #,##0.00_-;-* #,##0.00_-;_-* "-"_-;_-@_-' || format === '_-* #,##0_-;-* #,##0_-;_-* "-"_-;_-@_-') {
+            format = '';
+        }
+        format = format === '' ? getFormatFromType('Number') : format;
+        format = format.toString().split('_)').join(' ').split('_(').join(' ').split('[Red]').join('');
+        return format;
     };
     WorkbookNumberFormat.prototype.currencyFormat = function (args, intl) {
         args.format = args.format === '' ? getFormatFromType('Currency') : args.format;
@@ -1043,6 +1050,8 @@ function getTypeFromFormat(format) {
     var code = 'General';
     switch (format) {
         case '0.00':
+        case '_-* #,##0.00_-;-* #,##0.00_-;_-* "-"_-;_-@_-':
+        case '_-* #,##0_-;-* #,##0_-;_-* "-"_-;_-@_-':
             code = 'Number';
             break;
         case '$#,##0.00':
@@ -1466,7 +1475,9 @@ var DataBind = /** @__PURE__ @class */ (function () {
                         row = sheet.rows[i + indexes_1[0]];
                         if (row) {
                             for (var j = indexes_1[1]; j < indexes_1[1] + range.info.fldLen; j++) {
-                                delete row.cells[j];
+                                if (row.cells && row.cells[i]) {
+                                    delete row.cells[j];
+                                }
                             }
                         }
                     }
@@ -1516,10 +1527,12 @@ var DataBind = /** @__PURE__ @class */ (function () {
             if (range.dataSource) {
                 var isNewRow = void 0;
                 startCell = getCellIndexes(range.startCell);
-                dataRange = startCell.concat([startCell[0] + range.info.count, startCell[1] + range.info.fldLen - 1]);
+                dataRange = startCell.concat([startCell[0] + range.info.count + (range.showFieldAsHeader ? 0 : -1),
+                    startCell[1] + range.info.fldLen - 1]);
                 if (args.modelType === 'Row') {
                     if (args.insertType) {
-                        inRange = dataRange[0] < args.index && dataRange[2] >= args.index;
+                        inRange = ((!range.showFieldAsHeader && args.insertType === 'above') ? dataRange[0] <= args.index
+                            : dataRange[0] < args.index) && dataRange[2] >= args.index;
                         cellIndices = [args.index];
                         if (!inRange) {
                             if ((dataRange[2] + 1 === args.index && args.insertType === 'below')) {
@@ -10857,14 +10870,16 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                     valueOfCell = dispTxt.toString();
                 }
                 else {
-                    valueOfCell = sheet.rows[ridx].cells[cidx].value.toString();
+                    if (sheet.rows[ridx].cells[cidx].value) {
+                        valueOfCell = sheet.rows[ridx].cells[cidx].value.toString();
+                    }
                 }
             }
         }
         if (valueOfCell) {
             var lcValueOfCell = valueOfCell.toLowerCase();
             var ivalueOfCell = valueOfCell.indexOf(args.value) > -1;
-            var lowerCaseIndex = lcValueOfCell.indexOf(args.value) > -1;
+            var lowerCaseIndex = lcValueOfCell.indexOf(args.value.toString().toLowerCase()) > -1;
             if ((stringValue === valueOfCell) || (stringValue === lcValueOfCell) || (ivalueOfCell) || (lowerCaseIndex)) {
                 if (args.searchBy === 'By Column') {
                     ridx++;
@@ -11076,7 +11091,8 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
     WorkbookFindAndReplace.prototype.nextCommon = function (findNextArgs) {
         var sheet = findNextArgs.sheets[findNextArgs.sheetIndex];
         if (sheet.rows[findNextArgs.rowIndex]) {
-            if (sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex]) {
+            var rowCol = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex];
+            if (rowCol && rowCol.value) {
                 var cellType = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex];
                 if (cellType) {
                     var cellval = void 0;
@@ -11116,7 +11132,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                     }
                     else if (!findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
                         findNextArgs.val = cellval.toString().toLowerCase();
-                        var index = cellval.indexOf(findNextArgs.args.value) > -1;
+                        var index = findNextArgs.val.indexOf(findNextArgs.args.value.toString().toLowerCase()) > -1;
                         var lowerCaseIndex = findNextArgs.val.indexOf(findNextArgs.args.value) > -1;
                         if ((findNextArgs.val === findNextArgs.stringValue) || ((cellval === findNextArgs.stringValue) || (index)) ||
                             (cellval === findNextArgs.stringValue) || (lowerCaseIndex)) {
@@ -11156,14 +11172,16 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                     valueOfCell = displayTxt.toString();
                 }
                 else {
-                    valueOfCell = sheet.rows[ridx].cells[cidx].value.toString();
+                    if (sheet.rows[ridx].cells[cidx].value) {
+                        valueOfCell = sheet.rows[ridx].cells[cidx].value.toString();
+                    }
                 }
             }
         }
         if (valueOfCell) {
             var lcValue = valueOfCell.toLowerCase();
             var ivalue = valueOfCell.indexOf(args.value) > -1;
-            var lowerCaseIndex = lcValue.indexOf(args.value) > -1;
+            var lowerCaseIndex = lcValue.indexOf(args.value.toString().toLowerCase()) > -1;
             if ((stringValue === valueOfCell) || (stringValue === lcValue) || (ivalue) || (lowerCaseIndex)) {
                 if (args.searchBy === 'By Row') {
                     cidx--;
@@ -11375,7 +11393,8 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
     WorkbookFindAndReplace.prototype.prevCommon = function (findPrevArgs) {
         var sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex];
         if (sheet.rows[findPrevArgs.rowIndex]) {
-            if (sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex]) {
+            if (sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex] &&
+                sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex].value) {
                 var cellType = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex];
                 if (cellType) {
                     var cellvalue = void 0;
@@ -11415,7 +11434,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                     }
                     else if (!findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
                         findPrevArgs.val = cellvalue.toString().toLowerCase();
-                        var index = cellvalue.indexOf(findPrevArgs.args.value) > -1;
+                        var index = findPrevArgs.val.indexOf(findPrevArgs.args.value.toString().toLowerCase()) > -1;
                         var lowerCaseIndex = findPrevArgs.val.indexOf(findPrevArgs.args.value) > -1;
                         if ((cellvalue === findPrevArgs.stringValue) || ((cellvalue === findPrevArgs.stringValue) ||
                             (index)) || (findPrevArgs.val === findPrevArgs.stringValue) || (lowerCaseIndex)) {
@@ -11439,7 +11458,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
         var activecell = getCellIndexes(sheet.activeCell);
         var currentCell = sheet.rows[activecell[0]].cells[activecell[1]].value.toString();
         var index = currentCell.indexOf(args.value) > -1;
-        var lowerCaseIndex = currentCell.toLowerCase().indexOf(args.value) > -1;
+        var lowerCaseIndex = currentCell.toLowerCase().indexOf(args.value.toString().toLowerCase()) > -1;
         var val = currentCell.toString().toLowerCase();
         if ((currentCell !== args.value) && (!index) && (val !== args.value) && (!lowerCaseIndex)) {
             args.findOpt = 'next';
@@ -11520,7 +11539,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                     for (startColumn; startColumn <= endColumn; startColumn++) {
                         var cell = sheet.rows[startRow].cells[startColumn];
                         if (row) {
-                            if (row.cells[startColumn]) {
+                            if (row.cells[startColumn] && row.cells[startColumn].value) {
                                 var cellType = sheet.rows[startRow].cells[startColumn];
                                 if (cellType) {
                                     var cellTypeVal = cellType.format;
@@ -11565,7 +11584,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                                     }
                                     else if (!args.isCSen && !args.isEMatch) {
                                         var val = cellval.toString().toLowerCase();
-                                        var index = cellval.indexOf(args.value) > -1;
+                                        var index = val.indexOf(args.value.toString().toLowerCase()) > -1;
                                         var lowerCaseValue = val.indexOf(args.value) > -1;
                                         if (((cellval === args.value) || (index)) || (val === args.value) || (cellval === args.value) ||
                                             (lowerCaseValue)) {
@@ -11614,7 +11633,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                 }
                 for (columnIndex; columnIndex <= endColumn; columnIndex++) {
                     if (row) {
-                        if (row.cells[columnIndex]) {
+                        if (row.cells[columnIndex] && row.cells[columnIndex].value) {
                             var cellType = sheet.rows[rowIndex].cells[columnIndex];
                             if (cellType) {
                                 var cellFormat = cellType.format;
@@ -11646,7 +11665,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                                 }
                                 else if (!args.isCSen && !args.isEMatch) {
                                     var val = cellvalue.toString().toLowerCase();
-                                    var index = cellvalue.indexOf(args.value) > -1;
+                                    var index = val.indexOf(args.value.toString().toLowerCase()) > -1;
                                     var lowerCaseValue = val.indexOf(args.value) > -1;
                                     if ((val === args.value) || ((cellvalue === args.value) || (index)) || (cellvalue === args.value) ||
                                         (lowerCaseValue)) {
@@ -11662,6 +11681,16 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
         var totalCount = count;
         var requiredCount = this.requiredCount(args) - 1;
         count = totalCount - requiredCount;
+        if (count > totalCount) {
+            count = totalCount;
+        }
+        if (count !== 0) {
+            var activecel = getCellIndexes(sheet.activeCell);
+            var val = this.parent.getDisplayText(sheet.rows[activecel[0]].cells[activecel[1]]).toString().toLowerCase();
+            if (val.indexOf(args.value.toString().toLowerCase()) === -1) {
+                count = count - 1;
+            }
+        }
         args.findCount = count + ' ' + 'of' + ' ' + totalCount;
         return;
     };
@@ -11682,7 +11711,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                 }
                 for (startColumn; startColumn <= endColumn; startColumn++) {
                     if (row) {
-                        if (row.cells[startColumn]) {
+                        if (row.cells[startColumn] && row.cells[startColumn].value) {
                             if (sheet.rows[startRow].cells[startColumn]) {
                                 var cellval = void 0;
                                 if (sheet.rows[startRow].cells[startColumn].format) {
@@ -11712,9 +11741,10 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                                 }
                                 else if (!args.isCSen && !args.isEMatch) {
                                     var val = cellval.toString().toLowerCase();
-                                    var index = cellval.indexOf(args.value) > -1;
+                                    var argsVal = args.value.toString().toLowerCase();
+                                    var index = val.indexOf(argsVal) > -1;
                                     var lowerCaseVal = val.indexOf(args.value) > -1;
-                                    if ((cellval === args.value) || ((cellval === args.value) || (index)) || (val === args.value) ||
+                                    if ((cellval === args.value) || ((val === argsVal) || (index)) || (val === args.value) ||
                                         (lowerCaseVal)) {
                                         requiredCount++;
                                     }
@@ -11729,7 +11759,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
     };
     WorkbookFindAndReplace.prototype.findAllValues = function (findAllArguments) {
         var startSheet = findAllArguments.sheetIndex;
-        var sheet = this.parent.sheets[startSheet];
+        var sheet = this.parent.sheets[startSheet - 1];
         var endRow = sheet.usedRange.rowIndex;
         var rowIndex = 0;
         var count = 0;
@@ -11810,7 +11840,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                                     }
                                     else if (!findAllArguments.isCSen && !findAllArguments.isEMatch) {
                                         var val = cellvalue.toString().toLowerCase();
-                                        var index = cellvalue.indexOf(findAllArguments.value) > -1;
+                                        var index = val.indexOf(findAllArguments.value.toLowerCase()) > -1;
                                         if ((val === findAllArguments.value) || ((cellvalue === findAllArguments.value) || (index)) ||
                                             ((cellvalue === findAllArguments.value))) {
                                             address = sheet.name + '!' + getCellAddress(rowIndex, columnIndex);
@@ -17567,6 +17597,8 @@ var Edit = /** @__PURE__ @class */ (function () {
                 var sheet = this.parent.getActiveSheet();
                 var formulaRefIndicator = this.parent.element.querySelector('.e-formularef-indicator');
                 this.isCellEdit = trgtElem.classList.contains('e-spreadsheet-edit');
+                var isFormula = checkIsFormula(this.editCellData.value) ||
+                    (this.editCellData.value && this.editCellData.value.toString().indexOf('=') === 0);
                 if (trgtElem.classList.contains('e-cell') || trgtElem.classList.contains('e-header-cell') ||
                     trgtElem.classList.contains('e-selectall') || closest(trgtElem, '.e-toolbar-item.e-active')) {
                     if (this.isAltEnter) {
@@ -17577,8 +17609,6 @@ var Edit = /** @__PURE__ @class */ (function () {
                             this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
                         }
                     }
-                    var isFormula = checkIsFormula(this.editCellData.value) ||
-                        (this.editCellData.value && this.editCellData.value.toString().indexOf('=') === 0);
                     if (!isFormula) {
                         this.endEdit(false, e);
                     }
@@ -17645,7 +17675,7 @@ var Edit = /** @__PURE__ @class */ (function () {
                     }
                 }
                 else {
-                    if (this.editCellData.value === this.editorElem.textContent && this.editorElem.textContent.indexOf('(') !==
+                    if (isFormula && this.editCellData.value === this.editorElem.textContent && this.editorElem.textContent.indexOf('(') !==
                         this.editorElem.textContent.length - 1) {
                         if (this.editCellData.sheetIndex === sheet.id - 1) {
                             var curPos = window.getSelection().focusOffset;
@@ -20184,7 +20214,7 @@ var CellFormat = /** @__PURE__ @class */ (function () {
             && Number(style.fontSize.split('pt')[0]) > 12) || keys.indexOf('fontFamily') > -1;
     };
     CellFormat.prototype.setLeftBorder = function (border, cell, rowIdx, colIdx, row, actionUpdate, first) {
-        if (first.includes('Column')) {
+        if (first && first.includes('Column')) {
             return;
         }
         var prevCell = this.parent.getCell(rowIdx, colIdx - 1, row);
@@ -20199,7 +20229,7 @@ var CellFormat = /** @__PURE__ @class */ (function () {
         }
     };
     CellFormat.prototype.setTopBorder = function (border, cell, rowIdx, colIdx, pRow, pHRow, actionUpdate, first, lastCell, manualUpdate) {
-        if (first.includes('Row')) {
+        if (first && first.includes('Row')) {
             return;
         }
         var prevCell = this.parent.getCell(rowIdx - 1, colIdx, pRow);
@@ -23298,8 +23328,10 @@ var DataValidation = /** @__PURE__ @class */ (function () {
                             operator = cell.validation.operator;
                             value1 = cell.validation.value1;
                             value2 = cell.validation.value2;
-                            ignoreBlank = cell.validation.ignoreBlank;
-                            inCellDropDown = cell.validation.inCellDropDown;
+                            ignoreBlank = !isNullOrUndefined(cell.validation.ignoreBlank) ?
+                                cell.validation.ignoreBlank : ignoreBlank;
+                            inCellDropDown = !isNullOrUndefined(cell.validation.inCellDropDown) ?
+                                cell.validation.inCellDropDown : inCellDropDown;
                         }
                     }
                 }
@@ -23737,7 +23769,7 @@ var DataValidation = /** @__PURE__ @class */ (function () {
         var value2 = cell.validation.value2;
         var opt = cell.validation.operator;
         var type = cell.validation.type;
-        var ignoreBlank = cell.validation.ignoreBlank;
+        var ignoreBlank = !isNullOrUndefined(cell.validation.ignoreBlank) ? cell.validation.ignoreBlank : true;
         var formValidation = this.formatValidation(args.value, type);
         isValidate = formValidation.isValidate;
         errorMsg = formValidation.errorMsg;
@@ -34319,10 +34351,9 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
         if (cellValue.indexOf('\n') > -1 && !isWrap) {
             var splitVal = cellValue.split('\n');
             if (splitVal.length > 1) {
-                wrap(args.address, true, this.parent);
-                var ht = getTextHeight(this.parent, args.cell.style || this.parent.cellStyle, splitVal.length);
-                this.parent.setRowHeight(ht, args.rowIdx, this.parent.activeSheetIndex + 1, true);
-                this.parent.getRow(args.rowIdx, this.parent.getRowHeaderTable()).style.height = ht + "px";
+                this.parent.notify(wrapEvent, {
+                    range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, initial: true, sheet: this.parent.getActiveSheet(), td: args.td, row: args.row, hRow: args.hRow
+                });
             }
         }
         return evtArgs.element;

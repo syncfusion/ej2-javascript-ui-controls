@@ -52,7 +52,7 @@ export class ColumnWidthService {
         }
     }
 
-    public setColumnWidth(column: Column, index?: number, module?: string): void {
+    public setColumnWidth(column: Column, index?: number, module?: string, allowStopEvent: boolean = true): void {
         if (this.parent.getColumns().length < 1) {
             return;
         }
@@ -67,7 +67,9 @@ export class ColumnWidthService {
             if ((this.parent.options.allowResizing && module === 'resize') || (this.parent.options.frozenColumns && this.parent.options.allowResizing)) {
                 this.setWidthToTable();
             }
-            this.parent.dotNetRef.invokeMethodAsync("ColumnWidthChanged", { index: columnIndex, width: cWidth, columnUid: column.uid });
+            if (allowStopEvent) {
+                this.parent.dotNetRef.invokeMethodAsync("ColumnWidthChanged", { index: columnIndex, width: cWidth, columnUid: column.uid });
+            }
         }
     }
 
@@ -157,7 +159,7 @@ export class ColumnWidthService {
     }
 
     public getWidth(column: Column): string | number {
-        
+
         //TODO: move it to c# side
 
         // if (isNullOrUndefined(column.width) && this.parent.options.allowResizing

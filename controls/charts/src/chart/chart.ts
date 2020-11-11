@@ -2355,7 +2355,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
          */
         if (this.element) {
             this.unWireEvents();
-            this.clearTemplate();
+            // tslint:disable-next-line:no-any
+            if ((this as any).isReact) { this.clearTemplate(); }
             super.destroy();
             if (!this.enableCanvas) {
                 this.removeSvg();
@@ -2506,10 +2507,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * To find mouse x, y for aligned chart element svg position
      */
     private setMouseXY(pageX: number, pageY: number): void {
-        let svgRect: ClientRect = getElement(this.svgId).getBoundingClientRect();
-        let rect: ClientRect = this.element.getBoundingClientRect();
-        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
-        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
+        if (getElement(this.svgId)) {
+            let svgRect: ClientRect = getElement(this.svgId).getBoundingClientRect();
+            let rect: ClientRect = this.element.getBoundingClientRect();
+            this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+            this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
+        }
     }
 
     /**
@@ -3207,7 +3210,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             return null;
         }
         removeElement(this.element.id + '_Secondary_Element');
-        this.clearTemplate();
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.clearTemplate(); }
         let removeLength: number = 0;
         if (this.zoomModule && this.zoomModule.pinchTarget) {
             this.zoomModule.pinchTarget.id = '';
@@ -3492,7 +3496,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             }
             if (refreshBounds) {
                 this.enableCanvas ? this.createChartSvg() : this.removeSvg();
-                this.clearTemplate();
+                // tslint:disable-next-line:no-any
+                if ((this as any).isReact) { this.clearTemplate(); }
                 this.refreshAxis();
                 this.refreshBound();
                 this.trigger('loaded', { chart: this.isBlazor ? {} : this });

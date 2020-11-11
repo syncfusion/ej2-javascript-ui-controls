@@ -7,7 +7,7 @@ import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
 import { Popup, PositionData, getZindexPartial } from '../popup/popup';
 import { PositionDataModel } from '../popup/popup-model';
 import { ButtonPropsModel, DialogModel, AnimationSettingsModel } from './dialog-model';
-import { createResize, removeResize, setMinHeight, setMaxWidth } from '../common/resize';
+import { createResize, removeResize, setMinHeight, setMaxWidth, setMaxHeight } from '../common/resize';
 
 /**
  * Defines the types of a button in the dialog.
@@ -1564,6 +1564,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
 
     private windowResizeHandler(): void {
         setMaxWidth(this.targetEle.clientWidth);
+        setMaxHeight(this.targetEle.clientHeight);
+        this.setMaxHeight();
     }
     /**
      * Get the properties to be maintained in the persisted state.
@@ -1635,7 +1637,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         window.addEventListener('resize', this.windowResizeHandler.bind(this));
     }
     private unWireWindowResizeEvent(): void {
-        window.addEventListener('resize', this.windowResizeHandler.bind(this));
+        window.removeEventListener('resize', this.windowResizeHandler.bind(this));
     }
     /**
      * Binding event to the element while widget creation

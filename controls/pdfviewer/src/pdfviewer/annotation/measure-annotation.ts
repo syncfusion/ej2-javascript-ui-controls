@@ -364,14 +364,13 @@ export class MeasureAnnotation {
      * @private
      */
     public setAnnotationType(type: AnnotType): void {
-        let date: Date = new Date();
         let author: string = 'Guest';
         this.updateMeasureproperties();
         this.pdfViewerBase.disableTextSelectionMode();
         switch (type) {
             case 'Distance':
                 this.currentAnnotationMode = 'Distance';
-                let modifiedDateDist: string = date.toLocaleString();
+                let modifiedDateDist: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                 // tslint:disable-next-line:max-line-length
                 author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.distanceSettings.author ? this.pdfViewer.distanceSettings.author : 'Guest';
                 this.pdfViewer.drawingObject = {
@@ -386,7 +385,7 @@ export class MeasureAnnotation {
                 break;
             case 'Perimeter':
                 this.currentAnnotationMode = 'Perimeter';
-                let modifiedDatePeri: string = date.toLocaleString();
+                let modifiedDatePeri: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                 // tslint:disable-next-line:max-line-length
                 author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.perimeterSettings.author ? this.pdfViewer.perimeterSettings.author : 'Guest';
                 this.pdfViewer.drawingObject = {
@@ -401,7 +400,7 @@ export class MeasureAnnotation {
                 break;
             case 'Area':
                 this.currentAnnotationMode = 'Area';
-                let modifiedDateArea: string = date.toLocaleString();
+                let modifiedDateArea: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                 // tslint:disable-next-line:max-line-length
                 author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.areaSettings.author ? this.pdfViewer.areaSettings.author : 'Guest';
                 this.pdfViewer.drawingObject = {
@@ -415,7 +414,7 @@ export class MeasureAnnotation {
                 break;
             case 'Radius':
                 this.currentAnnotationMode = 'Radius';
-                let modifiedDateRad: string = date.toLocaleString();
+                let modifiedDateRad: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                 // tslint:disable-next-line:max-line-length
                 author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.radiusSettings.author ? this.pdfViewer.radiusSettings.author : 'Guest';
                 this.pdfViewer.drawingObject = {
@@ -428,7 +427,7 @@ export class MeasureAnnotation {
                 break;
             case 'Volume':
                 this.currentAnnotationMode = 'Volume';
-                let modifiedDateVol: string = date.toLocaleString();
+                let modifiedDateVol: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                 // tslint:disable-next-line:max-line-length
                 author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.volumeSettings.author ? this.pdfViewer.volumeSettings.author : 'Guest';
                 this.pdfViewer.drawingObject = {
@@ -505,7 +504,6 @@ export class MeasureAnnotation {
         // tslint:disable-next-line:radix
         let borderDashArray: number = parseInt(annotationModel.borderDashArray);
         borderDashArray = isNaN(borderDashArray) ? 0 : borderDashArray;
-        let date: Date = new Date();
         // tslint:disable-next-line:max-line-length
         let measure: IMeasure = { ratio: this.scaleRatioString, x: [this.createNumberFormat('x')], distance: [this.createNumberFormat('d')], area: [this.createNumberFormat('a')] };
         if (annotationModel.measureType === 'Volume') {
@@ -521,14 +519,16 @@ export class MeasureAnnotation {
             subject: annotationModel.subject, note: annotationModel.notes, strokeColor: annotationModel.strokeColor,
             fillColor: annotationModel.fillColor, opacity: annotationModel.opacity, thickness: annotationModel.thickness,
             // tslint:disable-next-line:max-line-length
-            borderStyle: annotationModel.borderStyle, borderDashArray: borderDashArray, bounds: bound, modifiedDate: date.toLocaleString(),
+            borderStyle: annotationModel.borderStyle, borderDashArray: borderDashArray, bounds: bound,
+            // tslint:disable-next-line:max-line-length
+            modifiedDate: this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime(),
             rotateAngle: 'RotateAngle' + annotationModel.rotateAngle, isCloudShape: annotationModel.isCloudShape, cloudIntensity: annotationModel.cloudIntensity,
             // tslint:disable-next-line:max-line-length
             vertexPoints: annotationModel.vertexPoints, lineHeadStart: this.pdfViewer.annotation.getArrowTypeForCollection(annotationModel.sourceDecoraterShapes),
             lineHeadEnd: this.pdfViewer.annotation.getArrowTypeForCollection(annotationModel.taregetDecoraterShapes), rectangleDifference: [], isLocked: annotationSettings.isLock,
             // tslint:disable-next-line:max-line-length
             leaderLength: annotationModel.leaderHeight, leaderLineExtension: 2, leaderLineOffset: 0, calibrate: measure, caption: true, captionPosition: 'Top',
-            indent: this.getIndent(annotationModel.measureType), annotName: annotationName, comments: [], review: { state: '', stateModel: '', modifiedDate: date.toLocaleString(), author: annotationModel.author},
+            indent: this.getIndent(annotationModel.measureType), annotName: annotationName, comments: [], review: { state: '', stateModel: '', modifiedDate: this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime(), author: annotationModel.author},
             // tslint:disable-next-line:max-line-length
             labelContent: annotationModel.labelContent, enableShapeLabel: annotationModel.enableShapeLabel, labelFillColor: annotationModel.labelFillColor,
             labelBorderColor: annotationModel.labelBorderColor, fontColor: annotationModel.fontColor, fontSize: annotationModel.fontSize,
@@ -956,7 +956,6 @@ export class MeasureAnnotation {
         if (pageAnnotations != null && annotationBase) {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
                 if (annotationBase.id === pageAnnotations[i].id) {
-                    let date: Date = new Date();
                     if (property === 'bounds') {
                         this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAnnotationModifiedDate(annotationBase, true);
                         if (pageAnnotations[i].shapeAnnotationType === 'Line' || pageAnnotations[i].shapeAnnotationType === 'Polyline') {
@@ -973,37 +972,27 @@ export class MeasureAnnotation {
                             // tslint:disable-next-line:max-line-length
                             pageAnnotations[i].labelBounds = this.pdfViewer.annotationModule.inputElementModule.calculateLabelBounds(annotationBase.wrapper.bounds);
                         }
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'fill') {
                         pageAnnotations[i].fillColor = annotationBase.wrapper.children[0].style.fill;
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'stroke') {
                         pageAnnotations[i].strokeColor = annotationBase.wrapper.children[0].style.strokeColor;
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'opacity') {
                         pageAnnotations[i].opacity = annotationBase.wrapper.children[0].style.opacity;
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'thickness') {
                         pageAnnotations[i].thickness = annotationBase.wrapper.children[0].style.strokeWidth;
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'dashArray') {
                         pageAnnotations[i].borderDashArray = annotationBase.wrapper.children[0].style.strokeDashArray;
                         pageAnnotations[i].borderStyle = annotationBase.borderStyle;
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'startArrow') {
                         // tslint:disable-next-line:max-line-length
                         pageAnnotations[i].lineHeadStart = this.pdfViewer.annotation.getArrowTypeForCollection(annotationBase.sourceDecoraterShapes);
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'endArrow') {
                         // tslint:disable-next-line:max-line-length
                         pageAnnotations[i].lineHeadEnd = this.pdfViewer.annotation.getArrowTypeForCollection(annotationBase.taregetDecoraterShapes);
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'leaderLength') {
                         pageAnnotations[i].leaderLength = annotationBase.leaderHeight;
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'notes') {
                         pageAnnotations[i].note = annotationBase.notes;
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                         if (pageAnnotations[i].enableShapeLabel === true) {
                             pageAnnotations[i].labelContent = annotationBase.notes;
                         }
@@ -1013,15 +1002,14 @@ export class MeasureAnnotation {
                     } else if (property === 'labelContent') {
                         pageAnnotations[i].note = annotationBase.labelContent;
                         pageAnnotations[i].labelContent = annotationBase.labelContent;
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                         break;
                     } else if (property === 'fontColor') {
                         pageAnnotations[i].fontColor = annotationBase.fontColor;
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'fontSize') {
                         pageAnnotations[i].fontSize = annotationBase.fontSize;
-                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     }
+                    // tslint:disable-next-line:max-line-length
+                    pageAnnotations[i].modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                     this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[i], pageNumber);
                 }
             }

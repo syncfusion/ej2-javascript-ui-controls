@@ -7532,4 +7532,68 @@ describe('MultiSelect', () => {
             }, 800);
         });
     });
+    describe('EJ2-42379 - BeforeOpen event triggers when the component is initialized with the pre-select value', () => {
+        let element: HTMLInputElement;
+        let empList: { [key: string]: Object }[] = [
+            { id: 'list1', text: 'JAVA' },
+            { id: 'list2', text: 'C#' },
+            { id: 'list3', text: 'C++' },
+            { id: 'list4', text: '.NET' },
+            { id: 'list5', text: 'Oracle' },
+            { id: 'list6', text: 'GO' },
+            { id: 'list7', text: 'Haskell' }
+        ];
+        let ddl: any;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'multiSelect' });
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+            if (element) {
+                element.remove();
+            }
+        });
+        it('check beforeOpen event with value', () => {
+            let isOpen: boolean = false;
+            ddl = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'text',value:'text' },
+                value: ['JAVA'],
+                beforeOpen: (): void => {
+                    isOpen = true;
+                }
+            });
+            ddl.appendTo(element);
+            expect(isOpen).toBe(false);
+            ddl.showPopup();
+            expect(isOpen).toBe(true);
+            ddl.hidePopup();
+            isOpen = false;
+            ddl.showPopup();
+            expect(isOpen).toBe(true);
+            ddl.hidePopup();
+            ddl.destroy();
+        });
+        it('check beforeOpen event without value', () => {
+            let isOpen: boolean = false;
+            ddl = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'text',value:'text' },
+                beforeOpen: (): void => {
+                    isOpen = true;
+                }
+            });
+            ddl.appendTo(element);
+            expect(isOpen).toBe(false);
+            ddl.showPopup();
+            expect(isOpen).toBe(true);
+            ddl.hidePopup();
+            isOpen = false;
+            ddl.showPopup();
+            expect(isOpen).toBe(true);
+            ddl.hidePopup();
+            ddl.destroy();
+        });
+    });
 });

@@ -450,3 +450,5 @@ export const groupCollapse: string = 'group-collapse';
 export const beforeCheckboxRenderer: string = 'beforeCheckboxRenderer';
 /** @hidden */
 export const refreshHandlers: string = 'refreshResizeHandlers';
+/** @hidden */
+export const beforeRefreshOnDataChange: string = 'before-refresh-on-data-change';

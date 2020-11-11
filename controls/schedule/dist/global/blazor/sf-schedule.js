@@ -1192,8 +1192,6 @@ var __extends$1 = (undefined && undefined.__extends) || (function () {
  * Month view events render
  */
 
-var EVENT_GAP = 0;
-var EVENT_TOP = 10;
 var BLOCK_INDICATOR_WIDTH = 24;
 var MonthEvent = /** @class */ (function (_super) {
     __extends$1(MonthEvent, _super);
@@ -1210,101 +1208,76 @@ var MonthEvent = /** @class */ (function (_super) {
         _this.maxOrIndicator = (_this.maxHeight || _this.withIndicator);
         _this.moreIndicatorHeight =
             (_this.parent.options.rowAutoHeight && _this.parent.options.ignoreWhitespace) ? 0 : _this.moreIndicatorHeight;
+        _this.eventTop = _this.parent.options.currentView === 'Month' ? 10 : 0;
         return _this;
     }
     MonthEvent.prototype.renderAppointments = function () {
-        if (this.parent.options.currentView === 'Month') {
-            var eventsClass = '.' + APPOINTMENT_CLASS + ', .' + MORE_INDICATOR_CLASS;
-            var blockEventClass = '.' + BLOCK_APPOINTMENT_CLASS + ', .' + BLOCK_INDICATOR_CLASS;
-            var elementList = [].slice.call(this.parent.element.querySelectorAll(eventsClass + ', ' + blockEventClass));
-            var workcell = this.parent.element.querySelector('.e-work-cells');
-            if (!workcell) {
-                return;
-            }
-            var conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
+        var eventsClass = '.' + APPOINTMENT_CLASS + ', .' + MORE_INDICATOR_CLASS;
+        var blockEventClass = '.' + BLOCK_APPOINTMENT_CLASS + ', .' + BLOCK_INDICATOR_CLASS;
+        var elementList = [].slice.call(this.parent.element.querySelectorAll(eventsClass + ', ' + blockEventClass));
+        var workcell = this.parent.element.querySelector('.e-work-cells');
+        if (!workcell) {
+            return;
+        }
+        var conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
+        if (this.parent.options.rowAutoHeight) {
+            this.parent.uiStateValues.top = conWrap.scrollTop;
+            this.parent.uiStateValues.left = conWrap.scrollLeft;
+        }
+        this.removeHeightProperty(CONTENT_TABLE_CLASS);
+        this.cellHeight = workcell.getBoundingClientRect().height;
+        this.cellWidth = workcell.getBoundingClientRect().width;
+        var currentPanel = this.parent.element.querySelector('.e-current-panel');
+        var appHeight = getElementHeightFromClass(currentPanel, APPOINTMENT_CLASS);
+        this.dateRender = this.parent.activeView.renderDates;
+        for (var i = 0; i < elementList.length; i++) {
+            var ele = elementList[i];
+            this.removedPositionedStyles(ele);
+            var startTime = this.getStartTime(ele);
+            var overlapCount = this.getOverLapCount(ele);
+            var diffInDays = this.getDataCount(ele);
+            var appWidth = (diffInDays * this.cellWidth) - 5;
+            var appLeft = 0;
+            var appRight = 0;
+            var resIndex = this.getGroupIndex(ele);
+            var cellTd = this.getCellTd(resIndex, startTime);
+            var target = sf.base.closest(cellTd, 'tr');
+            this.monthHeaderHeight = this.parent.options.currentView === 'Month' ? cellTd.firstElementChild.offsetHeight : 0;
+            var height = this.monthHeaderHeight + ((overlapCount + 1) * appHeight) + this.moreIndicatorHeight;
             if (this.parent.options.rowAutoHeight) {
-                this.parent.uiStateValues.top = conWrap.scrollTop;
-                this.parent.uiStateValues.left = conWrap.scrollLeft;
+                this.updateCellHeight(target.firstElementChild, height);
             }
-            this.removeHeightProperty(CONTENT_TABLE_CLASS);
-            this.cellHeight = workcell.getBoundingClientRect().height;
-            this.cellWidth = workcell.getBoundingClientRect().width;
-            var currentPanel = this.parent.element.querySelector('.e-current-panel');
-            var appHeight = getElementHeightFromClass(currentPanel, APPOINTMENT_CLASS);
-            this.dateRender = this.parent.activeView.renderDates;
-            for (var i = 0; i < elementList.length; i++) {
-                var ele = elementList[i];
-                this.removedPositionedStyles(ele);
-                var startTime = this.getStartTime(ele);
-                var overlapCount = this.getOverLapCount(ele);
-                var diffInDays = this.getDataCount(ele);
-                var appWidth = (diffInDays * this.cellWidth) - 5;
-                var appLeft = 0;
-                var appRight = 0;
-                var resIndex = this.getGroupIndex(ele);
-                var cellTd = this.getCellTd(resIndex, startTime);
-                var target = sf.base.closest(cellTd, 'tr');
-                this.monthHeaderHeight = cellTd.firstElementChild.offsetHeight;
-                var height = this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
-                if (this.parent.options.rowAutoHeight) {
-                    this.updateCellHeight(target.firstElementChild, height);
-                }
-                var top_1 = cellTd.offsetTop;
-                var appTop = this.monthHeaderHeight + ((ele.classList.contains('e-block-appointment')) ? top_1 :
-                    (top_1 + EVENT_GAP) + (overlapCount * (appHeight + EVENT_GAP))) + EVENT_TOP;
-                appLeft = (this.parent.options.enableRtl) ? 0 : cellTd.offsetLeft;
-                appRight = (this.parent.options.enableRtl) ? cellTd.parentElement.offsetWidth - cellTd.offsetLeft - this.cellWidth : 0;
-                if (!ele.classList.contains('e-more-indicator')) {
-                    if (!ele.classList.contains('e-block-indicator')) {
-                        sf.base.setStyleAttribute(ele, {
-                            'width': appWidth + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
-                        });
-                        if (this.maxOrIndicator) {
-                            this.setMaxEventHeight(ele, cellTd);
-                        }
-                        if (ele.classList.contains('e-block-appointment')) {
-                            sf.base.setStyleAttribute(ele, {
-                                'height': cellTd.offsetHeight - (appTop - cellTd.offsetTop) + 'px'
-                            });
-                        }
-                        if (ele.classList.contains('e-appointment')) {
-                            this.parent.eventBase.wireAppointmentEvents(ele);
-                        }
+            var top_1 = cellTd.offsetTop;
+            var appTop = this.monthHeaderHeight + ((ele.classList.contains('e-block-appointment')) ? top_1 :
+                top_1 + (overlapCount * appHeight)) + this.eventTop;
+            appLeft = (this.parent.options.enableRtl) ? 0 : cellTd.offsetLeft;
+            appRight = (this.parent.options.enableRtl) ? cellTd.parentElement.offsetWidth - cellTd.offsetLeft - this.cellWidth : 0;
+            if (!ele.classList.contains('e-more-indicator')) {
+                if (!ele.classList.contains('e-block-indicator')) {
+                    sf.base.setStyleAttribute(ele, {
+                        'width': appWidth + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
+                    });
+                    if (this.maxOrIndicator) {
+                        this.setMaxEventHeight(ele, cellTd);
                     }
-                    else {
-                        this.updateBlockIndicator(ele, appRight, appLeft, cellTd);
+                    if (ele.classList.contains('e-block-appointment')) {
+                        sf.base.setStyleAttribute(ele, {
+                            'height': cellTd.offsetHeight - (appTop - cellTd.offsetTop) + 'px'
+                        });
+                    }
+                    if (ele.classList.contains('e-appointment')) {
+                        this.parent.eventBase.wireAppointmentEvents(ele);
                     }
                 }
                 else {
-                    this.updateMoreIndicator(ele, appRight, appLeft, top_1);
+                    this.updateBlockIndicator(ele, appRight, appLeft, cellTd);
                 }
             }
-            this.updateRowHeight(appHeight);
-        }
-        else if (!this.parent.activeViewOptions.timeScale.enable) {
-            var workcell = this.parent.element.querySelector('.e-work-cells');
-            if (!workcell) {
-                return;
-            }
-            var contentTableWrap = this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS);
-            var disableTimeElementList = [].slice.call(contentTableWrap.querySelectorAll('.' + APPOINTMENT_CLASS));
-            var appointmentHeight = disableTimeElementList.length > 0 ? disableTimeElementList[0].offsetHeight : 0;
-            for (var i = 0; i < disableTimeElementList.length; i++) {
-                var ele = disableTimeElementList[i];
-                var rowCount = this.getRowCount(ele);
-                var totalLength = this.getTotalLength(ele);
-                ele.style.top = rowCount * appointmentHeight + 'px';
-                ele.style.width = (workcell.getBoundingClientRect().width * totalLength) - 10 + 'px';
-                this.parent.eventBase.wireAppointmentEvents(ele);
-            }
-            if (disableTimeElementList.length > 0) {
-                var moreIndicatorList = [].slice.call(contentTableWrap.querySelectorAll('.' + MORE_INDICATOR_CLASS));
-                for (var i = 0; i < moreIndicatorList.length; i++) {
-                    var ele = moreIndicatorList[i];
-                    ele.style.top = 8 * appointmentHeight + 'px';
-                }
+            else {
+                this.updateMoreIndicator(ele, appRight, appLeft, top_1);
             }
         }
+        this.updateRowHeight(appHeight);
     };
     MonthEvent.prototype.removedPositionedStyles = function (ele) {
         ele.style.removeProperty('width');
@@ -1331,7 +1304,8 @@ var MonthEvent = /** @class */ (function (_super) {
         ele.style.position = 'absolute';
     };
     MonthEvent.prototype.setMaxEventHeight = function (event, cell) {
-        var headerHeight = getOuterHeight(cell.querySelector('.' + DATE_HEADER_CLASS));
+        var headerHeight = this.parent.options.currentView === 'Month' ?
+            getOuterHeight(cell.querySelector('.' + DATE_HEADER_CLASS)) : 0;
         var height = (cell.offsetHeight - headerHeight) - (this.maxHeight ? 0 : this.moreIndicatorHeight);
         sf.base.setStyleAttribute(event, { 'height': height + 'px', 'align-items': 'center' });
     };
@@ -1404,7 +1378,7 @@ var MonthEvent = /** @class */ (function (_super) {
             var appLeft = (this.parent.options.enableRtl) ? 0 : cellTd.offsetLeft;
             var appRight = (this.parent.options.enableRtl) ?
                 cellTd.parentElement.offsetWidth - cellTd.offsetLeft - this.cellWidth : 0;
-            var appTop = cellTd.offsetTop + this.monthHeaderHeight + EVENT_TOP;
+            var appTop = cellTd.offsetTop + this.monthHeaderHeight + this.eventTop;
             sf.base.setStyleAttribute(element, {
                 'width': width + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'height': height + 'px', 'top': appTop + 'px'
             });
@@ -1422,7 +1396,7 @@ var MonthEvent = /** @class */ (function (_super) {
             var appRight = (this.parent.options.enableRtl) ?
                 cellTd.parentElement.offsetWidth - cellTd.offsetLeft - this.cellWidth : 0;
             var top_2 = this.monthHeaderHeight +
-                (cellTd.offsetTop + EVENT_GAP) + (overlapCount * (appHeight + EVENT_GAP)) + EVENT_TOP;
+                cellTd.offsetTop + (overlapCount * appHeight) + this.eventTop;
             sf.base.setStyleAttribute(element, {
                 'left': appLeft + 'px', 'right': appRight + 'px', 'top': top_2 + 'px'
             });
@@ -1771,7 +1745,7 @@ var __extends$3 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var EVENT_GAP$1 = 2;
+var EVENT_GAP = 2;
 var BLOCK_INDICATOR_WIDTH$1 = 22;
 var BLOCK_INDICATOR_HEIGHT = 18;
 /**
@@ -1851,10 +1825,10 @@ var TimelineEvent = /** @class */ (function (_super) {
                 var resIndex = this.getGroupIndex(ele);
                 var top_1 = this.getRowTop(resIndex);
                 var appTop = (ele.classList.contains('e-block-appointment')) ? top_1 :
-                    (top_1 + EVENT_GAP$1) + (overlapCount * (appHeight + EVENT_GAP$1));
+                    (top_1 + EVENT_GAP) + (overlapCount * (appHeight + EVENT_GAP));
                 appLeft = (this.parent.options.enableRtl) ? 0 : position;
                 appRight = (this.parent.options.enableRtl) ? position : 0;
-                var height = ((overlapCount + 1) * (appHeight + EVENT_GAP$1)) + this.moreIndicatorHeight;
+                var height = ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
                 if (!ele.classList.contains('e-more-indicator')) {
                     if (!ele.classList.contains('e-block-indicator')) {
                         sf.base.setStyleAttribute(ele, {
@@ -1937,7 +1911,7 @@ var TimelineEvent = /** @class */ (function (_super) {
     };
     TimelineEvent.prototype.setMaxEventHeight = function (event) {
         sf.base.setStyleAttribute(event, {
-            'height': (this.cellHeight - (this.maxHeight ? 0 : EVENT_GAP$1) -
+            'height': (this.cellHeight - (this.maxHeight ? 0 : EVENT_GAP) -
                 (this.maxHeight ? 0 : this.moreIndicatorHeight)) + 'px'
         });
     };
@@ -2060,7 +2034,7 @@ var TimelineEvent = /** @class */ (function (_super) {
         var position = this.getPosition(startTime, endTime, event.isAllDay, this.day);
         appWidth = (appWidth <= 0) ? this.cellWidth : appWidth; // appWidth 0 when start and end time as same
         var top = this.getRowTop(resIndex);
-        var appTop = (top + EVENT_GAP$1) + ( /*overlapCount */(appHeight + EVENT_GAP$1));
+        var appTop = (top + EVENT_GAP) + ( /*overlapCount */(appHeight + EVENT_GAP));
         var appLeft = (this.parent.options.enableRtl) ? 0 : position;
         var appRight = (this.parent.options.enableRtl) ? position : 0;
         var appointmentElement;
@@ -3747,7 +3721,8 @@ var ActionBase = /** @class */ (function () {
         var cloneElement = cloneWrapper.children[0];
         var cloneClassLists = [CLONE_ELEMENT_CLASS];
         cloneClassLists.push((this.actionObj.action === 'drag') ? DRAG_CLONE_CLASS : RESIZE_CLONE_CLASS);
-        if (this.parent.options.currentView === 'Month' || this.parent.options.currentView === 'TimelineMonth') {
+        if (this.parent.options.currentView === 'Month' || this.parent.options.currentView === 'TimelineMonth' ||
+            (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable)) {
             cloneClassLists.push(MONTH_CLONE_ELEMENT_CLASS);
         }
         sf.base.addClass([cloneElement], cloneClassLists);
@@ -3764,7 +3739,8 @@ var ActionBase = /** @class */ (function () {
     };
     ActionBase.prototype.removeCloneElementClasses = function () {
         var elements = this.actionObj.originalElement;
-        if (this.parent.options.currentView === 'Month') {
+        if (this.parent.options.currentView === 'Month' ||
+            (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable)) {
             elements = [].slice.call(this.parent.element.querySelectorAll('.' + EVENT_ACTION_CLASS));
         }
         sf.base.removeClass(elements, EVENT_ACTION_CLASS);
@@ -4053,7 +4029,8 @@ var Resize = /** @class */ (function (_super) {
             _this.actionObj.start = eventObj.startTime;
             _this.actionObj.end = eventObj.endTime;
             _this.actionObj.originalElement = _this.getOriginalElement(_this.actionObj.element);
-            if (_this.parent.options.currentView === 'Month') {
+            if (_this.parent.options.currentView === 'Month' ||
+                (!_this.parent.isTimelineView() && !_this.parent.activeViewOptions.timeScale.enable)) {
                 _this.daysVariation = -1;
                 _this.cloneEventDetail = _this.actionObj.element.querySelector('.e-appointment-details');
                 _this.monthEvent = new MonthEvent(_this.parent);
@@ -4079,7 +4056,8 @@ var Resize = /** @class */ (function (_super) {
         this.updateResizingDirection(e);
     };
     Resize.prototype.updateResizingDirection = function (e) {
-        if (this.parent.options.currentView === 'Month') {
+        if (this.parent.options.currentView === 'Month' ||
+            (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable)) {
             this.monthResizing();
             return;
         }
@@ -4328,7 +4306,8 @@ var Resize = /** @class */ (function (_super) {
         var pageWidth = isLeft ? (this.actionObj.X - this.actionObj.pageX) : (this.actionObj.pageX - this.actionObj.X);
         var targetWidth = isTimelineView ?
             (this.actionObj.element.offsetWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth :
-            this.parent.options.currentView === 'Month' ? this.actionObj.element.offsetWidth :
+            this.parent.options.currentView === 'Month' ||
+                (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable) ? this.actionObj.element.offsetWidth :
                 Math.ceil(this.actionObj.element.offsetWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth;
         var offsetWidth = targetWidth + (Math.ceil(pageWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth);
         var left = (this.parent.options.enableRtl) ? parseInt(this.actionObj.element.style.right, 10) :
@@ -4488,7 +4467,8 @@ var DragAndDrop = /** @class */ (function (_super) {
         }
         var cellHeight = (this.actionObj.cellHeight / this.actionObj.slotInterval) * this.actionObj.interval;
         var leftValue = sf.base.formatUnit(0);
-        if (this.parent.isTimelineView() || this.parent.options.currentView === 'Month') {
+        if (this.parent.isTimelineView() || this.parent.options.currentView === 'Month' ||
+            (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable)) {
             leftValue = sf.base.formatUnit(this.actionObj.clone.offsetLeft);
         }
         var topValue;
@@ -4610,7 +4590,8 @@ var DragAndDrop = /** @class */ (function (_super) {
                     _this.timelineEventModule = new TimelineEvent(_this.parent, 'hour');
                 }
             }
-            if (_this.parent.options.currentView === 'Month') {
+            if (_this.parent.options.currentView === 'Month' ||
+                (!_this.parent.isTimelineView() && !_this.parent.activeViewOptions.timeScale.enable)) {
                 _this.updateOriginalElement(_this.actionObj.clone);
                 _this.cloneEventDetail = _this.actionObj.clone.querySelector('.e-appointment-details');
                 _this.monthEvent = new MonthEvent(_this.parent);
@@ -4756,7 +4737,8 @@ var DragAndDrop = /** @class */ (function (_super) {
             this.calculateTimelineTime(e);
         }
         else {
-            if (this.parent.options.currentView === 'Month') {
+            if (this.parent.options.currentView === 'Month' ||
+                (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable)) {
                 this.calculateVerticalDate(e);
             }
             else {

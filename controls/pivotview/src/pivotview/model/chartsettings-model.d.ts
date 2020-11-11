@@ -2460,6 +2460,12 @@ export interface PivotSeriesModel {
     pyramidMode?: PyramidModes;
 
     /**
+      * Allows you to draw the chart series points with custom color for the pie, funnel, doughnut and pyramid chart types.
+      * @default []
+      */
+    palettes?: string[];
+
+    /**
       * Allows to defines start angle for the pie, funnel, doughnut and pyramid chart series.
       * @default 0
       */

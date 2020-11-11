@@ -88,6 +88,7 @@ export class Toolbar {
             enableRtl: this.parent.enableRtl,
             items: this.getItems(),
             allowKeyboard: false,
+            width: !this.parent.gridSettings.allowAutoResizing ? (this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2)) : 'auto'
         });
         this.toolbar.isStringTemplate = true;
         let viewStr: string = 'viewContainerRef';

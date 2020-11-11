@@ -96,8 +96,22 @@ export class SfRichTextEditor {
     public isBlur: boolean;
     public isFocusOut: boolean;
     private isInitial: boolean = false;
+    public blurEnabled: boolean = false;
+    public focusEnabled: boolean = false;
     private isResizeInitialized: boolean;
     public undoRedoStatus: boolean = false;
+    public createdEnabled: boolean = false;
+    public actionBeginEnabled: boolean = false;
+    public imageDeleteEnabled: boolean = false;
+    public onResizeStopEnabled: boolean = false;
+    public quickTbClosedEnabled: boolean = false;
+    public quickTbOpenedEnabled: boolean = false;
+    public onQuickTbOpenEnabled: boolean = false;
+    public onResizeStartEnabled: boolean = false;
+    public actionCompleteEnabled: boolean = false;
+    public beforeUploadImageEnabled: boolean = false;
+    public onImageUploadFailedEnabled: boolean = false;
+    public onImageUploadSuccessEnabled: boolean = false;
     //#endregion
 
     //#region HtmlElement variables
@@ -201,7 +215,7 @@ export class SfRichTextEditor {
         this.setPanelValue(this.value);
         this.observer.notify(events.initialEnd, {});
         this.wireEvents();
-        this.dotNetRef.invokeMethodAsync('CreatedEvent');
+        if (this.createdEnabled) { this.dotNetRef.invokeMethodAsync('CreatedEvent'); }
     }
 
     private isUndoRedoStatus(): void {
@@ -1245,7 +1259,7 @@ export class SfRichTextEditor {
             }
             this.defaultResize(e, false);
             let args: FocusBlurEventArgs = { isInteracted: Object.keys(e).length === 0 ? false : true };
-            this.dotNetRef.invokeMethodAsync('FocusEvent', args);
+            if (this.focusEnabled) { this.dotNetRef.invokeMethodAsync('FocusEvent', args); }
             if (!isNOU(this.saveInterval) && this.saveInterval > 0 && !this.autoSaveOnIdle) {
                 this.timeInterval = setInterval(this.updateValueOnIdle.bind(this), this.saveInterval);
             }
@@ -1289,7 +1303,7 @@ export class SfRichTextEditor {
             dispatchEvent(this.valueContainer, 'focusout');
             this.defaultResize(e, true);
             let args: FocusBlurEventArgs = { isInteracted: Object.keys(e).length === 0 ? false : true };
-            this.dotNetRef.invokeMethodAsync('BlurEvent', args);
+            if (this.blurEnabled) { this.dotNetRef.invokeMethodAsync('BlurEvent', args); }
             if (!isNOU(this.timeInterval)) {
                 clearInterval(this.timeInterval);
                 this.timeInterval = null;

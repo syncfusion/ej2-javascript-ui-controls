@@ -48,7 +48,6 @@ var SWIMLANE_CONTENT_CLASS = 'e-swimlane-content';
 var SWIMLANE_RESOURCE_CLASS = 'e-swimlane-resource';
 
 var WINDOW_WIDTH = 'WindowWidth';
-
 var TOOLTIP_TEXT_CLASS = 'e-tooltip-text';
 
 /**
@@ -607,43 +606,6 @@ var Keyboard = /** @class */ (function () {
 }());
 
 /**
- * Tooltip for Kanban board
- */
-var KanbanTooltip = /** @class */ (function () {
-    function KanbanTooltip(parent) {
-        this.parent = parent;
-        this.renderTooltip();
-    }
-    KanbanTooltip.prototype.renderTooltip = function () {
-        this.tooltipObj = new sf.popups.Tooltip({
-            mouseTrail: !this.parent.isAdaptive,
-            offsetY: 5,
-            position: 'BottomCenter',
-            showTipPointer: true,
-            target: '.' + TOOLTIP_TEXT_CLASS,
-            beforeRender: this.onBeforeRender.bind(this)
-        });
-        this.tooltipObj.appendTo(this.parent.element);
-        this.tooltipObj.isStringTemplate = true;
-    };
-    KanbanTooltip.prototype.onBeforeRender = function (args) {
-        if (this.parent.dragAndDropModule.isDragging) {
-            args.cancel = true;
-            return;
-        }
-        var tooltipContent;
-        tooltipContent = "<div class=\"e-card-header-caption\">" + args.target.innerText + "</div>";
-        this.tooltipObj.setProperties({ content: tooltipContent }, true);
-    };
-    KanbanTooltip.prototype.destroy = function () {
-        this.tooltipObj.destroy();
-        sf.base.addClass([this.parent.element], 'e-control');
-        this.tooltipObj = null;
-    };
-    return KanbanTooltip;
-}());
-
-/**
  * kanban touch module
  */
 var KanbanTouch = /** @class */ (function () {
@@ -738,9 +700,6 @@ var SfKanban = /** @class */ (function () {
         }
         if (this.allowKeyboard) {
             this.keyboardModule = new Keyboard(this);
-        }
-        if (this.enableTooltip) {
-            this.tooltipModule = new KanbanTooltip(this);
         }
         this.scrollPosition.content = { left: 0, top: 0 };
         this.initializeSwimlaneTree();
@@ -1023,9 +982,6 @@ var SfKanban = /** @class */ (function () {
         if (this.keyboardModule) {
             this.keyboardModule.destroy();
         }
-        if (this.enableTooltip) {
-            this.tooltipModule.destroy();
-        }
         this.unWireEvents();
     };
     return SfKanban;
@@ -1067,6 +1023,22 @@ var Kanban = {
     },
     listViewClick: function (element) {
         element.blazor__instance.onListViewClick();
+    },
+    getTargetDetails: function (element, left, top, isTemplate) {
+        if (element && element.blazor__instance) {
+            var target = document.elementFromPoint(left, top);
+            var targetElement = void 0;
+            var text = null;
+            if (isTemplate) {
+                targetElement = sf.base.closest(target, '.' + CARD_CLASS);
+                text = JSON.stringify(targetElement.getAttribute('data-id'));
+            }
+            else if (target.classList.contains(TOOLTIP_TEXT_CLASS)) {
+                text = JSON.stringify(target.innerHTML);
+            }
+            return text;
+        }
+        return null;
     },
     destroy: function (element) {
         if (element && element.blazor__instance) {

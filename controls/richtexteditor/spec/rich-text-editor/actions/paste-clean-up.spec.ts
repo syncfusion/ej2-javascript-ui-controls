@@ -1460,3 +1460,47 @@ describe("Paste in Markdown Editor", () => {
       destroy(rteObj);
   });
 });
+
+describe("Paste in Markdown Editor", () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = {
+        preventDefault: () => { },
+        type: "keydown",
+        stopPropagation: () => { },
+        ctrlKey: false,
+        shiftKey: false,
+        action: null,
+        which: 64,
+        key: ""
+    };
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['ClearFormat']
+            }
+        });
+        done();
+    });
+    it("Pasting content in ", (done: Function) => {
+        keyBoardEvent.clipboardData = {
+            getData: () => { return `<html> <body> <!--StartFragment--><p><img class='pasteContent_Img' src='' /></p><!--EndFragment--> </body></html>` },
+            types: ['text/html', 'Files'],
+            files: { 0: { lastModified: 1594563447084, name: "image.png", size: 66216, type: "image/png", webkitRelativePath: "", lastModifiedDate: new Date() } },
+            items: { 0: { kind: 'string', type: 'text/html' }, 1: { kind: 'file', type: 'image/png' }, }
+        };
+        setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+        rteObj.onPaste(keyBoardEvent);
+        let imgEle: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll("img");
+        expect(isNullOrUndefined(imgEle)).toBe(false);
+        rteObj.selectAll();
+        (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
+        (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
+        (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
+        let imgElements: HTMLElement[] = (rteObj as any).inputElement.firstElementChild.querySelectorAll("img");
+        expect(imgElements.length).toBe(1);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});

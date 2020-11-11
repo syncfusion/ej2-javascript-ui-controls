@@ -327,8 +327,6 @@ export class Selection implements IAction {
             this.index = index;  this.toggle =  isToggle; this.data =  selectData; this.removed = isRemoved;
             if (isRowSelected && this.selectionSettings.persistSelection && !(this.selectionSettings.checkboxMode === 'ResetOnRowClick')) {
                 this.clearSelectedRow(index);
-                isRemoved = true;
-                this.removed = isRemoved;
                 this.selectRowCallBack();
             } else if (!isRowSelected && this.selectionSettings.persistSelection &&
                 this.selectionSettings.checkboxMode !== 'ResetOnRowClick') {
@@ -337,7 +335,8 @@ export class Selection implements IAction {
             if (this.selectionSettings.checkboxMode === 'ResetOnRowClick') {
                 this.clearSelection();
             }
-            if (!this.selectionSettings.persistSelection || this.selectionSettings.checkboxMode === 'ResetOnRowClick') {
+            if (!this.selectionSettings.persistSelection || this.selectionSettings.checkboxMode === 'ResetOnRowClick' ||
+                (!this.parent.isCheckBoxSelection && this.selectionSettings.persistSelection)) {
                 this.selectRowCheck = true;
                 this.clearRow();
             }
@@ -513,7 +512,7 @@ export class Selection implements IAction {
         let selectedMovableRow: Element = !this.isSingleSel() ? this.getSelectedMovableRow(rowIndexes[0]) :
             this.getSelectedMovableRow(rowIndexes[rowIndexes.length - 1]);
         let frzCols: number = gObj.getFrozenColumns();
-        if (!this.isRowType() || this.isEditing()) {
+        if ((!this.isRowType() || this.isEditing()) && !this.selectionSettings.checkboxOnly) {
             return;
         }
         let args: Object;
@@ -635,12 +634,13 @@ export class Selection implements IAction {
     }
 
     private clearSelectedRow(index: number): void {
-        if (this.target) {
-            let selectedEle: HTMLElement = this.target.parentElement;
+        if (this.toggle) {
+            let selectedEle: Element = this.parent.getRowByIndex(index);
             if (!this.disableUI) {
                 selectedEle.removeAttribute('aria-selected');
                 this.addRemoveClassesForRow(selectedEle, false, true, 'e-selectionbackground', 'e-active');
             }
+            this.removed = true;
             this.updatePersistCollection(selectedEle, false);
             this.updateCheckBoxes(selectedEle);
             this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(index), 1);
@@ -3140,6 +3140,7 @@ export class Selection implements IAction {
         this.onDataBoundFunction = this.onDataBound.bind(this);
         this.parent.addEventListener(events.dataBound, this.onDataBoundFunction);
         this.parent.on(events.contentReady, this.checkBoxSelectionChanged, this);
+        this.parent.on(events.beforeRefreshOnDataChange, this.initPerisistSelection, this);
         this.parent.on(events.onEmpty, this.setCheckAllForEmptyGrid, this);
         this.actionCompleteFunc = this.actionCompleteHandler.bind(this);
         this.parent.addEventListener(events.actionComplete, this.actionCompleteFunc);
@@ -3158,6 +3159,7 @@ export class Selection implements IAction {
         this.parent.removeEventListener(events.actionComplete, this.actionCompleteFunc);
         this.parent.off(events.onEmpty, this.setCheckAllForEmptyGrid);
         this.parent.off(events.click, this.clickHandler);
+        this.parent.off(events.beforeRefreshOnDataChange, this.initPerisistSelection);
     }
 
     private setCheckAllForEmptyGrid(): void {

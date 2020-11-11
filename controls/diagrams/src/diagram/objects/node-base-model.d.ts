@@ -62,6 +62,7 @@ export interface NodeBaseModel {
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
+     * @ignoreapilink
      */
     symbolInfo?: SymbolPaletteInfoModel;
 

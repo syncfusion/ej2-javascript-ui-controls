@@ -1071,6 +1071,8 @@ var Dialog = /** @class */ (function (_super) {
     };
     Dialog.prototype.windowResizeHandler = function () {
         sf.popups.setMaxWidth(this.targetEle.clientWidth);
+        sf.popups.setMaxHeight(this.targetEle.clientHeight);
+        this.setMaxHeight();
     };
     /**
      * Get the properties to be maintained in the persisted state.
@@ -1153,7 +1155,7 @@ var Dialog = /** @class */ (function (_super) {
         window.addEventListener('resize', this.windowResizeHandler.bind(this));
     };
     Dialog.prototype.unWireWindowResizeEvent = function () {
-        window.addEventListener('resize', this.windowResizeHandler.bind(this));
+        window.removeEventListener('resize', this.windowResizeHandler.bind(this));
     };
     /**
      * Binding event to the element while widget creation

@@ -415,7 +415,7 @@ public pagerTemplate: string;
   public sortSettings: SortSettingsModel;
   /**
    * Configures the TreeGrid aggregate rows.
-   * > Check the [`Aggregates`](../../treegrid/aggregates/) for its configuration.
+   * > Check the [`Aggregates`](../../treegrid/aggregate/) for its configuration.
    * @default []
    */
   @Collection<AggregateRowModel>([], AggregateRow)
@@ -438,7 +438,8 @@ public pagerTemplate: string;
   /**
    * The detail template allows you to show or hide additional information about a particular row.
    *
-   * > It accepts either the [template string](../../common/template-engine/) or the HTML element ID.
+   * > It accepts either the [template string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals) 
+   * or the HTML element ID.
    *
    */
   @Property()
@@ -535,7 +536,8 @@ public pagerTemplate: string;
     /**   
      * The row template that renders customized rows from the given template. 
      * By default, TreeGrid renders a table row for every data source item.
-     * > * It accepts either [template string](../../common/template-engine/) or HTML element ID.   
+     * > * It accepts either [template string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals)
+     * or HTML element ID.   
      * > * The row template must be a table row.  
      * 
      * > Check the [`Row Template`](../../treegrid/row) customization.
@@ -1093,7 +1095,7 @@ public beforeDataBound: EmitType<BeforeDataBoundArgs>;
   /**
    * If `allowExcelExport` set to true, then it will allow the user to export treegrid to Excel file.
    * 
-   * > Check the [`ExcelExport`](../../treegrid/excel-exporting/) to configure exporting document.
+   * > Check the [`ExcelExport`](../../treegrid/excel-export/) to configure exporting document.
    * @default false    
    */
   @Property(false)
@@ -1834,7 +1836,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     let treeGrid: TreeGrid = this;
     this.grid.rowSelecting = (args: RowDeselectEventArgs): void => {
       if (!isNullOrUndefined(args.target) && (args.target.classList.contains('e-treegridexpand')
-          || args.target.classList.contains('e-treegridcollapse'))) {
+          || args.target.classList.contains('e-treegridcollapse') || args.target.classList.contains('e-summarycell'))) {
         args.cancel = true;
         return;
       }
@@ -2012,6 +2014,10 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         if (beginEdit && typeof beginEdit === 'function') {
           beginEdit.apply(this, [args]);
         }
+      }
+      if (!isNullOrUndefined(args.row) && args.row.classList.contains('e-summaryrow')) {
+        args.cancel = true;
+        return;
       }
       let callBackPromise: Deferred = new Deferred();
       this.trigger(events.beginEdit, args, (begineditArgs: BeginEditArgs) => {
@@ -3983,7 +3989,7 @@ private getGridEditSettings(): GridEditModel {
    * @hidden
    */
   public getFrozenColumns(): number { // TreeGrid method to get frozen columns
-    return this.getFrozenCount(this.columns as Column[], 0);
+    return this.getFrozenCount(this.columns as Column[], 0) + this.frozenColumns;
   }
 
   private getFrozenCount(cols: Column[], cnt: number): number { // TreeGrid method to get frozen columns count

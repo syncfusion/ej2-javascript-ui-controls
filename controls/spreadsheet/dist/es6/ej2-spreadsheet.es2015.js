@@ -741,8 +741,7 @@ class WorkbookNumberFormat {
         return zeros.substr(0, suffixLen < 0 ? 0 : suffixLen) + resultSuffix;
     }
     applyNumberFormat(args, intl) {
-        args.format = args.format === '' ? getFormatFromType('Number') : args.format;
-        args.format = args.format.toString().split('_)').join(' ').split('_(').join(' ').split('[Red]').join('');
+        args.format = this.isCustomFormat(args.format.toString());
         let formatArr = args.format.toString().split(';');
         if (Number(args.value) >= 0) {
             args.format = formatArr[0];
@@ -753,6 +752,14 @@ class WorkbookNumberFormat {
         return intl.formatNumber(Number(args.value), {
             format: args.format
         });
+    }
+    isCustomFormat(format) {
+        if (format === '_-* #,##0.00_-;-* #,##0.00_-;_-* "-"_-;_-@_-' || format === '_-* #,##0_-;-* #,##0_-;_-* "-"_-;_-@_-') {
+            format = '';
+        }
+        format = format === '' ? getFormatFromType('Number') : format;
+        format = format.toString().split('_)').join(' ').split('_(').join(' ').split('[Red]').join('');
+        return format;
     }
     currencyFormat(args, intl) {
         args.format = args.format === '' ? getFormatFromType('Currency') : args.format;
@@ -1038,6 +1045,8 @@ function getTypeFromFormat(format) {
     let code = 'General';
     switch (format) {
         case '0.00':
+        case '_-* #,##0.00_-;-* #,##0.00_-;_-* "-"_-;_-@_-':
+        case '_-* #,##0_-;-* #,##0_-;_-* "-"_-;_-@_-':
             code = 'Number';
             break;
         case '$#,##0.00':
@@ -1455,7 +1464,9 @@ class DataBind {
                         row = sheet.rows[i + indexes[0]];
                         if (row) {
                             for (let j = indexes[1]; j < indexes[1] + range.info.fldLen; j++) {
-                                delete row.cells[j];
+                                if (row.cells && row.cells[i]) {
+                                    delete row.cells[j];
+                                }
                             }
                         }
                     }
@@ -1504,10 +1515,12 @@ class DataBind {
             if (range.dataSource) {
                 let isNewRow;
                 startCell = getCellIndexes(range.startCell);
-                dataRange = [...startCell, startCell[0] + range.info.count, startCell[1] + range.info.fldLen - 1];
+                dataRange = [...startCell, startCell[0] + range.info.count + (range.showFieldAsHeader ? 0 : -1),
+                    startCell[1] + range.info.fldLen - 1];
                 if (args.modelType === 'Row') {
                     if (args.insertType) {
-                        inRange = dataRange[0] < args.index && dataRange[2] >= args.index;
+                        inRange = ((!range.showFieldAsHeader && args.insertType === 'above') ? dataRange[0] <= args.index
+                            : dataRange[0] < args.index) && dataRange[2] >= args.index;
                         cellIndices = [args.index];
                         if (!inRange) {
                             if ((dataRange[2] + 1 === args.index && args.insertType === 'below')) {
@@ -10569,14 +10582,16 @@ class WorkbookFindAndReplace {
                     valueOfCell = dispTxt.toString();
                 }
                 else {
-                    valueOfCell = sheet.rows[ridx].cells[cidx].value.toString();
+                    if (sheet.rows[ridx].cells[cidx].value) {
+                        valueOfCell = sheet.rows[ridx].cells[cidx].value.toString();
+                    }
                 }
             }
         }
         if (valueOfCell) {
             let lcValueOfCell = valueOfCell.toLowerCase();
             let ivalueOfCell = valueOfCell.indexOf(args.value) > -1;
-            let lowerCaseIndex = lcValueOfCell.indexOf(args.value) > -1;
+            let lowerCaseIndex = lcValueOfCell.indexOf(args.value.toString().toLowerCase()) > -1;
             if ((stringValue === valueOfCell) || (stringValue === lcValueOfCell) || (ivalueOfCell) || (lowerCaseIndex)) {
                 if (args.searchBy === 'By Column') {
                     ridx++;
@@ -10788,7 +10803,8 @@ class WorkbookFindAndReplace {
     nextCommon(findNextArgs) {
         let sheet = findNextArgs.sheets[findNextArgs.sheetIndex];
         if (sheet.rows[findNextArgs.rowIndex]) {
-            if (sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex]) {
+            let rowCol = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex];
+            if (rowCol && rowCol.value) {
                 let cellType = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex];
                 if (cellType) {
                     let cellval;
@@ -10828,7 +10844,7 @@ class WorkbookFindAndReplace {
                     }
                     else if (!findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
                         findNextArgs.val = cellval.toString().toLowerCase();
-                        let index = cellval.indexOf(findNextArgs.args.value) > -1;
+                        let index = findNextArgs.val.indexOf(findNextArgs.args.value.toString().toLowerCase()) > -1;
                         let lowerCaseIndex = findNextArgs.val.indexOf(findNextArgs.args.value) > -1;
                         if ((findNextArgs.val === findNextArgs.stringValue) || ((cellval === findNextArgs.stringValue) || (index)) ||
                             (cellval === findNextArgs.stringValue) || (lowerCaseIndex)) {
@@ -10868,14 +10884,16 @@ class WorkbookFindAndReplace {
                     valueOfCell = displayTxt.toString();
                 }
                 else {
-                    valueOfCell = sheet.rows[ridx].cells[cidx].value.toString();
+                    if (sheet.rows[ridx].cells[cidx].value) {
+                        valueOfCell = sheet.rows[ridx].cells[cidx].value.toString();
+                    }
                 }
             }
         }
         if (valueOfCell) {
             let lcValue = valueOfCell.toLowerCase();
             let ivalue = valueOfCell.indexOf(args.value) > -1;
-            let lowerCaseIndex = lcValue.indexOf(args.value) > -1;
+            let lowerCaseIndex = lcValue.indexOf(args.value.toString().toLowerCase()) > -1;
             if ((stringValue === valueOfCell) || (stringValue === lcValue) || (ivalue) || (lowerCaseIndex)) {
                 if (args.searchBy === 'By Row') {
                     cidx--;
@@ -11087,7 +11105,8 @@ class WorkbookFindAndReplace {
     prevCommon(findPrevArgs) {
         let sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex];
         if (sheet.rows[findPrevArgs.rowIndex]) {
-            if (sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex]) {
+            if (sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex] &&
+                sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex].value) {
                 let cellType = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex];
                 if (cellType) {
                     let cellvalue;
@@ -11127,7 +11146,7 @@ class WorkbookFindAndReplace {
                     }
                     else if (!findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
                         findPrevArgs.val = cellvalue.toString().toLowerCase();
-                        let index = cellvalue.indexOf(findPrevArgs.args.value) > -1;
+                        let index = findPrevArgs.val.indexOf(findPrevArgs.args.value.toString().toLowerCase()) > -1;
                         let lowerCaseIndex = findPrevArgs.val.indexOf(findPrevArgs.args.value) > -1;
                         if ((cellvalue === findPrevArgs.stringValue) || ((cellvalue === findPrevArgs.stringValue) ||
                             (index)) || (findPrevArgs.val === findPrevArgs.stringValue) || (lowerCaseIndex)) {
@@ -11151,7 +11170,7 @@ class WorkbookFindAndReplace {
         let activecell = getCellIndexes(sheet.activeCell);
         let currentCell = sheet.rows[activecell[0]].cells[activecell[1]].value.toString();
         let index = currentCell.indexOf(args.value) > -1;
-        let lowerCaseIndex = currentCell.toLowerCase().indexOf(args.value) > -1;
+        let lowerCaseIndex = currentCell.toLowerCase().indexOf(args.value.toString().toLowerCase()) > -1;
         let val = currentCell.toString().toLowerCase();
         if ((currentCell !== args.value) && (!index) && (val !== args.value) && (!lowerCaseIndex)) {
             args.findOpt = 'next';
@@ -11232,7 +11251,7 @@ class WorkbookFindAndReplace {
                     for (startColumn; startColumn <= endColumn; startColumn++) {
                         let cell = sheet.rows[startRow].cells[startColumn];
                         if (row) {
-                            if (row.cells[startColumn]) {
+                            if (row.cells[startColumn] && row.cells[startColumn].value) {
                                 let cellType = sheet.rows[startRow].cells[startColumn];
                                 if (cellType) {
                                     let cellTypeVal = cellType.format;
@@ -11277,7 +11296,7 @@ class WorkbookFindAndReplace {
                                     }
                                     else if (!args.isCSen && !args.isEMatch) {
                                         let val = cellval.toString().toLowerCase();
-                                        let index = cellval.indexOf(args.value) > -1;
+                                        let index = val.indexOf(args.value.toString().toLowerCase()) > -1;
                                         let lowerCaseValue = val.indexOf(args.value) > -1;
                                         if (((cellval === args.value) || (index)) || (val === args.value) || (cellval === args.value) ||
                                             (lowerCaseValue)) {
@@ -11326,7 +11345,7 @@ class WorkbookFindAndReplace {
                 }
                 for (columnIndex; columnIndex <= endColumn; columnIndex++) {
                     if (row) {
-                        if (row.cells[columnIndex]) {
+                        if (row.cells[columnIndex] && row.cells[columnIndex].value) {
                             let cellType = sheet.rows[rowIndex].cells[columnIndex];
                             if (cellType) {
                                 let cellFormat = cellType.format;
@@ -11358,7 +11377,7 @@ class WorkbookFindAndReplace {
                                 }
                                 else if (!args.isCSen && !args.isEMatch) {
                                     let val = cellvalue.toString().toLowerCase();
-                                    let index = cellvalue.indexOf(args.value) > -1;
+                                    let index = val.indexOf(args.value.toString().toLowerCase()) > -1;
                                     let lowerCaseValue = val.indexOf(args.value) > -1;
                                     if ((val === args.value) || ((cellvalue === args.value) || (index)) || (cellvalue === args.value) ||
                                         (lowerCaseValue)) {
@@ -11374,6 +11393,16 @@ class WorkbookFindAndReplace {
         let totalCount = count;
         let requiredCount = this.requiredCount(args) - 1;
         count = totalCount - requiredCount;
+        if (count > totalCount) {
+            count = totalCount;
+        }
+        if (count !== 0) {
+            let activecel = getCellIndexes(sheet.activeCell);
+            let val = this.parent.getDisplayText(sheet.rows[activecel[0]].cells[activecel[1]]).toString().toLowerCase();
+            if (val.indexOf(args.value.toString().toLowerCase()) === -1) {
+                count = count - 1;
+            }
+        }
         args.findCount = count + ' ' + 'of' + ' ' + totalCount;
         return;
     }
@@ -11394,7 +11423,7 @@ class WorkbookFindAndReplace {
                 }
                 for (startColumn; startColumn <= endColumn; startColumn++) {
                     if (row) {
-                        if (row.cells[startColumn]) {
+                        if (row.cells[startColumn] && row.cells[startColumn].value) {
                             if (sheet.rows[startRow].cells[startColumn]) {
                                 let cellval;
                                 if (sheet.rows[startRow].cells[startColumn].format) {
@@ -11424,9 +11453,10 @@ class WorkbookFindAndReplace {
                                 }
                                 else if (!args.isCSen && !args.isEMatch) {
                                     let val = cellval.toString().toLowerCase();
-                                    let index = cellval.indexOf(args.value) > -1;
+                                    let argsVal = args.value.toString().toLowerCase();
+                                    let index = val.indexOf(argsVal) > -1;
                                     let lowerCaseVal = val.indexOf(args.value) > -1;
-                                    if ((cellval === args.value) || ((cellval === args.value) || (index)) || (val === args.value) ||
+                                    if ((cellval === args.value) || ((val === argsVal) || (index)) || (val === args.value) ||
                                         (lowerCaseVal)) {
                                         requiredCount++;
                                     }
@@ -11441,7 +11471,7 @@ class WorkbookFindAndReplace {
     }
     findAllValues(findAllArguments) {
         let startSheet = findAllArguments.sheetIndex;
-        let sheet = this.parent.sheets[startSheet];
+        let sheet = this.parent.sheets[startSheet - 1];
         let endRow = sheet.usedRange.rowIndex;
         let rowIndex = 0;
         let count = 0;
@@ -11522,7 +11552,7 @@ class WorkbookFindAndReplace {
                                     }
                                     else if (!findAllArguments.isCSen && !findAllArguments.isEMatch) {
                                         let val = cellvalue.toString().toLowerCase();
-                                        let index = cellvalue.indexOf(findAllArguments.value) > -1;
+                                        let index = val.indexOf(findAllArguments.value.toLowerCase()) > -1;
                                         if ((val === findAllArguments.value) || ((cellvalue === findAllArguments.value) || (index)) ||
                                             ((cellvalue === findAllArguments.value))) {
                                             address = sheet.name + '!' + getCellAddress(rowIndex, columnIndex);
@@ -17071,6 +17101,8 @@ class Edit {
                 let sheet = this.parent.getActiveSheet();
                 let formulaRefIndicator = this.parent.element.querySelector('.e-formularef-indicator');
                 this.isCellEdit = trgtElem.classList.contains('e-spreadsheet-edit');
+                let isFormula = checkIsFormula(this.editCellData.value) ||
+                    (this.editCellData.value && this.editCellData.value.toString().indexOf('=') === 0);
                 if (trgtElem.classList.contains('e-cell') || trgtElem.classList.contains('e-header-cell') ||
                     trgtElem.classList.contains('e-selectall') || closest(trgtElem, '.e-toolbar-item.e-active')) {
                     if (this.isAltEnter) {
@@ -17081,8 +17113,6 @@ class Edit {
                             this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
                         }
                     }
-                    let isFormula = checkIsFormula(this.editCellData.value) ||
-                        (this.editCellData.value && this.editCellData.value.toString().indexOf('=') === 0);
                     if (!isFormula) {
                         this.endEdit(false, e);
                     }
@@ -17149,7 +17179,7 @@ class Edit {
                     }
                 }
                 else {
-                    if (this.editCellData.value === this.editorElem.textContent && this.editorElem.textContent.indexOf('(') !==
+                    if (isFormula && this.editCellData.value === this.editorElem.textContent && this.editorElem.textContent.indexOf('(') !==
                         this.editorElem.textContent.length - 1) {
                         if (this.editCellData.sheetIndex === sheet.id - 1) {
                             let curPos = window.getSelection().focusOffset;
@@ -19663,7 +19693,7 @@ class CellFormat {
             && Number(style.fontSize.split('pt')[0]) > 12) || keys.indexOf('fontFamily') > -1;
     }
     setLeftBorder(border, cell, rowIdx, colIdx, row, actionUpdate, first) {
-        if (first.includes('Column')) {
+        if (first && first.includes('Column')) {
             return;
         }
         let prevCell = this.parent.getCell(rowIdx, colIdx - 1, row);
@@ -19678,7 +19708,7 @@ class CellFormat {
         }
     }
     setTopBorder(border, cell, rowIdx, colIdx, pRow, pHRow, actionUpdate, first, lastCell, manualUpdate) {
-        if (first.includes('Row')) {
+        if (first && first.includes('Row')) {
             return;
         }
         let prevCell = this.parent.getCell(rowIdx - 1, colIdx, pRow);
@@ -22756,8 +22786,10 @@ class DataValidation {
                             operator = cell.validation.operator;
                             value1 = cell.validation.value1;
                             value2 = cell.validation.value2;
-                            ignoreBlank = cell.validation.ignoreBlank;
-                            inCellDropDown = cell.validation.inCellDropDown;
+                            ignoreBlank = !isNullOrUndefined(cell.validation.ignoreBlank) ?
+                                cell.validation.ignoreBlank : ignoreBlank;
+                            inCellDropDown = !isNullOrUndefined(cell.validation.inCellDropDown) ?
+                                cell.validation.inCellDropDown : inCellDropDown;
                         }
                     }
                 }
@@ -23194,7 +23226,7 @@ class DataValidation {
         let value2 = cell.validation.value2;
         let opt = cell.validation.operator;
         let type = cell.validation.type;
-        let ignoreBlank = cell.validation.ignoreBlank;
+        let ignoreBlank = !isNullOrUndefined(cell.validation.ignoreBlank) ? cell.validation.ignoreBlank : true;
         let formValidation = this.formatValidation(args.value, type);
         isValidate = formValidation.isValidate;
         errorMsg = formValidation.errorMsg;
@@ -33607,10 +33639,9 @@ class CellRenderer {
         if (cellValue.indexOf('\n') > -1 && !isWrap) {
             let splitVal = cellValue.split('\n');
             if (splitVal.length > 1) {
-                wrap(args.address, true, this.parent);
-                let ht = getTextHeight(this.parent, args.cell.style || this.parent.cellStyle, splitVal.length);
-                this.parent.setRowHeight(ht, args.rowIdx, this.parent.activeSheetIndex + 1, true);
-                this.parent.getRow(args.rowIdx, this.parent.getRowHeaderTable()).style.height = `${ht}px`;
+                this.parent.notify(wrapEvent, {
+                    range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, initial: true, sheet: this.parent.getActiveSheet(), td: args.td, row: args.row, hRow: args.hRow
+                });
             }
         }
         return evtArgs.element;

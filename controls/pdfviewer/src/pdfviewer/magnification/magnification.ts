@@ -866,14 +866,15 @@ export class Magnification {
     /**
      * @private
      */
-    public fitPageScrollMouseWheel(event: MouseWheelEvent): void {
+    // tslint:disable-next-line
+    public fitPageScrollMouseWheel(event: WheelEvent): void {
         if (this.fitType === 'fitToPage') {
             this.isMagnified = false;
             event.preventDefault();
-            if (event.wheelDelta > 0) {
-                this.upwardScrollFitPage(this.pdfViewerBase.currentPageNumber - 1);
-            } else {
+            if (event.deltaY > 0) {
                 this.downwardScrollFitPage(this.pdfViewerBase.currentPageNumber - 1);
+            } else {
+                this.upwardScrollFitPage(this.pdfViewerBase.currentPageNumber - 1);
             }
         }
     }
@@ -943,10 +944,11 @@ export class Magnification {
      */
     public updatePagesForFitPage(currentPageIndex: number): void {
         if (this.fitType === 'fitToPage') {
-            if (currentPageIndex > 0) {
+            if (currentPageIndex > 0 && this.pdfViewerBase.getElement('_pageDiv_' + (currentPageIndex - 1))) {
                 this.pdfViewerBase.getElement('_pageDiv_' + (currentPageIndex - 1)).style.visibility = 'hidden';
             }
-            if (currentPageIndex < (this.pdfViewerBase.pageCount - 1)) {
+            // tslint:disable-next-line:max-line-length
+            if ((currentPageIndex < (this.pdfViewerBase.pageCount - 1)) && this.pdfViewerBase.getElement('_pageDiv_' + (currentPageIndex + 1))) {
                 this.pdfViewerBase.getElement('_pageDiv_' + (currentPageIndex + 1)).style.visibility = 'hidden';
             }
         }

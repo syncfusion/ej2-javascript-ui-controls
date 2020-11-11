@@ -8584,6 +8584,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 if (!targetNode || (canInConnect(targetNode) || (actualObject.targetPortID !== '' && canPortInConnect(inPort)))) {
                     actualObject.targetPortWrapper = target ? this.getWrapper(target, newProp.targetPortID) : undefined;
+                } else if (actualObject.targetPortID === '' && !canInConnect(targetNode)){
+                    actualObject.targetPortWrapper = undefined;
                 }
             }
             if (newProp.flip !== undefined) { actualObject.flip = newProp.flip; flipConnector(actualObject); }

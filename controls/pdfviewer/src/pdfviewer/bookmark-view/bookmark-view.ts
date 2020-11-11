@@ -199,7 +199,9 @@ export class BookmarkView {
             let bookid: number = args.data.Id;
             this.childNavigateCount = 0;
             this.pdfViewerBase.navigationPane.goBackToToolbar();
-            this.navigateToBookmark(bookid);
+            // tslint:disable-next-line
+            let data: any[] = this.treeObj.getTreeData(args.node);
+            this.navigateToBookmark(bookid, args.node.textContent, data[0].FileName);
         } else {
             this.childNavigateCount++;
         }
@@ -209,7 +211,9 @@ export class BookmarkView {
     private nodeClick = (args: NodeSelectEventArgs): boolean => {
         this.setHeight(args.node);
         let bookid: number = Number(args.nodeData.id);
-        this.navigateToBookmark(bookid);
+        // tslint:disable-next-line
+        let data: any[] = this.treeObj.getTreeData(args.node);
+        this.navigateToBookmark(bookid, args.node.textContent, data[0].FileName);
         if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule) {
             // tslint:disable-next-line
             let currentPageNumber: number = parseInt(this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber);
@@ -294,11 +298,13 @@ export class BookmarkView {
         }
     }
 
-    private navigateToBookmark(bookid: number): void {
+    private navigateToBookmark(bookid: number, text: string, fileName: string) : void {
         let pageIndex: number = this.bookmarksDestination.bookMarkDestination[bookid].PageIndex;
         let Y: number = this.bookmarksDestination.bookMarkDestination[bookid].Y;
-        this.goToBookmark(pageIndex, Y);
-        this.pdfViewer.fireBookmarkClick(pageIndex + 1, Y);
+        if (pageIndex !== -1) {
+            this.goToBookmark(pageIndex, Y);
+        }
+        this.pdfViewer.fireBookmarkClick(pageIndex !== -1 ? pageIndex + 1 : pageIndex, Y, text, fileName);
     }
 
     /**

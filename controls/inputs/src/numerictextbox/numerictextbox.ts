@@ -1380,6 +1380,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                     this.updateHTMLAttrToWrapper();
                     this.updateDataAttribute(true);
                     this.checkAttributes(true);
+                    Input.validateInputType(this.container, this.element);
                     break;
                 case 'placeholder':
                     Input.setPlaceholder(newProp.placeholder, this.element);

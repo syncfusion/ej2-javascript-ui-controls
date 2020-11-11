@@ -1,5 +1,6 @@
 import { BlazorDotnetObject, extend, isNullOrUndefined, print } from '@syncfusion/ej2-base';
 import { EventHandler, MouseEventArgs, KeyboardEventArgs, KeyboardEvents, closest } from '@syncfusion/ej2-base';
+import { getScrollableParent } from '@syncfusion/ej2-popups';
 import { Scroll } from './scroll';
 import { Freeze } from './freeze';
 import { BlazorGridElement, IGridOptions, Column, ScrollPositionType } from './interfaces';
@@ -68,6 +69,7 @@ export class SfGrid {
         this.content = this.element.querySelector('.e-gridcontent .e-content');
         this.footer = this.element.querySelector('.e-summarycontent');
         this.initModules();
+        this.addScrollEvents(true);
     }
 
     public initModules() {
@@ -133,6 +135,26 @@ export class SfGrid {
         this.columnModel = [];
         this.updateColumnModel(this.options.columns as Column[]);
         return this.columnModel;
+    }
+
+    private addScrollEvents(add: boolean): void {
+        if (this.options.showColumnMenu) {
+            let elements: HTMLElement[] = getScrollableParent(this.element);
+            for (let i: number = 0; i < elements.length; i++) {
+                if (elements[i] instanceof HTMLElement) {
+                    add ? EventHandler.add(elements[i], 'scroll', this.scrollHandler, this) :
+                        EventHandler.remove(elements[i], 'scroll', this.scrollHandler);
+                }
+            }
+            add ? EventHandler.add(this.content, 'scroll', this.scrollHandler, this) :
+            EventHandler.remove(this.content, 'scroll', this.scrollHandler);
+        }
+    }
+
+    private scrollHandler(e: MouseEvent): void {
+        if (!isNullOrUndefined(this.element) && !isNullOrUndefined(this.element.blazor__instance)) {
+            return this.element.blazor__instance.columnMenuModule.setPosition();
+        }
     }
 
     private updateColumnModel(columns: Column[]): void {
@@ -503,8 +525,10 @@ export class SfGrid {
     }
     public documentClickHandler(e: MouseEventArgs): void {
         let popupElement: Element = parentsUntil(<Element>e.target, 'e-popup-open');
-        let CCButton: Element = parentsUntil(<Element>e.target,'e-cc-toolbar');
-        if (!popupElement && !((<Element>e.target).classList.contains('e-cc-cancel')) && !((<Element>e.target).classList.contains('e-choosercheck')) && !((<Element>e.target).classList.contains('e-fltrcheck')) && !((<Element>e.target).classList.contains('e-icon-filter')) && !CCButton && (this.element.querySelectorAll('.e-filter-popup.e-popup-open').length || this.element.querySelectorAll('.e-ccdlg.e-popup-open').length)) {
+        let CCButton: Element = parentsUntil(<Element>e.target, 'e-cc-toolbar');
+        let datetimePicker: Element = parentsUntil(<Element>e.target, 'e-datepicker');
+        let daterangePicker: Element = parentsUntil(<Element>e.target, 'e-daterangepicker') || parentsUntil(<Element>e.target, 'e-zoomin');
+        if (!popupElement && !datetimePicker && !daterangePicker && !((<Element>e.target).classList.contains('e-cc-cancel')) && !((<Element>e.target).classList.contains('e-choosercheck')) && !((<Element>e.target).classList.contains('e-fltrcheck')) && !((<Element>e.target).classList.contains('e-icon-filter')) && !CCButton && (this.element.querySelectorAll('.e-filter-popup.e-popup-open').length || this.element.querySelectorAll('.e-ccdlg.e-popup-open').length)) {
             this.dotNetRef.invokeMethodAsync('FilterPopupClose');
         }
     }
@@ -651,6 +675,7 @@ export class SfGrid {
 
     public destroy() {
         this.unWireEvents();
+        this.addScrollEvents(false);
         this.toolTipModule.destroy();
         this.keyModule.destroy();
         this.virtualContentModule.removeEventListener();

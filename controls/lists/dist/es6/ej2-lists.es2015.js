@@ -4318,31 +4318,46 @@ let Sortable = Sortable_1 = class Sortable extends Base {
             this.trigger('drag', { event: e.event, element: this.element, target: e.target });
             let newInst = this.getSortableInstance(e.target);
             let target = this.getSortableElement(e.target, newInst);
-            if ((this.isValidTarget(target, newInst) || e.target.className.indexOf('e-list-group-item') > -1) && this.curTarget !== target &&
-                (newInst.placeHolderElement ? newInst.placeHolderElement !== e.target : true)) {
+            if ((this.isValidTarget(target, newInst) || e.target.className.indexOf('e-list-group-item') > -1) && (this.curTarget !== target ||
+                !isNullOrUndefined(newInst.placeHolder)) && (newInst.placeHolderElement ? newInst.placeHolderElement !== e.target :
+                true)) {
                 if (e.target.className.indexOf('e-list-group-item') > -1) {
                     target = e.target;
                 }
                 this.curTarget = target;
+                if (this.target === target) {
+                    return;
+                }
                 let oldIdx = this.getIndex(newInst.placeHolderElement, newInst);
-                oldIdx = isNullOrUndefined(oldIdx) ? this.getIndex(this.target) :
-                    this.getIndex(target, newInst) < oldIdx || !oldIdx ? oldIdx : oldIdx - 1;
-                newInst.placeHolderElement = this.getPlaceHolder(target, newInst);
-                let newIdx = this.getIndex(target, newInst);
-                let idx = newInst.element !== this.element ? newIdx : oldIdx < newIdx ? newIdx + 1 : newIdx;
-                if (newInst.placeHolderElement) {
+                let placeHolder = this.getPlaceHolder(target, newInst);
+                let newIdx;
+                if (placeHolder) {
+                    oldIdx = isNullOrUndefined(oldIdx) ? this.getIndex(this.target) : oldIdx;
+                    newIdx = this.getIndex(target, newInst, e.event);
+                    let isPlaceHolderPresent = this.isPlaceHolderPresent(newInst);
+                    if (isPlaceHolderPresent && oldIdx === newIdx) {
+                        return;
+                    }
+                    if (isPlaceHolderPresent) {
+                        remove(newInst.placeHolderElement);
+                    }
+                    newInst.placeHolderElement = placeHolder;
                     if (e.target.className.indexOf('e-list-group-item') > -1) {
                         newInst.element.insertBefore(newInst.placeHolderElement, newInst.element.children[newIdx]);
                     }
-                    else if (newInst.element !== this.element && idx === newInst.element.childElementCount - 1) {
+                    else if (newInst.element !== this.element && newIdx === newInst.element.childElementCount) {
                         newInst.element.appendChild(newInst.placeHolderElement);
                     }
                     else {
-                        newInst.element.insertBefore(newInst.placeHolderElement, newInst.element.children[idx]);
+                        newInst.element.insertBefore(newInst.placeHolderElement, newInst.element.children[newIdx]);
                     }
                     this.refreshDisabled(oldIdx, newIdx, newInst);
                 }
                 else {
+                    oldIdx = isNullOrUndefined(oldIdx) ? this.getIndex(this.target) :
+                        this.getIndex(target, newInst) < oldIdx || !oldIdx ? oldIdx : oldIdx - 1;
+                    newIdx = this.getIndex(target, newInst);
+                    let idx = newInst.element !== this.element ? newIdx : oldIdx < newIdx ? newIdx + 1 : newIdx;
                     this.updateItemClass(newInst);
                     newInst.element.insertBefore(this.target, newInst.element.children[idx]);
                     this.refreshDisabled(oldIdx, newIdx, newInst);
@@ -4398,7 +4413,8 @@ let Sortable = Sortable_1 = class Sortable extends Base {
             let curIdx;
             let handled;
             prevIdx = this.getIndex(this.target);
-            if (this.isPlaceHolderPresent(dropInst)) {
+            let isPlaceHolderPresent = this.isPlaceHolderPresent(dropInst);
+            if (isPlaceHolderPresent) {
                 let curIdx = this.getIndex(dropInst.placeHolderElement, dropInst);
                 let args = { previousIndex: prevIdx, currentIndex: curIdx, target: e.target, droppedElement: this.target,
                     helper: e.helper, cancel: false, handled: false };
@@ -4423,11 +4439,11 @@ let Sortable = Sortable_1 = class Sortable extends Base {
             dropInst = this.getSortableInstance(e.target);
             curIdx = dropInst.element.childElementCount;
             prevIdx = this.getIndex(this.target);
-            if (dropInst.element === e.target) {
-                let beforeDropArgs = { previousIndex: prevIdx, currentIndex: curIdx, target: e.target,
-                    droppedElement: this.target, helper: e.helper, cancel: false };
+            if (dropInst.element === e.target || (!isPlaceHolderPresent && this.curTarget === this.target)) {
+                let beforeDropArgs = { previousIndex: prevIdx, currentIndex: this.curTarget === this.target ? prevIdx : curIdx,
+                    target: e.target, droppedElement: this.target, helper: e.helper, cancel: false };
                 this.trigger('beforeDrop', beforeDropArgs, (observedArgs) => {
-                    if (!observedArgs.cancel) {
+                    if (dropInst.element === e.target && !observedArgs.cancel) {
                         this.updateItemClass(dropInst);
                         dropInst.element.appendChild(this.target);
                         this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: curIdx,
@@ -4468,12 +4484,9 @@ let Sortable = Sortable_1 = class Sortable extends Base {
     }
     getPlaceHolder(target, instance) {
         if (instance.placeHolder) {
-            if (this.isPlaceHolderPresent(instance)) {
-                remove(instance.placeHolderElement);
-            }
-            instance.placeHolderElement = instance.placeHolder({ element: instance.element, grabbedElement: this.target, target: target });
-            instance.placeHolderElement.classList.add('e-sortable-placeholder');
-            return instance.placeHolderElement;
+            let placeHolderElement = instance.placeHolder({ element: instance.element, grabbedElement: this.target, target: target });
+            placeHolderElement.classList.add('e-sortable-placeholder');
+            return placeHolderElement;
         }
         return null;
     }
@@ -4521,11 +4534,24 @@ let Sortable = Sortable_1 = class Sortable extends Base {
             }
         }
     }
-    getIndex(target, instance = this) {
+    getIndex(target, instance = this, e) {
         let idx;
+        let placeHolderPresent;
         [].slice.call(instance.element.children).forEach((element, index) => {
+            if (element.classList.contains('e-sortable-placeholder')) {
+                placeHolderPresent = true;
+            }
             if (element === target) {
                 idx = index;
+                if (!isNullOrUndefined(e)) {
+                    if (placeHolderPresent) {
+                        idx -= 1;
+                    }
+                    let offset = target.getBoundingClientRect();
+                    let clientY = offset.bottom - ((offset.bottom - offset.top) / 2);
+                    idx = e.clientY <= clientY ? idx : idx + 1;
+                }
+                return;
             }
         });
         return idx;

@@ -1137,7 +1137,7 @@ export class Annotation {
                 case 'stampOpacity':
                     this.pdfViewer.nodePropertyChange(actionObject.annotation, { opacity: actionObject.undoElement.opacity });
                     this.stickyNotesAnnotationModule.updateAnnotationModifiedDate(actionObject.annotation, null, true);
-                    actionObject.annotation.modifiedDate = new Date().toLocaleString();
+                    actionObject.annotation.modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                     break;
                 case 'Shape Stroke':
                     this.pdfViewer.nodePropertyChange(actionObject.annotation, { strokeColor: actionObject.undoElement.strokeColor });
@@ -1154,7 +1154,7 @@ export class Annotation {
                     if (actionObject.annotation.shapeAnnotationType === 'StickyNotes') {
                         this.stickyNotesAnnotationModule.updateOpacityValue(actionObject.annotation);
                         this.stickyNotesAnnotationModule.updateAnnotationModifiedDate(actionObject.annotation, null, true);
-                        actionObject.annotation.modifiedDate = new Date().toLocaleString();
+                        actionObject.annotation.modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                     } else {
                         this.modifyInCollections(actionObject.annotation, 'opacity');
                     }
@@ -1180,7 +1180,7 @@ export class Annotation {
                     // tslint:disable-next-line:max-line-length
                     actionObject.annotation = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.undoAction(actionObject.annotation, actionObject.action, actionObject.undoElement);
                     this.stickyNotesAnnotationModule.updateAnnotationModifiedDate(actionObject.annotation, null, true);
-                    actionObject.annotation.modifiedDate = new Date().toLocaleString();
+                    actionObject.annotation.modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                     break;
                 case 'Comments Property Added':
                     // tslint:disable-next-line:max-line-length
@@ -1943,7 +1943,7 @@ export class Annotation {
         if (this.isUndoRedoAction) {
             this.stickyNotesAnnotationModule.updateAnnotationModifiedDate(annotationBase, null, true);
             if (this.isUndoAction) {
-                annotationBase.modifiedDate = new Date().toLocaleString();
+                annotationBase.modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             }
         } else {
             if (property !== 'bounds') {
@@ -3502,8 +3502,7 @@ export class Annotation {
                 // tslint:disable-next-line:max-line-length
                 this.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'Shape Thickness', '', clonedObject, redoClonedObject);
             }
-            let date: Date = new Date();
-            currentAnnotation.modifiedDate = date.toLocaleString();
+            currentAnnotation.modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             this.pdfViewer.renderDrawing();
             this.pdfViewerBase.signatureModule.modifySignatureCollection(null, pageNumber, currentAnnotation, true);
         }
@@ -3823,8 +3822,7 @@ export class Annotation {
                 });
                 commentObj.appendTo(newCommentDiv);
             }
-            let date: Date = new Date();
-            currentAnnotation.modifiedDate = date.toLocaleString();
+            currentAnnotation.modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             if (currentAnnotation.customData !== annotation.customData) {
                 currentAnnotation.customData = annotation.customData;
             }
@@ -4025,8 +4023,7 @@ export class Annotation {
             newAnnotation.allowedInteractions = annotation.allowedInteractions;
         }
         newAnnotation.customData = annotation.customData;
-        let date: Date = new Date();
-        newAnnotation.modifiedDate = date.toLocaleString();
+        newAnnotation.modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
         return newAnnotation;
     }
 

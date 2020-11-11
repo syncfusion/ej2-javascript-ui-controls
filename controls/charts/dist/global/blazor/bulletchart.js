@@ -1766,7 +1766,7 @@ var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var axisPadding = 10;
+var axisPadding = 5;
 /**
  * Configures the `rows` of the chart.
  */
@@ -2056,7 +2056,7 @@ var Axis = /** @class */ (function (_super) {
         }
         var diff;
         var value;
-        var labelSize = titleSize + innerPadding + axisPadding +
+        var labelSize = titleSize + innerPadding + axisPadding + this.labelPadding +
             ((this.orientation === 'Vertical') ? this.maxLabelSize.width : this.maxLabelSize.height) + this.multiLevelLabelHeight;
         if (crossAxis && this.placeNextToAxisLine) {
             var range = crossAxis.visibleRange;
@@ -6210,7 +6210,10 @@ var BulletChart = /** @class */ (function (_super) {
             var id = 'tooltipDiv' + this.element.id;
             var tooltipDiv = document.getElementById(id);
             if (tooltipDiv) {
-                this.clearTemplate();
+                // tslint:disable-next-line:no-any
+                if (this.isReact) {
+                    this.clearTemplate();
+                }
                 sf.base.remove(tooltipDiv);
             }
             if (this.bulletTooltipModule) {
@@ -6237,7 +6240,10 @@ var BulletChart = /** @class */ (function (_super) {
         if (!this.isTouchEvent(e)) {
             var tooltipDiv = document.getElementById('.tooltipDiv' + this.element.id);
             if (tooltipDiv) {
-                this.clearTemplate();
+                // tslint:disable-next-line:no-any
+                if (this.isReact) {
+                    this.clearTemplate();
+                }
                 sf.base.remove(tooltipDiv);
             }
         }
@@ -6260,7 +6266,10 @@ var BulletChart = /** @class */ (function (_super) {
      */
     BulletChart.prototype.bulletMouseDown = function (e) {
         if (this.isTouchEvent(e)) {
-            this.clearTemplate();
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.clearTemplate();
+            }
             sf.base.remove(document.getElementById(('tooltipDiv' + this.element.id)));
             var targetId = e.target.id;
             /* tslint:disable:no-string-literal */
@@ -6748,7 +6757,9 @@ var BulletTooltip = /** @class */ (function () {
                 }
             }
             // tslint:disable-next-line:no-any
-            this.control.renderReactTemplates();
+            if (this.control.isReact) {
+                this.control.renderReactTemplates();
+            }
         }
     };
     /**

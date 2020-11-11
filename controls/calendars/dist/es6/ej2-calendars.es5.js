@@ -9264,6 +9264,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         this.setProperties({ value: this.checkDateValue(new Date(this.checkInValue(this.value))) }, true);
         this.setProperties({ min: this.checkDateValue(new Date(this.checkInValue(this.min))) }, true);
         this.setProperties({ max: this.checkDateValue(new Date(this.checkInValue(this.max))) }, true);
+        this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkInValue(this.scrollTo))) }, true);
         if (this.angularTag !== null) {
             this.validationAttribute(this.element, this.inputElement);
         }
@@ -11436,7 +11437,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                             if (this.popupWrapper) {
                                 this.setScrollTo();
                             }
-                            this.setProperties({ scrollTo: newProp.scrollTo }, true);
+                            this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkInValue(newProp.scrollTo))) }, true);
                         }
                         else {
                             this.setProperties({ scrollTo: null }, true);
@@ -11734,6 +11735,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.updateHtmlAttributeToWrapper.call(this);
         this.bindInputEvents();
         this.setValue();
+        this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkValue(this.scrollTo))) }, true);
         this.previousDateTime = this.value && new Date(+this.value);
         if (this.element.tagName === 'EJS-DATETIMEPICKER') {
             this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
@@ -12910,7 +12912,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
                         if (this.dateTimeWrapper) {
                             this.setScrollTo();
                         }
-                        this.setProperties({ scrollTo: newProp.scrollTo }, true);
+                        this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkValue(newProp.scrollTo))) }, true);
                     }
                     else {
                         this.setProperties({ scrollTo: null }, true);

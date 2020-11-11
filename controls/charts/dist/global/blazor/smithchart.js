@@ -3679,10 +3679,13 @@ var TooltipRender = /** @class */ (function () {
         return this.tooltipElement;
     };
     TooltipRender.prototype.setMouseXY = function (smithchart, pageX, pageY) {
-        var rect = smithchart.element.getBoundingClientRect();
-        var svgRect = document.getElementById(smithchart.element.id + '_svg').getBoundingClientRect();
-        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
-        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+        var svgRectElement = document.getElementById(smithchart.element.id + '_svg');
+        if (smithchart.element && svgRectElement) {
+            var rect = smithchart.element.getBoundingClientRect();
+            var svgRect = svgRectElement.getBoundingClientRect();
+            this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
+            this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+        }
     };
     TooltipRender.prototype.createTooltip = function (smithchart, e, pointindex, seriesindex, series) {
         var _this = this;

@@ -4624,4 +4624,65 @@ describe('rowdeselect checking with persist selection and ResetOnRowClick', () =
             gridObj = null;
         });
     });
+
+    describe('EJ2-42056 - enable toggle with persist selection', () => {
+        let gridObj: Grid;
+        let rowSelected: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    rowSelected: rowSelected,
+                    selectionSettings: { persistSelection: true, enableToggle:false },
+                    columns: [
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'CustomerID' },
+                        { field: 'EmployeeID', headerText: 'Employee ID' }
+                        ],
+                    height: 700,
+                }, done);
+        });
+        it('checking select row with toggle', (done: Function) => {
+            rowSelected = (): void => {
+                expect(gridObj.element.querySelectorAll('.e-row')[3].getAttribute('aria-selected')).toBe('true');
+                gridObj.rowSelected = null;
+                done();
+            };
+            gridObj.rowSelected = rowSelected;
+            gridObj.selectRow(3, false);
+        });
+        it('checking select row with enabletoggle', (done: Function) => {
+            rowSelected = (): void => {
+                expect(gridObj.element.querySelectorAll('.e-row')[3].getAttribute('aria-selected')).toBe('true');
+                gridObj.rowSelected = null;
+                done();
+            };
+            gridObj.rowSelected = rowSelected;
+            gridObj.selectRow(3, false);
+        });
+        it('row selection with enable toggle and persistence', (done: Function) => {
+            rowSelected = (): void => {
+                expect(gridObj.element.querySelectorAll('.e-row')[1].getAttribute('aria-selected')).toBe('true');
+                gridObj.rowSelected = null;
+                done();
+            };
+            gridObj.rowSelected = rowSelected;
+            (gridObj.getRows()[1].querySelector('.e-rowcell') as HTMLElement).click();
+        });
+        it('checking the row deselect', (done: Function) => {
+            rowSelected = (): void => {
+                expect(gridObj.element.querySelectorAll('.e-row')[1].getAttribute('aria-selected')).toBe('true');
+                gridObj.rowSelected = null;
+                done();
+            };
+            gridObj.rowSelected = rowSelected;
+            (gridObj.getRows()[1].querySelector('.e-rowcell') as HTMLElement).click();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+    
 });
+

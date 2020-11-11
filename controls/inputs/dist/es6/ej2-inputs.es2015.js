@@ -62,6 +62,7 @@ var Input;
         if (!isNullOrUndefined(args.element) && args.element.tagName === 'TEXTAREA') {
             addClass([inputObject.container], CLASSNAMES.TEXTAREA);
         }
+        validateInputType(inputObject.container, args.element);
         inputObject = setPropertyValue(args, inputObject);
         return inputObject;
     }
@@ -772,6 +773,15 @@ var Input;
         return button;
     }
     Input.appendSpan = appendSpan;
+    function validateInputType(containerElement, input) {
+        if (input.type === 'hidden') {
+            containerElement.classList.add('e-hidden');
+        }
+        else if (containerElement.classList.contains('e-hidden')) {
+            containerElement.classList.remove('e-hidden');
+        }
+    }
+    Input.validateInputType = validateInputType;
 })(Input || (Input = {}));
 
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
@@ -1899,6 +1909,7 @@ let NumericTextBox = class NumericTextBox extends Component {
                     this.updateHTMLAttrToWrapper();
                     this.updateDataAttribute(true);
                     this.checkAttributes(true);
+                    Input.validateInputType(this.container, this.element);
                     break;
                 case 'placeholder':
                     Input.setPlaceholder(newProp.placeholder, this.element);
@@ -9802,18 +9813,24 @@ let Uploader = class Uploader extends Component {
         if (eventArgs.fileData.statusCode === '5') {
             return;
         }
-        let liElement = this.getLiElement(eventArgs.fileData);
-        liElement.querySelector('.' + STATUS).innerHTML = this.localizedTexts('fileUploadCancel');
-        liElement.querySelector('.' + STATUS).classList.add(UPLOAD_FAILED);
         eventArgs.fileData.statusCode = '5';
         eventArgs.fileData.status = this.localizedTexts('fileUploadCancel');
-        this.pauseButton = this.createElement('span', { className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex } });
-        let removeIcon = liElement.querySelector('.' + REMOVE_ICON);
-        removeIcon.parentElement.insertBefore(this.pauseButton, removeIcon);
-        this.pauseButton.setAttribute('title', this.localizedTexts('retry'));
-        /* istanbul ignore next */
-        this.pauseButton.addEventListener('click', (e) => { this.reloadcanceledFile(e, file, liElement); }, false);
-        this.checkActionButtonStatus();
+        let liElement = this.getLiElement(eventArgs.fileData);
+        if (liElement) {
+            if (!isNullOrUndefined(liElement.querySelector('.' + STATUS))) {
+                liElement.querySelector('.' + STATUS).innerHTML = this.localizedTexts('fileUploadCancel');
+                liElement.querySelector('.' + STATUS).classList.add(UPLOAD_FAILED);
+            }
+            this.pauseButton = this.createElement('span', { className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex } });
+            let removeIcon = liElement.querySelector('.' + REMOVE_ICON);
+            if (removeIcon) {
+                removeIcon.parentElement.insertBefore(this.pauseButton, removeIcon);
+            }
+            this.pauseButton.setAttribute('title', this.localizedTexts('retry'));
+            /* istanbul ignore next */
+            this.pauseButton.addEventListener('click', (e) => { this.reloadcanceledFile(e, file, liElement); }, false);
+            this.checkActionButtonStatus();
+        }
     }
     checkChunkUpload() {
         return (this.asyncSettings.chunkSize <= 0 || isNullOrUndefined(this.asyncSettings.chunkSize)) ? false : true;
@@ -12771,6 +12788,7 @@ let TextBox = class TextBox extends Component {
                     this.updateHTMLAttrToWrapper();
                     let attributes$$1 = this.element.attributes;
                     this.checkAttributes(true);
+                    Input.validateInputType(this.textboxWrapper.container, this.element);
                     break;
                 case 'readonly':
                     Input.setReadonly(this.readonly, this.respectiveElement);
@@ -12778,6 +12796,7 @@ let TextBox = class TextBox extends Component {
                 case 'type':
                     if (this.respectiveElement.tagName !== 'TEXTAREA') {
                         this.respectiveElement.setAttribute('type', this.type);
+                        Input.validateInputType(this.textboxWrapper.container, this.element);
                         this.raiseChangeEvent();
                     }
                     break;

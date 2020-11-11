@@ -282,6 +282,8 @@ export function getInternalProperties(propName: string): string[] {
             return ['nodeId'];
         case 'shape':
             return ['hasHeader'];
+        case 'layers':
+            return ['objectZIndex'];
     }
     return [];
 }

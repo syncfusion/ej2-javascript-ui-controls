@@ -1,6 +1,7 @@
 /**
  * `Clear Format` module is used to handle Clear Format.
  */
+import { closest } from '@syncfusion/ej2-base';
 import { NodeSelection } from './../../selection/index';
 import { NodeCutter } from './nodecutter';
 import { InsertMethods } from './insert-methods';
@@ -8,19 +9,13 @@ import { IsFormatted } from './isformatted';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
 
 export class ClearFormat {
-
     private static BLOCK_TAGS: string[] = ['address', 'article', 'aside', 'blockquote',
      'details', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer',
     'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'li', 'main', 'nav',
-    'noscript', 'ol', 'p', 'pre', 'section', 'table', 'tbody', 'td', 'tfoot', 'th',
-    'thead', 'tr', 'ul' ];
-
+    'noscript', 'ol', 'p', 'pre', 'section', 'ul' ];
     private static NONVALID_PARENT_TAGS: string[] = ['thead', 'tbody', 'ul', 'ol', 'table', 'tfoot', 'tr'];
-
     private static IGNORE_PARENT_TAGS: string[] = ['ul', 'ol', 'table'];
-
-    private static NONVALID_TAGS: string[] = ['thead', 'tbody', 'figcaption', 'td', 'tr',
-            'th',   'tfoot', 'figcaption', 'li'  ];
+    private static NONVALID_TAGS: string[] = ['thead', 'tbody', 'figcaption', 'td', 'tr', 'th',   'tfoot', 'figcaption', 'li'  ];
 
     /**
      * clear method
@@ -35,14 +30,19 @@ export class ClearFormat {
         let nodes: Node[] = nodeSelection.getInsertNodeCollection(range);
         let save: NodeSelection =  nodeSelection.save(range, docElement);
         if (!isCollapsed) {
-            let preNode: Node = nodeCutter.GetSpliceNode(range, nodes[0] as HTMLElement);
+            let preNode: Node;
+            if (nodes[0].nodeName === 'BR' && closest(nodes[0], 'table')) {
+                preNode = nodeCutter.GetSpliceNode(range, closest(nodes[0], 'table') as HTMLElement);
+            } else {
+                preNode = nodeCutter.GetSpliceNode(range, nodes[nodes.length > 1 && nodes[0].nodeName === 'IMG' ? 1 : 0]  as HTMLElement);
+            }
             if (nodes.length === 1) {
                 nodeSelection.setSelectionContents(docElement, preNode);
                 range = nodeSelection.getRange(docElement);
             } else {
                 let i: number = 1;
                 let lastText: Node = nodes[nodes.length - i];
-                while (nodes[nodes.length - i].nodeName === 'BR') {
+                while (nodes.length <= i && nodes[nodes.length - i].nodeName === 'BR') {
                     i++;
                     lastText = nodes[nodes.length - i];
                 }

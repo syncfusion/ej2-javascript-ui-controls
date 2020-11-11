@@ -1332,7 +1332,7 @@ export class Renderer {
         // tslint:disable-next-line:max-line-length
         this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
         // }
-        if (tableCell.updatedTopBorders && tableCell.updatedTopBorders.length > 0) {
+        if (tableCell.updatedTopBorders && tableCell.updatedTopBorders.length > 1) {
             let cellX: number = cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2;
             let cellY: number = cellWidget.y - cellWidget.margin.top + lineWidth / 2;
             for (let a: number = 0; a < tableCell.updatedTopBorders.length; a++) {

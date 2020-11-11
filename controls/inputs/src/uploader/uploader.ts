@@ -3293,18 +3293,24 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private eventCancelByArgs(e: BeforeSendEventArgs, eventArgs: UploadingEventArgs, file: FileInfo): void {
         e.cancel = true;
         if (eventArgs.fileData.statusCode === '5') { return; }
-        let liElement: HTMLElement = this.getLiElement(eventArgs.fileData);
-        liElement.querySelector('.' + STATUS).innerHTML = this.localizedTexts('fileUploadCancel');
-        liElement.querySelector('.' + STATUS).classList.add(UPLOAD_FAILED);
         eventArgs.fileData.statusCode = '5';
         eventArgs.fileData.status = this.localizedTexts('fileUploadCancel');
-        this.pauseButton = this.createElement('span', {className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex}});
-        let removeIcon: Element = liElement.querySelector('.' + REMOVE_ICON);
-        removeIcon.parentElement.insertBefore(this.pauseButton, removeIcon);
-        this.pauseButton.setAttribute('title', this.localizedTexts('retry'));
-        /* istanbul ignore next */
-        this.pauseButton.addEventListener('click', (e: Event) => { this.reloadcanceledFile(e, file, liElement); }, false);
-        this.checkActionButtonStatus();
+        let liElement: HTMLElement = this.getLiElement(eventArgs.fileData);
+        if (liElement) {
+            if (!isNullOrUndefined(liElement.querySelector('.' + STATUS))) {
+                liElement.querySelector('.' + STATUS).innerHTML = this.localizedTexts('fileUploadCancel');
+                liElement.querySelector('.' + STATUS).classList.add(UPLOAD_FAILED);
+            }
+            this.pauseButton = this.createElement('span', {className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex}});
+            let removeIcon: Element = liElement.querySelector('.' + REMOVE_ICON);
+            if (removeIcon) {
+                removeIcon.parentElement.insertBefore(this.pauseButton, removeIcon);
+            }
+            this.pauseButton.setAttribute('title', this.localizedTexts('retry'));
+            /* istanbul ignore next */
+            this.pauseButton.addEventListener('click', (e: Event) => { this.reloadcanceledFile(e, file, liElement); }, false);
+            this.checkActionButtonStatus();
+        }
     }
 
     private checkChunkUpload(): boolean {

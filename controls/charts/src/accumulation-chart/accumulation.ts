@@ -808,20 +808,23 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     private setMouseXY(e: PointerEvent): void {
         let pageX: number;
         let pageY: number;
-        let svgRect: ClientRect = getElement(this.element.id + '_svg').getBoundingClientRect();
-        let rect: ClientRect = this.element.getBoundingClientRect();
-        if (e.type.indexOf('touch') > -1) {
-            this.isTouch = true;
-            let touchArg: TouchEvent = <TouchEvent & PointerEvent>e;
-            pageY = touchArg.changedTouches[0].clientY;
-            pageX = touchArg.changedTouches[0].clientX;
-        } else {
-            this.isTouch = e.pointerType === 'touch' || e.pointerType === '2';
-            pageX = e.clientX;
-            pageY = e.clientY;
+        let svgRectElement: Element = getElement(this.element.id + '_svg');
+        if (svgRectElement && this.element) {
+            let svgRect: ClientRect = svgRectElement.getBoundingClientRect();
+            let rect: ClientRect = this.element.getBoundingClientRect();
+            if (e.type.indexOf('touch') > -1) {
+                this.isTouch = true;
+                let touchArg: TouchEvent = <TouchEvent & PointerEvent>e;
+                pageY = touchArg.changedTouches[0].clientY;
+                pageX = touchArg.changedTouches[0].clientX;
+            } else {
+                this.isTouch = e.pointerType === 'touch' || e.pointerType === '2';
+                pageX = e.clientX;
+                pageY = e.clientY;
+            }
+            this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+            this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
         }
-        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
-        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
     }
     /**
      * Handles the mouse end.

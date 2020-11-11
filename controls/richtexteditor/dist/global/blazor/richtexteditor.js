@@ -8296,7 +8296,7 @@ var NodeSelection = /** @class */ (function () {
         for (; index--; null) {
             node = node && node.childNodes[num[index]];
         }
-        if (node && constant >= 0) {
+        if (node && constant >= 0 && node.nodeName !== 'html') {
             range[isvalid ? 'setStart' : 'setEnd'](node, constant);
         }
         return range;
@@ -10629,7 +10629,7 @@ var InsertHtml = /** @class */ (function () {
         for (var i = 0; i < emptyElements.length; i++) {
             if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR' &&
                 emptyElements[i].tagName !== 'IFRAME' && emptyElements[i].tagName !== 'TD' &&
-                emptyElements[i].tagName !== 'SOURCE') {
+                emptyElements[i].tagName !== 'SOURCE' && emptyElements[i].tagName !== 'HR') {
                 var detachableElement = this.findDetachEmptyElem(emptyElements[i]);
                 if (!sf.base.isNullOrUndefined(detachableElement)) {
                     sf.base.detach(detachableElement);
@@ -12451,7 +12451,13 @@ var ClearFormat$1 = /** @class */ (function () {
         var nodes = nodeSelection.getInsertNodeCollection(range);
         var save = nodeSelection.save(range, docElement);
         if (!isCollapsed) {
-            var preNode = nodeCutter.GetSpliceNode(range, nodes[0]);
+            var preNode = void 0;
+            if (nodes[0].nodeName === 'BR' && sf.base.closest(nodes[0], 'table')) {
+                preNode = nodeCutter.GetSpliceNode(range, sf.base.closest(nodes[0], 'table'));
+            }
+            else {
+                preNode = nodeCutter.GetSpliceNode(range, nodes[nodes.length > 1 && nodes[0].nodeName === 'IMG' ? 1 : 0]);
+            }
             if (nodes.length === 1) {
                 nodeSelection.setSelectionContents(docElement, preNode);
                 range = nodeSelection.getRange(docElement);
@@ -12459,7 +12465,7 @@ var ClearFormat$1 = /** @class */ (function () {
             else {
                 var i = 1;
                 var lastText = nodes[nodes.length - i];
-                while (nodes[nodes.length - i].nodeName === 'BR') {
+                while (nodes.length <= i && nodes[nodes.length - i].nodeName === 'BR') {
                     i++;
                     lastText = nodes[nodes.length - i];
                 }
@@ -12640,12 +12646,10 @@ var ClearFormat$1 = /** @class */ (function () {
     ClearFormat.BLOCK_TAGS = ['address', 'article', 'aside', 'blockquote',
         'details', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer',
         'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'li', 'main', 'nav',
-        'noscript', 'ol', 'p', 'pre', 'section', 'table', 'tbody', 'td', 'tfoot', 'th',
-        'thead', 'tr', 'ul'];
+        'noscript', 'ol', 'p', 'pre', 'section', 'ul'];
     ClearFormat.NONVALID_PARENT_TAGS = ['thead', 'tbody', 'ul', 'ol', 'table', 'tfoot', 'tr'];
     ClearFormat.IGNORE_PARENT_TAGS = ['ul', 'ol', 'table'];
-    ClearFormat.NONVALID_TAGS = ['thead', 'tbody', 'figcaption', 'td', 'tr',
-        'th', 'tfoot', 'figcaption', 'li'];
+    ClearFormat.NONVALID_TAGS = ['thead', 'tbody', 'figcaption', 'td', 'tr', 'th', 'tfoot', 'figcaption', 'li'];
     return ClearFormat;
 }());
 

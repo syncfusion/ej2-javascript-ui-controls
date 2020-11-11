@@ -1,6 +1,6 @@
 import { ContextMenu as Menu, ContextMenuModel, MenuItemModel, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { LayoutViewer, DocumentHelper } from './viewer';
-import { isNullOrUndefined, L10n, classList } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, L10n, classList, Browser } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../document-editor';
 import { Selection, ContextElementInfo } from './index';
 import { TextPosition } from './selection/selection-helper';
@@ -637,8 +637,10 @@ export class ContextMenu {
             xPos = point.x;
             yPos = point.y;
         } else {
-            yPos = (event as MouseEvent).y + document.body.scrollTop + document.documentElement.scrollTop;
-            xPos = (event as MouseEvent).x + document.body.scrollLeft + document.documentElement.scrollLeft;
+            // tslint:disable-next-line:max-line-length
+            yPos = ((Browser.isIE) ? (event as MouseEvent).clientY : (event as MouseEvent).y) + document.body.scrollTop + document.documentElement.scrollTop;
+            // tslint:disable-next-line:max-line-length
+            xPos = ((Browser.isIE) ? (event as MouseEvent).clientX : (event as MouseEvent).x) + document.body.scrollLeft + document.documentElement.scrollLeft;
         }
         if (this.showHideElements(this.documentHelper.selection)) {
             if (isTouch) {

@@ -10391,6 +10391,11 @@
     }
   }
 
+  .e-float-input.e-control-wrapper.e-hidden,
+  .e-input-group.e-control-wrapper.e-hidden {
+    display: none;
+  }
+
   .e-filled.e-input-group.e-float-icon-left,
   .e-filled.e-input-group.e-success.e-float-icon-left,
   .e-filled.e-input-group.e-warning.e-float-icon-left,

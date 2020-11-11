@@ -7600,9 +7600,13 @@ var Draggable = /** @class */ (function (_super) {
                 this.diffY = this.position.top - this.offset.top;
             }
             this.getScrollableValues();
+            if (!this.clone && !this.dragArea) {
+                pos.top -= this.parentScrollY;
+                pos.left -= this.parentScrollX;
+            }
             var posValue = this.getProcessedPositionValue({
-                top: (pos.top - this.diffY - (this.clone ? 0 : this.parentScrollY)) + 'px',
-                left: (pos.left - this.diffX - (this.clone ? 0 : this.parentScrollX)) + 'px'
+                top: (pos.top - this.diffY) + 'px',
+                left: (pos.left - this.diffX) + 'px'
             });
             this.dragElePosition = { top: pos.top, left: pos.left };
             setStyleAttribute(dragTargetElement, this.getDragPosition({ position: 'absolute', left: posValue.left, top: posValue.top }));
@@ -7758,10 +7762,14 @@ var Draggable = /** @class */ (function (_super) {
         else {
             draEleTop = top - iTop;
             draEleLeft = left - iLeft;
-        }
-        if (!this.clone) {
-            draEleTop -= this.parentScrollY;
-            draEleLeft -= this.parentScrollX;
+            if (!this.clone) {
+                draEleTop -= this.parentScrollY;
+                draEleLeft -= this.parentScrollX;
+            }
+            // Accuracy issue - while drag faster, Cursor and clone element have some distance gap
+            if (this.position.top !== draEleTop) {
+                draEleTop = this.position.top;
+            }
         }
         var dragValue = this.getProcessedPositionValue({ top: draEleTop + 'px', left: draEleLeft + 'px' });
         setStyleAttribute(helperElement, this.getDragPosition(dragValue));
@@ -7898,12 +7906,7 @@ var Draggable = /** @class */ (function (_super) {
             this.helperElement.style.pointerEvents = prevStyle;
         }
         else {
-            if (this.isReplaceDragEle) {
-                ele = this.currentStateCheck(evt.target);
-            }
-            else {
-                ele = evt.target;
-            }
+            ele = evt.target;
         }
         return ele;
     };

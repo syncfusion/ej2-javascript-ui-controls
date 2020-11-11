@@ -2410,9 +2410,6 @@ export class MultiSelect extends DropDownBase implements IInput {
     private renderPopup(): void {
         if (!this.list) { super.render(); }
         if (!this.popupObj) {
-            let args: BeforeOpenEventArgs = { cancel: false };
-            this.trigger('beforeOpen', args, (args: BeforeOpenEventArgs) => {
-                if (!args.cancel) {
                     document.body.appendChild(this.popupWrapper);
                     let checkboxFilter: HTMLElement = this.popupWrapper.querySelector('.' + FILTERPARENT);
                     if (this.mode === 'CheckBox' && !this.allowFiltering && checkboxFilter && this.filterParent) {
@@ -2504,8 +2501,6 @@ export class MultiSelect extends DropDownBase implements IInput {
                     }
                     this.popupObj.close();
                     this.popupWrapper.style.visibility = '';
-                }
-            });
         }
     }
     private setHeaderTemplate(): void {
@@ -3401,7 +3396,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                             wrapperleng = this.viewWrapper.offsetWidth;
                         }
                         break;
-                    } else if ((wrapperleng + remainSize + downIconWidth) <= overAllContainer) {
+                    } else if ((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) <= overAllContainer) {
                         tempData = data;
                         tempIndex = index;
                     } else if (index === 0) {
@@ -3879,32 +3874,36 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!this.enabled) {
             return;
         }
-        if ((isBlazor() && this.isServerRendered) && this.itemTemplate) {
-            this.DropDownBaseupdateBlazorTemplates(true, false, false, false, false, false, false, false);
-            if (this.mode !== 'CheckBox' && this.list) {
-                this.refreshSelection();
+        let args: BeforeOpenEventArgs = { cancel: false };
+        this.trigger('beforeOpen', args, (args: BeforeOpenEventArgs) => {
+            if (!args.cancel) {
+                if ((isBlazor() && this.isServerRendered) && this.itemTemplate) {
+                    this.DropDownBaseupdateBlazorTemplates(true, false, false, false, false, false, false, false);
+                    if (this.mode !== 'CheckBox' && this.list) {
+                        this.refreshSelection();
+                    }
+                }
+                if (!this.ulElement) {
+                    this.beforePopupOpen = true;
+                    super.render();
+                    if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering) {
+                        this.notify('popupFullScreen', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
+                    }
+                    return;
+                }
+                if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering) {
+                    this.notify('popupFullScreen', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
+                }
+                let mainLiLength: number = this.ulElement.querySelectorAll('li.' + 'e-list-item').length;
+                let liLength: number = this.ulElement.querySelectorAll('li.'
+                    + dropDownBaseClasses.li + '.' + HIDE_LIST).length;
+                if (mainLiLength > 0 && (mainLiLength === liLength) && (liLength === this.mainData.length)) {
+                    this.beforePopupOpen = false;
+                    return;
+                }
+                this.onPopupShown();
             }
-        }
-        if (!this.ulElement) {
-            this.beforePopupOpen = true;
-            super.render();
-            if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering) {
-                this.notify('popupFullScreen', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
-            }
-            return;
-        }
-        if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering) {
-            this.notify('popupFullScreen', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
-        }
-
-        let mainLiLength: number = this.ulElement.querySelectorAll('li.' + 'e-list-item').length;
-        let liLength: number = this.ulElement.querySelectorAll('li.'
-            + dropDownBaseClasses.li + '.' + HIDE_LIST).length;
-        if (mainLiLength > 0 && (mainLiLength === liLength) && (liLength === this.mainData.length)) {
-            this.beforePopupOpen = false;
-            return;
-        }
-        this.onPopupShown();
+        });
     }
     /**
      * Based on the state parameter, entire list item will be selected/deselected.

@@ -604,7 +604,7 @@ var SfDialog = /** @class */ (function () {
         window.addEventListener('resize', this.windowResizeHandler.bind(this));
     };
     SfDialog.prototype.unWireWindowResizeEvent = function () {
-        window.addEventListener('resize', this.windowResizeHandler.bind(this));
+        window.removeEventListener('resize', this.windowResizeHandler.bind(this));
     };
     /* Event handlers begin */
     SfDialog.prototype.popupCloseHandler = function () {
@@ -618,6 +618,8 @@ var SfDialog = /** @class */ (function () {
     };
     SfDialog.prototype.windowResizeHandler = function () {
         sf.popups.setMaxWidth(this.targetEle.clientWidth);
+        sf.popups.setMaxHeight(this.targetEle.clientHeight);
+        this.setMaxHeight();
     };
     SfDialog.prototype.onResizeStart = function (args, dialogObj) {
         var evtArgs = this.getMouseEvtArgs(args);

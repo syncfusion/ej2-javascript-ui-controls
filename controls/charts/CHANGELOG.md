@@ -2,12 +2,23 @@
 
 ## [Unreleased]
 
+## 18.3.48 (2020-11-11)
+
+### Chart
+
+#### Bug Fixes
+
+- `#292894` - Chart axis title overlaps when `labelPadding` is provided for axis labels issue has been fixed.
+- `#290869` - Axis label rotation issue has been fixed.
+- `#299015` - Script error on hovering the chart in animation issue has been fixed.
+
 ## 18.3.47 (2020-11-05)
 
 ### Chart
 
 #### Bug Fixes
 
+- `#295143` - Scrollbar `zoomFactor` and `zoomPosition` related issue has been fixed.
 - `#293312` - Waterfall series not working properly for 0 values issue has been fixed.
 - `#296989` - PageX and PageY arguments are not available in pie pointClick event issue fixed.
 - `#278146` - Scrollbar is not working properly for live data issue has been fixed.

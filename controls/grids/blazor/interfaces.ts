@@ -47,6 +47,7 @@ export interface IGridOptions {
     clipMode: string;
     rowDropTarget: string;
     selectionType: string;
+    showColumnMenu: boolean;
 }
 
 export interface BlazorGridElement extends HTMLElement {

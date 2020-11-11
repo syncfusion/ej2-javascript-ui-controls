@@ -359,7 +359,7 @@ export class NormalEdit {
             this.parent.notify(events.toolbarRefresh, {});
         }
         if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
-            || (!this.parent.isPersistSelection)) {
+            || (!this.parent.isPersistSelection) && !this.parent.selectionSettings.checkboxOnly) {
             if (this.parent.editSettings.mode !== 'Dialog') {
                 if (isBlazor() && this.parent.isServerRendered) {
                     let rowIndex: string = 'editRowIndex';

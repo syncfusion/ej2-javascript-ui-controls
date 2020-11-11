@@ -211,8 +211,7 @@ export class WorkbookNumberFormat {
     }
 
     private applyNumberFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
-        args.format = args.format === '' ? getFormatFromType('Number') : args.format;
-        args.format = args.format.toString().split('_)').join(' ').split('_(').join(' ').split('[Red]').join('');
+        args.format = this.isCustomFormat(args.format.toString());
         let formatArr: string[] = args.format.toString().split(';');
         if (Number(args.value) >= 0) {
             args.format = formatArr[0];
@@ -222,6 +221,15 @@ export class WorkbookNumberFormat {
         return intl.formatNumber(Number(args.value), {
             format: args.format as string
         });
+    }
+
+    private isCustomFormat(format: string): string {
+        if (format === '_-* #,##0.00_-;-* #,##0.00_-;_-* "-"_-;_-@_-' || format === '_-* #,##0_-;-* #,##0_-;_-* "-"_-;_-@_-') {
+            format = '';
+        }
+        format = format === '' ? getFormatFromType('Number') : format;
+        format = format.toString().split('_)').join(' ').split('_(').join(' ').split('[Red]').join('');
+        return format;
     }
 
     private currencyFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
@@ -518,6 +526,8 @@ export function getTypeFromFormat(format: string): string {
     let code: string = 'General';
     switch (format) {
         case '0.00':
+        case '_-* #,##0.00_-;-* #,##0.00_-;_-* "-"_-;_-@_-':
+        case '_-* #,##0_-;-* #,##0_-;_-* "-"_-;_-@_-':
             code = 'Number';
             break;
         case '$#,##0.00':

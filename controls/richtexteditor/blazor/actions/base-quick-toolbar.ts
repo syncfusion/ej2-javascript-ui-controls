@@ -121,80 +121,84 @@ export class BaseQuickToolbar {
         this.popupObj.dataBind();
     }
     public showPopup(x: number, y: number, target: Element, type: string): void {
-        this.parent.dotNetRef.invokeMethodAsync(
+        if (this.parent.onQuickTbOpenEnabled) {
             // @ts-ignore-start
-            constant.beforeQuickToolbarOpenEvent).then((args: BeforeQuickToolbarOpenArgs) => {
-            // @ts-ignore-end
-            if (!args.cancel) {
-                let editPanelTop: number;
-                let editPanelHeight: number;
-                let bodyStyle: CSSStyleDeclaration = window.getComputedStyle(document.body);
-                let bodyRight: number = parseFloat(
-                    bodyStyle.marginRight.split('px')[0]) + parseFloat(bodyStyle.paddingRight.split('px')[0]
-                    );
-                let windowHeight: number = window.innerHeight;
-                let windowWidth: number = window.innerWidth;
-                let parent: HTMLElement = this.parent.element;
-                let toolbarAvail: boolean = !isNOU(this.parent.getToolbar());
-                let tbHeight: number = toolbarAvail && this.parent.toolbarModule.getToolbarHeight();
-                let expTBHeight: number = toolbarAvail && this.parent.toolbarModule.getExpandTBarPopHeight();
-                let tBarHeight: number = (toolbarAvail) ? (tbHeight + expTBHeight) : 0;
-                addClass([this.element], [classes.CLS_HIDE]);
-                if (Browser.isDevice && !isIDevice()) {
-                    addClass([this.parent.getToolbar()], [classes.CLS_HIDE]);
-                }
-                if (this.parent.iframeSettings.enable) {
-                    let cntEle: Window = (<HTMLIFrameElement>this.parent.getPanel()).contentWindow;
-                    editPanelTop = cntEle.pageYOffset;
-                    editPanelHeight = cntEle.innerHeight;
-                } else {
-                    let cntEle: HTMLElement = <HTMLElement>closest(target, '.' + classes.CLS_RTE_CONTENT);
-                    editPanelTop = (cntEle) ? cntEle.scrollTop : 0;
-                    editPanelHeight = (cntEle) ? cntEle.offsetHeight : 0;
-                }
-                if (!this.parent.inlineMode.enable && !closest(target, 'table')) {
-                    // this.parent.disableToolbarItem(this.parent.toolbarSettings.items as string[]);
-                    // this.parent.enableToolbarItem(['Undo', 'Redo']);
-                }
-                append([this.element], document.body);
-                this.popupObj.position.X = x + 20;
-                this.popupObj.position.Y = y + ((this.parent.iframeSettings.enable) ? 35 : 20);
-                this.popupObj.dataBind();
-                this.popupObj.element.classList.add(classes.CLS_POPUP_OPEN);
-                let showPopupData: IShowQuickTBarOptions = {
-                    x: x, y: y,
-                    target: target as HTMLElement,
-                    editTop: editPanelTop,
-                    editHeight: editPanelHeight,
-                    popup: this.popupObj.element,
-                    popHeight: this.popupObj.element.offsetHeight,
-                    popWidth: this.popupObj.element.offsetWidth,
-                    parentElement: parent,
-                    bodyRightSpace: bodyRight,
-                    windowY: window.pageYOffset,
-                    windowHeight: windowHeight,
-                    windowWidth: windowWidth,
-                    parentData: parent.getBoundingClientRect(),
-                    tBarElementHeight: tBarHeight
-                };
-                if (target.tagName === 'IMG') {
-                    this.setPosition(showPopupData);
-                }
-                if (!this.parent.inlineMode.enable) {
-                    this.checkCollision(showPopupData, 'parent', '');
-                }
-                this.checkCollision(showPopupData, 'document', ((this.parent.inlineMode.enable) ? 'inline' : ''));
-                this.popupObj.element.classList.remove(classes.CLS_POPUP_OPEN);
-                removeClass([this.element], [classes.CLS_HIDE]);
-                this.popupObj.show({ name: 'ZoomIn', duration: (Browser.isIE ? 250 : 400) });
-                setStyleAttribute(this.element, {
-                    maxWidth: this.parent.element.offsetWidth + 'px'
-                });
-                addClass([this.element], [classes.CLS_POP]);
-                this.isDOMElement = true;
-                this.parent.dotNetRef.invokeMethodAsync(constant.updateClass, this.popupObj.element.classList.toString(), type);
-            }
+            this.parent.dotNetRef.invokeMethodAsync(constant.beforeQuickToolbarOpenEvent).then((args: BeforeQuickToolbarOpenArgs) => {
+                // @ts-ignore-end
+                if (!args.cancel) { this.onQuickTbOpenCallback(x, y, target, type); }
+            });
+        } else {
+            this.onQuickTbOpenCallback(x, y, target, type);
+        }
+    }
+    private onQuickTbOpenCallback(x: number, y: number, target: Element, type: string): void {
+        let editPanelTop: number;
+        let editPanelHeight: number;
+        let bodyStyle: CSSStyleDeclaration = window.getComputedStyle(document.body);
+        let bodyRight: number = parseFloat(
+            bodyStyle.marginRight.split('px')[0]) + parseFloat(bodyStyle.paddingRight.split('px')[0]
+            );
+        let windowHeight: number = window.innerHeight;
+        let windowWidth: number = window.innerWidth;
+        let parent: HTMLElement = this.parent.element;
+        let toolbarAvail: boolean = !isNOU(this.parent.getToolbar());
+        let tbHeight: number = toolbarAvail && this.parent.toolbarModule.getToolbarHeight();
+        let expTBHeight: number = toolbarAvail && this.parent.toolbarModule.getExpandTBarPopHeight();
+        let tBarHeight: number = (toolbarAvail) ? (tbHeight + expTBHeight) : 0;
+        addClass([this.element], [classes.CLS_HIDE]);
+        if (Browser.isDevice && !isIDevice()) {
+            addClass([this.parent.getToolbar()], [classes.CLS_HIDE]);
+        }
+        if (this.parent.iframeSettings.enable) {
+            let cntEle: Window = (<HTMLIFrameElement>this.parent.getPanel()).contentWindow;
+            editPanelTop = cntEle.pageYOffset;
+            editPanelHeight = cntEle.innerHeight;
+        } else {
+            let cntEle: HTMLElement = <HTMLElement>closest(target, '.' + classes.CLS_RTE_CONTENT);
+            editPanelTop = (cntEle) ? cntEle.scrollTop : 0;
+            editPanelHeight = (cntEle) ? cntEle.offsetHeight : 0;
+        }
+        if (!this.parent.inlineMode.enable && !closest(target, 'table')) {
+            // this.parent.disableToolbarItem(this.parent.toolbarSettings.items as string[]);
+            // this.parent.enableToolbarItem(['Undo', 'Redo']);
+        }
+        append([this.element], document.body);
+        this.popupObj.position.X = x + 20;
+        this.popupObj.position.Y = y + ((this.parent.iframeSettings.enable) ? 35 : 20);
+        this.popupObj.dataBind();
+        this.popupObj.element.classList.add(classes.CLS_POPUP_OPEN);
+        let showPopupData: IShowQuickTBarOptions = {
+            x: x, y: y,
+            target: target as HTMLElement,
+            editTop: editPanelTop,
+            editHeight: editPanelHeight,
+            popup: this.popupObj.element,
+            popHeight: this.popupObj.element.offsetHeight,
+            popWidth: this.popupObj.element.offsetWidth,
+            parentElement: parent,
+            bodyRightSpace: bodyRight,
+            windowY: window.pageYOffset,
+            windowHeight: windowHeight,
+            windowWidth: windowWidth,
+            parentData: parent.getBoundingClientRect(),
+            tBarElementHeight: tBarHeight
+        };
+        if (target.tagName === 'IMG') {
+            this.setPosition(showPopupData);
+        }
+        if (!this.parent.inlineMode.enable) {
+            this.checkCollision(showPopupData, 'parent', '');
+        }
+        this.checkCollision(showPopupData, 'document', ((this.parent.inlineMode.enable) ? 'inline' : ''));
+        this.popupObj.element.classList.remove(classes.CLS_POPUP_OPEN);
+        removeClass([this.element], [classes.CLS_HIDE]);
+        this.popupObj.show({ name: 'ZoomIn', duration: (Browser.isIE ? 250 : 400) });
+        setStyleAttribute(this.element, {
+            maxWidth: this.parent.element.offsetWidth + 'px'
         });
+        addClass([this.element], [classes.CLS_POP]);
+        this.isDOMElement = true;
+        this.parent.dotNetRef.invokeMethodAsync(constant.updateClass, this.popupObj.element.classList.toString(), type);
     }
     public hidePopup(): void {
         let viewSourcePanel: HTMLElement = <HTMLElement>this.parent.viewSourceModule.getViewPanel();
@@ -217,7 +221,7 @@ export class BaseQuickToolbar {
             removeClass([this.element], [classes.CLS_POP]);
             this.popupObj.element.removeAttribute('style');
             this.popupObj.destroy();
-            this.parent.dotNetRef.invokeMethodAsync(constant.quickToolbarCloseEvent);
+            if (this.parent.quickTbClosedEnabled) { this.parent.dotNetRef.invokeMethodAsync(constant.quickToolbarCloseEvent); }
         }
     }
     private updateStatus(args: IToolbarStatus): void {

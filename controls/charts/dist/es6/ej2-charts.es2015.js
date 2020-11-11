@@ -1226,7 +1226,7 @@ var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-const axisPadding = 10;
+const axisPadding = 5;
 /**
  * Configures the `rows` of the chart.
  */
@@ -1478,7 +1478,7 @@ class Axis extends ChildProperty {
         }
         let diff;
         let value;
-        let labelSize = titleSize + innerPadding + axisPadding +
+        let labelSize = titleSize + innerPadding + axisPadding + this.labelPadding +
             ((this.orientation === 'Vertical') ? this.maxLabelSize.width : this.maxLabelSize.height) + this.multiLevelLabelHeight;
         if (crossAxis && this.placeNextToAxisLine) {
             let range = crossAxis.visibleRange;
@@ -2951,7 +2951,9 @@ function createTemplate(childElement, pointIndex, content, chart, point, series,
             }
         }
         // tslint:disable-next-line:no-any
-        chart.renderReactTemplates();
+        if (chart.isReact) {
+            chart.renderReactTemplates();
+        }
     }
     catch (e) {
         return childElement;
@@ -4555,7 +4557,7 @@ class CartesianAxisLayoutPanel {
         padding = axis.opposedPosition ? padding + axis.scrollBarHeight : -padding - axis.scrollBarHeight;
         let x = rect.x + padding;
         let y = rect.y + rect.height * 0.5;
-        let options = new TextOption(chart.element.id + '_AxisTitle_' + index, x, y - this.padding, 'middle', axis.title, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation);
+        let options = new TextOption(chart.element.id + '_AxisTitle_' + index, x, y - axis.labelPadding, 'middle', axis.title, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation);
         options.text = textTrim(axis.updatedRect.height, options.text, axis.titleStyle);
         let element = textElement$1(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
         element.setAttribute('tabindex', axis.tabIndex.toString());
@@ -4749,6 +4751,7 @@ class CartesianAxisLayoutPanel {
         let pointX = 0;
         let pointY = 0;
         let labelSpace = axis.labelPadding;
+        let labelHeight;
         let elementSize;
         let labelPadding;
         let anchor;
@@ -4758,13 +4761,9 @@ class CartesianAxisLayoutPanel {
         let isOpposed = axis.opposedPosition;
         let tickSpace = axis.labelPosition === axis.tickPosition ? axis.majorTickLines.height : 0;
         let padding = tickSpace + labelSpace + axis.lineStyle.width * 0.5;
-        let rotateSize;
-        let diffHeight;
         let angle = axis.angle % 360;
         //I264474: Fix for X axis labels are not rendered in center of tick marks when angle is 270
-        let anglePadding = ((angle === 90 || angle === -270) ? -4 : (angle === -90 || angle === 270) ? 4 : 0);
         let options;
-        let yLocation;
         let labelWidth;
         let previousEnd = axis.isInversed ? (rect.x + rect.width) : rect.x;
         let width = 0;
@@ -4777,6 +4776,9 @@ class CartesianAxisLayoutPanel {
         let newPoints = [];
         let isRotatedLabelIntersect = false;
         padding += (angle === 90 || angle === 270 || angle === -90 || angle === -270) ? (islabelInside ? 5 : -5) : 0;
+        let isEndAnchor = ((!isOpposed && !islabelInside) || (isOpposed && islabelInside)) ?
+            ((360 >= angle && angle >= 180) || (-1 >= angle && angle >= -180)) :
+            ((1 <= angle && angle <= 180) || (-181 >= angle && angle >= -360));
         for (let i = 0, len = length; i < len; i++) {
             label = axis.visibleLabels[i];
             isAxisBreakLabel = isBreakLabel(label.originalText);
@@ -4786,7 +4788,9 @@ class CartesianAxisLayoutPanel {
             labelWidth = isAxisBreakLabel ? label.breakLabelSize.width : elementSize.width;
             width = ((axis.labelIntersectAction === 'Trim' || axis.labelIntersectAction === 'Wrap') && angle === 0 &&
                 labelWidth > intervalLength) ? intervalLength : labelWidth;
-            pointX -= width / 2;
+            labelHeight = elementSize.height / 4;
+            pointX -= (angle === 0) ? (width / 2) : (angle === -90 || angle === 270 ? -labelHeight :
+                (angle === 90 || angle === -270) ? labelHeight : 0);
             if (axis.labelStyle.textAlignment === 'Far') {
                 pointX = pointX + width - pixel;
             }
@@ -4797,18 +4801,17 @@ class CartesianAxisLayoutPanel {
                 pointX = pointX;
             }
             if (islabelInside && angle) {
-                pointY = isOpposed ? (rect.y + padding) : (rect.y - padding);
+                pointY = isOpposed ? (rect.y + padding + labelHeight) : (rect.y - padding - labelHeight);
             }
             else {
                 labelPadding = ((isOpposed && !islabelInside) || (!isOpposed && islabelInside)) ?
-                    -(padding + scrollBarHeight + (angle ? ((elementSize.height * 0.5) + (2 * axis.maxLabelSize.height / 5)) :
-                        (label.index > 1 ? (2 * (elementSize.height / 4)) : 0))) :
-                    padding + scrollBarHeight + (angle ? (axis.maxLabelSize.height * 0.5) : (3 * (elementSize.height / 4)));
+                    -(padding + scrollBarHeight + (angle ? labelHeight : (label.index > 1 ? (2 * labelHeight) : 0))) :
+                    padding + scrollBarHeight + ((angle ? 1 : 3) * labelHeight);
                 pointY = (rect.y + (labelPadding * label.index));
             }
-            anchor = chart.isRtlEnabled ? 'end' : '';
+            anchor = (chart.isRtlEnabled || isEndAnchor) ? 'end' : '';
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor);
-            if (axis.edgeLabelPlacement) {
+            if (axis.edgeLabelPlacement && (angle === 0)) {
                 switch (axis.edgeLabelPlacement) {
                     case 'None':
                         break;
@@ -4842,19 +4845,13 @@ class CartesianAxisLayoutPanel {
             }
             previousEnd = axis.isInversed ? options.x : options.x + width;
             if (angle !== 0) {
-                rotateSize = this.getRotateText(isAxisBreakLabel, axis, label, angle, chart);
-                diffHeight = islabelInside ? rotateSize.height :
-                    axis.maxLabelSize.height - Math.ceil(rotateSize.height);
-                yLocation = axis.opposedPosition ? diffHeight * 0.5 : -diffHeight * 0.5;
-                options.transform = 'rotate(' + angle + ',' + (pointX + width * 0.5 + anglePadding) + ','
-                    + (pointY + yLocation) + ')';
-                options.y = isAxisBreakLabel ? options.y +
-                    (isOpposed ? (4 * label.text.length) : -(4 * label.text.length)) : options.y + yLocation;
-                let height = (pointY + yLocation) - (options.y - ((label.size.height / 2) + 10));
+                options.transform = 'rotate(' + angle + ',' + pointX + ',' + pointY + ')';
+                options.y = isAxisBreakLabel ? options.y + (isOpposed ? (4 * label.text.length) : -(4 * label.text.length)) : options.y;
+                let height = (pointY) - (options.y - ((label.size.height / 2) + 10));
                 let rect = new Rect(options.x, options.y - ((label.size.height / 2) - 5), label.size.width, height);
                 let rectCoordinates = this.getRectanglePoints(rect);
-                let rectCenterX = pointX + width * 0.5 + anglePadding;
-                let rectCenterY = (pointY + yLocation) - (height / 2);
+                let rectCenterX = pointX;
+                let rectCenterY = (pointY) - (height / 2);
                 newPoints.push(getRotatedRectangleCoordinates(rectCoordinates, rectCenterX, rectCenterY, angle));
                 isRotatedLabelIntersect = false;
                 for (let index = i; index > 0; index--) {
@@ -5008,7 +5005,7 @@ class CartesianAxisLayoutPanel {
      */
     findAxisLabel(axis, label, width) {
         return (axis.labelIntersectAction === 'Trim' ?
-            ((axis.angle === 0 && !axis.enableTrim) ? textTrim(width, label, axis.labelStyle) : label) : label);
+            ((axis.angle % 360 === 0 && !axis.enableTrim) ? textTrim(width, label, axis.labelStyle) : label) : label);
     }
     /**
      * X-Axis Title function performed
@@ -5023,7 +5020,7 @@ class CartesianAxisLayoutPanel {
         let scrollBarHeight = isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight : 0;
         let padding = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
             (axis.labelPosition === 'Inside' ? 0 :
-                axis.maxLabelSize.height + axis.multiLevelLabelHeight + this.padding);
+                axis.maxLabelSize.height + axis.multiLevelLabelHeight + axis.labelPadding);
         padding = axis.opposedPosition ? -(padding + elementSize.height / 4 + scrollBarHeight) : (padding + (3 *
             elementSize.height / 4) + scrollBarHeight);
         let options = new TextOption(chart.element.id + '_AxisTitle_' + index, rect.x + rect.width * 0.5, rect.y + padding, 'middle', axis.title);
@@ -9056,7 +9053,10 @@ let Chart = class Chart extends Component {
          */
         if (this.element) {
             this.unWireEvents();
-            this.clearTemplate();
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.clearTemplate();
+            }
             super.destroy();
             if (!this.enableCanvas) {
                 this.removeSvg();
@@ -9180,10 +9180,12 @@ let Chart = class Chart extends Component {
      * To find mouse x, y for aligned chart element svg position
      */
     setMouseXY(pageX, pageY) {
-        let svgRect = getElement$1(this.svgId).getBoundingClientRect();
-        let rect = this.element.getBoundingClientRect();
-        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
-        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
+        if (getElement$1(this.svgId)) {
+            let svgRect = getElement$1(this.svgId).getBoundingClientRect();
+            let rect = this.element.getBoundingClientRect();
+            this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+            this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
+        }
     }
     /**
      * Export method for the chart.
@@ -9849,7 +9851,10 @@ let Chart = class Chart extends Component {
             return null;
         }
         removeElement$1(this.element.id + '_Secondary_Element');
-        this.clearTemplate();
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         let removeLength = 0;
         if (this.zoomModule && this.zoomModule.pinchTarget) {
             this.zoomModule.pinchTarget.id = '';
@@ -10134,7 +10139,10 @@ let Chart = class Chart extends Component {
             }
             if (refreshBounds) {
                 this.enableCanvas ? this.createChartSvg() : this.removeSvg();
-                this.clearTemplate();
+                // tslint:disable-next-line:no-any
+                if (this.isReact) {
+                    this.clearTemplate();
+                }
                 this.refreshAxis();
                 this.refreshBound();
                 this.trigger('loaded', { chart: this.isBlazor ? {} : this });
@@ -11567,16 +11575,17 @@ class StripLine {
      */
     renderText(stripline, rect, id, parent, chart, axis) {
         let textSize = measureText(stripline.text, stripline.textStyle);
-        let textMid = 3 * (textSize.height / 8);
+        let isRotationNull = (stripline.rotation === null);
+        let textMid = isRotationNull ? 3 * (textSize.height / 8) : 0;
         let ty = rect.y + (rect.height / 2) + textMid;
-        let rotation = (stripline.rotation === null) ? ((axis.orientation === 'Vertical') ? 0 : -90) : stripline.rotation;
+        let rotation = isRotationNull ? ((axis.orientation === 'Vertical') ? 0 : -90) : stripline.rotation;
         let tx = rect.x + (rect.width / 2);
         let anchor;
         let padding = 5;
         if (axis.orientation === 'Horizontal') {
             tx = this.getTextStart(tx + (textMid * this.factor(stripline.horizontalAlignment)), rect.width, stripline.horizontalAlignment);
-            ty = this.getTextStart(ty - textMid, rect.height, stripline.verticalAlignment);
-            anchor = this.invertAlignment(stripline.verticalAlignment);
+            ty = this.getTextStart(ty - textMid, rect.height, stripline.verticalAlignment) + (isRotationNull ? 0 : (textSize.height / 4));
+            anchor = isRotationNull ? this.invertAlignment(stripline.verticalAlignment) : stripline.horizontalAlignment;
         }
         else {
             tx = this.getTextStart(tx, rect.width, stripline.horizontalAlignment);
@@ -18243,7 +18252,9 @@ class BaseTooltip extends ChartData {
             }
         }
         // tslint:disable-next-line:no-any
-        this.chart.renderReactTemplates();
+        if (this.chart.isReact) {
+            this.chart.renderReactTemplates();
+        }
     }
     findPalette() {
         let colors = [];
@@ -18332,7 +18343,9 @@ class BaseTooltip extends ChartData {
         let tooltipElement = this.getElement(this.element.id + '_tooltip');
         this.stopAnimation();
         // tslint:disable-next-line:no-any
-        this.chart.clearTemplate();
+        if (this.chart.isReact) {
+            this.chart.clearTemplate();
+        }
         if (tooltipElement && this.previousPoints.length > 0) {
             this.toolTipInterval = setTimeout(() => {
                 if (this.svgTooltip) {
@@ -24952,7 +24965,7 @@ class ScrollBar {
             let currentX = this.moveLength(this.previousXY, this.previousRectX);
             elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
             this.positionThumb(elem.thumbRectX, elem.thumbRectWidth);
-            this.setZoomFactorPosition(elem.thumbRectX, elem.thumbRectWidth);
+            this.setZoomFactorPosition(elem.thumbRectX, elem.thumbRectWidth, false);
             if (this.isLazyLoad) {
                 let thumbMove = elem.thumbRectX > this.previousRectX ? 'RightMove' : 'LeftMove';
                 let args = this.calculateLazyRange(elem.thumbRectX, elem.thumbRectWidth, thumbMove);
@@ -25012,7 +25025,7 @@ class ScrollBar {
      * @param currentX
      * @param currentWidth
      */
-    setZoomFactorPosition(currentX, currentWidth) {
+    setZoomFactorPosition(currentX, currentWidth, isRequire = true) {
         let axis = this.axis;
         this.isScrollUI = true;
         let circleRadius = 8;
@@ -25023,8 +25036,8 @@ class ScrollBar {
             ? axis.rect.height : this.width);
         this.zoomFactor = (currentWidth + (currentScrollWidth >= this.width ? circleRadius + circleWidth : 0)) / (this.isVertical
             ? axis.rect.height : this.width);
-        axis.zoomPosition = this.zoomPosition;
-        axis.zoomFactor = this.zoomFactor;
+        axis.zoomPosition = this.zoomPosition < 0 ? 0 : this.zoomPosition > 0.9 ? 1 : this.zoomPosition;
+        axis.zoomFactor = isRequire ? this.zoomFactor : axis.zoomFactor;
     }
     /**
      * Handles the mouse move on scrollbar
@@ -25063,7 +25076,7 @@ class ScrollBar {
                 elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
                 this.positionThumb(elem.thumbRectX, elem.thumbRectWidth);
                 this.previousXY = mouseXY;
-                this.setZoomFactorPosition(currentX, elem.thumbRectWidth);
+                this.setZoomFactorPosition(currentX, elem.thumbRectWidth, false);
             }
             this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor, currentRange));
         }
@@ -27124,21 +27137,24 @@ let AccumulationChart = class AccumulationChart extends Component {
     setMouseXY(e) {
         let pageX;
         let pageY;
-        let svgRect = getElement$1(this.element.id + '_svg').getBoundingClientRect();
-        let rect = this.element.getBoundingClientRect();
-        if (e.type.indexOf('touch') > -1) {
-            this.isTouch = true;
-            let touchArg = e;
-            pageY = touchArg.changedTouches[0].clientY;
-            pageX = touchArg.changedTouches[0].clientX;
+        let svgRectElement = getElement$1(this.element.id + '_svg');
+        if (svgRectElement && this.element) {
+            let svgRect = svgRectElement.getBoundingClientRect();
+            let rect = this.element.getBoundingClientRect();
+            if (e.type.indexOf('touch') > -1) {
+                this.isTouch = true;
+                let touchArg = e;
+                pageY = touchArg.changedTouches[0].clientY;
+                pageX = touchArg.changedTouches[0].clientX;
+            }
+            else {
+                this.isTouch = e.pointerType === 'touch' || e.pointerType === '2';
+                pageX = e.clientX;
+                pageY = e.clientY;
+            }
+            this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+            this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
         }
-        else {
-            this.isTouch = e.pointerType === 'touch' || e.pointerType === '2';
-            pageX = e.clientX;
-            pageY = e.clientY;
-        }
-        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
-        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
     }
     /**
      * Handles the mouse end.
@@ -32184,7 +32200,10 @@ let RangeNavigator = class RangeNavigator extends Component {
     removeSvg() {
         if (getElement$1(this.element.id + '_Secondary_Element')) {
             remove(getElement$1(this.element.id + '_Secondary_Element'));
-            this.clearTemplate();
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.clearTemplate();
+            }
         }
         let removeLength = 0;
         if (this.svgObject) {
@@ -32523,7 +32542,10 @@ let RangeNavigator = class RangeNavigator extends Component {
      */
     destroy() {
         this.unWireEvents();
-        this.clearTemplate();
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         this.rangeSlider.destroy();
         super.destroy();
         this.element.innerHTML = '';
@@ -34782,10 +34804,13 @@ class StockChart extends Component {
      * To find mouse x, y for aligned chart element svg position
      */
     setMouseXY(pageX, pageY) {
-        let svgRect = getElement$1(this.element.id + '_stockChart_chart').getBoundingClientRect();
-        let rect = this.element.getBoundingClientRect();
-        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
-        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+        let svgRectElement = getElement$1(this.element.id + '_stockChart_chart');
+        if (this.element && svgRectElement) {
+            let stockRect = this.element.getBoundingClientRect();
+            let svgRect = svgRectElement.getBoundingClientRect();
+            this.mouseX = (pageX - stockRect.left) - Math.max(svgRect.left - stockRect.left, 0);
+            this.mouseY = (pageY - stockRect.top) - Math.max(svgRect.top - stockRect.top, 0);
+        }
     }
     /**
      * Handles the mouse move.
@@ -37268,7 +37293,10 @@ let BulletChart = class BulletChart extends Component {
             let id = 'tooltipDiv' + this.element.id;
             let tooltipDiv = document.getElementById(id);
             if (tooltipDiv) {
-                this.clearTemplate();
+                // tslint:disable-next-line:no-any
+                if (this.isReact) {
+                    this.clearTemplate();
+                }
                 remove(tooltipDiv);
             }
             if (this.bulletTooltipModule) {
@@ -37295,7 +37323,10 @@ let BulletChart = class BulletChart extends Component {
         if (!this.isTouchEvent(e)) {
             let tooltipDiv = document.getElementById('.tooltipDiv' + this.element.id);
             if (tooltipDiv) {
-                this.clearTemplate();
+                // tslint:disable-next-line:no-any
+                if (this.isReact) {
+                    this.clearTemplate();
+                }
                 remove(tooltipDiv);
             }
         }
@@ -37318,7 +37349,10 @@ let BulletChart = class BulletChart extends Component {
      */
     bulletMouseDown(e) {
         if (this.isTouchEvent(e)) {
-            this.clearTemplate();
+            // tslint:disable-next-line:no-any
+            if (this.isReact) {
+                this.clearTemplate();
+            }
             remove(document.getElementById(('tooltipDiv' + this.element.id)));
             let targetId = e.target.id;
             /* tslint:disable:no-string-literal */
@@ -37804,7 +37838,9 @@ class BulletTooltip {
                 }
             }
             // tslint:disable-next-line:no-any
-            this.control.renderReactTemplates();
+            if (this.control.isReact) {
+                this.control.renderReactTemplates();
+            }
         }
     }
     /**
@@ -41435,10 +41471,13 @@ class TooltipRender {
         return this.tooltipElement;
     }
     setMouseXY(smithchart, pageX, pageY) {
-        let rect = smithchart.element.getBoundingClientRect();
-        let svgRect = document.getElementById(smithchart.element.id + '_svg').getBoundingClientRect();
-        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
-        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+        let svgRectElement = document.getElementById(smithchart.element.id + '_svg');
+        if (smithchart.element && svgRectElement) {
+            let rect = smithchart.element.getBoundingClientRect();
+            let svgRect = svgRectElement.getBoundingClientRect();
+            this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
+            this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+        }
     }
     createTooltip(smithchart, e, pointindex, seriesindex, series) {
         let currentPoint = series.points[pointindex];

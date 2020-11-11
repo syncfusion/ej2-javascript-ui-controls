@@ -180,7 +180,7 @@ export class BulletTooltip {
                 }
             }
             // tslint:disable-next-line:no-any
-            (this.control as any).renderReactTemplates();
+            if ((this.control as any).isReact) { (this.control as any).renderReactTemplates(); }
         }
     }
 

@@ -459,6 +459,7 @@ var __extends$4 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * The `Clipboard` module is used to handle clipboard copy action.
+ * @hidden
  */
 var TreeClipboard = /** @class */ (function (_super) {
     __extends$4(TreeClipboard, _super);
@@ -3171,7 +3172,7 @@ var TreeGrid = /** @class */ (function (_super) {
         var treeGrid = this;
         this.grid.rowSelecting = function (args) {
             if (!sf.base.isNullOrUndefined(args.target) && (args.target.classList.contains('e-treegridexpand')
-                || args.target.classList.contains('e-treegridcollapse'))) {
+                || args.target.classList.contains('e-treegridcollapse') || args.target.classList.contains('e-summarycell'))) {
                 args.cancel = true;
                 return;
             }
@@ -3360,6 +3361,10 @@ var TreeGrid = /** @class */ (function (_super) {
                 if (beginEdit$$1 && typeof beginEdit$$1 === 'function') {
                     beginEdit$$1.apply(_this, [args]);
                 }
+            }
+            if (!sf.base.isNullOrUndefined(args.row) && args.row.classList.contains('e-summaryrow')) {
+                args.cancel = true;
+                return;
             }
             var callBackPromise = new sf.data.Deferred();
             _this.trigger(beginEdit, args, function (begineditArgs) {
@@ -5319,7 +5324,7 @@ var TreeGrid = /** @class */ (function (_super) {
      * @hidden
      */
     TreeGrid.prototype.getFrozenColumns = function () {
-        return this.getFrozenCount(this.columns, 0);
+        return this.getFrozenCount(this.columns, 0) + this.frozenColumns;
     };
     TreeGrid.prototype.getFrozenCount = function (cols, cnt) {
         for (var j = 0, len = cols.length; j < len; j++) {
@@ -9147,6 +9152,7 @@ var Edit$1 = /** @class */ (function () {
         this.parent.on('actionComplete', this.editActionEvents, this);
         this.parent.grid.on(doubleTap, this.recordDoubleClick, this);
         this.parent.grid.on('dblclick', this.gridDblClick, this);
+        this.parent.grid.on('recordAdded', this.customCellSave, this);
         this.parent.on('savePreviousRowPosition', this.savePreviousRowPosition, this);
         // this.parent.on(events.beforeDataBound, this.beforeDataBound, this);
         this.parent.grid.on(beforeStartEdit, this.beforeStartEdit, this);
@@ -9188,6 +9194,7 @@ var Edit$1 = /** @class */ (function () {
         this.parent.off(cellEdit, this.cellEdit);
         this.parent.off('actionBegin', this.editActionEvents);
         this.parent.off('actionComplete', this.editActionEvents);
+        this.parent.grid.off('recordAdded', this.customCellSave);
         this.parent.grid.off(doubleTap, this.recordDoubleClick);
         this.parent.off('savePreviousRowPosition', this.savePreviousRowPosition);
         this.parent.grid.off(beforeStartEdit, this.beforeStartEdit);
@@ -9309,7 +9316,7 @@ var Edit$1 = /** @class */ (function () {
             });
         }
         if (this.doubleClickTarget && (this.doubleClickTarget.classList.contains('e-treegridexpand') ||
-            this.doubleClickTarget.classList.contains('e-treegridcollapse'))) {
+            this.doubleClickTarget.classList.contains('e-treegridcollapse') || this.doubleClickTarget.classList.contains('e-summarycell'))) {
             args.cancel = true;
             this.doubleClickTarget = null;
             return;
@@ -9337,14 +9344,7 @@ var Edit$1 = /** @class */ (function () {
     Edit$$1.prototype.batchCancel = function (e) {
         if (this.parent.editSettings.mode === 'Cell') {
             var cellDetails = sf.base.getValue('editModule.cellDetails', this.parent.grid.editModule);
-            var selectRowIndex = cellDetails.rowIndex;
-            var treeCell = void 0;
-            if (this.parent.allowRowDragAndDrop === true && !(this.parent.rowDropSettings.targetID)) {
-                treeCell = this.parent.getRows()[selectRowIndex].cells[this.parent.treeColumnIndex + 1];
-            }
-            else {
-                treeCell = this.parent.getRows()[selectRowIndex].cells[this.parent.treeColumnIndex];
-            }
+            var treeCell = this.parent.getCellFromIndex(cellDetails.rowIndex, this.parent.treeColumnIndex);
             this.parent.renderModule.cellRender({
                 data: cellDetails.rowData,
                 cell: treeCell,
@@ -9357,24 +9357,30 @@ var Edit$1 = /** @class */ (function () {
             this.parent.notify('batchCancelAction', {});
         }
     };
+    Edit$$1.prototype.customCellSave = function (args) {
+        if (isCountRequired(this.parent) && this.parent.editSettings.mode === 'Cell' && args.action === 'edit') {
+            this.updateCell(args, args.rowIndex);
+            this.afterCellSave(args, args.row, args.rowIndex);
+        }
+    };
     Edit$$1.prototype.cellSave = function (args) {
+        var _this = this;
         if (this.parent.editSettings.mode === 'Cell' && this.parent.element.querySelector('form')) {
             args.cancel = true;
             var editModule = 'editModule';
             sf.base.setValue('isEdit', false, this.parent.grid);
             sf.base.setValue('isEditCollapse', true, this.parent);
             args.rowData[args.columnName] = args.value;
-            var row = void 0;
-            var mRow = void 0;
+            var row_1;
             if (sf.base.isNullOrUndefined(args.cell)) {
-                row = this.parent.grid.editModule[editModule].form.parentElement.parentNode;
+                row_1 = this.parent.grid.editModule[editModule].form.parentElement.parentNode;
             }
             else {
-                row = args.cell.parentNode;
+                row_1 = args.cell.parentNode;
             }
             var rowIndex_1;
             var primaryKeys_1 = this.parent.getPrimaryKeyFieldNames();
-            if (sf.base.isNullOrUndefined(row)) {
+            if (sf.base.isNullOrUndefined(row_1)) {
                 this.parent.grid.getCurrentViewRecords().filter(function (e, i) {
                     if (e[primaryKeys_1[0]] === args.rowData[primaryKeys_1[0]]) {
                         rowIndex_1 = i;
@@ -9383,53 +9389,81 @@ var Edit$1 = /** @class */ (function () {
                 });
             }
             else {
-                rowIndex_1 = (this.parent.getRows().indexOf(row) === -1 && this.parent.frozenColumns > 0) ?
-                    this.parent.grid.getMovableRows().indexOf(row) : this.parent.getRows().indexOf(row);
+                rowIndex_1 = (this.parent.getRows().indexOf(row_1) === -1 && (this.parent.getFrozenColumns() > 0)) ?
+                    this.parent.grid.getMovableRows().indexOf(row_1) : this.parent.getRows().indexOf(row_1);
             }
             var arg = {};
             sf.base.extend(arg, args);
             arg.cancel = false;
             arg.type = 'save';
-            row = this.parent.grid.getRows()[row.rowIndex];
+            row_1 = this.parent.grid.getRows()[row_1.rowIndex];
             this.parent.trigger(actionBegin, arg);
             if (!arg.cancel) {
-                if ((row.rowIndex === this.parent.getCurrentViewRecords().length - 1) && this.keyPress === 'tab') {
+                if ((row_1.rowIndex === this.parent.getCurrentViewRecords().length - 1) && this.keyPress === 'tab') {
                     this.isTabLastRow = true;
                 }
                 this.blazorTemplates(args);
-                this.updateCell(args, rowIndex_1);
-                if (this.parent.grid.aggregateModule) {
-                    this.parent.grid.aggregateModule.refresh(args.rowData);
+                if (!isRemoteData(this.parent) &&
+                    !(this.parent.dataSource instanceof sf.data.DataManager && this.parent.dataSource.adaptor instanceof sf.data.RemoteSaveAdaptor)) {
+                    if (isCountRequired(this.parent)) {
+                        var eventPromise = 'eventPromise';
+                        var editArgs = { requestType: 'save', data: args.rowData, action: 'edit', row: row_1,
+                            rowIndex: rowIndex_1, rowData: args.rowData, columnName: args.columnName,
+                            filterChoiceCount: null, excelSearchOperator: null };
+                        this.parent.grid.getDataModule()[eventPromise](editArgs, this.parent.grid.query);
+                    }
+                    else {
+                        this.updateCell(args, rowIndex_1);
+                        this.afterCellSave(args, row_1, rowIndex_1);
+                    }
                 }
-                this.parent.grid.editModule.destroyWidgets([this.parent.grid.getColumnByField(args.columnName)]);
-                this.parent.grid.editModule.formObj.destroy();
-                if (this.keyPress !== 'tab' && this.keyPress !== 'shiftTab') {
-                    this.updateGridEditMode('Normal');
-                    this.isOnBatch = false;
+                else if (isRemoteData(this.parent) ||
+                    (this.parent.dataSource instanceof sf.data.DataManager && this.parent.dataSource.adaptor instanceof sf.data.RemoteSaveAdaptor)) {
+                    var query = this.parent.grid.query;
+                    var crud = this.parent.grid.dataSource.update(primaryKeys_1[0], args.rowData, query.fromTable, query, args.previousValue);
+                    crud.then(function (e) {
+                        if (!sf.base.isNullOrUndefined(e)) {
+                            args.rowData[args.columnName] = e[args.columnName];
+                        }
+                        _this.updateCell(args, rowIndex_1);
+                        _this.afterCellSave(args, row_1, rowIndex_1);
+                    });
                 }
-                this.enableToolbarItems('save');
-                if (this.parent.frozenColumns > 0) {
-                    mRow = this.parent.grid.getMovableRows()[rowIndex_1];
-                    sf.base.removeClass([mRow], ['e-editedrow', 'e-batchrow']);
-                    sf.base.removeClass(mRow.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
-                }
-                sf.base.removeClass([row], ['e-editedrow', 'e-batchrow']);
-                sf.base.removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
-                this.parent.grid.focusModule.restoreFocus();
-                editAction({ value: args.rowData, action: 'edit' }, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, args.columnName);
-                if ((row.rowIndex === this.parent.getCurrentViewRecords().length - 1) && this.keyPress === 'enter') {
-                    this.keyPress = null;
-                }
-                var saveArgs = {
-                    type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
-                    previousData: args.previousValue, row: row, target: args.cell
-                };
-                this.parent.trigger(actionComplete, saveArgs);
             }
             else {
                 this.parent.grid.isEdit = true;
             }
         }
+    };
+    Edit$$1.prototype.afterCellSave = function (args, row, rowIndex) {
+        var mRow;
+        if (this.parent.grid.aggregateModule) {
+            this.parent.grid.aggregateModule.refresh(args.rowData);
+        }
+        this.parent.grid.editModule.destroyWidgets([this.parent.grid.getColumnByField(args.columnName)]);
+        this.parent.grid.editModule.formObj.destroy();
+        if (this.keyPress !== 'tab' && this.keyPress !== 'shiftTab') {
+            this.updateGridEditMode('Normal');
+            this.isOnBatch = false;
+        }
+        this.enableToolbarItems('save');
+        if (this.parent.getFrozenColumns() > 0) {
+            mRow = this.parent.grid.getMovableRows()[rowIndex];
+            sf.base.removeClass([mRow], ['e-editedrow', 'e-batchrow']);
+            sf.base.removeClass(mRow.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
+        }
+        sf.base.removeClass([row], ['e-editedrow', 'e-batchrow']);
+        sf.base.removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
+        this.parent.grid.focusModule.restoreFocus();
+        editAction({ value: args.rowData, action: 'edit' }, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, args.columnName);
+        if ((row.rowIndex === this.parent.getCurrentViewRecords().length - 1) && this.keyPress === 'enter') {
+            this.keyPress = null;
+        }
+        var saveArgs = {
+            type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
+            previousData: args.previousValue, row: row, target: args.cell
+        };
+        this.parent.trigger(actionComplete, saveArgs);
     };
     Edit$$1.prototype.lastCellTab = function (formObj) {
         if (!this.parent.grid.isEdit && this.isOnBatch && this.keyPress === 'tab' && this.parent.editSettings.mode === 'Cell') {
@@ -10312,7 +10346,7 @@ var VirtualTreeContentRenderer = /** @class */ (function (_super) {
                 sf.base.getValue('currentInfo', this) : e.virtualInfo;
             var cBlock = (info.columnIndexes[0]) - 1;
             var cOffset = this.getColumnOffset(cBlock);
-            //this.virtualEle.setWrapperWidth(width, ( Browser.isIE || Browser.info.name === 'edge') as boolean);
+            this.virtualEle.setWrapperWidth(null, (sf.base.Browser.isIE || sf.base.Browser.info.name === 'edge'));
             target = this.parent.createElement('tbody');
             target.appendChild(newChild);
             var replace = 'replaceWith';

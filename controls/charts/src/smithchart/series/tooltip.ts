@@ -51,10 +51,13 @@ export class TooltipRender {
     }
 
     private setMouseXY(smithchart: Smithchart, pageX: number, pageY: number): void {
-        let rect: ClientRect = smithchart.element.getBoundingClientRect();
-        let svgRect: ClientRect = document.getElementById(smithchart.element.id + '_svg').getBoundingClientRect();
-        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
-        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+        let svgRectElement: Element = document.getElementById(smithchart.element.id + '_svg');
+        if (smithchart.element && svgRectElement) {
+            let rect: ClientRect = smithchart.element.getBoundingClientRect();
+            let svgRect: ClientRect = svgRectElement.getBoundingClientRect();
+            this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
+            this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+        }
     }
 
     private createTooltip(

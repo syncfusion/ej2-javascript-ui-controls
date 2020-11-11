@@ -62,6 +62,7 @@ var Input$1;
         if (!sf.base.isNullOrUndefined(args.element) && args.element.tagName === 'TEXTAREA') {
             sf.base.addClass([inputObject.container], CLASSNAMES.TEXTAREA);
         }
+        validateInputType(inputObject.container, args.element);
         inputObject = setPropertyValue(args, inputObject);
         return inputObject;
     }
@@ -777,6 +778,15 @@ var Input$1;
         return button;
     }
     Input$$1.appendSpan = appendSpan;
+    function validateInputType(containerElement, input) {
+        if (input.type === 'hidden') {
+            containerElement.classList.add('e-hidden');
+        }
+        else if (containerElement.classList.contains('e-hidden')) {
+            containerElement.classList.remove('e-hidden');
+        }
+    }
+    Input$$1.validateInputType = validateInputType;
 })(Input$1 || (Input$1 = {}));
 
 /**
@@ -1935,6 +1945,7 @@ var NumericTextBox = /** @class */ (function (_super) {
                     this.updateHTMLAttrToWrapper();
                     this.updateDataAttribute(true);
                     this.checkAttributes(true);
+                    sf.inputs.Input.validateInputType(this.container, this.element);
                     break;
                 case 'placeholder':
                     sf.inputs.Input.setPlaceholder(newProp.placeholder, this.element);

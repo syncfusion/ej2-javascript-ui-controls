@@ -180,6 +180,7 @@ var DateTimePicker = /** @class */ (function (_super) {
         _super.prototype.updateHtmlAttributeToWrapper.call(this);
         this.bindInputEvents();
         this.setValue();
+        this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkValue(this.scrollTo))) }, true);
         this.previousDateTime = this.value && new Date(+this.value);
         if (this.element.tagName === 'EJS-DATETIMEPICKER') {
             this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
@@ -1356,7 +1357,7 @@ var DateTimePicker = /** @class */ (function (_super) {
                         if (this.dateTimeWrapper) {
                             this.setScrollTo();
                         }
-                        this.setProperties({ scrollTo: newProp.scrollTo }, true);
+                        this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkValue(newProp.scrollTo))) }, true);
                     }
                     else {
                         this.setProperties({ scrollTo: null }, true);

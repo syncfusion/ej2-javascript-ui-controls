@@ -5,7 +5,7 @@ import { RowPosition } from '../enum';
 import { InterSectionObserver } from '@syncfusion/ej2-grids';
 import { TreeVirtualRowModelGenerator } from '../renderer/virtual-row-model-generator';
 import * as events from '../base/constant';
-import { isNullOrUndefined, EventHandler, getValue, setValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, EventHandler, getValue, setValue, Browser } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { isCountRequired } from '../utils';
 /**
@@ -310,7 +310,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
           getValue('currentInfo', this) : e.virtualInfo;
         let cBlock: number = (info.columnIndexes[0]) - 1;
         let cOffset: number = this.getColumnOffset(cBlock);
-        //this.virtualEle.setWrapperWidth(width, ( Browser.isIE || Browser.info.name === 'edge') as boolean);
+        this.virtualEle.setWrapperWidth(null, ( Browser.isIE || Browser.info.name === 'edge') as boolean);
         target = this.parent.createElement('tbody');
         target.appendChild(newChild);
         let replace: string = 'replaceWith';

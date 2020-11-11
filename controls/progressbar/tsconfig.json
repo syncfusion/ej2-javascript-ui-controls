@@ -25,7 +25,8 @@
     "dist",
     "public",
     "coverage",
-    "test-report"        
+    "test-report",
+    "demo/React-demo"
   ],
   "compileOnSave": false
 }

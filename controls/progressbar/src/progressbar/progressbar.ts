@@ -830,6 +830,8 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         this.unWireEvents();
         super.destroy();
         this.removeSvg();
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.clearTemplate(); }
         this.svgObject = null;
         this.element.classList.remove('e-progressbar');
         if (!this.refreshing) {

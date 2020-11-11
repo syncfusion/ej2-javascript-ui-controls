@@ -1116,7 +1116,7 @@ export class Edit {
                     let query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
                     let crud: Promise<Object> = null;
                     let dataAdaptor: AdaptorOptions = data.adaptor;
-                    if ((dataAdaptor instanceof WebApiAdaptor && dataAdaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
+                    if (!(dataAdaptor instanceof WebApiAdaptor && dataAdaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
                         crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
                     } else {
                         let changedRecords: string = 'changedRecords';
@@ -1915,7 +1915,7 @@ export class Edit {
                         updatedData[blazAddedRec] = [];
                     }
                     let adaptor: AdaptorOptions = data.adaptor;
-                    if ((adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
+                    if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
                         let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id) as Promise<Object>;
                         crud.then((e: ReturnType) => this.deleteSuccess(args))
                             .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
@@ -2505,7 +2505,7 @@ export class Edit {
                         /* tslint:disable-next-line */
                         let query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
                         let adaptor: AdaptorOptions = data.adaptor;
-                        if ((adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
+                        if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
                             /* tslint:disable-next-line */
                             let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
                             crud.then((e: { addedRecords: Object[], changedRecords: Object[] }) => {
@@ -2885,7 +2885,7 @@ export class Edit {
             let queryValue: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
             let crud: Promise<Object> = null;
             let adaptor: AdaptorOptions = data.adaptor;
-            if ((adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
+            if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
                 crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, queryValue) as Promise<Object>;
             } else {
                 let changedRecords: string = 'changedRecords';

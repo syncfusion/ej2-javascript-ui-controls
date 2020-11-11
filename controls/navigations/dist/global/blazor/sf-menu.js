@@ -162,6 +162,7 @@ var SfMenu = /** @class */ (function () {
             }
         }
         var ul = menu.classList.contains(MENUPARENT) ? menu : sf.base.select(DOT + MENUPARENT, menu);
+        args.popup.blazor__instance.setBlankIconStyle(ul, args.isRtl);
         var menuOffset = ul.getBoundingClientRect();
         var width = args.popup.blazor__instance.getMenuWidth(ul, menuOffset.width, args.isRtl);
         if (args.isVertical) {

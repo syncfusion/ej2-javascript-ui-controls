@@ -275,7 +275,7 @@ export class NodeSelection {
         for (; index--; null) {
             node = node && node.childNodes[num[index]];
         }
-        if (node && constant >= 0) {
+        if (node && constant >= 0 && node.nodeName !== 'html') {
             range[isvalid ? 'setStart' : 'setEnd'](node, constant);
         }
         return range;

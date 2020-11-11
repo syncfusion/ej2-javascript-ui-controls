@@ -2726,6 +2726,13 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
      public pyramidMode: PyramidModes;
 
      /**
+      * Allows you to draw the chart series points with custom color for the pie, funnel, doughnut and pyramid chart types.
+      * @default []
+      */
+     @Property([])
+     public palettes: string[];
+
+     /**
       * Allows to defines start angle for the pie, funnel, doughnut and pyramid chart series.
       * @default 0
       */

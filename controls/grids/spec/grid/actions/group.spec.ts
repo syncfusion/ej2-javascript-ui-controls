@@ -1532,3 +1532,44 @@ describe('Grouping module => ', () => {
     });
 
 });
+
+describe('EJ2-43460-Ungrouping arguments => ', () => {
+    let gridObj: Grid;
+    let actionBegin: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                columns: [{ field: 'OrderID', headerText: 'Order ID' },
+                { field: 'CustomerID', headerText: 'CustomerID' },
+                { field: 'EmployeeID', headerText: 'Employee ID' },
+                { field: 'Freight', headerText: 'Freight' },
+                { field: 'ShipCity', headerText: 'Ship City' }],
+                allowSorting: true,
+                allowPaging: true,
+                allowGrouping: true,
+                actionBegin: actionBegin,
+            }, done);
+    });
+    it('Check whether column name is defined while grouping', (done) => {
+        gridObj.actionBegin = (args?: any): void => {
+            expect(args.columnName).toBeDefined();
+            gridObj.actionBegin= null;
+            done();
+        }
+        gridObj.groupModule.groupColumn('EmployeeID');
+    });
+    it('Check whether column name is defined while ungrouping', (done) => {
+        gridObj.actionBegin = (args?: any): void => {
+            expect(args.columnName).toBeDefined();
+            gridObj.actionBegin= null;
+            done();
+        }
+        gridObj.groupModule.ungroupColumn('EmployeeID');
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+        gridObj = actionBegin = null;
+    });
+});

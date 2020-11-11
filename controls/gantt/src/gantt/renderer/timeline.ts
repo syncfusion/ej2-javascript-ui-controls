@@ -168,6 +168,7 @@ export class Timeline {
         if (this.isZooming || this.isZoomToFit) {
             let args: ZoomEventArgs = {
                 requestType: this.isZoomIn ? 'AfterZoomIn' : this.isZoomToFit ? 'AfterZoomToProject' : 'AfterZoomOut',
+                timeline: this.parent.currentZoomingLevel
             };
             this.parent.trigger('actionComplete', args);
         }

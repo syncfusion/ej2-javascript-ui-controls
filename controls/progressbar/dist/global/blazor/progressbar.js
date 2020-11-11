@@ -575,6 +575,10 @@ var AnnotationBase = /** @class */ (function () {
         }
         else if (this.control.redraw) {
             removeElement(annotationElement.id);
+            // tslint:disable-next-line:no-any
+            if (this.control.isReact) {
+                this.control.clearTemplate();
+            }
         }
     };
     AnnotationBase.prototype.setElementStyle = function (location, element, parentElement) {
@@ -590,6 +594,10 @@ var AnnotationBase = /** @class */ (function () {
             argsData.content.style.transform = 'translate(-50%, -50%)';
             argsData.content.setAttribute('aria-label', 'Annotation');
             parentElement.appendChild(argsData.content);
+            // tslint:disable-next-line:no-any
+            if (this.control.isReact) {
+                this.control.renderReactTemplates();
+            }
         }
     };
     AnnotationBase.prototype.Location = function (radius, angle) {
@@ -2499,6 +2507,10 @@ var ProgressBar = /** @class */ (function (_super) {
         this.unWireEvents();
         _super.prototype.destroy.call(this);
         this.removeSvg();
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
         this.svgObject = null;
         this.element.classList.remove('e-progressbar');
         if (!this.refreshing) {
@@ -2683,7 +2695,5 @@ exports.ProgressAnimation = ProgressAnimation;
 return exports;
 
 });
-sfBlazor.modules["progressbar"] = "progressbar.ProgressBar";
-sfBlazor.loadDependencies(sfBlazor.dependencyJson.progressbar, () => {
+
     sf.progressbar = sf.base.extend({}, sf.progressbar, sfprogressbar({}));
-});

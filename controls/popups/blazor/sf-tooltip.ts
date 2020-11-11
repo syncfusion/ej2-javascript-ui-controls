@@ -77,6 +77,7 @@ class SfTooltip {
     public beforeCloseAnimation: TooltipAnimationSettings = null;
     public ctrlId: string;
     public isPopupHidden: boolean = true;
+    private hasTitle: boolean;
     public tooltipEventArgs: TooltipEventArgs;
     constructor(element: BlazorTooltipElement, ref: BlazorDotnetObject, properties: InitProps, eventList: EventList) {
         this.element = element;
@@ -234,7 +235,7 @@ class SfTooltip {
         orgdescribedby ? attributes(target, { 'aria-describedby': orgdescribedby }) : target.removeAttribute('aria-describedby');
     }
     private clear(): void {
-        if (this.tooltipEle) {
+        if (this.tooltipEle && this.isPopupHidden) {
             removeClass([this.tooltipEle], POPUP_CLOSE);
             addClass([this.tooltipEle], POPUP_OPEN);
         }
@@ -272,7 +273,9 @@ class SfTooltip {
     private restoreElement(target: HTMLElement): void {
         this.unwireMouseEvents(target);
         if (!NOU(getAttributeOrDefault(target, 'data-content', null))) {
-            attributes(target, { 'title': getAttributeOrDefault(target, 'data-content', null) });
+            if (this.hasTitle) {
+                attributes(target, { 'title': getAttributeOrDefault(target, 'data-content', null) });
+            }
             target.removeAttribute('data-content');
         }
         this.removeDescribedBy(target);
@@ -687,9 +690,14 @@ class SfTooltip {
         }
     }
     private renderContent(target?: HTMLElement): void {
-        if (target && !NOU(getAttributeOrDefault(target, 'title', null))) {
-            attributes(target, { 'data-content': getAttributeOrDefault(target, 'title', null) });
+        let title: string = getAttributeOrDefault(target, 'title', null);
+        let dataTitle: string = getAttributeOrDefault(target, 'data-title', null);
+        if (!NOU(title) && target) {
+            attributes(target, { 'data-content': title });
+            this.hasTitle = true;
             target.removeAttribute('title');
+        } else if (!NOU(dataTitle) && target) {
+            attributes(target, { 'data-content': dataTitle });
         }
         if (!this.properties.content) {
             let tooltipContent: HTMLElement = this.tooltipEle.querySelector('.' + TIPCONTENT) as HTMLElement;
