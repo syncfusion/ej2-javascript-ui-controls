@@ -52517,18 +52517,23 @@ var LineDistribution = /** @__PURE__ @class */ (function () {
         for (var i = 0; i <= connectors.length - 1; i++) {
             var internalConnector = diagram.nameTable[connectors[i]];
             internalConnector[obstacleCollection] = [];
-            var targetNodePort = findPort(node, inConnectors ? internalConnector.targetPortID : internalConnector.sourcePortID);
+            var newPort = findPort(node, inConnectors ? internalConnector.targetPortID : internalConnector.sourcePortID);
             var direction = targetDirection;
-            if (targetNodePort === undefined) {
-                targetNodePort = new PointPort(node, 'ports', '', true);
-                targetNodePort.id = randomId() + '_LineDistribution';
-                inConnectors ? internalConnector.targetPortID : internalConnector.sourcePortID = targetNodePort.id;
+            if (newPort === undefined) {
+                newPort = new PointPort(node, 'ports', '', true);
+                newPort.id = randomId() + '_LineDistribution';
+                if (inConnectors) {
+                    internalConnector.targetPortID = newPort.id;
+                }
+                else {
+                    internalConnector.sourcePortID = newPort.id;
+                }
             }
-            this.portOffsetCalculation(targetNodePort, connectors.length, direction, i);
-            node.ports.push(targetNodePort);
+            this.portOffsetCalculation(newPort, connectors.length, direction, i);
+            node.ports.push(newPort);
             var portWrapper = node.initPortWrapper(node.ports[node.ports.length - 1]);
             node.wrapper.children.push(portWrapper);
-            diagram.connectorPropertyChange(internalConnector, inConnectors ? { targetPortID: '' } : { sourcePortID: '' }, inConnectors ? { targetPortID: targetNodePort.id } : { sourcePortID: targetNodePort.id });
+            diagram.connectorPropertyChange(internalConnector, inConnectors ? { targetPortID: '' } : { sourcePortID: '' }, inConnectors ? { targetPortID: newPort.id } : { sourcePortID: newPort.id });
         }
     };
     /* tslint:enable */

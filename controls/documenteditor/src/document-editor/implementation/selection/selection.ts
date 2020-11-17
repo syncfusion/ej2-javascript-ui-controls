@@ -7083,6 +7083,9 @@ export class Selection {
             let count: number = 0;
             for (let j: number = 0; j < lineWidget.children.length; j++) {
                 let inline: ElementBox = lineWidget.children[j] as ElementBox;
+                if (inline instanceof ListTextElementBox) {
+                    continue;
+                }
                 if (startOffset >= count + inline.length) {
                     count += inline.length;
                     continue;

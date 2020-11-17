@@ -1104,4 +1104,19 @@ export class DateProcessor {
             setValue('maxEndDate', maxEndDate, editArgs);
         }
     }
+    /**
+     * 
+     * @param segments 
+     * @private
+     */
+    public splitTasksDuration(segments: ITaskSegment[]): number {
+        let duration: number = 0;
+        for (let i: number = 0; i < segments.length; i++) {
+            let segment: ITaskSegment = segments[i];
+            let sDate: Date = segment.startDate;
+            let eDate: Date = segment.endDate;
+            duration += Math.ceil(this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24));
+        }
+        return duration;
+    }
 }

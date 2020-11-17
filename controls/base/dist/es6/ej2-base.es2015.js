@@ -5076,7 +5076,6 @@ function append(fromElements, toElement, isEval) {
     }
     return fromElements;
 }
-//tslint: enable:no-any
 /**
  * The function is used to evaluate script from Ajax request
  * @param ele - An element is going to evaluate the script
@@ -5101,9 +5100,12 @@ function detach(element) {
     }
     else {
         let parentNode = element.parentNode;
-        return parentNode.removeChild(element);
+        if (parentNode) {
+            return parentNode.removeChild(element);
+        }
     }
 }
+//tslint: enable:no-any
 /**
  * The function used to remove the element from Dom also clear the bounded events
  * @param  {Element|Node|HTMLElement} element - An element remove from the Dom
@@ -5155,6 +5157,7 @@ function select(selector, context = document, needsVDOM) {
         return VirtualDOM.vDomSelector({ ele: context, selector, selectAll: false });
     }
     else {
+        selector = querySelectId(selector);
         return context.querySelector(selector);
     }
 }
@@ -5170,9 +5173,29 @@ function selectAll(selector, context = document, needsVDOM) {
         return VirtualDOM.vDomSelector({ ele: context, selector, selectAll: true });
     }
     else {
+        selector = querySelectId(selector);
         let nodeList = context.querySelectorAll(selector);
         return nodeList;
     }
+}
+function querySelectId(selector) {
+    if (selector.match(/#[0-9]/g)) {
+        let idList = selector.split(',');
+        for (let i = 0; i < idList.length; i++) {
+            let list = idList[i].split(' ');
+            for (let j = 0; j < list.length; j++) {
+                if (list[j].match(/#/)) {
+                    let splitId = list[j].split('#');
+                    if (splitId[1].match(/^\d/)) {
+                        list[j] = list[j].replace(/#/, '[id=\'') + '\']';
+                    }
+                }
+            }
+            idList[i] = list.join(' ');
+        }
+        return idList.join(',');
+    }
+    return selector;
 }
 /**
  * Returns single closest parent element based on class selector.
@@ -6825,7 +6848,7 @@ let Component = class Component extends Base {
      */
     appendTo(selector) {
         if (!isNullOrUndefined(selector) && typeof (selector) === 'string') {
-            this.element = document.querySelector(selector);
+            this.element = select(selector, document);
         }
         else if (!isNullOrUndefined(selector)) {
             this.element = selector;
@@ -7520,10 +7543,6 @@ let Draggable = Draggable_1 = class Draggable extends Base {
             if (!this.clone) {
                 draEleTop -= this.parentScrollY;
                 draEleLeft -= this.parentScrollX;
-            }
-            // Accuracy issue - while drag faster, Cursor and clone element have some distance gap
-            if (this.position.top !== draEleTop) {
-                draEleTop = this.position.top;
             }
         }
         let dragValue = this.getProcessedPositionValue({ top: draEleTop + 'px', left: draEleLeft + 'px' });

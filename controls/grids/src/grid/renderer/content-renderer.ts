@@ -1102,6 +1102,12 @@ export class ContentRender implements IRenderer {
                 let currentLen: number = dataSource.length;
                 if (prevLen === currentLen) {
                     for (let i: number = 0; i < currentLen; i++) {
+                        if (this.parent.editSettings.mode === 'Batch'
+                            && trs[i].classList.contains('e-insertedrow')) {
+                            trs.splice(i, 1);
+                            --i;
+                            continue;
+                        }
                         newKeys[dataSource[i][key]] = oldKeys[this.prevCurrentView[i][key]] = i;
                         newIndexes[i] = dataSource[i][key];
                         oldRowElements[oldRowObjs[i].uid] = trs[i];
@@ -1113,6 +1119,12 @@ export class ContentRender implements IRenderer {
                         newIndexes[i] = dataSource[i][key];
                     }
                     for (let i: number = 0; i < prevLen; i++) {
+                        if (this.parent.editSettings.mode === 'Batch'
+                            && trs[i].classList.contains('e-insertedrow')) {
+                            trs.splice(i, 1);
+                            --i;
+                            continue;
+                        }
                         oldRowElements[oldRowObjs[i].uid] = trs[i];
                         oldKeys[this.prevCurrentView[i][key]] = i;
                         oldIndexes[i] = this.prevCurrentView[i][key];
@@ -1127,7 +1139,7 @@ export class ContentRender implements IRenderer {
                         isEqual = this.objectEqualityChecker(this.prevCurrentView[i], dataSource[i]);
                     }
                     let tr: HTMLTableRowElement = oldRowElements[oldRowObjs[oldIndex].uid] as HTMLTableRowElement;
-                    newRowObjs.push(gObj.getRowsObject()[oldIndex]);
+                    newRowObjs.push(oldRowObjs[oldIndex]);
                     if (this.rowElements[i] && this.rowElements[i].getAttribute('data-uid') === newRowObjs[i].uid
                         && ((hasBatch && isNullOrUndefined(batchChangeKeys[newIndexes[i]]))
                             || (!hasBatch && (isEqual || this.prevCurrentView[i] === dataSource[i])))) {
@@ -1205,6 +1217,9 @@ export class ContentRender implements IRenderer {
     private refreshImmutableContent(index: number, tr: HTMLTableRowElement, row: Row<Column>): void {
         row.isAltRow = this.parent.enableAltRow ? index % 2 !== 0 : false;
         row.isAltRow ? tr.classList.add('e-altrow') : tr.classList.remove('e-altrow');
+        row.index = index;
+        row.edit = undefined;
+        row.isDirty = false;
         tr.setAttribute('aria-rowindex', index.toString());
         this.updateCellIndex(tr, index);
     }

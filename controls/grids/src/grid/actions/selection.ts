@@ -1,6 +1,6 @@
 import { Browser, EventHandler, MouseEventArgs, createElement, isBlazor } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, isUndefined, addClass, removeClass } from '@syncfusion/ej2-base';
-import { remove, closest, classList } from '@syncfusion/ej2-base';
+import { remove, closest, classList, select } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 import {
     IGrid, IAction, IIndex, ISelectedCell, IPosition, IRenderer, EJ2Intance, NotifyArgs, CellFocusArgs,
@@ -2032,9 +2032,9 @@ export class Selection implements IAction {
             if (rindex < this.parent.frozenRows) {
                 isFrozenRow = true;
             }
-            if (!parentsUntil(this.target, 'e-table').querySelector('#' + this.parent.element.id + '_autofill')) {
-                if (this.parent.element.querySelector('#' + this.parent.element.id + '_autofill')) {
-                    this.parent.element.querySelector('#' + this.parent.element.id + '_autofill').remove();
+            if (!select('#' + this.parent.element.id + '_autofill', parentsUntil(this.target, 'e-table'))) {
+                if (select('#' + this.parent.element.id + '_autofill', this.parent.element)) {
+                    select('#' + this.parent.element.id + '_autofill', this.parent.element).remove();
                 }
                 this.autofill = createElement(
                     'div', { className: 'e-autofill', id: this.parent.element.id + '_autofill' });

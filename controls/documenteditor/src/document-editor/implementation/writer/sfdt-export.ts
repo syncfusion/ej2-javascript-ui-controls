@@ -1217,6 +1217,10 @@ export class SfdtExport {
     public writeCharacterFormat(format: WCharacterFormat, isInline?: boolean): any {
         let characterFormat: any = {};
         HelperMethods.writeCharacterFormat(characterFormat, isInline, format);
+        characterFormat.boldBidi = isInline ? format.bold : format.getValue('bold');
+        characterFormat.italicBidi = isInline ? format.italic : format.getValue('italic');
+        characterFormat.fontSizeBidi = isInline ? format.fontSize : format.getValue('fontSize');
+        characterFormat.fontFamilyBidi = isInline ? format.fontFamily : format.getValue('fontFamily');
         if (this.writeInlineStyles && !isInline) {
             characterFormat.inlineFormat = this.writeCharacterFormat(format, true);
         }

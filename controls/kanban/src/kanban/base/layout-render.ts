@@ -21,7 +21,7 @@ export class LayoutRender extends MobileLayout {
     public scrollLeft: number;
     private swimlaneRow: HeaderArgs[];
     public columnData: { [key: string]: Object[] };
-    private swimlaneData: { [key: string]: Object[] };
+    public swimlaneData: { [key: string]: Object[] };
 
     /**
      * Constructor for layout module
@@ -608,7 +608,7 @@ export class LayoutRender extends MobileLayout {
         this.renderValidation();
     }
 
-    private getColumnData(columnValue: string, dataSource: Object[] = this.parent.kanbanData): Object[] {
+    public getColumnData(columnValue: string, dataSource: Object[] = this.parent.kanbanData): Object[] {
         let cardData: Object[] = [];
         let columnKeys: string[] = columnValue.split(',');
         for (let key of columnKeys) {
@@ -620,23 +620,18 @@ export class LayoutRender extends MobileLayout {
     }
 
     private sortCategory(cardData: Object[]): Object[] {
-        let key: string;
+        let key: string = this.parent.cardSettings.headerField;
         let direction: string = this.parent.sortSettings.direction;
         switch (this.parent.sortSettings.sortBy) {
             case 'DataSourceOrder':
-                if (direction === 'Descending') {
-                    cardData.reverse();
-                }
+                this.sortOrder(key, direction, cardData);
                 break;
             case 'Custom':
             case 'Index':
                 if (this.parent.sortSettings.field) {
                     key = this.parent.sortSettings.field;
-                    if (this.parent.sortSettings.sortBy === 'Custom') {
-                        direction = this.parent.sortSettings.direction;
-                    }
-                    this.sortOrder(key, direction, cardData);
                 }
+                this.sortOrder(key, direction, cardData);
                 break;
         }
         return cardData;
@@ -726,7 +721,6 @@ export class LayoutRender extends MobileLayout {
     }
 
     public refresh(): void {
-        this.columnData = this.getColumnCards();
         this.parent.columns.forEach((column: ColumnsModel) => {
             if (column.showItemCount) {
                 let countSelector: string = `.${cls.HEADER_CELLS_CLASS}[data-key="${column.keyField}"] .${cls.CARD_ITEM_COUNT_CLASS}`;
@@ -737,7 +731,6 @@ export class LayoutRender extends MobileLayout {
             }
         });
         if (this.parent.swimlaneSettings.keyField) {
-            this.swimlaneData = this.getSwimlaneCards();
             let swimlaneRows: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(`.${cls.SWIMLANE_ROW_CLASS}`));
             swimlaneRows.forEach((swimlane: HTMLElement) => {
                 let swimlaneKey: string = swimlane.getAttribute('data-key');
@@ -773,25 +766,27 @@ export class LayoutRender extends MobileLayout {
             let rowSelector: string = `.e-content-row.e-swimlane-row[data-key="${data[this.parent.swimlaneSettings.keyField]}"]`;
             cardRow = this.parent.element.querySelector(rowSelector).nextElementSibling as HTMLElement;
         }
-        if (this.parent.sortSettings.sortBy === 'DataSourceOrder' && !isNullOrUndefined(index) ||
-            this.parent.sortSettings.sortBy === 'Custom') {
+        if (this.parent.sortSettings.sortBy !== 'Index') {
+            let field: string = this.parent.cardSettings.headerField;
+            if (this.parent.sortSettings.sortBy === 'Custom') {
+                field = this.parent.sortSettings.field;
+            }
             if (isNullOrUndefined(this.parent.swimlaneSettings.keyField)) {
-                index = (this.parent.getColumnData(key, this.parent.kanbanData) as { [key: string]: Object }[]).findIndex(
-                    (data: { [key: string]: Object }) =>
-                        data[this.parent.cardSettings.headerField] === data[this.parent.cardSettings.headerField]);
+                index = (this.getColumnData(key, this.parent.kanbanData) as { [key: string]: Object }[]).findIndex(
+                    (colData: { [key: string]: Object }) =>
+                        colData[field] === data[field]);
             } else {
                 let swimlaneDatas: Object[] = this.parent.getSwimlaneData(data[this.parent.swimlaneSettings.keyField] as string);
-                index = (this.parent.getColumnData(key, swimlaneDatas) as { [key: string]: Object }[]).findIndex(
-                    (data: { [key: string]: Object }) =>
-                        data[this.parent.cardSettings.headerField] === data[this.parent.cardSettings.headerField]);
+                index = (this.getColumnData(key, swimlaneDatas) as { [key: string]: Object }[]).findIndex(
+                    (colData: { [key: string]: Object }) => colData[field] === data[field]);
             }
-        } else if (this.parent.sortSettings.sortBy === 'Index' && this.parent.sortSettings.field
-                    && this.parent.sortSettings.direction === 'Ascending') {
+        } else if (this.parent.sortSettings.sortBy === 'Index' &&
+            this.parent.sortSettings.field && this.parent.sortSettings.direction === 'Ascending') {
             index = (data[this.parent.sortSettings.field] as number) - 1;
         }
         if (cardRow) {
             let td: HTMLElement = [].slice.call(cardRow.children).filter((e: Element) =>
-                e.getAttribute('data-key').replace(/\s/g, '').split(',').indexOf(key) !== -1)[0];
+                e.getAttribute('data-key').replace(/\s/g, '').split(',').indexOf(key.replace(/\s/g, '')) !== -1)[0];
             let cardWrapper: Element = td.querySelector('.' + cls.CARD_WRAPPER_CLASS);
             let cardElement: HTMLElement = this.renderCard(data as { [key: string]: string });
             if (this.parent.allowDragAndDrop) {
@@ -802,12 +797,6 @@ export class LayoutRender extends MobileLayout {
                 if (!cardArgs.cancel) {
                     if (isNullOrUndefined(index) || cardWrapper.children.length === 0) {
                         cardWrapper.appendChild(cardElement);
-                    } else if (this.parent.sortSettings.sortBy === 'DataSourceOrder') {
-                        if (index === 0) {
-                            cardWrapper.children[index].insertAdjacentElement('beforebegin', cardElement);
-                        } else {
-                            cardWrapper.children[index - 1].insertAdjacentElement('afterend', cardElement);
-                        }
                     } else {
                         cardWrapper.insertBefore(cardElement, cardWrapper.childNodes[index]);
                     }

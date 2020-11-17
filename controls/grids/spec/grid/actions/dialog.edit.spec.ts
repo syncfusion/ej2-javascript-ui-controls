@@ -1,7 +1,7 @@
 /**
  * Grid dialog edit spec document
  */
-import { extend, getValue } from '@syncfusion/ej2-base';
+import { extend, getValue, select } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Filter } from '../../../src/grid/actions/filter';
 import { Edit } from '../../../src/grid/actions/edit';
@@ -124,8 +124,8 @@ describe('Dialog Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.actionBegin = actionBegin;
-            (document.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
-            (document.querySelector('#'+gridObj.element.id+'_dialogEdit_wrapper').querySelectorAll('button') as any)[1].click();
+            (select('#' + gridObj.element.id + 'CustomerID', document) as any).value = 'updated';
+            (select('#'+gridObj.element.id+'_dialogEdit_wrapper', document).querySelectorAll('button') as any)[1].click();
         });
 
         it('Add start', (done: Function) => {
@@ -199,9 +199,9 @@ describe('Dialog Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.actionBegin = actionBegin;
-            (document.querySelector('#'+ gridObj.element.id +'OrderID') as any).value = 10247;
-            (document.querySelector('#'+ gridObj.element.id +'CustomerID') as any).value = 'updated';
-            (document.querySelector('#'+ gridObj.element.id +'_dialogEdit_wrapper').querySelectorAll('button') as any)[1].click();
+            (select('#'+ gridObj.element.id +'OrderID', document) as any).value = 10247;
+            (select('#'+ gridObj.element.id +'CustomerID', document) as any).value = 'updated';
+            (select('#'+ gridObj.element.id +'_dialogEdit_wrapper', document).querySelectorAll('button') as any)[1].click();
         });
 
 
@@ -281,8 +281,8 @@ describe('Dialog Editing module', () => {
             gridObj.actionBegin = actionBegin;
             //toolbar status check
             expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(4);
-            (document.querySelector('#'+ gridObj.element.id +'CustomerID') as any).value = 'updatednew';
-            (document.querySelector('#'+ gridObj.element.id +'_dialogEdit_wrapper').querySelectorAll('button') as any)[2].click();
+            (select('#'+ gridObj.element.id +'CustomerID', document) as any).value = 'updatednew';
+            (select('#'+ gridObj.element.id +'_dialogEdit_wrapper', document).querySelectorAll('button') as any)[2].click();
         });
 
         it('Add-cancel start', (done: Function) => {
@@ -337,9 +337,9 @@ describe('Dialog Editing module', () => {
             gridObj.actionBegin = actionBegin;
             //toolbar status check
             expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(4);
-            (document.querySelector('#'+ gridObj.element.id +'OrderID') as any).value = 10247;
-            (document.querySelector('#'+ gridObj.element.id +'CustomerID') as any).value = 'updatednew';
-            (document.querySelector('#'+ gridObj.element.id +'_dialogEdit_wrapper').querySelectorAll('button') as any)[2].click();
+            (select('#'+ gridObj.element.id +'OrderID', document) as any).value = 10247;
+            (select('#'+ gridObj.element.id +'CustomerID', document) as any).value = 'updatednew';
+            (select('#'+ gridObj.element.id +'_dialogEdit_wrapper', document).querySelectorAll('button') as any)[2].click();
         });
 
         it('toolbar status check', () => {
@@ -372,16 +372,16 @@ describe('Dialog Editing module', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
-            (document.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
-            (document.querySelector('#'+ gridObj.element.id +'_dialogEdit_wrapper').querySelectorAll('button') as any)[1].click();
+            (select('#' + gridObj.element.id + 'CustomerID', document) as any).value = 'updated';
+            (select('#'+ gridObj.element.id +'_dialogEdit_wrapper', document).querySelectorAll('button') as any)[1].click();
         });
 
         it('check row selection on dialog close by esc and close icon', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {
-                    let td = (document.querySelector('#' + gridObj.element.id + '_dialogEdit_wrapper').querySelectorAll('td.e-rowcell') as any)[0];
+                    let td = (select('#' + gridObj.element.id + '_dialogEdit_wrapper', document).querySelectorAll('td.e-rowcell') as any)[0];
                     expect((td as HTMLElement).style.textAlign === 'left').toBe(true);
-                    (document.querySelector('#' + gridObj.element.id + '_dialogEdit_wrapper').querySelectorAll('.e-dlg-closeicon-btn') as any)[0].click();
+                    (select('#' + gridObj.element.id + '_dialogEdit_wrapper', document).querySelectorAll('.e-dlg-closeicon-btn') as any)[0].click();
                 }
                 if (args.requestType === 'cancel') {
                     expect(gridObj.getSelectedRecords().length).toBe(1);
@@ -395,7 +395,7 @@ describe('Dialog Editing module', () => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {
                     expect(gridObj.getSelectedRecords().length).toBe(1);
-                    (document.querySelector('#' + gridObj.element.id + '_dialogEdit_wrapper').querySelectorAll('.e-dlg-closeicon-btn') as any)[0].click();
+                    (select('#' + gridObj.element.id + '_dialogEdit_wrapper', document).querySelectorAll('.e-dlg-closeicon-btn') as any)[0].click();
                     done();
                 }
             };
@@ -405,7 +405,7 @@ describe('Dialog Editing module', () => {
         it('enableRtl alignment check', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {
-                    let td = (document.querySelector('#' + gridObj.element.id + '_dialogEdit_wrapper').querySelectorAll('td.e-rowcell') as any)[0];
+                    let td = (select('#' + gridObj.element.id + '_dialogEdit_wrapper', document).querySelectorAll('td.e-rowcell') as any)[0];
                     expect((td as HTMLElement).style.textAlign === 'right').toBe(true);
                     done();
                 }               

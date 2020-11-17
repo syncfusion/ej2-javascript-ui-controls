@@ -732,7 +732,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
     }
 
-    protected closeMenu(ulIndex: number = 0, e: MouseEvent | KeyboardEvent = null): void {
+    // tslint:disable-next-line:max-func-body-length
+    protected closeMenu(ulIndex: number = 0, e: MouseEvent | KeyboardEvent = null, isIterated?: boolean): void {
         if (this.isMenuVisible()) {
             let sli: Element; let ul: HTMLElement; let item: MenuItemModel; let items: MenuItemModel[];
             let beforeCloseArgs: BeforeOpenCloseMenuEventArgs; let wrapper: Element = this.getWrapper();
@@ -790,8 +791,17 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     if (isOpen && this.hamburgerMode && ulIndex && !(submenus.length)) {
                         this.afterCloseMenu(e as MouseEvent);
                     } else if (isOpen && !this.hamburgerMode && this.navIdx.length && closedLi && !trgtLi) {
-                        this.closeMenu(this.navIdx[this.navIdx.length - 1], e);
-                    } else if (isOpen && !ulIndex && ((this.hamburgerMode && this.navIdx.length) || this.navIdx.length === 1)) {
+                        let ele: HTMLElement = e ? closest(e.target as Element, '.e-menu-wrapper') as HTMLElement : null;
+                        if (ele) {
+                            ele = ele.querySelector('.e-menu-item');
+                            if (ele && this.getIndex(ele.id, true).length <= this.navIdx.length) {
+                                this.closeMenu(this.navIdx[this.navIdx.length - 1], e, true);
+                            }
+                        } else {
+                            this.closeMenu(this.navIdx[this.navIdx.length - 1], e);
+                        }
+                    } else if (isOpen && !isIterated && !ulIndex && ((this.hamburgerMode && this.navIdx.length) ||
+                        this.navIdx.length === 1)) {
                         this.closeMenu(null, e);
                     } else if (isOpen && isNullOrUndefined(ulIndex) && this.navIdx.length) {
                         this.closeMenu(null, e);
@@ -1484,7 +1494,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     let cIdx: number = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
                     if (cIdx < this.navIdx.length) {
                         this.closeMenu(cIdx + 1, e);
-                        this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
+                        if (popupEle) { this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]); }
                     }
                 } else if (this.isMenu && this.hamburgerMode && trgt.tagName === 'SPAN'
                     && trgt.classList.contains('e-menu-icon')) {

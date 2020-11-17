@@ -219,9 +219,15 @@ export class ColumnBase {
         if (check <= 0) {
             return null;
         }
-        let direction: string = this.calculateRoundedRectPath(
-            rect, series.cornerRadius.topLeft, series.cornerRadius.topRight, series.cornerRadius.bottomLeft,
-            series.cornerRadius.bottomRight);
+        let direction: string;
+        if (point.y === 0) {
+            // For 0 values corner radius will not calculate
+            direction = this.calculateRoundedRectPath(rect, 0, 0, 0, 0);
+        } else {
+            direction = this.calculateRoundedRectPath(
+                rect, series.cornerRadius.topLeft, series.cornerRadius.topRight, series.cornerRadius.bottomLeft,
+                series.cornerRadius.bottomRight);
+        }
         let name: string = series.category === 'Indicator' ? chart.element.id + '_Indicator_' + series.index + '_' + series.name +
             '_Point_' + point.index : chart.element.id + '_Series_' + series.index + '_Point_' + point.index;
         let previousElement: Element = redrawElement(chart.redraw, name);

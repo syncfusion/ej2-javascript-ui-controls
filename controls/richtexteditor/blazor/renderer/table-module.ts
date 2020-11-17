@@ -509,7 +509,7 @@ export class Table {
     private resizeBtnInit(): { [key: string]: boolean } {
         return this.resizeBtnStat = { column: false, row: false, tableBox: false };
     }
-    private removeResizeEle(): void {
+    public removeResizeEle(): void {
         let item: NodeListOf<Element> = this.parent.getEditPanel().
             querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box');
         if (item.length > 0) {

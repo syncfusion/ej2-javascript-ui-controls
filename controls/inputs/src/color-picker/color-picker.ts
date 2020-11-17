@@ -1733,7 +1733,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             if (this.rgb.length === 4) { this.updateOpacityInput(this.rgb[3] * 100); }
         } else {
             this.removeTileSelection();
-            let ele: Element = select('span[aria-label="' + this.roundValue(newProp) + '"]', this.container);
+            let ele: Element = this.container.querySelector('span[aria-label="' + this.roundValue(newProp) + '"]');
             if (ele) { this.addTileSelection(ele); }
         }
     }

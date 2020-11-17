@@ -468,6 +468,11 @@ export interface PdfAnnotationBaseModel {
      */
     allowedInteractions?: AllowedInteraction;
 
+    /**
+     * specifies whether the annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
+
 }
 
 /**

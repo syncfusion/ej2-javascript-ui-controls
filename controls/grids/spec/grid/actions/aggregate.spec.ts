@@ -1,7 +1,7 @@
 /**
  * Data spec
  */
-import { createElement, remove } from '@syncfusion/ej2-base';
+import { createElement, remove, selectAll, select } from '@syncfusion/ej2-base';
 import { EventHandler, ChildProperty, EmitType, debounce } from '@syncfusion/ej2-base';
 import { DataUtil } from '@syncfusion/ej2-data';
 import { Grid } from '../../../src/grid/base/grid';
@@ -780,7 +780,7 @@ describe('Aggregates Functionality testing', () => {
             };
             grid.beforeBatchSave = beforeBatchSave;
             (<any>grid.toolbarModule).toolbarClickHandler({ item: { id: grid.element.id + '_update' } });
-            grid.element.querySelector('#' + grid.element.id + 'EditConfirm').querySelectorAll('button')[0].click();                   
+            selectAll('#' + grid.element.id + 'EditConfirm button', grid.element)[0].click();                   
         });
         it('cancel the edited value ', (done: Function) => {
             grid.editModule.editCell(0, 'Freight');
@@ -1007,7 +1007,7 @@ describe('Aggregates Functionality testing', () => {
 
             grid.selectRow(0, true);
             (<any>grid.toolbarModule).toolbarClickHandler({ item: { id: grid.element.id + '_edit' } });
-            (grid.element.querySelector('#' + grid.element.id + 'Freight') as any).value = 100;
+            (select('#' + grid.element.id + 'Freight', grid.element) as any).value = 100;
             grid.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: grid.getContent().querySelector('.e-row') } as any);         
             done();
         });

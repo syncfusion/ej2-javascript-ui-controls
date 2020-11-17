@@ -568,4 +568,33 @@ describe('Paging module', () => {
             gridInstance = null;
         });
     });
+    describe('Immutable mode paging', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    allowPaging: true,
+                    dataSource: data,
+                    enableImmutableMode: true,
+                    pageSettings: { pageSize: 2 },
+                    columns: [{ field: 'OrderID', isPrimaryKey: true }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                    { field: 'ShipCity' }],
+                }, done);
+        });
+        it('paging', (done: Function) => {
+            let actionComplete = (args?: any): void => {
+                gridObj.actionComplete = null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.getPager().getElementsByClassName('e-numericcontainer')[0].childNodes[1].childNodes[0] as HTMLElement).click();
+        });
+        it('check row index', () => {
+            expect(gridObj.getRowsObject()[1].index).toBe(1);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

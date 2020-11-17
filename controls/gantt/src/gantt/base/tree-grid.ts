@@ -67,7 +67,7 @@ export class GanttTreeGrid {
     private composeProperties(): void {
         this.parent.treeGrid.showColumnMenu = this.parent.showColumnMenu;
         this.parent.treeGrid.columnMenuItems = this.parent.columnMenuItems;
-        this.parent.treeGrid.childMapping = this.parent.taskFields.child;
+        this.parent.treeGrid.childMapping = isNullOrUndefined(this.parent.taskFields.child) ? '' : this.parent.taskFields.child;
         this.parent.treeGrid.treeColumnIndex = this.parent.treeColumnIndex;
         this.parent.treeGrid.columns = this.treeGridColumns;
         this.parent.treeGrid.dataSource = this.parent.flatData;

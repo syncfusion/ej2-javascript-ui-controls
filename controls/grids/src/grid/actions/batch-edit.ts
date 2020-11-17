@@ -1,4 +1,4 @@
-import { extend, addClass, removeClass, setValue, isBlazor, closest } from '@syncfusion/ej2-base';
+import { extend, addClass, removeClass, setValue, isBlazor, closest, select } from '@syncfusion/ej2-base';
 import { remove, classList, updateBlazorTemplate, blazorTemplates, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { isNullOrUndefined, KeyboardEventArgs, isUndefined } from '@syncfusion/ej2-base';
@@ -904,7 +904,7 @@ export class BatchEdit {
             }
             this.renderer.update(cellEditArgs);
             this.parent.notify(events.batchEditFormRendered, cellEditArgs);
-            this.form = gObj.element.querySelector('#' + gObj.element.id + 'EditForm');
+            this.form = select('#' + gObj.element.id + 'EditForm', gObj.element);
             gObj.editModule.applyFormValidation([col]);
             (this.parent.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
         });

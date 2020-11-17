@@ -274,6 +274,7 @@ var SfTreeView = /** @class */ (function () {
                 document.body.appendChild(virtualEle);
                 document.body.style.cursor = EMPTY;
                 _this_1.dragData = _this_1.getNodeData(_this_1.dragLi);
+                _this_1.virtualEle = virtualEle;
                 return virtualEle;
             },
             drag: function (e) {
@@ -333,9 +334,6 @@ var SfTreeView = /** @class */ (function () {
             },
             over: function (e) {
                 document.body.style.cursor = EMPTY;
-            },
-            drop: function (e) {
-                _this_1.dropAction(e);
             }
         });
     };
@@ -361,10 +359,19 @@ var SfTreeView = /** @class */ (function () {
             this.isHelperElement = false;
         }
         this.dragStartAction = false;
+        if (this.isHelperElement) {
+            this.dropAction(this.dragStopEventArgs, true);
+        }
     };
-    SfTreeView.prototype.dragStartActionContinue = function () {
-        this.dragStartAction = true;
-        this.dragStartEventArgs.bindEvents(sf.base.getElement(this.dragStartEventArgs.dragElement));
+    SfTreeView.prototype.dragStartActionContinue = function (cancel) {
+        if (cancel) {
+            this.dragObj.intDestroy(this.dragStartEventArgs.event);
+            this.dragCancelAction(this.virtualEle);
+        }
+        else {
+            this.dragStartAction = true;
+            this.dragStartEventArgs.bindEvents(sf.base.getElement(this.dragStartEventArgs.dragElement));
+        }
     };
     SfTreeView.prototype.getId = function (ele) {
         if (sf.base.isNullOrUndefined(ele)) {
@@ -1588,9 +1595,9 @@ var TreeView = {
             element.blazor__instance.setMultiSelect(args);
         }
     },
-    dragStartActionContinue: function dragStartActionContinue(element) {
+    dragStartActionContinue: function dragStartActionContinue(element, cancel) {
         if (this.valid(element)) {
-            element.blazor__instance.dragStartActionContinue();
+            element.blazor__instance.dragStartActionContinue(cancel);
         }
     },
     dragNodeStop: function dragNodeStop(element, args) {

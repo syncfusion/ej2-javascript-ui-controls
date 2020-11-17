@@ -545,6 +545,6 @@ export class FormulaBar {
     }
 
     private getFormulaBar(): HTMLTextAreaElement {
-        return this.parent.element.querySelector('#' + this.parent.element.id + '_formula_input');
+        return this.parent.element.querySelector('[id="' + this.parent.element.id + '_formula_input"]');
     }
 }

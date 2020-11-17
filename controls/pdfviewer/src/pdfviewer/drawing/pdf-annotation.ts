@@ -546,6 +546,12 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     @Property(['None'])
     public allowedInteractions: AllowedInteraction;
 
+    /**
+     * specifies whether the annotations are included or not in print actions.
+     */
+    @Property(true)
+    public isPrint: boolean;
+
 
     // tslint:disable-next-line:no-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {

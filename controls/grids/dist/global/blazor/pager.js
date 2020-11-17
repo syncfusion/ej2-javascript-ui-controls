@@ -1945,9 +1945,9 @@ var CheckBoxFilterBase = /** @class */ (function () {
             this.searchBoxClick(e);
         }
         if (elem) {
-            var selectAll = elem.querySelector('.e-selectall');
-            if (selectAll) {
-                this.updateAllCBoxes(!selectAll.classList.contains('e-check'));
+            var selectAll$$1 = elem.querySelector('.e-selectall');
+            if (selectAll$$1) {
+                this.updateAllCBoxes(!selectAll$$1.classList.contains('e-check'));
             }
             else {
                 toogleCheckbox(elem.parentElement);
@@ -2048,9 +2048,9 @@ var CheckBoxFilterBase = /** @class */ (function () {
         if (data.length && !this.renderEmpty) {
             var selectAllValue = this.getLocalizedLabel('SelectAll');
             var checkBox = this.createCheckbox(selectAllValue, false, (_a = {}, _a[this.options.field] = selectAllValue, _a));
-            var selectAll = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
-            selectAll.querySelector('.e-frame').classList.add('e-selectall');
-            cBoxes.appendChild(selectAll);
+            var selectAll$$1 = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
+            selectAll$$1.querySelector('.e-frame').classList.add('e-selectall');
+            cBoxes.appendChild(selectAll$$1);
             var predicate = new sf.data.Predicate('field', 'equal', this.options.field);
             if (this.options.foreignKeyValue) {
                 predicate = predicate.or('field', 'equal', this.options.foreignKeyValue);
@@ -4792,6 +4792,12 @@ var ContentRender = /** @class */ (function () {
                 var currentLen = dataSource.length;
                 if (prevLen === currentLen) {
                     for (var i = 0; i < currentLen; i++) {
+                        if (this.parent.editSettings.mode === 'Batch'
+                            && trs[i].classList.contains('e-insertedrow')) {
+                            trs.splice(i, 1);
+                            --i;
+                            continue;
+                        }
                         newKeys[dataSource[i][key]] = oldKeys[this.prevCurrentView[i][key]] = i;
                         newIndexes[i] = dataSource[i][key];
                         oldRowElements[oldRowObjs[i].uid] = trs[i];
@@ -4804,6 +4810,12 @@ var ContentRender = /** @class */ (function () {
                         newIndexes[i] = dataSource[i][key];
                     }
                     for (var i = 0; i < prevLen; i++) {
+                        if (this.parent.editSettings.mode === 'Batch'
+                            && trs[i].classList.contains('e-insertedrow')) {
+                            trs.splice(i, 1);
+                            --i;
+                            continue;
+                        }
                         oldRowElements[oldRowObjs[i].uid] = trs[i];
                         oldKeys[this.prevCurrentView[i][key]] = i;
                         oldIndexes[i] = this.prevCurrentView[i][key];
@@ -4818,7 +4830,7 @@ var ContentRender = /** @class */ (function () {
                         isEqual = this.objectEqualityChecker(this.prevCurrentView[i], dataSource[i]);
                     }
                     var tr = oldRowElements[oldRowObjs[oldIndex].uid];
-                    newRowObjs.push(gObj.getRowsObject()[oldIndex]);
+                    newRowObjs.push(oldRowObjs[oldIndex]);
                     if (this.rowElements[i] && this.rowElements[i].getAttribute('data-uid') === newRowObjs[i].uid
                         && ((hasBatch && sf.base.isNullOrUndefined(batchChangeKeys[newIndexes[i]]))
                             || (!hasBatch && (isEqual || this.prevCurrentView[i] === dataSource[i])))) {
@@ -4896,6 +4908,9 @@ var ContentRender = /** @class */ (function () {
     ContentRender.prototype.refreshImmutableContent = function (index, tr, row) {
         row.isAltRow = this.parent.enableAltRow ? index % 2 !== 0 : false;
         row.isAltRow ? tr.classList.add('e-altrow') : tr.classList.remove('e-altrow');
+        row.index = index;
+        row.edit = undefined;
+        row.isDirty = false;
         tr.setAttribute('aria-rowindex', index.toString());
         this.updateCellIndex(tr, index);
     };
@@ -10704,9 +10719,9 @@ var Selection = /** @class */ (function () {
             if (rindex < this.parent.frozenRows) {
                 isFrozenRow = true;
             }
-            if (!parentsUntil(this.target, 'e-table').querySelector('#' + this.parent.element.id + '_autofill')) {
-                if (this.parent.element.querySelector('#' + this.parent.element.id + '_autofill')) {
-                    this.parent.element.querySelector('#' + this.parent.element.id + '_autofill').remove();
+            if (!sf.base.select('#' + this.parent.element.id + '_autofill', parentsUntil(this.target, 'e-table'))) {
+                if (sf.base.select('#' + this.parent.element.id + '_autofill', this.parent.element)) {
+                    sf.base.select('#' + this.parent.element.id + '_autofill', this.parent.element).remove();
                 }
                 this.autofill = sf.base.createElement('div', { className: 'e-autofill', id: this.parent.element.id + '_autofill' });
                 this.autofill.style.display = 'none';
@@ -17641,13 +17656,13 @@ var Print = /** @class */ (function () {
         if (!depth) {
             return;
         }
-        var groupCaption = element.querySelectorAll(id + "captioncell.e-groupcaption");
+        var groupCaption = sf.base.selectAll(id + "captioncell.e-groupcaption", element);
         var colSpan = groupCaption[depth - 1].getAttribute('colspan');
         for (var i = 0; i < groupCaption.length; i++) {
             groupCaption[i].setAttribute('colspan', colSpan);
         }
-        var colGroups = element.querySelectorAll("colgroup" + id + "colGroup");
-        var contentColGroups = element.querySelector('.e-content').querySelectorAll('colgroup');
+        var colGroups = sf.base.selectAll("colgroup" + id + "colGroup", element);
+        var contentColGroups = sf.base.selectAll('.e-content colgroup', element);
         this.hideColGroup(colGroups, depth);
         this.hideColGroup(contentColGroups, depth);
     };
@@ -18009,9 +18024,9 @@ function getRowHeight(element) {
 
 /** @hidden */
 function isActionPrevent(inst) {
-    var dlg = inst.element.querySelector('#' + inst.element.id + 'EditConfirm');
+    var dlg = sf.base.select('#' + inst.element.id + 'EditConfirm', inst.element);
     return inst.editSettings.mode === 'Batch' &&
-        (inst.element.querySelectorAll('.e-updatedtd').length) && inst.editSettings.showConfirmDialog &&
+        (sf.base.selectAll('.e-updatedtd', inst.element).length) && inst.editSettings.showConfirmDialog &&
         (dlg ? dlg.classList.contains('e-popup-close') : true);
 }
 /** @hidden */
@@ -19176,7 +19191,7 @@ var PagerDropDown = /** @class */ (function () {
     PagerDropDown.prototype.convertValue = function (pageSizeValue) {
         var item = pageSizeValue;
         for (var i = 0; i < item.length; i++) {
-            item[i] = typeof item[i] === 'number' ? item[i].toString() : item[i];
+            item[i] = parseInt(item[i], 10) ? item[i].toString() : this.pagerModule.getLocalizedLabel(item[i]);
         }
         return item;
     };

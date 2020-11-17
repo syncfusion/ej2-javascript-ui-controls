@@ -700,8 +700,18 @@ export class Drawing {
             let objects: (PdfAnnotationBaseModel)[] = this.getPageObjects(pageIndex);
             for (let i: number = 0; i < objects.length; i++) {
                 // tslint:disable-next-line:no-any
-                let renderElement: DrawingElement = (this.pdfViewer.nameTable as any)[objects[i].id].wrapper;
-                refreshDiagramElements(diagramLayer, [renderElement], this.renderer);
+                let renderElement: DrawingElement;
+                if (diagramLayer.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex) {
+                    if (objects[i].isPrint) {
+                        // tslint:disable-next-line:no-any
+                        renderElement = (this.pdfViewer.nameTable as any)[objects[i].id].wrapper;
+                        refreshDiagramElements(diagramLayer, [renderElement], this.renderer);
+                    }
+                } else {
+                    // tslint:disable-next-line:no-any
+                    renderElement = (this.pdfViewer.nameTable as any)[objects[i].id].wrapper;
+                    refreshDiagramElements(diagramLayer, [renderElement], this.renderer);
+                }
             }
         }
     }
@@ -2226,7 +2236,7 @@ export class Drawing {
                 for (let i: number = 0; i < children.length; i++) {
                     if (children[i].textNodes) {
                         if (actualObject.shapeAnnotationType === "FreeText") {
-                            if (node.dynamicText !== undefined) {
+                            if (node.dynamicText) {
                                 children[i].content = node.dynamicText;
                                 actualObject.dynamicText = node.dynamicText;
                             } else {

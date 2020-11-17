@@ -440,7 +440,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var ruleListElem = target.querySelector('.e-rule-list');
         var args;
         if (type === 'change') {
-            ruleElem = target.querySelector('#' + parentId);
+            ruleElem = target.querySelector('[id="' + parentId + '"]');
         }
         else {
             ruleElem = this.createElement('div', { attrs: { class: 'e-rule-container' } });
@@ -558,7 +558,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     popupHeight: ((this.columns.length > 5) ? height : 'auto'),
                     change: this.changeField.bind(this), value: rule ? rule.field : null
                 });
-                dropDownList.appendTo('#' + ruleElem.id + '_filterkey');
+                dropDownList.appendTo('[id="' + ruleElem.id + '_filterkey"]');
                 this.selectedColumn = dropDownList.getDataByValue(dropDownList.value);
                 if (Object.keys(rule).length) {
                     this.changeRule(rule, {
@@ -606,7 +606,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         else {
             var parentId = closest(element, '.e-rule-container').id;
             if (this.previousColumn && this.previousColumn.ruleTemplate) {
-                detach(element.closest('#' + parentId).querySelector('.e-rule-field'));
+                detach(element.closest('[id="' + parentId + '"]').querySelector('.e-rule-field'));
                 this.clearTemplate([parentId]);
             }
             if (column) {
@@ -1269,7 +1269,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     index: 0,
                     value: value
                 });
-                dropDownList.appendTo('#' + ruleId + '_operatorkey');
+                dropDownList.appendTo('[id="' + ruleId + '_operatorkey"]');
                 tempRule.operator = (rule && rule.operator !== '') ? rule.operator : operatorList[0].value;
                 if (this.isImportRules) {
                     tempRule.type = this.selectedColumn.type;
@@ -1462,7 +1462,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             close: this.closePopup.bind(this, i),
             actionBegin: this.multiSelectOpen.bind(this, parentId + '_valuekey' + i)
         });
-        multiSelectObj.appendTo('#' + parentId + '_valuekey' + i);
+        multiSelectObj.appendTo('[id="' + parentId + '_valuekey' + i + '"]');
         this.updateRules(multiSelectObj.element, selectedValue, 0);
     };
     QueryBuilder.prototype.multiSelectOpen = function (parentId, args) {
@@ -1615,7 +1615,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 placeholder: this.l10n.getConstant('SelectValue'),
                 input: this.changeValue.bind(this, idx)
             });
-            inputobj.appendTo('#' + parentId + '_valuekey' + idx);
+            inputobj.appendTo('[id="' + parentId + '_valuekey' + idx + '"]');
             inputobj.value = selectedValue;
             inputobj.dataBind();
         }
@@ -1641,7 +1641,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 placeholder: this.l10n.getConstant('SelectValue'),
                 input: this.changeValue.bind(this, idx)
             });
-            inputobj.appendTo('#' + parentId + '_valuekey' + idx);
+            inputobj.appendTo('[id="' + parentId + '_valuekey' + idx + '"]');
             inputobj.value = selVal;
             inputobj.dataBind();
         }
@@ -1660,7 +1660,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 step: itemData.step ? itemData.step : 1,
                 change: this.changeValue.bind(this, idx)
             });
-            numeric.appendTo('#' + parentId + '_valuekey' + idx);
+            numeric.appendTo('[id="' + parentId + '_valuekey' + idx + '"]');
         }
     };
     QueryBuilder.prototype.processValueString = function (value, type) {
@@ -1779,7 +1779,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                                     datepick = new DatePicker({ locale: this.getLocale(),
                                         value: selectedValue, placeholder: place, change: this.changeValue.bind(this, i) });
                                 }
-                                datepick.appendTo('#' + parentId + '_valuekey' + i);
+                                datepick.appendTo('[id="' + parentId + '_valuekey' + i + '"]');
                                 if (!rule.value) {
                                     this.updateRules(document.getElementById(parentId + '_valuekey' + i), selectedValue);
                                 }
@@ -1797,6 +1797,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(rule.type) && itemData) {
             rule.type = itemData.type;
         }
+        var label;
         if (itemData.values) {
             var values = itemData.values;
             if (rule.type === 'boolean' && !isNullOrUndefined(rule.value)) {
@@ -1808,7 +1809,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             else if (i === 0) {
                 isCheck = true;
             }
-            orgValue = value = values[i];
+            orgValue = value = label = values[i];
         }
         else {
             var values = [true, false];
@@ -1823,12 +1824,13 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
             value = values[i].toString();
             orgValue = values[i];
+            label = this.l10n.getConstant(['True', 'False'][i]);
         }
         var radiobutton = new RadioButton({
-            label: value, name: parentId + 'default', checked: isCheck, value: value,
+            label: label, name: parentId + 'default', checked: isCheck, value: value,
             change: this.changeValue.bind(this, i)
         });
-        radiobutton.appendTo('#' + parentId + '_valuekey' + i);
+        radiobutton.appendTo('[id="' + parentId + '_valuekey' + i + '"]');
         if (isCheck) {
             this.updateRules(radiobutton.element, orgValue, 0);
         }
@@ -1879,7 +1881,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
                 else {
-                    detach(target.nextElementSibling.querySelector('#' + parentId + '_valuekey0'));
+                    detach(target.nextElementSibling.querySelector('[id="' + parentId + '_valuekey0"]'));
                 }
             }
             if (isRender) {
@@ -2659,7 +2661,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             IsEmpty: 'Is Empty',
             IsNotEmpty: 'Is Not Empty',
             IsNull: 'Is Null',
-            IsNotNull: 'Is Not Null'
+            IsNotNull: 'Is Not Null',
+            True: 'true',
+            False: 'false'
         };
         this.l10n = new L10n('querybuilder', this.defaultLocale, this.locale);
         this.intl = new Internationalization(this.locale);

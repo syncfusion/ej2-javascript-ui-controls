@@ -39,9 +39,9 @@ export class ChartData {
         let mouseX: number; let mouseY: number;
         for (let len: number = chart.visibleSeries.length, i: number = len - 1; i >= 0; i--) {
             series = chart.visibleSeries[i];
-            width = (series.type === 'Scatter' || series.drawType === 'Scatter' || (!series.isRectSeries && series.marker.visible))
+            width = (series.type === 'Scatter' || series.drawType === 'Scatter' || (series.marker.visible))
                 ? (series.marker.height + 5) / 2 : 0;
-            height = (series.type === 'Scatter' || series.drawType === 'Scatter' || (!series.isRectSeries && series.marker.visible))
+            height = (series.type === 'Scatter' || series.drawType === 'Scatter' || (series.marker.visible))
                 ? (series.marker.width + 5) / 2 : 0;
             mouseX = chart.mouseX; mouseY = chart.mouseY;
             if (series.dragSettings.enable && series.isRectSeries) {
@@ -106,8 +106,8 @@ export class ChartData {
                     return point;
                 }
             }
-            if (series.dragSettings.enable && series.isRectSeries) {
-                if (this.rectRegion(x, y, point, rect, series)) {
+            if ((series.dragSettings.enable && series.isRectSeries) || (series.isRectSeries && series.marker.visible)) {
+                if (this.isPointInThresholdRegion(x, y, point, rect, series)) {
                     this.insideRegion = true;
                     return point;
                 }
@@ -138,14 +138,14 @@ export class ChartData {
         });
     }
     /**
-     * To find drag region for column and bar series
+     * To check the point in threshold region for column and bar series
      * @param x
      * @param y
      * @param point
      * @param rect
      * @param series
      */
-    private rectRegion(x: number, y: number, point: Points, rect: Rect, series: Series): boolean {
+    private isPointInThresholdRegion(x: number, y: number, point: Points, rect: Rect, series: Series): boolean {
         let isBar: boolean = series.type === 'Bar';
         let isInversed: boolean = series.yAxis.isInversed;
         let isTransposed: boolean = series.chart.isTransposed;

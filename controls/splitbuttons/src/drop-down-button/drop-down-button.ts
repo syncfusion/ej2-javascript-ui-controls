@@ -472,7 +472,8 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
 
     private mousedownHandler(e: MouseEvent): void {
         let trgt: HTMLElement = e.target as HTMLElement;
-        if (!this.canOpen() && !(closest(trgt, '#' + this.getPopUpElement().id) || closest(trgt, '#' + this.element.id))) {
+        if (!this.canOpen() && !(closest(trgt, '[id="' + this.getPopUpElement().id + '"]')
+            || closest(trgt, '[id="' + this.element.id + '"]'))) {
             this.closePopup(e);
         }
     }
@@ -480,14 +481,14 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     protected clickHandler(e: MouseEvent | KeyboardEventArgs): void {
         let trgt: HTMLElement = e.target as HTMLElement;
         let canOpen: boolean = this.canOpen();
-        if (closest(trgt, '#' + this.element.id)) {
+        if (closest(trgt, '[id="' + this.element.id + '"]')) {
             if (canOpen) {
                 this.openPopUp(e);
             } else {
                 this.closePopup(e, this.activeElem[0]);
             }
         } else {
-            if (closest(trgt, '#' + this.getPopUpElement().id)) {
+            if (closest(trgt, '[id="' + this.getPopUpElement().id + '"]')) {
                 let eventArgs: MenuEventArgs;
                 let liIdx: number;
                 let item: ItemModel;

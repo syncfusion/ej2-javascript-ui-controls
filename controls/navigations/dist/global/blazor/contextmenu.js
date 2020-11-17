@@ -1491,7 +1491,8 @@ var MenuBase = /** @class */ (function (_super) {
             this.isCMenu = false;
         }
     };
-    MenuBase.prototype.closeMenu = function (ulIndex, e) {
+    // tslint:disable-next-line:max-func-body-length
+    MenuBase.prototype.closeMenu = function (ulIndex, e, isIterated) {
         var _this = this;
         if (ulIndex === void 0) { ulIndex = 0; }
         if (e === void 0) { e = null; }
@@ -1569,9 +1570,19 @@ var MenuBase = /** @class */ (function (_super) {
                         _this.afterCloseMenu(e);
                     }
                     else if (isOpen && !_this.hamburgerMode && _this.navIdx.length && closedLi && !trgtLi) {
-                        _this.closeMenu(_this.navIdx[_this.navIdx.length - 1], e);
+                        var ele = e ? sf.base.closest(e.target, '.e-menu-wrapper') : null;
+                        if (ele) {
+                            ele = ele.querySelector('.e-menu-item');
+                            if (ele && _this.getIndex(ele.id, true).length <= _this.navIdx.length) {
+                                _this.closeMenu(_this.navIdx[_this.navIdx.length - 1], e, true);
+                            }
+                        }
+                        else {
+                            _this.closeMenu(_this.navIdx[_this.navIdx.length - 1], e);
+                        }
                     }
-                    else if (isOpen && !ulIndex && ((_this.hamburgerMode && _this.navIdx.length) || _this.navIdx.length === 1)) {
+                    else if (isOpen && !isIterated && !ulIndex && ((_this.hamburgerMode && _this.navIdx.length) ||
+                        _this.navIdx.length === 1)) {
                         _this.closeMenu(null, e);
                     }
                     else if (isOpen && sf.base.isNullOrUndefined(ulIndex) && _this.navIdx.length) {
@@ -2323,7 +2334,9 @@ var MenuBase = /** @class */ (function (_super) {
                     var cIdx = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
                     if (cIdx < this.navIdx.length) {
                         this.closeMenu(cIdx + 1, e);
-                        this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
+                        if (popupEle) {
+                            this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
+                        }
                     }
                 }
                 else if (this.isMenu && this.hamburgerMode && trgt.tagName === 'SPAN'

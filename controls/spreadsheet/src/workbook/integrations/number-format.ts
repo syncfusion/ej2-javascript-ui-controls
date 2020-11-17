@@ -165,7 +165,6 @@ export class WorkbookNumberFormat {
     }
 
     private autoDetectGeneralFormat(options: AutoDetectGeneralFormatArgs): { [key: string]: string | boolean } {
-        let range: number[] = getRangeIndexes(this.parent.getActiveSheet().activeCell);
         if (isNumber(options.fResult)) {
             if (options.args.format && options.args.format !== '') {
                 if (options.args.format.toString().indexOf('%') > -1) {
@@ -176,7 +175,7 @@ export class WorkbookNumberFormat {
                     options.fResult = this.applyNumberFormat(options.args, options.intl);
                 }
             }
-            if (options.fResult && options.fResult.toString().split(this.decimalSep)[0].length > 11) {
+            if (options.args.format === 'General' && options.fResult && options.fResult.toString().split(this.decimalSep)[0].length > 11) {
                 options.fResult = this.scientificFormat(options.args);
             }
             options.isRightAlign = true;

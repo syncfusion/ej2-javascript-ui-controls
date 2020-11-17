@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Observer, Property, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getValue, isBlazor, isNullOrUndefined, isObject, isUndefined, matches, merge, print, remove, removeClass, resetBlazorTemplate, setCulture, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Observer, Property, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getValue, isBlazor, isNullOrUndefined, isObject, isUndefined, matches, merge, print, remove, removeClass, resetBlazorTemplate, select, selectAll, setCulture, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil, Deferred, Predicate, Query, UrlAdaptor } from '@syncfusion/ej2-data';
 import { Dialog, Tooltip, calculatePosition, calculateRelativeBasedPosition, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, RadioButton, Switch, createCheckBox } from '@syncfusion/ej2-buttons';
@@ -3389,6 +3389,12 @@ class ContentRender {
                 let currentLen = dataSource.length;
                 if (prevLen === currentLen) {
                     for (let i = 0; i < currentLen; i++) {
+                        if (this.parent.editSettings.mode === 'Batch'
+                            && trs[i].classList.contains('e-insertedrow')) {
+                            trs.splice(i, 1);
+                            --i;
+                            continue;
+                        }
                         newKeys[dataSource[i][key]] = oldKeys[this.prevCurrentView[i][key]] = i;
                         newIndexes[i] = dataSource[i][key];
                         oldRowElements[oldRowObjs[i].uid] = trs[i];
@@ -3401,6 +3407,12 @@ class ContentRender {
                         newIndexes[i] = dataSource[i][key];
                     }
                     for (let i = 0; i < prevLen; i++) {
+                        if (this.parent.editSettings.mode === 'Batch'
+                            && trs[i].classList.contains('e-insertedrow')) {
+                            trs.splice(i, 1);
+                            --i;
+                            continue;
+                        }
                         oldRowElements[oldRowObjs[i].uid] = trs[i];
                         oldKeys[this.prevCurrentView[i][key]] = i;
                         oldIndexes[i] = this.prevCurrentView[i][key];
@@ -3415,7 +3427,7 @@ class ContentRender {
                         isEqual = this.objectEqualityChecker(this.prevCurrentView[i], dataSource[i]);
                     }
                     let tr = oldRowElements[oldRowObjs[oldIndex].uid];
-                    newRowObjs.push(gObj.getRowsObject()[oldIndex]);
+                    newRowObjs.push(oldRowObjs[oldIndex]);
                     if (this.rowElements[i] && this.rowElements[i].getAttribute('data-uid') === newRowObjs[i].uid
                         && ((hasBatch && isNullOrUndefined(batchChangeKeys[newIndexes[i]]))
                             || (!hasBatch && (isEqual || this.prevCurrentView[i] === dataSource[i])))) {
@@ -3493,6 +3505,9 @@ class ContentRender {
     refreshImmutableContent(index, tr, row) {
         row.isAltRow = this.parent.enableAltRow ? index % 2 !== 0 : false;
         row.isAltRow ? tr.classList.add('e-altrow') : tr.classList.remove('e-altrow');
+        row.index = index;
+        row.edit = undefined;
+        row.isDirty = false;
         tr.setAttribute('aria-rowindex', index.toString());
         this.updateCellIndex(tr, index);
     }
@@ -9022,9 +9037,9 @@ class Selection {
             if (rindex < this.parent.frozenRows) {
                 isFrozenRow = true;
             }
-            if (!parentsUntil(this.target, 'e-table').querySelector('#' + this.parent.element.id + '_autofill')) {
-                if (this.parent.element.querySelector('#' + this.parent.element.id + '_autofill')) {
-                    this.parent.element.querySelector('#' + this.parent.element.id + '_autofill').remove();
+            if (!select('#' + this.parent.element.id + '_autofill', parentsUntil(this.target, 'e-table'))) {
+                if (select('#' + this.parent.element.id + '_autofill', this.parent.element)) {
+                    select('#' + this.parent.element.id + '_autofill', this.parent.element).remove();
                 }
                 this.autofill = createElement('div', { className: 'e-autofill', id: this.parent.element.id + '_autofill' });
                 this.autofill.style.display = 'none';
@@ -16163,13 +16178,13 @@ class Print {
         if (!depth) {
             return;
         }
-        let groupCaption = element.querySelectorAll(`${id}captioncell.e-groupcaption`);
+        let groupCaption = selectAll(`${id}captioncell.e-groupcaption`, element);
         let colSpan = groupCaption[depth - 1].getAttribute('colspan');
         for (let i = 0; i < groupCaption.length; i++) {
             groupCaption[i].setAttribute('colspan', colSpan);
         }
-        let colGroups = element.querySelectorAll(`colgroup${id}colGroup`);
-        let contentColGroups = element.querySelector('.e-content').querySelectorAll('colgroup');
+        let colGroups = selectAll(`colgroup${id}colGroup`, element);
+        let contentColGroups = selectAll('.e-content colgroup', element);
         this.hideColGroup(colGroups, depth);
         this.hideColGroup(contentColGroups, depth);
     }
@@ -16691,9 +16706,9 @@ function isEditable(col, type, elem) {
 }
 /** @hidden */
 function isActionPrevent(inst) {
-    let dlg = inst.element.querySelector('#' + inst.element.id + 'EditConfirm');
+    let dlg = select('#' + inst.element.id + 'EditConfirm', inst.element);
     return inst.editSettings.mode === 'Batch' &&
-        (inst.element.querySelectorAll('.e-updatedtd').length) && inst.editSettings.showConfirmDialog &&
+        (selectAll('.e-updatedtd', inst.element).length) && inst.editSettings.showConfirmDialog &&
         (dlg ? dlg.classList.contains('e-popup-close') : true);
 }
 /** @hidden */
@@ -17948,9 +17963,9 @@ class CheckBoxFilterBase {
             this.searchBoxClick(e);
         }
         if (elem) {
-            let selectAll = elem.querySelector('.e-selectall');
-            if (selectAll) {
-                this.updateAllCBoxes(!selectAll.classList.contains('e-check'));
+            let selectAll$$1 = elem.querySelector('.e-selectall');
+            if (selectAll$$1) {
+                this.updateAllCBoxes(!selectAll$$1.classList.contains('e-check'));
             }
             else {
                 toogleCheckbox(elem.parentElement);
@@ -18049,9 +18064,9 @@ class CheckBoxFilterBase {
         if (data.length && !this.renderEmpty) {
             let selectAllValue = this.getLocalizedLabel('SelectAll');
             let checkBox = this.createCheckbox(selectAllValue, false, { [this.options.field]: selectAllValue });
-            let selectAll = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
-            selectAll.querySelector('.e-frame').classList.add('e-selectall');
-            cBoxes.appendChild(selectAll);
+            let selectAll$$1 = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
+            selectAll$$1.querySelector('.e-frame').classList.add('e-selectall');
+            cBoxes.appendChild(selectAll$$1);
             let predicate = new Predicate('field', 'equal', this.options.field);
             if (this.options.foreignKeyValue) {
                 predicate = predicate.or('field', 'equal', this.options.foreignKeyValue);
@@ -20394,7 +20409,7 @@ class PagerDropDown {
     convertValue(pageSizeValue) {
         let item = pageSizeValue;
         for (let i = 0; i < item.length; i++) {
-            item[i] = typeof item[i] === 'number' ? item[i].toString() : item[i];
+            item[i] = parseInt(item[i], 10) ? item[i].toString() : this.pagerModule.getLocalizedLabel(item[i]);
         }
         return item;
     }
@@ -26067,7 +26082,7 @@ class Toolbar$1 {
         }
     }
     bindSearchEvents() {
-        this.searchElement = this.element.querySelector('#' + this.gridID + '_searchbar');
+        this.searchElement = select('#' + this.gridID + '_searchbar', this.element);
         this.wireEvent();
         this.refreshToolbarItems();
         if (this.parent.searchSettings) {
@@ -26211,7 +26226,7 @@ class Toolbar$1 {
      */
     enableItems(items, isEnable) {
         for (let item of items) {
-            let element = this.element.querySelector('#' + item);
+            let element = select('#' + item, this.element);
             if (element) {
                 this.toolbar.enableItems(element.parentElement, isEnable);
             }
@@ -28948,7 +28963,7 @@ class EditRender {
         let fForm;
         let frzCols = gObj.getFrozenColumns();
         let form = gObj.editSettings.mode === 'Dialog' ?
-            document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper').querySelector('.e-gridform') :
+            select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) :
             gObj.element.querySelector('.e-gridform');
         if (frzCols && gObj.editSettings.mode === 'Normal') {
             let rowIndex = parseInt(args.row.getAttribute('aria-rowindex'), 10);
@@ -29274,7 +29289,7 @@ class DropDownEditCell {
     dropDownOpen(args) {
         let dlgElement = parentsUntil(this.obj.element, 'e-dialog');
         if (this.parent.editSettings.mode === 'Dialog' && !isNullOrUndefined(dlgElement)) {
-            let dlgObj = document.querySelector('#' + dlgElement.id).ej2_instances[0];
+            let dlgObj = select('#' + dlgElement.id, document).ej2_instances[0];
             args.popup.element.style.zIndex = (dlgObj.zIndex + 1).toString();
         }
     }
@@ -29571,7 +29586,7 @@ class NormalEdit {
             previousData: this.previousData, selectedRow: gObj.selectedRowIndex, foreignKeyData: {}
         });
         let isDlg = gObj.editSettings.mode === 'Dialog';
-        let dlgWrapper = document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper');
+        let dlgWrapper = select('#' + gObj.element.id + '_dialogEdit_wrapper', document);
         let dlgForm = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.querySelector('.e-gridform');
         let data = { virtualData: {}, isAdd: false };
         this.parent.notify(getVirtualData, data);
@@ -30880,7 +30895,7 @@ class BatchEdit {
             }
             this.renderer.update(cellEditArgs);
             this.parent.notify(batchEditFormRendered, cellEditArgs);
-            this.form = gObj.element.querySelector('#' + gObj.element.id + 'EditForm');
+            this.form = select('#' + gObj.element.id + 'EditForm', gObj.element);
             gObj.editModule.applyFormValidation([col]);
             this.parent.element.querySelector('.e-gridpopup').style.display = 'none';
         });
@@ -32016,7 +32031,7 @@ class Edit {
         let frzCols = gObj.getFrozenColumns();
         let form = this.parent.editSettings.mode !== 'Dialog' ?
             gObj.element.querySelector('.e-gridform') :
-            document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper').querySelector('.e-gridform');
+            select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document);
         let mForm = gObj.element.querySelectorAll('.e-gridform')[1];
         let rules = {};
         let mRules = {};
@@ -32087,7 +32102,7 @@ class Edit {
                 > (parseInt(closest(inputElement, '.e-row').getAttribute('aria-rowindex'), 10) || 0));
         }
         return this.parent.editSettings.mode !== 'Dialog' ? isFHdr ? this.parent.getHeaderTable() : this.parent.getContentTable() :
-            document.querySelector('#' + this.parent.element.id + '_dialogEdit_wrapper');
+            select('#' + this.parent.element.id + '_dialogEdit_wrapper', document);
     }
     validationComplete(args) {
         if (this.parent.isEdit) {
@@ -32143,7 +32158,7 @@ class Edit {
         }
         let table = isInline ?
             (isFHdr ? this.parent.getHeaderTable() : this.parent.getContentTable()) :
-            document.querySelector('#' + this.parent.element.id + '_dialogEdit_wrapper').querySelector('.e-dlg-content');
+            select('#' + this.parent.element.id + '_dialogEdit_wrapper .e-dlg-content', document);
         let client = table.getBoundingClientRect();
         let left = isInline ?
             this.parent.element.getBoundingClientRect().left : client.left;
@@ -32636,7 +32651,7 @@ class ColumnChooser {
         this.clearActions();
         this.parent.notify(columnChooserCancelBtnClick, { dialog: this.dlgObj });
     }
-    checkstatecolumn(isChecked, coluid, selectAll = false) {
+    checkstatecolumn(isChecked, coluid, selectAll$$1 = false) {
         if (isChecked) {
             if (this.hideColumn.indexOf(coluid) !== -1) {
                 this.hideColumn.splice(this.hideColumn.indexOf(coluid), 1);
@@ -32653,7 +32668,7 @@ class ColumnChooser {
                 this.hideColumn.push(coluid);
             }
         }
-        if (selectAll) {
+        if (selectAll$$1) {
             if (!isChecked) {
                 this.changedColumns.push(coluid);
             }
@@ -32734,8 +32749,8 @@ class ColumnChooser {
         let checkstate;
         let elem = parentsUntil(e.target, 'e-checkbox-wrapper');
         if (elem) {
-            let selectAll = elem.querySelector('.e-selectall');
-            if (selectAll) {
+            let selectAll$$1 = elem.querySelector('.e-selectall');
+            if (selectAll$$1) {
                 this.updateSelectAll(!elem.querySelector('.e-check'));
             }
             else {
@@ -32832,12 +32847,12 @@ class ColumnChooser {
         this.ulElement = this.parent.createElement('ul', { className: 'e-ccul-ele e-cc' });
         let selectAllValue = this.l10n.getConstant('SelectAll');
         let cclist = this.parent.createElement('li', { className: 'e-cclist e-cc e-cc-selectall' });
-        let selectAll = this.createCheckBox(selectAllValue, false, 'grid-selectAll');
+        let selectAll$$1 = this.createCheckBox(selectAllValue, false, 'grid-selectAll');
         if (gdCol.length) {
-            selectAll.querySelector('.e-checkbox-wrapper').firstElementChild.classList.add('e-selectall');
-            selectAll.querySelector('.e-frame').classList.add('e-selectall');
-            this.checkState(selectAll.querySelector('.e-icons'), true);
-            cclist.appendChild(selectAll);
+            selectAll$$1.querySelector('.e-checkbox-wrapper').firstElementChild.classList.add('e-selectall');
+            selectAll$$1.querySelector('.e-frame').classList.add('e-selectall');
+            this.checkState(selectAll$$1.querySelector('.e-icons'), true);
+            cclist.appendChild(selectAll$$1);
             this.ulElement.appendChild(cclist);
         }
         for (let i = 0; i < gdCol.length; i++) {

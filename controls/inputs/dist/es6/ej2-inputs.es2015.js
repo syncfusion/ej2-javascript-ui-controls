@@ -9391,7 +9391,8 @@ let Uploader = class Uploader extends Component {
             let eventArgs = {
                 event: e,
                 fileData: files,
-                cancel: false
+                cancel: false,
+                customFormData: []
             };
             this.trigger('canceling', eventArgs, (eventArgs) => {
                 if (eventArgs.cancel) {
@@ -9412,6 +9413,7 @@ let Uploader = class Uploader extends Component {
                         let name = this.element.getAttribute('name');
                         formData.append(name, files.name);
                         formData.append('cancel-uploading', files.name);
+                        this.updateFormData(formData, eventArgs.customFormData);
                         let ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
                         ajax.emitError = false;
                         ajax.onLoad = (e) => { this.removecanceledFile(e, files); return {}; };
@@ -9858,7 +9860,7 @@ let Uploader = class Uploader extends Component {
                 metaData.file.statusCode = '3';
             }
             if (metaData.file.statusCode === '5') {
-                let eventArgs = { event: e, fileData: metaData.file, cancel: false };
+                let eventArgs = { event: e, fileData: metaData.file, cancel: false, customFormData: [] };
                 this.trigger('canceling', eventArgs, (eventArgs) => {
                     /* istanbul ignore next */
                     if (eventArgs.cancel) {
@@ -9878,6 +9880,7 @@ let Uploader = class Uploader extends Component {
                         formData.append(name, metaData.file.name);
                         formData.append('cancel-uploading', metaData.file.name);
                         formData.append('cancelUploading', metaData.file.name);
+                        this.updateFormData(formData, eventArgs.customFormData);
                         let ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
                         ajax.emitError = false;
                         ajax.onLoad = (e) => { this.removeChunkFile(e, metaData, custom); return {}; };
@@ -12443,7 +12446,7 @@ let ColorPicker = class ColorPicker extends Component {
         }
         else {
             this.removeTileSelection();
-            let ele = select('span[aria-label="' + this.roundValue(newProp) + '"]', this.container);
+            let ele = this.container.querySelector('span[aria-label="' + this.roundValue(newProp) + '"]');
             if (ele) {
                 this.addTileSelection(ele);
             }

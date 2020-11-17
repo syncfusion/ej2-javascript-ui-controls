@@ -153,20 +153,24 @@ export class Clipboard {
         }
         let rfshRange: number[];
         /* tslint:disable-next-line */
-        let isExternal: DataTransfer = !this.copiedInfo && ((args && args.clipboardData) || window['clipboardData']);
+        let isExternal: DataTransfer | boolean = ((args && args.clipboardData) || window['clipboardData']);
         let copiedIdx: number = this.getCopiedIdx();
         let isCut: boolean;
         let copyInfo: { range: number[], sId: number, isCut: boolean } = Object.assign({}, this.copiedInfo);
-        if (this.copiedInfo || isExternal || this.copiedShapeInfo) {
+        if (isExternal || this.copiedShapeInfo) {
             let cSIdx: number = (args && args.sIdx > -1) ? args.sIdx : this.parent.activeSheetIndex;
             let curSheet: SheetModel = getSheet(this.parent, cSIdx);
             let selIdx: number[] = getSwapRange(args && args.range || getRangeIndexes(curSheet.selectedRange));
-            let rows: RowModel[] = isExternal && this.getExternalCells(args);
-            if (isExternal && !rows.length) { // If image pasted
+            let rows: RowModel[] | { internal: boolean } = isExternal && this.getExternalCells(args);
+            if ((rows as { internal: boolean }).internal) {
+                isExternal = false;
+                if (!this.copiedInfo) { return; }
+            }
+            if (isExternal && !(rows as RowModel[]).length) { // If image pasted
                 return;
             }
             let rowIdx: number = selIdx[0]; let cIdx: number[] = isExternal
-                ? [0, 0, rows.length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedShapeInfo ?
+                ? [0, 0, (rows as RowModel[]).length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedShapeInfo ?
                     getRangeIndexes(curSheet.selectedRange) : this.copiedInfo.range);
             let isRepeative: boolean = (selIdx[2] - selIdx[0] + 1) % (cIdx[2] - cIdx[0] + 1) === 0
                 && (selIdx[3] - selIdx[1] + 1) % (cIdx[3] - cIdx[1] + 1) === 0;
@@ -191,7 +195,7 @@ export class Clipboard {
             let prevSheet: SheetModel = getSheet(this.parent, isExternal ? cSIdx : copiedIdx);
             selIdx = getRangeIndexes(beginEventArgs.pastedRange);
             rowIdx = selIdx[0]; cIdx = isExternal
-                ? [0, 0, rows.length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedShapeInfo ?
+                ? [0, 0, (rows as RowModel[]).length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedShapeInfo ?
                     getRangeIndexes(curSheet.selectedRange) : this.copiedInfo.range);
             isRepeative = (selIdx[2] - selIdx[0] + 1) % (cIdx[2] - cIdx[0] + 1) === 0 && (selIdx[3] - selIdx[1] + 1) %
                 (cIdx[3] - cIdx[1] + 1) === 0;
@@ -235,7 +239,7 @@ export class Clipboard {
                                     break;
                                 case 'Values':
                                     cell = { value: cell.value };
-                                    if (cell.value.indexOf('\n') > -1) {
+                                    if (cell.value && cell.value.toString().indexOf('\n') > -1) {
                                         let ele: Element = this.parent.getCell(selIdx[0], selIdx[1]);
                                         ele.classList.add('e-alt-unwrap');
                                     }
@@ -285,6 +289,9 @@ export class Clipboard {
                     }
                     this.clearCopiedInfo();
                     this.cutInfo = isCut;
+                }
+                if (isExternal && this.copiedInfo) {
+                    this.clearCopiedInfo();
                 }
                 if (isExternal || (args && args.isAction)) {
                     this.parent.element.focus();
@@ -491,7 +498,7 @@ export class Clipboard {
         let text: string = '';
         let range: number[] = this.copiedInfo.range;
         let sheet: SheetModel = this.parent.getActiveSheet();
-        let data: string = '<html><body><table xmlns="http://www.w3.org/1999/xhtml"><tbody>';
+        let data: string = '<html><body><table class="e-spreadsheet" xmlns="http://www.w3.org/1999/xhtml"><tbody>';
         for (let i: number = range[0]; i <= range[2]; i++) {
             data += '<tr>';
             for (let j: number = range[1]; j <= range[3]; j++) {
@@ -536,10 +543,10 @@ export class Clipboard {
         }
     }
 
-    private getExternalCells(args: ClipboardEvent): RowModel[] {
+    private getExternalCells(args: ClipboardEvent): RowModel[] | { internal: boolean } {
         let html: string;
         let text: string;
-        let rows: RowModel[] = [];
+        let rows: RowModel[] | { internal: boolean } = [];
         let cells: CellModel[] = [];
         let cellStyle: CellStyleModel;
         let ele: Element = this.parent.createElement('span');
@@ -552,14 +559,18 @@ export class Clipboard {
             ele.innerHTML = html;
         }
         if (ele.querySelector('table')) {
-            ele.querySelectorAll('tr').forEach((tr: Element) => {
-                tr.querySelectorAll('td').forEach((td: Element, j: number) => {
-                    td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
-                    cells[j] = { value: td.textContent, style: this.getStyle(td, ele) };
+            if (ele.querySelector('.e-spreadsheet')) {
+                rows = { internal: true };
+            } else {
+                ele.querySelectorAll('tr').forEach((tr: Element) => {
+                    tr.querySelectorAll('td').forEach((td: Element, j: number) => {
+                        td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
+                        cells[j] = { value: td.textContent, style: this.getStyle(td, ele) };
+                    });
+                    (rows as RowModel[]).push({ cells: cells });
+                    cells = [];
                 });
-                rows.push({ cells: cells });
-                cells = [];
-            });
+            }
         } else if (text) {
             if (html) {
                 [].slice.call(ele.children).forEach((child: Element) => {
@@ -577,7 +588,7 @@ export class Clipboard {
                         cells[j].value = col;
                     }
                 });
-                rows.push({ cells: cells });
+                (rows as RowModel[]).push({ cells: cells });
                 cells = [];
             });
         }

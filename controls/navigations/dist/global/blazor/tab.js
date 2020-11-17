@@ -1847,6 +1847,110 @@ var Tab = /** @class */ (function (_super) {
             }
         }
     };
+    Tab.prototype.refreshActiveTab = function () {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
+        if (!this.isTemplate) {
+            if (this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE)) {
+                sf.base.detach(this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE).children[0]);
+                sf.base.detach(this.element.querySelector('.' + CLS_CONTENT).querySelector('.' + CLS_ACTIVE).children[0]);
+                var checkValues = this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE).id;
+                var num = checkValues.indexOf('_');
+                var checkValue_1 = parseInt(checkValues.substring(num + 1), 10);
+                var i_2 = 0;
+                var id_1;
+                [].slice.call(this.element.querySelectorAll('.' + CLS_TB_ITEM)).forEach(function (elem) {
+                    var idValue = ((elem.id).indexOf('_'));
+                    id_1 = parseInt(elem.id.substring(idValue + 1), 10);
+                    if (id_1 < checkValue_1) {
+                        i_2++;
+                    }
+                });
+                var item = this.items[i_2];
+                var txtWrap = void 0;
+                var pos = (sf.base.isNullOrUndefined(item.header) || sf.base.isNullOrUndefined(item.header.iconPosition)) ? '' : item.header.iconPosition;
+                var css = (sf.base.isNullOrUndefined(item.header) || sf.base.isNullOrUndefined(item.header.iconCss)) ? '' : item.header.iconCss;
+                var text = item.headerTemplate || item.header.text;
+                txtWrap = this.createElement('div', { className: CLS_TEXT, attrs: { 'role': 'presentation' } });
+                if (!sf.base.isNullOrUndefined(text.tagName)) {
+                    txtWrap.appendChild(text);
+                }
+                else {
+                    this.headerTextCompile(txtWrap, text, i_2);
+                }
+                var tEle = void 0;
+                var icon = this.createElement('span', {
+                    className: CLS_ICONS + ' ' + CLS_TAB_ICON + ' ' + CLS_ICON + '-' + pos + ' ' + css
+                });
+                var tConts = this.createElement('div', { className: CLS_TEXT_WRAP });
+                tConts.appendChild(txtWrap);
+                if ((text !== '' && text !== undefined) && css !== '') {
+                    if ((pos === 'left' || pos === 'top')) {
+                        tConts.insertBefore(icon, tConts.firstElementChild);
+                    }
+                    else {
+                        tConts.appendChild(icon);
+                    }
+                    tEle = txtWrap;
+                    this.isIconAlone = false;
+                }
+                else {
+                    tEle = ((css === '') ? txtWrap : icon);
+                    if (tEle === icon) {
+                        sf.base.detach(txtWrap);
+                        tConts.appendChild(icon);
+                        this.isIconAlone = true;
+                    }
+                }
+                var wrapAtt = (item.disabled) ? {} : { tabIndex: '-1' };
+                tConts.appendChild(this.btnCls.cloneNode(true));
+                var wraper = this.createElement('div', { className: CLS_WRAP, attrs: wrapAtt });
+                wraper.appendChild(tConts);
+                if (pos === 'top' || pos === 'bottom') {
+                    this.element.classList.add('e-vertical-icon');
+                }
+                this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE).appendChild(wraper);
+                var crElem = this.createElement('div', { innerHTML: item.content });
+                this.element.querySelector('.' + CLS_ITEM + '.' + CLS_ACTIVE).appendChild(crElem);
+            }
+        }
+        else {
+            var tabItems = this.element.querySelector('.' + CLS_TB_ITEMS);
+            var element = this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE);
+            var id = element.id;
+            var num = (id.indexOf('_'));
+            var index = parseInt(id.substring(num + 1), 10);
+            var header = element.innerText;
+            var detachContent = this.element.querySelector('.' + CLS_CONTENT).querySelector('.' + CLS_ACTIVE).children[0];
+            var mainContents = detachContent.innerHTML;
+            sf.base.detach(element);
+            sf.base.detach(detachContent);
+            var attr = {
+                className: CLS_TB_ITEM + ' ' + CLS_TEMPLATE + ' ' + CLS_ACTIVE, id: CLS_ITEM + this.tabId + '_' + index,
+                attrs: {
+                    role: 'tab', 'aria-controls': CLS_CONTENT + this.tabId + '_' + index,
+                    'aria-disabled': 'false', 'aria-selected': 'true'
+                }
+            };
+            var txtString = this.createElement('span', {
+                className: CLS_TEXT, innerHTML: header, attrs: { 'role': 'presentation' }
+            }).outerHTML;
+            var conte = this.createElement('div', {
+                className: CLS_TEXT_WRAP, innerHTML: txtString + this.btnCls.outerHTML
+            }).outerHTML;
+            var wrap = this.createElement('div', { className: CLS_WRAP, innerHTML: conte, attrs: { tabIndex: '-1' } });
+            tabItems.insertBefore(this.createElement('div', attr), tabItems.children[index + 1]);
+            this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE).appendChild(wrap);
+            var crElem = this.createElement('div', { innerHTML: mainContents });
+            this.element.querySelector('.' + CLS_CONTENT).querySelector('.' + CLS_ACTIVE).appendChild(crElem);
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
+    };
     __decorate([
         sf.base.Collection([], TabItem)
     ], Tab.prototype, "items", void 0);

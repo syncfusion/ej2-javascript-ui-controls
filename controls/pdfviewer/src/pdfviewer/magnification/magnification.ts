@@ -423,7 +423,7 @@ export class Magnification {
         if (this.pdfViewerBase.pageSize.length > 0) {
             // tslint:disable-next-line:max-line-length
             this.pdfViewerBase.pageContainer.style.height = this.topValue + this.pdfViewerBase.getPageHeight(this.pdfViewerBase.pageSize.length - 1) + 'px';
-            // tslint:disable-next-line 
+            // tslint:disable-next-line
             let proxy: any = this;
             this.pdfViewerBase.renderedPagesList = [];
             this.pdfViewerBase.pinchZoomStorage = [];

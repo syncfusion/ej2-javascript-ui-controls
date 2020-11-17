@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.50 (2020-11-17)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#285393` - This issue "Connector Target Point connection is not connected properly in line distribution" has been fixed.
+
 ## 18.3.48 (2020-11-11)
 
 ### Diagram

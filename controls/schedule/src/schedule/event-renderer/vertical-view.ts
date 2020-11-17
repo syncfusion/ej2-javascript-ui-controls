@@ -586,7 +586,7 @@ export class VerticalEvent extends EventBase {
             let recordStart: Date = record[fieldMapping.startTime] as Date;
             let recordEnd: Date = record[fieldMapping.endTime] as Date;
             this.overlapList = appointmentList.filter((data: { [key: string]: Object }) =>
-                (data[fieldMapping.endTime] > recordStart && data[fieldMapping.startTime] < recordEnd) ||
+                (data[fieldMapping.endTime] > recordStart && data[fieldMapping.startTime] <= recordEnd) ||
                 (data[fieldMapping.startTime] >= recordEnd && data[fieldMapping.endTime] <= recordStart));
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 this.overlapList = this.filterEventsByResource(this.resources[resource], this.overlapList);

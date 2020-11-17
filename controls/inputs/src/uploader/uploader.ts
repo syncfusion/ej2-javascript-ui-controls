@@ -433,6 +433,11 @@ export interface CancelEventArgs {
      * Returns the file details that will be canceled.
      */
     fileData: FileInfo;
+    /**
+     * Defines the additional data in key and value pair format that will be submitted when the upload is cancelled.
+     * @blazorType object
+     */
+    customFormData: { [key: string]: Object }[];
 }
 
 export interface PauseResumeEventArgs {
@@ -2866,7 +2871,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             let eventArgs: CancelEventArgs = {
                 event: e,
                 fileData: files,
-                cancel: false
+                cancel: false,
+                customFormData : []
             };
             this.trigger('canceling', eventArgs, (eventArgs: CancelEventArgs) => {
                 if (eventArgs.cancel) {
@@ -2886,6 +2892,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                         let name: string = this.element.getAttribute('name');
                         formData.append(name, files.name);
                         formData.append('cancel-uploading', files.name);
+                        this.updateFormData(formData, eventArgs.customFormData);
                         let ajax: Ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
                         ajax.emitError = false;
                         ajax.onLoad = (e: Event): object => { this.removecanceledFile(e, files); return {}; };
@@ -3338,7 +3345,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 metaData.file.statusCode = '3';
             }
             if (metaData.file.statusCode === '5') {
-                let eventArgs: CancelEventArgs = { event: e, fileData: metaData.file, cancel: false };
+                let eventArgs: CancelEventArgs = { event: e, fileData: metaData.file, cancel: false, customFormData: [] };
                 this.trigger('canceling', eventArgs, (eventArgs: CancelEventArgs) => {
                     /* istanbul ignore next */
                     if (eventArgs.cancel) {
@@ -3357,6 +3364,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                         formData.append(name, metaData.file.name);
                         formData.append('cancel-uploading', metaData.file.name);
                         formData.append('cancelUploading', metaData.file.name);
+                        this.updateFormData(formData, eventArgs.customFormData);
                         let ajax: Ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
                         ajax.emitError = false;
                         ajax.onLoad = (e: Event): object => { this.removeChunkFile(e, metaData, custom); return {}; };

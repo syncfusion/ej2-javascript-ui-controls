@@ -1636,7 +1636,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
 
     private renderLegend(): void {
-        if (this.legendModule && this.legendModule.legendCollections.length) {
+        if (this.legendModule && this.legendModule.legendCollections.length && this.legendSettings.visible) {
             this.legendModule.calTotalPage = true;
             let borderWidth: number = this.legendSettings.border.width;
             let bounds: Rect = this.legendModule.legendBounds;
@@ -1965,7 +1965,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let top: number = margin.top + subTitleHeight + titleHeight + this.chartArea.border.width * 0.5;
         let height: number = this.availableSize.height - top - this.border.width - margin.bottom;
         this.initialClipRect = new Rect(left, top, width, height);
-        if (this.legendModule) {
+        if (this.legendModule && this.legendSettings.visible) {
             this.legendModule.calculateLegendBounds(this.initialClipRect, this.availableSize, null);
         }
         this.chartAxisLayoutPanel.measureAxis(this.initialClipRect);

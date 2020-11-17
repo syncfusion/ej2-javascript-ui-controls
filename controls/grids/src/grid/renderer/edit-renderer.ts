@@ -4,7 +4,7 @@ import { Column } from '../models/column';
 import { InlineEditRender } from './inline-edit-renderer';
 import { BatchEditRender } from './batch-edit-renderer';
 import { DialogEditRender } from './dialog-edit-renderer';
-import { attributes, classList, isBlazor } from '@syncfusion/ej2-base';
+import { attributes, classList, isBlazor, select } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import { CellType } from '../base/enum';
 import { CellRendererFactory } from '../services/cell-render-factory';
@@ -62,7 +62,7 @@ export class EditRender {
         let fForm: Element;
         let frzCols: number = gObj.getFrozenColumns();
         let form: Element = gObj.editSettings.mode === 'Dialog' ?
-        document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper').querySelector('.e-gridform') :
+        select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) :
         gObj.element.querySelector('.e-gridform');
         if (frzCols && gObj.editSettings.mode === 'Normal') {
             let rowIndex: number = parseInt(args.row.getAttribute('aria-rowindex'), 10);

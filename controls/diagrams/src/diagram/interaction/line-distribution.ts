@@ -583,20 +583,23 @@ export class LineDistribution {
             let internalConnector: Connector = diagram.nameTable[connectors[i]];
             internalConnector[obstacleCollection] = [];
 
-            let targetNodePort: PointPortModel = findPort(node, inConnectors ? internalConnector.targetPortID : internalConnector.sourcePortID);
+            let newPort: PointPortModel = findPort(node, inConnectors ? internalConnector.targetPortID : internalConnector.sourcePortID);
             let direction: string = targetDirection;
-            if (targetNodePort === undefined) {
-                targetNodePort = new PointPort(node, 'ports', '', true);
-                targetNodePort.id = randomId() + '_LineDistribution';
-                inConnectors ? internalConnector.targetPortID : internalConnector.sourcePortID = targetNodePort.id;
-
+            if (newPort === undefined) {
+                newPort = new PointPort(node, 'ports', '', true);
+                newPort.id = randomId() + '_LineDistribution';
+                if (inConnectors) {
+                    internalConnector.targetPortID = newPort.id;
+                } else {
+                    internalConnector.sourcePortID = newPort.id;
+                }
             }
-            this.portOffsetCalculation(targetNodePort, connectors.length, direction, i);
-            node.ports.push(targetNodePort);
+            this.portOffsetCalculation(newPort, connectors.length, direction, i);
+            node.ports.push(newPort);
             let portWrapper: DiagramElement = (node as Node).initPortWrapper((node as NodeModel).ports[node.ports.length - 1] as Port);
             node.wrapper.children.push(portWrapper);
             diagram.connectorPropertyChange(internalConnector, inConnectors ? { targetPortID: '' } as Connector : { sourcePortID: '' } as Connector,
-                inConnectors ? { targetPortID: targetNodePort.id } as Connector : { sourcePortID: targetNodePort.id } as Connector);
+                inConnectors ? { targetPortID: newPort.id } as Connector : { sourcePortID: newPort.id } as Connector);
         }
     }
     /* tslint:enable */

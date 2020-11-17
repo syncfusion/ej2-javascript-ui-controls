@@ -1,4 +1,4 @@
-import { KeyboardEventArgs, L10n, closest, addClass } from '@syncfusion/ej2-base';
+import { KeyboardEventArgs, L10n, closest, addClass, select } from '@syncfusion/ej2-base';
 import { extend, getValue, resetBlazorTemplate, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { remove } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -781,7 +781,7 @@ export class Edit implements IAction {
         let frzCols: number = gObj.getFrozenColumns();
         let form: HTMLFormElement = this.parent.editSettings.mode !== 'Dialog' ?
         gObj.element.querySelector('.e-gridform') as HTMLFormElement :
-        document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper').querySelector('.e-gridform') as HTMLFormElement;
+        select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) as HTMLFormElement;
         let mForm: HTMLFormElement = gObj.element.querySelectorAll('.e-gridform')[1] as HTMLFormElement;
         let rules: Object = {};
         let mRules: Object = {};
@@ -851,7 +851,7 @@ export class Edit implements IAction {
                 > (parseInt(closest(inputElement, '.e-row').getAttribute('aria-rowindex'), 10) || 0));
         }
         return this.parent.editSettings.mode !== 'Dialog' ? isFHdr ? this.parent.getHeaderTable() : this.parent.getContentTable() :
-            document.querySelector('#' + this.parent.element.id + '_dialogEdit_wrapper');
+            select('#' + this.parent.element.id + '_dialogEdit_wrapper', document);
     }
 
     private validationComplete(args: { status: string, inputName: string, element: HTMLElement, message: string }): void {
@@ -908,7 +908,7 @@ export class Edit implements IAction {
         }
         let table: Element = isInline ?
             (isFHdr ? this.parent.getHeaderTable() : this.parent.getContentTable()) :
-            document.querySelector('#' + this.parent.element.id + '_dialogEdit_wrapper').querySelector('.e-dlg-content');
+            select('#' + this.parent.element.id + '_dialogEdit_wrapper .e-dlg-content', document);
         let client: ClientRect = table.getBoundingClientRect();
         let left: number = isInline ?
             this.parent.element.getBoundingClientRect().left : client.left;

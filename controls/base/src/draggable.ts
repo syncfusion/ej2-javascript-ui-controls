@@ -713,10 +713,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 draEleTop -= this.parentScrollY;
                 draEleLeft -= this.parentScrollX;
             }
-            // Accuracy issue - while drag faster, Cursor and clone element have some distance gap
-            if (this.position.top !== draEleTop) {
-                draEleTop = this.position.top;
-            }
         }
 
         let dragValue: DragPosition = this.getProcessedPositionValue({ top: draEleTop + 'px', left: draEleLeft + 'px' });

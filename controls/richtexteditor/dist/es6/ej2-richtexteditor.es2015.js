@@ -14064,13 +14064,19 @@ class XhtmlValidation {
     }
     enableXhtmlValidation() {
         if (this.parent.enableXhtml) {
-            this.clean(this.parent.inputElement);
+            if (isNullOrUndefined(this.parent.inputElement)) {
+                this.currentElement = this.parent.element;
+            }
+            else {
+                this.currentElement = this.parent.inputElement;
+            }
+            this.clean(this.currentElement);
             this.AddRootElement();
             this.ImageTags();
             this.removeTags();
             this.RemoveUnsupported();
-            this.parent.inputElement.innerHTML = this.selfEncloseValidation(this.parent.inputElement.innerHTML);
-            this.parent.setProperties({ value: this.parent.inputElement.innerHTML }, true);
+            this.currentElement.innerHTML = this.selfEncloseValidation(this.currentElement.innerHTML);
+            this.parent.setProperties({ value: this.currentElement.innerHTML }, true);
         }
     }
     /**
@@ -14104,13 +14110,13 @@ class XhtmlValidation {
         return currentValue;
     }
     AddRootElement() {
-        if ((this.parent.inputElement.childNodes.length === 1 && this.parent.inputElement.firstChild.nodeName !== 'DIV') ||
-            this.parent.inputElement.childNodes.length > 1) {
+        if ((this.currentElement.childNodes.length === 1 && this.currentElement.firstChild.nodeName !== 'DIV') ||
+            this.currentElement.childNodes.length > 1) {
             let parentEle = this.parent.createElement('div');
-            while (this.parent.inputElement.childNodes.length > 0) {
-                parentEle.appendChild(this.parent.inputElement.childNodes[0]);
+            while (this.currentElement.childNodes.length > 0) {
+                parentEle.appendChild(this.currentElement.childNodes[0]);
             }
-            this.parent.inputElement.appendChild(parentEle);
+            this.currentElement.appendChild(parentEle);
         }
     }
     ;
@@ -14125,10 +14131,10 @@ class XhtmlValidation {
                 this.clean(child);
             }
         }
-        return this.parent.inputElement.innerHTML;
+        return this.currentElement.innerHTML;
     }
     ImageTags() {
-        let imgNodes = this.parent.inputElement.querySelectorAll('IMG');
+        let imgNodes = this.currentElement.querySelectorAll('IMG');
         for (let i = imgNodes.length - 1; i >= 0; i--) {
             if (!imgNodes[i].hasAttribute('alt')) {
                 let img = imgNodes[i];
@@ -14145,7 +14151,7 @@ class XhtmlValidation {
     }
     ;
     RemoveElementNode(rmvNode, parentNode) {
-        let parentArray = this.parent.inputElement.querySelectorAll(parentNode);
+        let parentArray = this.currentElement.querySelectorAll(parentNode);
         for (let i = 0; i < parentArray.length; i++) {
             let rmvArray = parentArray[i].querySelectorAll(rmvNode);
             for (let j = rmvArray.length; j > 0; j--) {
@@ -14155,7 +14161,7 @@ class XhtmlValidation {
     }
     ;
     RemoveUnsupported() {
-        let underlineEle = this.parent.inputElement.querySelectorAll('u');
+        let underlineEle = this.currentElement.querySelectorAll('u');
         for (let i = underlineEle.length - 1; i >= 0; i--) {
             let spanEle = this.parent.createElement('span');
             spanEle.style.textDecoration = 'underline';
@@ -14163,7 +14169,7 @@ class XhtmlValidation {
             underlineEle[i].parentNode.insertBefore(spanEle, underlineEle[i]);
             detach(underlineEle[i]);
         }
-        let strongEle = this.parent.inputElement.querySelectorAll('strong');
+        let strongEle = this.currentElement.querySelectorAll('strong');
         for (let i = strongEle.length - 1; i >= 0; i--) {
             let boldEle = this.parent.createElement('b');
             boldEle.innerHTML = strongEle[i].innerHTML;
@@ -14178,10 +14184,10 @@ class XhtmlValidation {
     }
     ;
     RemoveAttributeByName(attrName) {
-        if (this.parent.inputElement.firstChild !== null) {
-            if (this.parent.inputElement.firstChild.nodeType !== 3) {
-                for (let i = 0; i < this.parent.inputElement.childNodes.length; i++) {
-                    let ele = this.parent.inputElement.childNodes[i];
+        if (this.currentElement.firstChild !== null) {
+            if (this.currentElement.firstChild.nodeType !== 3) {
+                for (let i = 0; i < this.currentElement.childNodes.length; i++) {
+                    let ele = this.currentElement.childNodes[i];
                     if (ele.nodeType !== 3 && ele.nodeName !== 'TABLE' && ele.nodeName !== 'TBODY' && ele.nodeName !== 'THEAD' &&
                         ele.nodeName !== 'TH' && ele.nodeName !== 'TR' && ele.nodeName !== 'TD') {
                         if (ele.hasAttribute(attrName)) {
@@ -18476,7 +18482,7 @@ class Table {
                     proxy.removeTable(selection, event, true);
                 }
                 else if (ele && ele.querySelectorAll('table').length > 0) {
-                    this.removeResizeEle();
+                    this.removeResizeElement();
                 }
             }
             if (ele && ele.tagName !== 'TD' && ele.tagName !== 'TH') {
@@ -18766,7 +18772,7 @@ class Table {
             target.removeAttribute('class');
             addClass([target], CLS_TABLE_SEL);
             this.curTable = (this.curTable) ? this.curTable : closest(target, 'table');
-            this.removeResizeEle();
+            this.removeResizeElement();
             if (this.helper && this.contentModule.getEditPanel().contains(this.helper)) {
                 detach(this.helper);
             }
@@ -18782,7 +18788,7 @@ class Table {
             this.curTable = (closestTable && this.parent.contentModule.getEditPanel().contains(closestTable))
                 && (target.nodeName === 'TD' || target.nodeName === 'TH') ?
                 closestTable : target;
-            this.removeResizeEle();
+            this.removeResizeElement();
             this.tableResizeEleCreation(this.curTable, e);
         }
     }
@@ -18833,7 +18839,7 @@ class Table {
         }
         this.contentModule.getEditPanel().appendChild(tableReBox);
     }
-    removeResizeEle() {
+    removeResizeElement() {
         let item = this.parent.contentModule.getEditPanel().
             querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box');
         if (item.length > 0) {
@@ -19048,7 +19054,7 @@ class Table {
     cancelResizeAction() {
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd);
-        this.removeResizeEle();
+        this.removeResizeElement();
     }
     resizeEnd(e) {
         this.resizeBtnInit();
@@ -19059,7 +19065,7 @@ class Table {
             if (!Browser.isDevice) {
                 EventHandler.add(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper, this);
             }
-            this.removeResizeEle();
+            this.removeResizeElement();
             if (this.helper && this.contentModule.getEditPanel().contains(this.helper)) {
                 detach(this.helper);
                 this.helper = null;
@@ -19106,7 +19112,7 @@ class Table {
         };
         this.parent.formatter.process(this.parent, (delKey) ? cmd : args, args.originalEvent, value);
         this.contentModule.getEditPanel().focus();
-        this.removeResizeEle();
+        this.removeResizeElement();
         this.hideTableQuickToolbar();
     }
     renderDlgContent(args) {
@@ -19194,7 +19200,7 @@ class Table {
         }
         if (target && target.classList && !target.classList.contains(CLS_TB_COL_RES) &&
             !target.classList.contains(CLS_TB_ROW_RES) && !target.classList.contains(CLS_TB_BOX_RES)) {
-            this.removeResizeEle();
+            this.removeResizeElement();
         }
     }
     drawTable(tableDiv, args) {
@@ -21479,6 +21485,9 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     getUpdatedValue() {
         let value;
+        if (!isNullOrUndefined(this.tableModule)) {
+            this.tableModule.removeResizeElement();
+        }
         let getTextArea = this.element.querySelector('.e-rte-srctextarea');
         if (this.editorMode === 'HTML') {
             value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?

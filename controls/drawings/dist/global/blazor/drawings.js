@@ -1148,11 +1148,11 @@ function wrapSvgText(text, textValue) {
                 }
                 else {
                     txtValue = txtValue + (content[k + 1] || '');
-                    if (txtValue.indexOf('\n') > -1) {
-                        txtValue = txtValue.replace('\n', '');
-                    }
+                    // if (txtValue.indexOf('\n') > -1) {
+                    //     txtValue = txtValue.replace('\n', '');
+                    // }
                     var width = bBoxText(txtValue, text);
-                    if (Math.ceil(width) + 2 >= text.width && txtValue.length > 0) {
+                    if ((Math.ceil(width) + 2 >= text.width && txtValue.length > 0) || (txtValue.indexOf('\n') > -1)) {
                         childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: width };
                         txtValue = '';
                     }
@@ -4644,7 +4644,5 @@ exports.getString = getString;
 return exports;
 
 });
-sfBlazor.libs.push("drawings")
-sfBlazor.loadDependencies(["base"], () => {
+
     sf.drawings = sf.drawings({});
-});

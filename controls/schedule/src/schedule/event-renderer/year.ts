@@ -189,9 +189,16 @@ export class YearEvent extends TimelineEvent {
         this.cellHeight = td.offsetHeight;
         for (let a: number = 0; a < eventDatas.length; a++) {
             let data: { [key: string]: Object } = eventDatas[a] as { [key: string]: Object };
+            let overlapIndex: number;
             let eventData: { [key: string]: Object } = extend({}, data, null, true) as { [key: string]: Object };
-            let overlapIndex: number = this.getIndex(eventData[this.fields.startTime] as Date);
-            eventData.Index = overlapIndex;
+            if (this.parent.activeViewOptions.group.resources.length > 0) {
+                let eventObj: { [key: string]: Object } = this.isSpannedEvent(eventData as { [key: string]: Object }, month);
+                overlapIndex = this.getIndex(eventObj[this.fields.startTime] as Date);
+                eventData.Index = overlapIndex;
+            } else {
+                overlapIndex = this.getIndex(eventData[this.fields.startTime] as Date);
+                eventData.Index = overlapIndex;
+            }
             let availedHeight: number = this.cellHeader + (this.eventHeight * (a + 1)) + EVENT_GAP + this.moreIndicatorHeight;
             let leftValue: number = (this.parent.activeViewOptions.orientation === 'Vertical') ?
                 month * this.cellWidth : index * this.cellWidth;
@@ -231,7 +238,13 @@ export class YearEvent extends TimelineEvent {
             width = this.cellWidth;
         }
         let rowTd: HTMLElement = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${index}) td`) as HTMLElement;
-        let top: number = rowTd.offsetTop + this.cellHeader + (this.eventHeight * <number>eventObj.Index) + EVENT_GAP;
+        let top: number;
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            let overlapIndex: number = this.getIndex(eventObj[this.fields.startTime] as Date);
+            top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * overlapIndex) + EVENT_GAP;
+        } else {
+            top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * <number>eventObj.Index) + EVENT_GAP;
+        }
         setStyleAttribute(wrap, {
             'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px'
         });
@@ -240,7 +253,9 @@ export class YearEvent extends TimelineEvent {
             if (!eventArgs.cancel) {
                 wrapper.appendChild(wrap);
                 this.wireAppointmentEvents(wrap, eventObj, true);
-                if (!(eventObj.isSpanned as { [key: string]: Object }).isRight) {
+                if (this.parent.activeViewOptions.group.resources.length > 0) {
+                    this.renderedEvents.push(extend({}, eventObj, null, true));
+                } else if (!(eventObj.isSpanned as { [key: string]: Object }).isRight) {
                     this.renderedEvents.push(extend({}, eventObj, null, true));
                 }
             }

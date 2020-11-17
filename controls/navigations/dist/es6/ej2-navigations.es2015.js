@@ -1418,7 +1418,8 @@ let MenuBase = class MenuBase extends Component {
             this.isCMenu = false;
         }
     }
-    closeMenu(ulIndex = 0, e = null) {
+    // tslint:disable-next-line:max-func-body-length
+    closeMenu(ulIndex = 0, e = null, isIterated) {
         if (this.isMenuVisible()) {
             let sli;
             let ul;
@@ -1493,9 +1494,19 @@ let MenuBase = class MenuBase extends Component {
                         this.afterCloseMenu(e);
                     }
                     else if (isOpen && !this.hamburgerMode && this.navIdx.length && closedLi && !trgtLi) {
-                        this.closeMenu(this.navIdx[this.navIdx.length - 1], e);
+                        let ele = e ? closest(e.target, '.e-menu-wrapper') : null;
+                        if (ele) {
+                            ele = ele.querySelector('.e-menu-item');
+                            if (ele && this.getIndex(ele.id, true).length <= this.navIdx.length) {
+                                this.closeMenu(this.navIdx[this.navIdx.length - 1], e, true);
+                            }
+                        }
+                        else {
+                            this.closeMenu(this.navIdx[this.navIdx.length - 1], e);
+                        }
                     }
-                    else if (isOpen && !ulIndex && ((this.hamburgerMode && this.navIdx.length) || this.navIdx.length === 1)) {
+                    else if (isOpen && !isIterated && !ulIndex && ((this.hamburgerMode && this.navIdx.length) ||
+                        this.navIdx.length === 1)) {
                         this.closeMenu(null, e);
                     }
                     else if (isOpen && isNullOrUndefined(ulIndex) && this.navIdx.length) {
@@ -2232,7 +2243,9 @@ let MenuBase = class MenuBase extends Component {
                     let cIdx = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
                     if (cIdx < this.navIdx.length) {
                         this.closeMenu(cIdx + 1, e);
-                        this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
+                        if (popupEle) {
+                            this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
+                        }
                     }
                 }
                 else if (this.isMenu && this.hamburgerMode && trgt.tagName === 'SPAN'
@@ -8717,6 +8730,110 @@ let Tab = class Tab extends Component {
                     }
                     break;
             }
+        }
+    }
+    refreshActiveTab() {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
+        if (!this.isTemplate) {
+            if (this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1)) {
+                detach(this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1).children[0]);
+                detach(this.element.querySelector('.' + CLS_CONTENT$1).querySelector('.' + CLS_ACTIVE$1).children[0]);
+                let checkValues = this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1).id;
+                let num = checkValues.indexOf('_');
+                let checkValue = parseInt(checkValues.substring(num + 1), 10);
+                let i = 0;
+                let id;
+                [].slice.call(this.element.querySelectorAll('.' + CLS_TB_ITEM)).forEach((elem) => {
+                    let idValue = ((elem.id).indexOf('_'));
+                    id = parseInt(elem.id.substring(idValue + 1), 10);
+                    if (id < checkValue) {
+                        i++;
+                    }
+                });
+                let item = this.items[i];
+                let txtWrap;
+                let pos = (isNullOrUndefined(item.header) || isNullOrUndefined(item.header.iconPosition)) ? '' : item.header.iconPosition;
+                let css = (isNullOrUndefined(item.header) || isNullOrUndefined(item.header.iconCss)) ? '' : item.header.iconCss;
+                let text = item.headerTemplate || item.header.text;
+                txtWrap = this.createElement('div', { className: CLS_TEXT, attrs: { 'role': 'presentation' } });
+                if (!isNullOrUndefined(text.tagName)) {
+                    txtWrap.appendChild(text);
+                }
+                else {
+                    this.headerTextCompile(txtWrap, text, i);
+                }
+                let tEle;
+                let icon = this.createElement('span', {
+                    className: CLS_ICONS + ' ' + CLS_TAB_ICON + ' ' + CLS_ICON + '-' + pos + ' ' + css
+                });
+                let tConts = this.createElement('div', { className: CLS_TEXT_WRAP });
+                tConts.appendChild(txtWrap);
+                if ((text !== '' && text !== undefined) && css !== '') {
+                    if ((pos === 'left' || pos === 'top')) {
+                        tConts.insertBefore(icon, tConts.firstElementChild);
+                    }
+                    else {
+                        tConts.appendChild(icon);
+                    }
+                    tEle = txtWrap;
+                    this.isIconAlone = false;
+                }
+                else {
+                    tEle = ((css === '') ? txtWrap : icon);
+                    if (tEle === icon) {
+                        detach(txtWrap);
+                        tConts.appendChild(icon);
+                        this.isIconAlone = true;
+                    }
+                }
+                let wrapAtt = (item.disabled) ? {} : { tabIndex: '-1' };
+                tConts.appendChild(this.btnCls.cloneNode(true));
+                let wraper = this.createElement('div', { className: CLS_WRAP, attrs: wrapAtt });
+                wraper.appendChild(tConts);
+                if (pos === 'top' || pos === 'bottom') {
+                    this.element.classList.add('e-vertical-icon');
+                }
+                this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1).appendChild(wraper);
+                let crElem = this.createElement('div', { innerHTML: item.content });
+                this.element.querySelector('.' + CLS_ITEM$2 + '.' + CLS_ACTIVE$1).appendChild(crElem);
+            }
+        }
+        else {
+            let tabItems = this.element.querySelector('.' + CLS_TB_ITEMS);
+            let element = this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1);
+            let id = element.id;
+            let num = (id.indexOf('_'));
+            let index = parseInt(id.substring(num + 1), 10);
+            let header = element.innerText;
+            let detachContent = this.element.querySelector('.' + CLS_CONTENT$1).querySelector('.' + CLS_ACTIVE$1).children[0];
+            let mainContents = detachContent.innerHTML;
+            detach(element);
+            detach(detachContent);
+            let attr = {
+                className: CLS_TB_ITEM + ' ' + CLS_TEMPLATE$1 + ' ' + CLS_ACTIVE$1, id: CLS_ITEM$2 + this.tabId + '_' + index,
+                attrs: {
+                    role: 'tab', 'aria-controls': CLS_CONTENT$1 + this.tabId + '_' + index,
+                    'aria-disabled': 'false', 'aria-selected': 'true'
+                }
+            };
+            let txtString = this.createElement('span', {
+                className: CLS_TEXT, innerHTML: header, attrs: { 'role': 'presentation' }
+            }).outerHTML;
+            let conte = this.createElement('div', {
+                className: CLS_TEXT_WRAP, innerHTML: txtString + this.btnCls.outerHTML
+            }).outerHTML;
+            let wrap = this.createElement('div', { className: CLS_WRAP, innerHTML: conte, attrs: { tabIndex: '-1' } });
+            tabItems.insertBefore(this.createElement('div', attr), tabItems.children[index + 1]);
+            this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1).appendChild(wrap);
+            let crElem = this.createElement('div', { innerHTML: mainContents });
+            this.element.querySelector('.' + CLS_CONTENT$1).querySelector('.' + CLS_ACTIVE$1).appendChild(crElem);
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     }
 };

@@ -13,7 +13,7 @@ import { createGrid, destroy } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { DetailRow } from '../../../src/grid/actions/detail-row';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
-import { removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { removeClass, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import * as events from '../../../src/grid/base/constant';
 import { Edit } from '../../../src/grid/actions/edit';
 
@@ -56,7 +56,7 @@ describe('Column chooser module', () => {
 
             gridObj.element.classList.add('e-device');
             setTimeout(() => {
-                (<HTMLElement>gridObj.toolbarModule.getToolbar().querySelector('#' + gridObj.element.id + '_columnchooser')).click();
+                select('#' + gridObj.element.id + '_columnchooser', gridObj.toolbarModule.getToolbar()).click();
                 (<any>gridObj).isDestroyed = true;
                 (<any>gridObj).columnChooserModule.addEventListener();
                 (<any>gridObj).columnChooserModule.destroy();
@@ -98,9 +98,9 @@ describe('Column chooser module', () => {
 
             gridObj.beforeOpenColumnChooser = beforeOpenColumnChooser;
             setTimeout(() => {
-                (<HTMLElement>gridObj.toolbarModule.getToolbar().querySelector('#' + gridObj.element.id + '_columnchooser')).click();
+                select('#' + gridObj.element.id + '_columnchooser', gridObj.toolbarModule.getToolbar()).click();
                 (<any>gridObj).columnChooserModule.isDlgOpen = true;
-                (<HTMLElement>gridObj.toolbarModule.getToolbar().querySelector('#' + gridObj.element.id + '_columnchooser')).click();
+                select('#' + gridObj.element.id + '_columnchooser', gridObj.toolbarModule.getToolbar()).click();
                 (<any>gridObj).columnChooserModule.destroy();
                 (<any>gridObj).destroy();
             }, 500);
@@ -411,7 +411,7 @@ describe('Column chooser module', () => {
             let e: Object;
             gridObj.element.classList.add('e-bigger');
             setTimeout(() => {
-                (<HTMLElement>gridObj.toolbarModule.getToolbar().querySelector('#' + gridObj.element.id + '_columnchooser')).click();
+                select('#' + gridObj.element.id + '_columnchooser', gridObj.toolbarModule.getToolbar()).click();
                 (<any>gridObj).columnChooserModule.openColumnChooser(x, y);
                 (<any>gridObj).columnChooserModule.openColumnChooser();
                 let sel: HTMLElement = (<any>gridObj).element.querySelector('.e-columnchooser-btn');
@@ -799,7 +799,7 @@ describe('Column chooser module', () => {
                 }, done);
         });
         it('check ok button are disable', (done: Function) => {
-            let columnchooser: HTMLElement = gridObj.toolbarModule.getToolbar().querySelector('#' + gridObj.element.id + '_columnchooser');
+            let columnchooser: HTMLElement = select('#' + gridObj.element.id + '_columnchooser', gridObj.toolbarModule.getToolbar());
             columnchooser.click();
             let cheEle: any = gridObj.element.querySelectorAll('.e-cc-selectall .e-selectall')[0];
             cheEle.click();

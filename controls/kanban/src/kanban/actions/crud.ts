@@ -91,7 +91,7 @@ export class Crud {
         for (let columnKey of modifiedKey) {
             let keyData: { [key: string]: Object }[] = cardData.filter((cardObj: { [key: string]: Object }) =>
                 cardObj[this.parent.keyField] === columnKey);
-            columnAllDatas = this.parent.layoutModule.columnData[columnKey] as { [key: string]: Object }[];
+            columnAllDatas = this.parent.layoutModule.getColumnData(columnKey) as { [key: string]: Object }[];
             for (let data of keyData as { [key: string]: Object }[]) {
                 if (this.parent.swimlaneSettings.keyField) {
                     let swimlaneDatas: Object[] = this.parent.getSwimlaneData(data[this.parent.swimlaneSettings.keyField] as string);
@@ -118,14 +118,5 @@ export class Crud {
             }
         }
         return finalData;
-    }
-
-    private removeData(columnAllDatas: { [key: string]: Object }[], keyData: { [key: string]: Object }[]): { [key: string]: Object }[] {
-        keyData.map((cardObj: { [key: string]: Object }) => {
-            if (columnAllDatas.indexOf(cardObj) !== -1) {
-                columnAllDatas.splice(columnAllDatas.indexOf(cardObj), 1);
-            }
-        });
-        return columnAllDatas;
     }
 }

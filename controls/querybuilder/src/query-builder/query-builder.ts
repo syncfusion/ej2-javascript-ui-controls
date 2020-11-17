@@ -633,7 +633,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let ruleElem: Element; let elem: Element; let ruleListElem: Element = target.querySelector('.e-rule-list');
         let args: ActionEventArgs;
         if (type === 'change') {
-            ruleElem = target.querySelector('#' + parentId);
+            ruleElem = target.querySelector('[id="' + parentId + '"]');
         } else {
             ruleElem = this.createElement('div', { attrs: { class: 'e-rule-container' } });
             ruleElem.setAttribute('id', target.id + '_rule' + this.ruleIdCounter);
@@ -735,7 +735,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     popupHeight: ((this.columns.length > 5) ? height : 'auto'),
                     change: this.changeField.bind(this), value: rule ? rule.field : null
                 });
-                dropDownList.appendTo('#' + ruleElem.id + '_filterkey');
+                dropDownList.appendTo('[id="' +  ruleElem.id + '_filterkey"]');
                 this.selectedColumn = dropDownList.getDataByValue(dropDownList.value) as ColumnsModel;
                 if (Object.keys(rule).length) {
                     this.changeRule(rule, {
@@ -781,7 +781,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         } else {
             let parentId: string = closest(element, '.e-rule-container').id;
             if (this.previousColumn && this.previousColumn.ruleTemplate ) {
-                detach(element.closest('#' + parentId).querySelector('.e-rule-field'));
+                detach(element.closest('[id="' + parentId + '"]').querySelector('.e-rule-field'));
                 this.clearTemplate([parentId]);
             }
             if (column) {
@@ -1387,7 +1387,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     index: 0,
                     value: value
                 });
-                dropDownList.appendTo('#' + ruleId + '_operatorkey');
+                dropDownList.appendTo('[id="' + ruleId + '_operatorkey"]');
                 tempRule.operator = (rule && rule.operator !== '') ? rule.operator : operatorList[0].value as string;
                 if (this.isImportRules) {
                     tempRule.type = this.selectedColumn.type;
@@ -1569,7 +1569,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             close: this.closePopup.bind(this, i),
             actionBegin: this.multiSelectOpen.bind(this, parentId + '_valuekey' + i)
         });
-        multiSelectObj.appendTo('#' + parentId + '_valuekey' + i);
+        multiSelectObj.appendTo('[id="' + parentId + '_valuekey' + i + '"]');
         this.updateRules(multiSelectObj.element, selectedValue, 0);
     }
     private multiSelectOpen(parentId: string, args: PopupEventArgs): void {
@@ -1701,7 +1701,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 placeholder: this.l10n.getConstant('SelectValue'),
                 input: this.changeValue.bind(this, idx)
             });
-            inputobj.appendTo('#' + parentId + '_valuekey' + idx);
+            inputobj.appendTo('[id="' + parentId + '_valuekey' + idx + '"]');
             inputobj.value = selectedValue;
             inputobj.dataBind();
         }
@@ -1728,7 +1728,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 placeholder: this.l10n.getConstant('SelectValue'),
                 input: this.changeValue.bind(this, idx)
             });
-            inputobj.appendTo('#' + parentId + '_valuekey' + idx);
+            inputobj.appendTo('[id="' + parentId + '_valuekey' + idx + '"]');
             inputobj.value = selVal;
             inputobj.dataBind();
         } else {
@@ -1747,7 +1747,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 step: itemData.step ? itemData.step : 1,
                 change: this.changeValue.bind(this, idx)
             });
-            numeric.appendTo('#' + parentId + '_valuekey' + idx);
+            numeric.appendTo('[id="' + parentId + '_valuekey' + idx + '"]');
         }
     }
     private processValueString(value: string, type: string): string[] | number[] {
@@ -1846,7 +1846,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                                 datepick = new DatePicker({ locale: this.getLocale(),
                                     value: selectedValue, placeholder: place, change: this.changeValue.bind(this, i) });
                             }
-                            datepick.appendTo('#' + parentId + '_valuekey' + i);
+                            datepick.appendTo('[id="' + parentId + '_valuekey' + i + '"]');
                             if (!rule.value) {
                                 this.updateRules(document.getElementById(parentId + '_valuekey' + i), selectedValue);
                              }
@@ -1863,6 +1863,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         if (isNullOrUndefined(rule.type) && itemData) {
             rule.type = itemData.type;
         }
+        let label: string;
         if (itemData.values) {
             let values: string[] = itemData.values as string[];
             if (rule.type === 'boolean' && !isNullOrUndefined(rule.value)) {
@@ -1872,7 +1873,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             } else if (i === 0) {
                 isCheck = true;
             }
-            orgValue = value = values[i];
+            orgValue = value = label = values[i];
         } else {
             let values: boolean[] = [true, false];
             if (rule.type === 'boolean' && !isNullOrUndefined(rule.value)) {
@@ -1882,13 +1883,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             } else if (i === 0) {
                 isCheck = true;
             }
-            value = values[i].toString(); orgValue = values[i];
+            value = values[i].toString(); orgValue = values[i]; label = this.l10n.getConstant(['True', 'False'][i]);
         }
         let radiobutton: RadioButton = new RadioButton({
-            label: value, name: parentId + 'default', checked: isCheck, value: value,
+            label: label, name: parentId + 'default', checked: isCheck, value: value,
             change: this.changeValue.bind(this, i)
         });
-        radiobutton.appendTo('#' + parentId + '_valuekey' + i);
+        radiobutton.appendTo('[id="' + parentId + '_valuekey' + i + '"]');
         if (isCheck) {
             this.updateRules(radiobutton.element, orgValue, 0);
         }
@@ -1937,7 +1938,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     detach(target.nextElementSibling.querySelector('.e-blazor-template'));
                 }
             } else {
-                detach(target.nextElementSibling.querySelector('#' + parentId + '_valuekey0'));
+                detach(target.nextElementSibling.querySelector('[id="' + parentId + '_valuekey0"]'));
             }
         }
         if (isRender) {
@@ -2643,7 +2644,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             IsEmpty: 'Is Empty',
             IsNotEmpty: 'Is Not Empty',
             IsNull: 'Is Null',
-            IsNotNull: 'Is Not Null'
+            IsNotNull: 'Is Not Null',
+            True: 'true',
+            False: 'false'
         };
         this.l10n = new L10n('querybuilder', this.defaultLocale, this.locale);
         this.intl = new Internationalization(this.locale);

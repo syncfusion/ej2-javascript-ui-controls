@@ -1494,7 +1494,8 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             this.isCMenu = false;
         }
     };
-    MenuBase.prototype.closeMenu = function (ulIndex, e) {
+    // tslint:disable-next-line:max-func-body-length
+    MenuBase.prototype.closeMenu = function (ulIndex, e, isIterated) {
         var _this = this;
         if (ulIndex === void 0) { ulIndex = 0; }
         if (e === void 0) { e = null; }
@@ -1572,9 +1573,19 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                         _this.afterCloseMenu(e);
                     }
                     else if (isOpen && !_this.hamburgerMode && _this.navIdx.length && closedLi && !trgtLi) {
-                        _this.closeMenu(_this.navIdx[_this.navIdx.length - 1], e);
+                        var ele = e ? closest(e.target, '.e-menu-wrapper') : null;
+                        if (ele) {
+                            ele = ele.querySelector('.e-menu-item');
+                            if (ele && _this.getIndex(ele.id, true).length <= _this.navIdx.length) {
+                                _this.closeMenu(_this.navIdx[_this.navIdx.length - 1], e, true);
+                            }
+                        }
+                        else {
+                            _this.closeMenu(_this.navIdx[_this.navIdx.length - 1], e);
+                        }
                     }
-                    else if (isOpen && !ulIndex && ((_this.hamburgerMode && _this.navIdx.length) || _this.navIdx.length === 1)) {
+                    else if (isOpen && !isIterated && !ulIndex && ((_this.hamburgerMode && _this.navIdx.length) ||
+                        _this.navIdx.length === 1)) {
                         _this.closeMenu(null, e);
                     }
                     else if (isOpen && isNullOrUndefined(ulIndex) && _this.navIdx.length) {
@@ -2326,7 +2337,9 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                     var cIdx = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
                     if (cIdx < this.navIdx.length) {
                         this.closeMenu(cIdx + 1, e);
-                        this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
+                        if (popupEle) {
+                            this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
+                        }
                     }
                 }
                 else if (this.isMenu && this.hamburgerMode && trgt.tagName === 'SPAN'
@@ -8996,6 +9009,110 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
             }
+        }
+    };
+    Tab.prototype.refreshActiveTab = function () {
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.clearTemplate();
+        }
+        if (!this.isTemplate) {
+            if (this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1)) {
+                detach(this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1).children[0]);
+                detach(this.element.querySelector('.' + CLS_CONTENT$1).querySelector('.' + CLS_ACTIVE$1).children[0]);
+                var checkValues = this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1).id;
+                var num = checkValues.indexOf('_');
+                var checkValue_1 = parseInt(checkValues.substring(num + 1), 10);
+                var i_2 = 0;
+                var id_1;
+                [].slice.call(this.element.querySelectorAll('.' + CLS_TB_ITEM)).forEach(function (elem) {
+                    var idValue = ((elem.id).indexOf('_'));
+                    id_1 = parseInt(elem.id.substring(idValue + 1), 10);
+                    if (id_1 < checkValue_1) {
+                        i_2++;
+                    }
+                });
+                var item = this.items[i_2];
+                var txtWrap = void 0;
+                var pos = (isNullOrUndefined(item.header) || isNullOrUndefined(item.header.iconPosition)) ? '' : item.header.iconPosition;
+                var css = (isNullOrUndefined(item.header) || isNullOrUndefined(item.header.iconCss)) ? '' : item.header.iconCss;
+                var text = item.headerTemplate || item.header.text;
+                txtWrap = this.createElement('div', { className: CLS_TEXT, attrs: { 'role': 'presentation' } });
+                if (!isNullOrUndefined(text.tagName)) {
+                    txtWrap.appendChild(text);
+                }
+                else {
+                    this.headerTextCompile(txtWrap, text, i_2);
+                }
+                var tEle = void 0;
+                var icon = this.createElement('span', {
+                    className: CLS_ICONS + ' ' + CLS_TAB_ICON + ' ' + CLS_ICON + '-' + pos + ' ' + css
+                });
+                var tConts = this.createElement('div', { className: CLS_TEXT_WRAP });
+                tConts.appendChild(txtWrap);
+                if ((text !== '' && text !== undefined) && css !== '') {
+                    if ((pos === 'left' || pos === 'top')) {
+                        tConts.insertBefore(icon, tConts.firstElementChild);
+                    }
+                    else {
+                        tConts.appendChild(icon);
+                    }
+                    tEle = txtWrap;
+                    this.isIconAlone = false;
+                }
+                else {
+                    tEle = ((css === '') ? txtWrap : icon);
+                    if (tEle === icon) {
+                        detach(txtWrap);
+                        tConts.appendChild(icon);
+                        this.isIconAlone = true;
+                    }
+                }
+                var wrapAtt = (item.disabled) ? {} : { tabIndex: '-1' };
+                tConts.appendChild(this.btnCls.cloneNode(true));
+                var wraper = this.createElement('div', { className: CLS_WRAP, attrs: wrapAtt });
+                wraper.appendChild(tConts);
+                if (pos === 'top' || pos === 'bottom') {
+                    this.element.classList.add('e-vertical-icon');
+                }
+                this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1).appendChild(wraper);
+                var crElem = this.createElement('div', { innerHTML: item.content });
+                this.element.querySelector('.' + CLS_ITEM$2 + '.' + CLS_ACTIVE$1).appendChild(crElem);
+            }
+        }
+        else {
+            var tabItems = this.element.querySelector('.' + CLS_TB_ITEMS);
+            var element = this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1);
+            var id = element.id;
+            var num = (id.indexOf('_'));
+            var index = parseInt(id.substring(num + 1), 10);
+            var header = element.innerText;
+            var detachContent = this.element.querySelector('.' + CLS_CONTENT$1).querySelector('.' + CLS_ACTIVE$1).children[0];
+            var mainContents = detachContent.innerHTML;
+            detach(element);
+            detach(detachContent);
+            var attr = {
+                className: CLS_TB_ITEM + ' ' + CLS_TEMPLATE$1 + ' ' + CLS_ACTIVE$1, id: CLS_ITEM$2 + this.tabId + '_' + index,
+                attrs: {
+                    role: 'tab', 'aria-controls': CLS_CONTENT$1 + this.tabId + '_' + index,
+                    'aria-disabled': 'false', 'aria-selected': 'true'
+                }
+            };
+            var txtString = this.createElement('span', {
+                className: CLS_TEXT, innerHTML: header, attrs: { 'role': 'presentation' }
+            }).outerHTML;
+            var conte = this.createElement('div', {
+                className: CLS_TEXT_WRAP, innerHTML: txtString + this.btnCls.outerHTML
+            }).outerHTML;
+            var wrap = this.createElement('div', { className: CLS_WRAP, innerHTML: conte, attrs: { tabIndex: '-1' } });
+            tabItems.insertBefore(this.createElement('div', attr), tabItems.children[index + 1]);
+            this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1).appendChild(wrap);
+            var crElem = this.createElement('div', { innerHTML: mainContents });
+            this.element.querySelector('.' + CLS_CONTENT$1).querySelector('.' + CLS_ACTIVE$1).appendChild(crElem);
+        }
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
         }
     };
     __decorate$7([

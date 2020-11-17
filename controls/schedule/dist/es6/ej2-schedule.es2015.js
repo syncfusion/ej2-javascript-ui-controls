@@ -5777,7 +5777,7 @@ class VerticalEvent extends EventBase {
             let appointment = [];
             let recordStart = record[fieldMapping.startTime];
             let recordEnd = record[fieldMapping.endTime];
-            this.overlapList = appointmentList.filter((data) => (data[fieldMapping.endTime] > recordStart && data[fieldMapping.startTime] < recordEnd) ||
+            this.overlapList = appointmentList.filter((data) => (data[fieldMapping.endTime] > recordStart && data[fieldMapping.startTime] <= recordEnd) ||
                 (data[fieldMapping.startTime] >= recordEnd && data[fieldMapping.endTime] <= recordStart));
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 this.overlapList = this.filterEventsByResource(this.resources[resource], this.overlapList);
@@ -8655,7 +8655,6 @@ class EventTooltip {
             let templateId = this.parent.element.id + '_tooltipTemplate';
             resetBlazorTemplate(templateId, 'TooltipTemplate');
         }
-        this.parent.resetTemplates();
     }
     // tslint:disable-next-line:max-func-body-length
     onBeforeRender(args) {
@@ -8775,6 +8774,7 @@ class EventTooltip {
      * @private
      */
     destroy() {
+        this.parent.resetTemplates();
         this.tooltipObj.destroy();
         addClass([this.parent.element], 'e-control');
         this.tooltipObj = null;
@@ -20155,9 +20155,17 @@ class YearEvent extends TimelineEvent {
         this.cellHeight = td.offsetHeight;
         for (let a = 0; a < eventDatas.length; a++) {
             let data = eventDatas[a];
+            let overlapIndex;
             let eventData = extend({}, data, null, true);
-            let overlapIndex = this.getIndex(eventData[this.fields.startTime]);
-            eventData.Index = overlapIndex;
+            if (this.parent.activeViewOptions.group.resources.length > 0) {
+                let eventObj = this.isSpannedEvent(eventData, month);
+                overlapIndex = this.getIndex(eventObj[this.fields.startTime]);
+                eventData.Index = overlapIndex;
+            }
+            else {
+                overlapIndex = this.getIndex(eventData[this.fields.startTime]);
+                eventData.Index = overlapIndex;
+            }
             let availedHeight = this.cellHeader + (this.eventHeight * (a + 1)) + EVENT_GAP$2 + this.moreIndicatorHeight;
             let leftValue = (this.parent.activeViewOptions.orientation === 'Vertical') ?
                 month * this.cellWidth : index * this.cellWidth;
@@ -20198,7 +20206,14 @@ class YearEvent extends TimelineEvent {
             width = this.cellWidth;
         }
         let rowTd = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${index}) td`);
-        let top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * eventObj.Index) + EVENT_GAP$2;
+        let top;
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            let overlapIndex = this.getIndex(eventObj[this.fields.startTime]);
+            top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * overlapIndex) + EVENT_GAP$2;
+        }
+        else {
+            top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * eventObj.Index) + EVENT_GAP$2;
+        }
         setStyleAttribute(wrap, {
             'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px'
         });
@@ -20207,7 +20222,10 @@ class YearEvent extends TimelineEvent {
             if (!eventArgs.cancel) {
                 wrapper.appendChild(wrap);
                 this.wireAppointmentEvents(wrap, eventObj, true);
-                if (!eventObj.isSpanned.isRight) {
+                if (this.parent.activeViewOptions.group.resources.length > 0) {
+                    this.renderedEvents.push(extend({}, eventObj, null, true));
+                }
+                else if (!eventObj.isSpanned.isRight) {
                     this.renderedEvents.push(extend({}, eventObj, null, true));
                 }
             }

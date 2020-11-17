@@ -147,6 +147,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private tooltipPositionY: string;
     private tooltipEventArgs: TooltipEventArgs;
     private isHidden: boolean;
+    private isTooltipOpen: boolean;
     private showTimer: number;
     private hideTimer: number;
     private tipWidth: number;
@@ -690,7 +691,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         } else {
             target = this.element;
         }
-        if (isNullOrUndefined(target) || target.getAttribute('data-tooltip-id') !== null) { return; }
+        if (isNullOrUndefined(target) || (target.getAttribute('data-tooltip-id') !== null && this.closeDelay === 0)) { return; }
         let targetList: Element[] = [].slice.call(document.querySelectorAll('[data-tooltip-id= ' + this.ctrlId + '_content]'));
         for (let target of targetList) {
             this.restoreElement(target as HTMLElement);
@@ -938,6 +939,20 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private hideTooltip(hideAnimation: TooltipAnimationSettings, e?: Event, targetElement?: HTMLElement): void {
+        if (this.closeDelay > 0) {
+            clearTimeout(this.hideTimer);
+            clearTimeout(this.showTimer);
+            let hide: Function = (): void => {
+                if (this.closeDelay && this.tooltipEle && this.isTooltipOpen) { return; }
+                this.tooltipHide(hideAnimation, e, targetElement);
+            };
+            this.hideTimer = setTimeout(hide, this.closeDelay);
+        } else {
+            this.tooltipHide(hideAnimation, e, targetElement);
+        }
+    }
+
+    private tooltipHide (hideAnimation: TooltipAnimationSettings, e?: Event, targetElement?: HTMLElement): void {
         let target: HTMLElement;
         if (e) {
             target = this.target ? (targetElement || e.target as HTMLElement) : this.element;
@@ -986,14 +1001,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (hideAnimation.effect === 'None') {
             closeAnimation = undefined;
         }
-        if (this.closeDelay > 0) {
-            let hide: Function = (): void => {
-                if (this.popupObj) { this.popupObj.hide(closeAnimation); }
-            };
-            this.hideTimer = setTimeout(hide, this.closeDelay);
-        } else {
-            if (this.popupObj) { this.popupObj.hide(closeAnimation); }
-        }
+        if (this.popupObj) { this.popupObj.hide(closeAnimation); }
     }
     private restoreElement(target: HTMLElement): void {
         this.unwireMouseEvents(target);
@@ -1024,6 +1032,16 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             this.popupObj = null;
         }
     }
+    private tooltipHover (e: Event): void {
+        if (this.tooltipEle) {
+            this.isTooltipOpen = true;
+        }
+    }
+
+    private tooltipMouseOut (e: Event): void {
+            this.isTooltipOpen = false;
+            this.hideTooltip(this.animation.close, e, this.findTarget());
+    }
     private onMouseOut(e: Event): void {
         const enteredElement: EventTarget = (e as MouseEvent).relatedTarget;
         // don't close the tooltip only if it is tooltip content element
@@ -1033,7 +1051,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 `.${TOOLTIP_WRAP}.${POPUP_LIB}.${POPUP_ROOT}`);
             if (checkForTooltipElement) {
                 EventHandler.add(checkForTooltipElement, 'mouseleave', this.tooltipElementMouseOut, this);
-                this.unwireMouseEvents(e.target as Element);
             } else {
                 this.hideTooltip(this.animation.close, e, this.findTarget());
                 if (this.closeDelay === 0) { this.clear(); }
@@ -1089,7 +1106,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
     private touchEnd(e: TouchEvent): void {
-        if (this.tooltipEle && closest(e.target as HTMLElement, '.' + ROOT) === null) {
+        if (this.tooltipEle && closest(e.target as HTMLElement, '.' + ROOT) === null && !this.isSticky) {
             this.close();
         }
     }
@@ -1173,6 +1190,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 if (e.type === 'mouseover') {
                     if (!this.isServerRender()) { EventHandler.add(target, 'mouseleave', this.onMouseOut, this); }
                 }
+                if (this.closeDelay) {
+                    EventHandler.add(this.tooltipEle, 'mouseenter', this.tooltipHover, this);
+                    EventHandler.add(this.tooltipEle, 'mouseleave', this.tooltipMouseOut, this);
+                }
             }
             if (this.mouseTrail) {
                 EventHandler.add(target, 'mousemove touchstart mouseenter', this.onMouseMove, this);
@@ -1227,6 +1248,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 if (opensOn === 'Hover' && !Browser.isDevice) {
                     if (!this.isServerRender()) { EventHandler.remove(target, 'mouseleave', this.onMouseOut); }
                 }
+            }
+            if (this.closeDelay) {
+                EventHandler.remove(target, 'mouseenter', this.tooltipHover );
+                EventHandler.remove(target, 'mouseleave', this.tooltipMouseOut);
             }
         }
         if (this.mouseTrail) {

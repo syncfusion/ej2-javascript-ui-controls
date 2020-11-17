@@ -11,6 +11,7 @@ import { Edit } from '../../../src/grid/actions/edit';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Column } from '../../../src/grid/models/column';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { select } from '@syncfusion/ej2-base';
 
 Grid.Inject(Search, Page, Toolbar, Edit);
 
@@ -236,7 +237,7 @@ describe('Search module=>', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;            
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element) as any).value = 'updated';
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
         });
 

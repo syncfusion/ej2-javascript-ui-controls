@@ -1,5 +1,5 @@
 import { L10n, EventHandler, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { remove, isBlazor, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { remove, isBlazor, updateBlazorTemplate, select } from '@syncfusion/ej2-base';
 import { Toolbar as tool, ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { IGrid, NotifyArgs } from '../base/interface';
 import * as events from '../base/constant';
@@ -91,7 +91,7 @@ export class Toolbar {
     }
 
     private bindSearchEvents(): void {
-        this.searchElement = (<HTMLInputElement>this.element.querySelector('#' + this.gridID + '_searchbar'));
+        this.searchElement = (<HTMLInputElement>select('#' + this.gridID + '_searchbar', this.element));
         this.wireEvent();
         this.refreshToolbarItems();
         if (this.parent.searchSettings) {
@@ -238,7 +238,7 @@ export class Toolbar {
      */
     public enableItems(items: string[], isEnable: boolean): void {
         for (let item of items) {
-            let element: HTMLElement = <HTMLElement>this.element.querySelector('#' + item);
+            let element: HTMLElement = select('#' + item, this.element);
             if (element) {
                 this.toolbar.enableItems(element.parentElement, isEnable);
             }

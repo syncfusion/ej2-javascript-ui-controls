@@ -2858,10 +2858,12 @@ describe('DataLoaded event do not gets trigger after data loaded', () => {
             ele.remove();
         });
         it('Tree Line Distribution 2r data loaded', function (done) {
-
+       
 
             var connector0 = diagram.connectors[0].id
             var pathElement = document.getElementById(connector0 + "_path_groupElement")
+            expect(diagram.connectors[0].sourcePortID === diagram.nameTable[diagram.connectors[0].sourceID].ports[0].id).toBe(true);
+            expect(diagram.connectors[0].targetPortID === diagram.nameTable[diagram.connectors[0].targetID].ports[2].id).toBe(true);
             expect(pathElement.children[0].getAttribute("d") === "M0,0 L13,0 Q20,0,20,7 L20,63 Q20,70,27,70 L39.5,70 ").toBe(true);
             var connector1 = diagram.connectors[1].id
             var pathElement1 = document.getElementById(connector1 + "_path_groupElement")

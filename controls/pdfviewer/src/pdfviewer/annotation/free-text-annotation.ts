@@ -322,6 +322,7 @@ export class FreeTextAnnotation {
                             annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings,
                             // tslint:disable-next-line
                             customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode: annotation.annotationAddMode, allowedInteractions: annotation.allowedInteractions,
+                            isPrint: annotation.IsPrint
                         };
                         if (isImportAction) {
                             annot.id = annotation.AnnotName;
@@ -586,6 +587,10 @@ export class FreeTextAnnotation {
                 // tslint:disable-next-line
                 let annotationSettings: any =  this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
                 // tslint:disable-next-line
+                this.author = this.author? this.author : this.pdfViewer.freeTextSettings.author ? this.pdfViewer.freeTextSettings.author : 'Guest';
+                // tslint:disable-next-line
+                let allowedInteractions: any = this.pdfViewer.freeTextSettings.allowedInteractions ? this.pdfViewer.freeTextSettings.allowedInteractions: this.pdfViewer.annotationSettings.allowedInteractions;
+                // tslint:disable-next-line
                 annot = {
                     author: this.author, modifiedDate: currentDateString, subject: 'Text Box', id: 'free_text' + this.inputBoxCount,
                     // tslint:disable-next-line:max-line-length
@@ -601,7 +606,8 @@ export class FreeTextAnnotation {
                     review: { state: 'Unmarked', stateModel: 'None', modifiedDate: currentDateString, author: this.author },
                     // tslint:disable-next-line:max-line-length
                     annotationSelectorSettings: annotationSelectorSettings, annotationSettings: annotationSettings,
-                    customData: this.pdfViewer.annotationModule.getData('FreeText')
+                    customData: this.pdfViewer.annotationModule.getData('FreeText'), isPrint: this.pdfViewer.freeTextSettings.isPrint,
+                    allowedInteractions: allowedInteractions
                 };
                 if (this.pdfViewer.enableRtl) {
                     annot.textAlign = 'Right';
@@ -955,7 +961,7 @@ export class FreeTextAnnotation {
                 comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
                 font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline },
                 annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings,
-                customData: this.pdfViewer.annotation.getCustomData(annotation)
+                customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint
             };
             this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annot, '_annotations_freetext');
         }

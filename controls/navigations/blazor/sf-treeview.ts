@@ -74,6 +74,7 @@ class SfTreeView {
     private dropObj: Droppable;
     private keyboardModule: KeyboardEvents;
     private dragLi: Element;
+    private virtualEle: HTMLElement;
     private dragTarget: Element;
     private dragData: { [key: string]: Object };
     private oldText: string;
@@ -304,6 +305,7 @@ class SfTreeView {
                 document.body.appendChild(virtualEle);
                 document.body.style.cursor = EMPTY;
                 this.dragData = this.getNodeData(this.dragLi);
+                this.virtualEle = virtualEle;
                 return virtualEle;
             },
             drag: (e: DragEventArgs) => {
@@ -358,9 +360,6 @@ class SfTreeView {
             },
             over: (e: { evt: MouseEvent & TouchEvent, target: Element }) => {
                 document.body.style.cursor = EMPTY;
-            },
-            drop: (e: DropEventArgs) => {
-                this.dropAction(e);
             }
         });
     }
@@ -388,11 +387,19 @@ class SfTreeView {
             this.isHelperElement = false;
         }
         this.dragStartAction = false;
+        if (this.isHelperElement) {
+            this.dropAction(this.dragStopEventArgs, true );
+        }
     }
 
-    public dragStartActionContinue(): void {
-        this.dragStartAction = true;
-        this.dragStartEventArgs.bindEvents(getElement(this.dragStartEventArgs.dragElement));
+    public dragStartActionContinue(cancel: boolean): void {
+        if  (cancel) {
+            this.dragObj.intDestroy(this.dragStartEventArgs.event);
+            this.dragCancelAction(this.virtualEle);
+        } else {
+            this.dragStartAction = true;
+            this.dragStartEventArgs.bindEvents(getElement(this.dragStartEventArgs.dragElement));
+        }
     }
 
     private getId(ele: string | Element): string {
@@ -1729,9 +1736,9 @@ let TreeView: object = {
             element.blazor__instance.setMultiSelect(args);
         }
     },
-    dragStartActionContinue: function dragStartActionContinue(element: BlazorTreeViewElement): void {
+    dragStartActionContinue: function dragStartActionContinue(element: BlazorTreeViewElement, cancel: boolean): void {
         if (this.valid(element)) {
-            element.blazor__instance.dragStartActionContinue();
+            element.blazor__instance.dragStartActionContinue(cancel);
         }
     },
     dragNodeStop: function dragNodeStop(element: BlazorTreeViewElement, args: DragAndDropEventArgs): void {

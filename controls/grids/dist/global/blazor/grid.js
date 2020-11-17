@@ -3463,6 +3463,12 @@ var ContentRender = /** @class */ (function () {
                 var currentLen = dataSource.length;
                 if (prevLen === currentLen) {
                     for (var i = 0; i < currentLen; i++) {
+                        if (this.parent.editSettings.mode === 'Batch'
+                            && trs[i].classList.contains('e-insertedrow')) {
+                            trs.splice(i, 1);
+                            --i;
+                            continue;
+                        }
                         newKeys[dataSource[i][key]] = oldKeys[this.prevCurrentView[i][key]] = i;
                         newIndexes[i] = dataSource[i][key];
                         oldRowElements[oldRowObjs[i].uid] = trs[i];
@@ -3475,6 +3481,12 @@ var ContentRender = /** @class */ (function () {
                         newIndexes[i] = dataSource[i][key];
                     }
                     for (var i = 0; i < prevLen; i++) {
+                        if (this.parent.editSettings.mode === 'Batch'
+                            && trs[i].classList.contains('e-insertedrow')) {
+                            trs.splice(i, 1);
+                            --i;
+                            continue;
+                        }
                         oldRowElements[oldRowObjs[i].uid] = trs[i];
                         oldKeys[this.prevCurrentView[i][key]] = i;
                         oldIndexes[i] = this.prevCurrentView[i][key];
@@ -3489,7 +3501,7 @@ var ContentRender = /** @class */ (function () {
                         isEqual = this.objectEqualityChecker(this.prevCurrentView[i], dataSource[i]);
                     }
                     var tr = oldRowElements[oldRowObjs[oldIndex].uid];
-                    newRowObjs.push(gObj.getRowsObject()[oldIndex]);
+                    newRowObjs.push(oldRowObjs[oldIndex]);
                     if (this.rowElements[i] && this.rowElements[i].getAttribute('data-uid') === newRowObjs[i].uid
                         && ((hasBatch && sf.base.isNullOrUndefined(batchChangeKeys[newIndexes[i]]))
                             || (!hasBatch && (isEqual || this.prevCurrentView[i] === dataSource[i])))) {
@@ -3567,6 +3579,9 @@ var ContentRender = /** @class */ (function () {
     ContentRender.prototype.refreshImmutableContent = function (index, tr, row) {
         row.isAltRow = this.parent.enableAltRow ? index % 2 !== 0 : false;
         row.isAltRow ? tr.classList.add('e-altrow') : tr.classList.remove('e-altrow');
+        row.index = index;
+        row.edit = undefined;
+        row.isDirty = false;
         tr.setAttribute('aria-rowindex', index.toString());
         this.updateCellIndex(tr, index);
     };
@@ -9400,9 +9415,9 @@ var Selection = /** @class */ (function () {
             if (rindex < this.parent.frozenRows) {
                 isFrozenRow = true;
             }
-            if (!parentsUntil(this.target, 'e-table').querySelector('#' + this.parent.element.id + '_autofill')) {
-                if (this.parent.element.querySelector('#' + this.parent.element.id + '_autofill')) {
-                    this.parent.element.querySelector('#' + this.parent.element.id + '_autofill').remove();
+            if (!sf.base.select('#' + this.parent.element.id + '_autofill', parentsUntil(this.target, 'e-table'))) {
+                if (sf.base.select('#' + this.parent.element.id + '_autofill', this.parent.element)) {
+                    sf.base.select('#' + this.parent.element.id + '_autofill', this.parent.element).remove();
                 }
                 this.autofill = sf.base.createElement('div', { className: 'e-autofill', id: this.parent.element.id + '_autofill' });
                 this.autofill.style.display = 'none';
@@ -16714,13 +16729,13 @@ var Print = /** @class */ (function () {
         if (!depth) {
             return;
         }
-        var groupCaption = element.querySelectorAll(id + "captioncell.e-groupcaption");
+        var groupCaption = sf.base.selectAll(id + "captioncell.e-groupcaption", element);
         var colSpan = groupCaption[depth - 1].getAttribute('colspan');
         for (var i = 0; i < groupCaption.length; i++) {
             groupCaption[i].setAttribute('colspan', colSpan);
         }
-        var colGroups = element.querySelectorAll("colgroup" + id + "colGroup");
-        var contentColGroups = element.querySelector('.e-content').querySelectorAll('colgroup');
+        var colGroups = sf.base.selectAll("colgroup" + id + "colGroup", element);
+        var contentColGroups = sf.base.selectAll('.e-content colgroup', element);
         this.hideColGroup(colGroups, depth);
         this.hideColGroup(contentColGroups, depth);
     };
@@ -17246,9 +17261,9 @@ function isEditable(col, type, elem) {
 }
 /** @hidden */
 function isActionPrevent(inst) {
-    var dlg = inst.element.querySelector('#' + inst.element.id + 'EditConfirm');
+    var dlg = sf.base.select('#' + inst.element.id + 'EditConfirm', inst.element);
     return inst.editSettings.mode === 'Batch' &&
-        (inst.element.querySelectorAll('.e-updatedtd').length) && inst.editSettings.showConfirmDialog &&
+        (sf.base.selectAll('.e-updatedtd', inst.element).length) && inst.editSettings.showConfirmDialog &&
         (dlg ? dlg.classList.contains('e-popup-close') : true);
 }
 /** @hidden */
@@ -18518,9 +18533,9 @@ var CheckBoxFilterBase = /** @class */ (function () {
             this.searchBoxClick(e);
         }
         if (elem) {
-            var selectAll = elem.querySelector('.e-selectall');
-            if (selectAll) {
-                this.updateAllCBoxes(!selectAll.classList.contains('e-check'));
+            var selectAll$$1 = elem.querySelector('.e-selectall');
+            if (selectAll$$1) {
+                this.updateAllCBoxes(!selectAll$$1.classList.contains('e-check'));
             }
             else {
                 toogleCheckbox(elem.parentElement);
@@ -18621,9 +18636,9 @@ var CheckBoxFilterBase = /** @class */ (function () {
         if (data.length && !this.renderEmpty) {
             var selectAllValue = this.getLocalizedLabel('SelectAll');
             var checkBox = this.createCheckbox(selectAllValue, false, (_a = {}, _a[this.options.field] = selectAllValue, _a));
-            var selectAll = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
-            selectAll.querySelector('.e-frame').classList.add('e-selectall');
-            cBoxes.appendChild(selectAll);
+            var selectAll$$1 = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
+            selectAll$$1.querySelector('.e-frame').classList.add('e-selectall');
+            cBoxes.appendChild(selectAll$$1);
             var predicate = new sf.data.Predicate('field', 'equal', this.options.field);
             if (this.options.foreignKeyValue) {
                 predicate = predicate.or('field', 'equal', this.options.foreignKeyValue);
@@ -21010,7 +21025,7 @@ var PagerDropDown = /** @class */ (function () {
     PagerDropDown.prototype.convertValue = function (pageSizeValue) {
         var item = pageSizeValue;
         for (var i = 0; i < item.length; i++) {
-            item[i] = typeof item[i] === 'number' ? item[i].toString() : item[i];
+            item[i] = parseInt(item[i], 10) ? item[i].toString() : this.pagerModule.getLocalizedLabel(item[i]);
         }
         return item;
     };
@@ -26775,7 +26790,7 @@ var Toolbar$1 = /** @class */ (function () {
         }
     };
     Toolbar$$1.prototype.bindSearchEvents = function () {
-        this.searchElement = this.element.querySelector('#' + this.gridID + '_searchbar');
+        this.searchElement = sf.base.select('#' + this.gridID + '_searchbar', this.element);
         this.wireEvent();
         this.refreshToolbarItems();
         if (this.parent.searchSettings) {
@@ -26921,7 +26936,7 @@ var Toolbar$1 = /** @class */ (function () {
     Toolbar$$1.prototype.enableItems = function (items, isEnable) {
         for (var _i = 0, items_2 = items; _i < items_2.length; _i++) {
             var item = items_2[_i];
-            var element = this.element.querySelector('#' + item);
+            var element = sf.base.select('#' + item, this.element);
             if (element) {
                 this.toolbar.enableItems(element.parentElement, isEnable);
             }
@@ -29745,7 +29760,7 @@ var EditRender = /** @class */ (function () {
         var fForm;
         var frzCols = gObj.getFrozenColumns();
         var form = gObj.editSettings.mode === 'Dialog' ?
-            document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper').querySelector('.e-gridform') :
+            sf.base.select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) :
             gObj.element.querySelector('.e-gridform');
         if (frzCols && gObj.editSettings.mode === 'Normal') {
             var rowIndex = parseInt(args.row.getAttribute('aria-rowindex'), 10);
@@ -30075,7 +30090,7 @@ var DropDownEditCell = /** @class */ (function () {
     DropDownEditCell.prototype.dropDownOpen = function (args) {
         var dlgElement = parentsUntil(this.obj.element, 'e-dialog');
         if (this.parent.editSettings.mode === 'Dialog' && !sf.base.isNullOrUndefined(dlgElement)) {
-            var dlgObj = document.querySelector('#' + dlgElement.id).ej2_instances[0];
+            var dlgObj = sf.base.select('#' + dlgElement.id, document).ej2_instances[0];
             args.popup.element.style.zIndex = (dlgObj.zIndex + 1).toString();
         }
     };
@@ -30377,7 +30392,7 @@ var NormalEdit = /** @class */ (function () {
             previousData: this.previousData, selectedRow: gObj.selectedRowIndex, foreignKeyData: {}
         });
         var isDlg = gObj.editSettings.mode === 'Dialog';
-        var dlgWrapper = document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper');
+        var dlgWrapper = sf.base.select('#' + gObj.element.id + '_dialogEdit_wrapper', document);
         var dlgForm = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.querySelector('.e-gridform');
         var data = { virtualData: {}, isAdd: false };
         this.parent.notify(getVirtualData, data);
@@ -31716,7 +31731,7 @@ var BatchEdit = /** @class */ (function () {
             }
             _this.renderer.update(cellEditArgs);
             _this.parent.notify(batchEditFormRendered, cellEditArgs);
-            _this.form = gObj.element.querySelector('#' + gObj.element.id + 'EditForm');
+            _this.form = sf.base.select('#' + gObj.element.id + 'EditForm', gObj.element);
             gObj.editModule.applyFormValidation([col]);
             _this.parent.element.querySelector('.e-gridpopup').style.display = 'none';
         });
@@ -32879,7 +32894,7 @@ var Edit = /** @class */ (function () {
         var frzCols = gObj.getFrozenColumns();
         var form = this.parent.editSettings.mode !== 'Dialog' ?
             gObj.element.querySelector('.e-gridform') :
-            document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper').querySelector('.e-gridform');
+            sf.base.select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document);
         var mForm = gObj.element.querySelectorAll('.e-gridform')[1];
         var rules = {};
         var mRules = {};
@@ -32951,7 +32966,7 @@ var Edit = /** @class */ (function () {
                 > (parseInt(sf.base.closest(inputElement, '.e-row').getAttribute('aria-rowindex'), 10) || 0));
         }
         return this.parent.editSettings.mode !== 'Dialog' ? isFHdr ? this.parent.getHeaderTable() : this.parent.getContentTable() :
-            document.querySelector('#' + this.parent.element.id + '_dialogEdit_wrapper');
+            sf.base.select('#' + this.parent.element.id + '_dialogEdit_wrapper', document);
     };
     Edit.prototype.validationComplete = function (args) {
         if (this.parent.isEdit) {
@@ -33007,7 +33022,7 @@ var Edit = /** @class */ (function () {
         }
         var table = isInline ?
             (isFHdr ? this.parent.getHeaderTable() : this.parent.getContentTable()) :
-            document.querySelector('#' + this.parent.element.id + '_dialogEdit_wrapper').querySelector('.e-dlg-content');
+            sf.base.select('#' + this.parent.element.id + '_dialogEdit_wrapper .e-dlg-content', document);
         var client = table.getBoundingClientRect();
         var left = isInline ?
             this.parent.element.getBoundingClientRect().left : client.left;
@@ -33501,8 +33516,8 @@ var ColumnChooser = /** @class */ (function () {
         this.clearActions();
         this.parent.notify(columnChooserCancelBtnClick, { dialog: this.dlgObj });
     };
-    ColumnChooser.prototype.checkstatecolumn = function (isChecked, coluid, selectAll) {
-        if (selectAll === void 0) { selectAll = false; }
+    ColumnChooser.prototype.checkstatecolumn = function (isChecked, coluid, selectAll$$1) {
+        if (selectAll$$1 === void 0) { selectAll$$1 = false; }
         if (isChecked) {
             if (this.hideColumn.indexOf(coluid) !== -1) {
                 this.hideColumn.splice(this.hideColumn.indexOf(coluid), 1);
@@ -33519,7 +33534,7 @@ var ColumnChooser = /** @class */ (function () {
                 this.hideColumn.push(coluid);
             }
         }
-        if (selectAll) {
+        if (selectAll$$1) {
             if (!isChecked) {
                 this.changedColumns.push(coluid);
             }
@@ -33600,8 +33615,8 @@ var ColumnChooser = /** @class */ (function () {
         var checkstate;
         var elem = parentsUntil(e.target, 'e-checkbox-wrapper');
         if (elem) {
-            var selectAll = elem.querySelector('.e-selectall');
-            if (selectAll) {
+            var selectAll$$1 = elem.querySelector('.e-selectall');
+            if (selectAll$$1) {
                 this.updateSelectAll(!elem.querySelector('.e-check'));
             }
             else {
@@ -33699,12 +33714,12 @@ var ColumnChooser = /** @class */ (function () {
         this.ulElement = this.parent.createElement('ul', { className: 'e-ccul-ele e-cc' });
         var selectAllValue = this.l10n.getConstant('SelectAll');
         var cclist = this.parent.createElement('li', { className: 'e-cclist e-cc e-cc-selectall' });
-        var selectAll = this.createCheckBox(selectAllValue, false, 'grid-selectAll');
+        var selectAll$$1 = this.createCheckBox(selectAllValue, false, 'grid-selectAll');
         if (gdCol.length) {
-            selectAll.querySelector('.e-checkbox-wrapper').firstElementChild.classList.add('e-selectall');
-            selectAll.querySelector('.e-frame').classList.add('e-selectall');
-            this.checkState(selectAll.querySelector('.e-icons'), true);
-            cclist.appendChild(selectAll);
+            selectAll$$1.querySelector('.e-checkbox-wrapper').firstElementChild.classList.add('e-selectall');
+            selectAll$$1.querySelector('.e-frame').classList.add('e-selectall');
+            this.checkState(selectAll$$1.querySelector('.e-icons'), true);
+            cclist.appendChild(selectAll$$1);
             this.ulElement.appendChild(cclist);
         }
         for (var i = 0; i < gdCol.length; i++) {

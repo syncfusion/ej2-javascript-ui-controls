@@ -1477,7 +1477,7 @@ export class Renderer {
         this.pageContext.lineTo(this.getScaledValue(endX, 1), this.getScaledValue(endY, 2));
         this.pageContext.lineWidth = this.getScaledValue(lineWidth);
         // set line color
-        this.pageContext.strokeStyle = color;
+        this.pageContext.strokeStyle = HelperMethods.getColor(color);
         if (lineWidth > 0) {
             this.pageContext.stroke();
         }

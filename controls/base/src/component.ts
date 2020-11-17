@@ -5,7 +5,7 @@ import { Observer, BoundOptions } from './observer';
 import { ChildProperty } from './child-property';
 import { Property, NotifyPropertyChanges } from './notify-property-change';
 import { onIntlChange, rightToLeft, defaultCulture } from './internationalization';
-import { createElement, addClass, removeClass, ElementProperties } from './dom';
+import { createElement, addClass, removeClass, ElementProperties, select } from './dom';
 import { VirtualDOM } from './virtual-dom';
 import { getRandomId } from './template-engine';
 let componentCount: number = 0;
@@ -110,7 +110,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
      */
     public appendTo(selector?: string | HTMLElement): void {
         if (!isNullOrUndefined(selector) && typeof (selector) === 'string') {
-            this.element = <ElementType>document.querySelector(<string>selector);
+            this.element = <ElementType>select(<string>selector, document);
         } else if (!isNullOrUndefined(selector)) {
             this.element = <ElementType>selector;
         }

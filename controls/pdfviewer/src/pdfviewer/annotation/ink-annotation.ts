@@ -144,13 +144,17 @@ export class InkAnnotation {
             let isLock: boolean = this.pdfViewer.inkAnnotationSettings.isLock ? this.pdfViewer.inkAnnotationSettings.isLock : this.pdfViewer.annotationSettings.isLock;
             let author: string = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.inkAnnotationSettings.author ? this.pdfViewer.inkAnnotationSettings.author : 'Guest';
             let customData: object = this.pdfViewer.inkAnnotationSettings.customData;
+            let isPrint: boolean = this.pdfViewer.inkAnnotationSettings.isPrint;
+            // tslint:disable-next-line
+            let allowedInteractions: any = this.pdfViewer.inkAnnotationSettings.allowedInteractions ? this.pdfViewer.inkAnnotationSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             annot = {
                 // tslint:disable-next-line:max-line-length
                 id: 'ink' + this.pdfViewerBase.inkCount, bounds: { x: currentBounds.x, y: currentBounds.y, width: currentBounds.width, height: currentBounds.height }, pageIndex: pageIndex, data: this.outputString, customData: customData,
                 shapeAnnotationType: 'Ink', opacity: opacity, strokeColor: strokeColor, thickness: thickness, annotName: annotationName, comments: [],
                 author: author , subject: 'Ink', notes: '',
                 review: { state: '', stateModel: '', modifiedDate: modifiedDate, author: author },
-                annotationSelectorSettings: this.getSelector('Ink', ''), modifiedDate: modifiedDate, annotationSettings: { isLock: isLock }
+                annotationSelectorSettings: this.getSelector('Ink', ''), modifiedDate: modifiedDate, annotationSettings: { isLock: isLock },
+                isPrint: isPrint, allowedInteractions: allowedInteractions
             };
             let annotation: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
             // tslint:disable-next-line
@@ -323,7 +327,8 @@ export class InkAnnotation {
                     let isLock: boolean = currentAnnotation.AnnotationSettings ? currentAnnotation.AnnotationSettings.isLock : false;
                     // tslint:disable-next-line
                     let selectorSettings: any = currentAnnotation.AnnotationSelectorSettings ? currentAnnotation.AnnotationSelectorSettings : this.getSelector(currentAnnotation, 'Ink');
-                    let customData: object = currentAnnotation.customData ? currentAnnotation.customData : this.pdfViewer.inkAnnotationSettings.customData;
+                    let customData: object = currentAnnotation.CustomData ? currentAnnotation.CustomData : this.pdfViewer.inkAnnotationSettings.customData;
+                    let isPrint: boolean = currentAnnotation.IsPrint;
                     // tslint:disable-next-line:max-line-length
                     currentAnnotation.allowedInteractions = currentAnnotation.AllowedInteractions ? currentAnnotation.AllowedInteractions :  this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(currentAnnotation);
                     annot = {
@@ -334,7 +339,7 @@ export class InkAnnotation {
                         comments: this.pdfViewer.annotationModule.getAnnotationComments(currentAnnotation.Comments, currentAnnotation, currentAnnotation.Author), author: currentAnnotation.Author, allowedInteractions: currentAnnotation.allowedInteractions, subject: currentAnnotation.Subject, modifiedDate: currentAnnotation.ModifiedDate,
                         // tslint:disable-next-line:max-line-length
                         review: { state: '', stateModel: '', modifiedDate: currentAnnotation.ModifiedDate, author: currentAnnotation.Author }, notes: currentAnnotation.Note, annotationSettings: { isLock: isLock },
-                        annotationSelectorSettings: selectorSettings, customData: customData
+                        annotationSelectorSettings: selectorSettings, customData: customData, isPrint: isPrint
                     };
                     this.pdfViewer.add(annot as PdfAnnotationBase);
                     // tslint:disable-next-line
@@ -503,6 +508,7 @@ export class InkAnnotation {
             let currentWidth: number = (bounds.Width);
             let currentHeight: number = (bounds.Height);
             let customData: object = currentAnnotation.customData;
+            let isPrint: boolean = currentAnnotation.isPrint;
             // tslint:disable-next-line
             let allowedInteractions: any = currentAnnotation.AllowedInteractions ? currentAnnotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(currentAnnotation);
             // tslint:disable-next-line
@@ -517,7 +523,7 @@ export class InkAnnotation {
                 shapeAnnotationType: 'Ink', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, annotationId: currentAnnotation.AnnotName,
                 // tslint:disable-next-line:max-line-length
                 customData: customData, comments: this.pdfViewer.annotationModule.getAnnotationComments(currentAnnotation.Comments, currentAnnotation, currentAnnotation.Author), author: currentAnnotation.Author, allowedInteractions: allowedInteractions, subject: currentAnnotation.Subject, modifiedDate: currentAnnotation.ModifiedDate,
-                review: { state: '', stateModel: '', modifiedDate: currentAnnotation.ModifiedDate, author: currentAnnotation.Author }, notes: currentAnnotation.Note,
+                review: { state: '', stateModel: '', modifiedDate: currentAnnotation.ModifiedDate, author: currentAnnotation.Author }, notes: currentAnnotation.Note, isPrint: isPrint
 
             };
             return annot;

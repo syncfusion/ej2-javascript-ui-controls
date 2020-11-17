@@ -143,7 +143,7 @@ export class Formula {
     }
 
     private renderAutoComplete(): void {
-        if (!this.parent.element.querySelector('#' + this.parent.element.id + '_ac')) {
+        if (!this.parent.element.querySelector('[id="' + this.parent.element.id + '_ac"]')) {
             let acElem: HTMLInputElement = this.parent.createElement(
                 'input', { id: this.parent.element.id + '_ac', className: 'e-ss-ac' }) as HTMLInputElement;
             this.parent.element.appendChild(acElem);
@@ -313,7 +313,7 @@ export class Formula {
         this.isFormulaBar = false;
         if (this.isPopupOpened) {
             this.hidePopUp();
-            let suggPopupElem: HTMLElement = document.querySelector('#' + this.parent.element.id + '_ac_popup');
+            let suggPopupElem: HTMLElement = document.querySelector('[id="' + this.parent.element.id + '_ac_popup"]');
             if (suggPopupElem) {
                 detach(suggPopupElem);
             }

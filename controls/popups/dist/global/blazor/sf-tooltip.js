@@ -159,6 +159,10 @@ var SfTooltip = /** @class */ (function () {
                 if (e.type === 'focus') {
                     sf.base.EventHandler.add(target, 'blur', this.onMouseOut, this);
                 }
+                if (this.properties.closeDelay) {
+                    sf.base.EventHandler.add(this.tooltipEle, 'mouseenter', this.tooltipHover, this);
+                    sf.base.EventHandler.add(this.tooltipEle, 'mouseleave', this.tooltipMouseOut, this);
+                }
             }
             if (this.properties.mouseTrail) {
                 sf.base.EventHandler.add(target, 'mousemove touchstart mouseenter', this.onMouseMove, this);
@@ -222,6 +226,10 @@ var SfTooltip = /** @class */ (function () {
                 if (opensOn === 'Focus') {
                     sf.base.EventHandler.remove(target, 'blur', this.onMouseOut);
                 }
+            }
+            if (this.properties.closeDelay) {
+                sf.base.EventHandler.remove(target, 'mouseenter', this.tooltipHover);
+                sf.base.EventHandler.remove(target, 'mouseleave', this.tooltipMouseOut);
             }
         }
         if (this.properties.mouseTrail) {
@@ -481,6 +489,9 @@ var SfTooltip = /** @class */ (function () {
             if (_this.checkForOpen(_this.properties.opensOn, _this.element, e)) {
                 return;
             }
+            if (_this.properties.closeDelay && _this.tooltipEle && _this.isTooltipOpen) {
+                return;
+            }
             var target;
             if (e) {
                 target = _this.properties.target ? (targetElement || e.target) : _this.element;
@@ -687,13 +698,21 @@ var SfTooltip = /** @class */ (function () {
         }
         sf.base.setStyleAttribute(arrowEle, { 'top': topValue, 'left': leftValue });
     };
+    SfTooltip.prototype.tooltipHover = function (e) {
+        if (this.tooltipEle) {
+            this.isTooltipOpen = true;
+        }
+    };
+    SfTooltip.prototype.tooltipMouseOut = function (e) {
+        this.isTooltipOpen = false;
+        this.hideTooltip(this.properties.animation.close, e, this.findTarget());
+    };
     SfTooltip.prototype.onMouseOut = function (e) {
         var enteredElement = e.relatedTarget;
         if (enteredElement && !this.properties.mouseTrail) {
             var checkForTooltipElement = sf.base.closest(enteredElement, "." + TOOLTIP_WRAP + "." + POPUP_LIB + "." + POPUP_ROOT);
             if (checkForTooltipElement) {
                 sf.base.EventHandler.add(checkForTooltipElement, 'mouseleave', this.tooltipElementMouseOut, this);
-                this.unwireMouseEvents(e.target);
             }
             else {
                 this.hideTooltip(this.properties.animation.close, e, this.findTarget());
@@ -752,7 +771,7 @@ var SfTooltip = /** @class */ (function () {
         }
     };
     SfTooltip.prototype.touchEnd = function (e) {
-        if (this.tooltipEle && sf.base.closest(e.target, '.' + ROOT) === null) {
+        if (this.tooltipEle && sf.base.closest(e.target, '.' + ROOT) === null && !this.properties.isSticky) {
             this.hideTooltip(this.properties.animation.close);
         }
     };

@@ -286,7 +286,8 @@ export class StripLine {
                 tx + (textMid * this.factor(stripline.horizontalAlignment)),
                 rect.width, stripline.horizontalAlignment
             );
-            ty = this.getTextStart(ty - textMid, rect.height, stripline.verticalAlignment) + (isRotationNull ? 0 : (textSize.height / 4));
+            ty = this.getTextStart(ty - textMid, rect.height, stripline.verticalAlignment) +
+                (stripline.verticalAlignment === 'Start' && !isRotationNull ? (textSize.height / 4) : 0);
             anchor = isRotationNull ? this.invertAlignment(stripline.verticalAlignment) : stripline.horizontalAlignment;
 
         } else {

@@ -2705,6 +2705,30 @@ describe('RTE base module', () => {
         });
     });
 
+    describe('RTE Change Events with table', () => {
+        let rteObj: RichTextEditor;
+        let change: boolean = false;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: '<p>testing</p>',
+                change: function (args: any) {
+                    change = true;
+                    expect(change).toBe(true);
+                    expect(args.value).toBe('<table class="main_color e-rte-table" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td valign="top"><table class="e-rte-table" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td height="25"></td></tr><tr><td><table class="e-rte-table" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td width="30" valign="top"><table class="e-rte-table" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td><table class="e-rte-table" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td width="15" height="32" bgcolor="#555a5d"></td><td width="15"></td></tr></tbody></table></td></tr></tbody></table></td><td valign="top"><table class="e-rte-table" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td style="font-family: Helvetica, Arial, Helvetica, sans-serif; font-size: 24px; line-height: 26px; color: #00468b;" class=""><span style="color: #00468b;"><b>{{RecipientTemplateModel.CampaignName}}sdfsdfasdf</b></span></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td style="line-height: 1px; font-size: 1px;" height="14" class="e-cell-select">&nbsp;</td></tr></tbody></table></td></tr><tr><td valign="top"><table class="e-rte-table" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td><table class="e-rte-table" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td width="30" class="">&nbsp;</td><td valign="top"><table class="e-rte-table" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td style="font-family: Helvetica, Arial, Helvetica, sans-serif; font-size: 20px; line-height: 22px; color: #555a5d;" class="title_color"></td></tr><tr><td style="line-height: 1px; font-size: 1px;" height="10">&nbsp;</td></tr><tr><td style="font-family: Helvetica, Arial, Helvetica, sans-serif; font-size: 14px; line-height: 20px; color: #000000;" class=""><div></div><p>Welcome to the <u>October2020 Broker Report</u> (link: <a href="https://blog.crmls.org/brokers/crmls-broker-report-october-2020">https://blog.crmls.org/brokers/crmls-broker-report-october-2020</a><u>)</u>.This information is available for you to share with your agents and officestaff. Resources for you and your agents on any modifications to how you dobusiness are available on our webpage: CRMLSCOVID-19 Resources (link: <a href="https://go.crmls.org/crmls-coronavirus-covid-19-updates/">https://go.crmls.org/crmls-coronavirus-covid-19-updates/</a>). Please make sure to look out foremails from CRMLS and your local association as they become available.</p><p><br></p><p><b>ComplianceCorner</b></p><p>·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Trending Topicsfor Compliance: October 2020 (link to: <a href="https://blog.crmls.org/updates/trending-topics-october-2020/">https://blog.crmls.org/updates/trending-topics-october-2020/</a>)</p><p>·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Paragon usersonly! The last Top Violation Overview webinar is this Thursday, October 29 beforeenforcement ramps up (link to: <a href="https://crmls.zoom.us/webinar/register/WN_BF1j2carRv2Pu221Y0SXEA">https://crmls.zoom.us/webinar/register/WN_BF1j2carRv2Pu221Y0SXEA</a>)</p><p>·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Palm Springsusers only! The last Top Violation Overview webinar is tomorrow, October 28 at2pm before enforcement ramps up (link to: <a href="https://crmls.zoom.us/webinar/register/WN_0jNqnfLTR0-du8-KBuPK_A">https://crmls.zoom.us/webinar/register/WN_0jNqnfLTR0-du8-KBuPK_A</a></p><p>·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Pasadena-Foothills&amp; Ventura users only! The last Top Violation Overview webinars beforeenforcement ramps up are today at 10am &amp; 1pm. Register here (link to:&nbsp; <a href="https://crmls.zoom.us/webinar/register/WN_E5IUI8BrR7y0lSMB5EASCw">https://crmls.zoom.us/webinar/register/WN_E5IUI8BrR7y0lSMB5EASCw</a></p></td></tr><tr><td></td></tr></tbody></table></td><td width="30"></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table>');
+                }
+            });
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Change event checking when table with resize element', () => {
+            expect(rteObj.value).toBe('<p>testing</p>');
+            rteObj.value = '<table class="main_color e-rte-table" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td valign="top"><table class="e-rte-table" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td height="25"></td></tr><tr><td><table class="e-rte-table" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td width="30" valign="top"><table class="e-rte-table" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td><table class="e-rte-table" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td width="15" height="32" bgcolor="#555a5d"></td><td width="15"></td></tr></tbody></table></td></tr></tbody></table></td><td valign="top"><table class="e-rte-table" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td style="font-family: Helvetica, Arial, Helvetica, sans-serif; font-size: 24px; line-height: 26px; color: #00468b;" class=""><span style="color: #00468b;"><b>{{RecipientTemplateModel.CampaignName}}sdfsdfasdf</b></span></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td style="line-height: 1px; font-size: 1px;" height="14" class="e-cell-select">&nbsp;</td></tr></tbody></table></td></tr><tr><td valign="top"><table class="e-rte-table" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td><table class="e-rte-table" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td width="30" class="">&nbsp;</td><td valign="top"><table class="e-rte-table" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td style="font-family: Helvetica, Arial, Helvetica, sans-serif; font-size: 20px; line-height: 22px; color: #555a5d;" class="title_color"></td></tr><tr><td style="line-height: 1px; font-size: 1px;" height="10">&nbsp;</td></tr><tr><td style="font-family: Helvetica, Arial, Helvetica, sans-serif; font-size: 14px; line-height: 20px; color: #000000;" class=""><div></div><p>Welcome to the <u>October2020 Broker Report</u> (link: <a href="https://blog.crmls.org/brokers/crmls-broker-report-october-2020">https://blog.crmls.org/brokers/crmls-broker-report-october-2020</a><u>)</u>.This information is available for you to share with your agents and officestaff. Resources for you and your agents on any modifications to how you dobusiness are available on our webpage: CRMLSCOVID-19 Resources (link: <a href="https://go.crmls.org/crmls-coronavirus-covid-19-updates/">https://go.crmls.org/crmls-coronavirus-covid-19-updates/</a>). Please make sure to look out foremails from CRMLS and your local association as they become available.</p><p><br></p><p><b>ComplianceCorner</b></p><p>·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Trending Topicsfor Compliance: October 2020 (link to: <a href="https://blog.crmls.org/updates/trending-topics-october-2020/">https://blog.crmls.org/updates/trending-topics-october-2020/</a>)</p><p>·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Paragon usersonly! The last Top Violation Overview webinar is this Thursday, October 29 beforeenforcement ramps up (link to: <a href="https://crmls.zoom.us/webinar/register/WN_BF1j2carRv2Pu221Y0SXEA">https://crmls.zoom.us/webinar/register/WN_BF1j2carRv2Pu221Y0SXEA</a>)</p><p>·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Palm Springsusers only! The last Top Violation Overview webinar is tomorrow, October 28 at2pm before enforcement ramps up (link to: <a href="https://crmls.zoom.us/webinar/register/WN_0jNqnfLTR0-du8-KBuPK_A">https://crmls.zoom.us/webinar/register/WN_0jNqnfLTR0-du8-KBuPK_A</a></p><p>·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Pasadena-Foothills&amp; Ventura users only! The last Top Violation Overview webinars beforeenforcement ramps up are today at 10am &amp; 1pm. Register here (link to:&nbsp; <a href="https://crmls.zoom.us/webinar/register/WN_E5IUI8BrR7y0lSMB5EASCw">https://crmls.zoom.us/webinar/register/WN_E5IUI8BrR7y0lSMB5EASCw</a></p></td></tr><tr><td></td></tr></tbody></table></td><td width="30"></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table><span data-row="0" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="width: 1081px; height: 4px; top: 91px; left: 74.6667px;"></span><span data-row="1" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="width: 1081px; height: 4px; top: 115.667px; left: 74.6667px;"></span><span data-row="2" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="width: 1081px; height: 4px; top: 420.333px; left: 74.6667px;"></span><span data-row="3" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="width: 1081px; height: 4px; top: 445px; left: 74.6667px;"></span><span class="e-table-box" data-col="0" unselectable="on" contenteditable="false" style="top: 443px; left: 1151.67px;"></span>';
+            rteObj.dataBind();
+        });
+    });
+
     describe(' valueTemplate property', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;
@@ -3942,6 +3966,9 @@ describe('XHTML validation -iframe', function () {
     afterAll(() => {
         destroy(rteObj);
     });
+    it("EJ2-43894 - When value property not set throws console error issue test case", function () {
+        expect(rteObj.inputElement.innerHTML).toBe('<div><p><br></p></div>');
+    });
     it("clean", function () {
         rteObj.value = "<!-- sit amet --><div><!-- sit amet --><p>adasd</p></div>";
         rteObj.enableXhtml = false;
@@ -4007,6 +4034,12 @@ describe('XHTML validation -iframe', function () {
         rteObj.enableXhtml = true;
         rteObj.dataBind();
         expect(rteObj.inputElement.innerHTML).toBe('<div><p>syncsync</p></div>');
+    });
+    
+    it("EJ2-43894 - Empty value throws console error issue test case", function () {
+        rteObj.value = '';
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe('<div><p><br></p></div>');
     });
 });
 describe('IFrame - Util - setEditFrameFocus method testing', function () {

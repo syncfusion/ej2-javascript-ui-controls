@@ -1,7 +1,7 @@
 /**
  * tab spec document
  */
-import { Browser, createElement, closest, DomElements, L10n, isVisible, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
+import { Browser, createElement, closest, DomElements, L10n, isVisible, isNullOrUndefined as isNOU, detach } from '@syncfusion/ej2-base';
 import { Tab, SelectingEventArgs, RemoveEventArgs, AddEventArgs, SelectEventArgs } from '../src/tab/tab';
 import { TabActionSettingsModel, TabAnimationSettingsModel } from '../src/tab/tab-model';
 import { Toolbar } from '../src/toolbar/toolbar';
@@ -10209,6 +10209,128 @@ describe('Tab Control', () => {
             expect(element.querySelectorAll(".e-toolbar-item")[0].querySelector(".e-tab-text").innerHTML).toBe("headerText1");
             tab.addTab([{ headerTemplate: "Newitem1", content: "NewContent1" }], 0);
             expect(element.querySelectorAll(".e-toolbar-item")[0].querySelector(".e-tab-text").innerHTML).toBe("Newitem1");
+        });
+    });
+
+    describe('refresh currentTab function calling is template is FALSE', () => {
+        let tab: Tab;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Items - headerPlacement checking', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(tab.headerPlacement).toEqual('Top');
+            expect(tab.isStringTemplate).toEqual(false);
+            tab.refreshActiveTab();
+            let ele: any = (tab as any).hdrEle.querySelector('.e-toolbar-item.e-active').children[0];
+            let cont: any = (tab as any).content.querySelector('.e-active').children[0];
+            detach(ele);
+            detach(cont);
+            expect((tab as any).hdrEle.querySelector('.e-toolbar-item.e-active').childElementCount).toEqual(0);
+            expect((tab as any).content.querySelector('.e-active').childElementCount).toEqual(0);
+            let elem: HTMLElement = createElement('div', { id: 'e-tab-text' });
+            elem.setAttribute('role', 'presentation');
+            elem.innerHTML = 'item1';
+            let elemSpan: HTMLElement = createElement('span');
+            elemSpan.setAttribute('title', 'Close');
+            let mainElem: HTMLElement = createElement('div', { id: 'e-text-wrap' });
+            mainElem.appendChild(elem);
+            mainElem.appendChild(elemSpan);
+            let headerEle: HTMLElement = createElement('div', { id: 'e-tab-wrap' });
+            headerEle.setAttribute('tabindex', '-1');
+            headerEle.appendChild(mainElem);
+            (tab as any).hdrEle.querySelector('.e-toolbar-item.e-active').appendChild(headerEle);
+            let subContent: HTMLElement = createElement('div');
+            subContent.innerHTML = 'content';
+            (tab as any).content.querySelector('.e-active').appendChild(subContent);
+            expect((tab as any).hdrEle.querySelector('.e-toolbar-item.e-active').childElementCount).toEqual(1);
+            expect((tab as any).content.querySelector('.e-active').childElementCount).toEqual(1);
+        });
+    });
+
+    describe('Tab direct child element testing', () => {
+        let tab: Tab;
+        let ele: HTMLElement;
+        beforeEach((): void => {
+            tab = undefined;
+            ele = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Items based rendering - Child element checking', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.children.length).toEqual(2);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(1).classList.contains('e-content')).toEqual(true);
+        });
+        it('Template based rendering - Child element checking', () => {
+            ele.innerHTML = '<div class="e-tab-header"> </div> <div class="e-content"></div>';
+            tab = new Tab();
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.children.length).toEqual(2);
+        });
+        it('Items and Template combined input based control rendering test', () => {
+            ele.innerHTML = '<div class="e-tab-header"> <div> item1 </div> </div> <div class="e-content">  <div> <div> content1 </div> </div> </div>';
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.children.length).toEqual(2);
+            expect(element.classList.contains('e-template')).toEqual(true);
+            tab.refreshActiveTab();
+            let eles: any = (tab as any).hdrEle.querySelector('.e-toolbar-item.e-active').children[0];
+            let cont: any = (tab as any).content.querySelector('.e-active').children[0];
+            detach(eles);
+            detach(cont);
+            expect((tab as any).hdrEle.querySelector('.e-toolbar-item.e-active').childElementCount).toEqual(0);
+            expect((tab as any).content.querySelector('.e-active').childElementCount).toEqual(0);
+            let elem: HTMLElement = createElement('div', { id: 'e-tab-text' });
+            elem.setAttribute('role', 'presentation');
+            elem.innerHTML = 'item1';
+            let elemSpan: HTMLElement = createElement('span');
+            elemSpan.setAttribute('title', 'Close');
+            let mainElem: HTMLElement = createElement('div', { id: 'e-text-wrap' });
+            mainElem.appendChild(elem);
+            mainElem.appendChild(elemSpan);
+            let headerEle: HTMLElement = createElement('div', { id: 'e-tab-wrap' });
+            headerEle.setAttribute('tabindex', '-1');
+            headerEle.appendChild(mainElem);
+            (tab as any).hdrEle.querySelector('.e-toolbar-item.e-active').appendChild(headerEle);
+            let subContent: HTMLElement = createElement('div');
+            subContent.innerHTML = 'content';
+            (tab as any).content.querySelector('.e-active').appendChild(subContent);
+            expect((tab as any).hdrEle.querySelector('.e-toolbar-item.e-active').childElementCount).toEqual(1);
+            expect((tab as any).content.querySelector('.e-active').childElementCount).toEqual(1);
         });
     });
 

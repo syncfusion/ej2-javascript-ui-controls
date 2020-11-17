@@ -7154,9 +7154,9 @@ var ChartData = /** @class */ (function () {
         var mouseY;
         for (var len = chart.visibleSeries.length, i = len - 1; i >= 0; i--) {
             series = chart.visibleSeries[i];
-            width = (series.type === 'Scatter' || series.drawType === 'Scatter' || (!series.isRectSeries && series.marker.visible))
+            width = (series.type === 'Scatter' || series.drawType === 'Scatter' || (series.marker.visible))
                 ? (series.marker.height + 5) / 2 : 0;
-            height = (series.type === 'Scatter' || series.drawType === 'Scatter' || (!series.isRectSeries && series.marker.visible))
+            height = (series.type === 'Scatter' || series.drawType === 'Scatter' || (series.marker.visible))
                 ? (series.marker.width + 5) / 2 : 0;
             mouseX = chart.mouseX;
             mouseY = chart.mouseY;
@@ -7224,8 +7224,8 @@ var ChartData = /** @class */ (function () {
                     return point;
                 }
             }
-            if (series.dragSettings.enable && series.isRectSeries) {
-                if (this.rectRegion(x, y, point, rect, series)) {
+            if ((series.dragSettings.enable && series.isRectSeries) || (series.isRectSeries && series.marker.visible)) {
+                if (this.isPointInThresholdRegion(x, y, point, rect, series)) {
                     this.insideRegion = true;
                     return point;
                 }
@@ -7250,14 +7250,14 @@ var ChartData = /** @class */ (function () {
         });
     };
     /**
-     * To find drag region for column and bar series
+     * To check the point in threshold region for column and bar series
      * @param x
      * @param y
      * @param point
      * @param rect
      * @param series
      */
-    ChartData.prototype.rectRegion = function (x, y, point, rect, series) {
+    ChartData.prototype.isPointInThresholdRegion = function (x, y, point, rect, series) {
         var _this = this;
         var isBar = series.type === 'Bar';
         var isInversed = series.yAxis.isInversed;
@@ -12136,7 +12136,7 @@ var Chart$1 = /** @class */ (function (_super) {
      * To render the legend
      */
     Chart$$1.prototype.renderLegend = function () {
-        if (this.legendModule && this.legendModule.legendCollections.length) {
+        if (this.legendModule && this.legendModule.legendCollections.length && this.legendSettings.visible) {
             this.legendModule.calTotalPage = true;
             var borderWidth = this.legendSettings.border.width;
             var bounds = this.legendModule.legendBounds;
@@ -12445,7 +12445,7 @@ var Chart$1 = /** @class */ (function (_super) {
         var top = margin.top + subTitleHeight + titleHeight + this.chartArea.border.width * 0.5;
         var height = this.availableSize.height - top - this.border.width - margin.bottom;
         this.initialClipRect = new sf.svgbase.Rect(left, top, width, height);
-        if (this.legendModule) {
+        if (this.legendModule && this.legendSettings.visible) {
             this.legendModule.calculateLegendBounds(this.initialClipRect, this.availableSize, null);
         }
         this.chartAxisLayoutPanel.measureAxis(this.initialClipRect);
@@ -15417,7 +15417,8 @@ var StripLine = /** @class */ (function () {
         var padding = 5;
         if (axis.orientation === 'Horizontal') {
             tx = this.getTextStart(tx + (textMid * this.factor(stripline.horizontalAlignment)), rect.width, stripline.horizontalAlignment);
-            ty = this.getTextStart(ty - textMid, rect.height, stripline.verticalAlignment) + (isRotationNull ? 0 : (textSize.height / 4));
+            ty = this.getTextStart(ty - textMid, rect.height, stripline.verticalAlignment) +
+                (stripline.verticalAlignment === 'Start' && !isRotationNull ? (textSize.height / 4) : 0);
             anchor = isRotationNull ? this.invertAlignment(stripline.verticalAlignment) : stripline.horizontalAlignment;
         }
         else {
@@ -16055,7 +16056,14 @@ var ColumnBase = /** @class */ (function () {
         if (check <= 0) {
             return null;
         }
-        var direction = this.calculateRoundedRectPath(rect, series.cornerRadius.topLeft, series.cornerRadius.topRight, series.cornerRadius.bottomLeft, series.cornerRadius.bottomRight);
+        var direction;
+        if (point.y === 0) {
+            // For 0 values corner radius will not calculate
+            direction = this.calculateRoundedRectPath(rect, 0, 0, 0, 0);
+        }
+        else {
+            direction = this.calculateRoundedRectPath(rect, series.cornerRadius.topLeft, series.cornerRadius.topRight, series.cornerRadius.bottomLeft, series.cornerRadius.bottomRight);
+        }
         var name = series.category === 'Indicator' ? chart.element.id + '_Indicator_' + series.index + '_' + series.name +
             '_Point_' + point.index : chart.element.id + '_Series_' + series.index + '_Point_' + point.index;
         var previousElement = redrawElement(chart.redraw, name);
@@ -29721,7 +29729,7 @@ var ScrollBar = /** @class */ (function () {
         var circleWidth = 16;
         if (this.isResizeRight || thumbMove === 'RightMove') {
             currentScrollWidth = this.isResizeRight ? currentScrollWidth + circleWidth : currentScrollWidth;
-            zoomFactor = currentScrollWidth / this.width;
+            zoomFactor = (currentScrollWidth + circleRadius) / this.width;
             zoomPosition = thumbMove === 'RightMove' ? (scrollThumbX + circleRadius) / this.width : this.axis.zoomPosition;
             currentStart = thumbMove === 'RightMove' ? (range.min + zoomPosition * range.delta) : this.previousStart;
             currentEnd = currentStart + zoomFactor * range.delta;

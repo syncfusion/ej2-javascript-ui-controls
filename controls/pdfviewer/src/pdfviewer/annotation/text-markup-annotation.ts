@@ -44,6 +44,7 @@ export interface ITextMarkupAnnotation {
     // tslint:disable-next-line
     annotationSettings?: any;
     allowedInteractions?: AllowedInteraction;
+    isPrint: boolean;
 }
 
 /**
@@ -516,7 +517,7 @@ export class TextMarkupAnnotation {
                             annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber,
                             textMarkupContent: '', textMarkupStartIndex: 0, textMarkupEndIndex: 0, annotationSelectorSettings: this.getSettings(annotation),
                             // tslint:disable-next-line:max-line-length
-                            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode: annotation.annotationAddMode, annotationSettings: annotation.AnnotationSettings
+                            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode: annotation.annotationAddMode, annotationSettings: annotation.AnnotationSettings, isPrint: annotation.IsPrint
                         };
                         if (annotation.IsMultiSelect) {
                             annotationObject.annotNameCollection = annotation.AnnotNameCollection;
@@ -536,15 +537,22 @@ export class TextMarkupAnnotation {
                     let annotBounds: any = annotation.Bounds ? annotation.Bounds : annotation.bounds;
                     let opacity: number = annotation.Opacity ? annotation.Opacity : annotation.opacity;
                     let color: string = annotation.Color ? annotation.Color : annotation.color;
+                    let isPrint: boolean;
+                    if (annotation.TextMarkupAnnotationType) {
+                        isPrint = annotation.IsPrint;
+                    }
+                    if (annotation.textMarkupAnnotationType) {
+                        isPrint = annotation.isPrint;
+                    }
                     switch (type) {
                         case 'Highlight':
-                            this.renderHighlightAnnotation(annotBounds, opacity, color, context, factor);
+                            this.renderHighlightAnnotation(annotBounds, opacity, color, context, factor, isPrint, pageNumber);
                             break;
                         case 'Strikethrough':
-                            this.renderStrikeoutAnnotation(annotBounds, opacity, color, context, factor, pageNumber);
+                            this.renderStrikeoutAnnotation(annotBounds, opacity, color, context, factor, pageNumber, isPrint);
                             break;
                         case 'Underline':
-                            this.renderUnderlineAnnotation(annotBounds, opacity, color, context, factor, pageNumber);
+                            this.renderUnderlineAnnotation(annotBounds, opacity, color, context, factor, pageNumber, isPrint);
                             break;
                     }
                 }
@@ -981,7 +989,8 @@ export class TextMarkupAnnotation {
                     // tslint:disable-next-line:max-line-length
                     annotation = this.getAddedAnnotation(type, this.highlightColor, this.highlightOpacity, bounds, author, subject, modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions);
                     if (annotation) {
-                        this.renderHighlightAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor);
+                        // tslint:disable-next-line:max-line-length
+                        this.renderHighlightAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, annotation.isPrint, pageNumber);
                     }
                     break;
                 case 'Strikethrough':
@@ -994,7 +1003,7 @@ export class TextMarkupAnnotation {
                     annotation = this.getAddedAnnotation(type, this.strikethroughColor, this.strikethroughOpacity, bounds, author, subject, modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions);
                     if (annotation) {
                         // tslint:disable-next-line:max-line-length
-                        this.renderStrikeoutAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, pageNumber);
+                        this.renderStrikeoutAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, pageNumber, annotation.isPrint);
                     }
                     break;
                 case 'Underline':
@@ -1007,7 +1016,7 @@ export class TextMarkupAnnotation {
                     annotation = this.getAddedAnnotation(type, this.underlineColor, this.underlineOpacity, bounds, author, subject, modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions);
                     if (annotation) {
                     // tslint:disable-next-line:max-line-length   
-                        this.renderUnderlineAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, pageNumber);
+                        this.renderUnderlineAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, pageNumber, annotation.isPrint);
                     }
                     break;
             }
@@ -1047,7 +1056,7 @@ export class TextMarkupAnnotation {
     }
 
     // tslint:disable-next-line
-    private renderHighlightAnnotation(bounds: any[], opacity: number, color: string, context: CanvasRenderingContext2D, factor: number): void {
+    private renderHighlightAnnotation(bounds: any[], opacity: number, color: string, context: CanvasRenderingContext2D, factor: number, isPrint: boolean, pageIndex: number): void {
         for (let i: number = 0; i < bounds.length; i++) {
             // tslint:disable-next-line
             let bound: any = bounds[i];
@@ -1056,43 +1065,79 @@ export class TextMarkupAnnotation {
             let y: number = bound.Y ? bound.Y : bound.top;
             let width: number = bound.Width ? bound.Width : bound.width;
             let height: number = bound.Height ? bound.Height : bound.height;
-            // tslint:disable-next-line:max-line-length
-            context.rect((x * factor), (y * factor), (width * factor), (height * factor));
-            context.globalAlpha = opacity * 0.5;
-            context.closePath();
-            context.fillStyle = color;
-            context.msFillRule = 'nonzero';
-            context.fill();
+            if (context.canvas.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex) {
+                if (isPrint) {
+                    // tslint:disable-next-line:max-line-length
+                    context.rect((x * factor), (y * factor), (width * factor), (height * factor));
+                    context.globalAlpha = opacity * 0.5;
+                    context.closePath();
+                    context.fillStyle = color;
+                    context.msFillRule = 'nonzero';
+                    context.fill();
+                }
+            } else {
+                // tslint:disable-next-line:max-line-length
+                context.rect((x * factor), (y * factor), (width * factor), (height * factor));
+                context.globalAlpha = opacity * 0.5;
+                context.closePath();
+                context.fillStyle = color;
+                context.msFillRule = 'nonzero';
+                context.fill();
+            }
         }
         context.save();
     }
 
     // tslint:disable-next-line
-    private renderStrikeoutAnnotation(bounds: any[], opacity: number, color: string, context: CanvasRenderingContext2D, factor: number, pageNumber: number): void {
+    private renderStrikeoutAnnotation(bounds: any[], opacity: number, color: string, context: CanvasRenderingContext2D, factor: number, pageNumber: number, isPrint: boolean): void {
         for (let i: number = 0; i < bounds.length; i++) {
             // tslint:disable-next-line
             let bound: any = this.getProperBounds(bounds[i]);
             let pageDetails: ISize = this.pdfViewerBase.pageSize[pageNumber];
-            if (pageDetails.rotation === 1) {
-                // tslint:disable-next-line:max-line-length
-                this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factor, context, pageNumber);
-            } else if (pageDetails.rotation === 2) {
-                // tslint:disable-next-line:max-line-length
-                this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factor, context, pageNumber);
-            } else if (pageDetails.rotation === 3) {
-                this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factor, context, pageNumber);
+            if (context.canvas.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageNumber) {
+                if (isPrint) {
+                    if (pageDetails.rotation === 1) {
+                        // tslint:disable-next-line:max-line-length
+                        this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factor, context, pageNumber);
+                    } else if (pageDetails.rotation === 2) {
+                        // tslint:disable-next-line:max-line-length
+                        this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factor, context, pageNumber);
+                    } else if (pageDetails.rotation === 3) {
+                        this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factor, context, pageNumber);
+                    } else {
+                        this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factor, context, pageNumber);
+                    }
+                }
             } else {
-                this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factor, context, pageNumber);
+                if (pageDetails.rotation === 1) {
+                    // tslint:disable-next-line:max-line-length
+                    this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factor, context, pageNumber);
+                } else if (pageDetails.rotation === 2) {
+                    // tslint:disable-next-line:max-line-length
+                    this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factor, context, pageNumber);
+                } else if (pageDetails.rotation === 3) {
+                    this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factor, context, pageNumber);
+                } else {
+                    this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factor, context, pageNumber);
+                }
             }
         }
     }
 
     // tslint:disable-next-line
-    private renderUnderlineAnnotation(bounds: any[], opacity: number, color: string, context: CanvasRenderingContext2D, factor: number, pageNumber: number): void {
+    private renderUnderlineAnnotation(bounds: any[], opacity: number, color: string, context: CanvasRenderingContext2D, factor: number, pageNumber: number, isPrint: boolean): void {
         for (let i: number = 0; i < bounds.length; i++) {
             // tslint:disable-next-line
             let boundValues: any = this.getProperBounds(bounds[i]);
-            this.drawLine(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factor, context, pageNumber);
+            if (context.canvas.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageNumber) {
+                if (isPrint) {
+                    // tslint:disable-next-line:max-line-length
+                    this.drawLine(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factor, context, pageNumber);
+                }
+            } else {
+                // tslint:disable-next-line:max-line-length
+                this.drawLine(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factor, context, pageNumber);
+            }
         }
     }
 
@@ -2361,13 +2406,14 @@ export class TextMarkupAnnotation {
         }
         // tslint:disable-next-line
         let annotationSettings: object =  this.getAnnotationSettings(type);
+        let isPrint: boolean = this.getIsPrintValue(type);
         let annotation: ITextMarkupAnnotation = {
             // tslint:disable-next-line:max-line-length
             textMarkupAnnotationType: type, color: color, opacity: opacity, bounds: bounds, author: author, allowedInteractions: allowedInteractions, subject: subject, modifiedDate: modifiedDate, note: note, rect: rect,
             annotName: annotationName, comments: [], review: { state: '', stateModel: '', author: author, modifiedDate: modifiedDate }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber,
                // tslint:disable-next-line:max-line-length
             textMarkupContent: textContent, textMarkupStartIndex: startIndex, textMarkupEndIndex: endIndex, isMultiSelect: isMultiSelect, annotationSelectorSettings: this.getSelector(type),
-            customData: this.pdfViewer.annotation.getTextMarkupData(subject), annotationAddMode: this.annotationAddMode, annotationSettings: annotationSettings
+            customData: this.pdfViewer.annotation.getTextMarkupData(subject), annotationAddMode: this.annotationAddMode, annotationSettings: annotationSettings, isPrint: isPrint
         };
         if (isMultiSelect) {
             this.multiPageCollection.push(annotation);
@@ -2407,6 +2453,19 @@ export class TextMarkupAnnotation {
             annotationSettings = { isLock : true };
         }
         return annotationSettings;
+    }
+    private getIsPrintValue(type: string): boolean {
+        let isPrint: boolean = true;
+        if (type === 'Highlight') {
+            isPrint = this.pdfViewer.highlightSettings.isPrint;
+        }
+        if (type === 'Underline') {
+            isPrint = this.pdfViewer.underlineSettings.isPrint;
+        }
+        if (type === 'Strikethrough') {
+            isPrint = this.pdfViewer.strikethroughSettings.isPrint;
+        }
+        return isPrint;
     }
     // tslint:disable-next-line
     private annotationDivSelect(annotation: any, pageNumber: number): any {
@@ -2482,7 +2541,7 @@ export class TextMarkupAnnotation {
             // tslint:disable-next-line:max-line-length
             textMarkupEndIndex: 0, annotationSelectorSettings: this.getSettings(annotation), customData: this.pdfViewer.annotation.getCustomData(annotation),
             isMultiSelect: annotation.IsMultiSelect, annotNameCollection: annotation.AnnotNameCollection, annotpageNumbers: annotation.AnnotpageNumbers,
-            annotationAddMode: this.annotationAddMode, annotationSettings : annotation.AnnotationSettings
+            annotationAddMode: this.annotationAddMode, annotationSettings : annotation.AnnotationSettings, isPrint: annotation.isPrint
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_textMarkup');
     }
@@ -2499,7 +2558,8 @@ export class TextMarkupAnnotation {
         annotationObject = {
             // tslint:disable-next-line:max-line-length
             textMarkupAnnotationType: annotation.TextMarkupAnnotationType, allowedInteractions: annotation.allowedInteractions, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
-            annotationId: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber, isMultiSelect: annotation.IsMultiSelect, annotNameCollection: annotation.AnnotNameCollection, annotpageNumbers: annotation.AnnotpageNumbers, customData: this.pdfViewer.annotation.getCustomData(annotation)
+            annotationId: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber, isMultiSelect: annotation.IsMultiSelect, annotNameCollection: annotation.AnnotNameCollection, annotpageNumbers: annotation.AnnotpageNumbers, customData: this.pdfViewer.annotation.getCustomData(annotation),
+            isPrint: annotation.isPrint
         };
         return annotationObject;
     }

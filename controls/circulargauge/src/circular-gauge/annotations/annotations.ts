@@ -4,7 +4,7 @@ import { stringToNumber, GaugeLocation, getLocationFromAngle, getFontStyle } fro
 import { getElement, getTemplateFunction, measureElementRect } from '../utils/helper';
 import { IAnnotationRenderEventArgs } from '../model/interface';
 import { annotationRender } from '../model/constants';
-import { createElement, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { createElement, updateBlazorTemplate, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Annotation Module handles the Annotation of the axis.
@@ -32,7 +32,9 @@ export class Annotations {
             id: this.elementId + '_Annotations_' + index
         });
         let parentElement: Element = getElement(this.elementId + '_Secondary_Element');
-        document.getElementById(this.elementId + '_Secondary_Element').style.width = width + 'px';
+        if (!isNullOrUndefined(document.getElementById(this.elementId + '_Secondary_Element'))) {
+            document.getElementById(this.elementId + '_Secondary_Element').style.width = width + 'px';
+        }
         axis.annotations.map((annotation: Annotation, annotationIndex: number) => {
             if (annotation.content !== null) {
                 this.createTemplate(element, annotationIndex, index);

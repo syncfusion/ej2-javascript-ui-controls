@@ -2023,7 +2023,8 @@ var Uploader = /** @class */ (function (_super) {
             var eventArgs = {
                 event: e,
                 fileData: files,
-                cancel: false
+                cancel: false,
+                customFormData: []
             };
             this.trigger('canceling', eventArgs, function (eventArgs) {
                 if (eventArgs.cancel) {
@@ -2044,6 +2045,7 @@ var Uploader = /** @class */ (function (_super) {
                         var name_2 = _this.element.getAttribute('name');
                         formData.append(name_2, files.name);
                         formData.append('cancel-uploading', files.name);
+                        _this.updateFormData(formData, eventArgs.customFormData);
                         var ajax = new sf.base.Ajax(_this.asyncSettings.removeUrl, 'POST', true, null);
                         ajax.emitError = false;
                         ajax.onLoad = function (e) { _this.removecanceledFile(e, files); return {}; };
@@ -2498,7 +2500,7 @@ var Uploader = /** @class */ (function (_super) {
                 metaData.file.statusCode = '3';
             }
             if (metaData.file.statusCode === '5') {
-                var eventArgs_1 = { event: e, fileData: metaData.file, cancel: false };
+                var eventArgs_1 = { event: e, fileData: metaData.file, cancel: false, customFormData: [] };
                 this.trigger('canceling', eventArgs_1, function (eventArgs) {
                     /* istanbul ignore next */
                     if (eventArgs.cancel) {
@@ -2518,6 +2520,7 @@ var Uploader = /** @class */ (function (_super) {
                         formData.append(name_3, metaData.file.name);
                         formData.append('cancel-uploading', metaData.file.name);
                         formData.append('cancelUploading', metaData.file.name);
+                        _this.updateFormData(formData, eventArgs.customFormData);
                         var ajax = new sf.base.Ajax(_this.asyncSettings.removeUrl, 'POST', true, null);
                         ajax.emitError = false;
                         ajax.onLoad = function (e) { _this.removeChunkFile(e, metaData, custom); return {}; };

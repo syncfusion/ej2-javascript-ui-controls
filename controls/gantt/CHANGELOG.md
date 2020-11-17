@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.3.50 (2020-11-17)
+
+### Gantt
+
+#### Bug Fixes
+
+- `293889` - Console error in split task when allowTaskbarEditing is disable has been fixed.
+- `300744` - Console error on clicking add/edit toolbar has been fixed.
+
 ## 18.3.48 (2020-11-11)
 
 ### Gantt

@@ -13785,7 +13785,7 @@ class Renderer {
         this.pageContext.lineTo(this.getScaledValue(endX, 1), this.getScaledValue(endY, 2));
         this.pageContext.lineWidth = this.getScaledValue(lineWidth);
         // set line color
-        this.pageContext.strokeStyle = color;
+        this.pageContext.strokeStyle = HelperMethods.getColor(color);
         if (lineWidth > 0) {
             this.pageContext.stroke();
         }
@@ -42650,6 +42650,9 @@ class Selection {
             let count = 0;
             for (let j = 0; j < lineWidget.children.length; j++) {
                 let inline = lineWidget.children[j];
+                if (inline instanceof ListTextElementBox) {
+                    continue;
+                }
                 if (startOffset >= count + inline.length) {
                     count += inline.length;
                     continue;
@@ -68967,9 +68970,11 @@ class WordExport {
                 this.serializeBodyItem(writer, blocks[k], true);
                 this.isInsideComment = false;
             }
-            //if (blocks.length === 0 && this.commentParaID === 0) {
+            if (blocks.length === 0) {
+                this.isInsideComment = true;
+                this.commentParaID++;
+            }
             this.commentParaIDInfo[comment.commentId] = this.commentParaID;
-            //}
             //}
             this.isInsideComment = false;
             //}
@@ -75420,6 +75425,10 @@ class SfdtExport {
     writeCharacterFormat(format, isInline) {
         let characterFormat = {};
         HelperMethods.writeCharacterFormat(characterFormat, isInline, format);
+        characterFormat.boldBidi = isInline ? format.bold : format.getValue('bold');
+        characterFormat.italicBidi = isInline ? format.italic : format.getValue('italic');
+        characterFormat.fontSizeBidi = isInline ? format.fontSize : format.getValue('fontSize');
+        characterFormat.fontFamilyBidi = isInline ? format.fontFamily : format.getValue('fontFamily');
         if (this.writeInlineStyles && !isInline) {
             characterFormat.inlineFormat = this.writeCharacterFormat(format, true);
         }

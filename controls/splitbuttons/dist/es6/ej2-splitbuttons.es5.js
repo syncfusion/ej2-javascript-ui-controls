@@ -503,14 +503,15 @@ var DropDownButton = /** @__PURE__ @class */ (function (_super) {
     };
     DropDownButton.prototype.mousedownHandler = function (e) {
         var trgt = e.target;
-        if (!this.canOpen() && !(closest(trgt, '#' + this.getPopUpElement().id) || closest(trgt, '#' + this.element.id))) {
+        if (!this.canOpen() && !(closest(trgt, '[id="' + this.getPopUpElement().id + '"]')
+            || closest(trgt, '[id="' + this.element.id + '"]'))) {
             this.closePopup(e);
         }
     };
     DropDownButton.prototype.clickHandler = function (e) {
         var trgt = e.target;
         var canOpen = this.canOpen();
-        if (closest(trgt, '#' + this.element.id)) {
+        if (closest(trgt, '[id="' + this.element.id + '"]')) {
             if (canOpen) {
                 this.openPopUp(e);
             }
@@ -519,7 +520,7 @@ var DropDownButton = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else {
-            if (closest(trgt, '#' + this.getPopUpElement().id)) {
+            if (closest(trgt, '[id="' + this.getPopUpElement().id + '"]')) {
                 var eventArgs = void 0;
                 var liIdx = void 0;
                 var item = void 0;

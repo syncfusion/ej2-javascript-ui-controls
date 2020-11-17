@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 18.3.50 (2020-11-17)
+
+### Menu
+
+#### Bug Fixes
+
+- `#298633` - Sub menu closed while clicking on the scroll bar issue resolved.
+
+### Tab
+
+#### New Features
+
+- `#298781, #159033, #301025, #299403, #301347` - Provided `refreshActiveTab` public method to refresh the active tab item.
+
 ## 18.3.47 (2020-11-05)
 
 ### TreeView

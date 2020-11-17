@@ -4658,6 +4658,7 @@ public mouseDownHandler(event: MouseEvent): void {
             (document.body || document.documentElement).appendChild(anchorElement);
             anchorElement.click();
             anchorElement.parentNode.removeChild(anchorElement);
+            this.pdfViewer.fireExportSuccess(blobUrl, (anchorElement as HTMLAnchorElement).download);
         }
     }
     /**
@@ -4721,7 +4722,7 @@ public mouseDownHandler(event: MouseEvent): void {
                         } else if (data.split('base64,')[1]) {
                             let blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/json');
                             if (Browser.isIE || Browser.info.name === 'edge') {
-                                window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0]);
+                                window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0] + '.json');
                             } else {
                                 proxy.downloadExportAnnotationJson(blobUrl, true);
                             }
@@ -6582,6 +6583,7 @@ public mouseDownHandler(event: MouseEvent): void {
 
            } else {
                jsonObject = this.constructJsonDownload();
+               proxy.pdfViewer.fireExportStart(jsonObject);
                jsonObject.annotationDataFormat = annotationDataFormat;
                // tslint:disable-next-line
                jsonObject['action'] = 'ExportAnnotations';
@@ -6628,9 +6630,9 @@ public mouseDownHandler(event: MouseEvent): void {
                                     if (Browser.isIE || Browser.info.name === 'edge') {
                                         if (proxy.pdfViewer.exportAnnotationFileName !== null) {
                                             // tslint:disable-next-line:max-line-length
-                                            window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.exportAnnotationFileName.split('.')[0]);
+                                            window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.exportAnnotationFileName.split('.')[0] + '.json');
                                         } else {
-                                            window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0]);
+                                            window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0] + '.json');
                                         }
                                     } else {
                                         proxy.downloadExportAnnotationJson(blobUrl);
@@ -6652,7 +6654,7 @@ public mouseDownHandler(event: MouseEvent): void {
                                 } else {
                                     proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('Export Failed'));
                                     // tslint:disable-next-line:max-line-length
-                                    proxy.pdfViewer.fireExportFailed(jsonObject.pdfAnnotation, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
+                                    proxy.pdfViewer.fireExportFailed(jsonObject, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
                                 }
                             }
                         }
@@ -8112,8 +8114,11 @@ public mouseDownHandler(event: MouseEvent): void {
         }
     }
 
+    /**
+     * @private
+     */
     // tslint:disable-next-line
-    private convertBounds(bounds: any): any {
+    public convertBounds(bounds: any): any {
         if (bounds) {
             let x: number = bounds.x ? bounds.x : bounds.left ? bounds.left : bounds.Left ? bounds.Left : 0;
             let y: number = bounds.y ? bounds.y : bounds.top ? bounds.top : bounds.Top ? bounds.Top : 0;

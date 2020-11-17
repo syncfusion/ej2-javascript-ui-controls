@@ -447,7 +447,7 @@ export class ScrollBar {
     let circleWidth: number = 16;
     if (this.isResizeRight || thumbMove === 'RightMove') {
         currentScrollWidth = this.isResizeRight ? currentScrollWidth + circleWidth : currentScrollWidth;
-        zoomFactor = currentScrollWidth / this.width;
+        zoomFactor = (currentScrollWidth + circleRadius) / this.width;
         zoomPosition = thumbMove === 'RightMove' ? (scrollThumbX + circleRadius) / this.width : this.axis.zoomPosition;
         currentStart = thumbMove === 'RightMove' ? (range.min + zoomPosition * range.delta) : this.previousStart;
         currentEnd = currentStart + zoomFactor * range.delta;

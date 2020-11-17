@@ -1,4 +1,4 @@
-import { print as printWindow, createElement, detach, classList } from '@syncfusion/ej2-base';
+import { print as printWindow, createElement, detach, classList, selectAll } from '@syncfusion/ej2-base';
 import { IGrid, PrintEventArgs } from '../base/interface';
 import { getPrintGridModel } from '../base/util';
 import { Scroll } from '../actions/scroll';
@@ -205,18 +205,18 @@ export class Print {
         if (!depth) {
             return;
         }
-        let groupCaption: NodeList = element.querySelectorAll(`${id}captioncell.e-groupcaption`);
+        let groupCaption: HTMLElement[] = selectAll(`${id}captioncell.e-groupcaption`, element);
         let colSpan: string = (<HTMLElement>groupCaption[depth - 1]).getAttribute('colspan');
         for (let i: number = 0; i < groupCaption.length; i++) {
             (<HTMLElement>groupCaption[i]).setAttribute('colspan', colSpan);
         }
-        let colGroups: NodeList = element.querySelectorAll(`colgroup${id}colGroup`);
-        let contentColGroups: NodeList = element.querySelector('.e-content').querySelectorAll('colgroup');
+        let colGroups: HTMLElement[] = selectAll(`colgroup${id}colGroup`, element);
+        let contentColGroups: HTMLElement[] = selectAll('.e-content colgroup', element);
         this.hideColGroup(colGroups, depth);
         this.hideColGroup(contentColGroups, depth);
     }
 
-    private hideColGroup(colGroups: NodeList, depth: number): void {
+    private hideColGroup(colGroups: HTMLElement[], depth: number): void {
         for (let i: number = 0; i < colGroups.length; i++) {
             for (let j: number = 0; j < depth; j++) {
                 (<HTMLElement>(<HTMLElement>colGroups[i]).children[j]).style.display = 'none';

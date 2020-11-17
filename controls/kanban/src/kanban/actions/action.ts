@@ -94,31 +94,33 @@ export class Action {
     public cardClick(e: KeyboardEvent, selectedCard?: HTMLElement): void {
         let target: Element = closest((selectedCard) ? selectedCard : e.target as Element, '.' + cls.CARD_CLASS);
         let cardClickObj: { [key: string]: Object } = this.parent.getCardDetails(target) as { [key: string]: Object };
-        this.parent.activeCardData = { data: cardClickObj, element: target };
-        let args: CardClickEventArgs = { data: cardClickObj, element: target, cancel: false, event: e };
-        this.parent.trigger(events.cardClick, args, (clickArgs: CardClickEventArgs) => {
-            if (!clickArgs.cancel) {
-                if (target.classList.contains(cls.CARD_SELECTION_CLASS) && e.type === 'click') {
-                    removeClass([target], cls.CARD_SELECTION_CLASS);
-                    this.parent.layoutModule.disableAttributeSelection(target);
-                } else {
-                    let isCtrlKey: boolean = e.ctrlKey;
-                    if (this.parent.isAdaptive && this.parent.touchModule) {
-                        isCtrlKey = (this.parent.touchModule.mobilePopup && this.parent.touchModule.tabHold) || isCtrlKey;
+        if (cardClickObj) {
+            this.parent.activeCardData = { data: cardClickObj, element: target };
+            let args: CardClickEventArgs = { data: cardClickObj, element: target, cancel: false, event: e };
+            this.parent.trigger(events.cardClick, args, (clickArgs: CardClickEventArgs) => {
+                if (!clickArgs.cancel) {
+                    if (target.classList.contains(cls.CARD_SELECTION_CLASS) && e.type === 'click') {
+                        removeClass([target], cls.CARD_SELECTION_CLASS);
+                        this.parent.layoutModule.disableAttributeSelection(target);
+                    } else {
+                        let isCtrlKey: boolean = e.ctrlKey;
+                        if (this.parent.isAdaptive && this.parent.touchModule) {
+                            isCtrlKey = (this.parent.touchModule.mobilePopup && this.parent.touchModule.tabHold) || isCtrlKey;
+                        }
+                        this.cardSelection(target, isCtrlKey, e.shiftKey);
                     }
-                    this.cardSelection(target, isCtrlKey, e.shiftKey);
+                    if (this.parent.isAdaptive && this.parent.touchModule) {
+                        this.parent.touchModule.updatePopupContent();
+                    }
+                    let cell: Element = closest(target, '.' + cls.CONTENT_CELLS_CLASS);
+                    if (this.parent.allowKeyboard) {
+                        let element: HTMLElement[] = [].slice.call(cell.querySelectorAll('.' + cls.CARD_CLASS));
+                        element.forEach((e: HTMLElement): void => { e.setAttribute('tabindex', '0'); });
+                        this.parent.keyboardModule.addRemoveTabIndex('Remove');
+                    }
                 }
-                if (this.parent.isAdaptive && this.parent.touchModule) {
-                    this.parent.touchModule.updatePopupContent();
-                }
-                let cell: Element = closest(target, '.' + cls.CONTENT_CELLS_CLASS);
-                if (this.parent.allowKeyboard) {
-                    let element: HTMLElement[] = [].slice.call(cell.querySelectorAll('.' + cls.CARD_CLASS));
-                    element.forEach((e: HTMLElement): void => { e.setAttribute('tabindex', '0'); });
-                    this.parent.keyboardModule.addRemoveTabIndex('Remove');
-                }
-            }
-        });
+            });
+        }
     }
 
     private cardDoubleClick(e: Event): void {

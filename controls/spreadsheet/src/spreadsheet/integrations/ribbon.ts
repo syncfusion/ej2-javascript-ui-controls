@@ -139,7 +139,7 @@ export class Ribbon {
                     {
                         prefixIcon: 'e-image-icon', text: l10n.getConstant('Image'),
                         id: id + '_', tooltipText: l10n.getConstant('Image'), click: (): void => {
-                             (this.parent.element.querySelector('#' + id + '_imageUpload') as HTMLElement).click(); }
+                             (this.parent.element.querySelector('[id="' + id + '_imageUpload"]') as HTMLElement).click(); }
                     }]
             },
             {
@@ -1567,7 +1567,7 @@ export class Ribbon {
         if (!selectArgs.cancel) {
             switch (args.item.id) {
                 case `${id}_Open`:
-                    (this.parent.element.querySelector('#' + id + '_fileUpload') as HTMLElement).click();
+                    (this.parent.element.querySelector('[id="' + id + '_fileUpload"]') as HTMLElement).click();
                     break;
                 case `${id}_Xlsx`:
                 case `${id}_Xls`:
@@ -1721,7 +1721,8 @@ export class Ribbon {
 
     private updateToggleText(item: string, text: string): void {
         getUpdateUsingRaf((): void => {
-            this.ribbon.element.querySelector(`#${this.parent.element.id}_${item} .e-tbar-btn-text`).textContent = text;
+            this.ribbon.element.querySelector('[id="' + `${this.parent.element.id}_${item}` + '"]' + ' .e-tbar-btn-text')
+                .textContent = text;
         });
     }
 
@@ -1991,7 +1992,7 @@ export class Ribbon {
         let ribbonEle: HTMLElement = this.ribbon.element;
         let id: string = parentElem.id;
         ['bold', 'italic', 'line-through', 'underline'].forEach((name: string): void => {
-            destroyComponent(parentElem.querySelector('#' + `${id}_${name}`), Button);
+            destroyComponent(parentElem.querySelector('[id="' + `${id}_${name}` + '"]'), Button);
         });
         this.pasteSplitBtn.destroy(); this.pasteSplitBtn = null;
         this.mergeSplitBtn.destroy(); this.mergeSplitBtn = null;

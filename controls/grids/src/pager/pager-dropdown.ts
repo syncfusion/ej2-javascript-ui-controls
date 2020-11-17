@@ -116,7 +116,7 @@ export class PagerDropDown {
     private convertValue(pageSizeValue: (number | string)[]): (number | string)[] {
         let item: (number | string)[] = pageSizeValue;
         for (let i: number = 0; i < item.length; i++) {
-            item[i] = typeof item[i] === 'number' ? item[i].toString() : item[i];
+            item[i] = parseInt(item[i] as string, 10) ? item[i].toString() : this.pagerModule.getLocalizedLabel(item[i] as string);
         }
         return item as string[];
     }

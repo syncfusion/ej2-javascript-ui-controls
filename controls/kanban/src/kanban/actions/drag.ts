@@ -270,7 +270,9 @@ export class DragAndDrop {
         let columnKey: Element;
         let dropIndex: number;
         if (this.dragObj.targetClone.parentElement) {
-            dropIndex = [].slice.call(this.dragObj.targetClone.parentElement.children).indexOf(this.dragObj.targetClone);
+            let className: string = '.' + cls.CARD_CLASS + ':not(.' + cls.DRAGGED_CARD_CLASS + '),.' + cls.DROPPED_CLONE_CLASS;
+            let element: HTMLElement[] = [].slice.call(this.dragObj.targetClone.parentElement.querySelectorAll(className));
+            dropIndex = element.indexOf(this.dragObj.targetClone);
         }
         if (this.parent.element.querySelector('.' + cls.TARGET_MULTI_CLONE_CLASS)) {
             columnKey = closest(e.target as HTMLElement, '.' + cls.MULTI_COLUMN_KEY_CLASS);

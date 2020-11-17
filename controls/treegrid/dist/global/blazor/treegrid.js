@@ -1544,7 +1544,7 @@ var Render = /** @class */ (function () {
         if (sf.base.isNullOrUndefined(treeColumn.field)) {
             args.cell.setAttribute('aria-colindex', colindex + '');
         }
-        if (treeColumn.field === args.column.field && !sf.base.isNullOrUndefined(treeColumn.template)) {
+        if (treeColumn.field === args.column.field && !sf.base.isNullOrUndefined(treeColumn.template) && !sf.base.isBlazor()) {
             args.column.template = treeColumn.template;
             args.column[templateFn] = sf.grids.templateCompiler(args.column.template);
             args.cell.classList.add('e-templatecell');

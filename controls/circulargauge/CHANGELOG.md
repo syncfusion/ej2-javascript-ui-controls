@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 18.3.50 (2020-11-17)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- The script error will not be thrown now when the circular gauge is resized.
+
 ## 18.3.44 (2020-10-27)
 
 ### CircularGauge

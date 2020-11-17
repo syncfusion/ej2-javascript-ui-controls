@@ -53,6 +53,7 @@ export interface IShapeAnnotation {
     annotationSettings?: any;
     customData: object;
     allowedInteractions?: AllowedInteraction;
+    isPrint: boolean;
 }
 
 /**
@@ -226,6 +227,12 @@ export class ShapeAnnotation {
                         annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
                         // tslint:disable-next-line:max-line-length
                         annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+                        let isPrint: boolean;
+                        if (annotation.annotationAddMode === 'Imported Annotation') {
+                            isPrint = annotation.IsPrint;
+                        } else {
+                            isPrint = annotation.AnnotationSettings.isPrint;
+                        }
                         // tslint:disable-next-line:max-line-length
                         annotationObject = {
                             id: 'shape' + this.shapeCount, shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
@@ -240,7 +247,7 @@ export class ShapeAnnotation {
                             fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                             // tslint:disable-next-line:max-line-length
                             labelBounds: annotation.LabelBounds,  annotationSelectorSettings: this.getSettings(annotation), labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
-                            customData: this.pdfViewer.annotation.getCustomData(annotation)
+                            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: isPrint
                         };
                         let annot: PdfAnnotationBaseModel;
                         // tslint:disable-next-line
@@ -263,7 +270,8 @@ export class ShapeAnnotation {
                             labelContent: annotation.LabelContent, enableShapeLabel: annotation.EnableShapeLabel, labelFillColor: annotation.LabelFillColor,
                             fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                             labelBounds: annotation.LabelBounds, annotationSelectorSettings: annotation.AnnotationSelectorSettings,
-                            annotationSettings: annotationObject.annotationSettings, annotationAddMode: annotation.annotationAddMode
+                            annotationSettings: annotationObject.annotationSettings, annotationAddMode: annotation.annotationAddMode,
+                            isPrint: annotation.IsPrint
                         };
                         let addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');
@@ -682,6 +690,7 @@ export class ShapeAnnotation {
         borderDashArray = isNaN(borderDashArray) ? 0 : borderDashArray;
         // tslint:disable-next-line
         let annotationSettings: any = this.pdfViewer.annotationModule.findAnnotationSettings(annotationModel, true);
+        annotationModel.isPrint = annotationSettings.isPrint;
         return {
             // tslint:disable-next-line:max-line-length
             id: annotationModel.id, shapeAnnotationType: this.getShapeAnnotType(annotationModel.shapeAnnotationType), author: annotationModel.author, allowedInteractions: this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotationModel),  subject: annotationModel.subject, note: annotationModel.notes,
@@ -698,7 +707,7 @@ export class ShapeAnnotation {
             fontColor: annotationModel.fontColor, labelBorderColor: annotationModel.labelBorderColor, fontSize: annotationModel.fontSize,
             // tslint:disable-next-line:max-line-length
             labelBounds: labelBound, annotationSelectorSettings: this.getSelector(annotationModel.shapeAnnotationType, annotationModel.subject ), labelSettings: this.pdfViewer.shapeLabelSettings, annotationSettings: annotationSettings,
-            customData: this.pdfViewer.annotation.getShapeData(annotationModel.shapeAnnotationType, annotationModel.subject)
+            customData: this.pdfViewer.annotation.getShapeData(annotationModel.shapeAnnotationType, annotationModel.subject), isPrint: annotationModel.isPrint
         };
     }
 
@@ -805,7 +814,7 @@ export class ShapeAnnotation {
             labelBorderColor: annotation.LabelBorderColor, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
             // tslint:disable-next-line:max-line-length
             labelBounds: annotation.LabelBounds, annotationSelectorSettings: this.getSettings(annotation), labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
-            customData: this.pdfViewer.annotation.getCustomData(annotation)
+            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');
     }
@@ -852,7 +861,7 @@ export class ShapeAnnotation {
             labelBorderColor: annotation.LabelBorderColor, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
             // tslint:disable-next-line:max-line-length
             labelBounds: annotation.LabelBounds, pageNumber: pageNumber, labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
-            customData: this.pdfViewer.annotation.getCustomData(annotation)
+            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint
         };
         return annotationObject;
     }

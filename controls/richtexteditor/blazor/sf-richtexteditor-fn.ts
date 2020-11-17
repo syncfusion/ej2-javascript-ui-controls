@@ -399,6 +399,9 @@ export class SfRichTextEditor {
     }
     private getUpdatedValue(): string {
         let value: string;
+        if (!isNOU(this.tableModule)) {
+            this.tableModule.removeResizeEle();
+        }
         if (this.editorMode === 'HTML') {
             let inputContent: string = this.getInputInnerHtml();
             value = (inputContent === '<p><br></p>') ? null : this.enableHtmlEncode ?

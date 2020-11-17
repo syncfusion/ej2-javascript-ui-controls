@@ -1,7 +1,7 @@
 /**
  * Command Column spec
  */
-import { EmitType, L10n } from '@syncfusion/ej2-base';
+import { EmitType, L10n, select } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Column } from '../../../src/grid/models/column';
@@ -345,17 +345,17 @@ describe('Command Column ', () => {
         it('Editing feature with delete command', () => {
             grid.clearSelection();
             (<any>grid).commandColumnModule.commandClickHandler({ target: grid.getRows()[0].querySelector('.e-unboundcelldiv').children[1] });
-            let dlg: any = grid.element.querySelector('#' + grid.element.id + 'EditConfirm');
+            let dlg: any = select('#' + grid.element.id + 'EditConfirm', grid.element);
             expect(dlg).not.toBeUndefined();
-            grid.element.querySelector('#' + grid.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            select('#' + grid.element.id + 'EditConfirm', grid.element).querySelectorAll('button')[0].click();
         });
 
         it('Editing feature with delete command with selection', () => {
             grid.selectRow(0);
             (<any>grid).commandColumnModule.commandClickHandler({ target: grid.getRows()[0].querySelector('.e-unboundcelldiv').children[1] });
-            let dlg: any = grid.element.querySelector('#' + grid.element.id + 'EditConfirm');
+            let dlg: any = select('#' + grid.element.id + 'EditConfirm', grid.element);
             expect(dlg).not.toBeUndefined();
-            grid.element.querySelector('#' + grid.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            select('#' + grid.element.id + 'EditConfirm', grid.element).querySelectorAll('button')[0].click();
         });
 
         afterAll(() => {

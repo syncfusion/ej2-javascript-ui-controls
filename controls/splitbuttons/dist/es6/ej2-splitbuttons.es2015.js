@@ -471,14 +471,15 @@ let DropDownButton = class DropDownButton extends Component {
     }
     mousedownHandler(e) {
         let trgt = e.target;
-        if (!this.canOpen() && !(closest(trgt, '#' + this.getPopUpElement().id) || closest(trgt, '#' + this.element.id))) {
+        if (!this.canOpen() && !(closest(trgt, '[id="' + this.getPopUpElement().id + '"]')
+            || closest(trgt, '[id="' + this.element.id + '"]'))) {
             this.closePopup(e);
         }
     }
     clickHandler(e) {
         let trgt = e.target;
         let canOpen = this.canOpen();
-        if (closest(trgt, '#' + this.element.id)) {
+        if (closest(trgt, '[id="' + this.element.id + '"]')) {
             if (canOpen) {
                 this.openPopUp(e);
             }
@@ -487,7 +488,7 @@ let DropDownButton = class DropDownButton extends Component {
             }
         }
         else {
-            if (closest(trgt, '#' + this.getPopUpElement().id)) {
+            if (closest(trgt, '[id="' + this.getPopUpElement().id + '"]')) {
                 let eventArgs;
                 let liIdx;
                 let item;

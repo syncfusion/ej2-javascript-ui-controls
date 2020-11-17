@@ -6804,7 +6804,7 @@ var ColorPicker = /** @class */ (function (_super) {
         }
         else {
             this.removeTileSelection();
-            var ele = sf.base.select('span[aria-label="' + this.roundValue(newProp) + '"]', this.container);
+            var ele = this.container.querySelector('span[aria-label="' + this.roundValue(newProp) + '"]');
             if (ele) {
                 this.addTileSelection(ele);
             }

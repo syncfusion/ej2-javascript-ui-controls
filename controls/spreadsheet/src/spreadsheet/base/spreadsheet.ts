@@ -1610,7 +1610,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public refreshNode(td: Element, args?: RefreshValueArgs): void {
         let value: string;
         if (td) {
-            let spanElem: Element = td.querySelector('#' + this.element.id + '_currency');
+            let spanElem: Element = td.querySelector('[id="' + this.element.id + '_currency"]');
             let alignClass: string = 'e-right-align';
             if (args) {
                 args.result = isNullOrUndefined(args.result) ? '' : args.result.toString();

@@ -53,359 +53,6 @@ const cardSpace = 16;
 const toggleWidth = 50;
 
 /**
- * Kanban data module
- * @hidden
- */
-class Data {
-    /**
-     * Constructor for data module
-     * @private
-     */
-    constructor(parent) {
-        this.parent = parent;
-        this.keyField = this.parent.cardSettings.headerField;
-        this.initDataManager(parent.dataSource, parent.query);
-        this.refreshDataManager();
-    }
-    /**
-     * The function used to initialize dataManager and query
-     * @return {void}
-     * @private
-     */
-    initDataManager(dataSource, query) {
-        this.dataManager = dataSource instanceof DataManager ? dataSource : new DataManager(dataSource);
-        this.query = query instanceof Query ? query : new Query();
-        this.kanbanData = new DataManager(this.parent.kanbanData);
-    }
-    /**
-     * The function used to generate updated Query from schedule model
-     * @return {void}
-     * @private
-     */
-    getQuery() {
-        return this.query.clone();
-    }
-    /**
-     * The function used to get dataSource by executing given Query
-     * @param  {Query} query - A Query that specifies to generate dataSource
-     * @return {void}
-     * @private
-     */
-    getData(query) {
-        return this.dataManager.executeQuery(query);
-    }
-    /**
-     * The function used to get the table name from the given Query
-     * @return {string}
-     * @private
-     */
-    getTable() {
-        if (this.parent.query) {
-            let query = this.getQuery();
-            return query.fromTable;
-        }
-        else {
-            return null;
-        }
-    }
-    /**
-     * The function is used to send the request and get response from datamanager
-     * @return {void}
-     * @private
-     */
-    refreshDataManager() {
-        let dataManager = this.getData(this.getQuery());
-        dataManager.then((e) => this.dataManagerSuccess(e)).catch((e) => this.dataManagerFailure(e));
-    }
-    /**
-     * The function is used to handle the success response from dataManager
-     * @return {void}
-     * @private
-     */
-    dataManagerSuccess(e) {
-        if (this.parent.isDestroyed) {
-            return;
-        }
-        this.parent.trigger(dataBinding, e, (args) => {
-            let resultData = extend([], args.result, null, true);
-            this.kanbanData.saveChanges({ addedRecords: resultData, changedRecords: [], deletedRecords: [] });
-            this.parent.kanbanData = resultData;
-            this.parent.notify(dataReady, { processedData: resultData });
-            this.parent.trigger(dataBound, null, () => this.parent.hideSpinner());
-        });
-    }
-    /**
-     * The function is used to handle the failure response from dataManager
-     * @return {void}
-     * @private
-     */
-    dataManagerFailure(e) {
-        if (this.parent.isDestroyed) {
-            return;
-        }
-        this.parent.trigger(actionFailure, { error: e }, () => this.parent.hideSpinner());
-    }
-    /**
-     * The function is used to perform the insert, update, delete and batch actions in datamanager
-     * @return {void}
-     * @private
-     */
-    updateDataManager(updateType, params, type, data, index) {
-        this.parent.showSpinner();
-        let promise;
-        switch (updateType) {
-            case 'insert':
-                promise = this.dataManager.insert(data, this.getTable(), this.getQuery());
-                break;
-            case 'update':
-                promise = this.dataManager.update(this.keyField, data, this.getTable(), this.getQuery());
-                break;
-            case 'delete':
-                promise = this.dataManager.remove(this.keyField, data, this.getTable(), this.getQuery());
-                break;
-            case 'batch':
-                promise = this.dataManager.saveChanges(params, this.keyField, this.getTable(), this.getQuery());
-                break;
-        }
-        let actionArgs = {
-            requestType: type, cancel: false, addedRecords: params.addedRecords,
-            changedRecords: params.changedRecords, deletedRecords: params.deletedRecords
-        };
-        if (this.dataManager.dataSource.offline) {
-            this.parent.trigger(actionComplete, actionArgs, (offlineArgs) => {
-                if (!offlineArgs.cancel) {
-                    this.refreshUI(offlineArgs, index);
-                }
-            });
-        }
-        else {
-            promise.then((e) => {
-                if (this.parent.isDestroyed) {
-                    return;
-                }
-                this.parent.trigger(actionComplete, actionArgs, (onlineArgs) => {
-                    if (!onlineArgs.cancel) {
-                        this.refreshUI(onlineArgs, index);
-                    }
-                });
-            }).catch((e) => {
-                this.dataManagerFailure(e);
-            });
-        }
-    }
-    /**
-     * The function is used to refresh the UI once the datamanager action is completed
-     * @return {void}
-     * @private
-     */
-    refreshUI(args, index) {
-        this.parent.resetTemplates();
-        this.kanbanData.saveChanges({ addedRecords: args.addedRecords, changedRecords: args.changedRecords,
-            deletedRecords: args.deletedRecords });
-        this.parent.kanbanData = this.kanbanData.dataSource.json;
-        let field;
-        if (this.parent.sortSettings.sortBy === 'DataSourceOrder') {
-            field = this.parent.cardSettings.headerField;
-        }
-        else if (this.parent.sortSettings.sortBy === 'Custom') {
-            field = this.parent.sortSettings.field;
-        }
-        if (this.parent.sortSettings.sortBy !== 'Index') {
-            this.parent.kanbanData = this.parent.layoutModule.sortOrder(field, this.parent.sortSettings.direction, this.parent.kanbanData);
-        }
-        args.addedRecords.forEach((data) => {
-            this.parent.layoutModule.renderCardBasedOnIndex(data);
-        });
-        args.changedRecords.forEach((data) => {
-            this.parent.layoutModule.removeCard(data);
-            this.parent.layoutModule.renderCardBasedOnIndex(data, index);
-            if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index'
-                && this.parent.sortSettings.direction === 'Descending' && index > 0) {
-                --index;
-            }
-        });
-        args.deletedRecords.forEach((data) => {
-            this.parent.layoutModule.removeCard(data);
-        });
-        this.parent.kanbanData = this.kanbanData.dataSource.json;
-        this.parent.layoutModule.refresh();
-        this.parent.renderTemplates();
-        this.parent.trigger(dataBound, null, () => this.parent.hideSpinner());
-    }
-}
-
-var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Holds the configuration of swimlane settings in kanban board.
- */
-class SwimlaneSettings extends ChildProperty {
-}
-__decorate$1([
-    Property()
-], SwimlaneSettings.prototype, "keyField", void 0);
-__decorate$1([
-    Property()
-], SwimlaneSettings.prototype, "textField", void 0);
-__decorate$1([
-    Property(false)
-], SwimlaneSettings.prototype, "showEmptyRow", void 0);
-__decorate$1([
-    Property(true)
-], SwimlaneSettings.prototype, "showItemCount", void 0);
-__decorate$1([
-    Property(false)
-], SwimlaneSettings.prototype, "allowDragAndDrop", void 0);
-__decorate$1([
-    Property()
-], SwimlaneSettings.prototype, "template", void 0);
-__decorate$1([
-    Property('Ascending')
-], SwimlaneSettings.prototype, "sortDirection", void 0);
-__decorate$1([
-    Property(true)
-], SwimlaneSettings.prototype, "showUnassignedRow", void 0);
-
-var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Holds the configuration of card settings in kanban board.
- */
-class CardSettings extends ChildProperty {
-}
-__decorate$2([
-    Property(true)
-], CardSettings.prototype, "showHeader", void 0);
-__decorate$2([
-    Property()
-], CardSettings.prototype, "headerField", void 0);
-__decorate$2([
-    Property()
-], CardSettings.prototype, "contentField", void 0);
-__decorate$2([
-    Property()
-], CardSettings.prototype, "tagsField", void 0);
-__decorate$2([
-    Property()
-], CardSettings.prototype, "grabberField", void 0);
-__decorate$2([
-    Property()
-], CardSettings.prototype, "footerCssField", void 0);
-__decorate$2([
-    Property()
-], CardSettings.prototype, "template", void 0);
-__decorate$2([
-    Property('Single')
-], CardSettings.prototype, "selectionType", void 0);
-
-var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Holds the configuration of editor settings.
- */
-class DialogSettings extends ChildProperty {
-}
-__decorate$3([
-    Property()
-], DialogSettings.prototype, "template", void 0);
-__decorate$3([
-    Property([])
-], DialogSettings.prototype, "fields", void 0);
-__decorate$3([
-    Property(null)
-], DialogSettings.prototype, "model", void 0);
-
-var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Holds the configuration of columns in kanban board.
- */
-class Columns extends ChildProperty {
-}
-__decorate$4([
-    Property()
-], Columns.prototype, "keyField", void 0);
-__decorate$4([
-    Property()
-], Columns.prototype, "headerText", void 0);
-__decorate$4([
-    Property()
-], Columns.prototype, "template", void 0);
-__decorate$4([
-    Property(false)
-], Columns.prototype, "allowToggle", void 0);
-__decorate$4([
-    Property(true)
-], Columns.prototype, "isExpanded", void 0);
-__decorate$4([
-    Property()
-], Columns.prototype, "minCount", void 0);
-__decorate$4([
-    Property()
-], Columns.prototype, "maxCount", void 0);
-__decorate$4([
-    Property(true)
-], Columns.prototype, "showItemCount", void 0);
-__decorate$4([
-    Property(false)
-], Columns.prototype, "showAddButton", void 0);
-
-var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Holds the configuration of stacked header settings in kanban board.
- */
-class StackedHeaders extends ChildProperty {
-}
-__decorate$5([
-    Property()
-], StackedHeaders.prototype, "text", void 0);
-__decorate$5([
-    Property()
-], StackedHeaders.prototype, "keyFields", void 0);
-
-var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Holds the configuration of sort settings in kanban board.
- */
-class SortSettings extends ChildProperty {
-}
-__decorate$6([
-    Property('DataSourceOrder')
-], SortSettings.prototype, "sortBy", void 0);
-__decorate$6([
-    Property()
-], SortSettings.prototype, "field", void 0);
-__decorate$6([
-    Property('Ascending')
-], SortSettings.prototype, "direction", void 0);
-
-/**
  * Kanban CSS Constants
  */
 /** @hidden */
@@ -592,6 +239,349 @@ const SHOW_ADD_ICON = 'e-show-add-icon';
 const SHOW_ADD_FOCUS = 'e-show-add-focus';
 
 /**
+ * Kanban data module
+ * @hidden
+ */
+class Data {
+    /**
+     * Constructor for data module
+     * @private
+     */
+    constructor(parent) {
+        this.parent = parent;
+        this.keyField = this.parent.cardSettings.headerField;
+        this.initDataManager(parent.dataSource, parent.query);
+        this.refreshDataManager();
+    }
+    /**
+     * The function used to initialize dataManager and query
+     * @return {void}
+     * @private
+     */
+    initDataManager(dataSource, query) {
+        this.dataManager = dataSource instanceof DataManager ? dataSource : new DataManager(dataSource);
+        this.query = query instanceof Query ? query : new Query();
+        this.kanbanData = new DataManager(this.parent.kanbanData);
+    }
+    /**
+     * The function used to generate updated Query from schedule model
+     * @return {void}
+     * @private
+     */
+    getQuery() {
+        return this.query.clone();
+    }
+    /**
+     * The function used to get dataSource by executing given Query
+     * @param  {Query} query - A Query that specifies to generate dataSource
+     * @return {void}
+     * @private
+     */
+    getData(query) {
+        return this.dataManager.executeQuery(query);
+    }
+    /**
+     * The function used to get the table name from the given Query
+     * @return {string}
+     * @private
+     */
+    getTable() {
+        if (this.parent.query) {
+            let query = this.getQuery();
+            return query.fromTable;
+        }
+        else {
+            return null;
+        }
+    }
+    /**
+     * The function is used to send the request and get response from datamanager
+     * @return {void}
+     * @private
+     */
+    refreshDataManager() {
+        let dataManager = this.getData(this.getQuery());
+        dataManager.then((e) => this.dataManagerSuccess(e)).catch((e) => this.dataManagerFailure(e));
+    }
+    /**
+     * The function is used to handle the success response from dataManager
+     * @return {void}
+     * @private
+     */
+    dataManagerSuccess(e) {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.trigger(dataBinding, e, (args) => {
+            let resultData = extend([], args.result, null, true);
+            this.kanbanData.saveChanges({ addedRecords: resultData, changedRecords: [], deletedRecords: [] });
+            this.parent.kanbanData = resultData;
+            this.parent.notify(dataReady, { processedData: resultData });
+            this.parent.trigger(dataBound, null, () => this.parent.hideSpinner());
+        });
+    }
+    /**
+     * The function is used to handle the failure response from dataManager
+     * @return {void}
+     * @private
+     */
+    dataManagerFailure(e) {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.trigger(actionFailure, { error: e }, () => this.parent.hideSpinner());
+    }
+    /**
+     * The function is used to perform the insert, update, delete and batch actions in datamanager
+     * @return {void}
+     * @private
+     */
+    updateDataManager(updateType, params, type, data, index) {
+        this.parent.showSpinner();
+        let promise;
+        let actionArgs = {
+            requestType: type, cancel: false, addedRecords: params.addedRecords,
+            changedRecords: params.changedRecords, deletedRecords: params.deletedRecords
+        };
+        this.parent.trigger(actionComplete, actionArgs, (offlineArgs) => {
+            if (!offlineArgs.cancel) {
+                switch (updateType) {
+                    case 'insert':
+                        promise = this.dataManager.insert(data, this.getTable(), this.getQuery());
+                        break;
+                    case 'update':
+                        promise = this.dataManager.update(this.keyField, data, this.getTable(), this.getQuery());
+                        break;
+                    case 'delete':
+                        promise = this.dataManager.remove(this.keyField, data, this.getTable(), this.getQuery());
+                        break;
+                    case 'batch':
+                        promise = this.dataManager.saveChanges(params, this.keyField, this.getTable(), this.getQuery());
+                        break;
+                }
+                if (this.dataManager.dataSource.offline) {
+                    this.kanbanData = this.dataManager;
+                    this.parent.kanbanData = this.dataManager.dataSource.json;
+                    this.refreshUI(offlineArgs, index);
+                }
+                else {
+                    promise.then((e) => {
+                        if (this.parent.isDestroyed) {
+                            return;
+                        }
+                        this.refreshUI(offlineArgs, index);
+                    }).catch((e) => {
+                        this.dataManagerFailure(e);
+                    });
+                }
+            }
+        });
+    }
+    /**
+     * The function is used to refresh the UI once the datamanager action is completed
+     * @return {void}
+     * @private
+     */
+    refreshUI(args, index) {
+        this.parent.layoutModule.columnData = this.parent.layoutModule.getColumnCards();
+        if (this.parent.swimlaneSettings.keyField) {
+            this.parent.layoutModule.swimlaneData = this.parent.layoutModule.getSwimlaneCards();
+        }
+        args.addedRecords.forEach((data) => {
+            this.parent.layoutModule.renderCardBasedOnIndex(data);
+        });
+        args.changedRecords.forEach((data) => {
+            let card = [].slice.call(this.parent.element
+                .querySelectorAll('.' + CARD_CLASS + '[data-id="' + data[this.parent.cardSettings.headerField] + '"]'));
+            let updateIndex = [].slice.call(card[0].parentElement.children).indexOf(card[0]);
+            this.parent.layoutModule.removeCard(data);
+            this.parent.layoutModule.renderCardBasedOnIndex(data, updateIndex);
+            if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index'
+                && this.parent.sortSettings.direction === 'Descending' && index > 0) {
+                --index;
+            }
+        });
+        args.deletedRecords.forEach((data) => {
+            this.parent.layoutModule.removeCard(data);
+        });
+        this.parent.layoutModule.refresh();
+        this.parent.renderTemplates();
+        this.parent.trigger(dataBound, null, () => this.parent.hideSpinner());
+    }
+}
+
+var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Holds the configuration of swimlane settings in kanban board.
+ */
+class SwimlaneSettings extends ChildProperty {
+}
+__decorate$1([
+    Property()
+], SwimlaneSettings.prototype, "keyField", void 0);
+__decorate$1([
+    Property()
+], SwimlaneSettings.prototype, "textField", void 0);
+__decorate$1([
+    Property(false)
+], SwimlaneSettings.prototype, "showEmptyRow", void 0);
+__decorate$1([
+    Property(true)
+], SwimlaneSettings.prototype, "showItemCount", void 0);
+__decorate$1([
+    Property(false)
+], SwimlaneSettings.prototype, "allowDragAndDrop", void 0);
+__decorate$1([
+    Property()
+], SwimlaneSettings.prototype, "template", void 0);
+__decorate$1([
+    Property('Ascending')
+], SwimlaneSettings.prototype, "sortDirection", void 0);
+__decorate$1([
+    Property(true)
+], SwimlaneSettings.prototype, "showUnassignedRow", void 0);
+
+var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Holds the configuration of card settings in kanban board.
+ */
+class CardSettings extends ChildProperty {
+}
+__decorate$2([
+    Property(true)
+], CardSettings.prototype, "showHeader", void 0);
+__decorate$2([
+    Property()
+], CardSettings.prototype, "headerField", void 0);
+__decorate$2([
+    Property()
+], CardSettings.prototype, "contentField", void 0);
+__decorate$2([
+    Property()
+], CardSettings.prototype, "tagsField", void 0);
+__decorate$2([
+    Property()
+], CardSettings.prototype, "grabberField", void 0);
+__decorate$2([
+    Property()
+], CardSettings.prototype, "footerCssField", void 0);
+__decorate$2([
+    Property()
+], CardSettings.prototype, "template", void 0);
+__decorate$2([
+    Property('Single')
+], CardSettings.prototype, "selectionType", void 0);
+
+var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Holds the configuration of editor settings.
+ */
+class DialogSettings extends ChildProperty {
+}
+__decorate$3([
+    Property()
+], DialogSettings.prototype, "template", void 0);
+__decorate$3([
+    Property([])
+], DialogSettings.prototype, "fields", void 0);
+__decorate$3([
+    Property(null)
+], DialogSettings.prototype, "model", void 0);
+
+var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Holds the configuration of columns in kanban board.
+ */
+class Columns extends ChildProperty {
+}
+__decorate$4([
+    Property()
+], Columns.prototype, "keyField", void 0);
+__decorate$4([
+    Property()
+], Columns.prototype, "headerText", void 0);
+__decorate$4([
+    Property()
+], Columns.prototype, "template", void 0);
+__decorate$4([
+    Property(false)
+], Columns.prototype, "allowToggle", void 0);
+__decorate$4([
+    Property(true)
+], Columns.prototype, "isExpanded", void 0);
+__decorate$4([
+    Property()
+], Columns.prototype, "minCount", void 0);
+__decorate$4([
+    Property()
+], Columns.prototype, "maxCount", void 0);
+__decorate$4([
+    Property(true)
+], Columns.prototype, "showItemCount", void 0);
+__decorate$4([
+    Property(false)
+], Columns.prototype, "showAddButton", void 0);
+
+var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Holds the configuration of stacked header settings in kanban board.
+ */
+class StackedHeaders extends ChildProperty {
+}
+__decorate$5([
+    Property()
+], StackedHeaders.prototype, "text", void 0);
+__decorate$5([
+    Property()
+], StackedHeaders.prototype, "keyFields", void 0);
+
+var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Holds the configuration of sort settings in kanban board.
+ */
+class SortSettings extends ChildProperty {
+}
+__decorate$6([
+    Property('DataSourceOrder')
+], SortSettings.prototype, "sortBy", void 0);
+__decorate$6([
+    Property()
+], SortSettings.prototype, "field", void 0);
+__decorate$6([
+    Property('Ascending')
+], SortSettings.prototype, "direction", void 0);
+
+/**
  * Action module is used to perform card actions.
  * @hidden
  */
@@ -669,32 +659,34 @@ class Action {
     cardClick(e, selectedCard) {
         let target = closest((selectedCard) ? selectedCard : e.target, '.' + CARD_CLASS);
         let cardClickObj = this.parent.getCardDetails(target);
-        this.parent.activeCardData = { data: cardClickObj, element: target };
-        let args = { data: cardClickObj, element: target, cancel: false, event: e };
-        this.parent.trigger(cardClick, args, (clickArgs) => {
-            if (!clickArgs.cancel) {
-                if (target.classList.contains(CARD_SELECTION_CLASS) && e.type === 'click') {
-                    removeClass([target], CARD_SELECTION_CLASS);
-                    this.parent.layoutModule.disableAttributeSelection(target);
-                }
-                else {
-                    let isCtrlKey = e.ctrlKey;
-                    if (this.parent.isAdaptive && this.parent.touchModule) {
-                        isCtrlKey = (this.parent.touchModule.mobilePopup && this.parent.touchModule.tabHold) || isCtrlKey;
+        if (cardClickObj) {
+            this.parent.activeCardData = { data: cardClickObj, element: target };
+            let args = { data: cardClickObj, element: target, cancel: false, event: e };
+            this.parent.trigger(cardClick, args, (clickArgs) => {
+                if (!clickArgs.cancel) {
+                    if (target.classList.contains(CARD_SELECTION_CLASS) && e.type === 'click') {
+                        removeClass([target], CARD_SELECTION_CLASS);
+                        this.parent.layoutModule.disableAttributeSelection(target);
                     }
-                    this.cardSelection(target, isCtrlKey, e.shiftKey);
+                    else {
+                        let isCtrlKey = e.ctrlKey;
+                        if (this.parent.isAdaptive && this.parent.touchModule) {
+                            isCtrlKey = (this.parent.touchModule.mobilePopup && this.parent.touchModule.tabHold) || isCtrlKey;
+                        }
+                        this.cardSelection(target, isCtrlKey, e.shiftKey);
+                    }
+                    if (this.parent.isAdaptive && this.parent.touchModule) {
+                        this.parent.touchModule.updatePopupContent();
+                    }
+                    let cell = closest(target, '.' + CONTENT_CELLS_CLASS);
+                    if (this.parent.allowKeyboard) {
+                        let element = [].slice.call(cell.querySelectorAll('.' + CARD_CLASS));
+                        element.forEach((e) => { e.setAttribute('tabindex', '0'); });
+                        this.parent.keyboardModule.addRemoveTabIndex('Remove');
+                    }
                 }
-                if (this.parent.isAdaptive && this.parent.touchModule) {
-                    this.parent.touchModule.updatePopupContent();
-                }
-                let cell = closest(target, '.' + CONTENT_CELLS_CLASS);
-                if (this.parent.allowKeyboard) {
-                    let element = [].slice.call(cell.querySelectorAll('.' + CARD_CLASS));
-                    element.forEach((e) => { e.setAttribute('tabindex', '0'); });
-                    this.parent.keyboardModule.addRemoveTabIndex('Remove');
-                }
-            }
-        });
+            });
+        }
     }
     cardDoubleClick(e) {
         let target = closest(e.target, '.' + CARD_CLASS);
@@ -986,7 +978,7 @@ class Crud {
         let finalData = [];
         for (let columnKey of modifiedKey) {
             let keyData = cardData.filter((cardObj) => cardObj[this.parent.keyField] === columnKey);
-            columnAllDatas = this.parent.layoutModule.columnData[columnKey];
+            columnAllDatas = this.parent.layoutModule.getColumnData(columnKey);
             for (let data of keyData) {
                 if (this.parent.swimlaneSettings.keyField) {
                     let swimlaneDatas = this.parent.getSwimlaneData(data[this.parent.swimlaneSettings.keyField]);
@@ -1014,14 +1006,6 @@ class Crud {
             }
         }
         return finalData;
-    }
-    removeData(columnAllDatas, keyData) {
-        keyData.map((cardObj) => {
-            if (columnAllDatas.indexOf(cardObj) !== -1) {
-                columnAllDatas.splice(columnAllDatas.indexOf(cardObj), 1);
-            }
-        });
-        return columnAllDatas;
     }
 }
 
@@ -1284,7 +1268,9 @@ class DragAndDrop {
         let columnKey;
         let dropIndex;
         if (this.dragObj.targetClone.parentElement) {
-            dropIndex = [].slice.call(this.dragObj.targetClone.parentElement.children).indexOf(this.dragObj.targetClone);
+            let className = '.' + CARD_CLASS + ':not(.' + DRAGGED_CARD_CLASS + '),.' + DROPPED_CLONE_CLASS;
+            let element = [].slice.call(this.dragObj.targetClone.parentElement.querySelectorAll(className));
+            dropIndex = element.indexOf(this.dragObj.targetClone);
         }
         if (this.parent.element.querySelector('.' + TARGET_MULTI_CLONE_CLASS)) {
             columnKey = closest(e.target, '.' + MULTI_COLUMN_KEY_CLASS);
@@ -3023,23 +3009,18 @@ class LayoutRender extends MobileLayout {
         return cardData;
     }
     sortCategory(cardData) {
-        let key;
+        let key = this.parent.cardSettings.headerField;
         let direction = this.parent.sortSettings.direction;
         switch (this.parent.sortSettings.sortBy) {
             case 'DataSourceOrder':
-                if (direction === 'Descending') {
-                    cardData.reverse();
-                }
+                this.sortOrder(key, direction, cardData);
                 break;
             case 'Custom':
             case 'Index':
                 if (this.parent.sortSettings.field) {
                     key = this.parent.sortSettings.field;
-                    if (this.parent.sortSettings.sortBy === 'Custom') {
-                        direction = this.parent.sortSettings.direction;
-                    }
-                    this.sortOrder(key, direction, cardData);
                 }
+                this.sortOrder(key, direction, cardData);
                 break;
         }
         return cardData;
@@ -3121,7 +3102,6 @@ class LayoutRender extends MobileLayout {
         this.renderCards();
     }
     refresh() {
-        this.columnData = this.getColumnCards();
         this.parent.columns.forEach((column) => {
             if (column.showItemCount) {
                 let countSelector = `.${HEADER_CELLS_CLASS}[data-key="${column.keyField}"] .${CARD_ITEM_COUNT_CLASS}`;
@@ -3132,7 +3112,6 @@ class LayoutRender extends MobileLayout {
             }
         });
         if (this.parent.swimlaneSettings.keyField) {
-            this.swimlaneData = this.getSwimlaneCards();
             let swimlaneRows = [].slice.call(this.parent.element.querySelectorAll(`.${SWIMLANE_ROW_CLASS}`));
             swimlaneRows.forEach((swimlane) => {
                 let swimlaneKey = swimlane.getAttribute('data-key');
@@ -3166,22 +3145,25 @@ class LayoutRender extends MobileLayout {
             let rowSelector = `.e-content-row.e-swimlane-row[data-key="${data[this.parent.swimlaneSettings.keyField]}"]`;
             cardRow = this.parent.element.querySelector(rowSelector).nextElementSibling;
         }
-        if (this.parent.sortSettings.sortBy === 'DataSourceOrder' && !isNullOrUndefined(index) ||
-            this.parent.sortSettings.sortBy === 'Custom') {
+        if (this.parent.sortSettings.sortBy !== 'Index') {
+            let field = this.parent.cardSettings.headerField;
+            if (this.parent.sortSettings.sortBy === 'Custom') {
+                field = this.parent.sortSettings.field;
+            }
             if (isNullOrUndefined(this.parent.swimlaneSettings.keyField)) {
-                index = this.parent.getColumnData(key, this.parent.kanbanData).findIndex((data) => data[this.parent.cardSettings.headerField] === data[this.parent.cardSettings.headerField]);
+                index = this.getColumnData(key, this.parent.kanbanData).findIndex((colData) => colData[field] === data[field]);
             }
             else {
                 let swimlaneDatas = this.parent.getSwimlaneData(data[this.parent.swimlaneSettings.keyField]);
-                index = this.parent.getColumnData(key, swimlaneDatas).findIndex((data) => data[this.parent.cardSettings.headerField] === data[this.parent.cardSettings.headerField]);
+                index = this.getColumnData(key, swimlaneDatas).findIndex((colData) => colData[field] === data[field]);
             }
         }
-        else if (this.parent.sortSettings.sortBy === 'Index' && this.parent.sortSettings.field
-            && this.parent.sortSettings.direction === 'Ascending') {
+        else if (this.parent.sortSettings.sortBy === 'Index' &&
+            this.parent.sortSettings.field && this.parent.sortSettings.direction === 'Ascending') {
             index = data[this.parent.sortSettings.field] - 1;
         }
         if (cardRow) {
-            let td = [].slice.call(cardRow.children).filter((e) => e.getAttribute('data-key').replace(/\s/g, '').split(',').indexOf(key) !== -1)[0];
+            let td = [].slice.call(cardRow.children).filter((e) => e.getAttribute('data-key').replace(/\s/g, '').split(',').indexOf(key.replace(/\s/g, '')) !== -1)[0];
             let cardWrapper = td.querySelector('.' + CARD_WRAPPER_CLASS);
             let cardElement = this.renderCard(data);
             if (this.parent.allowDragAndDrop) {
@@ -3192,14 +3174,6 @@ class LayoutRender extends MobileLayout {
                 if (!cardArgs.cancel) {
                     if (isNullOrUndefined(index) || cardWrapper.children.length === 0) {
                         cardWrapper.appendChild(cardElement);
-                    }
-                    else if (this.parent.sortSettings.sortBy === 'DataSourceOrder') {
-                        if (index === 0) {
-                            cardWrapper.children[index].insertAdjacentElement('beforebegin', cardElement);
-                        }
-                        else {
-                            cardWrapper.children[index - 1].insertAdjacentElement('afterend', cardElement);
-                        }
                     }
                     else {
                         cardWrapper.insertBefore(cardElement, cardWrapper.childNodes[index]);

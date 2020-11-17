@@ -61,6 +61,7 @@ export interface IMeasureShapeAnnotation {
     annotationSettings?: any;
     customData: object;
     allowedInteractions?: AllowedInteraction;
+    isPrint: boolean;
 }
 
 /**
@@ -280,6 +281,12 @@ export class MeasureAnnotation {
                         annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
                         // tslint:disable-next-line:max-line-length
                         annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+                        let isPrint: boolean;
+                        if (annotation.annotationAddMode === 'Imported Annotation') {
+                            isPrint = annotation.IsPrint;
+                        } else {
+                            isPrint = annotation.AnnotationSettings.isPrint;
+                        }
                         let measureObject: IMeasure = {
                             // tslint:disable-next-line:max-line-length
                             ratio: annotation.Calibrate.Ratio, x: this.getNumberFormatArray(annotation.Calibrate.X), distance: this.getNumberFormatArray(annotation.Calibrate.Distance), area: this.getNumberFormatArray(annotation.Calibrate.Area), angle: this.getNumberFormatArray(annotation.Calibrate.Angle), volume: this.getNumberFormatArray(annotation.Calibrate.Volume),
@@ -306,7 +313,7 @@ export class MeasureAnnotation {
                              fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                              // tslint:disable-next-line:max-line-length
                              labelBounds: annotation.LabelBounds, annotationSelectorSettings: this.getSettings(annotation), labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
-                             customData: this.pdfViewer.annotation.getCustomData(annotation)
+                             customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: isPrint
                         };
                         let annot: PdfAnnotationBaseModel;
                         // tslint:disable-next-line
@@ -333,7 +340,8 @@ export class MeasureAnnotation {
                              labelContent: annotation.LabelContent, enableShapeLabel: annotation.EnableShapeLabel, labelFillColor: annotation.LabelFillColor,
                              fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                              labelBounds: annotation.LabelBounds, annotationSelectorSettings: annotation.AnnotationSelectorSettings,
-                             annotationSettings: annotationObject.annotationSettings, annotationAddMode: annotation.annotationAddMode
+                             annotationSettings: annotationObject.annotationSettings, annotationAddMode: annotation.annotationAddMode,
+                             isPrint: isPrint
                         };
                         this.pdfViewer.annotation.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
                         this.pdfViewer.add(annot as PdfAnnotationBase);
@@ -513,6 +521,7 @@ export class MeasureAnnotation {
         let annotationSettings: any = this.pdfViewer.annotationModule.findAnnotationSettings(annotationModel, true);
         // tslint:disable-next-line
         let allowedInteractions: any = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotationModel);
+        annotationModel.isPrint = annotationSettings.isPrint;
         return {
             // tslint:disable-next-line:max-line-length
             id: annotationModel.id, shapeAnnotationType: this.getShapeAnnotType(annotationModel.measureType), author: annotationModel.author, allowedInteractions: allowedInteractions,
@@ -534,7 +543,7 @@ export class MeasureAnnotation {
             labelBorderColor: annotationModel.labelBorderColor, fontColor: annotationModel.fontColor, fontSize: annotationModel.fontSize,
             // tslint:disable-next-line:max-line-length
             labelBounds: labelBound,  annotationSelectorSettings: this.getSelector(annotationModel.subject), labelSettings: this.pdfViewer.shapeLabelSettings, annotationSettings: annotationSettings,
-            customData: this.pdfViewer.annotation.getMeasureData(annotationModel.subject)
+            customData: this.pdfViewer.annotation.getMeasureData(annotationModel.subject), isPrint: annotationModel.isPrint
         };
     }
 
@@ -1419,7 +1428,7 @@ export class MeasureAnnotation {
             labelBorderColor: annotation.LabelBorderColor, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
             // tslint:disable-next-line:max-line-length
             labelBounds: annotation.LabelBounds, annotationSelectorSettings: this.getSettings(annotation), labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
-            customData: this.pdfViewer.annotation.getCustomData(annotation)
+            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
     }
@@ -1477,7 +1486,7 @@ export class MeasureAnnotation {
             labelBorderColor: annotation.LabelBorderColor, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
             // tslint:disable-next-line:max-line-length
             labelBounds: annotation.LabelBounds, pageNumber: pageNumber, annotationSelectorSettings: annotation.AnnotationSelectorSettings, labelSettings: annotation.labelSettings, annotationSettings: annotation.AnnotationSettings,
-            customData: this.pdfViewer.annotation.getCustomData(annotation)
+            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint
         };
         return annotationObject;
     }

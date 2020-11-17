@@ -1,7 +1,7 @@
 /**
  * Grid batch edit spec document
  */ 
-import { extend, getValue } from '@syncfusion/ej2-base';
+import { extend, getValue, select, selectAll } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { Grid } from '../../../src/grid/base/grid';
 import { isActionPrevent } from '../../../src/grid/base/util';
@@ -234,7 +234,7 @@ describe('Batch Editing module', () => {
             };
             gridObj.beforeBatchSave = beforeBatchSave;
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
         });
 
         it('batch save', (done: Function) => {
@@ -257,7 +257,7 @@ describe('Batch Editing module', () => {
             gridObj.beforeBatchSave = beforeBatchSave;
             gridObj.dataBound = dataBound;
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
         });
         it('EJ2-6134 - I193436 batch add - validation and selection', (done: Function) => {
             let batchAdd = (args?: any): void => {
@@ -427,7 +427,7 @@ describe('Batch Editing module', () => {
 
         it('batch cancel', () => {
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_cancel' } });
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[1].click();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[1].click();
             //row count check
             expect(gridObj.getContent().querySelectorAll('.e-row:not(.e-hiddenrow)').length).toBe(10);
             //record count check
@@ -993,7 +993,7 @@ describe('Batch Editing module', () => {
             };
             gridObj.dataBound = dataBound;
             gridObj.editModule.batchSave();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
         });
 
         it('add record by method', () => {
@@ -1018,7 +1018,7 @@ describe('Batch Editing module', () => {
 
         it('batch cancel method testing', () => {
             gridObj.editModule.batchCancel();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
             expect(gridObj.getContent().querySelectorAll('.e-row')[0].classList.contains('e-hiddenrow')).toBeFalsy();
         });
 
@@ -1104,7 +1104,7 @@ describe('Batch Editing module', () => {
             };
             gridObj.dataBound = dataBound;
             gridObj.editModule.batchSave();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
         });
 
         it('add record by method', () => {
@@ -1129,14 +1129,14 @@ describe('Batch Editing module', () => {
 
         it('batch cancel method testing', () => {
             gridObj.editModule.batchCancel();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
             expect(gridObj.getContent().querySelectorAll('.e-row')[0].classList.contains('e-hiddenrow')).toBeFalsy();
         });
 
         it('batch edit invalie input', () => {
             (gridObj.editModule as any).editModule.dblClickHandler({ target: gridObj.element });
             expect(gridObj.element.querySelectorAll('.e-editedbatchcell').length).toBe(0);
-            (gridObj.editModule as any).editModule.clickHandler({ target: gridObj.element.querySelector('#' + gridObj.element.id + '_add') });
+            (gridObj.editModule as any).editModule.clickHandler({ target: select('#' + gridObj.element.id + '_add', gridObj.element) });
         });
 
         afterAll(() => {
@@ -1182,8 +1182,8 @@ describe('Batch Editing module', () => {
         it('Search method - cancel', () => {
             gridObj.editModule.updateCell(0, 'CustomerID', 'updated');
             gridObj.searchModule.search('10249');
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[1].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[1].click();
         });
 
         it('Search method - ok', (done: Function) => {
@@ -1193,8 +1193,8 @@ describe('Batch Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.searchModule.search('10249');
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
         });
 
         it('clear search', (done: Function) => {
@@ -1209,8 +1209,8 @@ describe('Batch Editing module', () => {
         it('sort method - cancel', () => {
             gridObj.editModule.updateCell(0, 'CustomerID', 'updated');
             gridObj.sortColumn('OrderID', 'Ascending', false);
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[1].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[1].click();
         });
 
         it('sort method - ok', (done: Function) => {
@@ -1220,15 +1220,15 @@ describe('Batch Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.sortColumn('OrderID', 'Ascending', false);
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
         });
 
         it('clear sorting method - cancel', () => {
             gridObj.editModule.updateCell(0, 'CustomerID', 'updated');
             gridObj.clearSorting();
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[1].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[1].click();
         });
 
         it('clear sorting method - ok', (done: Function) => {
@@ -1238,15 +1238,15 @@ describe('Batch Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.clearSorting();
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
         });
 
         it('group column method - cancel', () => {
             gridObj.editModule.updateCell(0, 'CustomerID', 'updated');
             gridObj.groupModule.groupColumn('CustomerID');
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[1].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[1].click();
         });
 
         it('group column method - ok', (done: Function) => {
@@ -1256,15 +1256,15 @@ describe('Batch Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.groupModule.groupColumn('CustomerID');
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
         });
 
         it('ungroup column method - cancel', () => {
             gridObj.editModule.updateCell(0, 'CustomerID', 'updated');
             gridObj.groupModule.ungroupColumn('CustomerID');
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[1].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[1].click();
         });
 
         it('ungroup column method - ok', (done: Function) => {
@@ -1274,15 +1274,15 @@ describe('Batch Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.groupModule.ungroupColumn('CustomerID');
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
         });
 
         it('filter column method - cancel', () => {
             gridObj.editModule.updateCell(0, 'CustomerID', 'updated');
             gridObj.filterByColumn('OrderID', 'equal', 10248, 'and', true);
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[1].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[1].click();
         });
 
         it('filter column method - ok', (done: Function) => {
@@ -1292,15 +1292,15 @@ describe('Batch Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.filterByColumn('OrderID', 'equal', 10248, 'and', true);
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
         });
 
         it('clearfiltering method - cancel', () => {
             gridObj.editModule.updateCell(0, 'CustomerID', 'updated');
             gridObj.clearFiltering();
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[1].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[1].click();
         });
 
         it('clearfiltering method - ok', (done: Function) => {
@@ -1310,15 +1310,15 @@ describe('Batch Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.clearFiltering();
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
         });
 
         it('filter column method - cancel', () => {
             gridObj.editModule.updateCell(0, 'CustomerID', 'updated');
             gridObj.filterByColumn('OrderID', 'equal', 10248, 'and', true);
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[1].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[1].click();
         });
 
         it('filter column method - ok', (done: Function) => {
@@ -1328,15 +1328,15 @@ describe('Batch Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.filterByColumn('OrderID', 'equal', 10248, 'and', true);
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
         });
 
         it('removeFilteredColsByField method - cancel', () => {
             gridObj.editModule.updateCell(0, 'CustomerID', 'updated');
             gridObj.removeFilteredColsByField('OrderID')
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[1].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[1].click();
         });
 
         it('removeFilteredColsByField method - ok', (done: Function) => {
@@ -1346,15 +1346,15 @@ describe('Batch Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.removeFilteredColsByField('OrderID')
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
         });
 
         it('reorder column method - cancel', () => {
             gridObj.editModule.updateCell(0, 'CustomerID', 'updated');
             (gridObj.reorderModule as any).moveColumns(2, gridObj.columns[0]);
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[1].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[1].click();
         });
 
         it('reorder column method - ok', (done: Function) => {
@@ -1364,16 +1364,16 @@ describe('Batch Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             (gridObj.reorderModule as any).moveColumns(2, gridObj.columns[0]);
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
         });
 
         it('goto page - cancel', () => {
             gridObj.editModule.updateCell(0, 'CustomerID', 'updated');
             gridObj.goToPage(2);
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[1].click();
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeFalsy();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[1].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeFalsy();
             expect(gridObj.pageSettings.currentPage).not.toBe(2);
         });
 
@@ -1384,9 +1384,9 @@ describe('Batch Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.goToPage(2);
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeFalsy();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeFalsy();
         });
 
         afterAll(() => {
@@ -1912,7 +1912,7 @@ describe('Batch Editing module', () => {
     //         input.value += input.value;
     //         gridObj.element.click();
     //         gridObj.hideColumns('OrderID');
-    //         let confirm = gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm');
+    //         let confirm = select('#' + gridObj.element.id + 'EditConfirm', gridObj.element);
     //         expect(confirm).not.toBe(null);
     //         expect((confirm as any).style.display !== 'none').toBeTruthy();
     //         confirm.querySelectorAll('button')[1].click();
@@ -1923,7 +1923,7 @@ describe('Batch Editing module', () => {
     //         input.value += input.value;
     //         gridObj.element.click();
     //         gridObj.showColumns('EmployeeID');
-    //         let confirm = gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm');
+    //         let confirm = select('#' + gridObj.element.id + 'EditConfirm', gridObj.element);
     //         expect(confirm).not.toBe(null);
     //         expect((confirm as any).style.display !== 'none').toBeTruthy();
     //         confirm.querySelectorAll('button')[1].click();
@@ -2124,7 +2124,7 @@ describe('Batch Editing module', () => {
             gridObj.beforeBatchSave = beforeBatchSave;
             gridObj.dataBound = dataBound;
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
         });
 
         it('delete record by method', () => {
@@ -2136,7 +2136,7 @@ describe('Batch Editing module', () => {
 
         it('batch cancel method testing', () => {
             gridObj.editModule.batchCancel();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
             expect(gridObj.getContent().querySelectorAll('.e-row')[0].classList.contains('e-hiddenrow')).toBeFalsy();
         });
 
@@ -2238,7 +2238,7 @@ describe('Batch Editing module', () => {
             gridObj.beforeBatchSave = beforeBatchSave;
             gridObj.dataBound = dataBound;
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
         });
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
@@ -2592,7 +2592,7 @@ describe('Batch Editing module', () => {
             for (var i = 0; i < gridObj.getRows().length; i++) {
                 gridObj.deleteRecord();
             }
-            (gridObj.element.querySelector('#'+gridObj.element.id+'_update') as any).click();
+            (select('#'+gridObj.element.id+'_update', gridObj.element) as any).click();
         });
 
         it('action complete triggered when deleting all records', function () {
@@ -2642,33 +2642,33 @@ describe('Batch Editing module', () => {
         });
 
         it('add and update check', function () {
-            (gridObj.element.querySelector('#'+gridObj.element.id+'_add') as any).click();
-            (gridObj.element.querySelector('#'+gridObj.element.id+'_update') as any).click();
+            (select('#'+gridObj.element.id+'_add', gridObj.element) as any).click();
+            (select('#'+gridObj.element.id+'_update', gridObj.element) as any).click();
             expect(document.querySelectorAll('.e-griderror').length).toBe(1);                
-            (gridObj.element.querySelector('#'+gridObj.element.id+'CustomerID') as any).value ='test';
-            (gridObj.element.querySelector('#'+gridObj.element.id+'_update') as any).click();
+            (select('#'+gridObj.element.id+'CustomerID', gridObj.element) as any).value ='test';
+            (select('#'+gridObj.element.id+'_update', gridObj.element) as any).click();
 expect(document.querySelectorAll('.e-griderror').length).toBe(1);
-(gridObj.element.querySelector('#'+gridObj.element.id+'_update') as any).click();
+(select('#'+gridObj.element.id+'_update', gridObj.element) as any).click();
 expect(document.querySelectorAll('.e-griderror').length).toBe(1);
 
 
-(gridObj.element.querySelector('#'+gridObj.element.id+'ShipRegion') as any).value ='test';
+(select('#'+gridObj.element.id+'ShipRegion', gridObj.element) as any).value ='test';
 expect(gridObj.isEdit).toBe(true);
-(gridObj.element.querySelector('#'+gridObj.element.id+'_update') as any).click();
+(select('#'+gridObj.element.id+'_update', gridObj.element) as any).click();
 expect(gridObj.isEdit).toBe(false);
 expect((gridObj.editModule as any).editModule.isAdded).toBe(false);
         });
 
         it('add and focus out', function () {
-            (gridObj.element.querySelector('#'+gridObj.element.id+'_add') as any).click();
+            (select('#'+gridObj.element.id+'_add', gridObj.element) as any).click();
             gridObj.element.click()
             expect(document.querySelectorAll('.e-griderror').length).toBe(1);
-            (gridObj.element.querySelector('#'+gridObj.element.id+'CustomerID') as any).value ='test';
+            (select('#'+gridObj.element.id+'CustomerID', gridObj.element) as any).value ='test';
             gridObj.element.click()
             expect(document.querySelectorAll('.e-griderror').length).toBe(1);
 gridObj.element.click()
 expect(document.querySelectorAll('.e-griderror').length).toBe(1);
-(gridObj.element.querySelector('#'+gridObj.element.id+'ShipRegion') as any).value ='test';
+(select('#'+gridObj.element.id+'ShipRegion', gridObj.element) as any).value ='test';
 expect(gridObj.isEdit).toBe(true);
 gridObj.element.click()
 expect(gridObj.isEdit).toBe(false);
@@ -2677,16 +2677,16 @@ expect((gridObj.editModule as any).editModule.isAdded).toBe(false);
         });
 
         it('add and delete', function () {
-            (gridObj.element.querySelector('#'+gridObj.element.id+'_add') as any).click();
+            (select('#'+gridObj.element.id+'_add', gridObj.element) as any).click();
             gridObj.element.click()
             expect(document.querySelectorAll('.e-griderror').length).toBe(1);
-            (gridObj.element.querySelector('#'+gridObj.element.id+'_delete') as any).click();
+            (select('#'+gridObj.element.id+'_delete', gridObj.element) as any).click();
             expect(document.querySelectorAll('.e-griderror').length).toBe(0);          
             expect((gridObj.editModule as any).editModule.isAdded).toBe(false);
         });
 
         it('add and cancel', function () {
-            (gridObj.element.querySelector('#'+gridObj.element.id+'_add') as any).click();
+            (select('#'+gridObj.element.id+'_add', gridObj.element) as any).click();
             gridObj.element.click()
             expect(document.querySelectorAll('.e-griderror').length).toBe(1);
             gridObj.editModule.closeEdit();     
@@ -3135,7 +3135,7 @@ describe('EJ2-36298 - validation rules for columns => ', () => {
             }, done);
     });
     it('add and delete', function () {
-        (gridObj.element.querySelector('#'+gridObj.element.id+'_add') as any).click();
+        (select('#'+gridObj.element.id+'_add', gridObj.element) as any).click();
         gridObj.element.click()
         expect(document.querySelectorAll('.e-griderror').length).toBe(1);
     });
@@ -3167,7 +3167,7 @@ describe('EJ2-37034 - batch edit creates new record after add a record and tab f
             }, done);
     });
     it('add and delete', function () {
-        (gridObj.element.querySelector('#'+gridObj.element.id+'_add') as any).click();
+        (select('#'+gridObj.element.id+'_add', gridObj.element) as any).click();
         let tr = gridObj.getContent().querySelectorAll('tr')[5];
         cell = tr.cells[tr.cells.length - 1];
         cell.click();
@@ -3600,7 +3600,7 @@ describe('EJ2-41938-Auto-fill functionality not working properly with frozen col
             }, done);
     });
     it('Check the updatecell value', () => {
-        (gridObj.element.querySelector('#'+gridObj.element.id+'_add') as any).click();
+        (select('#'+gridObj.element.id+'_add', gridObj.element) as any).click();
         gridObj.editModule.updateCell(0, 'CustomerID', 'updated');
         let updateElem: HTMLElement = gridObj.getContent().querySelector('.e-movablecontent').querySelector('table').rows[0].childNodes[0] as any;
         expect(updateElem.innerHTML).toBe('updated');
@@ -3666,7 +3666,7 @@ describe('EJ2-42197 - Delete action was not working properly in checkbox selecti
     });
     it('check selection', () => {
         gridObj.selectRow(2);
-        (gridObj.element.querySelector('#'+gridObj.element.id+'_delete') as any).click();
+        (select('#'+gridObj.element.id+'_delete', gridObj.element) as any).click();
         expect(gridObj.getSelectedRecords().length).toBe(0);
     });
     afterAll(() => {

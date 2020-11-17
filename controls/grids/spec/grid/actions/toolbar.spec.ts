@@ -1,7 +1,7 @@
 /**
  * Grid toolbar spec document
  */
-import { EventHandler } from '@syncfusion/ej2-base';
+import { EventHandler, select } from '@syncfusion/ej2-base';
 import { extend } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
@@ -112,9 +112,9 @@ describe('Toolbar functionalities', () => {
             expect(gridObj.searchSettings.key).toBe('hai');
             done();
         };
-        let searchElement: HTMLInputElement = <HTMLInputElement>gridObj.toolbarModule.getToolbar().querySelector('#' + gridObj.element.id + '_searchbar');
+        let searchElement: HTMLInputElement = select('#' + gridObj.element.id + '_searchbar', gridObj.toolbarModule.getToolbar());
         (searchElement).value = 'hai';
-        (<HTMLInputElement>gridObj.toolbarModule.getToolbar().querySelector('#' + gridObj.element.id + '_searchbar')).focus();
+        (select('#' + gridObj.element.id + '_searchbar', gridObj.toolbarModule.getToolbar())).focus();
         expect(document.activeElement.id).toBe(gridObj.element.id + '_searchbar');
         keyup.target = searchElement;
         EventHandler.trigger(searchElement, 'keyup', keyup);
@@ -125,7 +125,7 @@ describe('Toolbar functionalities', () => {
             expect(gridObj.searchSettings.key).toBe('');
             done();
         };
-        let searchElement: HTMLInputElement = <HTMLInputElement>gridObj.toolbarModule.getToolbar().querySelector('#' + gridObj.element.id + '_searchbar');
+        let searchElement: HTMLInputElement = select('#' + gridObj.element.id + '_searchbar', gridObj.toolbarModule.getToolbar());
         searchElement.value = '';
         (<any>gridObj.toolbarModule).toolbarClickHandler({ item: (<any>gridObj.toolbarModule).toolbar.items[9], originalEvent: { target: document.getElementById(gridObj.element.id + '_searchbutton') } });
         (<any>gridObj.toolbarModule).toolbarClickHandler({ item: (<any>gridObj.toolbarModule).toolbar.items[9], originalEvent: { target: searchElement } });
@@ -138,7 +138,7 @@ describe('Toolbar functionalities', () => {
         gridObj.beforePrint = (args: { element: Element }) => {
             expect((args.element.querySelector('.e-toolbar') as HTMLElement)).toBe(null);
         };
-        (<HTMLElement>gridObj.toolbarModule.getToolbar().querySelector('#' + gridObj.element.id + '_print')).click();
+        select('#' + gridObj.element.id + '_print', gridObj.toolbarModule.getToolbar()).click();
         //forcoverage
         (<any>gridObj.toolbarModule).toolbarClickHandler({ target: (<any>gridObj.toolbarModule).element });
         (gridObj.toolbarModule as any).keyUpHandler({ keyCode: 12 });
@@ -246,9 +246,9 @@ describe('Toolbar functionalities', () => {
                 done();
             }
             gridObj.actionBegin = actionBegin;
-            let searchElement: HTMLInputElement = <HTMLInputElement>gridObj.toolbarModule.getToolbar().querySelector('#' + gridObj.element.id + '_searchbar');
+            let searchElement: HTMLInputElement = select('#' + gridObj.element.id + '_searchbar', gridObj.toolbarModule.getToolbar());
             (searchElement).value = '98';
-            (<HTMLInputElement>gridObj.toolbarModule.getToolbar().querySelector('#' + gridObj.element.id + '_searchbar')).focus();
+            (select('#' + gridObj.element.id + '_searchbar', gridObj.toolbarModule.getToolbar())).focus();
             keyup.target = searchElement;
             EventHandler.trigger(searchElement, 'keyup', keyup);
             expect(count).toBe(1);  

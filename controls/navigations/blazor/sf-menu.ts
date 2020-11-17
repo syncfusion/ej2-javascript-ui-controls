@@ -4,7 +4,7 @@ import { getZindexPartial } from '@syncfusion/ej2-popups';
 import { keyActionHandler } from './menu-base';
 import { addScrolling, destroyScroll } from '../src/common/menu-scroll';
 import { VScroll } from '../src/common/v-scroll';
-import { HScroll } from '../src';
+import { HScroll } from '../src/common/h-scroll';
 
 const CONTAINER: string = 'e-menu-container';
 const MENUCLASS: string = '.e-menu';

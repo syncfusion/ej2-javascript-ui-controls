@@ -5905,7 +5905,7 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
             var recordStart_1 = record[fieldMapping.startTime];
             var recordEnd_1 = record[fieldMapping.endTime];
             this.overlapList = appointmentList_1.filter(function (data) {
-                return (data[fieldMapping.endTime] > recordStart_1 && data[fieldMapping.startTime] < recordEnd_1) ||
+                return (data[fieldMapping.endTime] > recordStart_1 && data[fieldMapping.startTime] <= recordEnd_1) ||
                     (data[fieldMapping.startTime] >= recordEnd_1 && data[fieldMapping.endTime] <= recordStart_1);
             });
             if (this.parent.activeViewOptions.group.resources.length > 0) {
@@ -8868,7 +8868,6 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
             var templateId = this.parent.element.id + '_tooltipTemplate';
             resetBlazorTemplate(templateId, 'TooltipTemplate');
         }
-        this.parent.resetTemplates();
     };
     // tslint:disable-next-line:max-func-body-length
     EventTooltip.prototype.onBeforeRender = function (args) {
@@ -8988,6 +8987,7 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
      * @private
      */
     EventTooltip.prototype.destroy = function () {
+        this.parent.resetTemplates();
         this.tooltipObj.destroy();
         addClass([this.parent.element], 'e-control');
         this.tooltipObj = null;
@@ -20940,9 +20940,17 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
         this.cellHeight = td.offsetHeight;
         for (var a = 0; a < eventDatas.length; a++) {
             var data = eventDatas[a];
+            var overlapIndex = void 0;
             var eventData = extend({}, data, null, true);
-            var overlapIndex = this.getIndex(eventData[this.fields.startTime]);
-            eventData.Index = overlapIndex;
+            if (this.parent.activeViewOptions.group.resources.length > 0) {
+                var eventObj = this.isSpannedEvent(eventData, month);
+                overlapIndex = this.getIndex(eventObj[this.fields.startTime]);
+                eventData.Index = overlapIndex;
+            }
+            else {
+                overlapIndex = this.getIndex(eventData[this.fields.startTime]);
+                eventData.Index = overlapIndex;
+            }
             var availedHeight = this.cellHeader + (this.eventHeight * (a + 1)) + EVENT_GAP$2 + this.moreIndicatorHeight;
             var leftValue = (this.parent.activeViewOptions.orientation === 'Vertical') ?
                 month * this.cellWidth : index * this.cellWidth;
@@ -20984,7 +20992,14 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
             width = this.cellWidth;
         }
         var rowTd = this.parent.element.querySelector(".e-content-wrap tr:nth-child(" + index + ") td");
-        var top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * eventObj.Index) + EVENT_GAP$2;
+        var top;
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            var overlapIndex = this.getIndex(eventObj[this.fields.startTime]);
+            top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * overlapIndex) + EVENT_GAP$2;
+        }
+        else {
+            top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * eventObj.Index) + EVENT_GAP$2;
+        }
         setStyleAttribute(wrap, {
             'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px'
         });
@@ -20993,7 +21008,10 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
             if (!eventArgs.cancel) {
                 wrapper.appendChild(wrap);
                 _this.wireAppointmentEvents(wrap, eventObj, true);
-                if (!eventObj.isSpanned.isRight) {
+                if (_this.parent.activeViewOptions.group.resources.length > 0) {
+                    _this.renderedEvents.push(extend({}, eventObj, null, true));
+                }
+                else if (!eventObj.isSpanned.isRight) {
                     _this.renderedEvents.push(extend({}, eventObj, null, true));
                 }
             }

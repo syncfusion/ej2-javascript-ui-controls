@@ -7,7 +7,7 @@ import { Reorder } from '../../../src/grid/actions/reorder';
 import { CommandColumn } from '../../../src/grid/actions/command-column';
 import { ContextMenuOpenEventArgs, ContextMenuClickEventArgs } from '../../../src/grid/base/interface';
 import { Grid } from '../../../src/grid/base/grid';
-import { createElement, remove, EmitType } from '@syncfusion/ej2-base';
+import { createElement, remove, EmitType, select } from '@syncfusion/ej2-base';
 import { data } from '../../../spec/grid/base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy } from '../base/specutil.spec';
@@ -181,8 +181,8 @@ describe('context menu module', () => {
                     (gridObj.contextMenuModule as any).contextMenuItemClick({ item: itemModel });
                 }
             }
-            if (gridObj.element.querySelector('#' + gridObj.element.id + 'EditAlert').querySelector('button')) {
-                gridObj.element.querySelector('#' + gridObj.element.id + 'EditAlert').querySelector('button').click();
+            if (select('#' + gridObj.element.id + 'EditAlert', gridObj.element).querySelector('button')) {
+                select('#' + gridObj.element.id + 'EditAlert', gridObj.element).querySelector('button').click();
             }
         });
         afterAll(() => {

@@ -63,7 +63,6 @@ export class EventTooltip {
             let templateId: string = this.parent.element.id + '_tooltipTemplate';
             resetBlazorTemplate(templateId, 'TooltipTemplate');
         }
-        this.parent.resetTemplates();
     }
 
     // tslint:disable-next-line:max-func-body-length
@@ -185,6 +184,7 @@ export class EventTooltip {
      * @private
      */
     public destroy(): void {
+        this.parent.resetTemplates();
         this.tooltipObj.destroy();
         addClass([this.parent.element], 'e-control');
         this.tooltipObj = null;

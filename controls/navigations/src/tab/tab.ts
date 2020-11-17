@@ -1967,4 +1967,99 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             }
         }
     }
+
+    public refreshActiveTab(): void {
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.clearTemplate(); }
+        if (!this.isTemplate) {
+            if (this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE)) {
+                detach(this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE).children[0]);
+                detach(this.element.querySelector('.' + CLS_CONTENT).querySelector('.' + CLS_ACTIVE).children[0]);
+                let checkValues: string = this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE).id;
+                let num: number = checkValues.indexOf('_');
+                let checkValue: number = parseInt(checkValues.substring(num + 1), 10);
+                let i: number = 0;
+                let id: number;
+                [].slice.call(this.element.querySelectorAll('.' + CLS_TB_ITEM)).forEach((elem: HTEle) => {
+                    let idValue: number = ((elem.id).indexOf('_'));
+                    id = parseInt(elem.id.substring(idValue + 1), 10);
+                    if (id < checkValue) {
+                        i++;
+                    }
+                });
+                let item: TabItemModel = this.items[i];
+                let txtWrap: HTEle;
+                let pos: Str = (isNOU(item.header) || isNOU(item.header.iconPosition)) ? '' : item.header.iconPosition;
+                let css: Str = (isNOU(item.header) || isNOU(item.header.iconCss)) ? '' : item.header.iconCss;
+                let text: Str | HTEle = item.headerTemplate || item.header.text;
+                txtWrap = this.createElement('div', { className: CLS_TEXT, attrs: { 'role': 'presentation' } });
+                if (!isNOU((<HTEle>text).tagName)) {
+                    txtWrap.appendChild(text as HTEle);
+                } else {
+                    this.headerTextCompile(txtWrap, text as string, i);
+                }
+                let tEle: HTEle;
+                let icon: HTEle = this.createElement('span', {
+                    className: CLS_ICONS + ' ' + CLS_TAB_ICON + ' ' + CLS_ICON + '-' + pos + ' ' + css
+                });
+                let tConts: HTEle = this.createElement('div', { className: CLS_TEXT_WRAP });
+                tConts.appendChild(txtWrap);
+                if ((text !== '' && text !== undefined) && css !== '') {
+                    if ((pos === 'left' || pos === 'top')) {
+                        tConts.insertBefore(icon, tConts.firstElementChild);
+                    } else {
+                        tConts.appendChild(icon);
+                    }
+                    tEle = txtWrap;
+                    this.isIconAlone = false;
+                } else {
+                    tEle = ((css === '') ? txtWrap : icon);
+                    if (tEle === icon) {
+                        detach(txtWrap);
+                        tConts.appendChild(icon);
+                        this.isIconAlone = true;
+                    }
+                }
+                let wrapAtt: { [key: string]: string } = (item.disabled) ? {} : { tabIndex: '-1' };
+                tConts.appendChild(this.btnCls.cloneNode(true));
+                let wraper: HTEle = this.createElement('div', { className: CLS_WRAP, attrs: wrapAtt });
+                wraper.appendChild(tConts);
+                if (pos === 'top' || pos === 'bottom') { this.element.classList.add('e-vertical-icon'); }
+                this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE).appendChild(wraper);
+                let crElem: HTEle = this.createElement('div', { innerHTML: item.content as string });
+                this.element.querySelector('.' + CLS_ITEM + '.' + CLS_ACTIVE).appendChild(crElem);
+            }
+        } else {
+            let tabItems: HTMLElement = this.element.querySelector('.' + CLS_TB_ITEMS);
+            let element: HTMLElement = this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE);
+            let id: string | number = element.id;
+            let num: number = (id.indexOf('_'));
+            let index: number = parseInt(id.substring(num + 1), 10);
+            let header: string = element.innerText;
+            let detachContent: Element = this.element.querySelector('.' + CLS_CONTENT).querySelector('.' + CLS_ACTIVE).children[0];
+            let mainContents: string = detachContent.innerHTML;
+            detach(element);
+            detach(detachContent);
+            let attr: object = {
+                className: CLS_TB_ITEM + ' ' + CLS_TEMPLATE + ' ' + CLS_ACTIVE, id: CLS_ITEM + this.tabId + '_' + index,
+                attrs: {
+                    role: 'tab', 'aria-controls': CLS_CONTENT + this.tabId + '_' + index,
+                    'aria-disabled': 'false', 'aria-selected': 'true'
+                }
+            };
+            let txtString: Str = this.createElement('span', {
+                className: CLS_TEXT, innerHTML: header, attrs: { 'role': 'presentation' }
+            }).outerHTML;
+            let conte: Str = this.createElement('div', {
+                className: CLS_TEXT_WRAP, innerHTML: txtString + this.btnCls.outerHTML
+            }).outerHTML;
+            let wrap: HTEle = this.createElement('div', { className: CLS_WRAP, innerHTML: conte, attrs: { tabIndex: '-1' } });
+            tabItems.insertBefore(this.createElement('div', attr), tabItems.children[index + 1]);
+            this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE).appendChild(wrap);
+            let crElem: HTEle = this.createElement('div', { innerHTML: mainContents });
+            this.element.querySelector('.' + CLS_CONTENT).querySelector('.' + CLS_ACTIVE).appendChild(crElem);
+        }
+        // tslint:disable-next-line:no-any
+        if ((this as any).isReact) { this.renderReactTemplates(); }
+    }
 }

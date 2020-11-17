@@ -1546,7 +1546,7 @@ var Render = /** @__PURE__ @class */ (function () {
         if (isNullOrUndefined(treeColumn.field)) {
             args.cell.setAttribute('aria-colindex', colindex + '');
         }
-        if (treeColumn.field === args.column.field && !isNullOrUndefined(treeColumn.template)) {
+        if (treeColumn.field === args.column.field && !isNullOrUndefined(treeColumn.template) && !isBlazor()) {
             args.column.template = treeColumn.template;
             args.column[templateFn] = templateCompiler(args.column.template);
             args.cell.classList.add('e-templatecell');

@@ -396,6 +396,32 @@ describe('Tooltip Control', () => {
             triggerMouseEvent(document.getElementById('tstooltip'), 'mouseleave');
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
         });
+
+        it('Mouse hover over tooltip itself with closeDelay', (done) => {
+            let tipFn1: jasmine.Spy = jasmine.createSpy('tooltipevent');
+            tooltip = new Tooltip({
+                width: '100px', height: '50px', content: 'Tooltip Content', closeDelay: 800, animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                beforeClose: tipFn1, afterClose: tipFn1,
+            }, '#tstooltip');
+            let target: HTMLElement = document.getElementById('tstooltip');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            triggerMouseEvent(target, 'mouseover');
+            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            expect(isVisible(document.querySelector('.e-tooltip-wrap') as HTMLElement)).toBe(true);
+            expect(tipFn1).toHaveBeenCalledTimes(0);
+            triggerMouseEvent(document.getElementById('tstooltip'), 'mouseleave');
+            expect(tipFn1).toHaveBeenCalledTimes(0);
+            triggerMouseEvent(tooltipEle, 'mouseenter');
+            expect(isVisible(tooltipEle)).toBe(true);
+            expect(document.querySelector('.e-tooltip-wrap')).not.toBeNull();
+            triggerMouseEvent(tooltipEle, 'mouseleave');
+            expect(tipFn1).toHaveBeenCalledTimes(0);
+            setTimeout(function () {
+                expect(document.querySelector('.e-tooltip-wrap') as HTMLElement).toBeNull();
+                expect(tipFn1).toHaveBeenCalledTimes(2);
+                done();
+            }, 900);
+        });
     });
     describe('Tooltip Focus events', () => {
         let tooltip: Tooltip;
@@ -949,7 +975,7 @@ describe('Tooltip Control', () => {
             tooltip.touchEndHandler(e);
             expect(isVisible(tooltipEle)).toBe(true);
             triggerTouchEvent(document, "touchend");
-            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            expect(isVisible(tooltipEle)).toBe(true);
         });
     });
     describe('Mouse trail option test cases', () => {

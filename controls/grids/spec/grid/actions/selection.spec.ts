@@ -1,7 +1,7 @@
 /**
  * Grid Selection spec document
  */
-import { Browser, EmitType } from '@syncfusion/ej2-base';
+import { Browser, EmitType, select } from '@syncfusion/ej2-base';
 import { EventHandler, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { createElement } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
@@ -4078,7 +4078,7 @@ describe('Checkbox state when Selecting in batch edit while adding record => ', 
         (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
         expect(gridObj.element.querySelector('.e-checkselectall').nextElementSibling.classList.contains('e-stop')).toBeTruthy();
         gridObj.editModule.batchCancel();
-        gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();        
+        select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();        
     });
 
     afterAll(() => {

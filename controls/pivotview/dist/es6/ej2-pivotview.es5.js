@@ -22992,7 +22992,11 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                     if (this.element.querySelector('.e-grouping-bar')) {
                         this.element.querySelector('.e-grouping-bar').remove();
                     }
-                    this.renderPivotGrid();
+                    if (isNullOrUndefined(newProp.showFieldList))
+                        this.renderPivotGrid();
+                    break;
+                case 'showFieldList':
+                    this.initialLoad();
                     break;
                 case 'groupingBarSettings':
                     this.axisFieldModule.render();

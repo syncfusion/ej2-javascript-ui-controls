@@ -33,6 +33,7 @@ export interface IPopupAnnotation {
     // tslint:disable-next-line
     annotationSettings: any;
     allowedInteractions: AllowedInteraction;
+    isPrint: boolean;
 }
 
 /**
@@ -145,7 +146,8 @@ export class StickyNotesAnnotation {
                         annotName: annotation.AnnotName, color: annotation.color,
                         annotationSelectorSettings: this.getSettings(annotation),
                         customData: this.pdfViewer.annotation.getCustomData(annotation),
-                        annotationSettings: annotation.AnnotationSettings, allowedInteractions: annotation.allowedInteractions
+                        annotationSettings: annotation.AnnotationSettings, allowedInteractions: annotation.allowedInteractions,
+                        isPrint: annotation.IsPrint
                     };
                     let annot: PdfAnnotationBaseModel;
                     // tslint:disable-next-line:max-line-length
@@ -156,7 +158,7 @@ export class StickyNotesAnnotation {
                         subject: annotationObject.subject, notes: annotationObject.note, opacity: annotationObject.opacity, id: annotationObject.annotName, fillColor: annotationObject.color,
                         annotationSelectorSettings: annotation.AnnotationSelectorSettings,
                         annotationSettings: annotationObject.annotationSettings,
-                        annotationAddMode: annotation.annotationAddMode
+                        annotationAddMode: annotation.annotationAddMode, isPrint: annotation.IsPrint
                     };
                     if (canvas) {
                         this.drawStickyNotes(position.Left, position.Top, position.Width, position.Height, pageNumber, annot, canvas);
@@ -201,7 +203,7 @@ export class StickyNotesAnnotation {
                 annot = {
                     // tslint:disable-next-line:max-line-length
                     author: annotation.author, modifiedDate: annotation.modifiedDate, annotName: annotation.annotName, data: image.src, bounds: { x: X, y: Y, width: width, height: height }, subject: annotation.subject,
-                    notes: annotation.notes, opacity: annotation.opacity, id: annotation.annotName, shapeAnnotationType: 'StickyNotes', strokeColor: 'transparent', stampStrokeColor: '', pageIndex: annotation.pageIndex,
+                    notes: annotation.notes, opacity: annotation.opacity, id: annotation.annotName, shapeAnnotationType: 'StickyNotes', strokeColor: 'transparent', stampStrokeColor: '', pageIndex: annotation.pageIndex, isPrint: annotation.isPrint
                 };
             } else {
                 annotationName = this.pdfViewer.annotation.createGUID();
@@ -209,10 +211,11 @@ export class StickyNotesAnnotation {
                 document.getElementById(commentsDivid).id = annotationName;
                 // tslint:disable-next-line
                 let annotationSelectorSettings: any = this.pdfViewer.stickyNotesSettings.annotationSelectorSettings ? this.pdfViewer.stickyNotesSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+                let isPrint: boolean = this.pdfViewer.stickyNotesSettings.isPrint;
                 annot = {
                     // tslint:disable-next-line:max-line-length
                     bounds: { x: X, y: Y, width: width, height: height }, pageIndex: pageIndex, data: image.src, modifiedDate: this.getDateAndTime(),
-                    shapeAnnotationType: 'StickyNotes', strokeColor: 'transparent', stampStrokeColor: '', annotName: annotationName, id: annotationName, opacity: this.opacity
+                    shapeAnnotationType: 'StickyNotes', strokeColor: 'transparent', stampStrokeColor: '', annotName: annotationName, id: annotationName, opacity: this.opacity, isPrint: isPrint
                 };
                 if (proxy.pdfViewer.toolbarModule.isAddComment) {
                     // tslint:disable-next-line:max-line-length
@@ -238,7 +241,7 @@ export class StickyNotesAnnotation {
                     // tslint:disable-next-line:max-line-length
                     bounds: { left: X, top: Y, width: width, height: height }, review: { state: '', stateModel: '', modifiedDate: '', author: author },
                     annotationSelectorSettings: annotationSelectorSettings,
-                    customData: this.pdfViewer.annotationModule.getData('sticky'), annotationSettings: { isLock: isLock }
+                    customData: this.pdfViewer.annotationModule.getData('sticky'), annotationSettings: { isLock: isLock }, isPrint: isPrint
                 };
             }
             if (!annotation) {
@@ -3121,7 +3124,8 @@ export class StickyNotesAnnotation {
             bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
             annotName: annotation.AnnotName, color: annotation.color,
             annotationSelectorSettings: this.getSettings(annotation),
-            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationSettings: { isLock: isLock }
+            customData: this.pdfViewer.annotation.getCustomData(annotation),
+            annotationSettings: { isLock: isLock }, isPrint: annotation.IsPrint
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_sticky');
     }
@@ -3148,7 +3152,8 @@ export class StickyNotesAnnotation {
             // tslint:disable-next-line:max-line-length
             bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
             annotationId: annotation.AnnotName, color: annotation.color, pageNumber: pageNumber,
-            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationSettings: { isLock: isLock }
+            customData: this.pdfViewer.annotation.getCustomData(annotation),
+            annotationSettings: { isLock: isLock }, isPrint: annotation.IsPrint
         };
         return annotationObject;
     }

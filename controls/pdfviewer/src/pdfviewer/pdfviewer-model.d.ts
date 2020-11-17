@@ -196,6 +196,11 @@ export interface StrikethroughSettingsModel {
      */
     allowedInteractions?: AllowedInteraction[];
 
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
+
 }
 
 /**
@@ -252,6 +257,11 @@ export interface UnderlineSettingsModel {
      */
     allowedInteractions?: AllowedInteraction[];
 
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
+
 }
 
 /**
@@ -307,6 +317,11 @@ export interface HighlightSettingsModel {
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
+
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
 
 }
 
@@ -397,6 +412,11 @@ export interface LineSettingsModel {
      */
     allowedInteractions?: AllowedInteraction[];
 
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
+
 }
 
 /**
@@ -486,6 +506,11 @@ export interface ArrowSettingsModel {
      */
     allowedInteractions?: AllowedInteraction[];
 
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
+
 }
 
 /**
@@ -560,6 +585,11 @@ export interface RectangleSettingsModel {
      */
     allowedInteractions?: AllowedInteraction[];
 
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
+
 }
 
 /**
@@ -633,6 +663,11 @@ export interface CircleSettingsModel {
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
+
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
 
 }
 
@@ -750,6 +785,11 @@ export interface PolygonSettingsModel {
      */
     allowedInteractions?: AllowedInteraction[];
 
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
+
 }
 
 /**
@@ -823,6 +863,11 @@ export interface StampSettingsModel {
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
+
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
 
 }
 
@@ -907,6 +952,11 @@ export interface CustomStampSettingsModel {
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
+
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
 
 }
 
@@ -1007,6 +1057,11 @@ export interface DistanceSettingsModel {
      */
     allowedInteractions?: AllowedInteraction[];
 
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
+
 }
 
 /**
@@ -1091,6 +1146,11 @@ export interface PerimeterSettingsModel {
      */
     allowedInteractions?: AllowedInteraction[];
 
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
+
 }
 
 /**
@@ -1159,6 +1219,11 @@ export interface AreaSettingsModel {
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
+
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
 
 }
 
@@ -1234,6 +1299,11 @@ export interface RadiusSettingsModel {
      */
     allowedInteractions?: AllowedInteraction[];
 
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
+
 }
 
 /**
@@ -1303,6 +1373,11 @@ export interface VolumeSettingsModel {
      */
     allowedInteractions?: AllowedInteraction[];
 
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
+
 }
 
 /**
@@ -1352,6 +1427,11 @@ export interface InkAnnotationSettingsModel {
      */
     customData?: object;
 
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
+
 }
 
 /**
@@ -1390,6 +1470,11 @@ export interface StickyNotesSettingsModel {
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
+
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
 
 }
 
@@ -1541,6 +1626,11 @@ export interface FreeTextSettingsModel {
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
+
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
 
 }
 

@@ -1,4 +1,4 @@
-import { extend, isBlazor } from '@syncfusion/ej2-base';
+import { extend, isBlazor, select } from '@syncfusion/ej2-base';
 import { remove, isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs, EditEventArgs, AddEventArgs, SaveEventArgs } from '../base/interface';
 import { parentsUntil, isGroupAdaptive, refreshForeignData, getObject } from '../base/util';
@@ -223,7 +223,7 @@ export class NormalEdit {
             previousData: this.previousData, selectedRow: gObj.selectedRowIndex, foreignKeyData: {}
         });
         let isDlg: Boolean = gObj.editSettings.mode === 'Dialog';
-        let dlgWrapper: Element = document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper');
+        let dlgWrapper: Element = select('#' + gObj.element.id + '_dialogEdit_wrapper', document);
         let dlgForm: Element = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.querySelector('.e-gridform');
         let data: { virtualData: Object, isAdd: boolean } = { virtualData: {}, isAdd: false };
         this.parent.notify(events.getVirtualData, data);

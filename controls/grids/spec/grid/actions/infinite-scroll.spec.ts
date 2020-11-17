@@ -17,6 +17,7 @@ import { createGrid, destroy, getKeyUpObj, getClickObj } from '../base/specutil.
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { InfiniteScroll } from '../../../src/grid/actions/infinite-scroll';
 import { RowSelectEventArgs, NotifyArgs } from '../../../src/grid/base/interface';
+import { select } from '@syncfusion/ej2-base';
 
 Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, InfiniteScroll, Toolbar, Freeze);
 
@@ -931,7 +932,7 @@ describe('Infinite scroll normal mode with edit feature teating => ', () => {
         setTimeout(done, 200);
     });
     it('Ensure grid edit form after scroll', function(done: Function){
-        (gridObj.element.querySelector('#' + gridObj.element.id + (gridObj.columns[rowindex] as Column).field) as any).value = 'updated';
+        (select('#' + gridObj.element.id + (gridObj.columns[rowindex] as Column).field, gridObj.element) as any).value = 'updated';
         expect(gridObj.element.querySelectorAll('form').length).toBe(1);
         expect((gridObj as any).infiniteScrollModule.editRowIndex).toBe(rowindex);
         expect(Object.keys((gridObj as any).infiniteScrollModule.virtualInfiniteData).length).toBe(0);
@@ -1029,8 +1030,8 @@ describe('Infinite scroll normal mode with edit feature teating => ', () => {
             }
         };
         expect(gridObj.element.querySelectorAll('.e-addedrow').length).toBe(1);
-        (gridObj.element.querySelector('#' + gridObj.element.id + (gridObj.columns[0] as Column).field) as any).value = 897654;
-        (gridObj.element.querySelector('#' + gridObj.element.id + (gridObj.columns[1] as Column).field) as any).value = 'updated';
+        (select('#' + gridObj.element.id + (gridObj.columns[0] as Column).field, gridObj.element) as any).value = 897654;
+        (select('#' + gridObj.element.id + (gridObj.columns[1] as Column).field, gridObj.element) as any).value = 'updated';
         let beforeDataBound = function(args: any) {
             expect(args.result.length).toBe(1);
             expect(args.result[0][(gridObj.columns[0] as Column).field]).toBe(897654);
@@ -1166,8 +1167,8 @@ describe('Infinite scroll cache mode with edit feature teating => ', () => {
                 //toolbar status check
                 expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(4);
                 expect(gridObj.isEdit).toBeTruthy();
-                expect((gridObj.element.querySelector('#' + gridObj.element.id + (gridObj.columns[1] as Column).field) as any).value).toBe(gridObj.dataSource[rowindex][(gridObj.columns[1] as Column).field]);
-                (gridObj.element.querySelector('#' + gridObj.element.id + (gridObj.columns[1] as Column).field) as any).value = 'updated';
+                expect((select('#' + gridObj.element.id + (gridObj.columns[1] as Column).field, gridObj.element) as any).value).toBe(gridObj.dataSource[rowindex][(gridObj.columns[1] as Column).field]);
+                (select('#' + gridObj.element.id + (gridObj.columns[1] as Column).field, gridObj.element) as any).value = 'updated';
                 gridObj.actionComplete = null;
                 done();
             }
@@ -1257,8 +1258,8 @@ describe('Infinite scroll cache mode with edit feature teating => ', () => {
             }
         };
         expect(gridObj.element.querySelectorAll('.e-addedrow').length).toBe(1);
-        (gridObj.element.querySelector('#' + gridObj.element.id + (gridObj.columns[0] as Column).field) as any).value = 897654;
-        (gridObj.element.querySelector('#' + gridObj.element.id + (gridObj.columns[1] as Column).field) as any).value = 'updated';
+        (select('#' + gridObj.element.id + (gridObj.columns[0] as Column).field, gridObj.element) as any).value = 897654;
+        (select('#' + gridObj.element.id + (gridObj.columns[1] as Column).field, gridObj.element) as any).value = 'updated';
         gridObj.actionComplete = actionComplete;
         (gridObj.editModule as any).editModule.endEdit();
     });

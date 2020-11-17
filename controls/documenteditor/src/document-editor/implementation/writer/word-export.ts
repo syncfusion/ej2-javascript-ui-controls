@@ -717,9 +717,11 @@ export class WordExport {
                 this.serializeBodyItem(writer, blocks[k], true);
                 this.isInsideComment = false;
             }
-            //if (blocks.length === 0 && this.commentParaID === 0) {
+            if (blocks.length === 0) {
+                this.isInsideComment = true;
+                this.commentParaID++;
+            }
             this.commentParaIDInfo[comment.commentId] = this.commentParaID;
-            //}
             //}
             this.isInsideComment = false;
             //}

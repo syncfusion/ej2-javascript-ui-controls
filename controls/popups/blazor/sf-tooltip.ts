@@ -78,6 +78,7 @@ class SfTooltip {
     public ctrlId: string;
     public isPopupHidden: boolean = true;
     private hasTitle: boolean;
+    private isTooltipOpen: boolean;
     public tooltipEventArgs: TooltipEventArgs;
     constructor(element: BlazorTooltipElement, ref: BlazorDotnetObject, properties: InitProps, eventList: EventList) {
         this.element = element;
@@ -160,6 +161,10 @@ class SfTooltip {
                 if (e.type === 'focus') {
                     EventHandler.add(target, 'blur', this.onMouseOut, this);
                 }
+                if (this.properties.closeDelay) {
+                    EventHandler.add(this.tooltipEle, 'mouseenter', this.tooltipHover, this);
+                    EventHandler.add(this.tooltipEle, 'mouseleave', this.tooltipMouseOut, this);
+                }
             }
             if (this.properties.mouseTrail) {
                 EventHandler.add(target, 'mousemove touchstart mouseenter', this.onMouseMove, this);
@@ -211,6 +216,10 @@ class SfTooltip {
                 if (opensOn === 'Focus') {
                     EventHandler.remove(target, 'blur', this.onMouseOut);
                 }
+            }
+            if (this.properties.closeDelay) {
+                EventHandler.remove(target, 'mouseenter', this.tooltipHover );
+                EventHandler.remove(target, 'mouseleave', this.tooltipMouseOut);
             }
         }
         if (this.properties.mouseTrail) {
@@ -436,6 +445,7 @@ class SfTooltip {
         clearTimeout(this.showTimer);
         let hide: Function = (): void => {
             if (this.checkForOpen(this.properties.opensOn, this.element, e)) { return; }
+            if (this.properties.closeDelay && this.tooltipEle && this.isTooltipOpen ) { return; }
             let target: HTMLElement;
             if (e) {
                 target = this.properties.target ? (targetElement || e.target as HTMLElement) : this.element;
@@ -619,6 +629,17 @@ class SfTooltip {
         setStyleAttribute(arrowEle, { 'top': topValue, 'left': leftValue });
     }
 
+    private tooltipHover(e: Event): void {
+        if (this.tooltipEle) {
+            this.isTooltipOpen = true;
+        }
+    }
+
+    private tooltipMouseOut (e: Event): void {
+            this.isTooltipOpen = false;
+            this.hideTooltip(this.properties.animation.close, e, this.findTarget());
+    }
+
     private onMouseOut(e: Event): void {
         const enteredElement: EventTarget = (e as MouseEvent).relatedTarget;
         if (enteredElement && !this.properties.mouseTrail) {
@@ -627,7 +648,6 @@ class SfTooltip {
                 `.${TOOLTIP_WRAP}.${POPUP_LIB}.${POPUP_ROOT}`);
             if (checkForTooltipElement) {
                 EventHandler.add(checkForTooltipElement, 'mouseleave', this.tooltipElementMouseOut, this);
-                this.unwireMouseEvents(e.target as Element);
             } else {
                 this.hideTooltip(this.properties.animation.close, e, this.findTarget());
                 if (this.properties.closeDelay === 0) { this.clear(); }
@@ -678,7 +698,7 @@ class SfTooltip {
         if (this.tooltipEle && event.keyCode === 27) { this.hideTooltip(this.properties.animation.close); }
     }
     private touchEnd(e: TouchEvent): void {
-        if (this.tooltipEle && closest(e.target as HTMLElement, '.' + ROOT) === null) {
+        if (this.tooltipEle && closest(e.target as HTMLElement, '.' + ROOT) === null && !this.properties.isSticky) {
             this.hideTooltip(this.properties.animation.close);
         }
     }

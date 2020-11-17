@@ -1417,7 +1417,9 @@ class Annotations {
             id: this.elementId + '_Annotations_' + index
         });
         let parentElement = getElement(this.elementId + '_Secondary_Element');
-        document.getElementById(this.elementId + '_Secondary_Element').style.width = width + 'px';
+        if (!isNullOrUndefined(document.getElementById(this.elementId + '_Secondary_Element'))) {
+            document.getElementById(this.elementId + '_Secondary_Element').style.width = width + 'px';
+        }
         axis.annotations.map((annotation, annotationIndex) => {
             if (annotation.content !== null) {
                 this.createTemplate(element, annotationIndex, index);

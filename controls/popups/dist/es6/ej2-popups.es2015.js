@@ -3567,7 +3567,7 @@ let Tooltip = class Tooltip extends Component {
         else {
             target = this.element;
         }
-        if (isNullOrUndefined(target) || target.getAttribute('data-tooltip-id') !== null) {
+        if (isNullOrUndefined(target) || (target.getAttribute('data-tooltip-id') !== null && this.closeDelay === 0)) {
             return;
         }
         let targetList = [].slice.call(document.querySelectorAll('[data-tooltip-id= ' + this.ctrlId + '_content]'));
@@ -3812,6 +3812,22 @@ let Tooltip = class Tooltip extends Component {
         return eleOffset;
     }
     hideTooltip(hideAnimation, e, targetElement) {
+        if (this.closeDelay > 0) {
+            clearTimeout(this.hideTimer);
+            clearTimeout(this.showTimer);
+            let hide = () => {
+                if (this.closeDelay && this.tooltipEle && this.isTooltipOpen) {
+                    return;
+                }
+                this.tooltipHide(hideAnimation, e, targetElement);
+            };
+            this.hideTimer = setTimeout(hide, this.closeDelay);
+        }
+        else {
+            this.tooltipHide(hideAnimation, e, targetElement);
+        }
+    }
+    tooltipHide(hideAnimation, e, targetElement) {
         let target;
         if (e) {
             target = this.target ? (targetElement || e.target) : this.element;
@@ -3866,18 +3882,8 @@ let Tooltip = class Tooltip extends Component {
         if (hideAnimation.effect === 'None') {
             closeAnimation = undefined;
         }
-        if (this.closeDelay > 0) {
-            let hide = () => {
-                if (this.popupObj) {
-                    this.popupObj.hide(closeAnimation);
-                }
-            };
-            this.hideTimer = setTimeout(hide, this.closeDelay);
-        }
-        else {
-            if (this.popupObj) {
-                this.popupObj.hide(closeAnimation);
-            }
+        if (this.popupObj) {
+            this.popupObj.hide(closeAnimation);
         }
     }
     restoreElement(target) {
@@ -3912,6 +3918,15 @@ let Tooltip = class Tooltip extends Component {
             this.popupObj = null;
         }
     }
+    tooltipHover(e) {
+        if (this.tooltipEle) {
+            this.isTooltipOpen = true;
+        }
+    }
+    tooltipMouseOut(e) {
+        this.isTooltipOpen = false;
+        this.hideTooltip(this.animation.close, e, this.findTarget());
+    }
     onMouseOut(e) {
         const enteredElement = e.relatedTarget;
         // don't close the tooltip only if it is tooltip content element
@@ -3919,7 +3934,6 @@ let Tooltip = class Tooltip extends Component {
             const checkForTooltipElement = closest(enteredElement, `.${TOOLTIP_WRAP}.${POPUP_LIB}.${POPUP_ROOT$1}`);
             if (checkForTooltipElement) {
                 EventHandler.add(checkForTooltipElement, 'mouseleave', this.tooltipElementMouseOut, this);
-                this.unwireMouseEvents(e.target);
             }
             else {
                 this.hideTooltip(this.animation.close, e, this.findTarget());
@@ -3979,7 +3993,7 @@ let Tooltip = class Tooltip extends Component {
         }
     }
     touchEnd(e) {
-        if (this.tooltipEle && closest(e.target, '.' + ROOT$1) === null) {
+        if (this.tooltipEle && closest(e.target, '.' + ROOT$1) === null && !this.isSticky) {
             this.close();
         }
     }
@@ -4073,6 +4087,10 @@ let Tooltip = class Tooltip extends Component {
                         EventHandler.add(target, 'mouseleave', this.onMouseOut, this);
                     }
                 }
+                if (this.closeDelay) {
+                    EventHandler.add(this.tooltipEle, 'mouseenter', this.tooltipHover, this);
+                    EventHandler.add(this.tooltipEle, 'mouseleave', this.tooltipMouseOut, this);
+                }
             }
             if (this.mouseTrail) {
                 EventHandler.add(target, 'mousemove touchstart mouseenter', this.onMouseMove, this);
@@ -4137,6 +4155,10 @@ let Tooltip = class Tooltip extends Component {
                         EventHandler.remove(target, 'mouseleave', this.onMouseOut);
                     }
                 }
+            }
+            if (this.closeDelay) {
+                EventHandler.remove(target, 'mouseenter', this.tooltipHover);
+                EventHandler.remove(target, 'mouseleave', this.tooltipMouseOut);
             }
         }
         if (this.mouseTrail) {

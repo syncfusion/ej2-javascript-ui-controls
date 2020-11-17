@@ -2751,7 +2751,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     if (this.element.querySelector('.e-grouping-bar')) {
                         this.element.querySelector('.e-grouping-bar').remove();
                     }
-                    this.renderPivotGrid();
+                    if (isNullOrUndefined(newProp.showFieldList))
+                        this.renderPivotGrid();
+                    break;
+                case 'showFieldList':
+                    this.initialLoad();
                     break;
                 case 'groupingBarSettings':
                     this.axisFieldModule.render();

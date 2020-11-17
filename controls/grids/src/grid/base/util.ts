@@ -1,7 +1,7 @@
 import { ChildProperty, compile as baseTemplateComplier, setValue, Internationalization, isUndefined, closest } from '@syncfusion/ej2-base';
 import { extend as baseExtend, isNullOrUndefined, getValue, classList, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { setStyleAttribute, addClass, attributes, remove, createElement, DateFormatOptions, removeClass } from '@syncfusion/ej2-base';
-import { isObject, IKeyValue, isBlazor, Browser } from '@syncfusion/ej2-base';
+import { isObject, IKeyValue, isBlazor, Browser, select, selectAll } from '@syncfusion/ej2-base';
 import {
     IPosition, IGrid, IValueFormatter, IRow, ICell, IExpandedRow, PdfExportProperties,
     ExcelExportProperties, DataStateChangeEventArgs
@@ -522,9 +522,9 @@ export function isEditable(col: Column, type: string, elem: Element): boolean {
 
 /** @hidden */
 export function isActionPrevent(inst: IGrid): boolean {
-    let dlg: HTMLElement = inst.element.querySelector('#' + inst.element.id + 'EditConfirm') as HTMLElement;
+    let dlg: HTMLElement = select('#' + inst.element.id + 'EditConfirm', inst.element) as HTMLElement;
     return inst.editSettings.mode === 'Batch' &&
-        (inst.element.querySelectorAll('.e-updatedtd').length) && inst.editSettings.showConfirmDialog &&
+        (selectAll('.e-updatedtd', inst.element).length) && inst.editSettings.showConfirmDialog &&
         (dlg ? dlg.classList.contains('e-popup-close') : true);
 }
 

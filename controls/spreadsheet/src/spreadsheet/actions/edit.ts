@@ -295,7 +295,7 @@ export class Edit {
         }
     }
     private renderEditor(): void {
-        if (!this.editorElem || !this.parent.element.querySelector('#' + this.parent.element.id + '_edit')) {
+        if (!this.editorElem || !this.parent.element.querySelector('[id="' + this.parent.element.id + '_edit"]')) {
             let editor: HTMLElement;
             editor = this.parent.createElement(
                 'div', { id: this.parent.element.id + '_edit', className: 'e-spreadsheet-edit' });

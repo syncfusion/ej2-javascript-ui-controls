@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.3.48 (2020-11-11)
+## 18.3.50 (2020-11-17)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with setting HTML element id start with number is fixed
+
+## 18.3.42 (2020-10-20)
 
 ### QueryBuilder
 

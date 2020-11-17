@@ -49,6 +49,192 @@ var cardSpace = 16;
 var toggleWidth = 50;
 
 /**
+ * Kanban CSS Constants
+ */
+/** @hidden */
+var ROOT_CLASS = 'e-kanban';
+/** @hidden */
+var RTL_CLASS = 'e-rtl';
+/** @hidden */
+var DEVICE_CLASS = 'e-device';
+/** @hidden */
+var ICON_CLASS = 'e-icons';
+/** @hidden */
+var TEMPLATE_CLASS = 'e-template';
+/** @hidden */
+var SWIMLANE_CLASS = 'e-swimlane';
+/** @hidden */
+var TABLE_CLASS = 'e-kanban-table';
+/** @hidden */
+var HEADER_CLASS = 'e-kanban-header';
+/** @hidden */
+var HEADER_TABLE_CLASS = 'e-header-table';
+/** @hidden */
+var HEADER_CELLS_CLASS = 'e-header-cells';
+/** @hidden */
+var HEADER_WRAP_CLASS = 'e-header-wrap';
+/** @hidden */
+var HEADER_TITLE_CLASS = 'e-header-title';
+/** @hidden */
+var HEADER_TEXT_CLASS = 'e-header-text';
+/** @hidden */
+var HEADER_ICON_CLASS = 'e-header-icon';
+/** @hidden */
+var STACKED_HEADER_ROW_CLASS = 'e-stacked-header-row';
+/** @hidden */
+var STACKED_HEADER_CELL_CLASS = 'e-stacked-header-cell';
+/** @hidden */
+var CONTENT_CELLS_CLASS = 'e-content-cells';
+/** @hidden */
+var CONTENT_CLASS = 'e-kanban-content';
+/** @hidden */
+var CONTENT_TABLE_CLASS = 'e-content-table';
+/** @hidden */
+var HEADER_ROW_TOGGLE_CLASS = 'e-toggle-header';
+/** @hidden */
+var HEADER_ROW_CLASS = 'e-header-row';
+/** @hidden */
+var CONTENT_ROW_CLASS = 'e-content-row';
+/** @hidden */
+var SWIMLANE_ROW_CLASS = 'e-swimlane-row';
+/** @hidden */
+var SWIMLANE_ROW_EXPAND_CLASS = 'e-swimlane-row-expand';
+/** @hidden */
+var SWIMLANE_ROW_COLLAPSE_CLASS = 'e-swimlane-row-collapse';
+/** @hidden */
+var SWIMLANE_ROW_TEXT_CLASS = 'e-swimlane-text';
+/** @hidden */
+var CARD_ITEM_COUNT_CLASS = 'e-item-count';
+/** @hidden */
+var CARD_WRAPPER_CLASS = 'e-card-wrapper';
+/** @hidden */
+var CARD_CLASS = 'e-card';
+/** @hidden */
+var DRAGGABLE_CLASS = 'e-draggable';
+/** @hidden */
+var CARD_HEADER_CLASS = 'e-card-header';
+/** @hidden */
+var CARD_CONTENT_CLASS = 'e-card-content';
+/** @hidden */
+var CARD_HEADER_TEXT_CLASS = 'e-card-header-caption';
+/** @hidden */
+var CARD_HEADER_TITLE_CLASS = 'e-card-header-title';
+/** @hidden */
+var CARD_TAGS_CLASS = 'e-card-tags';
+/** @hidden */
+var CARD_TAG_CLASS = 'e-card-tag';
+/** @hidden */
+var CARD_COLOR_CLASS = 'e-card-color';
+/** @hidden */
+var CARD_LABEL_CLASS = 'e-card-label';
+/** @hidden */
+var CARD_FOOTER_CLASS = 'e-card-footer';
+/** @hidden */
+var CARD_FOOTER_CSS_CLASS = 'e-card-footer-css';
+/** @hidden */
+var COLUMN_EXPAND_CLASS = 'e-column-expand';
+/** @hidden */
+var COLUMN_COLLAPSE_CLASS = 'e-column-collapse';
+/** @hidden */
+var COLLAPSE_HEADER_TEXT_CLASS = 'e-collapse-header-text';
+/** @hidden */
+var COLLAPSED_CLASS = 'e-collapsed';
+/** @hidden */
+var DIALOG_CLASS = 'e-kanban-dialog';
+/** @hidden */
+
+/** @hidden */
+var FORM_CLASS = 'e-kanban-form';
+/** @hidden */
+var FORM_WRAPPER_CLASS = 'e-kanban-form-wrapper';
+/** @hidden */
+var ERROR_VALIDATION_CLASS = 'e-kanban-error';
+/** @hidden */
+var FIELD_CLASS = 'e-field';
+/** @hidden */
+var DRAGGED_CLONE_CLASS = 'e-target-dragged-clone';
+/** @hidden */
+var CLONED_CARD_CLASS = 'e-cloned-card';
+/** @hidden */
+var DRAGGED_CARD_CLASS = 'e-kanban-dragged-card';
+/** @hidden */
+var DROPPED_CLONE_CLASS = 'e-target-dropped-clone';
+/** @hidden */
+var DROPPING_CLASS = 'e-dropping';
+/** @hidden */
+var TOGGLE_VISIBLE_CLASS = 'e-toggle-visible';
+/** @hidden */
+
+/** @hidden */
+var MULTI_CARD_WRAPPER_CLASS = 'e-multi-card-wrapper';
+/** @hidden */
+var MULTI_ACTIVE_CLASS = 'e-multi-active';
+/** @hidden */
+var TARGET_MULTI_CLONE_CLASS = 'e-target-multi-clone';
+/** @hidden */
+var MULTI_COLUMN_KEY_CLASS = 'e-column-key';
+/** @hidden */
+var CARD_SELECTION_CLASS = 'e-selection';
+/** @hidden */
+var TOOLTIP_CLASS = 'e-kanban-tooltip';
+/** @hidden */
+var TOOLTIP_TEXT_CLASS = 'e-tooltip-text';
+/** @hidden */
+
+/** @hidden */
+var SWIMLANE_HEADER_CLASS = 'e-swimlane-header';
+/** @hidden */
+var SWIMLANE_HEADER_TOOLBAR_CLASS = 'e-swimlane-header-toolbar';
+/** @hidden */
+var TOOLBAR_MENU_CLASS = 'e-toolbar-menu';
+/** @hidden */
+var TOOLBAR_MENU_ICON_CLASS = 'e-icon-menu';
+/** @hidden */
+var TOOLBAR_LEVEL_TITLE_CLASS = 'e-toolbar-level-title';
+/** @hidden */
+var TOOLBAR_SWIMLANE_NAME_CLASS = 'e-toolbar-swimlane-name';
+/** @hidden */
+var SWIMLANE_OVERLAY_CLASS = 'e-swimlane-overlay';
+/** @hidden */
+var SWIMLANE_CONTENT_CLASS = 'e-swimlane-content';
+/** @hidden */
+var SWIMLANE_RESOURCE_CLASS = 'e-swimlane-resource';
+/** @hidden */
+var SWIMLANE_TREE_CLASS = 'e-swimlane-tree';
+/** @hidden */
+var LIMITS_CLASS = 'e-limits';
+/** @hidden */
+var MAX_COUNT_CLASS = 'e-max-count';
+/** @hidden */
+var MIN_COUNT_CLASS = 'e-min-count';
+/** @hidden */
+var MAX_COLOR_CLASS = 'e-max-color';
+/** @hidden */
+var MIN_COLOR_CLASS = 'e-min-color';
+/** @hidden */
+
+/** @hidden */
+var POPUP_HEADER_CLASS = 'e-popup-header';
+/** @hidden */
+var CLOSE_CLASS = 'e-close';
+/** @hidden */
+var POPUP_CONTENT_CLASS = 'e-popup-content';
+/** @hidden */
+var POPUP_WRAPPER_CLASS = 'e-mobile-popup-wrapper';
+/** @hidden */
+var CLOSE_ICON_CLASS = 'e-close-icon';
+/** @hidden */
+var POPUP_OPEN_CLASS = 'e-popup-open';
+/** @hidden */
+var DIALOG_CONTENT_CONTAINER = 'e-kanban-dialog-content';
+/** @hidden */
+var SHOW_ADD_BUTTON = 'e-show-add-button';
+/** @hidden */
+var SHOW_ADD_ICON = 'e-show-add-icon';
+/** @hidden */
+var SHOW_ADD_FOCUS = 'e-show-add-focus';
+
+/**
  * Kanban data module
  * @hidden
  */
@@ -153,45 +339,43 @@ var Data = /** @class */ (function () {
         var _this = this;
         this.parent.showSpinner();
         var promise;
-        switch (updateType) {
-            case 'insert':
-                promise = this.dataManager.insert(data, this.getTable(), this.getQuery());
-                break;
-            case 'update':
-                promise = this.dataManager.update(this.keyField, data, this.getTable(), this.getQuery());
-                break;
-            case 'delete':
-                promise = this.dataManager.remove(this.keyField, data, this.getTable(), this.getQuery());
-                break;
-            case 'batch':
-                promise = this.dataManager.saveChanges(params, this.keyField, this.getTable(), this.getQuery());
-                break;
-        }
         var actionArgs = {
             requestType: type, cancel: false, addedRecords: params.addedRecords,
             changedRecords: params.changedRecords, deletedRecords: params.deletedRecords
         };
-        if (this.dataManager.dataSource.offline) {
-            this.parent.trigger(actionComplete, actionArgs, function (offlineArgs) {
-                if (!offlineArgs.cancel) {
+        this.parent.trigger(actionComplete, actionArgs, function (offlineArgs) {
+            if (!offlineArgs.cancel) {
+                switch (updateType) {
+                    case 'insert':
+                        promise = _this.dataManager.insert(data, _this.getTable(), _this.getQuery());
+                        break;
+                    case 'update':
+                        promise = _this.dataManager.update(_this.keyField, data, _this.getTable(), _this.getQuery());
+                        break;
+                    case 'delete':
+                        promise = _this.dataManager.remove(_this.keyField, data, _this.getTable(), _this.getQuery());
+                        break;
+                    case 'batch':
+                        promise = _this.dataManager.saveChanges(params, _this.keyField, _this.getTable(), _this.getQuery());
+                        break;
+                }
+                if (_this.dataManager.dataSource.offline) {
+                    _this.kanbanData = _this.dataManager;
+                    _this.parent.kanbanData = _this.dataManager.dataSource.json;
                     _this.refreshUI(offlineArgs, index);
                 }
-            });
-        }
-        else {
-            promise.then(function (e) {
-                if (_this.parent.isDestroyed) {
-                    return;
+                else {
+                    promise.then(function (e) {
+                        if (_this.parent.isDestroyed) {
+                            return;
+                        }
+                        _this.refreshUI(offlineArgs, index);
+                    }).catch(function (e) {
+                        _this.dataManagerFailure(e);
+                    });
                 }
-                _this.parent.trigger(actionComplete, actionArgs, function (onlineArgs) {
-                    if (!onlineArgs.cancel) {
-                        _this.refreshUI(onlineArgs, index);
-                    }
-                });
-            }).catch(function (e) {
-                _this.dataManagerFailure(e);
-            });
-        }
+            }
+        });
     };
     /**
      * The function is used to refresh the UI once the datamanager action is completed
@@ -200,26 +384,19 @@ var Data = /** @class */ (function () {
      */
     Data.prototype.refreshUI = function (args, index) {
         var _this = this;
-        this.parent.resetTemplates();
-        this.kanbanData.saveChanges({ addedRecords: args.addedRecords, changedRecords: args.changedRecords,
-            deletedRecords: args.deletedRecords });
-        this.parent.kanbanData = this.kanbanData.dataSource.json;
-        var field;
-        if (this.parent.sortSettings.sortBy === 'DataSourceOrder') {
-            field = this.parent.cardSettings.headerField;
-        }
-        else if (this.parent.sortSettings.sortBy === 'Custom') {
-            field = this.parent.sortSettings.field;
-        }
-        if (this.parent.sortSettings.sortBy !== 'Index') {
-            this.parent.kanbanData = this.parent.layoutModule.sortOrder(field, this.parent.sortSettings.direction, this.parent.kanbanData);
+        this.parent.layoutModule.columnData = this.parent.layoutModule.getColumnCards();
+        if (this.parent.swimlaneSettings.keyField) {
+            this.parent.layoutModule.swimlaneData = this.parent.layoutModule.getSwimlaneCards();
         }
         args.addedRecords.forEach(function (data) {
             _this.parent.layoutModule.renderCardBasedOnIndex(data);
         });
         args.changedRecords.forEach(function (data) {
+            var card = [].slice.call(_this.parent.element
+                .querySelectorAll('.' + CARD_CLASS + '[data-id="' + data[_this.parent.cardSettings.headerField] + '"]'));
+            var updateIndex = [].slice.call(card[0].parentElement.children).indexOf(card[0]);
             _this.parent.layoutModule.removeCard(data);
-            _this.parent.layoutModule.renderCardBasedOnIndex(data, index);
+            _this.parent.layoutModule.renderCardBasedOnIndex(data, updateIndex);
             if (_this.parent.sortSettings.field && _this.parent.sortSettings.sortBy === 'Index'
                 && _this.parent.sortSettings.direction === 'Descending' && index > 0) {
                 --index;
@@ -228,7 +405,6 @@ var Data = /** @class */ (function () {
         args.deletedRecords.forEach(function (data) {
             _this.parent.layoutModule.removeCard(data);
         });
-        this.parent.kanbanData = this.kanbanData.dataSource.json;
         this.parent.layoutModule.refresh();
         this.parent.renderTemplates();
         this.parent.trigger(dataBound, null, function () { return _this.parent.hideSpinner(); });
@@ -516,192 +692,6 @@ var SortSettings = /** @class */ (function (_super) {
 }(sf.base.ChildProperty));
 
 /**
- * Kanban CSS Constants
- */
-/** @hidden */
-var ROOT_CLASS = 'e-kanban';
-/** @hidden */
-var RTL_CLASS = 'e-rtl';
-/** @hidden */
-var DEVICE_CLASS = 'e-device';
-/** @hidden */
-var ICON_CLASS = 'e-icons';
-/** @hidden */
-var TEMPLATE_CLASS = 'e-template';
-/** @hidden */
-var SWIMLANE_CLASS = 'e-swimlane';
-/** @hidden */
-var TABLE_CLASS = 'e-kanban-table';
-/** @hidden */
-var HEADER_CLASS = 'e-kanban-header';
-/** @hidden */
-var HEADER_TABLE_CLASS = 'e-header-table';
-/** @hidden */
-var HEADER_CELLS_CLASS = 'e-header-cells';
-/** @hidden */
-var HEADER_WRAP_CLASS = 'e-header-wrap';
-/** @hidden */
-var HEADER_TITLE_CLASS = 'e-header-title';
-/** @hidden */
-var HEADER_TEXT_CLASS = 'e-header-text';
-/** @hidden */
-var HEADER_ICON_CLASS = 'e-header-icon';
-/** @hidden */
-var STACKED_HEADER_ROW_CLASS = 'e-stacked-header-row';
-/** @hidden */
-var STACKED_HEADER_CELL_CLASS = 'e-stacked-header-cell';
-/** @hidden */
-var CONTENT_CELLS_CLASS = 'e-content-cells';
-/** @hidden */
-var CONTENT_CLASS = 'e-kanban-content';
-/** @hidden */
-var CONTENT_TABLE_CLASS = 'e-content-table';
-/** @hidden */
-var HEADER_ROW_TOGGLE_CLASS = 'e-toggle-header';
-/** @hidden */
-var HEADER_ROW_CLASS = 'e-header-row';
-/** @hidden */
-var CONTENT_ROW_CLASS = 'e-content-row';
-/** @hidden */
-var SWIMLANE_ROW_CLASS = 'e-swimlane-row';
-/** @hidden */
-var SWIMLANE_ROW_EXPAND_CLASS = 'e-swimlane-row-expand';
-/** @hidden */
-var SWIMLANE_ROW_COLLAPSE_CLASS = 'e-swimlane-row-collapse';
-/** @hidden */
-var SWIMLANE_ROW_TEXT_CLASS = 'e-swimlane-text';
-/** @hidden */
-var CARD_ITEM_COUNT_CLASS = 'e-item-count';
-/** @hidden */
-var CARD_WRAPPER_CLASS = 'e-card-wrapper';
-/** @hidden */
-var CARD_CLASS = 'e-card';
-/** @hidden */
-var DRAGGABLE_CLASS = 'e-draggable';
-/** @hidden */
-var CARD_HEADER_CLASS = 'e-card-header';
-/** @hidden */
-var CARD_CONTENT_CLASS = 'e-card-content';
-/** @hidden */
-var CARD_HEADER_TEXT_CLASS = 'e-card-header-caption';
-/** @hidden */
-var CARD_HEADER_TITLE_CLASS = 'e-card-header-title';
-/** @hidden */
-var CARD_TAGS_CLASS = 'e-card-tags';
-/** @hidden */
-var CARD_TAG_CLASS = 'e-card-tag';
-/** @hidden */
-var CARD_COLOR_CLASS = 'e-card-color';
-/** @hidden */
-var CARD_LABEL_CLASS = 'e-card-label';
-/** @hidden */
-var CARD_FOOTER_CLASS = 'e-card-footer';
-/** @hidden */
-var CARD_FOOTER_CSS_CLASS = 'e-card-footer-css';
-/** @hidden */
-var COLUMN_EXPAND_CLASS = 'e-column-expand';
-/** @hidden */
-var COLUMN_COLLAPSE_CLASS = 'e-column-collapse';
-/** @hidden */
-var COLLAPSE_HEADER_TEXT_CLASS = 'e-collapse-header-text';
-/** @hidden */
-var COLLAPSED_CLASS = 'e-collapsed';
-/** @hidden */
-var DIALOG_CLASS = 'e-kanban-dialog';
-/** @hidden */
-
-/** @hidden */
-var FORM_CLASS = 'e-kanban-form';
-/** @hidden */
-var FORM_WRAPPER_CLASS = 'e-kanban-form-wrapper';
-/** @hidden */
-var ERROR_VALIDATION_CLASS = 'e-kanban-error';
-/** @hidden */
-var FIELD_CLASS = 'e-field';
-/** @hidden */
-var DRAGGED_CLONE_CLASS = 'e-target-dragged-clone';
-/** @hidden */
-var CLONED_CARD_CLASS = 'e-cloned-card';
-/** @hidden */
-var DRAGGED_CARD_CLASS = 'e-kanban-dragged-card';
-/** @hidden */
-var DROPPED_CLONE_CLASS = 'e-target-dropped-clone';
-/** @hidden */
-var DROPPING_CLASS = 'e-dropping';
-/** @hidden */
-var TOGGLE_VISIBLE_CLASS = 'e-toggle-visible';
-/** @hidden */
-
-/** @hidden */
-var MULTI_CARD_WRAPPER_CLASS = 'e-multi-card-wrapper';
-/** @hidden */
-var MULTI_ACTIVE_CLASS = 'e-multi-active';
-/** @hidden */
-var TARGET_MULTI_CLONE_CLASS = 'e-target-multi-clone';
-/** @hidden */
-var MULTI_COLUMN_KEY_CLASS = 'e-column-key';
-/** @hidden */
-var CARD_SELECTION_CLASS = 'e-selection';
-/** @hidden */
-var TOOLTIP_CLASS = 'e-kanban-tooltip';
-/** @hidden */
-var TOOLTIP_TEXT_CLASS = 'e-tooltip-text';
-/** @hidden */
-
-/** @hidden */
-var SWIMLANE_HEADER_CLASS = 'e-swimlane-header';
-/** @hidden */
-var SWIMLANE_HEADER_TOOLBAR_CLASS = 'e-swimlane-header-toolbar';
-/** @hidden */
-var TOOLBAR_MENU_CLASS = 'e-toolbar-menu';
-/** @hidden */
-var TOOLBAR_MENU_ICON_CLASS = 'e-icon-menu';
-/** @hidden */
-var TOOLBAR_LEVEL_TITLE_CLASS = 'e-toolbar-level-title';
-/** @hidden */
-var TOOLBAR_SWIMLANE_NAME_CLASS = 'e-toolbar-swimlane-name';
-/** @hidden */
-var SWIMLANE_OVERLAY_CLASS = 'e-swimlane-overlay';
-/** @hidden */
-var SWIMLANE_CONTENT_CLASS = 'e-swimlane-content';
-/** @hidden */
-var SWIMLANE_RESOURCE_CLASS = 'e-swimlane-resource';
-/** @hidden */
-var SWIMLANE_TREE_CLASS = 'e-swimlane-tree';
-/** @hidden */
-var LIMITS_CLASS = 'e-limits';
-/** @hidden */
-var MAX_COUNT_CLASS = 'e-max-count';
-/** @hidden */
-var MIN_COUNT_CLASS = 'e-min-count';
-/** @hidden */
-var MAX_COLOR_CLASS = 'e-max-color';
-/** @hidden */
-var MIN_COLOR_CLASS = 'e-min-color';
-/** @hidden */
-
-/** @hidden */
-var POPUP_HEADER_CLASS = 'e-popup-header';
-/** @hidden */
-var CLOSE_CLASS = 'e-close';
-/** @hidden */
-var POPUP_CONTENT_CLASS = 'e-popup-content';
-/** @hidden */
-var POPUP_WRAPPER_CLASS = 'e-mobile-popup-wrapper';
-/** @hidden */
-var CLOSE_ICON_CLASS = 'e-close-icon';
-/** @hidden */
-var POPUP_OPEN_CLASS = 'e-popup-open';
-/** @hidden */
-var DIALOG_CONTENT_CONTAINER = 'e-kanban-dialog-content';
-/** @hidden */
-var SHOW_ADD_BUTTON = 'e-show-add-button';
-/** @hidden */
-var SHOW_ADD_ICON = 'e-show-add-icon';
-/** @hidden */
-var SHOW_ADD_FOCUS = 'e-show-add-focus';
-
-/**
  * Action module is used to perform card actions.
  * @hidden
  */
@@ -781,32 +771,34 @@ var Action = /** @class */ (function () {
         var _this = this;
         var target = sf.base.closest((selectedCard) ? selectedCard : e.target, '.' + CARD_CLASS);
         var cardClickObj = this.parent.getCardDetails(target);
-        this.parent.activeCardData = { data: cardClickObj, element: target };
-        var args = { data: cardClickObj, element: target, cancel: false, event: e };
-        this.parent.trigger(cardClick, args, function (clickArgs) {
-            if (!clickArgs.cancel) {
-                if (target.classList.contains(CARD_SELECTION_CLASS) && e.type === 'click') {
-                    sf.base.removeClass([target], CARD_SELECTION_CLASS);
-                    _this.parent.layoutModule.disableAttributeSelection(target);
-                }
-                else {
-                    var isCtrlKey = e.ctrlKey;
-                    if (_this.parent.isAdaptive && _this.parent.touchModule) {
-                        isCtrlKey = (_this.parent.touchModule.mobilePopup && _this.parent.touchModule.tabHold) || isCtrlKey;
+        if (cardClickObj) {
+            this.parent.activeCardData = { data: cardClickObj, element: target };
+            var args = { data: cardClickObj, element: target, cancel: false, event: e };
+            this.parent.trigger(cardClick, args, function (clickArgs) {
+                if (!clickArgs.cancel) {
+                    if (target.classList.contains(CARD_SELECTION_CLASS) && e.type === 'click') {
+                        sf.base.removeClass([target], CARD_SELECTION_CLASS);
+                        _this.parent.layoutModule.disableAttributeSelection(target);
                     }
-                    _this.cardSelection(target, isCtrlKey, e.shiftKey);
+                    else {
+                        var isCtrlKey = e.ctrlKey;
+                        if (_this.parent.isAdaptive && _this.parent.touchModule) {
+                            isCtrlKey = (_this.parent.touchModule.mobilePopup && _this.parent.touchModule.tabHold) || isCtrlKey;
+                        }
+                        _this.cardSelection(target, isCtrlKey, e.shiftKey);
+                    }
+                    if (_this.parent.isAdaptive && _this.parent.touchModule) {
+                        _this.parent.touchModule.updatePopupContent();
+                    }
+                    var cell = sf.base.closest(target, '.' + CONTENT_CELLS_CLASS);
+                    if (_this.parent.allowKeyboard) {
+                        var element = [].slice.call(cell.querySelectorAll('.' + CARD_CLASS));
+                        element.forEach(function (e) { e.setAttribute('tabindex', '0'); });
+                        _this.parent.keyboardModule.addRemoveTabIndex('Remove');
+                    }
                 }
-                if (_this.parent.isAdaptive && _this.parent.touchModule) {
-                    _this.parent.touchModule.updatePopupContent();
-                }
-                var cell = sf.base.closest(target, '.' + CONTENT_CELLS_CLASS);
-                if (_this.parent.allowKeyboard) {
-                    var element = [].slice.call(cell.querySelectorAll('.' + CARD_CLASS));
-                    element.forEach(function (e) { e.setAttribute('tabindex', '0'); });
-                    _this.parent.keyboardModule.addRemoveTabIndex('Remove');
-                }
-            }
-        });
+            });
+        }
     };
     Action.prototype.cardDoubleClick = function (e) {
         var _this = this;
@@ -1114,7 +1106,7 @@ var Crud = /** @class */ (function () {
             var keyData = cardData.filter(function (cardObj) {
                 return cardObj[_this.parent.keyField] === columnKey;
             });
-            columnAllDatas = this_1.parent.layoutModule.columnData[columnKey];
+            columnAllDatas = this_1.parent.layoutModule.getColumnData(columnKey);
             for (var _i = 0, _a = keyData; _i < _a.length; _i++) {
                 var data = _a[_i];
                 if (this_1.parent.swimlaneSettings.keyField) {
@@ -1148,14 +1140,6 @@ var Crud = /** @class */ (function () {
             _loop_1(columnKey);
         }
         return finalData;
-    };
-    Crud.prototype.removeData = function (columnAllDatas, keyData) {
-        keyData.map(function (cardObj) {
-            if (columnAllDatas.indexOf(cardObj) !== -1) {
-                columnAllDatas.splice(columnAllDatas.indexOf(cardObj), 1);
-            }
-        });
-        return columnAllDatas;
     };
     return Crud;
 }());
@@ -1423,7 +1407,9 @@ var DragAndDrop = /** @class */ (function () {
         var columnKey;
         var dropIndex;
         if (this.dragObj.targetClone.parentElement) {
-            dropIndex = [].slice.call(this.dragObj.targetClone.parentElement.children).indexOf(this.dragObj.targetClone);
+            var className = '.' + CARD_CLASS + ':not(.' + DRAGGED_CARD_CLASS + '),.' + DROPPED_CLONE_CLASS;
+            var element = [].slice.call(this.dragObj.targetClone.parentElement.querySelectorAll(className));
+            dropIndex = element.indexOf(this.dragObj.targetClone);
         }
         if (this.parent.element.querySelector('.' + TARGET_MULTI_CLONE_CLASS)) {
             columnKey = sf.base.closest(e.target, '.' + MULTI_COLUMN_KEY_CLASS);
@@ -3234,23 +3220,18 @@ var LayoutRender = /** @class */ (function (_super) {
         return cardData;
     };
     LayoutRender.prototype.sortCategory = function (cardData) {
-        var key;
+        var key = this.parent.cardSettings.headerField;
         var direction = this.parent.sortSettings.direction;
         switch (this.parent.sortSettings.sortBy) {
             case 'DataSourceOrder':
-                if (direction === 'Descending') {
-                    cardData.reverse();
-                }
+                this.sortOrder(key, direction, cardData);
                 break;
             case 'Custom':
             case 'Index':
                 if (this.parent.sortSettings.field) {
                     key = this.parent.sortSettings.field;
-                    if (this.parent.sortSettings.sortBy === 'Custom') {
-                        direction = this.parent.sortSettings.direction;
-                    }
-                    this.sortOrder(key, direction, cardData);
                 }
+                this.sortOrder(key, direction, cardData);
                 break;
         }
         return cardData;
@@ -3339,7 +3320,6 @@ var LayoutRender = /** @class */ (function (_super) {
     };
     LayoutRender.prototype.refresh = function () {
         var _this = this;
-        this.columnData = this.getColumnCards();
         this.parent.columns.forEach(function (column) {
             if (column.showItemCount) {
                 var countSelector = "." + HEADER_CELLS_CLASS + "[data-key=\"" + column.keyField + "\"] ." + CARD_ITEM_COUNT_CLASS;
@@ -3350,7 +3330,6 @@ var LayoutRender = /** @class */ (function (_super) {
             }
         });
         if (this.parent.swimlaneSettings.keyField) {
-            this.swimlaneData = this.getSwimlaneCards();
             var swimlaneRows = [].slice.call(this.parent.element.querySelectorAll("." + SWIMLANE_ROW_CLASS));
             swimlaneRows.forEach(function (swimlane) {
                 var swimlaneKey = swimlane.getAttribute('data-key');
@@ -3379,34 +3358,34 @@ var LayoutRender = /** @class */ (function (_super) {
         });
     };
     LayoutRender.prototype.renderCardBasedOnIndex = function (data, index) {
-        var _this = this;
         var key = data[this.parent.keyField];
         var cardRow = this.parent.element.querySelector('.e-content-row:not(.e-swimlane-row)');
         if (this.parent.swimlaneSettings.keyField) {
             var rowSelector = ".e-content-row.e-swimlane-row[data-key=\"" + data[this.parent.swimlaneSettings.keyField] + "\"]";
             cardRow = this.parent.element.querySelector(rowSelector).nextElementSibling;
         }
-        if (this.parent.sortSettings.sortBy === 'DataSourceOrder' && !sf.base.isNullOrUndefined(index) ||
-            this.parent.sortSettings.sortBy === 'Custom') {
+        if (this.parent.sortSettings.sortBy !== 'Index') {
+            var field_1 = this.parent.cardSettings.headerField;
+            if (this.parent.sortSettings.sortBy === 'Custom') {
+                field_1 = this.parent.sortSettings.field;
+            }
             if (sf.base.isNullOrUndefined(this.parent.swimlaneSettings.keyField)) {
-                index = this.parent.getColumnData(key, this.parent.kanbanData).findIndex(function (data) {
-                    return data[_this.parent.cardSettings.headerField] === data[_this.parent.cardSettings.headerField];
+                index = this.getColumnData(key, this.parent.kanbanData).findIndex(function (colData) {
+                    return colData[field_1] === data[field_1];
                 });
             }
             else {
                 var swimlaneDatas = this.parent.getSwimlaneData(data[this.parent.swimlaneSettings.keyField]);
-                index = this.parent.getColumnData(key, swimlaneDatas).findIndex(function (data) {
-                    return data[_this.parent.cardSettings.headerField] === data[_this.parent.cardSettings.headerField];
-                });
+                index = this.getColumnData(key, swimlaneDatas).findIndex(function (colData) { return colData[field_1] === data[field_1]; });
             }
         }
-        else if (this.parent.sortSettings.sortBy === 'Index' && this.parent.sortSettings.field
-            && this.parent.sortSettings.direction === 'Ascending') {
+        else if (this.parent.sortSettings.sortBy === 'Index' &&
+            this.parent.sortSettings.field && this.parent.sortSettings.direction === 'Ascending') {
             index = data[this.parent.sortSettings.field] - 1;
         }
         if (cardRow) {
             var td = [].slice.call(cardRow.children).filter(function (e) {
-                return e.getAttribute('data-key').replace(/\s/g, '').split(',').indexOf(key) !== -1;
+                return e.getAttribute('data-key').replace(/\s/g, '').split(',').indexOf(key.replace(/\s/g, '')) !== -1;
             })[0];
             var cardWrapper_2 = td.querySelector('.' + CARD_WRAPPER_CLASS);
             var cardElement_1 = this.renderCard(data);
@@ -3418,14 +3397,6 @@ var LayoutRender = /** @class */ (function (_super) {
                 if (!cardArgs.cancel) {
                     if (sf.base.isNullOrUndefined(index) || cardWrapper_2.children.length === 0) {
                         cardWrapper_2.appendChild(cardElement_1);
-                    }
-                    else if (_this.parent.sortSettings.sortBy === 'DataSourceOrder') {
-                        if (index === 0) {
-                            cardWrapper_2.children[index].insertAdjacentElement('beforebegin', cardElement_1);
-                        }
-                        else {
-                            cardWrapper_2.children[index - 1].insertAdjacentElement('afterend', cardElement_1);
-                        }
                     }
                     else {
                         cardWrapper_2.insertBefore(cardElement_1, cardWrapper_2.childNodes[index]);

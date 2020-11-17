@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.50 (2020-11-17)
+
+### DropDownButton
+
+#### Bug Fixes
+
+- Issue with setting HTML element id start with number is fixed
+
 ## 18.3.48 (2020-11-11)
 
 ### DropDownButton

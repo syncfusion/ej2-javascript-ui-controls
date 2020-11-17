@@ -40,7 +40,7 @@ export class KeyboardShortcut {
                 }
             }
             if (e.keyCode === 79) {
-                (this.parent.element.querySelector('#' + this.parent.element.id + '_fileUpload') as HTMLElement).click();
+                (this.parent.element.querySelector('[id="' + this.parent.element.id + '_fileUpload"]') as HTMLElement).click();
             } else if (e.keyCode === 83) {
                 if (this.parent.saveUrl && this.parent.allowSave) { this.parent.save(); }
             } else if (e.keyCode === 67) {

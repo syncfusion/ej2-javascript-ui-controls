@@ -1,12 +1,13 @@
 import * as events from '../base/constant';
 import { IRichTextEditor } from '../base/interface';
-import { detach } from '@syncfusion/ej2-base';
+import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * XhtmlValidation module called when set enableXhtml as true
  */
 export class XhtmlValidation {
     private parent: IRichTextEditor;
+    private currentElement: HTMLElement;
     constructor(parent?: IRichTextEditor) {
         this.parent = parent;
         this.addEventListener();
@@ -24,13 +25,18 @@ export class XhtmlValidation {
 
     private enableXhtmlValidation(): void {
         if (this.parent.enableXhtml) {
-            this.clean(this.parent.inputElement);
+            if (isNullOrUndefined(this.parent.inputElement)) {
+                this.currentElement = this.parent.element;
+            } else {
+                this.currentElement = this.parent.inputElement;
+            }
+            this.clean(this.currentElement);
             this.AddRootElement();
             this.ImageTags();
             this.removeTags();
             this.RemoveUnsupported();
-            this.parent.inputElement.innerHTML = this.selfEncloseValidation(this.parent.inputElement.innerHTML);
-            this.parent.setProperties({ value: this.parent.inputElement.innerHTML }, true);
+            this.currentElement.innerHTML = this.selfEncloseValidation(this.currentElement.innerHTML);
+            this.parent.setProperties({ value: this.currentElement.innerHTML }, true);
         }
     }
 
@@ -66,14 +72,14 @@ export class XhtmlValidation {
     }
 
     private AddRootElement(): void {
-        if ((this.parent.inputElement.childNodes.length === 1 && this.parent.inputElement.firstChild.nodeName !== 'DIV') ||
-            this.parent.inputElement.childNodes.length > 1) {
+        if ((this.currentElement.childNodes.length === 1 && this.currentElement.firstChild.nodeName !== 'DIV') ||
+            this.currentElement.childNodes.length > 1) {
             let parentEle: HTMLElement = this.parent.createElement('div');
 
-            while (this.parent.inputElement.childNodes.length > 0) {
-                parentEle.appendChild(this.parent.inputElement.childNodes[0]);
+            while (this.currentElement.childNodes.length > 0) {
+                parentEle.appendChild(this.currentElement.childNodes[0]);
             }
-            this.parent.inputElement.appendChild(parentEle);
+            this.currentElement.appendChild(parentEle);
         }
     };
 
@@ -87,11 +93,11 @@ export class XhtmlValidation {
                 this.clean(child);
             }
         }
-        return this.parent.inputElement.innerHTML;
+        return this.currentElement.innerHTML;
     }
 
     private ImageTags(): void {
-        let imgNodes: NodeListOf<HTMLElement> = this.parent.inputElement.querySelectorAll('IMG');
+        let imgNodes: NodeListOf<HTMLElement> = this.currentElement.querySelectorAll('IMG');
         for (let i: number = imgNodes.length - 1; i >= 0; i--) {
             if (!imgNodes[i].hasAttribute('alt')) {
                 let img: Element = imgNodes[i];
@@ -108,7 +114,7 @@ export class XhtmlValidation {
     };
 
     private RemoveElementNode(rmvNode: string, parentNode: string): void {
-        let parentArray: NodeListOf<HTMLElement> = this.parent.inputElement.querySelectorAll(parentNode);
+        let parentArray: NodeListOf<HTMLElement> = this.currentElement.querySelectorAll(parentNode);
         for (let i: number = 0; i < parentArray.length; i++) {
             let rmvArray: NodeListOf<HTMLElement> = parentArray[i].querySelectorAll(rmvNode);
             for (let j: number = rmvArray.length; j > 0; j--) {
@@ -117,7 +123,7 @@ export class XhtmlValidation {
         }
     };
     private RemoveUnsupported(): void {
-        let underlineEle: NodeListOf<HTMLElement> = <NodeListOf<HTMLElement>>this.parent.inputElement.querySelectorAll('u');
+        let underlineEle: NodeListOf<HTMLElement> = <NodeListOf<HTMLElement>>this.currentElement.querySelectorAll('u');
         for (let i: number = underlineEle.length - 1; i >= 0; i--) {
             let spanEle: HTMLElement = this.parent.createElement('span');
             spanEle.style.textDecoration = 'underline';
@@ -125,7 +131,7 @@ export class XhtmlValidation {
             underlineEle[i].parentNode.insertBefore(spanEle, underlineEle[i]);
             detach(underlineEle[i]);
         }
-        let strongEle: NodeListOf<HTMLElement> = this.parent.inputElement.querySelectorAll('strong');
+        let strongEle: NodeListOf<HTMLElement> = this.currentElement.querySelectorAll('strong');
         for (let i: number = strongEle.length - 1; i >= 0; i--) {
             let boldEle: HTMLElement = this.parent.createElement('b');
             boldEle.innerHTML = strongEle[i].innerHTML;
@@ -139,10 +145,10 @@ export class XhtmlValidation {
         }
     };
      private RemoveAttributeByName(attrName: string): void {
-        if (this.parent.inputElement.firstChild !== null) {
-            if (this.parent.inputElement.firstChild.nodeType !== 3) {
-                for (let i: number = 0; i < this.parent.inputElement.childNodes.length; i++) {
-                    let ele: Node = this.parent.inputElement.childNodes[i];
+        if (this.currentElement.firstChild !== null) {
+            if (this.currentElement.firstChild.nodeType !== 3) {
+                for (let i: number = 0; i < this.currentElement.childNodes.length; i++) {
+                    let ele: Node = this.currentElement.childNodes[i];
                     if (ele.nodeType !== 3 && ele.nodeName !== 'TABLE' && ele.nodeName !== 'TBODY' && ele.nodeName !== 'THEAD' &&
                         ele.nodeName !== 'TH' && ele.nodeName !== 'TR' && ele.nodeName !== 'TD') {
                         if ((ele as HTMLElement).hasAttribute(attrName)) {

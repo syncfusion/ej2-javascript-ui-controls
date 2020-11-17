@@ -4,6 +4,7 @@ import { Kanban } from './kanban';
 import { ActionEventArgs, SaveChanges } from './interface';
 import { ReturnType } from './type';
 import * as events from './constant';
+import * as cls from '../base/css-constant';
 
 /**
  * Kanban data module
@@ -115,42 +116,41 @@ export class Data {
     public updateDataManager(updateType: string, params: SaveChanges, type: string, data: { [key: string]: Object }, index?: number): void {
         this.parent.showSpinner();
         let promise: Promise<Object>;
-        switch (updateType) {
-            case 'insert':
-                promise = this.dataManager.insert(data, this.getTable(), this.getQuery()) as Promise<Object>;
-                break;
-            case 'update':
-                promise = this.dataManager.update(this.keyField, data, this.getTable(), this.getQuery()) as Promise<Object>;
-                break;
-            case 'delete':
-                promise = this.dataManager.remove(this.keyField, data, this.getTable(), this.getQuery()) as Promise<Object>;
-                break;
-            case 'batch':
-                promise = this.dataManager.saveChanges(params, this.keyField, this.getTable(), this.getQuery()) as Promise<Object>;
-                break;
-        }
         let actionArgs: ActionEventArgs = {
             requestType: type, cancel: false, addedRecords: params.addedRecords,
             changedRecords: params.changedRecords, deletedRecords: params.deletedRecords
         };
-        if (this.dataManager.dataSource.offline) {
-            this.parent.trigger(events.actionComplete, actionArgs, (offlineArgs: ActionEventArgs) => {
-                if (!offlineArgs.cancel) {
-                    this.refreshUI(offlineArgs, index);
+        this.parent.trigger(events.actionComplete, actionArgs, (offlineArgs: ActionEventArgs) => {
+            if (!offlineArgs.cancel) {
+                switch (updateType) {
+                    case 'insert':
+                        promise = this.dataManager.insert(data, this.getTable(), this.getQuery()) as Promise<Object>;
+                        break;
+                    case 'update':
+                        promise = this.dataManager.update(this.keyField, data, this.getTable(), this.getQuery()) as Promise<Object>;
+                        break;
+                    case 'delete':
+                        promise = this.dataManager.remove(this.keyField, data, this.getTable(), this.getQuery()) as Promise<Object>;
+                        break;
+                    case 'batch':
+                        promise = this.dataManager.saveChanges(params, this.keyField, this.getTable(), this.getQuery()) as Promise<Object>;
+                        break;
                 }
-            });
-        } else {
-            promise.then((e: ReturnType) => {
-                if (this.parent.isDestroyed) { return; }
-                this.parent.trigger(events.actionComplete, actionArgs, (onlineArgs: ActionEventArgs) => {
-                    if (!onlineArgs.cancel) {
-                        this.refreshUI(onlineArgs, index);
-                    }
-                });
-            }).catch((e: ReturnType) => {
-                this.dataManagerFailure(e);
-            });
-        }
+
+                if (this.dataManager.dataSource.offline) {
+                    this.kanbanData = this.dataManager;
+                    this.parent.kanbanData = this.dataManager.dataSource.json;
+                    this.refreshUI(offlineArgs, index);
+                } else {
+                    promise.then((e: ReturnType) => {
+                        if (this.parent.isDestroyed) { return; }
+                        this.refreshUI(offlineArgs, index);
+                    }).catch((e: ReturnType) => {
+                        this.dataManagerFailure(e);
+                    });
+                }
+            }
+        });
     }
 
     /**
@@ -159,34 +159,28 @@ export class Data {
      * @private
      */
     private refreshUI(args: ActionEventArgs, index: number): void {
-        this.parent.resetTemplates();
-        this.kanbanData.saveChanges({ addedRecords: args.addedRecords, changedRecords: args.changedRecords,
-            deletedRecords: args.deletedRecords });
-        this.parent.kanbanData = this.kanbanData.dataSource.json;
         let field: string;
-        if (this.parent.sortSettings.sortBy === 'DataSourceOrder') {
-            field = this.parent.cardSettings.headerField;
-        } else if (this.parent.sortSettings.sortBy === 'Custom') {
-            field = this.parent.sortSettings.field;
-        }
-        if (this.parent.sortSettings.sortBy !== 'Index') {
-            this.parent.kanbanData = this.parent.layoutModule.sortOrder(field, this.parent.sortSettings.direction, this.parent.kanbanData);
+        this.parent.layoutModule.columnData = this.parent.layoutModule.getColumnCards();
+        if (this.parent.swimlaneSettings.keyField) {
+            this.parent.layoutModule.swimlaneData = this.parent.layoutModule.getSwimlaneCards();
         }
         args.addedRecords.forEach((data: { [key: string]: Object }) => {
             this.parent.layoutModule.renderCardBasedOnIndex(data);
         });
         args.changedRecords.forEach((data: { [key: string]: Object }) => {
+            let card: HTMLCollection = [].slice.call(this.parent.element
+                .querySelectorAll('.' + cls.CARD_CLASS + '[data-id="' + data[this.parent.cardSettings.headerField] + '"]'));
+            let updateIndex: number = [].slice.call(card[0].parentElement.children).indexOf(card[0]);
             this.parent.layoutModule.removeCard(data);
-            this.parent.layoutModule.renderCardBasedOnIndex(data, index);
+            this.parent.layoutModule.renderCardBasedOnIndex(data, updateIndex);
             if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index'
-            && this.parent.sortSettings.direction === 'Descending' && index > 0) {
+                && this.parent.sortSettings.direction === 'Descending' && index > 0) {
                 --index;
             }
         });
         args.deletedRecords.forEach((data: { [key: string]: Object }) => {
             this.parent.layoutModule.removeCard(data);
         });
-        this.parent.kanbanData = this.kanbanData.dataSource.json;
         this.parent.layoutModule.refresh();
         this.parent.renderTemplates();
         this.parent.trigger(events.dataBound, null, () => this.parent.hideSpinner());

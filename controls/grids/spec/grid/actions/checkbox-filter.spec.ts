@@ -17,6 +17,7 @@ import { Edit } from '../../../src/grid/actions/edit';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { Query } from '@syncfusion/ej2-data';
 import { FilterSearchBeginEventArgs } from '../../../src/grid/base/interface';
+import { select } from '@syncfusion/ej2-base';
 
 Grid.Inject(Filter, Page,Toolbar, Selection, Group, Freeze, Edit, Filter, VirtualScroll);
 
@@ -1807,7 +1808,7 @@ describe('Checkbox Filter module => ', () => {
             checkBoxFilter.querySelectorAll('button')[0].click();
         });
         it('Check confirm dialog', () => {
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-dialog')).toBeTruthy();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-dialog')).toBeTruthy();
         });
         it('check data are filtered', (done: Function) => {
             actionComplete = (args?: any): void => {
@@ -1818,7 +1819,7 @@ describe('Checkbox Filter module => ', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
         });
         it('memory leak', () => {     
             profile.sample();

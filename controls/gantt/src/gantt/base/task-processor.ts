@@ -399,7 +399,8 @@ export class TaskProcessor extends DateProcessor {
     private sortSegmentsData(segments: ITaskSegment[], onLoad: boolean, ganttProp: ITaskData): ITaskSegment[] {
         if (onLoad) {
             segments.sort((a: ITaskSegment, b: ITaskSegment) => {
-                return a[this.parent.taskFields.startDate].getTime() - b[this.parent.taskFields.startDate].getTime();
+                let startDate: string = this.parent.taskFields.startDate;
+                return this.getDateFromFormat(a[startDate]).getTime() - this.getDateFromFormat(b[startDate]).getTime();
             });
         } else {
             segments.sort((a: ITaskSegment, b: ITaskSegment) => {
@@ -424,7 +425,7 @@ export class TaskProcessor extends DateProcessor {
                     let startDate: Date = onLoad ? segment[taskSettings.startDate] : segment.startDate;
                     let endDate: Date = onLoad ? segment[taskSettings.endDate] : segment.endDate;
                     let duration: number = onLoad ? segment[taskSettings.duration] : segment.duration;
-                    startDate = i === 0 ? new Date(data.ganttProperties.startDate.getTime()) : startDate;
+                    startDate = this.getDateFromFormat(startDate);
                     startDate = this.checkStartDate(startDate, data.ganttProperties, false);
                     if (!isNullOrUndefined(duration)) {
                         endDate = this.getEndDate(startDate, duration, data.ganttProperties.durationUnit, data.ganttProperties, false);
@@ -1809,7 +1810,7 @@ export class TaskProcessor extends DateProcessor {
         if (!isNullOrUndefined(ganttRecord.segments) && ganttRecord.segments.length > 0) {
             let segments: ITaskSegment[] = ganttRecord.segments;
             let fixedWidth: boolean = true;
-            let totalTaskWidth: number = this.parent.editModule.taskbarEditModule.splitTasksDuration(segments) * this.parent.perDayWidth;
+            let totalTaskWidth: number = this.splitTasksDuration(segments) * this.parent.perDayWidth;
             let totalProgressWidth: number = this.parent.dataOperation.getProgressWidth(totalTaskWidth, ganttRecord.progress);
             for (let i: number = 0; i < segments.length; i++) {
                 let segment: ITaskSegment = segments[i];

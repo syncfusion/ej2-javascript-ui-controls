@@ -169,7 +169,7 @@ export function append(fromElements: Element[] | NodeList, toElement: Element, i
     }
     return fromElements;
 }
-//tslint: enable:no-any
+
 /**
  * The function is used to evaluate script from Ajax request
  * @param ele - An element is going to evaluate the script
@@ -190,15 +190,18 @@ function executeScript(ele: Element): void {
  * @param  {Element|Node|HTMLElement} element - An element that is going to detach from the Dom
  * @private
  */
-export function detach(element: Element | Node | HTMLElement): Element {
+export function detach(element: Element | Node | HTMLElement): any {
     if (isObject(element)) {
         return VirtualDOM.detach(element as any) as any;
     } else {
         let parentNode: Node = element.parentNode;
-        return <Element>parentNode.removeChild(element);
+        if (parentNode) {
+            return <Element>parentNode.removeChild(element);
+        }
     }
 
 }
+//tslint: enable:no-any
 /**
  * The function used to remove the element from Dom also clear the bounded events
  * @param  {Element|Node|HTMLElement} element - An element remove from the Dom
@@ -249,6 +252,7 @@ export function select(selector: string, context: Document | Element = document,
         //tslint:disable-next-line
         return VirtualDOM.vDomSelector({ ele: (context as any), selector, selectAll: false });
     } else {
+        selector = querySelectId(selector);
         return context.querySelector(selector);
     }
 }
@@ -264,9 +268,30 @@ export function selectAll(selector: string, context: Document | Element = docume
         //tslint:disable-next-line
         return VirtualDOM.vDomSelector({ ele: (context as any), selector, selectAll: true }) as any;
     } else {
+        selector = querySelectId(selector);
         let nodeList: NodeList = context.querySelectorAll(selector);
         return <HTMLElement[] & NodeList>nodeList;
     }
+}
+
+function querySelectId(selector: string): string {
+    if (selector.match(/#[0-9]/g)) {
+        let idList: string[] = selector.split(',');
+        for (let i: number = 0; i < idList.length; i++) {
+            let list: string[] = idList[i].split(' ');
+            for (let j: number = 0; j < list.length; j++) {
+                if (list[j].match(/#/)) {
+                    let splitId: string[] = list[j].split('#');
+                    if (splitId[1].match(/^\d/)) {
+                        list[j] = list[j].replace(/#/, '[id=\'') + '\']';
+                    }
+                }
+            }
+            idList[i] = list.join(' ');
+        }
+        return idList.join(',');
+    }
+    return selector;
 }
 
 /**

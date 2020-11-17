@@ -1,7 +1,7 @@
 /**
  * Grid Inline edit spec document
  */
-import { EmitType } from '@syncfusion/ej2-base';
+import { EmitType, select } from '@syncfusion/ej2-base';
 import { extend } from '@syncfusion/ej2-base';
 import { createElement } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
@@ -210,7 +210,7 @@ describe('Inline Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.actionBegin = actionBegin;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element) as any).value = 'updated';
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
         });
 
@@ -276,8 +276,8 @@ describe('Inline Editing module', () => {
                 }
             };
             gridObj.actionBegin = actionBegin;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'OrderID') as any).value = 10247;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'OrderID', gridObj.element) as any).value = 10247;
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element) as any).value = 'updated';
             (gridObj.editModule as any).editModule.endEdit();
         });
 
@@ -392,7 +392,7 @@ describe('Inline Editing module', () => {
             gridObj.actionBegin = actionBegin;
             //toolbar status check
             expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(4);
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updatednew';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element) as any).value = 'updatednew';
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_cancel' } });
         });
 
@@ -449,8 +449,8 @@ describe('Inline Editing module', () => {
             gridObj.actionBegin = actionBegin;
             //toolbar status check
             expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(4);
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'OrderID') as any).value = 10247;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updatednew';
+            (select('#' + gridObj.element.id + 'OrderID', gridObj.element) as any).value = 10247;
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element) as any).value = 'updatednew';
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_cancel' } });
         });
 
@@ -483,7 +483,7 @@ describe('Inline Editing module', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element) as any).value = 'updated';
             (gridObj.element.querySelectorAll('.e-row')[2] as any).cells[0].click();
         });
 
@@ -590,7 +590,7 @@ describe('Inline Editing module', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element) as any).value = 'updated';
             gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: gridObj.getContent().querySelector('.e-row') } as any);
         });
 
@@ -617,8 +617,8 @@ describe('Inline Editing module', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'OrderID') as any).value = 10247;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'OrderID', gridObj.element) as any).value = 10247;
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element) as any).value = 'updated';
             gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: gridObj.getContent().querySelector('.e-row') } as any);
         });
 
@@ -660,7 +660,7 @@ describe('Inline Editing module', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updatednew';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element) as any).value = 'updatednew';
             gridObj.keyboardModule.keyAction({ action: 'escape', preventDefault: preventDefault, target: gridObj.getContent().querySelector('.e-row') } as any);
         });
 
@@ -736,16 +736,16 @@ describe('Inline Editing module', () => {
         it('deleting - no record alert', () => {
             gridObj.clearSelection();
             gridObj.deleteRecord();
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditAlert').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditAlert').querySelector('button').click();
+            expect(select('#' + gridObj.element.id + 'EditAlert', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            select('#' + gridObj.element.id + 'EditAlert', gridObj.element).querySelector('button').click();
         });
 
         it('deleting - delete confirm - cancel', () => {
             gridObj.clearSelection();
             gridObj.selectRow(3, true);
             gridObj.deleteRecord();
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[1].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).querySelectorAll('button')[1].click();
         });
 
         it('deleting - delete confirm - ok', (done: Function) => {
@@ -758,8 +758,8 @@ describe('Inline Editing module', () => {
             gridObj.selectRow(3, true);
             gridObj.actionComplete = actionComplete;
             gridObj.deleteRecord();
-            expect(gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').classList.contains('e-popup-open')).toBeTruthy();
-            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
             gridObj.editSettings.allowAdding = true;
             gridObj.dataBind();
             gridObj.editSettings.allowEditing = true;
@@ -820,12 +820,12 @@ describe('Inline Editing module', () => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {
                     let row: Element = gridObj.element.querySelectorAll('.e-editedrow')[0];
-                    expect((row.querySelector('#' + gridObj.element.id + 'CustomerID') as any).style.textAlign).toBe('right');
-                    expect((row.querySelector('#' + gridObj.element.id + 'ShipCity') as any).style.textAlign).toBe('center');
-                    expect((row.querySelector('#' + gridObj.element.id + 'ShipRegion') as any).style.textAlign).toBe('left');
-                    expect(row.querySelector('#' + gridObj.element.id + 'CustomerID').classList.contains('e-textbox')).toBeTruthy();
-                    expect(row.querySelector('#' + gridObj.element.id + 'ShipCity').classList.contains('e-textbox')).toBeTruthy();
-                    expect(row.querySelector('#' + gridObj.element.id + 'ShipRegion').classList.contains('e-textbox')).toBeTruthy();
+                    expect((select('#' + gridObj.element.id + 'CustomerID', row) as any).style.textAlign).toBe('right');
+                    expect((select('#' + gridObj.element.id + 'ShipCity', row) as any).style.textAlign).toBe('center');
+                    expect((select('#' + gridObj.element.id + 'ShipRegion', row) as any).style.textAlign).toBe('left');
+                    expect(select('#' + gridObj.element.id + 'CustomerID', row).classList.contains('e-textbox')).toBeTruthy();
+                    expect(select('#' + gridObj.element.id + 'ShipCity', row).classList.contains('e-textbox')).toBeTruthy();
+                    expect(select('#' + gridObj.element.id + 'ShipRegion', row).classList.contains('e-textbox')).toBeTruthy();
                     done();
                 }
             };
@@ -843,7 +843,7 @@ describe('Inline Editing module', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element) as any).value = 'updated';
             gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: (<any>gridObj.getContent().querySelector('.e-row')).cells[0] } as any);
         });
 
@@ -877,7 +877,7 @@ describe('Inline Editing module', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element)  as any).value = 'updated';
             gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: gridObj.getContent().querySelector('.e-row') } as any);
         });
 
@@ -951,7 +951,7 @@ describe('Inline Editing module', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element)  as any).value = 'updated';
             gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: gridObj.getContent().querySelector('.e-row') } as any);
         });
 
@@ -1054,7 +1054,7 @@ describe('Inline Editing module', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element)  as any).value = 'updated';
             gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: gridObj.getContent().querySelector('.e-row') } as any);
         });
 
@@ -1114,7 +1114,7 @@ describe('Inline Editing module', () => {
         });
 
         it('Edit with invalid data', () => {
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = '';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element)  as any).value = '';
             expect(gridObj.editModule.editFormValidate()).toBeFalsy();
             expect(gridObj.editModule.formObj.element.querySelectorAll('.e-griderror').length).toBe(1);
             let errors: any = document.querySelectorAll('.e-griderror');
@@ -1131,7 +1131,7 @@ describe('Inline Editing module', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element)  as any).value = 'updated';
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
         });
 
@@ -1161,8 +1161,8 @@ describe('Inline Editing module', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'OrderID') as any).value = 10247;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'OrderID', gridObj.element) as any).value = 10247;
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element)  as any).value = 'updated';
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
         });
 
@@ -1239,7 +1239,7 @@ describe('Inline Editing module', () => {
             };
             gridObj.actionBegin = actionBegin;
             gridObj.actionComplete = actionComplete;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updatedrow';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element)  as any).value = 'updatedrow';
             (gridObj.editModule as any).editModule.endEdit();
         });
 
@@ -1387,7 +1387,7 @@ describe('Inline Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.actionBegin = actionBegin;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element)  as any).value = 'updated';
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
         });
 
@@ -1453,8 +1453,8 @@ describe('Inline Editing module', () => {
                     expect(gridObj.isEdit).toBeTruthy();
                 }
             };
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'OrderID') as any).value = 10247;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'OrderID', gridObj.element) as any).value = 10247;
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element)  as any).value = 'updated';
             // (gridObj.editModule as any).editModule.endEdit();
             gridObj.actionComplete = actionComplete;
             gridObj.actionBegin = actionBegin;
@@ -1631,7 +1631,7 @@ describe('Inline Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.actionBegin = actionBegin;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element)  as any).value = 'updated';
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
         });
 
@@ -1951,8 +1951,8 @@ describe('Inline Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.actionBegin = actionBegin;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'OrderID') as any).value = '23432';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element)  as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'OrderID', gridObj.element) as any).value = '23432';
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
         });
 
@@ -2128,7 +2128,7 @@ describe('Inline Editing module', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element)  as any).value = 'updated';
             gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: gridObj.getContent().querySelector('.e-row') } as any);
         });
         afterAll(() => {
@@ -2198,7 +2198,7 @@ describe('Inline Editing module', () => {
             gridObj.actionComplete = actionComplete;
             gridObj.selectRow(4, true);
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element)  as any).value = 'updated';
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
         });
 
@@ -2405,7 +2405,7 @@ describe('Inline Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.actionBegin = actionBegin;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'FIELD1', gridObj.element) as any).value = 'updated';
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
         });
 
@@ -2481,7 +2481,7 @@ describe('Inline Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.actionBegin = actionBegin;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'FIELD1', gridObj.element) as any).value = 'updated';
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
         });
 
@@ -2493,7 +2493,7 @@ describe('Inline Editing module', () => {
         it('edit start - 3', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {
-                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value = 'updated';
+                    (select('#' + gridObj.element.id + 'FIELD1', gridObj.element) as any).value = 'updated';
                     done();
                 }
             };
@@ -2532,7 +2532,7 @@ describe('Inline Editing module', () => {
                     expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
                     expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
                     expect(gridObj.element.querySelectorAll('form').length).toBe(1);
-                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value = 'updated';
+                    (select('#' + gridObj.element.id + 'FIELD1', gridObj.element) as any).value = 'updated';
                     done();
                 }
             };
@@ -2574,7 +2574,7 @@ describe('Inline Editing module', () => {
         it('edit start - 5', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {
-                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value = 'updated';
+                    (select('#' + gridObj.element.id + 'FIELD1', gridObj.element) as any).value = 'updated';
                     done();
                 }
             };
@@ -2608,7 +2608,7 @@ describe('Inline Editing module', () => {
                     expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
                     expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
                     expect(gridObj.element.querySelectorAll('form').length).toBe(1);
-                    expect((gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value).toBe('updated');
+                    expect((select('#' + gridObj.element.id + 'FIELD1', gridObj.element) as any).value).toBe('updated');
                     expect(gridObj.isEdit).toBeTruthy();
                 }
             };
@@ -2642,8 +2642,8 @@ describe('Inline Editing module', () => {
                     //toolbar status check
                     expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(4);
                     expect(gridObj.isEdit).toBeTruthy();
-                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD2') as any).value = 1234567;
-                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value = 'updated';
+                    (select('#' + gridObj.element.id + 'FIELD2', gridObj.element) as any).value = 1234567;
+                    (select('#' + gridObj.element.id + 'FIELD1', gridObj.element) as any).value = 'updated';
                     done();
                 }
             };
@@ -2707,8 +2707,8 @@ describe('Inline Editing module', () => {
                     expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
                     expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
                     expect(gridObj.element.querySelectorAll('form').length).toBe(1);
-                    expect((gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD2') as any).value).toBe('1234567');
-                    expect((gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value).toBe('updated');
+                    expect((select('#' + gridObj.element.id + 'FIELD2', gridObj.element) as any).value).toBe('1234567');
+                    expect((select('#' + gridObj.element.id + 'FIELD1', gridObj.element) as any).value).toBe('updated');
                     expect(gridObj.isEdit).toBeTruthy();
                     gridObj.actionBegin = undefined;
                 }
@@ -2728,8 +2728,8 @@ describe('Inline Editing module', () => {
                 if (args.requestType === 'add') {
                     expect((<HTMLElement>gridObj.getContent().firstChild).scrollTop).toBe(0);
                     expect(gridObj.element.querySelectorAll('.e-addedrow').length).toBe(1);
-                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD2') as any).value = 12345678;
-                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value = 'updated';
+                    (select('#' + gridObj.element.id + 'FIELD2', gridObj.element) as any).value = 12345678;
+                    (select('#' + gridObj.element.id + 'FIELD1', gridObj.element) as any).value = 'updated';
                     done();
                 }
             };
@@ -2755,8 +2755,8 @@ describe('Inline Editing module', () => {
         it('Add start - 3', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'add') {
-                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD2') as any).value = 123456789;
-                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value = 'updated';
+                    (select('#' + gridObj.element.id + 'FIELD2', gridObj.element) as any).value = 123456789;
+                    (select('#' + gridObj.element.id + 'FIELD1', gridObj.element) as any).value = 'updated';
                     done();
                 }
             };
@@ -2784,8 +2784,8 @@ describe('Inline Editing module', () => {
         it('Add-cancel start', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'add') {
-                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD2') as any).value = 123456;
-                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value = 'updated';
+                    (select('#' + gridObj.element.id + 'FIELD2', gridObj.element) as any).value = 123456;
+                    (select('#' + gridObj.element.id + 'FIELD1', gridObj.element) as any).value = 'updated';
                     done();
                 }
             };
@@ -2968,7 +2968,7 @@ describe('Inline Editing module', () => {
             cell.click();
             gridObj.keyboardModule.keyAction({ action: 'f2', preventDefault: preventDefault, target: cell } as any);
             gridObj.element.querySelectorAll('.e-valid-input')[1].querySelector('input').innerText = 'JHON';
-            let cancel = gridObj.element.querySelector('#' + gridObj.element.id + '_cancel') as HTMLElement;
+            let cancel = select('#' + gridObj.element.id + '_cancel', gridObj.element) as HTMLElement;
             gridObj.actionBegin = actionBegin;
             cancel.click();
         });
@@ -3014,7 +3014,7 @@ describe('EJ2-40519 - ActionBegin event arguments cancel property value getting 
             let cell: HTMLElement= gridObj.element.querySelector('.e-content').querySelector('table').rows[0].childNodes[1] as any;
             cell.click();
             gridObj.keyboardModule.keyAction({ action: 'f2', preventDefault: preventDefault, target: cell } as any);
-            let update = gridObj.element.querySelector('#' + gridObj.element.id + '_update') as HTMLElement;
+            let update = select('#' + gridObj.element.id + '_update', gridObj.element) as HTMLElement;
             gridObj.actionBegin = actionBegin;
             update.click();
         });

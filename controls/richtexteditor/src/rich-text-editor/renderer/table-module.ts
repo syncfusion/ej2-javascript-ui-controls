@@ -167,7 +167,7 @@ export class Table {
                     event.preventDefault();
                     proxy.removeTable(selection, event as KeyboardEventArgs, true);
                 } else if (ele && ele.querySelectorAll('table').length > 0) {
-                    this.removeResizeEle();
+                    this.removeResizeElement();
                 }
             }
             if (ele && ele.tagName !== 'TD' && ele.tagName !== 'TH') {
@@ -456,7 +456,7 @@ export class Table {
             target.removeAttribute('class');
             addClass([target], classes.CLS_TABLE_SEL);
             this.curTable = (this.curTable) ? this.curTable : closest(target, 'table') as HTMLTableElement;
-            this.removeResizeEle();
+            this.removeResizeElement();
             if (this.helper && this.contentModule.getEditPanel().contains(this.helper)) { detach(this.helper); }
         }
     }
@@ -470,7 +470,7 @@ export class Table {
             this.curTable = (closestTable && this.parent.contentModule.getEditPanel().contains(closestTable))
                 && (target.nodeName === 'TD' || target.nodeName === 'TH') ?
                 (closestTable as HTMLTableElement) : target as HTMLTableElement;
-            this.removeResizeEle();
+            this.removeResizeElement();
             this.tableResizeEleCreation(this.curTable, e as PointerEvent);
         }
     }
@@ -521,7 +521,7 @@ export class Table {
         this.contentModule.getEditPanel().appendChild(tableReBox);
     }
 
-    private removeResizeEle(): void {
+    public removeResizeElement(): void {
         let item: NodeListOf<Element> = this.parent.contentModule.getEditPanel().
         querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box');
         if (item.length > 0) {
@@ -731,7 +731,7 @@ export class Table {
     private cancelResizeAction(): void {
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd);
-        this.removeResizeEle();
+        this.removeResizeElement();
     }
     private resizeEnd(e: PointerEvent | TouchEvent): void {
         this.resizeBtnInit();
@@ -742,7 +742,7 @@ export class Table {
             if (!Browser.isDevice) {
                 EventHandler.add(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper, this);
             }
-            this.removeResizeEle();
+            this.removeResizeElement();
             if (this.helper && this.contentModule.getEditPanel().contains(this.helper)) { detach(this.helper); this.helper = null; }
             this.pageX = null;
             this.pageY = null;
@@ -788,7 +788,7 @@ export class Table {
         this.parent.formatter.process(
             this.parent, (delKey) ? cmd : args, (args as ClickEventArgs).originalEvent, value);
         (this.contentModule.getEditPanel() as HTMLElement).focus();
-        this.removeResizeEle();
+        this.removeResizeElement();
         this.hideTableQuickToolbar();
     }
 
@@ -871,7 +871,7 @@ export class Table {
         }
         if (target && target.classList && !target.classList.contains(classes.CLS_TB_COL_RES) &&
             !target.classList.contains(classes.CLS_TB_ROW_RES) && !target.classList.contains(classes.CLS_TB_BOX_RES)) {
-            this.removeResizeEle();
+            this.removeResizeElement();
         }
 
     }

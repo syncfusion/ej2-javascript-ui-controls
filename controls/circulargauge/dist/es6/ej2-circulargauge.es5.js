@@ -1552,7 +1552,9 @@ var Annotations = /** @__PURE__ @class */ (function () {
             id: this.elementId + '_Annotations_' + index
         });
         var parentElement = getElement(this.elementId + '_Secondary_Element');
-        document.getElementById(this.elementId + '_Secondary_Element').style.width = width + 'px';
+        if (!isNullOrUndefined(document.getElementById(this.elementId + '_Secondary_Element'))) {
+            document.getElementById(this.elementId + '_Secondary_Element').style.width = width + 'px';
+        }
         axis.annotations.map(function (annotation, annotationIndex) {
             if (annotation.content !== null) {
                 _this.createTemplate(element, annotationIndex, index);

@@ -8985,9 +8985,9 @@ var ChartData = /** @class */ (function () {
         var mouseY;
         for (var len = chart.visibleSeries.length, i = len - 1; i >= 0; i--) {
             series = chart.visibleSeries[i];
-            width = (series.type === 'Scatter' || series.drawType === 'Scatter' || (!series.isRectSeries && series.marker.visible))
+            width = (series.type === 'Scatter' || series.drawType === 'Scatter' || (series.marker.visible))
                 ? (series.marker.height + 5) / 2 : 0;
-            height = (series.type === 'Scatter' || series.drawType === 'Scatter' || (!series.isRectSeries && series.marker.visible))
+            height = (series.type === 'Scatter' || series.drawType === 'Scatter' || (series.marker.visible))
                 ? (series.marker.width + 5) / 2 : 0;
             mouseX = chart.mouseX;
             mouseY = chart.mouseY;
@@ -9055,8 +9055,8 @@ var ChartData = /** @class */ (function () {
                     return point;
                 }
             }
-            if (series.dragSettings.enable && series.isRectSeries) {
-                if (this.rectRegion(x, y, point, rect, series)) {
+            if ((series.dragSettings.enable && series.isRectSeries) || (series.isRectSeries && series.marker.visible)) {
+                if (this.isPointInThresholdRegion(x, y, point, rect, series)) {
                     this.insideRegion = true;
                     return point;
                 }
@@ -9081,14 +9081,14 @@ var ChartData = /** @class */ (function () {
         });
     };
     /**
-     * To find drag region for column and bar series
+     * To check the point in threshold region for column and bar series
      * @param x
      * @param y
      * @param point
      * @param rect
      * @param series
      */
-    ChartData.prototype.rectRegion = function (x, y, point, rect, series) {
+    ChartData.prototype.isPointInThresholdRegion = function (x, y, point, rect, series) {
         var _this = this;
         var isBar = series.type === 'Bar';
         var isInversed = series.yAxis.isInversed;

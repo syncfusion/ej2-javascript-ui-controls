@@ -3,6 +3,7 @@ import { workbookEditOperation, checkDateFormat, workbookFormulaOperation } from
 import { getRangeIndexes } from '../common/index';
 import { isNullOrUndefined, getNumericObject } from '@syncfusion/ej2-base';
 import { checkIsFormula } from '../../workbook/common/index';
+import { getTypeFromFormat } from '../integrations/index';
 
 /**
  * The `WorkbookEdit` module is used to handle the editing functionalities in Workbook.
@@ -115,16 +116,19 @@ export class WorkbookEdit {
                 cell.formula = <string>eventArgs.value;
                 value = cell.value;
             }
-            let dateEventArgs: { [key: string]: string | number } = {
-                value: value,
-                rowIndex: range[0],
-                colIndex: range[1],
-                sheetIndex: sheetIdx,
-                updatedVal: ''
-            };
-            this.parent.notify(checkDateFormat, dateEventArgs);
-            if (!isNullOrUndefined(dateEventArgs.updatedVal) && (dateEventArgs.updatedVal as string).length > 0) {
-                cell.value = <string>dateEventArgs.updatedVal;
+            if (getTypeFromFormat(cell.format) !== 'Text') {
+                let dateEventArgs: { [key: string]: string | number } = {
+                    value: value,
+                    rowIndex: range[0],
+                    colIndex: range[1],
+                    sheetIndex: sheetIdx,
+                    updatedVal: ''
+                };
+                this.parent.notify(checkDateFormat, dateEventArgs);
+
+                if (!isNullOrUndefined(dateEventArgs.updatedVal) && (dateEventArgs.updatedVal as string).length > 0) {
+                    cell.value = <string>dateEventArgs.updatedVal;
+                }
             }
         } else {
             if (value.toString().indexOf(this.decimalSep) > -1) {

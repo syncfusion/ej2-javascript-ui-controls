@@ -1250,6 +1250,21 @@ class DateProcessor {
             setValue('maxEndDate', maxEndDate, editArgs);
         }
     }
+    /**
+     *
+     * @param segments
+     * @private
+     */
+    splitTasksDuration(segments) {
+        let duration = 0;
+        for (let i = 0; i < segments.length; i++) {
+            let segment = segments[i];
+            let sDate = segment.startDate;
+            let eDate = segment.endDate;
+            duration += Math.ceil(this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24));
+        }
+        return duration;
+    }
 }
 
 /**
@@ -1635,7 +1650,8 @@ class TaskProcessor extends DateProcessor {
     sortSegmentsData(segments, onLoad, ganttProp) {
         if (onLoad) {
             segments.sort((a, b) => {
-                return a[this.parent.taskFields.startDate].getTime() - b[this.parent.taskFields.startDate].getTime();
+                let startDate = this.parent.taskFields.startDate;
+                return this.getDateFromFormat(a[startDate]).getTime() - this.getDateFromFormat(b[startDate]).getTime();
             });
         }
         else {
@@ -1660,7 +1676,7 @@ class TaskProcessor extends DateProcessor {
                     let startDate = onLoad ? segment[taskSettings.startDate] : segment.startDate;
                     let endDate = onLoad ? segment[taskSettings.endDate] : segment.endDate;
                     let duration = onLoad ? segment[taskSettings.duration] : segment.duration;
-                    startDate = i === 0 ? new Date(data.ganttProperties.startDate.getTime()) : startDate;
+                    startDate = this.getDateFromFormat(startDate);
                     startDate = this.checkStartDate(startDate, data.ganttProperties, false);
                     if (!isNullOrUndefined(duration)) {
                         endDate = this.getEndDate(startDate, duration, data.ganttProperties.durationUnit, data.ganttProperties, false);
@@ -3070,7 +3086,7 @@ class TaskProcessor extends DateProcessor {
         if (!isNullOrUndefined(ganttRecord.segments) && ganttRecord.segments.length > 0) {
             let segments = ganttRecord.segments;
             let fixedWidth = true;
-            let totalTaskWidth = this.parent.editModule.taskbarEditModule.splitTasksDuration(segments) * this.parent.perDayWidth;
+            let totalTaskWidth = this.splitTasksDuration(segments) * this.parent.perDayWidth;
             let totalProgressWidth = this.parent.dataOperation.getProgressWidth(totalTaskWidth, ganttRecord.progress);
             for (let i = 0; i < segments.length; i++) {
                 let segment = segments[i];
@@ -5878,7 +5894,7 @@ class GanttTreeGrid {
     composeProperties() {
         this.parent.treeGrid.showColumnMenu = this.parent.showColumnMenu;
         this.parent.treeGrid.columnMenuItems = this.parent.columnMenuItems;
-        this.parent.treeGrid.childMapping = this.parent.taskFields.child;
+        this.parent.treeGrid.childMapping = isNullOrUndefined(this.parent.taskFields.child) ? '' : this.parent.taskFields.child;
         this.parent.treeGrid.treeColumnIndex = this.parent.treeColumnIndex;
         this.parent.treeGrid.columns = this.treeGridColumns;
         this.parent.treeGrid.dataSource = this.parent.flatData;
@@ -15467,16 +15483,6 @@ class TaskbarEdit extends DateProcessor {
         }
         return duration;
     }
-    splitTasksDuration(segments) {
-        let duration = 0;
-        for (let i = 0; i < segments.length; i++) {
-            let segment = segments[i];
-            let sDate = segment.startDate;
-            let eDate = segment.endDate;
-            duration += Math.ceil(this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24));
-        }
-        return duration;
-    }
     setSplitTaskDrag(item) {
         let segment = item.segments[this.segmentIndex];
         let left = this.getRoundOffStartLeft(segment, this.roundOffDuration);
@@ -17422,6 +17428,7 @@ class DialogEdit {
         let inputModel = {
             allowFiltering: true,
             treeColumnIndex: -1,
+            childMapping: '',
             editSettings: { allowEditing: true, mode: 'Cell' },
             locale: this.parent.locale,
             allowSelection: true,

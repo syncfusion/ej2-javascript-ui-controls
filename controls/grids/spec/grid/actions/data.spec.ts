@@ -1,7 +1,7 @@
 /**
  * Data spec
  */
-import { createElement, remove } from '@syncfusion/ej2-base';
+import { createElement, remove, select } from '@syncfusion/ej2-base';
 import { EmitType } from '@syncfusion/ej2-base';
 import { Query, DataManager, ODataV4Adaptor } from '@syncfusion/ej2-data';
 import { Grid } from '../../../src/grid/base/grid';
@@ -402,7 +402,7 @@ describe('Data module', () => {
             }
             gridObj.selectRow(0);
             gridObj.startEdit();
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element) as any).value = 'updated';
             gridObj.dataSourceChanged = dataSourceChanged;
             gridObj.endEdit();
         });
@@ -442,10 +442,10 @@ describe('Data module', () => {
             }
             gridObj.dataSourceChanged = dataSourceChanged;
             gridObj.editModule.editCell(4, 'CustomerID');
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (select('#' + gridObj.element.id + 'CustomerID', gridObj.element) as any).value = 'updated';
             gridObj.editModule.saveCell();
             gridObj.editModule.batchSave();
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm')as any).querySelectorAll('button')[0].click();
+            (select('#' + gridObj.element.id + 'EditConfirm', gridObj.element)as any).querySelectorAll('button')[0].click();
         });
         afterAll((done) => {
             destroy(gridObj);

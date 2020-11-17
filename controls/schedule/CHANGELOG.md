@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 18.3.50 (2020-11-17)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#299272` - An issue with the all day spanned events are not properly rendered in the timeline year view has been fixed.
+- `#299896` - An issue with events get overlapped, when we render the two events at the same time has been fixed.
+- `#299009` - An issue with `resourceHeaderTemplate` when enable the schedule tooltip has been fixed.
+
 ## 18.3.48 (2020-11-11)
 
 ### Schedule
@@ -296,6 +306,10 @@
 - `#F145578` - An issue with `scrollTo()` method not working properly in Timeline Week View has been fixed.
 
 ## 17.4.43 (2020-01-14)
+
+### Schedule
+
+#### Bug Fixes
 
 - `#149393` - An issue with event rendering in Timeline mode with `timescale` property has been fixed.
 - `#150335` - An issue with draggable clone element position on scroll has been fixed.

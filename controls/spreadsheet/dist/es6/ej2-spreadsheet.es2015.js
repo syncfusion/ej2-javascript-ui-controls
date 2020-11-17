@@ -694,7 +694,6 @@ class WorkbookNumberFormat {
         return { fResult: fResult, rightAlign: isRightAlign };
     }
     autoDetectGeneralFormat(options) {
-        let range = getRangeIndexes(this.parent.getActiveSheet().activeCell);
         if (isNumber(options.fResult)) {
             if (options.args.format && options.args.format !== '') {
                 if (options.args.format.toString().indexOf('%') > -1) {
@@ -707,7 +706,7 @@ class WorkbookNumberFormat {
                     options.fResult = this.applyNumberFormat(options.args, options.intl);
                 }
             }
-            if (options.fResult && options.fResult.toString().split(this.decimalSep)[0].length > 11) {
+            if (options.args.format === 'General' && options.fResult && options.fResult.toString().split(this.decimalSep)[0].length > 11) {
                 options.fResult = this.scientificFormat(options.args);
             }
             options.isRightAlign = true;
@@ -9845,16 +9844,18 @@ class WorkbookEdit {
                 cell.formula = eventArgs.value;
                 value = cell.value;
             }
-            let dateEventArgs = {
-                value: value,
-                rowIndex: range[0],
-                colIndex: range[1],
-                sheetIndex: sheetIdx,
-                updatedVal: ''
-            };
-            this.parent.notify(checkDateFormat, dateEventArgs);
-            if (!isNullOrUndefined(dateEventArgs.updatedVal) && dateEventArgs.updatedVal.length > 0) {
-                cell.value = dateEventArgs.updatedVal;
+            if (getTypeFromFormat(cell.format) !== 'Text') {
+                let dateEventArgs = {
+                    value: value,
+                    rowIndex: range[0],
+                    colIndex: range[1],
+                    sheetIndex: sheetIdx,
+                    updatedVal: ''
+                };
+                this.parent.notify(checkDateFormat, dateEventArgs);
+                if (!isNullOrUndefined(dateEventArgs.updatedVal) && dateEventArgs.updatedVal.length > 0) {
+                    cell.value = dateEventArgs.updatedVal;
+                }
             }
         }
         else {
@@ -16245,15 +16246,21 @@ class Clipboard {
         }
         let rfshRange;
         /* tslint:disable-next-line */
-        let isExternal = !this.copiedInfo && ((args && args.clipboardData) || window['clipboardData']);
+        let isExternal = ((args && args.clipboardData) || window['clipboardData']);
         let copiedIdx = this.getCopiedIdx();
         let isCut;
         let copyInfo = Object.assign({}, this.copiedInfo);
-        if (this.copiedInfo || isExternal || this.copiedShapeInfo) {
+        if (isExternal || this.copiedShapeInfo) {
             let cSIdx = (args && args.sIdx > -1) ? args.sIdx : this.parent.activeSheetIndex;
             let curSheet = getSheet(this.parent, cSIdx);
             let selIdx = getSwapRange(args && args.range || getRangeIndexes(curSheet.selectedRange));
             let rows = isExternal && this.getExternalCells(args);
+            if (rows.internal) {
+                isExternal = false;
+                if (!this.copiedInfo) {
+                    return;
+                }
+            }
             if (isExternal && !rows.length) { // If image pasted
                 return;
             }
@@ -16334,7 +16341,7 @@ class Clipboard {
                                     break;
                                 case 'Values':
                                     cell = { value: cell.value };
-                                    if (cell.value.indexOf('\n') > -1) {
+                                    if (cell.value && cell.value.toString().indexOf('\n') > -1) {
                                         let ele = this.parent.getCell(selIdx[0], selIdx[1]);
                                         ele.classList.add('e-alt-unwrap');
                                     }
@@ -16386,6 +16393,9 @@ class Clipboard {
                     }
                     this.clearCopiedInfo();
                     this.cutInfo = isCut;
+                }
+                if (isExternal && this.copiedInfo) {
+                    this.clearCopiedInfo();
                 }
                 if (isExternal || (args && args.isAction)) {
                     this.parent.element.focus();
@@ -16581,7 +16591,7 @@ class Clipboard {
         let text = '';
         let range = this.copiedInfo.range;
         let sheet = this.parent.getActiveSheet();
-        let data = '<html><body><table xmlns="http://www.w3.org/1999/xhtml"><tbody>';
+        let data = '<html><body><table class="e-spreadsheet" xmlns="http://www.w3.org/1999/xhtml"><tbody>';
         for (let i = range[0]; i <= range[2]; i++) {
             data += '<tr>';
             for (let j = range[1]; j <= range[3]; j++) {
@@ -16643,14 +16653,19 @@ class Clipboard {
             ele.innerHTML = html;
         }
         if (ele.querySelector('table')) {
-            ele.querySelectorAll('tr').forEach((tr) => {
-                tr.querySelectorAll('td').forEach((td, j) => {
-                    td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
-                    cells[j] = { value: td.textContent, style: this.getStyle(td, ele) };
+            if (ele.querySelector('.e-spreadsheet')) {
+                rows = { internal: true };
+            }
+            else {
+                ele.querySelectorAll('tr').forEach((tr) => {
+                    tr.querySelectorAll('td').forEach((td, j) => {
+                        td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
+                        cells[j] = { value: td.textContent, style: this.getStyle(td, ele) };
+                    });
+                    rows.push({ cells: cells });
+                    cells = [];
                 });
-                rows.push({ cells: cells });
-                cells = [];
-            });
+            }
         }
         else if (text) {
             if (html) {
@@ -16997,7 +17012,7 @@ class Edit {
         }
     }
     renderEditor() {
-        if (!this.editorElem || !this.parent.element.querySelector('#' + this.parent.element.id + '_edit')) {
+        if (!this.editorElem || !this.parent.element.querySelector('[id="' + this.parent.element.id + '_edit"]')) {
             let editor;
             editor = this.parent.createElement('div', { id: this.parent.element.id + '_edit', className: 'e-spreadsheet-edit' });
             editor.contentEditable = 'true';
@@ -18046,8 +18061,9 @@ class Selection {
                 if (ele) {
                     ele.classList.remove('e-hide');
                 }
-                let offset = this.getOffset(range[2], range[3]);
-                if (isMergeRange) { // Need to handle half hidden merge cell in better way
+                let offset = (this.isColSelected && this.isRowSelected) ? undefined
+                    : this.getOffset(range[2], range[3]);
+                if (isMergeRange && offset) { // Need to handle half hidden merge cell in better way
                     offset.left = { idx: 0, size: 0 };
                 }
                 locateElem(ele, range, sheet, this.parent.enableRtl, offset);
@@ -19457,7 +19473,7 @@ class KeyboardShortcut {
                 }
             }
             if (e.keyCode === 79) {
-                this.parent.element.querySelector('#' + this.parent.element.id + '_fileUpload').click();
+                this.parent.element.querySelector('[id="' + this.parent.element.id + '_fileUpload"]').click();
             }
             else if (e.keyCode === 83) {
                 if (this.parent.saveUrl && this.parent.allowSave) {
@@ -22600,7 +22616,7 @@ class DataValidation {
      */
     destroy() {
         this.removeEventListener();
-        let dataValPopup = document.querySelector('#' + this.parent.element.id + '_datavalidation-popup');
+        let dataValPopup = document.querySelector('[id="' + this.parent.element.id + '_datavalidation-popup"]');
         if (dataValPopup) {
             dataValPopup.remove();
         }
@@ -26625,7 +26641,7 @@ class Ribbon$$1 {
                     {
                         prefixIcon: 'e-image-icon', text: l10n.getConstant('Image'),
                         id: id + '_', tooltipText: l10n.getConstant('Image'), click: () => {
-                            this.parent.element.querySelector('#' + id + '_imageUpload').click();
+                            this.parent.element.querySelector('[id="' + id + '_imageUpload"]').click();
                         }
                     }
                 ]
@@ -28171,7 +28187,7 @@ class Ribbon$$1 {
         if (!selectArgs.cancel) {
             switch (args.item.id) {
                 case `${id}_Open`:
-                    this.parent.element.querySelector('#' + id + '_fileUpload').click();
+                    this.parent.element.querySelector('[id="' + id + '_fileUpload"]').click();
                     break;
                 case `${id}_Xlsx`:
                 case `${id}_Xls`:
@@ -28332,7 +28348,8 @@ class Ribbon$$1 {
     }
     updateToggleText(item, text) {
         getUpdateUsingRaf(() => {
-            this.ribbon.element.querySelector(`#${this.parent.element.id}_${item} .e-tbar-btn-text`).textContent = text;
+            this.ribbon.element.querySelector('[id="' + `${this.parent.element.id}_${item}` + '"]' + ' .e-tbar-btn-text')
+                .textContent = text;
         });
     }
     refreshViewTabContent(activeTab) {
@@ -28612,7 +28629,7 @@ class Ribbon$$1 {
         let ribbonEle = this.ribbon.element;
         let id = parentElem.id;
         ['bold', 'italic', 'line-through', 'underline'].forEach((name) => {
-            destroyComponent(parentElem.querySelector('#' + `${id}_${name}`), Button);
+            destroyComponent(parentElem.querySelector('[id="' + `${id}_${name}` + '"]'), Button);
         });
         this.pasteSplitBtn.destroy();
         this.pasteSplitBtn = null;
@@ -29201,7 +29218,7 @@ class FormulaBar {
         }
     }
     getFormulaBar() {
-        return this.parent.element.querySelector('#' + this.parent.element.id + '_formula_input');
+        return this.parent.element.querySelector('[id="' + this.parent.element.id + '_formula_input"]');
     }
 }
 
@@ -29324,7 +29341,7 @@ class Formula {
         }
     }
     renderAutoComplete() {
-        if (!this.parent.element.querySelector('#' + this.parent.element.id + '_ac')) {
+        if (!this.parent.element.querySelector('[id="' + this.parent.element.id + '_ac"]')) {
             let acElem = this.parent.createElement('input', { id: this.parent.element.id + '_ac', className: 'e-ss-ac' });
             this.parent.element.appendChild(acElem);
             let eventArgs = {
@@ -29486,7 +29503,7 @@ class Formula {
         this.isFormulaBar = false;
         if (this.isPopupOpened) {
             this.hidePopUp();
-            let suggPopupElem = document.querySelector('#' + this.parent.element.id + '_ac_popup');
+            let suggPopupElem = document.querySelector('[id="' + this.parent.element.id + '_ac_popup"]');
             if (suggPopupElem) {
                 detach(suggPopupElem);
             }
@@ -35407,7 +35424,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     refreshNode(td, args) {
         let value;
         if (td) {
-            let spanElem = td.querySelector('#' + this.element.id + '_currency');
+            let spanElem = td.querySelector('[id="' + this.element.id + '_currency"]');
             let alignClass = 'e-right-align';
             if (args) {
                 args.result = isNullOrUndefined(args.result) ? '' : args.result.toString();

@@ -1252,6 +1252,21 @@ var DateProcessor = /** @__PURE__ @class */ (function () {
             setValue('maxEndDate', maxEndDate, editArgs);
         }
     };
+    /**
+     *
+     * @param segments
+     * @private
+     */
+    DateProcessor.prototype.splitTasksDuration = function (segments) {
+        var duration = 0;
+        for (var i = 0; i < segments.length; i++) {
+            var segment = segments[i];
+            var sDate = segment.startDate;
+            var eDate = segment.endDate;
+            duration += Math.ceil(this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24));
+        }
+        return duration;
+    };
     return DateProcessor;
 }());
 
@@ -1668,7 +1683,8 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         if (onLoad) {
             segments.sort(function (a, b) {
-                return a[_this.parent.taskFields.startDate].getTime() - b[_this.parent.taskFields.startDate].getTime();
+                var startDate = _this.parent.taskFields.startDate;
+                return _this.getDateFromFormat(a[startDate]).getTime() - _this.getDateFromFormat(b[startDate]).getTime();
             });
         }
         else {
@@ -1693,7 +1709,7 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
                     var startDate = onLoad ? segment[taskSettings.startDate] : segment.startDate;
                     var endDate = onLoad ? segment[taskSettings.endDate] : segment.endDate;
                     var duration = onLoad ? segment[taskSettings.duration] : segment.duration;
-                    startDate = i === 0 ? new Date(data.ganttProperties.startDate.getTime()) : startDate;
+                    startDate = this.getDateFromFormat(startDate);
                     startDate = this.checkStartDate(startDate, data.ganttProperties, false);
                     if (!isNullOrUndefined(duration)) {
                         endDate = this.getEndDate(startDate, duration, data.ganttProperties.durationUnit, data.ganttProperties, false);
@@ -3109,7 +3125,7 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(ganttRecord.segments) && ganttRecord.segments.length > 0) {
             var segments = ganttRecord.segments;
             var fixedWidth = true;
-            var totalTaskWidth = this.parent.editModule.taskbarEditModule.splitTasksDuration(segments) * this.parent.perDayWidth;
+            var totalTaskWidth = this.splitTasksDuration(segments) * this.parent.perDayWidth;
             var totalProgressWidth = this.parent.dataOperation.getProgressWidth(totalTaskWidth, ganttRecord.progress);
             for (var i = 0; i < segments.length; i++) {
                 var segment = segments[i];
@@ -5940,7 +5956,7 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
     GanttTreeGrid.prototype.composeProperties = function () {
         this.parent.treeGrid.showColumnMenu = this.parent.showColumnMenu;
         this.parent.treeGrid.columnMenuItems = this.parent.columnMenuItems;
-        this.parent.treeGrid.childMapping = this.parent.taskFields.child;
+        this.parent.treeGrid.childMapping = isNullOrUndefined(this.parent.taskFields.child) ? '' : this.parent.taskFields.child;
         this.parent.treeGrid.treeColumnIndex = this.parent.treeColumnIndex;
         this.parent.treeGrid.columns = this.treeGridColumns;
         this.parent.treeGrid.dataSource = this.parent.flatData;
@@ -15915,16 +15931,6 @@ var TaskbarEdit = /** @__PURE__ @class */ (function (_super) {
         }
         return duration;
     };
-    TaskbarEdit.prototype.splitTasksDuration = function (segments) {
-        var duration = 0;
-        for (var i = 0; i < segments.length; i++) {
-            var segment = segments[i];
-            var sDate = segment.startDate;
-            var eDate = segment.endDate;
-            duration += Math.ceil(this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24));
-        }
-        return duration;
-    };
     TaskbarEdit.prototype.setSplitTaskDrag = function (item) {
         var segment = item.segments[this.segmentIndex];
         var left = this.getRoundOffStartLeft(segment, this.roundOffDuration);
@@ -17880,6 +17886,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         var inputModel = {
             allowFiltering: true,
             treeColumnIndex: -1,
+            childMapping: '',
             editSettings: { allowEditing: true, mode: 'Cell' },
             locale: this.parent.locale,
             allowSelection: true,

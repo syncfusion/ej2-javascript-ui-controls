@@ -691,7 +691,6 @@ var WorkbookNumberFormat = /** @class */ (function () {
         return { fResult: fResult, rightAlign: isRightAlign };
     };
     WorkbookNumberFormat.prototype.autoDetectGeneralFormat = function (options) {
-        var range = getRangeIndexes(this.parent.getActiveSheet().activeCell);
         if (isNumber(options.fResult)) {
             if (options.args.format && options.args.format !== '') {
                 if (options.args.format.toString().indexOf('%') > -1) {
@@ -704,7 +703,7 @@ var WorkbookNumberFormat = /** @class */ (function () {
                     options.fResult = this.applyNumberFormat(options.args, options.intl);
                 }
             }
-            if (options.fResult && options.fResult.toString().split(this.decimalSep)[0].length > 11) {
+            if (options.args.format === 'General' && options.fResult && options.fResult.toString().split(this.decimalSep)[0].length > 11) {
                 options.fResult = this.scientificFormat(options.args);
             }
             options.isRightAlign = true;
@@ -10116,16 +10115,18 @@ var WorkbookEdit = /** @class */ (function () {
                 cell.formula = eventArgs.value;
                 value = cell.value;
             }
-            var dateEventArgs = {
-                value: value,
-                rowIndex: range[0],
-                colIndex: range[1],
-                sheetIndex: sheetIdx,
-                updatedVal: ''
-            };
-            this.parent.notify(checkDateFormat, dateEventArgs);
-            if (!sf.base.isNullOrUndefined(dateEventArgs.updatedVal) && dateEventArgs.updatedVal.length > 0) {
-                cell.value = dateEventArgs.updatedVal;
+            if (getTypeFromFormat(cell.format) !== 'Text') {
+                var dateEventArgs = {
+                    value: value,
+                    rowIndex: range[0],
+                    colIndex: range[1],
+                    sheetIndex: sheetIdx,
+                    updatedVal: ''
+                };
+                this.parent.notify(checkDateFormat, dateEventArgs);
+                if (!sf.base.isNullOrUndefined(dateEventArgs.updatedVal) && dateEventArgs.updatedVal.length > 0) {
+                    cell.value = dateEventArgs.updatedVal;
+                }
             }
         }
         else {
@@ -16728,15 +16729,21 @@ var Clipboard = /** @class */ (function () {
         }
         var rfshRange;
         /* tslint:disable-next-line */
-        var isExternal = !this.copiedInfo && ((args && args.clipboardData) || window['clipboardData']);
+        var isExternal = ((args && args.clipboardData) || window['clipboardData']);
         var copiedIdx = this.getCopiedIdx();
         var isCut;
         var copyInfo = Object.assign({}, this.copiedInfo);
-        if (this.copiedInfo || isExternal || this.copiedShapeInfo) {
+        if (isExternal || this.copiedShapeInfo) {
             var cSIdx = (args && args.sIdx > -1) ? args.sIdx : this.parent.activeSheetIndex;
             var curSheet = getSheet(this.parent, cSIdx);
             var selIdx = getSwapRange(args && args.range || getRangeIndexes(curSheet.selectedRange));
             var rows = isExternal && this.getExternalCells(args);
+            if (rows.internal) {
+                isExternal = false;
+                if (!this.copiedInfo) {
+                    return;
+                }
+            }
             if (isExternal && !rows.length) { // If image pasted
                 return;
             }
@@ -16817,7 +16824,7 @@ var Clipboard = /** @class */ (function () {
                                     break;
                                 case 'Values':
                                     cell = { value: cell.value };
-                                    if (cell.value.indexOf('\n') > -1) {
+                                    if (cell.value && cell.value.toString().indexOf('\n') > -1) {
                                         var ele = this.parent.getCell(selIdx[0], selIdx[1]);
                                         ele.classList.add('e-alt-unwrap');
                                     }
@@ -16869,6 +16876,9 @@ var Clipboard = /** @class */ (function () {
                     }
                     this.clearCopiedInfo();
                     this.cutInfo = isCut;
+                }
+                if (isExternal && this.copiedInfo) {
+                    this.clearCopiedInfo();
                 }
                 if (isExternal || (args && args.isAction)) {
                     this.parent.element.focus();
@@ -17066,7 +17076,7 @@ var Clipboard = /** @class */ (function () {
         var text = '';
         var range = this.copiedInfo.range;
         var sheet = this.parent.getActiveSheet();
-        var data = '<html><body><table xmlns="http://www.w3.org/1999/xhtml"><tbody>';
+        var data = '<html><body><table class="e-spreadsheet" xmlns="http://www.w3.org/1999/xhtml"><tbody>';
         for (var i = range[0]; i <= range[2]; i++) {
             data += '<tr>';
             for (var j = range[1]; j <= range[3]; j++) {
@@ -17129,14 +17139,19 @@ var Clipboard = /** @class */ (function () {
             ele.innerHTML = html;
         }
         if (ele.querySelector('table')) {
-            ele.querySelectorAll('tr').forEach(function (tr) {
-                tr.querySelectorAll('td').forEach(function (td, j) {
-                    td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
-                    cells[j] = { value: td.textContent, style: _this.getStyle(td, ele) };
+            if (ele.querySelector('.e-spreadsheet')) {
+                rows = { internal: true };
+            }
+            else {
+                ele.querySelectorAll('tr').forEach(function (tr) {
+                    tr.querySelectorAll('td').forEach(function (td, j) {
+                        td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
+                        cells[j] = { value: td.textContent, style: _this.getStyle(td, ele) };
+                    });
+                    rows.push({ cells: cells });
+                    cells = [];
                 });
-                rows.push({ cells: cells });
-                cells = [];
-            });
+            }
         }
         else if (text) {
             if (html) {
@@ -17484,7 +17499,7 @@ var Edit = /** @class */ (function () {
         }
     };
     Edit.prototype.renderEditor = function () {
-        if (!this.editorElem || !this.parent.element.querySelector('#' + this.parent.element.id + '_edit')) {
+        if (!this.editorElem || !this.parent.element.querySelector('[id="' + this.parent.element.id + '_edit"]')) {
             var editor = void 0;
             editor = this.parent.createElement('div', { id: this.parent.element.id + '_edit', className: 'e-spreadsheet-edit' });
             editor.contentEditable = 'true';
@@ -18545,8 +18560,9 @@ var Selection = /** @class */ (function () {
                 if (ele) {
                     ele.classList.remove('e-hide');
                 }
-                var offset = this.getOffset(range[2], range[3]);
-                if (isMergeRange) { // Need to handle half hidden merge cell in better way
+                var offset = (this.isColSelected && this.isRowSelected) ? undefined
+                    : this.getOffset(range[2], range[3]);
+                if (isMergeRange && offset) { // Need to handle half hidden merge cell in better way
                     offset.left = { idx: 0, size: 0 };
                 }
                 locateElem(ele, range, sheet, this.parent.enableRtl, offset);
@@ -19969,7 +19985,7 @@ var KeyboardShortcut = /** @class */ (function () {
                 }
             }
             if (e.keyCode === 79) {
-                this.parent.element.querySelector('#' + this.parent.element.id + '_fileUpload').click();
+                this.parent.element.querySelector('[id="' + this.parent.element.id + '_fileUpload"]').click();
             }
             else if (e.keyCode === 83) {
                 if (this.parent.saveUrl && this.parent.allowSave) {
@@ -23133,7 +23149,7 @@ var DataValidation = /** @class */ (function () {
      */
     DataValidation.prototype.destroy = function () {
         this.removeEventListener();
-        var dataValPopup = document.querySelector('#' + this.parent.element.id + '_datavalidation-popup');
+        var dataValPopup = document.querySelector('[id="' + this.parent.element.id + '_datavalidation-popup"]');
         if (dataValPopup) {
             dataValPopup.remove();
         }
@@ -27231,7 +27247,7 @@ var Ribbon$$1 = /** @class */ (function () {
                     {
                         prefixIcon: 'e-image-icon', text: l10n.getConstant('Image'),
                         id: id + '_', tooltipText: l10n.getConstant('Image'), click: function () {
-                            _this.parent.element.querySelector('#' + id + '_imageUpload').click();
+                            _this.parent.element.querySelector('[id="' + id + '_imageUpload"]').click();
                         }
                     }
                 ]
@@ -28797,7 +28813,7 @@ var Ribbon$$1 = /** @class */ (function () {
         if (!selectArgs.cancel) {
             switch (args.item.id) {
                 case id + "_Open":
-                    this.parent.element.querySelector('#' + id + '_fileUpload').click();
+                    this.parent.element.querySelector('[id="' + id + '_fileUpload"]').click();
                     break;
                 case id + "_Xlsx":
                 case id + "_Xls":
@@ -28959,7 +28975,8 @@ var Ribbon$$1 = /** @class */ (function () {
     Ribbon$$1.prototype.updateToggleText = function (item, text) {
         var _this = this;
         getUpdateUsingRaf(function () {
-            _this.ribbon.element.querySelector("#" + _this.parent.element.id + "_" + item + " .e-tbar-btn-text").textContent = text;
+            _this.ribbon.element.querySelector('[id="' + (_this.parent.element.id + "_" + item) + '"]' + ' .e-tbar-btn-text')
+                .textContent = text;
         });
     };
     Ribbon$$1.prototype.refreshViewTabContent = function (activeTab) {
@@ -29243,7 +29260,7 @@ var Ribbon$$1 = /** @class */ (function () {
         var ribbonEle = this.ribbon.element;
         var id = parentElem.id;
         ['bold', 'italic', 'line-through', 'underline'].forEach(function (name) {
-            destroyComponent(parentElem.querySelector('#' + (id + "_" + name)), sf.buttons.Button);
+            destroyComponent(parentElem.querySelector('[id="' + (id + "_" + name) + '"]'), sf.buttons.Button);
         });
         this.pasteSplitBtn.destroy();
         this.pasteSplitBtn = null;
@@ -29835,7 +29852,7 @@ var FormulaBar = /** @class */ (function () {
         }
     };
     FormulaBar.prototype.getFormulaBar = function () {
-        return this.parent.element.querySelector('#' + this.parent.element.id + '_formula_input');
+        return this.parent.element.querySelector('[id="' + this.parent.element.id + '_formula_input"]');
     };
     return FormulaBar;
 }());
@@ -29960,7 +29977,7 @@ var Formula = /** @class */ (function () {
         }
     };
     Formula.prototype.renderAutoComplete = function () {
-        if (!this.parent.element.querySelector('#' + this.parent.element.id + '_ac')) {
+        if (!this.parent.element.querySelector('[id="' + this.parent.element.id + '_ac"]')) {
             var acElem = this.parent.createElement('input', { id: this.parent.element.id + '_ac', className: 'e-ss-ac' });
             this.parent.element.appendChild(acElem);
             var eventArgs = {
@@ -30123,7 +30140,7 @@ var Formula = /** @class */ (function () {
         this.isFormulaBar = false;
         if (this.isPopupOpened) {
             this.hidePopUp();
-            var suggPopupElem = document.querySelector('#' + this.parent.element.id + '_ac_popup');
+            var suggPopupElem = document.querySelector('[id="' + this.parent.element.id + '_ac_popup"]');
             if (suggPopupElem) {
                 sf.base.detach(suggPopupElem);
             }
@@ -36147,7 +36164,7 @@ var Spreadsheet = /** @class */ (function (_super) {
     Spreadsheet.prototype.refreshNode = function (td, args) {
         var value;
         if (td) {
-            var spanElem = td.querySelector('#' + this.element.id + '_currency');
+            var spanElem = td.querySelector('[id="' + this.element.id + '_currency"]');
             var alignClass = 'e-right-align';
             if (args) {
                 args.result = sf.base.isNullOrUndefined(args.result) ? '' : args.result.toString();

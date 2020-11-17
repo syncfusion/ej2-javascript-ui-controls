@@ -41,7 +41,7 @@ export class DataValidation {
      */
     protected destroy(): void {
         this.removeEventListener();
-        let dataValPopup: HTMLElement = document.querySelector('#' + this.parent.element.id + '_datavalidation-popup');
+        let dataValPopup: HTMLElement = document.querySelector('[id="' + this.parent.element.id + '_datavalidation-popup"]');
         if (dataValPopup) { dataValPopup.remove(); }
         this.parent = null;
     }

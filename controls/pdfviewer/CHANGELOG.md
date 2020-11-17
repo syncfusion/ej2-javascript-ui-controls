@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.50 (2020-11-17)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#294232` - Now the ink annotation position is maintained properly
+
 ## 18.3.48 (2020-11-11)
 
 ### PDF Viewer

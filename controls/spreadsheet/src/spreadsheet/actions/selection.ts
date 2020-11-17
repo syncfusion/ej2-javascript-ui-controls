@@ -449,8 +449,9 @@ export class Selection {
                 if (ele) {
                     ele.classList.remove('e-hide');
                 }
-                let offset: { left: IOffset, top: IOffset } = this.getOffset(range[2], range[3]);
-                if (isMergeRange) { // Need to handle half hidden merge cell in better way
+                let offset: { left: IOffset, top: IOffset } = (this.isColSelected && this.isRowSelected) ? undefined
+                    : this.getOffset(range[2], range[3]);
+                if (isMergeRange && offset) { // Need to handle half hidden merge cell in better way
                     offset.left = { idx: 0, size: 0 };
                 }
                 locateElem(ele, range, sheet, this.parent.enableRtl, offset);
