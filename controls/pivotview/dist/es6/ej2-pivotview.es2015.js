@@ -840,7 +840,68 @@ class PivotUtil {
         locale["Qtr"] = control.localeObj.getConstant('qtr');
         locale["Undefined"] = control.localeObj.getConstant('undefined');
         locale["GroupOutOfRange"] = control.localeObj.getConstant('groupOutOfRange');
+        locale["Group"] = control.localeObj.getConstant('group');
         return locale;
+    }
+    static updateReport(control, report) {
+        control.setProperties({ dataSourceSettings: { rows: [] } }, true);
+        control.setProperties({ dataSourceSettings: { columns: [] } }, true);
+        control.setProperties({ dataSourceSettings: { formatSettings: [] } }, true);
+        for (let i = 0; i < report.Rows.length; i++) {
+            control.dataSourceSettings.rows.push({
+                name: report.Rows[i].Name,
+                caption: report.Rows[i].Caption,
+                showNoDataItems: report.Rows[i].ShowNoDataItems,
+                baseField: report.Rows[i].BaseField,
+                baseItem: report.Rows[i].BaseItem,
+                showFilterIcon: report.Rows[i].ShowFilterIcon,
+                showSortIcon: report.Rows[i].ShowSortIcon,
+                showEditIcon: report.Rows[i].ShowEditIcon,
+                showRemoveIcon: report.Rows[i].ShowRemoveIcon,
+                showSubTotals: report.Rows[i].ShowValueTypeIcon,
+                allowDragAndDrop: report.Rows[i].AllowDragAndDrop,
+                axis: report.Rows[i].Axis,
+                dataType: report.Rows[i].DataType,
+                isCalculatedField: report.Rows[i].IsCalculatedField,
+                showValueTypeIcon: report.Rows[i].ShowValueTypeIcon,
+                type: report.Rows[i].Type
+            });
+        }
+        for (let i = 0; i < report.Columns.length; i++) {
+            control.dataSourceSettings.columns.push({
+                name: report.Columns[i].Name,
+                caption: report.Columns[i].Caption,
+                showNoDataItems: report.Columns[i].ShowNoDataItems,
+                baseField: report.Columns[i].BaseField,
+                baseItem: report.Columns[i].BaseItem,
+                showFilterIcon: report.Columns[i].ShowFilterIcon,
+                showSortIcon: report.Columns[i].ShowSortIcon,
+                showEditIcon: report.Columns[i].ShowEditIcon,
+                showRemoveIcon: report.Columns[i].ShowRemoveIcon,
+                showSubTotals: report.Columns[i].ShowValueTypeIcon,
+                allowDragAndDrop: report.Columns[i].AllowDragAndDrop,
+                axis: report.Columns[i].Axis,
+                dataType: report.Columns[i].DataType,
+                isCalculatedField: report.Columns[i].IsCalculatedField,
+                showValueTypeIcon: report.Columns[i].ShowValueTypeIcon,
+                type: report.Columns[i].Type
+            });
+        }
+        for (let i = 0; i < report.FormatSettings.length; i++) {
+            control.dataSourceSettings.formatSettings.push({
+                name: report.FormatSettings[i].Name,
+                format: report.FormatSettings[i].Format,
+                type: report.FormatSettings[i].Type,
+                currency: report.FormatSettings[i].Currency,
+                maximumFractionDigits: report.FormatSettings[i].MaximumFractionDigits,
+                maximumSignificantDigits: report.FormatSettings[i].MaximumSignificantDigits,
+                minimumFractionDigits: report.FormatSettings[i].MinimumFractionDigits,
+                minimumIntegerDigits: report.FormatSettings[i].MinimumIntegerDigits,
+                minimumSignificantDigits: report.FormatSettings[i].MinimumSignificantDigits,
+                skeleton: report.FormatSettings[i].Skeleton,
+                useGrouping: report.FormatSettings[i].UseGrouping
+            });
+        }
     }
     static generateUUID() {
         let d = new Date().getTime();
@@ -11164,7 +11225,7 @@ __decorate$1([
 class DataSourceSettings extends ChildProperty {
 }
 __decorate$1([
-    Property()
+    Property('Local')
 ], DataSourceSettings.prototype, "mode", void 0);
 __decorate$1([
     Property()
@@ -12631,22 +12692,24 @@ class VirtualScroll$1 {
         this.parent.on(contentReady, this.wireEvents, this);
     }
     wireEvents() {
-        let mCont = this.parent.element.querySelector('.' + MOVABLECONTENT_DIV);
-        let fCont = this.parent.element.querySelector('.' + FROZENCONTENT_DIV);
-        let mHdr = this.parent.element.querySelector('.' + MOVABLEHEADER_DIV);
-        EventHandler.clearEvents(mCont);
-        EventHandler.clearEvents(fCont);
-        if (this.engineModule) {
-            EventHandler.add(mCont, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, fCont), this);
-            EventHandler.add(mCont, 'scroll wheel touchmove pointermove keyup keydown', this.onVerticalScroll(fCont, mCont), this);
-            EventHandler.add(mCont, 'mouseup touchend', this.common(mHdr, mCont, fCont), this);
-            EventHandler.add(fCont, 'wheel', this.onWheelScroll(mCont, fCont), this);
-            EventHandler.add(fCont, 'touchstart pointerdown', this.setPageXY(), this);
-            EventHandler.add(fCont, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
-            EventHandler.add(mHdr, 'touchstart pointerdown', this.setPageXY(), this);
-            EventHandler.add(mHdr, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
+        if (this.parent.displayOption.view !== 'Chart') {
+            let mCont = this.parent.element.querySelector('.' + MOVABLECONTENT_DIV);
+            let fCont = this.parent.element.querySelector('.' + FROZENCONTENT_DIV);
+            let mHdr = this.parent.element.querySelector('.' + MOVABLEHEADER_DIV);
+            EventHandler.clearEvents(mCont);
+            EventHandler.clearEvents(fCont);
+            if (this.engineModule) {
+                EventHandler.add(mCont, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, fCont), this);
+                EventHandler.add(mCont, 'scroll wheel touchmove pointermove keyup keydown', this.onVerticalScroll(fCont, mCont), this);
+                EventHandler.add(mCont, 'mouseup touchend', this.common(mHdr, mCont, fCont), this);
+                EventHandler.add(fCont, 'wheel', this.onWheelScroll(mCont, fCont), this);
+                EventHandler.add(fCont, 'touchstart pointerdown', this.setPageXY(), this);
+                EventHandler.add(fCont, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
+                EventHandler.add(mHdr, 'touchstart pointerdown', this.setPageXY(), this);
+                EventHandler.add(mHdr, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
+            }
+            this.parent.grid.isPreventScrollEvent = true;
         }
-        this.parent.grid.isPreventScrollEvent = true;
     }
     onWheelScroll(mCont, fCont) {
         let element = mCont;
@@ -14723,7 +14786,9 @@ class PivotChart {
         this.updateView();
         this.parent.notify(contentReady, {});
         this.parent.trigger(chartLoaded, args);
-        this.parent.hideWaitingPopup();
+        if ((this.parent.dataSourceSettings.mode === 'Server' && this.parent.isServerWaitingPopup) || this.parent.dataSourceSettings.mode === 'Local') {
+            this.parent.hideWaitingPopup();
+        }
     }
     /** @hidden */
     updateView() {
@@ -21179,6 +21244,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         this.needsID = true;
         this.pivotRefresh = Component.prototype.refresh;
         this.request = new XMLHttpRequest();
+        /** @hidden */
+        this.isServerWaitingPopup = false;
         this.pivotView = this;
         setValue('mergePersistData', this.mergePersistPivotData, this);
     }
@@ -21852,6 +21919,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
     /* tslint:enable */
     onSuccess() {
         if (this.request.readyState === XMLHttpRequest.DONE) {
+            this.isServerWaitingPopup = true;
             try {
                 let engine = JSON.parse(this.request.responseText);
                 if (this.currentAction === 'fetchFieldMembers') {
@@ -21867,7 +21935,12 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                     this.engineModule.fieldList[engine.memberName].dateMember = dateMembers;
                     this.engineModule.fieldList[engine.memberName].formattedMembers = formattedMembers;
                     this.engineModule.fieldList[engine.memberName].members = members;
-                    this.pivotButtonModule.updateFilterEvents();
+                    if (this.showGroupingBar) {
+                        this.pivotButtonModule.updateFilterEvents();
+                    }
+                    else {
+                        this.pivotFieldListModule.pivotButtonModule.updateFilterEvents();
+                    }
                 }
                 else if (this.currentAction === 'fetchRawData') {
                     let valueCaption = this.engineModule.fieldList[this.drillThroughValue.actualText.toString()] ?
@@ -21883,7 +21956,18 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                     this.drillThroughModule.triggerDialog(valueCaption, aggType, rawData, this.drillThroughValue, this.drillThroughElement);
                 }
                 else {
-                    this.engineModule.fieldList = PivotUtil.formatFieldList(JSON.parse(engine.fieldList));
+                    let fList = PivotUtil.formatFieldList(JSON.parse(engine.fieldList));
+                    if (this.engineModule.fieldList) {
+                        let keys = Object.keys(this.engineModule.fieldList);
+                        for (let i = 0; i < keys.length; i++) {
+                            if (this.engineModule.fieldList[keys[i]] && fList[keys[i]]) {
+                                fList[keys[i]].dateMember = this.engineModule.fieldList[keys[i]].dateMember;
+                                fList[keys[i]].formattedMembers = this.engineModule.fieldList[keys[i]].formattedMembers;
+                                fList[keys[i]].members = this.engineModule.fieldList[keys[i]].members;
+                            }
+                        }
+                    }
+                    this.engineModule.fieldList = fList;
                     this.engineModule.fields = JSON.parse(engine.fields);
                     this.engineModule.rowCount = JSON.parse(engine.pivotCount).RowCount;
                     this.engineModule.columnCount = JSON.parse(engine.pivotCount).ColumnCount;
@@ -21901,7 +21985,10 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                     }
                     this.engineModule.headerContent = PivotUtil.frameContent(pivotValues, 'header', rowPos, this);
                     this.engineModule.pageSettings = this.pageSettings;
-                    let valueSort = JSON.parse(engine.valueSortSettings);
+                    if (this.dataSourceSettings.groupSettings.length > 0) {
+                        PivotUtil.updateReport(this, JSON.parse(engine.dataSourceSettings));
+                    }
+                    let valueSort = JSON.parse(engine.dataSourceSettings).ValueSortSettings;
                     this.engineModule.valueSortSettings = {
                         headerText: valueSort.HeaderText,
                         headerDelimiter: valueSort.HeaderDelimiter,
@@ -21948,6 +22035,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
      */
     getEngine(action, drillItem, sortItem, aggField, cField, filterItem, memberName, rawDataArgs, editArgs) {
         this.currentAction = action;
+        this.isServerWaitingPopup = false;
         let customProperties = {
             pageSettings: this.pageSettings,
             enableValueSorting: this.enableValueSorting,
@@ -23125,7 +23213,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             hideSpinner(this.fieldListSpinnerElement);
         }
         if (!this.isEmptyGrid) {
-            this.hideWaitingPopup();
+            if ((this.dataSourceSettings.mode === 'Server' && this.isServerWaitingPopup) || this.dataSourceSettings.mode === 'Local') {
+                this.hideWaitingPopup();
+            }
             this.trigger(dataBound);
         }
         else {
@@ -27522,6 +27612,7 @@ class PivotButton {
     updateFiltering(args) {
         /* tslint:disable */
         let pivotObj = this.parent.pivotGridModule ? this.parent.pivotGridModule : this.parent;
+        pivotObj.showWaitingPopup();
         pivotObj.mouseEventArgs = args;
         pivotObj.filterTargetID = this.parent.pivotCommon.moduleName !== 'pivotfieldlist' ?
             this.parent.element : document.getElementById(this.parent.pivotCommon.parentID + '_Wrapper');
@@ -27545,7 +27636,12 @@ class PivotButton {
             });
         }
         else if (pivotObj.dataSourceSettings.mode === 'Server') {
-            pivotObj.getEngine('fetchFieldMembers', null, null, null, null, null, fieldName);
+            if (this.parent.engineModule.fieldList[fieldName].members && Object.keys(this.parent.engineModule.fieldList[fieldName].members).length > 0) {
+                this.updateFilterEvents();
+            }
+            else {
+                pivotObj.getEngine('fetchFieldMembers', null, null, null, null, null, fieldName);
+            }
         }
         else {
             this.updateFilterEvents();
@@ -27567,6 +27663,7 @@ class PivotButton {
             // this.parent.pivotCommon.filterDialog.allMemberSelect.nodeChecked = this.nodeStateModified.bind(this);
             this.bindDialogEvents();
         }
+        pivotObj.hideWaitingPopup();
     }
     bindDialogEvents() {
         if (this.parent.pivotCommon.filterDialog.allowExcelLikeFilter && this.parent.pivotCommon.filterDialog.tabObj) {
@@ -28524,7 +28621,18 @@ let PivotFieldList = class PivotFieldList extends Component {
                     this.pivotButtonModule.updateFilterEvents();
                 }
                 else {
-                    this.engineModule.fieldList = PivotUtil.formatFieldList(JSON.parse(engine.fieldList));
+                    let fList = PivotUtil.formatFieldList(JSON.parse(engine.fieldList));
+                    if (this.engineModule.fieldList) {
+                        let keys = Object.keys(this.engineModule.fieldList);
+                        for (let i = 0; i < keys.length; i++) {
+                            if (this.engineModule.fieldList[keys[i]] && fList[keys[i]]) {
+                                fList[keys[i]].dateMember = this.engineModule.fieldList[keys[i]].dateMember;
+                                fList[keys[i]].formattedMembers = this.engineModule.fieldList[keys[i]].formattedMembers;
+                                fList[keys[i]].members = this.engineModule.fieldList[keys[i]].members;
+                            }
+                        }
+                    }
+                    this.engineModule.fieldList = fList;
                     this.engineModule.fields = JSON.parse(engine.fields);
                     this.engineModule.rowCount = JSON.parse(engine.pivotCount).RowCount;
                     this.engineModule.columnCount = JSON.parse(engine.pivotCount).ColumnCount;

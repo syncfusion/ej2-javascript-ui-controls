@@ -146,6 +146,12 @@ export interface PdfAnnotationBaseModel {
     notes?: string;
 
     /**
+     * specifies the locked action of the comment
+     * @default 'false'
+     */
+    isCommentLock?: boolean;
+
+    /**
      * Represents the stroke color of the annotation
      * @default 'black'
      */

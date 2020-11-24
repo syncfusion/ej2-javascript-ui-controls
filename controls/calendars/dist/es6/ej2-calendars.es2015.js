@@ -673,7 +673,8 @@ let CalendarBase = class CalendarBase extends Component {
             let weekEle = this.createElement('td', { className: CELL });
             let weekAnchor = this.createElement('span');
             if (day % 7 === 0 && this.weekNumber) {
-                weekAnchor.textContent = '' + this.getWeek(localDate);
+                let lastDate = new Date(localDate.getFullYear(), localDate.getMonth(), (localDate.getDate() + 6));
+                weekAnchor.textContent = '' + this.getWeek(lastDate);
                 weekEle.appendChild(weekAnchor);
                 addClass([weekEle], '' + WEEKNUMBER);
                 tdEles.push(weekEle);
@@ -1518,8 +1519,7 @@ let CalendarBase = class CalendarBase extends Component {
     getWeek(d) {
         let currentDate = new Date(this.checkValue(d)).valueOf();
         let date = new Date(d.getFullYear(), 0, 1).valueOf();
-        let a = (currentDate - date);
-        return Math.ceil((((a) / dayMilliSeconds) + new Date(date).getDay() + 1) / 7);
+        return Math.ceil((((currentDate - date) + dayMilliSeconds) / dayMilliSeconds) / 7);
     }
     setStartDate(date, time) {
         let tzOffset = date.getTimezoneOffset();
@@ -2948,6 +2948,8 @@ let DatePicker = class DatePicker extends Calendar {
         this.isBlazorServer = false;
         this.invalidValueString = null;
         this.checkPreviousValue = null;
+        this.isAngular = false;
+        this.preventChange = false;
         this.datepickerOptions = options;
     }
     /**
@@ -3869,7 +3871,12 @@ let DatePicker = class DatePicker extends Calendar {
                 this.changedArgs.event = event || null;
                 this.changedArgs.element = this.element;
                 this.changedArgs.isInteracted = !isNullOrUndefined(event);
-                this.trigger('change', this.changedArgs);
+                if (this.isAngular && this.preventChange) {
+                    this.preventChange = false;
+                }
+                else {
+                    this.trigger('change', this.changedArgs);
+                }
                 this.previousElementValue = this.inputElement.value;
                 this.previousDate = !isNaN(+new Date(this.checkValue(this.value))) ? new Date(this.checkValue(this.value)) : null;
                 this.isInteracted = true;
@@ -4849,6 +4856,8 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         this.preventBlur = false;
         this.preventFocus = false;
         this.invalidValueString = null;
+        this.isAngular = false;
+        this.preventChange = false;
         this.dateRangeOptions = options;
     }
     /**
@@ -4862,6 +4871,9 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         this.setProperties({ endDate: this.endValue }, true);
         this.setModelValue();
         this.setDataAttribute(false);
+        if (this.element.hasAttribute('data-val')) {
+            this.element.setAttribute('data-val', 'false');
+        }
         this.renderComplete();
     }
     /**
@@ -8181,7 +8193,12 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             this.setProperties({ endDate: this.checkDateValue(this.endValue) }, true);
             this.setProperties({ startDate: this.checkDateValue(this.startValue) }, true);
             this.setModelValue();
-            this.trigger('change', this.rangeArgs(e));
+            if (this.isAngular && this.preventChange) {
+                this.preventChange = false;
+            }
+            else {
+                this.trigger('change', this.rangeArgs(e));
+            }
         }
         this.previousEleValue = this.inputElement.value;
         this.initStartDate = this.checkDateValue(this.startValue);
@@ -9013,6 +9030,8 @@ let TimePicker = class TimePicker extends Component {
         this.disableItemCollection = [];
         this.invalidValueString = null;
         this.isBlazorServer = false;
+        this.isAngular = false;
+        this.preventChange = false;
         this.timeOptions = options;
     }
     /**
@@ -10749,7 +10768,12 @@ let TimePicker = class TimePicker extends Component {
         };
         eventArgs.value = this.valueWithMinutes || this.getDateObject(this.inputElement.value);
         this.prevDate = this.valueWithMinutes || this.getDateObject(this.inputElement.value);
-        this.trigger('change', eventArgs);
+        if (this.isAngular && this.preventChange) {
+            this.preventChange = false;
+        }
+        else {
+            this.trigger('change', eventArgs);
+        }
         this.invalidValueString = null;
         this.checkErrorState(this.value);
     }
@@ -11299,6 +11323,9 @@ let TimePicker = class TimePicker extends Component {
                             this.checkErrorState(this.invalidValueString);
                         }
                         this.checkValueChange(null, false);
+                        if (this.isAngular && this.preventChange) {
+                            this.preventChange = false;
+                        }
                     }
                     break;
                 case 'floatLabelType':
@@ -11499,6 +11526,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
     constructor(options, element) {
         super(options, element);
         this.valueWithMinutes = null;
+        this.scrollInvoked = false;
         this.dateTimeOptions = options;
     }
     focusHandler() {
@@ -12136,6 +12164,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         let element;
         let items = this.dateTimeWrapper.querySelectorAll('.' + LISTCLASS$2);
         if (items.length >= 0) {
+            this.scrollInvoked = true;
             let initialTime = this.timeCollections[0];
             let scrollTime = this.getDateObject(this.checkDateValue(this.scrollTo)).getTime();
             element = items[Math.round((scrollTime - initialTime) / (this.step * 60000))];
@@ -12506,7 +12535,13 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
                 let minute = status ? value.getMinutes() : MINUTE;
                 let second = status ? value.getSeconds() : SECOND;
                 let millisecond = status ? value.getMilliseconds() : MILLISECOND;
-                return new Date(year, month, date, hour, minute, second, millisecond);
+                if (!this.scrollInvoked) {
+                    return new Date(year, month, date, hour, minute, second, millisecond);
+                }
+                else {
+                    this.scrollInvoked = false;
+                    return new Date(year, month, date, dateValue.getHours(), dateValue.getMinutes(), dateValue.getSeconds(), dateValue.getMilliseconds());
+                }
             }
         }
         return null;

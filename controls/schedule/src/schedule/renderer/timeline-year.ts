@@ -217,12 +217,14 @@ export class TimelineYear extends Year {
                 if (isDateAvail) {
                     td.setAttribute('data-date', date.getTime().toString());
                     this.wireEvents(td, 'cell');
+                }
+                this.renderCellTemplate({ date: date, type: 'workCells' }, td);
+                this.parent.trigger(event.renderCell, { elementType: 'workCells', element: td, date: date });
+                if (isDateAvail) {
                     if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                         date = util.addDays(new Date(date.getTime()), 1);
                     }
                 }
-                this.renderCellTemplate({ date: date, type: 'workCells' }, td);
-                this.parent.trigger(event.renderCell, { elementType: 'workCells', element: td, date: date });
             }
         }
     }

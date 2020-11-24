@@ -1457,6 +1457,7 @@ export class Gantt extends Component<HTMLElement>
      */
     protected render(): void {
         if ((<{ isReact?: boolean }>this).isReact) {
+            (<{ isReact?: boolean }>this.treeGrid).isReact = true;
             (<{ isReact?: boolean }>this.treeGrid.grid).isReact = true;
         }
         createSpinner({ target: this.element }, this.createElement);

@@ -1228,6 +1228,9 @@ let QueryBuilder = class QueryBuilder extends Component {
                 detach(element.querySelector('input#' + inputElement[i].id));
             }
             else if (inputElement[i].classList.contains('e-dropdownlist')) {
+                if (this.allowValidation && inputElement[i].parentElement.className.indexOf('e-tooltip') > -1) {
+                    getComponent(inputElement[i].parentElement, 'tooltip').destroy();
+                }
                 getComponent(inputElement[i], 'dropdownlist').destroy();
             }
             else if (inputElement[i].classList.contains('e-radio')) {
@@ -1771,9 +1774,16 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         return 0;
     }
+    getPreviousItemData(prevItemData, column) {
+        if (column.template && prevItemData && Object.keys(prevItemData).length < 4) {
+            prevItemData.template = column.template;
+        }
+        return prevItemData;
+    }
     renderValues(target, itemData, prevItemData, isRender, rule, tempRule, element) {
         let filtElem = document.getElementById(element.id.replace('operatorkey', 'filterkey'));
         let filtObj = getComponent(filtElem, 'dropdownlist');
+        let column = this.getColumn(filtObj.value);
         if (isRender) {
             let ddlObj = getComponent(target.querySelector('input'), 'dropdownlist');
             if (itemData.operators) {
@@ -1796,6 +1806,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         let operator = tempRule.operator.toString();
         if (!(operator.indexOf('null') > -1 || operator.indexOf('empty') > -1)) {
             let parentId = closest(target, '.e-rule-container').id;
+            prevItemData = this.getPreviousItemData(prevItemData, column);
             if (prevItemData && prevItemData.template) {
                 this.templateDestroy(prevItemData, parentId + '_valuekey0');
                 if (isBlazor()) {
@@ -1817,7 +1828,6 @@ let QueryBuilder = class QueryBuilder extends Component {
                     this.destroyControls(target);
                 }
             }
-            let column = this.getColumn(filtObj.value);
             itemData.template = column.template;
             if (itemData.template) {
                 if (isBlazor() && itemData.field) {
@@ -2136,6 +2146,9 @@ let QueryBuilder = class QueryBuilder extends Component {
                 else {
                     rule.rules[index].value = '';
                 }
+            }
+            else {
+                rule.rules[index].value = selectedValue;
             }
         }
     }
@@ -3594,7 +3607,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                         }
                     }
                     else {
-                        if (typeof rule.value[0] === 'string') {
+                        if (typeof rule.value[0] === 'string' && rule.value !== null) {
                             valueStr += '("' + rule.value[0] + '"';
                             for (let k = 1, kLen = rule.value.length; k < kLen; k++) {
                                 valueStr += ',"' + rule.value[k] + '"';
@@ -3608,16 +3621,16 @@ let QueryBuilder = class QueryBuilder extends Component {
                 }
                 else {
                     if (rule.operator.toString().indexOf('startswith') > -1) {
-                        valueStr += '("' + rule.value + '%")';
+                        valueStr += rule.value ? '("' + rule.value + '%")' : '(' + rule.value + ')';
                     }
                     else if (rule.operator.toString().indexOf('endswith') > -1) {
-                        valueStr += '("%' + rule.value + '")';
+                        valueStr += rule.value ? '("%' + rule.value + '")' : '(' + rule.value + ')';
                     }
                     else if (rule.operator.toString().indexOf('contains') > -1) {
-                        valueStr += '("%' + rule.value + '%")';
+                        valueStr += rule.value ? '("%' + rule.value + '%")' : '(' + rule.value + ')';
                     }
                     else {
-                        if (rule.type === 'number' || typeof rule.value === 'boolean') {
+                        if (rule.type === 'number' || typeof rule.value === 'boolean' || rule.value === null) {
                             valueStr += rule.value;
                         }
                         else {
@@ -3745,6 +3758,12 @@ let QueryBuilder = class QueryBuilder extends Component {
             this.parser.push(['String', matchValue]);
             return matchValue.length;
         }
+        //Null
+        if (/^null/.exec(sqlString)) {
+            matchValue = /^null/.exec(sqlString)[0];
+            this.parser.push(['String', null]);
+            return matchValue.length;
+        }
         //Literals
         if (/^`?([a-z_][a-z0-9_.\[\]\(\)]{0,}(\:(number|float|string|date|boolean))?)`?/i.exec(sqlString)) {
             matchValue = /^`?([a-z_][a-z0-9_.\[\]\(\)]{0,}(\:(number|float|string|date|boolean))?)`?/i.exec(sqlString)[1];
@@ -3783,14 +3802,24 @@ let QueryBuilder = class QueryBuilder extends Component {
             '>=': 'greaterthanorequal', 'in': 'in', 'not in': 'notin', 'between': 'between', 'not between': 'notbetween',
             'is empty': 'isempty', 'is null': 'isnull', 'is not null': 'isnotnull', 'is not empty': 'isnotempty'
         };
-        if (value.indexOf('%') === 0 && value[value.length - 1] === '%') {
-            return (operator === 'not like') ? 'notcontains' : 'contains';
+        if (value) {
+            if (value.indexOf('%') === 0 && value[value.length - 1] === '%') {
+                return (operator === 'not like') ? 'notcontains' : 'contains';
+            }
+            else if (value.indexOf('%') !== 0 && value.indexOf('%') === value.length - 1) {
+                return (operator === 'not like') ? 'notstartswith' : 'startswith';
+            }
+            else if (value.indexOf('%') === 0 && value.indexOf('%') !== value.length - 1) {
+                return (operator === 'not like') ? 'notendswith' : 'endswith';
+            }
         }
-        else if (value.indexOf('%') !== 0 && value.indexOf('%') === value.length - 1) {
-            return (operator === 'not like') ? 'notstartswith' : 'startswith';
-        }
-        else if (value.indexOf('%') === 0 && value.indexOf('%') !== value.length - 1) {
-            return (operator === 'not like') ? 'notendswith' : 'endswith';
+        else {
+            if (operator === 'not like') {
+                return 'notequal';
+            }
+            else if (operator === 'like') {
+                return 'equal';
+            }
         }
         return operators[operator];
     }
@@ -3827,7 +3856,8 @@ let QueryBuilder = class QueryBuilder extends Component {
                         rule.type = this.getTypeFromColumn(rule);
                     }
                     else {
-                        rule.operator = this.getOperator(parser[i + 3][1].replace(/'/g, ''), parser[i + 1][1]);
+                        let oper = parser[i + 3][1] ? parser[i + 3][1].replace(/'/g, '') : parser[i + 3][1];
+                        rule.operator = this.getOperator(oper, parser[i + 1][1]);
                     }
                     operator = parser[i + 1][1];
                     i++;
@@ -3843,7 +3873,8 @@ let QueryBuilder = class QueryBuilder extends Component {
                                 break;
                             }
                             if (operator.indexOf('like') > -1 && parser[j][0] === 'String') {
-                                rule.value = parser[j][1].replace(/'/g, '').replace(/%/g, '');
+                                let val = parser[j][1] ? parser[j][1].replace(/'/g, '').replace(/%/g, '') : parser[j][1];
+                                rule.value = val;
                                 rule.type = 'string';
                             }
                             else if (operator.indexOf('between') > -1) {
@@ -3894,7 +3925,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                     }
                     else {
                         rule.type = 'string';
-                        rule.value = parser[i + 2][1].replace(/'/g, '');
+                        rule.value = parser[i + 2][1] ? parser[i + 2][1].replace(/'/g, '') : parser[i + 2][1];
                     }
                     rule.type = this.getTypeFromColumn(rule);
                 }

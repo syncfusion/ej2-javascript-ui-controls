@@ -186,7 +186,7 @@ export class AnnotationToolbar {
         this.updateToolbarItems();
     }
     public createMobileAnnotationToolbar(isEnable: boolean, isPath?: boolean): void {
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             if (this.toolbarElement == null && isEnable) {
                 this.isMobileAnnotEnabled = true;
                 // tslint:disable-next-line:max-line-length
@@ -665,7 +665,7 @@ export class AnnotationToolbar {
         }
     }
     private createDropDowns(isPath?: boolean): void {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.shapeElement = this.pdfViewerBase.getElement('_annotation_shapes');
             let shapeToolbar: Tool = this.createShapeOptions(this.shapeElement.id, true);
             // tslint:disable-next-line:max-line-length
@@ -685,7 +685,7 @@ export class AnnotationToolbar {
             this.colorDropDown.open = this.colorDropDownOpen.bind(this);
             this.pdfViewerBase.getElement('_annotation_color-popup').addEventListener('click', this.onColorPickerCancelClick.bind(this));
         }
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.strokeDropDownElement = this.pdfViewerBase.getElement('_annotation_stroke');
             this.strokeColorPicker = this.createColorPicker(this.strokeDropDownElement.id);
             this.strokeColorPicker.change = this.onStrokePickerChange.bind(this);
@@ -713,7 +713,7 @@ export class AnnotationToolbar {
             this.opacitySlider.changed = this.opacityChange.bind(this);
             this.opacityDropDown.open = this.opacityDropDownOpen.bind(this);
         }
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.fontFamilyElement = this.pdfViewerBase.getElement('_annotation_fontname');
             this.createDropDownListForFamily(this.fontFamilyElement);
             this.fontFamilyElement.style.textAlign = 'left';
@@ -739,7 +739,7 @@ export class AnnotationToolbar {
     }
 
     private opacityDropDownOpen(args: OpenCloseMenuEventArgs): void {
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             // tslint:disable-next-line:max-line-length
             let opacityElement: HTMLElement = this.pdfViewerBase.getElement('_annotation_opacity-popup');
             opacityElement.style.left = '0px';
@@ -829,7 +829,7 @@ export class AnnotationToolbar {
     }
 
     private colorDropDownOpen(): void {
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             // tslint:disable-next-line:max-line-length
             this.pdfViewerBase.getElement('_annotation_color-popup').style.left = '0px';
         }
@@ -1244,7 +1244,7 @@ export class AnnotationToolbar {
 
     // tslint:disable-next-line
     private thicknessDropDownOpen(args: OpenCloseMenuEventArgs): void {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.calculateToolbarPosition(args);
         }
     }
@@ -2630,7 +2630,7 @@ export class AnnotationToolbar {
             this.pdfViewer.annotationModule.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
             this.pdfViewer.annotationModule.textMarkupAnnotationModule.showHideDropletDiv(true);
         }
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.primaryToolbar.deSelectItem(this.highlightItem);
             this.primaryToolbar.deSelectItem(this.underlineItem);
             this.primaryToolbar.deSelectItem(this.strikethroughItem);
@@ -2642,7 +2642,7 @@ export class AnnotationToolbar {
         this.clearShapeMode();
         this.clearMeasureMode();
         this.pdfViewer.tool = '';
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.enableTextMarkupAnnotationPropertiesTools(false);
             this.enableFreeTextAnnotationPropertiesTools(false);
             this.updateColorInIcon(this.colorDropDownElement, '#000000');
@@ -2695,7 +2695,7 @@ export class AnnotationToolbar {
         if (!isBlazor()) {
             this.toolbar.enableItems(this.colorDropDownElement.parentElement, isEnable);
             this.toolbar.enableItems(this.opacityDropDownElement.parentElement, isEnable);
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.toolbar.enableItems(this.strokeDropDownElement.parentElement, false);
                 this.toolbar.enableItems(this.thicknessElement.parentElement, false);
                 this.toolbar.enableItems(this.fontFamilyElement.parentElement, false);

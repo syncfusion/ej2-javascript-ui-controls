@@ -51,6 +51,12 @@ export interface DraggableModel {
     isReplaceDragEle?: boolean;
 
     /**
+     * Defines wheather need to add prevent select class to body or not.
+     * @private
+     */
+    isPreventSelect?: boolean;
+
+    /**
      * Specifies the callback function for drag event.
      * @event
      */

@@ -325,7 +325,7 @@ export function textElement(
     parent: HTMLElement | Element
 ): Element {
     let renderOptions: Object = {};
-    let htmlObject: Element;
+    let htmlObject: HTMLElement;
     let tspanElement: Element;
     let renderer: SvgRenderer = new SvgRenderer('');
     let text: string;
@@ -345,7 +345,12 @@ export function textElement(
         'dominant-baseline': options.baseLine
     };
     text = typeof options.text === 'string' ? options.text : options.text[0];
-    htmlObject = renderer.createText(renderOptions, text);
+    htmlObject = renderer.createText(renderOptions, text) as HTMLElement;
+    htmlObject.style.fontFamily = font.fontFamily;
+    htmlObject.style.fontStyle = font.fontStyle;
+    htmlObject.style.fontSize = font.size;
+    htmlObject.style.fontWeight = font.fontWeight;
+    htmlObject.style.color = font.color;
     parent.appendChild(htmlObject);
     return htmlObject;
 }

@@ -6109,7 +6109,7 @@ function addOrthoSegments(element, seg, source, target, segLength, lineDistribut
                 case 'Bottom':
                     if (srcCorner.bottomCenter.y < tarCorner.topCenter.y) {
                         value = (tarCorner.topCenter.y - srcCorner.bottomCenter.y) / 2;
-                        extra = !lineDistribution ? Math.min(extra) : value;
+                        extra = !lineDistribution ? Math.min(extra, value) : value;
                     }
                     break;
             }
@@ -39204,7 +39204,7 @@ class Diagram extends Component {
             for (let node of Object.keys(id || layer.zIndexTable)) {
                 let renderNode = id ? this.nameTable[id[node]] : this.nameTable[layer.zIndexTable[node]];
                 if (renderNode && !(renderNode.parentId) && layer.visible &&
-                    !(renderNode.processId)) {
+                    (!(renderNode.processId) || this.refreshing)) {
                     let transformValue = {
                         tx: this.scroller.transform.tx,
                         ty: this.scroller.transform.ty,
@@ -39242,6 +39242,17 @@ class Diagram extends Component {
                         status = false;
                     }
                     this.updateTextElementValue(renderNode);
+                    if (this.refreshing) {
+                        if (renderNode.shape.activity && renderNode.shape.activity.subProcess
+                            && renderNode.shape.activity.subProcess.processes) {
+                            for (let i = 0; i < renderNode.shape.activity.subProcess.processes.length; i++) {
+                                let process = renderNode.shape.activity.subProcess.processes[i];
+                                renderNode.wrapper.children.push(this.nameTable[process].wrapper);
+                            }
+                            renderNode.wrapper.measure(new Size(renderNode.wrapper.bounds.width, renderNode.wrapper.bounds.height));
+                            renderNode.wrapper.arrange(renderNode.wrapper.desiredSize);
+                        }
+                    }
                     renderer.renderElement(renderNode.wrapper, canvas, htmlLayer, (!renderer.isSvgMode && transform) ? transformValue : undefined, undefined, undefined, status && (!this.diagramActions || isOverView));
                 }
             }
@@ -40047,6 +40058,7 @@ class Diagram extends Component {
             }
         });
     }
+    /** @private */
     getIndex(node, id) {
         let collection = (getObjectType(node) === Node) ? this.nodes : this.connectors;
         for (var i = 0; i < collection.length; i++) {
@@ -43941,6 +43953,20 @@ class DiagramContextMenu {
             }
         }
     }
+    updateItems() {
+        let canInsert = true;
+        for (let i = 0; i < this.parent.contextMenuSettings.items.length; i++) {
+            let items = this.parent.contextMenuSettings.items[i];
+            for (let j = 0; j < this.contextMenu.items.length; j++) {
+                if (this.contextMenu.items[j].text === this.parent.contextMenuSettings.items[i].text) {
+                    canInsert = false;
+                }
+            }
+            if (canInsert) {
+                this.contextMenu.insertAfter([items], this.contextMenu.items[this.contextMenu.items.length - 1].text);
+            }
+        }
+    }
     contextMenuBeforeOpen(args) {
         return __awaiter$3(this, void 0, void 0, function* () {
             if (!this.parent.checkMenu &&
@@ -43972,6 +43998,10 @@ class DiagramContextMenu {
                 this.parent.trigger(contextMenuOpen, diagramArgs);
             }
             let hidden = true;
+            if (!this.parent.contextMenuSettings.showCustomMenuOnly && this.parent.contextMenuSettings.items) {
+                this.updateItems();
+                this.contextMenu.refresh();
+            }
             this.hiddenItems = this.hiddenItems.concat(diagramArgs.hiddenItems);
             this.contextMenu.enableItems(this.disableItems, false, true);
             let contextItems = this;
@@ -44889,10 +44919,38 @@ class BpmnDiagrams {
                 if (diagram.mode === 'SVG') {
                     if (source.zIndex < target.zIndex) {
                         diagram.updateProcesses(source);
+                        this.updateSubprocessNodeIndex(source, diagram, target);
                     }
                 }
                 this.updateDocks(source, diagram);
             }
+        }
+    }
+    updateIndex(diagram, source) {
+        let processNode;
+        processNode = source;
+        let nodeindex = diagram.getIndex(processNode, processNode.id);
+        diagram.nodes.splice(Number(nodeindex), 1);
+        processNode.zIndex = diagram.nodes[diagram.nodes.length - 1].zIndex + 1;
+        diagram.nodes.push(processNode);
+    }
+    updateSubprocessNodeIndex(source, diagram, target) {
+        if (source.shape.activity.subProcess.processes
+            && source.shape.activity.subProcess.processes.length > 0) {
+            for (let i = 0; i < source.shape.activity.subProcess.processes.length; i++) {
+                this.updateIndex(diagram, source);
+                let processes = source.shape.activity.subProcess.processes[i];
+                if (diagram.nameTable[processes].shape.activity.subProcess.processes.length > 0) {
+                    this.updateSubprocessNodeIndex(diagram.nameTable[processes], diagram, target);
+                }
+                else {
+                    let node = diagram.nameTable[source.shape.activity.subProcess.processes[i]];
+                    this.updateIndex(diagram, node);
+                }
+            }
+        }
+        else {
+            this.updateIndex(diagram, source);
         }
     }
     /** @private */
@@ -52148,6 +52206,9 @@ class HierarchicalTree {
             let align;
             let rows = this.splitChildrenInRows(layout, shape);
             let unique = info.tree.children.length === 5 && rows[0].length === 3;
+            if (info.tree.children.length > 5) {
+                unique = rows[0].length === Math.round(info.tree.children.length / 2);
+            }
             let leftTree = [];
             let rightTree = [];
             if (!unique) {
@@ -52317,6 +52378,9 @@ class HierarchicalTree {
         let dimensions = treeInfo.dimensions;
         let lev = treeInfo.level;
         let unique = info.tree.children.length === 5 && rows[0].length === 3;
+        if (info.tree.children.length > 5) {
+            unique = rows[0].length === Math.round(info.tree.children.length / 2);
+        }
         if (unique && i === 1) {
             max = (rightBounds[0].right - rightBounds[0].x) >= (rightBounds[1].right - rightBounds[1].x) ? 0 : 1;
         }

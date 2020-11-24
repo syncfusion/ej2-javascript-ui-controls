@@ -50,7 +50,7 @@ describe('Autocorrection with arithmetic formulas', () => {
     });
     it('calculate worst case using numbers', () => {
         forceCalc = true;
-        formula.value = '=2+++-++/*+6+8';
+        formula.value = '=2+-+*+6+8';
         document.body.appendChild(formula);
         calculate.setKeyValue('F', formula.value);
         result = calculate.getKeyValue('F');
@@ -58,7 +58,7 @@ describe('Autocorrection with arithmetic formulas', () => {
     });
     it('calculate worst case using numbers with multiple numbers', () => {
         forceCalc = true;
-        formula.value = '=*++2+++-++/*+6+8+45';
+        formula.value = '=*++2+++-++*+6+8+45';
         document.body.appendChild(formula);
         calculate.setKeyValue('F', formula.value);
         result = calculate.getKeyValue('F');

@@ -2,6 +2,7 @@ import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { destroy } from './treegridutil.spec';
 import { stateChangeData, childdata1 } from './datasource.spec';
 import { createElement, EmitType } from '@syncfusion/ej2-base';
+import { select } from '@syncfusion/ej2-base';
 
 describe('Custom Binding', () => {
     let gridObj: TreeGrid;
@@ -90,8 +91,8 @@ describe('Custom Binding', () => {
       gridObj.actionComplete = (args:any) => {
         if(args.requestType === 'add'){
           let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-          (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '121';
-          (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'testing';
+          (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '121';
+          (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'testing';
         }
         if(args.requestType == 'save'){          
           let cells: NodeListOf<Element> = gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell');
@@ -132,7 +133,7 @@ describe('Custom Binding', () => {
       };
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'test1';     
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test1';     
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
     });
 

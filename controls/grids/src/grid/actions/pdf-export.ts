@@ -19,7 +19,7 @@ import { ReturnType } from '../base/type';
 import { SummaryModelGenerator, GroupSummaryModelGenerator, CaptionSummaryModelGenerator } from '../services/summary-model-generator';
 import { AggregateColumnModel } from '../models/aggregate-model';
 import { compile, getEnumValue, isNullOrUndefined, detach, isBlazor } from '@syncfusion/ej2-base';
-import { CellType, PdfPageSize, PdfDashStyle, PdfPageNumberType, ExportType, AggregateTemplateType } from '../base/enum';
+import { CellType, PdfPageSize, PdfDashStyle, PdfPageNumberType, ExportType } from '../base/enum';
 import { DataManager, Query, Group } from '@syncfusion/ej2-data';
 import { getValue } from '@syncfusion/ej2-base';
 import { Grid } from '../base/grid';
@@ -779,7 +779,7 @@ export class PdfExport {
                         if (!isNullOrUndefined(captionRow)) {
                             if (!isNullOrUndefined(captionRow.cells.getCell(i).value)) {
                                 /* tslint:disable-next-line:max-line-length */
-                                let args: AggregateQueryCellInfoEventArgs = { row: row, type: AggregateTemplateType.GroupCaption, style: captionRow.cells };
+                                let args: AggregateQueryCellInfoEventArgs = { row: row, type: 'GroupCaption', style: captionRow.cells };
                                 this.parent.trigger(events.pdfAggregateQueryCellInfo, args);
                                 value.push('');
                                 value.push(captionRow.cells.getCell(i).value);
@@ -848,7 +848,7 @@ export class PdfExport {
                     gridRow.style.setTextBrush(brush);
                     gridRow.style.setBackgroundBrush(backgroundBrush);
                      /* tslint:disable-next-line:max-line-length */
-                    let args: AggregateQueryCellInfoEventArgs = { row: row, type: isGroupedFooter ? AggregateTemplateType.GroupFooter : AggregateTemplateType.Footer, style: gridRow.cells };
+                    let args: AggregateQueryCellInfoEventArgs = { row: row, type: isGroupedFooter ? 'GroupFooter' : 'Footer', style: gridRow.cells };
                     this.parent.trigger(events.pdfAggregateQueryCellInfo, args);
                     for (let i: number = 0; i < pdfGrid.columns.count; i++) {
                         gridRow.cells.getCell(i).value = value[i].toString();

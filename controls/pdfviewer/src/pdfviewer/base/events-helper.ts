@@ -30,6 +30,17 @@ export interface UnloadEventArgs extends BaseEventArgs {
      */
     documentName: string;
 }
+
+/**
+ * This event arguments provides the necessary information about freeText event.
+ */
+export interface BeforeAddFreeTextEventArgs extends BaseEventArgs {
+    /**
+     * value of free text annotation.
+     */
+    value: string;
+}
+
 /**
  * This event provide necessary information about button field.
  */
@@ -358,7 +369,19 @@ export interface AnnotationPropertiesChangeEventArgs extends BaseEventArgs {
      * Defines the multi page annotation collections.
      */
     // tslint:disable-next-line
-    multiplePageCollection?: any
+    multiplePageCollection?: any;
+    /**
+     * Specifies whether the text of the FreeText annotation is changed or not.
+     */
+    isFreeTextChanged?: boolean;
+    /**
+     * Specifies the previous text of the freeText annotation.
+     */
+    previousText?: string;
+    /**
+     * Specifies the current text of the freeText annotation.
+     */
+    currentText?: string;
 }
 
 /**

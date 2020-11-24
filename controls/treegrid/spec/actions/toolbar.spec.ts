@@ -5,6 +5,7 @@ import { ToolbarItem } from '../../src/treegrid/enum';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
+import { select } from '@syncfusion/ej2-base';
 
 
 /**
@@ -94,9 +95,9 @@ describe('TreeGrid Toolbar module', () => {
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
         let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-        (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '124';
-        (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'fourth';
-        (formEle.querySelector('#' + gridObj.grid.element.id + 'startDate') as any).value = '2/3/2017';
+        (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '124';
+        (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'fourth';
+        (select('#' + gridObj.grid.element.id + 'startDate', formEle) as any).value = '2/3/2017';
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
     });
     afterAll(() => {
@@ -128,9 +129,9 @@ describe('TreeGrid Toolbar module', () => {
         expect(toolbarElements.querySelectorAll('.e-toolbar-item')[2].getAttribute('title')).toBe('Search');
     });
     it('click events', () => {
-        (<HTMLElement>gridObj.toolbarModule.getToolbar().querySelector('#' + gridObj.grid.element.id + '_collapseall')).click();
+        (<HTMLElement>select('#' + gridObj.grid.element.id + '_collapseall', gridObj.toolbarModule.getToolbar())).click();
         expect((<HTMLTableRowElement>gridObj.getRows()[1]).style.display).toBe('none');
-        (<HTMLElement>gridObj.toolbarModule.getToolbar().querySelector('#' + gridObj.grid.element.id + '_expandall')).click();
+        (<HTMLElement>select('#' + gridObj.grid.element.id + '_expandall', gridObj.toolbarModule.getToolbar())).click();
         expect((<HTMLTableRowElement>gridObj.getRows()[1]).style.display).toBe('table-row');
     });
     afterAll(() => {

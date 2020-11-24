@@ -271,7 +271,6 @@ describe('Scrollbar Chart', () => {
                 chartObj.loaded = null;
                 trigger.draganddropEvent(ele, 200, 250, 350, 400);
                 let border: string = document.getElementById('container_BorderLine_1').getAttribute('d').split('M ')[1];
-                console.log('Y Axis Labels Border Outside => ' + border);
                 expect(border === '57.5 411 L 29.5 411 L 29.5 364 ' || border === '26.5 423.5 L 26.5 386 ' || border === '26.5 423.5 L 26.5 386.87749565972206 ').toBe(true);
                 done();
             };
@@ -288,7 +287,6 @@ describe('Scrollbar Chart', () => {
                 chartObj.loaded = null;
                 trigger.draganddropEvent(ele, 200, 250, 350, 400);
                 let border: string = document.getElementById('container_BorderLine_1').getAttribute('d').split('M ')[1];
-                console.log('Y Axis Labels Border Inside => ' + border);
                 expect(border === '75.5 420.5 L 75.5 381 ' || border === '76.5 420.5 L 76.5 381 ' ||
                     border === '72.5 423.5 L 72.5 379 ' || border === '72.5 423.5 L 72.5 379.1809285481767 ').toBe(true);
                 done();

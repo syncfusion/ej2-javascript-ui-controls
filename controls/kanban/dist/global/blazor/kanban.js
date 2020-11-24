@@ -1716,6 +1716,7 @@ var KanbanDialog = /** @class */ (function () {
                 var templateId = this.parent.element.id + '_dialogTemplate';
                 var dialogTemplate = this.parent.templateParser(this.parent.dialogSettings.template)(args, this.parent, 'template', templateId, false);
                 sf.base.append(dialogTemplate, form);
+                this.parent.renderTemplates();
             }
             else {
                 var dialogWrapper = sf.base.createElement('div', { className: DIALOG_CONTENT_CONTAINER });
@@ -2034,6 +2035,7 @@ var KanbanDialog = /** @class */ (function () {
         }
     };
     KanbanDialog.prototype.destroy = function () {
+        this.parent.resetTemplates();
         this.destroyToolTip();
         this.destroyComponents();
         if (this.dialogObj) {

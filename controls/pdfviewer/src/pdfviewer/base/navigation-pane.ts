@@ -112,7 +112,7 @@ export class NavigationPane {
      * @private
      */
     public initializeNavigationPane(): void {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.createNavigationPane();
         }
     }
@@ -337,7 +337,7 @@ export class NavigationPane {
             this.annotationMenuObj.enableRtl = true;
         }
         this.annotationMenuObj.appendTo(annotationMenuElement);
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.annotationMenuObj.animationSettings.effect = 'ZoomIn';
         } else {
             this.annotationMenuObj.animationSettings.effect = 'SlideDown';
@@ -390,7 +390,7 @@ export class NavigationPane {
 
     private importAnnotationIconClick(args: ClickEventArgs): void {
         this.annotationInputElement.click();
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             (args.originalEvent.target as HTMLElement).blur();
             this.pdfViewerBase.focusViewerContainer();
         }
@@ -398,7 +398,7 @@ export class NavigationPane {
 
     private importXFdfAnnotationIconClick(args: ClickEventArgs): void {
         this.annotationXFdfInputElement.click();
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             (args.originalEvent.target as HTMLElement).blur();
             this.pdfViewerBase.focusViewerContainer();
         }
@@ -570,7 +570,7 @@ export class NavigationPane {
     }
 
     private initiateBookmarks(): void {
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.pdfViewerBase.mobileScrollerContainer.style.display = 'none';
         }
         // tslint:disable-next-line:max-line-length
@@ -593,7 +593,7 @@ export class NavigationPane {
      */
     public goBackToToolbar(): void {
         this.isNavigationToolbarVisible = false;
-        if (isBlazor() && !Browser.isDevice || !isBlazor()) {
+        if (isBlazor() && (!Browser.isDevice || this.pdfViewer.enableDesktopMode) || !isBlazor()) {
             this.pdfViewer.textSearchModule.cancelTextSearch();
         }
         this.searchInput = null;
@@ -608,7 +608,7 @@ export class NavigationPane {
             let bookmarkContainer: HTMLElement = this.pdfViewerBase.getElement('_bookmarks_container');
             if (bookmarkContainer) {
                 bookmarkContainer.parentElement.removeChild(bookmarkContainer);
-                if (Browser.isDevice) {
+                if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                     this.pdfViewerBase.mobileScrollerContainer.style.display = '';
                 }
             }
@@ -631,7 +631,7 @@ export class NavigationPane {
     private setSearchInputWidth(): void {
         let searchInputParent: HTMLElement = this.searchInput.parentElement;
         let padding: string = window.getComputedStyle(searchInputParent.parentElement, null).getPropertyValue('padding-left');
-        if (isBlazor() && Browser.isDevice) {
+        if (isBlazor() && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
             this.toolbarElement = this.pdfViewerBase.getElement('_navigationToolbar');
         }
         // tslint:disable-next-line:max-line-length

@@ -819,7 +819,7 @@ export class FormFields {
         if (data.IsReadonly || (!this.pdfViewer.enableFormFields) || isReadonly) {
             inputField.disabled = true;
             inputField.style.cursor = 'default';
-            inputField.style.backgroundColor = 'none';
+            inputField.style.backgroundColor = 'transparent';
         } else {
             // tslint:disable-next-line
             let borderColor: any = data.BackColor;
@@ -1055,7 +1055,7 @@ export class FormFields {
         let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
         span.style.left = left * zoomvalue + 'px';
         span.style.top = top * zoomvalue + 'px';
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             span.style.height = 5 + 'px';
             span.style.width = 10 + 'px';
             span.style.fontSize = '3px';

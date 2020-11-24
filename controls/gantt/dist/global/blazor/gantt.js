@@ -11503,6 +11503,7 @@ var Gantt = /** @class */ (function (_super) {
      */
     Gantt.prototype.render = function () {
         if (this.isReact) {
+            this.treeGrid.isReact = true;
             this.treeGrid.grid.isReact = true;
         }
         sf.popups.createSpinner({ target: this.element }, this.createElement);

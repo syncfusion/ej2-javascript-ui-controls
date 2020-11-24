@@ -72,6 +72,7 @@ export class RowDD {
 
     private dragStart: Function = (e: { target: HTMLElement, event: MouseEventArgs } & BlazorDragEventArgs) => {
         let gObj: SfGrid = this.parent;
+        document.body.classList.add('e-prevent-select');
         if (document.getElementsByClassName('e-griddragarea').length) {
             return;
         }
@@ -150,6 +151,7 @@ export class RowDD {
     }
 
     private dragStop: Function = (e: { target: HTMLTableRowElement, event: MouseEventArgs, helper: Element }) => {
+        document.body.classList.remove('e-prevent-select');
         if (isActionPrevent(this.parent.element)) {
             return;
         } else {
@@ -232,7 +234,8 @@ export class RowDD {
             helper: this.helper,
             dragStart: this.dragStart,
             drag: this.drag,
-            dragStop: this.dragStop
+            dragStop: this.dragStop,
+            isPreventSelect: false
         });
         this.droppable = new Droppable(gObj.getContent() as HTMLElement, {
             accept: '.e-dragclone',

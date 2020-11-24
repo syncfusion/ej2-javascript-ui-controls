@@ -1010,9 +1010,9 @@ describe('Waterfall Series', () => {
                     clientY: 300
                 };
                 chartObj.zoomModule.chartMouseWheel(<WheelEvent>wheelArgs);
-                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.80').toBe(true);
-                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.80').toBe(true);
-                expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.10').toBe(true);
+                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.72').toBe(true);
+                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.72').toBe(true);
+                expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.14').toBe(true);
                 expect(chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.00').toBe(true);
                 done();
             };
@@ -1029,11 +1029,11 @@ describe('Waterfall Series', () => {
                 chartObj.mouseMove(<PointerEvent>trigger.onTouchMove(areaElement, 728, 389, 404, 289, 404, 189));
                 chartObj.mouseMove(<PointerEvent>trigger.onTouchMove(areaElement, 748, 129, 304, 289, 304, 289));
                 let content = chartObj.primaryXAxis.zoomFactor.toFixed(2);
-                expect(content == '1.00' || content == '0.33' || content == '0.34').toBe(true);
+                expect(content == '1.00' || content == '0.33' || content == '0.30').toBe(true);
                 content = chartObj.primaryYAxis.zoomFactor.toFixed(2);
-                expect(content == '1.00').toBe(true);
+                expect(content == '1.00' || content === '0.90').toBe(true);
                 content = chartObj.primaryXAxis.zoomPosition.toFixed(2);
-                expect(content == '0.83' || content == '0.84').toBe(true);
+                expect(content == '0.80' || content == '0.81').toBe(true);
                 chartObj.mouseLeave(<PointerEvent>trigger.onTouchLeave(areaElement, 748, 129, 304, 289, 304, 289));
                 done();
             };

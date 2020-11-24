@@ -188,17 +188,17 @@ export class Renderer {
         } else {
             let footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
             // tslint:disable-next-line:max-line-length
-            let footerHeight: number = this.getScaledValue(page.boundingRectangle.height) -
-                this.getScaledValue(Math.max(page.footerWidget.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidget.sectionFormat.bottomMargin)));
-            height = Math.max((this.getScaledValue(page.boundingRectangle.height) - headerFooterHeight), footerHeight);
-            pageHt = this.getScaledValue(page.boundingRectangle.height) - footerDistance;
+            let footerHeight: number = page.boundingRectangle.height -
+                Math.max(page.footerWidget.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidget.sectionFormat.bottomMargin));
+            height = Math.max(page.boundingRectangle.height - headerFooterHeight, footerHeight);
+            pageHt = page.boundingRectangle.height - footerDistance;
         }
         for (let i: number = 0; i < widget.childWidgets.length; i++) {
             let block: BlockWidget = widget.childWidgets[i] as BlockWidget;
             if (!isHeader) {
                 height += block.height;
             }
-            if (isHeader || !isHeader && height <= pageHt) {
+            if (isHeader || !isHeader && this.getScaledValue(height) <= this.getScaledValue(pageHt)) {
                 this.renderWidget(page, block);
             }
         }

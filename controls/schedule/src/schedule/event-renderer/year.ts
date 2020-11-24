@@ -224,8 +224,9 @@ export class YearEvent extends TimelineEvent {
         let wrap: HTMLElement = this.createEventElement(eventObj);
         let width: number;
         let index: number;
-        if (eventObj[this.fields.isAllDay] && (<{ [key: string]: number }>eventObj.isSpanned).count === 1) {
-            eventObj[this.fields.endTime] = new Date((eventObj[this.fields.startTime] as Date).getTime());
+        if ((<{ [key: string]: number }>eventObj.isSpanned).count === 1) {
+            let endTime: Date = util.addDays(eventObj[this.fields.endTime] as Date, -1);
+            eventObj[this.fields.endTime] = (endTime > eventObj[this.fields.startTime]) ? endTime : eventObj[this.fields.endTime];
         }
         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
             index = row + 1;
@@ -238,13 +239,7 @@ export class YearEvent extends TimelineEvent {
             width = this.cellWidth;
         }
         let rowTd: HTMLElement = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${index}) td`) as HTMLElement;
-        let top: number;
-        if (this.parent.activeViewOptions.group.resources.length > 0) {
-            let overlapIndex: number = this.getIndex(eventObj[this.fields.startTime] as Date);
-            top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * overlapIndex) + EVENT_GAP;
-        } else {
-            top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * <number>eventObj.Index) + EVENT_GAP;
-        }
+        let top: number = rowTd.offsetTop + this.cellHeader + (this.eventHeight * <number>eventObj.Index) + EVENT_GAP;
         setStyleAttribute(wrap, {
             'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px'
         });
@@ -264,7 +259,7 @@ export class YearEvent extends TimelineEvent {
 
     private renderMoreIndicatior(
         wrapper: HTMLElement, count: number, startDate: Date, row: number, left: number, right: number, index?: number): void {
-        let endDate: Date = util.addDays(new Date(startDate.getTime()), 1);
+        let endDate: Date = util.addDays(util.lastDateOfMonth(new Date(startDate.getTime())), 1);
         let moreIndicator: HTMLElement = this.getMoreIndicatorElement(count, startDate, endDate);
         let rowTr: HTMLElement = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${row + 1})`) as HTMLElement;
         let top: number = rowTr.offsetTop + (this.cellHeight - this.moreIndicatorHeight);
@@ -367,11 +362,13 @@ export class YearEvent extends TimelineEvent {
 
     public getOverlapEvents(date: Date, appointments: { [key: string]: Object }[]): Object[] {
         let appointmentsList: Object[] = [];
+        let monthStart: Date = this.parent.calendarUtil.getMonthStartDate(new Date(date.getTime()));
+        let monthEnd: Date = util.addDays(this.parent.calendarUtil.getMonthEndDate(new Date(date.getTime())), -1);
         for (let app of appointments as { [key: string]: Date }[]) {
             let appStart: Date = new Date(app[this.fields.startTime].getTime());
             let appEnd: Date = new Date(app[this.fields.endTime].getTime());
-            if ((util.resetTime(appStart).getTime() <= util.resetTime(new Date(date.getTime())).getTime()) &&
-                (util.resetTime(appEnd).getTime() >= util.resetTime(new Date(date.getTime())).getTime())) {
+            if ((util.resetTime(appStart).getTime() >= util.resetTime(new Date(monthStart.getTime())).getTime()) &&
+                (util.resetTime(appEnd).getTime() <= util.resetTime(new Date(monthEnd.getTime())).getTime())) {
                 appointmentsList.push(app);
             }
         }

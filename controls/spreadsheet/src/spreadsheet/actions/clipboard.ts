@@ -4,7 +4,7 @@ import { Spreadsheet } from '../base/index';
 import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, getSwapRange, wrapEvent } from '../../workbook/index';
 import { CellStyleModel, getRangeAddress, workbookEditOperation, getSheetIndexFromId, getSheetName } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, applyCellFormat, checkIsFormula, Sheet } from '../../workbook/index';
-import { ExtendedSheet, Cell, pasteMerge, setMerge, MergeArgs, getCellIndexes } from '../../workbook/index';
+import { ExtendedSheet, Cell, pasteMerge, setMerge, MergeArgs, getCellIndexes, getCellAddress } from '../../workbook/index';
 import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType } from '../common/index';
 import { BeforePasteEventArgs, hasTemplate, createImageElement } from '../common/index';
 import { enableToolbarItems, rowHeightChanged, completeAction, beginAction, DialogBeforeOpenEventArgs } from '../common/index';
@@ -13,6 +13,7 @@ import { getMaxHgt, setMaxHgt, setRowEleHeight, deleteImage, getRowIdxFromClient
 import { Dialog } from '../services/index';
 import { Deferred } from '@syncfusion/ej2-data';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
+import { refreshRibbonIcons } from '../../workbook/common/index';
 
 /**
  * Represents clipboard support for Spreadsheet.
@@ -204,6 +205,9 @@ export class Clipboard {
             };
             rfshRange = isRepeative ? selIdx : [selIdx[0], selIdx[1]]
                 .concat([selIdx[0] + cIdx[2] - cIdx[0], selIdx[1] + cIdx[3] - cIdx[1] || selIdx[1]]);
+            let copiedAddress: string = getCellAddress(cIdx[0], cIdx[1]);
+            let copiedIndex: number[] = getCellIndexes(copiedAddress);
+            this.parent.notify(refreshRibbonIcons, copiedIndex);
             if (this.copiedShapeInfo && !this.copiedInfo) {
                 let pictureElem: HTMLElement = this.copiedShapeInfo.pictureElem as HTMLElement;
                 this.parent.notify(createImageElement, {
@@ -229,11 +233,12 @@ export class Clipboard {
             } else {
                 this.parent.notify(pasteMerge, mergeArgs);
                 if (mergeArgs.cancel) { return; }
+                let pasteType: string = beginEventArgs.type ? beginEventArgs.type : args.type;
                 for (let i: number = cIdx[0], l: number = 0; i <= cIdx[2]; i++, l++) {
                     for (let j: number = cIdx[1], k: number = 0; j <= cIdx[3]; j++, k++) {
                         cell = isExternal ? rows[i].cells[j] : Object.assign({}, getCell(i, j, prevSheet));
-                        if (cell && args && args.type) {
-                            switch (args.type) {
+                        if (cell && args && args.type || pasteType) {
+                            switch (pasteType) {
                                 case 'Formats':
                                     cell = { format: cell.format, style: cell.style };
                                     break;
@@ -264,6 +269,18 @@ export class Clipboard {
                                         mergeCollection.push(merge); this.parent.notify(setMerge, merge);
                                     }
                                     this.setCell(x + l, y + k, curSheet, cell, isExtend);
+                                    let sId : number = this.parent.activeSheetIndex;
+                                    let cellElem: HTMLTableCellElement = this.parent.getCell(x + l, y + k) as HTMLTableCellElement;
+                                    let address: string = getCellAddress(x + l, y + k);
+                                    let cellArgs: Object = {
+                                        address: this.parent.sheets[sId].name + '!' + address,
+                                        requestType: 'paste',
+                                        value : getCell(x + l, y + k, curSheet ).value,
+                                        oldValue:  prevCell.value,
+                                        element: cellElem,
+                                        displayText: this.parent.getDisplayText(cell)
+                                    };
+                                    this.parent.trigger('cellSave', cellArgs);
                                 }
                             }
                         } else {
@@ -307,7 +324,7 @@ export class Clipboard {
                         copiedRange: this.parent.sheets[sheetIndex].name + '!' + getRangeAddress(copyInfo && copyInfo.range ?
                             copyInfo.range : getRangeIndexes(this.parent.sheets[sheetIndex].selectedRange)),
                         pastedRange: getSheetName(this.parent) + '!' + getRangeAddress(rfshRange),
-                        type: (args && args.type) || 'All'
+                        type: pasteType || 'All'
                     };
                     this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
                 }

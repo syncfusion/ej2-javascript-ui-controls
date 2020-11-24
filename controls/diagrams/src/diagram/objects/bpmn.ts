@@ -699,10 +699,37 @@ export class BpmnDiagrams {
                 if (diagram.mode === 'SVG') {
                     if (source.zIndex < target.zIndex) {
                         diagram.updateProcesses(source as Node);
+                        this.updateSubprocessNodeIndex(source, diagram, target);
                     }
                 }
                 this.updateDocks(source as Node, diagram);
             }
+        }
+    }
+    private updateIndex(diagram: Diagram, source: Node): void {
+        let processNode: Node;
+        processNode = source;
+        let nodeindex: string = diagram.getIndex(processNode, processNode.id);
+        diagram.nodes.splice(Number(nodeindex), 1);
+        processNode.zIndex = diagram.nodes[diagram.nodes.length - 1].zIndex + 1;
+        diagram.nodes.push(processNode);
+    }
+    private updateSubprocessNodeIndex(source: Node, diagram: Diagram, target: Node): void {
+        if ((source.shape as BpmnShapeModel).activity.subProcess.processes
+            && (source.shape as BpmnShapeModel).activity.subProcess.processes.length > 0) {
+            for (let i: number = 0; i < (source.shape as BpmnShapeModel).activity.subProcess.processes.length; i++) {
+                this.updateIndex(diagram, source);
+                let processes: string = (source.shape as BpmnShapeModel).activity.subProcess.processes[i];
+                if (diagram.nameTable[processes].shape.activity.subProcess.processes.length > 0) {
+
+                    this.updateSubprocessNodeIndex(diagram.nameTable[processes], diagram, target);
+                } else {
+                    let node: Node = diagram.nameTable[(source.shape as BpmnShapeModel).activity.subProcess.processes[i]];
+                    this.updateIndex(diagram, node);
+                }
+            }
+        } else {
+            this.updateIndex(diagram, source);
         }
     }
     /** @private */

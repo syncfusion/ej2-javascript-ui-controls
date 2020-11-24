@@ -10029,7 +10029,7 @@ var Formats = /** @class */ (function () {
             }
             else {
                 var brNode = this.parent.nodeSelection.getSelectionNodeCollectionBr(range)[0];
-                if (brNode.nodeName === 'BR' && (brNode.previousSibling && brNode.previousSibling.nodeName === 'TABLE')) {
+                if (!sf.base.isNullOrUndefined(brNode) && brNode.nodeName === 'BR' && (brNode.previousSibling && brNode.previousSibling.nodeName === 'TABLE')) {
                     endCon.replaceChild(pTag, brNode);
                     this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, pTag, 0);
                 }

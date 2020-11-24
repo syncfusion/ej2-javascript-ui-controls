@@ -1507,7 +1507,7 @@ describe('Diagram Control', () => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             let node = diagram.nameTable['end'].wrapper;
             mouseEvents.dragAndDropEvent(diagramCanvas, node.bounds.center.x, node.bounds.center.y, 225, 225);
-            expect((diagram.nodes[0].shape as BpmnShape).activity.subProcess.collapsed).toBe(true);
+            expect((diagram.nodes[3].shape as BpmnShape).activity.subProcess.collapsed).toBe(true);
             done()
         });
 

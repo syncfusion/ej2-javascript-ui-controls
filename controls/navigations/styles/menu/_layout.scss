@@ -44,6 +44,10 @@
               padding: $menu-separator-padding;
             }
           }
+
+          & .e-menu-item .e-menu-icon {
+            width: $menu-icon-width;
+          }
         }
 
         & .e-menu-item  {
@@ -61,7 +65,6 @@
             line-height: $menu-li-height;
             margin-right: $menu-icon-margin-right;
             text-align: center;
-            width: $menu-icon-width;
           }
 
           & .e-caret {
@@ -95,10 +98,6 @@
 
           & .e-caret {
             font-size: $submenu-caret-font-size;
-          }
-
-          & .e-menu-icon {
-            width: 1em;
           }
         }
       }
@@ -236,8 +235,12 @@
       }
     }
 
-    &.e-contextmenu-container .e-menu-vscroll ul.e-ul {
-      width: inherit;
+    &.e-contextmenu-container {
+      height: 1px;
+
+      .e-menu-vscroll ul.e-ul {
+        width: inherit;
+      }
     }
   }
 
@@ -299,7 +302,6 @@
         font-size: $menu-icon-bigger-font-size;
         line-height: $menu-bigger-li-height;
         margin-right: $menu-bigger-icon-margin-right;
-        width: $menu-icon-width;
       }
 
       &.e-menu-caret-icon {
@@ -351,7 +353,6 @@
 
         & .e-menu-icon {
           margin-right: $cmenu-icon-margin-right;
-          width: 1em;
         }
       }
     }

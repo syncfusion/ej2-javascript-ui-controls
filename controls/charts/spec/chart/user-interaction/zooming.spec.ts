@@ -1144,10 +1144,10 @@ describe('Chart Control', () => {
                     clientY: 100
                 };
                 chartObj.zoomModule.chartMouseWheel(<WheelEvent>wheelArgs);
-                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.80').toBe(true);
-                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.80').toBe(true);
-                expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.05').toBe(true);
-                expect(chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.14').toBe(true);
+                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.72').toBe(true);
+                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.72').toBe(true);
+                expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.07').toBe(true);
+                expect(chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.19').toBe(true);
                 done();
             };
             chartObj.zoomSettings.enableMouseWheelZooming = true;
@@ -1165,10 +1165,9 @@ describe('Chart Control', () => {
                     clientY: 100
                 };
                 chartObj.zoomModule.chartMouseWheel(<WheelEvent>wheelArgs);
-                expect(chartObj.primaryXAxis.zoomFactor == 1).toBe(true);
-                expect(chartObj.primaryYAxis.zoomFactor == 1).toBe(true);
-                expect(chartObj.primaryXAxis.zoomPosition == 0).toBe(true);
-                expect(chartObj.primaryYAxis.zoomPosition == 0).toBe(true);
+                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == "0.97").toBe(true);
+                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == "0.97").toBe(true);
+                expect(chartObj.primaryYAxis.zoomPosition.toFixed(2) == "0.02").toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1216,10 +1215,10 @@ describe('Chart Control', () => {
                     clientY: 100
                 };
                 chartObj.zoomModule.chartMouseWheel(<WheelEvent>wheelArgs);
-                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.80').toBe(true);
-                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.80').toBe(true);
-                expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.05').toBe(true);
-                expect(chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.14').toBe(true);
+                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.72').toBe(true);
+                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.72').toBe(true);
+                expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.07').toBe(true);
+                expect(chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.19').toBe(true);
                 chartObj.zoomModule.isPointer = isPointer;
                 chartObj.zoomModule.browserName = browserName;
                 done();
@@ -1238,10 +1237,10 @@ describe('Chart Control', () => {
                     clientY: 100
                 };
                 chartObj.zoomModule.chartMouseWheel(<WheelEvent>wheelArgs);
-                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.67').toBe(true);
-                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.80').toBe(true);
-                expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.08').toBe(true);
-                expect(chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.14').toBe(true);
+                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.55').toBe(true);
+                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.72').toBe(true);
+                expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.11').toBe(true);
+                expect(chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.19').toBe(true);
                 done();
             };
             chartObj.zoomSettings.mode = 'X';
@@ -1259,10 +1258,10 @@ describe('Chart Control', () => {
                     clientY: 100
                 };
                 chartObj.zoomModule.chartMouseWheel(<WheelEvent>wheelArgs);
-                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.67').toBe(true);
-                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.67').toBe(true);
-                expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.08').toBe(true);
-                expect(chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.23').toBe(true);
+                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.55').toBe(true);
+                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.55').toBe(true);
+                expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.11').toBe(true);
+                expect(chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.31').toBe(true);
                 done();
             };
             chartObj.zoomSettings.mode = 'Y';

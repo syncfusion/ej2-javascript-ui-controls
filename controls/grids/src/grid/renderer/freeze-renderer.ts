@@ -40,6 +40,8 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
         if (isBlazor() && !this.parent.isJsComponent) { return; }
         super.renderEmpty(tbody);
         this.getMovableContent().querySelector('tbody').innerHTML = '<tr><td></td></tr>';
+        (this.parent.getContent().querySelector('.e-frozencontent') as HTMLElement).style.height =
+            (this.parent.getContent().querySelector('.e-movablecontent') as HTMLElement).offsetHeight - getScrollBarWidth() + 'px';
         addClass([this.getMovableContent().querySelector('tbody').querySelector('tr')], ['e-emptyrow']);
         this.getFrozenContent().querySelector('.e-emptyrow').querySelector('td').colSpan = this.parent.getFrozenColumns();
         (this.getFrozenContent() as HTMLElement).style.borderRightWidth = '0px';

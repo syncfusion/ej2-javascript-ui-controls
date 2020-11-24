@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.3.51 (2020-11-24)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#290596` - Validation working improperly with column template issue resolved.
+- Issue with template destroy is fixed
+
 ## 18.3.50 (2020-11-17)
 
 ### QueryBuilder

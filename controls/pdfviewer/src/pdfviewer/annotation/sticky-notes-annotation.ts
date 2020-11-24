@@ -34,6 +34,7 @@ export interface IPopupAnnotation {
     annotationSettings: any;
     allowedInteractions: AllowedInteraction;
     isPrint: boolean;
+    isCommentLock: boolean;
 }
 
 /**
@@ -52,6 +53,7 @@ export interface ICommentsCollection {
     review: IReviewCollection;
     shapeAnnotationType: string;
     position?: number;
+    isLock: boolean;
 }
 
 /**
@@ -147,7 +149,7 @@ export class StickyNotesAnnotation {
                         annotationSelectorSettings: this.getSettings(annotation),
                         customData: this.pdfViewer.annotation.getCustomData(annotation),
                         annotationSettings: annotation.AnnotationSettings, allowedInteractions: annotation.allowedInteractions,
-                        isPrint: annotation.IsPrint
+                        isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
                     };
                     let annot: PdfAnnotationBaseModel;
                     // tslint:disable-next-line:max-line-length
@@ -158,7 +160,8 @@ export class StickyNotesAnnotation {
                         subject: annotationObject.subject, notes: annotationObject.note, opacity: annotationObject.opacity, id: annotationObject.annotName, fillColor: annotationObject.color,
                         annotationSelectorSettings: annotation.AnnotationSelectorSettings,
                         annotationSettings: annotationObject.annotationSettings,
-                        annotationAddMode: annotation.annotationAddMode, isPrint: annotation.IsPrint
+                        // tslint:disable-next-line:max-line-length
+                        annotationAddMode: annotation.annotationAddMode, isPrint: annotation.IsPrint, isCommentLock: annotationObject.isCommentLock
                     };
                     if (canvas) {
                         this.drawStickyNotes(position.Left, position.Top, position.Width, position.Height, pageNumber, annot, canvas);
@@ -241,7 +244,8 @@ export class StickyNotesAnnotation {
                     // tslint:disable-next-line:max-line-length
                     bounds: { left: X, top: Y, width: width, height: height }, review: { state: '', stateModel: '', modifiedDate: '', author: author },
                     annotationSelectorSettings: annotationSelectorSettings,
-                    customData: this.pdfViewer.annotationModule.getData('sticky'), annotationSettings: { isLock: isLock }, isPrint: isPrint
+                    // tslint:disable-next-line:max-line-length
+                    customData: this.pdfViewer.annotationModule.getData('sticky'), annotationSettings: { isLock: isLock }, isPrint: isPrint, isCommentLock: false
                 };
             }
             if (!annotation) {
@@ -591,7 +595,7 @@ export class StickyNotesAnnotation {
      * @private
      */
     public initializeAcccordionContainer(): void {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             // tslint:disable-next-line:max-line-length
             let commentPanelText: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentsPanelText', className: 'e-pv-comments-panel-text' });
             commentPanelText.textContent = this.pdfViewer.localeObj.getConstant('No Comments Yet');
@@ -789,6 +793,10 @@ export class StickyNotesAnnotation {
             commentDiv.appendChild(commentTextBox);
             if (data) {
                 editObj.value = data.Note;
+                let isCommentLocked: boolean = this.checkIslockProperty(data);
+                if (isCommentLocked && data.Comments == null) {
+                    this.createCommentDiv(this.commentsContainer);
+                }
                 if (data.Name === 'freeText') {
                     editObj.value = data.MarkupText;
                 }
@@ -1485,7 +1493,7 @@ export class StickyNotesAnnotation {
             this.commentMenuObj.enableRtl = true;
         }
         this.commentMenuObj.appendTo(commentMenuElement);
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.commentMenuObj.animationSettings.effect = 'ZoomIn';
         } else {
             this.commentMenuObj.animationSettings.effect = 'SlideDown';
@@ -1504,21 +1512,27 @@ export class StickyNotesAnnotation {
                     contextActiveDiv = contextDiv[i].parentElement.nextSibling;
                 }
             }
+            let isCommentLocked: boolean = this.checkIslockProperty(contextActiveDiv);
             if (args.item) {
                 switch (args.item.text) {
                     case this.pdfViewer.localeObj.getConstant('Edit'):
-                        // tslint:disable-next-line
-                        let commentShow: any = document.querySelectorAll('.e-pv-new-comments-div');
-                        for (let i: number = 0; i < commentShow.length; i++) {
-                            commentShow[i].style.display = 'none';
+                        if (!isCommentLocked) {
+                            // tslint:disable-next-line
+                            let commentShow: any = document.querySelectorAll('.e-pv-new-comments-div');
+                            for (let i: number = 0; i < commentShow.length; i++) {
+                                commentShow[i].style.display = 'none';
+                            }
+                            contextActiveDiv.ej2_instances[0].enableEditMode = true;
                         }
-                        contextActiveDiv.ej2_instances[0].enableEditMode = true;
                         break;
                     case this.pdfViewer.localeObj.getConstant('Delete Context'):
-                        if (contextActiveDiv.parentElement.parentElement.firstChild === contextActiveDiv.parentElement) {
-                            this.pdfViewer.annotationModule.deleteAnnotation();
-                        } else {
-                            this.modifyCommentDeleteProperty(contextActiveDiv.parentElement.parentElement, contextActiveDiv.parentElement);
+                        if (!isCommentLocked) {
+                            if (contextActiveDiv.parentElement.parentElement.firstChild === contextActiveDiv.parentElement) {
+                                this.pdfViewer.annotationModule.deleteAnnotation();
+                            } else {
+                                // tslint:disable-next-line:max-line-length
+                                this.modifyCommentDeleteProperty(contextActiveDiv.parentElement.parentElement, contextActiveDiv.parentElement);
+                            }
                         }
                         break;
                     case this.pdfViewer.localeObj.getConstant('Set Status'):
@@ -1622,7 +1636,10 @@ export class StickyNotesAnnotation {
         for (let i: number = 0; i < commentShow.length; i++) {
             commentShow[i].style.display = 'none';
         }
-        if (event.currentTarget.parentElement.parentElement) {
+        let isCommentLocked: boolean = this.checkIslockProperty(event.currentTarget.nextSibling);
+        if (isCommentLocked) {
+            event.currentTarget.nextSibling.ej2_instances[0].enableEditMode = false;
+        } else if (event.currentTarget.parentElement.parentElement) {
             let isLocked : boolean = this.checkAnnotationSettings(event.currentTarget.parentElement.parentElement.id);
             if (isLocked) {
                 // tslint:disable-next-line
@@ -1640,13 +1657,49 @@ export class StickyNotesAnnotation {
     }
 
     // tslint:disable-next-line
+    private checkIslockProperty(commentEvent: any): boolean {
+        // tslint:disable-next-line
+        let annotCollection: any = this.pdfViewer.annotationCollection;
+        // tslint:disable-next-line
+        let annotation: any;
+        if (commentEvent.IsCommentLock) {
+            return true;
+        }
+        // tslint:disable-next-line:max-line-length
+        if (this.pdfViewer.annotationModule.textMarkupAnnotationModule && this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+            annotation =  this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
+        } else if (this.pdfViewer.selectedItems.annotations[0]) {
+            annotation =  this.pdfViewer.selectedItems.annotations[0];
+        }
+        for (let i: number = 0; i < annotCollection.length; i++) {
+            // tslint:disable-next-line:max-line-length
+            let note: string = annotCollection[i].note ?  annotCollection[i].note : annotCollection[i].notes;
+            if (annotCollection[i].isCommentLock === true && (commentEvent.textContent === note || annotCollection[i].dynamicText === commentEvent.textContent)) {
+                return true;
+            }
+            for (let j: number = 0; j < annotCollection[i].comments.length; j++) {
+                if (annotation && annotCollection[i].annotationId === annotation.annotName) {
+                // tslint:disable-next-line:max-line-length
+                    if (annotCollection[i].comments[j].isLock === true && commentEvent.textContent === annotCollection[i].comments[j].note) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    // tslint:disable-next-line
     private openEditorElement(event: any): void {
         // tslint:disable-next-line
         let commentShow: any = document.querySelectorAll('.e-pv-new-comments-div');
         for (let i: number = 0; i < commentShow.length; i++) {
             commentShow[i].style.display = 'none';
         }
-        if (event.currentTarget.parentElement.parentElement) {
+        let isCommentLocked: boolean = this.checkIslockProperty(event.currentTarget);
+        if (isCommentLocked) {
+            event.currentTarget.ej2_instances[0].enableEditMode = false;
+        } else if (event.currentTarget.parentElement.parentElement) {
             let isLocked : boolean = this.checkAnnotationSettings(event.currentTarget.parentElement.parentElement.id);
             if (isLocked) {
                 // tslint:disable-next-line
@@ -1761,7 +1814,14 @@ export class StickyNotesAnnotation {
         for (let i: number = 0; i < commentShow.length; i++) {
             commentShow[i].style.display = 'none';
         }
-        if (event.currentTarget) {
+        let isCommentLocked: boolean = this.checkIslockProperty(event.currentTarget.lastChild);
+        if (isCommentLocked) {
+            if (event.currentTarget.childElementCount === 2) {
+                event.currentTarget.lastChild.ej2_instances[0].enableEditMode = false;
+            } else {
+                event.currentTarget.childNodes[1].ej2_instances[0].enableEditMode = false;
+            }
+        } else if (event.currentTarget) {
             let isLocked : boolean = this.checkAnnotationSettings(event.currentTarget.parentElement.id);
             if (!isLocked) {
                 if (event.currentTarget.childElementCount === 2) {
@@ -1965,6 +2025,9 @@ export class StickyNotesAnnotation {
                     this.pdfViewer.navigationModule.goToPage(pageNumber);
                 }
                 let annotType: string = element.getAttribute('name');
+                if (annotType === 'null') {
+                    annotType = 'ink';
+                }
                 this.isCommentsSelected = false;
                 this.setAnnotationType(element.id, annotType, pageNumber);
                 if (!this.isCommentsSelected) {
@@ -2286,13 +2349,13 @@ export class StickyNotesAnnotation {
                     }
                 }
                 // tslint:disable-next-line:max-line-length
-                let newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: 'Comments', comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author } };
+                let newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: 'Comments', comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author }, isLock: false };
                 if (!isComment) {
                     currentAnnotation.comments[currentAnnotation.comments.length] = newArray;
                 }
             } else {
                 // tslint:disable-next-line:max-line-length
-                let newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: 'Comments', comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author } };
+                let newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: 'Comments', comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author }, isLock: false };
                 currentAnnotation.comments[currentAnnotation.comments.length] = newArray;
             }
             // tslint:disable-next-line:max-line-length
@@ -3125,7 +3188,7 @@ export class StickyNotesAnnotation {
             annotName: annotation.AnnotName, color: annotation.color,
             annotationSelectorSettings: this.getSettings(annotation),
             customData: this.pdfViewer.annotation.getCustomData(annotation),
-            annotationSettings: { isLock: isLock }, isPrint: annotation.IsPrint
+            annotationSettings: { isLock: isLock }, isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_sticky');
     }
@@ -3153,7 +3216,7 @@ export class StickyNotesAnnotation {
             bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
             annotationId: annotation.AnnotName, color: annotation.color, pageNumber: pageNumber,
             customData: this.pdfViewer.annotation.getCustomData(annotation),
-            annotationSettings: { isLock: isLock }, isPrint: annotation.IsPrint
+            annotationSettings: { isLock: isLock }, isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
         };
         return annotationObject;
     }

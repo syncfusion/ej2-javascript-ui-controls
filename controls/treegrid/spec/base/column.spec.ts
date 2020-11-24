@@ -6,6 +6,7 @@ import { Column, ColumnModel } from '../../src';
 import { ITreeData } from '../../src/treegrid/base/interface';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { ColumnChooser } from '../../src/treegrid/actions/column-chooser';
+import { select } from '@syncfusion/ej2-base';
 
 /**
  * Grid Column spec 
@@ -302,7 +303,7 @@ describe('Column Chooser', () => {
   it('Column chooser testing', () => {
     gridObj.showColumnChooser= true;
     gridObj.dataBind();
-    (<HTMLElement>gridObj.grid.toolbarModule.getToolbar().querySelector('#' + gridObj.grid.element.id + '_columnchooser')).click();
+    (<HTMLElement>select('#' + gridObj.grid.element.id + '_columnchooser', gridObj.grid.toolbarModule.getToolbar())).click();
     (<any>gridObj.element.querySelectorAll('.e-cc-chbox')[3]).click();
     (<any> gridObj.element.querySelector('.e-cc_okbtn')).click()
     expect(gridObj.getVisibleColumns().length).toBe(4);
@@ -338,7 +339,7 @@ describe('Column Chooser', () => {
     );
   });
   it('Check ShowInColumnChooser method', () => {
-    (<HTMLElement>gridObj.grid.toolbarModule.getToolbar().querySelector('#' + gridObj.grid.element.id + '_columnchooser')).click();
+    (<HTMLElement>select('#' + gridObj.grid.element.id + '_columnchooser', gridObj.grid.toolbarModule.getToolbar())).click();
       expect(gridObj.element.querySelectorAll('.e-cclist').length).toBe(5);
       expect(gridObj.element.querySelectorAll('.e-cclist')[0].textContent).toBe('Select All');
       expect(gridObj.element.querySelectorAll('.e-cclist')[1].textContent).toBe('Task ID');
@@ -347,7 +348,7 @@ describe('Column Chooser', () => {
       expect(gridObj.element.querySelectorAll('.e-cclist')[4].textContent).toBe('Progress'); 
     });
   it('Check showcolumnchooser', () => {
-    (<HTMLElement>gridObj.grid.toolbarModule.getToolbar().querySelector('#' + gridObj.grid.element.id + '_columnchooser')).click();
+    (<HTMLElement>select('#' + gridObj.grid.element.id + '_columnchooser', gridObj.grid.toolbarModule.getToolbar())).click();
     (<any>gridObj.element.querySelectorAll('.e-cc-chbox')[2]).click();
     (<any>gridObj.element.querySelectorAll('.e-cc-chbox')[3]).click();
     (<any> gridObj.element.querySelector('.e-cc_okbtn')).click()

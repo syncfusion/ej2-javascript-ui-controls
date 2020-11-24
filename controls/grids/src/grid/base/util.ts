@@ -268,19 +268,19 @@ export function setColumnIndex(columnModel: Column[], ind: number = 0): number {
 }
 
 /** @hidden */
-export function prepareColumns(columns: Column[] | string[] | ColumnModel[], autoWidth?: boolean): Column[] {
+export function prepareColumns(columns: Column[] | string[] | ColumnModel[], autoWidth?: boolean, gObj?: IGrid): Column[] {
     for (let c: number = 0, len: number = columns.length; c < len; c++) {
 
         let column: Column;
 
         if (typeof columns[c] === 'string') {
-            column = new Column({ field: <string>columns[c] });
+            column = new Column({ field: <string>columns[c] }, gObj);
         } else if (!(columns[c] instanceof Column)) {
             if (!(columns[c] as Column).columns) {
-                column = new Column(columns[c] as Column);
+                column = new Column(columns[c] as Column, gObj);
             } else {
-                (columns[c] as Column).columns = prepareColumns((columns[c] as Column).columns);
-                column = new Column(columns[c] as Column);
+                (columns[c] as Column).columns = prepareColumns((columns[c] as Column).columns, null, gObj);
+                column = new Column(columns[c] as Column, gObj);
             }
         } else {
             column = <Column>columns[c];

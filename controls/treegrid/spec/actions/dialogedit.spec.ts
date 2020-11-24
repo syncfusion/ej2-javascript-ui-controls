@@ -5,6 +5,7 @@ import { Edit } from '../../src/treegrid/actions/edit';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { Column } from '../../src';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
+import { select } from '@syncfusion/ej2-base';
 
 /**
  * Grid Dialog Edit spec 
@@ -53,7 +54,7 @@ describe('Dialog Edit module', () => {
     });
     it('edit row - modify data', (done: Function) => {
         let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-        (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'test';
+        (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test';
         actionComplete = (args?: any): void => {
           let cells: NodeListOf<Element> = gridObj.grid.getRows()[2].querySelectorAll('.e-rowcell');
           expect(cells[1].textContent ).toBe('test');

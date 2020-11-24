@@ -798,8 +798,13 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                         (tspanElement).textContent = line = line.replace(/<[a-zA-Z\/](.|\n)*?>/g, isRtlText ? '\u200E' : '');
                         subWidth += measureText(line, font).width;
                         if (tspanStyle !== '') {
-                            tspanElement.setAttribute('style', tspanStyle);
+                            tspanElement.style.fontWeight = tspanStyle.split('font-weight:')[1];
+                            tspanElement.style.color = tspanElement.getAttribute('fill');
                         }
+                        // 'inherit' will apply css style from parent element.
+                        tspanElement.style.fontFamily = 'inherit';
+                        tspanElement.style.fontStyle = 'inherit';
+                        tspanElement.style.fontSize = 'inherit';
                         isRow = false;
                     }
                 }
@@ -954,8 +959,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 location.y = (symbolLocation.y < 0 ? 0 : symbolLocation.y) + clipY + markerHeight;
             }
             if (location.y + height + this.arrowPadding > boundsY + bounds.height) {
-                location.y = (symbolLocation.y < bounds.height ? bounds.height : symbolLocation.y)
-                    + clipY - this.elementSize.height - (2 * this.padding) - this.arrowPadding - markerHeight;
+                location.y = Math.min(symbolLocation.y, boundsY + bounds.height) + clipY
+                    - this.elementSize.height - (2 * this.padding) - this.arrowPadding - markerHeight;
             }
             tipLocation.x = width / 2;
             if (location.x < boundsX) {

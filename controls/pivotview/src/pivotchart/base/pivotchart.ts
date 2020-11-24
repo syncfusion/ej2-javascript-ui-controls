@@ -1089,7 +1089,9 @@ export class PivotChart {
         this.updateView();
         this.parent.notify(events.contentReady, {});
         this.parent.trigger(events.chartLoaded, args);
-        this.parent.hideWaitingPopup();
+        if ((this.parent.dataSourceSettings.mode === 'Server' && this.parent.isServerWaitingPopup) || this.parent.dataSourceSettings.mode === 'Local') {
+            this.parent.hideWaitingPopup();
+        }
     }
     /** @hidden */
     public updateView(): void {

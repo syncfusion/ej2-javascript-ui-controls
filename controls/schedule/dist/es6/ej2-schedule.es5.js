@@ -1053,8 +1053,7 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
     };
     HeaderRenderer.prototype.calendarChange = function (args) {
         if (args.value.getTime() !== this.parent.selectedDate.getTime()) {
-            var calendarDate = new Date(args.value);
-            calendarDate.setHours(new Date().getHours(), new Date().getMinutes(), new Date().getSeconds());
+            var calendarDate = resetTime(new Date(args.value));
             this.parent.changeDate(this.parent.getCurrentTime(calendarDate));
         }
         this.headerPopup.hide();
@@ -5953,6 +5952,9 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
                                 (this.parent.enableRtl) ? apps.style.right = this.getEventLeft(args.width, i) :
                                     apps.style.left = this.getEventLeft(args.width, i);
                                 apps.style.width = ((parseFloat(args.width))) + '%';
+                                data.appWidth = apps.style.width;
+                            }
+                            else {
                                 data.appWidth = apps.style.width;
                             }
                         }
@@ -12245,7 +12247,8 @@ var Render = /** @__PURE__ @class */ (function () {
             this.parent.virtualScrollModule.destroy();
             this.parent.virtualScrollModule = null;
         }
-        if (this.parent.currentView.indexOf('Timeline') !== -1 && this.parent.activeViewOptions.allowVirtualScrolling
+        if (this.parent.currentView.indexOf('Timeline') !== -1 && this.parent.currentView.indexOf('Year') === -1
+            && this.parent.activeViewOptions.allowVirtualScrolling
             && this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
             this.parent.virtualScrollModule = new VirtualScroll(this.parent);
             this.parent.uiStateValues.top = 0;
@@ -12302,6 +12305,16 @@ var Render = /** @__PURE__ @class */ (function () {
             }
             _this.parent.eventsData = resultData.filter(function (data) { return !data[_this.parent.eventFields.isBlock]; });
             _this.parent.blockData = resultData.filter(function (data) { return data[_this.parent.eventFields.isBlock]; });
+            for (var _b = 0, _c = resultData; _b < _c.length; _b++) {
+                var datas = _c[_b];
+                if (typeof datas[_this.parent.eventFields.startTime] === 'string') {
+                    datas[_this.parent.eventFields.startTime] = getDateFromString(datas[_this.parent.eventFields.startTime]);
+                }
+                if (typeof datas[_this.parent.eventFields.endTime] === 'string') {
+                    datas[_this.parent.eventFields.endTime] = getDateFromString(datas[_this.parent.eventFields.endTime]);
+                }
+                _this.parent.eventBase.processTimezone(datas, true);
+            }
             var processed = _this.parent.eventBase.processData(resultData);
             _this.parent.notify(dataReady, { processedData: processed });
             if (_this.parent.dragAndDropModule && _this.parent.dragAndDropModule.actionObj.action === 'drag') {
@@ -17844,7 +17857,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
                     pointerEvents: 'none'
                 });
             }
-            var top_1 = this.actionObj.clone.offsetTop;
+            var top_1 = parseInt(e.top, 10);
             top_1 = top_1 < 0 ? 0 : top_1;
             topValue = formatUnit(Math.ceil(top_1 / cellHeight) * cellHeight);
             var scrollHeight = this.parent.element.querySelector('.e-content-wrap').scrollHeight;
@@ -18230,9 +18243,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
             offsetTop = Math.round(offsetTop / this.actionObj.cellHeight) * this.actionObj.cellHeight;
             this.actionObj.clone.style.top = formatUnit(offsetTop);
         }
-        var rowIndex = (this.parent.activeViewOptions.timeScale.enable) ?
-            (this.actionObj.target.offsetTop /
-                this.actionObj.cellHeight) : 0;
+        var rowIndex = (this.parent.activeViewOptions.timeScale.enable) ? (offsetTop / this.actionObj.cellHeight) : 0;
         var heightPerMinute = this.actionObj.cellHeight / this.actionObj.slotInterval;
         var diffInMinutes = parseInt(this.actionObj.clone.style.top, 10) - offsetTop;
         var tr;
@@ -20977,8 +20988,9 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
         var wrap = this.createEventElement(eventObj);
         var width;
         var index;
-        if (eventObj[this.fields.isAllDay] && eventObj.isSpanned.count === 1) {
-            eventObj[this.fields.endTime] = new Date(eventObj[this.fields.startTime].getTime());
+        if (eventObj.isSpanned.count === 1) {
+            var endTime = addDays(eventObj[this.fields.endTime], -1);
+            eventObj[this.fields.endTime] = (endTime > eventObj[this.fields.startTime]) ? endTime : eventObj[this.fields.endTime];
         }
         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
             index = row + 1;
@@ -20992,14 +21004,7 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
             width = this.cellWidth;
         }
         var rowTd = this.parent.element.querySelector(".e-content-wrap tr:nth-child(" + index + ") td");
-        var top;
-        if (this.parent.activeViewOptions.group.resources.length > 0) {
-            var overlapIndex = this.getIndex(eventObj[this.fields.startTime]);
-            top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * overlapIndex) + EVENT_GAP$2;
-        }
-        else {
-            top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * eventObj.Index) + EVENT_GAP$2;
-        }
+        var top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * eventObj.Index) + EVENT_GAP$2;
         setStyleAttribute(wrap, {
             'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px'
         });
@@ -21018,7 +21023,7 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
         });
     };
     YearEvent.prototype.renderMoreIndicatior = function (wrapper, count, startDate, row, left, right, index) {
-        var endDate = addDays(new Date(startDate.getTime()), 1);
+        var endDate = addDays(lastDateOfMonth(new Date(startDate.getTime())), 1);
         var moreIndicator = this.getMoreIndicatorElement(count, startDate, endDate);
         var rowTr = this.parent.element.querySelector(".e-content-wrap tr:nth-child(" + (row + 1) + ")");
         var top = rowTr.offsetTop + (this.cellHeight - this.moreIndicatorHeight);
@@ -21121,12 +21126,14 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
     };
     YearEvent.prototype.getOverlapEvents = function (date, appointments) {
         var appointmentsList = [];
+        var monthStart = this.parent.calendarUtil.getMonthStartDate(new Date(date.getTime()));
+        var monthEnd = addDays(this.parent.calendarUtil.getMonthEndDate(new Date(date.getTime())), -1);
         for (var _i = 0, _a = appointments; _i < _a.length; _i++) {
             var app = _a[_i];
             var appStart = new Date(app[this.fields.startTime].getTime());
             var appEnd = new Date(app[this.fields.endTime].getTime());
-            if ((resetTime(appStart).getTime() <= resetTime(new Date(date.getTime())).getTime()) &&
-                (resetTime(appEnd).getTime() >= resetTime(new Date(date.getTime())).getTime())) {
+            if ((resetTime(appStart).getTime() >= resetTime(new Date(monthStart.getTime())).getTime()) &&
+                (resetTime(appEnd).getTime() <= resetTime(new Date(monthEnd.getTime())).getTime())) {
                 appointmentsList.push(app);
             }
         }
@@ -23241,12 +23248,14 @@ var TimelineYear = /** @__PURE__ @class */ (function (_super) {
                 if (isDateAvail) {
                     td.setAttribute('data-date', date.getTime().toString());
                     this.wireEvents(td, 'cell');
+                }
+                this.renderCellTemplate({ date: date, type: 'workCells' }, td);
+                this.parent.trigger(renderCell, { elementType: 'workCells', element: td, date: date });
+                if (isDateAvail) {
                     if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                         date = addDays(new Date(date.getTime()), 1);
                     }
                 }
-                this.renderCellTemplate({ date: date, type: 'workCells' }, td);
-                this.parent.trigger(renderCell, { elementType: 'workCells', element: td, date: date });
             }
         }
     };

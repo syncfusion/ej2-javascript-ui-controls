@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { spreadsheetDestroyed, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, RefreshType } from '../common/index';
-import { colWidthChanged } from '../common/index';
+import { colWidthChanged, updateTableWidth } from '../common/index';
 import { IScrollArgs, onVerticalScroll, onHorizontalScroll, rowHeightChanged, beforeHeaderLoaded, deInitProperties } from '../common/index';
 import { SheetModel, getRowHeight, getRowsHeight, getColumnWidth, getColumnsWidth } from './../../workbook/index';
 import { getRangeAddress } from '../../workbook/common/index';
@@ -467,6 +467,7 @@ export class VirtualScroll {
         this.parent.on(beforeContentLoaded, this.createVirtualElement, this);
         this.parent.on(beforeVirtualContentLoaded, this.translate, this);
         this.parent.on(virtualContentLoaded, this.updateColumnWidth, this);
+        this.parent.on(updateTableWidth, this.updateColumnWidth, this);
         this.parent.on(onVerticalScroll, this.onVerticalScroll, this);
         this.parent.on(onHorizontalScroll, this.onHorizontalScroll, this);
         this.parent.on(updateUsedRange, this.updateUsedRange, this);
@@ -489,6 +490,7 @@ export class VirtualScroll {
         this.parent.off(beforeContentLoaded, this.createVirtualElement);
         this.parent.off(beforeVirtualContentLoaded, this.translate);
         this.parent.off(virtualContentLoaded, this.updateColumnWidth);
+        this.parent.off(updateTableWidth, this.updateColumnWidth);
         this.parent.off(onVerticalScroll, this.onVerticalScroll);
         this.parent.off(onHorizontalScroll, this.onHorizontalScroll);
         this.parent.off(updateUsedRange, this.updateUsedRange);

@@ -452,3 +452,5 @@ export const beforeCheckboxRenderer: string = 'beforeCheckboxRenderer';
 export const refreshHandlers: string = 'refreshResizeHandlers';
 /** @hidden */
 export const beforeRefreshOnDataChange: string = 'before-refresh-on-data-change';
+/** @hidden */
+export const immutableBatchCancel: string = 'immutable-batch-cancel';

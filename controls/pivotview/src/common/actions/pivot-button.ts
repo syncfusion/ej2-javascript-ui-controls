@@ -863,6 +863,7 @@ export class PivotButton implements IAction {
     private updateFiltering(args: MouseEventArgs): void {
         /* tslint:disable */
         let pivotObj: PivotView = (this.parent as any).pivotGridModule ? (this.parent as any).pivotGridModule : this.parent;
+        pivotObj.showWaitingPopup();
         pivotObj.mouseEventArgs = args;
         pivotObj.filterTargetID = this.parent.pivotCommon.moduleName !== 'pivotfieldlist' ?
             this.parent.element : document.getElementById(this.parent.pivotCommon.parentID + '_Wrapper');
@@ -886,7 +887,11 @@ export class PivotButton implements IAction {
                     $this.updateFilterEvents();
                 });
         } else if (pivotObj.dataSourceSettings.mode === 'Server') {
-            pivotObj.getEngine('fetchFieldMembers', null, null, null, null, null, fieldName);
+            if (this.parent.engineModule.fieldList[fieldName].members && Object.keys(this.parent.engineModule.fieldList[fieldName].members).length > 0) {
+                this.updateFilterEvents();
+            } else {
+                pivotObj.getEngine('fetchFieldMembers', null, null, null, null, null, fieldName);
+            }
         } else {
             this.updateFilterEvents();
         }
@@ -907,6 +912,7 @@ export class PivotButton implements IAction {
             // this.parent.pivotCommon.filterDialog.allMemberSelect.nodeChecked = this.nodeStateModified.bind(this);
             this.bindDialogEvents();
         }
+        pivotObj.hideWaitingPopup();
     }
     private bindDialogEvents(): void {
         if (this.parent.pivotCommon.filterDialog.allowExcelLikeFilter && this.parent.pivotCommon.filterDialog.tabObj) {

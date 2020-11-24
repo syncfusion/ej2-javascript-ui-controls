@@ -1758,7 +1758,7 @@ export class TextSelection {
     // tslint:disable-next-line
     public calculateContextMenuPosition(top: any, left: any): any {
         top = top - this.pdfViewerBase.toolbarHeight;
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             // tslint:disable-next-line
             let contextTop: any = top - this.contextMenuHeight;
             if (contextTop < this.pdfViewerBase.toolbarHeight) {

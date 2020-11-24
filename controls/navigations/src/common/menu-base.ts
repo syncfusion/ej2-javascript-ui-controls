@@ -1185,6 +1185,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             if (collide.indexOf('bottom') > -1) {
                 let offset: OffsetPosition = this.callFit(ul, false, true, top, left);
                 top = offset.top - 20;
+                if (top < 0) {
+                    let newTop: number = (pageYOffset + document.documentElement.clientHeight) - ul.getBoundingClientRect().height;
+                    if (newTop > -1) { top = newTop; }
+                }
             }
             collide = isCollide(ul, null, left, top);
             if (collide.indexOf('left') > -1) {

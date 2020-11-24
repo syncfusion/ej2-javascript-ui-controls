@@ -179,3 +179,5 @@ export const clearCF: string = 'clearCF';
 export const clearCells: string = 'clearCells';
 /** @hidden */
 export const setImage: string = 'setImage';
+/** @hidden */
+export const refreshRibbonIcons: string = 'refreshRibbonIcons';

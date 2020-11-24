@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, compile, createElement, extend, getElement, getEnumValue, getValue, isBlazor, isNullOrUndefined, merge, removeClass, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, compile, createElement, extend, getElement, getEnumValue, getValue, isBlazor, isNullOrUndefined, merge, removeClass, select, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Aggregate, CellType, Clipboard, ColumnChooser, ColumnMenu, CommandColumn, ContextMenu, DetailRow, Edit, ExcelExport, Filter, Freeze, Grid, InterSectionObserver, Logger, Page, PdfExport, Print, RenderType, Reorder, Resize, RowDD, RowDropSettings, Scroll, Sort, Toolbar, VirtualContentRenderer, VirtualRowModelGenerator, VirtualScroll, appendChildren, calculateAggregate, detailLists, extend as extend$1, getActualProperties, getObject, getUid, gridObserver, iterateArrayOrObject, parentsUntil, templateCompiler } from '@syncfusion/ej2-grids';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { CacheAdaptor, DataManager, DataUtil, Deferred, JsonAdaptor, ODataAdaptor, Predicate, Query, RemoteSaveAdaptor, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
@@ -8526,8 +8526,8 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         this.parent.off('contextMenuClick', this.contextMenuClick);
     };
     ContextMenu$$1.prototype.contextMenuOpen = function (args) {
-        var addRow = args.element.querySelector('#' + this.parent.element.id + '_gridcontrol_cmenu_AddRow');
-        var editRecord = args.element.querySelector('#' + this.parent.element.id + '_gridcontrol_cmenu_Edit');
+        var addRow = select('#' + this.parent.element.id + '_gridcontrol_cmenu_AddRow', args.element);
+        var editRecord = select('#' + this.parent.element.id + '_gridcontrol_cmenu_Edit', args.element);
         if (addRow) {
             if (this.parent.grid.editSettings.allowAdding === false) {
                 addRow.style.display = 'none';

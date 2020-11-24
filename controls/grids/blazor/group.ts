@@ -37,6 +37,7 @@ export class Group {
     }
     private dragStart: Function = (e: BlazorDragEventArgs): void => {
         this.parent.element.classList.add('e-ungroupdrag');
+        document.body.classList.add('e-prevent-select');
         e.bindEvents(e.dragElement);
     }
     private drag: Function = (e: { target: HTMLElement, event: MouseEventArgs }): void => {
@@ -54,6 +55,7 @@ export class Group {
         }
     }
     private dragStop: Function = (e: { target: HTMLElement, event: MouseEventArgs, helper: Element }) => {
+        document.body.classList.remove('e-prevent-select');
         this.parent.element.classList.remove('e-ungroupdrag');
         let preventDrop: boolean = !(parentsUntil(e.target, 'e-gridcontent') || parentsUntil(e.target, 'e-gridheader'));
         // if (this.groupSettings.allowReordering && preventDrop) {     //TODO: reordering
@@ -251,7 +253,8 @@ export class Group {
             helper: this.helper,
             dragStart: this.dragStart,
             drag: this.drag,
-            dragStop: this.dragStop
+            dragStop: this.dragStop,
+            isPreventSelect: false
         });
     }
 

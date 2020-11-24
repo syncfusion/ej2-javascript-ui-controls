@@ -117,7 +117,8 @@ var SfDropDownList = /** @class */ (function () {
         if (!this.isDisposed) {
             this.dotNetRef.invokeMethodAsync('KeyActionHandler', keyEventsArgs);
         }
-        if (e.action !== 'tab' && e.action !== 'close' && e.action !== 'space' && e.action !== 'enter' && e.action !== 'open') {
+        if (e.action !== 'tab' && e.action !== 'close' && e.action !== 'space' && e.action !== 'enter' && e.action !== 'open'
+            && (this.options.moduleName === 'SfDropDownList' || e.action !== 'home' && e.action !== 'end')) {
             e.preventDefault();
         }
     };

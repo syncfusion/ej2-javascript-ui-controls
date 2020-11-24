@@ -5,7 +5,7 @@ import { PageEventArgs, extend, doesImplementInterface, getObject, FilterEventAr
 import { RowExpandingEventArgs, RowCollapsingEventArgs } from '../../src';
 import { ColumnMenu } from '../../src/treegrid/actions/column-menu';
 import {Toolbar} from '../../src/treegrid/actions/toolbar';
-import { isNullOrUndefined, L10n, createElement, EmitType } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, L10n, createElement, EmitType, select } from '@syncfusion/ej2-base';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { Page } from '../../src/treegrid/actions/page';
 import { Filter } from '../../src/treegrid/actions/filter';
@@ -282,9 +282,9 @@ describe('TreeGrid base module', () => {
       expect(toolbarElements.querySelectorAll('.e-toolbar-item')[1].getAttribute('title')).toBe('Collapse All');
     });
     it('click events', () => {
-        (<HTMLElement>gridObj.grid.toolbarModule.getToolbar().querySelector('#' + gridObj.grid.element.id + '_collapseall')).click();
+        (<HTMLElement>select('#' + gridObj.grid.element.id + '_collapseall', gridObj.grid.toolbarModule.getToolbar())).click();
         expect((<HTMLTableRowElement>gridObj.getRows()[1]).style.display).toBe('none');
-        (<HTMLElement>gridObj.grid.toolbarModule.getToolbar().querySelector('#' + gridObj.grid.element.id + '_expandall')).click();
+        (<HTMLElement>select('#' + gridObj.grid.element.id + '_expandall', gridObj.grid.toolbarModule.getToolbar())).click();
         expect((<HTMLTableRowElement>gridObj.getRows()[1]).style.display).toBe('table-row');
     });
     it('disable RTL testing', () => {

@@ -54,6 +54,7 @@ export class Zoom {
     private zoomkitOpacity: number;
     private wheelEvent: string;
     private cancelEvent: string;
+    private zoomCompleteEvtCollection: IZoomCompleteEventArgs[] = [];
 
     /**
      * Constructor for Zooming module.
@@ -138,14 +139,17 @@ export class Zoom {
         this.isZoomed = true;
         this.offset = !chart.delayRedraw ? chart.chartAxisLayoutPanel.seriesClipRect : this.offset;
         chart.delayRedraw = true;
+        this.zoomCompleteEvtCollection = [];
         chart.disableTrackTooltip = true;
         let argsData: IZoomCompleteEventArgs;
         let zoomingEventArgs: IZoomingEventArgs;
         let zoomedAxisCollection: IAxisData[] = [];
         for (let axis of (axes as Axis[])) {
             argsData = {
-                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
-                currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
+                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
+                previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor,
+                currentZoomPosition: axis.zoomPosition, previousVisibleRange: axis.visibleRange,
+                currentVisibleRange: null
             };
             currentScale = Math.max(1 / minMax(axis.zoomFactor, 0, 1), 1);
             if (axis.orientation === 'Horizontal') {
@@ -155,10 +159,10 @@ export class Zoom {
                 offset = (chart.previousMouseMoveY - chart.mouseY) / axis.rect.height / currentScale;
                 argsData.currentZoomPosition = minMax(axis.zoomPosition - offset, 0, (1 - axis.zoomFactor));
             }
-            chart.trigger(zoomComplete, argsData);
             if (!argsData.cancel) {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
+                this.zoomCompleteEvtCollection.push(argsData);
             }
             zoomedAxisCollection.push({
                 zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
@@ -172,6 +176,7 @@ export class Zoom {
              });
         } else {
             this.performDefferedZoom(chart);
+            this.redrawOnZooming(chart, false);
         }
     }
 
@@ -246,29 +251,32 @@ export class Zoom {
         let argsData: IZoomCompleteEventArgs;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
         let onZoomingEventArg: IZoomingEventArgs;
-        let zoomedAxisCollections: IAxisData[] = [];
+        let zoomedAxisCollections: IAxisData[] = []; this.zoomCompleteEvtCollection = [];
         for (let axis of (axes as Axis[])) {
             argsData = {
-                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
-                currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
+                cancel: false, name: zoomComplete, axis: axis,
+                previousZoomFactor: axis.zoomFactor,
+                previousZoomPosition: axis.zoomPosition,
+                currentZoomFactor: axis.zoomFactor,
+                currentZoomPosition: axis.zoomPosition,
+                previousVisibleRange: axis.visibleRange, currentVisibleRange: null
             };
             if (axis.orientation === 'Horizontal') {
                 if (mode !== 'Y') {
                     argsData.currentZoomPosition += Math.abs((zoomRect.x - bounds.x) / (bounds.width)) * axis.zoomFactor;
                     argsData.currentZoomFactor *= (zoomRect.width / bounds.width);
-                    chart.trigger(zoomComplete, argsData);
                 }
             } else {
                 if (mode !== 'X') {
                     argsData.currentZoomPosition += (1 - Math.abs((zoomRect.height + (zoomRect.y - bounds.y)) / (bounds.height)))
                                                     * axis.zoomFactor;
                     argsData.currentZoomFactor  *= (zoomRect.height / bounds.height);
-                    chart.trigger(zoomComplete, argsData);
                 }
             }
             if (!argsData.cancel) {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
+                this.zoomCompleteEvtCollection.push(argsData);
             }
             zoomedAxisCollections.push({
                 zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
@@ -282,7 +290,32 @@ export class Zoom {
                                                                      this.performZoomRedraw(chart); });
         } else {
             this.zoomingRect = new Rect(0, 0, 0, 0);
+            this.redrawOnZooming(chart);
+        }
+    }
+
+    /** It is used to redraw the chart and trigger zoomComplete event */
+    private redrawOnZooming(chart: Chart, isRedraw: boolean = true, isMouseUp: boolean = false): void {
+        let zoomCompleteCollection: IZoomCompleteEventArgs[] = isMouseUp ? this.toolkit.zoomCompleteEvtCollection :
+        this.zoomCompleteEvtCollection;
+        if (isRedraw) {
             this.performZoomRedraw(chart);
+        }
+        let argsData: IZoomCompleteEventArgs;
+        for (let i: number = 0; i < zoomCompleteCollection.length; i++) {
+            if (!zoomCompleteCollection[i].cancel) {
+                argsData = {
+                    cancel: false, name: zoomComplete,
+                    axis: chart.axisCollections[i],
+                    previousZoomFactor: zoomCompleteCollection[i].previousZoomFactor,
+                    previousZoomPosition: zoomCompleteCollection[i].previousZoomPosition,
+                    currentZoomFactor: chart.axisCollections[i].zoomFactor,
+                    currentZoomPosition: chart.axisCollections[i].zoomPosition,
+                    currentVisibleRange: chart.axisCollections[i].visibleRange,
+                    previousVisibleRange: zoomCompleteCollection[i].previousVisibleRange
+                };
+                chart.trigger(zoomComplete, argsData);
+            }
         }
     }
 
@@ -293,7 +326,7 @@ export class Zoom {
      */
     public performMouseWheelZooming(e: WheelEvent, mouseX: number, mouseY: number, chart: Chart, axes: AxisModel[]): void {
         let direction: number = (this.browserName === 'mozilla' && !this.isPointer) ?
-            -(e.detail) / 3 > 0 ? 1 : -1 : (e.wheelDelta / 120) > 0 ? 1 : -1;
+            -(e.detail) / 3 > 0 ? 1 : -1 : (e.wheelDelta > 0 ? 1 : -1);
         let mode: ZoomMode = this.zooming.mode;
         let origin: number = 0.5;
         let cumulative: number;
@@ -304,13 +337,17 @@ export class Zoom {
         chart.disableTrackTooltip = true;
         this.performedUI =  true;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
+        this.zoomCompleteEvtCollection = [];
         let argsData: IZoomCompleteEventArgs;
         let onZoomingEventArgs: IZoomingEventArgs;
         let zoomedAxisCollection: IAxisData[] = [];
         for (let axis of (axes as Axis[])) {
             argsData = {
-                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
-                currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
+                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
+                previousZoomPosition: axis.zoomPosition,
+                currentZoomFactor: axis.zoomFactor,
+                currentZoomPosition: axis.zoomPosition, currentVisibleRange: null,
+                previousVisibleRange: axis.visibleRange
             };
             if ((axis.orientation === 'Vertical' && mode !== 'X') ||
                 (axis.orientation === 'Horizontal' && mode !== 'Y')) {
@@ -318,18 +355,18 @@ export class Zoom {
                 if (cumulative >= 1) {
                     origin = axis.orientation === 'Horizontal' ? mouseX / axis.rect.width : 1 - (mouseY / axis.rect.height);
                     origin = origin > 1 ? 1 : origin < 0 ? 0 : origin;
-                    zoomFactor = (cumulative === 1) ? 1 : minMax(1 / cumulative, 0, 1);
+                    zoomFactor = (cumulative === 1) ? 1 : minMax((direction > 0 ? 0.9 : 1.1) / cumulative, 0, 1);
                     zoomPosition = (cumulative === 1) ? 0 : axis.zoomPosition + ((axis.zoomFactor - zoomFactor) * origin);
                     if (axis.zoomPosition !== zoomPosition || axis.zoomFactor !== zoomFactor) {
                         zoomFactor = (zoomPosition + zoomFactor) > 1 ? (1 - zoomPosition) : zoomFactor;
                     }
                     argsData.currentZoomFactor = zoomFactor;
                     argsData.currentZoomPosition = zoomPosition;
-                    chart.trigger(zoomComplete, argsData);
                 }
                 if (!argsData.cancel) {
                     axis.zoomFactor = argsData.currentZoomFactor;
                     axis.zoomPosition = argsData.currentZoomPosition;
+                    this.zoomCompleteEvtCollection.push(argsData);
                 }
             }
             zoomedAxisCollection.push({
@@ -341,7 +378,7 @@ export class Zoom {
         if (!onZoomingEventArgs.cancel && this.chart.isBlazor) {
             this.chart.trigger(onZooming, onZoomingEventArgs, () => { this.performZoomRedraw(chart); });
         } else {
-            this.performZoomRedraw(chart);
+            this.redrawOnZooming(chart);
         }
     }
 
@@ -401,6 +438,7 @@ export class Zoom {
         }
         this.calculatePinchZoomFactor(chart, pinchRect);
         this.refreshAxis(<CartesianAxisLayoutPanel>chart.chartAxisLayoutPanel, chart, chart.axisCollections);
+        this.redrawOnZooming(chart, false);
         return true;
     }
 
@@ -417,6 +455,7 @@ export class Zoom {
         let currentZP: number;
         let onZoomingEventArgs: IZoomingEventArgs;
         let zoomedAxisCollection: IAxisData[] = [];
+        this.zoomCompleteEvtCollection = [];
         for (let index: number = 0; index < chart.axisCollections.length; index++) {
             let axis: Axis = chart.axisCollections[index];
             if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
@@ -425,7 +464,9 @@ export class Zoom {
                 currentZP = axis.zoomPosition;
                 argsData = {
                     cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
-                    previousZoomPosition: axis.zoomPosition, currentZoomFactor: currentZF, currentZoomPosition: currentZP
+                    previousZoomPosition: axis.zoomPosition, currentZoomFactor: currentZF,
+                    currentZoomPosition: currentZP, previousVisibleRange: axis.visibleRange,
+                    currentVisibleRange: null
                 };
                 if (axis.orientation === 'Horizontal') {
                     value = pinchRect.x - this.offset.x;
@@ -446,10 +487,10 @@ export class Zoom {
                 currentZF = (selectionMax - selectionMin) / this.zoomAxes[index].actualDelta;
                 argsData.currentZoomPosition = currentZP < 0 ? 0 : currentZP;
                 argsData.currentZoomFactor = currentZF > 1 ? 1 : currentZF;
-                chart.trigger(zoomComplete, argsData);
                 if (!argsData.cancel) {
                     axis.zoomFactor = argsData.currentZoomFactor;
                     axis.zoomPosition = argsData.currentZoomPosition;
+                    this.zoomCompleteEvtCollection.push(argsData);
                 }
                 zoomedAxisCollection.push({
                     zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
@@ -758,7 +799,7 @@ export class Zoom {
         let performZoomRedraw: boolean = (<Element>e.target).id.indexOf(chart.element.id + '_ZoomOut_') === -1 ||
             (<Element>e.target).id.indexOf(chart.element.id + '_ZoomIn_') === -1;
         if (chart.isChartDrag || performZoomRedraw) {
-            this.performZoomRedraw(chart);
+            this.redrawOnZooming(chart, true, true);
         }
         if (chart.isTouch) {
             if (chart.isDoubleTap && withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect)

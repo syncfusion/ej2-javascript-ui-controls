@@ -2600,7 +2600,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.isVirtualAdaptive = true;
         }
         this.trigger(events.load);
-        prepareColumns(this.columns as Column[], this.enableColumnVirtualization);
+        prepareColumns(this.columns as Column[], this.enableColumnVirtualization, this);
         if (this.enablePersistence) {
             this.notify(events.columnsPrepared, {});
         }
@@ -2757,6 +2757,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.element.style.display = 'none';
         }
         classList(this.element, [], ['e-rtl', 'e-gridhover', 'e-responsive', 'e-default', 'e-device', 'e-grid-min-height']);
+        if ((<{ isAngular?: boolean }>this).isAngular) {
+            this.element.innerHTML = null;
+        }
     }
 
     private destroyDependentModules(): void {
@@ -5240,7 +5243,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private updateColumnObject(): void {
-        prepareColumns(this.columns, this.enableColumnVirtualization);
+        prepareColumns(this.columns, this.enableColumnVirtualization, this);
         if (!(isBlazor() && this.isServerRendered)) {
             setColumnIndex(this.columns as Column[]);
         }

@@ -157,7 +157,7 @@ class SfContextMenu {
         let cssProp: { padding: string, cssSelector: string, margin: string } =  isRtl ? { padding: 'paddingRight', cssSelector:
             'padding-right', margin: 'marginLeft' } : { padding: 'paddingLeft', cssSelector: 'padding-left', margin: 'marginRight' };
         [].slice.call(menu.querySelectorAll(
-            '.e-menu-item[style~="' + cssProp.cssSelector + '"]:not(.e-blankicon)')).forEach((li: HTMLElement): void => {
+            '.e-menu-item[style*="' + cssProp.cssSelector + '"]:not(.e-blankicon)')).forEach((li: HTMLElement): void => {
             // tslint:disable-next-line:no-any
             (li.style as any)[cssProp.padding] = EMPTY;
         });

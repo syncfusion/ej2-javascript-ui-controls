@@ -1086,9 +1086,9 @@ describe('Chart', () => {
                     clientY: 300
                 };
                 chartObj.zoomModule.chartMouseWheel(<WheelEvent>wheelArgs);
-                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.80').toBe(true);
-                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.80').toBe(true);
-                expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.10').toBe(true);
+                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.72').toBe(true);
+                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.72').toBe(true);
+                expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.14').toBe(true);
                 expect(chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.00' ||
                     chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.01').toBe(true);
                 done();
@@ -1106,11 +1106,11 @@ describe('Chart', () => {
                 chartObj.mouseMove(<PointerEvent>trigger.onTouchMove(areaElement, 728, 389, 404, 289, 404, 189));
                 chartObj.mouseMove(<PointerEvent>trigger.onTouchMove(areaElement, 748, 129, 304, 289, 304, 289));
                 let content = chartObj.primaryXAxis.zoomFactor.toFixed(2);
-                expect(content == '0.33' || content == '0.32').toBe(true);
+                expect(content == '0.29' || content == '0.30').toBe(true);
                 content = chartObj.primaryYAxis.zoomFactor.toFixed(2);
                 expect(content == '1.00').toBe(true);
                 content = chartObj.primaryXAxis.zoomPosition.toFixed(2);
-                expect(content == '0.77' || content == '0.78').toBe(true);
+                expect(content == '0.74' || content == '0.75').toBe(true);
                 chartObj.mouseLeave(<PointerEvent>trigger.onTouchLeave(areaElement, 748, 129, 304, 289, 304, 289));
                 done();
             };
@@ -1120,7 +1120,7 @@ describe('Chart', () => {
         });
         it('Checking with Months and its Round rangePadding', (done: Function) => {
             loaded = (args: Object): void => {
-                expect(document.getElementById('containerAxisLabels0').childNodes[0].textContent == '5.5').toBe(true);
+                expect(document.getElementById('containerAxisLabels0').childNodes[0].textContent == '6').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

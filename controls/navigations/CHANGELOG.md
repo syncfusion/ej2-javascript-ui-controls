@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.51 (2020-11-24)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#294581` - ContextMenu with items more than the window size closes automatically while opening issue resolved.
+
 ## 18.3.50 (2020-11-17)
 
 ### Menu

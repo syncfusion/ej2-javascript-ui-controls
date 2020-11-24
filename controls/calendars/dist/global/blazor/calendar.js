@@ -688,7 +688,8 @@ var CalendarBase = /** @class */ (function (_super) {
             var weekEle = this.createElement('td', { className: CELL });
             var weekAnchor = this.createElement('span');
             if (day % 7 === 0 && this.weekNumber) {
-                weekAnchor.textContent = '' + this.getWeek(localDate);
+                var lastDate = new Date(localDate.getFullYear(), localDate.getMonth(), (localDate.getDate() + 6));
+                weekAnchor.textContent = '' + this.getWeek(lastDate);
                 weekEle.appendChild(weekAnchor);
                 sf.base.addClass([weekEle], '' + WEEKNUMBER);
                 tdEles.push(weekEle);
@@ -1534,8 +1535,7 @@ var CalendarBase = /** @class */ (function (_super) {
     CalendarBase.prototype.getWeek = function (d) {
         var currentDate = new Date(this.checkValue(d)).valueOf();
         var date = new Date(d.getFullYear(), 0, 1).valueOf();
-        var a = (currentDate - date);
-        return Math.ceil((((a) / dayMilliSeconds) + new Date(date).getDay() + 1) / 7);
+        return Math.ceil((((currentDate - date) + dayMilliSeconds) / dayMilliSeconds) / 7);
     };
     CalendarBase.prototype.setStartDate = function (date, time) {
         var tzOffset = date.getTimezoneOffset();

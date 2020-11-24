@@ -398,6 +398,9 @@ var TooltipSettings = /** @class */ (function (_super) {
     __decorate$1([
         sf.base.Complex({ color: '#cccccc', width: 0.5 }, Border)
     ], TooltipSettings.prototype, "border", void 0);
+    __decorate$1([
+        sf.base.Property('None')
+    ], TooltipSettings.prototype, "position", void 0);
     return TooltipSettings;
 }(sf.base.ChildProperty));
 /**
@@ -3507,7 +3510,14 @@ function textElement$1(renderer, option, font, color, parent, isMinus, redraw, i
         'dominant-baseline': option.baseLine
     };
     text = typeof option.text === 'string' ? option.text : isMinus ? option.text[option.text.length - 1] : option.text[0];
-    htmlObject = renderer.createText(renderOptions, text, seriesClipRect ? seriesClipRect.x : 0, seriesClipRect ? seriesClipRect.y : 0);
+    var transX = seriesClipRect ? seriesClipRect.x : 0;
+    var transY = seriesClipRect ? seriesClipRect.y : 0;
+    htmlObject = renderer.createText(renderOptions, text, transX, transY);
+    htmlObject.style.fontFamily = font.fontFamily;
+    htmlObject.style.fontStyle = font.fontStyle;
+    htmlObject.style.fontSize = font.size;
+    htmlObject.style.fontWeight = font.fontWeight;
+    htmlObject.style.color = font.color;
     if (typeof option.text !== 'string' && option.text.length > 1) {
         for (var i = 1, len = option.text.length; i < len; i++) {
             height = (sf.svgbase.measureText(option.text[i], font).height);

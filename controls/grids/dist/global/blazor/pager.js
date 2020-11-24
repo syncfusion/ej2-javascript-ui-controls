@@ -441,7 +441,7 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
  * Represents Grid `Column` model class.
  */
 var Column = /** @class */ (function () {
-    function Column(options) {
+    function Column(options, parent) {
         var _this = this;
         /**
          * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.
@@ -538,6 +538,7 @@ var Column = /** @class */ (function () {
         /** @hidden */
         this.getFilterTemplate = function () { return _this.filterTemplateFn; };
         sf.base.merge(this, options);
+        this.parent = parent;
         if (this.type === 'none') {
             this.type = (sf.base.isBlazor() && !sf.base.isNullOrUndefined(this.template) && sf.base.isNullOrUndefined(this.field)) ? 'none' : null;
         }
@@ -558,7 +559,7 @@ var Column = /** @class */ (function () {
         this.toJSON = function () {
             var col = {};
             var skip = ['filter', 'dataSource', sf.base.isBlazor() ? ' ' : 'headerText', 'template', 'headerTemplate', 'edit',
-                'editTemplate', 'filterTemplate', 'commandsTemplate'];
+                'editTemplate', 'filterTemplate', 'commandsTemplate', 'parent'];
             var keys = Object.keys(_this);
             for (var i = 0; i < keys.length; i++) {
                 if (keys[i] === 'columns') {
@@ -644,10 +645,23 @@ var Column = /** @class */ (function () {
     };
     /** @hidden */
     Column.prototype.setProperties = function (column) {
+        var _this = this;
         //Angular two way binding
         var keys = Object.keys(column);
         for (var i = 0; i < keys.length; i++) {
             this[keys[i]] = column[keys[i]];
+            //Refresh the react columnTemplates on state change
+            if (this.parent && this.parent.isReact && keys[i] === 'template') {
+                //tslint:disable-next-line:no-any
+                this.parent.clearTemplate(['columnTemplate'], undefined, function () {
+                    var rowsObj = _this.parent.getRowsObject();
+                    var pKeyField = _this.parent.getPrimaryKeyFieldNames()[0];
+                    for (var j = 0; j < rowsObj.length; j++) {
+                        var key = rowsObj[j].data[pKeyField];
+                        _this.parent.setCellValue(key, _this.field, rowsObj[j][_this.field]);
+                    }
+                });
+            }
         }
     };
     /**
@@ -1162,6 +1176,8 @@ var beforeCheckboxRenderer = 'beforeCheckboxRenderer';
 var refreshHandlers = 'refreshResizeHandlers';
 /** @hidden */
 var beforeRefreshOnDataChange = 'before-refresh-on-data-change';
+/** @hidden */
+var immutableBatchCancel = 'immutable-batch-cancel';
 
 /**
  * Defines types of Cell
@@ -1238,18 +1254,6 @@ var ToolbarItem;
     ToolbarItem[ToolbarItem["CsvExport"] = 10] = "CsvExport";
     ToolbarItem[ToolbarItem["WordExport"] = 11] = "WordExport";
 })(ToolbarItem || (ToolbarItem = {}));
-/**
- * Defines the Aggregate Template Type
- * * groupCaptionTemplate
- * * groupFooterTemplate
- * * footerTemplate
- */
-var AggregateTemplateType;
-(function (AggregateTemplateType) {
-    AggregateTemplateType["GroupCaption"] = "GroupCaption";
-    AggregateTemplateType["GroupFooter"] = "GroupFooter";
-    AggregateTemplateType["Footer"] = "Footer";
-})(AggregateTemplateType || (AggregateTemplateType = {}));
 
 /* tslint:disable-next-line:max-line-length */
 /**
@@ -3821,6 +3825,7 @@ var ContentRender = /** @class */ (function () {
         this.parent.on(uiUpdate, this.enableAfterRender, this);
         this.parent.on(refreshInfiniteModeBlocks, this.refreshContentRows, this);
         this.parent.on(beforeCellFocused, this.beforeCellFocused, this);
+        this.parent.on(destroy, this.droppableDestroy, this);
     }
     ContentRender.prototype.beforeCellFocused = function (e) {
         if (e.byKey && (e.keyArgs.action === 'upArrow' || e.keyArgs.action === 'downArrow')) {
@@ -4688,10 +4693,15 @@ var ContentRender = /** @class */ (function () {
     };
     ContentRender.prototype.initializeContentDrop = function () {
         var gObj = this.parent;
-        var drop = new sf.base.Droppable(gObj.element, {
+        this.droppable = new sf.base.Droppable(gObj.element, {
             accept: '.e-dragclone',
             drop: this.drop
         });
+    };
+    ContentRender.prototype.droppableDestroy = function () {
+        if (this.droppable && !this.droppable.isDestroyed) {
+            this.droppable.destroy();
+        }
     };
     ContentRender.prototype.canSkip = function (column, row, index) {
         /**
@@ -4892,12 +4902,16 @@ var ContentRender = /** @class */ (function () {
             changedRecords = changes.changedRecords;
             addedRecords = changes.addedRecords;
         }
+        var args = { cancel: false };
+        this.parent.notify(immutableBatchCancel, { rows: rows, args: args });
         if (addedRecords.length) {
             if (this.parent.editSettings.newRowPosition === 'Bottom') {
                 rows.splice(rows.length - 1, addedRecords.length);
             }
             else {
-                rows.splice(0, addedRecords.length);
+                if (!args.cancel) {
+                    rows.splice(0, addedRecords.length);
+                }
             }
         }
         for (var i = 0; i < changedRecords.length; i++) {
@@ -7166,7 +7180,7 @@ var Render = /** @class */ (function () {
         if (this.parent.columns.length < 1) {
             this.buildColumns(e.result[0]);
         }
-        prepareColumns(this.parent.columns);
+        prepareColumns(this.parent.columns, null, this.parent);
         this.headerRenderer.renderTable();
         this.contentRenderer.renderTable();
         this.parent.isAutoGen = true;
@@ -13720,7 +13734,7 @@ var Grid = /** @class */ (function (_super) {
             this.isVirtualAdaptive = true;
         }
         this.trigger(load);
-        prepareColumns(this.columns, this.enableColumnVirtualization);
+        prepareColumns(this.columns, this.enableColumnVirtualization, this);
         if (this.enablePersistence) {
             this.notify(columnsPrepared, {});
         }
@@ -13877,6 +13891,9 @@ var Grid = /** @class */ (function (_super) {
             this.element.style.display = 'none';
         }
         sf.base.classList(this.element, [], ['e-rtl', 'e-gridhover', 'e-responsive', 'e-default', 'e-device', 'e-grid-min-height']);
+        if (this.isAngular) {
+            this.element.innerHTML = null;
+        }
     };
     Grid.prototype.destroyDependentModules = function () {
         var gridElement = this.element;
@@ -16269,7 +16286,7 @@ var Grid = /** @class */ (function (_super) {
         this.injectedModules = modules;
     };
     Grid.prototype.updateColumnObject = function () {
-        prepareColumns(this.columns, this.enableColumnVirtualization);
+        prepareColumns(this.columns, this.enableColumnVirtualization, this);
         if (!(sf.base.isBlazor() && this.isServerRendered)) {
             setColumnIndex(this.columns);
         }
@@ -17837,19 +17854,19 @@ function setColumnIndex(columnModel, ind) {
     return ind;
 }
 /** @hidden */
-function prepareColumns(columns, autoWidth) {
+function prepareColumns(columns, autoWidth, gObj) {
     for (var c = 0, len = columns.length; c < len; c++) {
         var column = void 0;
         if (typeof columns[c] === 'string') {
-            column = new Column({ field: columns[c] });
+            column = new Column({ field: columns[c] }, gObj);
         }
         else if (!(columns[c] instanceof Column)) {
             if (!columns[c].columns) {
-                column = new Column(columns[c]);
+                column = new Column(columns[c], gObj);
             }
             else {
-                columns[c].columns = prepareColumns(columns[c].columns);
-                column = new Column(columns[c]);
+                columns[c].columns = prepareColumns(columns[c].columns, null, gObj);
+                column = new Column(columns[c], gObj);
             }
         }
         else {

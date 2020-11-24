@@ -116,6 +116,10 @@ export interface IZoomCompleteEventArgs extends IChartEventArgs {
     currentZoomFactor: number;
     /** Defines the current zoom position */
     currentZoomPosition: number;
+    /** Defines the current axis visible range */
+    currentVisibleRange: VisibleRangeModel;
+    /** Defines the previous axis visible range */
+    previousVisibleRange: VisibleRangeModel;
 }
 
 export interface ITooltipRenderEventArgs extends IChartEventArgs {

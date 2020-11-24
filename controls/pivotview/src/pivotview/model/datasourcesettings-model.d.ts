@@ -560,6 +560,7 @@ export interface DataSourceSettingsModel {
 
     /**
      * Allows to set the mode of rendering the pivot table.
+     * @default Local
      */
     mode?: RenderMode;
 

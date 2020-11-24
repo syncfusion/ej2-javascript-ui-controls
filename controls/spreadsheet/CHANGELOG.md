@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 18.3.51 (2020-11-24)
+
+### Spreadsheet
+
+#### New Features
+
+`#I300338` - Provided support to link the whole column or row data to the list validation.
+`#I300657` - Provided support for custom alert message to the validation dialog.
+
+#### Bug Fixes
+
+`#I301708` - Border is removed when pasting values adjacent to border contained cells issue has been fixed.
+
 ## 18.3.50 (2020-11-17)
 
 ### Spreadsheet

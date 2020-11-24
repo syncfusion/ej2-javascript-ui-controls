@@ -36,7 +36,8 @@ import { SelectorModel } from './drawing/selector-model';
 import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';
 import { renderAdornerLayer } from './drawing/dom-util';
 import { ThumbnailClickEventArgs } from './index';
-import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, CommentClickEventArgs } from './base';
+// tslint:disable-next-line:max-line-length
+import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, CommentClickEventArgs, BeforeAddFreeTextEventArgs } from './base';
 // tslint:disable-next-line:max-line-length
 import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 import { ContextMenuSettingsModel } from './pdfviewer-model';
@@ -2433,6 +2434,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableMultiLineOverlap: boolean;
 
     /**
+     * Checks if the freeText value is valid or not. FALSE by default
+     * @default false
+     */
+    @Property(false)
+    public isValidFreeText: boolean;
+
+    /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
      * @default false
      */
@@ -2631,6 +2639,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(false)
     public isFormFieldDocument: boolean;
+
+    /**
+     * Gets or sets a boolean value to show or hide desktop toolbar in mobile devices. FALSE by default.
+     * @default false
+     */
+    @Property(false)
+    public enableDesktopMode: boolean;
 
     /**
      * Enable or disable the free text annotation in the Pdfviewer.
@@ -3521,6 +3536,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public commentDelete: EmitType<CommentClickEventArgs>;
 
     /**
+     * Triggers the event before adding a text in the freeText annotation.
+     * @event
+     * @blazorProperty 'beforeAddFreeText'
+     */
+    @Event()
+    public beforeAddFreeText: EmitType<BeforeAddFreeTextEventArgs>;
+
+    /**
      * PDF document annotation collection.
      * @private
      * @deprecated
@@ -4325,6 +4348,17 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             eventArgs.multiplePageCollection = multiPageCollection;
         }
         this.trigger('annotationRemove', eventArgs);
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireBeforeAddFreeTextAnnotation(value: string): void {
+        // tslint:disable-next-line:max-line-length
+        let eventArgs: BeforeAddFreeTextEventArgs = { name: 'beforeAddFreeText', value: value };
+        // tslint:disable-next-line
+        this.trigger('beforeAddFreeText', eventArgs);
     }
 
     /**

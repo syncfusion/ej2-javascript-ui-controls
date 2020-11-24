@@ -1190,7 +1190,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         }
     }
 
-    private getIndexes(range: string): { startIdx: number, endIdx: number, isCol: boolean } {
+    /** @hidden */
+    public getIndexes(range: string): { startIdx: number, endIdx: number, isCol: boolean } {
         let startIsCol: boolean;
         let endIsCol: boolean;
         let start: string;

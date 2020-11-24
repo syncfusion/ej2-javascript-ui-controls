@@ -9,6 +9,7 @@ import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { EmitType, createElement, remove } from '@syncfusion/ej2-base';
 import { EditEventArgs } from '@syncfusion/ej2-grids';
 import { ITreeData } from '../../src';
+import { select } from '@syncfusion/ej2-base';
 
 
 /**
@@ -60,8 +61,8 @@ describe('Edit module', () => {
     });
     it('Add row - select row', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '121';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'first';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '121';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'first';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '121' ).toBeTruthy();
@@ -86,8 +87,8 @@ describe('Edit module', () => {
     });
     it('Add row - select row datasource index', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '122';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'second';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '122';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'second';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '122' ).toBeTruthy();
@@ -104,7 +105,7 @@ describe('Edit module', () => {
       gridObj.selectRow(0);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'test1';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test1';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '122' ).toBeTruthy();
@@ -121,7 +122,7 @@ describe('Edit module', () => {
       gridObj.selectRow(15);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'test2';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test2';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[15].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '14' ).toBeTruthy();
@@ -185,8 +186,8 @@ describe('Edit module', () => {
     });
     it('Add row - no selection datasource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '121';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'first';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '121';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'first';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[rows.length - 1].querySelectorAll('.e-rowcell');
@@ -213,8 +214,8 @@ describe('Edit module', () => {
     });
     it('Add row - select row datasource index', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '122';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'second';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '122';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'second';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[rows.length - 1].querySelectorAll('.e-rowcell');
@@ -233,7 +234,7 @@ describe('Edit module', () => {
       gridObj.selectRow(rows.length - 1);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'test1';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test1';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[rows.length - 1].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '122' ).toBeTruthy();
@@ -250,7 +251,7 @@ describe('Edit module', () => {
       gridObj.selectRow(13);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'test2';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test2';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[13].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '14' ).toBeTruthy();
@@ -313,8 +314,8 @@ describe('Edit module', () => {
     });
     it('Add row - no selection datasource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '121';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'first';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '121';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'first';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[0].querySelectorAll('.e-rowcell');
@@ -341,8 +342,8 @@ describe('Edit module', () => {
     });
     it('Add row - select row datasource index', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '122';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'second';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '122';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'second';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[6].querySelectorAll('.e-rowcell');
@@ -369,8 +370,8 @@ describe('Edit module', () => {
     });
     it('Add row - child datasource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '123';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'third';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '123';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'third';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[9].querySelectorAll('.e-rowcell');
@@ -397,8 +398,8 @@ describe('Edit module', () => {
     });
     it('Add row - deep child datasource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '124';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'fourth';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '124';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'fourth';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[16].querySelectorAll('.e-rowcell');
@@ -417,7 +418,7 @@ describe('Edit module', () => {
       gridObj.selectRow(16);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'test1';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test1';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[16].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '124' ).toBeTruthy();
@@ -434,7 +435,7 @@ describe('Edit module', () => {
       gridObj.selectRow(18);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'test3';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test3';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[18].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '15' ).toBeTruthy();
@@ -505,8 +506,8 @@ describe('Edit module', () => {
     });
     it('Add row - no selection datasource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '121';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'first';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '121';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'first';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[0].querySelectorAll('.e-rowcell');
@@ -533,8 +534,8 @@ describe('Edit module', () => {
     });
     it('Add row - select row datasource index', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '122';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'second';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '122';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'second';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[12].querySelectorAll('.e-rowcell');
@@ -561,8 +562,8 @@ describe('Edit module', () => {
     });
     it('Add row - child datasource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '123';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'third';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '123';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'third';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[9].querySelectorAll('.e-rowcell');
@@ -589,8 +590,8 @@ describe('Edit module', () => {
     });
     it('Add row - deep child datasource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '124';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'fourth';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '124';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'fourth';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[23].querySelectorAll('.e-rowcell');
@@ -609,7 +610,7 @@ describe('Edit module', () => {
       gridObj.selectRow(23);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'test1';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test1';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[23].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '124' ).toBeTruthy();
@@ -681,8 +682,8 @@ describe('Edit module', () => {
     });
     it('Add row - no selection datasource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '121';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'first';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '121';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'first';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[0].querySelectorAll('.e-rowcell');
@@ -709,8 +710,8 @@ describe('Edit module', () => {
     });
     it('Add row - select row datasource index', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '122';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'second';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '122';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'second';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[8].querySelectorAll('.e-rowcell');
@@ -737,8 +738,8 @@ describe('Edit module', () => {
     });
     it('Add row - parent datasource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '123';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'third';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '123';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'third';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[38].querySelectorAll('.e-rowcell');
@@ -757,7 +758,7 @@ describe('Edit module', () => {
       gridObj.selectRow(8);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'test1';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test1';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[8].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '122' ).toBeTruthy();
@@ -821,8 +822,8 @@ describe('Edit module', () => {
     });
     it('Add row - no selection dataSource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '121';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'first';
+      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '121';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'first';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '121').toBeTruthy();
@@ -847,8 +848,8 @@ describe('Edit module', () => {
     });
     it('Add row - select row datasource index', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '122';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'second';
+      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '122';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'second';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '122').toBeTruthy();
@@ -865,7 +866,7 @@ describe('Edit module', () => {
       gridObj.selectRow(0);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'test1';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test1';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '122').toBeTruthy();
@@ -882,7 +883,7 @@ describe('Edit module', () => {
       gridObj.selectRow(4);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'test2';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test2';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[4].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '22').toBeTruthy();
@@ -947,8 +948,8 @@ describe('Edit module', () => {
     });
     it('Add row - no selection datasource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '121';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'first';
+      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '121';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'first';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[rows.length - 1].querySelectorAll('.e-rowcell');
@@ -975,8 +976,8 @@ describe('Edit module', () => {
     });
     it('Add row - select row datasource index', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '122';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'second';
+      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '122';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'second';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[rows.length - 1].querySelectorAll('.e-rowcell');
@@ -995,7 +996,7 @@ describe('Edit module', () => {
       gridObj.selectRow(rows.length - 1);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'test1';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test1';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[rows.length - 1].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '122' ).toBeTruthy();
@@ -1012,7 +1013,7 @@ describe('Edit module', () => {
       gridObj.selectRow(2);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'test2';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test2';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[2].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '22' ).toBeTruthy();
@@ -1077,8 +1078,8 @@ describe('Edit module', () => {
     });
     it('Add row - no selection datasource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '121';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'first';
+      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '121';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'first';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[0].querySelectorAll('.e-rowcell');
@@ -1105,8 +1106,8 @@ describe('Edit module', () => {
     });
     it('Add row - select row datasource index', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '122';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'second';
+      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '122';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'second';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[4].querySelectorAll('.e-rowcell');
@@ -1134,8 +1135,8 @@ describe('Edit module', () => {
     });
     it('Add row - child datasource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '123';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'third';
+      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '123';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'third';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[7].querySelectorAll('.e-rowcell');
@@ -1162,8 +1163,8 @@ describe('Edit module', () => {
     });
     it('Add row - deep child datasource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '124';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'fourth';
+      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '124';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'fourth';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[3].querySelectorAll('.e-rowcell');
@@ -1183,7 +1184,7 @@ describe('Edit module', () => {
       gridObj.selectRow(3);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'test1';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test1';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[3].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '124' ).toBeTruthy();
@@ -1200,7 +1201,7 @@ describe('Edit module', () => {
       gridObj.selectRow(4);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'test3';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test3';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[4].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '22' ).toBeTruthy();
@@ -1274,8 +1275,8 @@ describe('Edit module', () => {
     });
     it('Add row - no selection datasource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '121';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'first';
+      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '121';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'first';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[rows.length - 1].querySelectorAll('.e-rowcell');
@@ -1302,8 +1303,8 @@ describe('Edit module', () => {
     });
     it('Add row - select row datasource index', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '122';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'second';
+      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '122';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'second';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[rows.length - 1].querySelectorAll('.e-rowcell');
@@ -1322,7 +1323,7 @@ describe('Edit module', () => {
       gridObj.selectRow(rows.length - 1);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'test1';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test1';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[rows.length - 1].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '122' ).toBeTruthy();
@@ -1339,7 +1340,7 @@ describe('Edit module', () => {
       gridObj.selectRow(2);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'test2';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test2';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[2].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '22' ).toBeTruthy();
@@ -1403,8 +1404,8 @@ describe('Edit module', () => {
     });
     it('Add row - no selection datasource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '121';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'first';
+      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '121';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'first';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[0].querySelectorAll('.e-rowcell');
@@ -1431,8 +1432,8 @@ describe('Edit module', () => {
     });
     it('Add row - select row datasource index', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '122';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'second';
+      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '122';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'second';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[5].querySelectorAll('.e-rowcell');
@@ -1460,8 +1461,8 @@ describe('Edit module', () => {
     });
     it('Add row - child datasource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '123';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'third';
+      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '123';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'third';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[12].querySelectorAll('.e-rowcell');
@@ -1488,8 +1489,8 @@ describe('Edit module', () => {
     });
     it('Add row - deep child datasource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '124';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'fourth';
+      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '124';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'fourth';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[4].querySelectorAll('.e-rowcell');
@@ -1509,7 +1510,7 @@ describe('Edit module', () => {
       gridObj.selectRow(4);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'test1';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test1';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[4].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '124' ).toBeTruthy();
@@ -1526,7 +1527,7 @@ describe('Edit module', () => {
       gridObj.selectRow(3);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'test3';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test3';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[3].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '22' ).toBeTruthy();
@@ -1598,8 +1599,8 @@ describe('Edit module', () => {
     });
     it('Add row - no selection datasource', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '121';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'first';
+      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '121';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'first';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[0].querySelectorAll('.e-rowcell');
@@ -1626,8 +1627,8 @@ describe('Edit module', () => {
     });
     it('Add row - select row datasource index', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '122';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'second';
+      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '122';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'second';
       actionComplete = (args?: any): void => {
         rows = gridObj.grid.getRows();
         let cells: NodeListOf<Element> = rows[11].querySelectorAll('.e-rowcell');
@@ -1647,7 +1648,7 @@ describe('Edit module', () => {
       gridObj.selectRow(11);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'test1';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test1';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[11].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '122' ).toBeTruthy();
@@ -1664,7 +1665,7 @@ describe('Edit module', () => {
       gridObj.selectRow(3);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName') as any).value = 'test2';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test2';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[3].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '22' ).toBeTruthy();
@@ -1788,7 +1789,7 @@ describe('Edit module', () => {
       };
       gridObj.actionComplete = actionComplete;
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = 133;
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = 133;
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });      
     });
     afterAll(() => {
@@ -1858,7 +1859,7 @@ describe('Edit module', () => {
       };
       gridObj.actionComplete = actionComplete;
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = 133;
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = 133;
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
       
     });
@@ -1958,8 +1959,8 @@ describe('Edit module', () => {
       gridObj.selectRow(1);
       actionComplete = (args?: any): void => {
         let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-        (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '121';
-        (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'child1';
+        (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '121';
+        (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'child1';
         if(args.requestType === 'save'){
           expect(gridObj.getRows().length).toBe(36);
           expect(gridObj.dataSource[1].subtasks[3].subtasks[0].taskID === 121).toBe(true);
@@ -2122,9 +2123,9 @@ describe('Edit module', () => {
       };
       gridObj.actionComplete = actionComplete;
       var formEle = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '121';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName')as any).value = 'first';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'progress') as any).value = '23';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '121';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'first';
+      (select('#' + gridObj.grid.element.id + 'progress', formEle) as any).value = '23';
       rows = gridObj.getRows();      
       (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();      
     });
@@ -2170,9 +2171,9 @@ describe('Edit module', () => {
       };
       gridObj.actionComplete = actionComplete;
       var formEle = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '121';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName')as any).value = 'first';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'progress') as any).value = '23';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '121';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'first';
+      (select('#' + gridObj.grid.element.id + 'progress', formEle) as any).value = '23';
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
     });
     afterAll(() => {
@@ -2216,9 +2217,9 @@ describe('Edit module', () => {
       };
       gridObj.actionComplete = actionComplete;
       var formEle = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '121';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName')as any).value = 'first';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'progress') as any).value = '23';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '121';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'first';
+      (select('#' + gridObj.grid.element.id + 'progress', formEle) as any).value = '23';
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
     });
     afterAll(() => {
@@ -2320,9 +2321,9 @@ describe('Edit module', () => {
     });
     it('Add Row - ActionBegin Event', function (done) {
         var formEle = gridObj.grid.editModule.formObj.element;
-        (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '121';
-        (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName')as any).value = 'first';
-        (formEle.querySelector('#' + gridObj.grid.element.id + 'Progress') as any).value = '23';
+        (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '121';
+        (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'first';
+        (select('#' + gridObj.grid.element.id + 'Progress', formEle) as any).value = '23';
         actionBegin = function (args) {
             expect(args.data.TaskName === 'first').toBe(true);
             done();

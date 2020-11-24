@@ -344,11 +344,11 @@ var SfMenu = /** @class */ (function () {
             }
         }
         else if (destroy) {
-            var scrollElement = sf.base.select(DOT + SCROLLMENU + (this.element.classList.contains(VERTICAL) ? VSCROLL : HSCROLL), this.popup);
+            var scrollElement = sf.base.select(DOT + SCROLLMENU + (this.element.classList.contains(VERTICAL) ? VSCROLL : HSCROLL), this.element);
             if (scrollElement) {
                 var scrollInstance = (this.element.classList.contains(VERTICAL) ? sf.base.getInstance(scrollElement, sf.navigations.VScroll) :
                     sf.base.getInstance(scrollElement, sf.navigations.HScroll));
-                sf.navigations.destroyScroll(scrollInstance, this.element);
+                sf.navigations.destroyScroll(scrollInstance, scrollElement);
             }
         }
     };

@@ -338,7 +338,7 @@ export class BookmarkView {
         let scroll: string = scrollValue.toString();
         // tslint:disable-next-line:radix
         proxy.pdfViewerBase.viewerContainer.scrollTop = parseInt(scroll);
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.pdfViewerBase.mobileScrollerContainer.style.display = '';
             this.pdfViewerBase.updateMobileScrollerPosition();
         }

@@ -257,16 +257,34 @@ export class CellRenderer implements ICellRenderer {
     }
 
     private removeStyle(element: HTMLElement, rowIdx: number, colIdx: number): void {
-        if (element.style.length) { element.removeAttribute('style'); }
+        let cellStyle: CellStyleModel;
+        if (element.style.length) {
+            cellStyle = this.parent.getCellStyleValue(['borderLeft', 'border'], [rowIdx, colIdx + 1]);
+            let rightBorder: string = cellStyle.borderLeft || cellStyle.border;
+            cellStyle = this.parent.getCellStyleValue(['borderTop', 'border'], [rowIdx + 1, colIdx]);
+            let bottomBorder: string = cellStyle.borderTop || cellStyle.border;
+            if (rightBorder || bottomBorder) {
+                [].slice.call(element.style).forEach((style: string) => {
+                    if ((rightBorder && !(style.indexOf('border-right') > -1) && !bottomBorder) ||
+                        (bottomBorder && !(style.indexOf('border-bottom') > -1) && !rightBorder)) {
+                        element.style.removeProperty(style);
+                    }
+                });
+            } else {
+                element.removeAttribute('style');
+            }
+        }
         let prevRowCell: HTMLElement = this.parent.getCell(rowIdx - 1, colIdx);
         if (prevRowCell && prevRowCell.style.borderBottom) {
-            rowIdx = Number(prevRowCell.parentElement.getAttribute('aria-rowindex')) - 1;
-            if (!this.parent.getCellStyleValue(['borderBottom'], [rowIdx, colIdx]).borderBottom) { prevRowCell.style.borderBottom = ''; }
+            let prevRowIdx: number = Number(prevRowCell.parentElement.getAttribute('aria-rowindex')) - 1;
+            cellStyle = this.parent.getCellStyleValue(['borderBottom', 'border'], [prevRowIdx, colIdx]);
+            if (!(cellStyle.borderBottom || cellStyle.border)) { prevRowCell.style.borderBottom = ''; }
         }
         let prevColCell: HTMLElement = <HTMLElement>element.previousElementSibling;
         if (prevColCell && prevColCell.style.borderRight) {
             colIdx = Number(prevColCell.getAttribute('aria-colindex')) - 1;
-            if (!this.parent.getCellStyleValue(['borderRight'], [rowIdx, colIdx]).borderRight) { prevColCell.style.borderRight = ''; }
+            cellStyle = this.parent.getCellStyleValue(['borderRight', 'border'], [rowIdx, colIdx]);
+            if (!(cellStyle.borderRight || cellStyle.border)) { prevColCell.style.borderRight = ''; }
         }
     }
     /** @hidden */

@@ -2826,7 +2826,11 @@ var Uploader = /** @class */ (function (_super) {
             }
             if (!isNaN(Math.round((e.loaded / e.total) * 100)) && sf.base.isNullOrUndefined(this.template) && metaData.file.statusCode !== '4') {
                 var loadedSize = (metaData.chunkIndex * this.asyncSettings.chunkSize);
-                var value = Math.min((((loadedSize + e.loaded) / metaData.file.size) * 100), 100);
+                var currentLoaded = e.loaded;
+                if (currentLoaded > this.asyncSettings.chunkSize) {
+                    currentLoaded = this.asyncSettings.chunkSize;
+                }
+                var value = Math.min((((loadedSize + currentLoaded) / metaData.file.size) * 100), 100);
                 this.changeProgressValue(liElement, Math.round(value).toString() + '%');
             }
             if (metaData.chunkIndex === 0) {

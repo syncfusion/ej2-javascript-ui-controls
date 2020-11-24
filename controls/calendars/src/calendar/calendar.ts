@@ -963,7 +963,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             let weekEle: HTMLElement = this.createElement('td', { className: CELL });
             let weekAnchor: HTMLElement = this.createElement('span');
             if (day % 7 === 0 && this.weekNumber) {
-                weekAnchor.textContent = '' + this.getWeek(localDate);
+                let lastDate : Date = new Date(localDate.getFullYear(), localDate.getMonth(), (localDate.getDate() + 6));
+                weekAnchor.textContent = '' + this.getWeek(lastDate);
                 weekEle.appendChild(weekAnchor);
                 addClass([weekEle], '' + WEEKNUMBER);
                 tdEles.push(weekEle);
@@ -1784,8 +1785,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected getWeek(d: Date): number {
         let currentDate: number = new Date(this.checkValue(d)).valueOf();
         let date: number = new Date(d.getFullYear(), 0, 1).valueOf();
-        let a: number = (currentDate - date);
-        return Math.ceil((((a) / dayMilliSeconds) + new Date(date).getDay() + 1) / 7);
+        return Math.ceil((((currentDate - date) + dayMilliSeconds) / dayMilliSeconds) / 7);
     }
     protected setStartDate(date: Date, time: number): void {
         let tzOffset: number = date.getTimezoneOffset();

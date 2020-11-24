@@ -4612,9 +4612,11 @@ let CircularGauge = class CircularGauge extends Component {
             name: resized,
             currentSize: new Size(0, 0)
         };
-        this.createSvg();
-        this.calculateBounds();
-        this.renderElements();
+        if (!isNullOrUndefined(document.getElementById(this.element.id + '_svg'))) {
+            this.createSvg();
+            this.calculateBounds();
+            this.renderElements();
+        }
         args.currentSize = this.availableSize;
         this.animatePointer = false;
         if (this.resizeTo) {

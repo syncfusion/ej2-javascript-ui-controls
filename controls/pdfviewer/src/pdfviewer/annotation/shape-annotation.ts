@@ -54,6 +54,7 @@ export interface IShapeAnnotation {
     customData: object;
     allowedInteractions?: AllowedInteraction;
     isPrint: boolean;
+    isCommentLock: boolean;
 }
 
 /**
@@ -247,7 +248,7 @@ export class ShapeAnnotation {
                             fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                             // tslint:disable-next-line:max-line-length
                             labelBounds: annotation.LabelBounds,  annotationSelectorSettings: this.getSettings(annotation), labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
-                            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: isPrint
+                            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: isPrint, isCommentLock: annotation.IsCommentLock
                         };
                         let annot: PdfAnnotationBaseModel;
                         // tslint:disable-next-line
@@ -271,7 +272,7 @@ export class ShapeAnnotation {
                             fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                             labelBounds: annotation.LabelBounds, annotationSelectorSettings: annotation.AnnotationSelectorSettings,
                             annotationSettings: annotationObject.annotationSettings, annotationAddMode: annotation.annotationAddMode,
-                            isPrint: annotation.IsPrint
+                            isPrint: annotation.IsPrint, isCommentLock: annotationObject.isCommentLock
                         };
                         let addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');
@@ -318,7 +319,7 @@ export class ShapeAnnotation {
                     thickness: this.lineThickness, modifiedDate: modifiedDateLine, borderDashArray: this.lineDashArray.toString(),
                     // tslint:disable-next-line:max-line-length
                     sourceDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.lineStartHead.toString()), taregetDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.lineEndHead.toString()),
-                    author: author, subject: 'Line', lineHeadStart: this.lineStartHead, lineHeadEnd: this.lineEndHead
+                    author: author, subject: 'Line', lineHeadStart: this.lineStartHead, lineHeadEnd: this.lineEndHead, isCommentLock: false
                 };
                 this.pdfViewer.tool = 'Line';
                 break;
@@ -336,7 +337,7 @@ export class ShapeAnnotation {
                     fillColor: this.arrowFillColor, strokeColor: this.arrowStrokeColor, notes: '', thickness: this.arrowThickness,
                     borderDashArray: this.arrowDashArray.toString(), author: author, subject: 'Arrow',
                     // tslint:disable-next-line:max-line-length
-                    modifiedDate: modifiedDateArrow, lineHeadStart: this.arrowStartHead, lineHeadEnd: this.arrowEndHead
+                    modifiedDate: modifiedDateArrow, lineHeadStart: this.arrowStartHead, lineHeadEnd: this.arrowEndHead, isCommentLock: false
                 };
                 this.pdfViewer.tool = 'Line';
                 break;
@@ -350,7 +351,7 @@ export class ShapeAnnotation {
                     shapeAnnotationType: this.setShapeType('Rectangle'), strokeColor: this.rectangleStrokeColor,
                     fillColor: this.rectangleFillColor, opacity: this.rectangleOpacity, notes: '',
                     thickness: this.rectangleThickness, borderDashArray: '0', modifiedDate: modifiedDateRect,
-                    author: author, subject: 'Rectangle'
+                    author: author, subject: 'Rectangle', isCommentLock: false
                 };
                 this.pdfViewer.tool = 'DrawTool';
                 break;
@@ -364,7 +365,7 @@ export class ShapeAnnotation {
                     shapeAnnotationType: this.setShapeType('Circle'), strokeColor: this.circleStrokeColor,
                     fillColor: this.circleFillColor, opacity: this.circleOpacity, notes: '',
                     thickness: this.circleThickness, borderDashArray: '0', modifiedDate: modifiedDateCir,
-                    author: author, subject: 'Circle'
+                    author: author, subject: 'Circle', isCommentLock: false
                 };
                 this.pdfViewer.tool = 'DrawTool';
                 break;
@@ -378,7 +379,7 @@ export class ShapeAnnotation {
                     strokeColor: this.polygonStrokeColor, fillColor: this.polygonFillColor,
                     opacity: this.polygonOpacity, thickness: this.polygonThickness, borderDashArray: '0',
                     notes: '', author: author, subject: 'Polygon',
-                    modifiedDate: modifiedDatePolygon, borderStyle: ''
+                    modifiedDate: modifiedDatePolygon, borderStyle: '', isCommentLock: false
                 };
                 this.pdfViewer.tool = 'Polygon';
                 break;
@@ -707,7 +708,7 @@ export class ShapeAnnotation {
             fontColor: annotationModel.fontColor, labelBorderColor: annotationModel.labelBorderColor, fontSize: annotationModel.fontSize,
             // tslint:disable-next-line:max-line-length
             labelBounds: labelBound, annotationSelectorSettings: this.getSelector(annotationModel.shapeAnnotationType, annotationModel.subject ), labelSettings: this.pdfViewer.shapeLabelSettings, annotationSettings: annotationSettings,
-            customData: this.pdfViewer.annotation.getShapeData(annotationModel.shapeAnnotationType, annotationModel.subject), isPrint: annotationModel.isPrint
+            customData: this.pdfViewer.annotation.getShapeData(annotationModel.shapeAnnotationType, annotationModel.subject), isPrint: annotationModel.isPrint, isCommentLock: annotationModel.isCommentLock
         };
     }
 
@@ -814,7 +815,7 @@ export class ShapeAnnotation {
             labelBorderColor: annotation.LabelBorderColor, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
             // tslint:disable-next-line:max-line-length
             labelBounds: annotation.LabelBounds, annotationSelectorSettings: this.getSettings(annotation), labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
-            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint
+            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');
     }

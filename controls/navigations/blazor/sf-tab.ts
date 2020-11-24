@@ -723,6 +723,11 @@ class SfTab {
             this.selectingContent(args);
         }
     }
+    public setPersistence(elementId: string, selectedItem: string): void {
+        if (this.options.enablePersistence) {
+            window.localStorage.setItem(elementId, selectedItem);
+        }
+    }
     public selectingContent(args: number): void {
         this.tbItem = selectAll('.' + CLS_TB_ITEM, this.hdrEle);
         if (this.tbItem.length > args && args >= 0 && !isNaN(args)) {
@@ -810,6 +815,7 @@ let Tab: object = {
             element.classList.remove(CLS_FOCUS);
             element.blazor__instance.isPopup = isPopup;
             element.blazor__instance.headerItemsUpdate(selectingIndex);
+            element.blazor__instance.setPersistence(element.id, selectingIndex.toString());
             if (element.blazor__instance.options.loadOn !== 'Init') {
                 element.blazor__instance.contentReady();
             }
@@ -818,6 +824,7 @@ let Tab: object = {
     selectingContent(element: BlazorTabElement, selectingIndex: number): void {
         if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.selectingContent(selectingIndex);
+            element.blazor__instance.setPersistence(element.id, selectingIndex.toString());
             if (element.blazor__instance.options.loadOn !== 'Init') {
                 element.blazor__instance.contentReady();
             }
@@ -900,9 +907,7 @@ let Tab: object = {
     },
     destroy(element: BlazorTabElement, elementId: string, selectedItem: string): void {
         if (!isNOU(element) && !isNOU(element.blazor__instance)) {
-            if (element.blazor__instance.options.enablePersistence) {
-                window.localStorage.setItem(elementId, selectedItem);
-            }
+            element.blazor__instance.setPersistence(elementId, selectedItem);
             element.blazor__instance.destroy();
         }
     },

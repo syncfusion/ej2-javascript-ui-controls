@@ -1416,6 +1416,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 (getComponent(inputElement[i], 'textbox') as TextBox).destroy();
                 detach(element.querySelector('input#' + inputElement[i].id));
             } else if (inputElement[i].classList.contains('e-dropdownlist')) {
+                if (this.allowValidation && inputElement[i].parentElement.className.indexOf('e-tooltip') > -1) {
+                    (getComponent(inputElement[i].parentElement, 'tooltip') as Tooltip).destroy();
+                }
                 (getComponent(inputElement[i], 'dropdownlist') as DropDownList).destroy();
             } else if (inputElement[i].classList.contains('e-radio')) {
                 (getComponent(inputElement[i], 'radio') as RadioButton).destroy();
@@ -1849,9 +1852,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                             datepick.appendTo('[id="' + parentId + '_valuekey' + i + '"]');
                             if (!rule.value) {
                                 this.updateRules(document.getElementById(parentId + '_valuekey' + i), selectedValue);
-                             }
+                            }
                         }
-                            break;
+                        break;
                     }
                 }
             }
@@ -1905,22 +1908,28 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         return 0;
     }
+    private getPreviousItemData(prevItemData: ColumnsModel, column: ColumnsModel): ColumnsModel {
+        if (column.template && prevItemData && Object.keys(prevItemData).length < 4) {
+            prevItemData.template = column.template;
+        }
+        return prevItemData;
+    }
+
     private renderValues(
         target: Element, itemData: ColumnsModel, prevItemData: ColumnsModel, isRender: boolean, rule: RuleModel,
         tempRule: RuleModel, element: Element): void {
         let filtElem: HTMLElement = document.getElementById(element.id.replace('operatorkey', 'filterkey'));
         let filtObj: DropDownList = getComponent(filtElem, 'dropdownlist') as DropDownList;
+        let column: ColumnsModel = this.getColumn(filtObj.value as string);
         if (isRender) {
             let ddlObj: DropDownList = getComponent(target.querySelector('input'), 'dropdownlist') as DropDownList;
             if (itemData.operators) {
-                ddlObj.value = null; ddlObj.dataBind();
-                ddlObj.dataSource = itemData.operators;
+                ddlObj.value = null; ddlObj.dataBind(); ddlObj.dataSource = itemData.operators;
                 ddlObj.index = this.getOperatorIndex(ddlObj, rule);
                 ddlObj.value = tempRule.operator = ddlObj.dataSource[ddlObj.index].value as string;
                 ddlObj.dataBind();
             } else if (itemData.type) {
-                ddlObj.value = null; ddlObj.dataBind();
-                ddlObj.dataSource = this.customOperators[itemData.type + 'Operator'];
+                ddlObj.value = null; ddlObj.dataBind(); ddlObj.dataSource = this.customOperators[itemData.type + 'Operator'];
                 ddlObj.index = this.getOperatorIndex(ddlObj, rule);
                 ddlObj.value = tempRule.operator = ddlObj.dataSource[ddlObj.index].value as string;
                 ddlObj.dataBind();
@@ -1929,6 +1938,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let operator: string = tempRule.operator.toString();
         if (!(operator.indexOf('null') > -1 || operator.indexOf('empty') > -1)) {
         let parentId: string = closest(target, '.e-rule-container').id;
+        prevItemData = this.getPreviousItemData(prevItemData, column);
         if (prevItemData && prevItemData.template) {
             this.templateDestroy(prevItemData, parentId + '_valuekey0');
             if (isBlazor()) {
@@ -1948,7 +1958,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.destroyControls(target);
             }
         }
-        let column: ColumnsModel = this.getColumn(filtObj.value as string); itemData.template = column.template;
+        itemData.template = column.template;
         if (itemData.template) {
             if (isBlazor() && itemData.field) {
                 this.columnTemplateFn = this.templateParser(itemData.template as string);
@@ -2230,6 +2240,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 } else {
                     rule.rules[index].value = '';
                 }
+            } else {
+                rule.rules[index].value = selectedValue as null;
             }
         }
     }
@@ -3552,8 +3564,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (rules.rules[j].rules) {
                 queryStr = this.getSqlString(rules.rules[j], enableEscape, queryStr);
             } else {
-                let rule: RuleModel = rules.rules[j];
-                let valueStr: string = '';
+                let rule: RuleModel = rules.rules[j]; let valueStr: string = '';
                 if (rule.value instanceof Array) {
                     if (rule.operator.toString().indexOf('between') > -1) {
                         if (rule.type === 'date') {
@@ -3562,7 +3573,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                             valueStr += rule.value[0] + ' AND ' + rule.value[1];
                         }
                     } else {
-                        if (typeof rule.value[0] === 'string') {
+                        if (typeof rule.value[0] === 'string' && rule.value !== null) {
                             valueStr += '("' + rule.value[0] + '"';
                             for (let k: number = 1, kLen: number = rule.value.length; k < kLen; k++) {
                                 valueStr += ',"' + rule.value[k] + '"';
@@ -3574,13 +3585,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     }
                 } else {
                     if (rule.operator.toString().indexOf('startswith') > -1) {
-                        valueStr += '("' + rule.value + '%")';
+                        valueStr += rule.value ? '("' + rule.value + '%")' : '(' + rule.value + ')';
                     } else if (rule.operator.toString().indexOf('endswith') > -1) {
-                        valueStr += '("%' + rule.value + '")';
+                        valueStr += rule.value ? '("%' + rule.value + '")' : '(' + rule.value + ')';
                     } else if (rule.operator.toString().indexOf('contains') > -1) {
-                        valueStr += '("%' + rule.value + '%")';
+                        valueStr += rule.value ? '("%' + rule.value + '%")' : '(' + rule.value + ')';
                     } else {
-                        if (rule.type === 'number' || typeof rule.value === 'boolean') {
+                        if (rule.type === 'number' || typeof rule.value === 'boolean' || rule.value === null) {
                             valueStr += rule.value;
                         } else {
                             valueStr += '"' + rule.value + '"';
@@ -3703,6 +3714,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             this.parser.push(['String', matchValue]);
             return matchValue.length;
         }
+        //Null
+        if (/^null/.exec(sqlString)) {
+            matchValue = /^null/.exec(sqlString)[0];
+            this.parser.push(['String', null]);
+            return matchValue.length;
+        }
         //Literals
         if (/^`?([a-z_][a-z0-9_.\[\]\(\)]{0,}(\:(number|float|string|date|boolean))?)`?/i.exec(sqlString)) {
             matchValue = /^`?([a-z_][a-z0-9_.\[\]\(\)]{0,}(\:(number|float|string|date|boolean))?)`?/i.exec(sqlString)[1];
@@ -3741,12 +3758,20 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             '>=': 'greaterthanorequal', 'in': 'in', 'not in': 'notin', 'between': 'between', 'not between': 'notbetween',
             'is empty': 'isempty', 'is null': 'isnull', 'is not null': 'isnotnull', 'is not empty': 'isnotempty'
         };
-        if (value.indexOf('%') === 0 && value[value.length - 1] === '%') {
-            return (operator === 'not like') ? 'notcontains' : 'contains';
-        } else if (value.indexOf('%') !== 0 && value.indexOf('%') === value.length - 1) {
-            return (operator === 'not like') ? 'notstartswith' : 'startswith';
-        } else if (value.indexOf('%') === 0 && value.indexOf('%') !== value.length - 1) {
-            return (operator === 'not like') ? 'notendswith' : 'endswith';
+        if (value) {
+            if (value.indexOf('%') === 0 && value[value.length - 1] === '%') {
+                return (operator === 'not like') ? 'notcontains' : 'contains';
+            } else if (value.indexOf('%') !== 0 && value.indexOf('%') === value.length - 1) {
+                return (operator === 'not like') ? 'notstartswith' : 'startswith';
+            } else if (value.indexOf('%') === 0 && value.indexOf('%') !== value.length - 1) {
+                return (operator === 'not like') ? 'notendswith' : 'endswith';
+            }
+        } else {
+            if (operator === 'not like') {
+                return 'notequal';
+            } else if (operator === 'like') {
+                return 'equal';
+            }
         }
         return operators[operator];
     }
@@ -3773,7 +3798,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         rule.operator = this.getOperator(' ', parser[i + 1][1]);
                         rule.value = null; rule.type = this.getTypeFromColumn(rule);
                     } else {
-                        rule.operator = this.getOperator(parser[i + 3][1].replace(/'/g, ''), parser[i + 1][1]); }
+                        let oper: string = parser[i + 3][1] ? parser[i + 3][1].replace(/'/g, '') : parser[i + 3][1];
+                        rule.operator = this.getOperator(oper, parser[i + 1][1]); }
                     operator = parser[i + 1][1]; i++; j = i + 1; jLen = iLen;
                     for (j = i + 1; j < jLen; j++) {
                         if (parser[j][0] === 'Right') {
@@ -3784,8 +3810,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                                 break;
                             }
                             if (operator.indexOf('like') > -1 && parser[j][0] === 'String') {
-                                rule.value = parser[j][1].replace(/'/g, '').replace(/%/g, '');
-                                rule.type = 'string';
+                                let val: string = parser[j][1] ? parser[j][1].replace(/'/g, '').replace(/%/g, ''): parser[j][1];
+                                rule.value = val; rule.type = 'string';
                             } else if (operator.indexOf('between') > -1) {
                                 if (parser[j][0] === 'Literal' || parser[j][0] === 'Left') {
                                     break;
@@ -3813,15 +3839,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         } else if (operator.indexOf('between') > -1 && parser[j - 1][0] === 'Conditions') {
                             rule.value = numVal; rule.type = 'number';
                         }
-                        numVal = []; strVal = [];
-                        rule.type = this.getTypeFromColumn(rule);
+                        numVal = []; strVal = []; rule.type = this.getTypeFromColumn(rule);
                     }
                 } else if (parser[i + 1][0] === 'Operators') {
                     rule.operator = this.getOperator(parser[i + 2][1], parser[i + 1][1]);
                     if (parser[i + 2][0] === 'Number') {
                         rule.type = 'number'; rule.value = Number(parser[i + 2][1]);
                     } else {
-                        rule.type = 'string'; rule.value = parser[i + 2][1].replace(/'/g, '');
+                        rule.type = 'string'; rule.value = parser[i + 2][1] ? parser[i + 2][1].replace(/'/g, ''): parser[i + 2][1];
                     }
                     rule.type = this.getTypeFromColumn(rule);
                 }
@@ -3840,8 +3865,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         grpCount++;
                     }
                 }
-                levelColl.push(grpCount); rules.rules.push(subRules);
-                subRules = this.processParser(this.parser, subRules, levelColl);
+                levelColl.push(grpCount); rules.rules.push(subRules); subRules = this.processParser(this.parser, subRules, levelColl);
                 return rules;
             } else if (parser[i][0] === 'Conditions') {
                 if (parser[i][1] === 'not') {

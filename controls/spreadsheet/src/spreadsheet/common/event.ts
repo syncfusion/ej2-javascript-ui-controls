@@ -270,3 +270,5 @@ export const createImageElement: string = 'createImageElement';
 export const deleteImage: string = 'deleteImage';
 /** @hidden */
 export const refreshImagePosition: string = 'refreshImagePosition';
+/** @hidden */
+export const updateTableWidth: string = 'updateTableWidth';

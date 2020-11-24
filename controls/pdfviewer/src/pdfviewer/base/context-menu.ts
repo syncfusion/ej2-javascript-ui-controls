@@ -60,7 +60,7 @@ export class ContextMenu implements IContextMenu {
             this.contextMenuObj.enableRtl = true;
         }
         this.contextMenuObj.appendTo(this.contextMenuElement);
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.contextMenuObj.animationSettings.effect = 'ZoomIn';
         } else {
             this.contextMenuObj.animationSettings.effect = 'SlideDown';

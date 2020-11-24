@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 18.3.51 (2020-11-24)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- Circular gauge will now be destroyed properly.
+
 ## 18.3.50 (2020-11-17)
 
 ### CircularGauge

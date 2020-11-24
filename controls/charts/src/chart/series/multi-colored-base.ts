@@ -186,7 +186,7 @@ export class MultiColoredSeries extends LineBase {
         let options: RectOption;
         if ((endPointLocation.x - startPointLocation.x > 0) && (endPointLocation.y - startPointLocation.y > 0)) {
             options = new RectOption(
-                series.chart.element.id + '_ChartSegmentClipRect_' + index,
+                series.chart.element.id + '_ChartSegment' + series.index + 'ClipRect_' + index,
                 'transparent', { width: 1, color: 'Gray' }, 1,
                 {
                     x: startPointLocation.x,
@@ -198,7 +198,7 @@ export class MultiColoredSeries extends LineBase {
             series.seriesElement.appendChild(
                 appendClipElement(series.chart.redraw, options, series.chart.renderer as SvgRenderer)
             );
-            return 'url(#' + series.chart.element.id + '_ChartSegmentClipRect_' + index + ')';
+            return 'url(#' + series.chart.element.id + '_ChartSegment' + series.index + 'ClipRect_' + index + ')';
         }
         return null;
     }

@@ -2,7 +2,7 @@
  * MaskedTextBox spec document
  */
 
-import { createElement, KeyboardEvents, EmitType, EventHandler, extend  } from '@syncfusion/ej2-base';
+import { createElement, KeyboardEvents, EmitType, EventHandler, extend, Browser, isBlazor } from '@syncfusion/ej2-base';
 import { MaskedTextBox, MaskChangeEventArgs, MaskFocusEventArgs, MaskBlurEventArgs} from '../src/maskedtextbox/maskedtextbox/maskedtextbox';
 import { maskInput, setMaskValue, getVal, getMaskedVal, mobileRemoveFunction, maskInputDropHandler, maskInputBlurHandler } from '../src/maskedtextbox/base/mask-base';
 import  {profile , inMB, getMemoryProfile} from './common.spec';
@@ -3107,4 +3107,29 @@ describe('EJ2-36604 - While giving the class name with empty space for HtmlAttri
         expect(maskBox.inputObj.container.classList.contains('custom-class-one')).toBe(true);
         expect(maskBox.inputObj.container.classList.contains('custom-class-two')).toBe(true);
     });   
+});
+describe('Masked Textbox with bind value', function () {
+    let maskBox: any;
+    beforeEach(function () {
+        let browser: string = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
+        Browser.userAgent = browser;
+        maskBox = undefined;
+        let ele: HTMLElement = createElement('input', { id: 'mask1' });
+        document.body.appendChild(ele);
+    });
+    afterEach(function () {
+        if (maskBox) {
+            maskBox.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('Bind value checking', function () {       
+        maskBox = new MaskedTextBox({
+            mask: "000000",
+            value: "123456"
+        });
+        maskBox.appendTo('#mask1');
+        let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+        expect(input.value).toBe('123456');
+    });
 });

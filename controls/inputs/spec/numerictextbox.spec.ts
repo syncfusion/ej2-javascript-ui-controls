@@ -5925,4 +5925,23 @@ describe('Change Event testing', () => {
             expect(inputObj.container.classList.contains('e-hidden')).toBe(true);
         });
     });    
+    describe('bug(EJMVC-273): EJ2 Dropdown list is preventing form submission with integer data type as value property', function () {
+        let inputObj: any;
+        beforeEach(function () {
+            let inputElement: HTMLElement = createElement('input', { id: 'numericTextbox' });
+            document.body.appendChild(inputElement);
+            inputElement.setAttribute('data-val','true');
+        });
+        afterEach(function () {
+            if (inputObj) {
+                inputObj.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('htmlAttribute type as hidden', () => {
+            inputObj = new NumericTextBox({});
+            inputObj.appendTo('#numericTextbox');
+            expect(inputObj.element.getAttribute('data-val')).toBe('false');
+        });
+    });
 });

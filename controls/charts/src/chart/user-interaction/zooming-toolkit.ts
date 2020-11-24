@@ -30,6 +30,8 @@ export class Toolkit {
     private selectedID: string;
     private iconRectOverFill: string = 'transparent';
     private iconRectSelectionFill: string = 'transparent';
+    /** @private */
+    public zoomCompleteEvtCollection: IZoomCompleteEventArgs[] = [];
 
     /** @private */
     constructor(chart: Chart) {
@@ -260,20 +262,22 @@ export class Toolkit {
         chart.svgObject.setAttribute('cursor', 'auto');
         let zoomingEventArgs: IZoomingEventArgs;
         let zoomedAxisCollection: IAxisData[] = [];
+        this.zoomCompleteEvtCollection = [];
         for (let axis of (chart.axisCollections as Axis[])) {
             argsData = {
-                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
-                currentZoomFactor: 1, currentZoomPosition: 0
+                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
+                previousZoomPosition: axis.zoomPosition, currentZoomFactor: 1, currentZoomPosition: 0,
+                previousVisibleRange: axis.visibleRange, currentVisibleRange: null
             };
             axis.zoomFactor = 1;
             axis.zoomPosition = 0;
             if (axis.zoomingScrollBar) {
                 axis.zoomingScrollBar.isScrollUI = false;
             }
-            chart.trigger(zoomComplete, argsData);
             if (!argsData.cancel) {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
+                this.zoomCompleteEvtCollection.push(argsData);
             }
             zoomedAxisCollection.push({
                 zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
@@ -361,10 +365,12 @@ export class Toolkit {
             chart.disableTrackTooltip = true;
             chart.delayRedraw = true;
             let argsData: IZoomCompleteEventArgs;
+            this.zoomCompleteEvtCollection = [];
             for (let axis of (axes as Axis[])) {
                 argsData = {
                     cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
-                    previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
+                    previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition,
+                    previousVisibleRange: axis.visibleRange, currentVisibleRange: null
                 };
                 if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
                     (axis.orientation === 'Vertical' && mode !== 'X')) {
@@ -376,10 +382,10 @@ export class Toolkit {
                     }
                     argsData.currentZoomFactor = zoomFactor;
                     argsData.currentZoomPosition = zoomPosition;
-                    chart.trigger(zoomComplete, argsData);
                     if (!argsData.cancel) {
                         axis.zoomFactor = argsData.currentZoomFactor;
                         axis.zoomPosition = argsData.currentZoomPosition;
+                        this.zoomCompleteEvtCollection.push(argsData);
                     }
                 }
             }

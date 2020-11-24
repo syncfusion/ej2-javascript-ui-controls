@@ -183,11 +183,13 @@ export class Tooltip extends BaseTooltip {
                 this.headerText = argsData.headerText;
                 this.formattedText = this.formattedText.concat(argsData.text);
                 this.text = this.formattedText;
-                this.createTooltip(this.chart, isFirst, this.getSymbolLocation(point),
-                                   point.series.clipRect, point.point, this.findShapes(),
-                                   this.findMarkerHeight(<PointData>this.currentPoints[0]),
-                                   this.chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(point),
-                                   this.chart.tooltip.template ? argsData.template : '');
+                this.createTooltip(
+                    this.chart, isFirst, this.getSymbolLocation(point),
+                    point.series.clipRect, point.point, this.findShapes(),
+                    this.findMarkerHeight(<PointData>this.currentPoints[0]),
+                    this.chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(point),
+                    this.chart.tooltip.template ? argsData.template : '', this.chart.tooltip.position
+                );
             } else {
                 this.removeHighlight(this.control);
                 remove(this.getElement(this.element.id + '_tooltip'));

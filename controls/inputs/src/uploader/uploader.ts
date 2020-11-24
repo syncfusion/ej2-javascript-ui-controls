@@ -434,7 +434,7 @@ export interface CancelEventArgs {
      */
     fileData: FileInfo;
     /**
-     * Defines the additional data in key and value pair format that will be submitted when the upload is cancelled.
+     * Defines the additional data in key and value pair format that will be submitted when the upload action is canceled.
      * @blazorType object
      */
     customFormData: { [key: string]: Object }[];
@@ -3664,7 +3664,11 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             }
             if (!isNaN(Math.round((e.loaded / e.total) * 100)) && isNullOrUndefined(this.template) && metaData.file.statusCode !== '4' ) {
                 let loadedSize: number =  (metaData.chunkIndex * this.asyncSettings.chunkSize);
-                let value: number = Math.min((((loadedSize + e.loaded) / metaData.file.size) * 100), 100);
+                let currentLoaded: number = e.loaded;
+                if (currentLoaded > this.asyncSettings.chunkSize) {
+                    currentLoaded = this.asyncSettings.chunkSize;
+                }
+                let value: number = Math.min((((loadedSize + currentLoaded) / metaData.file.size) * 100), 100);
                 this.changeProgressValue(liElement, Math.round(value).toString() + '%');
             }
             if (metaData.chunkIndex === 0) {

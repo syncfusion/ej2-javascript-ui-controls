@@ -591,7 +591,7 @@ export class Render {
         if (this.parent.columns.length < 1) {
             this.buildColumns(e.result[0]);
         }
-        prepareColumns(this.parent.columns);
+        prepareColumns(this.parent.columns, null, this.parent);
         this.headerRenderer.renderTable();
         this.contentRenderer.renderTable();
         this.parent.isAutoGen = true;

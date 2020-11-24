@@ -3012,11 +3012,11 @@ export class Layout {
                     }
                 }
                 //Adds the splitted widget of a vertical merged cell, to next row widget in the next page.
-                this.insertSplittedCellWidgets(viewer, tableCollection, splittedWidget, tableRowWidget.indexInOwner - 1);
+                this.insertSplittedCellWidgets(viewer, tableCollection, splittedWidget, tableRowWidget.index - 1);
             }
         } else {
             //Adds the splitted widget of a vertical merged cell, to next row widget in the next page.
-            this.insertSplittedCellWidgets(viewer, tableCollection, splittedWidget, tableRowWidget.indexInOwner - 1);
+            this.insertSplittedCellWidgets(viewer, tableCollection, splittedWidget, tableRowWidget.index - 1);
         }
         return splittedWidget;
     }
@@ -4919,7 +4919,7 @@ export class Layout {
             let cellTopBorder: WBorder = cell.cellFormat.borders.top;
             let cellStartPos: number = cell.x;
             let cellEndPos: number = cell.x + cell.width + cell.margin.left + cell.margin.right;
-            let adjCells: TableCellWidget[] = this.getAdjacentRowCell(cell, cell.x, cell.x + cell.width, cell.rowIndex - 1);
+            let adjCells: TableCellWidget[] = this.getAdjacentRowCell(cell, cell.x, cell.x + cell.width, cell.ownerRow.indexInOwner - 1);
             for (let j: number = 0; j < adjCells.length; j++) {
                 let adjCell: TableCellWidget = adjCells[j];
                 let prevCellBottomBorder: WBorder = adjCell.cellFormat.borders.bottom;

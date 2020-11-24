@@ -43,22 +43,24 @@ export class VirtualScroll {
     }
 
     private wireEvents(): void {
-        let mCont: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement;
-        let fCont: HTMLElement = this.parent.element.querySelector('.' + cls.FROZENCONTENT_DIV) as HTMLElement;
-        let mHdr: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
-        EventHandler.clearEvents(mCont);
-        EventHandler.clearEvents(fCont);
-        if (this.engineModule) {
-            EventHandler.add(mCont, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, fCont), this);
-            EventHandler.add(mCont, 'scroll wheel touchmove pointermove keyup keydown', this.onVerticalScroll(fCont, mCont), this);
-            EventHandler.add(mCont, 'mouseup touchend', this.common(mHdr, mCont, fCont), this);
-            EventHandler.add(fCont, 'wheel', this.onWheelScroll(mCont, fCont), this);
-            EventHandler.add(fCont, 'touchstart pointerdown', this.setPageXY(), this);
-            EventHandler.add(fCont, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
-            EventHandler.add(mHdr, 'touchstart pointerdown', this.setPageXY(), this);
-            EventHandler.add(mHdr, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
+        if (this.parent.displayOption.view !== 'Chart') {
+            let mCont: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement;
+            let fCont: HTMLElement = this.parent.element.querySelector('.' + cls.FROZENCONTENT_DIV) as HTMLElement;
+            let mHdr: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
+            EventHandler.clearEvents(mCont);
+            EventHandler.clearEvents(fCont);
+            if (this.engineModule) {
+                EventHandler.add(mCont, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, fCont), this);
+                EventHandler.add(mCont, 'scroll wheel touchmove pointermove keyup keydown', this.onVerticalScroll(fCont, mCont), this);
+                EventHandler.add(mCont, 'mouseup touchend', this.common(mHdr, mCont, fCont), this);
+                EventHandler.add(fCont, 'wheel', this.onWheelScroll(mCont, fCont), this);
+                EventHandler.add(fCont, 'touchstart pointerdown', this.setPageXY(), this);
+                EventHandler.add(fCont, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
+                EventHandler.add(mHdr, 'touchstart pointerdown', this.setPageXY(), this);
+                EventHandler.add(mHdr, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
+            }
+            this.parent.grid.isPreventScrollEvent = true;
         }
-        this.parent.grid.isPreventScrollEvent = true;
     }
     private onWheelScroll(mCont: HTMLElement, fCont: HTMLElement): Function {
         let element: HTMLElement = mCont;

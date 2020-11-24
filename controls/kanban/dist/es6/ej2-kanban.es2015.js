@@ -1573,6 +1573,7 @@ class KanbanDialog {
                 let templateId = this.parent.element.id + '_dialogTemplate';
                 let dialogTemplate = this.parent.templateParser(this.parent.dialogSettings.template)(args, this.parent, 'template', templateId, false);
                 append(dialogTemplate, form);
+                this.parent.renderTemplates();
             }
             else {
                 let dialogWrapper = createElement('div', { className: DIALOG_CONTENT_CONTAINER });
@@ -1884,6 +1885,7 @@ class KanbanDialog {
         }
     }
     destroy() {
+        this.parent.resetTemplates();
         this.destroyToolTip();
         this.destroyComponents();
         if (this.dialogObj) {

@@ -6428,7 +6428,7 @@ function addOrthoSegments(element, seg, source, target, segLength, lineDistribut
                 case 'Bottom':
                     if (srcCorner.bottomCenter.y < tarCorner.topCenter.y) {
                         value = (tarCorner.topCenter.y - srcCorner.bottomCenter.y) / 2;
-                        extra = !lineDistribution ? Math.min(extra) : value;
+                        extra = !lineDistribution ? Math.min(extra, value) : value;
                     }
                     break;
             }
@@ -40726,7 +40726,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 var node = _c[_b];
                 var renderNode = id ? this.nameTable[id[node]] : this.nameTable[layer.zIndexTable[node]];
                 if (renderNode && !(renderNode.parentId) && layer.visible &&
-                    !(renderNode.processId)) {
+                    (!(renderNode.processId) || this.refreshing)) {
                     var transformValue = {
                         tx: this.scroller.transform.tx,
                         ty: this.scroller.transform.ty,
@@ -40764,6 +40764,17 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         status_1 = false;
                     }
                     this.updateTextElementValue(renderNode);
+                    if (this.refreshing) {
+                        if (renderNode.shape.activity && renderNode.shape.activity.subProcess
+                            && renderNode.shape.activity.subProcess.processes) {
+                            for (var i = 0; i < renderNode.shape.activity.subProcess.processes.length; i++) {
+                                var process = renderNode.shape.activity.subProcess.processes[i];
+                                renderNode.wrapper.children.push(this.nameTable[process].wrapper);
+                            }
+                            renderNode.wrapper.measure(new Size(renderNode.wrapper.bounds.width, renderNode.wrapper.bounds.height));
+                            renderNode.wrapper.arrange(renderNode.wrapper.desiredSize);
+                        }
+                    }
                     renderer.renderElement(renderNode.wrapper, canvas, htmlLayer, (!renderer.isSvgMode && transform) ? transformValue : undefined, undefined, undefined, status_1 && (!this.diagramActions || isOverView));
                 }
             }
@@ -41584,6 +41595,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             });
         });
     };
+    /** @private */
     Diagram.prototype.getIndex = function (node, id) {
         var collection = (getObjectType(node) === Node) ? this.nodes : this.connectors;
         for (var i = 0; i < collection.length; i++) {
@@ -45557,6 +45569,20 @@ var DiagramContextMenu = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    DiagramContextMenu.prototype.updateItems = function () {
+        var canInsert = true;
+        for (var i = 0; i < this.parent.contextMenuSettings.items.length; i++) {
+            var items = this.parent.contextMenuSettings.items[i];
+            for (var j = 0; j < this.contextMenu.items.length; j++) {
+                if (this.contextMenu.items[j].text === this.parent.contextMenuSettings.items[i].text) {
+                    canInsert = false;
+                }
+            }
+            if (canInsert) {
+                this.contextMenu.insertAfter([items], this.contextMenu.items[this.contextMenu.items.length - 1].text);
+            }
+        }
+    };
     DiagramContextMenu.prototype.contextMenuBeforeOpen = function (args) {
         return __awaiter$3(this, void 0, void 0, function () {
             var diagramArgs, _i, _a, item, _b, _c, newItem, hidden, contextItems, i, item, i, item;
@@ -45597,6 +45623,10 @@ var DiagramContextMenu = /** @__PURE__ @class */ (function () {
                         _d.label = 3;
                     case 3:
                         hidden = true;
+                        if (!this.parent.contextMenuSettings.showCustomMenuOnly && this.parent.contextMenuSettings.items) {
+                            this.updateItems();
+                            this.contextMenu.refresh();
+                        }
                         this.hiddenItems = this.hiddenItems.concat(diagramArgs.hiddenItems);
                         this.contextMenu.enableItems(this.disableItems, false, true);
                         contextItems = this;
@@ -46524,10 +46554,38 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
                 if (diagram.mode === 'SVG') {
                     if (source.zIndex < target.zIndex) {
                         diagram.updateProcesses(source);
+                        this.updateSubprocessNodeIndex(source, diagram, target);
                     }
                 }
                 this.updateDocks(source, diagram);
             }
+        }
+    };
+    BpmnDiagrams.prototype.updateIndex = function (diagram, source) {
+        var processNode;
+        processNode = source;
+        var nodeindex = diagram.getIndex(processNode, processNode.id);
+        diagram.nodes.splice(Number(nodeindex), 1);
+        processNode.zIndex = diagram.nodes[diagram.nodes.length - 1].zIndex + 1;
+        diagram.nodes.push(processNode);
+    };
+    BpmnDiagrams.prototype.updateSubprocessNodeIndex = function (source, diagram, target) {
+        if (source.shape.activity.subProcess.processes
+            && source.shape.activity.subProcess.processes.length > 0) {
+            for (var i = 0; i < source.shape.activity.subProcess.processes.length; i++) {
+                this.updateIndex(diagram, source);
+                var processes = source.shape.activity.subProcess.processes[i];
+                if (diagram.nameTable[processes].shape.activity.subProcess.processes.length > 0) {
+                    this.updateSubprocessNodeIndex(diagram.nameTable[processes], diagram, target);
+                }
+                else {
+                    var node = diagram.nameTable[source.shape.activity.subProcess.processes[i]];
+                    this.updateIndex(diagram, node);
+                }
+            }
+        }
+        else {
+            this.updateIndex(diagram, source);
         }
     };
     /** @private */
@@ -53804,6 +53862,9 @@ var HierarchicalTree = /** @__PURE__ @class */ (function () {
             var align = void 0;
             var rows = this.splitChildrenInRows(layout, shape);
             var unique = info.tree.children.length === 5 && rows[0].length === 3;
+            if (info.tree.children.length > 5) {
+                unique = rows[0].length === Math.round(info.tree.children.length / 2);
+            }
             var leftTree = [];
             var rightTree = [];
             if (!unique) {
@@ -53973,6 +54034,9 @@ var HierarchicalTree = /** @__PURE__ @class */ (function () {
         var dimensions = treeInfo.dimensions;
         var lev = treeInfo.level;
         var unique = info.tree.children.length === 5 && rows[0].length === 3;
+        if (info.tree.children.length > 5) {
+            unique = rows[0].length === Math.round(info.tree.children.length / 2);
+        }
         if (unique && i === 1) {
             max = (rightBounds[0].right - rightBounds[0].x) >= (rightBounds[1].right - rightBounds[1].x) ? 0 : 1;
         }

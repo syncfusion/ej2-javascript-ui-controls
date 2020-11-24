@@ -859,7 +859,69 @@ export class PivotUtil {
         (locale as any)["Qtr"] = control.localeObj.getConstant('qtr');
         (locale as any)["Undefined"] = control.localeObj.getConstant('undefined');
         (locale as any)["GroupOutOfRange"] = control.localeObj.getConstant('groupOutOfRange');
+        (locale as any)["Group"] = control.localeObj.getConstant('group');
         return locale;
+    }
+
+    public static updateReport(control: PivotView | PivotFieldList, report: any): void {
+        control.setProperties({ dataSourceSettings: { rows: [] } }, true);
+        control.setProperties({ dataSourceSettings: { columns: [] } }, true);
+        control.setProperties({ dataSourceSettings: { formatSettings: [] } }, true);
+        for (let i: number = 0; i < report.Rows.length; i++) {
+            control.dataSourceSettings.rows.push({
+                name: report.Rows[i].Name,
+                caption: report.Rows[i].Caption,
+                showNoDataItems: report.Rows[i].ShowNoDataItems,
+                baseField: report.Rows[i].BaseField,
+                baseItem: report.Rows[i].BaseItem,
+                showFilterIcon: report.Rows[i].ShowFilterIcon,
+                showSortIcon: report.Rows[i].ShowSortIcon,
+                showEditIcon: report.Rows[i].ShowEditIcon,
+                showRemoveIcon: report.Rows[i].ShowRemoveIcon,
+                showSubTotals: report.Rows[i].ShowValueTypeIcon,
+                allowDragAndDrop: report.Rows[i].AllowDragAndDrop,
+                axis: report.Rows[i].Axis,
+                dataType: report.Rows[i].DataType,
+                isCalculatedField: report.Rows[i].IsCalculatedField,
+                showValueTypeIcon: report.Rows[i].ShowValueTypeIcon,
+                type: report.Rows[i].Type
+            });
+        }
+        for (let i: number = 0; i < report.Columns.length; i++) {
+            control.dataSourceSettings.columns.push({
+                name: report.Columns[i].Name,
+                caption: report.Columns[i].Caption,
+                showNoDataItems: report.Columns[i].ShowNoDataItems,
+                baseField: report.Columns[i].BaseField,
+                baseItem: report.Columns[i].BaseItem,
+                showFilterIcon: report.Columns[i].ShowFilterIcon,
+                showSortIcon: report.Columns[i].ShowSortIcon,
+                showEditIcon: report.Columns[i].ShowEditIcon,
+                showRemoveIcon: report.Columns[i].ShowRemoveIcon,
+                showSubTotals: report.Columns[i].ShowValueTypeIcon,
+                allowDragAndDrop: report.Columns[i].AllowDragAndDrop,
+                axis: report.Columns[i].Axis,
+                dataType: report.Columns[i].DataType,
+                isCalculatedField: report.Columns[i].IsCalculatedField,
+                showValueTypeIcon: report.Columns[i].ShowValueTypeIcon,
+                type: report.Columns[i].Type
+            });
+        }
+        for (let i: number = 0; i < report.FormatSettings.length; i++) {
+            control.dataSourceSettings.formatSettings.push({
+                name: report.FormatSettings[i].Name,
+                format: report.FormatSettings[i].Format,
+                type: report.FormatSettings[i].Type,
+                currency: report.FormatSettings[i].Currency,
+                maximumFractionDigits: report.FormatSettings[i].MaximumFractionDigits,
+                maximumSignificantDigits: report.FormatSettings[i].MaximumSignificantDigits,
+                minimumFractionDigits: report.FormatSettings[i].MinimumFractionDigits,
+                minimumIntegerDigits: report.FormatSettings[i].MinimumIntegerDigits,
+                minimumSignificantDigits: report.FormatSettings[i].MinimumSignificantDigits,
+                skeleton: report.FormatSettings[i].Skeleton,
+                useGrouping: report.FormatSettings[i].UseGrouping
+            });
+        }
     }
 
     public static generateUUID(): string {

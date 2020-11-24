@@ -174,6 +174,13 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     public notes: string;
 
     /**
+     * specifies the locked action of the comment
+     * @default 'false'
+     */
+    @Property(false)
+    public isCommentLock: boolean;
+
+    /**
      * Represents the stroke color of the annotation
      * @default 'black'
      */

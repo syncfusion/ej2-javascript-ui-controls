@@ -217,6 +217,12 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     @Property()
     public isReplaceDragEle: boolean;
     /**
+     * Defines wheather need to add prevent select class to body or not.
+     * @private
+     */
+    @Property(true)
+    public isPreventSelect: boolean;
+    /**
      * Specifies the callback function for drag event.
      * @event
      */
@@ -480,7 +486,9 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             EventHandler.add(document, Browser.touchEndEvent, this.intDestroy, this);
         }
         this.toggleEvents(true);
-        document.body.classList.add('e-prevent-select');
+        if (evt.type !== 'touchstart' && this.isPreventSelect) {
+            document.body.classList.add('e-prevent-select');
+        }
         this.externalInitialize = false;
         EventHandler.trigger(document.documentElement, Browser.touchStartEvent, evt);
     }

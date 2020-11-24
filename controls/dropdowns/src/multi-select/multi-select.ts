@@ -93,6 +93,8 @@ export class MultiSelect extends DropDownBase implements IInput {
     private keyAction: boolean;
     private isSelectAll: boolean;
     private clearIconWidth: number = 0;
+    private preventChange: boolean = false;
+    private isAngular: boolean = false;
 
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
@@ -1432,7 +1434,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                 isInteracted: event ? true : false,
                 element: this.element
             };
-            this.trigger('change', eventArgs);
+            if (this.isAngular && this.preventChange) {
+                this.preventChange = false;
+            } else {
+                this.trigger('change', eventArgs);
+            }
             this.updateTempValue();
             if (!this.changeOnBlur) {
                 this.dispatchEvent(this.hiddenElement as HTMLElement, 'change');
@@ -2228,6 +2234,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         element: HTMLElement,
         isNotTrigger: boolean,
         length?: number): void {
+        let list: string[] | number[] | boolean[] | { [key: string]: Object; }[] = this.listData;
         if (this.initStatus && !isNotTrigger) {
             let val: FieldSettingsModel = this.getDataByValue(value) as FieldSettingsModel;
             let eventArgs: SelectEventArgs = {
@@ -2253,6 +2260,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                         };
                         this.trigger('selectedAll', args);
                         this.selectAllEventData = [];
+                    }
+                    if (this.allowCustomValue && this.isServerRendered && this.listData !== list) {
+                        this.listData = list;
                     }
                     this.updateListSelectEventCallback(value, element, eve);
                 }
@@ -4022,6 +4032,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.enable(this.enabled);
         this.enableRTL(this.enableRtl);
         this.checkInitialValue();
+        if (this.element.hasAttribute('data-val')) {
+            this.element.setAttribute('data-val', 'false');
+        }
         this.renderComplete();
     }
     private checkInitialValue(): void {

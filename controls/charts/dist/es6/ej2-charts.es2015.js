@@ -531,6 +531,9 @@ __decorate$1([
 __decorate$1([
     Complex({ color: '#cccccc', width: 0.5 }, Border)
 ], TooltipSettings.prototype, "border", void 0);
+__decorate$1([
+    Property('None')
+], TooltipSettings.prototype, "position", void 0);
 /**
  * button settings in period selector
  */
@@ -3476,7 +3479,14 @@ function textElement$1(renderer, option, font, color, parent, isMinus = false, r
         'dominant-baseline': option.baseLine
     };
     text = typeof option.text === 'string' ? option.text : isMinus ? option.text[option.text.length - 1] : option.text[0];
-    htmlObject = renderer.createText(renderOptions, text, seriesClipRect ? seriesClipRect.x : 0, seriesClipRect ? seriesClipRect.y : 0);
+    let transX = seriesClipRect ? seriesClipRect.x : 0;
+    let transY = seriesClipRect ? seriesClipRect.y : 0;
+    htmlObject = renderer.createText(renderOptions, text, transX, transY);
+    htmlObject.style.fontFamily = font.fontFamily;
+    htmlObject.style.fontStyle = font.fontStyle;
+    htmlObject.style.fontSize = font.size;
+    htmlObject.style.fontWeight = font.fontWeight;
+    htmlObject.style.color = font.color;
     if (typeof option.text !== 'string' && option.text.length > 1) {
         for (let i = 1, len = option.text.length; i < len; i++) {
             height = (measureText(option.text[i], font).height);
@@ -5630,7 +5640,8 @@ class SeriesBase extends ChildProperty {
                     this.currentViewData = this.chart.paretoSeriesModule.performCumulativeCalculation(this.currentViewData, this);
                 }
             }
-            this.isRectTypeSeries = this.type.indexOf('Column') > -1 || this.type.indexOf('Bar') > -1;
+            this.isRectTypeSeries = this.type.indexOf('Column') > -1 || this.type.indexOf('Bar') > -1
+                || this.type.indexOf('Histogram') > -1;
         }
         let len = Object.keys(this.currentViewData).length;
         this.points = [];
@@ -5947,8 +5958,8 @@ class SeriesBase extends ChildProperty {
             chart.refreshBound();
             chart.trigger('loaded', { chart: chart.isBlazor ? {} : chart });
             if (this.chart.stockChart && this.chart.stockChart.initialRender) {
-                this.chart.stockChart.stockChartDataManagerSuccess();
                 this.chart.stockChart.initialRender = false;
+                this.chart.stockChart.stockChartDataManagerSuccess();
             }
         }
         if (this instanceof Series) {
@@ -9025,6 +9036,33 @@ let Chart = class Chart extends Component {
         this.series = [];
         this.refresh();
     }
+    /**
+     * To add secondary axis for the chart
+     * @param {AxisModel[]} axisCollection - Defines the axis collection to be added in chart.
+     * @return {void}.
+     */
+    addAxes(axisCollection) {
+        for (let axis of axisCollection) {
+            axis = new Axis(this, 'axes', axis);
+            if (this.isBlazor) {
+                axis.interval = isNaN(axis.interval) ? null : axis.interval;
+                axis.desiredIntervals = isNaN(axis.desiredIntervals) ? null : axis.desiredIntervals;
+            }
+            this.axes.push(axis);
+        }
+        this.refresh();
+    }
+    /**
+     * To remove secondary axis for the chart
+     * @param index - Defines the axis collection to be removed in chart.
+     * @return {void}.
+     */
+    removeAxis(index) {
+        this.redraw = false;
+        this.axes.splice(index, 1);
+        this.refresh();
+    }
+    ;
     /**
      * To destroy the widget
      * @method destroy
@@ -12548,14 +12586,14 @@ class MultiColoredSeries extends LineBase {
             [startPointLocation, startPointLocation = endPointLocation][0] : endPointLocation;
         let options;
         if ((endPointLocation.x - startPointLocation.x > 0) && (endPointLocation.y - startPointLocation.y > 0)) {
-            options = new RectOption(series.chart.element.id + '_ChartSegmentClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1, {
+            options = new RectOption(series.chart.element.id + '_ChartSegment' + series.index + 'ClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1, {
                 x: startPointLocation.x,
                 y: startPointLocation.y,
                 width: endPointLocation.x - startPointLocation.x,
                 height: endPointLocation.y - startPointLocation.y
             });
             series.seriesElement.appendChild(appendClipElement(series.chart.redraw, options, series.chart.renderer));
-            return 'url(#' + series.chart.element.id + '_ChartSegmentClipRect_' + index + ')';
+            return 'url(#' + series.chart.element.id + '_ChartSegment' + series.index + 'ClipRect_' + index + ')';
         }
         return null;
     }
@@ -14906,7 +14944,7 @@ class WaterfallSeries extends ColumnBase {
                 for (let j = 0; j < data.length; j++) {
                     if (j === sumIndex[k]) {
                         if (intermediateSum !== undefined) {
-                            index = subArraySum(data, -1, sumIndex[k], sumIndex, series);
+                            index = subArraySum(data, intermediateSum[k] - 1, sumIndex[k], sumIndex, series);
                         }
                         else {
                             index = subArraySum(data, -1, sumIndex[k], null, series);
@@ -15813,11 +15851,15 @@ class HistogramSeries extends ColumnSeries {
             yValues: yValues
         };
         let min = Math.min(...series.histogramValues.yValues);
+        let max = Math.max(...series.histogramValues.yValues);
         this.calculateBinInterval(series.histogramValues.yValues, series);
         binWidth = series.histogramValues.binWidth;
         let yCount;
         for (let j = 0; j < data.length;) {
             yCount = yValues.filter((y) => y >= min && y < (min + (binWidth))).length;
+            if ((min + binWidth) === max) {
+                yCount += yValues.filter((y) => y >= max).length;
+            }
             updatedData.push({
                 'x': min + binWidth / 2,
                 [series.yName]: yCount
@@ -18209,27 +18251,63 @@ class BaseTooltip extends ChartData {
             }
         }
     }
-    createTooltip(chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints = null, templatePoint = null, customTemplate) {
+    createTooltip(chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints = null, templatePoint = null, customTemplate, tooltipPosition = 'None') {
         let series = this.currentPoints[0].series;
         let module = chart.tooltipModule || chart.accumulationTooltipModule;
         if (!module) { // For the tooltip enable is false.
             return;
         }
+        let isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
+        let inverted = this.chart.requireInvertedAxis && series.isRectSeries;
+        let position = null;
+        if (tooltipPosition === 'Auto' && this.text.length <= 1) {
+            let contentSize = measureText(this.text[0], chart.tooltip.textStyle);
+            let headerSize = (!(this.header === '' || this.header === '<b></b>')) ? measureText(this.header, this.textStyle) :
+                new Size(0, 0);
+            // marker size + arrowpadding + 2 * padding + markerpadding
+            const markerSize = 10 + 12 + (2 * 10) + 5;
+            contentSize.width = Math.max(contentSize.width, headerSize.width) + ((shapes.length > 0) ? markerSize : 0);
+            const heightPadding = 12 + (2 * 10) + (headerSize.height > 0 ? (2 * 10) : 0);
+            contentSize.height = contentSize.height + headerSize.height + heightPadding;
+            position = this.getCurrentPosition(isNegative, inverted);
+            position = this.getPositionBySize(contentSize, new Rect(0, 0, bounds.width, bounds.height), location, position);
+            isNegative = (position === 'Left') || (position === 'Bottom');
+            inverted = (position === 'Left') || (position === 'Right');
+        }
+        else if (tooltipPosition !== 'None' && this.text.length <= 1) {
+            position = tooltipPosition;
+            isNegative = (position === 'Left') || (position === 'Bottom');
+            inverted = (position === 'Left') || (position === 'Right');
+        }
         if (isFirst) {
             this.svgTooltip = new Tooltip({
                 opacity: chart.tooltip.opacity,
-                header: this.headerText, content: this.text, fill: chart.tooltip.fill, border: chart.tooltip.border,
-                enableAnimation: chart.tooltip.enableAnimation, location: location, shared: chart.tooltip.shared,
-                shapes: shapes, clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
-                areaBounds: bounds, palette: this.findPalette(), template: customTemplate || chart.tooltip.template, data: templatePoint,
-                theme: chart.theme, offset: offset, textStyle: chart.tooltip.textStyle,
-                isNegative: (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0),
-                inverted: this.chart.requireInvertedAxis && series.isRectSeries,
+                header: this.headerText,
+                content: this.text,
+                fill: chart.tooltip.fill,
+                border: chart.tooltip.border,
+                enableAnimation: chart.tooltip.enableAnimation,
+                location: location,
+                shared: chart.tooltip.shared,
+                shapes: shapes,
+                clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
+                areaBounds: bounds,
+                palette: this.findPalette(),
+                template: customTemplate || chart.tooltip.template,
+                data: templatePoint,
+                theme: chart.theme,
+                offset: offset,
+                textStyle: chart.tooltip.textStyle,
+                isNegative: isNegative,
+                inverted: inverted,
                 arrowPadding: this.text.length > 1 || this.chart.stockChart ? 0 : 12,
-                availableSize: chart.availableSize, duration: this.chart.tooltip.duration,
-                isCanvas: this.chart.enableCanvas, isTextWrap: chart.tooltip.enableTextWrap && chart.getModuleName() === 'chart',
+                availableSize: chart.availableSize,
+                duration: this.chart.tooltip.duration,
+                isCanvas: this.chart.enableCanvas,
+                isTextWrap: chart.tooltip.enableTextWrap && chart.getModuleName() === 'chart',
                 blazorTemplate: { name: 'Template', parent: this.chart.tooltip },
                 controlInstance: this.chart,
+                tooltipPlacement: position,
                 tooltipRender: () => {
                     module.removeHighlight(module.control);
                     module.highlightPoints();
@@ -18253,9 +18331,11 @@ class BaseTooltip extends ChartData {
                 this.svgTooltip.data = templatePoint;
                 this.svgTooltip.template = chart.tooltip.template;
                 this.svgTooltip.textStyle = chart.tooltip.textStyle;
-                this.svgTooltip.isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
+                this.svgTooltip.isNegative = isNegative;
+                this.svgTooltip.inverted = inverted;
                 this.svgTooltip.clipBounds = this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation;
                 this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart ? 0 : 12;
+                this.svgTooltip.tooltipPlacement = position;
                 this.svgTooltip.dataBind();
             }
         }
@@ -18263,6 +18343,76 @@ class BaseTooltip extends ChartData {
         if (this.chart.isReact) {
             this.chart.renderReactTemplates();
         }
+    }
+    getPositionBySize(textSize, bounds, arrowLocation, position) {
+        let isTop = this.isTooltipFitPosition('Top', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        let isBottom = this.isTooltipFitPosition('Bottom', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        let isRight = this.isTooltipFitPosition('Right', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        let isLeft = this.isTooltipFitPosition('Left', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        let tooltipPos;
+        if (isTop || isBottom || isRight || isLeft) {
+            if (position === 'Top') {
+                tooltipPos = isTop ? 'Top' : (isBottom ? 'Bottom' : (isRight ? 'Right' : 'Left'));
+            }
+            else if (position === 'Bottom') {
+                tooltipPos = isBottom ? 'Bottom' : (isTop ? 'Top' : (isRight ? 'Right' : 'Left'));
+            }
+            else if (position === 'Right') {
+                tooltipPos = isRight ? 'Right' : (isLeft ? 'Left' : (isTop ? 'Top' : 'Bottom'));
+            }
+            else {
+                tooltipPos = isLeft ? 'Left' : (isRight ? 'Right' : (isTop ? 'Top' : 'Bottom'));
+            }
+        }
+        else {
+            let size = [(arrowLocation.x - bounds.x), ((bounds.x + bounds.width) - arrowLocation.x), (arrowLocation.y - bounds.y),
+                ((bounds.y + bounds.height) - arrowLocation.y)];
+            let index = size.indexOf(Math.max.apply(this, size));
+            position = (index === 0) ? 'Left' : (index === 1) ? 'Right' : (index === 2) ? 'Top' : 'Bottom';
+            return position;
+        }
+        return tooltipPos;
+    }
+    isTooltipFitPosition(position, bounds, location, size) {
+        let start = new ChartLocation(0, 0);
+        let end = new ChartLocation(0, 0);
+        switch (position) {
+            case 'Top':
+                start.x = location.x - (size.width / 2);
+                start.y = location.y - size.height;
+                end.x = location.x + (size.width / 2);
+                end.y = location.y;
+                break;
+            case 'Bottom':
+                start.x = location.x - (size.width / 2);
+                start.y = location.y;
+                end.x = location.x + (size.width / 2);
+                end.y = location.y + size.height;
+                break;
+            case 'Right':
+                start.x = location.x;
+                start.y = location.y - (size.height / 2);
+                end.x = location.x + size.width;
+                end.y = location.y + (size.height / 2);
+                break;
+            case 'Left':
+                start.x = location.x - size.width;
+                start.y = location.y - (size.height / 2);
+                end.x = location.x;
+                end.y = location.y + (size.height / 2);
+                break;
+        }
+        return (withInBounds(start.x, start.y, bounds) && withInBounds(end.x, end.y, bounds));
+    }
+    getCurrentPosition(isNegative, inverted) {
+        let position;
+        if (inverted) {
+            position = isNegative ? 'Left' : 'Right';
+        }
+        else {
+            position = isNegative ? 'Bottom' : 'Top';
+        }
+        return position;
     }
     findPalette() {
         let colors = [];
@@ -18532,7 +18682,7 @@ class Tooltip$1 extends BaseTooltip {
                 this.headerText = argsData.headerText;
                 this.formattedText = this.formattedText.concat(argsData.text);
                 this.text = this.formattedText;
-                this.createTooltip(this.chart, isFirst, this.getSymbolLocation(point), point.series.clipRect, point.point, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), this.chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(point), this.chart.tooltip.template ? argsData.template : '');
+                this.createTooltip(this.chart, isFirst, this.getSymbolLocation(point), point.series.clipRect, point.point, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), this.chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(point), this.chart.tooltip.template ? argsData.template : '', this.chart.tooltip.position);
             }
             else {
                 this.removeHighlight(this.control);
@@ -18919,6 +19069,8 @@ class Toolkit {
     constructor(chart) {
         this.iconRectOverFill = 'transparent';
         this.iconRectSelectionFill = 'transparent';
+        /** @private */
+        this.zoomCompleteEvtCollection = [];
         this.chart = chart;
         this.elementId = chart.element.id;
         this.chart.svgRenderer = new SvgRenderer(this.elementId);
@@ -19103,20 +19255,22 @@ class Toolkit {
         chart.svgObject.setAttribute('cursor', 'auto');
         let zoomingEventArgs;
         let zoomedAxisCollection = [];
+        this.zoomCompleteEvtCollection = [];
         for (let axis of chart.axisCollections) {
             argsData = {
-                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
-                currentZoomFactor: 1, currentZoomPosition: 0
+                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
+                previousZoomPosition: axis.zoomPosition, currentZoomFactor: 1, currentZoomPosition: 0,
+                previousVisibleRange: axis.visibleRange, currentVisibleRange: null
             };
             axis.zoomFactor = 1;
             axis.zoomPosition = 0;
             if (axis.zoomingScrollBar) {
                 axis.zoomingScrollBar.isScrollUI = false;
             }
-            chart.trigger(zoomComplete, argsData);
             if (!argsData.cancel) {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
+                this.zoomCompleteEvtCollection.push(argsData);
             }
             zoomedAxisCollection.push({
                 zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
@@ -19197,10 +19351,12 @@ class Toolkit {
             chart.disableTrackTooltip = true;
             chart.delayRedraw = true;
             let argsData;
+            this.zoomCompleteEvtCollection = [];
             for (let axis of axes) {
                 argsData = {
                     cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
-                    previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
+                    previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition,
+                    previousVisibleRange: axis.visibleRange, currentVisibleRange: null
                 };
                 if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
                     (axis.orientation === 'Vertical' && mode !== 'X')) {
@@ -19212,10 +19368,10 @@ class Toolkit {
                     }
                     argsData.currentZoomFactor = zoomFactor;
                     argsData.currentZoomPosition = zoomPosition;
-                    chart.trigger(zoomComplete, argsData);
                     if (!argsData.cancel) {
                         axis.zoomFactor = argsData.currentZoomFactor;
                         axis.zoomPosition = argsData.currentZoomPosition;
+                        this.zoomCompleteEvtCollection.push(argsData);
                     }
                 }
             }
@@ -19237,6 +19393,7 @@ class Zoom {
      * @private.
      */
     constructor(chart) {
+        this.zoomCompleteEvtCollection = [];
         this.chart = chart;
         this.isPointer = Browser.isPointer;
         this.browserName = Browser.info.name;
@@ -19308,14 +19465,17 @@ class Zoom {
         this.isZoomed = true;
         this.offset = !chart.delayRedraw ? chart.chartAxisLayoutPanel.seriesClipRect : this.offset;
         chart.delayRedraw = true;
+        this.zoomCompleteEvtCollection = [];
         chart.disableTrackTooltip = true;
         let argsData;
         let zoomingEventArgs;
         let zoomedAxisCollection = [];
         for (let axis of axes) {
             argsData = {
-                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
-                currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
+                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
+                previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor,
+                currentZoomPosition: axis.zoomPosition, previousVisibleRange: axis.visibleRange,
+                currentVisibleRange: null
             };
             currentScale = Math.max(1 / minMax(axis.zoomFactor, 0, 1), 1);
             if (axis.orientation === 'Horizontal') {
@@ -19326,10 +19486,10 @@ class Zoom {
                 offset = (chart.previousMouseMoveY - chart.mouseY) / axis.rect.height / currentScale;
                 argsData.currentZoomPosition = minMax(axis.zoomPosition - offset, 0, (1 - axis.zoomFactor));
             }
-            chart.trigger(zoomComplete, argsData);
             if (!argsData.cancel) {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
+                this.zoomCompleteEvtCollection.push(argsData);
             }
             zoomedAxisCollection.push({
                 zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
@@ -19344,6 +19504,7 @@ class Zoom {
         }
         else {
             this.performDefferedZoom(chart);
+            this.redrawOnZooming(chart, false);
         }
     }
     performDefferedZoom(chart) {
@@ -19416,16 +19577,20 @@ class Zoom {
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
         let onZoomingEventArg;
         let zoomedAxisCollections = [];
+        this.zoomCompleteEvtCollection = [];
         for (let axis of axes) {
             argsData = {
-                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
-                currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
+                cancel: false, name: zoomComplete, axis: axis,
+                previousZoomFactor: axis.zoomFactor,
+                previousZoomPosition: axis.zoomPosition,
+                currentZoomFactor: axis.zoomFactor,
+                currentZoomPosition: axis.zoomPosition,
+                previousVisibleRange: axis.visibleRange, currentVisibleRange: null
             };
             if (axis.orientation === 'Horizontal') {
                 if (mode !== 'Y') {
                     argsData.currentZoomPosition += Math.abs((zoomRect.x - bounds.x) / (bounds.width)) * axis.zoomFactor;
                     argsData.currentZoomFactor *= (zoomRect.width / bounds.width);
-                    chart.trigger(zoomComplete, argsData);
                 }
             }
             else {
@@ -19433,12 +19598,12 @@ class Zoom {
                     argsData.currentZoomPosition += (1 - Math.abs((zoomRect.height + (zoomRect.y - bounds.y)) / (bounds.height)))
                         * axis.zoomFactor;
                     argsData.currentZoomFactor *= (zoomRect.height / bounds.height);
-                    chart.trigger(zoomComplete, argsData);
                 }
             }
             if (!argsData.cancel) {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
+                this.zoomCompleteEvtCollection.push(argsData);
             }
             zoomedAxisCollections.push({
                 zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
@@ -19454,7 +19619,31 @@ class Zoom {
         }
         else {
             this.zoomingRect = new Rect(0, 0, 0, 0);
+            this.redrawOnZooming(chart);
+        }
+    }
+    /** It is used to redraw the chart and trigger zoomComplete event */
+    redrawOnZooming(chart, isRedraw = true, isMouseUp = false) {
+        let zoomCompleteCollection = isMouseUp ? this.toolkit.zoomCompleteEvtCollection :
+            this.zoomCompleteEvtCollection;
+        if (isRedraw) {
             this.performZoomRedraw(chart);
+        }
+        let argsData;
+        for (let i = 0; i < zoomCompleteCollection.length; i++) {
+            if (!zoomCompleteCollection[i].cancel) {
+                argsData = {
+                    cancel: false, name: zoomComplete,
+                    axis: chart.axisCollections[i],
+                    previousZoomFactor: zoomCompleteCollection[i].previousZoomFactor,
+                    previousZoomPosition: zoomCompleteCollection[i].previousZoomPosition,
+                    currentZoomFactor: chart.axisCollections[i].zoomFactor,
+                    currentZoomPosition: chart.axisCollections[i].zoomPosition,
+                    currentVisibleRange: chart.axisCollections[i].visibleRange,
+                    previousVisibleRange: zoomCompleteCollection[i].previousVisibleRange
+                };
+                chart.trigger(zoomComplete, argsData);
+            }
         }
     }
     /**
@@ -19464,7 +19653,7 @@ class Zoom {
      */
     performMouseWheelZooming(e, mouseX, mouseY, chart, axes) {
         let direction = (this.browserName === 'mozilla' && !this.isPointer) ?
-            -(e.detail) / 3 > 0 ? 1 : -1 : (e.wheelDelta / 120) > 0 ? 1 : -1;
+            -(e.detail) / 3 > 0 ? 1 : -1 : (e.wheelDelta > 0 ? 1 : -1);
         let mode = this.zooming.mode;
         let origin = 0.5;
         let cumulative;
@@ -19475,13 +19664,17 @@ class Zoom {
         chart.disableTrackTooltip = true;
         this.performedUI = true;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
+        this.zoomCompleteEvtCollection = [];
         let argsData;
         let onZoomingEventArgs;
         let zoomedAxisCollection = [];
         for (let axis of axes) {
             argsData = {
-                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
-                currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
+                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
+                previousZoomPosition: axis.zoomPosition,
+                currentZoomFactor: axis.zoomFactor,
+                currentZoomPosition: axis.zoomPosition, currentVisibleRange: null,
+                previousVisibleRange: axis.visibleRange
             };
             if ((axis.orientation === 'Vertical' && mode !== 'X') ||
                 (axis.orientation === 'Horizontal' && mode !== 'Y')) {
@@ -19489,18 +19682,18 @@ class Zoom {
                 if (cumulative >= 1) {
                     origin = axis.orientation === 'Horizontal' ? mouseX / axis.rect.width : 1 - (mouseY / axis.rect.height);
                     origin = origin > 1 ? 1 : origin < 0 ? 0 : origin;
-                    zoomFactor = (cumulative === 1) ? 1 : minMax(1 / cumulative, 0, 1);
+                    zoomFactor = (cumulative === 1) ? 1 : minMax((direction > 0 ? 0.9 : 1.1) / cumulative, 0, 1);
                     zoomPosition = (cumulative === 1) ? 0 : axis.zoomPosition + ((axis.zoomFactor - zoomFactor) * origin);
                     if (axis.zoomPosition !== zoomPosition || axis.zoomFactor !== zoomFactor) {
                         zoomFactor = (zoomPosition + zoomFactor) > 1 ? (1 - zoomPosition) : zoomFactor;
                     }
                     argsData.currentZoomFactor = zoomFactor;
                     argsData.currentZoomPosition = zoomPosition;
-                    chart.trigger(zoomComplete, argsData);
                 }
                 if (!argsData.cancel) {
                     axis.zoomFactor = argsData.currentZoomFactor;
                     axis.zoomPosition = argsData.currentZoomPosition;
+                    this.zoomCompleteEvtCollection.push(argsData);
                 }
             }
             zoomedAxisCollection.push({
@@ -19513,7 +19706,7 @@ class Zoom {
             this.chart.trigger(onZooming, onZoomingEventArgs, () => { this.performZoomRedraw(chart); });
         }
         else {
-            this.performZoomRedraw(chart);
+            this.redrawOnZooming(chart);
         }
     }
     /**
@@ -19572,6 +19765,7 @@ class Zoom {
         }
         this.calculatePinchZoomFactor(chart, pinchRect);
         this.refreshAxis(chart.chartAxisLayoutPanel, chart, chart.axisCollections);
+        this.redrawOnZooming(chart, false);
         return true;
     }
     calculatePinchZoomFactor(chart, pinchRect) {
@@ -19587,6 +19781,7 @@ class Zoom {
         let currentZP;
         let onZoomingEventArgs;
         let zoomedAxisCollection = [];
+        this.zoomCompleteEvtCollection = [];
         for (let index = 0; index < chart.axisCollections.length; index++) {
             let axis = chart.axisCollections[index];
             if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
@@ -19595,7 +19790,9 @@ class Zoom {
                 currentZP = axis.zoomPosition;
                 argsData = {
                     cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
-                    previousZoomPosition: axis.zoomPosition, currentZoomFactor: currentZF, currentZoomPosition: currentZP
+                    previousZoomPosition: axis.zoomPosition, currentZoomFactor: currentZF,
+                    currentZoomPosition: currentZP, previousVisibleRange: axis.visibleRange,
+                    currentVisibleRange: null
                 };
                 if (axis.orientation === 'Horizontal') {
                     value = pinchRect.x - this.offset.x;
@@ -19617,10 +19814,10 @@ class Zoom {
                 currentZF = (selectionMax - selectionMin) / this.zoomAxes[index].actualDelta;
                 argsData.currentZoomPosition = currentZP < 0 ? 0 : currentZP;
                 argsData.currentZoomFactor = currentZF > 1 ? 1 : currentZF;
-                chart.trigger(zoomComplete, argsData);
                 if (!argsData.cancel) {
                     axis.zoomFactor = argsData.currentZoomFactor;
                     axis.zoomPosition = argsData.currentZoomPosition;
+                    this.zoomCompleteEvtCollection.push(argsData);
                 }
                 zoomedAxisCollection.push({
                     zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
@@ -19935,7 +20132,7 @@ class Zoom {
         let performZoomRedraw = e.target.id.indexOf(chart.element.id + '_ZoomOut_') === -1 ||
             e.target.id.indexOf(chart.element.id + '_ZoomIn_') === -1;
         if (chart.isChartDrag || performZoomRedraw) {
-            this.performZoomRedraw(chart);
+            this.redrawOnZooming(chart, true, true);
         }
         if (chart.isTouch) {
             if (chart.isDoubleTap && withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect)
@@ -26805,6 +27002,7 @@ class PieSeries extends PieBase {
             point.start = start;
         }
         else {
+            seriesGroup.appendChild(chart.renderer.drawPath(option));
             this.refresh(point, degree, start, chart, option, seriesGroup);
         }
     }
@@ -27028,6 +27226,7 @@ let AccumulationChart = class AccumulationChart extends Component {
         else {
             for (let i = 0; i < currentSeries.points.length; i++) {
                 currentSeries.points[i].y = currentSeries.dataSource[i].y;
+                currentSeries.points[i].color = currentSeries.dataSource[i][currentSeries.pointColorMapping];
                 currentSeries.sumOfPoints += currentSeries.dataSource[i].y;
             }
             this.redraw = this.enableAnimation;
@@ -30898,7 +31097,7 @@ class RangeNavigatorAxis extends DateTime {
             else {
                 continue;
             }
-            textElement$1(this.rangeNavigator.renderer, new TextOption(this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text), argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor, labelElement).setAttribute('style', axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default');
+            textElement$1(this.rangeNavigator.renderer, new TextOption(this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text), argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor, labelElement).style.cursor = axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default';
             prevX = pointX;
             prevLabel = label;
         }

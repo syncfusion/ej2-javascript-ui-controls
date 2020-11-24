@@ -1395,6 +1395,8 @@ let DropDownList = class DropDownList extends DropDownBase {
         super(options, element);
         this.previousValue = null;
         this.isListSearched = false;
+        this.preventChange = false;
+        this.isAngular = false;
     }
     ;
     /**
@@ -2522,7 +2524,12 @@ let DropDownList = class DropDownList extends DropDownBase {
                 value: this.value,
                 element: this.element
             };
-            this.trigger('change', eventArgs);
+            if (this.isAngular && this.preventChange) {
+                this.preventChange = false;
+            }
+            else {
+                this.trigger('change', eventArgs);
+            }
             if (this.isServerBlazor && this.enablePersistence) {
                 // tslint:disable-next-line
                 this.interopAdaptor.invokeMethodAsync('ServerChange');
@@ -3512,6 +3519,9 @@ let DropDownList = class DropDownList extends DropDownBase {
             if (!isNullOrUndefined(this.text)) {
                 this.inputElement.setAttribute('value', this.text);
             }
+        }
+        if (this.element.hasAttribute('data-val')) {
+            this.element.setAttribute('data-val', 'false');
         }
         this.renderComplete();
     }
@@ -8492,6 +8502,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     constructor(option, element) {
         super(option, element);
         this.clearIconWidth = 0;
+        this.preventChange = false;
+        this.isAngular = false;
         this.isValidKey = false;
         this.selectAllEventData = [];
         this.selectAllEventEle = [];
@@ -9286,7 +9298,12 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                 isInteracted: event ? true : false,
                 element: this.element
             };
-            this.trigger('change', eventArgs);
+            if (this.isAngular && this.preventChange) {
+                this.preventChange = false;
+            }
+            else {
+                this.trigger('change', eventArgs);
+            }
             this.updateTempValue();
             if (!this.changeOnBlur) {
                 this.dispatchEvent(this.hiddenElement, 'change');
@@ -10115,6 +10132,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         }
     }
     dispatchSelect(value, eve, element, isNotTrigger, length) {
+        let list = this.listData;
         if (this.initStatus && !isNotTrigger) {
             let val = this.getDataByValue(value);
             let eventArgs = {
@@ -10140,6 +10158,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                         };
                         this.trigger('selectedAll', args);
                         this.selectAllEventData = [];
+                    }
+                    if (this.allowCustomValue && this.isServerRendered && this.listData !== list) {
+                        this.listData = list;
                     }
                     this.updateListSelectEventCallback(value, element, eve);
                 }
@@ -11965,6 +11986,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         this.enable(this.enabled);
         this.enableRTL(this.enableRtl);
         this.checkInitialValue();
+        if (this.element.hasAttribute('data-val')) {
+            this.element.setAttribute('data-val', 'false');
+        }
         this.renderComplete();
     }
     checkInitialValue() {

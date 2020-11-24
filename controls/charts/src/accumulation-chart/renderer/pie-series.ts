@@ -36,6 +36,7 @@ export class PieSeries extends PieBase {
             point.degree = degree;
             point.start = start;
         } else {
+            seriesGroup.appendChild(chart.renderer.drawPath(option));
             this.refresh(point, degree, start, chart, option, seriesGroup);
         }
     }

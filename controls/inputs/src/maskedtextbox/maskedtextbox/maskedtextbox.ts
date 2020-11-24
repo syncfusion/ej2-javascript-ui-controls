@@ -1,6 +1,6 @@
 import { Component, Event, Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, formatUnit, getValue, setValue, attributes, addClass, detach, createElement } from '@syncfusion/ej2-base';
-import { removeClass , Browser, closest} from '@syncfusion/ej2-base';
+import { removeClass , Browser, closest, isBlazor} from '@syncfusion/ej2-base';
 import { Input, InputObject, FloatLabelType } from '../../input/input';
 import { regularExpressions, createMask, applyMask, wireEvents, unwireEvents, unstrippedValue, strippedValue } from '../base/index';
 import { setMaskValue, MaskUndo, setElementValue, bindClearEvent } from '../base/index';
@@ -53,6 +53,8 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     private formElement: HTMLElement;
     private initInputValue: string = '';
     private maskOptions: MaskedTextBoxModel;
+    private isAngular: boolean = false;
+    private preventChange: boolean = false;
 
     /**
      * Gets or sets the CSS classes to root element of the MaskedTextBox which helps to customize the
@@ -287,6 +289,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      */
     public render(): void {
         if (this.element.tagName.toLowerCase() === 'input') {
+            let checkBlazor: boolean = isBlazor() && this.isServerRendered;
             if (this.floatLabelType === 'Never') {
                 addClass([this.element], INPUT);
             }
@@ -296,7 +299,11 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                 this.element.setAttribute('name', this.element.id);
             }
             this.isInitial = true;
-            this.resetMaskedTextBox();
+            if (checkBlazor && Browser.isIE === true) {
+               setTimeout(() => { this.resetMaskedTextBox(); });
+            } else {
+                this.resetMaskedTextBox();
+            }
             this.isInitial = false;
             this.setMaskPlaceholder(true, false);
             this.setWidth(this.width);

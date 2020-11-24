@@ -330,8 +330,7 @@ export class HeaderRenderer {
     }
     private calendarChange(args: ChangedEventArgs & NavigatedEventArgs): void {
         if (args.value.getTime() !== this.parent.selectedDate.getTime()) {
-            let calendarDate: Date = new Date(args.value);
-            calendarDate.setHours(new Date().getHours(), new Date().getMinutes(), new Date().getSeconds());
+            let calendarDate: Date = util.resetTime(new Date(args.value));
             this.parent.changeDate(this.parent.getCurrentTime(calendarDate));
         }
         this.headerPopup.hide();

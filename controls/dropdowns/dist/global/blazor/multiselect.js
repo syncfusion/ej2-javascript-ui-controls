@@ -218,6 +218,8 @@ var MultiSelect = /** @class */ (function (_super) {
     function MultiSelect(option, element) {
         var _this = _super.call(this, option, element) || this;
         _this.clearIconWidth = 0;
+        _this.preventChange = false;
+        _this.isAngular = false;
         _this.isValidKey = false;
         _this.selectAllEventData = [];
         _this.selectAllEventEle = [];
@@ -1016,7 +1018,12 @@ var MultiSelect = /** @class */ (function (_super) {
                 isInteracted: event ? true : false,
                 element: this.element
             };
-            this.trigger('change', eventArgs);
+            if (this.isAngular && this.preventChange) {
+                this.preventChange = false;
+            }
+            else {
+                this.trigger('change', eventArgs);
+            }
             this.updateTempValue();
             if (!this.changeOnBlur) {
                 this.dispatchEvent(this.hiddenElement, 'change');
@@ -1847,6 +1854,7 @@ var MultiSelect = /** @class */ (function (_super) {
     };
     MultiSelect.prototype.dispatchSelect = function (value, eve, element, isNotTrigger, length) {
         var _this = this;
+        var list = this.listData;
         if (this.initStatus && !isNotTrigger) {
             var val_2 = this.getDataByValue(value);
             var eventArgs = {
@@ -1872,6 +1880,9 @@ var MultiSelect = /** @class */ (function (_super) {
                         };
                         _this.trigger('selectedAll', args);
                         _this.selectAllEventData = [];
+                    }
+                    if (_this.allowCustomValue && _this.isServerRendered && _this.listData !== list) {
+                        _this.listData = list;
                     }
                     _this.updateListSelectEventCallback(value, element, eve);
                 }
@@ -3707,6 +3718,9 @@ var MultiSelect = /** @class */ (function (_super) {
         this.enable(this.enabled);
         this.enableRTL(this.enableRtl);
         this.checkInitialValue();
+        if (this.element.hasAttribute('data-val')) {
+            this.element.setAttribute('data-val', 'false');
+        }
         this.renderComplete();
     };
     MultiSelect.prototype.checkInitialValue = function () {

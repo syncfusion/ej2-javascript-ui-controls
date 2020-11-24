@@ -5,11 +5,11 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ContextMenu } from '../../src/treegrid/actions/context-menu';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { CellSaveEventArgs,  } from '../../src';
-import{L10n } from '@syncfusion/ej2-base';
+import{ L10n, select } from '@syncfusion/ej2-base';
 import { CellEditArgs } from '@syncfusion/ej2-grids';
 
 /**
- * Grid base spec 
+ * Grid base spec
  */
 TreeGrid.Inject(ContextMenu);
 describe('ContextMenu module', () => {
@@ -52,8 +52,8 @@ describe('ContextMenu module', () => {
         };
         (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
         (gridObj.grid.contextMenuModule as any).contextMenuOpen();
-        let addrow: HTMLElement = document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
-            .querySelector('#' + gridObj.element.id + '_gridcontrol_cmenu_AddRow');
+        let addrow: HTMLElement = select('#' + gridObj.element.id + '_gridcontrol_cmenu_AddRow',
+                                         document.getElementById(gridObj.element.id + '_gridcontrol_cmenu'));
         expect(addrow.style.display).toBe('none');
         (gridObj.grid.contextMenuModule as any).contextMenuOnClose(e);
         gridObj.grid.editSettings.allowAdding = true;
@@ -293,8 +293,8 @@ describe('ContextMenu module', () => {
       };
       (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
       (gridObj.grid.contextMenuModule as any).contextMenuOpen();
-      let editRecord: HTMLElement = document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
-      .querySelector('#' + gridObj.element.id + '_gridcontrol_cmenu_Edit');
+      let editRecord: HTMLElement = select('#' + gridObj.element.id + '_gridcontrol_cmenu_Edit',
+                                           document.getElementById(gridObj.element.id + '_gridcontrol_cmenu'));
       expect(editRecord.style.display).toBe('none');
     });
     afterAll(() => {

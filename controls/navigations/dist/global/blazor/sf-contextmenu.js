@@ -272,7 +272,7 @@ var SfContextMenu = /** @class */ (function () {
     SfContextMenu.prototype.setBlankIconStyle = function (menu, isRtl) {
         var blankIconList = [].slice.call(menu.getElementsByClassName('e-blankicon'));
         var cssProp = isRtl ? { padding: 'paddingRight', cssSelector: 'padding-right', margin: 'marginLeft' } : { padding: 'paddingLeft', cssSelector: 'padding-left', margin: 'marginRight' };
-        [].slice.call(menu.querySelectorAll('.e-menu-item[style~="' + cssProp.cssSelector + '"]:not(.e-blankicon)')).forEach(function (li) {
+        [].slice.call(menu.querySelectorAll('.e-menu-item[style*="' + cssProp.cssSelector + '"]:not(.e-blankicon)')).forEach(function (li) {
             // tslint:disable-next-line:no-any
             li.style[cssProp.padding] = EMPTY;
         });

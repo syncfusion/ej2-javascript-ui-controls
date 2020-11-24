@@ -7596,4 +7596,23 @@ describe('MultiSelect', () => {
             ddl.destroy();
         });
     });
+    describe('bug(EJMVC-273): EJ2 Dropdown list is preventing form submission with integer data type as value property', function () {
+        let listObj: any;
+        beforeEach(function () {
+            let inputElement: HTMLElement = createElement('input', { id: 'multiselect' });
+            document.body.appendChild(inputElement);
+            inputElement.setAttribute('data-val','true');
+        });
+        afterEach(function () {
+            if (listObj) {
+                listObj.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Entering the class name without any empty space', function () {
+            listObj = new MultiSelect({});
+            listObj.appendTo('#multiselect');
+            expect(listObj.element.getAttribute('data-val')).toBe('false');
+        });
+    });
 });

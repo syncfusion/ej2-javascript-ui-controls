@@ -603,6 +603,9 @@ var TooltipSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Complex({ color: '#cccccc', width: 0.5 }, Border)
     ], TooltipSettings.prototype, "border", void 0);
+    __decorate$1([
+        Property('None')
+    ], TooltipSettings.prototype, "position", void 0);
     return TooltipSettings;
 }(ChildProperty));
 /**
@@ -3724,7 +3727,14 @@ function textElement$1(renderer, option, font, color, parent, isMinus, redraw, i
         'dominant-baseline': option.baseLine
     };
     text = typeof option.text === 'string' ? option.text : isMinus ? option.text[option.text.length - 1] : option.text[0];
-    htmlObject = renderer.createText(renderOptions, text, seriesClipRect ? seriesClipRect.x : 0, seriesClipRect ? seriesClipRect.y : 0);
+    var transX = seriesClipRect ? seriesClipRect.x : 0;
+    var transY = seriesClipRect ? seriesClipRect.y : 0;
+    htmlObject = renderer.createText(renderOptions, text, transX, transY);
+    htmlObject.style.fontFamily = font.fontFamily;
+    htmlObject.style.fontStyle = font.fontStyle;
+    htmlObject.style.fontSize = font.size;
+    htmlObject.style.fontWeight = font.fontWeight;
+    htmlObject.style.color = font.color;
     if (typeof option.text !== 'string' && option.text.length > 1) {
         for (var i = 1, len = option.text.length; i < len; i++) {
             height = (measureText(option.text[i], font).height);
@@ -5954,7 +5964,8 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
                     this.currentViewData = this.chart.paretoSeriesModule.performCumulativeCalculation(this.currentViewData, this);
                 }
             }
-            this.isRectTypeSeries = this.type.indexOf('Column') > -1 || this.type.indexOf('Bar') > -1;
+            this.isRectTypeSeries = this.type.indexOf('Column') > -1 || this.type.indexOf('Bar') > -1
+                || this.type.indexOf('Histogram') > -1;
         }
         var len = Object.keys(this.currentViewData).length;
         this.points = [];
@@ -6275,8 +6286,8 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
             chart.refreshBound();
             chart.trigger('loaded', { chart: chart.isBlazor ? {} : chart });
             if (this.chart.stockChart && this.chart.stockChart.initialRender) {
-                this.chart.stockChart.stockChartDataManagerSuccess();
                 this.chart.stockChart.initialRender = false;
+                this.chart.stockChart.stockChartDataManagerSuccess();
             }
         }
         if (this instanceof Series) {
@@ -9508,6 +9519,34 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         this.series = [];
         this.refresh();
     };
+    /**
+     * To add secondary axis for the chart
+     * @param {AxisModel[]} axisCollection - Defines the axis collection to be added in chart.
+     * @return {void}.
+     */
+    Chart.prototype.addAxes = function (axisCollection) {
+        for (var _i = 0, axisCollection_1 = axisCollection; _i < axisCollection_1.length; _i++) {
+            var axis = axisCollection_1[_i];
+            axis = new Axis(this, 'axes', axis);
+            if (this.isBlazor) {
+                axis.interval = isNaN(axis.interval) ? null : axis.interval;
+                axis.desiredIntervals = isNaN(axis.desiredIntervals) ? null : axis.desiredIntervals;
+            }
+            this.axes.push(axis);
+        }
+        this.refresh();
+    };
+    /**
+     * To remove secondary axis for the chart
+     * @param index - Defines the axis collection to be removed in chart.
+     * @return {void}.
+     */
+    Chart.prototype.removeAxis = function (index) {
+        this.redraw = false;
+        this.axes.splice(index, 1);
+        this.refresh();
+    };
+    
     /**
      * To destroy the widget
      * @method destroy
@@ -13202,14 +13241,14 @@ var MultiColoredSeries = /** @__PURE__ @class */ (function (_super) {
             [startPointLocation, startPointLocation = endPointLocation][0] : endPointLocation;
         var options;
         if ((endPointLocation.x - startPointLocation.x > 0) && (endPointLocation.y - startPointLocation.y > 0)) {
-            options = new RectOption(series.chart.element.id + '_ChartSegmentClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1, {
+            options = new RectOption(series.chart.element.id + '_ChartSegment' + series.index + 'ClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1, {
                 x: startPointLocation.x,
                 y: startPointLocation.y,
                 width: endPointLocation.x - startPointLocation.x,
                 height: endPointLocation.y - startPointLocation.y
             });
             series.seriesElement.appendChild(appendClipElement(series.chart.redraw, options, series.chart.renderer));
-            return 'url(#' + series.chart.element.id + '_ChartSegmentClipRect_' + index + ')';
+            return 'url(#' + series.chart.element.id + '_ChartSegment' + series.index + 'ClipRect_' + index + ')';
         }
         return null;
     };
@@ -15849,7 +15888,7 @@ var WaterfallSeries = /** @__PURE__ @class */ (function (_super) {
                 for (var j = 0; j < data.length; j++) {
                     if (j === sumIndex[k]) {
                         if (intermediateSum !== undefined) {
-                            index = subArraySum(data, -1, sumIndex[k], sumIndex, series);
+                            index = subArraySum(data, intermediateSum[k] - 1, sumIndex[k], sumIndex, series);
                         }
                         else {
                             index = subArraySum(data, -1, sumIndex[k], null, series);
@@ -16875,11 +16914,15 @@ var HistogramSeries = /** @__PURE__ @class */ (function (_super) {
             yValues: yValues
         };
         var min = Math.min.apply(Math, series.histogramValues.yValues);
+        var max = Math.max.apply(Math, series.histogramValues.yValues);
         this.calculateBinInterval(series.histogramValues.yValues, series);
         binWidth = series.histogramValues.binWidth;
         var yCount;
         for (var j = 0; j < data.length;) {
             yCount = yValues.filter(function (y) { return y >= min && y < (min + (binWidth)); }).length;
+            if ((min + binWidth) === max) {
+                yCount += yValues.filter(function (y) { return y >= max; }).length;
+            }
             updatedData.push((_a = {
                     'x': min + binWidth / 2
                 }, _a[series.yName] = yCount, _a));
@@ -19512,29 +19555,66 @@ var BaseTooltip = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    BaseTooltip.prototype.createTooltip = function (chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints, templatePoint, customTemplate) {
+    BaseTooltip.prototype.createTooltip = function (chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints, templatePoint, customTemplate, tooltipPosition) {
         if (extraPoints === void 0) { extraPoints = null; }
         if (templatePoint === void 0) { templatePoint = null; }
+        if (tooltipPosition === void 0) { tooltipPosition = 'None'; }
         var series = this.currentPoints[0].series;
         var module = chart.tooltipModule || chart.accumulationTooltipModule;
         if (!module) { // For the tooltip enable is false.
             return;
         }
+        var isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
+        var inverted = this.chart.requireInvertedAxis && series.isRectSeries;
+        var position = null;
+        if (tooltipPosition === 'Auto' && this.text.length <= 1) {
+            var contentSize = measureText(this.text[0], chart.tooltip.textStyle);
+            var headerSize = (!(this.header === '' || this.header === '<b></b>')) ? measureText(this.header, this.textStyle) :
+                new Size(0, 0);
+            // marker size + arrowpadding + 2 * padding + markerpadding
+            var markerSize = 10 + 12 + (2 * 10) + 5;
+            contentSize.width = Math.max(contentSize.width, headerSize.width) + ((shapes.length > 0) ? markerSize : 0);
+            var heightPadding = 12 + (2 * 10) + (headerSize.height > 0 ? (2 * 10) : 0);
+            contentSize.height = contentSize.height + headerSize.height + heightPadding;
+            position = this.getCurrentPosition(isNegative, inverted);
+            position = this.getPositionBySize(contentSize, new Rect(0, 0, bounds.width, bounds.height), location, position);
+            isNegative = (position === 'Left') || (position === 'Bottom');
+            inverted = (position === 'Left') || (position === 'Right');
+        }
+        else if (tooltipPosition !== 'None' && this.text.length <= 1) {
+            position = tooltipPosition;
+            isNegative = (position === 'Left') || (position === 'Bottom');
+            inverted = (position === 'Left') || (position === 'Right');
+        }
         if (isFirst) {
             this.svgTooltip = new Tooltip({
                 opacity: chart.tooltip.opacity,
-                header: this.headerText, content: this.text, fill: chart.tooltip.fill, border: chart.tooltip.border,
-                enableAnimation: chart.tooltip.enableAnimation, location: location, shared: chart.tooltip.shared,
-                shapes: shapes, clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
-                areaBounds: bounds, palette: this.findPalette(), template: customTemplate || chart.tooltip.template, data: templatePoint,
-                theme: chart.theme, offset: offset, textStyle: chart.tooltip.textStyle,
-                isNegative: (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0),
-                inverted: this.chart.requireInvertedAxis && series.isRectSeries,
+                header: this.headerText,
+                content: this.text,
+                fill: chart.tooltip.fill,
+                border: chart.tooltip.border,
+                enableAnimation: chart.tooltip.enableAnimation,
+                location: location,
+                shared: chart.tooltip.shared,
+                shapes: shapes,
+                clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
+                areaBounds: bounds,
+                palette: this.findPalette(),
+                template: customTemplate || chart.tooltip.template,
+                data: templatePoint,
+                theme: chart.theme,
+                offset: offset,
+                textStyle: chart.tooltip.textStyle,
+                isNegative: isNegative,
+                inverted: inverted,
                 arrowPadding: this.text.length > 1 || this.chart.stockChart ? 0 : 12,
-                availableSize: chart.availableSize, duration: this.chart.tooltip.duration,
-                isCanvas: this.chart.enableCanvas, isTextWrap: chart.tooltip.enableTextWrap && chart.getModuleName() === 'chart',
+                availableSize: chart.availableSize,
+                duration: this.chart.tooltip.duration,
+                isCanvas: this.chart.enableCanvas,
+                isTextWrap: chart.tooltip.enableTextWrap && chart.getModuleName() === 'chart',
                 blazorTemplate: { name: 'Template', parent: this.chart.tooltip },
                 controlInstance: this.chart,
+                tooltipPlacement: position,
                 tooltipRender: function () {
                     module.removeHighlight(module.control);
                     module.highlightPoints();
@@ -19558,9 +19638,11 @@ var BaseTooltip = /** @__PURE__ @class */ (function (_super) {
                 this.svgTooltip.data = templatePoint;
                 this.svgTooltip.template = chart.tooltip.template;
                 this.svgTooltip.textStyle = chart.tooltip.textStyle;
-                this.svgTooltip.isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
+                this.svgTooltip.isNegative = isNegative;
+                this.svgTooltip.inverted = inverted;
                 this.svgTooltip.clipBounds = this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation;
                 this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart ? 0 : 12;
+                this.svgTooltip.tooltipPlacement = position;
                 this.svgTooltip.dataBind();
             }
         }
@@ -19568,6 +19650,76 @@ var BaseTooltip = /** @__PURE__ @class */ (function (_super) {
         if (this.chart.isReact) {
             this.chart.renderReactTemplates();
         }
+    };
+    BaseTooltip.prototype.getPositionBySize = function (textSize, bounds, arrowLocation, position) {
+        var isTop = this.isTooltipFitPosition('Top', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        var isBottom = this.isTooltipFitPosition('Bottom', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        var isRight = this.isTooltipFitPosition('Right', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        var isLeft = this.isTooltipFitPosition('Left', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        var tooltipPos;
+        if (isTop || isBottom || isRight || isLeft) {
+            if (position === 'Top') {
+                tooltipPos = isTop ? 'Top' : (isBottom ? 'Bottom' : (isRight ? 'Right' : 'Left'));
+            }
+            else if (position === 'Bottom') {
+                tooltipPos = isBottom ? 'Bottom' : (isTop ? 'Top' : (isRight ? 'Right' : 'Left'));
+            }
+            else if (position === 'Right') {
+                tooltipPos = isRight ? 'Right' : (isLeft ? 'Left' : (isTop ? 'Top' : 'Bottom'));
+            }
+            else {
+                tooltipPos = isLeft ? 'Left' : (isRight ? 'Right' : (isTop ? 'Top' : 'Bottom'));
+            }
+        }
+        else {
+            var size = [(arrowLocation.x - bounds.x), ((bounds.x + bounds.width) - arrowLocation.x), (arrowLocation.y - bounds.y),
+                ((bounds.y + bounds.height) - arrowLocation.y)];
+            var index = size.indexOf(Math.max.apply(this, size));
+            position = (index === 0) ? 'Left' : (index === 1) ? 'Right' : (index === 2) ? 'Top' : 'Bottom';
+            return position;
+        }
+        return tooltipPos;
+    };
+    BaseTooltip.prototype.isTooltipFitPosition = function (position, bounds, location, size) {
+        var start = new ChartLocation(0, 0);
+        var end = new ChartLocation(0, 0);
+        switch (position) {
+            case 'Top':
+                start.x = location.x - (size.width / 2);
+                start.y = location.y - size.height;
+                end.x = location.x + (size.width / 2);
+                end.y = location.y;
+                break;
+            case 'Bottom':
+                start.x = location.x - (size.width / 2);
+                start.y = location.y;
+                end.x = location.x + (size.width / 2);
+                end.y = location.y + size.height;
+                break;
+            case 'Right':
+                start.x = location.x;
+                start.y = location.y - (size.height / 2);
+                end.x = location.x + size.width;
+                end.y = location.y + (size.height / 2);
+                break;
+            case 'Left':
+                start.x = location.x - size.width;
+                start.y = location.y - (size.height / 2);
+                end.x = location.x;
+                end.y = location.y + (size.height / 2);
+                break;
+        }
+        return (withInBounds(start.x, start.y, bounds) && withInBounds(end.x, end.y, bounds));
+    };
+    BaseTooltip.prototype.getCurrentPosition = function (isNegative, inverted) {
+        var position;
+        if (inverted) {
+            position = isNegative ? 'Left' : 'Right';
+        }
+        else {
+            position = isNegative ? 'Bottom' : 'Top';
+        }
+        return position;
     };
     BaseTooltip.prototype.findPalette = function () {
         var colors = [];
@@ -19860,7 +20012,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
                 _this.headerText = argsData.headerText;
                 _this.formattedText = _this.formattedText.concat(argsData.text);
                 _this.text = _this.formattedText;
-                _this.createTooltip(_this.chart, isFirst, _this.getSymbolLocation(point), point.series.clipRect, point.point, _this.findShapes(), _this.findMarkerHeight(_this.currentPoints[0]), _this.chart.chartAxisLayoutPanel.seriesClipRect, null, _this.getTemplateText(point), _this.chart.tooltip.template ? argsData.template : '');
+                _this.createTooltip(_this.chart, isFirst, _this.getSymbolLocation(point), point.series.clipRect, point.point, _this.findShapes(), _this.findMarkerHeight(_this.currentPoints[0]), _this.chart.chartAxisLayoutPanel.seriesClipRect, null, _this.getTemplateText(point), _this.chart.tooltip.template ? argsData.template : '', _this.chart.tooltip.position);
             }
             else {
                 _this.removeHighlight(_this.control);
@@ -20254,6 +20406,8 @@ var Toolkit = /** @__PURE__ @class */ (function () {
     function Toolkit(chart) {
         this.iconRectOverFill = 'transparent';
         this.iconRectSelectionFill = 'transparent';
+        /** @private */
+        this.zoomCompleteEvtCollection = [];
         this.chart = chart;
         this.elementId = chart.element.id;
         this.chart.svgRenderer = new SvgRenderer(this.elementId);
@@ -20439,21 +20593,23 @@ var Toolkit = /** @__PURE__ @class */ (function () {
         chart.svgObject.setAttribute('cursor', 'auto');
         var zoomingEventArgs;
         var zoomedAxisCollection = [];
+        this.zoomCompleteEvtCollection = [];
         for (var _i = 0, _a = chart.axisCollections; _i < _a.length; _i++) {
             var axis = _a[_i];
             argsData = {
-                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
-                currentZoomFactor: 1, currentZoomPosition: 0
+                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
+                previousZoomPosition: axis.zoomPosition, currentZoomFactor: 1, currentZoomPosition: 0,
+                previousVisibleRange: axis.visibleRange, currentVisibleRange: null
             };
             axis.zoomFactor = 1;
             axis.zoomPosition = 0;
             if (axis.zoomingScrollBar) {
                 axis.zoomingScrollBar.isScrollUI = false;
             }
-            chart.trigger(zoomComplete, argsData);
             if (!argsData.cancel) {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
+                this.zoomCompleteEvtCollection.push(argsData);
             }
             zoomedAxisCollection.push({
                 zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
@@ -20534,11 +20690,13 @@ var Toolkit = /** @__PURE__ @class */ (function () {
             chart.disableTrackTooltip = true;
             chart.delayRedraw = true;
             var argsData = void 0;
+            this.zoomCompleteEvtCollection = [];
             for (var _i = 0, _a = axes; _i < _a.length; _i++) {
                 var axis = _a[_i];
                 argsData = {
                     cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
-                    previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
+                    previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition,
+                    previousVisibleRange: axis.visibleRange, currentVisibleRange: null
                 };
                 if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
                     (axis.orientation === 'Vertical' && mode !== 'X')) {
@@ -20550,10 +20708,10 @@ var Toolkit = /** @__PURE__ @class */ (function () {
                     }
                     argsData.currentZoomFactor = zoomFactor;
                     argsData.currentZoomPosition = zoomPosition;
-                    chart.trigger(zoomComplete, argsData);
                     if (!argsData.cancel) {
                         axis.zoomFactor = argsData.currentZoomFactor;
                         axis.zoomPosition = argsData.currentZoomPosition;
+                        this.zoomCompleteEvtCollection.push(argsData);
                     }
                 }
             }
@@ -20576,6 +20734,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
      * @private.
      */
     function Zoom(chart) {
+        this.zoomCompleteEvtCollection = [];
         this.chart = chart;
         this.isPointer = Browser.isPointer;
         this.browserName = Browser.info.name;
@@ -20648,6 +20807,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         this.isZoomed = true;
         this.offset = !chart.delayRedraw ? chart.chartAxisLayoutPanel.seriesClipRect : this.offset;
         chart.delayRedraw = true;
+        this.zoomCompleteEvtCollection = [];
         chart.disableTrackTooltip = true;
         var argsData;
         var zoomingEventArgs;
@@ -20655,8 +20815,10 @@ var Zoom = /** @__PURE__ @class */ (function () {
         for (var _i = 0, _a = axes; _i < _a.length; _i++) {
             var axis = _a[_i];
             argsData = {
-                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
-                currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
+                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
+                previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor,
+                currentZoomPosition: axis.zoomPosition, previousVisibleRange: axis.visibleRange,
+                currentVisibleRange: null
             };
             currentScale = Math.max(1 / minMax(axis.zoomFactor, 0, 1), 1);
             if (axis.orientation === 'Horizontal') {
@@ -20667,10 +20829,10 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 offset = (chart.previousMouseMoveY - chart.mouseY) / axis.rect.height / currentScale;
                 argsData.currentZoomPosition = minMax(axis.zoomPosition - offset, 0, (1 - axis.zoomFactor));
             }
-            chart.trigger(zoomComplete, argsData);
             if (!argsData.cancel) {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
+                this.zoomCompleteEvtCollection.push(argsData);
             }
             zoomedAxisCollection.push({
                 zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
@@ -20685,6 +20847,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         }
         else {
             this.performDefferedZoom(chart);
+            this.redrawOnZooming(chart, false);
         }
     };
     Zoom.prototype.performDefferedZoom = function (chart) {
@@ -20758,17 +20921,21 @@ var Zoom = /** @__PURE__ @class */ (function () {
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
         var onZoomingEventArg;
         var zoomedAxisCollections = [];
+        this.zoomCompleteEvtCollection = [];
         for (var _i = 0, _a = axes; _i < _a.length; _i++) {
             var axis = _a[_i];
             argsData = {
-                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
-                currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
+                cancel: false, name: zoomComplete, axis: axis,
+                previousZoomFactor: axis.zoomFactor,
+                previousZoomPosition: axis.zoomPosition,
+                currentZoomFactor: axis.zoomFactor,
+                currentZoomPosition: axis.zoomPosition,
+                previousVisibleRange: axis.visibleRange, currentVisibleRange: null
             };
             if (axis.orientation === 'Horizontal') {
                 if (mode !== 'Y') {
                     argsData.currentZoomPosition += Math.abs((zoomRect.x - bounds.x) / (bounds.width)) * axis.zoomFactor;
                     argsData.currentZoomFactor *= (zoomRect.width / bounds.width);
-                    chart.trigger(zoomComplete, argsData);
                 }
             }
             else {
@@ -20776,12 +20943,12 @@ var Zoom = /** @__PURE__ @class */ (function () {
                     argsData.currentZoomPosition += (1 - Math.abs((zoomRect.height + (zoomRect.y - bounds.y)) / (bounds.height)))
                         * axis.zoomFactor;
                     argsData.currentZoomFactor *= (zoomRect.height / bounds.height);
-                    chart.trigger(zoomComplete, argsData);
                 }
             }
             if (!argsData.cancel) {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
+                this.zoomCompleteEvtCollection.push(argsData);
             }
             zoomedAxisCollections.push({
                 zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
@@ -20797,7 +20964,33 @@ var Zoom = /** @__PURE__ @class */ (function () {
         }
         else {
             this.zoomingRect = new Rect(0, 0, 0, 0);
+            this.redrawOnZooming(chart);
+        }
+    };
+    /** It is used to redraw the chart and trigger zoomComplete event */
+    Zoom.prototype.redrawOnZooming = function (chart, isRedraw, isMouseUp) {
+        if (isRedraw === void 0) { isRedraw = true; }
+        if (isMouseUp === void 0) { isMouseUp = false; }
+        var zoomCompleteCollection = isMouseUp ? this.toolkit.zoomCompleteEvtCollection :
+            this.zoomCompleteEvtCollection;
+        if (isRedraw) {
             this.performZoomRedraw(chart);
+        }
+        var argsData;
+        for (var i = 0; i < zoomCompleteCollection.length; i++) {
+            if (!zoomCompleteCollection[i].cancel) {
+                argsData = {
+                    cancel: false, name: zoomComplete,
+                    axis: chart.axisCollections[i],
+                    previousZoomFactor: zoomCompleteCollection[i].previousZoomFactor,
+                    previousZoomPosition: zoomCompleteCollection[i].previousZoomPosition,
+                    currentZoomFactor: chart.axisCollections[i].zoomFactor,
+                    currentZoomPosition: chart.axisCollections[i].zoomPosition,
+                    currentVisibleRange: chart.axisCollections[i].visibleRange,
+                    previousVisibleRange: zoomCompleteCollection[i].previousVisibleRange
+                };
+                chart.trigger(zoomComplete, argsData);
+            }
         }
     };
     /**
@@ -20808,7 +21001,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
     Zoom.prototype.performMouseWheelZooming = function (e, mouseX, mouseY, chart, axes) {
         var _this = this;
         var direction = (this.browserName === 'mozilla' && !this.isPointer) ?
-            -(e.detail) / 3 > 0 ? 1 : -1 : (e.wheelDelta / 120) > 0 ? 1 : -1;
+            -(e.detail) / 3 > 0 ? 1 : -1 : (e.wheelDelta > 0 ? 1 : -1);
         var mode = this.zooming.mode;
         var origin = 0.5;
         var cumulative;
@@ -20819,14 +21012,18 @@ var Zoom = /** @__PURE__ @class */ (function () {
         chart.disableTrackTooltip = true;
         this.performedUI = true;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
+        this.zoomCompleteEvtCollection = [];
         var argsData;
         var onZoomingEventArgs;
         var zoomedAxisCollection = [];
         for (var _i = 0, _a = axes; _i < _a.length; _i++) {
             var axis = _a[_i];
             argsData = {
-                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
-                currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
+                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
+                previousZoomPosition: axis.zoomPosition,
+                currentZoomFactor: axis.zoomFactor,
+                currentZoomPosition: axis.zoomPosition, currentVisibleRange: null,
+                previousVisibleRange: axis.visibleRange
             };
             if ((axis.orientation === 'Vertical' && mode !== 'X') ||
                 (axis.orientation === 'Horizontal' && mode !== 'Y')) {
@@ -20834,18 +21031,18 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 if (cumulative >= 1) {
                     origin = axis.orientation === 'Horizontal' ? mouseX / axis.rect.width : 1 - (mouseY / axis.rect.height);
                     origin = origin > 1 ? 1 : origin < 0 ? 0 : origin;
-                    zoomFactor = (cumulative === 1) ? 1 : minMax(1 / cumulative, 0, 1);
+                    zoomFactor = (cumulative === 1) ? 1 : minMax((direction > 0 ? 0.9 : 1.1) / cumulative, 0, 1);
                     zoomPosition = (cumulative === 1) ? 0 : axis.zoomPosition + ((axis.zoomFactor - zoomFactor) * origin);
                     if (axis.zoomPosition !== zoomPosition || axis.zoomFactor !== zoomFactor) {
                         zoomFactor = (zoomPosition + zoomFactor) > 1 ? (1 - zoomPosition) : zoomFactor;
                     }
                     argsData.currentZoomFactor = zoomFactor;
                     argsData.currentZoomPosition = zoomPosition;
-                    chart.trigger(zoomComplete, argsData);
                 }
                 if (!argsData.cancel) {
                     axis.zoomFactor = argsData.currentZoomFactor;
                     axis.zoomPosition = argsData.currentZoomPosition;
+                    this.zoomCompleteEvtCollection.push(argsData);
                 }
             }
             zoomedAxisCollection.push({
@@ -20858,7 +21055,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
             this.chart.trigger(onZooming, onZoomingEventArgs, function () { _this.performZoomRedraw(chart); });
         }
         else {
-            this.performZoomRedraw(chart);
+            this.redrawOnZooming(chart);
         }
     };
     /**
@@ -20917,6 +21114,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         }
         this.calculatePinchZoomFactor(chart, pinchRect);
         this.refreshAxis(chart.chartAxisLayoutPanel, chart, chart.axisCollections);
+        this.redrawOnZooming(chart, false);
         return true;
     };
     Zoom.prototype.calculatePinchZoomFactor = function (chart, pinchRect) {
@@ -20932,6 +21130,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var currentZP;
         var onZoomingEventArgs;
         var zoomedAxisCollection = [];
+        this.zoomCompleteEvtCollection = [];
         for (var index = 0; index < chart.axisCollections.length; index++) {
             var axis = chart.axisCollections[index];
             if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
@@ -20940,7 +21139,9 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 currentZP = axis.zoomPosition;
                 argsData = {
                     cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
-                    previousZoomPosition: axis.zoomPosition, currentZoomFactor: currentZF, currentZoomPosition: currentZP
+                    previousZoomPosition: axis.zoomPosition, currentZoomFactor: currentZF,
+                    currentZoomPosition: currentZP, previousVisibleRange: axis.visibleRange,
+                    currentVisibleRange: null
                 };
                 if (axis.orientation === 'Horizontal') {
                     value = pinchRect.x - this.offset.x;
@@ -20962,10 +21163,10 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 currentZF = (selectionMax - selectionMin) / this.zoomAxes[index].actualDelta;
                 argsData.currentZoomPosition = currentZP < 0 ? 0 : currentZP;
                 argsData.currentZoomFactor = currentZF > 1 ? 1 : currentZF;
-                chart.trigger(zoomComplete, argsData);
                 if (!argsData.cancel) {
                     axis.zoomFactor = argsData.currentZoomFactor;
                     axis.zoomPosition = argsData.currentZoomPosition;
+                    this.zoomCompleteEvtCollection.push(argsData);
                 }
                 zoomedAxisCollection.push({
                     zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
@@ -21282,7 +21483,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var performZoomRedraw = e.target.id.indexOf(chart.element.id + '_ZoomOut_') === -1 ||
             e.target.id.indexOf(chart.element.id + '_ZoomIn_') === -1;
         if (chart.isChartDrag || performZoomRedraw) {
-            this.performZoomRedraw(chart);
+            this.redrawOnZooming(chart, true, true);
         }
         if (chart.isTouch) {
             if (chart.isDoubleTap && withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect)
@@ -28442,6 +28643,7 @@ var PieSeries = /** @__PURE__ @class */ (function (_super) {
             point.start = start;
         }
         else {
+            seriesGroup.appendChild(chart.renderer.drawPath(option));
             this.refresh(point, degree, start, chart, option, seriesGroup);
         }
     };
@@ -28682,6 +28884,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
         else {
             for (var i = 0; i < currentSeries.points.length; i++) {
                 currentSeries.points[i].y = currentSeries.dataSource[i].y;
+                currentSeries.points[i].color = currentSeries.dataSource[i][currentSeries.pointColorMapping];
                 currentSeries.sumOfPoints += currentSeries.dataSource[i].y;
             }
             this.redraw = this.enableAnimation;
@@ -32765,7 +32968,7 @@ var RangeNavigatorAxis = /** @__PURE__ @class */ (function (_super) {
             else {
                 continue;
             }
-            textElement$1(this.rangeNavigator.renderer, new TextOption(this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text), argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor, labelElement).setAttribute('style', axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default');
+            textElement$1(this.rangeNavigator.renderer, new TextOption(this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text), argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor, labelElement).style.cursor = axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default';
             prevX = pointX;
             prevLabel = label;
         }

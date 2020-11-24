@@ -8524,8 +8524,8 @@ var ContextMenu$1 = /** @class */ (function () {
         this.parent.off('contextMenuClick', this.contextMenuClick);
     };
     ContextMenu$$1.prototype.contextMenuOpen = function (args) {
-        var addRow = args.element.querySelector('#' + this.parent.element.id + '_gridcontrol_cmenu_AddRow');
-        var editRecord = args.element.querySelector('#' + this.parent.element.id + '_gridcontrol_cmenu_Edit');
+        var addRow = sf.base.select('#' + this.parent.element.id + '_gridcontrol_cmenu_AddRow', args.element);
+        var editRecord = sf.base.select('#' + this.parent.element.id + '_gridcontrol_cmenu_Edit', args.element);
         if (addRow) {
             if (this.parent.grid.editSettings.allowAdding === false) {
                 addRow.style.display = 'none';

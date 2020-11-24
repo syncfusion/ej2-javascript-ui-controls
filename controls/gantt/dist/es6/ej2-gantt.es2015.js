@@ -11104,6 +11104,7 @@ let Gantt = class Gantt extends Component {
      */
     render() {
         if (this.isReact) {
+            this.treeGrid.isReact = true;
             this.treeGrid.grid.isReact = true;
         }
         createSpinner({ target: this.element }, this.createElement);

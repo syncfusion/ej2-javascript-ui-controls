@@ -507,7 +507,7 @@ export class PdfViewerBase {
     public initializeComponent(): void {
         let element: HTMLElement = document.getElementById(this.pdfViewer.element.id);
         if (element) {
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 this.pdfViewer.element.classList.add('e-pv-mobile-view');
             }
             let controlWidth: string = '100%';
@@ -516,7 +516,7 @@ export class PdfViewerBase {
             this.viewerMainContainer =  isBlazor() ? element.querySelector('.e-pv-viewer-main-container') : createElement('div', { id: this.pdfViewer.element.id + '_viewerMainContainer', className: 'e-pv-viewer-main-container' });
             // tslint:disable-next-line:max-line-length
             this.viewerContainer = isBlazor() ? element.querySelector('.e-pv-viewer-container') : createElement('div', { id: this.pdfViewer.element.id + '_viewerContainer', className: 'e-pv-viewer-container', attrs: { 'aria-label': 'pdfviewer scroll view' } });
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 this.createMobilePageNumberContainer();
             }
             // tslint:disable-next-line
@@ -559,13 +559,13 @@ export class PdfViewerBase {
             }
             // tslint:disable-next-line:max-line-length
             let viewerWidth: number = this.pdfViewer.element.clientWidth;
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 viewerWidth = viewerWidth - (this.navigationPane.sideBarToolbar ? this.navigationPane.getViewerContainerLeft() : 0) -
                     (this.navigationPane.commentPanelContainer ? this.navigationPane.getViewerContainerRight() : 0);
             }
             this.viewerContainer.style.width = viewerWidth + 'px';
             this.viewerMainContainer.appendChild(this.viewerContainer);
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 this.mobileScrollerContainer.style.left = (viewerWidth - parseFloat(this.mobileScrollerContainer.style.width)) + 'px';
                 this.mobilePageNoContainer.style.left = (viewerWidth / 2) - (parseFloat(this.mobilePageNoContainer.style.width) / 2) + 'px';
                 this.mobilePageNoContainer.style.top = (this.pdfViewer.element.clientHeight / 2) + 'px';
@@ -584,11 +584,11 @@ export class PdfViewerBase {
             }
             this.viewerContainer.appendChild(this.pageContainer);
             this.pageContainer.style.width = this.viewerContainer.clientWidth + 'px';
-            if (toolbarDiv && this.pdfViewer.thumbnailViewModule && !Browser.isDevice) {
+            if (toolbarDiv && this.pdfViewer.thumbnailViewModule && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
                 this.pdfViewer.thumbnailViewModule.createThumbnailContainer();
             }
             this.createPrintPopup();
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 this.createGoToPagePopup();
             }
             let waitingPopup: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_loadingIndicator' });
@@ -602,7 +602,7 @@ export class PdfViewerBase {
             }
             this.contextMenuModule.createContextMenu();
             this.wireEvents();
-            if (this.pdfViewer.textSearchModule && !Browser.isDevice) {
+            if (this.pdfViewer.textSearchModule && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
                 this.pdfViewer.textSearchModule.createTextSearchBox();
             }
             if (this.pdfViewer.documentPath) {
@@ -671,7 +671,8 @@ export class PdfViewerBase {
         this.ispageMoved = false;
         this.isThumb = true;
         if (this.isTextMarkupAnnotationModule()) {
-            if (this.pdfViewer.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage != null && Browser.isDevice) {
+            // tslint:disable-next-line:max-line-length
+            if (this.pdfViewer.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage != null && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
                 let pageNumber: number = this.pdfViewer.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage;
                 this.pdfViewer.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage = null;
                 this.pdfViewer.annotationModule.textMarkupAnnotationModule.clearAnnotationSelection(pageNumber);
@@ -695,7 +696,7 @@ export class PdfViewerBase {
     private setMaximumHeight(element: any): void {
         // tslint:disable-next-line
         let currentRect: any = element.getBoundingClientRect();
-        if (!Browser.isDevice || (currentRect && currentRect.height === 0)) {
+        if ((!Browser.isDevice || this.pdfViewer.enableDesktopMode) || (currentRect && currentRect.height === 0)) {
             element.style.minHeight = '500px';
         }
         this.updateWidth();
@@ -705,7 +706,7 @@ export class PdfViewerBase {
     private applyViewerHeight(element: any): void {
         // tslint:disable-next-line
         let currentRect: any = element.getBoundingClientRect();
-        if (Browser.isDevice && currentRect && currentRect.height === 0) {
+        if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && currentRect && currentRect.height === 0) {
             element.style.minHeight = '500px';
         }
     }
@@ -870,7 +871,7 @@ export class PdfViewerBase {
             // tslint:disable-next-line
             let pageData: any = { pageCount: data.pageCount, pageSizes: data.pageSizes };
             window.sessionStorage.setItem(this.documentId + '_pagedata', JSON.stringify(pageData));
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 this.mobileScrollerContainer.style.display = '';
                 // tslint:disable-next-line
                 let toolbarHeight: any = this.pdfViewer.toolbarModule ? this.toolbarHeight : 0;
@@ -879,7 +880,7 @@ export class PdfViewerBase {
         } else {
             this.pageCount = 0;
             this.currentPageNumber = 0;
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 this.mobileScrollerContainer.style.display = 'none';
             }
             if (data === 4) {
@@ -926,11 +927,9 @@ export class PdfViewerBase {
                 }
             }
             if (this.pdfViewer.zoomMode === 'FitToWidth') {
-                isZoomMode = true;
                 this.isInitialPageMode = true;
                 this.pdfViewer.magnificationModule.fitToWidth();
             } else if (this.pdfViewer.zoomMode === 'FitToPage') {
-                isZoomMode = true;
                 this.isInitialPageMode = true;
                 this.pdfViewer.magnificationModule.fitToPage();
             }
@@ -981,7 +980,7 @@ export class PdfViewerBase {
                 this.viewerContainer.setAttribute('aria-labelledby', this.pdfViewer.element.id + '_pageDiv_' + (this.currentPageNumber - 1));
             }
         }
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.mobileSpanContainer.innerHTML = this.currentPageNumber.toString();
             this.mobilecurrentPageContainer.innerHTML = this.currentPageNumber.toString();
         }
@@ -1159,7 +1158,7 @@ export class PdfViewerBase {
             } else {
                 waitingPopup.style.top = this.viewerContainer.clientHeight / 2 + 'px';
             }
-            if (Browser.isDevice && pageCurrentRect.width > this.viewerContainer.clientWidth) {
+            if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && pageCurrentRect.width > this.viewerContainer.clientWidth) {
                 waitingPopup.style.left = (this.viewerContainer.clientWidth / 2) + (this.viewerContainer.scrollLeft) + 'px';
             } else if (this.getZoomFactor() > 1.25 && pageCurrentRect.width > this.viewerContainer.clientWidth) {
                 waitingPopup.style.left = this.viewerContainer.clientWidth / 2 + 'px';
@@ -1234,6 +1233,16 @@ export class PdfViewerBase {
             if (this.renderedPagesList.indexOf(pageNumber) === -1) {
                 this.createRequestForRender(pageNumber);
             }
+            setTimeout(
+                () => {
+                    let currentPageNumber: number = pageNumber + 1;
+                    if (currentPageNumber !== this.currentPageNumber) {
+                        this.pdfViewer.currentPageNumber = currentPageNumber;
+                        this.currentPageNumber = currentPageNumber;
+                        this.pdfViewer.toolbarModule.updateCurrentPage(currentPageNumber);
+                    }
+                },
+                800);
         }
     }
     /**
@@ -1402,7 +1411,7 @@ export class PdfViewerBase {
         this.tilerequestLists = [];
         this.pdfViewer.formFieldCollections = [];
         this.initiateTextSelectMode();
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (this.navigationPane.sideBarToolbar) {
                 this.navigationPane.clear();
             }
@@ -1464,7 +1473,7 @@ export class PdfViewerBase {
      * @private
      */
     public destroy(): void {
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.pdfViewer.element.classList.remove('e-pv-mobile-view');
         }
         this.unWireEvents();
@@ -1796,7 +1805,7 @@ export class PdfViewerBase {
      * @private
      */
     public updateMobileScrollerPosition(): void {
-        if (Browser.isDevice && this.mobileScrollerContainer) {
+        if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.mobileScrollerContainer) {
             // tslint:disable-next-line
             let ratio: any = (this.viewerContainer.scrollHeight - this.viewerContainer.clientHeight) / (this.viewerContainer.clientHeight - 56);
             // tslint:disable-next-line
@@ -1833,7 +1842,7 @@ export class PdfViewerBase {
                 }
             }
         });
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.passwordPopup.buttons = [
                 {
                     buttonModel: { content: this.pdfViewer.localeObj.getConstant('OK'), isPrimary: true },
@@ -1932,7 +1941,7 @@ export class PdfViewerBase {
 
     private wireEvents(): void {
         this.viewerContainer.addEventListener('scroll', this.viewerContainerOnScroll, true);
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.viewerContainer.addEventListener('touchmove', this.viewerContainerOnScroll, true);
         }
         this.viewerContainer.addEventListener('mousedown', this.viewerContainerOnMousedown);
@@ -1969,7 +1978,7 @@ export class PdfViewerBase {
 
     private unWireEvents(): void {
         this.viewerContainer.removeEventListener('scroll', this.viewerContainerOnScroll, true);
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.viewerContainer.removeEventListener('touchmove', this.viewerContainerOnScroll, true);
         }
         this.viewerContainer.removeEventListener('mousedown', this.viewerContainerOnMousedown);
@@ -2072,7 +2081,7 @@ export class PdfViewerBase {
             if (toolbarContainer) {
                 toolbarHeight = toolbarContainer.getBoundingClientRect().height;
             }
-            if (proxy.isAnnotationToolbarHidden() || Browser.isDevice) {
+            if (proxy.isAnnotationToolbarHidden() || (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
                 // tslint:disable-next-line:max-line-length
                 proxy.viewerContainer.style.height = proxy.updatePageHeight(proxy.pdfViewer.element.getBoundingClientRect().height, toolbarHeight);
             } else {
@@ -2088,7 +2097,7 @@ export class PdfViewerBase {
         } else {
             proxy.viewerContainer.style.height = proxy.updatePageHeight(proxy.pdfViewer.element.getBoundingClientRect().height, 0);
         }
-        if (proxy.pdfViewer.bookmarkViewModule && Browser.isDevice) {
+        if (proxy.pdfViewer.bookmarkViewModule && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
             let bookmarkContainer: HTMLElement = proxy.getElement('_bookmarks_container');
             if (bookmarkContainer) {
                 bookmarkContainer.style.height = proxy.updatePageHeight(proxy.pdfViewer.element.getBoundingClientRect().height, 0);
@@ -2123,7 +2132,7 @@ export class PdfViewerBase {
         if (this.pdfViewer.enableToolbar && this.pdfViewer.thumbnailViewModule) {
             proxy.pdfViewer.thumbnailViewModule.gotoThumbnailImage(proxy.currentPageNumber - 1);
         }
-        if (proxy.pdfViewer.textSearchModule && !Browser.isDevice) {
+        if (proxy.pdfViewer.textSearchModule && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
             proxy.pdfViewer.textSearchModule.textSearchBoxOnResize();
         }
         if (viewerWidth !== 0) {
@@ -2131,7 +2140,7 @@ export class PdfViewerBase {
                 proxy.updateZoomValue();
             }
         }
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             proxy.mobileScrollerContainer.style.left = (viewerWidth - parseFloat(proxy.mobileScrollerContainer.style.width)) + 'px';
             proxy.mobilePageNoContainer.style.left = (viewerWidth / 2) - (parseFloat(proxy.mobilePageNoContainer.style.width) / 2) + 'px';
             proxy.mobilePageNoContainer.style.top = (proxy.pdfViewer.element.clientHeight / 2) + 'px';
@@ -2930,7 +2939,7 @@ public mouseDownHandler(event: MouseEvent): void {
                 this.textLayer.modifyTextCursor(true);
                 this.pdfViewer.textSelectionModule.enableTextSelectionMode();
             }
-            if (!Browser.isDevice && !isBlazor()) {
+            if ((!Browser.isDevice || this.pdfViewer.enableDesktopMode) && !isBlazor()) {
                 this.enableAnnotationAddTools(true);
             }
         }
@@ -3203,9 +3212,9 @@ public mouseDownHandler(event: MouseEvent): void {
         this.previousTime = new Date().getTime();
         // tslint:disable-next-line:max-line-length
         if (touchPoints.length === 1 && !((event.target as HTMLElement).classList.contains('e-pv-touch-select-drop') || (event.target as HTMLElement).classList.contains('e-pv-touch-ellipse'))) {
-            if (Browser.isDevice && this.pageCount > 0 && !this.isThumb && !((event.target as HTMLElement).classList.contains('e-pv-hyperlink'))) {
+            if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.pageCount > 0 && !this.isThumb && !((event.target as HTMLElement).classList.contains('e-pv-hyperlink'))) {
                 this.handleTaps(touchPoints);
-            } else if (!Browser.isDevice) {
+            } else if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.handleTextBoxTaps(touchPoints);
             }
             if (this.pdfViewer.textSelectionModule && !this.isTextSelectionDisabled) {
@@ -3311,10 +3320,11 @@ public mouseDownHandler(event: MouseEvent): void {
                         // tslint:disable-next-line:max-line-length
                         this.viewerContainer.style.height = this.updatePageHeight(this.pdfViewer.element.getBoundingClientRect().height, 56);
                     }
-                    if (this.isTapHidden && Browser.isDevice) {
+                    if (this.isTapHidden && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
                         this.mobileScrollerContainer.style.display = '';
                         this.updateMobileScrollerPosition();
-                    } else if (Browser.isDevice && this.getSelectTextMarkupCurrentPage() == null) {
+                    // tslint:disable-next-line:max-line-length
+                    } else if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.getSelectTextMarkupCurrentPage() == null) {
                         this.mobileScrollerContainer.style.display = 'none';
                     }
                     if (this.getSelectTextMarkupCurrentPage() == null) {
@@ -3362,7 +3372,7 @@ public mouseDownHandler(event: MouseEvent): void {
         event.preventDefault();
         if (this.pdfViewer.textSelectionModule) {
             this.pdfViewer.textSelectionModule.initiateTouchSelection(event, this.touchClientX, this.touchClientY);
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 clearTimeout(this.singleTapTimer);
                 this.tapCount = 0;
             }
@@ -3389,7 +3399,7 @@ public mouseDownHandler(event: MouseEvent): void {
         if (this.pdfViewer.textSelectionModule) {
             // tslint:disable-next-line:max-line-length
             if (!this.isPanMode && this.pdfViewer.enableTextSelection && !this.isTextSelectionDisabled && this.getSelectTextMarkupCurrentPage() == null) {
-                if (!(this.isWebkitMobile && Browser.isDevice)) {
+                if (!(this.isWebkitMobile && (Browser.isDevice && !this.pdfViewer.enableDesktopMode))) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
@@ -3398,7 +3408,7 @@ public mouseDownHandler(event: MouseEvent): void {
     }
 
     private viewerContainerOnTouchMove = (event: TouchEvent): void => {
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             clearTimeout(this.singleTapTimer);
             this.tapCount = 0;
         }
@@ -3410,7 +3420,7 @@ public mouseDownHandler(event: MouseEvent): void {
         if (this.pdfViewer.magnificationModule) {
             this.isTouchScrolled = true;
             if (touchPoints.length > 1 && this.pageCount > 0) {
-                if (Browser.isDevice) {
+                if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                     this.isTouchScrolled = false;
                 }
                 if (this.pdfViewer.enablePinchZoom) {
@@ -3418,7 +3428,7 @@ public mouseDownHandler(event: MouseEvent): void {
                     this.pdfViewer.magnificationModule.initiatePinchMove(touchPoints[0].clientX, touchPoints[0].clientY, touchPoints[1].clientX, touchPoints[1].clientY);
                 }
             } else if (touchPoints.length === 1 && this.getPagesPinchZoomed()) {
-                if (Browser.isDevice) {
+                if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                     this.isTouchScrolled = false;
                 }
                 this.pdfViewer.magnificationModule.pinchMoveScroll();
@@ -3476,7 +3486,7 @@ public mouseDownHandler(event: MouseEvent): void {
         this.isLongTouchPropagated = false;
         clearInterval(this.longTouchTimer);
         this.longTouchTimer = null;
-        if (Browser.isDevice && this.isTouchScrolled) {
+        if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.isTouchScrolled) {
             this.currentTime = new Date().getTime();
             let duration: number = this.currentTime - this.previousTime;
             // tslint:disable-next-line
@@ -3541,7 +3551,7 @@ public mouseDownHandler(event: MouseEvent): void {
                 this.pdfViewer.toolbarModule.updateTotalPage();
             }
         }
-        if (Browser.isDevice && this.mobiletotalPageContainer) {
+        if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.mobiletotalPageContainer) {
             this.mobiletotalPageContainer.innerHTML = this.pageCount.toString();
             this.pageNoContainer.innerHTML = '(1-' + this.pageCount.toString() + ')';
         }
@@ -4201,13 +4211,13 @@ public mouseDownHandler(event: MouseEvent): void {
         this.createWaitingPopup(pageNumber);
         this.orderPageDivElements(pageDiv, pageNumber);
         this.renderPageCanvas(pageDiv, pageWidth, pageHeight, pageNumber, 'block');
-        if (Browser.isDevice && !this.isThumb) {
+        if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && !this.isThumb) {
             this.updateMobileScrollerPosition();
         }
     }
 
     private renderPDFInformations(): void {
-        if (this.pdfViewer.thumbnailViewModule && !Browser.isDevice) {
+        if (this.pdfViewer.thumbnailViewModule && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
             this.pdfViewer.thumbnailViewModule.createRequestForThumbnails();
         }
         if (this.pdfViewer.bookmarkViewModule) {
@@ -4301,7 +4311,7 @@ public mouseDownHandler(event: MouseEvent): void {
         // tslint:disable-next-line:max-line-length
         if (leftPosition < 0 || (this.pdfViewer.magnificationModule ? ((this.pdfViewer.magnificationModule.isAutoZoom && this.getZoomFactor() < 1) || this.pdfViewer.magnificationModule.fitType === 'fitToWidth') : false)) {
             let leftValue: number = leftPosition;
-            if (leftPosition > 0 && Browser.isDevice) {
+            if (leftPosition > 0 && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
                 leftPosition = leftPosition;
             } else {
                 leftPosition = this.pageLeft;
@@ -4360,7 +4370,7 @@ public mouseDownHandler(event: MouseEvent): void {
         let proxy: PdfViewerBase = this;
         let scrollposX: number = 0;
         let scrollposY: number = 0;
-        if (event.touches && Browser.isDevice) {
+        if (event.touches && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
             // tslint:disable-next-line
             let ratio: any = (this.viewerContainer.scrollHeight - this.viewerContainer.clientHeight) / (this.viewerContainer.clientHeight - this.toolbarHeight);
             if (this.isThumb) {
@@ -4378,7 +4388,7 @@ public mouseDownHandler(event: MouseEvent): void {
                     this.mobileScrollerContainer.style.top = containerValue + 'px';
                 }
             } else if (event.touches[0].target.className !== 'e-pv-touch-ellipse') {
-                if (!(this.isWebkitMobile && Browser.isDevice)) {
+                if (!(this.isWebkitMobile && (Browser.isDevice && !this.pdfViewer.enableDesktopMode))) {
                     this.mobilePageNoContainer.style.display = 'none';
                     scrollposY = this.touchClientY - event.touches[0].pageY;
                     scrollposX = this.touchClientX - event.touches[0].pageX;
@@ -4435,17 +4445,17 @@ public mouseDownHandler(event: MouseEvent): void {
             }
             this.viewerContainer.setAttribute('aria-labelledby', this.pdfViewer.element.id + '_pageDiv_' + (this.currentPageNumber - 1));
             if (!isBlazor()) {
-                if (!Browser.isDevice) {
+                if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                     this.pdfViewer.toolbarModule.updateNavigationButtons();
                 }
             }
         }
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.mobileSpanContainer.innerHTML = this.currentPageNumber.toString();
             this.mobilecurrentPageContainer.innerHTML = this.currentPageNumber.toString();
         }
         if (pageIndex !== this.currentPageNumber) {
-            if (proxy.pdfViewer.thumbnailViewModule && !Browser.isDevice) {
+            if (proxy.pdfViewer.thumbnailViewModule && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
                 proxy.pdfViewer.thumbnailViewModule.gotoThumbnailImage(proxy.currentPageNumber - 1);
                 proxy.pdfViewer.thumbnailViewModule.isThumbnailClicked = false;
             }
@@ -4478,7 +4488,8 @@ public mouseDownHandler(event: MouseEvent): void {
         if (this.pdfViewer.annotation && this.navigationPane.commentPanelContainer) {
             this.pdfViewer.annotation.stickyNotesAnnotationModule.updateCommentPanelScrollTop(this.currentPageNumber);
         }
-        if (Browser.isDevice && event.touches && event.touches[0].target.className !== 'e-pv-touch-ellipse') {
+        // tslint:disable-next-line:max-line-length
+        if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && event.touches && event.touches[0].target.className !== 'e-pv-touch-ellipse') {
             setTimeout(
                 () => { this.updateMobileScrollerPosition(); }, 500);
         }
@@ -6220,7 +6231,9 @@ public mouseDownHandler(event: MouseEvent): void {
                 }
             }
         } else {
-            cursorType = this.pdfViewer.selectedItems.annotations[0].annotationSelectorSettings.resizerCursorType;
+            if (this.pdfViewer.selectedItems.annotations[0]) {
+                cursorType = this.pdfViewer.selectedItems.annotations[0].annotationSelectorSettings.resizerCursorType;
+            }
         }
         if (!cursorType) {
             cursorType = this.pdfViewer.annotationSelectorSettings.resizerCursorType;
@@ -6305,7 +6318,8 @@ public mouseDownHandler(event: MouseEvent): void {
                     this.isMouseDown = false;
                 }
                 let obj: IElement = findActiveElement(evt, this, this.pdfViewer);
-                if ((this.isShapeAnnotationModule() || this.isCalibrateAnnotationModule()) && !Browser.isDevice) {
+                // tslint:disable-next-line:max-line-length
+                if ((this.isShapeAnnotationModule() && !this.isCalibrateAnnotationModule()) && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
                     this.pdfViewer.annotation.onShapesMouseup(obj as PdfAnnotationBaseModel, evt);
                 }
                 this.isAnnotationDrawn = false;
@@ -6313,7 +6327,7 @@ public mouseDownHandler(event: MouseEvent): void {
         }
         let target: HTMLElement = evt.target as HTMLElement;
            // tslint:disable-next-line:max-line-length
-        if (!touches && evt.cancelable && this.skipPreventDefault(target) && !Browser.isDevice) {
+        if (!touches && evt.cancelable && this.skipPreventDefault(target) && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
             evt.preventDefault();
         }
         this.eventArgs = {};
@@ -6356,11 +6370,11 @@ public mouseDownHandler(event: MouseEvent): void {
             isStamp = true;
         }
         let target: PdfAnnotationBaseModel;
-        if (Browser.isDevice && this.pdfViewer.annotation) {
+        if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.pdfViewer.annotation) {
             this.activeElements.activePageID = this.pdfViewer.annotation.getEventPageNumber(evt);
         }
         let obj: IElement = findActiveElement(evt, this, this.pdfViewer);
-        if (Browser.isDevice && obj) {
+        if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && obj) {
             evt.preventDefault();
         }
         if (this.pdfViewer.annotation && this.pdfViewer.enableStampAnnotations) {
@@ -6526,7 +6540,7 @@ public mouseDownHandler(event: MouseEvent): void {
             let isAnnotations: boolean = this.updateExportItem();
             if (isAnnotations) {
                 return new Promise((resolve: Function, reject: Function) => {
-                    this.createRequestForExportAnnotations(true).then((value: object) => {
+                    this.createRequestForExportAnnotations(true, AnnotationDataFormat.Json).then((value: object) => {
                         resolve(value);
                     });
                 });

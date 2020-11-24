@@ -307,9 +307,21 @@ export class DragAndDrop extends ActionBase {
         let isSameResource: boolean = (this.parent.activeViewOptions.group.resources.length > 0) ?
             parseInt(this.actionObj.element.getAttribute('data-group-index'), 10) === this.actionObj.groupIndex : true;
         let groupIndex: number = (this.parent.activeViewOptions.group.resources.length > 0) ? this.actionObj.groupIndex : -1;
+        let indexCol: number[] = [];
+        if (this.parent.activeViewOptions.group.resources.length > 0 && this.parent.activeViewOptions.group.allowGroupEdit) {
+            let originalElement: HTMLElement[] = this.getOriginalElement(this.actionObj.element);
+            indexCol = originalElement.map((element: HTMLElement) => parseInt(element.getAttribute('data-group-index'), 10));
+            if (indexCol.indexOf(this.actionObj.groupIndex) === -1) {
+                let cloneIndex: number = parseInt(this.actionObj.clone.getAttribute('data-group-index'), 10);
+                indexCol = indexCol.filter((index: number) => index !== cloneIndex);
+                indexCol.push(this.actionObj.groupIndex);
+            } else {
+                indexCol = [];
+            }
+        }
         // tslint:disable-next-line:no-any
         (this.parent as any).dotNetRef.invokeMethodAsync(
-            'OnDragStop', startTime, endTime, eventGuid, groupIndex, isSameResource, this.actionObj.isAllDay);
+            'OnDragStop', startTime, endTime, eventGuid, groupIndex, isSameResource, this.actionObj.isAllDay, indexCol);
     }
 
     public updateNavigatingPosition(e: MouseEvent & TouchEvent): void {
@@ -677,7 +689,7 @@ export class DragAndDrop extends ActionBase {
         let index: number = this.getCursorCurrentIndex(colIndex, cloneIndex, tr);
         index = index < 0 ? 0 : index;
         let eventStart: Date = this.isHeaderRows ? new Date(this.timelineEventModule.dateRender[index].getTime()) :
-        this.parent.getDateFromElement(<HTMLElement>tr.children[index]);
+            this.parent.getDateFromElement(<HTMLElement>tr.children[index]);
         if (this.isStepDragging) {
             let widthDiff: number = this.getWidthDiff(tr, index);
             if (widthDiff !== 0) {

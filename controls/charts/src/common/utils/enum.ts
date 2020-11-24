@@ -245,3 +245,26 @@ export type LegendTitlePosition =
     'Left' |
     /** Define the right position. */
     'Right';
+
+/**
+ * Defines the position of the tooltip.
+ * *None - Defines the default tooltip placing inside the chart bounds
+ * *Auto - Defines the auto tooltip placing based on most available space
+ * *Left - Defines the Left side tooltip placing
+ * *Right - Defines the Right side tooltip placing
+ * *Top - Defines the Top side tooltip placing
+ * *Bottom - Defines the Bottom side tooltip placing
+ */
+export type TooltipPosition =
+    /** Defines the default tooltip placing inside the chart bounds */
+    'None' |
+    /** Defines the auto tooltip placing based on most available space */
+    'Auto' |
+    /** Defines the Left side tooltip placing */
+    'Left' |
+    /** Defines the Right side tooltip placing */
+    'Right' |
+    /** Defines the Top side tooltip placing */
+    'Top' |
+    /** Defines the Bottom side tooltip placing */
+    'Bottom';

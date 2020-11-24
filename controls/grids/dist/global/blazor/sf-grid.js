@@ -693,6 +693,7 @@ var HeaderDragDrop = /** @class */ (function () {
         var _this = this;
         this.dragStart = function (e) {
             var gObj = _this.parent;
+            document.body.classList.add('e-prevent-select');
             var popup = gObj.element.querySelector('.e-gridpopup');
             if (popup) {
                 popup.style.display = 'none';
@@ -727,6 +728,7 @@ var HeaderDragDrop = /** @class */ (function () {
         };
         this.dragStop = function (e) {
             var gObj = _this.parent;
+            document.body.classList.remove('e-prevent-select');
             var cancel;
             var popup = gObj.element.querySelector('.e-gridpopup');
             if (popup) {
@@ -828,7 +830,8 @@ var HeaderDragDrop = /** @class */ (function () {
                 dragStart: this.dragStart,
                 drag: this.drag,
                 dragStop: this.dragStop,
-                abort: '.e-rhandler'
+                abort: '.e-rhandler',
+                isPreventSelect: false
             });
         }
     };
@@ -1318,6 +1321,7 @@ var Reorder = /** @class */ (function () {
     };
     Reorder.prototype.dragStart = function (e) {
         var gObj = this.parent;
+        document.body.classList.add('e-prevent-select');
         var target = e.target;
         this.element = target.classList.contains('e-headercell') ? target :
             parentsUntil(target, 'e-headercell');
@@ -1331,6 +1335,7 @@ var Reorder = /** @class */ (function () {
     };
     Reorder.prototype.dragStop = function (e) {
         var gObj = this.parent;
+        document.body.classList.remove('e-prevent-select');
         this.setDisplay('none');
         this.stopTimer();
         if (!e.cancel) {
@@ -2325,6 +2330,7 @@ var Group = /** @class */ (function () {
         };
         this.dragStart = function (e) {
             _this.parent.element.classList.add('e-ungroupdrag');
+            document.body.classList.add('e-prevent-select');
             e.bindEvents(e.dragElement);
         };
         this.drag = function (e) {
@@ -2342,6 +2348,7 @@ var Group = /** @class */ (function () {
             }
         };
         this.dragStop = function (e) {
+            document.body.classList.remove('e-prevent-select');
             _this.parent.element.classList.remove('e-ungroupdrag');
             var preventDrop = !(parentsUntil(e.target, 'e-gridcontent') || parentsUntil(e.target, 'e-gridheader'));
             // if (this.groupSettings.allowReordering && preventDrop) {     //TODO: reordering
@@ -2523,7 +2530,8 @@ var Group = /** @class */ (function () {
             helper: this.helper,
             dragStart: this.dragStart,
             drag: this.drag,
-            dragStop: this.dragStop
+            dragStop: this.dragStop,
+            isPreventSelect: false
         });
     };
     Group.prototype.initializeGHeaderDrop = function () {
@@ -3485,6 +3493,7 @@ var RowDD = /** @class */ (function () {
         };
         this.dragStart = function (e) {
             var gObj = _this.parent;
+            document.body.classList.add('e-prevent-select');
             if (document.getElementsByClassName('e-griddragarea').length) {
                 return;
             }
@@ -3568,6 +3577,7 @@ var RowDD = /** @class */ (function () {
             }
         };
         this.dragStop = function (e) {
+            document.body.classList.remove('e-prevent-select');
             if (isActionPrevent(_this.parent.element)) {
                 return;
             }
@@ -3644,7 +3654,8 @@ var RowDD = /** @class */ (function () {
             helper: this.helper,
             dragStart: this.dragStart,
             drag: this.drag,
-            dragStop: this.dragStop
+            dragStop: this.dragStop,
+            isPreventSelect: false
         });
         this.droppable = new sf.base.Droppable(gObj.getContent(), {
             accept: '.e-dragclone',

@@ -508,9 +508,9 @@ describe('Chart Control', () => {
                     clientY: 300
                 };
                 chartObj.zoomModule.chartMouseWheel(<WheelEvent>wheelArgs);
-                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.80').toBe(true);
-                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.80').toBe(true);
-                expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.10').toBe(true);
+                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.72').toBe(true);
+                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.72').toBe(true);
+                expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.14').toBe(true);
                 expect(chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.00' ||
                     chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.01').toBe(true);
                 done();
@@ -528,11 +528,11 @@ describe('Chart Control', () => {
                 chartObj.mouseMove(<PointerEvent>trigger.onTouchMove(areaElement, 728, 389, 404, 289, 404, 189));
                 chartObj.mouseMove(<PointerEvent>trigger.onTouchMove(areaElement, 748, 129, 304, 289, 304, 289));
                 let content = chartObj.primaryXAxis.zoomFactor.toFixed(2);
-                expect(content == '0.33' || content == '0.32').toBe(true);
+                expect(content == '0.33' || content == '0.29').toBe(true);
                 content = chartObj.primaryYAxis.zoomFactor.toFixed(2);
-                expect(content == '1.00').toBe(true);
+                expect(content == '1.00' || content === '0.90').toBe(true);
                 content = chartObj.primaryXAxis.zoomPosition.toFixed(2);
-                expect(content == '0.77' || content == '0.87' || content == '0.78').toBe(true);
+                expect(content == '0.77' || content == '0.84' || content == '0.83').toBe(true);
                 chartObj.mouseLeave(<PointerEvent>trigger.onTouchLeave(areaElement, 748, 129, 304, 289, 304, 289));
                 done();
             };

@@ -777,6 +777,11 @@ var SfTab = /** @class */ (function () {
             this.selectingContent(args);
         }
     };
+    SfTab.prototype.setPersistence = function (elementId, selectedItem) {
+        if (this.options.enablePersistence) {
+            window.localStorage.setItem(elementId, selectedItem);
+        }
+    };
     SfTab.prototype.selectingContent = function (args) {
         this.tbItem = sf.base.selectAll('.' + CLS_TB_ITEM, this.hdrEle);
         if (this.tbItem.length > args && args >= 0 && !isNaN(args)) {
@@ -844,6 +849,7 @@ var Tab = {
             element.classList.remove(CLS_FOCUS);
             element.blazor__instance.isPopup = isPopup;
             element.blazor__instance.headerItemsUpdate(selectingIndex);
+            element.blazor__instance.setPersistence(element.id, selectingIndex.toString());
             if (element.blazor__instance.options.loadOn !== 'Init') {
                 element.blazor__instance.contentReady();
             }
@@ -852,6 +858,7 @@ var Tab = {
     selectingContent: function (element, selectingIndex) {
         if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.selectingContent(selectingIndex);
+            element.blazor__instance.setPersistence(element.id, selectingIndex.toString());
             if (element.blazor__instance.options.loadOn !== 'Init') {
                 element.blazor__instance.contentReady();
             }
@@ -934,9 +941,7 @@ var Tab = {
     },
     destroy: function (element, elementId, selectedItem) {
         if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
-            if (element.blazor__instance.options.enablePersistence) {
-                window.localStorage.setItem(elementId, selectedItem);
-            }
+            element.blazor__instance.setPersistence(elementId, selectedItem);
             element.blazor__instance.destroy();
         }
     },

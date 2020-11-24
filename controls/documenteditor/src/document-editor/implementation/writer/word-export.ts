@@ -736,11 +736,16 @@ export class WordExport {
         let blocks: any = [];
         let multiText: string[] = text.split('\n');
         multiText = multiText.filter((x: string) => x !== '');
-        while (multiText.length > 0) {
-            let block: any = {};
-            block.inlines = [{ text: multiText[0] }];
+        let block: any = {};
+        if (multiText.length === 0) {
+            block.inlines = [{ text: '' }];
             blocks.push(block);
-            multiText.splice(0, 1);
+        } else {
+            while (multiText.length > 0) {
+                block.inlines = [{ text: multiText[0] }];
+                blocks.push(block);
+                multiText.splice(0, 1);
+            }
         }
         return blocks;
     }

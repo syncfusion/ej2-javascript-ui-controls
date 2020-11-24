@@ -2014,6 +2014,12 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             if (collide.indexOf('bottom') > -1) {
                 var offset = this.callFit(ul, false, true, top, left);
                 top = offset.top - 20;
+                if (top < 0) {
+                    var newTop = (pageYOffset + document.documentElement.clientHeight) - ul.getBoundingClientRect().height;
+                    if (newTop > -1) {
+                        top = newTop;
+                    }
+                }
             }
             collide = isCollide(ul, null, left, top);
             if (collide.indexOf('left') > -1) {

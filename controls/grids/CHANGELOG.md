@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 18.3.51 (2020-11-24)
+
+### Grid
+
+#### Bug Fixes
+
+- `#302178` - Grid does not destroyed issue has been resolved.
+- `#301357`,`#302019` - frozen Grid layout issue when change the empty datasource has been fixed.
+
+## 18.3.50 (2020-11-17)
+
+### Grid
+
+#### Bug Fixes
+
+- `#158208` - Grid `pageSize` 'All' translated issue has been fixed.
+
 ## 18.3.48 (2020-11-11)
 
 ### Grid

@@ -3552,7 +3552,7 @@ export class LineWidget implements IWidget {
                     || element.previousElement instanceof ListTextElementBox
                     || element.previousElement instanceof EditRangeEndElementBox
                     || element.previousElement instanceof EditRangeStartElementBox
-                    || element instanceof ImageElementBox)) {
+                    || element.previousElement instanceof ImageElementBox)) {
                     isApplied = true;
                     element = element.previousElement;
                     continue;
@@ -3747,17 +3747,17 @@ export class LineWidget implements IWidget {
                 if (!isStarted && (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
                     || inlineElement instanceof ShapeElementBox || inlineElement instanceof ContentControl
                     || inlineElement instanceof BookmarkElementBox || inlineElement instanceof EditRangeEndElementBox
-                    || inlineElement instanceof EditRangeStartElementBox
+                    || inlineElement instanceof EditRangeStartElementBox || inlineElement instanceof CommentCharacterElementBox
                     || inlineElement instanceof FieldElementBox
                     && HelperMethods.isLinkedFieldCharacter(inlineElement as FieldElementBox))) {
                     isStarted = true;
                 }
                 if (isStarted && offset <= count + inlineElement.length) {
-                    // if (inlineElement instanceof BookmarkElementBox) {
-                    //     offset += inlineElement.length;
-                    //     count += inlineElement.length;
-                    //     continue;
-                    // }
+                    //if (inlineElement instanceof BookmarkElementBox) {
+                    //    offset += inlineElement.length;
+                    //    count += inlineElement.length;
+                    //    continue;
+                    //}
                     // tslint:disable-next-line:max-line-length
                     if (inlineElement instanceof TextElementBox && ((inlineElement as TextElementBox).text === ' ' && inlineElement.revisions.length === 0 && isInsert)) {
                         let currentElement: ElementBox = this.getNextTextElement(this, i + 1);

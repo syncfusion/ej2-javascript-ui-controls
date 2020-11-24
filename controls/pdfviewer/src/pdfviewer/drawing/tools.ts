@@ -1122,9 +1122,11 @@ export class ResizeTool extends ToolBase {
             }
         }
         let changes: PointModel = { x: x, y: y };
-        changes = rotatePoint(-this.currentElement.wrapper.rotateAngle, undefined, undefined, changes);
-        let sx: number = (this.currentElement.wrapper.actualSize.width + changes.x) / this.currentElement.wrapper.actualSize.width;
-        let sy: number = (this.currentElement.wrapper.actualSize.height + changes.y) / this.currentElement.wrapper.actualSize.height;
+        if (this.currentElement.wrapper) {
+            changes = rotatePoint(-this.currentElement.wrapper.rotateAngle, undefined, undefined, changes);
+            let sx: number = (this.currentElement.wrapper.actualSize.width + changes.x) / this.currentElement.wrapper.actualSize.width;
+            let sy: number = (this.currentElement.wrapper.actualSize.height + changes.y) / this.currentElement.wrapper.actualSize.height;
+        }
         changes = this.getChanges(changes);
         if (!this.helper) {
             // tslint:disable-next-line

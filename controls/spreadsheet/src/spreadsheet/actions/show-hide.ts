@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
 import { spreadsheetDestroyed, IRowRenderer, HideShowEventArgs, ICellRenderer, CellRenderArgs, getUpdateUsingRaf } from '../common/index';
 import { autoFit, hideShow, virtualContentLoaded, completeAction, setScrollEvent, onContentScroll, skipHiddenIdx } from '../common/index';
-import { beginAction, hiddenMerge } from '../common/index';
+import { beginAction, hiddenMerge, updateTableWidth } from '../common/index';
 import { SheetModel, getCellAddress, isHiddenRow, setRow, setColumn, isHiddenCol, getRangeAddress, getCell } from '../../workbook/index';
 import { getCellIndexes, getColumnWidth, applyCellFormat, CellFormatArgs, CellModel, MergeArgs } from '../../workbook/index';
 import { activeCellMergedRange, setMerge } from '../../workbook/index';
@@ -267,6 +267,8 @@ export class ShowHide {
                             this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(
                                 sheet, 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, colIndex:
                                 this.parent.viewport.leftIndex, refresh: 'Column' });
+                        } else {
+                            this.parent.notify(updateTableWidth, { refresh: 'Column' });
                         }
                         this.parent.selectRange(sheet.selectedRange);
                         return;

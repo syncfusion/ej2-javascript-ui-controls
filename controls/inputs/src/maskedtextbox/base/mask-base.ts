@@ -629,7 +629,12 @@ function triggerMaskChangeEvent(event: KeyboardEvent, oldValue: string): void {
         this.value = this.changeEventArgs.value;
         this.isProtectedOnChange = prevOnChange;
         merge(eventArgs, this.changeEventArgs);
-        this.trigger('change', eventArgs);
+         /* istanbul ignore next */
+        if (this.isAngular && this.preventChange) {
+            this.preventChange = false;
+        } else {
+            this.trigger('change', eventArgs);
+        }
     }
     this.preEleVal = this.element.value;
     this.prevValue = strippedValue.call(this, this.element);

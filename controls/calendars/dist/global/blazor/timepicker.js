@@ -98,6 +98,8 @@ var TimePicker = /** @class */ (function (_super) {
         _this.disableItemCollection = [];
         _this.invalidValueString = null;
         _this.isBlazorServer = false;
+        _this.isAngular = false;
+        _this.preventChange = false;
         _this.timeOptions = options;
         return _this;
     }
@@ -1840,7 +1842,12 @@ var TimePicker = /** @class */ (function (_super) {
         };
         eventArgs.value = this.valueWithMinutes || this.getDateObject(this.inputElement.value);
         this.prevDate = this.valueWithMinutes || this.getDateObject(this.inputElement.value);
-        this.trigger('change', eventArgs);
+        if (this.isAngular && this.preventChange) {
+            this.preventChange = false;
+        }
+        else {
+            this.trigger('change', eventArgs);
+        }
         this.invalidValueString = null;
         this.checkErrorState(this.value);
     };
@@ -2393,6 +2400,9 @@ var TimePicker = /** @class */ (function (_super) {
                             this.checkErrorState(this.invalidValueString);
                         }
                         this.checkValueChange(null, false);
+                        if (this.isAngular && this.preventChange) {
+                            this.preventChange = false;
+                        }
                     }
                     break;
                 case 'floatLabelType':

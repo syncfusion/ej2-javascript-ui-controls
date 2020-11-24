@@ -139,6 +139,8 @@ export class DropDownList extends DropDownBase implements IInput {
     private isServerIncrementalSearch: boolean;
     private isServerNavigation: boolean;
     protected isListSearched: boolean = false;
+    protected preventChange: boolean = false;
+    protected isAngular: boolean = false;
 
     /**
      * Sets CSS classes to the root element of the component that allows customization of appearance.
@@ -1500,7 +1502,11 @@ export class DropDownList extends DropDownBase implements IInput {
                 value: this.value,
                 element: this.element
             };
-            this.trigger('change', eventArgs);
+            if (this.isAngular && this.preventChange) {
+                this.preventChange = false;
+            } else {
+                this.trigger('change', eventArgs);
+            }
             if (this.isServerBlazor && this.enablePersistence) {
                 // tslint:disable-next-line
                 (this as any).interopAdaptor.invokeMethodAsync('ServerChange');
@@ -2473,6 +2479,9 @@ export class DropDownList extends DropDownBase implements IInput {
             if (!isNullOrUndefined(this.text)) {
                 this.inputElement.setAttribute('value', this.text);
             }
+        }
+        if (this.element.hasAttribute('data-val')) {
+            this.element.setAttribute('data-val', 'false');
         }
         this.renderComplete();
     };

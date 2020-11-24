@@ -53,6 +53,8 @@ var NumericTextBox = /** @class */ (function (_super) {
         var _this = _super.call(this, options, element) || this;
         _this.isVue = false;
         _this.preventChange = false;
+        _this.isAngular = false;
+        _this.isDynamicChange = false;
         _this.numericOptions = options;
         return _this;
     }
@@ -163,6 +165,9 @@ var NumericTextBox = /** @class */ (function (_super) {
                 }
             }
             this.elementPrevValue = this.element.value;
+            if (this.element.hasAttribute('data-val')) {
+                this.element.setAttribute('data-val', 'false');
+            }
             this.renderComplete();
         }
     };
@@ -654,6 +659,8 @@ var NumericTextBox = /** @class */ (function (_super) {
     };
     
     NumericTextBox.prototype.inputHandler = function (event) {
+        // tslint:disable-next-line
+        var numerictextboxObj = this;
         if (!this.enabled || this.readonly) {
             return;
         }
@@ -661,6 +668,13 @@ var NumericTextBox = /** @class */ (function (_super) {
         var fireFox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
         if ((fireFox || iOS) && sf.base.Browser.isDevice) {
             this.preventHandler();
+        }
+        /* istanbul ignore next */
+        if (this.isAngular
+            && this.element.value !== sf.base.getValue('decimal', sf.base.getNumericObject(this.locale))
+            && this.element.value !== sf.base.getValue('minusSign', sf.base.getNumericObject(this.locale))) {
+            numerictextboxObj.localChange({ value: this.instance.getNumberParser({ format: 'n' })(this.element.value) });
+            this.preventChange = true;
         }
         if (this.isVue) {
             var current = this.instance.getNumberParser({ format: 'n' })(this.element.value);
@@ -732,7 +746,8 @@ var NumericTextBox = /** @class */ (function (_super) {
             }
         }
         this.changeValue(value === null || isNaN(value) ? null : this.strictMode ? this.trimValue(value) : value);
-        if ((!this.isVue) || (this.isVue && !this.preventChange)) {
+        /* istanbul ignore next */
+        if (!this.isDynamicChange) {
             this.raiseChangeEvent(event);
         }
     };
@@ -1174,9 +1189,11 @@ var NumericTextBox = /** @class */ (function (_super) {
                     this.floatLabelTypeUpdate();
                     break;
                 case 'value':
+                    this.isDynamicChange = (this.isAngular || this.isVue) && this.preventChange;
                     this.updateValue(newProp.value);
-                    if (this.isVue && this.preventChange) {
+                    if (this.isDynamicChange) {
                         this.preventChange = false;
+                        this.isDynamicChange = false;
                     }
                     break;
                 case 'min':

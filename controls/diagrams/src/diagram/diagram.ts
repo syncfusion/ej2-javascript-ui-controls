@@ -6876,7 +6876,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             for (let node of Object.keys(id || (layer as Layer).zIndexTable)) {
                 let renderNode: Node = id ? this.nameTable[id[node]] : this.nameTable[(layer as Layer).zIndexTable[node]];
                 if (renderNode && !(renderNode.parentId) && layer.visible &&
-                    !(renderNode.processId)) {
+                    (!(renderNode.processId) || this.refreshing)) {
                     let transformValue: TransformFactor = {
                         tx: this.scroller.transform.tx,
                         ty: this.scroller.transform.ty,
@@ -6912,6 +6912,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         status = false;
                     }
                     this.updateTextElementValue(renderNode);
+                    if (this.refreshing) {
+                        if ((renderNode.shape as BpmnShapeModel).activity && (renderNode.shape as BpmnShapeModel).activity.subProcess
+                            && (renderNode.shape as BpmnShapeModel).activity.subProcess.processes) {
+                            for (let i: number = 0; i < (renderNode.shape as BpmnShapeModel).activity.subProcess.processes.length; i++) {
+                                let process: string = (renderNode.shape as BpmnShapeModel).activity.subProcess.processes[i];
+                                renderNode.wrapper.children.push(this.nameTable[process].wrapper);
+                            }
+                            renderNode.wrapper.measure(new Size(renderNode.wrapper.bounds.width, renderNode.wrapper.bounds.height));
+                            renderNode.wrapper.arrange(renderNode.wrapper.desiredSize);
+                        }
+                    }
                     renderer.renderElement(
                         renderNode.wrapper, canvas, htmlLayer,
                         (!renderer.isSvgMode && transform) ? transformValue : undefined,
@@ -7750,7 +7761,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
-    private getIndex(node: NodeModel | ConnectorModel, id: string) {
+    /** @private */
+    public getIndex(node: NodeModel | ConnectorModel, id: string) {
         let index: number;
         let collection: (NodeModel | ConnectorModel)[] = (getObjectType(node) === Node) ? this.nodes : this.connectors;
         for (var i = 0; i < collection.length; i++) {

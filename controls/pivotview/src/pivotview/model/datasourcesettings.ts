@@ -734,8 +734,9 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * Allows to set the mode of rendering the pivot table.
+     * @default Local
      */
-    @Property()
+    @Property('Local')
     public mode: RenderMode;
 
     /**

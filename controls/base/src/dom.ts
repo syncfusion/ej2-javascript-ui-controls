@@ -280,10 +280,12 @@ function querySelectId(selector: string): string {
         for (let i: number = 0; i < idList.length; i++) {
             let list: string[] = idList[i].split(' ');
             for (let j: number = 0; j < list.length; j++) {
-                if (list[j].match(/#/)) {
-                    let splitId: string[] = list[j].split('#');
-                    if (splitId[1].match(/^\d/)) {
-                        list[j] = list[j].replace(/#/, '[id=\'') + '\']';
+                if (list[j].indexOf('#') > -1) {
+                    if (!list[j].match(/\[.*\]/)) {
+                        let splitId: string[] = list[j].split('#');
+                        if (splitId[1].match(/^\d/)) {
+                            list[j] = list[j].replace(/#/, '[id=\'') + '\']';
+                        }
                     }
                 }
             }

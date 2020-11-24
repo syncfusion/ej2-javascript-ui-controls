@@ -840,6 +840,8 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         var _this = _super.call(this, options, element) || this;
         _this.isVue = false;
         _this.preventChange = false;
+        _this.isAngular = false;
+        _this.isDynamicChange = false;
         _this.numericOptions = options;
         return _this;
     }
@@ -950,6 +952,9 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             this.elementPrevValue = this.element.value;
+            if (this.element.hasAttribute('data-val')) {
+                this.element.setAttribute('data-val', 'false');
+            }
             this.renderComplete();
         }
     };
@@ -1441,6 +1446,8 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
     };
     
     NumericTextBox.prototype.inputHandler = function (event) {
+        // tslint:disable-next-line
+        var numerictextboxObj = this;
         if (!this.enabled || this.readonly) {
             return;
         }
@@ -1448,6 +1455,13 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         var fireFox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
         if ((fireFox || iOS) && Browser.isDevice) {
             this.preventHandler();
+        }
+        /* istanbul ignore next */
+        if (this.isAngular
+            && this.element.value !== getValue('decimal', getNumericObject(this.locale))
+            && this.element.value !== getValue('minusSign', getNumericObject(this.locale))) {
+            numerictextboxObj.localChange({ value: this.instance.getNumberParser({ format: 'n' })(this.element.value) });
+            this.preventChange = true;
         }
         if (this.isVue) {
             var current = this.instance.getNumberParser({ format: 'n' })(this.element.value);
@@ -1519,7 +1533,8 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.changeValue(value === null || isNaN(value) ? null : this.strictMode ? this.trimValue(value) : value);
-        if ((!this.isVue) || (this.isVue && !this.preventChange)) {
+        /* istanbul ignore next */
+        if (!this.isDynamicChange) {
             this.raiseChangeEvent(event);
         }
     };
@@ -1961,9 +1976,11 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
                     this.floatLabelTypeUpdate();
                     break;
                 case 'value':
+                    this.isDynamicChange = (this.isAngular || this.isVue) && this.preventChange;
                     this.updateValue(newProp.value);
-                    if (this.isVue && this.preventChange) {
+                    if (this.isDynamicChange) {
                         this.preventChange = false;
+                        this.isDynamicChange = false;
                     }
                     break;
                 case 'min':
@@ -2742,7 +2759,13 @@ function triggerMaskChangeEvent(event, oldValue) {
         this.value = this.changeEventArgs.value;
         this.isProtectedOnChange = prevOnChange;
         merge(eventArgs, this.changeEventArgs);
-        this.trigger('change', eventArgs);
+        /* istanbul ignore next */
+        if (this.isAngular && this.preventChange) {
+            this.preventChange = false;
+        }
+        else {
+            this.trigger('change', eventArgs);
+        }
     }
     this.preEleVal = this.element.value;
     this.prevValue = strippedValue.call(this, this.element);
@@ -3211,6 +3234,8 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
     function MaskedTextBox(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.initInputValue = '';
+        _this.isAngular = false;
+        _this.preventChange = false;
         _this.maskOptions = options;
         return _this;
     }
@@ -3280,7 +3305,9 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     MaskedTextBox.prototype.render = function () {
+        var _this = this;
         if (this.element.tagName.toLowerCase() === 'input') {
+            var checkBlazor = isBlazor() && this.isServerRendered;
             if (this.floatLabelType === 'Never') {
                 addClass([this.element], INPUT);
             }
@@ -3290,7 +3317,12 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
                 this.element.setAttribute('name', this.element.id);
             }
             this.isInitial = true;
-            this.resetMaskedTextBox();
+            if (checkBlazor && Browser.isIE === true) {
+                setTimeout(function () { _this.resetMaskedTextBox(); });
+            }
+            else {
+                this.resetMaskedTextBox();
+            }
             this.isInitial = false;
             this.setMaskPlaceholder(true, false);
             this.setWidth(this.width);
@@ -10396,7 +10428,11 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             }
             if (!isNaN(Math.round((e.loaded / e.total) * 100)) && isNullOrUndefined(this.template) && metaData.file.statusCode !== '4') {
                 var loadedSize = (metaData.chunkIndex * this.asyncSettings.chunkSize);
-                var value = Math.min((((loadedSize + e.loaded) / metaData.file.size) * 100), 100);
+                var currentLoaded = e.loaded;
+                if (currentLoaded > this.asyncSettings.chunkSize) {
+                    currentLoaded = this.asyncSettings.chunkSize;
+                }
+                var value = Math.min((((loadedSize + currentLoaded) / metaData.file.size) * 100), 100);
                 this.changeProgressValue(liElement, Math.round(value).toString() + '%');
             }
             if (metaData.chunkIndex === 0) {

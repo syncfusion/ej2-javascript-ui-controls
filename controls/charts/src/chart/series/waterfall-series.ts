@@ -189,7 +189,7 @@ export class WaterfallSeries extends ColumnBase {
                 for (let j: number = 0; j < data.length; j++) {
                     if (j === sumIndex[k]) {
                         if (intermediateSum !== undefined) {
-                            index = subArraySum(data, -1, sumIndex[k], sumIndex, series);
+                            index = subArraySum(data, intermediateSum[k] - 1, sumIndex[k], sumIndex, series);
                         } else {
                             index = subArraySum(data, -1, sumIndex[k], null, series);
                         }

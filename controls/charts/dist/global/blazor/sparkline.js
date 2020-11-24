@@ -1026,6 +1026,9 @@ var TooltipSettings = /** @class */ (function (_super) {
     __decorate$2([
         sf.base.Complex({ color: '#cccccc', width: 0.5 }, Border)
     ], TooltipSettings.prototype, "border", void 0);
+    __decorate$2([
+        sf.base.Property('None')
+    ], TooltipSettings.prototype, "position", void 0);
     return TooltipSettings;
 }(sf.base.ChildProperty));
 /**

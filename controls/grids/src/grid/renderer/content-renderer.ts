@@ -41,6 +41,7 @@ export class ContentRender implements IRenderer {
     /** @hidden */
     public prevCurrentView: Object[] = [];
     public colgroup: Element;
+    private droppable: Droppable;
     private isLoaded: boolean = true;
     private tbody: HTMLElement;
     private viewColIndexes: number[] = [];
@@ -127,6 +128,7 @@ export class ContentRender implements IRenderer {
         this.parent.on(events.uiUpdate, this.enableAfterRender, this);
         this.parent.on(events.refreshInfiniteModeBlocks, this.refreshContentRows, this);
         this.parent.on(events.beforeCellFocused, this.beforeCellFocused, this);
+        this.parent.on(events.destroy, this.droppableDestroy, this);
     }
 
     private beforeCellFocused(e: CellFocusArgs): void {
@@ -995,10 +997,16 @@ export class ContentRender implements IRenderer {
 
     private initializeContentDrop(): void {
         let gObj: IGrid = this.parent;
-        let drop: Droppable = new Droppable(gObj.element as HTMLElement, {
+        this.droppable = new Droppable(gObj.element as HTMLElement, {
             accept: '.e-dragclone',
             drop: this.drop as (e: DropEventArgs) => void
         });
+    }
+
+    private droppableDestroy(): void {
+        if (this.droppable && !this.droppable.isDestroyed) {
+            this.droppable.destroy();
+        }
     }
 
 
@@ -1201,11 +1209,15 @@ export class ContentRender implements IRenderer {
             changedRecords = (<{ changedRecords?: Object[] }>changes).changedRecords;
             addedRecords = (<{ addedRecords?: Object[] }>changes).addedRecords;
         }
+        let args: NotifyArgs = { cancel: false };
+        this.parent.notify(events.immutableBatchCancel, { rows: rows, args: args });
         if (addedRecords.length) {
             if (this.parent.editSettings.newRowPosition === 'Bottom') {
                 rows.splice(rows.length - 1, addedRecords.length);
             } else {
-                rows.splice(0, addedRecords.length);
+                if (!args.cancel) {
+                    rows.splice(0, addedRecords.length);
+                }
             }
         }
         for (let i: number = 0; i < changedRecords.length; i++) {

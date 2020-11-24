@@ -136,6 +136,6 @@ export class WorkbookEdit {
             }
             cell.value = value;
         }
-        this.parent.setUsedRange(range[0] + 1, range[1]);
+        this.parent.setUsedRange(range[0], range[1]);
     }
 }

@@ -103,7 +103,7 @@ export class DragAndDrop extends ActionBase {
                     pointerEvents: 'none'
                 });
             }
-            let top: number = this.actionObj.clone.offsetTop;
+            let top: number = parseInt(<string>e.top, 10);
             top = top < 0 ? 0 : top;
             topValue = formatUnit(Math.ceil(top / cellHeight) * cellHeight);
             let scrollHeight: number = this.parent.element.querySelector('.e-content-wrap').scrollHeight;
@@ -489,9 +489,7 @@ export class DragAndDrop extends ActionBase {
             offsetTop = Math.round(offsetTop / this.actionObj.cellHeight) * this.actionObj.cellHeight;
             this.actionObj.clone.style.top = formatUnit(offsetTop);
         }
-        let rowIndex: number = (this.parent.activeViewOptions.timeScale.enable) ?
-            ((this.actionObj.target as HTMLElement).offsetTop /
-                this.actionObj.cellHeight) : 0;
+        let rowIndex: number = (this.parent.activeViewOptions.timeScale.enable) ? (offsetTop / this.actionObj.cellHeight) : 0;
         let heightPerMinute: number = this.actionObj.cellHeight / this.actionObj.slotInterval;
         let diffInMinutes: number = parseInt(this.actionObj.clone.style.top, 10) - offsetTop;
         let tr: HTMLElement;

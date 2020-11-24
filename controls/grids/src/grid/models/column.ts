@@ -1,12 +1,13 @@
 import { merge, isNullOrUndefined, extend, Property } from '@syncfusion/ej2-base';
 import { NumberFormatOptions, DateFormatOptions, isBlazor } from '@syncfusion/ej2-base';
 import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
-import { ICellFormatter, IFilterUI, IEditCell, CommandModel, IFilter, CommandButtonOptions, DataResult } from '../base/interface';
+import { ICellFormatter, IFilterUI, IEditCell, CommandModel, IFilter, CommandButtonOptions, DataResult, IGrid } from '../base/interface';
 import { TextAlign, ClipMode, Action, SortDirection, EditType, ColumnType, CommandButtonType } from '../base/enum';
 import { PredicateModel } from '../base/grid-model';
 import { ValueFormatter } from '../services/value-formatter';
 import { ValueAccessor, SortComparer, HeaderValueAccessor } from '../base/type';
 import { getUid, templateCompiler, getForeignData, getObject } from '../base/util';
+import { Row } from './row';
 
 /**
  * Represents Grid `Column` model class.
@@ -428,8 +429,11 @@ export class Column {
      */
     public autoFit: boolean = false;
 
-    constructor(options: ColumnModel) {
+    private parent: IGrid;
+
+    constructor(options: ColumnModel, parent?: IGrid) {
         merge(this, options);
+        this.parent = parent;
         if (this.type === 'none') {
             this.type = (isBlazor() && !isNullOrUndefined(this.template) && isNullOrUndefined(this.field)) ? 'none' : null;
         } else if (this.type) {
@@ -449,7 +453,7 @@ export class Column {
         this.toJSON = () => {
             let col: object = {};
             let skip: string[] = ['filter', 'dataSource', isBlazor() ? ' ' : 'headerText', 'template', 'headerTemplate', 'edit',
-                'editTemplate', 'filterTemplate', 'commandsTemplate'];
+                'editTemplate', 'filterTemplate', 'commandsTemplate', 'parent'];
             let keys : string[] = Object.keys(this);
             for (let i: number = 0; i < keys.length; i++) {
                 if (keys[i] === 'columns') {
@@ -559,6 +563,18 @@ export class Column {
         let keys: string[] = Object.keys(column);
         for (let i: number = 0; i < keys.length; i++) {
             this[keys[i]] = column[keys[i]];
+            //Refresh the react columnTemplates on state change
+            if (this.parent && this.parent.isReact && keys[i] === 'template') {
+                //tslint:disable-next-line:no-any
+                (this.parent as any).clearTemplate(['columnTemplate'], undefined, () => {
+                    let rowsObj: Row<Column>[] = this.parent.getRowsObject();
+                    let pKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
+                    for (let j: number = 0; j < rowsObj.length; j++) {
+                        let key: string | number = rowsObj[j].data[pKeyField];
+                        this.parent.setCellValue(key, this.field, rowsObj[j][this.field]);
+                    }
+                });
+            }
         }
     }
 

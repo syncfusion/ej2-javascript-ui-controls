@@ -255,9 +255,9 @@ export interface PivotFieldListModel extends ComponentModel{
     fieldRemove?: EmitType<FieldRemoveEventArgs>;
 
     /**
-     * It trigger when the Pivot Field List rendered.
-     * @event
-     */
+     * It trigger when the Pivot Field List rendered.
+     * @event
+     */
     dataBound?: EmitType<Object>;
 
     /**

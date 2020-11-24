@@ -8,7 +8,7 @@ import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { Sort } from '../../src/treegrid/actions/sort';
 import { Filter } from '../../src/treegrid/actions/filter';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, select } from '@syncfusion/ej2-base';
 
 /**
  * Grid Batch Edit spec 
@@ -71,7 +71,7 @@ describe('Frozen Columns With Editing', () => {
       (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
       expect(gridObj.getBatchChanges()[addedRecords].length === 1).toBe(true);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
     });
     afterAll(() => {
       destroy(gridObj);
@@ -128,7 +128,7 @@ describe('Frozen Columns With Editing', () => {
       (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = "Planning Progress";
       expect(gridObj.getBatchChanges()[addedRecords].length === 1).toBe(true);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
     });
     afterAll(() => {
       destroy(gridObj);
@@ -183,7 +183,7 @@ describe('Frozen Columns With Editing', () => {
       (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
       expect(gridObj.getBatchChanges()[addedRecords].length === 1).toBe(true);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
     });
     afterAll(() => {
       destroy(gridObj);
@@ -237,7 +237,7 @@ describe('Frozen Columns With Editing', () => {
       (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
       expect(gridObj.getBatchChanges()[addedRecords].length === 1).toBe(true);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
     });
     afterAll(() => {
       destroy(gridObj);
@@ -293,7 +293,7 @@ describe('Frozen Columns With Editing', () => {
       (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
       expect(gridObj.getBatchChanges()[addedRecords].length === 1).toBe(true);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
     });
     afterAll(() => {
       destroy(gridObj);
@@ -350,7 +350,7 @@ describe('Frozen Columns With Editing', () => {
       (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
       expect(gridObj.getBatchChanges()[addedRecords].length === 1).toBe(true);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
     });
     afterAll(() => {
       destroy(gridObj);
@@ -414,7 +414,7 @@ describe('Frozen Columns With Editing', () => {
       expect(gridObj.getBatchChanges()[addedRecords].length === 2).toBe(true);
       gridObj.selectRow(5);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
-      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
     });
     afterAll(() => {
       destroy(gridObj);
@@ -472,7 +472,7 @@ describe('Frozen Columns With Editing', () => {
       (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 42;
       expect(gridObj.getBatchChanges()[addedRecords].length === 2).toBe(true);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
     });
     afterAll(() => {
       destroy(gridObj);
@@ -530,7 +530,7 @@ describe('Frozen Columns With Editing', () => {
       (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 42;
       expect(gridObj.getBatchChanges()[addedRecords].length === 2).toBe(true);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
     });
     afterAll(() => {
       destroy(gridObj);
@@ -587,7 +587,7 @@ describe('Frozen Columns With Editing', () => {
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });      
       (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 42;
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
     });
     afterAll(() => {
       destroy(gridObj);
@@ -635,7 +635,7 @@ describe('Frozen Columns With Editing', () => {
       gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
       expect(gridObj.getBatchChanges()['changedRecords'].length === 1).toBe(true);
-      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
     });
     it('Batch Add Datasource check - Batch Editing', () => {
       expect(gridObj.dataSource[0].subtasks[1].taskName === 'test').toBe(true);
@@ -696,7 +696,7 @@ describe('Frozen Columns With Editing', () => {
         let method: string = 'expandCollapseRequest';
         gridObj[method](gridObj.getRowByIndex(0).querySelector('.e-treegridexpand'));
         expect(gridObj.getBatchChanges()['changedRecords'].length === 1).toBe(true);
-        gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
       });
       afterAll(() => {
           destroy(gridObj);
@@ -759,7 +759,7 @@ describe('Frozen Columns With Editing', () => {
         gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
         expect(gridObj.getBatchChanges()['changedRecords'].length === 1).toBe(true);
-        gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
       });
       afterAll(() => {
         destroy(gridObj);
@@ -822,7 +822,7 @@ describe('Frozen Columns With Editing', () => {
         gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
         expect(gridObj.getBatchChanges()['changedRecords'].length === 1).toBe(true);
-        gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
       });
       afterAll(() => {
         destroy(gridObj);
@@ -871,7 +871,7 @@ describe('Frozen Columns With Editing', () => {
         (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
         expect(gridObj.getBatchChanges()[addedRecords].length === 1).toBe(true);
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-        gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
       });
       afterAll(() => {
         destroy(gridObj);
@@ -920,7 +920,7 @@ describe('Frozen Columns With Editing', () => {
         (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
         expect(gridObj.getBatchChanges()[addedRecords].length === 1).toBe(true);
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-        gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
       });
       afterAll(() => {
         destroy(gridObj);
@@ -969,7 +969,7 @@ describe('Frozen Columns With Editing', () => {
         (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
         expect(gridObj.getBatchChanges()[addedRecords].length === 1).toBe(true);
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-        gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
       });
       afterAll(() => {
         destroy(gridObj);
@@ -1020,7 +1020,7 @@ describe('Frozen Columns With Editing', () => {
         (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
         expect(gridObj.getBatchChanges()[addedRecords].length === 1).toBe(true);
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-        gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
       });
       afterAll(() => {
         destroy(gridObj);
@@ -1065,7 +1065,7 @@ describe('Frozen Columns With Editing', () => {
       gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
       expect(gridObj.getBatchChanges()["changedRecords"].length === 1).toBe(true);
-      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
     });
     it('Batch Add Datasource check - Batch Editing', () => {
       expect(gridObj.dataSource[2].TaskName === 'test').toBe(true);
@@ -1120,7 +1120,7 @@ describe('Frozen Columns With Editing', () => {
       gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
       expect(gridObj.getBatchChanges()['changedRecords'].length === 1).toBe(true);
-      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
     });
     afterAll(() => {
       destroy(gridObj);
@@ -1173,7 +1173,7 @@ describe('Frozen Columns With Editing', () => {
       gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
       expect(gridObj.getBatchChanges()['changedRecords'].length === 1).toBe(true);
-      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
     });
     afterAll(() => {
       destroy(gridObj);
@@ -1219,7 +1219,7 @@ describe('Frozen Columns With Editing', () => {
       gridObj.selectRow(6);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
-      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
       expect(gridObj.getCurrentViewRecords()[0][childRecords].length === 4).toBe(true);
      });
     afterAll(() => {
@@ -1274,7 +1274,7 @@ describe('Frozen Columns With Editing', () => {
       gridObj.selectRow(12);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });      
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
       let addedRecords = 'addedRecords';
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
       (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 40;
@@ -1294,7 +1294,7 @@ describe('Frozen Columns With Editing', () => {
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
       (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
       expect(gridObj.getBatchChanges()[addedRecords].length === 1).toBe(true); 
     }); 
      afterAll(() => {

@@ -1580,7 +1580,7 @@ export function textElement(
     labelSize?: Size, isRotatedLabelIntersect?: boolean, isCanvas?: boolean
 ): Element {
     let renderOptions: Object = {};
-    let htmlObject: Element;
+    let htmlObject: HTMLElement;
     let tspanElement: Element;
     //let renderer: SvgRenderer = new SvgRenderer('');
     let text: string;
@@ -1603,7 +1603,14 @@ export function textElement(
         'dominant-baseline': option.baseLine
     };
     text = typeof option.text === 'string' ? option.text : isMinus ? option.text[option.text.length - 1] : option.text[0];
-    htmlObject = renderer.createText(renderOptions, text, seriesClipRect ? seriesClipRect.x : 0, seriesClipRect ? seriesClipRect.y : 0);
+    let transX: number = seriesClipRect ? seriesClipRect.x : 0;
+    let transY: number = seriesClipRect ? seriesClipRect.y : 0;
+    htmlObject = renderer.createText(renderOptions, text, transX, transY) as HTMLElement;
+    htmlObject.style.fontFamily = font.fontFamily;
+    htmlObject.style.fontStyle = font.fontStyle;
+    htmlObject.style.fontSize = font.size;
+    htmlObject.style.fontWeight = font.fontWeight;
+    htmlObject.style.color = font.color;
     if (typeof option.text !== 'string' && option.text.length > 1) {
         for (let i: number = 1, len: number = option.text.length; i < len; i++) {
             height = (measureText(option.text[i], font).height);

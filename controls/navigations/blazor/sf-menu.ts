@@ -214,11 +214,11 @@ class SfMenu {
             }
         } else if (destroy) {
             let scrollElement: HTMLElement = select(
-                DOT + SCROLLMENU + (this.element.classList.contains(VERTICAL) ? VSCROLL : HSCROLL), this.popup);
+                DOT + SCROLLMENU + (this.element.classList.contains(VERTICAL) ? VSCROLL : HSCROLL), this.element);
             if (scrollElement) {
                 let scrollInstance: VScroll | HScroll = (this.element.classList.contains(VERTICAL) ? getInstance(scrollElement, VScroll) :
                     getInstance(scrollElement, HScroll)) as VScroll | HScroll;
-                destroyScroll(scrollInstance, this.element);
+                destroyScroll(scrollInstance, scrollElement);
             }
         }
     }

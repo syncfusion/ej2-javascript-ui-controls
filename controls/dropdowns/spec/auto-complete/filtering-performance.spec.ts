@@ -61,7 +61,8 @@ describe('Filtering performance', () => {
             }
             autoObj.dataBound = () => {
                 isBind = true;
-                expect(autoObj.text).toBe('TestDescription987');
+                let data : { [key: string]: string } = autoObj.getDataByValue(autoObj.value) as { [key: string]: string };
+                expect(data.Description).toBe('TestDescription987');
                 expect(isOpen).toBeTruthy();
                 done();
             }
@@ -125,7 +126,7 @@ describe('Filtering performance', () => {
                 done();
             }
             autoObj.actionComplete = () => {
-                autoObj.text = 'TestDescription987';
+                autoObj.text = 'Test1987';
             }
             autoObj.focusIn();
             (<any>autoObj).inputElement.value = "t";

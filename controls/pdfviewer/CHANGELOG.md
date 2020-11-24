@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.51 (2020-11-24)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#299496` - Now the ajaxRequestFailed event triggered on every retry count.
+
 ## 18.3.50 (2020-11-17)
 
 ### PDF Viewer

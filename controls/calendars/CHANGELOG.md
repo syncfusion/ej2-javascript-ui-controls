@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.51 (2020-11-24)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#301613` - Issue with "week number is not updated properly in first week of the year" has been resolved.
+
 ## 18.3.40 (2020-10-13)
 
 ### DateRangePicker

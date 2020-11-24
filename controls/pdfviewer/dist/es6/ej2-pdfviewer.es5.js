@@ -126,6 +126,9 @@ var PdfAnnotationBase = /** @__PURE__ @class */ (function (_super) {
         Property('')
     ], PdfAnnotationBase.prototype, "notes", void 0);
     __decorate([
+        Property(false)
+    ], PdfAnnotationBase.prototype, "isCommentLock", void 0);
+    __decorate([
         Property('black')
     ], PdfAnnotationBase.prototype, "strokeColor", void 0);
     __decorate([
@@ -4890,9 +4893,11 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
             }
         }
         var changes = { x: x, y: y };
-        changes = rotatePoint(-this.currentElement.wrapper.rotateAngle, undefined, undefined, changes);
-        var sx = (this.currentElement.wrapper.actualSize.width + changes.x) / this.currentElement.wrapper.actualSize.width;
-        var sy = (this.currentElement.wrapper.actualSize.height + changes.y) / this.currentElement.wrapper.actualSize.height;
+        if (this.currentElement.wrapper) {
+            changes = rotatePoint(-this.currentElement.wrapper.rotateAngle, undefined, undefined, changes);
+            var sx = (this.currentElement.wrapper.actualSize.width + changes.x) / this.currentElement.wrapper.actualSize.width;
+            var sy = (this.currentElement.wrapper.actualSize.height + changes.y) / this.currentElement.wrapper.actualSize.height;
+        }
         changes = this.getChanges(changes);
         if (!this.helper) {
             // tslint:disable-next-line
@@ -6050,7 +6055,7 @@ var FreeTextAnnotation = /** @__PURE__ @class */ (function () {
                             annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings,
                             // tslint:disable-next-line
                             customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode: annotation.annotationAddMode, allowedInteractions: annotation.allowedInteractions,
-                            isPrint: annotation.IsPrint
+                            isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
                         };
                         if (isImportAction) {
                             annot.id = annotation.AnnotName;
@@ -6092,7 +6097,7 @@ var FreeTextAnnotation = /** @__PURE__ @class */ (function () {
                 var modifiedDateRect = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                 this.pdfViewer.drawingObject = {
                     shapeAnnotationType: 'FreeText', strokeColor: this.borderColor,
-                    fillColor: this.fillColor, opacity: this.opacity, notes: '',
+                    fillColor: this.fillColor, opacity: this.opacity, notes: '', isCommentLock: false,
                     thickness: this.borderWidth, borderDashArray: '0', modifiedDate: modifiedDateRect,
                     // tslint:disable-next-line:max-line-length
                     author: this.pdfViewer.freeTextSettings.author, subject: 'Text Box', font: { isBold: this.isBold, isItalic: this.isItalic, isStrikeout: this.isStrikethrough, isUnderline: this.isUnderline }, textAlign: this.textAlign
@@ -6296,6 +6301,7 @@ var FreeTextAnnotation = /** @__PURE__ @class */ (function () {
     // tslint:disable-next-line
     FreeTextAnnotation.prototype.onFocusOutInputBox = function () {
         if (!this.pdfViewerBase.isFreeTextContextMenu) {
+            this.pdfViewer.fireBeforeAddFreeTextAnnotation(this.inputBoxElement.value);
             var pageIndex = this.pdfViewerBase.currentPageNumber - 1;
             var pageDiv = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
             var inputEleHeight = parseFloat(this.inputBoxElement.style.height);
@@ -6307,6 +6313,10 @@ var FreeTextAnnotation = /** @__PURE__ @class */ (function () {
             }
             var inputEleTop = parseFloat(this.inputBoxElement.style.top);
             var zoomFactor = this.pdfViewerBase.getZoomFactor();
+            if (this.pdfViewer.isValidFreeText) {
+                this.inputBoxElement.value = 'Type Here';
+                this.pdfViewer.isValidFreeText = false;
+            }
             var inputValue = this.inputBoxElement.value;
             var isNewlyAdded = false;
             if (this.isNewFreeTextAnnot === true) {
@@ -6369,6 +6379,10 @@ var FreeTextAnnotation = /** @__PURE__ @class */ (function () {
                 this.selectedAnnotation = annotation;
             }
             this.isInuptBoxInFocus = false;
+            if (!isNewlyAdded && this.previousText !== inputValue) {
+                // tslint:disable-next-line:max-line-length
+                this.pdfViewer.annotationModule.triggerAnnotationPropChange(this.selectedAnnotation, false, false, false, false, false, false, false, true, this.previousText, inputValue);
+            }
             // tslint:disable-next-line
             if (this.selectedAnnotation && this.pdfViewer.selectedItems.annotations) {
                 inputEleWidth = ((inputEleWidth - 1) / zoomFactor);
@@ -6706,7 +6720,8 @@ var FreeTextAnnotation = /** @__PURE__ @class */ (function () {
                 comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
                 font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline },
                 annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings,
-                customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint
+                // tslint:disable-next-line:max-line-length
+                customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
             };
             this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annot, '_annotations_freetext');
         }
@@ -6748,7 +6763,7 @@ var FreeTextAnnotation = /** @__PURE__ @class */ (function () {
                 fontFamily: annotation.FontFamily, notes: annotation.MarkupText,
                 // tslint:disable-next-line
                 comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
-                font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }, pageNumber: pageNumber, annotationSettings: annotation.AnnotationSettings
+                font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }, pageNumber: pageNumber, annotationSettings: annotation.AnnotationSettings, isCommentLock: annotation.IsCommentLock
             };
             return annot;
         }
@@ -7521,7 +7536,7 @@ var Annotation = /** @__PURE__ @class */ (function () {
                             this.textMarkupAnnotationModule.isSelectedAnnotation = true;
                             this.textMarkupAnnotationModule.showHideDropletDiv(true);
                             this.textMarkupAnnotationModule.annotationClickPosition = null;
-                            this.textMarkupAnnotationModule.selectAnnotation(textMarkupAnnotation, canvas, pageIndex);
+                            this.textMarkupAnnotationModule.selectAnnotation(textMarkupAnnotation, canvas, pageIndex, null, true);
                             this.textMarkupAnnotationModule.currentTextMarkupAnnotation = textMarkupAnnotation;
                             this.textMarkupAnnotationModule.selectTextMarkupCurrentPage = pageIndex;
                             this.textMarkupAnnotationModule.enableAnnotationPropertiesTool(true);
@@ -7567,6 +7582,26 @@ var Annotation = /** @__PURE__ @class */ (function () {
                     this.isAnnotationSelected = true;
                     this.annotationPageIndex = pageIndex;
                 }
+            }
+        }
+    };
+    /**
+     * Clear the annotation selection.
+     * @returns void
+     */
+    Annotation.prototype.clearSelection = function () {
+        if (this.textMarkupAnnotationModule && this.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+            this.textMarkupAnnotationModule.clearCurrentSelectedAnnotation();
+            this.textMarkupAnnotationModule.clearCurrentAnnotationSelection(this.textMarkupAnnotationModule.selectTextMarkupCurrentPage);
+        }
+        else {
+            if (this.pdfViewer.selectedItems && this.pdfViewer.selectedItems.annotations[0]) {
+                // tslint:disable-next-line
+                var currentAnnotation = this.pdfViewer.selectedItems.annotations[0];
+                this.pdfViewer.clearSelection(currentAnnotation.pageIndex);
+            }
+            else {
+                this.pdfViewer.clearSelection(this.pdfViewer.currentPageNumber - 1);
             }
         }
     };
@@ -8834,7 +8869,7 @@ var Annotation = /** @__PURE__ @class */ (function () {
                     _this.destroyPropertiesWindow();
                 }
             });
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.propertiesDialog.buttons = [
                     // tslint:disable-next-line:max-line-length
                     { buttonModel: { content: this.pdfViewer.localeObj.getConstant('OK'), isPrimary: true }, click: this.onOkClicked.bind(this) },
@@ -9384,7 +9419,8 @@ var Annotation = /** @__PURE__ @class */ (function () {
             if (this.pdfViewer.textSelectionModule && !this.pdfViewerBase.isPanMode) {
                 this.pdfViewer.textSelectionModule.enableTextSelectionMode();
             }
-            if (this.pdfViewer.toolbar && this.pdfViewer.toolbar.annotationToolbarModule && !Browser.isDevice) {
+            // tslint:disable-next-line:max-line-length
+            if (this.pdfViewer.toolbar && this.pdfViewer.toolbar.annotationToolbarModule && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
                 // tslint:disable-next-line:max-line-length
                 var isSkip = this.pdfViewer.toolbar.annotationToolbarModule.inkAnnotationSelected;
                 if (this.pdfViewer.annotation.freeTextAnnotationModule && !this.pdfViewer.annotation.freeTextAnnotationModule.isInuptBoxInFocus && !isSkip) {
@@ -9597,7 +9633,7 @@ var Annotation = /** @__PURE__ @class */ (function () {
                 isLock = false;
             }
         }
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (!isLock) {
                 if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Stamp' ||
                     this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Image') {
@@ -9624,8 +9660,9 @@ var Annotation = /** @__PURE__ @class */ (function () {
                     this.pdfViewer.toolbar.annotationToolbarModule.enableAnnotationPropertiesTools(true);
                 }
             }
+            // tslint:disable-next-line:max-line-length
         }
-        else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Path' && Browser.isDevice) {
+        else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Path' && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
             this.pdfViewer.toolbarModule.annotationToolbarModule.createMobileAnnotationToolbar(true, true);
         }
     };
@@ -9705,7 +9742,8 @@ var Annotation = /** @__PURE__ @class */ (function () {
                         // tslint:disable-next-line:max-line-length
                         shapeAnnotationType: 'sticky', author: annotation.Author, modifiedDate: annotation.ModifiedDate, note: annotation.Note, state: annotation.state, stateModel: annotation.stateModel,
                         comments: [], review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
-                        annotName: annotation.AnnotName, parentId: parentAnnotation.AnnotName, subject: 'Comments'
+                        annotName: annotation.AnnotName, parentId: parentAnnotation.AnnotName, subject: 'Comments',
+                        isLock: annotation.IsLock
                     };
                     newArray[newArray.length] = annotationObject;
                 }
@@ -10017,11 +10055,16 @@ var Annotation = /** @__PURE__ @class */ (function () {
      * @private
      */
     // tslint:disable-next-line:max-line-length
-    Annotation.prototype.triggerAnnotationPropChange = function (pdfAnnotationBase, isColor, isStroke, isThickness, isOpacity, isLineStart, isLineEnd, isDashArray) {
+    Annotation.prototype.triggerAnnotationPropChange = function (pdfAnnotationBase, isColor, isStroke, isThickness, isOpacity, isLineStart, isLineEnd, isDashArray, isFreeText, previousText, currentText) {
         var index = this.getAnnotationIndex(pdfAnnotationBase.pageIndex, pdfAnnotationBase.id);
         var type = this.getAnnotationType(pdfAnnotationBase.shapeAnnotationType, pdfAnnotationBase.measureType);
         // tslint:disable-next-line:max-line-length
         var eventArgs = { name: 'annotationPropertiesChange', pageIndex: pdfAnnotationBase.pageIndex, annotationId: pdfAnnotationBase.annotName, annotationType: type, isColorChanged: isColor, isOpacityChanged: isOpacity, isThicknessChanged: isThickness, isStrokeColorChanged: isStroke };
+        if (isFreeText) {
+            eventArgs.isFreeTextChanged = isFreeText;
+            eventArgs.previousText = previousText;
+            eventArgs.currentText = currentText;
+        }
         if (isLineStart) {
             eventArgs.isLineHeadStartStyleChanged = isLineStart;
         }
@@ -10239,7 +10282,7 @@ var Annotation = /** @__PURE__ @class */ (function () {
             var overlappedCollections = [];
             // tslint:disable-next-line
             for (var i = 0; i < overlappedAnnotations.length; i++) {
-                if (overlappedAnnotations[i].shapeAnnotationType !== 'textMarkup' && this.overlappedCollections) {
+                if (overlappedAnnotations[i].shapeAnnotationType !== 'textMarkup' && this.overlappedCollections || isSelected) {
                     for (var j = 0; j < this.overlappedCollections.length; j++) {
                         if (overlappedAnnotations[i].annotName === this.overlappedCollections[j].annotName) {
                             overlappedCollections.push(overlappedAnnotations[i]);
@@ -10521,7 +10564,22 @@ var Annotation = /** @__PURE__ @class */ (function () {
             if (annotation.shapeAnnotationType === 'textMarkup') {
                 annotationType = 'textMarkup';
             }
-            if (annotation && annotation.note !== '') {
+            if (annotation && annotation.isCommentLock === true) {
+                currentAnnotation.isCommentLock = annotation.isCommentLock;
+            }
+            for (var j = 0; j < annotation.comments.length; j++) {
+                if (annotation.comments[j].isLock === true) {
+                    if (annotationType) {
+                        currentAnnotation.comments = annotation.comments;
+                        currentAnnotation.comments[j].isLock = annotation.comments[j].isLock;
+                    }
+                    else {
+                        currentAnnotation.properties.comments = annotation.comments;
+                        currentAnnotation.properties.comments[j].isLock = annotation.comments[j].isLock;
+                    }
+                }
+            }
+            if (annotation && annotation.note !== '' && annotation.note !== undefined) {
                 if (annotationType) {
                     currentAnnotation.note = annotation.note;
                     // tslint:disable-next-line:max-line-length
@@ -10548,11 +10606,13 @@ var Annotation = /** @__PURE__ @class */ (function () {
                 var commentDiv = document.getElementById(annotation.annotationId);
                 this.deletComment(commentDiv);
             }
-            for (var j = 0; j < annotation.comments.length; j++) {
-                if (annotation.comments[j].note === '' && annotation.commentType === 'delete') {
-                    // tslint:disable-next-line
-                    var commentDiv = document.getElementById(annotation.comments[j].annotName);
-                    this.deletComment(commentDiv);
+            if (annotation.comments) {
+                for (var j = 0; j < annotation.comments.length; j++) {
+                    if (annotation.comments[j].note === '' && annotation.commentType === 'delete') {
+                        // tslint:disable-next-line
+                        var commentDiv = document.getElementById(annotation.comments[j].annotName);
+                        this.deletComment(commentDiv);
+                    }
                 }
             }
             if (annotation.type === 'TextMarkup' || annotation.shapeAnnotationType === 'textMarkup') {
@@ -10758,7 +10818,7 @@ var Annotation = /** @__PURE__ @class */ (function () {
         var bounds = this.pdfViewerBase.convertBounds(currentAnnotation.wrapper.bounds);
         // tslint:disable-next-line
         var annotBounds = this.pdfViewerBase.convertBounds(annotation.bounds);
-        if (JSON.stringify(bounds) !== JSON.stringify(annotBounds)) {
+        if (bounds && annotBounds && JSON.stringify(bounds) !== JSON.stringify(annotBounds)) {
             // tslint:disable-next-line
             var annotationBounds = { x: annotBounds.X + (annotBounds.Width / 2), y: annotBounds.Y + (annotBounds.Height / 2), width: annotBounds.Width, height: annotBounds.Height };
             this.pdfViewer.nodePropertyChange(currentAnnotation, { bounds: annotationBounds });
@@ -10866,7 +10926,15 @@ var Annotation = /** @__PURE__ @class */ (function () {
     };
     // tslint:disable-next-line
     Annotation.prototype.modifyAnnotationProperties = function (newAnnotation, annotation, annotationType) {
-        if (annotation && annotation.note !== '') {
+        if (annotation && annotation.isCommentLock === true) {
+            newAnnotation.isCommentLock = annotation.isCommentLock;
+        }
+        for (var j = 0; j < annotation.comments.length; j++) {
+            if (annotation.comments[j].isLock === true) {
+                newAnnotation.comments[j].isLock = annotation.comments[j].isLock;
+            }
+        }
+        if (annotation && annotation.note !== '' && annotation.note !== undefined) {
             newAnnotation.note = annotation.note;
         }
         if (annotation.commentId && annotation.editComment && annotation.commentType === 'edit') {
@@ -10887,7 +10955,9 @@ var Annotation = /** @__PURE__ @class */ (function () {
             newAnnotation.allowedInteractions = annotation.allowedInteractions;
         }
         else if (annotationType === 'sticky' || annotationType === 'stamp') {
-            newAnnotation.bounds = annotation.bounds;
+            if (annotation.bounds) {
+                newAnnotation.bounds = annotation.bounds;
+            }
             newAnnotation.opacity = annotation.opacity;
             newAnnotation.annotationSettings = annotation.annotationSettings;
             newAnnotation.allowedInteractions = annotation.allowedInteractions;
@@ -10896,7 +10966,9 @@ var Annotation = /** @__PURE__ @class */ (function () {
             }
         }
         else if (annotationType === 'ink') {
-            newAnnotation.bounds = annotation.bounds;
+            if (annotation.bounds) {
+                newAnnotation.bounds = annotation.bounds;
+            }
             newAnnotation.opacity = annotation.opacity;
             newAnnotation.strokeColor = annotation.strokeColor;
             newAnnotation.thickness = annotation.thickness;
@@ -10906,7 +10978,9 @@ var Annotation = /** @__PURE__ @class */ (function () {
         else if (annotationType === 'shape' || annotationType === 'shape_measure') {
             if (annotation.subType === 'Line' || annotation.subType === 'Arrow' || annotation.subType === 'Distance' ||
                 annotation.subType === 'Perimeter') {
-                newAnnotation.bounds = annotation.bounds;
+                if (annotation.bounds) {
+                    newAnnotation.bounds = annotation.bounds;
+                }
                 newAnnotation.vertexPoints = annotation.vertexPoints;
                 newAnnotation.opacity = annotation.opacity;
                 newAnnotation.fillColor = annotation.fillColor;
@@ -10919,7 +10993,9 @@ var Annotation = /** @__PURE__ @class */ (function () {
                 newAnnotation.allowedInteractions = annotation.allowedInteractions;
             }
             else {
-                newAnnotation.bounds = annotation.bounds;
+                if (annotation.bounds) {
+                    newAnnotation.bounds = annotation.bounds;
+                }
                 newAnnotation.vertexPoints = annotation.vertexPoints;
                 newAnnotation.opacity = annotation.opacity;
                 newAnnotation.fillColor = annotation.fillColor;
@@ -10951,7 +11027,9 @@ var Annotation = /** @__PURE__ @class */ (function () {
             }
         }
         else if (annotationType === 'freetext') {
-            newAnnotation.bounds = annotation.bounds;
+            if (annotation.bounds) {
+                newAnnotation.bounds = annotation.bounds;
+            }
             newAnnotation.opacity = annotation.opacity;
             newAnnotation.strokeColor = annotation.strokeColor;
             newAnnotation.thickness = annotation.thickness;
@@ -11144,53 +11222,57 @@ var Annotation = /** @__PURE__ @class */ (function () {
     Annotation.prototype.findAnnotationSettings = function (annotation, isSettings) {
         // tslint:disable-next-line
         var annotSettings = this.pdfViewer.annotationSettings;
-        if (annotation.shapeAnnotationType === 'StickyNotes' && this.pdfViewer.stickyNotesSettings) {
-            annotSettings = this.pdfViewer.stickyNotesSettings;
-        }
-        else if (annotation.shapeAnnotationType === 'Stamp' || annotation.shapeAnnotationType === 'Image') {
-            annotSettings = this.pdfViewer.stampSettings;
-            // tslint:disable-next-line:max-line-length
-            if ((annotation.stampAnnotationType === 'image' || annotation.shapeAnnotationType === 'Image')) {
-                annotSettings = this.pdfViewer.customStampSettings;
+        if (annotation) {
+            // tslint:disable-next-line
+            var shapeType = annotation.shapeAnnotationType;
+            if (shapeType === 'StickyNotes' && this.pdfViewer.stickyNotesSettings) {
+                annotSettings = this.pdfViewer.stickyNotesSettings;
             }
-        }
-        else if (annotation.shapeAnnotationType === 'FreeText') {
-            annotSettings = this.pdfViewer.freeTextSettings;
-        }
-        else if (annotation.measureType === '') {
-            if (annotation.shapeAnnotationType === 'Line') {
-                annotSettings = this.pdfViewer.lineSettings;
+            else if (shapeType === 'Stamp' || shapeType === 'Image') {
+                annotSettings = this.pdfViewer.stampSettings;
                 // tslint:disable-next-line:max-line-length
+                if ((shapeType === 'image' || shapeType === 'Image')) {
+                    annotSettings = this.pdfViewer.customStampSettings;
+                }
             }
-            else if ((annotation.shapeAnnotationType === 'Arrow' || annotation.shapeAnnotationType === 'LineWidthArrowHead')) {
-                annotSettings = this.pdfViewer.arrowSettings;
+            else if (shapeType === 'FreeText') {
+                annotSettings = this.pdfViewer.freeTextSettings;
             }
-            else if (annotation.shapeAnnotationType === 'Rectangle') {
-                annotSettings = this.pdfViewer.rectangleSettings;
-                // tslint:disable-next-line:max-line-length
+            else if (annotation.measureType === '') {
+                if (shapeType === 'Line') {
+                    annotSettings = this.pdfViewer.lineSettings;
+                    // tslint:disable-next-line:max-line-length
+                }
+                else if ((shapeType === 'Arrow' || shapeType === 'LineWidthArrowHead')) {
+                    annotSettings = this.pdfViewer.arrowSettings;
+                }
+                else if (shapeType === 'Rectangle') {
+                    annotSettings = this.pdfViewer.rectangleSettings;
+                    // tslint:disable-next-line:max-line-length
+                }
+                else if ((shapeType === 'Circle' || shapeType === 'Ellipse')) {
+                    annotSettings = this.pdfViewer.circleSettings;
+                }
+                else if (shapeType === 'Polygon' && this.pdfViewer.polygonSettings) {
+                    annotSettings = this.pdfViewer.polygonSettings;
+                }
             }
-            else if ((annotation.shapeAnnotationType === 'Circle' || annotation.shapeAnnotationType === 'Ellipse')) {
-                annotSettings = this.pdfViewer.circleSettings;
-            }
-            else if (annotation.shapeAnnotationType === 'Polygon' && this.pdfViewer.polygonSettings) {
-                annotSettings = this.pdfViewer.polygonSettings;
-            }
-        }
-        else if (annotation.measureType !== '') {
-            if (annotation.measureType === 'Distance') {
-                annotSettings = this.pdfViewer.distanceSettings;
-            }
-            else if (annotation.measureType === 'Perimeter') {
-                annotSettings = this.pdfViewer.perimeterSettings;
-            }
-            else if (annotation.measureType === 'Area') {
-                annotSettings = this.pdfViewer.areaSettings;
-            }
-            else if (annotation.measureType === 'Radius') {
-                annotSettings = this.pdfViewer.radiusSettings;
-            }
-            else if (annotation.measureType === 'Volume') {
-                annotSettings = this.pdfViewer.volumeSettings;
+            else if (annotation.measureType !== '') {
+                if (annotation.measureType === 'Distance') {
+                    annotSettings = this.pdfViewer.distanceSettings;
+                }
+                else if (annotation.measureType === 'Perimeter') {
+                    annotSettings = this.pdfViewer.perimeterSettings;
+                }
+                else if (annotation.measureType === 'Area') {
+                    annotSettings = this.pdfViewer.areaSettings;
+                }
+                else if (annotation.measureType === 'Radius') {
+                    annotSettings = this.pdfViewer.radiusSettings;
+                }
+                else if (annotation.measureType === 'Volume') {
+                    annotSettings = this.pdfViewer.volumeSettings;
+                }
             }
         }
         if (isSettings) {
@@ -12714,7 +12796,7 @@ var TextMarkupAnnotation = /** @__PURE__ @class */ (function () {
                             annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber,
                             textMarkupContent: '', textMarkupStartIndex: 0, textMarkupEndIndex: 0, annotationSelectorSettings: this.getSettings(annotation),
                             // tslint:disable-next-line:max-line-length
-                            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode: annotation.annotationAddMode, annotationSettings: annotation.AnnotationSettings, isPrint: annotation.IsPrint
+                            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode: annotation.annotationAddMode, annotationSettings: annotation.AnnotationSettings, isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
                         };
                         if (annotation.IsMultiSelect) {
                             annotationObject.annotNameCollection = annotation.AnnotNameCollection;
@@ -13195,7 +13277,7 @@ var TextMarkupAnnotation = /** @__PURE__ @class */ (function () {
                     author = (this.pdfViewer.highlightSettings.author !== 'Guest' && this.pdfViewer.highlightSettings.author) ? this.pdfViewer.highlightSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
                     allowedInteractions = this.pdfViewer.highlightSettings.allowedInteractions ? this.pdfViewer.highlightSettings.allowedInteractions : 'None';
                     // tslint:disable-next-line:max-line-length
-                    annotation = this.getAddedAnnotation(type, this.highlightColor, this.highlightOpacity, bounds, author, subject, modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions);
+                    annotation = this.getAddedAnnotation(type, this.highlightColor, this.highlightOpacity, bounds, author, subject, modifiedDate, '', false, rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions);
                     if (annotation) {
                         // tslint:disable-next-line:max-line-length
                         this.renderHighlightAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, annotation.isPrint, pageNumber);
@@ -13208,7 +13290,7 @@ var TextMarkupAnnotation = /** @__PURE__ @class */ (function () {
                     author = (this.pdfViewer.strikethroughSettings.author !== 'Guest' && this.pdfViewer.strikethroughSettings.author) ? this.pdfViewer.strikethroughSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
                     allowedInteractions = this.pdfViewer.strikethroughSettings.allowedInteractions ? this.pdfViewer.strikethroughSettings.allowedInteractions : 'None';
                     // tslint:disable-next-line:max-line-length
-                    annotation = this.getAddedAnnotation(type, this.strikethroughColor, this.strikethroughOpacity, bounds, author, subject, modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions);
+                    annotation = this.getAddedAnnotation(type, this.strikethroughColor, this.strikethroughOpacity, bounds, author, subject, modifiedDate, '', false, rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions);
                     if (annotation) {
                         // tslint:disable-next-line:max-line-length
                         this.renderStrikeoutAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, pageNumber, annotation.isPrint);
@@ -13221,7 +13303,7 @@ var TextMarkupAnnotation = /** @__PURE__ @class */ (function () {
                     author = (this.pdfViewer.underlineSettings.author !== 'Guest' && this.pdfViewer.underlineSettings.author) ? this.pdfViewer.underlineSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
                     allowedInteractions = this.pdfViewer.underlineSettings.allowedInteractions ? this.pdfViewer.underlineSettings.allowedInteractions : 'None';
                     // tslint:disable-next-line:max-line-length
-                    annotation = this.getAddedAnnotation(type, this.underlineColor, this.underlineOpacity, bounds, author, subject, modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions);
+                    annotation = this.getAddedAnnotation(type, this.underlineColor, this.underlineOpacity, bounds, author, subject, modifiedDate, '', false, rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions);
                     if (annotation) {
                         // tslint:disable-next-line:max-line-length   
                         this.renderUnderlineAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, pageNumber, annotation.isPrint);
@@ -13528,7 +13610,7 @@ var TextMarkupAnnotation = /** @__PURE__ @class */ (function () {
                     }
                     this.currentAnnotationIndex = null;
                     this.selectTextMarkupCurrentPage = null;
-                    if (Browser.isDevice) {
+                    if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                         // tslint:disable-next-line:max-line-length
                         this.pdfViewer.toolbarModule.annotationToolbarModule.hideMobileAnnotationToolbar();
                         this.pdfViewer.toolbarModule.showToolbar(true);
@@ -14209,7 +14291,7 @@ var TextMarkupAnnotation = /** @__PURE__ @class */ (function () {
             }
             this.clearCurrentAnnotationSelection(pageNumber);
         }
-        else if (this.selectTextMarkupCurrentPage != null && Browser.isDevice) {
+        else if (this.selectTextMarkupCurrentPage != null && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
             var number = this.selectTextMarkupCurrentPage;
             this.selectTextMarkupCurrentPage = null;
             this.clearAnnotationSelection(number);
@@ -14219,6 +14301,9 @@ var TextMarkupAnnotation = /** @__PURE__ @class */ (function () {
             this.clearCurrentAnnotationSelection(pageNumber);
         }
     };
+    /**
+     * @private
+     */
     TextMarkupAnnotation.prototype.clearCurrentSelectedAnnotation = function () {
         if (this.currentTextMarkupAnnotation) {
             this.clearAnnotationSelection(this.selectTextMarkupCurrentPage);
@@ -14367,7 +14452,7 @@ var TextMarkupAnnotation = /** @__PURE__ @class */ (function () {
      * @private
      */
     // tslint:disable-next-line:max-line-length
-    TextMarkupAnnotation.prototype.selectAnnotation = function (annotation, canvas, pageNumber, event) {
+    TextMarkupAnnotation.prototype.selectAnnotation = function (annotation, canvas, pageNumber, event, isProgrammaticSelection) {
         if (this.pdfViewer.selectedItems.annotations[0]) {
             this.pdfViewer.clearSelection(this.pdfViewer.selectedItems.annotations[0].pageIndex);
             this.pdfViewer.clearSelection(this.selectTextMarkupCurrentPage);
@@ -14384,9 +14469,12 @@ var TextMarkupAnnotation = /** @__PURE__ @class */ (function () {
             if (!this.currentTextMarkupAnnotation) {
                 isCurrentTextMarkup = true;
             }
-            if (this.selectedTextMarkup && annotation) {
+            if (this.selectedTextMarkup && annotation && !isProgrammaticSelection) {
                 if (this.selectedTextMarkup.annotName === annotation.annotName) {
                     isCurrentTextMarkup = false;
+                }
+                else {
+                    isCurrentTextMarkup = true;
                 }
             }
             if (!isNaN(pageNumber)) {
@@ -14411,7 +14499,7 @@ var TextMarkupAnnotation = /** @__PURE__ @class */ (function () {
             if (annotation.annotName !== '' && !this.isNewAnnotation) {
                 if (isCurrentTextMarkup) {
                     var isSelected = false;
-                    if (currentEvent) {
+                    if (!currentEvent) {
                         isSelected = true;
                     }
                     // tslint:disable-next-line:max-line-length
@@ -14647,7 +14735,7 @@ var TextMarkupAnnotation = /** @__PURE__ @class */ (function () {
     };
     // tslint:disable-next-line:max-line-length
     // tslint:disable-next-line
-    TextMarkupAnnotation.prototype.getAddedAnnotation = function (type, color, opacity, bounds, author, subject, predefinedDate, note, rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions) {
+    TextMarkupAnnotation.prototype.getAddedAnnotation = function (type, color, opacity, bounds, author, subject, predefinedDate, note, isCommentLock, rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions) {
         // tslint:disable-next-line:max-line-length
         var modifiedDate = predefinedDate ? predefinedDate : this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
         var annotationName = this.pdfViewer.annotation.createGUID();
@@ -14664,7 +14752,7 @@ var TextMarkupAnnotation = /** @__PURE__ @class */ (function () {
             annotName: annotationName, comments: [], review: { state: '', stateModel: '', author: author, modifiedDate: modifiedDate }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber,
             // tslint:disable-next-line:max-line-length
             textMarkupContent: textContent, textMarkupStartIndex: startIndex, textMarkupEndIndex: endIndex, isMultiSelect: isMultiSelect, annotationSelectorSettings: this.getSelector(type),
-            customData: this.pdfViewer.annotation.getTextMarkupData(subject), annotationAddMode: this.annotationAddMode, annotationSettings: annotationSettings, isPrint: isPrint
+            customData: this.pdfViewer.annotation.getTextMarkupData(subject), annotationAddMode: this.annotationAddMode, annotationSettings: annotationSettings, isPrint: isPrint, isCommentLock: isCommentLock
         };
         if (isMultiSelect) {
             this.multiPageCollection.push(annotation);
@@ -14794,7 +14882,8 @@ var TextMarkupAnnotation = /** @__PURE__ @class */ (function () {
             // tslint:disable-next-line:max-line-length
             textMarkupEndIndex: 0, annotationSelectorSettings: this.getSettings(annotation), customData: this.pdfViewer.annotation.getCustomData(annotation),
             isMultiSelect: annotation.IsMultiSelect, annotNameCollection: annotation.AnnotNameCollection, annotpageNumbers: annotation.AnnotpageNumbers,
-            annotationAddMode: this.annotationAddMode, annotationSettings: annotation.AnnotationSettings, isPrint: annotation.isPrint
+            // tslint:disable-next-line:max-line-length
+            annotationAddMode: this.annotationAddMode, annotationSettings: annotation.AnnotationSettings, isPrint: annotation.isPrint, isCommentLock: annotation.IsCommentLock
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_textMarkup');
     };
@@ -14811,7 +14900,7 @@ var TextMarkupAnnotation = /** @__PURE__ @class */ (function () {
             // tslint:disable-next-line:max-line-length
             textMarkupAnnotationType: annotation.TextMarkupAnnotationType, allowedInteractions: annotation.allowedInteractions, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
             annotationId: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber, isMultiSelect: annotation.IsMultiSelect, annotNameCollection: annotation.AnnotNameCollection, annotpageNumbers: annotation.AnnotpageNumbers, customData: this.pdfViewer.annotation.getCustomData(annotation),
-            isPrint: annotation.isPrint
+            isPrint: annotation.isPrint, isCommentLock: annotation.IsCommentLock
         };
         return annotationObject;
     };
@@ -14946,7 +15035,7 @@ var MeasureAnnotation = /** @__PURE__ @class */ (function () {
                                 fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                                 // tslint:disable-next-line:max-line-length
                                 labelBounds: annotation.LabelBounds, annotationSelectorSettings: this.getSettings(annotation), labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
-                                customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: isPrint
+                                customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: isPrint, isCommentLock: annotation.IsCommentLock
                             };
                             var annot = void 0;
                             // tslint:disable-next-line
@@ -14974,7 +15063,7 @@ var MeasureAnnotation = /** @__PURE__ @class */ (function () {
                                 fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                                 labelBounds: annotation.LabelBounds, annotationSelectorSettings: annotation.AnnotationSelectorSettings,
                                 annotationSettings: annotationObject.annotationSettings, annotationAddMode: annotation.annotationAddMode,
-                                isPrint: isPrint
+                                isPrint: isPrint, isCommentLock: annotationObject.isCommentLock
                             };
                             this.pdfViewer.annotation.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
                             this.pdfViewer.add(annot);
@@ -15022,7 +15111,7 @@ var MeasureAnnotation = /** @__PURE__ @class */ (function () {
                     fillColor: this.distanceFillColor, notes: '', strokeColor: this.distanceStrokeColor, leaderHeight: this.leaderLength,
                     opacity: this.distanceOpacity, thickness: this.distanceThickness, borderDashArray: this.distanceDashArray.toString(),
                     // tslint:disable-next-line:max-line-length
-                    shapeAnnotationType: 'Distance', author: author, subject: 'Distance calculation'
+                    shapeAnnotationType: 'Distance', author: author, subject: 'Distance calculation', isCommentLock: false
                 };
                 this.pdfViewer.tool = 'Distance';
                 break;
@@ -15037,7 +15126,7 @@ var MeasureAnnotation = /** @__PURE__ @class */ (function () {
                     thickness: this.perimeterThickness, sourceDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.perimeterStartHead),
                     // tslint:disable-next-line:max-line-length
                     taregetDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.perimeterEndHead), measureType: 'Perimeter', borderDashArray: this.perimeterDashArray.toString(),
-                    author: author, subject: 'Perimeter calculation'
+                    author: author, subject: 'Perimeter calculation', isCommentLock: false
                 };
                 this.pdfViewer.tool = 'Perimeter';
                 break;
@@ -15051,7 +15140,7 @@ var MeasureAnnotation = /** @__PURE__ @class */ (function () {
                     shapeAnnotationType: 'Polygon', fillColor: this.areaFillColor, notes: '', strokeColor: this.areaStrokeColor,
                     thickness: this.areaThickness, opacity: this.areaOpacity, measureType: 'Area',
                     modifiedDate: modifiedDateArea, borderStyle: '', borderDashArray: '0',
-                    author: author, subject: 'Area calculation'
+                    author: author, subject: 'Area calculation', isCommentLock: false
                 };
                 this.pdfViewer.tool = 'Polygon';
                 break;
@@ -15064,7 +15153,7 @@ var MeasureAnnotation = /** @__PURE__ @class */ (function () {
                     // tslint:disable-next-line:max-line-length
                     shapeAnnotationType: 'Radius', fillColor: this.radiusFillColor, notes: '', strokeColor: this.radiusStrokeColor, opacity: this.radiusOpacity,
                     thickness: this.radiusThickness, measureType: 'Radius', modifiedDate: modifiedDateRad, borderStyle: '', borderDashArray: '0',
-                    author: author, subject: 'Radius calculation'
+                    author: author, subject: 'Radius calculation', isCommentLock: false
                 };
                 this.pdfViewer.tool = 'DrawTool';
                 break;
@@ -15078,7 +15167,7 @@ var MeasureAnnotation = /** @__PURE__ @class */ (function () {
                     shapeAnnotationType: 'Polygon', notes: '', fillColor: this.volumeFillColor, strokeColor: this.volumeStrokeColor,
                     opacity: this.volumeOpacity, thickness: this.volumeThickness, measureType: 'Volume',
                     modifiedDate: modifiedDateVol, borderStyle: '', borderDashArray: '0',
-                    author: author, subject: 'Volume calculation'
+                    author: author, subject: 'Volume calculation', isCommentLock: false
                 };
                 this.pdfViewer.tool = 'Polygon';
                 break;
@@ -15178,7 +15267,7 @@ var MeasureAnnotation = /** @__PURE__ @class */ (function () {
             labelBorderColor: annotationModel.labelBorderColor, fontColor: annotationModel.fontColor, fontSize: annotationModel.fontSize,
             // tslint:disable-next-line:max-line-length
             labelBounds: labelBound, annotationSelectorSettings: this.getSelector(annotationModel.subject), labelSettings: this.pdfViewer.shapeLabelSettings, annotationSettings: annotationSettings,
-            customData: this.pdfViewer.annotation.getMeasureData(annotationModel.subject), isPrint: annotationModel.isPrint
+            customData: this.pdfViewer.annotation.getMeasureData(annotationModel.subject), isPrint: annotationModel.isPrint, isCommentLock: annotationModel.isCommentLock
         };
     };
     MeasureAnnotation.prototype.getSelector = function (type) {
@@ -15383,7 +15472,7 @@ var MeasureAnnotation = /** @__PURE__ @class */ (function () {
                     dialogElement.parentElement.removeChild(dialogElement);
                 }
             });
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.scaleRatioDialog.buttons = [
                     // tslint:disable-next-line:max-line-length
                     { buttonModel: { content: this.pdfViewer.localeObj.getConstant('OK'), isPrimary: true }, click: this.onOkClicked.bind(this) },
@@ -16079,7 +16168,7 @@ var MeasureAnnotation = /** @__PURE__ @class */ (function () {
             labelBorderColor: annotation.LabelBorderColor, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
             // tslint:disable-next-line:max-line-length
             labelBounds: annotation.LabelBounds, annotationSelectorSettings: this.getSettings(annotation), labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
-            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint
+            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
     };
@@ -16223,7 +16312,7 @@ var ShapeAnnotation = /** @__PURE__ @class */ (function () {
                                 fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                                 // tslint:disable-next-line:max-line-length
                                 labelBounds: annotation.LabelBounds, annotationSelectorSettings: this.getSettings(annotation), labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
-                                customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: isPrint
+                                customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: isPrint, isCommentLock: annotation.IsCommentLock
                             };
                             var annot = void 0;
                             // tslint:disable-next-line
@@ -16247,7 +16336,7 @@ var ShapeAnnotation = /** @__PURE__ @class */ (function () {
                                 fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                                 labelBounds: annotation.LabelBounds, annotationSelectorSettings: annotation.AnnotationSelectorSettings,
                                 annotationSettings: annotationObject.annotationSettings, annotationAddMode: annotation.annotationAddMode,
-                                isPrint: annotation.IsPrint
+                                isPrint: annotation.IsPrint, isCommentLock: annotationObject.isCommentLock
                             };
                             var addedAnnot = this.pdfViewer.add(annot);
                             this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');
@@ -16296,7 +16385,7 @@ var ShapeAnnotation = /** @__PURE__ @class */ (function () {
                     thickness: this.lineThickness, modifiedDate: modifiedDateLine, borderDashArray: this.lineDashArray.toString(),
                     // tslint:disable-next-line:max-line-length
                     sourceDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.lineStartHead.toString()), taregetDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.lineEndHead.toString()),
-                    author: author, subject: 'Line', lineHeadStart: this.lineStartHead, lineHeadEnd: this.lineEndHead
+                    author: author, subject: 'Line', lineHeadStart: this.lineStartHead, lineHeadEnd: this.lineEndHead, isCommentLock: false
                 };
                 this.pdfViewer.tool = 'Line';
                 break;
@@ -16314,7 +16403,7 @@ var ShapeAnnotation = /** @__PURE__ @class */ (function () {
                     fillColor: this.arrowFillColor, strokeColor: this.arrowStrokeColor, notes: '', thickness: this.arrowThickness,
                     borderDashArray: this.arrowDashArray.toString(), author: author, subject: 'Arrow',
                     // tslint:disable-next-line:max-line-length
-                    modifiedDate: modifiedDateArrow, lineHeadStart: this.arrowStartHead, lineHeadEnd: this.arrowEndHead
+                    modifiedDate: modifiedDateArrow, lineHeadStart: this.arrowStartHead, lineHeadEnd: this.arrowEndHead, isCommentLock: false
                 };
                 this.pdfViewer.tool = 'Line';
                 break;
@@ -16328,7 +16417,7 @@ var ShapeAnnotation = /** @__PURE__ @class */ (function () {
                     shapeAnnotationType: this.setShapeType('Rectangle'), strokeColor: this.rectangleStrokeColor,
                     fillColor: this.rectangleFillColor, opacity: this.rectangleOpacity, notes: '',
                     thickness: this.rectangleThickness, borderDashArray: '0', modifiedDate: modifiedDateRect,
-                    author: author, subject: 'Rectangle'
+                    author: author, subject: 'Rectangle', isCommentLock: false
                 };
                 this.pdfViewer.tool = 'DrawTool';
                 break;
@@ -16342,7 +16431,7 @@ var ShapeAnnotation = /** @__PURE__ @class */ (function () {
                     shapeAnnotationType: this.setShapeType('Circle'), strokeColor: this.circleStrokeColor,
                     fillColor: this.circleFillColor, opacity: this.circleOpacity, notes: '',
                     thickness: this.circleThickness, borderDashArray: '0', modifiedDate: modifiedDateCir,
-                    author: author, subject: 'Circle'
+                    author: author, subject: 'Circle', isCommentLock: false
                 };
                 this.pdfViewer.tool = 'DrawTool';
                 break;
@@ -16356,7 +16445,7 @@ var ShapeAnnotation = /** @__PURE__ @class */ (function () {
                     strokeColor: this.polygonStrokeColor, fillColor: this.polygonFillColor,
                     opacity: this.polygonOpacity, thickness: this.polygonThickness, borderDashArray: '0',
                     notes: '', author: author, subject: 'Polygon',
-                    modifiedDate: modifiedDatePolygon, borderStyle: ''
+                    modifiedDate: modifiedDatePolygon, borderStyle: '', isCommentLock: false
                 };
                 this.pdfViewer.tool = 'Polygon';
                 break;
@@ -16694,7 +16783,7 @@ var ShapeAnnotation = /** @__PURE__ @class */ (function () {
             fontColor: annotationModel.fontColor, labelBorderColor: annotationModel.labelBorderColor, fontSize: annotationModel.fontSize,
             // tslint:disable-next-line:max-line-length
             labelBounds: labelBound, annotationSelectorSettings: this.getSelector(annotationModel.shapeAnnotationType, annotationModel.subject), labelSettings: this.pdfViewer.shapeLabelSettings, annotationSettings: annotationSettings,
-            customData: this.pdfViewer.annotation.getShapeData(annotationModel.shapeAnnotationType, annotationModel.subject), isPrint: annotationModel.isPrint
+            customData: this.pdfViewer.annotation.getShapeData(annotationModel.shapeAnnotationType, annotationModel.subject), isPrint: annotationModel.isPrint, isCommentLock: annotationModel.isCommentLock
         };
     };
     ShapeAnnotation.prototype.getSelector = function (type, subject) {
@@ -16803,7 +16892,7 @@ var ShapeAnnotation = /** @__PURE__ @class */ (function () {
             labelBorderColor: annotation.LabelBorderColor, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
             // tslint:disable-next-line:max-line-length
             labelBounds: annotation.LabelBounds, annotationSelectorSettings: this.getSettings(annotation), labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
-            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint
+            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');
     };
@@ -17188,6 +17277,9 @@ var StampAnnotation = /** @__PURE__ @class */ (function () {
                 var stateModel = existingAnnotation['StateNodel'];
                 annotation.StateModel = stateModel;
                 // tslint:disable-next-line
+                var lock = existingAnnotation['IsCommentLock'];
+                annotation.IsCommentLock = lock;
+                // tslint:disable-next-line
                 var text = existingAnnotation['Note'];
                 annotation.Note = text;
                 // tslint:disable-next-line
@@ -17241,7 +17333,7 @@ var StampAnnotation = /** @__PURE__ @class */ (function () {
                 comments: annotation.Comments, review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, subject: annotation.iconName,
                 // tslint:disable-next-line
                 annotationSelectorSettings: annotation.AnnotationSelectorSettings, annotationSettings: annotation.AnnotationSettings, allowedInteractions: annotation.allowedInteractions,
-                annotationAddMode: existingAnnotation.annotationAddMode, isPrint: annotation.isPrint
+                annotationAddMode: existingAnnotation.annotationAddMode, isPrint: annotation.isPrint, isCommentLock: annotation.IsCommentLock
             };
             annotationObject = {
                 // tslint:disable-next-line:max-line-length
@@ -17251,7 +17343,7 @@ var StampAnnotation = /** @__PURE__ @class */ (function () {
                 rotateAngle: annotation.RotateAngle, creationDate: annotation.creationDate, pageNumber: pageIndex, icon: annotation.iconName, stampAnnotationPath: csData, randomId: 'stamp' + this.pdfViewerBase.customStampCount, isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText,
                 bounds: { left: X, top: Y, width: annotation.width, height: annotation.height, }, annotName: annotation.AnnotName, comments: annotation.Comments, review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp',
                 // tslint:disable-next-line:max-line-length
-                annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation), allowedInteractions: annotation.allowedInteractions, isPrint: annotation.isPrint
+                annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation), allowedInteractions: annotation.allowedInteractions, isPrint: annotation.isPrint, isCommentLock: annotation.IsCommentLock
             };
             this.storeStampInSession(pageIndex, annotationObject);
             this.pdfViewer.add(annot);
@@ -17345,7 +17437,7 @@ var StampAnnotation = /** @__PURE__ @class */ (function () {
                 bounds: { left: annotation.bounds.x, top: annotation.bounds.y, width: annotation.bounds.width, height: annotation.bounds.height }, stampFillcolor: '', isDynamicStamp: false, annotName: annotation.annotName, comments: [], review: { state: '', stateModel: '', author: annotation.author, modifiedDate: annotation.modifiedDate }, shapeAnnotationType: 'stamp',
                 // tslint:disable-next-line:max-line-length
                 annotationSelectorSettings: annotationSelectorSettings, annotationSettings: this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.customStampSettings), customData: this.pdfViewer.annotationModule.getData('image'), isPrint: annotation.isPrint,
-                allowedInteractions: allowedInteractions
+                allowedInteractions: allowedInteractions, isCommentLock: false
             };
         }
         else if (annotation.stampAnnotationType) {
@@ -17358,7 +17450,7 @@ var StampAnnotation = /** @__PURE__ @class */ (function () {
                 bounds: { left: annotation.bounds.left, top: annotation.bounds.top, width: annotation.bounds.width, height: annotation.bounds.height }, annotName: annotation.annotName, comments: annotation.Comments, review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp',
                 // tslint:disable-next-line:max-line-length
                 annotationSelectorSettings: annotationSelectorSettings, annotationSettings: this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stampSettings), customData: this.pdfViewer.annotationModule.getData(annotation.stampAnnotationType), isPrint: annotation.isPrint,
-                allowedInteractions: allowedInteractions
+                allowedInteractions: allowedInteractions, isCommentLock: annotation.isCommentLock
             };
         }
         else {
@@ -17371,7 +17463,7 @@ var StampAnnotation = /** @__PURE__ @class */ (function () {
                 bounds: { left: annotation.bounds.x, top: annotation.bounds.y, width: annotation.bounds.width, height: annotation.bounds.height, }, annotName: annotation.annotName, comments: annotation.Comments, review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.author, modifiedDate: annotation.ModifiedDate },
                 // tslint:disable-next-line:max-line-length
                 annotationSelectorSettings: annotationSelectorSettings, annotationSettings: this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stampSettings), customData: this.pdfViewer.annotationModule.getData(annotation.shapeAnnotationType), isPrint: annotation.isPrint,
-                allowedInteractions: allowedInteractions
+                allowedInteractions: allowedInteractions, isCommentLock: annotation.isCommentLock
             };
         }
         if (opacity) {
@@ -17443,6 +17535,7 @@ var StampAnnotation = /** @__PURE__ @class */ (function () {
             modifiedDate = annotation.ModifiedDate ? annotation.ModifiedDate : new Date().toLocaleString();
         }
         var annotationAddMode = annotation ? annotation.annotationAddMode : 'UI Drawn Annotation ';
+        var isCommentsLock = annotation.IsCommentLock ? annotation.IsCommentLock : false;
         var isPrint;
         if (!isExistingStamp) {
             isPrint = this.pdfViewer.customStampSettings.isPrint;
@@ -17454,7 +17547,8 @@ var StampAnnotation = /** @__PURE__ @class */ (function () {
             // tslint:disable-next-line:max-line-length
             id: 'stamp' + this.pdfViewerBase.customStampCount, allowedInteractions: allowedInteractions, bounds: { x: position.left, y: position.top, width: position.width, height: position.height }, pageIndex: pageIndex, data: image.src, modifiedDate: modifiedDate,
             shapeAnnotationType: 'Image', opacity: opacity, rotateAngle: RotationAngle, annotName: annotationName, comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: author },
-            annotationSettings: annotationSettings, annotationAddMode: annotationAddMode, signatureName: annotName, isPrint: isPrint
+            // tslint:disable-next-line:max-line-length
+            annotationSettings: annotationSettings, annotationAddMode: annotationAddMode, signatureName: annotName, isPrint: isPrint, isCommentLock: isCommentsLock
         };
         this.currentStampAnnotation = annot;
         // tslint:disable-next-line
@@ -17470,7 +17564,7 @@ var StampAnnotation = /** @__PURE__ @class */ (function () {
                 bounds: { left: position.left, top: position.top, width: position.width, height: position.height }, stampFillcolor: '', isDynamicStamp: false,
                 annotName: annotationName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: author, modifiedDate: modifiedDate }, shapeAnnotationType: 'stamp',
                 // tslint:disable-next-line:max-line-length
-                annotationSelectorSettings: annotationSelectorSettings, annotationSettings: annotationSettings, customData: this.pdfViewer.annotationModule.getData('image'), isPrint: isPrint
+                annotationSelectorSettings: annotationSelectorSettings, annotationSettings: annotationSettings, customData: this.pdfViewer.annotationModule.getData('image'), isPrint: isPrint, isCommentLock: isCommentsLock
             };
             this.storeStampInSession(pageIndex, annotationObject);
             annot.comments = this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author);
@@ -17979,7 +18073,7 @@ var StampAnnotation = /** @__PURE__ @class */ (function () {
                 rotateAngle: annotation.RotateAngle, creationDate: annotation.ModifiedDate, pageNumber: pageNumber, icon: '', stampAnnotationPath: this.findImageData(annotation.Apperarance), randomId: 'image', isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: ' ',
                 bounds: this.calculateImagePosition(annotation.Rect, false, false), annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp',
                 // tslint:disable-next-line:max-line-length
-                annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.annotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.isPrint
+                annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.annotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.isPrint, isCommentLock: annotation.IsCommentLock
             };
             this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_stamp');
         }
@@ -17993,7 +18087,7 @@ var StampAnnotation = /** @__PURE__ @class */ (function () {
                 // tslint:disable-next-line:max-line-length
                 bounds: this.calculateImagePosition(annotation.Rect, false, true), annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp',
                 // tslint:disable-next-line:max-line-length
-                annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.isPrint
+                annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.isPrint, isCommentLock: annotation.IsCommentLock
             };
             if (isDynamic) {
                 annotationObject.dynamicText = this.findDynamicText(annotation.Apperarance, annotation.Subject);
@@ -18240,7 +18334,7 @@ var StickyNotesAnnotation = /** @__PURE__ @class */ (function () {
                         annotationSelectorSettings: this.getSettings(annotation),
                         customData: this.pdfViewer.annotation.getCustomData(annotation),
                         annotationSettings: annotation.AnnotationSettings, allowedInteractions: annotation.allowedInteractions,
-                        isPrint: annotation.IsPrint
+                        isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
                     };
                     var annot = void 0;
                     // tslint:disable-next-line:max-line-length
@@ -18251,7 +18345,8 @@ var StickyNotesAnnotation = /** @__PURE__ @class */ (function () {
                         subject: annotationObject.subject, notes: annotationObject.note, opacity: annotationObject.opacity, id: annotationObject.annotName, fillColor: annotationObject.color,
                         annotationSelectorSettings: annotation.AnnotationSelectorSettings,
                         annotationSettings: annotationObject.annotationSettings,
-                        annotationAddMode: annotation.annotationAddMode, isPrint: annotation.IsPrint
+                        // tslint:disable-next-line:max-line-length
+                        annotationAddMode: annotation.annotationAddMode, isPrint: annotation.IsPrint, isCommentLock: annotationObject.isCommentLock
                     };
                     if (canvas) {
                         this.drawStickyNotes(position.Left, position.Top, position.Width, position.Height, pageNumber, annot, canvas);
@@ -18338,7 +18433,8 @@ var StickyNotesAnnotation = /** @__PURE__ @class */ (function () {
                     // tslint:disable-next-line:max-line-length
                     bounds: { left: X, top: Y, width: width, height: height }, review: { state: '', stateModel: '', modifiedDate: '', author: author },
                     annotationSelectorSettings: annotationSelectorSettings,
-                    customData: _this.pdfViewer.annotationModule.getData('sticky'), annotationSettings: { isLock: isLock }, isPrint: isPrint
+                    // tslint:disable-next-line:max-line-length
+                    customData: _this.pdfViewer.annotationModule.getData('sticky'), annotationSettings: { isLock: isLock }, isPrint: isPrint, isCommentLock: false
                 };
             }
             if (!annotation) {
@@ -18689,7 +18785,7 @@ var StickyNotesAnnotation = /** @__PURE__ @class */ (function () {
      * @private
      */
     StickyNotesAnnotation.prototype.initializeAcccordionContainer = function () {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             // tslint:disable-next-line:max-line-length
             var commentPanelText = createElement('div', { id: this.pdfViewer.element.id + '_commentsPanelText', className: 'e-pv-comments-panel-text' });
             commentPanelText.textContent = this.pdfViewer.localeObj.getConstant('No Comments Yet');
@@ -18886,6 +18982,10 @@ var StickyNotesAnnotation = /** @__PURE__ @class */ (function () {
             commentDiv.appendChild(commentTextBox);
             if (data) {
                 editObj_1.value = data.Note;
+                var isCommentLocked = this.checkIslockProperty(data);
+                if (isCommentLocked && data.Comments == null) {
+                    this.createCommentDiv(this.commentsContainer);
+                }
                 if (data.Name === 'freeText') {
                     editObj_1.value = data.MarkupText;
                 }
@@ -19626,7 +19726,7 @@ var StickyNotesAnnotation = /** @__PURE__ @class */ (function () {
             this.commentMenuObj.enableRtl = true;
         }
         this.commentMenuObj.appendTo(commentMenuElement);
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.commentMenuObj.animationSettings.effect = 'ZoomIn';
         }
         else {
@@ -19645,22 +19745,28 @@ var StickyNotesAnnotation = /** @__PURE__ @class */ (function () {
                     contextActiveDiv = contextDiv[i].parentElement.nextSibling;
                 }
             }
+            var isCommentLocked = this.checkIslockProperty(contextActiveDiv);
             if (args.item) {
                 switch (args.item.text) {
                     case this.pdfViewer.localeObj.getConstant('Edit'):
-                        // tslint:disable-next-line
-                        var commentShow = document.querySelectorAll('.e-pv-new-comments-div');
-                        for (var i = 0; i < commentShow.length; i++) {
-                            commentShow[i].style.display = 'none';
+                        if (!isCommentLocked) {
+                            // tslint:disable-next-line
+                            var commentShow = document.querySelectorAll('.e-pv-new-comments-div');
+                            for (var i = 0; i < commentShow.length; i++) {
+                                commentShow[i].style.display = 'none';
+                            }
+                            contextActiveDiv.ej2_instances[0].enableEditMode = true;
                         }
-                        contextActiveDiv.ej2_instances[0].enableEditMode = true;
                         break;
                     case this.pdfViewer.localeObj.getConstant('Delete Context'):
-                        if (contextActiveDiv.parentElement.parentElement.firstChild === contextActiveDiv.parentElement) {
-                            this.pdfViewer.annotationModule.deleteAnnotation();
-                        }
-                        else {
-                            this.modifyCommentDeleteProperty(contextActiveDiv.parentElement.parentElement, contextActiveDiv.parentElement);
+                        if (!isCommentLocked) {
+                            if (contextActiveDiv.parentElement.parentElement.firstChild === contextActiveDiv.parentElement) {
+                                this.pdfViewer.annotationModule.deleteAnnotation();
+                            }
+                            else {
+                                // tslint:disable-next-line:max-line-length
+                                this.modifyCommentDeleteProperty(contextActiveDiv.parentElement.parentElement, contextActiveDiv.parentElement);
+                            }
                         }
                         break;
                     case this.pdfViewer.localeObj.getConstant('Set Status'):
@@ -19762,7 +19868,11 @@ var StickyNotesAnnotation = /** @__PURE__ @class */ (function () {
         for (var i = 0; i < commentShow.length; i++) {
             commentShow[i].style.display = 'none';
         }
-        if (event.currentTarget.parentElement.parentElement) {
+        var isCommentLocked = this.checkIslockProperty(event.currentTarget.nextSibling);
+        if (isCommentLocked) {
+            event.currentTarget.nextSibling.ej2_instances[0].enableEditMode = false;
+        }
+        else if (event.currentTarget.parentElement.parentElement) {
             var isLocked = this.checkAnnotationSettings(event.currentTarget.parentElement.parentElement.id);
             if (isLocked) {
                 // tslint:disable-next-line
@@ -19780,13 +19890,50 @@ var StickyNotesAnnotation = /** @__PURE__ @class */ (function () {
         }
     };
     // tslint:disable-next-line
+    StickyNotesAnnotation.prototype.checkIslockProperty = function (commentEvent) {
+        // tslint:disable-next-line
+        var annotCollection = this.pdfViewer.annotationCollection;
+        // tslint:disable-next-line
+        var annotation;
+        if (commentEvent.IsCommentLock) {
+            return true;
+        }
+        // tslint:disable-next-line:max-line-length
+        if (this.pdfViewer.annotationModule.textMarkupAnnotationModule && this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+            annotation = this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
+        }
+        else if (this.pdfViewer.selectedItems.annotations[0]) {
+            annotation = this.pdfViewer.selectedItems.annotations[0];
+        }
+        for (var i = 0; i < annotCollection.length; i++) {
+            // tslint:disable-next-line:max-line-length
+            var note = annotCollection[i].note ? annotCollection[i].note : annotCollection[i].notes;
+            if (annotCollection[i].isCommentLock === true && (commentEvent.textContent === note || annotCollection[i].dynamicText === commentEvent.textContent)) {
+                return true;
+            }
+            for (var j = 0; j < annotCollection[i].comments.length; j++) {
+                if (annotation && annotCollection[i].annotationId === annotation.annotName) {
+                    // tslint:disable-next-line:max-line-length
+                    if (annotCollection[i].comments[j].isLock === true && commentEvent.textContent === annotCollection[i].comments[j].note) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    };
+    // tslint:disable-next-line
     StickyNotesAnnotation.prototype.openEditorElement = function (event) {
         // tslint:disable-next-line
         var commentShow = document.querySelectorAll('.e-pv-new-comments-div');
         for (var i = 0; i < commentShow.length; i++) {
             commentShow[i].style.display = 'none';
         }
-        if (event.currentTarget.parentElement.parentElement) {
+        var isCommentLocked = this.checkIslockProperty(event.currentTarget);
+        if (isCommentLocked) {
+            event.currentTarget.ej2_instances[0].enableEditMode = false;
+        }
+        else if (event.currentTarget.parentElement.parentElement) {
             var isLocked = this.checkAnnotationSettings(event.currentTarget.parentElement.parentElement.id);
             if (isLocked) {
                 // tslint:disable-next-line
@@ -19903,7 +20050,16 @@ var StickyNotesAnnotation = /** @__PURE__ @class */ (function () {
         for (var i = 0; i < commentShow.length; i++) {
             commentShow[i].style.display = 'none';
         }
-        if (event.currentTarget) {
+        var isCommentLocked = this.checkIslockProperty(event.currentTarget.lastChild);
+        if (isCommentLocked) {
+            if (event.currentTarget.childElementCount === 2) {
+                event.currentTarget.lastChild.ej2_instances[0].enableEditMode = false;
+            }
+            else {
+                event.currentTarget.childNodes[1].ej2_instances[0].enableEditMode = false;
+            }
+        }
+        else if (event.currentTarget) {
             var isLocked = this.checkAnnotationSettings(event.currentTarget.parentElement.id);
             if (!isLocked) {
                 if (event.currentTarget.childElementCount === 2) {
@@ -20106,6 +20262,9 @@ var StickyNotesAnnotation = /** @__PURE__ @class */ (function () {
                     this.pdfViewer.navigationModule.goToPage(pageNumber);
                 }
                 var annotType = element.getAttribute('name');
+                if (annotType === 'null') {
+                    annotType = 'ink';
+                }
                 this.isCommentsSelected = false;
                 this.setAnnotationType(element.id, annotType, pageNumber);
                 if (!this.isCommentsSelected) {
@@ -20436,14 +20595,14 @@ var StickyNotesAnnotation = /** @__PURE__ @class */ (function () {
                     }
                 }
                 // tslint:disable-next-line:max-line-length
-                var newArray = { annotName: annotName, parentId: parentElement, subject: 'Comments', comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author } };
+                var newArray = { annotName: annotName, parentId: parentElement, subject: 'Comments', comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author }, isLock: false };
                 if (!isComment) {
                     currentAnnotation.comments[currentAnnotation.comments.length] = newArray;
                 }
             }
             else {
                 // tslint:disable-next-line:max-line-length
-                var newArray = { annotName: annotName, parentId: parentElement, subject: 'Comments', comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author } };
+                var newArray = { annotName: annotName, parentId: parentElement, subject: 'Comments', comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author }, isLock: false };
                 currentAnnotation.comments[currentAnnotation.comments.length] = newArray;
             }
             // tslint:disable-next-line:max-line-length
@@ -21303,7 +21462,7 @@ var StickyNotesAnnotation = /** @__PURE__ @class */ (function () {
             annotName: annotation.AnnotName, color: annotation.color,
             annotationSelectorSettings: this.getSettings(annotation),
             customData: this.pdfViewer.annotation.getCustomData(annotation),
-            annotationSettings: { isLock: isLock }, isPrint: annotation.IsPrint
+            annotationSettings: { isLock: isLock }, isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_sticky');
     };
@@ -21330,7 +21489,7 @@ var StickyNotesAnnotation = /** @__PURE__ @class */ (function () {
             bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
             annotationId: annotation.AnnotName, color: annotation.color, pageNumber: pageNumber,
             customData: this.pdfViewer.annotation.getCustomData(annotation),
-            annotationSettings: { isLock: isLock }, isPrint: annotation.IsPrint
+            annotationSettings: { isLock: isLock }, isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
         };
         return annotationObject;
     };
@@ -21505,7 +21664,7 @@ var InkAnnotation = /** @__PURE__ @class */ (function () {
                 author: author, subject: 'Ink', notes: '',
                 review: { state: '', stateModel: '', modifiedDate: modifiedDate, author: author },
                 annotationSelectorSettings: this.getSelector('Ink', ''), modifiedDate: modifiedDate, annotationSettings: { isLock: isLock },
-                isPrint: isPrint, allowedInteractions: allowedInteractions
+                isPrint: isPrint, allowedInteractions: allowedInteractions, isCommentLock: false
             };
             var annotation = this.pdfViewer.add(annot);
             // tslint:disable-next-line
@@ -21692,7 +21851,7 @@ var InkAnnotation = /** @__PURE__ @class */ (function () {
                         comments: this.pdfViewer.annotationModule.getAnnotationComments(currentAnnotation.Comments, currentAnnotation, currentAnnotation.Author), author: currentAnnotation.Author, allowedInteractions: currentAnnotation.allowedInteractions, subject: currentAnnotation.Subject, modifiedDate: currentAnnotation.ModifiedDate,
                         // tslint:disable-next-line:max-line-length
                         review: { state: '', stateModel: '', modifiedDate: currentAnnotation.ModifiedDate, author: currentAnnotation.Author }, notes: currentAnnotation.Note, annotationSettings: { isLock: isLock },
-                        annotationSelectorSettings: selectorSettings, customData: customData, isPrint: isPrint
+                        annotationSelectorSettings: selectorSettings, customData: customData, isPrint: isPrint, isCommentLock: currentAnnotation.IsCommentLock
                     };
                     this.pdfViewer.add(annot);
                     // tslint:disable-next-line
@@ -21737,7 +21896,7 @@ var InkAnnotation = /** @__PURE__ @class */ (function () {
             comments: annotations.comments, author: annotations.author, subject: annotations.subject, modifiedDate: annotations.modifiedDate,
             // tslint:disable-next-line:max-line-length
             review: { state: '', stateModel: '', modifiedDate: annotations.modifiedDate, author: annotations.author }, notes: annotations.notes,
-            annotationSelectorSettings: this.getSelector(annotations, 'Ink')
+            annotationSelectorSettings: this.getSelector(annotations, 'Ink'), isCommentLock: annotations.isCommentLock
         };
         // tslint:disable-next-line
         var storeObject = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_ink');
@@ -21884,7 +22043,7 @@ var InkAnnotation = /** @__PURE__ @class */ (function () {
                 shapeAnnotationType: 'Ink', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, annotationId: currentAnnotation.AnnotName,
                 // tslint:disable-next-line:max-line-length
                 customData: customData, comments: this.pdfViewer.annotationModule.getAnnotationComments(currentAnnotation.Comments, currentAnnotation, currentAnnotation.Author), author: currentAnnotation.Author, allowedInteractions: allowedInteractions, subject: currentAnnotation.Subject, modifiedDate: currentAnnotation.ModifiedDate,
-                review: { state: '', stateModel: '', modifiedDate: currentAnnotation.ModifiedDate, author: currentAnnotation.Author }, notes: currentAnnotation.Note, isPrint: isPrint
+                review: { state: '', stateModel: '', modifiedDate: currentAnnotation.ModifiedDate, author: currentAnnotation.Author }, notes: currentAnnotation.Note, isPrint: isPrint, isCommentLock: currentAnnotation.IsCommentLock
             };
             return annot;
         }
@@ -22270,7 +22429,7 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
      * @private
      */
     NavigationPane.prototype.initializeNavigationPane = function () {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.createNavigationPane();
         }
     };
@@ -22495,7 +22654,7 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
             this.annotationMenuObj.enableRtl = true;
         }
         this.annotationMenuObj.appendTo(annotationMenuElement);
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.annotationMenuObj.animationSettings.effect = 'ZoomIn';
         }
         else {
@@ -22544,14 +22703,14 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
     };
     NavigationPane.prototype.importAnnotationIconClick = function (args) {
         this.annotationInputElement.click();
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             args.originalEvent.target.blur();
             this.pdfViewerBase.focusViewerContainer();
         }
     };
     NavigationPane.prototype.importXFdfAnnotationIconClick = function (args) {
         this.annotationXFdfInputElement.click();
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             args.originalEvent.target.blur();
             this.pdfViewerBase.focusViewerContainer();
         }
@@ -22677,7 +22836,7 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
         }
     };
     NavigationPane.prototype.initiateBookmarks = function () {
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.pdfViewerBase.mobileScrollerContainer.style.display = 'none';
         }
         // tslint:disable-next-line:max-line-length
@@ -22698,7 +22857,7 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
      */
     NavigationPane.prototype.goBackToToolbar = function () {
         this.isNavigationToolbarVisible = false;
-        if (isBlazor() && !Browser.isDevice || !isBlazor()) {
+        if (isBlazor() && (!Browser.isDevice || this.pdfViewer.enableDesktopMode) || !isBlazor()) {
             this.pdfViewer.textSearchModule.cancelTextSearch();
         }
         this.searchInput = null;
@@ -22714,7 +22873,7 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
             var bookmarkContainer = this.pdfViewerBase.getElement('_bookmarks_container');
             if (bookmarkContainer) {
                 bookmarkContainer.parentElement.removeChild(bookmarkContainer);
-                if (Browser.isDevice) {
+                if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                     this.pdfViewerBase.mobileScrollerContainer.style.display = '';
                 }
             }
@@ -22737,7 +22896,7 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
     NavigationPane.prototype.setSearchInputWidth = function () {
         var searchInputParent = this.searchInput.parentElement;
         var padding = window.getComputedStyle(searchInputParent.parentElement, null).getPropertyValue('padding-left');
-        if (isBlazor() && Browser.isDevice) {
+        if (isBlazor() && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
             this.toolbarElement = this.pdfViewerBase.getElement('_navigationToolbar');
         }
         // tslint:disable-next-line:max-line-length
@@ -23140,6 +23299,126 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
     };
     return NavigationPane;
 }());
+
+/**
+ * Enum for font styles
+ */
+var FontStyle;
+(function (FontStyle) {
+    FontStyle[FontStyle["None"] = 0] = "None";
+    FontStyle[FontStyle["Bold"] = 1] = "Bold";
+    FontStyle[FontStyle["Italic"] = 2] = "Italic";
+    FontStyle[FontStyle["Underline"] = 4] = "Underline";
+    FontStyle[FontStyle["Strikethrough"] = 8] = "Strikethrough";
+})(FontStyle || (FontStyle = {}));
+/**
+ * enum for context menu items
+ */
+var ContextMenuItem;
+(function (ContextMenuItem) {
+    ContextMenuItem[ContextMenuItem["Copy"] = 0] = "Copy";
+    ContextMenuItem[ContextMenuItem["Highlight"] = 1] = "Highlight";
+    ContextMenuItem[ContextMenuItem["Cut"] = 2] = "Cut";
+    ContextMenuItem[ContextMenuItem["Underline"] = 4] = "Underline";
+    ContextMenuItem[ContextMenuItem["Paste"] = 8] = "Paste";
+    ContextMenuItem[ContextMenuItem["Delete"] = 16] = "Delete";
+    ContextMenuItem[ContextMenuItem["ScaleRatio"] = 32] = "ScaleRatio";
+    ContextMenuItem[ContextMenuItem["Strikethrough"] = 64] = "Strikethrough";
+    ContextMenuItem[ContextMenuItem["Properties"] = 128] = "Properties";
+    ContextMenuItem[ContextMenuItem["Comment"] = 256] = "Comment";
+})(ContextMenuItem || (ContextMenuItem = {}));
+/**
+ * Enum for annotation resizer location
+ */
+var AnnotationResizerLocation;
+(function (AnnotationResizerLocation) {
+    AnnotationResizerLocation[AnnotationResizerLocation["Corners"] = 1] = "Corners";
+    AnnotationResizerLocation[AnnotationResizerLocation["Edges"] = 2] = "Edges";
+})(AnnotationResizerLocation || (AnnotationResizerLocation = {}));
+/**
+ * Enum for cursor type
+ */
+var CursorType;
+(function (CursorType) {
+    CursorType["auto"] = "auto";
+    CursorType["crossHair"] = "crosshair";
+    CursorType["e_resize"] = "e-resize";
+    CursorType["ew_resize"] = "ew-resize";
+    CursorType["grab"] = "grab";
+    CursorType["grabbing"] = "grabbing";
+    CursorType["move"] = "move";
+    CursorType["n_resize"] = "n-resize";
+    CursorType["ne_resize"] = "ne-resize";
+    CursorType["ns_resize"] = "ns-resize";
+    CursorType["nw_resize"] = "nw-resize";
+    CursorType["pointer"] = "pointer";
+    CursorType["s_resize"] = "s-resize";
+    CursorType["se_resize"] = "se-resize";
+    CursorType["sw_resize"] = "sw-resize";
+    CursorType["text"] = "text";
+    CursorType["w_resize"] = "w-resize";
+})(CursorType || (CursorType = {}));
+/**
+ * Enum type for Dynamic Stamp Items
+ */
+var DynamicStampItem;
+(function (DynamicStampItem) {
+    DynamicStampItem[DynamicStampItem["Revised"] = 1] = "Revised";
+    DynamicStampItem[DynamicStampItem["Reviewed"] = 2] = "Reviewed";
+    DynamicStampItem[DynamicStampItem["Received"] = 4] = "Received";
+    DynamicStampItem[DynamicStampItem["Approved"] = 8] = "Approved";
+    DynamicStampItem[DynamicStampItem["Confidential"] = 16] = "Confidential";
+    DynamicStampItem[DynamicStampItem["NotApproved"] = 32] = "NotApproved";
+})(DynamicStampItem || (DynamicStampItem = {}));
+/**
+ * Enum type for Sign Stamp Items
+ */
+var SignStampItem;
+(function (SignStampItem) {
+    SignStampItem[SignStampItem["Witness"] = 1] = "Witness";
+    SignStampItem[SignStampItem["InitialHere"] = 2] = "InitialHere";
+    SignStampItem[SignStampItem["SignHere"] = 4] = "SignHere";
+    SignStampItem[SignStampItem["Accepted"] = 8] = "Accepted";
+    SignStampItem[SignStampItem["Rejected"] = 16] = "Rejected";
+})(SignStampItem || (SignStampItem = {}));
+/**
+ * Enum type for Standard Business Stamp Items
+ */
+var StandardBusinessStampItem;
+(function (StandardBusinessStampItem) {
+    StandardBusinessStampItem[StandardBusinessStampItem["Approved"] = 1] = "Approved";
+    StandardBusinessStampItem[StandardBusinessStampItem["NotApproved"] = 2] = "NotApproved";
+    StandardBusinessStampItem[StandardBusinessStampItem["Draft"] = 4] = "Draft";
+    StandardBusinessStampItem[StandardBusinessStampItem["Final"] = 8] = "Final";
+    StandardBusinessStampItem[StandardBusinessStampItem["Completed"] = 16] = "Completed";
+    StandardBusinessStampItem[StandardBusinessStampItem["Confidential"] = 32] = "Confidential";
+    StandardBusinessStampItem[StandardBusinessStampItem["ForPublicRelease"] = 64] = "ForPublicRelease";
+    StandardBusinessStampItem[StandardBusinessStampItem["NotForPublicRelease"] = 128] = "NotForPublicRelease";
+    StandardBusinessStampItem[StandardBusinessStampItem["ForComment"] = 256] = "ForComment";
+    StandardBusinessStampItem[StandardBusinessStampItem["Void"] = 512] = "Void";
+    StandardBusinessStampItem[StandardBusinessStampItem["PreliminaryResults"] = 1024] = "PreliminaryResults";
+    StandardBusinessStampItem[StandardBusinessStampItem["InformationOnly"] = 2048] = "InformationOnly";
+})(StandardBusinessStampItem || (StandardBusinessStampItem = {}));
+/**
+ * Enum type for allowed interactions for locked annotations
+ */
+var AllowedInteraction;
+(function (AllowedInteraction) {
+    AllowedInteraction["Select"] = "Select";
+    AllowedInteraction["Move"] = "Move";
+    AllowedInteraction["Resize"] = "Resize";
+    AllowedInteraction["Delete"] = "Delete";
+    AllowedInteraction["None"] = "None";
+    AllowedInteraction["PropertyChange"] = "PropertyChange";
+})(AllowedInteraction || (AllowedInteraction = {}));
+/**
+ * Enum type for export annotation file types
+ */
+var AnnotationDataFormat;
+(function (AnnotationDataFormat) {
+    AnnotationDataFormat["Json"] = "Json";
+    AnnotationDataFormat["Xfdf"] = "XFdf";
+})(AnnotationDataFormat || (AnnotationDataFormat = {}));
 
 /**
  * ContextMenu module is used to handle the context menus used in the control.
@@ -24128,7 +24407,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                 if (toolbarContainer) {
                     toolbarHeight = toolbarContainer.getBoundingClientRect().height;
                 }
-                if (proxy.isAnnotationToolbarHidden() || Browser.isDevice) {
+                if (proxy.isAnnotationToolbarHidden() || (Browser.isDevice && !_this.pdfViewer.enableDesktopMode)) {
                     // tslint:disable-next-line:max-line-length
                     proxy.viewerContainer.style.height = proxy.updatePageHeight(proxy.pdfViewer.element.getBoundingClientRect().height, toolbarHeight);
                 }
@@ -24146,7 +24425,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             else {
                 proxy.viewerContainer.style.height = proxy.updatePageHeight(proxy.pdfViewer.element.getBoundingClientRect().height, 0);
             }
-            if (proxy.pdfViewer.bookmarkViewModule && Browser.isDevice) {
+            if (proxy.pdfViewer.bookmarkViewModule && (Browser.isDevice && !_this.pdfViewer.enableDesktopMode)) {
                 var bookmarkContainer = proxy.getElement('_bookmarks_container');
                 if (bookmarkContainer) {
                     bookmarkContainer.style.height = proxy.updatePageHeight(proxy.pdfViewer.element.getBoundingClientRect().height, 0);
@@ -24183,7 +24462,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             if (_this.pdfViewer.enableToolbar && _this.pdfViewer.thumbnailViewModule) {
                 proxy.pdfViewer.thumbnailViewModule.gotoThumbnailImage(proxy.currentPageNumber - 1);
             }
-            if (proxy.pdfViewer.textSearchModule && !Browser.isDevice) {
+            if (proxy.pdfViewer.textSearchModule && (!Browser.isDevice || _this.pdfViewer.enableDesktopMode)) {
                 proxy.pdfViewer.textSearchModule.textSearchBoxOnResize();
             }
             if (viewerWidth !== 0) {
@@ -24191,7 +24470,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                     proxy.updateZoomValue();
                 }
             }
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !_this.pdfViewer.enableDesktopMode) {
                 proxy.mobileScrollerContainer.style.left = (viewerWidth - parseFloat(proxy.mobileScrollerContainer.style.width)) + 'px';
                 proxy.mobilePageNoContainer.style.left = (viewerWidth / 2) - (parseFloat(proxy.mobilePageNoContainer.style.width) / 2) + 'px';
                 proxy.mobilePageNoContainer.style.top = (proxy.pdfViewer.element.clientHeight / 2) + 'px';
@@ -24850,10 +25129,10 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             _this.previousTime = new Date().getTime();
             // tslint:disable-next-line:max-line-length
             if (touchPoints.length === 1 && !(event.target.classList.contains('e-pv-touch-select-drop') || event.target.classList.contains('e-pv-touch-ellipse'))) {
-                if (Browser.isDevice && _this.pageCount > 0 && !_this.isThumb && !(event.target.classList.contains('e-pv-hyperlink'))) {
+                if ((Browser.isDevice && !_this.pdfViewer.enableDesktopMode) && _this.pageCount > 0 && !_this.isThumb && !(event.target.classList.contains('e-pv-hyperlink'))) {
                     _this.handleTaps(touchPoints);
                 }
-                else if (!Browser.isDevice) {
+                else if (!Browser.isDevice || _this.pdfViewer.enableDesktopMode) {
                     _this.handleTextBoxTaps(touchPoints);
                 }
                 if (_this.pdfViewer.textSelectionModule && !_this.isTextSelectionDisabled) {
@@ -24878,7 +25157,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             event.preventDefault();
             if (_this.pdfViewer.textSelectionModule) {
                 _this.pdfViewer.textSelectionModule.initiateTouchSelection(event, _this.touchClientX, _this.touchClientY);
-                if (Browser.isDevice) {
+                if (Browser.isDevice && !_this.pdfViewer.enableDesktopMode) {
                     clearTimeout(_this.singleTapTimer);
                     _this.tapCount = 0;
                 }
@@ -24900,7 +25179,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             }
         };
         this.viewerContainerOnTouchMove = function (event) {
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !_this.pdfViewer.enableDesktopMode) {
                 clearTimeout(_this.singleTapTimer);
                 _this.tapCount = 0;
             }
@@ -24912,7 +25191,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             if (_this.pdfViewer.magnificationModule) {
                 _this.isTouchScrolled = true;
                 if (touchPoints.length > 1 && _this.pageCount > 0) {
-                    if (Browser.isDevice) {
+                    if (Browser.isDevice && !_this.pdfViewer.enableDesktopMode) {
                         _this.isTouchScrolled = false;
                     }
                     if (_this.pdfViewer.enablePinchZoom) {
@@ -24921,7 +25200,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                     }
                 }
                 else if (touchPoints.length === 1 && _this.getPagesPinchZoomed()) {
-                    if (Browser.isDevice) {
+                    if (Browser.isDevice && !_this.pdfViewer.enableDesktopMode) {
                         _this.isTouchScrolled = false;
                     }
                     _this.pdfViewer.magnificationModule.pinchMoveScroll();
@@ -24978,7 +25257,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             _this.isLongTouchPropagated = false;
             clearInterval(_this.longTouchTimer);
             _this.longTouchTimer = null;
-            if (Browser.isDevice && _this.isTouchScrolled) {
+            if ((Browser.isDevice && !_this.pdfViewer.enableDesktopMode) && _this.isTouchScrolled) {
                 _this.currentTime = new Date().getTime();
                 var duration = _this.currentTime - _this.previousTime;
                 // tslint:disable-next-line
@@ -25010,7 +25289,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             var proxy = _this;
             var scrollposX = 0;
             var scrollposY = 0;
-            if (event.touches && Browser.isDevice) {
+            if (event.touches && (Browser.isDevice && !_this.pdfViewer.enableDesktopMode)) {
                 // tslint:disable-next-line
                 var ratio = (_this.viewerContainer.scrollHeight - _this.viewerContainer.clientHeight) / (_this.viewerContainer.clientHeight - _this.toolbarHeight);
                 if (_this.isThumb) {
@@ -25029,7 +25308,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                     }
                 }
                 else if (event.touches[0].target.className !== 'e-pv-touch-ellipse') {
-                    if (!(_this.isWebkitMobile && Browser.isDevice)) {
+                    if (!(_this.isWebkitMobile && (Browser.isDevice && !_this.pdfViewer.enableDesktopMode))) {
                         _this.mobilePageNoContainer.style.display = 'none';
                         scrollposY = _this.touchClientY - event.touches[0].pageY;
                         scrollposX = _this.touchClientX - event.touches[0].pageX;
@@ -25088,17 +25367,17 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                 }
                 _this.viewerContainer.setAttribute('aria-labelledby', _this.pdfViewer.element.id + '_pageDiv_' + (_this.currentPageNumber - 1));
                 if (!isBlazor()) {
-                    if (!Browser.isDevice) {
+                    if (!Browser.isDevice || _this.pdfViewer.enableDesktopMode) {
                         _this.pdfViewer.toolbarModule.updateNavigationButtons();
                     }
                 }
             }
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !_this.pdfViewer.enableDesktopMode) {
                 _this.mobileSpanContainer.innerHTML = _this.currentPageNumber.toString();
                 _this.mobilecurrentPageContainer.innerHTML = _this.currentPageNumber.toString();
             }
             if (pageIndex !== _this.currentPageNumber) {
-                if (proxy.pdfViewer.thumbnailViewModule && !Browser.isDevice) {
+                if (proxy.pdfViewer.thumbnailViewModule && (!Browser.isDevice || _this.pdfViewer.enableDesktopMode)) {
                     proxy.pdfViewer.thumbnailViewModule.gotoThumbnailImage(proxy.currentPageNumber - 1);
                     proxy.pdfViewer.thumbnailViewModule.isThumbnailClicked = false;
                 }
@@ -25131,7 +25410,8 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             if (_this.pdfViewer.annotation && _this.navigationPane.commentPanelContainer) {
                 _this.pdfViewer.annotation.stickyNotesAnnotationModule.updateCommentPanelScrollTop(_this.currentPageNumber);
             }
-            if (Browser.isDevice && event.touches && event.touches[0].target.className !== 'e-pv-touch-ellipse') {
+            // tslint:disable-next-line:max-line-length
+            if ((Browser.isDevice && !_this.pdfViewer.enableDesktopMode) && event.touches && event.touches[0].target.className !== 'e-pv-touch-ellipse') {
                 setTimeout(function () { _this.updateMobileScrollerPosition(); }, 500);
             }
         };
@@ -25148,7 +25428,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
     PdfViewerBase.prototype.initializeComponent = function () {
         var element = document.getElementById(this.pdfViewer.element.id);
         if (element) {
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 this.pdfViewer.element.classList.add('e-pv-mobile-view');
             }
             var controlWidth = '100%';
@@ -25157,7 +25437,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             this.viewerMainContainer = isBlazor() ? element.querySelector('.e-pv-viewer-main-container') : createElement('div', { id: this.pdfViewer.element.id + '_viewerMainContainer', className: 'e-pv-viewer-main-container' });
             // tslint:disable-next-line:max-line-length
             this.viewerContainer = isBlazor() ? element.querySelector('.e-pv-viewer-container') : createElement('div', { id: this.pdfViewer.element.id + '_viewerContainer', className: 'e-pv-viewer-container', attrs: { 'aria-label': 'pdfviewer scroll view' } });
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 this.createMobilePageNumberContainer();
             }
             // tslint:disable-next-line
@@ -25202,13 +25482,13 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             }
             // tslint:disable-next-line:max-line-length
             var viewerWidth = this.pdfViewer.element.clientWidth;
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 viewerWidth = viewerWidth - (this.navigationPane.sideBarToolbar ? this.navigationPane.getViewerContainerLeft() : 0) -
                     (this.navigationPane.commentPanelContainer ? this.navigationPane.getViewerContainerRight() : 0);
             }
             this.viewerContainer.style.width = viewerWidth + 'px';
             this.viewerMainContainer.appendChild(this.viewerContainer);
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 this.mobileScrollerContainer.style.left = (viewerWidth - parseFloat(this.mobileScrollerContainer.style.width)) + 'px';
                 this.mobilePageNoContainer.style.left = (viewerWidth / 2) - (parseFloat(this.mobilePageNoContainer.style.width) / 2) + 'px';
                 this.mobilePageNoContainer.style.top = (this.pdfViewer.element.clientHeight / 2) + 'px';
@@ -25227,11 +25507,11 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             }
             this.viewerContainer.appendChild(this.pageContainer);
             this.pageContainer.style.width = this.viewerContainer.clientWidth + 'px';
-            if (toolbarDiv && this.pdfViewer.thumbnailViewModule && !Browser.isDevice) {
+            if (toolbarDiv && this.pdfViewer.thumbnailViewModule && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
                 this.pdfViewer.thumbnailViewModule.createThumbnailContainer();
             }
             this.createPrintPopup();
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 this.createGoToPagePopup();
             }
             var waitingPopup = createElement('div', { id: this.pdfViewer.element.id + '_loadingIndicator' });
@@ -25246,7 +25526,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             }
             this.contextMenuModule.createContextMenu();
             this.wireEvents();
-            if (this.pdfViewer.textSearchModule && !Browser.isDevice) {
+            if (this.pdfViewer.textSearchModule && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
                 this.pdfViewer.textSearchModule.createTextSearchBox();
             }
             if (this.pdfViewer.documentPath) {
@@ -25313,7 +25593,8 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
         this.ispageMoved = false;
         this.isThumb = true;
         if (this.isTextMarkupAnnotationModule()) {
-            if (this.pdfViewer.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage != null && Browser.isDevice) {
+            // tslint:disable-next-line:max-line-length
+            if (this.pdfViewer.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage != null && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
                 var pageNumber = this.pdfViewer.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage;
                 this.pdfViewer.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage = null;
                 this.pdfViewer.annotationModule.textMarkupAnnotationModule.clearAnnotationSelection(pageNumber);
@@ -25336,7 +25617,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
     PdfViewerBase.prototype.setMaximumHeight = function (element) {
         // tslint:disable-next-line
         var currentRect = element.getBoundingClientRect();
-        if (!Browser.isDevice || (currentRect && currentRect.height === 0)) {
+        if ((!Browser.isDevice || this.pdfViewer.enableDesktopMode) || (currentRect && currentRect.height === 0)) {
             element.style.minHeight = '500px';
         }
         this.updateWidth();
@@ -25346,7 +25627,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
     PdfViewerBase.prototype.applyViewerHeight = function (element) {
         // tslint:disable-next-line
         var currentRect = element.getBoundingClientRect();
-        if (Browser.isDevice && currentRect && currentRect.height === 0) {
+        if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && currentRect && currentRect.height === 0) {
             element.style.minHeight = '500px';
         }
     };
@@ -25507,7 +25788,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             // tslint:disable-next-line
             var pageData = { pageCount: data.pageCount, pageSizes: data.pageSizes };
             window.sessionStorage.setItem(this.documentId + '_pagedata', JSON.stringify(pageData));
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 this.mobileScrollerContainer.style.display = '';
                 // tslint:disable-next-line
                 var toolbarHeight = this.pdfViewer.toolbarModule ? this.toolbarHeight : 0;
@@ -25517,7 +25798,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
         else {
             this.pageCount = 0;
             this.currentPageNumber = 0;
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 this.mobileScrollerContainer.style.display = 'none';
             }
             if (data === 4) {
@@ -25564,12 +25845,10 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                 }
             }
             if (this.pdfViewer.zoomMode === 'FitToWidth') {
-                isZoomMode = true;
                 this.isInitialPageMode = true;
                 this.pdfViewer.magnificationModule.fitToWidth();
             }
             else if (this.pdfViewer.zoomMode === 'FitToPage') {
-                isZoomMode = true;
                 this.isInitialPageMode = true;
                 this.pdfViewer.magnificationModule.fitToPage();
             }
@@ -25618,7 +25897,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                 this.viewerContainer.setAttribute('aria-labelledby', this.pdfViewer.element.id + '_pageDiv_' + (this.currentPageNumber - 1));
             }
         }
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.mobileSpanContainer.innerHTML = this.currentPageNumber.toString();
             this.mobilecurrentPageContainer.innerHTML = this.currentPageNumber.toString();
         }
@@ -25807,7 +26086,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             else {
                 waitingPopup.style.top = this.viewerContainer.clientHeight / 2 + 'px';
             }
-            if (Browser.isDevice && pageCurrentRect.width > this.viewerContainer.clientWidth) {
+            if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && pageCurrentRect.width > this.viewerContainer.clientWidth) {
                 waitingPopup.style.left = (this.viewerContainer.clientWidth / 2) + (this.viewerContainer.scrollLeft) + 'px';
             }
             else if (this.getZoomFactor() > 1.25 && pageCurrentRect.width > this.viewerContainer.clientWidth) {
@@ -25877,6 +26156,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
      * @private
      */
     PdfViewerBase.prototype.updateScrollTop = function (pageNumber) {
+        var _this = this;
         // tslint:disable-next-line
         if (this.pageSize[pageNumber] != null) {
             this.viewerContainer.scrollTop = this.getPageTop(pageNumber);
@@ -25884,6 +26164,14 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             if (this.renderedPagesList.indexOf(pageNumber) === -1) {
                 this.createRequestForRender(pageNumber);
             }
+            setTimeout(function () {
+                var currentPageNumber = pageNumber + 1;
+                if (currentPageNumber !== _this.currentPageNumber) {
+                    _this.pdfViewer.currentPageNumber = currentPageNumber;
+                    _this.currentPageNumber = currentPageNumber;
+                    _this.pdfViewer.toolbarModule.updateCurrentPage(currentPageNumber);
+                }
+            }, 800);
         }
     };
     /**
@@ -26054,7 +26342,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
         this.tilerequestLists = [];
         this.pdfViewer.formFieldCollections = [];
         this.initiateTextSelectMode();
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (this.navigationPane.sideBarToolbar) {
                 this.navigationPane.clear();
             }
@@ -26116,7 +26404,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
      * @private
      */
     PdfViewerBase.prototype.destroy = function () {
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.pdfViewer.element.classList.remove('e-pv-mobile-view');
         }
         this.unWireEvents();
@@ -26449,7 +26737,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
      * @private
      */
     PdfViewerBase.prototype.updateMobileScrollerPosition = function () {
-        if (Browser.isDevice && this.mobileScrollerContainer) {
+        if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.mobileScrollerContainer) {
             // tslint:disable-next-line
             var ratio = (this.viewerContainer.scrollHeight - this.viewerContainer.clientHeight) / (this.viewerContainer.clientHeight - 56);
             // tslint:disable-next-line
@@ -26487,7 +26775,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                 }
             }
         });
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.passwordPopup.buttons = [
                 {
                     buttonModel: { content: this.pdfViewer.localeObj.getConstant('OK'), isPrimary: true },
@@ -26585,7 +26873,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
     PdfViewerBase.prototype.wireEvents = function () {
         var _this = this;
         this.viewerContainer.addEventListener('scroll', this.viewerContainerOnScroll, true);
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.viewerContainer.addEventListener('touchmove', this.viewerContainerOnScroll, true);
         }
         this.viewerContainer.addEventListener('mousedown', this.viewerContainerOnMousedown);
@@ -26622,7 +26910,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
     };
     PdfViewerBase.prototype.unWireEvents = function () {
         this.viewerContainer.removeEventListener('scroll', this.viewerContainerOnScroll, true);
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.viewerContainer.removeEventListener('touchmove', this.viewerContainerOnScroll, true);
         }
         this.viewerContainer.removeEventListener('mousedown', this.viewerContainerOnMousedown);
@@ -27057,7 +27345,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                 this.textLayer.modifyTextCursor(true);
                 this.pdfViewer.textSelectionModule.enableTextSelectionMode();
             }
-            if (!Browser.isDevice && !isBlazor()) {
+            if ((!Browser.isDevice || this.pdfViewer.enableDesktopMode) && !isBlazor()) {
                 this.enableAnnotationAddTools(true);
             }
         }
@@ -27164,11 +27452,12 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                         // tslint:disable-next-line:max-line-length
                         this.viewerContainer.style.height = this.updatePageHeight(this.pdfViewer.element.getBoundingClientRect().height, 56);
                     }
-                    if (this.isTapHidden && Browser.isDevice) {
+                    if (this.isTapHidden && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
                         this.mobileScrollerContainer.style.display = '';
                         this.updateMobileScrollerPosition();
+                        // tslint:disable-next-line:max-line-length
                     }
-                    else if (Browser.isDevice && this.getSelectTextMarkupCurrentPage() == null) {
+                    else if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.getSelectTextMarkupCurrentPage() == null) {
                         this.mobileScrollerContainer.style.display = 'none';
                     }
                     if (this.getSelectTextMarkupCurrentPage() == null) {
@@ -27213,7 +27502,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
         if (this.pdfViewer.textSelectionModule) {
             // tslint:disable-next-line:max-line-length
             if (!this.isPanMode && this.pdfViewer.enableTextSelection && !this.isTextSelectionDisabled && this.getSelectTextMarkupCurrentPage() == null) {
-                if (!(this.isWebkitMobile && Browser.isDevice)) {
+                if (!(this.isWebkitMobile && (Browser.isDevice && !this.pdfViewer.enableDesktopMode))) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
@@ -27255,7 +27544,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                 this.pdfViewer.toolbarModule.updateTotalPage();
             }
         }
-        if (Browser.isDevice && this.mobiletotalPageContainer) {
+        if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.mobiletotalPageContainer) {
             this.mobiletotalPageContainer.innerHTML = this.pageCount.toString();
             this.pageNoContainer.innerHTML = '(1-' + this.pageCount.toString() + ')';
         }
@@ -27927,12 +28216,12 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
         this.createWaitingPopup(pageNumber);
         this.orderPageDivElements(pageDiv, pageNumber);
         this.renderPageCanvas(pageDiv, pageWidth, pageHeight, pageNumber, 'block');
-        if (Browser.isDevice && !this.isThumb) {
+        if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && !this.isThumb) {
             this.updateMobileScrollerPosition();
         }
     };
     PdfViewerBase.prototype.renderPDFInformations = function () {
-        if (this.pdfViewer.thumbnailViewModule && !Browser.isDevice) {
+        if (this.pdfViewer.thumbnailViewModule && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
             this.pdfViewer.thumbnailViewModule.createRequestForThumbnails();
         }
         if (this.pdfViewer.bookmarkViewModule) {
@@ -28027,7 +28316,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
         // tslint:disable-next-line:max-line-length
         if (leftPosition < 0 || (this.pdfViewer.magnificationModule ? ((this.pdfViewer.magnificationModule.isAutoZoom && this.getZoomFactor() < 1) || this.pdfViewer.magnificationModule.fitType === 'fitToWidth') : false)) {
             var leftValue = leftPosition;
-            if (leftPosition > 0 && Browser.isDevice) {
+            if (leftPosition > 0 && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
                 leftPosition = leftPosition;
             }
             else {
@@ -29865,7 +30154,9 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             }
         }
         else {
-            cursorType = this.pdfViewer.selectedItems.annotations[0].annotationSelectorSettings.resizerCursorType;
+            if (this.pdfViewer.selectedItems.annotations[0]) {
+                cursorType = this.pdfViewer.selectedItems.annotations[0].annotationSelectorSettings.resizerCursorType;
+            }
         }
         if (!cursorType) {
             cursorType = this.pdfViewer.annotationSelectorSettings.resizerCursorType;
@@ -29946,7 +30237,8 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                     this.isMouseDown = false;
                 }
                 var obj = findActiveElement(evt, this, this.pdfViewer);
-                if ((this.isShapeAnnotationModule() || this.isCalibrateAnnotationModule()) && !Browser.isDevice) {
+                // tslint:disable-next-line:max-line-length
+                if ((this.isShapeAnnotationModule() && !this.isCalibrateAnnotationModule()) && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
                     this.pdfViewer.annotation.onShapesMouseup(obj, evt);
                 }
                 this.isAnnotationDrawn = false;
@@ -29954,7 +30246,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
         }
         var target = evt.target;
         // tslint:disable-next-line:max-line-length
-        if (!touches && evt.cancelable && this.skipPreventDefault(target) && !Browser.isDevice) {
+        if (!touches && evt.cancelable && this.skipPreventDefault(target) && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
             evt.preventDefault();
         }
         this.eventArgs = {};
@@ -29996,11 +30288,11 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             this.pdfViewer.tool = '';
             isStamp = true;
         }
-        if (Browser.isDevice && this.pdfViewer.annotation) {
+        if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.pdfViewer.annotation) {
             this.activeElements.activePageID = this.pdfViewer.annotation.getEventPageNumber(evt);
         }
         var obj = findActiveElement(evt, this, this.pdfViewer);
-        if (Browser.isDevice && obj) {
+        if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && obj) {
             evt.preventDefault();
         }
         if (this.pdfViewer.annotation && this.pdfViewer.enableStampAnnotations) {
@@ -30168,7 +30460,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             var isAnnotations = this.updateExportItem();
             if (isAnnotations) {
                 return new Promise(function (resolve, reject) {
-                    _this.createRequestForExportAnnotations(true).then(function (value) {
+                    _this.createRequestForExportAnnotations(true, AnnotationDataFormat.Json).then(function (value) {
                         resolve(value);
                     });
                 });
@@ -32365,126 +32657,6 @@ var TextLayer = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * Enum for font styles
- */
-var FontStyle;
-(function (FontStyle) {
-    FontStyle[FontStyle["None"] = 0] = "None";
-    FontStyle[FontStyle["Bold"] = 1] = "Bold";
-    FontStyle[FontStyle["Italic"] = 2] = "Italic";
-    FontStyle[FontStyle["Underline"] = 4] = "Underline";
-    FontStyle[FontStyle["Strikethrough"] = 8] = "Strikethrough";
-})(FontStyle || (FontStyle = {}));
-/**
- * enum for context menu items
- */
-var ContextMenuItem;
-(function (ContextMenuItem) {
-    ContextMenuItem[ContextMenuItem["Copy"] = 0] = "Copy";
-    ContextMenuItem[ContextMenuItem["Highlight"] = 1] = "Highlight";
-    ContextMenuItem[ContextMenuItem["Cut"] = 2] = "Cut";
-    ContextMenuItem[ContextMenuItem["Underline"] = 4] = "Underline";
-    ContextMenuItem[ContextMenuItem["Paste"] = 8] = "Paste";
-    ContextMenuItem[ContextMenuItem["Delete"] = 16] = "Delete";
-    ContextMenuItem[ContextMenuItem["ScaleRatio"] = 32] = "ScaleRatio";
-    ContextMenuItem[ContextMenuItem["Strikethrough"] = 64] = "Strikethrough";
-    ContextMenuItem[ContextMenuItem["Properties"] = 128] = "Properties";
-    ContextMenuItem[ContextMenuItem["Comment"] = 256] = "Comment";
-})(ContextMenuItem || (ContextMenuItem = {}));
-/**
- * Enum for annotation resizer location
- */
-var AnnotationResizerLocation;
-(function (AnnotationResizerLocation) {
-    AnnotationResizerLocation[AnnotationResizerLocation["Corners"] = 1] = "Corners";
-    AnnotationResizerLocation[AnnotationResizerLocation["Edges"] = 2] = "Edges";
-})(AnnotationResizerLocation || (AnnotationResizerLocation = {}));
-/**
- * Enum for cursor type
- */
-var CursorType;
-(function (CursorType) {
-    CursorType["auto"] = "auto";
-    CursorType["crossHair"] = "crosshair";
-    CursorType["e_resize"] = "e-resize";
-    CursorType["ew_resize"] = "ew-resize";
-    CursorType["grab"] = "grab";
-    CursorType["grabbing"] = "grabbing";
-    CursorType["move"] = "move";
-    CursorType["n_resize"] = "n-resize";
-    CursorType["ne_resize"] = "ne-resize";
-    CursorType["ns_resize"] = "ns-resize";
-    CursorType["nw_resize"] = "nw-resize";
-    CursorType["pointer"] = "pointer";
-    CursorType["s_resize"] = "s-resize";
-    CursorType["se_resize"] = "se-resize";
-    CursorType["sw_resize"] = "sw-resize";
-    CursorType["text"] = "text";
-    CursorType["w_resize"] = "w-resize";
-})(CursorType || (CursorType = {}));
-/**
- * Enum type for Dynamic Stamp Items
- */
-var DynamicStampItem;
-(function (DynamicStampItem) {
-    DynamicStampItem[DynamicStampItem["Revised"] = 1] = "Revised";
-    DynamicStampItem[DynamicStampItem["Reviewed"] = 2] = "Reviewed";
-    DynamicStampItem[DynamicStampItem["Received"] = 4] = "Received";
-    DynamicStampItem[DynamicStampItem["Approved"] = 8] = "Approved";
-    DynamicStampItem[DynamicStampItem["Confidential"] = 16] = "Confidential";
-    DynamicStampItem[DynamicStampItem["NotApproved"] = 32] = "NotApproved";
-})(DynamicStampItem || (DynamicStampItem = {}));
-/**
- * Enum type for Sign Stamp Items
- */
-var SignStampItem;
-(function (SignStampItem) {
-    SignStampItem[SignStampItem["Witness"] = 1] = "Witness";
-    SignStampItem[SignStampItem["InitialHere"] = 2] = "InitialHere";
-    SignStampItem[SignStampItem["SignHere"] = 4] = "SignHere";
-    SignStampItem[SignStampItem["Accepted"] = 8] = "Accepted";
-    SignStampItem[SignStampItem["Rejected"] = 16] = "Rejected";
-})(SignStampItem || (SignStampItem = {}));
-/**
- * Enum type for Standard Business Stamp Items
- */
-var StandardBusinessStampItem;
-(function (StandardBusinessStampItem) {
-    StandardBusinessStampItem[StandardBusinessStampItem["Approved"] = 1] = "Approved";
-    StandardBusinessStampItem[StandardBusinessStampItem["NotApproved"] = 2] = "NotApproved";
-    StandardBusinessStampItem[StandardBusinessStampItem["Draft"] = 4] = "Draft";
-    StandardBusinessStampItem[StandardBusinessStampItem["Final"] = 8] = "Final";
-    StandardBusinessStampItem[StandardBusinessStampItem["Completed"] = 16] = "Completed";
-    StandardBusinessStampItem[StandardBusinessStampItem["Confidential"] = 32] = "Confidential";
-    StandardBusinessStampItem[StandardBusinessStampItem["ForPublicRelease"] = 64] = "ForPublicRelease";
-    StandardBusinessStampItem[StandardBusinessStampItem["NotForPublicRelease"] = 128] = "NotForPublicRelease";
-    StandardBusinessStampItem[StandardBusinessStampItem["ForComment"] = 256] = "ForComment";
-    StandardBusinessStampItem[StandardBusinessStampItem["Void"] = 512] = "Void";
-    StandardBusinessStampItem[StandardBusinessStampItem["PreliminaryResults"] = 1024] = "PreliminaryResults";
-    StandardBusinessStampItem[StandardBusinessStampItem["InformationOnly"] = 2048] = "InformationOnly";
-})(StandardBusinessStampItem || (StandardBusinessStampItem = {}));
-/**
- * Enum type for allowed interactions for locked annotations
- */
-var AllowedInteraction;
-(function (AllowedInteraction) {
-    AllowedInteraction["Select"] = "Select";
-    AllowedInteraction["Move"] = "Move";
-    AllowedInteraction["Resize"] = "Resize";
-    AllowedInteraction["Delete"] = "Delete";
-    AllowedInteraction["None"] = "None";
-    AllowedInteraction["PropertyChange"] = "PropertyChange";
-})(AllowedInteraction || (AllowedInteraction = {}));
-/**
- * Enum type for export annotation file types
- */
-var AnnotationDataFormat;
-(function (AnnotationDataFormat) {
-    AnnotationDataFormat["Json"] = "Json";
-    AnnotationDataFormat["Xfdf"] = "XFdf";
-})(AnnotationDataFormat || (AnnotationDataFormat = {}));
-
-/**
  * ContextMenu module is used to handle the context menus used in the control.
  * @hidden
  */
@@ -32525,7 +32697,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             this.contextMenuObj.enableRtl = true;
         }
         this.contextMenuObj.appendTo(this.contextMenuElement);
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.contextMenuObj.animationSettings.effect = 'ZoomIn';
         }
         else {
@@ -32926,6 +33098,7 @@ var AjaxHandler = /** @__PURE__ @class */ (function () {
         if (statusString === '5' || isSkip) {
             isSkip = true;
             this.retryCount--;
+            proxy.pdfViewer.fireAjaxRequestFailed(status, proxy.httpRequest.statusText, jsonObj.action);
             proxy.send(jsonObj);
         }
         return isSkip;
@@ -34286,7 +34459,7 @@ var Magnification = /** @__PURE__ @class */ (function () {
         if (zoomValue !== null) {
             this.isAutoZoom = false;
             this.onZoomChanged(zoomValue);
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 if (this.isWebkitMobile) {
                     this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
                 }
@@ -34363,7 +34536,7 @@ var Magnification = /** @__PURE__ @class */ (function () {
         this.isPinchZoomed = true;
         this.onZoomChanged(temporaryZoomFactor * 100);
         this.isTapToFitZoom = true;
-        if (Browser.isDevice && (this.zoomFactor * 100) === 50) {
+        if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && (this.zoomFactor * 100) === 50) {
             var zoomValue = this.calculateFitZoomFactor('fitToWidth');
             this.fitType = null;
             if (zoomValue <= 50) {
@@ -34377,7 +34550,7 @@ var Magnification = /** @__PURE__ @class */ (function () {
     Magnification.prototype.pinchOut = function () {
         this.fitType = null;
         var temporaryZoomFactor = this.zoomFactor + this.pinchStep;
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             if (temporaryZoomFactor > 2) {
                 temporaryZoomFactor = 2;
             }
@@ -34436,7 +34609,7 @@ var Magnification = /** @__PURE__ @class */ (function () {
             else {
                 this.pdfViewerBase.isMinimumZoom = false;
             }
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 if (this.isWebkitMobile) {
                     this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
                 }
@@ -34453,7 +34626,7 @@ var Magnification = /** @__PURE__ @class */ (function () {
                         this.magnifyPages();
                     }
                     else {
-                        if (Browser.isDevice) {
+                        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                             // tslint:disable-next-line:max-line-length
                             this.pdfViewerBase.mobilePageNoContainer.style.left = (this.pdfViewer.element.clientWidth / 2) - (parseFloat(this.pdfViewerBase.mobilePageNoContainer.style.width) / 2) + 'px';
                         }
@@ -34483,7 +34656,7 @@ var Magnification = /** @__PURE__ @class */ (function () {
                     }
                 }
             }
-            if (Browser.isDevice && this.isPinchZoomed) {
+            if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.isPinchZoomed) {
                 // tslint:disable-next-line:radix
                 var zoomPercentage = parseInt((this.zoomFactor * 100).toString()) + '%';
                 this.pdfViewerBase.navigationPane.createTooltipMobile(zoomPercentage);
@@ -34513,7 +34686,7 @@ var Magnification = /** @__PURE__ @class */ (function () {
         if (!this.isPagesZoomed) {
             this.reRenderPageNumber = this.pdfViewerBase.currentPageNumber;
         }
-        if (!this.pdfViewerBase.documentLoaded) {
+        if (!this.pdfViewerBase.documentLoaded && !this.pdfViewerBase.isInitialPageMode) {
             this.isPagesZoomed = true;
         }
         var scrollValue = this.getMagnifiedValue(this.pdfViewerBase.viewerContainer.scrollTop);
@@ -35059,19 +35232,30 @@ var Magnification = /** @__PURE__ @class */ (function () {
             this.pdfViewer.toolbarModule.showToolbar(false);
         }
         var scrollValue = this.pdfViewerBase.viewerContainer.scrollTop;
-        if (!this.isTapToFitZoom) {
-            if (this.zoomFactor < 2) {
-                this.zoomTo(200);
+        if (!this.pdfViewer.selectedItems.annotations[0]) {
+            if (!this.isTapToFitZoom) {
+                if (this.zoomFactor < 2) {
+                    this.zoomTo(200);
+                }
+                else {
+                    this.fitToWidth();
+                }
             }
             else {
                 this.fitToWidth();
             }
+            this.calculateScrollValues(scrollValue);
+            this.isTapToFitZoom = !this.isTapToFitZoom;
         }
         else {
-            this.fitToWidth();
+            if (this.pdfViewer.selectedItems.annotations[0]) {
+                var elmtPosition = {};
+                elmtPosition.x = this.pdfViewer.selectedItems.annotations[0].bounds.x;
+                elmtPosition.y = this.pdfViewer.selectedItems.annotations[0].bounds.y;
+                // tslint:disable-next-line:max-line-length
+                this.pdfViewer.annotation.freeTextAnnotationModule.addInuptElemet(elmtPosition, this.pdfViewer.selectedItems.annotations[0]);
+            }
         }
-        this.calculateScrollValues(scrollValue);
-        this.isTapToFitZoom = !this.isTapToFitZoom;
     };
     Magnification.prototype.downwardScrollFitPage = function (currentPageIndex) {
         if (currentPageIndex !== (this.pdfViewerBase.pageCount - 1)) {
@@ -35752,7 +35936,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         };
         this.toolbarClickHandler = function (args) {
             // tslint:disable-next-line:max-line-length
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || _this.pdfViewer.enableDesktopMode) {
                 if (args.originalEvent.target === _this.zoomDropdownItem.parentElement.childNodes[1] || args.originalEvent.target === _this.zoomDropdownItem.parentElement.childNodes[2]) {
                     args.cancel = true;
                 }
@@ -35769,7 +35953,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             _this.handleToolbarBtnClick(args);
             // tslint:disable-next-line
             var targetElement = args.originalEvent.target;
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || _this.pdfViewer.enableDesktopMode) {
                 // tslint:disable-next-line:max-line-length
                 if (!(args.originalEvent.target === _this.zoomDropdownItem.parentElement.childNodes[1] || args.originalEvent.target === _this.zoomDropdownItem.parentElement.childNodes[2] || args.originalEvent.target === _this.currentPageBoxElement || args.originalEvent.target === _this.textSearchItem.childNodes[0])) {
                     if (targetElement.parentElement.id !== _this.pdfViewer.element.id + '_toolbarContainer_nav' && targetElement.id !== _this.pdfViewer.element.id + '_toolbarContainer_nav') {
@@ -35836,7 +36020,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             toolbarDiv = this.createToolbar(width);
         }
         else {
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 toolbarDiv = this.pdfViewer.element.querySelector('.e-pv-toolbar');
                 this.toolbarElement = toolbarDiv;
             }
@@ -35850,7 +36034,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         this.wireEvent();
         if (!isBlazor()) {
             this.updateToolbarItems();
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.applyToolbarSettings();
                 this.initialEnableItems();
                 this.pdfViewerBase.navigationPane.adjustPane();
@@ -35860,13 +36044,13 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             }
             if (this.pdfViewer.annotationModule) {
                 this.annotationToolbarModule = new AnnotationToolbar(this.pdfViewer, this.pdfViewerBase, this);
-                if (!Browser.isDevice) {
+                if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                     this.annotationToolbarModule.initializeAnnotationToolbar();
                 }
             }
         }
         else {
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.annotationToolbarModule = new AnnotationToolbar(this.pdfViewer, this.pdfViewerBase, this);
                 this.initialEnableItems();
                 this.pdfViewerBase.navigationPane.adjustPane();
@@ -35898,7 +36082,8 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         var toolbar = this.toolbarElement;
         if (enableToolbar) {
             toolbar.style.display = 'block';
-            if (Browser.isDevice && this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
+            // tslint:disable-next-line:max-line-length
+            if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
                 this.pdfViewer.toolbarModule.annotationToolbarModule.hideMobileAnnotationToolbar();
             }
         }
@@ -35913,7 +36098,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * @returns void
      */
     Toolbar$$1.prototype.showNavigationToolbar = function (enableNavigationToolbar) {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             var navigationToolbar = this.pdfViewerBase.navigationPane.sideBarToolbar;
             var navigationToolbarSplitter = this.pdfViewerBase.navigationPane.sideBarToolbarSplitter;
             if (enableNavigationToolbar) {
@@ -36071,7 +36256,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     };
     Toolbar$$1.prototype.showDownloadOption = function (enableDownloadOption) {
         this.isDownloadBtnVisible = enableDownloadOption;
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.applyHideToToolbar(enableDownloadOption, 25, 25);
         }
         else {
@@ -36084,7 +36269,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     };
     Toolbar$$1.prototype.showSearchOption = function (enableSearchOption) {
         this.isSearchBtnVisible = enableSearchOption;
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.applyHideToToolbar(enableSearchOption, 22, 22);
         }
         else {
@@ -36093,7 +36278,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     };
     Toolbar$$1.prototype.showUndoRedoTool = function (isEnable) {
         this.isUndoRedoBtnsVisible = isEnable;
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.applyHideToToolbar(isEnable, 16, 17);
         }
         else {
@@ -36164,7 +36349,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * @private
      */
     Toolbar$$1.prototype.resetToolbar = function () {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.currentPageBox.min = 0;
             this.currentPageBox.value = 0;
             this.updateTotalPage();
@@ -36178,7 +36363,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * @private
      */
     Toolbar$$1.prototype.updateToolbarItems = function () {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (this.toolbar) {
                 if (this.pdfViewerBase.pageCount === 0) {
                     this.toolbar.enableItems(this.downloadItem.parentElement, false);
@@ -36294,7 +36479,8 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * @private
      */
     Toolbar$$1.prototype.updateZoomButtons = function () {
-        if (this.pdfViewer.magnificationModule && !this.isMagnificationToolDisabled && !Browser.isDevice) {
+        // tslint:disable-next-line:max-line-length
+        if (this.pdfViewer.magnificationModule && !this.isMagnificationToolDisabled && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
             if (this.pdfViewer.magnificationModule.zoomFactor <= 0.1) {
                 this.toolbar.enableItems(this.zoomInItem.parentElement, true);
                 this.toolbar.enableItems(this.zoomOutItem.parentElement, false);
@@ -36384,7 +36570,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * @private
      */
     Toolbar$$1.prototype.updateCurrentPage = function (pageIndex) {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (this.currentPageBox.value === pageIndex) {
                 this.currentPageBoxElement.value = pageIndex.toString();
             }
@@ -36401,7 +36587,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * @private
      */
     Toolbar$$1.prototype.updateTotalPage = function () {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (this.pdfViewerBase.pageCount > 0) {
                 this.currentPageBox.min = 1;
             }
@@ -36420,7 +36606,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         // tslint:disable-next-line:max-line-length
         this.toolbarElement = createElement('div', { id: this.pdfViewer.element.id + '_toolbarContainer', className: 'e-pv-toolbar' });
         this.pdfViewerBase.viewerMainContainer.appendChild(this.toolbarElement);
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.toolbar = new Toolbar({
                 clicked: this.toolbarClickHandler, width: '', height: '', overflowMode: 'Popup',
                 items: this.createToolbarItems(), created: function () {
@@ -36757,7 +36943,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             this.fileInputElement.addEventListener('change', this.loadDocument);
         }
         if (!isBlazor()) {
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.toolbarElement.addEventListener('mouseup', this.toolbarOnMouseup.bind(this));
                 this.currentPageBoxElement.addEventListener('focusout', this.textBoxFocusOut);
                 this.currentPageBoxElement.addEventListener('keypress', this.navigateToPage);
@@ -36771,7 +36957,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         if (this.fileInputElement) {
             this.fileInputElement.removeEventListener('change', this.loadDocument);
         }
-        if (!Browser.isDevice && !isBlazor()) {
+        if ((!Browser.isDevice || this.pdfViewer.enableDesktopMode) && !isBlazor()) {
             this.toolbarElement.removeEventListener('mouseup', this.toolbarOnMouseup.bind(this));
             this.currentPageBoxElement.removeEventListener('focusout', this.textBoxFocusOut);
             this.currentPageBoxElement.removeEventListener('keypress', this.navigateToPage);
@@ -36784,7 +36970,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * @private
      */
     Toolbar$$1.prototype.onToolbarResize = function (viewerWidth) {
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.pdfViewerBase.navigationPane.toolbarResize();
         }
         else {
@@ -36804,7 +36990,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     };
     Toolbar$$1.prototype.handleOpenIconClick = function (args) {
         this.fileInputElement.click();
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             if (!isBlazor()) {
                 args.originalEvent.target.blur();
             }
@@ -37018,7 +37204,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * @private
      */
     Toolbar$$1.prototype.updateZoomPercentage = function (zoomFactor) {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             // tslint:disable-next-line:radix
             var currentPercent = parseInt((zoomFactor * 100).toString()) + '%';
             if (this.zoomDropDown.text === currentPercent) {
@@ -37064,7 +37250,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * @private
      */
     Toolbar$$1.prototype.textSearchButtonHandler = function () {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (this.pdfViewer.textSearchModule && this.pdfViewerBase.pageCount > 0) {
                 this.isTextSearchBoxDisplayed = !this.isTextSearchBoxDisplayed;
                 this.pdfViewer.textSearchModule.showSearchBox(this.isTextSearchBoxDisplayed);
@@ -37105,13 +37291,17 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * @private
      */
     Toolbar$$1.prototype.selectItem = function (element) {
-        element.classList.add('e-pv-select');
+        if (element) {
+            element.classList.add('e-pv-select');
+        }
     };
     /**
      * @private
      */
     Toolbar$$1.prototype.deSelectItem = function (element) {
-        element.classList.remove('e-pv-select');
+        if (element) {
+            element.classList.remove('e-pv-select');
+        }
     };
     /**
      * @private
@@ -37521,7 +37711,7 @@ var AnnotationToolbar = /** @__PURE__ @class */ (function () {
     };
     AnnotationToolbar.prototype.createMobileAnnotationToolbar = function (isEnable, isPath) {
         var _this = this;
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             if (this.toolbarElement == null && isEnable) {
                 this.isMobileAnnotEnabled = true;
                 // tslint:disable-next-line:max-line-length
@@ -37984,7 +38174,7 @@ var AnnotationToolbar = /** @__PURE__ @class */ (function () {
     };
     AnnotationToolbar.prototype.createDropDowns = function (isPath) {
         var _this = this;
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.shapeElement = this.pdfViewerBase.getElement('_annotation_shapes');
             var shapeToolbar = this.createShapeOptions(this.shapeElement.id, true);
             // tslint:disable-next-line:max-line-length
@@ -38004,7 +38194,7 @@ var AnnotationToolbar = /** @__PURE__ @class */ (function () {
             this.colorDropDown.open = this.colorDropDownOpen.bind(this);
             this.pdfViewerBase.getElement('_annotation_color-popup').addEventListener('click', this.onColorPickerCancelClick.bind(this));
         }
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.strokeDropDownElement = this.pdfViewerBase.getElement('_annotation_stroke');
             this.strokeColorPicker = this.createColorPicker(this.strokeDropDownElement.id);
             this.strokeColorPicker.change = this.onStrokePickerChange.bind(this);
@@ -38032,7 +38222,7 @@ var AnnotationToolbar = /** @__PURE__ @class */ (function () {
             this.opacitySlider.changed = this.opacityChange.bind(this);
             this.opacityDropDown.open = this.opacityDropDownOpen.bind(this);
         }
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.fontFamilyElement = this.pdfViewerBase.getElement('_annotation_fontname');
             this.createDropDownListForFamily(this.fontFamilyElement);
             this.fontFamilyElement.style.textAlign = 'left';
@@ -38057,7 +38247,7 @@ var AnnotationToolbar = /** @__PURE__ @class */ (function () {
         }
     };
     AnnotationToolbar.prototype.opacityDropDownOpen = function (args) {
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             // tslint:disable-next-line:max-line-length
             var opacityElement = this.pdfViewerBase.getElement('_annotation_opacity-popup');
             opacityElement.style.left = '0px';
@@ -38145,7 +38335,7 @@ var AnnotationToolbar = /** @__PURE__ @class */ (function () {
         }
     };
     AnnotationToolbar.prototype.colorDropDownOpen = function () {
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             // tslint:disable-next-line:max-line-length
             this.pdfViewerBase.getElement('_annotation_color-popup').style.left = '0px';
         }
@@ -38578,7 +38768,7 @@ var AnnotationToolbar = /** @__PURE__ @class */ (function () {
     };
     // tslint:disable-next-line
     AnnotationToolbar.prototype.thicknessDropDownOpen = function (args) {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.calculateToolbarPosition(args);
         }
     };
@@ -39936,7 +40126,7 @@ var AnnotationToolbar = /** @__PURE__ @class */ (function () {
             this.pdfViewer.annotationModule.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
             this.pdfViewer.annotationModule.textMarkupAnnotationModule.showHideDropletDiv(true);
         }
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.primaryToolbar.deSelectItem(this.highlightItem);
             this.primaryToolbar.deSelectItem(this.underlineItem);
             this.primaryToolbar.deSelectItem(this.strikethroughItem);
@@ -39948,7 +40138,7 @@ var AnnotationToolbar = /** @__PURE__ @class */ (function () {
         this.clearShapeMode();
         this.clearMeasureMode();
         this.pdfViewer.tool = '';
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.enableTextMarkupAnnotationPropertiesTools(false);
             this.enableFreeTextAnnotationPropertiesTools(false);
             this.updateColorInIcon(this.colorDropDownElement, '#000000');
@@ -40001,7 +40191,7 @@ var AnnotationToolbar = /** @__PURE__ @class */ (function () {
         if (!isBlazor()) {
             this.toolbar.enableItems(this.colorDropDownElement.parentElement, isEnable);
             this.toolbar.enableItems(this.opacityDropDownElement.parentElement, isEnable);
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.toolbar.enableItems(this.strokeDropDownElement.parentElement, false);
                 this.toolbar.enableItems(this.thicknessElement.parentElement, false);
                 this.toolbar.enableItems(this.fontFamilyElement.parentElement, false);
@@ -42781,6 +42971,16 @@ var PdfViewer = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     // tslint:disable-next-line
+    PdfViewer.prototype.fireBeforeAddFreeTextAnnotation = function (value) {
+        // tslint:disable-next-line:max-line-length
+        var eventArgs = { name: 'beforeAddFreeText', value: value };
+        // tslint:disable-next-line
+        this.trigger('beforeAddFreeText', eventArgs);
+    };
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
     PdfViewer.prototype.fireCommentAdd = function (text, annotation) {
         // tslint:disable-next-line:max-line-length
         var eventArgs = { name: 'CommentAdd', text: text, annotation: annotation };
@@ -43467,6 +43667,9 @@ var PdfViewer = /** @__PURE__ @class */ (function (_super) {
     ], PdfViewer.prototype, "enableMultiLineOverlap", void 0);
     __decorate$2([
         Property(false)
+    ], PdfViewer.prototype, "isValidFreeText", void 0);
+    __decorate$2([
+        Property(false)
     ], PdfViewer.prototype, "isAnnotationToolbarOpen", void 0);
     __decorate$2([
         Property(false)
@@ -43552,6 +43755,9 @@ var PdfViewer = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         Property(false)
     ], PdfViewer.prototype, "isFormFieldDocument", void 0);
+    __decorate$2([
+        Property(false)
+    ], PdfViewer.prototype, "enableDesktopMode", void 0);
     __decorate$2([
         Property(true)
     ], PdfViewer.prototype, "enableFreeText", void 0);
@@ -43843,6 +44049,9 @@ var PdfViewer = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         Event()
     ], PdfViewer.prototype, "commentDelete", void 0);
+    __decorate$2([
+        Event()
+    ], PdfViewer.prototype, "beforeAddFreeText", void 0);
     __decorate$2([
         Collection([], PdfAnnotationBase)
     ], PdfViewer.prototype, "annotations", void 0);
@@ -44174,7 +44383,7 @@ var BookmarkView = /** @__PURE__ @class */ (function () {
         var scroll = scrollValue.toString();
         // tslint:disable-next-line:radix
         proxy.pdfViewerBase.viewerContainer.scrollTop = parseInt(scroll);
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.pdfViewerBase.mobileScrollerContainer.style.display = '';
             this.pdfViewerBase.updateMobileScrollerPosition();
         }
@@ -46103,7 +46312,7 @@ var TextSelection = /** @__PURE__ @class */ (function () {
     // tslint:disable-next-line
     TextSelection.prototype.calculateContextMenuPosition = function (top, left) {
         top = top - this.pdfViewerBase.toolbarHeight;
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             // tslint:disable-next-line
             var contextTop = top - this.contextMenuHeight;
             if (contextTop < this.pdfViewerBase.toolbarHeight) {
@@ -47003,7 +47212,7 @@ var TextSearch = /** @__PURE__ @class */ (function () {
         if (scrollPoint) {
             offsetY += scrollPoint.y;
             offsetX += scrollPoint.x;
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 parent.scrollLeft = offsetX;
             }
             else {
@@ -47295,7 +47504,7 @@ var TextSearch = /** @__PURE__ @class */ (function () {
         return button;
     };
     TextSearch.prototype.enablePrevButton = function (isEnable) {
-        if (!Browser.isDevice) {
+        if ((!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
             if (isEnable) {
                 this.prevSearchBtn.removeAttribute('disabled');
             }
@@ -47305,7 +47514,7 @@ var TextSearch = /** @__PURE__ @class */ (function () {
         }
     };
     TextSearch.prototype.enableNextButton = function (isEnable) {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (isEnable) {
                 this.nextSearchBtn.removeAttribute('disabled');
             }
@@ -47326,7 +47535,7 @@ var TextSearch = /** @__PURE__ @class */ (function () {
      * @private
      */
     TextSearch.prototype.searchButtonClick = function (element, inputElement) {
-        if (isBlazor() && Browser.isDevice) {
+        if (isBlazor() && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
             var searchElement = this.pdfViewerBase.getElement('_search_box-icon');
             element = searchElement.children[0].children[0];
             inputElement = this.pdfViewerBase.getElement('_search_input');
@@ -47342,7 +47551,7 @@ var TextSearch = /** @__PURE__ @class */ (function () {
     };
     TextSearch.prototype.updateSearchInputIcon = function (isEnable) {
         if (isBlazor()) {
-            if (this.searchBtn && Browser.isDevice) {
+            if (this.searchBtn && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
                 this.searchBtn = this.pdfViewerBase.getElement('_search_box-icon').children[0].children[0];
             }
         }
@@ -47360,7 +47569,7 @@ var TextSearch = /** @__PURE__ @class */ (function () {
     TextSearch.prototype.onMessageBoxOpen = function () {
         this.pdfViewerBase.getElement('_search_input').blur();
         this.isMessagePopupOpened = true;
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             // tslint:disable-next-line:max-line-length
             this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No matches'));
         }
@@ -48658,7 +48867,7 @@ var FormFields = /** @__PURE__ @class */ (function () {
         if (data.IsReadonly || (!this.pdfViewer.enableFormFields) || isReadonly) {
             inputField.disabled = true;
             inputField.style.cursor = 'default';
-            inputField.style.backgroundColor = 'none';
+            inputField.style.backgroundColor = 'transparent';
         }
         else {
             // tslint:disable-next-line
@@ -48900,7 +49109,7 @@ var FormFields = /** @__PURE__ @class */ (function () {
         var zoomvalue = this.pdfViewerBase.getZoomFactor();
         span.style.left = left * zoomvalue + 'px';
         span.style.top = top * zoomvalue + 'px';
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             span.style.height = 5 + 'px';
             span.style.width = 10 + 'px';
             span.style.fontSize = '3px';

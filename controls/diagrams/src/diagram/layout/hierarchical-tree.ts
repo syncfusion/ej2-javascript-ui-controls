@@ -603,22 +603,19 @@ export class HierarchicalTree {
         let diff: number; let translateSibilingsBy: number;
         let fchild: INode; let maxRowWidth: number;
         let j: number; let i: number; let k: number; let max: number; let leftCenter: number; let rightCenter: number;
-
         //Get dimensions with respect to layout orientations
         let dimensions: Dimensions = this.getDimensions(layout, shape, x, y, level);
-        let info: LayoutInfo = layout.graphNodes[shape.id];
-        let side: string = info.tree.type;
-        let lev: number = level;
-        let right: number = x;
-        let bottom: number = y;
-        let prevLayoutLevels: LevelBounds[] = layout.levels.slice(0, layout.levels.length);
+        let info: LayoutInfo = layout.graphNodes[shape.id]; let side: string = info.tree.type; let lev: number = level;
+        let right: number = x; let bottom: number = y; let prevLayoutLevels: LevelBounds[] = layout.levels.slice(0, layout.levels.length);
         let minTranslation: number = 0;
-
         if (this.hasChild(layout, shape)) {
             let h: boolean = layout.orientation.indexOf('Left') !== -1 ? true : false;
             let align: boolean;
             let rows: string[][] = this.splitChildrenInRows(layout, shape);
             let unique: boolean = info.tree.children.length === 5 && rows[0].length === 3;
+            if (info.tree.children.length > 5) {
+                unique = rows[0].length === Math.round(info.tree.children.length / 2);
+            }
             let leftTree: string[][] = []; let rightTree: string[][] = [];
 
             if (!unique) {
@@ -774,6 +771,9 @@ export class HierarchicalTree {
         let dimensions: Dimensions = treeInfo.dimensions;
         let lev: number = treeInfo.level;
         let unique: boolean = info.tree.children.length === 5 && rows[0].length === 3;
+        if (info.tree.children.length > 5) {
+            unique = rows[0].length === Math.round(info.tree.children.length / 2);
+        }
         if (unique && i === 1) {
             max = (rightBounds[0].right - rightBounds[0].x) >= (rightBounds[1].right - rightBounds[1].x) ? 0 : 1;
         }

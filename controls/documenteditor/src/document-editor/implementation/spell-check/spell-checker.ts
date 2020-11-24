@@ -172,7 +172,7 @@ export class SpellChecker {
         this.errorWordCollection = new Dictionary<string, ElementBox[]>();
         this.errorSuggestions = new Dictionary<string, string[]>();
         this.ignoreAllItems = [];
-        this.uniqueSpelledWords = [];
+        this.uniqueSpelledWords = {};
         this.textSearchResults = new TextSearchResults(this.documentHelper.owner);
         this.uniqueKey = this.documentHelper.owner.element.id + '_' + this.createGuid();
     }
@@ -1193,7 +1193,7 @@ export class SpellChecker {
         if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
             this.uniqueSpelledWords = JSON.parse(localStorage.getItem(this.uniqueKey));
         }
-        this.uniqueSpelledWords = (!this.uniqueSpelledWords) ? this.uniqueSpelledWords : {};
+        this.uniqueSpelledWords = this.uniqueSpelledWords || {};
         let totalCount: number = spelledWords.length + Object.keys(this.uniqueSpelledWords).length;
         if (totalCount <= this.uniqueWordsCount) {
             for (let i: number = 0; i < spelledWords.length; i++) {
@@ -1253,7 +1253,7 @@ export class SpellChecker {
         this.errorWordCollection = undefined;
         this.ignoreAllItems = undefined;
         this.errorSuggestions = undefined;
-        this.uniqueSpelledWords = [];
+        this.uniqueSpelledWords = {};
         this.textSearchResults = undefined;
         if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
             localStorage.removeItem(this.uniqueKey);

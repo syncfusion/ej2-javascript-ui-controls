@@ -923,7 +923,8 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                         this.currentViewData, this);
                 }
             }
-            this.isRectTypeSeries = this.type.indexOf('Column') > -1 || this.type.indexOf('Bar') > -1;
+            this.isRectTypeSeries = this.type.indexOf('Column') > -1 || this.type.indexOf('Bar') > -1
+                                    || this.type.indexOf('Histogram') > -1;
         }
         let len: number = Object.keys(this.currentViewData).length;
         this.points = [];
@@ -1244,8 +1245,8 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             chart.refreshBound();
             chart.trigger('loaded', { chart: chart.isBlazor ? {} : chart });
             if (this.chart.stockChart && this.chart.stockChart.initialRender) {
-                this.chart.stockChart.stockChartDataManagerSuccess();
                 this.chart.stockChart.initialRender = false;
+                this.chart.stockChart.stockChartDataManagerSuccess();
             }
         }
         if (this instanceof Series) {

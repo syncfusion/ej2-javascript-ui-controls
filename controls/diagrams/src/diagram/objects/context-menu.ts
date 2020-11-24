@@ -251,6 +251,21 @@ export class DiagramContextMenu {
         }
     }
 
+    private updateItems(): void {
+        let canInsert: boolean = true;
+        for (let i: number = 0; i < this.parent.contextMenuSettings.items.length; i++) {
+            let items: ContextMenuItemModel = this.parent.contextMenuSettings.items[i];
+            for (let j: number = 0; j < this.contextMenu.items.length; j++) {
+                if (this.contextMenu.items[j].text === this.parent.contextMenuSettings.items[i].text) {
+                    canInsert = false;
+                }
+            }
+            if (canInsert) {
+                this.contextMenu.insertAfter([items], this.contextMenu.items[this.contextMenu.items.length - 1].text);
+
+            }
+        }
+    }
     private async contextMenuBeforeOpen(args: BeforeOpenCloseMenuEventArgs): Promise<void> {
         if (!this.parent.checkMenu &&
             (window.navigator.userAgent.indexOf('Linux') !== -1 || window.navigator.userAgent.indexOf('X11') !== -1)) {
@@ -278,6 +293,10 @@ export class DiagramContextMenu {
             this.parent.trigger(contextMenuOpen, diagramArgs);
         }
         let hidden: boolean = true;
+        if (!this.parent.contextMenuSettings.showCustomMenuOnly && this.parent.contextMenuSettings.items) {
+            this.updateItems();
+            this.contextMenu.refresh();
+        }
         this.hiddenItems = this.hiddenItems.concat(diagramArgs.hiddenItems);
         this.contextMenu.enableItems(this.disableItems, false, true);
         let contextItems: DiagramContextMenu = this;

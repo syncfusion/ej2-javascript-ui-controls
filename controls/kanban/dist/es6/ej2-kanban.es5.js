@@ -1720,6 +1720,7 @@ var KanbanDialog = /** @__PURE__ @class */ (function () {
                 var templateId = this.parent.element.id + '_dialogTemplate';
                 var dialogTemplate = this.parent.templateParser(this.parent.dialogSettings.template)(args, this.parent, 'template', templateId, false);
                 append(dialogTemplate, form);
+                this.parent.renderTemplates();
             }
             else {
                 var dialogWrapper = createElement('div', { className: DIALOG_CONTENT_CONTAINER });
@@ -2038,6 +2039,7 @@ var KanbanDialog = /** @__PURE__ @class */ (function () {
         }
     };
     KanbanDialog.prototype.destroy = function () {
+        this.parent.resetTemplates();
         this.destroyToolTip();
         this.destroyComponents();
         if (this.dialogObj) {

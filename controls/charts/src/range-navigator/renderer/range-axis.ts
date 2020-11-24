@@ -356,14 +356,12 @@ export class RangeNavigatorAxis extends DateTime {
             } else {
                 continue;
             }
-            textElement(
+            (textElement(
                 this.rangeNavigator.renderer as unknown as SvgRenderer,
                 new TextOption(
                     this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text),
                 argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor,
-                labelElement).setAttribute(
-                    'style', axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default'
-                );
+                labelElement) as HTMLElement).style.cursor = axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default';
             prevX = pointX;
             prevLabel = label;
         }

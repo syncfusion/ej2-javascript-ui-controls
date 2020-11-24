@@ -1108,6 +1108,31 @@ describe('RTE CR issues', () => {
         });
     });
 
+    describe('BLAZ-7176 - Enter key press before the image in a paragraph', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            keyCode: 13, which: 13, shiftKey: false
+        };
+        it(' Enter key press before the image in a paragraph ', () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable', 'Formats']
+                },
+                value: '<p id="p1">Paragraph <img src="blob:null/abfb97c2-cd30-4405-81e0-2993d05bfa35" class="e-rte-image e-imginline" alt="blazor.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"> </p>'
+            });
+            rteEle = rteObj.element;
+            let start: HTMLElement = document.getElementById('p1');
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, (start.childNodes[0] as Element), 10);
+            (rteObj.formatter.editorManager as any).formatObj.onKeyUp({ event: keyboardEventArgs });
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('p').length === 1).toBe(true);
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
+
     describe('EJ2-37997 - Lists all item selection with delete key action not remove the list completely', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;

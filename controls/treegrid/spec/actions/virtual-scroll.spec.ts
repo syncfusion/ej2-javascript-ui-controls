@@ -6,6 +6,7 @@ import { VirtualScroll } from '../../src/treegrid/actions/virtual-scroll';
 import { virtualData, editVirtualData, dataSource } from '../base/datasource.spec';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
+import { select } from '@syncfusion/ej2-base';
 
 /**
  * TreeGrid Virtual Scroll spec 
@@ -440,7 +441,7 @@ describe('TreeGrid Virtual Scroll', () => {
         };
         gridObj.grid.actionComplete = actionComplete;
         gridObj.grid.actionBegin = actionBegin;
-        (gridObj.grid.element.querySelector('#' + gridObj.grid.element.id + 'FIELD1') as any).value = 'updated';
+        (select('#' + gridObj.grid.element.id + 'FIELD1', gridObj.grid.element) as any).value = 'updated';
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
     });
 
@@ -500,7 +501,7 @@ describe('TreeGrid Virtual Scroll', () => {
         };
         gridObj.grid.actionComplete = actionComplete;
         gridObj.grid.actionBegin = actionBegin;
-        (gridObj.grid.element.querySelector('#' + gridObj.grid.element.id + 'FIELD1') as any).value = 'scroll updated';
+        (select('#' + gridObj.grid.element.id + 'FIELD1', gridObj.grid.element) as any).value = 'scroll updated';
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
     });
 
@@ -580,8 +581,8 @@ describe('TreeGrid Virtual Scroll', () => {
         };
         gridObj.grid.actionComplete = actionComplete;
         gridObj.grid.actionBegin = actionBegin;
-        (gridObj.grid.element.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '98765';
-        (gridObj.grid.element.querySelector('#' + gridObj.grid.element.id + 'FIELD1') as any).value = 'New Row';
+        (select('#' + gridObj.grid.element.id + 'TaskID', gridObj.grid.element) as any).value = '98765';
+        (select('#' + gridObj.grid.element.id + 'FIELD1', gridObj.grid.element) as any).value = 'New Row';
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
     });
 

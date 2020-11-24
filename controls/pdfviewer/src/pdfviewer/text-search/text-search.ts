@@ -680,7 +680,7 @@ export class TextSearch {
         if (scrollPoint) {
             offsetY += scrollPoint.y;
             offsetX += scrollPoint.x;
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 parent.scrollLeft = offsetX;
             } else {
                 if (this.pdfViewerBase.getZoomFactor() > 1.5) {
@@ -978,7 +978,7 @@ export class TextSearch {
     }
 
     private enablePrevButton(isEnable: boolean): void {
-        if (!Browser.isDevice) {
+        if ((!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
             if (isEnable) {
                 this.prevSearchBtn.removeAttribute('disabled');
             } else {
@@ -988,7 +988,7 @@ export class TextSearch {
     }
 
     private enableNextButton(isEnable: boolean): void {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (isEnable) {
                 this.nextSearchBtn.removeAttribute('disabled');
             } else {
@@ -1040,7 +1040,7 @@ export class TextSearch {
      * @private
      */
     public searchButtonClick(element: HTMLElement, inputElement: HTMLElement): void {
-        if (isBlazor() && Browser.isDevice) {
+        if (isBlazor() && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
             let searchElement: HTMLElement = this.pdfViewerBase.getElement('_search_box-icon');
             element = searchElement.children[0].children[0] as HTMLElement;
             inputElement = this.pdfViewerBase.getElement('_search_input');
@@ -1056,7 +1056,7 @@ export class TextSearch {
 
     private updateSearchInputIcon(isEnable: boolean): void {
         if (isBlazor()) {
-            if (this.searchBtn && Browser.isDevice) {
+            if (this.searchBtn && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
                 this.searchBtn = this.pdfViewerBase.getElement('_search_box-icon').children[0].children[0] as HTMLElement;
             }
         }
@@ -1082,7 +1082,7 @@ export class TextSearch {
     private onMessageBoxOpen(): void {
         this.pdfViewerBase.getElement('_search_input').blur();
         this.isMessagePopupOpened = true;
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             // tslint:disable-next-line:max-line-length
             this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No matches'));
         } else {

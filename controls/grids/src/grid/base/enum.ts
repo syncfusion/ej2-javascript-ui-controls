@@ -678,11 +678,10 @@ export type ColumnType =
  * * groupFooterTemplate 
  * * footerTemplate
  */
-export enum AggregateTemplateType {
-    GroupCaption = 'GroupCaption',
-    GroupFooter = 'GroupFooter',
-    Footer = 'Footer',
-}
+export type AggregateTemplateType =
+    'GroupCaption' |
+    'GroupFooter' |
+    'Footer';
 
 /** 
  * Defines mode of resizing.

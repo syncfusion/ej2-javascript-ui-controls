@@ -4700,8 +4700,21 @@ var DragAndDrop = /** @class */ (function (_super) {
         var isSameResource = (this.parent.activeViewOptions.group.resources.length > 0) ?
             parseInt(this.actionObj.element.getAttribute('data-group-index'), 10) === this.actionObj.groupIndex : true;
         var groupIndex = (this.parent.activeViewOptions.group.resources.length > 0) ? this.actionObj.groupIndex : -1;
+        var indexCol = [];
+        if (this.parent.activeViewOptions.group.resources.length > 0 && this.parent.activeViewOptions.group.allowGroupEdit) {
+            var originalElement = this.getOriginalElement(this.actionObj.element);
+            indexCol = originalElement.map(function (element) { return parseInt(element.getAttribute('data-group-index'), 10); });
+            if (indexCol.indexOf(this.actionObj.groupIndex) === -1) {
+                var cloneIndex_1 = parseInt(this.actionObj.clone.getAttribute('data-group-index'), 10);
+                indexCol = indexCol.filter(function (index) { return index !== cloneIndex_1; });
+                indexCol.push(this.actionObj.groupIndex);
+            }
+            else {
+                indexCol = [];
+            }
+        }
         // tslint:disable-next-line:no-any
-        this.parent.dotNetRef.invokeMethodAsync('OnDragStop', startTime, endTime, eventGuid, groupIndex, isSameResource, this.actionObj.isAllDay);
+        this.parent.dotNetRef.invokeMethodAsync('OnDragStop', startTime, endTime, eventGuid, groupIndex, isSameResource, this.actionObj.isAllDay, indexCol);
     };
     DragAndDrop.prototype.updateNavigatingPosition = function (e) {
         var _this = this;

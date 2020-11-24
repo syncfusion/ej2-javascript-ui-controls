@@ -26,7 +26,7 @@ import { ColorPicker as RibbonColorPicker } from './color-picker';
 import { Dialog } from '../services';
 import { Dialog as FindDialog, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { findDlg } from '../common/index';
-
+import { refreshRibbonIcons } from '../../workbook/common/index';
 
 /**
  * Represents Ribbon for Spreadsheet.
@@ -1986,6 +1986,7 @@ export class Ribbon {
         this.parent.on(enableRibbonTabs, this.enableRibbonTabs, this);
         this.parent.on(protectCellFormat, this.protectSheetHandler, this);
         this.parent.on(selectionComplete, this.updateMergeItem, this);
+        this.parent.on(refreshRibbonIcons, this.refreshToggleBtn, this);
     }
     public destroy(): void {
         let parentElem: HTMLElement = this.parent.element;
@@ -2028,6 +2029,7 @@ export class Ribbon {
             this.parent.off(enableRibbonTabs, this.enableRibbonTabs);
             this.parent.off(protectCellFormat, this.protectSheetHandler);
             this.parent.off(selectionComplete, this.updateMergeItem);
+            this.parent.off(refreshRibbonIcons, this.refreshToggleBtn);
         }
     }
 }

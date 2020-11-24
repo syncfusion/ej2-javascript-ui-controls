@@ -5,6 +5,7 @@ import { VirtualScroll } from '../actions/virtual-scroll';
 import { EventTooltip } from '../popups/event-tooltip';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
+import * as util from '../base/util';
 
 /**
  * Schedule DOM rendering
@@ -94,7 +95,8 @@ export class Render {
             this.parent.virtualScrollModule.destroy();
             this.parent.virtualScrollModule = null;
         }
-        if (this.parent.currentView.indexOf('Timeline') !== -1 && this.parent.activeViewOptions.allowVirtualScrolling
+        if (this.parent.currentView.indexOf('Timeline') !== -1 && this.parent.currentView.indexOf('Year') === -1
+            && this.parent.activeViewOptions.allowVirtualScrolling
             && this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
             this.parent.virtualScrollModule = new VirtualScroll(this.parent);
             this.parent.uiStateValues.top = 0;
@@ -149,6 +151,15 @@ export class Render {
             }
             this.parent.eventsData = resultData.filter((data: { [key: string]: Object }) => !data[this.parent.eventFields.isBlock]);
             this.parent.blockData = resultData.filter((data: { [key: string]: Object }) => data[this.parent.eventFields.isBlock]);
+            for (let datas of resultData as { [key: string]: Object }[]) {
+                if (typeof datas[this.parent.eventFields.startTime] === 'string') {
+                    datas[this.parent.eventFields.startTime] = util.getDateFromString(datas[this.parent.eventFields.startTime] as string);
+                }
+                if (typeof datas[this.parent.eventFields.endTime] === 'string') {
+                    datas[this.parent.eventFields.endTime] = util.getDateFromString(datas[this.parent.eventFields.endTime] as string);
+                }
+                this.parent.eventBase.processTimezone(datas, true);
+            }
             let processed: Object[] = this.parent.eventBase.processData(resultData as { [key: string]: Object }[]);
             this.parent.notify(events.dataReady, { processedData: processed });
             if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {

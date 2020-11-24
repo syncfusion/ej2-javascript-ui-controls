@@ -84,6 +84,7 @@ export class DateTimePicker extends DatePicker {
     protected timekeyConfigure: { [key: string]: string };
     protected preventArgs: PopupObjectArgs;
     private dateTimeOptions: DateTimePickerModel;
+    protected scrollInvoked: boolean = false;
 
     /**
      * Specifies the format of the time value that to be displayed in time popup list.
@@ -1119,6 +1120,7 @@ export class DateTimePicker extends DatePicker {
         let element: HTMLElement;
         let items: HTMLElement[] = <NodeListOf<HTMLLIElement> & HTMLElement[]>this.dateTimeWrapper.querySelectorAll('.' + LISTCLASS);
         if (items.length >= 0) {
+            this.scrollInvoked = true;
             let initialTime: number = this.timeCollections[0];
             let scrollTime: number = this.getDateObject(this.checkDateValue(this.scrollTo)).getTime();
             element = items[Math.round((scrollTime - initialTime) / (this.step * 60000))];
@@ -1474,7 +1476,14 @@ export class DateTimePicker extends DatePicker {
                 let minute: number = status ? value.getMinutes() : MINUTE;
                 let second: number = status ? value.getSeconds() : SECOND;
                 let millisecond: number = status ? value.getMilliseconds() : MILLISECOND;
-                return new Date(year, month, date, hour, minute, second, millisecond);
+                if (!this.scrollInvoked) {
+                    return new Date(year, month, date, hour, minute, second, millisecond);
+                } else {
+                    this.scrollInvoked = false;
+                    return new Date(
+                        year, month, date, dateValue.getHours(), dateValue.getMinutes(), dateValue.getSeconds(), dateValue.getMilliseconds()
+                    );
+                }
             }
         }
         return null;

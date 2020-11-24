@@ -9086,6 +9086,25 @@ describe('DateRangePicker', () => {
             expect((dateRangePicker.popupObj) !== null).toBe(true);
         });
     });
+    describe('bug(EJMVC-273): EJ2 Dropdown list is preventing form submission with integer data type as value property', () => {
+        let daterangepicker: any;
+        beforeEach(() => {
+            let ele: HTMLElement = <HTMLElement>createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+            ele.setAttribute('data-val','true');
+        });
+        afterEach(() => {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Data attribute at hidden element testing', () => {
+            daterangepicker = new DateRangePicker();
+            daterangepicker.appendTo('#date');
+            expect(daterangepicker.element.getAttribute('data-val')).toBe('false');
+        });
+    });
 });
 interface CalendarElement {
     leftCalTitle: HTMLElement;

@@ -1,6 +1,6 @@
 import { Browser, isBlazor } from '@syncfusion/ej2-base';
 import { PdfViewer, PdfViewerBase } from '../index';
-import { getDiagramElement } from '@syncfusion/ej2-drawings';
+import { getDiagramElement, PointModel } from '@syncfusion/ej2-drawings';
 
 /**
  * Magnification module
@@ -174,7 +174,7 @@ export class Magnification {
         if (zoomValue !== null) {
             this.isAutoZoom = false;
             this.onZoomChanged(zoomValue);
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 if (this.isWebkitMobile) {
                     this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
                 } else {
@@ -250,7 +250,7 @@ export class Magnification {
         this.isPinchZoomed = true;
         this.onZoomChanged(temporaryZoomFactor * 100);
         this.isTapToFitZoom = true;
-        if (Browser.isDevice && (this.zoomFactor * 100) === 50) {
+        if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && (this.zoomFactor * 100) === 50) {
             let zoomValue: number = this.calculateFitZoomFactor('fitToWidth');
             this.fitType = null;
             if (zoomValue <= 50) {
@@ -265,7 +265,7 @@ export class Magnification {
     private pinchOut(): void {
         this.fitType = null;
         let temporaryZoomFactor: number = this.zoomFactor + this.pinchStep;
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             if (temporaryZoomFactor > 2) {
                 temporaryZoomFactor = 2;
             }
@@ -323,7 +323,7 @@ export class Magnification {
             } else {
                 this.pdfViewerBase.isMinimumZoom = false;
             }
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 if (this.isWebkitMobile) {
                     this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
                 } else {
@@ -337,7 +337,7 @@ export class Magnification {
                     if (!this.isPinchZoomed) {
                         this.magnifyPages();
                     } else {
-                        if (Browser.isDevice) {
+                        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                             // tslint:disable-next-line:max-line-length
                             this.pdfViewerBase.mobilePageNoContainer.style.left = (this.pdfViewer.element.clientWidth / 2) - (parseFloat(this.pdfViewerBase.mobilePageNoContainer.style.width) / 2) + 'px';
                         }
@@ -367,7 +367,7 @@ export class Magnification {
                     }
                 }
             }
-            if (Browser.isDevice && this.isPinchZoomed) {
+            if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.isPinchZoomed) {
                 // tslint:disable-next-line:radix
                 let zoomPercentage: string = parseInt((this.zoomFactor * 100).toString()) + '%';
                 this.pdfViewerBase.navigationPane.createTooltipMobile(zoomPercentage);
@@ -400,7 +400,7 @@ export class Magnification {
         if (!this.isPagesZoomed) {
             this.reRenderPageNumber = this.pdfViewerBase.currentPageNumber;
         }
-        if (!this.pdfViewerBase.documentLoaded) {
+        if (!this.pdfViewerBase.documentLoaded && !this.pdfViewerBase.isInitialPageMode) {
             this.isPagesZoomed = true;
         }
         let scrollValue: number = this.getMagnifiedValue(this.pdfViewerBase.viewerContainer.scrollTop);
@@ -962,17 +962,27 @@ export class Magnification {
             this.pdfViewer.toolbarModule.showToolbar(false);
         }
         let scrollValue: number = this.pdfViewerBase.viewerContainer.scrollTop;
-        if (!this.isTapToFitZoom) {
-            if (this.zoomFactor < 2) {
-                this.zoomTo(200);
+        if (!this.pdfViewer.selectedItems.annotations[0]) {
+            if (!this.isTapToFitZoom) {
+                if (this.zoomFactor < 2) {
+                    this.zoomTo(200);
+                } else {
+                    this.fitToWidth();
+                }
             } else {
                 this.fitToWidth();
             }
+            this.calculateScrollValues(scrollValue);
+            this.isTapToFitZoom = !this.isTapToFitZoom;
         } else {
-            this.fitToWidth();
+            if (this.pdfViewer.selectedItems.annotations[0]) {
+                let elmtPosition: PointModel = {};
+                elmtPosition.x = this.pdfViewer.selectedItems.annotations[0].bounds.x;
+                elmtPosition.y = this.pdfViewer.selectedItems.annotations[0].bounds.y;
+                // tslint:disable-next-line:max-line-length
+                this.pdfViewer.annotation.freeTextAnnotationModule.addInuptElemet(elmtPosition, this.pdfViewer.selectedItems.annotations[0]);
+            }
         }
-        this.calculateScrollValues(scrollValue);
-        this.isTapToFitZoom = !this.isTapToFitZoom;
     }
 
     private downwardScrollFitPage(currentPageIndex: number): void {

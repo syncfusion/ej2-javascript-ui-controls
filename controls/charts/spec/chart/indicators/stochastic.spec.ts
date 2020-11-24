@@ -540,9 +540,9 @@ describe('Chart', () => {
                     clientY: 300
                 };
                 chartObj.zoomModule.chartMouseWheel(<WheelEvent>wheelArgs);
-                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.80').toBe(true);
-                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.80').toBe(true);
-                expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.06').toBe(true);
+                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.72').toBe(true);
+                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.72').toBe(true);
+                expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.08').toBe(true);
                 expect(chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.02' ||
                     chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.01').toBe(true);
                 done();
@@ -563,11 +563,11 @@ describe('Chart', () => {
                 chartObj.mouseMove(<PointerEvent>trigger.onTouchMove(areaElement, 728, 389, 404, 289, 404, 189));
                 chartObj.mouseMove(<PointerEvent>trigger.onTouchMove(areaElement, 748, 129, 304, 289, 304, 289));
                 let content = chartObj.primaryXAxis.zoomFactor.toFixed(2);
-                expect( content == '0.23' || content == '0.19').toBe(true);
+                expect( content == '0.23' || content == '0.17').toBe(true);
                 content = chartObj.primaryYAxis.zoomFactor.toFixed(2);
-                expect(content == '0.63' ||content == '0.50').toBe(true);
+                expect(content == '0.63' ||content == '0.45').toBe(true);
                 content = chartObj.primaryXAxis.zoomPosition.toFixed(2);
-                expect(content == '0.72' ||content == '0.46').toBe(true);
+                expect(content == '0.72' ||content == '0.45').toBe(true);
                 chartObj.mouseLeave(<PointerEvent>trigger.onTouchLeave(areaElement, 748, 129, 304, 289, 304, 289));
                 done();
             };

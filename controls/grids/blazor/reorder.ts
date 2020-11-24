@@ -484,6 +484,7 @@ export class Reorder {
 
     public dragStart(e: { target: Element, column: Column, event: MouseEvent }): void {
         let gObj: SfGrid = this.parent;
+        document.body.classList.add('e-prevent-select');
         let target: Element = e.target as Element;
         this.element = target.classList.contains('e-headercell') ? target as HTMLElement :
             parentsUntil(target, 'e-headercell') as HTMLElement;
@@ -498,6 +499,7 @@ export class Reorder {
 
     public dragStop(e: { target: Element, event: MouseEvent, column: Column, cancel: boolean }): void {
         let gObj: SfGrid = this.parent;
+        document.body.classList.remove('e-prevent-select');
         this.setDisplay('none');
         this.stopTimer();
         if (!e.cancel) {

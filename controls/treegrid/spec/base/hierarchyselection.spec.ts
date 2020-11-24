@@ -8,6 +8,7 @@ import { Edit } from '../../src/treegrid/actions/edit';
 import { Sort } from '../../src/treegrid/actions/sort';
 import { Aggregate } from '../../src/treegrid/actions/summary';
 import { PageEventArgs, FilterEventArgs, EditEventArgs } from '@syncfusion/ej2-grids';
+import { select } from '@syncfusion/ej2-base';
 
 /**
  * TreeGrid HierarchySelection spec 
@@ -439,7 +440,7 @@ describe('TreeGrid Hierarchy Selection', () => {
       gridObj.selectRow(1);
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'Plan time';
+      (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'Plan time';
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
       expect(gridObj.getRows()[1].querySelector('.e-frame').classList.contains('e-check')).toBeTruthy();
       (<HTMLElement>gridObj.getRows()[1].querySelector('.e-treecheckselect')).click();
@@ -488,8 +489,8 @@ describe('TreeGrid Hierarchy Selection', () => {
       gridObj.actionComplete = actionComplete;
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '122';
-      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'second';
+      (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '122';
+      (select('#' + gridObj.grid.element.id + 'taskName') as any).value = 'second';
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
     });
     afterAll(() => {

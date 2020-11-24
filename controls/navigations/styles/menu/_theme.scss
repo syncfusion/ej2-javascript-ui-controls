@@ -154,6 +154,10 @@
 
     &.e-menu-popup {
       background-color: $cmenu-ul-bgcolor;
+
+      &.e-sfcontextmenu .e-menu-vscroll {
+        background-color: inherit;
+      }
     }
 
     & .e-menu-hscroll.e-hscroll .e-scroll-nav {

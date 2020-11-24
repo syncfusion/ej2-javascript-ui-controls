@@ -14,7 +14,7 @@ import { getRangeIndexes, getIndexesFromAddress, getCellIndexes } from '../../wo
 import { CellFormatArgs } from '../../workbook/common/interface';
 import { DropDownList, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { ValidationModel, ValidationType, ValidationOperator, CellStyleModel } from '../../workbook';
+import { ValidationModel, ValidationType, ValidationOperator, CellStyleModel, getSheet, getSheetIndex } from '../../workbook/index';
 
 /**
  * Represents Data Validation support for Spreadsheet.
@@ -169,11 +169,24 @@ export class DataValidation {
 
     private updateDataSource(listObj: DropDownList, cell: CellModel): void {
         let count: number = 0;
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let value: string = cell.validation.value1.toUpperCase();
-        let isRange: boolean = value.indexOf('=') !== -1 ? true : false;
+        let value: string = cell.validation.value1;
+        let isRange: boolean = value.indexOf('=') !== -1;
         if (isRange) {
-            let indexes: number[] = getRangeIndexes(value);
+            let sheet: SheetModel = value.indexOf('!') > -1 ?
+                getSheet(this.parent, getSheetIndex(this.parent, value.split('=')[1].split('!')[0])) : this.parent.getActiveSheet();
+            let address: string = value.indexOf('!') > -1 ? value.split('!')[1] : value.split('=')[1];
+            let indexes: number[];
+            let range: string[] = address.split(':');
+            if ((range[0].match(/[a-z]+$/ig) && range[1].match(/[a-z]+$/ig)) || (range[0].match(/^[0-9]/g) && range[1].match(/^[0-9]/g))) {
+                let addressInfo: { startIdx: number, endIdx: number, isCol: boolean } = this.parent.getIndexes(address);
+                if (addressInfo.isCol) {
+                    indexes = [0, addressInfo.startIdx, sheet.usedRange.rowIndex, addressInfo.startIdx];
+                } else {
+                    indexes = [addressInfo.startIdx, 0, addressInfo.startIdx, sheet.usedRange.colIndex];
+                }
+            } else {
+                indexes = getRangeIndexes(address);
+            }
             for (let rowIdx: number = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
                 if (!sheet.rows[rowIdx]) { setRow(sheet, rowIdx, {}); }
                 for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
@@ -185,7 +198,7 @@ export class DataValidation {
                 }
             }
         } else {
-            let listValues: string[] = cell.validation.value1.split(',');
+            let listValues: string[] = value.split(',');
             for (let idx: number = 0; idx < listValues.length; idx++) {
                 count += 1;
                 this.data.push({ text: listValues[idx], id: 'list-' + count });
@@ -514,7 +527,6 @@ export class DataValidation {
         let inCellDropDown: boolean = allowData.querySelector('.e-data').querySelector('.e-checkbox-wrapper') ?
             allowData.querySelector('.e-data').querySelector('.e-checkbox-wrapper').querySelector('.e-check') ? true : false : null;
         let range: string = (dlgContEle.querySelector('.e-cellrange').getElementsByTagName('input')[0] as HTMLInputElement).value;
-        let cell: CellModel;
         let operator: string;
         let type: string = (allowEle as HTMLInputElement).value;
         if (dataEle) {
@@ -535,13 +547,15 @@ export class DataValidation {
         if (type === 'List') {
             if (value1.indexOf('=') !== -1) {
                 if (value1.indexOf(':') !== -1) {
-                    rangeAdd = value1.split(':');
-                    let arr1: string[] = rangeAdd;
-                    let arr2: string[] = rangeAdd;
-                    let isSingleCol: boolean = arr1[0].replace(/[0-9]/g, '').replace('=', '') ===
-                        arr1[1].replace(/[0-9]/g, '') ? true : false;
-                    let isSingleRow: boolean = arr2[0].replace(/\D/g, '').replace('=', '') === arr2[1].replace(/\D/g, '') ? true : false;
-                    isValidList = isSingleCol ? true : isSingleRow ? true : false;
+                    let address: string = value1.indexOf('!') > -1 ? value1.split('!')[1] : value1.split('=')[1];
+                    let isSheetNameValid: boolean = value1.indexOf('!') > -1 ?
+                        getSheetIndex(this.parent, value1.split('=')[1].split('!')[0]) > -1 : true;
+                    rangeAdd = address.split(':');
+                    let isSingleCol: boolean = address.match(/[a-z]/gi) ?
+                        rangeAdd[0].replace(/[0-9]/g, '') === rangeAdd[1].replace(/[0-9]/g, '') : false;
+                    let isSingleRow: boolean = address.match(/\d/g) ?
+                        rangeAdd[0].replace(/\D/g, '') === rangeAdd[1].replace(/\D/g, '') : false;
+                    isValidList = isSheetNameValid ? (isSingleCol ? true : isSingleRow ? true : false) : false;
                     if (!isValidList) {
                         errorMsg = l10n.getConstant('DialogError');
                     }
@@ -899,7 +913,7 @@ export class DataValidation {
                 beforeOpen: (args: BeforeOpenEventArgs): void => {
                     let dlgArgs: DialogBeforeOpenEventArgs = {
                         dialogName: 'ValidationErrorDialog',
-                        element: args.element, target: args.target, cancel: args.cancel
+                        element: args.element, target: args.target, cancel: args.cancel, content: error
                     };
                     this.parent.trigger('dialogBeforeOpen', dlgArgs);
                     if (dlgArgs.cancel) {
@@ -907,7 +921,7 @@ export class DataValidation {
                         args.cancel = true;
                     }
                     el.focus();
-                    erroDialogInst.dialogInstance.content = error; erroDialogInst.dialogInstance.dataBind();
+                    erroDialogInst.dialogInstance.content = dlgArgs.content; erroDialogInst.dialogInstance.dataBind();
                 },
                 buttons: [{
                     buttonModel: {

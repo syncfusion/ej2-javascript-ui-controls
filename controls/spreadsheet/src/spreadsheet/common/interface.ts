@@ -164,6 +164,10 @@ export interface DialogBeforeOpenEventArgs {
      * Returns the name of the dialog.
      */
     dialogName: String;
+    /**
+     * Defines the value that can be displayed in dialog’s content area, you can override it with your own custom message.
+     */
+    content?: string;
 
 }
 
@@ -262,7 +266,9 @@ export interface CellSaveEventArgs {
     address: string;
     /** Defines the formula. */
     formula?: string;
-    /** Defines the formula. */
+    /** Defines the display text of the cell */
+    displayText?: string;
+    /** Defines the type of Event. */
     originalEvent?: MouseEvent & TouchEvent | KeyboardEventArgs;
 }
 

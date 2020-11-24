@@ -550,6 +550,9 @@ var TooltipSettings = /** @class */ (function (_super) {
     __decorate$1([
         sf.base.Complex({ color: '#cccccc', width: 0.5 }, Border)
     ], TooltipSettings.prototype, "border", void 0);
+    __decorate$1([
+        sf.base.Property('None')
+    ], TooltipSettings.prototype, "position", void 0);
     return TooltipSettings;
 }(sf.base.ChildProperty));
 /**
@@ -3218,7 +3221,14 @@ function textElement(renderer, option, font, color, parent, isMinus, redraw, isA
         'dominant-baseline': option.baseLine
     };
     text = typeof option.text === 'string' ? option.text : isMinus ? option.text[option.text.length - 1] : option.text[0];
-    htmlObject = renderer.createText(renderOptions, text, seriesClipRect ? seriesClipRect.x : 0, seriesClipRect ? seriesClipRect.y : 0);
+    var transX = seriesClipRect ? seriesClipRect.x : 0;
+    var transY = seriesClipRect ? seriesClipRect.y : 0;
+    htmlObject = renderer.createText(renderOptions, text, transX, transY);
+    htmlObject.style.fontFamily = font.fontFamily;
+    htmlObject.style.fontStyle = font.fontStyle;
+    htmlObject.style.fontSize = font.size;
+    htmlObject.style.fontWeight = font.fontWeight;
+    htmlObject.style.color = font.color;
     if (typeof option.text !== 'string' && option.text.length > 1) {
         for (var i = 1, len = option.text.length; i < len; i++) {
             height = (sf.svgbase.measureText(option.text[i], font).height);
@@ -5524,6 +5534,7 @@ var PieSeries = /** @class */ (function (_super) {
             point.start = start;
         }
         else {
+            seriesGroup.appendChild(chart.renderer.drawPath(option));
             this.refresh(point, degree, start, chart, option, seriesGroup);
         }
     };
@@ -6076,6 +6087,7 @@ var AccumulationChart = /** @class */ (function (_super) {
         else {
             for (var i = 0; i < currentSeries.points.length; i++) {
                 currentSeries.points[i].y = currentSeries.dataSource[i].y;
+                currentSeries.points[i].color = currentSeries.dataSource[i][currentSeries.pointColorMapping];
                 currentSeries.sumOfPoints += currentSeries.dataSource[i].y;
             }
             this.redraw = this.enableAnimation;
@@ -9300,29 +9312,66 @@ var BaseTooltip = /** @class */ (function (_super) {
             }
         }
     };
-    BaseTooltip.prototype.createTooltip = function (chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints, templatePoint, customTemplate) {
+    BaseTooltip.prototype.createTooltip = function (chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints, templatePoint, customTemplate, tooltipPosition) {
         if (extraPoints === void 0) { extraPoints = null; }
         if (templatePoint === void 0) { templatePoint = null; }
+        if (tooltipPosition === void 0) { tooltipPosition = 'None'; }
         var series = this.currentPoints[0].series;
         var module = chart.tooltipModule || chart.accumulationTooltipModule;
         if (!module) { // For the tooltip enable is false.
             return;
         }
+        var isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
+        var inverted = this.chart.requireInvertedAxis && series.isRectSeries;
+        var position = null;
+        if (tooltipPosition === 'Auto' && this.text.length <= 1) {
+            var contentSize = sf.svgbase.measureText(this.text[0], chart.tooltip.textStyle);
+            var headerSize = (!(this.header === '' || this.header === '<b></b>')) ? sf.svgbase.measureText(this.header, this.textStyle) :
+                new sf.svgbase.Size(0, 0);
+            // marker size + arrowpadding + 2 * padding + markerpadding
+            var markerSize = 10 + 12 + (2 * 10) + 5;
+            contentSize.width = Math.max(contentSize.width, headerSize.width) + ((shapes.length > 0) ? markerSize : 0);
+            var heightPadding = 12 + (2 * 10) + (headerSize.height > 0 ? (2 * 10) : 0);
+            contentSize.height = contentSize.height + headerSize.height + heightPadding;
+            position = this.getCurrentPosition(isNegative, inverted);
+            position = this.getPositionBySize(contentSize, new sf.svgbase.Rect(0, 0, bounds.width, bounds.height), location, position);
+            isNegative = (position === 'Left') || (position === 'Bottom');
+            inverted = (position === 'Left') || (position === 'Right');
+        }
+        else if (tooltipPosition !== 'None' && this.text.length <= 1) {
+            position = tooltipPosition;
+            isNegative = (position === 'Left') || (position === 'Bottom');
+            inverted = (position === 'Left') || (position === 'Right');
+        }
         if (isFirst) {
             this.svgTooltip = new sf.svgbase.Tooltip({
                 opacity: chart.tooltip.opacity,
-                header: this.headerText, content: this.text, fill: chart.tooltip.fill, border: chart.tooltip.border,
-                enableAnimation: chart.tooltip.enableAnimation, location: location, shared: chart.tooltip.shared,
-                shapes: shapes, clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
-                areaBounds: bounds, palette: this.findPalette(), template: customTemplate || chart.tooltip.template, data: templatePoint,
-                theme: chart.theme, offset: offset, textStyle: chart.tooltip.textStyle,
-                isNegative: (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0),
-                inverted: this.chart.requireInvertedAxis && series.isRectSeries,
+                header: this.headerText,
+                content: this.text,
+                fill: chart.tooltip.fill,
+                border: chart.tooltip.border,
+                enableAnimation: chart.tooltip.enableAnimation,
+                location: location,
+                shared: chart.tooltip.shared,
+                shapes: shapes,
+                clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
+                areaBounds: bounds,
+                palette: this.findPalette(),
+                template: customTemplate || chart.tooltip.template,
+                data: templatePoint,
+                theme: chart.theme,
+                offset: offset,
+                textStyle: chart.tooltip.textStyle,
+                isNegative: isNegative,
+                inverted: inverted,
                 arrowPadding: this.text.length > 1 || this.chart.stockChart ? 0 : 12,
-                availableSize: chart.availableSize, duration: this.chart.tooltip.duration,
-                isCanvas: this.chart.enableCanvas, isTextWrap: chart.tooltip.enableTextWrap && chart.getModuleName() === 'chart',
+                availableSize: chart.availableSize,
+                duration: this.chart.tooltip.duration,
+                isCanvas: this.chart.enableCanvas,
+                isTextWrap: chart.tooltip.enableTextWrap && chart.getModuleName() === 'chart',
                 blazorTemplate: { name: 'Template', parent: this.chart.tooltip },
                 controlInstance: this.chart,
+                tooltipPlacement: position,
                 tooltipRender: function () {
                     module.removeHighlight(module.control);
                     module.highlightPoints();
@@ -9346,9 +9395,11 @@ var BaseTooltip = /** @class */ (function (_super) {
                 this.svgTooltip.data = templatePoint;
                 this.svgTooltip.template = chart.tooltip.template;
                 this.svgTooltip.textStyle = chart.tooltip.textStyle;
-                this.svgTooltip.isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
+                this.svgTooltip.isNegative = isNegative;
+                this.svgTooltip.inverted = inverted;
                 this.svgTooltip.clipBounds = this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation;
                 this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart ? 0 : 12;
+                this.svgTooltip.tooltipPlacement = position;
                 this.svgTooltip.dataBind();
             }
         }
@@ -9356,6 +9407,76 @@ var BaseTooltip = /** @class */ (function (_super) {
         if (this.chart.isReact) {
             this.chart.renderReactTemplates();
         }
+    };
+    BaseTooltip.prototype.getPositionBySize = function (textSize, bounds, arrowLocation, position) {
+        var isTop = this.isTooltipFitPosition('Top', new sf.svgbase.Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        var isBottom = this.isTooltipFitPosition('Bottom', new sf.svgbase.Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        var isRight = this.isTooltipFitPosition('Right', new sf.svgbase.Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        var isLeft = this.isTooltipFitPosition('Left', new sf.svgbase.Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        var tooltipPos;
+        if (isTop || isBottom || isRight || isLeft) {
+            if (position === 'Top') {
+                tooltipPos = isTop ? 'Top' : (isBottom ? 'Bottom' : (isRight ? 'Right' : 'Left'));
+            }
+            else if (position === 'Bottom') {
+                tooltipPos = isBottom ? 'Bottom' : (isTop ? 'Top' : (isRight ? 'Right' : 'Left'));
+            }
+            else if (position === 'Right') {
+                tooltipPos = isRight ? 'Right' : (isLeft ? 'Left' : (isTop ? 'Top' : 'Bottom'));
+            }
+            else {
+                tooltipPos = isLeft ? 'Left' : (isRight ? 'Right' : (isTop ? 'Top' : 'Bottom'));
+            }
+        }
+        else {
+            var size = [(arrowLocation.x - bounds.x), ((bounds.x + bounds.width) - arrowLocation.x), (arrowLocation.y - bounds.y),
+                ((bounds.y + bounds.height) - arrowLocation.y)];
+            var index = size.indexOf(Math.max.apply(this, size));
+            position = (index === 0) ? 'Left' : (index === 1) ? 'Right' : (index === 2) ? 'Top' : 'Bottom';
+            return position;
+        }
+        return tooltipPos;
+    };
+    BaseTooltip.prototype.isTooltipFitPosition = function (position, bounds, location, size) {
+        var start = new ChartLocation(0, 0);
+        var end = new ChartLocation(0, 0);
+        switch (position) {
+            case 'Top':
+                start.x = location.x - (size.width / 2);
+                start.y = location.y - size.height;
+                end.x = location.x + (size.width / 2);
+                end.y = location.y;
+                break;
+            case 'Bottom':
+                start.x = location.x - (size.width / 2);
+                start.y = location.y;
+                end.x = location.x + (size.width / 2);
+                end.y = location.y + size.height;
+                break;
+            case 'Right':
+                start.x = location.x;
+                start.y = location.y - (size.height / 2);
+                end.x = location.x + size.width;
+                end.y = location.y + (size.height / 2);
+                break;
+            case 'Left':
+                start.x = location.x - size.width;
+                start.y = location.y - (size.height / 2);
+                end.x = location.x;
+                end.y = location.y + (size.height / 2);
+                break;
+        }
+        return (withInBounds(start.x, start.y, bounds) && withInBounds(end.x, end.y, bounds));
+    };
+    BaseTooltip.prototype.getCurrentPosition = function (isNegative, inverted) {
+        var position;
+        if (inverted) {
+            position = isNegative ? 'Left' : 'Right';
+        }
+        else {
+            position = isNegative ? 'Bottom' : 'Top';
+        }
+        return position;
     };
     BaseTooltip.prototype.findPalette = function () {
         var colors = [];

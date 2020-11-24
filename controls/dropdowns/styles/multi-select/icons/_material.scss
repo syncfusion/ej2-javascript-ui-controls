@@ -44,7 +44,8 @@
     }
   }
 
-  .e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+  .e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
     @if $skin-name == 'material' {
       right: 52px;
     }
@@ -52,7 +53,7 @@
 
   .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
     @if $skin-name == 'material' {
-      right: 45px;
+      right: 52px;
     }
   }
 
@@ -72,7 +73,11 @@
   .e-bigger.e-small.e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
   .e-bigger.e-small .e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
   .e-bigger .e-small.e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-small .e-bigger.e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+  .e-small .e-bigger.e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
     @if $skin-name == 'material' {
       right: 48px;
     }
@@ -108,14 +113,18 @@
   }
 
   .e-small.e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-small .e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+  .e-small .e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
     @if $skin-name == 'material' {
       right: 48px;
     }
   }
 
   .e-rtl.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-rtl .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+  .e-rtl .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
     @if $skin-name == 'material' {
       left: 52px;
       right: auto;
@@ -133,7 +142,19 @@
   .e-rtl.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
   .e-rtl .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
   .e-small .e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-small .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+  .e-small .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger.e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger.e-small .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-rtl.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger .e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl .e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-small .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-small .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-rtl .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-rtl.e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
     @if $skin-name == 'material' {
       left: 48px;
       right: auto;
@@ -145,7 +166,13 @@
   .e-rtl .e-bigger.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
   .e-rtl .e-bigger .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
   .e-bigger .e-rtl.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-bigger .e-rtl .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+  .e-bigger .e-rtl .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
     @if $skin-name == 'material' {
       left: 60px;
       right: auto;
@@ -157,7 +184,13 @@
   .e-rtl .e-small.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
   .e-rtl .e-small .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
   .e-small .e-rtl.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-small .e-rtl .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+  .e-small .e-rtl .e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-small.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-small .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-small.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-small .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-rtl.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-rtl .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
     @if $skin-name == 'material' {
       left: 48px;
       right: auto;
@@ -394,7 +427,7 @@
 
   .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker,
   .e-bigger .e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker {
-    margin-top: -36px;
+    margin-top: -40px;
   }
 
   .e-bigger.e-small.e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
@@ -411,26 +444,26 @@
 
   .e-bigger.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
   .e-bigger .e-filled.e-multiselect .e-down-icon .e-chips-close.e-close-hooker {
-    margin-top: -42px;
+    margin-top: -44px;
   }
 
-  .e-bigger.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close,
-  .e-bigger .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close,
-  .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips .e-chips-close {
+  .e-bigger.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
+  .e-bigger .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
+  .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close {
     @if $ddl-multiselect-skin-name == 'material' {
       height: $ddl-multiselect-filled-chip-clear-icon-size;
       width: $ddl-multiselect-filled-chip-clear-icon-size;
     }
   }
 
-  .e-bigger.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips .e-chips-close,
-  .e-bigger .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips .e-chips-close {
+  .e-bigger.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
+  .e-bigger .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close {
     height: 16px;
     width: 16px;
   }
 
-  .e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close,
-  .e-small .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close {
+  .e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
+  .e-small .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close {
     @if $ddl-multiselect-skin-name == 'material' {
       height: $ddl-multiselect-filled-chip-clear-icon-size-small;
       width: $ddl-multiselect-filled-chip-clear-icon-size-small;
@@ -481,31 +514,63 @@
   .e-bigger .e-small.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before,
   .e-small .e-bigger.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before {
     content: '\e208';
-    font-size: 14px;
+    font-size: 16px;
+    height: 16px;
     padding: 0;
     text-align: center;
     vertical-align: middle;
+    width: 16px;
   }
 
   .e-small.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before,
   .e-small .e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before {
-    font-size: 12px;
-    height: 12px;
-    width: 12px;
+    font-size: 14px;
+    height: 14px;
+    width: 14px;
   }
 
   .e-bigger.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before,
   .e-bigger .e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before {
-    font-size: 16px;
-    height: 16px;
-    width: 16px;
+    font-size: 20px;
+    height: 20px;
+    width: 20px;
+  }
+
+  .e-bigger.e-small.e-rtl.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-rtl .e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $skin-name == 'material' {
+      left: 10px;
+      right: auto;
+    }
+  }
+
+  .e-small.e-rtl.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-small.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-rtl.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-small .e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $skin-name == 'material' {
+      left: 6px;
+      right: auto;
+    }
+  }
+
+  .e-bigger.e-rtl.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $skin-name == 'material' {
+      left: 12px;
+      right: auto;
+    }
   }
 
   // Filled theme dropdown icon styles
   .e-multiselect.e-input-group.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
   .e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
     @if $skin-name == 'material' {
-      margin: 11px 0 9px;
+      margin: 10px 0 9px;
     }
   }
 
@@ -545,7 +610,7 @@
   .e-bigger.e-multiselect.e-input-group.e-filled.e-float-input .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
   .e-bigger .e-multiselect.e-filled.e-input-group.e-control-wrapper.e-float-input .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
     @if $skin-name == 'material' {
-      margin: 4px 8px 8px 0;
+      margin: 0;
     }
   }
 
@@ -555,40 +620,59 @@
   .e-small .e-bigger.e-multiselect.e-input-group.e-float-input.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
     @if $skin-name == 'material' {
       height: 20px;
-      margin: 0 8px 8px 0;
+      margin: 0 0 8px;
       padding: 0;
       width: 20px;
     }
   }
 
   .e-multiselect.e-input-group.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
-  .e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
-  .e-bigger.e-small.e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
-  .e-bigger.e-small .e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
-  .e-bigger .e-small.e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
-  .e-small .e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before {
+  .e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before {
     @if $skin-name == 'material' {
-      font-size: 10px;
-      height: 10px;
-      width: 10px;
+      font-size: 16px;
+      height: 16px;
+      width: 16px;
     }
   }
 
   .e-small.e-multiselect.e-input-group.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
   .e-small .e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before {
     @if $skin-name == 'material' {
-      font-size: 8px;
-      height: 8px;
-      width: 8px;
+      font-size: 14px;
+      height: 14px;
+      width: 14px;
     }
   }
 
   .e-bigger.e-multiselect.e-input-group.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
   .e-bigger .e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before {
     @if $skin-name == 'material' {
-      font-size: 12px;
-      height: 12px;
-      width: 12px;
+      font-size: 20px;
+      height: 20px;
+      width: 20px;
+    }
+  }
+
+  .e-bigger.e-small.e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-bigger .e-small .e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-small.e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-small .e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before {
+    @if $skin-name == 'material' {
+      font-size: 18px;
+      height: 18px;
+      width: 18px;
+    }
+  }
+
+  .e-bigger.e-small.e-multiselect.e-filled.e-input-group.e-control-wrapper:not(.e-float-input) .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-small .e-multiselect.e-filled.e-input-group.e-control-wrapper:not(.e-float-input) .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small.e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper:not(.e-float-input) .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper:not(.e-float-input) .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $skin-name == 'material' {
+      height: 24px;
+      margin: 7px -4px 8px -1px;
+      padding: 0;
+      width: 24px;
     }
   }
 

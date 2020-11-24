@@ -573,6 +573,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     private request: XMLHttpRequest = new XMLHttpRequest();
     /** @hidden */
     public guid: string;
+    /** @hidden */
+    public isServerWaitingPopup: boolean = false;
 
     /* tslint:disable */
     //Property Declarations
@@ -2284,6 +2286,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     private onSuccess(): void {
         if (this.request.readyState === XMLHttpRequest.DONE) {
+            this.isServerWaitingPopup = true;
             try {
                 let engine: any = JSON.parse(this.request.responseText);
                 if (this.currentAction === 'fetchFieldMembers') {
@@ -2299,7 +2302,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     this.engineModule.fieldList[engine.memberName].dateMember = dateMembers;
                     this.engineModule.fieldList[engine.memberName].formattedMembers = formattedMembers;
                     this.engineModule.fieldList[engine.memberName].members = members;
-                    this.pivotButtonModule.updateFilterEvents();
+                    if (this.showGroupingBar) {
+                        this.pivotButtonModule.updateFilterEvents();
+                    } else {
+                        this.pivotFieldListModule.pivotButtonModule.updateFilterEvents();
+                    }
                 } else if (this.currentAction === 'fetchRawData') {
                     let valueCaption: string = this.engineModule.fieldList[this.drillThroughValue.actualText.toString()] ?
                         this.engineModule.fieldList[this.drillThroughValue.actualText.toString()].caption : this.drillThroughValue.actualText.toString();
@@ -2314,7 +2321,18 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     this.drillThroughModule.triggerDialog(valueCaption, aggType, rawData, this.drillThroughValue, this.drillThroughElement);
 
                 } else {
-                    this.engineModule.fieldList = PivotUtil.formatFieldList(JSON.parse(engine.fieldList));
+                    let fList: IFieldListOptions = PivotUtil.formatFieldList(JSON.parse(engine.fieldList));
+                    if (this.engineModule.fieldList) {
+                        let keys: string[] = Object.keys(this.engineModule.fieldList);
+                        for (let i: number = 0; i < keys.length; i++) {
+                            if (this.engineModule.fieldList[keys[i]] && fList[keys[i]]) {
+                                fList[keys[i]].dateMember = this.engineModule.fieldList[keys[i]].dateMember;
+                                fList[keys[i]].formattedMembers = this.engineModule.fieldList[keys[i]].formattedMembers;
+                                fList[keys[i]].members = this.engineModule.fieldList[keys[i]].members;
+                            }
+                        }
+                    }
+                    this.engineModule.fieldList = fList;
                     this.engineModule.fields = JSON.parse(engine.fields);
                     this.engineModule.rowCount = JSON.parse(engine.pivotCount).RowCount;
                     this.engineModule.columnCount = JSON.parse(engine.pivotCount).ColumnCount;
@@ -2332,7 +2350,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     }
                     this.engineModule.headerContent = PivotUtil.frameContent(pivotValues, 'header', rowPos, this);
                     this.engineModule.pageSettings = this.pageSettings;
-                    let valueSort: any = JSON.parse(engine.valueSortSettings);
+                    if (this.dataSourceSettings.groupSettings.length > 0) {
+                        PivotUtil.updateReport(this, JSON.parse(engine.dataSourceSettings));
+                    }
+                    let valueSort: any = JSON.parse(engine.dataSourceSettings).ValueSortSettings;
                     this.engineModule.valueSortSettings = {
                         headerText: valueSort.HeaderText,
                         headerDelimiter: valueSort.HeaderDelimiter,
@@ -2378,6 +2399,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     public getEngine(action: string, drillItem?: IDrilledItem, sortItem?: ISort, aggField?: IFieldOptions, cField?: ICalculatedFields, filterItem?: IFilter, memberName?: string, rawDataArgs?: any, editArgs?: any): void {
         this.currentAction = action;
+        this.isServerWaitingPopup = false;
         let customProperties: any = {
             pageSettings: this.pageSettings,
             enableValueSorting: this.enableValueSorting,
@@ -3545,7 +3567,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             hideSpinner(this.fieldListSpinnerElement);
         }
         if (!this.isEmptyGrid) {
-            this.hideWaitingPopup();
+            if ((this.dataSourceSettings.mode === 'Server' && this.isServerWaitingPopup) || this.dataSourceSettings.mode === 'Local') {
+                this.hideWaitingPopup();
+            }
             this.trigger(events.dataBound);
         } else {
             this.isEmptyGrid = false;

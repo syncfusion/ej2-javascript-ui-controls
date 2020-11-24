@@ -5333,10 +5333,12 @@ function querySelectId(selector) {
         for (var i = 0; i < idList.length; i++) {
             var list = idList[i].split(' ');
             for (var j = 0; j < list.length; j++) {
-                if (list[j].match(/#/)) {
-                    var splitId = list[j].split('#');
-                    if (splitId[1].match(/^\d/)) {
-                        list[j] = list[j].replace(/#/, '[id=\'') + '\']';
+                if (list[j].indexOf('#') > -1) {
+                    if (!list[j].match(/\[.*\]/)) {
+                        var splitId = list[j].split('#');
+                        if (splitId[1].match(/^\d/)) {
+                            list[j] = list[j].replace(/#/, '[id=\'') + '\']';
+                        }
                     }
                 }
             }
@@ -7550,7 +7552,9 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
             EventHandler.add(document, Browser.touchEndEvent, this.intDestroy, this);
         }
         this.toggleEvents(true);
-        document.body.classList.add('e-prevent-select');
+        if (evt.type !== 'touchstart' && this.isPreventSelect) {
+            document.body.classList.add('e-prevent-select');
+        }
         this.externalInitialize = false;
         EventHandler.trigger(document.documentElement, Browser.touchStartEvent, evt);
     };
@@ -8034,6 +8038,9 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         Property()
     ], Draggable.prototype, "isReplaceDragEle", void 0);
+    __decorate$2([
+        Property(true)
+    ], Draggable.prototype, "isPreventSelect", void 0);
     __decorate$2([
         Event$1()
     ], Draggable.prototype, "drag", void 0);

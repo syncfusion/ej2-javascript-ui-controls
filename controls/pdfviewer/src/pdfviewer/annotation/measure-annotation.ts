@@ -62,6 +62,7 @@ export interface IMeasureShapeAnnotation {
     customData: object;
     allowedInteractions?: AllowedInteraction;
     isPrint: boolean;
+    isCommentLock: boolean;
 }
 
 /**
@@ -313,7 +314,7 @@ export class MeasureAnnotation {
                              fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                              // tslint:disable-next-line:max-line-length
                              labelBounds: annotation.LabelBounds, annotationSelectorSettings: this.getSettings(annotation), labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
-                             customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: isPrint
+                             customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: isPrint, isCommentLock: annotation.IsCommentLock
                         };
                         let annot: PdfAnnotationBaseModel;
                         // tslint:disable-next-line
@@ -341,7 +342,7 @@ export class MeasureAnnotation {
                              fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                              labelBounds: annotation.LabelBounds, annotationSelectorSettings: annotation.AnnotationSelectorSettings,
                              annotationSettings: annotationObject.annotationSettings, annotationAddMode: annotation.annotationAddMode,
-                             isPrint: isPrint
+                             isPrint: isPrint, isCommentLock: annotationObject.isCommentLock
                         };
                         this.pdfViewer.annotation.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
                         this.pdfViewer.add(annot as PdfAnnotationBase);
@@ -387,7 +388,7 @@ export class MeasureAnnotation {
                     fillColor: this.distanceFillColor, notes: '', strokeColor: this.distanceStrokeColor, leaderHeight: this.leaderLength,
                     opacity: this.distanceOpacity, thickness: this.distanceThickness, borderDashArray: this.distanceDashArray.toString(),
                     // tslint:disable-next-line:max-line-length
-                    shapeAnnotationType: 'Distance', author: author, subject: 'Distance calculation'
+                    shapeAnnotationType: 'Distance', author: author, subject: 'Distance calculation', isCommentLock: false
                 };
                 this.pdfViewer.tool = 'Distance';
                 break;
@@ -402,7 +403,7 @@ export class MeasureAnnotation {
                     thickness: this.perimeterThickness, sourceDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.perimeterStartHead),
                     // tslint:disable-next-line:max-line-length
                     taregetDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.perimeterEndHead), measureType: 'Perimeter', borderDashArray: this.perimeterDashArray.toString(),
-                    author: author, subject: 'Perimeter calculation'
+                    author: author, subject: 'Perimeter calculation', isCommentLock: false
                 };
                 this.pdfViewer.tool = 'Perimeter';
                 break;
@@ -416,7 +417,7 @@ export class MeasureAnnotation {
                     shapeAnnotationType: 'Polygon', fillColor: this.areaFillColor, notes: '', strokeColor: this.areaStrokeColor,
                     thickness: this.areaThickness, opacity: this.areaOpacity, measureType: 'Area',
                     modifiedDate: modifiedDateArea, borderStyle: '', borderDashArray: '0',
-                    author: author, subject: 'Area calculation'
+                    author: author, subject: 'Area calculation', isCommentLock: false
                 };
                 this.pdfViewer.tool = 'Polygon';
                 break;
@@ -429,7 +430,7 @@ export class MeasureAnnotation {
                     // tslint:disable-next-line:max-line-length
                     shapeAnnotationType: 'Radius', fillColor: this.radiusFillColor, notes: '', strokeColor: this.radiusStrokeColor, opacity: this.radiusOpacity,
                     thickness: this.radiusThickness, measureType: 'Radius', modifiedDate: modifiedDateRad, borderStyle: '', borderDashArray: '0',
-                    author: author, subject: 'Radius calculation'
+                    author: author, subject: 'Radius calculation', isCommentLock: false
                 };
                 this.pdfViewer.tool = 'DrawTool';
                 break;
@@ -443,7 +444,7 @@ export class MeasureAnnotation {
                     shapeAnnotationType: 'Polygon', notes: '', fillColor: this.volumeFillColor, strokeColor: this.volumeStrokeColor,
                     opacity: this.volumeOpacity, thickness: this.volumeThickness, measureType: 'Volume',
                     modifiedDate: modifiedDateVol, borderStyle: '', borderDashArray: '0',
-                    author: author, subject: 'Volume calculation'
+                    author: author, subject: 'Volume calculation', isCommentLock: false
                 };
                 this.pdfViewer.tool = 'Polygon';
                 break;
@@ -543,7 +544,7 @@ export class MeasureAnnotation {
             labelBorderColor: annotationModel.labelBorderColor, fontColor: annotationModel.fontColor, fontSize: annotationModel.fontSize,
             // tslint:disable-next-line:max-line-length
             labelBounds: labelBound,  annotationSelectorSettings: this.getSelector(annotationModel.subject), labelSettings: this.pdfViewer.shapeLabelSettings, annotationSettings: annotationSettings,
-            customData: this.pdfViewer.annotation.getMeasureData(annotationModel.subject), isPrint: annotationModel.isPrint
+            customData: this.pdfViewer.annotation.getMeasureData(annotationModel.subject), isPrint: annotationModel.isPrint, isCommentLock: annotationModel.isCommentLock
         };
     }
 
@@ -744,7 +745,7 @@ export class MeasureAnnotation {
                     dialogElement.parentElement.removeChild(dialogElement);
                 }
             });
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.scaleRatioDialog.buttons = [
                     // tslint:disable-next-line:max-line-length
                     { buttonModel: { content: this.pdfViewer.localeObj.getConstant('OK'), isPrimary: true }, click: this.onOkClicked.bind(this) },
@@ -1428,7 +1429,7 @@ export class MeasureAnnotation {
             labelBorderColor: annotation.LabelBorderColor, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
             // tslint:disable-next-line:max-line-length
             labelBounds: annotation.LabelBounds, annotationSelectorSettings: this.getSettings(annotation), labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
-            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint
+            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
     }

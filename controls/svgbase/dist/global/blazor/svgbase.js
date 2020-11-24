@@ -1249,6 +1249,11 @@ function textElement(options, font, color, parent) {
     };
     text = typeof options.text === 'string' ? options.text : options.text[0];
     htmlObject = renderer.createText(renderOptions, text);
+    htmlObject.style.fontFamily = font.fontFamily;
+    htmlObject.style.fontStyle = font.fontStyle;
+    htmlObject.style.fontSize = font.size;
+    htmlObject.style.fontWeight = font.fontWeight;
+    htmlObject.style.color = font.color;
     parent.appendChild(htmlObject);
     return htmlObject;
 }
@@ -1702,8 +1707,13 @@ var Tooltip = /** @class */ (function (_super) {
                         (tspanElement).textContent = line = line.replace(/<[a-zA-Z\/](.|\n)*?>/g, isRtlText ? '\u200E' : '');
                         subWidth += measureText(line, font).width;
                         if (tspanStyle !== '') {
-                            tspanElement.setAttribute('style', tspanStyle);
+                            tspanElement.style.fontWeight = tspanStyle.split('font-weight:')[1];
+                            tspanElement.style.color = tspanElement.getAttribute('fill');
                         }
+                        // 'inherit' will apply css style from parent element.
+                        tspanElement.style.fontFamily = 'inherit';
+                        tspanElement.style.fontStyle = 'inherit';
+                        tspanElement.style.fontSize = 'inherit';
                         isRow = false;
                     }
                 }
@@ -1845,8 +1855,8 @@ var Tooltip = /** @class */ (function (_super) {
                 location.y = (symbolLocation.y < 0 ? 0 : symbolLocation.y) + clipY + markerHeight;
             }
             if (location.y + height + this.arrowPadding > boundsY + bounds.height) {
-                location.y = (symbolLocation.y < bounds.height ? bounds.height : symbolLocation.y)
-                    + clipY - this.elementSize.height - (2 * this.padding) - this.arrowPadding - markerHeight;
+                location.y = Math.min(symbolLocation.y, boundsY + bounds.height) + clipY
+                    - this.elementSize.height - (2 * this.padding) - this.arrowPadding - markerHeight;
             }
             tipLocation.x = width / 2;
             if (location.x < boundsX) {

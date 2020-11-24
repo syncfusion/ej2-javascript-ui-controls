@@ -73,6 +73,7 @@ var DateTimePicker = /** @class */ (function (_super) {
     function DateTimePicker(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.valueWithMinutes = null;
+        _this.scrollInvoked = false;
         _this.dateTimeOptions = options;
         return _this;
     }
@@ -713,6 +714,7 @@ var DateTimePicker = /** @class */ (function (_super) {
         var element;
         var items = this.dateTimeWrapper.querySelectorAll('.' + LISTCLASS);
         if (items.length >= 0) {
+            this.scrollInvoked = true;
             var initialTime = this.timeCollections[0];
             var scrollTime = this.getDateObject(this.checkDateValue(this.scrollTo)).getTime();
             element = items[Math.round((scrollTime - initialTime) / (this.step * 60000))];
@@ -1085,7 +1087,13 @@ var DateTimePicker = /** @class */ (function (_super) {
                 var minute = status_1 ? value.getMinutes() : MINUTE;
                 var second = status_1 ? value.getSeconds() : SECOND;
                 var millisecond = status_1 ? value.getMilliseconds() : MILLISECOND;
-                return new Date(year, month, date, hour, minute, second, millisecond);
+                if (!this.scrollInvoked) {
+                    return new Date(year, month, date, hour, minute, second, millisecond);
+                }
+                else {
+                    this.scrollInvoked = false;
+                    return new Date(year, month, date, dateValue.getHours(), dateValue.getMinutes(), dateValue.getSeconds(), dateValue.getMilliseconds());
+                }
             }
         }
         return null;

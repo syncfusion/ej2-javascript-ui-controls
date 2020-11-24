@@ -33,7 +33,8 @@ export class HeaderDragDrop {
                 dragStart: this.dragStart,
                 drag: this.drag,
                 dragStop: this.dragStop,
-                abort: '.e-rhandler'
+                abort: '.e-rhandler',
+                isPreventSelect: false
             });
         }
     }
@@ -48,6 +49,7 @@ export class HeaderDragDrop {
 
     private dragStart: Function = (e: { target: HTMLElement, event: MouseEvent } & BlazorDragEventArgs) => {
         let gObj: SfGrid = this.parent;
+        document.body.classList.add('e-prevent-select');
         let popup: HTMLElement = (gObj.element.querySelector('.e-gridpopup') as HTMLElement);
         if (popup) {
             popup.style.display = 'none';
@@ -84,6 +86,7 @@ export class HeaderDragDrop {
     }
     private dragStop: Function = (e: { target: HTMLElement, event: MouseEventArgs, helper: Element }) => {
         let gObj: SfGrid = this.parent;
+        document.body.classList.remove('e-prevent-select');
         let cancel: boolean;
         let popup: HTMLElement = (gObj.element.querySelector('.e-gridpopup') as HTMLElement);
         if (popup) {

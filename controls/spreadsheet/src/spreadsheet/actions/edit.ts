@@ -752,11 +752,13 @@ export class Edit {
     }
 
     private triggerEvent(eventName: string, event?: MouseEvent & TouchEvent | KeyboardEventArgs): boolean {
+        let cell : CellModel = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
         let eventArgs: CellEditEventArgs | CellSaveEventArgs = {
             element: this.editCellData.element,
             value: this.editCellData.value,
             oldValue: this.editCellData.oldValue,
-            address: this.editCellData.fullAddr
+            address: this.editCellData.fullAddr,
+            displayText: this.parent.getDisplayText(cell)
         };
         if (eventName === 'cellSave') {
             if (this.editCellData.formula) {

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.51 (2020-11-24)
+
+### Gantt
+
+#### Bug Fixes
+
+- `301606` - Issue in template column when use it as `treeColumnIndex` has been fixed.
+
 ## 18.3.50 (2020-11-17)
 
 ### Gantt
@@ -10,6 +18,7 @@
 
 - `293889` - Console error in split task when allowTaskbarEditing is disable has been fixed.
 - `300744` - Console error on clicking add/edit toolbar has been fixed.
+- `301653` - Issue on split task when date is given as string has been fixed.
 
 ## 18.3.48 (2020-11-11)
 

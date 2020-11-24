@@ -13,7 +13,7 @@ import { Row } from '../models/row';
 import { Column } from '../models/column';
 import { SummaryModelGenerator, GroupSummaryModelGenerator, CaptionSummaryModelGenerator } from '../services/summary-model-generator';
 import { AggregateColumnModel } from '../models/aggregate-model';
-import { CellType, MultipleExportType, ExcelHAlign, ExportType, AggregateTemplateType } from '../base/enum';
+import { CellType, MultipleExportType, ExcelHAlign, ExportType } from '../base/enum';
 import { Query, DataManager, Group } from '@syncfusion/ej2-data';
 import { Grid } from '../base/grid';
 import { Cell } from '../models/cell';
@@ -672,8 +672,7 @@ export class ExcelExport {
                         }
                         let args: AggregateQueryCellInfoEventArgs = {
                             row: row,
-                            type: footerTemplate ? AggregateTemplateType.Footer : groupFooterTemplate ?
-                             AggregateTemplateType.GroupFooter : AggregateTemplateType.GroupCaption ,
+                            type: footerTemplate ? 'Footer' : groupFooterTemplate ? 'GroupFooter' : 'GroupCaption',
                             style: eCell
                         };
                         this.parent.trigger(events.excelAggregateQueryCellInfo, args);

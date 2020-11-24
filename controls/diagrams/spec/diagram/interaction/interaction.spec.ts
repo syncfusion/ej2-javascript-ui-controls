@@ -3667,6 +3667,7 @@ describe('Diagram constraints TestCases', () => {
   
 });
 describe('Nudge testing while the item is not selected', () => {
+    
     let diagram: Diagram;
     let ele: HTMLElement;
 
@@ -3703,6 +3704,108 @@ describe('Nudge testing while the item is not selected', () => {
         mouseEvents.clickEvent(diagramCanvas, 150, 150); 
         mouseEvents.keyDownEvent(diagramCanvas, 'Down');
         expect((diagram.selectedItems.nodes.length > 0) || (diagram.selectedItems.connectors.length > 0)).toBe(true);
+        done();
+    })
+});
+
+
+
+describe('Context menu Cr issue fix', () => {
+    
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramnudge' });
+        document.body.appendChild(ele);
+        let selArray: (NodeModel | ConnectorModel)[] = [];
+        let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100 };
+        let connector: ConnectorModel = { id: 'connector1', sourcePoint: { x: 200, y: 200 }, targetPoint: { x: 300, y: 300 } };
+
+        diagram = new Diagram({
+        width: 1500, height: 1000,
+        contextMenuSettings: {
+            show: true, items: [{
+                    text: 'delete', id: 'delete', target: '.e-diagramcontent',
+                    iconCss: 'e-syncfusion'
+                }],
+            showCustomMenuOnly: true,
+        },
+        contextMenuOpen: function (args) {
+            for (var _i = 0, _a = args.items; _i < _a.length; _i++) {
+                var item = _a[_i];
+                if (item.text === 'delete') {
+                    
+                }
+            }
+        },
+        contextMenuClick: function (args) {
+            if (args.item.id === 'delete') {
+                if ((diagram.selectedItems.nodes.length + diagram.selectedItems.connectors.length) > 0) {
+                    diagram.cut();
+                }
+            }
+        },
+    });
+
+        diagram.appendTo('#diagramnudge');
+
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Context menu Cr issue fix', (done: Function) => {
+        diagram.contextMenuSettings.showCustomMenuOnly = false;
+        var items = [
+            {
+                text: "Exclude Ctrl+E",
+                id: "exclude"
+            },
+            {
+                text: "Copy Ctrl+C",
+                id: "copy"
+            },
+            {
+                text: "Paste Ctrl+V",
+                id: "paste"
+            },
+            {
+                text: "Group Ctrl+G",
+                id: "group"
+            },
+            {
+                text: "Delete Delete",
+                id: "delete"
+            },
+            {
+                text: "Add",
+                id: "add"
+            }
+        ];
+        diagram.contextMenuSettings.items = items;
+        diagram.dataBind();
+        var diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        var mouseEvents = new MouseEvents();
+        mouseEvents.clickEvent(diagramCanvas, 350, 110);
+       ( diagram.contextMenuModule as any).eventArgs = { target: diagramCanvas };
+        var e = {
+            event: (diagram.contextMenuModule as any).eventArgs,
+            items: diagram.contextMenuModule.contextMenu.items,
+            cancel: false
+        };
+       ( diagram.contextMenuModule as any).contextMenuBeforeOpen(e);
+       expect(diagram.contextMenuModule.contextMenu.items.length===7).toBe(true);
+       
         done();
     })
 });

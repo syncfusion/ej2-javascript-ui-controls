@@ -1206,11 +1206,11 @@ describe('Chart Control Series', () => {
                     clientY: 300
                 };
                 chartObj.zoomModule.chartMouseWheel(<WheelEvent>wheelArgs);
-                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.80').toBe(true);
-                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.80').toBe(true);
-                expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.10').toBe(true);
+                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.72').toBe(true);
+                expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.72').toBe(true);
+                expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.14').toBe(true);
                 expect(chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.00' ||
-                    chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.05').toBe(true);
+                    chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.08').toBe(true);
                 done();
             };
             chartObj.zoomSettings.enableMouseWheelZooming = true;
@@ -1226,11 +1226,11 @@ describe('Chart Control Series', () => {
                 chartObj.mouseMove(<PointerEvent>trigger.onTouchMove(areaElement, 728, 389, 404, 289, 404, 189));
                 chartObj.mouseMove(<PointerEvent>trigger.onTouchMove(areaElement, 748, 129, 304, 289, 304, 289));
                 let content = chartObj.primaryXAxis.zoomFactor.toFixed(2);
-                expect(content == '0.33' || content == '0.35' || content == '0.34').toBe(true);
+                expect(content == '0.33' || content == '0.30' || content == '0.31').toBe(true);
                 content = chartObj.primaryYAxis.zoomFactor.toFixed(2);
-                expect(content == '1.00' || content == '0.88' || content === '0.86').toBe(true);
+                expect(content == '1.00' || content == '0.77' || content === '0.79').toBe(true);
                 content = chartObj.primaryXAxis.zoomPosition.toFixed(2);
-                expect(content == '0.72' || content == '0.71' || content == '0.73').toBe(true);
+                expect(content == '0.72' || content == '0.69' || content == '0.70').toBe(true);
                 chartObj.mouseLeave(<PointerEvent>trigger.onTouchLeave(areaElement, 748, 129, 304, 289, 304, 289));
                 done();
             };

@@ -103,7 +103,7 @@ export class Toolbar {
         if (!isBlazor()) {
             toolbarDiv = this.createToolbar(width);
         } else {
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 toolbarDiv = this.pdfViewer.element.querySelector('.e-pv-toolbar');
                 this.toolbarElement = toolbarDiv;
             }
@@ -117,7 +117,7 @@ export class Toolbar {
         this.wireEvent();
         if (!isBlazor()) {
             this.updateToolbarItems();
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.applyToolbarSettings();
                 this.initialEnableItems();
                 this.pdfViewerBase.navigationPane.adjustPane();
@@ -126,12 +126,12 @@ export class Toolbar {
             }
             if (this.pdfViewer.annotationModule) {
                 this.annotationToolbarModule = new AnnotationToolbar(this.pdfViewer, this.pdfViewerBase, this);
-                if (!Browser.isDevice) {
+                if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                     this.annotationToolbarModule.initializeAnnotationToolbar();
                 }
             }
         } else {
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.annotationToolbarModule = new AnnotationToolbar(this.pdfViewer, this.pdfViewerBase, this);
                 this.initialEnableItems();
                 this.pdfViewerBase.navigationPane.adjustPane();
@@ -165,7 +165,8 @@ export class Toolbar {
         let toolbar: HTMLElement = this.toolbarElement;
         if (enableToolbar) {
             toolbar.style.display = 'block';
-            if (Browser.isDevice && this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
+            // tslint:disable-next-line:max-line-length
+            if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
                 this.pdfViewer.toolbarModule.annotationToolbarModule.hideMobileAnnotationToolbar();
             }
         } else {
@@ -179,7 +180,7 @@ export class Toolbar {
      * @returns void
      */
     public showNavigationToolbar(enableNavigationToolbar: boolean): void {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             let navigationToolbar: HTMLElement = this.pdfViewerBase.navigationPane.sideBarToolbar;
             let navigationToolbarSplitter: HTMLElement = this.pdfViewerBase.navigationPane.sideBarToolbarSplitter;
             if (enableNavigationToolbar) {
@@ -341,7 +342,7 @@ export class Toolbar {
     }
     private showDownloadOption(enableDownloadOption: boolean): void {
         this.isDownloadBtnVisible = enableDownloadOption;
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
         this.applyHideToToolbar(enableDownloadOption, 25, 25);
         }else {
             this.applyHideToToolbar(enableDownloadOption, 5, 5);
@@ -355,7 +356,7 @@ export class Toolbar {
 
     private showSearchOption(enableSearchOption: boolean): void {
         this.isSearchBtnVisible = enableSearchOption;
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.applyHideToToolbar(enableSearchOption, 22, 22);
             }else {
             this.applyHideToToolbar(enableSearchOption, 4, 4);
@@ -364,7 +365,7 @@ export class Toolbar {
 
     private showUndoRedoTool(isEnable: boolean): void {
     this.isUndoRedoBtnsVisible = isEnable;
-    if (!Browser.isDevice) {
+    if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.applyHideToToolbar(isEnable, 16, 17);
         }else {
             this.applyHideToToolbar(isEnable, 2, 3);
@@ -448,7 +449,7 @@ export class Toolbar {
      * @private
      */
     public resetToolbar(): void {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.currentPageBox.min = 0;
             this.currentPageBox.value = 0;
             this.updateTotalPage();
@@ -462,7 +463,7 @@ export class Toolbar {
      * @private
      */
     public updateToolbarItems(): void {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (this.toolbar) {
                 if (this.pdfViewerBase.pageCount === 0) {
                     this.toolbar.enableItems(this.downloadItem.parentElement, false);
@@ -571,7 +572,8 @@ export class Toolbar {
      * @private
      */
     public updateZoomButtons(): void {
-        if (this.pdfViewer.magnificationModule && !this.isMagnificationToolDisabled && !Browser.isDevice) {
+        // tslint:disable-next-line:max-line-length
+        if (this.pdfViewer.magnificationModule && !this.isMagnificationToolDisabled && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
             if (this.pdfViewer.magnificationModule.zoomFactor <= 0.1) {
                 this.toolbar.enableItems(this.zoomInItem.parentElement, true);
                 this.toolbar.enableItems(this.zoomOutItem.parentElement, false);
@@ -655,7 +657,7 @@ export class Toolbar {
      * @private
      */
     public updateCurrentPage(pageIndex: number): void {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (this.currentPageBox.value === pageIndex) {
                 (this.currentPageBoxElement as HTMLInputElement).value = pageIndex.toString();
             }
@@ -671,7 +673,7 @@ export class Toolbar {
      * @private
      */
     public updateTotalPage(): void {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (this.pdfViewerBase.pageCount > 0) {
                 this.currentPageBox.min = 1;
             }
@@ -691,7 +693,7 @@ export class Toolbar {
         // tslint:disable-next-line:max-line-length
         this.toolbarElement = createElement('div', { id: this.pdfViewer.element.id + '_toolbarContainer', className: 'e-pv-toolbar' });
         this.pdfViewerBase.viewerMainContainer.appendChild(this.toolbarElement);
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.toolbar = new tool({
                 clicked: this.toolbarClickHandler, width: '', height: '', overflowMode: 'Popup',
                 items: this.createToolbarItems(), created: () => {
@@ -1046,7 +1048,7 @@ export class Toolbar {
             this.fileInputElement.addEventListener('change', this.loadDocument);
         }
         if (!isBlazor()) {
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.toolbarElement.addEventListener('mouseup', this.toolbarOnMouseup.bind(this));
                 this.currentPageBoxElement.addEventListener('focusout', this.textBoxFocusOut);
                 this.currentPageBoxElement.addEventListener('keypress', this.navigateToPage);
@@ -1061,7 +1063,7 @@ export class Toolbar {
         if (this.fileInputElement) {
             this.fileInputElement.removeEventListener('change', this.loadDocument);
         }
-        if (!Browser.isDevice && !isBlazor()) {
+        if ((!Browser.isDevice || this.pdfViewer.enableDesktopMode) && !isBlazor()) {
             this.toolbarElement.removeEventListener('mouseup', this.toolbarOnMouseup.bind(this));
             this.currentPageBoxElement.removeEventListener('focusout', this.textBoxFocusOut);
             this.currentPageBoxElement.removeEventListener('keypress', this.navigateToPage);
@@ -1074,7 +1076,7 @@ export class Toolbar {
      * @private
      */
     public onToolbarResize(viewerWidth: number): void {
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.pdfViewerBase.navigationPane.toolbarResize();
         } else {
             this.toolbar.refreshOverflow();
@@ -1096,7 +1098,7 @@ export class Toolbar {
 
     private toolbarClickHandler = (args: ClickEventArgs): void => {
         // tslint:disable-next-line:max-line-length
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (args.originalEvent.target === this.zoomDropdownItem.parentElement.childNodes[1] || args.originalEvent.target === this.zoomDropdownItem.parentElement.childNodes[2]) {
                 args.cancel = true;
             } else if ((args.originalEvent.target as HTMLElement).id === this.pdfViewer.element.id + '_openIcon') {
@@ -1112,7 +1114,7 @@ export class Toolbar {
         this.handleToolbarBtnClick(args);
         // tslint:disable-next-line
         let targetElement : any = args.originalEvent.target;
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             // tslint:disable-next-line:max-line-length
             if (!(args.originalEvent.target === this.zoomDropdownItem.parentElement.childNodes[1] || args.originalEvent.target === this.zoomDropdownItem.parentElement.childNodes[2] || args.originalEvent.target === this.currentPageBoxElement || args.originalEvent.target === this.textSearchItem.childNodes[0])) {
                 if (targetElement.parentElement.id !== this.pdfViewer.element.id + '_toolbarContainer_nav' && targetElement.id !== this.pdfViewer.element.id + '_toolbarContainer_nav') {
@@ -1125,7 +1127,7 @@ export class Toolbar {
 
     private handleOpenIconClick(args: ClickEventArgs): void {
         this.fileInputElement.click();
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             if (!isBlazor()) {
                 (args.originalEvent.target as HTMLElement).blur();
             }
@@ -1378,7 +1380,7 @@ export class Toolbar {
      * @private
      */
     public updateZoomPercentage(zoomFactor: number): void {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             // tslint:disable-next-line:radix
             let currentPercent: string = parseInt((zoomFactor * 100).toString()) + '%';
             if (this.zoomDropDown.text === currentPercent) {
@@ -1421,7 +1423,7 @@ export class Toolbar {
      * @private
      */
     public textSearchButtonHandler(): void {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (this.pdfViewer.textSearchModule && this.pdfViewerBase.pageCount > 0) {
                 this.isTextSearchBoxDisplayed = !this.isTextSearchBoxDisplayed;
                 this.pdfViewer.textSearchModule.showSearchBox(this.isTextSearchBoxDisplayed);
@@ -1462,14 +1464,18 @@ export class Toolbar {
      * @private
      */
     public selectItem(element: HTMLElement): void {
-        element.classList.add('e-pv-select');
+        if (element) {
+            element.classList.add('e-pv-select');
+        }
     }
 
     /**
      * @private
      */
     public deSelectItem(element: HTMLElement): void {
-        element.classList.remove('e-pv-select');
+        if (element) {
+            element.classList.remove('e-pv-select');
+        }
     }
     /**
      * @private

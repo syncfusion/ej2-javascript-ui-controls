@@ -9936,7 +9936,7 @@ class Formats {
             }
             else {
                 let brNode = this.parent.nodeSelection.getSelectionNodeCollectionBr(range)[0];
-                if (brNode.nodeName === 'BR' && (brNode.previousSibling && brNode.previousSibling.nodeName === 'TABLE')) {
+                if (!isNullOrUndefined(brNode) && brNode.nodeName === 'BR' && (brNode.previousSibling && brNode.previousSibling.nodeName === 'TABLE')) {
                     endCon.replaceChild(pTag, brNode);
                     this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, pTag, 0);
                 }

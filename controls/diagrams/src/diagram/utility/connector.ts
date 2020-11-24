@@ -1840,7 +1840,7 @@ function addOrthoSegments(
                 case 'Bottom':
                     if (srcCorner.bottomCenter.y < tarCorner.topCenter.y) {
                         value = (tarCorner.topCenter.y - srcCorner.bottomCenter.y) / 2;
-                        extra = !lineDistribution ? Math.min(extra) : value;
+                        extra = !lineDistribution ? Math.min(extra, value) : value;
                     }
                     break;
             }

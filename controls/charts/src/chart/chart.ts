@@ -2327,6 +2327,35 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     /**
+     * To add secondary axis for the chart
+     * @param {AxisModel[]} axisCollection - Defines the axis collection to be added in chart.
+     * @return {void}.
+     */
+
+    public addAxes(axisCollection: AxisModel[]): void {
+        for (let axis of axisCollection) {
+            axis = new Axis(this, 'axes', axis);
+            if (this.isBlazor) {
+                axis.interval = isNaN(axis.interval) ? null : axis.interval;
+                axis.desiredIntervals = isNaN(axis.desiredIntervals) ? null : axis.desiredIntervals;
+            }
+            this.axes.push(axis);
+        }
+        this.refresh();
+    }
+
+    /**
+     * To remove secondary axis for the chart
+     * @param index - Defines the axis collection to be removed in chart.
+     * @return {void}.
+     */
+    public removeAxis(index: number): void {
+        this.redraw = false;
+        this.axes.splice(index, 1);
+        this.refresh();
+    };
+
+    /**
      * To destroy the widget
      * @method destroy
      * @return {void}.

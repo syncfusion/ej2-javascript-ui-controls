@@ -3388,7 +3388,7 @@ export abstract class LayoutViewer {
                         }
                         if (!block.isInsideTable) {
                             // tslint:disable-next-line:max-line-length
-                            leftIndent = (block.tableFormat.horizontalPositionAbs === 'Left') ? block.tableFormat.horizontalPosition : leftIndent;
+                            //leftIndent = (block.tableFormat.horizontalPositionAbs === 'Left') ? block.tableFormat.horizontalPosition : leftIndent;
                         }
                         this.documentHelper.tableLefts.push(leftIndent);
                     }

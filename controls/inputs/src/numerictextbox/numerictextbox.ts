@@ -72,6 +72,8 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private isVue: boolean = false;
     private preventChange: boolean = false;
     private elementPrevValue: string;
+    private isAngular: boolean = false;
+    private isDynamicChange: boolean = false;
 
     /*NumericTextBox Options */
 
@@ -407,6 +409,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                 }
             }
             this.elementPrevValue = this.element.value;
+            if (this.element.hasAttribute('data-val')) {
+                this.element.setAttribute('data-val', 'false');
+            }
             this.renderComplete();
         }
     }
@@ -896,11 +901,20 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         }
     };
     private inputHandler(event: KeyboardEvent): void {
+        // tslint:disable-next-line
+        let numerictextboxObj: any = this;
         if (!this.enabled || this.readonly) { return; }
         let iOS: boolean = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
         let fireFox: boolean = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
         if ((fireFox || iOS) && Browser.isDevice) {
             this.preventHandler();
+        }
+         /* istanbul ignore next */
+        if ( this.isAngular
+            && this.element.value !== getValue('decimal', getNumericObject(this.locale))
+            && this.element.value !== getValue('minusSign', getNumericObject(this.locale)) ) {
+            numerictextboxObj.localChange({value: this.instance.getNumberParser({ format: 'n' })(this.element.value)});
+            this.preventChange = true;
         }
         if (this.isVue) {
             let current: number = this.instance.getNumberParser({ format: 'n' })(this.element.value);
@@ -970,7 +984,8 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             }
         }
         this.changeValue(value === null || isNaN(value) ? null : this.strictMode ? this.trimValue(value) : value);
-        if ((!this.isVue) || (this.isVue && !this.preventChange)) {
+         /* istanbul ignore next */
+        if (!this.isDynamicChange) {
             this.raiseChangeEvent(event);
         }
     }
@@ -1400,9 +1415,11 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                     this.floatLabelTypeUpdate();
                     break;
                 case 'value':
+                    this.isDynamicChange = (this.isAngular || this.isVue) && this.preventChange;
                     this.updateValue(newProp.value);
-                    if (this.isVue && this.preventChange) {
+                    if (this.isDynamicChange) {
                         this.preventChange = false;
+                        this.isDynamicChange = false;
                     }
                     break;
                 case 'min':

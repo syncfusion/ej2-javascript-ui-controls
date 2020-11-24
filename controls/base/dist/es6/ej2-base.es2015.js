@@ -5184,10 +5184,12 @@ function querySelectId(selector) {
         for (let i = 0; i < idList.length; i++) {
             let list = idList[i].split(' ');
             for (let j = 0; j < list.length; j++) {
-                if (list[j].match(/#/)) {
-                    let splitId = list[j].split('#');
-                    if (splitId[1].match(/^\d/)) {
-                        list[j] = list[j].replace(/#/, '[id=\'') + '\']';
+                if (list[j].indexOf('#') > -1) {
+                    if (!list[j].match(/\[.*\]/)) {
+                        let splitId = list[j].split('#');
+                        if (splitId[1].match(/^\d/)) {
+                            list[j] = list[j].replace(/#/, '[id=\'') + '\']';
+                        }
                     }
                 }
             }
@@ -7309,7 +7311,9 @@ let Draggable = Draggable_1 = class Draggable extends Base {
             EventHandler.add(document, Browser.touchEndEvent, this.intDestroy, this);
         }
         this.toggleEvents(true);
-        document.body.classList.add('e-prevent-select');
+        if (evt.type !== 'touchstart' && this.isPreventSelect) {
+            document.body.classList.add('e-prevent-select');
+        }
         this.externalInitialize = false;
         EventHandler.trigger(document.documentElement, Browser.touchStartEvent, evt);
     }
@@ -7792,6 +7796,9 @@ __decorate$2([
 __decorate$2([
     Property()
 ], Draggable.prototype, "isReplaceDragEle", void 0);
+__decorate$2([
+    Property(true)
+], Draggable.prototype, "isPreventSelect", void 0);
 __decorate$2([
     Event$1()
 ], Draggable.prototype, "drag", void 0);

@@ -393,10 +393,10 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     @Event()
     public fieldRemove: EmitType<FieldRemoveEventArgs>;
 
-    /** 
-     * It trigger when the Pivot Field List rendered.
-     * @event
-     */
+    /** 
+     * It trigger when the Pivot Field List rendered.
+     * @event
+     */
     @Event()
     public dataBound: EmitType<Object>;
 
@@ -734,7 +734,18 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     this.engineModule.fieldList[engine.memberName].members = members;
                     this.pivotButtonModule.updateFilterEvents();
                 } else {
-                    this.engineModule.fieldList = PivotUtil.formatFieldList(JSON.parse(engine.fieldList));
+                    let fList: IFieldListOptions = PivotUtil.formatFieldList(JSON.parse(engine.fieldList));
+                    if (this.engineModule.fieldList) {
+                        let keys: string[] = Object.keys(this.engineModule.fieldList);
+                        for (let i: number = 0; i < keys.length; i++) {
+                            if (this.engineModule.fieldList[keys[i]] && fList[keys[i]]) {
+                                fList[keys[i]].dateMember = this.engineModule.fieldList[keys[i]].dateMember;
+                                fList[keys[i]].formattedMembers = this.engineModule.fieldList[keys[i]].formattedMembers;
+                                fList[keys[i]].members = this.engineModule.fieldList[keys[i]].members;
+                            }
+                        }
+                    }
+                    this.engineModule.fieldList = fList;
                     this.engineModule.fields = JSON.parse(engine.fields);
                     this.engineModule.rowCount = JSON.parse(engine.pivotCount).RowCount;
                     this.engineModule.columnCount = JSON.parse(engine.pivotCount).ColumnCount;

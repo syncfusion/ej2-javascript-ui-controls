@@ -8858,12 +8858,12 @@ class Layout {
                     }
                 }
                 //Adds the splitted widget of a vertical merged cell, to next row widget in the next page.
-                this.insertSplittedCellWidgets(viewer, tableCollection, splittedWidget, tableRowWidget.indexInOwner - 1);
+                this.insertSplittedCellWidgets(viewer, tableCollection, splittedWidget, tableRowWidget.index - 1);
             }
         }
         else {
             //Adds the splitted widget of a vertical merged cell, to next row widget in the next page.
-            this.insertSplittedCellWidgets(viewer, tableCollection, splittedWidget, tableRowWidget.indexInOwner - 1);
+            this.insertSplittedCellWidgets(viewer, tableCollection, splittedWidget, tableRowWidget.index - 1);
         }
         return splittedWidget;
     }
@@ -10809,7 +10809,7 @@ class Layout {
             let cellTopBorder = cell.cellFormat.borders.top;
             let cellStartPos = cell.x;
             let cellEndPos = cell.x + cell.width + cell.margin.left + cell.margin.right;
-            let adjCells = this.getAdjacentRowCell(cell, cell.x, cell.x + cell.width, cell.rowIndex - 1);
+            let adjCells = this.getAdjacentRowCell(cell, cell.x, cell.x + cell.width, cell.ownerRow.indexInOwner - 1);
             for (let j = 0; j < adjCells.length; j++) {
                 let adjCell = adjCells[j];
                 let prevCellBottomBorder = adjCell.cellFormat.borders.bottom;
@@ -12492,17 +12492,17 @@ class Renderer {
         else {
             let footerDistance = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
             // tslint:disable-next-line:max-line-length
-            let footerHeight = this.getScaledValue(page.boundingRectangle.height) -
-                this.getScaledValue(Math.max(page.footerWidget.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidget.sectionFormat.bottomMargin)));
-            height = Math.max((this.getScaledValue(page.boundingRectangle.height) - headerFooterHeight), footerHeight);
-            pageHt = this.getScaledValue(page.boundingRectangle.height) - footerDistance;
+            let footerHeight = page.boundingRectangle.height -
+                Math.max(page.footerWidget.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidget.sectionFormat.bottomMargin));
+            height = Math.max(page.boundingRectangle.height - headerFooterHeight, footerHeight);
+            pageHt = page.boundingRectangle.height - footerDistance;
         }
         for (let i = 0; i < widget.childWidgets.length; i++) {
             let block = widget.childWidgets[i];
             if (!isHeader) {
                 height += block.height;
             }
-            if (isHeader || !isHeader && height <= pageHt) {
+            if (isHeader || !isHeader && this.getScaledValue(height) <= this.getScaledValue(pageHt)) {
                 this.renderWidget(page, block);
             }
         }
@@ -19020,7 +19020,7 @@ class LayoutViewer {
                         }
                         if (!block.isInsideTable) {
                             // tslint:disable-next-line:max-line-length
-                            leftIndent = (block.tableFormat.horizontalPositionAbs === 'Left') ? block.tableFormat.horizontalPosition : leftIndent;
+                            //leftIndent = (block.tableFormat.horizontalPositionAbs === 'Left') ? block.tableFormat.horizontalPosition : leftIndent;
                         }
                         this.documentHelper.tableLefts.push(leftIndent);
                     }
@@ -23347,7 +23347,7 @@ class LineWidget {
                     || element.previousElement instanceof ListTextElementBox
                     || element.previousElement instanceof EditRangeEndElementBox
                     || element.previousElement instanceof EditRangeStartElementBox
-                    || element instanceof ImageElementBox)) {
+                    || element.previousElement instanceof ImageElementBox)) {
                     isApplied = true;
                     element = element.previousElement;
                     continue;
@@ -23549,17 +23549,17 @@ class LineWidget {
                 if (!isStarted && (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
                     || inlineElement instanceof ShapeElementBox || inlineElement instanceof ContentControl
                     || inlineElement instanceof BookmarkElementBox || inlineElement instanceof EditRangeEndElementBox
-                    || inlineElement instanceof EditRangeStartElementBox
+                    || inlineElement instanceof EditRangeStartElementBox || inlineElement instanceof CommentCharacterElementBox
                     || inlineElement instanceof FieldElementBox
                         && HelperMethods.isLinkedFieldCharacter(inlineElement))) {
                     isStarted = true;
                 }
                 if (isStarted && offset <= count + inlineElement.length) {
-                    // if (inlineElement instanceof BookmarkElementBox) {
-                    //     offset += inlineElement.length;
-                    //     count += inlineElement.length;
-                    //     continue;
-                    // }
+                    //if (inlineElement instanceof BookmarkElementBox) {
+                    //    offset += inlineElement.length;
+                    //    count += inlineElement.length;
+                    //    continue;
+                    //}
                     // tslint:disable-next-line:max-line-length
                     if (inlineElement instanceof TextElementBox && (inlineElement.text === ' ' && inlineElement.revisions.length === 0 && isInsert)) {
                         let currentElement = this.getNextTextElement(this, i + 1);
@@ -68988,11 +68988,17 @@ class WordExport {
         let blocks = [];
         let multiText = text.split('\n');
         multiText = multiText.filter((x) => x !== '');
-        while (multiText.length > 0) {
-            let block = {};
-            block.inlines = [{ text: multiText[0] }];
+        let block = {};
+        if (multiText.length === 0) {
+            block.inlines = [{ text: '' }];
             blocks.push(block);
-            multiText.splice(0, 1);
+        }
+        else {
+            while (multiText.length > 0) {
+                block.inlines = [{ text: multiText[0] }];
+                blocks.push(block);
+                multiText.splice(0, 1);
+            }
         }
         return blocks;
     }
@@ -85530,7 +85536,7 @@ class SpellChecker {
         this.errorWordCollection = new Dictionary();
         this.errorSuggestions = new Dictionary();
         this.ignoreAllItems = [];
-        this.uniqueSpelledWords = [];
+        this.uniqueSpelledWords = {};
         this.textSearchResults = new TextSearchResults(this.documentHelper.owner);
         this.uniqueKey = this.documentHelper.owner.element.id + '_' + this.createGuid();
     }
@@ -86628,7 +86634,7 @@ class SpellChecker {
         if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
             this.uniqueSpelledWords = JSON.parse(localStorage.getItem(this.uniqueKey));
         }
-        this.uniqueSpelledWords = (!this.uniqueSpelledWords) ? this.uniqueSpelledWords : {};
+        this.uniqueSpelledWords = this.uniqueSpelledWords || {};
         let totalCount = spelledWords.length + Object.keys(this.uniqueSpelledWords).length;
         if (totalCount <= this.uniqueWordsCount) {
             for (let i = 0; i < spelledWords.length; i++) {
@@ -86688,7 +86694,7 @@ class SpellChecker {
         this.errorWordCollection = undefined;
         this.ignoreAllItems = undefined;
         this.errorSuggestions = undefined;
-        this.uniqueSpelledWords = [];
+        this.uniqueSpelledWords = {};
         this.textSearchResults = undefined;
         if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
             localStorage.removeItem(this.uniqueKey);

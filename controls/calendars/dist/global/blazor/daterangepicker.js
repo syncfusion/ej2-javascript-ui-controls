@@ -134,6 +134,8 @@ var DateRangePicker = /** @class */ (function (_super) {
         _this.preventBlur = false;
         _this.preventFocus = false;
         _this.invalidValueString = null;
+        _this.isAngular = false;
+        _this.preventChange = false;
         _this.dateRangeOptions = options;
         return _this;
     }
@@ -148,6 +150,9 @@ var DateRangePicker = /** @class */ (function (_super) {
         this.setProperties({ endDate: this.endValue }, true);
         this.setModelValue();
         this.setDataAttribute(false);
+        if (this.element.hasAttribute('data-val')) {
+            this.element.setAttribute('data-val', 'false');
+        }
         this.renderComplete();
     };
     /**
@@ -3487,7 +3492,12 @@ var DateRangePicker = /** @class */ (function (_super) {
             this.setProperties({ endDate: this.checkDateValue(this.endValue) }, true);
             this.setProperties({ startDate: this.checkDateValue(this.startValue) }, true);
             this.setModelValue();
-            this.trigger('change', this.rangeArgs(e));
+            if (this.isAngular && this.preventChange) {
+                this.preventChange = false;
+            }
+            else {
+                this.trigger('change', this.rangeArgs(e));
+            }
         }
         this.previousEleValue = this.inputElement.value;
         this.initStartDate = this.checkDateValue(this.startValue);

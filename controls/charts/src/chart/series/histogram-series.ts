@@ -55,11 +55,15 @@ export class HistogramSeries extends ColumnSeries {
             yValues: yValues
         };
         let min: number = Math.min(...series.histogramValues.yValues);
+        let max: number = Math.max(...series.histogramValues.yValues);
         this.calculateBinInterval(series.histogramValues.yValues, series);
         binWidth = series.histogramValues.binWidth;
         let yCount: number;
         for (let j: number = 0; j < data.length; ) {
             yCount = yValues.filter((y: number) => y >= min && y < (min + (binWidth))).length;
+            if ((min + binWidth) === max) {
+                yCount += yValues.filter((y: number) => y >= max).length;
+            }
             updatedData.push({
                 'x': min + binWidth / 2,
                 [series.yName]: yCount

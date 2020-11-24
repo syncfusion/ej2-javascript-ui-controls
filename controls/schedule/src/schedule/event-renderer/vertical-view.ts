@@ -633,6 +633,8 @@ export class VerticalEvent extends EventBase {
                                     apps.style.left = this.getEventLeft(args.width, i);
                                 apps.style.width = ((parseFloat(args.width))) + '%';
                                 data.appWidth = apps.style.width;
+                            } else {
+                                data.appWidth = apps.style.width;
                             }
                         } else {
                             let appWidth: string = args.width;

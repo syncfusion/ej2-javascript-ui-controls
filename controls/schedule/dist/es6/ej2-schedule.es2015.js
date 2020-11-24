@@ -1051,8 +1051,7 @@ class HeaderRenderer {
     }
     calendarChange(args) {
         if (args.value.getTime() !== this.parent.selectedDate.getTime()) {
-            let calendarDate = new Date(args.value);
-            calendarDate.setHours(new Date().getHours(), new Date().getMinutes(), new Date().getSeconds());
+            let calendarDate = resetTime(new Date(args.value));
             this.parent.changeDate(this.parent.getCurrentTime(calendarDate));
         }
         this.headerPopup.hide();
@@ -5821,6 +5820,9 @@ class VerticalEvent extends EventBase {
                                 (this.parent.enableRtl) ? apps.style.right = this.getEventLeft(args.width, i) :
                                     apps.style.left = this.getEventLeft(args.width, i);
                                 apps.style.width = ((parseFloat(args.width))) + '%';
+                                data.appWidth = apps.style.width;
+                            }
+                            else {
                                 data.appWidth = apps.style.width;
                             }
                         }
@@ -11958,7 +11960,8 @@ class Render {
             this.parent.virtualScrollModule.destroy();
             this.parent.virtualScrollModule = null;
         }
-        if (this.parent.currentView.indexOf('Timeline') !== -1 && this.parent.activeViewOptions.allowVirtualScrolling
+        if (this.parent.currentView.indexOf('Timeline') !== -1 && this.parent.currentView.indexOf('Year') === -1
+            && this.parent.activeViewOptions.allowVirtualScrolling
             && this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
             this.parent.virtualScrollModule = new VirtualScroll(this.parent);
             this.parent.uiStateValues.top = 0;
@@ -12012,6 +12015,15 @@ class Render {
             }
             this.parent.eventsData = resultData.filter((data) => !data[this.parent.eventFields.isBlock]);
             this.parent.blockData = resultData.filter((data) => data[this.parent.eventFields.isBlock]);
+            for (let datas of resultData) {
+                if (typeof datas[this.parent.eventFields.startTime] === 'string') {
+                    datas[this.parent.eventFields.startTime] = getDateFromString(datas[this.parent.eventFields.startTime]);
+                }
+                if (typeof datas[this.parent.eventFields.endTime] === 'string') {
+                    datas[this.parent.eventFields.endTime] = getDateFromString(datas[this.parent.eventFields.endTime]);
+                }
+                this.parent.eventBase.processTimezone(datas, true);
+            }
             let processed = this.parent.eventBase.processData(resultData);
             this.parent.notify(dataReady, { processedData: processed });
             if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
@@ -17199,7 +17211,7 @@ class DragAndDrop extends ActionBase {
                     pointerEvents: 'none'
                 });
             }
-            let top = this.actionObj.clone.offsetTop;
+            let top = parseInt(e.top, 10);
             top = top < 0 ? 0 : top;
             topValue = formatUnit(Math.ceil(top / cellHeight) * cellHeight);
             let scrollHeight = this.parent.element.querySelector('.e-content-wrap').scrollHeight;
@@ -17581,9 +17593,7 @@ class DragAndDrop extends ActionBase {
             offsetTop = Math.round(offsetTop / this.actionObj.cellHeight) * this.actionObj.cellHeight;
             this.actionObj.clone.style.top = formatUnit(offsetTop);
         }
-        let rowIndex = (this.parent.activeViewOptions.timeScale.enable) ?
-            (this.actionObj.target.offsetTop /
-                this.actionObj.cellHeight) : 0;
+        let rowIndex = (this.parent.activeViewOptions.timeScale.enable) ? (offsetTop / this.actionObj.cellHeight) : 0;
         let heightPerMinute = this.actionObj.cellHeight / this.actionObj.slotInterval;
         let diffInMinutes = parseInt(this.actionObj.clone.style.top, 10) - offsetTop;
         let tr;
@@ -20191,8 +20201,9 @@ class YearEvent extends TimelineEvent {
         let wrap = this.createEventElement(eventObj);
         let width;
         let index;
-        if (eventObj[this.fields.isAllDay] && eventObj.isSpanned.count === 1) {
-            eventObj[this.fields.endTime] = new Date(eventObj[this.fields.startTime].getTime());
+        if (eventObj.isSpanned.count === 1) {
+            let endTime = addDays(eventObj[this.fields.endTime], -1);
+            eventObj[this.fields.endTime] = (endTime > eventObj[this.fields.startTime]) ? endTime : eventObj[this.fields.endTime];
         }
         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
             index = row + 1;
@@ -20206,14 +20217,7 @@ class YearEvent extends TimelineEvent {
             width = this.cellWidth;
         }
         let rowTd = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${index}) td`);
-        let top;
-        if (this.parent.activeViewOptions.group.resources.length > 0) {
-            let overlapIndex = this.getIndex(eventObj[this.fields.startTime]);
-            top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * overlapIndex) + EVENT_GAP$2;
-        }
-        else {
-            top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * eventObj.Index) + EVENT_GAP$2;
-        }
+        let top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * eventObj.Index) + EVENT_GAP$2;
         setStyleAttribute(wrap, {
             'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px'
         });
@@ -20232,7 +20236,7 @@ class YearEvent extends TimelineEvent {
         });
     }
     renderMoreIndicatior(wrapper, count, startDate, row, left, right, index) {
-        let endDate = addDays(new Date(startDate.getTime()), 1);
+        let endDate = addDays(lastDateOfMonth(new Date(startDate.getTime())), 1);
         let moreIndicator = this.getMoreIndicatorElement(count, startDate, endDate);
         let rowTr = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${row + 1})`);
         let top = rowTr.offsetTop + (this.cellHeight - this.moreIndicatorHeight);
@@ -20335,11 +20339,13 @@ class YearEvent extends TimelineEvent {
     }
     getOverlapEvents(date, appointments) {
         let appointmentsList = [];
+        let monthStart = this.parent.calendarUtil.getMonthStartDate(new Date(date.getTime()));
+        let monthEnd = addDays(this.parent.calendarUtil.getMonthEndDate(new Date(date.getTime())), -1);
         for (let app of appointments) {
             let appStart = new Date(app[this.fields.startTime].getTime());
             let appEnd = new Date(app[this.fields.endTime].getTime());
-            if ((resetTime(appStart).getTime() <= resetTime(new Date(date.getTime())).getTime()) &&
-                (resetTime(appEnd).getTime() >= resetTime(new Date(date.getTime())).getTime())) {
+            if ((resetTime(appStart).getTime() >= resetTime(new Date(monthStart.getTime())).getTime()) &&
+                (resetTime(appEnd).getTime() <= resetTime(new Date(monthEnd.getTime())).getTime())) {
                 appointmentsList.push(app);
             }
         }
@@ -22326,12 +22332,14 @@ class TimelineYear extends Year {
                 if (isDateAvail) {
                     td.setAttribute('data-date', date.getTime().toString());
                     this.wireEvents(td, 'cell');
+                }
+                this.renderCellTemplate({ date: date, type: 'workCells' }, td);
+                this.parent.trigger(renderCell, { elementType: 'workCells', element: td, date: date });
+                if (isDateAvail) {
                     if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                         date = addDays(new Date(date.getTime()), 1);
                     }
                 }
-                this.renderCellTemplate({ date: date, type: 'workCells' }, td);
-                this.parent.trigger(renderCell, { elementType: 'workCells', element: td, date: date });
             }
         }
     }
