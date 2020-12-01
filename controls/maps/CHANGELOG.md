@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 18.3.51 (2020-11-24)
+
+### Maps
+
+#### Bug Fixes
+
+- `301355` - The balloon marker will now select properly with `initialMarkerSelection`.
+
 ## 18.3.44 (2020-10-27)
 
 ### Maps

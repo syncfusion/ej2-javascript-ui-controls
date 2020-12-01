@@ -1056,7 +1056,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             customizeStyle('MarkerselectionMap', 'MarkerselectionMapStyle', markerSelectionProperties);
         }
         if (this.selectedMarkerElementId.length === 0 || selectionSettings.enableMultiSelect) {
-            targetElement.setAttribute('class', 'MarkerselectionMapStyle');
+            if (targetElement.tagName === 'g') {
+                targetElement.children[0].setAttribute('class', 'MarkerselectionMapStyle');
+            } else {
+                targetElement.setAttribute('class', 'MarkerselectionMapStyle');
+            }
         }
     }
     /**

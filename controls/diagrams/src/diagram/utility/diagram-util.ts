@@ -2230,7 +2230,7 @@ export function getSymbolSize(sourceElement: SymbolPaletteModel, clonedObject: N
     } else if ((sourceElement as SymbolPaletteModel).symbolPreview[size] !== undefined) {
         previewSize = (sourceElement as SymbolPaletteModel).symbolPreview[size];
     } else {
-        previewSize = (clonedObject as Node).width || wrapper.actualSize.width;
+        previewSize = (clonedObject as Node)[size] || wrapper.actualSize[size];
     }
     return previewSize;
 }

@@ -720,7 +720,7 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
                         indexCollection = indexCollection.filter((item, index, value) => value.indexOf(item) === index);
                         let container = maps.element.getBoundingClientRect();
                         tempX = tempX - container['left'];
-                        tempY = maps.isBlazor ? tempY - container['top'] : (tempY - ((maps.availableSize.height < container['height']) ?
+                        tempY = maps.isBlazor ? tempY - container['top'] : (tempY - ((maps.availableSize.height <= container['height']) ?
                             container['top'] : (container['bottom'] - container['top'])));
                         let translate = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
                         let transPoint = (maps.isTileMap) ? { x: 0, y: 0 } : (maps.translatePoint.x !== 0) ?
@@ -6160,7 +6160,12 @@ let Maps = class Maps extends Component {
             customizeStyle('MarkerselectionMap', 'MarkerselectionMapStyle', markerSelectionProperties);
         }
         if (this.selectedMarkerElementId.length === 0 || selectionSettings.enableMultiSelect) {
-            targetElement.setAttribute('class', 'MarkerselectionMapStyle');
+            if (targetElement.tagName === 'g') {
+                targetElement.children[0].setAttribute('class', 'MarkerselectionMapStyle');
+            }
+            else {
+                targetElement.setAttribute('class', 'MarkerselectionMapStyle');
+            }
         }
     }
     /**

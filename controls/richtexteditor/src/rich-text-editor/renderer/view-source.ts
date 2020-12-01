@@ -213,8 +213,7 @@ export class ViewSource {
     }
 
     private getTextAreaValue(): string {
-        return (this.contentModule.getEditPanel().innerHTML === '<p><br></p>' ||
-            this.contentModule.getEditPanel().innerHTML.length === 12) ||
+        return (this.contentModule.getEditPanel().innerHTML === '<p><br></p>') ||
             (this.contentModule.getEditPanel().childNodes.length === 1 &&
             (this.contentModule.getEditPanel().childNodes[0] as HTMLElement).tagName === 'P' &&
             this.contentModule.getEditPanel().innerHTML.length === 7) ? '' : this.parent.value;

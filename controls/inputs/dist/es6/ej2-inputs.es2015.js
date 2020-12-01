@@ -821,8 +821,6 @@ let NumericTextBox = class NumericTextBox extends Component {
         super(options, element);
         this.isVue = false;
         this.preventChange = false;
-        this.isAngular = false;
-        this.isDynamicChange = false;
         this.numericOptions = options;
     }
     preRender() {
@@ -1420,8 +1418,6 @@ let NumericTextBox = class NumericTextBox extends Component {
     }
     ;
     inputHandler(event) {
-        // tslint:disable-next-line
-        let numerictextboxObj = this;
         if (!this.enabled || this.readonly) {
             return;
         }
@@ -1429,13 +1425,6 @@ let NumericTextBox = class NumericTextBox extends Component {
         let fireFox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
         if ((fireFox || iOS) && Browser.isDevice) {
             this.preventHandler();
-        }
-        /* istanbul ignore next */
-        if (this.isAngular
-            && this.element.value !== getValue('decimal', getNumericObject(this.locale))
-            && this.element.value !== getValue('minusSign', getNumericObject(this.locale))) {
-            numerictextboxObj.localChange({ value: this.instance.getNumberParser({ format: 'n' })(this.element.value) });
-            this.preventChange = true;
         }
         if (this.isVue) {
             let current = this.instance.getNumberParser({ format: 'n' })(this.element.value);
@@ -1507,8 +1496,7 @@ let NumericTextBox = class NumericTextBox extends Component {
             }
         }
         this.changeValue(value === null || isNaN(value) ? null : this.strictMode ? this.trimValue(value) : value);
-        /* istanbul ignore next */
-        if (!this.isDynamicChange) {
+        if ((!this.isVue) || (this.isVue && !this.preventChange)) {
             this.raiseChangeEvent(event);
         }
     }
@@ -1944,11 +1932,9 @@ let NumericTextBox = class NumericTextBox extends Component {
                     this.floatLabelTypeUpdate();
                     break;
                 case 'value':
-                    this.isDynamicChange = (this.isAngular || this.isVue) && this.preventChange;
                     this.updateValue(newProp.value);
-                    if (this.isDynamicChange) {
+                    if (this.isVue && this.preventChange) {
                         this.preventChange = false;
-                        this.isDynamicChange = false;
                     }
                     break;
                 case 'min':
@@ -2723,13 +2709,7 @@ function triggerMaskChangeEvent(event, oldValue) {
         this.value = this.changeEventArgs.value;
         this.isProtectedOnChange = prevOnChange;
         merge(eventArgs, this.changeEventArgs);
-        /* istanbul ignore next */
-        if (this.isAngular && this.preventChange) {
-            this.preventChange = false;
-        }
-        else {
-            this.trigger('change', eventArgs);
-        }
+        this.trigger('change', eventArgs);
     }
     this.preEleVal = this.element.value;
     this.prevValue = strippedValue.call(this, this.element);
@@ -3180,8 +3160,6 @@ let MaskedTextBox = class MaskedTextBox extends Component {
     constructor(options, element) {
         super(options, element);
         this.initInputValue = '';
-        this.isAngular = false;
-        this.preventChange = false;
         this.maskOptions = options;
     }
     /**

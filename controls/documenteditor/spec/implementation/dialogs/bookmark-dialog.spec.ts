@@ -178,13 +178,13 @@ console.log('Backspace in bookmark validation');
         editor.editorModule.onBackSpace();
         editor.editorModule.onBackSpace();
         editor.editorModule.onBackSpace();
-        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] instanceof BookmarkElementBox).toBe(true);
-        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] instanceof BookmarkElementBox).toBe(true);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] instanceof BookmarkElementBox).toBe(false);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] instanceof BookmarkElementBox).toBe(false);
     });
     it('Backspace in bookmark validation', () => {
 console.log('Backspace in bookmark validation');
         editor.editorModule.onBackSpace();
-        expect(editor.selection.start.paragraph.isEmpty()).toBe(true);
+        expect(editor.selection.start.paragraph.isEmpty()).toBe(false);
     });
     // it('undo validation', () => {
     //     editor.editorHistory.undo();

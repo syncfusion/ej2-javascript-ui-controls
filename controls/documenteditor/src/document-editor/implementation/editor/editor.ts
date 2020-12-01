@@ -11484,6 +11484,22 @@ export class Editor {
     // tslint:disable-next-line:max-line-length
     private removeCharacter(inline: ElementBox, offset: number, count: number, lineWidget: LineWidget, lineIndex: number, i: number, isRearrange?: boolean): boolean {
         let isBreak: boolean = false;
+        if (inline instanceof BookmarkElementBox) {
+            if (!isNullOrUndefined(inline.line.previousLine)) {
+                inline.line.previousLine.children.splice(inline.line.previousLine.children.length, 0 , inline);
+                inline.line = inline.line.previousLine;
+            } else if (!isNullOrUndefined(inline.line.paragraph.previousRenderedWidget)) {
+                // tslint:disable-next-line:max-line-length
+                (inline.line.paragraph.previousRenderedWidget.lastChild as LineWidget).children.splice((inline.line.paragraph.previousRenderedWidget.lastChild as LineWidget).children.length, 0 , inline);
+                inline.line = (inline.line.paragraph.previousRenderedWidget.lastChild as LineWidget);
+            } else if (!isNullOrUndefined(inline.line.paragraph.nextRenderedWidget)) {
+                // tslint:disable-next-line:max-line-length
+                (inline.line.paragraph.nextRenderedWidget.firstChild as LineWidget).children.splice((inline.line.paragraph.nextRenderedWidget.firstChild as LineWidget).children.length, 0 , inline);
+                inline.line = (inline.line.paragraph.nextRenderedWidget.firstChild as LineWidget);
+            }
+            lineWidget.children.splice(i, 1);
+            return true;
+        }
         if (offset < count + inline.length) {
             let indexInInline: number = offset - count;
             inline.ischangeDetected = true;

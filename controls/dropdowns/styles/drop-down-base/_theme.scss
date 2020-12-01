@@ -98,14 +98,14 @@
     }
   }
 
-  .e-multi-column.e-ddl.e-popup.e-popup-open table {
+  .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open table {
     border-collapse: collapse;
     table-layout: fixed;
     width: 100%;
   }
 
-  .e-multi-column.e-ddl.e-popup.e-popup-open th,
-  .e-multi-column.e-ddl.e-popup.e-popup-open td {
+  .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open th,
+  .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open td {
     display: table-cell;
     overflow: hidden;
     padding-right: 16px;
@@ -113,12 +113,12 @@
     text-overflow: ellipsis;
   }
 
-  .e-multi-column.e-ddl.e-popup.e-popup-open th {
+  .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open th {
     line-height: 36px;
     text-align: left;
   }
 
-  .e-multi-column.e-ddl.e-popup.e-popup-open .e-ddl-header {
+  .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open .e-ddl-header {
     background-color: $ddl-list-bg-color;
     border-color: $ddl-multi-column-border-color;
     border-style: solid;
@@ -130,28 +130,28 @@
     text-indent: 10px;
   }
 
-  .e-multi-column.e-ddl.e-popup.e-popup-open .e-dropdownbase .e-list-item {
+  .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open .e-dropdownbase .e-list-item {
     padding-right: 0;
   }
 
-  .e-multi-column.e-ddl.e-popup.e-popup-open.e-scroller .e-ddl-header {
+  .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open#{&}.e-scroller .e-ddl-header {
     padding-right: 16px;
   }
 
-  .e-multi-column.e-ddl.e-popup.e-popup-open .e-ddl-header,
-  .e-multi-column.e-ddl.e-popup.e-popup-open.e-ddl-device .e-ddl-header {
+  .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open .e-ddl-header,
+  .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open#{&}.e-ddl-device .e-ddl-header {
     padding-right: 0;
   }
 
-  .e-multi-column.e-ddl.e-popup.e-popup-open .e-text-center {
+  .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open .e-text-center {
     text-align: center;
   }
 
-  .e-multi-column.e-ddl.e-popup.e-popup-open .e-text-right {
+  .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open .e-text-right {
     text-align: right;
   }
 
-  .e-multi-column.e-ddl.e-popup.e-popup-open .e-text-left {
+  .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open .e-text-left {
     text-align: left;
   }
 

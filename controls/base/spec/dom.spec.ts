@@ -32,6 +32,7 @@ describe('Dom', () => {
     let elem1: Element = Dom.createElement('div', { id: 'ele-level-1', className: 'ele' });
     let elem2: Element = Dom.createElement('div', { id: 'ele-level-2', className: 'ele' });
     let elem3: Element = Dom.createElement('div', { id: 'ele-level-3', className: 'ele' });
+    let elem4: Element = Dom.createElement('div', { id: '1-element', className: 'ele' });
 
     elem2.appendChild(elem3);
     elem1.appendChild(elem2);
@@ -63,6 +64,18 @@ describe('Dom', () => {
             Dom.addClass(eleAr, ['class1', 'class2', 'class3']);
             expect(eleAr[0].className).toBe('eleClass newclass class1 class2 class3');
             expect(eleAr[5].className).toBe('eleClass newclass class1 class2 class3');
+        });
+        
+        it('For element as object', () => {
+            let vid: HTMLElement = Dom.createElement('div', { id: 'ele-level-0', className: 'check' });
+            let obj: Object = {}
+            for(var p in vid) {
+                obj[p] = vid[p];
+            }
+            (eleAr as any).push(obj);
+            Dom.addClass(eleAr, ['class1']);
+            expect((eleAr[6].attributes as any).className).toBe('class1');
+            eleAr.pop();
         });
     });
 
@@ -103,6 +116,10 @@ describe('Dom', () => {
 
         it('get single element context based', () => {
             expect(Dom.select('#ele-level-3', elem1)).toBe(elem3);
+        });
+        
+        it('get id starts with number element', () => {
+            expect(Dom.select('#1-element', elem4));
         });
 
         it('get multiple element', () => {

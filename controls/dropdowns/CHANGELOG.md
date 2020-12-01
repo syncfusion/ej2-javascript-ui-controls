@@ -2,6 +2,38 @@
 
 ## [Unreleased]
 
+## 18.3.52 (2020-12-01)
+
+### DropDownList
+
+#### Bug Fixes
+
+- `#304117`,`#304560` - EJ1 and EJ2 controls theme compatibility issue resolved.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#304117`,`#304560` - EJ1 and EJ2 controls theme compatibility issue resolved.
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#304117`,`#304560` - EJ1 and EJ2 controls theme compatibility issue resolved.
+
+### AutoComplete
+
+#### Bug Fixes
+
+- `#304117`,`#304560` - EJ1 and EJ2 controls theme compatibility issue resolved.
+
+### ListBox
+
+#### Bug Fixes
+
+- Issue with 'removeItem' method has been fixed.
+
 ## 18.3.44 (2020-10-27)
 
 ### MultiSelect

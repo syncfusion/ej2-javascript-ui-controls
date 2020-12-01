@@ -13,7 +13,7 @@
     }
   }
 
-  .e-datepicker {
+  #{&}.e-datepicker {
 
     #{if(&, '&', '*')} .e-calendar {
 

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.52 (2020-12-01)
+
+### Gantt
+
+#### Bug Fixes
+
+- `F159625` - Console error on indent action after adding record has been fixed.
+
 ## 18.3.51 (2020-11-24)
 
 ### Gantt

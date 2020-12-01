@@ -13,7 +13,7 @@ import { getMaxHgt, setMaxHgt, setRowEleHeight, deleteImage, getRowIdxFromClient
 import { Dialog } from '../services/index';
 import { Deferred } from '@syncfusion/ej2-data';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { refreshRibbonIcons } from '../../workbook/common/index';
+import { refreshRibbonIcons, getColumn, isLocked as isCellLocked } from '../../workbook/index';
 
 /**
  * Represents clipboard support for Spreadsheet.
@@ -94,8 +94,7 @@ export class Clipboard {
         let actCell: string = sheet.activeCell;
         let actCellIndex: number[] = getCellIndexes(actCell);
         let cellObj: CellModel = getCell(actCellIndex[0], actCellIndex[1], sheet);
-        let isLocked: boolean = cellObj ? !isNullOrUndefined(cellObj.isLocked) ? cellObj.isLocked
-            : sheet.isProtected : sheet.isProtected;
+        let isLocked: boolean = sheet.isProtected && isCellLocked(cellObj, getColumn(sheet, actCellIndex[1]));
         if (e.target === 'Content' || e.target === 'RowHeader' || e.target === 'ColumnHeader') {
             this.parent.enableContextMenuItems(
                 [l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], (this.copiedInfo ||
@@ -143,7 +142,7 @@ export class Clipboard {
 
     private paste(args?: {
         range: number[], sIdx: number, type: PasteSpecialType, isClick?: boolean,
-        isAction?: boolean
+        isAction?: boolean, isInternal?: boolean
     } & ClipboardEvent): void {
         if (this.parent.isEdit && this.copiedInfo) {
             if (args as ClipboardEvent && (args as ClipboardEvent).type) {
@@ -158,12 +157,12 @@ export class Clipboard {
         let copiedIdx: number = this.getCopiedIdx();
         let isCut: boolean;
         let copyInfo: { range: number[], sId: number, isCut: boolean } = Object.assign({}, this.copiedInfo);
-        if (isExternal || this.copiedShapeInfo) {
+        if (isExternal || this.copiedShapeInfo || (args.isInternal && this.copiedInfo)) {
             let cSIdx: number = (args && args.sIdx > -1) ? args.sIdx : this.parent.activeSheetIndex;
             let curSheet: SheetModel = getSheet(this.parent, cSIdx);
             let selIdx: number[] = getSwapRange(args && args.range || getRangeIndexes(curSheet.selectedRange));
             let rows: RowModel[] | { internal: boolean } = isExternal && this.getExternalCells(args);
-            if ((rows as { internal: boolean }).internal) {
+            if (!args.isInternal && (rows as { internal: boolean }).internal) {
                 isExternal = false;
                 if (!this.copiedInfo) { return; }
             }

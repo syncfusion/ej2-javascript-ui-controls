@@ -1,4 +1,4 @@
-import { Ajax, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, append, closest, compile, createElement, detach, extend, formatUnit, getElement, getInstance, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Ajax, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, append, closest, compile, createElement, detach, extend, formatUnit, getElement, getInstance, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, Deferred, Query } from '@syncfusion/ej2-data';
 import { Dialog, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { ColumnChooser, CommandColumn, ContextMenu, Edit, ExcelExport, Freeze, Grid, Page, PdfExport, Reorder, Resize, Selection, Toolbar, VirtualScroll, getObject, headerRefreshed, setStyleAndAttributes } from '@syncfusion/ej2-grids';
@@ -6333,7 +6333,7 @@ var AggregateMenu = /** @__PURE__ @class */ (function () {
             enableRtl: this.parent.enableRtl,
             beforeOpen: this.beforeMenuOpen.bind(this, isStringField),
             onClose: function (args) {
-                _this.parentElement.querySelector('#' + _this.buttonElement.id).focus();
+                select('#' + _this.buttonElement.id, _this.parentElement).focus();
             },
             select: this.selectOptionInContextMenu.bind(this)
         };
@@ -6644,7 +6644,7 @@ var AggregateMenu = /** @__PURE__ @class */ (function () {
         this.updateDataSource(true);
     };
     AggregateMenu.prototype.removeDialog = function () {
-        this.parentElement.querySelector('#' + this.buttonElement.id).focus();
+        select('#' + this.buttonElement.id, this.parentElement).focus();
         if (this.valueDialog && !this.valueDialog.isDestroyed) {
             this.valueDialog.destroy();
         }
@@ -7010,49 +7010,49 @@ var Render = /** @__PURE__ @class */ (function () {
             var rowIndex = Number(elem.getAttribute('index'));
             var colIndex = Number(elem.getAttribute('aria-colindex'));
             var pivotValue1 = this_1.parent.pivotValues[rowIndex][colIndex];
-            var select = item.id;
-            switch (select) {
+            var selectedID = item.id;
+            switch (selectedID) {
                 case this_1.parent.element.id + '_expand':
                     if (elem.querySelectorAll('.' + EXPAND).length > 0) {
-                        if (args.element.querySelectorAll('#' + this_1.parent.element.id + '_expand')) {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_expand').classList.add(MENU_DISABLE);
+                        if (selectAll('#' + this_1.parent.element.id + '_expand', args.element)) {
+                            select('#' + this_1.parent.element.id + '_expand', args.element).classList.add(MENU_DISABLE);
                         }
-                        if (args.element.querySelector('#' + this_1.parent.element.id + '_expand').classList.contains(MENU_DISABLE)) {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_expand').classList.remove(MENU_DISABLE);
+                        if (select('#' + this_1.parent.element.id + '_expand', args.element).classList.contains(MENU_DISABLE)) {
+                            select('#' + this_1.parent.element.id + '_expand', args.element).classList.remove(MENU_DISABLE);
                         }
-                        if (args.element.querySelector('#' + this_1.parent.element.id + '_expand').classList.contains(MENU_HIDE)) {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_expand').classList.remove(MENU_HIDE);
-                            args.element.querySelector('#' + this_1.parent.element.id + '_collapse').classList.remove(MENU_HIDE);
+                        if (select('#' + this_1.parent.element.id + '_expand', args.element).classList.contains(MENU_HIDE)) {
+                            select('#' + this_1.parent.element.id + '_expand', args.element).classList.remove(MENU_HIDE);
+                            select('#' + this_1.parent.element.id + '_collapse', args.element).classList.remove(MENU_HIDE);
                         }
                     }
                     else {
                         if (bool) {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_expand').classList.add(MENU_HIDE);
+                            select('#' + this_1.parent.element.id + '_expand', args.element).classList.add(MENU_HIDE);
                         }
                         else {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_expand').classList.add(MENU_DISABLE);
+                            select('#' + this_1.parent.element.id + '_expand', args.element).classList.add(MENU_DISABLE);
                         }
                     }
                     break;
                 case this_1.parent.element.id + '_collapse':
                     if (elem.querySelectorAll('.' + COLLAPSE).length > 0) {
-                        if (args.element.querySelector('#' + this_1.parent.element.id + '_expand')) {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_expand').classList.add(MENU_DISABLE);
+                        if (select('#' + this_1.parent.element.id + '_expand', args.element)) {
+                            select('#' + this_1.parent.element.id + '_expand', args.element).classList.add(MENU_DISABLE);
                         }
-                        if (args.element.querySelector('#' + this_1.parent.element.id + '_collapse').classList.contains(MENU_DISABLE)) {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_collapse').classList.remove(MENU_DISABLE);
+                        if (select('#' + this_1.parent.element.id + '_collapse', args.element).classList.contains(MENU_DISABLE)) {
+                            select('#' + this_1.parent.element.id + '_collapse', args.element).classList.remove(MENU_DISABLE);
                         }
-                        if (args.element.querySelector('#' + this_1.parent.element.id + '_collapse').classList.contains(MENU_HIDE)) {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_collapse').classList.remove(MENU_HIDE);
-                            args.element.querySelector('#' + this_1.parent.element.id + '_expand').classList.remove(MENU_HIDE);
+                        if (select('#' + this_1.parent.element.id + '_collapse', args.element).classList.contains(MENU_HIDE)) {
+                            select('#' + this_1.parent.element.id + '_collapse', args.element).classList.remove(MENU_HIDE);
+                            select('#' + this_1.parent.element.id + '_expand', args.element).classList.remove(MENU_HIDE);
                         }
                     }
                     else {
                         if (bool) {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_collapse').classList.add(MENU_HIDE);
+                            select('#' + this_1.parent.element.id + '_collapse', args.element).classList.add(MENU_HIDE);
                         }
                         else {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_collapse').classList.add(MENU_DISABLE);
+                            select('#' + this_1.parent.element.id + '_collapse', args.element).classList.add(MENU_DISABLE);
                         }
                     }
                     break;
@@ -7060,18 +7060,18 @@ var Render = /** @__PURE__ @class */ (function () {
                     if (!isGroupElement && args.items.length === 2) {
                         args.cancel = true;
                     }
-                    if (args.element.querySelectorAll('#' + this_1.parent.element.id + '_custom_group')) {
-                        addClass([args.element.querySelector('#' + this_1.parent.element.id + '_custom_group')], MENU_HIDE);
+                    if (selectAll('#' + this_1.parent.element.id + '_custom_group', args.element)) {
+                        addClass([select('#' + this_1.parent.element.id + '_custom_group', args.element)], MENU_HIDE);
                     }
                     if (isGroupElement) {
-                        if (args.element.querySelectorAll('#' + this_1.parent.element.id + '_custom_group')) {
-                            removeClass([args.element.querySelector('#' + this_1.parent.element.id + '_custom_group')], MENU_HIDE);
+                        if (selectAll('#' + this_1.parent.element.id + '_custom_group', args.element)) {
+                            removeClass([select('#' + this_1.parent.element.id + '_custom_group', args.element)], MENU_HIDE);
                         }
                     }
                     break;
                 case this_1.parent.element.id + '_custom_ungroup':
-                    if (args.element.querySelectorAll('#' + this_1.parent.element.id + '_custom_ungroup')) {
-                        addClass([args.element.querySelector('#' + this_1.parent.element.id + '_custom_ungroup')], MENU_HIDE);
+                    if (selectAll('#' + this_1.parent.element.id + '_custom_ungroup', args.element)) {
+                        addClass([select('#' + this_1.parent.element.id + '_custom_ungroup', args.element)], MENU_HIDE);
                     }
                     if (isGroupElement) {
                         var isUngroupOption = false;
@@ -7097,101 +7097,101 @@ var Render = /** @__PURE__ @class */ (function () {
                             (this_1.parent.engineModule.fieldList[fieldName].isCustomField && fieldName.indexOf('_date_group') > -1)) {
                             isUngroupOption = true;
                         }
-                        if (args.element.querySelectorAll('#' + this_1.parent.element.id + '_custom_ungroup') && isUngroupOption) {
-                            removeClass([args.element.querySelector('#' + this_1.parent.element.id + '_custom_ungroup')], MENU_HIDE);
+                        if (selectAll('#' + this_1.parent.element.id + '_custom_ungroup', args.element) && isUngroupOption) {
+                            removeClass([select('#' + this_1.parent.element.id + '_custom_ungroup', args.element)], MENU_HIDE);
                         }
                     }
                     break;
                 case this_1.parent.element.id + '_drillthrough':
                     if (!this_1.parent.allowDrillThrough) {
-                        if (args.element.querySelector('#' + this_1.parent.element.id + '_drillthrough')) {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_drillthrough').classList.add(MENU_DISABLE);
+                        if (select('#' + this_1.parent.element.id + '_drillthrough', args.element)) {
+                            select('#' + this_1.parent.element.id + '_drillthrough', args.element).classList.add(MENU_DISABLE);
                         }
                     }
                     else if (!(elem.classList.contains('e-summary'))) {
                         if (elem.innerText === '') {
-                            if (args.element.querySelector('#' + this_1.parent.element.id + '_drillthrough')) {
-                                args.element.querySelector('#' + this_1.parent.element.id + '_drillthrough').classList.add(MENU_DISABLE);
+                            if (select('#' + this_1.parent.element.id + '_drillthrough', args.element)) {
+                                select('#' + this_1.parent.element.id + '_drillthrough', args.element).classList.add(MENU_DISABLE);
                             }
                         }
                     }
                     else {
-                        if (args.element.querySelector('#' + this_1.parent.element.id + '_drillthrough').classList.contains(MENU_DISABLE)) {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_drillthrough').classList.remove(MENU_DISABLE);
+                        if (select('#' + this_1.parent.element.id + '_drillthrough', args.element).classList.contains(MENU_DISABLE)) {
+                            select('#' + this_1.parent.element.id + '_drillthrough', args.element).classList.remove(MENU_DISABLE);
                         }
                     }
                     break;
                 case this_1.parent.element.id + '_sortasc':
                     if (!this_1.parent.enableValueSorting) {
-                        if (args.element.querySelector('#' + this_1.parent.element.id + '_sortasc')) {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_sortasc').classList.add(MENU_DISABLE);
+                        if (select('#' + this_1.parent.element.id + '_sortasc', args.element)) {
+                            select('#' + this_1.parent.element.id + '_sortasc', args.element).classList.add(MENU_DISABLE);
                         }
                     }
                     else if (elem.querySelectorAll('.e-icon-descending').length > 0) {
-                        if (args.element.querySelector('#' + this_1.parent.element.id + '_sortdesc')) {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_sortdesc').classList.add(MENU_DISABLE);
+                        if (select('#' + this_1.parent.element.id + '_sortdesc', args.element)) {
+                            select('#' + this_1.parent.element.id + '_sortdesc', args.element).classList.add(MENU_DISABLE);
                         }
                         else {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_sortdesc').classList.remove(MENU_DISABLE);
+                            select('#' + this_1.parent.element.id + '_sortdesc', args.element).classList.remove(MENU_DISABLE);
                         }
-                        if (args.element.querySelector('#' + this_1.parent.element.id + '_sortasc').classList.contains(MENU_DISABLE)) {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_sortasc').classList.remove(MENU_DISABLE);
+                        if (select('#' + this_1.parent.element.id + '_sortasc', args.element).classList.contains(MENU_DISABLE)) {
+                            select('#' + this_1.parent.element.id + '_sortasc', args.element).classList.remove(MENU_DISABLE);
                         }
                     }
-                    else if (args.element.querySelector('#' + this_1.parent.element.id + '_sortdesc').classList.contains(MENU_DISABLE)) {
-                        args.element.querySelector('#' + this_1.parent.element.id + '_sortdesc').classList.remove(MENU_DISABLE);
+                    else if (select('#' + this_1.parent.element.id + '_sortdesc', args.element).classList.contains(MENU_DISABLE)) {
+                        select('#' + this_1.parent.element.id + '_sortdesc', args.element).classList.remove(MENU_DISABLE);
                     }
                     break;
                 case this_1.parent.element.id + '_sortdesc':
                     if (!this_1.parent.enableValueSorting) {
-                        if (args.element.querySelector('#' + this_1.parent.element.id + '_sortdesc')) {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_sortdesc').classList.add(MENU_DISABLE);
+                        if (select('#' + this_1.parent.element.id + '_sortdesc', args.element)) {
+                            select('#' + this_1.parent.element.id + '_sortdesc', args.element).classList.add(MENU_DISABLE);
                         }
                     }
                     else if (elem.querySelectorAll('.e-icon-ascending').length > 0) {
-                        if (args.element.querySelector('#' + this_1.parent.element.id + '_sortasc')) {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_sortasc').classList.add(MENU_DISABLE);
+                        if (select('#' + this_1.parent.element.id + '_sortasc', args.element)) {
+                            select('#' + this_1.parent.element.id + '_sortasc', args.element).classList.add(MENU_DISABLE);
                         }
                         else {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_sortasc').classList.remove(MENU_DISABLE);
+                            select('#' + this_1.parent.element.id + '_sortasc', args.element).classList.remove(MENU_DISABLE);
                         }
-                        if (args.element.querySelector('#' + this_1.parent.element.id + '_sortdesc').classList.contains(MENU_DISABLE)) {
-                            args.element.querySelector('#' + this_1.parent.element.id + '_sortdesc').classList.remove(MENU_DISABLE);
+                        if (select('#' + this_1.parent.element.id + '_sortdesc', args.element).classList.contains(MENU_DISABLE)) {
+                            select('#' + this_1.parent.element.id + '_sortdesc', args.element).classList.remove(MENU_DISABLE);
                         }
                     }
-                    else if (args.element.querySelector('#' + this_1.parent.element.id + '_sortasc').classList.contains(MENU_DISABLE)) {
-                        args.element.querySelector('#' + this_1.parent.element.id + '_sortasc').classList.remove(MENU_DISABLE);
+                    else if (select('#' + this_1.parent.element.id + '_sortasc', args.element).classList.contains(MENU_DISABLE)) {
+                        select('#' + this_1.parent.element.id + '_sortasc', args.element).classList.remove(MENU_DISABLE);
                     }
                     break;
                 case this_1.parent.element.id + '_CalculatedField':
                     if (!this_1.parent.allowCalculatedField) {
-                        args.element.querySelector('#' + this_1.parent.element.id + '_CalculatedField').classList.add(MENU_DISABLE);
+                        select('#' + this_1.parent.element.id + '_CalculatedField', args.element).classList.add(MENU_DISABLE);
                     }
                     break;
                 case this_1.parent.element.id + '_pdf':
                     if (!this_1.parent.allowPdfExport) {
-                        args.element.querySelector('#' + this_1.parent.element.id + '_pdf').classList.add(MENU_DISABLE);
+                        select('#' + this_1.parent.element.id + '_pdf', args.element).classList.add(MENU_DISABLE);
                     }
                     break;
                 case this_1.parent.element.id + '_excel':
                     if (!this_1.parent.allowExcelExport) {
-                        args.element.querySelector('#' + this_1.parent.element.id + '_excel').classList.add(MENU_DISABLE);
+                        select('#' + this_1.parent.element.id + '_excel', args.element).classList.add(MENU_DISABLE);
                     }
                     break;
                 case this_1.parent.element.id + '_csv':
                     if (!this_1.parent.allowExcelExport) {
-                        args.element.querySelector('#' + this_1.parent.element.id + '_csv').classList.add(MENU_DISABLE);
+                        select('#' + this_1.parent.element.id + '_csv', args.element).classList.add(MENU_DISABLE);
                     }
                     break;
                 case this_1.parent.element.id + '_exporting':
                     if ((!this_1.parent.allowExcelExport) && (!this_1.parent.allowPdfExport)) {
-                        args.element.querySelector('#' + this_1.parent.element.id + '_exporting').classList.add(MENU_DISABLE);
+                        select('#' + this_1.parent.element.id + '_exporting', args.element).classList.add(MENU_DISABLE);
                     }
                     break;
                 case this_1.parent.element.id + '_aggregate':
-                    if ((args.element.querySelector('#' + this_1.parent.element.id + '_aggregate')) &&
-                        (!args.element.querySelector('#' + this_1.parent.element.id + '_aggregate').classList.contains(MENU_DISABLE))) {
-                        args.element.querySelector('#' + this_1.parent.element.id + '_aggregate').classList.add(MENU_DISABLE);
+                    if ((select('#' + this_1.parent.element.id + '_aggregate', args.element)) &&
+                        (!select('#' + this_1.parent.element.id + '_aggregate', args.element).classList.contains(MENU_DISABLE))) {
+                        select('#' + this_1.parent.element.id + '_aggregate', args.element).classList.add(MENU_DISABLE);
                     }
                     if ((elem.classList.contains('e-valuesheader') || elem.classList.contains('e-valuescontent') ||
                         (elem.classList.contains('e-stot') && elem.classList.contains('e-rowsheader'))) && this_1.parent.dataType !== 'olap') {
@@ -7231,7 +7231,7 @@ var Render = /** @__PURE__ @class */ (function () {
                                 }
                                 if (menuItem && menuItem.length >= 1) {
                                     item.items = menuItem;
-                                    args.element.querySelector('#' + _this.parent.element.id + '_aggregate').classList.remove(MENU_DISABLE);
+                                    select('#' + _this.parent.element.id + '_aggregate', args.element).classList.remove(MENU_DISABLE);
                                 }
                             }
                         });
@@ -12937,8 +12937,8 @@ var PivotContextMenu = /** @__PURE__ @class */ (function () {
         }
         if (this.menuObj && !this.menuObj.isDestroyed) {
             this.menuObj.destroy();
-            if (document.querySelector('#' + this.parent.element.id + '_PivotContextMenu')) {
-                remove(document.querySelector('#' + this.parent.element.id + '_PivotContextMenu'));
+            if (select('#' + this.parent.element.id + '_PivotContextMenu', document)) {
+                remove(select('#' + this.parent.element.id + '_PivotContextMenu', document));
             }
         }
         else {
@@ -14071,7 +14071,7 @@ var PivotChart = /** @__PURE__ @class */ (function () {
             : parent.dataSourceSettings.values.length > 0;
         if (isDataAvail) {
             if (!this.parent.chart && (this.parent.element.querySelector('.e-chart') || this.parent.element.querySelector('.e-accumulationchart'))) {
-                remove(this.parent.element.querySelector('#' + this.parent.element.id + '_chart'));
+                remove(select('#' + this.parent.element.id + '_chart', this.parent.element));
             }
             if (this.chartSettings.enableMultiAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0) {
                 this.measureList = this.dataSourceSettings.values.map(function (item) { return item.name; });
@@ -14107,7 +14107,7 @@ var PivotChart = /** @__PURE__ @class */ (function () {
             return;
         }
         else {
-            if (!this.parent.element.querySelector('#' + this.parent.element.id + '_chart')) {
+            if (!select('#' + this.parent.element.id + '_chart', this.parent.element)) {
                 if (this.parent.displayOption.view === 'Both') {
                     this.parent.displayOption.primary === 'Chart' ?
                         (this.parent.element.insertBefore((createElement('div', {
@@ -14140,7 +14140,7 @@ var PivotChart = /** @__PURE__ @class */ (function () {
                         this.parent.grid.element.style.display = 'none';
                     }
                     if (this.parent.currentView !== 'Chart') {
-                        this.parent.element.querySelector('#' + this.parent.element.id + '_chart').style.display = 'none';
+                        select('#' + this.parent.element.id + '_chart', this.parent.element).style.display = 'none';
                     }
                 }
             }
@@ -14483,9 +14483,9 @@ var PivotChart = /** @__PURE__ @class */ (function () {
             this.accumulationType.indexOf(type) < 0) || (this.parent.chart.getModuleName() === 'chart' &&
             this.accumulationType.indexOf(type) > -1))) {
             this.parent.chart.destroy();
-            if (this.parent.element.querySelector('#' + this.parent.element.id + '_chart')) {
-                this.parent.element.querySelector('#' + this.parent.element.id + '_chart').innerHTML = '';
-                this.parent.element.querySelector('#' + this.parent.element.id + '_chart').appendChild(createElement('div', {
+            if (select('#' + this.parent.element.id + '_chart', this.parent.element)) {
+                select('#' + this.parent.element.id + '_chart', this.parent.element).innerHTML = '';
+                select('#' + this.parent.element.id + '_chart', this.parent.element).appendChild(createElement('div', {
                     className: PIVOTCHART_INNER, id: this.parent.element.id + '_chartInner',
                 }));
             }
@@ -14497,8 +14497,8 @@ var PivotChart = /** @__PURE__ @class */ (function () {
                     this.parent.chart.destroy();
                 }
                 this.parent.chart = undefined;
-                this.parent.element.querySelector('#' + this.parent.element.id + '_chart').innerHTML = '';
-                this.parent.element.querySelector('#' + this.parent.element.id + '_chart').appendChild(createElement('div', {
+                select('#' + this.parent.element.id + '_chart', this.parent.element).innerHTML = '';
+                select('#' + this.parent.element.id + '_chart', this.parent.element).appendChild(createElement('div', {
                     className: PIVOTCHART_INNER, id: this.parent.element.id + '_chartInner',
                 }));
                 this.parent.toolbarModule.isMultiAxisChange = false;
@@ -15083,7 +15083,7 @@ var PivotChart = /** @__PURE__ @class */ (function () {
         if (this.chartSettings.showMultiLevelLabels) {
             var multilabelAxisName = PivotUtil.inArray(this.chartSettings.chartSeries.type, ['Bar', 'StackingBar', 'StackingBar100']) > -1 ?
                 '_chartYAxisMultiLevelLabel0' : '_chartXAxisMultiLevelLabel0';
-            if (!isNullOrUndefined(this.parent.element.querySelector('#' + this.parent.element.id + multilabelAxisName))) {
+            if (!isNullOrUndefined(select('#' + this.parent.element.id + multilabelAxisName, this.parent.element))) {
                 this.parent.element.querySelector('#' + this.parent.element.id + multilabelAxisName).setAttribute('cursor', 'pointer');
             }
         }
@@ -15181,8 +15181,8 @@ var PivotChart = /** @__PURE__ @class */ (function () {
         };
         this.accumulationMenu = new ContextMenu$1(menuOptions);
         var contextMenu;
-        if (this.parent.element.querySelector('#' + this.parent.element.id + '_accumulationChart')) {
-            contextMenu = this.parent.element.querySelector('#' + this.parent.element.id + '_accumulationChart');
+        if (select('#' + this.parent.element.id + '_accumulationChart', this.parent.element)) {
+            contextMenu = select('#' + this.parent.element.id + '_accumulationChart', this.parent.element);
             contextMenu.innerHTML = '';
         }
         else {
@@ -23230,8 +23230,8 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (this.toolbarModule) {
-            if (this.showFieldList && this.element.querySelector('#' + this.element.id + '_PivotFieldList')) {
-                this.element.querySelector('#' + this.element.id + '_PivotFieldList').style.display = 'none';
+            if (this.showFieldList && select('#' + this.element.id + '_PivotFieldList', this.element)) {
+                select('#' + this.element.id + '_PivotFieldList', this.element).style.display = 'none';
             }
             if (this.toolbar && this.toolbar.indexOf('FieldList') !== -1 &&
                 this.showToolbar && this.element.querySelector('.e-toggle-field-list')) {
@@ -25539,14 +25539,14 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.chart) {
             this.chart.destroy();
-            if (this.chart.isDestroyed && this.element.querySelector('#' + this.element.id + '_chart')) {
-                remove(this.element.querySelector('#' + this.element.id + '_chart'));
+            if (this.chart.isDestroyed && select('#' + this.element.id + '_chart', this.element)) {
+                remove(select('#' + this.element.id + '_chart', this.element));
             }
         }
         if (this.grid) {
             this.grid.destroy();
-            if (this.grid.isDestroyed && this.element.querySelector('#' + this.element.id + '_grid')) {
-                remove(this.element.querySelector('#' + this.element.id + '_grid'));
+            if (this.grid.isDestroyed && select('#' + this.element.id + '_grid', this.element)) {
+                remove(select('#' + this.element.id + '_grid', this.element));
             }
         }
         this.unwireEvents();
@@ -25558,8 +25558,8 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             if (this.element.querySelector('.e-spinner-pane')) {
                 remove(this.element.querySelector('.e-spinner-pane'));
             }
-            if (this.showFieldList && document.querySelector('#' + this.element.id + '_PivotFieldList')) {
-                remove(document.querySelector('#' + this.element.id + '_PivotFieldList'));
+            if (this.showFieldList && select('#' + this.element.id + '_PivotFieldList', document)) {
+                remove(select('#' + this.element.id + '_PivotFieldList', document));
             }
         }
         removeClass([this.element], ROOT);
@@ -26157,7 +26157,7 @@ var DialogRenderer = /** @__PURE__ @class */ (function () {
             this.fieldListDialog.isStringTemplate = true;
             this.fieldListDialog.appendTo(fieldListWrappper);
             // this.fieldListDialog.element.querySelector('.e-dlg-header').innerHTML = headerTemplate;
-            setStyleAttribute(fieldListWrappper.querySelector('#' + fieldListWrappper.id + '_dialog-content'), {
+            setStyleAttribute(select('#' + fieldListWrappper.id + '_dialog-content', fieldListWrappper), {
                 'padding': '0'
             });
             var footer = fieldListWrappper.querySelector('.' + FOOTER_CONTENT_CLASS);
@@ -26193,7 +26193,7 @@ var DialogRenderer = /** @__PURE__ @class */ (function () {
             // this.fieldListDialog.element.querySelector('.e-dlg-header').innerHTML = headerTemplate;
             // this.fieldListDialog.element.querySelector('.e-footer-content').innerHTML = template;
             this.renderDeferUpdateButtons();
-            setStyleAttribute(fieldListWrappper.querySelector('#' + fieldListWrappper.id + '_title'), { 'width': '100%' });
+            setStyleAttribute(select('#' + fieldListWrappper.id + '_title', fieldListWrappper), { 'width': '100%' });
             fieldListWrappper.querySelector('.' + TITLE_HEADER_CLASS).appendChild(this.createCalculatedButton());
         }
     };
@@ -26412,7 +26412,7 @@ var DialogRenderer = /** @__PURE__ @class */ (function () {
     DialogRenderer.prototype.removeFieldListIcon = function () {
         if (this.parent.isAdaptive && this.parent.allowCalculatedField && this.parent.calculatedFieldModule) {
             if (this.adaptiveElement && this.adaptiveElement.selectedItem === 4) {
-                if (this.adaptiveElement.element.querySelector('#' + this.parent.element.id + 'droppable')) {
+                if (select('#' + this.parent.element.id + 'droppable', this.adaptiveElement.element)) {
                     /* tslint:disable */
                     this.parent.calculatedFieldModule
                         .updateAdaptiveCalculatedField(false);
@@ -28497,7 +28497,7 @@ var PivotButton = /** @__PURE__ @class */ (function () {
         if ((isNullOrUndefined(operand1) || operand1 === '') ||
             (['Between', 'NotBetween'].indexOf(operator) > -1 && (isNullOrUndefined(operand2) || operand2 === ''))) {
             var inputElementString = (type.toLowerCase() + ((isNullOrUndefined(operand1) || operand1 === '') ? '_input_option_1' : '_input_option_2'));
-            var focusElement = dialogElement.querySelector('#' + this.parent.element.id + '_' + inputElementString);
+            var focusElement = select('#' + this.parent.element.id + '_' + inputElementString, dialogElement);
             addClass([focusElement], EMPTY_FIELD);
             focusElement.focus();
             return;
@@ -30392,7 +30392,7 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
                 case 'enter':
                     var field = node.getAttribute('data-field');
                     var type = node.getAttribute('data-type');
-                    var dropField = this.dialog.element.querySelector('#' + this.parentID + 'droppable');
+                    var dropField = select('#' + this.parentID + 'droppable', this.dialog.element);
                     if (this.parent.dataType === 'pivot') {
                         if (dropField.value === '') {
                             if (type === CALC) {
@@ -30553,19 +30553,19 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
             this.inputObj.dataBind();
             var formatString = node.getAttribute('data-formatString');
             var dialogElement = this.dialog.element;
-            var customFormat = getInstance(dialogElement.querySelector('#' + this.parentID + 'Custom_Format_Element'), MaskedTextBox);
+            var customFormat = getInstance(select('#' + this.parentID + 'Custom_Format_Element', dialogElement), MaskedTextBox);
             if (this.parent.dataType === 'olap') {
                 var memberType = node.getAttribute('data-membertype');
                 var parentHierarchy = node.getAttribute('data-hierarchy');
                 var expression = node.getAttribute('data-formula');
                 var customString = node.getAttribute('data-customString');
-                var fieldTitle = dialogElement.querySelector('#' + this.parentID + '_' + 'FieldNameTitle');
-                var memberTypeDrop = getInstance(dialogElement.querySelector('#' + this.parentID + 'Member_Type_Div'), DropDownList);
-                var hierarchyDrop = getInstance(dialogElement.querySelector('#' + this.parentID + 'Hierarchy_List_Div'), DropDownList);
-                var formatDrop = getInstance(dialogElement.querySelector('#' + this.parentID + 'Format_Div'), DropDownList);
+                var fieldTitle = select('#' + this.parentID + '_' + 'FieldNameTitle', dialogElement);
+                var memberTypeDrop = getInstance(select('#' + this.parentID + 'Member_Type_Div', dialogElement), DropDownList);
+                var hierarchyDrop = getInstance(select('#' + this.parentID + 'Hierarchy_List_Div', dialogElement), DropDownList);
+                var formatDrop = getInstance(select('#' + this.parentID + 'Format_Div', dialogElement), DropDownList);
                 /* tslint:enable:max-line-length */
                 fieldTitle.innerHTML = this.parent.localeObj.getConstant('caption');
-                document.querySelector('#' + this.parentID + 'droppable').value = expression;
+                select('#' + this.parentID + 'droppable', document).value = expression;
                 memberTypeDrop.readonly = true;
                 memberTypeDrop.value = memberType;
                 memberTypeDrop.dataBind();
@@ -30585,7 +30585,7 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
                 addClass([node.querySelector('.e-list-icon')], CALC_EDITED);
                 removeClass([node.querySelector('.e-list-icon')], CALC_EDIT);
                 node.querySelector('.' + CALC_EDITED).setAttribute('title', this.parent.localeObj.getConstant('clearCalculatedField'));
-                document.querySelector('#' + this.parentID + 'droppable').value = node.getAttribute('data-uid');
+                select('#' + this.parentID + 'droppable', document).value = node.getAttribute('data-uid');
             }
             customFormat.dataBind();
         }
@@ -30597,14 +30597,14 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
             this.inputObj.dataBind();
             var dialogElement = this.dialog.element;
             /* tslint:disable:max-line-length */
-            var customFormat = getInstance(dialogElement.querySelector('#' + this.parentID + 'Custom_Format_Element'), MaskedTextBox);
+            var customFormat = getInstance(select('#' + this.parentID + 'Custom_Format_Element', dialogElement), MaskedTextBox);
             customFormat.value = '';
             customFormat.dataBind();
             if (this.parent.dataType === 'olap') {
-                var hierarchyDrop = getInstance(dialogElement.querySelector('#' + this.parentID + 'Hierarchy_List_Div'), DropDownList);
-                var formatDrop = getInstance(dialogElement.querySelector('#' + this.parentID + 'Format_Div'), DropDownList);
-                var memberTypeDrop = getInstance(dialogElement.querySelector('#' + this.parentID + 'Member_Type_Div'), DropDownList);
-                var fieldTitle = dialogElement.querySelector('#' + this.parentID + '_' + 'FieldNameTitle');
+                var hierarchyDrop = getInstance(select('#' + this.parentID + 'Hierarchy_List_Div', dialogElement), DropDownList);
+                var formatDrop = getInstance(select('#' + this.parentID + 'Format_Div', dialogElement), DropDownList);
+                var memberTypeDrop = getInstance(select('#' + this.parentID + 'Member_Type_Div', dialogElement), DropDownList);
+                var fieldTitle = select('#' + this.parentID + '_' + 'FieldNameTitle', dialogElement);
                 /* tslint:enable:max-line-length */
                 fieldTitle.innerHTML = this.parent.localeObj.getConstant('fieldTitle');
                 hierarchyDrop.index = 0;
@@ -30620,11 +30620,11 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
                 removeClass(this.treeObj.element.querySelectorAll('.' + CALC_EDITED), CALC_EDITED);
                 node.querySelector('.' + CALC_EDIT).setAttribute('title', this.parent.localeObj.getConstant('edit'));
             }
-            document.querySelector('#' + this.parentID + 'droppable').value = '';
+            select('#' + this.parentID + 'droppable', document).value = '';
         }
         else if (node.tagName === 'LI' && (node.querySelector('.' + GRID_REMOVE) &&
             node.querySelector('.' + GRID_REMOVE).classList.contains('e-list-icon')) && !edit && !edited) {
-            var dropField = document.querySelector('#' + this.parentID + 'droppable');
+            var dropField = select('#' + this.parentID + 'droppable', document);
             var field = {
                 name: this.isEdit ? this.currentFieldName : this.inputObj.value,
                 caption: this.inputObj.value,
@@ -30796,8 +30796,8 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
             }
         };
         var contextMenu;
-        if (document.querySelector('#' + this.parentID + 'CalcContextmenu')) {
-            contextMenu = document.querySelector('#' + this.parentID + 'CalcContextmenu');
+        if (select('#' + this.parentID + 'CalcContextmenu', document)) {
+            contextMenu = select('#' + this.parentID + 'CalcContextmenu', document);
         }
         else {
             contextMenu = createElement('ul', {
@@ -30989,18 +30989,18 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
     /* tslint:disable:max-line-length */
     CalculatedField.prototype.getCalculatedFieldInfo = function () {
         var field;
-        var dropField = document.querySelector('#' + this.parentID + 'droppable');
+        var dropField = select('#' + this.parentID + 'droppable', document);
         var dialogElement = this.parent.isAdaptive ? this.parent.dialogRenderer.adaptiveElement.element : this.dialog.element;
-        var customFormat = getInstance(dialogElement.querySelector('#' + this.parentID + 'Custom_Format_Element'), MaskedTextBox);
+        var customFormat = getInstance(select('#' + this.parentID + 'Custom_Format_Element', dialogElement), MaskedTextBox);
         field = {
             name: this.isEdit ? this.currentFieldName : this.inputObj.value,
             caption: this.inputObj.value,
             formula: dropField.value
         };
         if (this.parent.dataType === 'olap') {
-            var formatDrop = getInstance(dialogElement.querySelector('#' + this.parentID + 'Format_Div'), DropDownList);
-            var memberTypeDrop = getInstance(dialogElement.querySelector('#' + this.parentID + 'Member_Type_Div'), DropDownList);
-            var hierarchyDrop = getInstance(dialogElement.querySelector('#' + this.parentID + 'Hierarchy_List_Div'), DropDownList);
+            var formatDrop = getInstance(select('#' + this.parentID + 'Format_Div', dialogElement), DropDownList);
+            var memberTypeDrop = getInstance(select('#' + this.parentID + 'Member_Type_Div', dialogElement), DropDownList);
+            var hierarchyDrop = getInstance(select('#' + this.parentID + 'Hierarchy_List_Div', dialogElement), DropDownList);
             field.formatString = (formatDrop.value === 'Custom' ? customFormat.value : formatDrop.value);
             if (memberTypeDrop.value === 'Dimension') {
                 field.hierarchyUniqueName = hierarchyDrop.value;
@@ -31050,7 +31050,7 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
         }
         try {
             this.parent.updateDataSource(false);
-            var pivot = this.parent.getModuleName() === 'pivotfieldlist' ?
+            var pivot = (this.parent.getModuleName() === 'pivotfieldlist' && this.parent.pivotGridModule) ?
                 this.parent.pivotGridModule : this.parent;
             if (!(isBlazor() && pivot && pivot.enableVirtualization) && (pivot && pivot.dataSourceSettings.mode !== 'Server')) {
                 this.endDialog();
@@ -31080,13 +31080,13 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
             /* tslint:disable:max-line-length */
             var dialogElement = this.parent.isAdaptive ? this.parent.dialogRenderer.parentElement : this.dialog.element;
             this.parent.dialogRenderer.parentElement.querySelector('.' + CALCINPUT).value = '';
-            this.parent.dialogRenderer.parentElement.querySelector('#' + this.parentID + 'droppable').value = '';
-            this.parent.dialogRenderer.parentElement.querySelector('#' + this.parentID + 'Custom_Format_Element').value = '';
+            select('#' + this.parentID + 'droppable', this.parent.dialogRenderer.parentElement).value = '';
+            select('#' + this.parentID + 'Custom_Format_Element', this.parent.dialogRenderer.parentElement).value = '';
             if (this.parent.dataType === 'olap') {
-                var customFormat = getInstance(dialogElement.querySelector('#' + this.parentID + 'Custom_Format_Element'), MaskedTextBox);
-                var formatDrop = getInstance(dialogElement.querySelector('#' + this.parentID + 'Format_Div'), DropDownList);
-                var memberTypeDrop = getInstance(dialogElement.querySelector('#' + this.parentID + 'Member_Type_Div'), DropDownList);
-                var hierarchyDrop = getInstance(dialogElement.querySelector('#' + this.parentID + 'Hierarchy_List_Div'), DropDownList);
+                var customFormat = getInstance(select('#' + this.parentID + 'Custom_Format_Element', dialogElement), MaskedTextBox);
+                var formatDrop = getInstance(select('#' + this.parentID + 'Format_Div', dialogElement), DropDownList);
+                var memberTypeDrop = getInstance(select('#' + this.parentID + 'Member_Type_Div', dialogElement), DropDownList);
+                var hierarchyDrop = getInstance(select('#' + this.parentID + 'Hierarchy_List_Div', dialogElement), DropDownList);
                 formatDrop.index = 0;
                 formatDrop.dataBind();
                 memberTypeDrop.index = 0;
@@ -31201,7 +31201,7 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
      */
     CalculatedField.prototype.fieldDropped = function (args) {
         args.cancel = true;
-        var dropField = this.dialog.element.querySelector('#' + this.parentID + 'droppable');
+        var dropField = select('#' + this.parentID + 'droppable', this.dialog.element);
         removeClass([dropField], 'e-copy-drop');
         removeClass([args.draggedNode.querySelector('.' + LIST_TEXT_CLASS)], SELECTED_NODE_CLASS);
         var field = args.draggedNode.getAttribute('data-field');
@@ -31268,8 +31268,8 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
      */
     CalculatedField.prototype.createDialog = function () {
         var _this = this;
-        if (document.querySelector('#' + this.parentID + 'calculateddialog') !== null) {
-            remove(document.querySelector('#' + this.parentID + 'calculateddialog'));
+        if (select('#' + this.parentID + 'calculateddialog', document) !== null) {
+            remove(select('#' + this.parentID + 'calculateddialog', document));
             while (!isNullOrUndefined(document.querySelector('.' + this.parentID + 'calculatedmenu'))) {
                 remove(document.querySelector('.' + this.parentID + 'calculatedmenu'));
             }
@@ -31310,8 +31310,8 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
             close: this.closeDialog.bind(this),
             beforeOpen: this.beforeOpen.bind(this),
             open: function () {
-                if (_this.dialog.element.querySelector('#' + _this.parentID + 'ddlelement')) {
-                    _this.dialog.element.querySelector('#' + _this.parentID + 'ddlelement').focus();
+                if (select('#' + _this.parentID + 'ddlelement', _this.dialog.element)) {
+                    select('#' + _this.parentID + 'ddlelement', _this.dialog.element).focus();
                 }
             },
             animationSettings: { effect: 'Zoom' },
@@ -31551,7 +31551,7 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
                     className: CALC_FORMAT_INPUT
                 });
                 customFormatDiv.appendChild(customFormatObj);
-                (this.parent.isAdaptive ? outerDiv.insertBefore(customFormatDiv, outerDiv.querySelector('#' + this.parentID + 'buttonDiv')) : outerDiv.appendChild(customFormatDiv));
+                (this.parent.isAdaptive ? outerDiv.insertBefore(customFormatDiv, select('#' + this.parentID + 'buttonDiv', outerDiv)) : outerDiv.appendChild(customFormatDiv));
             }
         }
         return outerDiv;
@@ -31563,24 +31563,24 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
     CalculatedField.prototype.renderAdaptiveLayout = function (isEdit) {
         var dialogElement = this.parent.dialogRenderer.adaptiveElement;
         if (isEdit) {
-            if (dialogElement.element.querySelector('#' + this.parentID + 'droppable')) {
-                this.formulaText = document.querySelector('#' + this.parentID + 'droppable').value;
+            if (select('#' + this.parentID + 'droppable', dialogElement.element)) {
+                this.formulaText = select('#' + this.parentID + 'droppable', document).value;
                 this.fieldText = this.inputObj.value;
             }
             if (dialogElement.element.querySelector('.' + CALC_MEMBER_TYPE_DIV)) {
-                var memberTypeDrop = getInstance(dialogElement.element.querySelector('#' + this.parentID + 'Member_Type_Div'), DropDownList);
+                var memberTypeDrop = getInstance(select('#' + this.parentID + 'Member_Type_Div', dialogElement.element), DropDownList);
                 this.fieldType = memberTypeDrop.value;
             }
             if (dialogElement.element.querySelector('.' + CALC_HIERARCHY_LIST_DIV)) {
-                var hierarchyDrop = getInstance(dialogElement.element.querySelector('#' + this.parentID + 'Hierarchy_List_Div'), DropDownList);
+                var hierarchyDrop = getInstance(select('#' + this.parentID + 'Hierarchy_List_Div', dialogElement.element), DropDownList);
                 this.parentHierarchy = this.fieldType === 'Dimension' ? hierarchyDrop.value : null;
             }
             if (dialogElement.element.querySelector('.' + CALC_FORMAT_TYPE_DIV)) {
-                var formatDrop = getInstance(dialogElement.element.querySelector('#' + this.parentID + 'Format_Div'), DropDownList);
+                var formatDrop = getInstance(select('#' + this.parentID + 'Format_Div', dialogElement.element), DropDownList);
                 this.formatType = formatDrop.value;
             }
             if (dialogElement.element.querySelector('.' + CALC_FORMAT_INPUT)) {
-                var customFormat = getInstance(dialogElement.element.querySelector('#' + this.parentID + 'Custom_Format_Element'), MaskedTextBox);
+                var customFormat = getInstance(select('#' + this.parentID + 'Custom_Format_Element', dialogElement.element), MaskedTextBox);
                 this.formatText = this.parent.dataType === 'olap' ? this.formatType === 'Custom' ? customFormat.value : null : customFormat.value;
             }
         }
@@ -31604,19 +31604,19 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
                 formatString: (this.parent.dataType === 'pivot' ? null : 'Standard'), parentHierarchy: null
             });
         this.currentFieldName = calcInfo.id;
-        if (dialogElement.querySelector('#' + this.parentID + 'droppable')) {
-            this.formulaText = document.querySelector('#' + this.parentID + 'droppable').value = calcInfo.formula;
+        if (select('#' + this.parentID + 'droppable', document)) {
+            this.formulaText = select('#' + this.parentID + 'droppable', document).value = calcInfo.formula;
             this.fieldText = this.inputObj.value = calcInfo.caption;
             this.inputObj.dataBind();
         }
         if (dialogElement.querySelector('.' + CALC_MEMBER_TYPE_DIV)) {
-            var memberTypeDrop = getInstance(dialogElement.querySelector('#' + this.parentID + 'Member_Type_Div'), DropDownList);
+            var memberTypeDrop = getInstance(select('#' + this.parentID + 'Member_Type_Div', dialogElement), DropDownList);
             this.fieldType = memberTypeDrop.value = calcInfo.fieldType;
             memberTypeDrop.readonly = isEdit ? true : false;
             memberTypeDrop.dataBind();
         }
         if (dialogElement.querySelector('.' + CALC_HIERARCHY_LIST_DIV)) {
-            var hierarchyDrop = getInstance(dialogElement.querySelector('#' + this.parentID + 'Hierarchy_List_Div'), DropDownList);
+            var hierarchyDrop = getInstance(select('#' + this.parentID + 'Hierarchy_List_Div', dialogElement), DropDownList);
             if (this.fieldType === 'Dimension') {
                 this.parentHierarchy = hierarchyDrop.value = calcInfo.parentHierarchy;
             }
@@ -31628,11 +31628,11 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
         }
         if (dialogElement.querySelector('.' + CALC_FORMAT_TYPE_DIV)) {
             var formatStringData = ['Standard', 'Currency', 'Percent'];
-            var formatDrop = getInstance(dialogElement.querySelector('#' + this.parentID + 'Format_Div'), DropDownList);
+            var formatDrop = getInstance(select('#' + this.parentID + 'Format_Div', dialogElement), DropDownList);
             this.formatType = formatDrop.value = (formatStringData.indexOf(calcInfo.formatString) > -1 ? calcInfo.formatString : 'Custom');
         }
         if (dialogElement.querySelector('.' + CALC_FORMAT_INPUT)) {
-            var customFormat = getInstance(dialogElement.querySelector('#' + this.parentID + 'Custom_Format_Element'), MaskedTextBox);
+            var customFormat = getInstance(select('#' + this.parentID + 'Custom_Format_Element', dialogElement), MaskedTextBox);
             var formatObj = PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.formatSettings);
             if (this.parent.dataType === 'pivot') {
                 this.formatText = customFormat.value = formatObj ? formatObj.format : null;
@@ -31683,12 +31683,12 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
             change: function (args) {
                 hierarchyListObj.enabled = args.value === 'Dimension' ? true : false;
                 _this.fieldType = args.value;
-                _this.formulaText = document.querySelector('#' + _this.parentID + 'droppable').value;
+                _this.formulaText = select('#' + _this.parentID + 'droppable', document).value;
                 hierarchyListObj.dataBind();
             }
         });
         memberTypeObj.isStringTemplate = true;
-        memberTypeObj.appendTo(dialogElement.querySelector('#' + this.parentID + 'Member_Type_Div'));
+        memberTypeObj.appendTo(select('#' + this.parentID + 'Member_Type_Div', dialogElement));
         var hierarchyListObj = new DropDownList({
             dataSource: fieldData, enableRtl: this.parent.enableRtl,
             allowFiltering: true,
@@ -31700,11 +31700,11 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
             cssClass: MEMBER_OPTIONS_CLASS, width: '100%',
             change: function (args) {
                 _this.parentHierarchy = args.value;
-                _this.formulaText = document.querySelector('#' + _this.parentID + 'droppable').value;
+                _this.formulaText = select('#' + _this.parentID + 'droppable', document).value;
             }
         });
         hierarchyListObj.isStringTemplate = true;
-        hierarchyListObj.appendTo(dialogElement.querySelector('#' + this.parentID + 'Hierarchy_List_Div'));
+        hierarchyListObj.appendTo(select('#' + this.parentID + 'Hierarchy_List_Div', dialogElement));
         var formatStringObj = new DropDownList({
             dataSource: fData, enableRtl: this.parent.enableRtl,
             fields: { value: 'value', text: 'text' },
@@ -31713,19 +31713,19 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
             change: function (args) {
                 customerFormatObj.enabled = args.value === 'Custom' ? true : false;
                 _this.formatType = args.value;
-                _this.formulaText = document.querySelector('#' + _this.parentID + 'droppable').value;
+                _this.formulaText = select('#' + _this.parentID + 'droppable', document).value;
                 customerFormatObj.dataBind();
             }
         });
         formatStringObj.isStringTemplate = true;
-        formatStringObj.appendTo(dialogElement.querySelector('#' + this.parentID + 'Format_Div'));
+        formatStringObj.appendTo(select('#' + this.parentID + 'Format_Div', dialogElement));
         var customerFormatObj = new MaskedTextBox({
             placeholder: this.parent.localeObj.getConstant('customFormat'),
             value: this.formatText !== null && formatStringObj.value === 'Custom' ? this.formatText : null,
             enabled: formatStringObj.value === 'Custom' ? true : false,
             change: function (args) {
                 _this.formatText = args.value;
-                _this.formulaText = document.querySelector('#' + _this.parentID + 'droppable').value;
+                _this.formulaText = select('#' + _this.parentID + 'droppable', document).value;
             }
         });
         customerFormatObj.isStringTemplate = true;
@@ -32044,7 +32044,7 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
                 placeholder: this.parent.localeObj.getConstant('fieldName'),
                 change: function (args) {
                     _this.fieldText = args.value;
-                    _this.formulaText = document.querySelector('#' + _this.parentID + 'droppable').value;
+                    _this.formulaText = select('#' + _this.parentID + 'droppable', document).value;
                 }
             });
             this.inputObj.isStringTemplate = true;
@@ -32054,7 +32054,7 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
                     placeholder: this.parent.localeObj.getConstant('numberFormatString'),
                     change: function (args) {
                         _this.formatText = args.value;
-                        _this.formulaText = document.querySelector('#' + _this.parentID + 'droppable').value;
+                        _this.formulaText = select('#' + _this.parentID + 'droppable', document).value;
                     }
                 });
                 formatInputObj.isStringTemplate = true;
@@ -32067,10 +32067,8 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
                     formatInputObj.value = this.formatText;
                 }
             }
-            if (this.formulaText !== null && this.parent.
-                dialogRenderer.parentElement.querySelector('#' + this.parentID + 'droppable') !== null) {
-                var drop = this.parent.
-                    dialogRenderer.parentElement.querySelector('#' + this.parentID + 'droppable');
+            if (this.formulaText !== null && select('#' + this.parentID + 'droppable', this.parent.dialogRenderer.parentElement) !== null) {
+                var drop = select('#' + this.parentID + 'droppable', this.parent.dialogRenderer.parentElement);
                 drop.value = this.formulaText;
             }
             if (this.fieldText !== null && this.parent.
@@ -32178,8 +32176,8 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
             });
             checkbox.isStringTemplate = true;
             checkbox.appendTo('#' + this.parentID + '_' + index);
-            document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-field', key);
-            document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-type', type);
+            select('#' + this.parentID + '_' + index, document).setAttribute('data-field', key);
+            select('#' + this.parentID + '_' + index, document).setAttribute('data-type', type);
         }
     };
     /**
@@ -32285,7 +32283,7 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
             this.createOlapDropElements();
         }
         this.createTreeView();
-        this.droppable = new Droppable(this.dialog.element.querySelector('#' + this.parentID + 'droppable'));
+        this.droppable = new Droppable(select('#' + this.parentID + 'droppable'));
         this.keyboardEvents = new KeyboardEvents(this.parent.calculatedFieldModule.dialog.element, {
             keyAction: this.keyActionHandler.bind(this),
             keyConfigs: { moveRight: 'rightarrow', enter: 'enter', shiftE: 'shift+E', delete: 'delete' },
@@ -32728,11 +32726,11 @@ var GroupingBar = /** @__PURE__ @class */ (function () {
                     }
                 }
                 if (this.groupingChartTable) {
-                    if (this.parent.element.querySelector('#' + this.parent.element.id + '_chart')) {
+                    if (select('#' + this.parent.element.id + '_chart', this.parent.element)) {
                         setStyleAttribute(this.groupingChartTable, {
                             width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber())
                         });
-                        this.parent.element.insertBefore(this.groupingChartTable, this.parent.element.querySelector('#' + this.parent.element.id + '_chart'));
+                        this.parent.element.insertBefore(this.groupingChartTable, select('#' + this.parent.element.id + '_chart', this.parent.element));
                     }
                     else {
                         this.groupingChartTable = undefined;
@@ -33097,8 +33095,8 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
         return 'conditionalformatting';
     };
     ConditionalFormatting.prototype.createDialog = function () {
-        if (document.querySelector('#' + this.parentID + 'conditionalformatting') !== null) {
-            remove(document.querySelector('#' + this.parentID + 'conditionalformatting'));
+        if (select('#' + this.parentID + 'conditionalformatting', document) !== null) {
+            remove(select('#' + this.parentID + 'conditionalformatting', document));
         }
         this.parent.element.appendChild(createElement('div', {
             id: this.parentID + 'conditionalformatting',
@@ -33187,17 +33185,17 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
     };
     ConditionalFormatting.prototype.refreshConditionValues = function () {
         for (var i = 0; i < this.newFormat.length; i++) {
-            if (document.querySelector('#' + this.parentID + 'conditionvalue1' + i).value === '' ||
-                document.querySelector('#' + this.parentID + 'conditionvalue2' + i).value === '') {
-                document.querySelector('#' + this.parentID + 'conditionvalue1' + i).value === '' ?
-                    document.querySelector('#' + this.parentID + 'conditionvalue1' + i).focus() :
-                    document.querySelector('#' + this.parentID + 'conditionvalue2' + i).focus();
+            if (select('#' + this.parentID + 'conditionvalue1' + i, document).value === '' ||
+                select('#' + this.parentID + 'conditionvalue2' + i, document).value === '') {
+                select('#' + this.parentID + 'conditionvalue1' + i, document).value === '' ?
+                    select('#' + this.parentID + 'conditionvalue1' + i, document).focus() :
+                    select('#' + this.parentID + 'conditionvalue2' + i, document).focus();
                 return false;
             }
             this.newFormat[i].value1 =
-                Number(document.querySelector('#' + this.parentID + 'conditionvalue1' + i).value);
+                Number(select('#' + this.parentID + 'conditionvalue1' + i, document).value);
             this.newFormat[i].value2 =
-                Number(document.querySelector('#' + this.parentID + 'conditionvalue2' + i).value);
+                Number(select('#' + this.parentID + 'conditionvalue2' + i, document).value);
         }
         return true;
     };
@@ -33425,29 +33423,29 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
     ConditionalFormatting.prototype.conditionChange = function (i, args) {
         this.newFormat[i].conditions = args.value;
         if (args.value === 'Between' || args.value === 'NotBetween') {
-            document.querySelector('#' + this.parentID + 'valuespan' + i).style.display = 'inline-block';
-            document.querySelector('#' + this.parentID + 'valuespan' + i).style.width =
+            select('#' + this.parentID + 'valuespan' + i, document).style.display = 'inline-block';
+            select('#' + this.parentID + 'valuespan' + i, document).style.width =
                 this.parent.isAdaptive ? '10%' : '10px';
-            document.querySelector('#' + this.parentID + 'conditionvalue2' + i).style.display = 'inline-block';
-            document.querySelector('#' + this.parentID + 'conditionvalue2' + i).style.width =
+            select('#' + this.parentID + 'conditionvalue2' + i, document).style.display = 'inline-block';
+            select('#' + this.parentID + 'conditionvalue2' + i, document).style.width =
                 this.parent.isAdaptive ? '35%' : '45px';
-            document.querySelector('#' + this.parentID + 'conditionvalue1' + i).style.width =
+            select('#' + this.parentID + 'conditionvalue1' + i, document).style.width =
                 this.parent.isAdaptive ? '35%' : '45px';
         }
         else {
-            document.querySelector('#' + this.parentID + 'valuespan' + i).style.display = 'none';
-            document.querySelector('#' + this.parentID + 'conditionvalue2' + i).style.display = 'none';
-            document.querySelector('#' + this.parentID + 'conditionvalue1' + i).style.width =
+            select('#' + this.parentID + 'valuespan' + i, document).style.display = 'none';
+            select('#' + this.parentID + 'conditionvalue2' + i, document).style.display = 'none';
+            select('#' + this.parentID + 'conditionvalue1' + i, document).style.width =
                 this.parent.isAdaptive ? '100%' : '120px';
         }
     };
     ConditionalFormatting.prototype.fontNameChange = function (i, args) {
         this.newFormat[i].style.fontFamily = args.value.toString();
-        document.querySelector('#' + this.parentID + 'valuepreview' + i).style.fontFamily = args.value;
+        select('#' + this.parentID + 'valuepreview' + i, document).style.fontFamily = args.value;
     };
     ConditionalFormatting.prototype.fontSizeChange = function (i, args) {
         this.newFormat[i].style.fontSize = args.value.toString();
-        document.querySelector('#' + this.parentID + 'valuepreview' + i).style.fontSize = args.value;
+        select('#' + this.parentID + 'valuepreview' + i, document).style.fontSize = args.value;
     };
     ConditionalFormatting.prototype.measureChange = function (i, args) {
         this.newFormat[i].measure = args.value.toString() === this.parent.localeObj.getConstant('AllValues') ?
@@ -33457,7 +33455,7 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
         var format = this.newFormat[i];
         var value = isNullOrUndefined(format.style.color) ? 'black' : format.style.color;
         var color = this.isHex(value.substr(1)) ? value : this.colourNameToHex(value);
-        document.querySelector('#' + this.parentID + 'valuepreview' + i).style.color = color;
+        select('#' + this.parentID + 'valuepreview' + i, document).style.color = color;
         this.fontColor[i] = new ColorPicker({
             cssClass: FORMAT_COLOR_PICKER + ' ' + FORMAT_FONT_COLOR_PICKER,
             value: color, mode: 'Palette',
@@ -33468,9 +33466,9 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
         addClass([this.fontColor[i].element.nextElementSibling.querySelector('.' + SELECTED_COLOR)], ICON);
         value = isNullOrUndefined(format.style.backgroundColor) ? 'white' : format.style.backgroundColor;
         color = this.isHex(value.substr(1)) ? value : this.colourNameToHex(value);
-        document.querySelector('#' + this.parentID + 'valuepreview' + i).style.backgroundColor = color;
-        document.querySelector('#' + this.parentID + 'valuepreview' + i).style.fontFamily = format.style.fontFamily;
-        document.querySelector('#' + this.parentID + 'valuepreview' + i).style.fontSize = format.style.fontSize;
+        select('#' + this.parentID + 'valuepreview' + i, document).style.backgroundColor = color;
+        select('#' + this.parentID + 'valuepreview' + i, document).style.fontFamily = format.style.fontFamily;
+        select('#' + this.parentID + 'valuepreview' + i, document).style.fontSize = format.style.fontSize;
         this.backgroundColor[i] = new ColorPicker({
             cssClass: FORMAT_COLOR_PICKER, value: color, mode: 'Palette',
             change: this.backColorChange.bind(this, i)
@@ -33488,12 +33486,12 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
     };
     ConditionalFormatting.prototype.backColorChange = function (i, args) {
         this.newFormat[i].style.backgroundColor = args.currentValue.hex;
-        document.querySelector('#' + this.parentID + 'valuepreview' + i).style.backgroundColor =
+        select('#' + this.parentID + 'valuepreview' + i, document).style.backgroundColor =
             args.currentValue.hex;
     };
     ConditionalFormatting.prototype.fontColorChange = function (i, args) {
         this.newFormat[i].style.color = args.currentValue.hex;
-        document.querySelector('#' + this.parentID + 'valuepreview' + i).style.color =
+        select('#' + this.parentID + 'valuepreview' + i, document).style.color =
             args.currentValue.hex;
     };
     ConditionalFormatting.prototype.toggleButtonClick = function (i) {
@@ -33608,8 +33606,8 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
             this.destroyColorPickers();
             this.dialog.destroy();
         }
-        if (document.querySelector('#' + this.parentID + 'conditionalformatting')) {
-            remove(document.querySelector('#' + this.parentID + 'conditionalformatting'));
+        if (select('#' + this.parentID + 'conditionalformatting', document)) {
+            remove(select('#' + this.parentID + 'conditionalformatting', document));
         }
     };
     ConditionalFormatting.prototype.destroyColorPickers = function () {
@@ -33675,22 +33673,22 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
     Toolbar$$1.prototype.createToolbar = function () {
         this.parent.isModified = false;
         this.renderDialog();
-        if (document.querySelector('#' + this.parent.element.id + 'pivot-toolbar') !== null) {
-            remove(document.querySelector('#' + this.parent.element.id + 'pivot-toolbar'));
+        if (select('#' + this.parent.element.id + 'pivot-toolbar', document) !== null) {
+            remove(select('#' + this.parent.element.id + 'pivot-toolbar', document));
         }
         var element = createElement('div', {
             id: this.parent.element.id + 'pivot-toolbar',
             className: GRID_TOOLBAR
         });
-        if (this.parent.showFieldList && this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList')) {
-            this.parent.element.insertBefore(element, this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList'));
+        if (this.parent.showFieldList && select('#' + this.parent.element.id + '_PivotFieldList', this.parent.element)) {
+            this.parent.element.insertBefore(element, select('#' + this.parent.element.id + '_PivotFieldList', this.parent.element));
         }
         else if (this.parent.showGroupingBar &&
-            this.parent.element.querySelector('#' + this.parent.element.id + ' .' + 'e-pivot-grouping-bar')) {
-            this.parent.element.insertBefore(element, this.parent.element.querySelector('#' + this.parent.element.id + ' .' + 'e-pivot-grouping-bar'));
+            select('#' + this.parent.element.id + ' .' + 'e-pivot-grouping-bar', this.parent.element)) {
+            this.parent.element.insertBefore(element, select('#' + this.parent.element.id + ' .' + 'e-pivot-grouping-bar', this.parent.element));
         }
         else {
-            this.parent.element.insertBefore(element, this.parent.element.querySelector('#' + this.parent.element.id + '_grid'));
+            this.parent.element.insertBefore(element, select('#' + this.parent.element.id + '_grid', this.parent.element));
         }
         this.toolbar = new Toolbar$1({
             created: this.create.bind(this),
@@ -33866,9 +33864,9 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
                     }
             }
         }
-        if (this.parent.showFieldList && toolbar.indexOf('FieldList') === -1 && this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList') &&
-            this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList').style.display === 'none') {
-            this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList').style.display = 'block';
+        if (this.parent.showFieldList && toolbar.indexOf('FieldList') === -1 && select('#' + this.parent.element.id + '_PivotFieldList', this.parent.element) &&
+            select('#' + this.parent.element.id + '_PivotFieldList', this.parent.element).style.display === 'none') {
+            select('#' + this.parent.element.id + '_PivotFieldList', this.parent.element).style.display = 'block';
         }
         var toolbarArgs = { customToolbar: items };
         this.parent.trigger(toolbarRender, toolbarArgs);
@@ -34017,8 +34015,8 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
         }
     };
     Toolbar$$1.prototype.renderDialog = function () {
-        if (document.querySelector('#' + this.parent.element.id + 'report-dialog') !== null) {
-            remove(document.querySelector('#' + this.parent.element.id + 'report-dialog'));
+        if (select('#' + this.parent.element.id + 'report-dialog', document) !== null) {
+            remove(select('#' + this.parent.element.id + 'report-dialog', document));
         }
         this.parent.element.appendChild(createElement('div', {
             id: this.parent.element.id + 'report-dialog',
@@ -34057,8 +34055,8 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
         this.dialog.appendTo('#' + this.parent.element.id + 'report-dialog');
     };
     Toolbar$$1.prototype.renderMDXDialog = function () {
-        if (document.querySelector('#' + this.parent.element.id + 'mdx-dialog') !== null) {
-            remove(document.querySelector('#' + this.parent.element.id + 'mdx-dialog'));
+        if (select('#' + this.parent.element.id + 'mdx-dialog', document) !== null) {
+            remove(select('#' + this.parent.element.id + 'mdx-dialog', document));
         }
         this.parent.element.appendChild(createElement('div', {
             id: this.parent.element.id + 'mdx-dialog',
@@ -34365,7 +34363,7 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
      */
     Toolbar$$1.prototype.createChartMenu = function () {
         var _this_1 = this;
-        if (document.querySelector('#' + this.parent.element.id + 'chart_menu')) {
+        if (select('#' + this.parent.element.id + 'chart_menu', document)) {
             var menuItems = [];
             var types = this.getValidChartType();
             for (var i = 0; (i < types.length && i < 7); i++) {
@@ -34417,10 +34415,10 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
     /* tslint:disable:max-func-body-length */
     Toolbar$$1.prototype.create = function () {
         var _this_1 = this;
-        if (this.parent.element.querySelector('#' + this.parent.element.id + 'chart_menu')) {
+        if (select('#' + this.parent.element.id + 'chart_menu', this.parent.element)) {
             this.createChartMenu();
         }
-        if (this.parent.element.querySelector('#' + this.parent.element.id + 'export_menu')) {
+        if (select('#' + this.parent.element.id + 'export_menu', this.parent.element)) {
             var menu = [{
                     iconCss: GRID_EXPORT + ' ' + ICON,
                     items: [
@@ -34466,7 +34464,7 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
             this.exportMenu.isStringTemplate = true;
             this.exportMenu.appendTo('#' + this.parent.element.id + 'export_menu');
         }
-        if (this.parent.element.querySelector('#' + this.parent.element.id + 'subtotal_menu')) {
+        if (select('#' + this.parent.element.id + 'subtotal_menu', this.parent.element)) {
             var menu = [{
                     iconCss: GRID_SUB_TOTAL + ' ' + ICON,
                     items: [
@@ -34502,7 +34500,7 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
             this.subTotalMenu.isStringTemplate = true;
             this.subTotalMenu.appendTo('#' + this.parent.element.id + 'subtotal_menu');
         }
-        if (this.parent.element.querySelector('#' + this.parent.element.id + 'grandtotal_menu')) {
+        if (select('#' + this.parent.element.id + 'grandtotal_menu', this.parent.element)) {
             var menu = [{
                     iconCss: GRID_GRAND_TOTAL + ' ' + ICON,
                     items: [
@@ -34538,7 +34536,7 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
             this.grandTotalMenu.isStringTemplate = true;
             this.grandTotalMenu.appendTo('#' + this.parent.element.id + 'grandtotal_menu');
         }
-        if (this.parent.element.querySelector('#' + this.parent.element.id + 'formatting_menu')) {
+        if (select('#' + this.parent.element.id + 'formatting_menu', this.parent.element)) {
             var menu = [{
                     iconCss: FORMATTING_MENU + ' ' + ICON,
                     items: [
@@ -34561,7 +34559,7 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
             this.formattingMenu.isStringTemplate = true;
             this.formattingMenu.appendTo('#' + this.parent.element.id + 'formatting_menu');
         }
-        if (this.parent.element.querySelector('#' + this.parent.element.id + '_reportlist')) {
+        if (select('#' + this.parent.element.id + '_reportlist', this.parent.element)) {
             var saveArgs = {
                 report: this.parent.getPersistData(),
                 reportName: this.parent.localeObj.getConstant('defaultReport')
@@ -34686,55 +34684,55 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
     };
     /* tslint:disable:max-line-length */
     Toolbar$$1.prototype.updateSubtotalSelection = function (args) {
-        if (!args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + PIVOT_SELECT_ICON).classList.contains(PIVOT_DISABLE_ICON)) {
-            args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + PIVOT_SELECT_ICON).classList.add(PIVOT_DISABLE_ICON);
+        if (!select('#' + this.parent.element.id + 'subtotal' + ' .' + PIVOT_SELECT_ICON, args.element).classList.contains(PIVOT_DISABLE_ICON)) {
+            select('#' + this.parent.element.id + 'subtotal' + ' .' + PIVOT_SELECT_ICON, args.element).classList.add(PIVOT_DISABLE_ICON);
         }
-        if (!args.element.querySelector('#' + this.parent.element.id + 'notsubtotal' + ' .' + PIVOT_SELECT_ICON).classList.contains(PIVOT_DISABLE_ICON)) {
-            args.element.querySelector('#' + this.parent.element.id + 'notsubtotal' + ' .' + PIVOT_SELECT_ICON).classList.add(PIVOT_DISABLE_ICON);
+        if (!select('#' + this.parent.element.id + 'notsubtotal' + ' .' + PIVOT_SELECT_ICON, args.element).classList.contains(PIVOT_DISABLE_ICON)) {
+            select('#' + this.parent.element.id + 'notsubtotal' + ' .' + PIVOT_SELECT_ICON, args.element).classList.add(PIVOT_DISABLE_ICON);
         }
-        if (!args.element.querySelector('#' + this.parent.element.id + 'subtotalrow' + ' .' + PIVOT_SELECT_ICON).classList.contains(PIVOT_DISABLE_ICON)) {
-            args.element.querySelector('#' + this.parent.element.id + 'subtotalrow' + ' .' + PIVOT_SELECT_ICON).classList.add(PIVOT_DISABLE_ICON);
+        if (!select('#' + this.parent.element.id + 'subtotalrow' + ' .' + PIVOT_SELECT_ICON, args.element).classList.contains(PIVOT_DISABLE_ICON)) {
+            select('#' + this.parent.element.id + 'subtotalrow' + ' .' + PIVOT_SELECT_ICON, args.element).classList.add(PIVOT_DISABLE_ICON);
         }
-        if (!args.element.querySelector('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + PIVOT_SELECT_ICON).classList.contains(PIVOT_DISABLE_ICON)) {
-            args.element.querySelector('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + PIVOT_SELECT_ICON).classList.add(PIVOT_DISABLE_ICON);
+        if (!select('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + PIVOT_SELECT_ICON, args.element).classList.contains(PIVOT_DISABLE_ICON)) {
+            select('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + PIVOT_SELECT_ICON, args.element).classList.add(PIVOT_DISABLE_ICON);
         }
         if (this.parent.dataSourceSettings.showSubTotals && this.parent.dataSourceSettings.showRowSubTotals && !this.parent.dataSourceSettings.showColumnSubTotals) {
-            args.element.querySelector('#' + this.parent.element.id + 'subtotalrow' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
+            select('#' + this.parent.element.id + 'subtotalrow' + ' .' + PIVOT_SELECT_ICON, args.element).classList.remove(PIVOT_DISABLE_ICON);
         }
         else if (this.parent.dataSourceSettings.showSubTotals && !this.parent.dataSourceSettings.showRowSubTotals && this.parent.dataSourceSettings.showColumnSubTotals) {
-            args.element.querySelector('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
+            select('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + PIVOT_SELECT_ICON, args.element).classList.remove(PIVOT_DISABLE_ICON);
         }
         else if (this.parent.dataSourceSettings.showSubTotals && this.parent.dataSourceSettings.showRowSubTotals && this.parent.dataSourceSettings.showColumnSubTotals) {
-            args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
+            select('#' + this.parent.element.id + 'subtotal' + ' .' + PIVOT_SELECT_ICON, args.element).classList.remove(PIVOT_DISABLE_ICON);
         }
         else if (!this.parent.dataSourceSettings.showSubTotals || (!this.parent.dataSourceSettings.showRowSubTotals && !this.parent.dataSourceSettings.showColumnSubTotals)) {
-            args.element.querySelector('#' + this.parent.element.id + 'notsubtotal' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
+            select('#' + this.parent.element.id + 'notsubtotal' + ' .' + PIVOT_SELECT_ICON, args.element).classList.remove(PIVOT_DISABLE_ICON);
         }
     };
     Toolbar$$1.prototype.updateGrandtotalSelection = function (args) {
-        if (!args.element.querySelector('#' + this.parent.element.id + 'grandtotal' + ' .' + PIVOT_SELECT_ICON).classList.contains(PIVOT_DISABLE_ICON)) {
-            args.element.querySelector('#' + this.parent.element.id + 'grandtotal' + ' .' + PIVOT_SELECT_ICON).classList.add(PIVOT_DISABLE_ICON);
+        if (!select('#' + this.parent.element.id + 'grandtotal' + ' .' + PIVOT_SELECT_ICON, args.element).classList.contains(PIVOT_DISABLE_ICON)) {
+            select('#' + this.parent.element.id + 'grandtotal' + ' .' + PIVOT_SELECT_ICON, args.element).classList.add(PIVOT_DISABLE_ICON);
         }
-        if (!args.element.querySelector('#' + this.parent.element.id + 'notgrandtotal' + ' .' + PIVOT_SELECT_ICON).classList.contains(PIVOT_DISABLE_ICON)) {
-            args.element.querySelector('#' + this.parent.element.id + 'notgrandtotal' + ' .' + PIVOT_SELECT_ICON).classList.add(PIVOT_DISABLE_ICON);
+        if (!select('#' + this.parent.element.id + 'notgrandtotal' + ' .' + PIVOT_SELECT_ICON, args.element).classList.contains(PIVOT_DISABLE_ICON)) {
+            select('#' + this.parent.element.id + 'notgrandtotal' + ' .' + PIVOT_SELECT_ICON, args.element).classList.add(PIVOT_DISABLE_ICON);
         }
-        if (!args.element.querySelector('#' + this.parent.element.id + 'grandtotalrow' + ' .' + PIVOT_SELECT_ICON).classList.contains(PIVOT_DISABLE_ICON)) {
-            args.element.querySelector('#' + this.parent.element.id + 'grandtotalrow' + ' .' + PIVOT_SELECT_ICON).classList.add(PIVOT_DISABLE_ICON);
+        if (!select('#' + this.parent.element.id + 'grandtotalrow' + ' .' + PIVOT_SELECT_ICON, args.element).classList.contains(PIVOT_DISABLE_ICON)) {
+            select('#' + this.parent.element.id + 'grandtotalrow' + ' .' + PIVOT_SELECT_ICON, args.element).classList.add(PIVOT_DISABLE_ICON);
         }
-        if (!args.element.querySelector('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + PIVOT_SELECT_ICON).classList.contains(PIVOT_DISABLE_ICON)) {
-            args.element.querySelector('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + PIVOT_SELECT_ICON).classList.add(PIVOT_DISABLE_ICON);
+        if (!select('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + PIVOT_SELECT_ICON, args.element).classList.contains(PIVOT_DISABLE_ICON)) {
+            select('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + PIVOT_SELECT_ICON, args.element).classList.add(PIVOT_DISABLE_ICON);
         }
         if (this.parent.dataSourceSettings.showGrandTotals && this.parent.dataSourceSettings.showRowGrandTotals && !this.parent.dataSourceSettings.showColumnGrandTotals) {
-            args.element.querySelector('#' + this.parent.element.id + 'grandtotalrow' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
+            select('#' + this.parent.element.id + 'grandtotalrow' + ' .' + PIVOT_SELECT_ICON, args.element).classList.remove(PIVOT_DISABLE_ICON);
         }
         else if (this.parent.dataSourceSettings.showGrandTotals && !this.parent.dataSourceSettings.showRowGrandTotals && this.parent.dataSourceSettings.showColumnGrandTotals) {
-            args.element.querySelector('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
+            select('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + PIVOT_SELECT_ICON, args.element).classList.remove(PIVOT_DISABLE_ICON);
         }
         else if (this.parent.dataSourceSettings.showGrandTotals && this.parent.dataSourceSettings.showRowGrandTotals && this.parent.dataSourceSettings.showColumnGrandTotals) {
-            args.element.querySelector('#' + this.parent.element.id + 'grandtotal' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
+            select('#' + this.parent.element.id + 'grandtotal' + ' .' + PIVOT_SELECT_ICON, args.element).classList.remove(PIVOT_DISABLE_ICON);
         }
         else if (!this.parent.dataSourceSettings.showGrandTotals || (!this.parent.dataSourceSettings.showRowGrandTotals && !this.parent.dataSourceSettings.showColumnGrandTotals)) {
-            args.element.querySelector('#' + this.parent.element.id + 'notgrandtotal' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
+            select('#' + this.parent.element.id + 'notgrandtotal' + ' .' + PIVOT_SELECT_ICON, args.element).classList.remove(PIVOT_DISABLE_ICON);
         }
     };
     /* tslint:enable:max-line-length */
@@ -35146,8 +35144,8 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
             cssClass: 'e-dialog-show-legend',
             enableRtl: this.parent.enableRtl,
         });
-        checkbox1.appendTo(this.chartTypesDialog.element.querySelector('#' + this.parent.element.id + '_DialogShowLabel'));
-        checkbox.appendTo(this.chartTypesDialog.element.querySelector('#' + this.parent.element.id + '_DialogMultipleAxis'));
+        checkbox1.appendTo(select('#' + this.parent.element.id + '_DialogShowLabel', this.chartTypesDialog.element));
+        checkbox.appendTo(select('#' + this.parent.element.id + '_DialogMultipleAxis', this.chartTypesDialog.element));
         if (['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) {
             checkbox.disabled = true;
         }
@@ -35216,8 +35214,8 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
         if (this.toolbar && !this.toolbar.isDestroyed) {
             this.toolbar.destroy();
         }
-        if (document.querySelector('#' + this.parent.element.id + 'pivot-toolbar')) {
-            remove(document.querySelector('#' + this.parent.element.id + 'pivot-toolbar'));
+        if (select('#' + this.parent.element.id + 'pivot-toolbar', document)) {
+            remove(select('#' + this.parent.element.id + 'pivot-toolbar', document));
         }
     };
     Toolbar$$1.prototype.focusToolBar = function () {
@@ -35408,7 +35406,7 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
         return outerElement;
     };
     NumberFormatting.prototype.renderControls = function () {
-        if (this.dialog.element.querySelector('#' + this.parent.element.id + '_FormatValueDrop')) {
+        if (select('#' + this.parent.element.id + '_FormatValueDrop', this.dialog.element)) {
             var valueFields = [];
             valueFields.push({
                 index: 0, name: this.parent.localeObj.getConstant('AllValues'), field: this.parent.localeObj.getConstant('AllValues')
@@ -35427,7 +35425,7 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
             this.valuesDropDown.isStringTemplate = true;
             this.valuesDropDown.appendTo('#' + this.parent.element.id + '_FormatValueDrop');
         }
-        if (this.dialog.element.querySelector('#' + this.parent.element.id + '_FormatDrop')) {
+        if (select('#' + this.parent.element.id + '_FormatDrop', this.dialog.element)) {
             var fields = [
                 { index: 0, name: this.parent.localeObj.getConstant('number') },
                 { index: 1, name: this.parent.localeObj.getConstant('currency') },
@@ -35442,7 +35440,7 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
             this.formatDropDown.isStringTemplate = true;
             this.formatDropDown.appendTo('#' + this.parent.element.id + '_FormatDrop');
         }
-        if (this.dialog.element.querySelector('#' + this.parent.element.id + '_GroupingDrop')) {
+        if (select('#' + this.parent.element.id + '_GroupingDrop', this.dialog.element)) {
             var fields = [
                 { index: 0, name: this.parent.localeObj.getConstant('true') },
                 { index: 1, name: this.parent.localeObj.getConstant('false') }
@@ -35454,7 +35452,7 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
             this.groupingDropDown.isStringTemplate = true;
             this.groupingDropDown.appendTo('#' + this.parent.element.id + '_GroupingDrop');
         }
-        if (this.dialog.element.querySelector('#' + this.parent.element.id + '_DecimalDrop')) {
+        if (select('#' + this.parent.element.id + '_DecimalDrop', this.dialog.element)) {
             var fields = [
                 { index: 0, name: 0 },
                 { index: 1, name: 1 },

@@ -20,7 +20,7 @@ export interface CellClickEventArgs extends BaseEventArgs {
     isAllDay: boolean;
     element?: HTMLElement;
     cancel?: boolean;
-    event?: Event;
+    mouseEventArgs?: MouseArgs;
     groupIndex?: number;
 }
 
@@ -28,6 +28,21 @@ export interface EventClickArgs extends BaseEventArgs {
     element: HTMLElement | HTMLElement[];
     guid: string[];
     cancel?: boolean;
+}
+
+export interface MouseArgs {
+    altKey: boolean;
+    button: number;
+    buttons: number;
+    clientX: number;
+    clientY: number;
+    ctrlKey: boolean;
+    detail: number;
+    metaKey: boolean;
+    screenX: number;
+    screenY: number;
+    shiftKey: boolean;
+    type: string;
 }
 
 export interface ResizeEventArgs extends BaseEventArgs {

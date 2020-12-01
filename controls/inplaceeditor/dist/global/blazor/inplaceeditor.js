@@ -312,7 +312,12 @@ var InPlaceEditor = /** @class */ (function (_super) {
     };
     InPlaceEditor.prototype.setClass = function (action, val) {
         if (!this.isEmpty(val)) {
-            action === 'add' ? sf.base.addClass([this.element], [val]) : sf.base.removeClass([this.element], [val]);
+            var allClassName = val.split(' ');
+            for (var i = 0; i < allClassName.length; i++) {
+                if (allClassName[i].trim() !== '') {
+                    action === 'add' ? sf.base.addClass([this.element], [allClassName[i]]) : sf.base.removeClass([this.element], [allClassName[i]]);
+                }
+            }
         }
     };
     InPlaceEditor.prototype.appendValueElement = function () {

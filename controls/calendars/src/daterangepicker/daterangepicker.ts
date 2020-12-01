@@ -249,8 +249,6 @@ export class DateRangePicker extends CalendarBase {
     private invalidValueString: string = null;
     private dateRangeOptions: DateRangePickerModel;
     private mobileRangePopupWrap: HTMLElement;
-    private isAngular: boolean = false;
-    private preventChange: boolean = false;
 
     /**
      * Gets or sets the start and end date of the Calendar. 
@@ -3910,11 +3908,7 @@ export class DateRangePicker extends CalendarBase {
             this.setProperties({ endDate: this.checkDateValue(this.endValue) }, true);
             this.setProperties({ startDate: this.checkDateValue(this.startValue) }, true);
             this.setModelValue();
-            if (this.isAngular && this.preventChange) {
-                this.preventChange = false;
-            } else {
-                this.trigger('change', this.rangeArgs(e));
-            }
+            this.trigger('change', this.rangeArgs(e));
         }
         this.previousEleValue = this.inputElement.value;
         this.initStartDate = this.checkDateValue(this.startValue);

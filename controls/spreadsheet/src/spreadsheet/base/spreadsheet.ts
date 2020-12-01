@@ -1036,7 +1036,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public paste(address?: string, type?: PasteSpecialType): void {
         this.notify(paste, {
             range: getIndexesFromAddress(address), sIdx: getSheetIndex(this, getSheetNameFromAddress(address)),
-            type: type, isAction: false
+            type: type, isAction: false, isInternal: true
         });
     }
 
@@ -1611,7 +1611,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public refreshNode(td: Element, args?: RefreshValueArgs): void {
         let value: string;
         if (td) {
-            let spanElem: Element = td.querySelector('[id="' + this.element.id + '_currency"]');
+            let spanElem: Element = select('#' + this.element.id + '_currency', td);
             let alignClass: string = 'e-right-align';
             if (args) {
                 args.result = isNullOrUndefined(args.result) ? '' : args.result.toString();

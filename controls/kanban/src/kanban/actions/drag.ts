@@ -1,5 +1,5 @@
 import { Draggable, formatUnit, createElement, isNullOrUndefined, addClass, closest, MouseEventArgs } from '@syncfusion/ej2-base';
-import { removeClass, classList, remove, Browser, EventHandler } from '@syncfusion/ej2-base';
+import { removeClass, classList, remove, Browser, EventHandler, extend } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
 import { DragArgs, EJ2Instance, DragEdges, DragEventArgs } from '../base/interface';
 import * as cls from '../base/css-constant';
@@ -329,7 +329,8 @@ export class DragAndDrop {
     }
 
     private updateDroppedData(element: HTMLElement, cardStatus: string, contentCell: Element): void {
-        let crudData: { [key: string]: Object } = this.parent.getCardDetails(element) as { [key: string]: Object };
+        let crudObj: { [key: string]: Object } = this.parent.getCardDetails(element) as { [key: string]: Object };
+        let crudData: { [key: string]: Object } = extend({}, crudObj, null, true) as { [key: string]: Object };
         if (cardStatus.split(',').length === 1) {
             crudData[this.parent.keyField] = cardStatus;
         }

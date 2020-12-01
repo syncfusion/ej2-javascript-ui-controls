@@ -93,8 +93,6 @@ export class MultiSelect extends DropDownBase implements IInput {
     private keyAction: boolean;
     private isSelectAll: boolean;
     private clearIconWidth: number = 0;
-    private preventChange: boolean = false;
-    private isAngular: boolean = false;
 
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
@@ -1434,11 +1432,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 isInteracted: event ? true : false,
                 element: this.element
             };
-            if (this.isAngular && this.preventChange) {
-                this.preventChange = false;
-            } else {
-                this.trigger('change', eventArgs);
-            }
+            this.trigger('change', eventArgs);
             this.updateTempValue();
             if (!this.changeOnBlur) {
                 this.dispatchEvent(this.hiddenElement as HTMLElement, 'change');

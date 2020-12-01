@@ -1,3 +1,5 @@
+import { CellModel, ColumnModel } from './../base/index';
+
 /**
  * Check whether the text is formula or not.
  * @param text 
@@ -53,6 +55,26 @@ export function isCellReference(value: string): boolean {
  */
 export function isChar(value: string): boolean {
     if ((value.charCodeAt(0) >= 65 && value.charCodeAt(0) <= 90) || (value.charCodeAt(0) >= 97 && value.charCodeAt(0) <= 122)) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Check whether the cell is locked or not
+ * @hidden
+ */
+export function isLocked(cell: CellModel, column: ColumnModel): boolean {
+    if (!cell) {
+        cell = {};
+    }
+    if (cell.isLocked) {
+        return true;
+    } else if (cell.isLocked === false) {
+        return false;
+    } else if (column && column.isLocked) {
+        return true;
+    } else if (!cell.isLocked && (column && column.isLocked !== false)) {
         return true;
     }
     return false;

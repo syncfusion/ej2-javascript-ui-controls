@@ -5,7 +5,7 @@ import { workbookFormulaOperation } from '../../workbook/common/event';
 import { AutoComplete } from '@syncfusion/ej2-dropdowns';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { PopupEventArgs, SelectEventArgs, AutoCompleteModel } from '@syncfusion/ej2-dropdowns';
-import { KeyboardEventArgs, L10n, detach, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { KeyboardEventArgs, L10n, detach, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { checkIsFormula, getSheet, SheetModel, getSheetName, DefineNameModel, getCellIndexes } from '../../workbook/index';
 import { Dialog } from '../services/index';
 import { dialog, locale } from '../common/index';
@@ -143,7 +143,7 @@ export class Formula {
     }
 
     private renderAutoComplete(): void {
-        if (!this.parent.element.querySelector('[id="' + this.parent.element.id + '_ac"]')) {
+        if (!select('#' + this.parent.element.id + '_ac', this.parent.element)) {
             let acElem: HTMLInputElement = this.parent.createElement(
                 'input', { id: this.parent.element.id + '_ac', className: 'e-ss-ac' }) as HTMLInputElement;
             this.parent.element.appendChild(acElem);
@@ -313,7 +313,7 @@ export class Formula {
         this.isFormulaBar = false;
         if (this.isPopupOpened) {
             this.hidePopUp();
-            let suggPopupElem: HTMLElement = document.querySelector('[id="' + this.parent.element.id + '_ac_popup"]');
+            let suggPopupElem: HTMLElement = select('#' + this.parent.element.id + '_ac_popup');
             if (suggPopupElem) {
                 detach(suggPopupElem);
             }

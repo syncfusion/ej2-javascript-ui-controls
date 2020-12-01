@@ -124,7 +124,8 @@ export class DialogEditRender {
         let tempDiv: Element = this.parent.createElement('div', { className: 'e-dialog' + dialogTemp });
         let dummyData: Object = extend({}, args.rowData, { isAdd: !this.isEdit }, true);
         let templateID: string = this.parent.element.id + 'editSettings' + dialogTemp;
-        appendChildren(tempDiv, this.parent.getEditHeaderTemplate()(dummyData, this.parent, 'editSettings' + dialogTemp, templateID));
+        appendChildren(tempDiv, (dialogTemp === 'HeaderTemplate' ?  this.parent.getEditHeaderTemplate() :
+            this.parent.getEditFooterTemplate())(dummyData, this.parent, 'editSettings' + dialogTemp, templateID));
         updateBlazorTemplate(templateID, dialogTemp, this.parent.editSettings);
         return tempDiv;
     }

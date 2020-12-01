@@ -33,6 +33,7 @@ export class HeaderRender implements IRenderer {
     public freezeReorder: boolean;
     public draggable: Draggable;
     private isFirstCol: boolean = false;
+    private isReplaceDragEle: boolean = true;
     private helper: Function = (e: { sender: MouseEvent }) => {
         let gObj: IGrid = this.parent;
         let target: Element = this.draggable.currentStateTarget;
@@ -737,7 +738,8 @@ export class HeaderRender implements IRenderer {
             dragStart: this.dragStart,
             drag: this.drag,
             dragStop: this.dragStop,
-            abort: '.e-rhandler'
+            abort: '.e-rhandler',
+            isReplaceDragEle: this.isReplaceDragEle
         });
     }
 

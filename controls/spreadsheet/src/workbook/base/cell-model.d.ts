@@ -71,7 +71,7 @@ export interface CellModel {
 
     /**
      * Specifies the cell is locked or not, for allow edit range in spreadsheet protect option.
-     * @default true
+     * @default null
      */
     isLocked?: boolean;
 

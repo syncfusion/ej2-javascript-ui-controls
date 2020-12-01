@@ -7,7 +7,7 @@ import { PdfHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, PdfQueryC
 import { ExcelHeaderQueryCellInfoEventArgs, HeaderCellInfoEventArgs, Selection, RowDeselectEventArgs } from '@syncfusion/ej2-grids';
 import { CellDeselectEventArgs, CellSelectingEventArgs, ExcelExportCompleteArgs } from '@syncfusion/ej2-grids';
 import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, getElement } from '@syncfusion/ej2-base';
-import { isBlazor, addClass, removeClass, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { isBlazor, addClass, removeClass, SanitizeHtmlHelper, select, selectAll } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
 import { DataBoundEventArgs, BeforeOpenCloseMenuEventArgs, MenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
@@ -389,47 +389,47 @@ export class Render {
             let rowIndex: number = Number(elem.getAttribute('index'));
             let colIndex: number = Number(elem.getAttribute('aria-colindex'));
             let pivotValue1: IAxisSet = this.parent.pivotValues[rowIndex][colIndex] as IAxisSet;
-            let select: string = item.id;
-            switch (select) {
+            let selectedID: string = item.id;
+            switch (selectedID) {
                 case this.parent.element.id + '_expand':
                     if (elem.querySelectorAll('.' + cls.EXPAND).length > 0) {
-                        if (args.element.querySelectorAll('#' + this.parent.element.id + '_expand')) {
-                            args.element.querySelector('#' + this.parent.element.id + '_expand').classList.add(cls.MENU_DISABLE);
+                        if (selectAll('#' + this.parent.element.id + '_expand', args.element)) {
+                            select('#' + this.parent.element.id + '_expand', args.element).classList.add(cls.MENU_DISABLE);
                         }
-                        if (args.element.querySelector('#' + this.parent.element.id + '_expand').classList.contains(cls.MENU_DISABLE)) {
-                            args.element.querySelector('#' + this.parent.element.id + '_expand').classList.remove(cls.MENU_DISABLE);
+                        if (select('#' + this.parent.element.id + '_expand', args.element).classList.contains(cls.MENU_DISABLE)) {
+                            select('#' + this.parent.element.id + '_expand', args.element).classList.remove(cls.MENU_DISABLE);
                         }
-                        if (args.element.querySelector('#' + this.parent.element.id + '_expand').classList.contains(cls.MENU_HIDE)) {
-                            args.element.querySelector('#' + this.parent.element.id + '_expand').classList.remove(cls.MENU_HIDE);
-                            args.element.querySelector('#' + this.parent.element.id + '_collapse').classList.remove(cls.MENU_HIDE);
+                        if (select('#' + this.parent.element.id + '_expand', args.element).classList.contains(cls.MENU_HIDE)) {
+                            select('#' + this.parent.element.id + '_expand', args.element).classList.remove(cls.MENU_HIDE);
+                            select('#' + this.parent.element.id + '_collapse', args.element).classList.remove(cls.MENU_HIDE);
                         }
                     } else {
 
                         if (bool) {
-                            args.element.querySelector('#' + this.parent.element.id + '_expand').classList.add(cls.MENU_HIDE);
+                            select('#' + this.parent.element.id + '_expand', args.element).classList.add(cls.MENU_HIDE);
                         } else {
-                            args.element.querySelector('#' + this.parent.element.id + '_expand').classList.add(cls.MENU_DISABLE);
+                            select('#' + this.parent.element.id + '_expand', args.element).classList.add(cls.MENU_DISABLE);
                         }
                     }
                     break;
                 case this.parent.element.id + '_collapse':
                     if (elem.querySelectorAll('.' + cls.COLLAPSE).length > 0) {
-                        if (args.element.querySelector('#' + this.parent.element.id + '_expand')) {
-                            args.element.querySelector('#' + this.parent.element.id + '_expand').classList.add(cls.MENU_DISABLE);
+                        if (select('#' + this.parent.element.id + '_expand', args.element)) {
+                            select('#' + this.parent.element.id + '_expand', args.element).classList.add(cls.MENU_DISABLE);
                         }
-                        if (args.element.querySelector('#' + this.parent.element.id + '_collapse').classList.contains(cls.MENU_DISABLE)) {
-                            args.element.querySelector('#' + this.parent.element.id + '_collapse').classList.remove(cls.MENU_DISABLE);
+                        if (select('#' + this.parent.element.id + '_collapse', args.element).classList.contains(cls.MENU_DISABLE)) {
+                            select('#' + this.parent.element.id + '_collapse', args.element).classList.remove(cls.MENU_DISABLE);
                         }
-                        if (args.element.querySelector('#' + this.parent.element.id + '_collapse').classList.contains(cls.MENU_HIDE)) {
-                            args.element.querySelector('#' + this.parent.element.id + '_collapse').classList.remove(cls.MENU_HIDE);
-                            args.element.querySelector('#' + this.parent.element.id + '_expand').classList.remove(cls.MENU_HIDE);
+                        if (select('#' + this.parent.element.id + '_collapse', args.element).classList.contains(cls.MENU_HIDE)) {
+                            select('#' + this.parent.element.id + '_collapse', args.element).classList.remove(cls.MENU_HIDE);
+                            select('#' + this.parent.element.id + '_expand', args.element).classList.remove(cls.MENU_HIDE);
                         }
                     } else {
 
                         if (bool) {
-                            args.element.querySelector('#' + this.parent.element.id + '_collapse').classList.add(cls.MENU_HIDE);
+                            select('#' + this.parent.element.id + '_collapse', args.element).classList.add(cls.MENU_HIDE);
                         } else {
-                            args.element.querySelector('#' + this.parent.element.id + '_collapse').classList.add(cls.MENU_DISABLE);
+                            select('#' + this.parent.element.id + '_collapse', args.element).classList.add(cls.MENU_DISABLE);
                         }
                     }
                     break;
@@ -437,18 +437,18 @@ export class Render {
                     if (!isGroupElement && args.items.length === 2) {
                         args.cancel = true;
                     }
-                    if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_group')) {
-                        addClass([args.element.querySelector('#' + this.parent.element.id + '_custom_group')], cls.MENU_HIDE);
+                    if (selectAll('#' + this.parent.element.id + '_custom_group', args.element)) {
+                        addClass([select('#' + this.parent.element.id + '_custom_group', args.element)], cls.MENU_HIDE);
                     }
                     if (isGroupElement) {
-                        if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_group')) {
-                            removeClass([args.element.querySelector('#' + this.parent.element.id + '_custom_group')], cls.MENU_HIDE);
+                        if (selectAll('#' + this.parent.element.id + '_custom_group', args.element)) {
+                            removeClass([select('#' + this.parent.element.id + '_custom_group', args.element)], cls.MENU_HIDE);
                         }
                     }
                     break;
                 case this.parent.element.id + '_custom_ungroup':
-                    if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_ungroup')) {
-                        addClass([args.element.querySelector('#' + this.parent.element.id + '_custom_ungroup')], cls.MENU_HIDE);
+                    if (selectAll('#' + this.parent.element.id + '_custom_ungroup', args.element)) {
+                        addClass([select('#' + this.parent.element.id + '_custom_ungroup', args.element)], cls.MENU_HIDE);
                     }
                     if (isGroupElement) {
                         let isUngroupOption: boolean = false;
@@ -472,93 +472,93 @@ export class Render {
                             (this.parent.engineModule.fieldList[fieldName].isCustomField && fieldName.indexOf('_date_group') > -1)) {
                             isUngroupOption = true;
                         }
-                        if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_ungroup') && isUngroupOption) {
-                            removeClass([args.element.querySelector('#' + this.parent.element.id + '_custom_ungroup')], cls.MENU_HIDE);
+                        if (selectAll('#' + this.parent.element.id + '_custom_ungroup', args.element) && isUngroupOption) {
+                            removeClass([select('#' + this.parent.element.id + '_custom_ungroup', args.element)], cls.MENU_HIDE);
                         }
                     }
                     break;
                 case this.parent.element.id + '_drillthrough':
                     if (!this.parent.allowDrillThrough) {
-                        if (args.element.querySelector('#' + this.parent.element.id + '_drillthrough')) {
-                            args.element.querySelector('#' + this.parent.element.id + '_drillthrough').classList.add(cls.MENU_DISABLE);
+                        if (select('#' + this.parent.element.id + '_drillthrough', args.element)) {
+                            select('#' + this.parent.element.id + '_drillthrough', args.element).classList.add(cls.MENU_DISABLE);
                         }
                     } else if (!(elem.classList.contains('e-summary'))) {
                         if ((elem as HTMLElement).innerText === '') {
-                            if (args.element.querySelector('#' + this.parent.element.id + '_drillthrough')) {
-                                args.element.querySelector('#' + this.parent.element.id + '_drillthrough').classList.add(cls.MENU_DISABLE);
+                            if (select('#' + this.parent.element.id + '_drillthrough', args.element)) {
+                                select('#' + this.parent.element.id + '_drillthrough', args.element).classList.add(cls.MENU_DISABLE);
                             }
                         }
                     } else {
-                        if (args.element.querySelector('#' + this.parent.element.id + '_drillthrough').classList.contains(cls.MENU_DISABLE)) {
-                            args.element.querySelector('#' + this.parent.element.id + '_drillthrough').classList.remove(cls.MENU_DISABLE);
+                        if (select('#' + this.parent.element.id + '_drillthrough', args.element).classList.contains(cls.MENU_DISABLE)) {
+                            select('#' + this.parent.element.id + '_drillthrough', args.element).classList.remove(cls.MENU_DISABLE);
                         }
                     }
                     break;
                 case this.parent.element.id + '_sortasc':
                     if (!this.parent.enableValueSorting) {
-                        if (args.element.querySelector('#' + this.parent.element.id + '_sortasc')) {
-                            args.element.querySelector('#' + this.parent.element.id + '_sortasc').classList.add(cls.MENU_DISABLE);
+                        if (select('#' + this.parent.element.id + '_sortasc', args.element)) {
+                            select('#' + this.parent.element.id + '_sortasc', args.element).classList.add(cls.MENU_DISABLE);
                         }
                     } else if (elem.querySelectorAll('.e-icon-descending').length > 0) {
-                        if (args.element.querySelector('#' + this.parent.element.id + '_sortdesc')) {
-                            args.element.querySelector('#' + this.parent.element.id + '_sortdesc').classList.add(cls.MENU_DISABLE);
+                        if (select('#' + this.parent.element.id + '_sortdesc', args.element)) {
+                            select('#' + this.parent.element.id + '_sortdesc', args.element).classList.add(cls.MENU_DISABLE);
                         } else {
-                            args.element.querySelector('#' + this.parent.element.id + '_sortdesc').classList.remove(cls.MENU_DISABLE);
+                            select('#' + this.parent.element.id + '_sortdesc', args.element).classList.remove(cls.MENU_DISABLE);
                         }
-                        if (args.element.querySelector('#' + this.parent.element.id + '_sortasc').classList.contains(cls.MENU_DISABLE)) {
-                            args.element.querySelector('#' + this.parent.element.id + '_sortasc').classList.remove(cls.MENU_DISABLE);
+                        if (select('#' + this.parent.element.id + '_sortasc', args.element).classList.contains(cls.MENU_DISABLE)) {
+                            select('#' + this.parent.element.id + '_sortasc', args.element).classList.remove(cls.MENU_DISABLE);
                         }
-                    } else if (args.element.querySelector('#' + this.parent.element.id + '_sortdesc').classList.contains(cls.MENU_DISABLE)) {
-                        args.element.querySelector('#' + this.parent.element.id + '_sortdesc').classList.remove(cls.MENU_DISABLE);
+                    } else if (select('#' + this.parent.element.id + '_sortdesc', args.element).classList.contains(cls.MENU_DISABLE)) {
+                        select('#' + this.parent.element.id + '_sortdesc', args.element).classList.remove(cls.MENU_DISABLE);
                     }
                     break;
                 case this.parent.element.id + '_sortdesc':
                     if (!this.parent.enableValueSorting) {
-                        if (args.element.querySelector('#' + this.parent.element.id + '_sortdesc')) {
-                            args.element.querySelector('#' + this.parent.element.id + '_sortdesc').classList.add(cls.MENU_DISABLE);
+                        if (select('#' + this.parent.element.id + '_sortdesc', args.element)) {
+                            select('#' + this.parent.element.id + '_sortdesc', args.element).classList.add(cls.MENU_DISABLE);
                         }
                     } else if (elem.querySelectorAll('.e-icon-ascending').length > 0) {
-                        if (args.element.querySelector('#' + this.parent.element.id + '_sortasc')) {
-                            args.element.querySelector('#' + this.parent.element.id + '_sortasc').classList.add(cls.MENU_DISABLE);
+                        if (select('#' + this.parent.element.id + '_sortasc', args.element)) {
+                            select('#' + this.parent.element.id + '_sortasc', args.element).classList.add(cls.MENU_DISABLE);
                         } else {
-                            args.element.querySelector('#' + this.parent.element.id + '_sortasc').classList.remove(cls.MENU_DISABLE);
+                            select('#' + this.parent.element.id + '_sortasc', args.element).classList.remove(cls.MENU_DISABLE);
                         }
-                        if (args.element.querySelector('#' + this.parent.element.id + '_sortdesc').classList.contains(cls.MENU_DISABLE)) {
-                            args.element.querySelector('#' + this.parent.element.id + '_sortdesc').classList.remove(cls.MENU_DISABLE);
+                        if (select('#' + this.parent.element.id + '_sortdesc', args.element).classList.contains(cls.MENU_DISABLE)) {
+                            select('#' + this.parent.element.id + '_sortdesc', args.element).classList.remove(cls.MENU_DISABLE);
                         }
-                    } else if (args.element.querySelector('#' + this.parent.element.id + '_sortasc').classList.contains(cls.MENU_DISABLE)) {
-                        args.element.querySelector('#' + this.parent.element.id + '_sortasc').classList.remove(cls.MENU_DISABLE);
+                    } else if (select('#' + this.parent.element.id + '_sortasc', args.element).classList.contains(cls.MENU_DISABLE)) {
+                        select('#' + this.parent.element.id + '_sortasc', args.element).classList.remove(cls.MENU_DISABLE);
                     }
                     break;
                 case this.parent.element.id + '_CalculatedField':
                     if (!this.parent.allowCalculatedField) {
-                        args.element.querySelector('#' + this.parent.element.id + '_CalculatedField').classList.add(cls.MENU_DISABLE);
+                        select('#' + this.parent.element.id + '_CalculatedField', args.element).classList.add(cls.MENU_DISABLE);
                     }
                     break;
                 case this.parent.element.id + '_pdf':
                     if (!this.parent.allowPdfExport) {
-                        args.element.querySelector('#' + this.parent.element.id + '_pdf').classList.add(cls.MENU_DISABLE);
+                        select('#' + this.parent.element.id + '_pdf', args.element).classList.add(cls.MENU_DISABLE);
                     }
                     break;
                 case this.parent.element.id + '_excel':
                     if (!this.parent.allowExcelExport) {
-                        args.element.querySelector('#' + this.parent.element.id + '_excel').classList.add(cls.MENU_DISABLE);
+                        select('#' + this.parent.element.id + '_excel', args.element).classList.add(cls.MENU_DISABLE);
                     }
                     break;
                 case this.parent.element.id + '_csv':
                     if (!this.parent.allowExcelExport) {
-                        args.element.querySelector('#' + this.parent.element.id + '_csv').classList.add(cls.MENU_DISABLE);
+                        select('#' + this.parent.element.id + '_csv', args.element).classList.add(cls.MENU_DISABLE);
                     }
                     break;
                 case this.parent.element.id + '_exporting':
                     if ((!this.parent.allowExcelExport) && (!this.parent.allowPdfExport)) {
-                        args.element.querySelector('#' + this.parent.element.id + '_exporting').classList.add(cls.MENU_DISABLE);
+                        select('#' + this.parent.element.id + '_exporting', args.element).classList.add(cls.MENU_DISABLE);
                     }
                     break;
                 case this.parent.element.id + '_aggregate':
-                    if ((args.element.querySelector('#' + this.parent.element.id + '_aggregate')) &&
-                        (!args.element.querySelector('#' + this.parent.element.id + '_aggregate').classList.contains(cls.MENU_DISABLE))) {
-                        args.element.querySelector('#' + this.parent.element.id + '_aggregate').classList.add(cls.MENU_DISABLE);
+                    if ((select('#' + this.parent.element.id + '_aggregate', args.element)) &&
+                        (!select('#' + this.parent.element.id + '_aggregate', args.element).classList.contains(cls.MENU_DISABLE))) {
+                        select('#' + this.parent.element.id + '_aggregate', args.element).classList.add(cls.MENU_DISABLE);
                     }
                     if ((elem.classList.contains('e-valuesheader') || elem.classList.contains('e-valuescontent') ||
                         (elem.classList.contains('e-stot') && elem.classList.contains('e-rowsheader'))) && this.parent.dataType !== 'olap') {
@@ -599,7 +599,7 @@ export class Render {
                                 }
                                 if (menuItem && menuItem.length >= 1) {
                                     item.items = menuItem;
-                                    args.element.querySelector('#' + this.parent.element.id + '_aggregate').classList.remove(cls.MENU_DISABLE);
+                                    select('#' + this.parent.element.id + '_aggregate', args.element).classList.remove(cls.MENU_DISABLE);
                                 }
                             }
                         });

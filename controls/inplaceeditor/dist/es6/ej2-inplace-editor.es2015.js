@@ -284,7 +284,12 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     }
     setClass(action, val) {
         if (!this.isEmpty(val)) {
-            action === 'add' ? addClass([this.element], [val]) : removeClass([this.element], [val]);
+            let allClassName = val.split(' ');
+            for (let i = 0; i < allClassName.length; i++) {
+                if (allClassName[i].trim() !== '') {
+                    action === 'add' ? addClass([this.element], [allClassName[i]]) : removeClass([this.element], [allClassName[i]]);
+                }
+            }
         }
     }
     appendValueElement() {

@@ -5341,7 +5341,9 @@ function querySelectId(selector) {
                     if (!list[j].match(/\[.*\]/)) {
                         var splitId = list[j].split('#');
                         if (splitId[1].match(/^\d/)) {
-                            list[j] = list[j].replace(/#/, '[id=\'') + '\']';
+                            var setId = list[j].split('.');
+                            setId[0] = setId[0].replace(/#/, '[id=\'') + '\']';
+                            list[j] = setId.join('.');
                         }
                     }
                 }
@@ -6967,6 +6969,15 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
 var componentCount = 0;
 var lastPageID;
 var lastHistoryLen = 0;
+exports.versionBasedStatePersistence = false;
+/**
+ * To enable or disable version based statePersistence functionality for all components globally.
+ * @param {boolean} status - Optional argument Specifies the status value to enable or disable versionBasedStatePersistence option.
+ * @returns {void}
+ */
+function enableVersionBasedPersistence(status) {
+    exports.versionBasedStatePersistence = status;
+}
 /**
  * Base class for all Essential JavaScript components
  */
@@ -7229,14 +7240,25 @@ var Component = /** @class */ (function (_super) {
         }
     };
     Component.prototype.mergePersistData = function () {
-        var data = window.localStorage.getItem(this.getModuleName() + this.element.id);
+        var data;
+        if (exports.versionBasedStatePersistence) {
+            data = window.localStorage.getItem(this.getModuleName() + this.element.id + this.ej2StatePersistenceVersion);
+        }
+        else {
+            data = window.localStorage.getItem(this.getModuleName() + this.element.id);
+        }
         if (!(isNullOrUndefined(data) || (data === ''))) {
             this.setProperties(JSON.parse(data), true);
         }
     };
     Component.prototype.setPersistData = function () {
         if (!this.isDestroyed) {
-            window.localStorage.setItem(this.getModuleName() + this.element.id, this.getPersistData());
+            if (exports.versionBasedStatePersistence) {
+                window.localStorage.setItem(this.getModuleName() + this.element.id + this.ej2StatePersistenceVersion, this.getPersistData());
+            }
+            else {
+                window.localStorage.setItem(this.getModuleName() + this.element.id, this.getPersistData());
+            }
         }
     };
     //tslint:disable-next-line
@@ -9030,6 +9052,7 @@ exports.Base = Base;
 exports.getComponent = getComponent;
 exports.removeChildInstance = removeChildInstance;
 exports.Browser = Browser;
+exports.enableVersionBasedPersistence = enableVersionBasedPersistence;
 exports.Component = Component;
 exports.ChildProperty = ChildProperty;
 exports.Position = Position;

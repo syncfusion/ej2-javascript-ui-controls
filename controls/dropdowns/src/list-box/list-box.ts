@@ -838,11 +838,11 @@ export class ListBox extends DropDownBase {
                     this.setSelection();
                 }
                 if (listObj.sortOrder !== 'None' || this.selectionSettings.showCheckbox
-                    !== listObj.selectionSettings.showCheckbox || listObj.fields.groupBy) {
-                    let sortabale: { placeHolderElement: Element } = getComponent(ul as HTMLElement, 'sortable');
+                    !== listObj.selectionSettings.showCheckbox || listObj.fields.groupBy || listObj.itemTemplate || this.itemTemplate) {
+                    let sortable: { placeHolderElement: Element } = getComponent(ul as HTMLElement, 'sortable');
                     ul.innerHTML = listObj.renderItems(listData as obj[], listObj.fields).innerHTML;
-                    if (sortabale.placeHolderElement) {
-                        ul.appendChild(sortabale.placeHolderElement);
+                    if (sortable.placeHolderElement) {
+                        ul.appendChild(sortable.placeHolderElement);
                     }
                     ul.appendChild(args.helper); listObj.setSelection();
                 }
@@ -1024,10 +1024,10 @@ export class ListBox extends DropDownBase {
                     }
                 }
             }
-            for (let k: number = removeIdxes.length - 1; k > 0; k--) {
+            for (let k: number = removeIdxes.length - 1; k >= 0; k--) {
                 (this.listData as { [key: string]: Object }[]).splice(removeIdxes[k], 1);
             }
-            for (let k: number = removeLiIdxes.length - 1; k > 0; k--) {
+            for (let k: number = removeLiIdxes.length - 1; k >= 0; k--) {
                 this.liCollections.splice(removeLiIdxes[k], 1);
             }
         } else {
@@ -1556,8 +1556,8 @@ export class ListBox extends DropDownBase {
         if (value) {
             elems = value;
         }
-        let isRefresh: boolean | string = tListBox.sortOrder !== 'None' ||
-            (tListBox.selectionSettings.showCheckbox !== fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy;
+        let isRefresh: boolean | string = tListBox.sortOrder !== 'None' || (tListBox.selectionSettings.showCheckbox !==
+            fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy || tListBox.itemTemplate || fListBox.itemTemplate;
         fListBox.value = [];
         if (elems.length) {
             this.removeSelected(fListBox, elems);
@@ -1701,8 +1701,8 @@ export class ListBox extends DropDownBase {
         type sortedType = dataType | { isHeader: boolean };
         let listData: dataType[] = [].slice.call(tListBox.listData);
         let jsonData: {[key: string]: object}[] = [].slice.call(tListBox.jsonData);
-        let isRefresh: boolean | string = tListBox.sortOrder !== 'None' ||
-            (tListBox.selectionSettings.showCheckbox !== fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy;
+        let isRefresh: boolean | string = tListBox.sortOrder !== 'None' || (tListBox.selectionSettings.showCheckbox !==
+            fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy || tListBox.itemTemplate || fListBox.itemTemplate;
         this.removeSelected(fListBox, fListBox.getSelectedItems());
         let tempItems: Object[] = [].slice.call(fListBox.jsonData);
         let localDataArgs: { [key: string]: Object } = { cancel: false, items: tempItems, eventName: this.toolbarAction };

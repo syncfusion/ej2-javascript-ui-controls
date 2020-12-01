@@ -218,8 +218,6 @@ var MultiSelect = /** @class */ (function (_super) {
     function MultiSelect(option, element) {
         var _this = _super.call(this, option, element) || this;
         _this.clearIconWidth = 0;
-        _this.preventChange = false;
-        _this.isAngular = false;
         _this.isValidKey = false;
         _this.selectAllEventData = [];
         _this.selectAllEventEle = [];
@@ -1018,12 +1016,7 @@ var MultiSelect = /** @class */ (function (_super) {
                 isInteracted: event ? true : false,
                 element: this.element
             };
-            if (this.isAngular && this.preventChange) {
-                this.preventChange = false;
-            }
-            else {
-                this.trigger('change', eventArgs);
-            }
+            this.trigger('change', eventArgs);
             this.updateTempValue();
             if (!this.changeOnBlur) {
                 this.dispatchEvent(this.hiddenElement, 'change');

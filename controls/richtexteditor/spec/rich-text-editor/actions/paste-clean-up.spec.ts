@@ -581,8 +581,8 @@ describe("paste cleanup testing", () => {
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       let pastedElm: any =(rteObj as any).inputElement.firstElementChild;
-      expect(pastedElm.children[0].tagName.toLowerCase() === 'a').toBe(true);
-      expect(pastedElm.children[0].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
+      expect(pastedElm.children[0].childNodes[0].tagName.toLowerCase()  === 'a').toBe(true);
+      expect(pastedElm.children[0].childNodes[0].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
       done();
     }, 100);
   });
@@ -608,8 +608,8 @@ describe("paste cleanup testing", () => {
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement.firstElementChild;
-      expect(pastedElm.children[0].tagName.toLowerCase() === 'a').toBe(true);
-      expect(pastedElm.children[0].getAttribute('href') === 'www.ej2.syncfusion.com').toBe(true);
+      expect(pastedElm.children[0].children[0].tagName.toLowerCase() === 'a').toBe(true);
+      expect(pastedElm.children[0].children[0].getAttribute('href') === 'www.ej2.syncfusion.com').toBe(true);
       done();
     }, 100);
   });
@@ -634,10 +634,10 @@ describe("paste cleanup testing", () => {
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement;
-      expect(pastedElm.children[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
-      expect(pastedElm.children[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
+      expect(pastedElm.children[0].children[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
+      expect(pastedElm.children[0].children[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
       let expected: boolean = false;
-      let expectedElem: string = `<p>Hi syncfusion website <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>is here</p><p>14</p>`;
+      let expectedElem: string = `<p><span>Hi syncfusion website <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>is here</span>14</p>`;
       if (pastedElm.innerHTML === expectedElem) {
         expected = true;
       }
@@ -666,10 +666,10 @@ describe("paste cleanup testing", () => {
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement;
-      expect(pastedElm.children[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
-      expect(pastedElm.children[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
+      expect(pastedElm.children[0].children[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
+      expect(pastedElm.children[0].children[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
       let expected: boolean = false;
-      let expectedElem: string = `<p>Hi syncfusion website <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>is here with another URL <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>text after second URL</p><p>15</p>`;
+      let expectedElem: string = `<p><span>Hi syncfusion website <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>is here with another URL <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>text after second URL</span>15</p>`;
       if (pastedElm.innerHTML === expectedElem) {
         expected = true;
       }
@@ -703,7 +703,7 @@ third line`;
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = false;
-      let expectedElem: string = `<p>first line</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Second line with space <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a></p><p><br></p><p><br></p><p>third line</p><p>16</p>`;
+      let expectedElem: string = `<p><span>first line</span></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Second line with space <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a></p><p><br></p><p><br></p><p>third line</p><p>16</p>`;
       if (pastedElm === expectedElem) {
         expected = true;
       }
@@ -1282,6 +1282,54 @@ describe("Image paste", () => {
             let imgEle: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll("img");
             expect(isNullOrUndefined(imgEle)).toBe(false);
             done();
+        }, 50);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe("Paste when iframe enabled", () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = {
+        preventDefault: () => { },
+        type: "keydown",
+        stopPropagation: () => { },
+        ctrlKey: false,
+        shiftKey: false,
+        action: null,
+        which: 64,
+        key: ""
+    };
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            iframeSettings: { enable: true },
+            value: 'Hello'
+        });
+        done();
+    });
+
+    it(" Paste by selecting all content when iframe enabled", (done) => {
+        keyBoardEvent.clipboardData = {
+            getData: () => { return `<p>Pasted Content</p>` },
+            types: ['text/html', 'Files'],
+            items: { }
+        };
+        rteObj.pasteCleanupSettings.prompt = true;
+        rteObj.dataBind();
+        rteObj.selectAll();
+        rteObj.onPaste(keyBoardEvent);
+        setTimeout(() => {
+          if (rteObj.pasteCleanupSettings.prompt) {
+            let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_KEEP_FORMAT);
+            keepFormat[0].click();
+            let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+            pasteOK[0].click();
+          }
+          expect(rteObj.value === '<p>Pasted Content</p>').toBe(true);
+          done();
         }, 50);
     });
 

@@ -6556,16 +6556,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             let rootNode: Node = this.nodes[0] as Node;
             if (rootNode.outEdges.length > 1) {
                 let isProtectedChange: boolean = this.isProtectedOnChange;
-                let connector: ConnectorModel = this.nameTable[rootNode.outEdges[1]];
-                let isAllowServerUpdate: boolean = this.allowServerDataBinding;
-                this.protectPropertyChange(false);
-                this.enableServerDataBinding(false);
-                this.preventDiagramUpdate = true;
-                connector.sourcePortID = rootNode.ports[1].id;
-                this.dataBind();
-                this.preventDiagramUpdate = false;
-                this.enableServerDataBinding(isAllowServerUpdate);
-                this.protectPropertyChange(isProtectedChange);
+                for (let i: number = 1; i < rootNode.outEdges.length; i++) {
+                    let connector: ConnectorModel = this.nameTable[rootNode.outEdges[i]];
+                    let isAllowServerUpdate: boolean = this.allowServerDataBinding;
+                    this.protectPropertyChange(false);
+                    this.enableServerDataBinding(false);
+                    this.preventDiagramUpdate = true;
+                    let target: NodeModel = this.getObject(connector.targetID);
+                    // tslint:disable-next-line:no-any
+                    if ((target.data as any).Branch === 'Left') {
+                        connector.sourcePortID = rootNode.ports[1].id;
+                    }
+                    this.dataBind();
+                    this.preventDiagramUpdate = false;
+                    this.enableServerDataBinding(isAllowServerUpdate);
+                    this.protectPropertyChange(isProtectedChange);
+                }
             }
         }
         if (isBlazor()) {
@@ -8587,6 +8593,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 let sourceNode: Node = this.nameTable[actualObject.sourceID];
                 if (!sourceNode || (canOutConnect(sourceNode) || (actualObject.sourcePortID !== '' && canPortOutConnect(outPort)))) {
                     actualObject.sourcePortWrapper = source ? this.getWrapper(source, newProp.sourcePortID) : undefined;
+                }
+                else if (actualObject.sourcePortID === '' && !canOutConnect(sourceNode)){
+                    actualObject.sourcePortWrapper = undefined;
                 }
             }
             if (newProp.targetPortID !== undefined && newProp.targetPortID !== oldProp.targetPortID) {

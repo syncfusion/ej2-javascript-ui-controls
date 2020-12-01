@@ -904,12 +904,11 @@ export class CartesianAxisLayoutPanel {
         let x: number = rect.x + padding;
 
         let y: number = rect.y + rect.height * 0.5;
-
+        let titleSize: number = (axis.titleSize.height * (axis.titleCollection.length - 1));
         let options: TextOption = new TextOption(
-            chart.element.id + '_AxisTitle_' + index, x, y - axis.labelPadding, 'middle',
-            axis.title, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation
+            chart.element.id + '_AxisTitle_' + index, x, y - axis.labelPadding - titleSize, 'middle',
+            axis.titleCollection, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation
         );
-        options.text = textTrim( axis.updatedRect.height, options.text as string, axis.titleStyle);
         let element: Element = textElement(
             chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent
         );
@@ -1381,15 +1380,13 @@ export class CartesianAxisLayoutPanel {
         let padding: number = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
             (axis.labelPosition === 'Inside' ? 0 :
                 axis.maxLabelSize.height + axis.multiLevelLabelHeight + axis.labelPadding);
-
-        padding = axis.opposedPosition ? -(padding + elementSize.height / 4 + scrollBarHeight) : (padding + (3 *
+        let titleSize: number = (axis.titleSize.height * (axis.titleCollection.length - 1));
+        padding = axis.opposedPosition ? -(padding + elementSize.height / 4 + scrollBarHeight + titleSize) : (padding + (3 *
             elementSize.height / 4) + scrollBarHeight);
-
         let options: TextOption = new TextOption(
             chart.element.id + '_AxisTitle_' + index, rect.x + rect.width * 0.5,
-            rect.y + padding, 'middle', axis.title
+            rect.y + padding, 'middle', axis.titleCollection
         );
-        options.text = textTrim( axis.updatedRect.width, options.text as string, axis.titleStyle);
         let element: Element = textElement(
             chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent
         );

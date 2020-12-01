@@ -83,3 +83,12 @@ export function updateTextNode(value: string): string {
     }
     return resultElm.innerHTML;
 }
+
+export function getLastTextNode(startChildNodes: Node): Node {
+    let finalNode: Node = startChildNodes;
+    do {
+        if (finalNode.childNodes.length > 0) { finalNode = finalNode.childNodes[0]; }
+    }
+    while (finalNode.childNodes.length > 0);
+    return finalNode;
+}

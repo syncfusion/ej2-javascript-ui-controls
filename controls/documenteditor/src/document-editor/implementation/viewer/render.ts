@@ -485,7 +485,9 @@ export class Renderer {
         this.renderTableCellOutline(page.documentHelper, cellWidget);
         for (let i: number = 0; i < cellWidget.childWidgets.length; i++) {
             let widget: Widget = cellWidget.childWidgets[i] as Widget;
-            let width: number = cellWidget.width + cellWidget.margin.left - cellWidget.leftBorderWidth;
+            // MS word render the content in right margin also.
+            // So, we need to add right margin value while cliping the content
+            let width: number = (cellWidget.width + cellWidget.margin.left + cellWidget.margin.right) - cellWidget.leftBorderWidth;
             if (!this.isPrinting) {
                 // tslint:disable-next-line:max-line-length
                 this.clipRect(cellWidget.x - cellWidget.margin.left, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));

@@ -1,4 +1,4 @@
-import { createElement, remove, extend, getInstance } from '@syncfusion/ej2-base';
+import { createElement, remove, extend, getInstance, select } from '@syncfusion/ej2-base';
 import { MouseEventArgs } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
@@ -109,7 +109,7 @@ export class AggregateMenu {
             enableRtl: this.parent.enableRtl,
             beforeOpen: this.beforeMenuOpen.bind(this, isStringField),
             onClose: (args: OpenCloseMenuEventArgs) => {
-                (this.parentElement.querySelector('#' + this.buttonElement.id) as HTMLElement).focus();
+                (select('#' + this.buttonElement.id, this.parentElement) as HTMLElement).focus();
             },
             select: this.selectOptionInContextMenu.bind(this)
         };
@@ -416,7 +416,7 @@ export class AggregateMenu {
         this.updateDataSource(true);
     }
     private removeDialog(): void {
-        (this.parentElement.querySelector('#' + this.buttonElement.id) as HTMLElement).focus();
+        (select('#' + this.buttonElement.id, this.parentElement) as HTMLElement).focus();
         if (this.valueDialog && !this.valueDialog.isDestroyed) { this.valueDialog.destroy(); }
         if (document.getElementById(this.parentElement.id + '_ValueDialog')) {
             remove(document.getElementById(this.parentElement.id + '_ValueDialog'));

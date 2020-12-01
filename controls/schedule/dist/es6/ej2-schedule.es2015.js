@@ -8533,7 +8533,8 @@ class QuickPopups {
             this.quickPopupHide();
             this.parent.removeNewEventElement();
         }
-        if (!closest(target, '.' + MORE_POPUP_WRAPPER_CLASS) && !target.classList.contains(MORE_INDICATOR_CLASS)
+        if (!closest(target, '.' + MORE_POPUP_WRAPPER_CLASS) && (target.classList &&
+            !target.classList.contains(MORE_INDICATOR_CLASS))
             && (!closest(target, '.' + POPUP_OPEN)) && !closest(target, '.' + WORK_CELLS_CLASS)) {
             this.morePopup.hide();
         }

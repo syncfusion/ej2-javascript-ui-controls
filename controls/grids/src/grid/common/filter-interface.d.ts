@@ -28,6 +28,7 @@ export interface IXLFilter extends Component<HTMLElement> {
     getForeignKeyColumns?: Function;
     isReact?: boolean;
     renderTemplates?: Function;
+    allowSorting?: boolean;
 }
 /** @hidden */
 export interface FilterStateObj {

@@ -25,5 +25,13 @@
     .e-chkcancel-icon::before {
       content: '\e745';
     }
+
+    .e-sortascending::before {
+      content: '\e812';
+    }
+
+    .e-sortdescending::before {
+      content: '\e811';
+    }
   }
 }

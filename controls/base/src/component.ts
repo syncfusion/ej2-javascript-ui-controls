@@ -11,6 +11,16 @@ import { getRandomId } from './template-engine';
 let componentCount: number = 0;
 let lastPageID: number;
 let lastHistoryLen: number = 0;
+export let versionBasedStatePersistence: boolean = false;
+
+/**
+ * To enable or disable version based statePersistence functionality for all components globally.
+ * @param {boolean} status - Optional argument Specifies the status value to enable or disable versionBasedStatePersistence option.
+ * @returns {void}
+ */
+export function enableVersionBasedPersistence(status: boolean): void {
+    versionBasedStatePersistence = status;
+}
 /**
  * Base class for all Essential JavaScript components
  */
@@ -19,6 +29,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
 
     public element: ElementType;
     private randomId: string = uniqueID();
+    public ej2StatePersistenceVersion: string;
     /**
      * Enable or disable persisting component's state between page reloads.
      * @default false
@@ -294,14 +305,24 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     }
 
     private mergePersistData(): void {
-        let data: string = window.localStorage.getItem(this.getModuleName() + this.element.id);
+        let data: string;
+        if (versionBasedStatePersistence) {
+            data = window.localStorage.getItem(this.getModuleName() + this.element.id + this.ej2StatePersistenceVersion);
+        } else {
+           data = window.localStorage.getItem(this.getModuleName() + this.element.id);
+        }
         if (!(isNullOrUndefined(data) || (data === ''))) {
             this.setProperties(JSON.parse(data), true);
         }
     }
     private setPersistData(): void {
         if (!this.isDestroyed) {
-            window.localStorage.setItem(this.getModuleName() + this.element.id, this.getPersistData());
+            if (versionBasedStatePersistence) {
+                window.localStorage.setItem
+                (this.getModuleName() + this.element.id + this.ej2StatePersistenceVersion, this.getPersistData());
+            } else {
+                window.localStorage.setItem(this.getModuleName() + this.element.id, this.getPersistData());
+            }
         }
     }
 

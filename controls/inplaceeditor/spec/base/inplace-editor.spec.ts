@@ -537,6 +537,15 @@ describe('InPlace-Editor Control', () => {
             expect(ele.classList.contains('e-two')).toEqual(false);
             expect(ele.classList.contains('e-three')).toEqual(false);
         });
+        it('Multiple CssClass testing', () => {
+            editorObj = renderEditor({
+                cssClass: 'e-one e-two e-three'
+            });
+            ele = editorObj.element;
+            expect(ele.classList.contains('e-one')).toEqual(true);
+            expect(ele.classList.contains('e-two')).toEqual(true);
+            expect(ele.classList.contains('e-three')).toEqual(true);
+        });
     });
     describe('primaryKey property testing', () => {
         let ele: HTMLElement;

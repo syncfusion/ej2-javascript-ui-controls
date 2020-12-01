@@ -1,6 +1,6 @@
 import { Toolbar as tool, ClickEventArgs, MenuItemModel, Menu } from '@syncfusion/ej2-navigations';
 import { ItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { remove, createElement, formatUnit, isBlazor, getInstance, addClass, removeClass, closest } from '@syncfusion/ej2-base';
+import { remove, createElement, formatUnit, isBlazor, getInstance, addClass, removeClass, closest, select } from '@syncfusion/ej2-base';
 import * as events from '../../common/base/constant';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { SaveReportArgs, FetchReportArgs, LoadReportArgs, RemoveReportArgs, RenameReportArgs, ToolbarArgs } from '../base/interface';
@@ -64,24 +64,24 @@ export class Toolbar {
     private createToolbar(): void {
         this.parent.isModified = false;
         this.renderDialog();
-        if (document.querySelector('#' + this.parent.element.id + 'pivot-toolbar') !== null) {
-            remove(document.querySelector('#' + this.parent.element.id + 'pivot-toolbar'));
+        if (select('#' + this.parent.element.id + 'pivot-toolbar', document) !== null) {
+            remove(select('#' + this.parent.element.id + 'pivot-toolbar', document));
         }
         let element: HTMLElement = createElement(
             'div', {
             id: this.parent.element.id + 'pivot-toolbar',
             className: cls.GRID_TOOLBAR
         });
-        if (this.parent.showFieldList && this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList')) {
+        if (this.parent.showFieldList && select('#' + this.parent.element.id + '_PivotFieldList', this.parent.element)) {
             this.parent.element.insertBefore(
-                element, this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList'));
+                element, select('#' + this.parent.element.id + '_PivotFieldList', this.parent.element));
         } else if (this.parent.showGroupingBar &&
-            this.parent.element.querySelector('#' + this.parent.element.id + ' .' + 'e-pivot-grouping-bar')) {
+            select('#' + this.parent.element.id + ' .' + 'e-pivot-grouping-bar', this.parent.element)) {
             this.parent.element.insertBefore(
-                element, this.parent.element.querySelector('#' + this.parent.element.id + ' .' + 'e-pivot-grouping-bar'));
+                element, select('#' + this.parent.element.id + ' .' + 'e-pivot-grouping-bar', this.parent.element));
         } else {
             this.parent.element.insertBefore(
-                element, this.parent.element.querySelector('#' + this.parent.element.id + '_grid'));
+                element, select('#' + this.parent.element.id + '_grid', this.parent.element));
         }
         this.toolbar = new tool({
             created: this.create.bind(this),
@@ -260,9 +260,9 @@ export class Toolbar {
                     }
             }
         }
-        if (this.parent.showFieldList && toolbar.indexOf('FieldList') === -1 && (this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList') as HTMLElement) &&
-            (this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList') as HTMLElement).style.display === 'none') {
-            (this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList') as HTMLElement).style.display = 'block';
+        if (this.parent.showFieldList && toolbar.indexOf('FieldList') === -1 && (select('#' + this.parent.element.id + '_PivotFieldList', this.parent.element) as HTMLElement) &&
+            (select('#' + this.parent.element.id + '_PivotFieldList', this.parent.element) as HTMLElement).style.display === 'none') {
+            (select('#' + this.parent.element.id + '_PivotFieldList', this.parent.element) as HTMLElement).style.display = 'block';
         }
         let toolbarArgs: ToolbarArgs = { customToolbar: items };
         this.parent.trigger(events.toolbarRender, toolbarArgs);
@@ -421,8 +421,8 @@ export class Toolbar {
     }
 
     private renderDialog(): void {
-        if (document.querySelector('#' + this.parent.element.id + 'report-dialog') !== null) {
-            remove(document.querySelector('#' + this.parent.element.id + 'report-dialog'));
+        if (select('#' + this.parent.element.id + 'report-dialog', document) !== null) {
+            remove(select('#' + this.parent.element.id + 'report-dialog', document));
         }
         this.parent.element.appendChild(createElement('div', {
             id: this.parent.element.id + 'report-dialog',
@@ -462,8 +462,8 @@ export class Toolbar {
     }
 
     private renderMDXDialog(): void {
-        if (document.querySelector('#' + this.parent.element.id + 'mdx-dialog') !== null) {
-            remove(document.querySelector('#' + this.parent.element.id + 'mdx-dialog'));
+        if (select('#' + this.parent.element.id + 'mdx-dialog', document) !== null) {
+            remove(select('#' + this.parent.element.id + 'mdx-dialog', document));
         }
         this.parent.element.appendChild(createElement('div', {
             id: this.parent.element.id + 'mdx-dialog',
@@ -768,7 +768,7 @@ export class Toolbar {
      * @hidden
      */
     public createChartMenu(): void {
-        if (document.querySelector('#' + this.parent.element.id + 'chart_menu')) {
+        if (select('#' + this.parent.element.id + 'chart_menu', document)) {
             let menuItems: MenuItemModel[] = [];
             let types: ChartSeriesType[] = this.getValidChartType();
             for (let i: number = 0; (i < types.length && i < 7); i++) {
@@ -820,10 +820,10 @@ export class Toolbar {
     }
     /* tslint:disable:max-func-body-length */
     private create(): void {
-        if (this.parent.element.querySelector('#' + this.parent.element.id + 'chart_menu')) {
+        if (select('#' + this.parent.element.id + 'chart_menu', this.parent.element)) {
             this.createChartMenu();
         }
-        if (this.parent.element.querySelector('#' + this.parent.element.id + 'export_menu')) {
+        if (select('#' + this.parent.element.id + 'export_menu', this.parent.element)) {
             let menu: MenuItemModel[] = [{
                 iconCss: cls.GRID_EXPORT + ' ' + cls.ICON,
                 items: [
@@ -870,7 +870,7 @@ export class Toolbar {
             this.exportMenu.isStringTemplate = true;
             this.exportMenu.appendTo('#' + this.parent.element.id + 'export_menu');
         }
-        if (this.parent.element.querySelector('#' + this.parent.element.id + 'subtotal_menu')) {
+        if (select('#' + this.parent.element.id + 'subtotal_menu', this.parent.element)) {
             let menu: MenuItemModel[] = [{
                 iconCss: cls.GRID_SUB_TOTAL + ' ' + cls.ICON,
                 items: [
@@ -907,7 +907,7 @@ export class Toolbar {
             this.subTotalMenu.isStringTemplate = true;
             this.subTotalMenu.appendTo('#' + this.parent.element.id + 'subtotal_menu');
         }
-        if (this.parent.element.querySelector('#' + this.parent.element.id + 'grandtotal_menu')) {
+        if (select('#' + this.parent.element.id + 'grandtotal_menu', this.parent.element)) {
             let menu: MenuItemModel[] = [{
                 iconCss: cls.GRID_GRAND_TOTAL + ' ' + cls.ICON,
                 items: [
@@ -944,7 +944,7 @@ export class Toolbar {
             this.grandTotalMenu.isStringTemplate = true;
             this.grandTotalMenu.appendTo('#' + this.parent.element.id + 'grandtotal_menu');
         }
-        if (this.parent.element.querySelector('#' + this.parent.element.id + 'formatting_menu')) {
+        if (select('#' + this.parent.element.id + 'formatting_menu', this.parent.element)) {
             let menu: MenuItemModel[] = [{
                 iconCss: cls.FORMATTING_MENU + ' ' + cls.ICON,
                 items: [
@@ -968,7 +968,7 @@ export class Toolbar {
             this.formattingMenu.isStringTemplate = true;
             this.formattingMenu.appendTo('#' + this.parent.element.id + 'formatting_menu');
         }
-        if (this.parent.element.querySelector('#' + this.parent.element.id + '_reportlist')) {
+        if (select('#' + this.parent.element.id + '_reportlist', this.parent.element)) {
             let saveArgs: SaveReportArgs = {
                 report: this.parent.getPersistData(),
                 reportName: this.parent.localeObj.getConstant('defaultReport')
@@ -1088,49 +1088,49 @@ export class Toolbar {
     }
     /* tslint:disable:max-line-length */
     private updateSubtotalSelection(args: BeforeOpenCloseMenuEventArgs): void {
-        if (!args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
-            args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
+        if (!select('#' + this.parent.element.id + 'subtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+            select('#' + this.parent.element.id + 'subtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
         }
-        if (!args.element.querySelector('#' + this.parent.element.id + 'notsubtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
-            args.element.querySelector('#' + this.parent.element.id + 'notsubtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
+        if (!select('#' + this.parent.element.id + 'notsubtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+            select('#' + this.parent.element.id + 'notsubtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
         }
-        if (!args.element.querySelector('#' + this.parent.element.id + 'subtotalrow' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
-            args.element.querySelector('#' + this.parent.element.id + 'subtotalrow' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
+        if (!select('#' + this.parent.element.id + 'subtotalrow' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+            select('#' + this.parent.element.id + 'subtotalrow' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
         }
-        if (!args.element.querySelector('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
-            args.element.querySelector('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
+        if (!select('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+            select('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
         }
         if (this.parent.dataSourceSettings.showSubTotals && this.parent.dataSourceSettings.showRowSubTotals && !this.parent.dataSourceSettings.showColumnSubTotals) {
-            args.element.querySelector('#' + this.parent.element.id + 'subtotalrow' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
+            select('#' + this.parent.element.id + 'subtotalrow' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
         } else if (this.parent.dataSourceSettings.showSubTotals && !this.parent.dataSourceSettings.showRowSubTotals && this.parent.dataSourceSettings.showColumnSubTotals) {
-            args.element.querySelector('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
+            select('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
         } else if (this.parent.dataSourceSettings.showSubTotals && this.parent.dataSourceSettings.showRowSubTotals && this.parent.dataSourceSettings.showColumnSubTotals) {
-            args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
+            select('#' + this.parent.element.id + 'subtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
         } else if (!this.parent.dataSourceSettings.showSubTotals || (!this.parent.dataSourceSettings.showRowSubTotals && !this.parent.dataSourceSettings.showColumnSubTotals)) {
-            args.element.querySelector('#' + this.parent.element.id + 'notsubtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
+            select('#' + this.parent.element.id + 'notsubtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
         }
     }
     private updateGrandtotalSelection(args: BeforeOpenCloseMenuEventArgs): void {
-        if (!args.element.querySelector('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
-            args.element.querySelector('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
+        if (!select('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+            select('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
         }
-        if (!args.element.querySelector('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
-            args.element.querySelector('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
+        if (!select('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+            select('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
         }
-        if (!args.element.querySelector('#' + this.parent.element.id + 'grandtotalrow' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
-            args.element.querySelector('#' + this.parent.element.id + 'grandtotalrow' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
+        if (!select('#' + this.parent.element.id + 'grandtotalrow' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+            select('#' + this.parent.element.id + 'grandtotalrow' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
         }
-        if (!args.element.querySelector('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
-            args.element.querySelector('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
+        if (!select('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+            select('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
         }
         if (this.parent.dataSourceSettings.showGrandTotals && this.parent.dataSourceSettings.showRowGrandTotals && !this.parent.dataSourceSettings.showColumnGrandTotals) {
-            args.element.querySelector('#' + this.parent.element.id + 'grandtotalrow' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
+            select('#' + this.parent.element.id + 'grandtotalrow' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
         } else if (this.parent.dataSourceSettings.showGrandTotals && !this.parent.dataSourceSettings.showRowGrandTotals && this.parent.dataSourceSettings.showColumnGrandTotals) {
-            args.element.querySelector('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
+            select('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
         } else if (this.parent.dataSourceSettings.showGrandTotals && this.parent.dataSourceSettings.showRowGrandTotals && this.parent.dataSourceSettings.showColumnGrandTotals) {
-            args.element.querySelector('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
+            select('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
         } else if (!this.parent.dataSourceSettings.showGrandTotals || (!this.parent.dataSourceSettings.showRowGrandTotals && !this.parent.dataSourceSettings.showColumnGrandTotals)) {
-            args.element.querySelector('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
+            select('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
         }
     }
     /* tslint:enable:max-line-length */
@@ -1539,8 +1539,8 @@ export class Toolbar {
             cssClass: 'e-dialog-show-legend',
             enableRtl: this.parent.enableRtl,
         });
-        checkbox1.appendTo(this.chartTypesDialog.element.querySelector('#' + this.parent.element.id + '_DialogShowLabel') as HTMLElement);
-        checkbox.appendTo(this.chartTypesDialog.element.querySelector('#' + this.parent.element.id + '_DialogMultipleAxis') as HTMLElement);
+        checkbox1.appendTo(select('#' + this.parent.element.id + '_DialogShowLabel', this.chartTypesDialog.element) as HTMLElement);
+        checkbox.appendTo(select('#' + this.parent.element.id + '_DialogMultipleAxis', this.chartTypesDialog.element) as HTMLElement);
         if (['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) {
             checkbox.disabled = true;
         }
@@ -1608,8 +1608,8 @@ export class Toolbar {
         if (this.toolbar && !this.toolbar.isDestroyed) {
             this.toolbar.destroy();
         }
-        if (document.querySelector('#' + this.parent.element.id + 'pivot-toolbar')) {
-            remove(document.querySelector('#' + this.parent.element.id + 'pivot-toolbar'));
+        if (select('#' + this.parent.element.id + 'pivot-toolbar', document)) {
+            remove(select('#' + this.parent.element.id + 'pivot-toolbar', document));
         }
     }
 

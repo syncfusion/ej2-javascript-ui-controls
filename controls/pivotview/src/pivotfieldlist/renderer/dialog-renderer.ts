@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, addClass, removeClass, closest, isBlazor } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, addClass, removeClass, closest, isBlazor, select } from '@syncfusion/ej2-base';
 import { EventHandler, setStyleAttribute, extend } from '@syncfusion/ej2-base';
 import { PivotFieldList } from '../base/field-list';
 import * as cls from '../../common/base/css-constant';
@@ -265,7 +265,7 @@ export class DialogRenderer {
             this.fieldListDialog.isStringTemplate = true;
             this.fieldListDialog.appendTo(fieldListWrappper);
             // this.fieldListDialog.element.querySelector('.e-dlg-header').innerHTML = headerTemplate;
-            setStyleAttribute(fieldListWrappper.querySelector('#' + fieldListWrappper.id + '_dialog-content') as HTMLElement, {
+            setStyleAttribute(select('#' + fieldListWrappper.id + '_dialog-content', fieldListWrappper) as HTMLElement, {
                 'padding': '0'
             });
             let footer: Element = fieldListWrappper.querySelector('.' + cls.FOOTER_CONTENT_CLASS);
@@ -300,7 +300,7 @@ export class DialogRenderer {
             // this.fieldListDialog.element.querySelector('.e-dlg-header').innerHTML = headerTemplate;
             // this.fieldListDialog.element.querySelector('.e-footer-content').innerHTML = template;
             this.renderDeferUpdateButtons();
-            setStyleAttribute(fieldListWrappper.querySelector('#' + fieldListWrappper.id + '_title') as HTMLElement, { 'width': '100%' });
+            setStyleAttribute(select('#' + fieldListWrappper.id + '_title', fieldListWrappper) as HTMLElement, { 'width': '100%' });
             fieldListWrappper.querySelector('.' + cls.TITLE_HEADER_CLASS).appendChild(this.createCalculatedButton());
         }
     }
@@ -530,7 +530,7 @@ export class DialogRenderer {
     private removeFieldListIcon(): void {
         if (this.parent.isAdaptive && this.parent.allowCalculatedField && this.parent.calculatedFieldModule) {
             if (this.adaptiveElement && this.adaptiveElement.selectedItem === 4) {
-                if (this.adaptiveElement.element.querySelector('#' + this.parent.element.id + 'droppable')) {
+                if (select('#' + this.parent.element.id + 'droppable', this.adaptiveElement.element)) {
                     /* tslint:disable */
                     (this.parent.calculatedFieldModule as any)
                         .updateAdaptiveCalculatedField(false);

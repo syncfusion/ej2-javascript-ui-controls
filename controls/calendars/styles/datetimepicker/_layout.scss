@@ -55,7 +55,7 @@
     }
   }
 
-  .e-datetimepicker.e-time-modal {
+  #{&}.e-datetimepicker.e-time-modal {
     background-color: $datetime-default-overlay;
     height: 100%;
     left: 0;
@@ -67,7 +67,7 @@
     z-index: 999;
 	}
 
-  .e-datetimepicker.e-popup {
+  #{&}.e-datetimepicker.e-popup {
     border-style: solid;
     border-width: 1px;
     overflow: auto;
@@ -100,7 +100,7 @@
 
   //normal styles
 
-  .e-datetimepicker.e-popup {
+  #{&}.e-datetimepicker.e-popup {
     #{if(&, '&', '*')} .e-list-parent.e-ul .e-list-item {
       line-height: $datetime-list-normal-line-height;
       text-indent: $datetime-list-normal-text-indent;
@@ -131,8 +131,8 @@
     }
   }
 
-  .e-bigger .e-datetimepicker.e-popup,
-  #{if(&, '&', '*')}.e-bigger.e-datetimepicker.e-popup {
+  .e-bigger #{&}.e-datetimepicker.e-popup,
+  #{if(&, '&', '*')}.e-bigger#{&}.e-datetimepicker.e-popup {
     #{if(&, '&', '*')} .e-list-parent.e-ul {
       padding: $datetime-list-bigger-padding 0;
 
@@ -144,8 +144,8 @@
     }
   }
 
-  .e-small .e-datetimepicker.e-popup,
-  #{if(&, '&', '*')}.e-small.e-datetimepicker.e-popup {
+  .e-small #{&}.e-datetimepicker.e-popup,
+  #{if(&, '&', '*')}.e-small#{&}.e-datetimepicker.e-popup {
     #{if(&, '&', '*')} .e-list-parent.e-ul .e-list-item {
       font-size: $datetime-list-small-font-size;
       line-height: $datetime-list-small-line-height;
@@ -153,8 +153,8 @@
     }
   }
 
-  .e-small.e-bigger .e-datetimepicker.e-popup,
-  #{if(&, '&', '*')}.e-small.e-bigger.e-datetimepicker.e-popup {
+  .e-small.e-bigger #{&}.e-datetimepicker.e-popup,
+  #{if(&, '&', '*')}.e-small.e-bigger#{&}.e-datetimepicker.e-popup {
     #{if(&, '&', '*')} .e-list-parent.e-ul .e-list-item {
       font-size: $datetime-list-bigger-small-font-size;
       line-height: $datetime-list-bigger-small-line-height;

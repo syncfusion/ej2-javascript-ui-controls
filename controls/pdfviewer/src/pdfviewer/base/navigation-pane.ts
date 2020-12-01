@@ -1156,6 +1156,39 @@ export class NavigationPane {
     }
 
     private bookmarkButtonOnClick = (event: MouseEvent): void => {
+       this.openBookmarkcontentInitially();
+    }
+
+    private setBookmarkSelectionIconTheme(): void {
+        if (this.bookmarkButton) {
+            this.bookmarkButton.children[0].classList.remove('e-pv-bookmark-icon');
+            this.bookmarkButton.children[0].classList.add('e-pv-bookmark-selection-icon');
+            this.bookmarkButton.classList.add('e-pv-bookmark-button-selection');
+        }
+    }
+
+    private removeBookmarkSelectionIconTheme(): void {
+        if (this.bookmarkButton) {
+            this.bookmarkButton.children[0].classList.add('e-pv-bookmark-icon');
+            this.bookmarkButton.children[0].classList.remove('e-pv-bookmark-selection-icon');
+            this.bookmarkButton.classList.remove('e-pv-bookmark-button-selection');
+        }
+    }
+
+    private sideToolbarOnMouseup(event: MouseEvent): void {
+        if (event.target === this.sideBarToolbar) {
+            this.pdfViewerBase.focusViewerContainer();
+        }
+    }
+
+    private sideBarTitleOnMouseup(event: MouseEvent): void {
+        this.pdfViewerBase.focusViewerContainer();
+    }
+
+    /**
+     * @private
+     */
+    public openBookmarkcontentInitially(): void {
         let proxy: NavigationPane = this;
         if (document.getElementById(this.pdfViewer.element.id + '_thumbnail_view')) {
             document.getElementById(this.pdfViewer.element.id + '_thumbnail_view').style.display = 'none';
@@ -1188,32 +1221,6 @@ export class NavigationPane {
             let currentPageNumber: number = parseInt(this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber);
             this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(currentPageNumber);
         }
-    }
-
-    private setBookmarkSelectionIconTheme(): void {
-        if (this.bookmarkButton) {
-            this.bookmarkButton.children[0].classList.remove('e-pv-bookmark-icon');
-            this.bookmarkButton.children[0].classList.add('e-pv-bookmark-selection-icon');
-            this.bookmarkButton.classList.add('e-pv-bookmark-button-selection');
-        }
-    }
-
-    private removeBookmarkSelectionIconTheme(): void {
-        if (this.bookmarkButton) {
-            this.bookmarkButton.children[0].classList.add('e-pv-bookmark-icon');
-            this.bookmarkButton.children[0].classList.remove('e-pv-bookmark-selection-icon');
-            this.bookmarkButton.classList.remove('e-pv-bookmark-button-selection');
-        }
-    }
-
-    private sideToolbarOnMouseup(event: MouseEvent): void {
-        if (event.target === this.sideBarToolbar) {
-            this.pdfViewerBase.focusViewerContainer();
-        }
-    }
-
-    private sideBarTitleOnMouseup(event: MouseEvent): void {
-        this.pdfViewerBase.focusViewerContainer();
     }
 
     /**

@@ -780,6 +780,9 @@ var Dialog = /** @class */ (function (_super) {
                 !node.disabled && !this.disableElement(node, '[disabled],[aria-disabled="true"],[type="hidden"]')) {
                 return node;
             }
+            else {
+                node = null;
+            }
         }
         return node;
     };

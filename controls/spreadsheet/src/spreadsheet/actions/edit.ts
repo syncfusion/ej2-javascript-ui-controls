@@ -1,14 +1,14 @@
 import { Spreadsheet } from '../index';
-import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress, isSingleCell } from '../../workbook/common/address';
 import { keyDown, editOperation, clearCopy, mouseDown, selectionComplete, enableToolbarItems, completeAction } from '../common/event';
 import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage } from '../common/index';
 import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation } from '../../workbook/common/event';
-import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell } from '../../workbook/base/index';
+import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn } from '../../workbook/base/index';
 import { getSheetNameFromAddress, getSheet } from '../../workbook/base/index';
 import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit } from '../common/index';
-import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber, dataChanged } from '../../workbook/index';
+import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber, dataChanged, isLocked } from '../../workbook/index';
 import { checkConditionalFormat, initiateFormulaReference, initiateCur, clearCellRef, addressHandle } from '../common/event';
 import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit } from '../common/event';
 
@@ -198,7 +198,7 @@ export class Edit {
         let sheet: SheetModel = this.parent.getActiveSheet(); let actCell: number[] = getCellIndexes(sheet.activeCell);
         let cell: CellModel = getCell(actCell[0], actCell[1], sheet) || {};
         if (!closest(e.target as Element, '.e-findtool-dlg') && !closest(e.target as Element, '.e-validationerror-dlg')) {
-            if (!sheet.isProtected || closest(e.target as Element, '.e-sheet-rename') || (cell.isLocked === false)) {
+            if (!sheet.isProtected || closest(e.target as Element, '.e-sheet-rename') || !isLocked(cell, getColumn(sheet, actCell[1]))) {
                 if (this.isEdit) {
                     let isFormulaEdit: boolean = checkIsFormula(this.editCellData.value) ||
                         (this.editCellData.value && this.editCellData.value.toString().indexOf('=') === 0);
@@ -295,7 +295,7 @@ export class Edit {
         }
     }
     private renderEditor(): void {
-        if (!this.editorElem || !this.parent.element.querySelector('[id="' + this.parent.element.id + '_edit"]')) {
+        if (!this.editorElem || !select('#' + this.parent.element.id + '_edit', this.parent.element)) {
             let editor: HTMLElement;
             editor = this.parent.createElement(
                 'div', { id: this.parent.element.id + '_edit', className: 'e-spreadsheet-edit' });
@@ -504,7 +504,7 @@ export class Edit {
         let sheet: SheetModel = this.parent.getActiveSheet();
         let actCell: number[] = getCellIndexes(sheet.activeCell);
         let cell: CellModel = getCell(actCell[0], actCell[1], sheet) || {};
-        if (!sheet.isProtected || (cell.isLocked === false)) {
+        if (!sheet.isProtected || !isLocked(cell, getColumn(sheet, actCell[1]))) {
             if ((trgtElem.className.indexOf('e-ss-overlay') < 0) &&
                 (trgtElem.classList.contains('e-active-cell') || trgtElem.classList.contains('e-cell')
                     || closest(trgtElem, '.e-sheet-content'))) {

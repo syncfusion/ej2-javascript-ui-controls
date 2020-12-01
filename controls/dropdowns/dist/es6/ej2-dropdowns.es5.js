@@ -1437,8 +1437,6 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         var _this = _super.call(this, options, element) || this;
         _this.previousValue = null;
         _this.isListSearched = false;
-        _this.preventChange = false;
-        _this.isAngular = false;
         return _this;
     }
     
@@ -2570,12 +2568,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 value: this.value,
                 element: this.element
             };
-            if (this.isAngular && this.preventChange) {
-                this.preventChange = false;
-            }
-            else {
-                this.trigger('change', eventArgs);
-            }
+            this.trigger('change', eventArgs);
             if (this.isServerBlazor && this.enablePersistence) {
                 // tslint:disable-next-line
                 this.interopAdaptor.invokeMethodAsync('ServerChange');
@@ -8646,8 +8639,6 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     function MultiSelect(option, element) {
         var _this = _super.call(this, option, element) || this;
         _this.clearIconWidth = 0;
-        _this.preventChange = false;
-        _this.isAngular = false;
         _this.isValidKey = false;
         _this.selectAllEventData = [];
         _this.selectAllEventEle = [];
@@ -9446,12 +9437,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                 isInteracted: event ? true : false,
                 element: this.element
             };
-            if (this.isAngular && this.preventChange) {
-                this.preventChange = false;
-            }
-            else {
-                this.trigger('change', eventArgs);
-            }
+            this.trigger('change', eventArgs);
             this.updateTempValue();
             if (!this.changeOnBlur) {
                 this.dispatchEvent(this.hiddenElement, 'change');
@@ -13601,11 +13587,11 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                     this.setSelection();
                 }
                 if (listObj.sortOrder !== 'None' || this.selectionSettings.showCheckbox
-                    !== listObj.selectionSettings.showCheckbox || listObj.fields.groupBy) {
-                    var sortabale = getComponent(ul_2, 'sortable');
+                    !== listObj.selectionSettings.showCheckbox || listObj.fields.groupBy || listObj.itemTemplate || this.itemTemplate) {
+                    var sortable = getComponent(ul_2, 'sortable');
                     ul_2.innerHTML = listObj.renderItems(listData, listObj.fields).innerHTML;
-                    if (sortabale.placeHolderElement) {
-                        ul_2.appendChild(sortabale.placeHolderElement);
+                    if (sortable.placeHolderElement) {
+                        ul_2.appendChild(sortable.placeHolderElement);
                     }
                     ul_2.appendChild(args.helper);
                     listObj.setSelection();
@@ -13793,10 +13779,10 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
             }
-            for (var k = removeIdxes.length - 1; k > 0; k--) {
+            for (var k = removeIdxes.length - 1; k >= 0; k--) {
                 this.listData.splice(removeIdxes[k], 1);
             }
-            for (var k = removeLiIdxes.length - 1; k > 0; k--) {
+            for (var k = removeLiIdxes.length - 1; k >= 0; k--) {
                 this.liCollections.splice(removeLiIdxes[k], 1);
             }
         }
@@ -14349,8 +14335,8 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         if (value) {
             elems = value;
         }
-        var isRefresh = tListBox.sortOrder !== 'None' ||
-            (tListBox.selectionSettings.showCheckbox !== fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy;
+        var isRefresh = tListBox.sortOrder !== 'None' || (tListBox.selectionSettings.showCheckbox !==
+            fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy || tListBox.itemTemplate || fListBox.itemTemplate;
         fListBox.value = [];
         if (elems.length) {
             this.removeSelected(fListBox, elems);
@@ -14502,8 +14488,8 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         var listData = [].slice.call(tListBox.listData);
         var jsonData = [].slice.call(tListBox.jsonData);
-        var isRefresh = tListBox.sortOrder !== 'None' ||
-            (tListBox.selectionSettings.showCheckbox !== fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy;
+        var isRefresh = tListBox.sortOrder !== 'None' || (tListBox.selectionSettings.showCheckbox !==
+            fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy || tListBox.itemTemplate || fListBox.itemTemplate;
         this.removeSelected(fListBox, fListBox.getSelectedItems());
         var tempItems = [].slice.call(fListBox.jsonData);
         var localDataArgs = { cancel: false, items: tempItems, eventName: this.toolbarAction };

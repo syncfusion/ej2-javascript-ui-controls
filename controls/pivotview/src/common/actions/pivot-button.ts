@@ -1,5 +1,5 @@
 import { createElement, Draggable, DragEventArgs, remove, extend, detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { EventHandler, MouseEventArgs, BlazorDragEventArgs, isBlazor } from '@syncfusion/ej2-base';
+import { EventHandler, MouseEventArgs, BlazorDragEventArgs, isBlazor, select } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, addClass, removeClass, closest, Browser } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
@@ -1005,7 +1005,7 @@ export class PivotButton implements IAction {
             (['Between', 'NotBetween'].indexOf(operator) > -1 && (isNOU(operand2) || operand2 === ''))) {
             let inputElementString: string =
                 (type.toLowerCase() + ((isNOU(operand1) || operand1 === '') ? '_input_option_1' : '_input_option_2'));
-            let focusElement: HTMLElement = dialogElement.querySelector('#' + this.parent.element.id + '_' + inputElementString);
+            let focusElement: HTMLElement = select('#' + this.parent.element.id + '_' + inputElementString, dialogElement);
             addClass([focusElement], cls.EMPTY_FIELD);
             focusElement.focus();
             return;

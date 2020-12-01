@@ -2,6 +2,38 @@
 
 ## [Unreleased]
 
+## 18.3.52 (2020-12-01)
+
+### Calendar
+
+#### Bug Fixes
+
+- `#304117`,`#304560` - EJ1 and EJ2 controls theme compatibility issue resolved.
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#304117`,`#304560` - EJ1 and EJ2 controls theme compatibility issue resolved.
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- `#304117`,`#304560` - EJ1 and EJ2 controls theme compatibility issue resolved.
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#304117`,`#304560` - EJ1 and EJ2 controls theme compatibility issue resolved.
+
+### TimePicker
+
+#### Bug Fixes
+
+- `#304117`,`#304560` - EJ1 and EJ2 controls theme compatibility issue resolved.
+
 ## 18.3.51 (2020-11-24)
 
 ### DatePicker

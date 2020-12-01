@@ -1,7 +1,7 @@
 import { addClass, removeClass, isNullOrUndefined, EventHandler, closest, extend } from '@syncfusion/ej2-base';
 import { SfSchedule } from '../../schedule';
 import * as cls from '../base/css-constant';
-import { EventClickArgs } from '../base/interface';
+import { EventClickArgs, MouseArgs } from '../base/interface';
 import * as util from '../base/util';
 
 /**
@@ -342,7 +342,7 @@ export class EventBase {
         setTimeout(() => this.isDoubleTapped = false, 250);
         e.preventDefault();
         if (this.isDoubleTapped) {
-            this.eventDoubleClick(e);
+            this.eventDoubleClick(e as Event & MouseEvent);
         } else if (!this.isDoubleTapped) {
             this.isDoubleTapped = true;
             this.eventClick(e as Event & MouseEvent);
@@ -380,15 +380,15 @@ export class EventBase {
             let target: Element = closest(<Element>eventData.target, '.' + cls.APPOINTMENT_CLASS) as Element;
             this.getSelectedEventElements(target);
             let guid: string = this.activeEventData(eventData, false);
-            this.parent.dotNetRef.invokeMethodAsync('TriggerEventClick', guid, true);
+            this.parent.dotNetRef.invokeMethodAsync('TriggerEventClick', guid, this.getMouseEvent(eventData), true);
         } else {
             this.removeSelectedAppointmentClass();
             let guid: string = this.activeEventData(eventData, true);
-            this.parent.dotNetRef.invokeMethodAsync('TriggerEventClick', guid, false);
+            this.parent.dotNetRef.invokeMethodAsync('TriggerEventClick', guid, this.getMouseEvent(eventData), false);
         }
     }
 
-    private eventDoubleClick(e: Event): void {
+    private eventDoubleClick(e: Event & MouseEvent): void {
         //this.parent.quickPopup.quickPopupHide(true);
         if (e.type === 'touchstart') {
             this.activeEventData(e, true);
@@ -399,7 +399,25 @@ export class EventBase {
             return;
         }
         let guid: string = this.activeEventData(e, false);
-        this.parent.dotNetRef.invokeMethodAsync('TriggerEventDoubleClick', guid);
+        this.parent.dotNetRef.invokeMethodAsync('TriggerEventDoubleClick', guid, this.getMouseEvent(e));
+    }
+
+    public getMouseEvent(e: Event & MouseEvent): MouseArgs {
+        let mouseEvent: MouseArgs = {
+            altKey: e.altKey,
+            button: e.button,
+            buttons: e.buttons,
+            clientX: e.clientX,
+            clientY: e.clientY,
+            ctrlKey: e.ctrlKey,
+            detail: e.detail,
+            metaKey: e.metaKey,
+            screenX: e.screenX,
+            screenY: e.screenY,
+            shiftKey: e.shiftKey,
+            type: e.type
+        };
+        return mouseEvent as MouseArgs;
     }
 
     private activeEventData(eventData: Event, isMultiple: boolean): string {

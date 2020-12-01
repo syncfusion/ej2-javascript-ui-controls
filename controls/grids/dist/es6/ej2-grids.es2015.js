@@ -3543,6 +3543,7 @@ class HeaderRender {
         this.frzIdx = 0;
         this.notfrzIdx = 0;
         this.isFirstCol = false;
+        this.isReplaceDragEle = true;
         this.helper = (e) => {
             let gObj = this.parent;
             let target = this.draggable.currentStateTarget;
@@ -4209,7 +4210,8 @@ class HeaderRender {
             dragStart: this.dragStart,
             drag: this.drag,
             dragStop: this.dragStop,
-            abort: '.e-rhandler'
+            abort: '.e-rhandler',
+            isReplaceDragEle: this.isReplaceDragEle
         });
     }
     initializeHeaderDrop() {
@@ -5875,7 +5877,7 @@ class ColumnWidthService {
                     this.setWidth(collection[i].minWidth, this.parent.getColumnIndexByField(collection[i].field));
                 }
                 else if (tWidth !== 0 && difference > tmWidth) {
-                    this.setWidth('', this.parent.getColumnIndexByField(collection[i].field), true);
+                    this.setWidth('', this.parent.getColumnIndexByField(collection[i].field) + this.parent.getIndentCount(), true);
                 }
             }
         }
@@ -7422,10 +7424,10 @@ class Selection {
         let selectedMovableRow = this.getSelectedMovableRow(index);
         if (!isToggle && !isRemoved) {
             if (this.selectedRowIndexes.indexOf(index) <= -1) {
-                this.updateRowSelection(selectedRow, index);
                 if (gObj.getFrozenColumns()) {
                     this.updateRowSelection(selectedMovableRow, index);
                 }
+                this.updateRowSelection(selectedRow, index);
             }
             this.selectRowIndex(index);
         }
@@ -9388,6 +9390,7 @@ class Selection {
     }
     refreshPersistSelection() {
         let rows = this.parent.getRows();
+        this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         if (rows !== null && rows.length > 0 && (this.parent.isPersistSelection || this.chkField)) {
             let indexes = [];
             for (let j = 0; j < rows.length; j++) {
@@ -9398,7 +9401,8 @@ class Selection {
                 }
                 let checkState;
                 let chkBox = rows[j].querySelector('.e-checkselect');
-                if (this.selectedRowState[pKey] || (this.parent.checkAllRows === 'Check' && this.chkAllCollec.indexOf(pKey) < 0)
+                if (this.selectedRowState[pKey] || (this.parent.checkAllRows === 'Check' &&
+                    this.totalRecordsCount === Object.keys(this.selectedRowState).length && this.chkAllCollec.indexOf(pKey) < 0)
                     || (this.parent.checkAllRows === 'Uncheck' && this.chkAllCollec.indexOf(pKey) > 0)
                     || (this.parent.checkAllRows === 'Intermediate' && !isNullOrUndefined(this.chkField) && rowObj.data[this.chkField])) {
                     indexes.push(parseInt(rows[j].getAttribute('aria-rowindex'), 10));
@@ -12238,7 +12242,13 @@ let Grid = Grid_1 = class Grid extends Component {
             DialogEditARIA: 'Edit dialog',
             ColumnChooserDialogARIA: 'Column chooser dialog',
             ColumnMenuDialogARIA: 'Column menu dialog',
-            CustomFilterDialogARIA: 'Customer filter dialog'
+            CustomFilterDialogARIA: 'Customer filter dialog',
+            SortAtoZ: 'Sort A to Z',
+            SortZtoA: 'Sort Z to A',
+            SortByOldest: 'Sort by Oldest',
+            SortByNewest: 'Sort by Newest',
+            SortSmallestToLargest: 'Sort Smallest to Largest',
+            SortLargestToSmallest: 'Sort Largest to Smallest'
         };
         this.keyConfigs = {
             downArrow: 'downarrow',
@@ -12460,7 +12470,7 @@ let Grid = Grid_1 = class Grid extends Component {
         }
         classList(this.element, [], ['e-rtl', 'e-gridhover', 'e-responsive', 'e-default', 'e-device', 'e-grid-min-height']);
         if (this.isAngular) {
-            this.element.innerHTML = null;
+            this.element = null;
         }
     }
     destroyDependentModules() {
@@ -15790,6 +15800,9 @@ __decorate$1([
     Property({})
 ], Grid.prototype, "currentAction", void 0);
 __decorate$1([
+    Property('default version')
+], Grid.prototype, "ej2StatePersistenceVersion", void 0);
+__decorate$1([
     Event()
 ], Grid.prototype, "created", void 0);
 __decorate$1([
@@ -17440,6 +17453,7 @@ class CheckBoxFilterBase {
     getAndSetChkElem(options) {
         this.dlg = this.parent.createElement('div', {
             id: this.id + this.options.type + '_excelDlg',
+            attrs: { uid: this.options.column.uid },
             className: 'e-checkboxfilter e-filter-popup'
         });
         this.sBox = this.parent.createElement('div', { className: 'e-searchcontainer' });
@@ -18297,7 +18311,7 @@ class ExcelFilterBase extends CheckBoxFilterBase {
             remove(this.cmenu);
         }
     }
-    createMenu(type, isFiltered, isCheckIcon) {
+    createMenu(type, isFiltered, isCheckIcon, eleOptions) {
         let options = { string: 'TextFilter', date: 'DateFilter', datetime: 'DateTimeFilter', number: 'NumberFilter' };
         this.menu = this.parent.createElement('div', { className: 'e-contextmenu-wrapper' });
         if (this.parent.enableRtl) {
@@ -18308,6 +18322,19 @@ class ExcelFilterBase extends CheckBoxFilterBase {
         }
         let ul = this.parent.createElement('ul');
         let icon = isFiltered ? 'e-excl-filter-icon e-filtered' : 'e-excl-filter-icon';
+        if (this.parent.allowSorting) {
+            let hdrele = closest(eleOptions.target, '.e-headercell').getAttribute('aria-sort');
+            let isAsc = (hdrele === 'Ascending') ? 'e-disabled e-excel-ascending' : 'e-excel-ascending';
+            let isDesc = (hdrele === 'Descending') ? 'e-disabled e-excel-descending' : 'e-excel-descending';
+            let ascName = (type === 'string') ? this.getLocalizedLabel('SortAtoZ') : (type === 'datetime' || type === 'date') ?
+                this.getLocalizedLabel('SortByOldest') : this.getLocalizedLabel('SortSmallestToLargest');
+            let descName = (type === 'string') ? this.getLocalizedLabel('SortZtoA') : (type === 'datetime' || type === 'date') ?
+                this.getLocalizedLabel('SortByNewest') : this.getLocalizedLabel('SortLargestToSmallest');
+            ul.appendChild(this.createMenuElem(ascName, isAsc, 'e-sortascending'));
+            ul.appendChild(this.createMenuElem(descName, isDesc, 'e-sortdescending'));
+            let separator = this.parent.createElement('li', { className: 'e-separator e-menu-item e-excel-separator' });
+            ul.appendChild(separator);
+        }
         ul.appendChild(this.createMenuElem(this.getLocalizedLabel('ClearFilter'), isFiltered ? '' : 'e-disabled', icon));
         if (type !== 'boolean') {
             ul.appendChild(this.createMenuElem(this.getLocalizedLabel(options[type]), 'e-submenu', isCheckIcon && this.ensureTextFilter() ? 'e-icon-check' : icon + ' e-emptyicon', true));
@@ -18443,7 +18470,7 @@ class ExcelFilterBase extends CheckBoxFilterBase {
             this.options.filteredColumns.filter((col) => {
                 return this.options.field === col.field;
             }).length;
-        this.createMenu(options.type, filterLength > 0, (filterLength === 1 || filterLength === 2));
+        this.createMenu(options.type, filterLength > 0, (filterLength === 1 || filterLength === 2), options);
         this.dlg.insertBefore(this.menu, this.dlg.firstChild);
         this.dlg.classList.add('e-excelfilter');
         if (this.parent.enableRtl) {
@@ -19324,6 +19351,7 @@ class Sort {
         }
     }
     clickHandler(e) {
+        let gObj = this.parent;
         this.currentTarget = null;
         this.popUpClickHandler(e);
         let target = closest(e.target, '.e-headercell');
@@ -19333,7 +19361,6 @@ class Sort {
             !e.target.classList.contains('e-columnmenu') &&
             !e.target.classList.contains('e-filtermenudiv') &&
             !parentsUntil(e.target, 'e-stackedheadercell')) {
-            let gObj = this.parent;
             let colObj = gObj.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('e-mappinguid'));
             let direction = !target.querySelectorAll('.e-ascending').length ? 'Ascending' :
                 'Descending';
@@ -19346,6 +19373,12 @@ class Sort {
         }
         if (target) {
             target.classList.remove('e-resized');
+        }
+        if (e.target.classList.contains('e-excel-ascending') ||
+            e.target.classList.contains('e-excel-descending')) {
+            let colUid = closest(e.target, '.e-filter-popup').getAttribute('uid');
+            let direction = e.target.classList.contains('e-excel-ascending') ? 'Ascending' : 'Descending';
+            this.sortColumn(gObj.getColumnByUid(colUid).field, direction, false);
         }
     }
     keyPressed(e) {
@@ -22665,6 +22698,9 @@ class Filter {
             let hasDialogClosed = this.parent.element.querySelector('.e-filter-popup');
             if (dialog && popupEle) {
                 hasDialog = dialog.id === popupEle.id;
+            }
+            if (target.classList.contains('e-excel-ascending') || target.classList.contains('e-excel-descending')) {
+                this.filterModule.closeDialog(target);
             }
             if (parentsUntil(target, 'e-filter-popup') || target.classList.contains('e-filtermenudiv')) {
                 return;
@@ -26679,7 +26715,9 @@ class SummaryCellRenderer extends CellRenderer {
                 let fData = gColumn.columnData.filter((e) => {
                     return e[gColumn.foreignKeyField] === data[column.columnName].key;
                 })[0];
-                data[column.columnName].foreignKey = fData[gColumn.foreignKeyValue];
+                if (fData) {
+                    data[column.columnName].foreignKey = fData[gColumn.foreignKeyValue];
+                }
             }
         }
         if (isBlazor()) {
@@ -28876,7 +28914,8 @@ class DialogEditRender {
         let tempDiv = this.parent.createElement('div', { className: 'e-dialog' + dialogTemp });
         let dummyData = extend({}, args.rowData, { isAdd: !this.isEdit }, true);
         let templateID = this.parent.element.id + 'editSettings' + dialogTemp;
-        appendChildren(tempDiv, this.parent.getEditHeaderTemplate()(dummyData, this.parent, 'editSettings' + dialogTemp, templateID));
+        appendChildren(tempDiv, (dialogTemp === 'HeaderTemplate' ? this.parent.getEditHeaderTemplate() :
+            this.parent.getEditFooterTemplate())(dummyData, this.parent, 'editSettings' + dialogTemp, templateID));
         updateBlazorTemplate(templateID, dialogTemp, this.parent.editSettings);
         return tempDiv;
     }
@@ -33257,7 +33296,8 @@ class ExportValueFormatter {
             args.value = getValue(args.column.foreignKeyValue, getForeignData(args.column, {}, args.value)[0]);
         }
         if (args.column.type === 'number' && args.column.format !== undefined && args.column.format !== '') {
-            return args.value ? this.internationalization.getNumberFormat({ format: args.column.format })(args.value) : '';
+            return args.value || args.value === 0 ?
+                this.internationalization.getNumberFormat({ format: args.column.format })(args.value) : '';
         }
         else if (args.column.type === 'boolean' && args.value !== '') {
             return args.value ? 'true' : 'false';
@@ -33550,6 +33590,7 @@ class ExcelExport {
             }
             /* tslint:disable-next-line:no-any */
             sheet.rows = this.rows;
+            sheet.enableRtl = this.parent.enableRtl;
             this.workSheet.push(sheet);
             this.book.worksheets = this.workSheet;
             this.book.styles = this.styles;

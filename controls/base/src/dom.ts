@@ -284,7 +284,9 @@ function querySelectId(selector: string): string {
                     if (!list[j].match(/\[.*\]/)) {
                         let splitId: string[] = list[j].split('#');
                         if (splitId[1].match(/^\d/)) {
-                            list[j] = list[j].replace(/#/, '[id=\'') + '\']';
+                            let setId: string[] = list[j].split('.');
+                            setId[0] = setId[0].replace(/#/, '[id=\'') + '\']';
+                            list[j] = setId.join('.');
                         }
                     }
                 }

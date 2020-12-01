@@ -1871,6 +1871,15 @@ function updateTextNode$1(value) {
     }
     return resultElm.innerHTML;
 }
+function getLastTextNode(startChildNodes) {
+    var finalNode = startChildNodes;
+    do {
+        if (finalNode.childNodes.length > 0) {
+            finalNode = finalNode.childNodes[0];
+        }
+    } while (finalNode.childNodes.length > 0);
+    return finalNode;
+}
 
 var __assign$1 = (undefined && undefined.__assign) || function () {
     __assign$1 = Object.assign || function(t) {
@@ -6922,8 +6931,10 @@ var DOMNode = /** @class */ (function () {
      */
     DOMNode.prototype.setMarker = function (save) {
         var range = save.range;
-        var start = (range.startContainer.childNodes[range.startOffset]
-            || range.startContainer);
+        var startChildNodes = range.startContainer.childNodes;
+        var isTableStart = startChildNodes.length > 1 && startChildNodes[0].nodeName === 'TABLE';
+        var start = ((isTableStart ? getLastTextNode(startChildNodes[range.startOffset + 1]) :
+            startChildNodes[range.startOffset]) || range.startContainer);
         var end = (range.endContainer.childNodes[(range.endOffset > 0) ? (range.endOffset - 1) : range.endOffset]
             || range.endContainer);
         if ((start.nodeType === Node.ELEMENT_NODE && end.nodeType === Node.ELEMENT_NODE) && (start.contains(end) || end.contains(start))) {
@@ -9878,8 +9889,19 @@ var SelectionCommands = /** @class */ (function () {
                 }
             }
             isCursor = range.collapsed;
+            var isSubSup = false;
             for (var index = 0; index < nodes.length; index++) {
                 var formatNode = isFormatted.getFormattedNode(nodes[index], format, endNode);
+                if (formatNode === null) {
+                    if (format === 'subscript') {
+                        formatNode = isFormatted.getFormattedNode(nodes[index], 'superscript', endNode);
+                        isSubSup = formatNode === null ? false : true;
+                    }
+                    else if (format === 'superscript') {
+                        formatNode = isFormatted.getFormattedNode(nodes[index], 'subscript', endNode);
+                        isSubSup = formatNode === null ? false : true;
+                    }
+                }
                 if (index === 0 && formatNode === null) {
                     isFormat = true;
                 }
@@ -9895,6 +9917,9 @@ var SelectionCommands = /** @class */ (function () {
                 setEditFrameFocus(endNode, selector);
             }
             save.restore();
+            if (isSubSup) {
+                this.applyFormat(docElement, format, endNode);
+            }
         }
     };
     SelectionCommands.insertCursorNode = function (docElement, domSelection, range, isFormatted, nodeCutter, format, value, endNode) {
@@ -11572,12 +11597,19 @@ var HtmlEditor = /** @class */ (function () {
                             contentWithSpace += spaceSplit[j] + ' ';
                         }
                     }
-                    contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+                    if (i === 0) {
+                        contentInnerElem += '<span>' + contentWithSpace.trim() + '</span>';
+                    }
+                    else {
+                        contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+                    }
                 }
             }
             var divElement = document.createElement('div');
+            divElement.setAttribute('class', 'pasteContent');
+            divElement.style.display = 'inline';
             divElement.innerHTML = contentInnerElem;
-            var paraElem = divElement.querySelectorAll('p');
+            var paraElem = divElement.querySelectorAll('span, p');
             for (var i = 0; i < paraElem.length; i++) {
                 var splitTextContent = paraElem[i].innerHTML.split(' ');
                 var resultSplitContent = '';
@@ -12061,8 +12093,7 @@ var ViewSource = /** @class */ (function () {
         });
     };
     ViewSource.prototype.getTextAreaValue = function (element) {
-        return (element.innerHTML === '<p><br></p>' ||
-            element.innerHTML.length === 12) ||
+        return (element.innerHTML === '<p><br></p>') ||
             (element.childNodes.length === 1 &&
                 element.childNodes[0].tagName === 'P' &&
                 element.innerHTML.length === 7) ? '' : this.parent.value;

@@ -1,4 +1,4 @@
-import { createElement, remove, Droppable, setStyleAttribute, removeClass } from '@syncfusion/ej2-base';
+import { createElement, remove, Droppable, setStyleAttribute, removeClass, select } from '@syncfusion/ej2-base';
 import { EventHandler, Touch, TapEventArgs, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { addClass, formatUnit } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
@@ -146,12 +146,12 @@ export class GroupingBar implements IAction {
                     }
                 }
                 if (this.groupingChartTable) {
-                    if (this.parent.element.querySelector('#' + this.parent.element.id + '_chart')) {
+                    if (select('#' + this.parent.element.id + '_chart', this.parent.element)) {
                         setStyleAttribute(this.groupingChartTable, {
                             width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber())
                         });
                         this.parent.element.insertBefore(
-                            this.groupingChartTable, this.parent.element.querySelector('#' + this.parent.element.id + '_chart'));
+                            this.groupingChartTable, select('#' + this.parent.element.id + '_chart', this.parent.element));
                     } else {
                         this.groupingChartTable = undefined;
                     }

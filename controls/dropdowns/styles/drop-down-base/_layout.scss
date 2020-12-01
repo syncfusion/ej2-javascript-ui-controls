@@ -61,7 +61,7 @@
     position: relative;
   }
 
-  .e-popup.e-ddl .e-dropdownbase.e-nodata {
+  #{&}.e-popup.e-ddl .e-dropdownbase.e-nodata {
     color: $ddl-nodata-font-color;
     cursor: default;
     font-family: $ddl-list-font-family;

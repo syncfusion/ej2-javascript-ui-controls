@@ -10,7 +10,7 @@
   background-color: $ddl-sel-hover-chip-bg-color;
 }
 
-.e-multiselect {
+#{&}.e-multiselect {
   box-sizing: border-box;
 }
 
@@ -73,85 +73,85 @@
   height: $ddl-chip-mobile-height;
 }
 
-.e-popup.e-multi-select-list-wrapper {
+#{&}.e-popup.e-multi-select-list-wrapper {
   box-shadow: $ddl-popup-shadow-value;
   box-sizing: content-box;
   overflow: initial;
 }
 
-.e-popup.e-multi-select-list-wrapper .e-list-item.e-active {
+#{&}.e-popup.e-multi-select-list-wrapper .e-list-item.e-active {
   border-bottom: $ddl-popup-active-border-width solid transparent;
   border-left: $ddl-popup-active-border-width solid $ddl-popup-active-focus-bg-color;
   border-right: $ddl-popup-active-border-width solid $ddl-popup-active-focus-bg-color;
   border-top: $ddl-popup-active-border-width solid $ddl-popup-active-border-color;
 }
 
-.e-popup.e-multi-select-list-wrapper.e-checkbox .e-list-item.e-active {
+#{&}.e-popup.e-multi-select-list-wrapper.e-checkbox .e-list-item.e-active {
   background-color: transparent;
   border-color: transparent;
   color: $ddl-multi-list-default-font-color;
 }
 
-.e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-list-group-item.e-active {
+#{&}.e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-list-group-item.e-active {
   background-color: transparent;
   border-color: transparent;
   color: $ddl-multi-list-default-font-color;
 }
 
-.e-popup.e-multi-select-list-wrapper.e-checkbox .e-list-item.e-active.e-item-focus {
+#{&}.e-popup.e-multi-select-list-wrapper.e-checkbox .e-list-item.e-active.e-item-focus {
   @if $ddl-multiselect-skin-name != 'highcontrast' {
     color: $ddl-multi-list-default-font-color;
   }
 }
 
-.e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-list-group-item.e-active.e-item-focus {
+#{&}.e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-list-group-item.e-active.e-item-focus {
   @if $ddl-multiselect-skin-name != 'highcontrast' {
     color: $ddl-multi-list-default-font-color;
   }
 }
 
-.e-popup.e-multi-select-list-wrapper.e-checkbox .e-list-item.e-active.e-hover {
+#{&}.e-popup.e-multi-select-list-wrapper.e-checkbox .e-list-item.e-active.e-hover {
   background-color: $ddl-multi-list-hover-bg-color;
 }
 
-.e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-list-group-item.e-active.e-hover {
+#{&}.e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-list-group-item.e-active.e-hover {
   background-color: $ddl-multi-list-hover-bg-color;
 }
 
-.e-popup.e-multi-select-list-wrapper .e-list-item.e-active:first-child {
+#{&}.e-popup.e-multi-select-list-wrapper .e-list-item.e-active:first-child {
   border-bottom: $ddl-popup-active-border-width solid transparent;
   border-top: $ddl-popup-active-border-width solid transparent;
 }
 
-.e-popup.e-multi-select-list-wrapper .e-list-item.e-active:last-child {
+#{&}.e-popup.e-multi-select-list-wrapper .e-list-item.e-active:last-child {
   border-bottom: $ddl-popup-active-border-width solid transparent;
 }
 
-.e-popup.e-multi-select-list-wrapper .e-list-item.e-active.e-item-focus + li.e-active {
+#{&}.e-popup.e-multi-select-list-wrapper .e-list-item.e-active.e-item-focus + li.e-active {
   @if $ddl-multiselect-skin-name != 'highcontrast' {
     border-top: $ddl-popup-active-border-width solid transparent;
   }
 }
 
-.e-popup.e-multi-select-list-wrapper .e-list-item.e-active.e-item-focus {
+#{&}.e-popup.e-multi-select-list-wrapper .e-list-item.e-active.e-item-focus {
   background-color: $ddl-popup-active-focus-bg-color;
   border: $ddl-popup-active-focus-border-width solid $ddl-popup-active-focus-border-color;
   box-shadow: $ddl-popup-active-focus-shadow-item;
   color: $ddl-popup-active-focus-font-color;
 }
 
-.e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-list-group-item.e-active.e-item-focus {
+#{&}.e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-list-group-item.e-active.e-item-focus {
   background-color: $ddl-popup-active-focus-bg-color;
   border: $ddl-popup-active-focus-border-width solid $ddl-popup-active-focus-border-color;
   box-shadow: $ddl-popup-active-focus-shadow-item;
   color: $ddl-popup-active-focus-font-color;
 }
 
-.e-popup.e-multi-select-list-wrapper .e-list-item {
+#{&}.e-popup.e-multi-select-list-wrapper .e-list-item {
   border: $ddl-popup-normal-border-width solid transparent;
 }
 
-.e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-list-group-item {
+#{&}.e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-list-group-item {
   border: $ddl-popup-normal-border-width solid transparent;
 }
 

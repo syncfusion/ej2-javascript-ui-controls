@@ -1326,6 +1326,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             if ((node.clientHeight > 0 || (node.tagName.toLowerCase() === 'a' && node.hasAttribute('href'))) && node.tabIndex > -1 &&
                 !(node as HTMLInputElement).disabled && !this.disableElement(node, '[disabled],[aria-disabled="true"],[type="hidden"]')) {
                 return node;
+            } else {
+                node = null;
             }
         }
         return node;

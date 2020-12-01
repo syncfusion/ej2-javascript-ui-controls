@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.52 (2020-12-01)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#300136` - Dynamic changing of allowEditing property works fine in Cell Edit mode.
+
 ## 18.3.48 (2020-11-11)
 
 ### TreeGrid

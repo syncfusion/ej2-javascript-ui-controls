@@ -211,6 +211,7 @@ export class CheckBoxFilterBase {
     protected getAndSetChkElem(options: IFilterArgs): HTMLElement {
         this.dlg = this.parent.createElement('div', {
             id: this.id + this.options.type + '_excelDlg',
+            attrs : { uid: this.options.column.uid},
             className: 'e-checkboxfilter e-filter-popup'
         });
 

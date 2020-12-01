@@ -1638,6 +1638,10 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
         _this.isChart = true;
         /** @private */
         _this.isIntervalInDecimal = true;
+        /** @private */
+        _this.titleCollection = [];
+        /** @private */
+        _this.titleSize = new Size(0, 0);
         /**
          * @private
          * Task: BLAZ-2044
@@ -1676,8 +1680,15 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
      */
     Axis.prototype.findLabelSize = function (crossAxis, innerPadding) {
         var titleSize = 0;
+        var isHorizontal = this.orientation === 'Horizontal';
         if (this.title) {
-            titleSize = measureText(this.title, this.titleStyle).height + innerPadding;
+            this.titleSize = measureText(this.title, this.titleStyle);
+            titleSize = this.titleSize.height + innerPadding;
+            if (this.rect.width || this.rect.height) {
+                var length_1 = isHorizontal ? this.rect.width : this.rect.height;
+                this.titleCollection = getTitle(this.title, this.titleStyle, length_1);
+                titleSize = (titleSize * this.titleCollection.length);
+            }
         }
         if (this.labelPosition === 'Inside') {
             return titleSize + innerPadding;
@@ -4839,8 +4850,8 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
         padding = axis.opposedPosition ? padding + axis.scrollBarHeight : -padding - axis.scrollBarHeight;
         var x = rect.x + padding;
         var y = rect.y + rect.height * 0.5;
-        var options = new TextOption(chart.element.id + '_AxisTitle_' + index, x, y - axis.labelPadding, 'middle', axis.title, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation);
-        options.text = textTrim(axis.updatedRect.height, options.text, axis.titleStyle);
+        var titleSize = (axis.titleSize.height * (axis.titleCollection.length - 1));
+        var options = new TextOption(chart.element.id + '_AxisTitle_' + index, x, y - axis.labelPadding - titleSize, 'middle', axis.titleCollection, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation);
         var element = textElement$1(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
         element.setAttribute('tabindex', axis.tabIndex.toString());
         element.setAttribute('aria-label', axis.description || axis.title);
@@ -5303,10 +5314,10 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
         var padding = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
             (axis.labelPosition === 'Inside' ? 0 :
                 axis.maxLabelSize.height + axis.multiLevelLabelHeight + axis.labelPadding);
-        padding = axis.opposedPosition ? -(padding + elementSize.height / 4 + scrollBarHeight) : (padding + (3 *
+        var titleSize = (axis.titleSize.height * (axis.titleCollection.length - 1));
+        padding = axis.opposedPosition ? -(padding + elementSize.height / 4 + scrollBarHeight + titleSize) : (padding + (3 *
             elementSize.height / 4) + scrollBarHeight);
-        var options = new TextOption(chart.element.id + '_AxisTitle_' + index, rect.x + rect.width * 0.5, rect.y + padding, 'middle', axis.title);
-        options.text = textTrim(axis.updatedRect.width, options.text, axis.titleStyle);
+        var options = new TextOption(chart.element.id + '_AxisTitle_' + index, rect.x + rect.width * 0.5, rect.y + padding, 'middle', axis.titleCollection);
         var element = textElement$1(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
         element.setAttribute('aria-label', axis.description || axis.title);
         element.setAttribute('tabindex', axis.tabIndex.toString());
@@ -34200,9 +34211,9 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
         var isDateTime = this.valueType === 'DateTime';
         var range = this.chartSeries.xAxis.actualRange;
         this.startValue = this.startValue ? this.startValue : (!this.value[0] ? range.min :
-            (isDateTime ? this.value[0].getTime() : +this.value[0]));
+            (isDateTime ? (new Date(this.value[0].toString())).getTime() : +this.value[0]));
         this.endValue = this.endValue ? this.endValue : (!this.value[1] ? range.max :
-            (isDateTime ? this.value[1].getTime() : +this.value[1]));
+            (isDateTime ? (new Date(this.value[1].toString())).getTime() : +this.value[1]));
     };
     /**
      * To render the range navigator

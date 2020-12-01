@@ -7920,10 +7920,14 @@ class DiagramHtmlElement extends DiagramElement {
      */
     set content(value) {
         this.data = value;
-        if (!this.isTemplate) {
-            this.template = getContent(this, true);
+        if (!this.canReset) {
+            this.canReset = true;
+            if (!this.isTemplate) {
+                this.template = getContent(this, true);
+            }
+            this.canReset = false;
+            this.isDirt = true;
         }
-        this.isDirt = true;
     }
 }
 
@@ -15481,7 +15485,7 @@ function getSymbolSize(sourceElement, clonedObject, wrapper, size) {
         previewSize = sourceElement.symbolPreview[size];
     }
     else {
-        previewSize = clonedObject.width || wrapper.actualSize.width;
+        previewSize = clonedObject[size] || wrapper.actualSize[size];
     }
     return previewSize;
 }
@@ -23621,9 +23625,9 @@ class MoveTool extends ToolBase {
                 object = this.commandHandler.renderContainerHelper(args.source) || args.source || this.commandHandler.renderContainerHelper(args.source);
                 if ((object.id === 'helper' && !obj.nodes[0].isLane && !obj.nodes[0].isPhase)
                     || (object.id !== 'helper')) {
-                    if (((object instanceof Selector && object.width == this.undoElement.width && object.height == this.undoElement.height) || !(object instanceof Selector)) && (object.offsetX !== this.undoElement.offsetX || object.offsetY !== this.undoElement.offsetY ||
+                    if ((((object instanceof Selector && object.width == this.undoElement.width && object.height == this.undoElement.height) || !(object instanceof Selector)) && (object.offsetX !== this.undoElement.offsetX || object.offsetY !== this.undoElement.offsetY ||
                         object.sourcePoint !== this.undoElement.sourcePoint
-                        || object.targetPoint !== this.undoElement.targetPoint)) {
+                        || object.targetPoint !== this.undoElement.targetPoint)) || this.isSelectionHasConnector(object)) {
                         if (args.source) {
                             newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
                             oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
@@ -23714,6 +23718,13 @@ class MoveTool extends ToolBase {
             this.commandHandler.updateBlazorSelector();
             _super("mouseUp").call(this, args);
         });
+    }
+    isSelectionHasConnector(args) {
+        if (args.nodes && args.connectors && args.nodes.length > 0 && args.connectors.length > 0 &&
+            (args.width !== this.undoElement.width || args.height !== this.undoElement.height)) {
+            return true;
+        }
+        return false;
     }
     getBlazorPositionChangeEventArgs(args, target) {
         args = {
@@ -31986,6 +31997,7 @@ class CommandHandler {
         this.diagram.preventConnectorsUpdate = true;
         this.expandCollapse(node, expand, this.diagram);
         node.isExpanded = expand;
+        let fixedNode = this.diagram.layout.fixedNode;
         this.diagram.layout.fixedNode = node.id;
         if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation && this.diagram.organizationalChartModule) {
             this.diagram.organizationalChartModule.isAnimation = true;
@@ -32009,6 +32021,7 @@ class CommandHandler {
                 this.diagram.resetSegments();
             }
         }
+        this.diagram.layout.fixedNode = fixedNode === "" ? "" : this.diagram.layout.fixedNode;
         return objects;
     }
     getparentexpand(target, diagram, visibility, connector) {
@@ -38909,16 +38922,22 @@ class Diagram extends Component {
             let rootNode = this.nodes[0];
             if (rootNode.outEdges.length > 1) {
                 let isProtectedChange = this.isProtectedOnChange;
-                let connector = this.nameTable[rootNode.outEdges[1]];
-                let isAllowServerUpdate = this.allowServerDataBinding;
-                this.protectPropertyChange(false);
-                this.enableServerDataBinding(false);
-                this.preventDiagramUpdate = true;
-                connector.sourcePortID = rootNode.ports[1].id;
-                this.dataBind();
-                this.preventDiagramUpdate = false;
-                this.enableServerDataBinding(isAllowServerUpdate);
-                this.protectPropertyChange(isProtectedChange);
+                for (let i = 1; i < rootNode.outEdges.length; i++) {
+                    let connector = this.nameTable[rootNode.outEdges[i]];
+                    let isAllowServerUpdate = this.allowServerDataBinding;
+                    this.protectPropertyChange(false);
+                    this.enableServerDataBinding(false);
+                    this.preventDiagramUpdate = true;
+                    let target = this.getObject(connector.targetID);
+                    // tslint:disable-next-line:no-any
+                    if (target.data.Branch === 'Left') {
+                        connector.sourcePortID = rootNode.ports[1].id;
+                    }
+                    this.dataBind();
+                    this.preventDiagramUpdate = false;
+                    this.enableServerDataBinding(isAllowServerUpdate);
+                    this.protectPropertyChange(isProtectedChange);
+                }
             }
         }
         if (isBlazor()) {
@@ -40940,6 +40959,9 @@ class Diagram extends Component {
                 let sourceNode = this.nameTable[actualObject.sourceID];
                 if (!sourceNode || (canOutConnect(sourceNode) || (actualObject.sourcePortID !== '' && canPortOutConnect(outPort)))) {
                     actualObject.sourcePortWrapper = source ? this.getWrapper(source, newProp.sourcePortID) : undefined;
+                }
+                else if (actualObject.sourcePortID === '' && !canOutConnect(sourceNode)) {
+                    actualObject.sourcePortWrapper = undefined;
                 }
             }
             if (newProp.targetPortID !== undefined && newProp.targetPortID !== oldProp.targetPortID) {
@@ -51136,18 +51158,20 @@ class LineDistribution {
                     else if (type === 'internalEdge') {
                         let internalEdges = cell;
                         let parent = matrixCell.visitedParents[0];
-                        for (let l = 0; l < parent.visitedChildren.length; l++) {
-                            let children = parent.visitedChildren[l];
-                            let cells = [];
-                            for (let m = 0; m < children.cells.length; m++) {
-                                let cell = children.cells[m];
-                                let type = this.getType(cell.type);
-                                if (type === 'internalVertex') {
-                                    cells.push(cell);
+                        if (parent) {
+                            for (let l = 0; l < parent.visitedChildren.length; l++) {
+                                let children = parent.visitedChildren[l];
+                                let cells = [];
+                                for (let m = 0; m < children.cells.length; m++) {
+                                    let cell = children.cells[m];
+                                    let type = this.getType(cell.type);
+                                    if (type === 'internalVertex') {
+                                        cells.push(cell);
+                                    }
                                 }
-                            }
-                            if (cells.length > 0) {
-                                break;
+                                if (cells.length > 0) {
+                                    break;
+                                }
                             }
                         }
                         // Need to updated line width

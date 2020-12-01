@@ -28,7 +28,7 @@
     }
   }
 
-  .e-timepicker.e-time-modal {
+  #{&}.e-timepicker.e-time-modal {
     background-color: $timepicker-default-overlay;
     height: 100%;
     left: 0;
@@ -40,7 +40,7 @@
     z-index: 999;
 	}
 
-  .e-timepicker.e-popup {
+  #{&}.e-timepicker.e-popup {
     border-style: solid;
     border-width: 1px;
     overflow: auto;
@@ -72,7 +72,7 @@
 
   //normal styles
 
-  .e-timepicker.e-popup {
+  #{&}.e-timepicker.e-popup {
     #{if(&, '&', '*')} .e-list-parent.e-ul .e-list-item {
       line-height: $timepicker-list-normal-line-height;
       text-indent: $timepicker-list-normal-text-indent;
@@ -94,8 +94,8 @@
     }
   }
 
-  .e-bigger .e-timepicker.e-popup,
-  #{if(&, '&', '*')}.e-bigger.e-timepicker.e-popup {
+  .e-bigger #{&}.e-timepicker.e-popup,
+  #{if(&, '&', '*')}.e-bigger#{&}.e-timepicker.e-popup {
 
     #{if(&, '&', '*')} .e-list-parent.e-ul {
       padding: $timepicker-list-bigger-padding 0;
@@ -109,8 +109,8 @@
   }
 
   //mouse small size
-  .e-small .e-timepicker.e-popup,
-  #{if(&, '&', '*')}.e-small.e-timepicker.e-popup {
+  .e-small #{&}.e-timepicker.e-popup,
+  #{if(&, '&', '*')}.e-small#{&}.e-timepicker.e-popup {
 
     #{if(&, '&', '*')} .e-list-parent.e-ul {
       #{if(&, '&', '*')} .e-list-item {
@@ -132,8 +132,8 @@
   }
 
   //mouse small size
-  .e-small.e-bigger .e-timepicker.e-popup,
-  #{if(&, '&', '*')}.e-small.e-bigger.e-timepicker.e-popup {
+  .e-small.e-bigger #{&}.e-timepicker.e-popup,
+  #{if(&, '&', '*')}.e-small.e-bigger#{&}.e-timepicker.e-popup {
 
     #{if(&, '&', '*')} .e-list-parent.e-ul {
       #{if(&, '&', '*')} .e-list-item {

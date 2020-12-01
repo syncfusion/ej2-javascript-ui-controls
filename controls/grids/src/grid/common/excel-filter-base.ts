@@ -1,4 +1,4 @@
-import { EventHandler, remove, Browser, isBlazor, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { EventHandler, remove, Browser, isBlazor, updateBlazorTemplate, closest } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Query, DataManager, Predicate, Deferred } from '@syncfusion/ej2-data';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
@@ -93,7 +93,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         }
     }
 
-    private createMenu(type: string, isFiltered: boolean, isCheckIcon: boolean): void {
+    private createMenu(type: string, isFiltered: boolean, isCheckIcon: boolean, eleOptions?: IFilterArgs ): void {
         let options: Object = { string: 'TextFilter', date: 'DateFilter', datetime: 'DateTimeFilter', number: 'NumberFilter' };
         this.menu = this.parent.createElement('div', { className: 'e-contextmenu-wrapper' });
         if (this.parent.enableRtl) {
@@ -103,6 +103,19 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         }
         let ul: Element = this.parent.createElement('ul');
         let icon: string = isFiltered ? 'e-excl-filter-icon e-filtered' : 'e-excl-filter-icon';
+        if (this.parent.allowSorting) {
+            let hdrele: string = closest(eleOptions.target, '.e-headercell').getAttribute('aria-sort');
+            let isAsc: string = (hdrele === 'Ascending') ? 'e-disabled e-excel-ascending' : 'e-excel-ascending';
+            let isDesc: string = (hdrele === 'Descending') ? 'e-disabled e-excel-descending' : 'e-excel-descending';
+            let ascName: string = (type === 'string') ? this.getLocalizedLabel('SortAtoZ') : (type === 'datetime' || type === 'date') ?
+            this.getLocalizedLabel('SortByOldest') : this.getLocalizedLabel('SortSmallestToLargest');
+            let descName: string = (type === 'string') ? this.getLocalizedLabel('SortZtoA') : (type === 'datetime' || type === 'date') ?
+            this.getLocalizedLabel('SortByNewest') : this.getLocalizedLabel('SortLargestToSmallest') ;
+            ul.appendChild(this.createMenuElem(ascName, isAsc, 'e-sortascending'));
+            ul.appendChild(this.createMenuElem(descName, isDesc, 'e-sortdescending'));
+            let separator: Element = this.parent.createElement('li', { className: 'e-separator e-menu-item e-excel-separator'});
+            ul.appendChild(separator);
+        }
         ul.appendChild(this.createMenuElem(this.getLocalizedLabel('ClearFilter'), isFiltered ? '' : 'e-disabled', icon));
         if (type !== 'boolean') {
             ul.appendChild(this.createMenuElem(
@@ -247,7 +260,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             this.options.filteredColumns.filter((col: Predicate) => {
                 return this.options.field === col.field;
             }).length;
-        this.createMenu(options.type, filterLength > 0, (filterLength === 1 || filterLength === 2));
+        this.createMenu(options.type, filterLength > 0, (filterLength === 1 || filterLength === 2), options);
         this.dlg.insertBefore(this.menu, this.dlg.firstChild);
         this.dlg.classList.add('e-excelfilter');
         if (this.parent.enableRtl) {

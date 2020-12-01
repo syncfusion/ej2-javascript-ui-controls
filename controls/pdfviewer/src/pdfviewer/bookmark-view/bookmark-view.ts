@@ -89,6 +89,9 @@ export class BookmarkView {
                 } else {
                     proxy.pdfViewerBase.navigationPane.enableBookmarkButton();
                     proxy.isBookmarkViewDiv = false;
+                    if (proxy.pdfViewer.isBookmarkPanelOpen) {
+                        proxy.pdfViewerBase.navigationPane.openBookmarkcontentInitially();
+                    }
                 }
             }
         };

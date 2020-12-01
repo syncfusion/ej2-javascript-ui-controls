@@ -4168,7 +4168,7 @@ export class WordExport {
         if (!isNullOrUndefined(format.cellSpacing) && format.cellSpacing > 0) {
             writer.writeStartElement(undefined, 'tblCellSpacing', this.wNamespace);
             // tslint:disable-next-line:max-line-length
-            writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(format.cellSpacing * this.twentiethOfPoint).toString());
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal((format.cellSpacing / 2) * this.twentiethOfPoint).toString());
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
             writer.writeEndElement();
         }

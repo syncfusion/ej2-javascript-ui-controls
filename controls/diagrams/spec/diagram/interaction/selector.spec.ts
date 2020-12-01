@@ -6,7 +6,7 @@ import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { SelectorModel } from '../../../src/diagram/objects/node-model';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 import { NodeConstraints } from '../../../src/diagram/enum/enum';
-
+import { IDraggingEventArgs } from '../../../src/diagram/objects/interface/IElement'
 
 /**
  * Selector spec
@@ -492,7 +492,7 @@ describe('Diagram Control', () => {
                 ],
                 constraints: NodeConstraints.Default & ~NodeConstraints.Rotate // Default except rotate
             };
-            
+
             let node2 = {
                 offsetX: 550,
                 offsetY: 250,
@@ -504,7 +504,7 @@ describe('Diagram Control', () => {
                     }
                 ],
             };
-            
+
             let connector = {
                 sourcePoint: {
                     x: 350,
@@ -515,14 +515,14 @@ describe('Diagram Control', () => {
                     y: 250,
                 }
             }
-            
+
             diagram = new Diagram({
                 width: '100%',
                 height: '600px',
                 nodes: [node, node2],
                 connectors: [connector],
             });
-            
+
             diagram.appendTo('#diagramRotateThumb');
 
         });
@@ -550,6 +550,101 @@ describe('Diagram Control', () => {
             events.clickEvent(diagramCanvas, 550, 250, true);
             events.clickEvent(diagramCanvas, 250, 250, true);
             expect(document.getElementById('rotateThumb') !== null && document.getElementById('pivotLine') !== null).toBe(false);
+            done();
+        });
+    });
+    describe('EJ2-44023-PositionChange event does not gets triggered for completed state', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram99' });
+            document.body.appendChild(ele);
+            let selArray: (NodeModel | ConnectorModel)[] = [];
+
+            let nodes: NodeModel[] = [
+                {
+                    id: "sdlc",
+                    offsetX: 300,
+                    offsetY: 288,
+                    annotations: [{ content: "SDLC" }]
+                },
+                {
+                    id: "support",
+                    offsetX: 150,
+                    offsetY: 250,width: 150,
+                    height: 150,
+                    annotations: [{ content: "Support" }]
+                },
+                {
+                    id: "analysis",
+                    offsetX: 300,
+                    offsetY: 150,
+                    annotations: [{ content: "Analysis" }]
+                },
+                {
+                    id: "design",
+                    offsetX: 450,
+                    offsetY: 250,
+                    annotations: [{ content: "Design" }]
+                },
+                {
+                    id: "implement",
+                    offsetX: 400,
+                    offsetY: 400,
+                    annotations: [{ content: "implement" }]
+                },
+                {
+                    id: "deploy",
+                    offsetX: 200,
+                    offsetY: 400,
+                    annotations: [{ content: "Deploy" }]
+                }
+            ];
+
+            let connections: ConnectorModel[] = [
+                { id: "connector1", sourceID: "analysis", targetID: "design" },
+                { id: "connector2", sourceID: "design", targetID: "implement" },
+                { id: "connector3", sourceID: "implement", targetID: "deploy" },
+                { id: "connector4", sourceID: "deploy", targetID: "support" },
+                { id: "connector5", sourceID: "support", targetID: "analysis" }
+            ];
+            diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes, connectors: connections, positionChange:position });
+            diagram.appendTo('#diagram99');
+            selArray.push(diagram.nodes[1]);
+            selArray.push(diagram.connectors[3]);
+            selArray.push(diagram.connectors[4]);
+            diagram.select(selArray, true);
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        function position(args: IDraggingEventArgs): void {
+            if (args.state === "Completed") {
+                console.log("positionChange", args);
+              }
+            }
+        it('PositionChange event does not gets triggered for completed state', (done: Function) => {
+            debugger
+            let events: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            events.mouseDownEvent(diagramCanvas, 120, 200);
+            events.mouseMoveEvent(diagramCanvas, 100, 335);
+            events.mouseUpEvent(diagramCanvas, 100, 335);
+            diagram.positionChange = (args: IDraggingEventArgs) => {
+                args.cancel = true;
+                if (args.state === 'Completed') {
+                    expect(args.newValue.offsetX == 167.5 &&
+                        args.newValue.offsetY == 312.5).toBe(true);
+                }
+            };
             done();
         });
     });

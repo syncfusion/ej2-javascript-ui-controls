@@ -2647,7 +2647,13 @@ private getGridEditSettings(): GridEditModel {
                           (newProp[prop].mode === 'Cell' || newProp[prop].mode === 'Row')) {
             this.grid.closeEdit();
           }
-          this.grid.editSettings = this.getGridEditSettings(); break;
+
+          this.grid.editSettings = this.getGridEditSettings();
+          if (this.grid.editSettings.allowEditing) {
+            let isOnBatch: string = 'isOnBatch';
+            this.editModule[isOnBatch] = false;
+          }
+          break;
       }
       if (requireRefresh) {
         this.grid.refresh();

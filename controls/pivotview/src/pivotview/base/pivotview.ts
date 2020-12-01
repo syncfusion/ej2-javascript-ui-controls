@@ -1,7 +1,7 @@
 import { Property, Browser, Component, ModuleDeclaration, createElement, setStyleAttribute, isBlazor } from '@syncfusion/ej2-base';
 import { EmitType, EventHandler, Complex, extend, ChildProperty, Collection, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { Internationalization, L10n, NotifyPropertyChanges, INotifyPropertyChanged, compile, formatUnit } from '@syncfusion/ej2-base';
-import { removeClass, addClass, Event, KeyboardEventArgs, setValue, closest } from '@syncfusion/ej2-base';
+import { removeClass, addClass, Event, KeyboardEventArgs, setValue, closest, select } from '@syncfusion/ej2-base';
 import { updateBlazorTemplate, resetBlazorTemplate, SanitizeHtmlHelper, MouseEventArgs } from '@syncfusion/ej2-base';
 import { PivotEngine, IPivotValues, IAxisSet, IDataOptions, IDataSet } from '../../base/engine';
 import { IPageSettings, IGroupSettings, IGridValues, IFieldListOptions, IValueSortSettings } from '../../base/engine';
@@ -2924,8 +2924,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             }
         }
         if (this.toolbarModule) {
-            if (this.showFieldList && this.element.querySelector('#' + this.element.id + '_PivotFieldList')) {
-                (this.element.querySelector('#' + this.element.id + '_PivotFieldList') as HTMLElement).style.display = 'none';
+            if (this.showFieldList && select('#' + this.element.id + '_PivotFieldList', this.element)) {
+                (select('#' + this.element.id + '_PivotFieldList', this.element) as HTMLElement).style.display = 'none';
             }
             if (this.toolbar && this.toolbar.indexOf('FieldList') !== -1 &&
                 this.showToolbar && this.element.querySelector('.e-toggle-field-list')) {
@@ -5188,14 +5188,14 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
         if (this.chart) {
             this.chart.destroy();
-            if (this.chart.isDestroyed && this.element.querySelector('#' + this.element.id + '_chart')) {
-                remove(this.element.querySelector('#' + this.element.id + '_chart'));
+            if (this.chart.isDestroyed && select('#' + this.element.id + '_chart', this.element)) {
+                remove(select('#' + this.element.id + '_chart', this.element));
             }
         }
         if (this.grid) {
             this.grid.destroy();
-            if (this.grid.isDestroyed && this.element.querySelector('#' + this.element.id + '_grid')) {
-                remove(this.element.querySelector('#' + this.element.id + '_grid'));
+            if (this.grid.isDestroyed && select('#' + this.element.id + '_grid', this.element)) {
+                remove(select('#' + this.element.id + '_grid', this.element));
             }
         }
         this.unwireEvents();
@@ -5206,8 +5206,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             if (this.element.querySelector('.e-spinner-pane')) {
                 remove(this.element.querySelector('.e-spinner-pane'));
             }
-            if (this.showFieldList && document.querySelector('#' + this.element.id + '_PivotFieldList')) {
-                remove(document.querySelector('#' + this.element.id + '_PivotFieldList'));
+            if (this.showFieldList && select('#' + this.element.id + '_PivotFieldList', document)) {
+                remove(select('#' + this.element.id + '_PivotFieldList', document));
             }
         }
         removeClass([this.element], cls.ROOT);

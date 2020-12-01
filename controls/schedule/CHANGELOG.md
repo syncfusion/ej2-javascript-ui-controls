@@ -14,6 +14,7 @@
 - `#F159110` - An issues with Scheduler timeline year view has been fixed.
 - `#F159666` - An issue with wrong element in `renderCell` event has been fixed.
 - `#F159432` - An issue with customizing the dragging interval time of the events has been fixed.
+- `#301811` - An issue with render RTE component as a additional field in the editor template has been fixed.
 
 ## 18.3.50 (2020-11-17)
 

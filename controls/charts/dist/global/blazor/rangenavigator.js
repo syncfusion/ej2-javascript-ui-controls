@@ -1474,6 +1474,10 @@ var Axis = /** @class */ (function (_super) {
         _this.isChart = true;
         /** @private */
         _this.isIntervalInDecimal = true;
+        /** @private */
+        _this.titleCollection = [];
+        /** @private */
+        _this.titleSize = new sf.svgbase.Size(0, 0);
         /**
          * @private
          * Task: BLAZ-2044
@@ -1512,8 +1516,15 @@ var Axis = /** @class */ (function (_super) {
      */
     Axis.prototype.findLabelSize = function (crossAxis, innerPadding) {
         var titleSize = 0;
+        var isHorizontal = this.orientation === 'Horizontal';
         if (this.title) {
-            titleSize = sf.svgbase.measureText(this.title, this.titleStyle).height + innerPadding;
+            this.titleSize = sf.svgbase.measureText(this.title, this.titleStyle);
+            titleSize = this.titleSize.height + innerPadding;
+            if (this.rect.width || this.rect.height) {
+                var length_1 = isHorizontal ? this.rect.width : this.rect.height;
+                this.titleCollection = getTitle(this.title, this.titleStyle, length_1);
+                titleSize = (titleSize * this.titleCollection.length);
+            }
         }
         if (this.labelPosition === 'Inside') {
             return titleSize + innerPadding;
@@ -3111,7 +3122,21 @@ function createSvg(chart) {
  * @param style
  * @param width
  */
-
+function getTitle(title, style, width) {
+    var titleCollection = [];
+    switch (style.textOverflow) {
+        case 'Wrap':
+            titleCollection = textWrap(title, width, style);
+            break;
+        case 'Trim':
+            titleCollection.push(textTrim(width, title, style));
+            break;
+        default:
+            titleCollection.push(title);
+            break;
+    }
+    return titleCollection;
+}
 /**
  * Method to calculate x position of title
  */
@@ -6336,9 +6361,9 @@ var RangeNavigator = /** @class */ (function (_super) {
         var isDateTime = this.valueType === 'DateTime';
         var range = this.chartSeries.xAxis.actualRange;
         this.startValue = this.startValue ? this.startValue : (!this.value[0] ? range.min :
-            (isDateTime ? this.value[0].getTime() : +this.value[0]));
+            (isDateTime ? (new Date(this.value[0].toString())).getTime() : +this.value[0]));
         this.endValue = this.endValue ? this.endValue : (!this.value[1] ? range.max :
-            (isDateTime ? this.value[1].getTime() : +this.value[1]));
+            (isDateTime ? (new Date(this.value[1].toString())).getTime() : +this.value[1]));
     };
     /**
      * To render the range navigator

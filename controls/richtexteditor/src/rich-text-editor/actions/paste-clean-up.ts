@@ -565,6 +565,9 @@ export class PasteCleanup {
       this.removeTempClass();
       this.parent.notify(events.toolbarRefresh, {});
       this.imgUploading(this.parent.inputElement);
+      if (this.parent.iframeSettings.enable) {
+        this.parent.updateValue();
+      }
     }
   }
 

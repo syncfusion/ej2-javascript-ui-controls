@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.51 (2020-11-24)
+
+### Common
+
+#### Bug Fixes
+
+- Script error throws on expanding node in `TreeView` while using HTML id contains `#` has been fixed.
+
 ## 18.3.48 (2020-11-11)
 
 ### Common

@@ -189,8 +189,7 @@ export class ViewSource {
         });
     }
     private getTextAreaValue(element: HTMLElement): string {
-        return (element.innerHTML === '<p><br></p>' ||
-            element.innerHTML.length === 12) ||
+        return (element.innerHTML === '<p><br></p>') ||
             (element.childNodes.length === 1 &&
                 (element.childNodes[0] as HTMLElement).tagName === 'P' &&
                 element.innerHTML.length === 7) ? '' : this.parent.value;

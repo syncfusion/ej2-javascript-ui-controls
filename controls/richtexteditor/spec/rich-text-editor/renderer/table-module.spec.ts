@@ -6,6 +6,7 @@ import { RichTextEditor, dispatchEvent } from "../../../src/rich-text-editor/ind
 import { InsertHtml } from '../../../src/editor-manager/plugin/inserthtml';
 import { NodeSelection } from '../../../src/selection/index';
 import { renderRTE, destroy, setCursorPoint, androidUA, iPhoneUA, currentBrowserUA, ieUA } from './../render.spec';
+import { getLastTextNode } from "../../../src/common/util";
 
 describe('Table creation', () => {
 
@@ -2559,6 +2560,71 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                         done();
                     }, 500);
                 }, 500);
+            }, 500);
+        });
+    });
+    describe(" EJ2-43332 - Table getting removed while using bulleting/numbering", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['OrderedList', 'UnorderedList']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;">
+                <tbody>
+                    <tr>
+                        <td class="" style="width: 20%;"><br></td>
+                        <td style="width: 20%;"><br></td>
+                        <td style="width: 20%;"><br></td>
+                        <td style="width: 20%;"><br></td>
+                        <td style="width: 20%;"><br></td>
+                    </tr>
+                </tbody>
+            </table><p><b>Test1</b></p><p><b>Test2</b></p>`
+            });
+            rteEle = rteObj.element;
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it(' Apply OrderedList and check table availability ', (done: Function) => {
+            rteObj.focusIn();
+            rteObj.selectAll();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            getLastTextNode(rteEle);
+            setTimeout(function () {
+                expect(rteEle.querySelector('.e-content').innerHTML).toBe(`<table class="e-rte-table" style="width: 100%; min-width: 0px;">
+                <tbody>
+                    <tr>
+                        <td class="" style="width: 20%;"><ol><li><br></li></ol></td>
+                        <td style="width: 20%;"><ol><li><br></li></ol></td>
+                        <td style="width: 20%;"><ol><li><br></li></ol></td>
+                        <td style="width: 20%;"><ol><li><br></li></ol></td>
+                        <td style="width: 20%;"><ol><li><br></li></ol></td>
+                    </tr>
+                </tbody>
+            </table><ol><li><b>Test1</b></li><li><b>Test2</b></li></ol>`);
+                done();
+            }, 500);
+        });
+        it(' Apply UnOrderedList and check table availability ', (done: Function) => {
+            rteObj.selectAll();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+            setTimeout(function () {
+                expect(rteEle.querySelector('.e-content').innerHTML).toBe(`<table class="e-rte-table" style="width: 100%; min-width: 0px;">
+                <tbody>
+                    <tr>
+                        <td class="" style="width: 20%;"><ul><li><br></li></ul></td>
+                        <td style="width: 20%;"><ul><li><br></li></ul></td>
+                        <td style="width: 20%;"><ul><li><br></li></ul></td>
+                        <td style="width: 20%;"><ul><li><br></li></ul></td>
+                        <td style="width: 20%;"><ul><li><br></li></ul></td>
+                    </tr>
+                </tbody>
+            </table><ul><li><b>Test1</b></li><li><b>Test2</b></li></ul>`);
+                done();
             }, 500);
         });
     });

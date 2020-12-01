@@ -78,8 +78,9 @@ export class Year extends ViewBase implements IRenderer {
         if (this.parent.options.currentView === 'TimelineYear') {
             this.element = this.parent.element.querySelector('.' + cls.TABLE_WRAP_CLASS);
             let workCell: HTMLElement = this.element.querySelector('.e-work-cells');
-            let cellHeight: number = workCell.offsetHeight;
-            let cellWidth: number = workCell.offsetWidth;
+            let cellDetail: object = workCell.getBoundingClientRect();
+            let cellHeight: number = (<{ [key: string]: Object }>cellDetail).height as number;
+            let cellWidth: number = (<{ [key: string]: Object }>cellDetail).width as number;
             let cellHeader: number = util.getOuterHeight(workCell.querySelector('.e-date-header'));
             let eventTable: Element = this.element.querySelector('.e-event-table');
             let eventHeight: number = util.getElementHeightFromClass(eventTable, 'e-appointment');
@@ -110,10 +111,10 @@ export class Year extends ViewBase implements IRenderer {
                     if (ele.classList.contains('e-appointment')) {
                         cellTop = cellData.offsetTop + cellHeader + (eventHeight * levelIndex) + EVENT_GAP;
                         height = eventHeight;
-                        width = cellWidth;
+                        width = cellWidth - 2;
                     } else {
                         cellTop = cellData.offsetTop + (cellHeight - ele.offsetHeight);
-                        width = cellWidth;
+                        width = cellWidth - 2;
                     }
                     ele.style.width = width + 'px';
                     ele.style.height = height + 'px';

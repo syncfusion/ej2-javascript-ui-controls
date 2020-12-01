@@ -70,13 +70,13 @@ export class ContextMenu {
                     this.parent.notify(copy, { isAction: true, promise: Promise });
                     break;
                 case id + '_paste':
-                    this.parent.notify(paste, { isAction: true });
+                    this.parent.notify(paste, { isAction: true, isInternal: true });
                     break;
                 case id + '_pastevalues':
-                    this.parent.notify(paste, { type: 'Values', isAction: true });
+                    this.parent.notify(paste, { type: 'Values', isAction: true, isInternal: true });
                     break;
                 case id + '_pasteformats':
-                    this.parent.notify(paste, { type: 'Formats', isAction: true });
+                    this.parent.notify(paste, { type: 'Formats', isAction: true, isInternal: true });
                     break;
                 case id + '_rename':
                     this.parent.notify(renameSheetTab, {});

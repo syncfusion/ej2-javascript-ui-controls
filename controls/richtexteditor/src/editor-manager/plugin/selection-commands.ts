@@ -46,8 +46,18 @@ export class SelectionCommands {
                 }
             }
             isCursor = range.collapsed;
+            let isSubSup: boolean = false;
             for (let index: number = 0; index < nodes.length; index++) {
                 let formatNode: Node = isFormatted.getFormattedNode(nodes[index], format, endNode);
+                if (formatNode === null) {
+                    if (format === 'subscript') {
+                        formatNode = isFormatted.getFormattedNode(nodes[index], 'superscript', endNode);
+                        isSubSup = formatNode === null ? false : true;
+                    } else if (format === 'superscript') {
+                        formatNode = isFormatted.getFormattedNode(nodes[index], 'subscript', endNode);
+                        isSubSup = formatNode === null ? false : true;
+                    }
+                }
                 if (index === 0 && formatNode === null) {
                     isFormat = true;
                 }
@@ -82,6 +92,9 @@ export class SelectionCommands {
             }
             if (isIDevice()) { setEditFrameFocus(endNode as Element, selector); }
             save.restore();
+            if (isSubSup) {
+                this.applyFormat(docElement, format, endNode);
+            }
         }
     }
 

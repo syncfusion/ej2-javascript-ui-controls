@@ -1,6 +1,6 @@
 @include export-module('calendar-theme') {
-  .e-calendar,
-  .e-bigger.e-small .e-calendar {
+  #{&}.e-calendar,
+  .e-bigger.e-small #{&}.e-calendar {
     background-color: $calendar-bg-color;
     border: $calendar-border-style;
     box-shadow: $calendar-box-shadow;#{if(&, '&', '*')} .e-date-icon-prev,
@@ -186,8 +186,8 @@
 }
 }
 
-  .e-small.e-calendar,
-  .e-small .e-calendar {
+  .e-small#{&}.e-calendar,
+  .e-small #{&}.e-calendar {
     #{if(&, '&', '*')} .e-header {
       #{if(&, '&', '*')} .e-title {
         color: $calendar-small-title-font-color;

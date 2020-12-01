@@ -209,7 +209,7 @@ $ddl-closer-margin-top-bigger-small: -3.2em !default;
         background-color: $selection-bg;
         }
       }
-  }.e-popup {
+  }#{&}.e-popup {
     #{if(&, '&', '*')}.e-multi-select-list-wrapper {
       #{if(&, '&', '*')}.e-ddl,
       .e-bigger #{if(&, '&', '*')}.e-ddl {

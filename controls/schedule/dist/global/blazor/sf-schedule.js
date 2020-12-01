@@ -1136,12 +1136,12 @@ var EventBase = /** @class */ (function () {
             var target_2 = sf.base.closest(eventData.target, '.' + APPOINTMENT_CLASS);
             this.getSelectedEventElements(target_2);
             var guid = this.activeEventData(eventData, false);
-            this.parent.dotNetRef.invokeMethodAsync('TriggerEventClick', guid, true);
+            this.parent.dotNetRef.invokeMethodAsync('TriggerEventClick', guid, this.getMouseEvent(eventData), true);
         }
         else {
             this.removeSelectedAppointmentClass();
             var guid = this.activeEventData(eventData, true);
-            this.parent.dotNetRef.invokeMethodAsync('TriggerEventClick', guid, false);
+            this.parent.dotNetRef.invokeMethodAsync('TriggerEventClick', guid, this.getMouseEvent(eventData), false);
         }
     };
     EventBase.prototype.eventDoubleClick = function (e) {
@@ -1155,7 +1155,24 @@ var EventBase = /** @class */ (function () {
             return;
         }
         var guid = this.activeEventData(e, false);
-        this.parent.dotNetRef.invokeMethodAsync('TriggerEventDoubleClick', guid);
+        this.parent.dotNetRef.invokeMethodAsync('TriggerEventDoubleClick', guid, this.getMouseEvent(e));
+    };
+    EventBase.prototype.getMouseEvent = function (e) {
+        var mouseEvent = {
+            altKey: e.altKey,
+            button: e.button,
+            buttons: e.buttons,
+            clientX: e.clientX,
+            clientY: e.clientY,
+            ctrlKey: e.ctrlKey,
+            detail: e.detail,
+            metaKey: e.metaKey,
+            screenX: e.screenX,
+            screenY: e.screenY,
+            shiftKey: e.shiftKey,
+            type: e.type
+        };
+        return mouseEvent;
     };
     EventBase.prototype.activeEventData = function (eventData, isMultiple) {
         var target = sf.base.closest(eventData.target, '.' + APPOINTMENT_CLASS);
@@ -2556,8 +2573,9 @@ var Year = /** @class */ (function (_super) {
         if (this.parent.options.currentView === 'TimelineYear') {
             this.element = this.parent.element.querySelector('.' + TABLE_WRAP_CLASS);
             var workCell = this.element.querySelector('.e-work-cells');
-            var cellHeight = workCell.offsetHeight;
-            var cellWidth = workCell.offsetWidth;
+            var cellDetail = workCell.getBoundingClientRect();
+            var cellHeight = cellDetail.height;
+            var cellWidth = cellDetail.width;
             var cellHeader = getOuterHeight(workCell.querySelector('.e-date-header'));
             var eventTable = this.element.querySelector('.e-event-table');
             var eventHeight = getElementHeightFromClass(eventTable, 'e-appointment');
@@ -2590,11 +2608,11 @@ var Year = /** @class */ (function (_super) {
                     if (ele.classList.contains('e-appointment')) {
                         cellTop = cellData.offsetTop + cellHeader + (eventHeight * levelIndex) + EVENT_GAP;
                         height = eventHeight;
-                        width = cellWidth;
+                        width = cellWidth - 2;
                     }
                     else {
                         cellTop = cellData.offsetTop + (cellHeight - ele.offsetHeight);
-                        width = cellWidth;
+                        width = cellWidth - 2;
                     }
                     ele.style.width = width + 'px';
                     ele.style.height = height + 'px';
@@ -2798,7 +2816,7 @@ var WorkCellInteraction = /** @class */ (function () {
             }
             this.parent.activeCellsData = this.parent.getCellDetails(target);
             this.parent.currentCell = target;
-            var args = sf.base.extend({}, this.parent.activeCellsData, { cancel: false, event: e, name: 'cellClick' }, true);
+            var args = sf.base.extend({}, this.parent.activeCellsData, { cancel: false, mouseEventArgs: this.parent.eventBase.getMouseEvent(e), name: 'cellClick' }, true);
             args.startTime = addLocalOffset(args.startTime);
             args.endTime = addLocalOffset(args.endTime);
             this.parent.dotNetRef.invokeMethodAsync('TriggerCellClick', args);
@@ -2815,7 +2833,7 @@ var WorkCellInteraction = /** @class */ (function () {
         if (this.parent.activeViewOptions.readonly || this.isPreventAction(e)) {
             return;
         }
-        var args = sf.base.extend({}, this.parent.activeCellsData, { cancel: false, event: e, name: 'OnCellDoubleClick' }, true);
+        var args = sf.base.extend({}, this.parent.activeCellsData, { cancel: false, mouseEventArgs: this.parent.eventBase.getMouseEvent(e), name: 'OnCellDoubleClick' }, true);
         args.startTime = addLocalOffset(args.startTime);
         args.endTime = addLocalOffset(args.endTime);
         this.parent.dotNetRef.invokeMethodAsync('OnOpenEditor', args, 'Add');
@@ -3011,7 +3029,7 @@ var KeyboardInteraction = /** @class */ (function () {
         this.parent.activeCellsData = this.getSelectedElements(target);
         if (this.parent.options.quickInfoOnSelectionEnd) {
             this.parent.currentCell = target;
-            var cellArgs = sf.base.extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellClick' }, true);
+            var cellArgs = sf.base.extend(this.parent.activeCellsData, { cancel: false, mouseEventArgs: e, name: 'cellClick' }, true);
             cellArgs.startTime = addLocalOffset(cellArgs.startTime);
             cellArgs.endTime = addLocalOffset(cellArgs.endTime);
             this.parent.dotNetRef.invokeMethodAsync('TriggerCellClick', cellArgs);
@@ -3040,7 +3058,7 @@ var KeyboardInteraction = /** @class */ (function () {
         if (target.classList.contains(WORK_CELLS_CLASS) || target.classList.contains(ALLDAY_CELLS_CLASS)) {
             this.parent.activeCellsData = this.getSelectedElements(target);
             this.parent.currentCell = target;
-            var args = sf.base.extend(this.parent.activeCellsData, { cancel: false, event: e });
+            var args = sf.base.extend(this.parent.activeCellsData, { cancel: false, mouseEventArgs: e });
             if (this.parent.options.allowInline) {
                 this.parent.inlineModule.cellEdit();
             }

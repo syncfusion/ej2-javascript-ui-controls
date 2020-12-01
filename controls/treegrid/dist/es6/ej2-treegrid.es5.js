@@ -4044,6 +4044,10 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                         this.grid.closeEdit();
                     }
                     this.grid.editSettings = this.getGridEditSettings();
+                    if (this.grid.editSettings.allowEditing) {
+                        var isOnBatch = 'isOnBatch';
+                        this.editModule[isOnBatch] = false;
+                    }
                     break;
             }
             if (requireRefresh) {

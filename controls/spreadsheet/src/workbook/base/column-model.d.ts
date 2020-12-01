@@ -31,4 +31,10 @@ export interface ColumnModel {
      */
     hidden?: boolean;
 
+    /**
+     * To lock/unlock the column in the protected sheet.
+     * @default null
+     */
+    isLocked?: boolean;
+
 }

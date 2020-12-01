@@ -1328,7 +1328,8 @@ class DragAndDrop {
         });
     }
     updateDroppedData(element, cardStatus, contentCell) {
-        let crudData = this.parent.getCardDetails(element);
+        let crudObj = this.parent.getCardDetails(element);
+        let crudData = extend({}, crudObj, null, true);
         if (cardStatus.split(',').length === 1) {
             crudData[this.parent.keyField] = cardStatus;
         }

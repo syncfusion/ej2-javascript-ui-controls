@@ -1584,6 +1584,10 @@ var Axis = /** @class */ (function (_super) {
         _this.isChart = true;
         /** @private */
         _this.isIntervalInDecimal = true;
+        /** @private */
+        _this.titleCollection = [];
+        /** @private */
+        _this.titleSize = new sf.svgbase.Size(0, 0);
         /**
          * @private
          * Task: BLAZ-2044
@@ -1622,8 +1626,15 @@ var Axis = /** @class */ (function (_super) {
      */
     Axis.prototype.findLabelSize = function (crossAxis, innerPadding) {
         var titleSize = 0;
+        var isHorizontal = this.orientation === 'Horizontal';
         if (this.title) {
-            titleSize = sf.svgbase.measureText(this.title, this.titleStyle).height + innerPadding;
+            this.titleSize = sf.svgbase.measureText(this.title, this.titleStyle);
+            titleSize = this.titleSize.height + innerPadding;
+            if (this.rect.width || this.rect.height) {
+                var length_1 = isHorizontal ? this.rect.width : this.rect.height;
+                this.titleCollection = getTitle(this.title, this.titleStyle, length_1);
+                titleSize = (titleSize * this.titleCollection.length);
+            }
         }
         if (this.labelPosition === 'Inside') {
             return titleSize + innerPadding;

@@ -1584,7 +1584,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.placeHolderWrapper = null;
         }
         if (!isNOU(this.cssClass)) {
-            removeClass([this.element], this.cssClass);
+            let allClassName: string[] = this.cssClass.split(' ');
+            for (let i: number = 0; i < allClassName.length; i++) {
+                if (allClassName[i].trim() !== '') {
+                    removeClass([this.element], allClassName[i]);
+                }
+            }
         }
         this.removeHtmlAttributes();
         this.removeAttributes();
@@ -1907,7 +1912,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     private setCssClass(cssClass: string): void {
         if (!isNOU(cssClass)) {
-            this.element.classList.add(cssClass);
+            let allClassName: string[] = cssClass.split(' ');
+            for (let i: number = 0; i < allClassName.length; i++) {
+                if (allClassName[i].trim() !== '') {
+                    this.element.classList.add(allClassName[i]);
+                }
+            }
         }
     }
     private updateRTL(): void {

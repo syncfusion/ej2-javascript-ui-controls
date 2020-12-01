@@ -2697,6 +2697,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableAnnotationToolbar: boolean;
 
     /**
+     * Gets or sets a boolean value to show or hide the bookmark panel while loading a document. FALSE by default.
+     * @default false
+     */
+    @Property(false)
+    public isBookmarkPanelOpen: boolean;
+
+    /**
      * Sets the interaction mode of the PdfViewer
      * @default TextSelection
      */

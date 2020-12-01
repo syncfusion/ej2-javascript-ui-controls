@@ -48,8 +48,8 @@ $ddl-bigger-small-list-font-size: 13px !default;
   .e-input-group:not(.e-disabled) .e-control#{&}.e-dropdownlist ~ .e-ddl-icon:hover,
   .e-input-group:not(.e-disabled) .e-back-icon:active,
   .e-input-group:not(.e-disabled) .e-back-icon:hover,
-  .e-popup.e-ddl .e-input-group:not(.e-disabled) .e-clear-icon:active,
-  .e-popup.e-ddl .e-input-group:not(.e-disabled) .e-clear-icon:hover {
+  #{&}.e-popup.e-ddl .e-input-group:not(.e-disabled) .e-clear-icon:active,
+  #{&}.e-popup.e-ddl .e-input-group:not(.e-disabled) .e-clear-icon:hover {
     background: transparent;
   }
 
@@ -57,21 +57,21 @@ $ddl-bigger-small-list-font-size: 13px !default;
     animation: none;
   }
 
-  .e-ddl.e-popup {
+  .e-ddl#{&}.e-popup {
     border: 0;
     box-shadow: $ddl-popup-shadow;
     margin-top: 2px;
   }
 
-  .e-popup.e-ddl .e-dropdownbase {
+  #{&}.e-popup.e-ddl .e-dropdownbase {
     min-height: 26px;
   }
 
-  .e-bigger .e-popup.e-ddl-device-filter .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) {
+  .e-bigger #{&}.e-popup.e-ddl-device-filter .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) {
     border-color: $ddl-default-border-color;
   }
 
-  .e-bigger .e-popup.e-ddl-device-filter {
+  .e-bigger #{&}.e-popup.e-ddl-device-filter {
     margin-top: 0;
   }
 
@@ -89,21 +89,21 @@ $ddl-bigger-small-list-font-size: 13px !default;
     background-color: $grey-100;
   }
 
-  .e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon {
+  #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon {
     margin: 6px 6px 5px;
     min-height: 12px;
     min-width: 12px;
     padding: 6px;
   }
 
-  .e-bigger .e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon,
-  .e-bigger.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon {
+  .e-bigger #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon,
+  .e-bigger#{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon {
     min-height: 16px;
     min-width: 16px;
   }
 
-  .e-bigger .e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-filter,
-  .e-bigger.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-filter {
+  .e-bigger #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-filter,
+  .e-bigger#{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-filter {
     padding: 8px 16px 8px 0;
   }
 
@@ -119,43 +119,43 @@ $ddl-bigger-small-list-font-size: 13px !default;
   }
 
   // small size
-  .e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-small .e-clear-icon,
-  .e-small .e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon,
-  .e-small.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon,
-  .e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-input-focus.e-small .e-clear-icon,
-  .e-small .e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-input-focus .e-clear-icon,
-  .e-small.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-input-focus .e-clear-icon {
+  #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-small .e-clear-icon,
+  .e-small #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon,
+  .e-small#{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon,
+  #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-input-focus.e-small .e-clear-icon,
+  .e-small #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-input-focus .e-clear-icon,
+  .e-small#{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-input-focus .e-clear-icon {
     margin: 0;
   }
 
-  .e-small .e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group .e-input-filter,
-  .e-small.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group .e-input-filter,
-  .e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-small .e-input-filter,
-  .e-small .e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-input-focus .e-input-filter,
-  .e-small.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-input-focus .e-input-filter,
-  .e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-small.e-input-focus .e-input-filter {
+  .e-small #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group .e-input-filter,
+  .e-small#{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group .e-input-filter,
+  #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-small .e-input-filter,
+  .e-small #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-input-focus .e-input-filter,
+  .e-small#{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-input-focus .e-input-filter,
+  #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-small.e-input-focus .e-input-filter {
     padding: 5px 5px 5px 12px;
   }
 
   // Touch Small
-  .e-bigger.e-small .e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon,
-  .e-bigger.e-small.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon,
-  .e-bigger .e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-small .e-clear-icon,
-  .e-bigger.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-small .e-clear-icon,
-  .e-small .e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-bigger .e-clear-icon,
-  .e-small.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-bigger .e-clear-icon,
-  .e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-bigger.e-small .e-clear-icon {
+  .e-bigger.e-small #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon,
+  .e-bigger.e-small#{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon,
+  .e-bigger #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-small .e-clear-icon,
+  .e-bigger#{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-small .e-clear-icon,
+  .e-small #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-bigger .e-clear-icon,
+  .e-small#{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-bigger .e-clear-icon,
+  #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-bigger.e-small .e-clear-icon {
     min-height: 18px;
     min-width: 18px;
   }
 
-  .e-bigger.e-small .e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group .e-input-filter,
-  .e-bigger.e-small.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group .e-input-filter,
-  .e-bigger .e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-small .e-input-filter,
-  .e-bigger.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-small .e-input-filter,
-  .e-small .e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-bigger .e-input-filter,
-  .e-small.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-bigger .e-input-filter,
-  .e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-bigger.e-small .e-input-filter {
+  .e-bigger.e-small #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group .e-input-filter,
+  .e-bigger.e-small#{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group .e-input-filter,
+  .e-bigger #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-small .e-input-filter,
+  .e-bigger#{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-small .e-input-filter,
+  .e-small #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-bigger .e-input-filter,
+  .e-small#{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-bigger .e-input-filter,
+  #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-bigger.e-small .e-input-filter {
     padding: 8px 16px;
   }
 

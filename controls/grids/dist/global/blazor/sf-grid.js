@@ -5579,7 +5579,7 @@ var SfGrid = /** @class */ (function () {
             e.preventDefault(); //prevent user select on shift pressing during selection
         }
         // e.button = 2 for right mouse button click
-        if ((e.button !== 2 && parentsUntil(e.target, 'e-headercell')) || parentsUntil(e.target, 'e-detailrowexpand') || parentsUntil(e.target, 'e-detailrowcollapse')
+        if ((e.button !== 2 && parentsUntil(e.target, 'e-headercell')) || (e.button !== 2 && parentsUntil(e.target, 'e-detailcell')) || parentsUntil(e.target, 'e-detailrowexpand') || parentsUntil(e.target, 'e-detailrowcollapse')
             || e.target.classList.contains('e-content') || e.target.classList.contains('e-headercontent') || sf.base.closest(e.target, ".e-groupdroparea") || sf.base.closest(e.target, ".e-gridpopup")
             || sf.base.closest(e.target, ".e-summarycell") || sf.base.closest(e.target, ".e-rhandler")
             || sf.base.closest(e.target, ".e-filtermenudiv") || sf.base.closest(e.target, ".e-filterbarcell")

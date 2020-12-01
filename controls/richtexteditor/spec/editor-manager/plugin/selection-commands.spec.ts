@@ -145,32 +145,28 @@ describe('Selection commands', () => {
     });
     it('Apply superscript tag for multiple nodes', () => {
         SelectionCommands.applyFormat(document, 'superscript', parentDiv);
-        expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('sup');
+        expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('sup');
     });
     it('Apply Italic tag for multiple nodes', () => {
         SelectionCommands.applyFormat(document, 'italic', parentDiv);
         expect(ptag.childNodes[0].childNodes[0].childNodes[0]
-            .childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('em');
+            .childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('em');
     });
     it('Revert Italic tag for multiple nodes', () => {
         SelectionCommands.applyFormat(document,'italic', parentDiv);
         expect(ptag.childNodes[0].childNodes[0].childNodes[0]
-            .childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
+            .childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert superscript tag for multiple nodes', () => {
         SelectionCommands.applyFormat(document,'superscript', parentDiv);
-        expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
+        expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert strikethrough tag for multiple nodes', () => {
         SelectionCommands.applyFormat(document,'strikethrough', parentDiv);
-        expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
+        expect(ptag.childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert underline tag for multiple nodes', () => {
         SelectionCommands.applyFormat(document,'underline', parentDiv);
-        expect(ptag.childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
-    });
-    it('Revert subscript tag for multiple nodes', () => {
-        SelectionCommands.applyFormat(document,'subscript', parentDiv);
         expect(ptag.childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert Bold tag for multiple nodes', () => {
@@ -200,32 +196,28 @@ describe('Selection commands', () => {
     });
     it('Apply superscript tag for cursor position', () => {
         SelectionCommands.applyFormat(document, 'superscript', parentDiv);
-        expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('sup');
+        expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('sup');
     });
     it('Apply Italic tag for cursor position', () => {
         SelectionCommands.applyFormat(document, 'italic', parentDiv);
         expect(ptag.childNodes[0].childNodes[0].childNodes[0]
-            .childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('em');
+            .childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('em');
     });
     it('Revert Italic tag for cursor position', () => {
         SelectionCommands.applyFormat(document,'italic', parentDiv);
         expect(ptag.childNodes[0].childNodes[0].childNodes[0]
-            .childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
+            .childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert superscript tag for cursor position', () => {
         SelectionCommands.applyFormat(document,'superscript', parentDiv);
-        expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
+        expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert strikethrough tag for cursor position', () => {
         SelectionCommands.applyFormat(document,'strikethrough', parentDiv);
-        expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
+        expect(ptag.childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert underline tag for cursor position', () => {
         SelectionCommands.applyFormat(document,'underline', parentDiv);
-        expect(ptag.childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
-    });
-    it('Revert subscript tag for cursor position', () => {
-        SelectionCommands.applyFormat(document,'subscript', parentDiv);
         expect(ptag.childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert Bold tag for cursor position', () => {
@@ -258,32 +250,28 @@ describe('Selection commands', () => {
     });
     it('Apply superscript tag for text node', () => {
         SelectionCommands.applyFormat(document, 'superscript', parentDiv);
-        expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('sup');
+        expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('sup');
     });
     it('Apply Italic tag for text node', () => {
         SelectionCommands.applyFormat(document, 'italic', parentDiv);
-        expect(ptag.childNodes[0].childNodes[0].childNodes[0]
+        expect(ptag.childNodes[0].childNodes[0]
             .childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('em');
     });
     it('Revert Italic tag for text node', () => {
         SelectionCommands.applyFormat(document,'italic', parentDiv);
-        expect(ptag.childNodes[0].childNodes[0].childNodes[0]
+        expect(ptag.childNodes[0].childNodes[0]
             .childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert superscript tag for text node', () => {
         SelectionCommands.applyFormat(document,'superscript', parentDiv);
-        expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
+        expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert strikethrough tag for text node', () => {
         SelectionCommands.applyFormat(document,'strikethrough', parentDiv);
-        expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
+        expect(ptag.childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert underline tag for text node', () => {
         SelectionCommands.applyFormat(document,'underline', parentDiv);
-        expect(ptag.childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
-    });
-    it('Revert subscript tag for  text node', () => {
-        SelectionCommands.applyFormat(document,'subscript', parentDiv);
         expect(ptag.childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert Bold tag for text node', () => {

@@ -3627,6 +3627,7 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         this.frzIdx = 0;
         this.notfrzIdx = 0;
         this.isFirstCol = false;
+        this.isReplaceDragEle = true;
         this.helper = function (e) {
             var gObj = _this.parent;
             var target = _this.draggable.currentStateTarget;
@@ -4295,7 +4296,8 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
             dragStart: this.dragStart,
             drag: this.drag,
             dragStop: this.dragStop,
-            abort: '.e-rhandler'
+            abort: '.e-rhandler',
+            isReplaceDragEle: this.isReplaceDragEle
         });
     };
     HeaderRender.prototype.initializeHeaderDrop = function () {
@@ -6150,7 +6152,7 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
                     this.setWidth(collection[i].minWidth, this.parent.getColumnIndexByField(collection[i].field));
                 }
                 else if (tWidth !== 0 && difference > tmWidth) {
-                    this.setWidth('', this.parent.getColumnIndexByField(collection[i].field), true);
+                    this.setWidth('', this.parent.getColumnIndexByField(collection[i].field) + this.parent.getIndentCount(), true);
                 }
             }
         }
@@ -7788,10 +7790,10 @@ var Selection = /** @__PURE__ @class */ (function () {
         var selectedMovableRow = this.getSelectedMovableRow(index);
         if (!isToggle && !isRemoved) {
             if (this.selectedRowIndexes.indexOf(index) <= -1) {
-                this.updateRowSelection(selectedRow, index);
                 if (gObj.getFrozenColumns()) {
                     this.updateRowSelection(selectedMovableRow, index);
                 }
+                this.updateRowSelection(selectedRow, index);
             }
             this.selectRowIndex(index);
         }
@@ -9776,6 +9778,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     Selection.prototype.refreshPersistSelection = function () {
         var rows = this.parent.getRows();
+        this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         if (rows !== null && rows.length > 0 && (this.parent.isPersistSelection || this.chkField)) {
             var indexes = [];
             for (var j = 0; j < rows.length; j++) {
@@ -9786,7 +9789,8 @@ var Selection = /** @__PURE__ @class */ (function () {
                 }
                 var checkState = void 0;
                 var chkBox = rows[j].querySelector('.e-checkselect');
-                if (this.selectedRowState[pKey] || (this.parent.checkAllRows === 'Check' && this.chkAllCollec.indexOf(pKey) < 0)
+                if (this.selectedRowState[pKey] || (this.parent.checkAllRows === 'Check' &&
+                    this.totalRecordsCount === Object.keys(this.selectedRowState).length && this.chkAllCollec.indexOf(pKey) < 0)
                     || (this.parent.checkAllRows === 'Uncheck' && this.chkAllCollec.indexOf(pKey) > 0)
                     || (this.parent.checkAllRows === 'Intermediate' && !isNullOrUndefined(this.chkField) && rowObj.data[this.chkField])) {
                     indexes.push(parseInt(rows[j].getAttribute('aria-rowindex'), 10));
@@ -12750,7 +12754,13 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             DialogEditARIA: 'Edit dialog',
             ColumnChooserDialogARIA: 'Column chooser dialog',
             ColumnMenuDialogARIA: 'Column menu dialog',
-            CustomFilterDialogARIA: 'Customer filter dialog'
+            CustomFilterDialogARIA: 'Customer filter dialog',
+            SortAtoZ: 'Sort A to Z',
+            SortZtoA: 'Sort Z to A',
+            SortByOldest: 'Sort by Oldest',
+            SortByNewest: 'Sort by Newest',
+            SortSmallestToLargest: 'Sort Smallest to Largest',
+            SortLargestToSmallest: 'Sort Largest to Smallest'
         };
         this.keyConfigs = {
             downArrow: 'downarrow',
@@ -12972,7 +12982,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
         classList(this.element, [], ['e-rtl', 'e-gridhover', 'e-responsive', 'e-default', 'e-device', 'e-grid-min-height']);
         if (this.isAngular) {
-            this.element.innerHTML = null;
+            this.element = null;
         }
     };
     Grid.prototype.destroyDependentModules = function () {
@@ -16344,6 +16354,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         Property({})
     ], Grid.prototype, "currentAction", void 0);
     __decorate$1([
+        Property('default version')
+    ], Grid.prototype, "ej2StatePersistenceVersion", void 0);
+    __decorate$1([
         Event()
     ], Grid.prototype, "created", void 0);
     __decorate$1([
@@ -18012,6 +18025,7 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
     CheckBoxFilterBase.prototype.getAndSetChkElem = function (options) {
         this.dlg = this.parent.createElement('div', {
             id: this.id + this.options.type + '_excelDlg',
+            attrs: { uid: this.options.column.uid },
             className: 'e-checkboxfilter e-filter-popup'
         });
         this.sBox = this.parent.createElement('div', { className: 'e-searchcontainer' });
@@ -18893,7 +18907,7 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
             remove(this.cmenu);
         }
     };
-    ExcelFilterBase.prototype.createMenu = function (type, isFiltered, isCheckIcon) {
+    ExcelFilterBase.prototype.createMenu = function (type, isFiltered, isCheckIcon, eleOptions) {
         var options = { string: 'TextFilter', date: 'DateFilter', datetime: 'DateTimeFilter', number: 'NumberFilter' };
         this.menu = this.parent.createElement('div', { className: 'e-contextmenu-wrapper' });
         if (this.parent.enableRtl) {
@@ -18904,6 +18918,19 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
         }
         var ul = this.parent.createElement('ul');
         var icon = isFiltered ? 'e-excl-filter-icon e-filtered' : 'e-excl-filter-icon';
+        if (this.parent.allowSorting) {
+            var hdrele = closest(eleOptions.target, '.e-headercell').getAttribute('aria-sort');
+            var isAsc = (hdrele === 'Ascending') ? 'e-disabled e-excel-ascending' : 'e-excel-ascending';
+            var isDesc = (hdrele === 'Descending') ? 'e-disabled e-excel-descending' : 'e-excel-descending';
+            var ascName = (type === 'string') ? this.getLocalizedLabel('SortAtoZ') : (type === 'datetime' || type === 'date') ?
+                this.getLocalizedLabel('SortByOldest') : this.getLocalizedLabel('SortSmallestToLargest');
+            var descName = (type === 'string') ? this.getLocalizedLabel('SortZtoA') : (type === 'datetime' || type === 'date') ?
+                this.getLocalizedLabel('SortByNewest') : this.getLocalizedLabel('SortLargestToSmallest');
+            ul.appendChild(this.createMenuElem(ascName, isAsc, 'e-sortascending'));
+            ul.appendChild(this.createMenuElem(descName, isDesc, 'e-sortdescending'));
+            var separator = this.parent.createElement('li', { className: 'e-separator e-menu-item e-excel-separator' });
+            ul.appendChild(separator);
+        }
         ul.appendChild(this.createMenuElem(this.getLocalizedLabel('ClearFilter'), isFiltered ? '' : 'e-disabled', icon));
         if (type !== 'boolean') {
             ul.appendChild(this.createMenuElem(this.getLocalizedLabel(options[type]), 'e-submenu', isCheckIcon && this.ensureTextFilter() ? 'e-icon-check' : icon + ' e-emptyicon', true));
@@ -19040,7 +19067,7 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
             this.options.filteredColumns.filter(function (col) {
                 return _this.options.field === col.field;
             }).length;
-        this.createMenu(options.type, filterLength > 0, (filterLength === 1 || filterLength === 2));
+        this.createMenu(options.type, filterLength > 0, (filterLength === 1 || filterLength === 2), options);
         this.dlg.insertBefore(this.menu, this.dlg.firstChild);
         this.dlg.classList.add('e-excelfilter');
         if (this.parent.enableRtl) {
@@ -19926,6 +19953,7 @@ var Sort = /** @__PURE__ @class */ (function () {
         }
     };
     Sort.prototype.clickHandler = function (e) {
+        var gObj = this.parent;
         this.currentTarget = null;
         this.popUpClickHandler(e);
         var target = closest(e.target, '.e-headercell');
@@ -19935,7 +19963,6 @@ var Sort = /** @__PURE__ @class */ (function () {
             !e.target.classList.contains('e-columnmenu') &&
             !e.target.classList.contains('e-filtermenudiv') &&
             !parentsUntil(e.target, 'e-stackedheadercell')) {
-            var gObj = this.parent;
             var colObj = gObj.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('e-mappinguid'));
             var direction = !target.querySelectorAll('.e-ascending').length ? 'Ascending' :
                 'Descending';
@@ -19948,6 +19975,12 @@ var Sort = /** @__PURE__ @class */ (function () {
         }
         if (target) {
             target.classList.remove('e-resized');
+        }
+        if (e.target.classList.contains('e-excel-ascending') ||
+            e.target.classList.contains('e-excel-descending')) {
+            var colUid = closest(e.target, '.e-filter-popup').getAttribute('uid');
+            var direction = e.target.classList.contains('e-excel-ascending') ? 'Ascending' : 'Descending';
+            this.sortColumn(gObj.getColumnByUid(colUid).field, direction, false);
         }
     };
     Sort.prototype.keyPressed = function (e) {
@@ -23349,6 +23382,9 @@ var Filter = /** @__PURE__ @class */ (function () {
             var hasDialogClosed = this.parent.element.querySelector('.e-filter-popup');
             if (dialog && popupEle) {
                 hasDialog = dialog.id === popupEle.id;
+            }
+            if (target.classList.contains('e-excel-ascending') || target.classList.contains('e-excel-descending')) {
+                this.filterModule.closeDialog(target);
             }
             if (parentsUntil(target, 'e-filter-popup') || target.classList.contains('e-filtermenudiv')) {
                 return;
@@ -27431,7 +27467,9 @@ var SummaryCellRenderer = /** @__PURE__ @class */ (function (_super) {
                 var fData = gColumn.columnData.filter(function (e) {
                     return e[gColumn.foreignKeyField] === data[column.columnName].key;
                 })[0];
-                data[column.columnName].foreignKey = fData[gColumn.foreignKeyValue];
+                if (fData) {
+                    data[column.columnName].foreignKey = fData[gColumn.foreignKeyValue];
+                }
             }
         }
         if (isBlazor()) {
@@ -29679,7 +29717,8 @@ var DialogEditRender = /** @__PURE__ @class */ (function () {
         var tempDiv = this.parent.createElement('div', { className: 'e-dialog' + dialogTemp });
         var dummyData = extend({}, args.rowData, { isAdd: !this.isEdit }, true);
         var templateID = this.parent.element.id + 'editSettings' + dialogTemp;
-        appendChildren(tempDiv, this.parent.getEditHeaderTemplate()(dummyData, this.parent, 'editSettings' + dialogTemp, templateID));
+        appendChildren(tempDiv, (dialogTemp === 'HeaderTemplate' ? this.parent.getEditHeaderTemplate() :
+            this.parent.getEditFooterTemplate())(dummyData, this.parent, 'editSettings' + dialogTemp, templateID));
         updateBlazorTemplate(templateID, dialogTemp, this.parent.editSettings);
         return tempDiv;
     };
@@ -34142,7 +34181,8 @@ var ExportValueFormatter = /** @__PURE__ @class */ (function () {
             args.value = getValue(args.column.foreignKeyValue, getForeignData(args.column, {}, args.value)[0]);
         }
         if (args.column.type === 'number' && args.column.format !== undefined && args.column.format !== '') {
-            return args.value ? this.internationalization.getNumberFormat({ format: args.column.format })(args.value) : '';
+            return args.value || args.value === 0 ?
+                this.internationalization.getNumberFormat({ format: args.column.format })(args.value) : '';
         }
         else if (args.column.type === 'boolean' && args.value !== '') {
             return args.value ? 'true' : 'false';
@@ -34438,6 +34478,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
             }
             /* tslint:disable-next-line:no-any */
             sheet.rows = _this.rows;
+            sheet.enableRtl = _this.parent.enableRtl;
             _this.workSheet.push(sheet);
             _this.book.worksheets = _this.workSheet;
             _this.book.styles = _this.styles;

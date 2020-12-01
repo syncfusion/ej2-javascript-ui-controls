@@ -1362,7 +1362,8 @@ export class QuickPopups {
             this.quickPopupHide();
             this.parent.removeNewEventElement();
         }
-        if (!closest(target, '.' + cls.MORE_POPUP_WRAPPER_CLASS) && !target.classList.contains(cls.MORE_INDICATOR_CLASS)
+        if (!closest(target, '.' + cls.MORE_POPUP_WRAPPER_CLASS) && (target.classList &&
+            !target.classList.contains(cls.MORE_INDICATOR_CLASS))
             && (!closest(target, '.' + cls.POPUP_OPEN)) && !closest(target, '.' + cls.WORK_CELLS_CLASS)) {
             this.morePopup.hide();
         }

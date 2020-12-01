@@ -87,8 +87,6 @@ export class DatePicker extends Calendar implements IInput {
     private datepickerOptions: DatePickerModel;
     protected defaultKeyConfigs: { [key: string]: string };
     protected mobilePopupWrapper: HTMLElement;
-    private isAngular: boolean = false;
-    private preventChange: boolean = false;
     /**
      * Specifies the width of the DatePicker component.
      * @default null
@@ -1292,11 +1290,7 @@ export class DatePicker extends Calendar implements IInput {
                 this.changedArgs.event = event || null;
                 this.changedArgs.element = this.element;
                 this.changedArgs.isInteracted = !isNullOrUndefined(event);
-                if (this.isAngular && this.preventChange) {
-                    this.preventChange = false;
-                } else {
-                    this.trigger('change', this.changedArgs);
-                }
+                this.trigger('change', this.changedArgs);
                 this.previousElementValue = this.inputElement.value;
                 this.previousDate = !isNaN(+new Date(this.checkValue(this.value))) ? new Date(this.checkValue(this.value)) : null;
                 this.isInteracted = true;

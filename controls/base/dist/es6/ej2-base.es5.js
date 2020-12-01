@@ -5337,7 +5337,9 @@ function querySelectId(selector) {
                     if (!list[j].match(/\[.*\]/)) {
                         var splitId = list[j].split('#');
                         if (splitId[1].match(/^\d/)) {
-                            list[j] = list[j].replace(/#/, '[id=\'') + '\']';
+                            var setId = list[j].split('.');
+                            setId[0] = setId[0].replace(/#/, '[id=\'') + '\']';
+                            list[j] = setId.join('.');
                         }
                     }
                 }
@@ -6963,6 +6965,15 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
 var componentCount = 0;
 var lastPageID;
 var lastHistoryLen = 0;
+var versionBasedStatePersistence = false;
+/**
+ * To enable or disable version based statePersistence functionality for all components globally.
+ * @param {boolean} status - Optional argument Specifies the status value to enable or disable versionBasedStatePersistence option.
+ * @returns {void}
+ */
+function enableVersionBasedPersistence(status) {
+    versionBasedStatePersistence = status;
+}
 /**
  * Base class for all Essential JavaScript components
  */
@@ -7225,14 +7236,25 @@ var Component = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Component.prototype.mergePersistData = function () {
-        var data = window.localStorage.getItem(this.getModuleName() + this.element.id);
+        var data;
+        if (versionBasedStatePersistence) {
+            data = window.localStorage.getItem(this.getModuleName() + this.element.id + this.ej2StatePersistenceVersion);
+        }
+        else {
+            data = window.localStorage.getItem(this.getModuleName() + this.element.id);
+        }
         if (!(isNullOrUndefined(data) || (data === ''))) {
             this.setProperties(JSON.parse(data), true);
         }
     };
     Component.prototype.setPersistData = function () {
         if (!this.isDestroyed) {
-            window.localStorage.setItem(this.getModuleName() + this.element.id, this.getPersistData());
+            if (versionBasedStatePersistence) {
+                window.localStorage.setItem(this.getModuleName() + this.element.id + this.ej2StatePersistenceVersion, this.getPersistData());
+            }
+            else {
+                window.localStorage.setItem(this.getModuleName() + this.element.id, this.getPersistData());
+            }
         }
     };
     //tslint:disable-next-line
@@ -9017,5 +9039,5 @@ var SanitizeHtmlHelper = /** @__PURE__ @class */ (function () {
  * Base modules
  */
 
-export { blazorCultureFormats, IntlBase, Ajax, Animation, rippleEffect, isRippleEnabled, enableRipple, Base, getComponent, removeChildInstance, Browser, Component, ChildProperty, Position, Draggable, Droppable, EventHandler, onIntlChange, rightToLeft, cldrData, defaultCulture, defaultCurrencyCode, Internationalization, setCulture, setCurrencyCode, loadCldr, enableRtl, getNumericObject, getNumberDependable, getDefaultDateObject, KeyboardEvents, L10n, ModuleLoader, Property, Complex, ComplexFactory, Collection, CollectionFactory, Event$1 as Event, NotifyPropertyChanges, CreateBuilder, SwipeSettings, Touch, HijriParser, blazorTemplates, getRandomId, compile$$1 as compile, updateBlazorTemplate, resetBlazorTemplate, setTemplateEngine, getTemplateEngine, disableBlazorMode, createInstance, setImmediate, getValue, setValue, deleteObject, isObject, getEnumValue, merge, extend, isNullOrUndefined, isUndefined, getUniqueID, debounce, queryParams, isObjectArray, compareElementParent, throwError, print, formatUnit, enableBlazorMode, isBlazor, getElement, getInstance, addInstance, uniqueID, createElement, addClass, removeClass, isVisible, prepend, append, detach, remove, attributes, select, selectAll, closest, siblings, getAttributeOrDefault, setStyleAttribute, classList, matches, includeInnerHTML, containsClass, cloneNode, Observer, SanitizeHtmlHelper };
+export { blazorCultureFormats, IntlBase, Ajax, Animation, rippleEffect, isRippleEnabled, enableRipple, Base, getComponent, removeChildInstance, Browser, versionBasedStatePersistence, enableVersionBasedPersistence, Component, ChildProperty, Position, Draggable, Droppable, EventHandler, onIntlChange, rightToLeft, cldrData, defaultCulture, defaultCurrencyCode, Internationalization, setCulture, setCurrencyCode, loadCldr, enableRtl, getNumericObject, getNumberDependable, getDefaultDateObject, KeyboardEvents, L10n, ModuleLoader, Property, Complex, ComplexFactory, Collection, CollectionFactory, Event$1 as Event, NotifyPropertyChanges, CreateBuilder, SwipeSettings, Touch, HijriParser, blazorTemplates, getRandomId, compile$$1 as compile, updateBlazorTemplate, resetBlazorTemplate, setTemplateEngine, getTemplateEngine, disableBlazorMode, createInstance, setImmediate, getValue, setValue, deleteObject, isObject, getEnumValue, merge, extend, isNullOrUndefined, isUndefined, getUniqueID, debounce, queryParams, isObjectArray, compareElementParent, throwError, print, formatUnit, enableBlazorMode, isBlazor, getElement, getInstance, addInstance, uniqueID, createElement, addClass, removeClass, isVisible, prepend, append, detach, remove, attributes, select, selectAll, closest, siblings, getAttributeOrDefault, setStyleAttribute, classList, matches, includeInnerHTML, containsClass, cloneNode, Observer, SanitizeHtmlHelper };
 //# sourceMappingURL=ej2-base.es5.js.map

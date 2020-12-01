@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.3.52 (2020-12-01)
+
+### RangeNavigator
+
+#### Bug Fixes
+
+- `#294999` - Range navigator rendering properly for `Date` type.
+- `#297551` - Text Wrap support added for chart axis title.
+
 ## 18.3.51 (2020-11-24)
 
 ### Chart

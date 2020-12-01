@@ -14,7 +14,7 @@
     }
   }
 
-  .e-timepicker.e-popup {
+  #{&}.e-timepicker.e-popup {
     border: $timepicker-list-border-color;
     border-radius: $timepicker-popup-border-radius;
     box-shadow: $timepicker-popup-shadow;
@@ -54,10 +54,10 @@
     }
   }
 
-  .e-small .e-timepicker.e-popup,
-  #{if(&, '&', '*')}.e-small.e-timepicker.e-popup,
-  .e-bigger.e-small .e-timepicker.e-popup,
-  #{if(&, '&', '*')}.e-bigger.e-small.e-timepicker.e-popup {
+  .e-small #{&}.e-timepicker.e-popup,
+  #{if(&, '&', '*')}.e-small#{&}.e-timepicker.e-popup,
+  .e-bigger.e-small #{&}.e-timepicker.e-popup,
+  #{if(&, '&', '*')}.e-bigger.e-small#{&}.e-timepicker.e-popup {
 
     #{if(&, '&', '*')} .e-list-parent.e-ul {
       #{if(&, '&', '*')} .e-list-item {

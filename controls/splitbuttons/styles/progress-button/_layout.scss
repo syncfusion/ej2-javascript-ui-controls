@@ -47,6 +47,7 @@
 
     &.e-progress-active {
       overflow: hidden;
+      pointer-events: none;
 
       .e-progress {
         opacity: 1;

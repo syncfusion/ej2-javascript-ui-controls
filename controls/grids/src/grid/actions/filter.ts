@@ -1048,6 +1048,9 @@ export class Filter implements IAction {
             if (dialog && popupEle) {
                 hasDialog = dialog.id === popupEle.id;
             }
+            if (target.classList.contains('e-excel-ascending') || target.classList.contains('e-excel-descending')) {
+                this.filterModule.closeDialog(target);
+            }
             if (parentsUntil(target, 'e-filter-popup') || target.classList.contains('e-filtermenudiv')) {
                 return;
             } else if (this.filterModule && (!parentsUntil(target, 'e-popup-wrapper')

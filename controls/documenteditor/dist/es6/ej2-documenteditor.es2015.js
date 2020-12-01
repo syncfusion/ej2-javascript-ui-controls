@@ -6815,6 +6815,10 @@ class Layout {
                     newSpan2.line = span.line;
                     newSpan2.characterFormat.copyFormat(span.characterFormat);
                     span.line.children.splice(inlineIndex + j, 0, newSpan2);
+                    if (span.revisions.length > 0) {
+                        this.updateRevisionForSpittedElement(span, newSpan2, true);
+                        newSpan2.isMarkedForRevision = span.isMarkedForRevision;
+                    }
                     newSpan2.text = text;
                 }
                 else {
@@ -7245,6 +7249,7 @@ class Layout {
             splittedElementBox.characterFormat.copyFormat(elementBox.characterFormat);
             splittedElementBox.width = this.documentHelper.textHelper.getWidth(splittedElementBox.text, characterFormat);
             splittedElementBox.trimEndWidth = splittedElementBox.width;
+            splittedElementBox.revisions = splittedElementBox.revisions;
             elementBox.text = elementBox.text.substr(0, index);
             elementBox.width -= splittedElementBox.width;
             elementBox.trimEndWidth = elementBox.width;
@@ -7407,6 +7412,10 @@ class Layout {
                     splittedElement.height = textElement.height;
                     splittedElement.baselineOffset = textElement.baselineOffset;
                     lineWidget.children.splice(indexOf, 0, splittedElement);
+                    if (textElement.revisions.length > 0) {
+                        this.updateRevisionForSpittedElement(textElement, splittedElement, index > 0);
+                        splittedElement.isMarkedForRevision = textElement.isMarkedForRevision;
+                    }
                     textElement.text = text;
                     textElement.width -= splittedElement.width;
                     textElement.trimEndWidth = textElement.width;
@@ -7848,6 +7857,10 @@ class Layout {
                     let splittedElement = new TextElementBox();
                     splittedElement.text = text.substr(index);
                     splittedElement.characterFormat.copyFormat(textElement.characterFormat);
+                    if (textElement.revisions.length > 0) {
+                        this.updateRevisionForSpittedElement(textElement, splittedElement, index > 0);
+                        splittedElement.isMarkedForRevision = textElement.isMarkedForRevision;
+                    }
                     textElement.text = text.substr(0, index);
                     this.documentHelper.textHelper.getTextSize(splittedElement, characterFormat);
                     textElement.width -= splittedElement.width;
@@ -9925,7 +9938,8 @@ class Layout {
      * @private
      */
     updateCellVerticalPosition(cellWidget, isUpdateToTop, isInsideTable) {
-        if (cellWidget.ownerTable.containerWidget instanceof BodyWidget || isInsideTable) {
+        let containerWidget = cellWidget.ownerTable.containerWidget;
+        if (containerWidget instanceof BlockContainer || containerWidget instanceof TextFrame || isInsideTable) {
             let displacement = this.getDisplacement(cellWidget, isUpdateToTop);
             //Update Y position alone for the child widget of cell
             this.updateCellContentVerticalPosition(cellWidget, displacement, isUpdateToTop);
@@ -12787,7 +12801,9 @@ class Renderer {
         this.renderTableCellOutline(page.documentHelper, cellWidget);
         for (let i = 0; i < cellWidget.childWidgets.length; i++) {
             let widget = cellWidget.childWidgets[i];
-            let width = cellWidget.width + cellWidget.margin.left - cellWidget.leftBorderWidth;
+            // MS word render the content in right margin also.
+            // So, we need to add right margin value while cliping the content
+            let width = (cellWidget.width + cellWidget.margin.left + cellWidget.margin.right) - cellWidget.leftBorderWidth;
             if (!this.isPrinting) {
                 // tslint:disable-next-line:max-line-length
                 this.clipRect(cellWidget.x - cellWidget.margin.left, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));
@@ -22419,7 +22435,13 @@ class TableCellWidget extends BlockWidget {
         let leftMargin = !isNullOrUndefined(this.leftMargin) ? this.leftMargin : 0;
         let rightMargin = !isNullOrUndefined(this.rightMargin) ? this.rightMargin : 0;
         if (ownerTable && ownerTable.tableFormat.preferredWidthType === 'Auto' && ownerTable.tableFormat.allowAutoFit) {
-            cellWidth = containerWidth;
+            if (this.cellFormat.preferredWidth === 0) {
+                cellWidth = containerWidth;
+            }
+            else {
+                // If cell has prefferd width, we need to consider prefferd width.
+                cellWidth = this.cellFormat.preferredWidth;
+            }
         }
         else if (this.cellFormat.preferredWidthType === 'Percent') {
             cellWidth = (this.cellFormat.preferredWidth * containerWidth) / 100 - leftMargin - rightMargin;
@@ -60032,6 +60054,24 @@ class Editor {
     // tslint:disable-next-line:max-line-length
     removeCharacter(inline, offset, count, lineWidget, lineIndex, i, isRearrange) {
         let isBreak = false;
+        if (inline instanceof BookmarkElementBox) {
+            if (!isNullOrUndefined(inline.line.previousLine)) {
+                inline.line.previousLine.children.splice(inline.line.previousLine.children.length, 0, inline);
+                inline.line = inline.line.previousLine;
+            }
+            else if (!isNullOrUndefined(inline.line.paragraph.previousRenderedWidget)) {
+                // tslint:disable-next-line:max-line-length
+                inline.line.paragraph.previousRenderedWidget.lastChild.children.splice(inline.line.paragraph.previousRenderedWidget.lastChild.children.length, 0, inline);
+                inline.line = inline.line.paragraph.previousRenderedWidget.lastChild;
+            }
+            else if (!isNullOrUndefined(inline.line.paragraph.nextRenderedWidget)) {
+                // tslint:disable-next-line:max-line-length
+                inline.line.paragraph.nextRenderedWidget.firstChild.children.splice(inline.line.paragraph.nextRenderedWidget.firstChild.children.length, 0, inline);
+                inline.line = inline.line.paragraph.nextRenderedWidget.firstChild;
+            }
+            lineWidget.children.splice(i, 1);
+            return true;
+        }
         if (offset < count + inline.length) {
             let indexInInline = offset - count;
             inline.ischangeDetected = true;
@@ -72401,7 +72441,7 @@ class WordExport {
         if (!isNullOrUndefined(format.cellSpacing) && format.cellSpacing > 0) {
             writer.writeStartElement(undefined, 'tblCellSpacing', this.wNamespace);
             // tslint:disable-next-line:max-line-length
-            writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(format.cellSpacing * this.twentiethOfPoint).toString());
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal((format.cellSpacing / 2) * this.twentiethOfPoint).toString());
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
             writer.writeEndElement();
         }

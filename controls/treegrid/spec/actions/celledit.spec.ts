@@ -974,6 +974,77 @@ describe('checkbox retained after cell edit and cancel', () => {
     });
   });
 
+  describe('EJ2-44206 - Dynamic Enable/Disable editing', () => {
+    let gridObj: TreeGrid;
+    let data: Object[] = sampleData;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: data,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          editSettings: {
+              allowAdding: true,
+              allowEditing: true,
+              allowDeleting: true,
+              mode: 'Cell',
+          },
+          toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+          columns: [
+              { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',  width: 90 },
+              { field: 'taskName', headerText: 'Task Name',  },
+              { field: 'startDate', headerText: 'Start', textAlign: 'Right', width: 130},
+              { field: 'progress', headerText: 'Duration', textAlign: 'Right', width: 100, }
+          ],
+        },
+        done
+      );
+    });
+    it('Initial edit test',(done: Function) => {
+      let click: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+     gridObj.cellEdit = (args?: Object) : void => {
+        expect(args['type'] === 'edit').toBe(true);
+       done();
+     } 
+     gridObj.getCellFromIndex(0, 1).dispatchEvent(click);
+     gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = '102';
+     gridObj.selectRow(1);   
+   });
+   it('Edit check after disabled editing',(done: Function) => {
+    let click: MouseEvent = new MouseEvent('dblclick', {
+      'view': window,
+      'bubbles': true,
+      'cancelable': true
+    });
+   done(); 
+   gridObj.editSettings.allowEditing = false;
+   gridObj.getCellFromIndex(0, 1).dispatchEvent(click);
+   expect(gridObj.element.classList.contains(".e-editing")).toBe(false);
+   gridObj.editSettings.allowEditing = true;
+   });
+   it('Edit check after enabled editing',() => {
+    let click: MouseEvent = new MouseEvent('dblclick', {
+      'view': window,
+      'bubbles': true,
+      'cancelable': true
+    });
+   gridObj.cellEdit = (args?: Object) : void => {
+      expect(args['type'] === 'edit').toBe(true);
+   }
+   gridObj.getCellFromIndex(0, 1).dispatchEvent(click);
+   gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = '104';
+   gridObj.selectRow(1);   
+ });
+ afterAll(() => {
+  destroy(gridObj);
+});
+});
+
+
   describe('EJ2-43565 - Cell Edit with isFrozen property', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {

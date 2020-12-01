@@ -3,7 +3,7 @@ import { extend, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { closest, classList } from '@syncfusion/ej2-base';
 import { SortSettings } from '../base/grid';
 import { Column } from '../models/column';
-import { IGrid, IAction, NotifyArgs } from '../base/interface';
+import { IGrid, IAction, NotifyArgs, EJ2Intance } from '../base/interface';
 import { SortDirection } from '../base/enum';
 import { setCssInGridPopUp, getActualPropFromColl, isActionPrevent, iterateExtend, parentsUntil } from '../base/util';
 import * as events from '../base/constant';
@@ -356,6 +356,7 @@ export class Sort implements IAction {
     }
 
     private clickHandler(e: MouseEvent): void {
+        let gObj: IGrid = this.parent;
         this.currentTarget = null;
         this.popUpClickHandler(e);
         let target: Element = closest(e.target as Element, '.e-headercell');
@@ -365,7 +366,6 @@ export class Sort implements IAction {
             !(e.target as Element).classList.contains('e-columnmenu') &&
             !(e.target as Element).classList.contains('e-filtermenudiv') &&
             !parentsUntil(e.target as Element, 'e-stackedheadercell')) {
-            let gObj: IGrid = this.parent;
             let colObj: Column = gObj.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('e-mappinguid')) as Column;
             let direction: SortDirection = !target.querySelectorAll('.e-ascending').length ? 'Ascending' :
                 'Descending';
@@ -378,6 +378,12 @@ export class Sort implements IAction {
         }
         if (target) {
             target.classList.remove('e-resized');
+        }
+        if ((e.target as Element).classList.contains('e-excel-ascending') ||
+            (e.target as Element).classList.contains('e-excel-descending')) {
+            let colUid: string = (<EJ2Intance>closest(e.target as Element, '.e-filter-popup')).getAttribute('uid');
+            let direction: SortDirection = (e.target as HTMLElement).classList.contains('e-excel-ascending') ? 'Ascending' : 'Descending';
+            this.sortColumn(gObj.getColumnByUid(colUid).field, direction, false);
         }
     }
 

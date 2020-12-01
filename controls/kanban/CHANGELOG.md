@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.52 (2020-12-01)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#300968, #302271` - An issue with the `dragStart` event maintained previous changed value in argument has been fixed.
+
 ## 18.3.50 (2020-11-17)
 
 ### Kanban

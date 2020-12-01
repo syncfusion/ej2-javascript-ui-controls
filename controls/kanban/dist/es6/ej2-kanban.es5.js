@@ -1471,7 +1471,8 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         });
     };
     DragAndDrop.prototype.updateDroppedData = function (element, cardStatus, contentCell) {
-        var crudData = this.parent.getCardDetails(element);
+        var crudObj = this.parent.getCardDetails(element);
+        var crudData = extend({}, crudObj, null, true);
         if (cardStatus.split(',').length === 1) {
             crudData[this.parent.keyField] = cardStatus;
         }

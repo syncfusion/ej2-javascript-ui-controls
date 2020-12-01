@@ -447,6 +447,33 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+    describe('BLAZ-8584 - Clicking on view source code with small value', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p>aaaaa</p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+        it(' Clicking on view source code with small value ', (done) => {
+            let sourceCode: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
+            dispatchEve(sourceCode, 'mousedown');
+            dispatchEve(sourceCode, 'mouseup');
+            sourceCode.click();
+            setTimeout(() => {
+                let textarea: HTMLTextAreaElement = (rteObj as any).element.querySelector('.e-rte-srctextarea');
+                expect(textarea.value === "<p>aaaaa</p>").toBe(true);
+                done();
+            }, 50)
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
     describe(' EJ2-218412  -  htmlAttributes "id" is not set to the validation textarea element in RTE ', () => {
         let rteObj: RichTextEditor;
         let element: HTMLElement = createElement('div', {

@@ -195,8 +195,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private timeOptions : TimePickerModel;
     private mobileTimePopupWrap: HTMLElement;
     private isBlazorServer: boolean = false;
-    private isAngular: boolean = false;
-    private preventChange: boolean = false;
     /**
      * Gets or sets the width of the TimePicker component. The width of the popup is based on the width of the component.
      * @default null
@@ -2111,11 +2109,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         };
         eventArgs.value = this.valueWithMinutes || this.getDateObject(this.inputElement.value);
         this.prevDate = this.valueWithMinutes || this.getDateObject(this.inputElement.value);
-        if (this.isAngular && this.preventChange) {
-            this.preventChange = false;
-        } else {
-            this.trigger('change', eventArgs);
-        }
+        this.trigger('change', eventArgs);
         this.invalidValueString = null;
         this.checkErrorState(this.value);
 
@@ -2652,9 +2646,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                             this.checkErrorState(this.invalidValueString);
                         }
                         this.checkValueChange(null, false);
-                        if (this.isAngular && this.preventChange) {
-                            this.preventChange = false;
-                        }
                     }
                     break;
                 case 'floatLabelType':

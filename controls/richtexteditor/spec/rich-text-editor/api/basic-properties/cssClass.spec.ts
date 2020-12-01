@@ -20,6 +20,15 @@ describe('RTE BASIC PROPERTIES - cssClass - ', () => {
                 rteObj.destroy();
                 expect(ele.classList.contains('custom-style')).toBe(false);
             });
+            it(' Test the check multiple CSSClass in RTE target element ', () => {
+                rteObj = renderRTE({ cssClass: 'custom-style1 custom-style2' });
+                let ele: HTMLElement = rteObj.element;
+                expect(ele.classList.contains('custom-style1')).toBe(true);
+                expect(ele.classList.contains('custom-style2')).toBe(true);
+                rteObj.destroy();
+                expect(ele.classList.contains('custom-style1')).toBe(false);
+                expect(ele.classList.contains('custom-style2')).toBe(false);
+            });
         });
     });
 });

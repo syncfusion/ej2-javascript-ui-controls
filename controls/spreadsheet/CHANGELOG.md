@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.52 (2020-12-01)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- Paste is not working when clicking on paste button in the ribbon tab.
+
 ## 18.3.51 (2020-11-24)
 
 ### Spreadsheet

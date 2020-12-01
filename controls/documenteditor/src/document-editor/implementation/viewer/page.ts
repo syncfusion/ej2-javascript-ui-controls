@@ -2666,7 +2666,12 @@ export class TableCellWidget extends BlockWidget {
         let leftMargin: number = !isNullOrUndefined(this.leftMargin) ? this.leftMargin : 0;
         let rightMargin: number = !isNullOrUndefined(this.rightMargin) ? this.rightMargin : 0;
         if (ownerTable && ownerTable.tableFormat.preferredWidthType === 'Auto' && ownerTable.tableFormat.allowAutoFit) {
-            cellWidth = containerWidth;
+            if (this.cellFormat.preferredWidth === 0) {
+                cellWidth = containerWidth;
+            } else {
+                // If cell has prefferd width, we need to consider prefferd width.
+                cellWidth = this.cellFormat.preferredWidth;
+            }
         } else if (this.cellFormat.preferredWidthType === 'Percent') {
             cellWidth = (this.cellFormat.preferredWidth * containerWidth) / 100 - leftMargin - rightMargin;
         } else if (this.cellFormat.preferredWidthType === 'Point') {

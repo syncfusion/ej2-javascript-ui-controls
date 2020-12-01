@@ -2,10 +2,10 @@ import { Spreadsheet } from '../base/index';
 import { keyDown, cut, paste, copy, clearCopy, performUndoRedo, initiateHyperlink, editHyperlink } from '../common/index';
 import { findDlg, gotoDlg } from '../common/index';
 import { setCellFormat, textDecorationUpdate, FontWeight, getCellIndexes, FontStyle } from '../../workbook/common/index';
-import { CellModel, SheetModel } from '../../workbook';
+import { CellModel, SheetModel, getColumn, isLocked as isCellLocked } from '../../workbook/index';
 import { setCell, getCell } from '../../workbook/base/cell';
 import { RowModel } from '../../workbook/base/row-model';
-import { isNullOrUndefined, closest } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest, select } from '@syncfusion/ej2-base';
 
 /**
  * Represents keyboard shortcut support for Spreadsheet.
@@ -40,7 +40,7 @@ export class KeyboardShortcut {
                 }
             }
             if (e.keyCode === 79) {
-                (this.parent.element.querySelector('[id="' + this.parent.element.id + '_fileUpload"]') as HTMLElement).click();
+                select('#' + this.parent.element.id + '_fileUpload', this.parent.element).click();
             } else if (e.keyCode === 83) {
                 if (this.parent.saveUrl && this.parent.allowSave) { this.parent.save(); }
             } else if (e.keyCode === 67) {
@@ -73,8 +73,7 @@ export class KeyboardShortcut {
             let actCell: string = actSheet.activeCell;
             let actCellIndex: number[] = getCellIndexes(actCell);
             let cellObj: CellModel = getCell(actCellIndex[0], actCellIndex[1], actSheet);
-            let isLocked: boolean = cellObj ? !isNullOrUndefined(cellObj.isLocked) ? cellObj.isLocked
-                : actSheet.isProtected : actSheet.isProtected;
+            let isLocked: boolean = actSheet.isProtected && isCellLocked(cellObj, getColumn(actSheet, actCellIndex[1]));
             if (!isLocked || !actSheet.isProtected) {
                 if (e.keyCode === 70) {
                     e.preventDefault();

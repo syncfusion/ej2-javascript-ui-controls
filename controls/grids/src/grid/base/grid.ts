@@ -1614,6 +1614,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     @Property({})
     public currentAction: ActionArgs;
 
+    /**
+     * Defines the version for Grid persistence.
+     */
+    @Property('default version')
+    public ej2StatePersistenceVersion: string;
+
     /** 
      * Triggers when the component is created.
      * @event 
@@ -2535,7 +2541,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             DialogEditARIA: 'Edit dialog',
             ColumnChooserDialogARIA: 'Column chooser dialog',
             ColumnMenuDialogARIA: 'Column menu dialog',
-            CustomFilterDialogARIA: 'Customer filter dialog'
+            CustomFilterDialogARIA: 'Customer filter dialog',
+            SortAtoZ: 'Sort A to Z',
+            SortZtoA: 'Sort Z to A',
+            SortByOldest: 'Sort by Oldest',
+            SortByNewest: 'Sort by Newest',
+            SortSmallestToLargest: 'Sort Smallest to Largest',
+            SortLargestToSmallest: 'Sort Largest to Smallest'
         };
         this.keyConfigs = {
             downArrow: 'downarrow',
@@ -2758,7 +2770,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         classList(this.element, [], ['e-rtl', 'e-gridhover', 'e-responsive', 'e-default', 'e-device', 'e-grid-min-height']);
         if ((<{ isAngular?: boolean }>this).isAngular) {
-            this.element.innerHTML = null;
+            this.element = null;
         }
     }
 

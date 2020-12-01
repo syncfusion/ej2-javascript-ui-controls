@@ -25,6 +25,14 @@
     .e-chkcancel-icon::before {
       content: '\e7a7';
     }
+
+    .e-sortascending::before {
+      content: '\e734';
+    }
+
+    .e-sortdescending::before {
+      content: '\e733';
+    }
    }
 }
   

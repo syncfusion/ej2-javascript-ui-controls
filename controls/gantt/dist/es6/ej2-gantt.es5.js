@@ -21506,12 +21506,17 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             var currentIndex = currentData.indexOf(deleteRecord);
             var flatIndex = flatData.indexOf(deleteRecord);
             var treeGridParentIndex = this.parent.treeGrid.parentData.indexOf(deleteRecord);
+            var tempData = getValue('dataOperation.dataArray', this.parent);
+            var dataIndex = tempData.indexOf(deleteRecord.taskData);
             var childIndex = void 0;
             if (currentIndex !== -1) {
                 currentData.splice(currentIndex, 1);
             }
             if (flatIndex !== -1) {
                 flatData.splice(flatIndex, 1);
+            }
+            if (dataIndex !== -1) {
+                tempData.splice(dataIndex, 1);
             }
             if (!isNullOrUndefined(deleteRecord)) {
                 deleteRecordIDs.push(deleteRecord.ganttProperties.rowUniqueID.toString());
@@ -22142,6 +22147,8 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
     Edit$$1.prototype.updateNewRecord = function (cAddedRecord, args) {
         if (cAddedRecord.level === 0) {
             this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
+            var tempData = getValue('dataOperation.dataArray', this.parent);
+            tempData.splice(0, 0, cAddedRecord.taskData);
         }
         this.updateTreeGridUniqueID(cAddedRecord, 'add');
         this.refreshNewlyAddedRecord(args, cAddedRecord);
@@ -22367,6 +22374,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                                 this.ganttData.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
                             }
                             this.treeGridData.splice(recordIndex1 + 1, 0, this.draggedRecord);
+                            this.parent.ids.splice(recordIndex1 + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
                         }
                         else {
                             c = this.parent.editModule.getChildCount(droppedRec, 0);
@@ -22374,6 +22382,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                                 this.ganttData.splice(recordIndex1 + c + 1, 0, this.draggedRecord.taskData);
                             }
                             this.treeGridData.splice(recordIndex1 + c + 1, 0, this.draggedRecord);
+                            this.parent.ids.splice(recordIndex1 + c + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
                             var idIndex = this.parent.ids.indexOf(this.draggedRecord[this.parent.taskFields.id].toString());
                             if (idIndex !== recordIndex1 + c + 1) {
                                 this.parent.ids.splice(idIndex, 1);
@@ -22464,6 +22473,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         this.parent.trigger('actionFailure', { error: e });
     };
     Edit$$1.prototype.indentOutdentSuccess = function (args) {
+        this.parent.treeGrid.parentData = [];
         this.parent.treeGrid.refresh();
         if (this.dropPosition === 'middleSegment') {
             args.requestType = 'indented';
@@ -22552,11 +22562,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                 this.ganttData.splice(childRecordsLength, 0, this.draggedRecord.taskData);
             }
             this.treeGridData.splice(childRecordsLength, 0, this.draggedRecord);
-            var idIndex = this.parent.ids.indexOf(this.draggedRecord[this.parent.taskFields.id].toString());
-            if (idIndex !== childRecordsLength) {
-                this.parent.ids.splice(idIndex, 1);
-                this.parent.ids.splice(childRecordsLength, 0, this.draggedRecord[this.parent.taskFields.id].toString());
-            }
+            this.parent.ids.splice(childRecordsLength, 0, this.draggedRecord[this.parent.taskFields.id].toString());
             this.recordLevel();
             if (this.draggedRecord.hasChildRecords) {
                 this.updateChildRecord(this.draggedRecord, childRecordsLength, this.droppedRecord.expanded);
@@ -22653,6 +22659,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                         dataSource.splice(indx, 1);
                     }
                     this.treeGridData.splice(indx, 1);
+                    this.parent.ids.splice(indx, 1);
                     if (this.parent.treeGrid.parentData.indexOf(delRow) !== -1) {
                         this.parent.treeGrid.parentData.splice(this.parent.treeGrid.parentData.indexOf(delRow), 1);
                     }
@@ -22662,6 +22669,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             if (!obj.taskFields.parentID) {
                 var deletedRecordCount = this.getChildCount(delRow, 0);
                 this.treeGridData.splice(recordIdx, deletedRecordCount + 1);
+                this.parent.ids.splice(recordIdx, deletedRecordCount + 1);
                 var parentIndex = this.ganttData.indexOf(delRow.taskData);
                 if (parentIndex !== -1) {
                     this.ganttData.splice(parentIndex, 1);
@@ -22697,6 +22705,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                     data.splice(indx, 1);
                 }
                 this.treeGridData.splice(indx, 1);
+                this.parent.ids.splice(indx, 1);
             }
             if (currentRec.hasChildRecords) {
                 this.removeChildItem(currentRec);

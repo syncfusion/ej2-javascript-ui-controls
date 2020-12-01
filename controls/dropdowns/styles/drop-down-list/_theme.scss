@@ -1,5 +1,5 @@
 @include export-module('dropdownlist-theme') {
-  .e-popup {
+  #{&}.e-popup {
     border-color: $ddl-default-border-color;
   }
 

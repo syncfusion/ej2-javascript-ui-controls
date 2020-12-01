@@ -354,8 +354,8 @@ export class Selection implements IAction {
         let selectedMovableRow: Element = this.getSelectedMovableRow(index);
         if (!isToggle && !isRemoved) {
             if (this.selectedRowIndexes.indexOf(index) <= -1) {
-                this.updateRowSelection(selectedRow, index);
                 if (gObj.getFrozenColumns()) { this.updateRowSelection(selectedMovableRow, index); }
+                this.updateRowSelection(selectedRow, index);
             }
             this.selectRowIndex(index);
         }
@@ -2388,6 +2388,7 @@ export class Selection implements IAction {
 
     private refreshPersistSelection(): void {
         let rows: Element[] = this.parent.getRows();
+        this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         if (rows !== null && rows.length > 0 && (this.parent.isPersistSelection || this.chkField)) {
             let indexes: number[] = [];
             for (let j: number = 0; j < rows.length; j++) {
@@ -2396,7 +2397,8 @@ export class Selection implements IAction {
                 if (pKey === null) { return; }
                 let checkState: boolean;
                 let chkBox: HTMLInputElement = (rows[j].querySelector('.e-checkselect') as HTMLInputElement);
-                if (this.selectedRowState[pKey] || (this.parent.checkAllRows === 'Check' && this.chkAllCollec.indexOf(pKey) < 0)
+                if (this.selectedRowState[pKey] || (this.parent.checkAllRows === 'Check' &&
+                    this.totalRecordsCount === Object.keys(this.selectedRowState).length && this.chkAllCollec.indexOf(pKey) < 0)
                     || (this.parent.checkAllRows === 'Uncheck' && this.chkAllCollec.indexOf(pKey) > 0)
                     || (this.parent.checkAllRows === 'Intermediate' && !isNullOrUndefined(this.chkField) && rowObj.data[this.chkField])
                 ) {

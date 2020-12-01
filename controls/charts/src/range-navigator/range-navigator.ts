@@ -514,9 +514,9 @@ export class RangeNavigator extends Component<HTMLElement> {
         let isDateTime: boolean = this.valueType === 'DateTime';
         let range: VisibleRangeModel = this.chartSeries.xAxis.actualRange;
         this.startValue = this.startValue ? this.startValue : (!this.value[0] ? range.min :
-            (isDateTime ? (<Date>this.value[0]).getTime() : +this.value[0]));
+            (isDateTime ? (new Date(this.value[0].toString())).getTime() : +this.value[0]));
         this.endValue = this.endValue ? this.endValue : (!this.value[1] ? range.max :
-            (isDateTime ? (<Date>this.value[1]).getTime() : +this.value[1]));
+            (isDateTime ? (new Date(this.value[1].toString())).getTime() : +this.value[1]));
     }
 
     /**

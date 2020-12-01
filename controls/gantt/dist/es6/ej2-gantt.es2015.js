@@ -20996,12 +20996,17 @@ class Edit$2 {
             let currentIndex = currentData.indexOf(deleteRecord);
             let flatIndex = flatData.indexOf(deleteRecord);
             let treeGridParentIndex = this.parent.treeGrid.parentData.indexOf(deleteRecord);
+            let tempData = getValue('dataOperation.dataArray', this.parent);
+            let dataIndex = tempData.indexOf(deleteRecord.taskData);
             let childIndex;
             if (currentIndex !== -1) {
                 currentData.splice(currentIndex, 1);
             }
             if (flatIndex !== -1) {
                 flatData.splice(flatIndex, 1);
+            }
+            if (dataIndex !== -1) {
+                tempData.splice(dataIndex, 1);
             }
             if (!isNullOrUndefined(deleteRecord)) {
                 deleteRecordIDs.push(deleteRecord.ganttProperties.rowUniqueID.toString());
@@ -21631,6 +21636,8 @@ class Edit$2 {
     updateNewRecord(cAddedRecord, args) {
         if (cAddedRecord.level === 0) {
             this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
+            let tempData = getValue('dataOperation.dataArray', this.parent);
+            tempData.splice(0, 0, cAddedRecord.taskData);
         }
         this.updateTreeGridUniqueID(cAddedRecord, 'add');
         this.refreshNewlyAddedRecord(args, cAddedRecord);
@@ -21854,6 +21861,7 @@ class Edit$2 {
                                 this.ganttData.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
                             }
                             this.treeGridData.splice(recordIndex1 + 1, 0, this.draggedRecord);
+                            this.parent.ids.splice(recordIndex1 + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
                         }
                         else {
                             c = this.parent.editModule.getChildCount(droppedRec, 0);
@@ -21861,6 +21869,7 @@ class Edit$2 {
                                 this.ganttData.splice(recordIndex1 + c + 1, 0, this.draggedRecord.taskData);
                             }
                             this.treeGridData.splice(recordIndex1 + c + 1, 0, this.draggedRecord);
+                            this.parent.ids.splice(recordIndex1 + c + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
                             let idIndex = this.parent.ids.indexOf(this.draggedRecord[this.parent.taskFields.id].toString());
                             if (idIndex !== recordIndex1 + c + 1) {
                                 this.parent.ids.splice(idIndex, 1);
@@ -21951,6 +21960,7 @@ class Edit$2 {
         this.parent.trigger('actionFailure', { error: e });
     }
     indentOutdentSuccess(args) {
+        this.parent.treeGrid.parentData = [];
         this.parent.treeGrid.refresh();
         if (this.dropPosition === 'middleSegment') {
             args.requestType = 'indented';
@@ -22039,11 +22049,7 @@ class Edit$2 {
                 this.ganttData.splice(childRecordsLength, 0, this.draggedRecord.taskData);
             }
             this.treeGridData.splice(childRecordsLength, 0, this.draggedRecord);
-            let idIndex = this.parent.ids.indexOf(this.draggedRecord[this.parent.taskFields.id].toString());
-            if (idIndex !== childRecordsLength) {
-                this.parent.ids.splice(idIndex, 1);
-                this.parent.ids.splice(childRecordsLength, 0, this.draggedRecord[this.parent.taskFields.id].toString());
-            }
+            this.parent.ids.splice(childRecordsLength, 0, this.draggedRecord[this.parent.taskFields.id].toString());
             this.recordLevel();
             if (this.draggedRecord.hasChildRecords) {
                 this.updateChildRecord(this.draggedRecord, childRecordsLength, this.droppedRecord.expanded);
@@ -22140,6 +22146,7 @@ class Edit$2 {
                         dataSource.splice(indx, 1);
                     }
                     this.treeGridData.splice(indx, 1);
+                    this.parent.ids.splice(indx, 1);
                     if (this.parent.treeGrid.parentData.indexOf(delRow) !== -1) {
                         this.parent.treeGrid.parentData.splice(this.parent.treeGrid.parentData.indexOf(delRow), 1);
                     }
@@ -22149,6 +22156,7 @@ class Edit$2 {
             if (!obj.taskFields.parentID) {
                 let deletedRecordCount = this.getChildCount(delRow, 0);
                 this.treeGridData.splice(recordIdx, deletedRecordCount + 1);
+                this.parent.ids.splice(recordIdx, deletedRecordCount + 1);
                 let parentIndex = this.ganttData.indexOf(delRow.taskData);
                 if (parentIndex !== -1) {
                     this.ganttData.splice(parentIndex, 1);
@@ -22184,6 +22192,7 @@ class Edit$2 {
                     data.splice(indx, 1);
                 }
                 this.treeGridData.splice(indx, 1);
+                this.parent.ids.splice(indx, 1);
             }
             if (currentRec.hasChildRecords) {
                 this.removeChildItem(currentRec);

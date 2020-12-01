@@ -1,11 +1,11 @@
 @include export-module('calendar-layout') { /*! calendar layout */
 
-  ejs-calendar {
+  #{&}ejs-calendar {
     display: block;
   }
 
-  .e-calendar,
-  .e-bigger.e-small.e-calendar {
+  #{&}.e-calendar,
+  .e-bigger.e-small #{&}.e-calendar {
     // sass-lint:disable no-vendor-prefixes
     -webkit-tap-highlight-color: transparent;
     border-radius: $calendar-wrapper-border-radius;
@@ -155,8 +155,8 @@
     }
 
   //normal style
-  .e-calendar,
-  .e-bigger.e-small.e-calendar {
+  #{&}.e-calendar,
+  .e-bigger.e-small #{&}.e-calendar {
     max-width: $calendar-normal-max-width;
     min-width:  $calendar-normal-min-width;
     padding: $calendar-popup-padding;
@@ -241,8 +241,8 @@
 }
 }
 
-  .e-small.e-bigger.e-calendar,
-  .e-small.e-bigger.e-calendar {
+  .e-small.e-bigger#{&}.e-calendar,
+  .e-small.e-bigger #{&}.e-calendar {
     #{if(&, '&', '*')} .e-content.e-year {
       #{if(&, '&', '*')} span.e-day {
         font-size: $calendar-bigger-small-yeardecade-font-size;
@@ -255,8 +255,8 @@
   }
 
   //bigger style
-  .e-bigger.e-calendar,
-  #{if(&, '&', '*')}.e-bigger .e-calendar {
+  .e-bigger#{&}.e-calendar,
+  #{if(&, '&', '*')}.e-bigger #{&}.e-calendar {
     max-width: $calendar-bigger-max-width;
     min-width: $calendar-bigger-min-width;
     padding: $calendar-popup-bigger-padding;
@@ -342,8 +342,8 @@
   }
 
   // Mouse small style
-  .e-small.e-calendar,
-  .e-small .e-calendar {
+  .e-small#{&}.e-calendar,
+  .e-small #{&}.e-calendar {
     max-width: $calendar-normal-max-width;
     min-width:  $calendar-normal-min-width;
     padding: $calendar-small-popup-padding;
@@ -392,7 +392,7 @@
     }
   }
 
-  .e-calendar {
+  #{&}.e-calendar {
     #{if(&, '&', '*')} .e-btn.e-today.e-flat.e-disabled,
     #{if(&, '&', '*')} .e-btn.e-today.e-flat.e-disabled:hover,
     #{if(&, '&', '*')} .e-btn.e-today.e-flat.e-disabled:active,

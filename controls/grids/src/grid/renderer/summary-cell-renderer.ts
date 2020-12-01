@@ -39,7 +39,9 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
                 let fData: object = gColumn.columnData.filter((e: object) => {
                     return e[gColumn.foreignKeyField] === data[column.columnName].key;
                 })[0];
-                data[column.columnName].foreignKey = fData[gColumn.foreignKeyValue];
+                if (fData) {
+                    data[column.columnName].foreignKey = fData[gColumn.foreignKeyValue];
+                }
             }
         }
         if (isBlazor()) {

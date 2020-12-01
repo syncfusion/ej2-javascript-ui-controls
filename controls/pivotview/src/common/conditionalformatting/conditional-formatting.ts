@@ -1,5 +1,5 @@
 import { Dialog, BeforeOpenEventArgs, ButtonPropsModel } from '@syncfusion/ej2-popups';
-import { isNullOrUndefined as isNaN, createElement, extend, remove, addClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNaN, createElement, extend, remove, addClass, select } from '@syncfusion/ej2-base';
 import { IConditionalFormatSettings } from '../../base/engine';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -55,8 +55,8 @@ export class ConditionalFormatting {
     }
 
     private createDialog(): void {
-        if (document.querySelector('#' + this.parentID + 'conditionalformatting') !== null) {
-            remove(document.querySelector('#' + this.parentID + 'conditionalformatting'));
+        if (select('#' + this.parentID + 'conditionalformatting', document) !== null) {
+            remove(select('#' + this.parentID + 'conditionalformatting', document));
         }
         this.parent.element.appendChild(createElement('div', {
             id: this.parentID + 'conditionalformatting',
@@ -148,17 +148,17 @@ export class ConditionalFormatting {
 
     private refreshConditionValues(): boolean {
         for (let i: number = 0; i < this.newFormat.length; i++) {
-            if ((document.querySelector('#' + this.parentID + 'conditionvalue1' + i) as HTMLInputElement).value === '' ||
-                (document.querySelector('#' + this.parentID + 'conditionvalue2' + i) as HTMLInputElement).value === '') {
-                (document.querySelector('#' + this.parentID + 'conditionvalue1' + i) as HTMLInputElement).value === '' ?
-                    (document.querySelector('#' + this.parentID + 'conditionvalue1' + i) as HTMLInputElement).focus() :
-                    (document.querySelector('#' + this.parentID + 'conditionvalue2' + i) as HTMLInputElement).focus();
+            if ((select('#' + this.parentID + 'conditionvalue1' + i, document) as HTMLInputElement).value === '' ||
+                (select('#' + this.parentID + 'conditionvalue2' + i, document) as HTMLInputElement).value === '') {
+                (select('#' + this.parentID + 'conditionvalue1' + i, document) as HTMLInputElement).value === '' ?
+                    (select('#' + this.parentID + 'conditionvalue1' + i, document) as HTMLInputElement).focus() :
+                    (select('#' + this.parentID + 'conditionvalue2' + i, document) as HTMLInputElement).focus();
                 return false;
             }
             this.newFormat[i].value1 =
-                Number((document.querySelector('#' + this.parentID + 'conditionvalue1' + i) as HTMLInputElement).value);
+                Number((select('#' + this.parentID + 'conditionvalue1' + i, document) as HTMLInputElement).value);
             this.newFormat[i].value2 =
-                Number((document.querySelector('#' + this.parentID + 'conditionvalue2' + i) as HTMLInputElement).value);
+                Number((select('#' + this.parentID + 'conditionvalue2' + i, document) as HTMLInputElement).value);
         }
         return true;
     }
@@ -360,30 +360,30 @@ export class ConditionalFormatting {
     private conditionChange(i: number, args: DropDownArgs): void {
         this.newFormat[i].conditions = args.value as Condition;
         if (args.value === 'Between' || args.value === 'NotBetween') {
-            (document.querySelector('#' + this.parentID + 'valuespan' + i) as HTMLElement).style.display = 'inline-block';
-            (document.querySelector('#' + this.parentID + 'valuespan' + i) as HTMLElement).style.width =
+            (select('#' + this.parentID + 'valuespan' + i, document) as HTMLElement).style.display = 'inline-block';
+            (select('#' + this.parentID + 'valuespan' + i, document) as HTMLElement).style.width =
                 this.parent.isAdaptive ? '10%' : '10px';
-            (document.querySelector('#' + this.parentID + 'conditionvalue2' + i) as HTMLElement).style.display = 'inline-block';
-            (document.querySelector('#' + this.parentID + 'conditionvalue2' + i) as HTMLElement).style.width =
+            (select('#' + this.parentID + 'conditionvalue2' + i, document) as HTMLElement).style.display = 'inline-block';
+            (select('#' + this.parentID + 'conditionvalue2' + i, document) as HTMLElement).style.width =
                 this.parent.isAdaptive ? '35%' : '45px';
-            (document.querySelector('#' + this.parentID + 'conditionvalue1' + i) as HTMLElement).style.width =
+            (select('#' + this.parentID + 'conditionvalue1' + i, document) as HTMLElement).style.width =
                 this.parent.isAdaptive ? '35%' : '45px';
         } else {
-            (document.querySelector('#' + this.parentID + 'valuespan' + i) as HTMLElement).style.display = 'none';
-            (document.querySelector('#' + this.parentID + 'conditionvalue2' + i) as HTMLElement).style.display = 'none';
-            (document.querySelector('#' + this.parentID + 'conditionvalue1' + i) as HTMLElement).style.width =
+            (select('#' + this.parentID + 'valuespan' + i, document) as HTMLElement).style.display = 'none';
+            (select('#' + this.parentID + 'conditionvalue2' + i, document) as HTMLElement).style.display = 'none';
+            (select('#' + this.parentID + 'conditionvalue1' + i, document) as HTMLElement).style.width =
                 this.parent.isAdaptive ? '100%' : '120px';
         }
     }
 
     private fontNameChange(i: number, args: DropDownArgs): void {
         this.newFormat[i].style.fontFamily = args.value.toString();
-        (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.fontFamily = args.value as string;
+        (select('#' + this.parentID + 'valuepreview' + i, document) as HTMLElement).style.fontFamily = args.value as string;
     }
 
     private fontSizeChange(i: number, args: DropDownArgs): void {
         this.newFormat[i].style.fontSize = args.value.toString();
-        (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.fontSize = args.value as string;
+        (select('#' + this.parentID + 'valuepreview' + i, document) as HTMLElement).style.fontSize = args.value as string;
     }
 
     private measureChange(i: number, args: DropDownArgs): void {
@@ -395,7 +395,7 @@ export class ConditionalFormatting {
         let format: ConditionalFormatSettingsModel = this.newFormat[i];
         let value: string = isNaN(format.style.color) ? 'black' : format.style.color;
         let color: string = this.isHex(value.substr(1)) ? value : this.colourNameToHex(value);
-        (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.color = color;
+        (select('#' + this.parentID + 'valuepreview' + i, document) as HTMLElement).style.color = color;
         this.fontColor[i] = new ColorPicker({
             cssClass: cls.FORMAT_COLOR_PICKER + ' ' + cls.FORMAT_FONT_COLOR_PICKER,
             value: color, mode: 'Palette',
@@ -406,9 +406,9 @@ export class ConditionalFormatting {
         addClass([this.fontColor[i].element.nextElementSibling.querySelector('.' + cls.SELECTED_COLOR)], cls.ICON);
         value = isNaN(format.style.backgroundColor) ? 'white' : format.style.backgroundColor;
         color = this.isHex(value.substr(1)) ? value : this.colourNameToHex(value);
-        (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.backgroundColor = color;
-        (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.fontFamily = format.style.fontFamily;
-        (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.fontSize = format.style.fontSize;
+        (select('#' + this.parentID + 'valuepreview' + i, document) as HTMLElement).style.backgroundColor = color;
+        (select('#' + this.parentID + 'valuepreview' + i, document) as HTMLElement).style.fontFamily = format.style.fontFamily;
+        (select('#' + this.parentID + 'valuepreview' + i, document) as HTMLElement).style.fontSize = format.style.fontSize;
         this.backgroundColor[i] = new ColorPicker({
             cssClass: cls.FORMAT_COLOR_PICKER, value: color, mode: 'Palette',
             change: this.backColorChange.bind(this, i)
@@ -427,13 +427,13 @@ export class ConditionalFormatting {
 
     private backColorChange(i: number, args: ColorPickerEventArgs): void {
         this.newFormat[i].style.backgroundColor = args.currentValue.hex;
-        (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.backgroundColor =
+        (select('#' + this.parentID + 'valuepreview' + i, document) as HTMLElement).style.backgroundColor =
             args.currentValue.hex;
     }
 
     private fontColorChange(i: number, args: ColorPickerEventArgs): void {
         this.newFormat[i].style.color = args.currentValue.hex;
-        (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.color =
+        (select('#' + this.parentID + 'valuepreview' + i, document) as HTMLElement).style.color =
             args.currentValue.hex;
     }
 
@@ -551,8 +551,8 @@ export class ConditionalFormatting {
             this.destroyColorPickers();
             this.dialog.destroy();
         }
-        if (document.querySelector('#' + this.parentID + 'conditionalformatting')) {
-            remove(document.querySelector('#' + this.parentID + 'conditionalformatting'));
+        if (select('#' + this.parentID + 'conditionalformatting', document)) {
+            remove(select('#' + this.parentID + 'conditionalformatting', document));
         }
     }
     private destroyColorPickers(): void {

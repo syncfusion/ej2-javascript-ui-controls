@@ -1395,8 +1395,6 @@ let DropDownList = class DropDownList extends DropDownBase {
         super(options, element);
         this.previousValue = null;
         this.isListSearched = false;
-        this.preventChange = false;
-        this.isAngular = false;
     }
     ;
     /**
@@ -2524,12 +2522,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                 value: this.value,
                 element: this.element
             };
-            if (this.isAngular && this.preventChange) {
-                this.preventChange = false;
-            }
-            else {
-                this.trigger('change', eventArgs);
-            }
+            this.trigger('change', eventArgs);
             if (this.isServerBlazor && this.enablePersistence) {
                 // tslint:disable-next-line
                 this.interopAdaptor.invokeMethodAsync('ServerChange');
@@ -8502,8 +8495,6 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     constructor(option, element) {
         super(option, element);
         this.clearIconWidth = 0;
-        this.preventChange = false;
-        this.isAngular = false;
         this.isValidKey = false;
         this.selectAllEventData = [];
         this.selectAllEventEle = [];
@@ -9298,12 +9289,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                 isInteracted: event ? true : false,
                 element: this.element
             };
-            if (this.isAngular && this.preventChange) {
-                this.preventChange = false;
-            }
-            else {
-                this.trigger('change', eventArgs);
-            }
+            this.trigger('change', eventArgs);
             this.updateTempValue();
             if (!this.changeOnBlur) {
                 this.dispatchEvent(this.hiddenElement, 'change');
@@ -13407,11 +13393,11 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                     this.setSelection();
                 }
                 if (listObj.sortOrder !== 'None' || this.selectionSettings.showCheckbox
-                    !== listObj.selectionSettings.showCheckbox || listObj.fields.groupBy) {
-                    let sortabale = getComponent(ul, 'sortable');
+                    !== listObj.selectionSettings.showCheckbox || listObj.fields.groupBy || listObj.itemTemplate || this.itemTemplate) {
+                    let sortable = getComponent(ul, 'sortable');
                     ul.innerHTML = listObj.renderItems(listData, listObj.fields).innerHTML;
-                    if (sortabale.placeHolderElement) {
-                        ul.appendChild(sortabale.placeHolderElement);
+                    if (sortable.placeHolderElement) {
+                        ul.appendChild(sortable.placeHolderElement);
                     }
                     ul.appendChild(args.helper);
                     listObj.setSelection();
@@ -13595,10 +13581,10 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                     }
                 }
             }
-            for (let k = removeIdxes.length - 1; k > 0; k--) {
+            for (let k = removeIdxes.length - 1; k >= 0; k--) {
                 this.listData.splice(removeIdxes[k], 1);
             }
-            for (let k = removeLiIdxes.length - 1; k > 0; k--) {
+            for (let k = removeLiIdxes.length - 1; k >= 0; k--) {
                 this.liCollections.splice(removeLiIdxes[k], 1);
             }
         }
@@ -14136,8 +14122,8 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         if (value) {
             elems = value;
         }
-        let isRefresh = tListBox.sortOrder !== 'None' ||
-            (tListBox.selectionSettings.showCheckbox !== fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy;
+        let isRefresh = tListBox.sortOrder !== 'None' || (tListBox.selectionSettings.showCheckbox !==
+            fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy || tListBox.itemTemplate || fListBox.itemTemplate;
         fListBox.value = [];
         if (elems.length) {
             this.removeSelected(fListBox, elems);
@@ -14288,8 +14274,8 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
     moveAllData(fListBox, tListBox, isKey, index) {
         let listData = [].slice.call(tListBox.listData);
         let jsonData = [].slice.call(tListBox.jsonData);
-        let isRefresh = tListBox.sortOrder !== 'None' ||
-            (tListBox.selectionSettings.showCheckbox !== fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy;
+        let isRefresh = tListBox.sortOrder !== 'None' || (tListBox.selectionSettings.showCheckbox !==
+            fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy || tListBox.itemTemplate || fListBox.itemTemplate;
         this.removeSelected(fListBox, fListBox.getSelectedItems());
         let tempItems = [].slice.call(fListBox.jsonData);
         let localDataArgs = { cancel: false, items: tempItems, eventName: this.toolbarAction };

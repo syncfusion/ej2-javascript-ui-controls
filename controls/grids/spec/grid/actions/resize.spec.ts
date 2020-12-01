@@ -14,7 +14,7 @@ import { Selection } from '../../../src/grid/actions/selection';
 import { Reorder } from '../../../src/grid/actions/reorder';
 import { Resize, resizeClassList } from '../../../src/grid/actions/resize';
 import { Freeze } from '../../../src/grid/actions/freeze';
-import { data } from '../base/datasource.spec';
+import { data, employeeData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { GridModel } from '../../../src/grid/base/grid-model';
 import { extend } from '@syncfusion/ej2-base';
@@ -1094,6 +1094,51 @@ describe('Resize module', () => {
              expect(hdrele.classList.contains('e-lastcell')).toBeFalsy();
              expect(lastcell.classList.contains('e-lastcell')).toBeTruthy();
 
+        })
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+    describe('EJ2-44181-Autofit columns in databound is not working properly for hierarchy grid', () => {
+        let gridObj: any;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    width: "500px",
+                    resizeSettings: { mode: "Auto" },
+                    columns: [
+                        { field: "EmployeeID", headerText: "Employee ID", textAlign: "Right" },
+                        { field: "FirstName", headerText: "Name" },
+                        { field: "Title", headerText: "Title" },
+                        { field: "City", headerText: "City" },
+                        { field: "Country", headerText: "Country" }
+                    ],
+                    childGrid: {
+                        dataSource: data,
+                        queryString: "EmployeeID",
+                        allowPaging: true,
+                        columns: [
+                            { field: "OrderID", headerText: "Order ID", textAlign: "Right" },
+                            { field: "ShipCity", headerText: "Ship City" },
+                            { field: "Freight", headerText: "Freight" },
+                            { field: "ShipName", headerText: "Ship Name" }
+                        ]
+                    }
+                }, done);
+                });
+                it('autofit all columns', () => {
+                    gridObj.autoFitColumns('');
+                });
+        it('col group width checking', () => {
+            [].slice.call(gridObj.getHeaderTable().querySelectorAll('col')).forEach((ele: HTMLElement) => {
+                expect(ele.style.width).not.toBe("");
+            });
+            [].slice.call(gridObj.getContentTable().querySelectorAll('col')).forEach((ele: HTMLElement) => {
+                expect(ele.style.width).not.toBe("");
+            });
         })
 
         afterAll(() => {

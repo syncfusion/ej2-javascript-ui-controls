@@ -3584,5 +3584,94 @@ describe('Layout children issue', () => {
 });
 
 
+describe('EJ2-44231-Exception occurs while change the datasource for layout at runtime', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    var updated = [
+        { id: 1, Label: 'updatedchild 1', color: "#71AF17" },
+        { id: 2, Label: 'updatedchild 2', parentId: 1, color: "red" },
+        { id: 3, Label: 'updatedGrandChild 1', parentId: 2, color: "#2E95D8" },
+        { id: 4, Label: 'updatedGrandChild 2', parentId: 2, color: "#2E95D8" },
+        { id: 5, Label: 'updatedChild 3', parentId: 1, color: "red" },
+        { id: 6, Label: 'updatedGrandChild 3', parentId: 5, color: "#2E95D8" }
+    ];
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagramdataMap' });
+        document.body.appendChild(ele);
+        
+        var data = [
+            { id: 1, Label: 'child 1', color: "#71AF17" },
+            { id: 2, Label: 'child 2', parentId: 1, color: "#1859B7" },
+            { id: 3, Label: 'GrandChild 1', parentId: 2 , color: "#2E95D8"},
+            { id: 4, Label: 'GrandChild 2', parentId: 2 , color: "#2E95D8"},
+            { id: 5, Label: 'Child 3', parentId: 1, color: "#1859B7" },
+            { id: 6, Label: 'GrandChild 3', parentId: 5, color: "#2E95D8" }
+        ];
+        
+    var items = new DataManager(data, new Query().take(7));
+    function nodeDefaultss(obj: any) {
+        obj.width = 120;
+        obj.height = 50;
+        obj.backgroundColor = obj.data.color;
+        obj.style = { fill: "none", strokeColor: "none", color: "white" };
+        obj.annotations = [{ content: obj.data['Label'], style: { color: 'white' } }];
+        obj.expandIcon = {
+            shape: "Plus",
+            width: 10,
+            height: 10,
+        };
+        obj.collapseIcon = {
+            shape: "Minus",
+            width: 10,
+            height: 10,
+        };
+        return obj;
+    }
+    function connectorDefaultss(connector: any) {
+        connector.targetDecorator.shape = "None";
+        connector.type = "Orthogonal";
+        connector.constraints = 0;
+        connector.cornerRadius = 0;
+        return connector;
+    }
+
+        diagram = new Diagram({
+                width: '900px', height: '550px',
+                layout: {
+                    type: "OrganizationalChart",
+                    getLayoutInfo: function (node:any, options:any) {
+                        if (!options.hasSubTree) {
+                            options.orientation = "Horizontal";
+                            options.type = "Center";
+                        }
+                    }
+                },
+                dataSourceSettings: { id: 'id', parentId: 'parentId', dataSource: items },
+                getNodeDefaults: nodeDefaultss,
+                getConnectorDefaults: connectorDefaultss
+            });
+        diagram.appendTo('#diagramdataMap');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Exception occurs while change the datasource for layout at runtime', (done: Function) => {
+        let diagramCanvas: HTMLElement; 
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        let mouseEvents: MouseEvents = new MouseEvents();
+        mouseEvents.mouseDownEvent(diagramCanvas, 384, 100);
+        mouseEvents.mouseUpEvent(diagramCanvas, 384, 100);
+        mouseEvents.mouseDownEvent(diagramCanvas, 384, 100);
+        mouseEvents.mouseUpEvent(diagramCanvas, 384, 100);
+        var items = new DataManager(updated, new Query().take(7));
+        diagram.dataSourceSettings.dataSource=items;
+        diagram.dataBind();
+        expect(diagram.nodes[0].offsetX === 487.5&&diagram.nodes[0].offsetY === 75).toBe(true)
+        done();
+        });
+
+});
+
 
 

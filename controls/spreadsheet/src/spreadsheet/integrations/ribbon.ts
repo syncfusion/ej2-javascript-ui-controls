@@ -139,7 +139,7 @@ export class Ribbon {
                     {
                         prefixIcon: 'e-image-icon', text: l10n.getConstant('Image'),
                         id: id + '_', tooltipText: l10n.getConstant('Image'), click: (): void => {
-                             (this.parent.element.querySelector('[id="' + id + '_imageUpload"]') as HTMLElement).click(); }
+                             select('#' + id + '_imageUpload', this.parent.element).click(); }
                     }]
             },
             {
@@ -207,10 +207,10 @@ export class Ribbon {
                     { text: l10n.getConstant('Values'), id: 'Values' },
                     { text: l10n.getConstant('Formats'), id: 'Formats' }],
                 select: (args: MenuEventArgs) => {
-                    this.parent.notify(paste, { type: args.item.id, isAction: true });
+                    this.parent.notify(paste, { type: args.item.id, isAction: true, isInternal: true });
                 },
                 click: () => {
-                    this.parent.notify(paste, { isAction: true });
+                    this.parent.notify(paste, { isAction: true, isInternal: true });
                 },
                 close: () => { this.parent.element.focus(); }
             });
@@ -1567,7 +1567,7 @@ export class Ribbon {
         if (!selectArgs.cancel) {
             switch (args.item.id) {
                 case `${id}_Open`:
-                    (this.parent.element.querySelector('[id="' + id + '_fileUpload"]') as HTMLElement).click();
+                    select('#' + id + '_fileUpload', this.parent.element).click();
                     break;
                 case `${id}_Xlsx`:
                 case `${id}_Xls`:
@@ -1721,8 +1721,7 @@ export class Ribbon {
 
     private updateToggleText(item: string, text: string): void {
         getUpdateUsingRaf((): void => {
-            this.ribbon.element.querySelector('[id="' + `${this.parent.element.id}_${item}` + '"]' + ' .e-tbar-btn-text')
-                .textContent = text;
+            select(`#${this.parent.element.id}_${item} .e-tbar-btn-text`, this.ribbon.element).textContent = text;
         });
     }
 
@@ -1993,7 +1992,7 @@ export class Ribbon {
         let ribbonEle: HTMLElement = this.ribbon.element;
         let id: string = parentElem.id;
         ['bold', 'italic', 'line-through', 'underline'].forEach((name: string): void => {
-            destroyComponent(parentElem.querySelector('[id="' + `${id}_${name}` + '"]'), Button);
+            destroyComponent(select('#' + `${id}_${name}`, parentElem), Button);
         });
         this.pasteSplitBtn.destroy(); this.pasteSplitBtn = null;
         this.mergeSplitBtn.destroy(); this.mergeSplitBtn = null;

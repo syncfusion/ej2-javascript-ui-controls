@@ -25,5 +25,13 @@
     .e-search-icon::before {
       content: '\e961';
     }
+
+    .e-sortascending::before {
+      content: '\e734';
+    }
+
+    .e-sortdescending::before {
+      content: '\e733';
+    }
   }
 }

@@ -844,19 +844,21 @@ export class LineDistribution {
                         let internalEdges: CellObject = cell;
                         let parent: MatrixCellGroupObject = matrixCell.visitedParents[0];
                         let isContainSibilingVertex: boolean = false;
-                        for (let l: number = 0; l < parent.visitedChildren.length; l++) {
-                            let children: MatrixCellGroupObject = parent.visitedChildren[l];
-                            let cells: CellObject[] = [];
-                            for (let m: number = 0; m < (children.cells as CellObject[]).length; m++) {
-                                let cell: CellObject = children.cells[m];
-                                let type: string = this.getType(cell.type);
-                                if (type === 'internalVertex') {
-                                    cells.push(cell);
+                        if (parent) {
+                            for (let l: number = 0; l < parent.visitedChildren.length; l++) {
+                                let children: MatrixCellGroupObject = parent.visitedChildren[l];
+                                let cells: CellObject[] = [];
+                                for (let m: number = 0; m < (children.cells as CellObject[]).length; m++) {
+                                    let cell: CellObject = children.cells[m];
+                                    let type: string = this.getType(cell.type);
+                                    if (type === 'internalVertex') {
+                                        cells.push(cell);
+                                    }
                                 }
-                            }
-                            if (cells.length > 0) {
-                                isContainSibilingVertex = true;
-                                break;
+                                if (cells.length > 0) {
+                                    isContainSibilingVertex = true;
+                                    break;
+                                }
                             }
                         }
 

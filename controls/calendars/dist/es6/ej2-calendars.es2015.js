@@ -2948,8 +2948,6 @@ let DatePicker = class DatePicker extends Calendar {
         this.isBlazorServer = false;
         this.invalidValueString = null;
         this.checkPreviousValue = null;
-        this.isAngular = false;
-        this.preventChange = false;
         this.datepickerOptions = options;
     }
     /**
@@ -3871,12 +3869,7 @@ let DatePicker = class DatePicker extends Calendar {
                 this.changedArgs.event = event || null;
                 this.changedArgs.element = this.element;
                 this.changedArgs.isInteracted = !isNullOrUndefined(event);
-                if (this.isAngular && this.preventChange) {
-                    this.preventChange = false;
-                }
-                else {
-                    this.trigger('change', this.changedArgs);
-                }
+                this.trigger('change', this.changedArgs);
                 this.previousElementValue = this.inputElement.value;
                 this.previousDate = !isNaN(+new Date(this.checkValue(this.value))) ? new Date(this.checkValue(this.value)) : null;
                 this.isInteracted = true;
@@ -4856,8 +4849,6 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         this.preventBlur = false;
         this.preventFocus = false;
         this.invalidValueString = null;
-        this.isAngular = false;
-        this.preventChange = false;
         this.dateRangeOptions = options;
     }
     /**
@@ -8193,12 +8184,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             this.setProperties({ endDate: this.checkDateValue(this.endValue) }, true);
             this.setProperties({ startDate: this.checkDateValue(this.startValue) }, true);
             this.setModelValue();
-            if (this.isAngular && this.preventChange) {
-                this.preventChange = false;
-            }
-            else {
-                this.trigger('change', this.rangeArgs(e));
-            }
+            this.trigger('change', this.rangeArgs(e));
         }
         this.previousEleValue = this.inputElement.value;
         this.initStartDate = this.checkDateValue(this.startValue);
@@ -9030,8 +9016,6 @@ let TimePicker = class TimePicker extends Component {
         this.disableItemCollection = [];
         this.invalidValueString = null;
         this.isBlazorServer = false;
-        this.isAngular = false;
-        this.preventChange = false;
         this.timeOptions = options;
     }
     /**
@@ -10768,12 +10752,7 @@ let TimePicker = class TimePicker extends Component {
         };
         eventArgs.value = this.valueWithMinutes || this.getDateObject(this.inputElement.value);
         this.prevDate = this.valueWithMinutes || this.getDateObject(this.inputElement.value);
-        if (this.isAngular && this.preventChange) {
-            this.preventChange = false;
-        }
-        else {
-            this.trigger('change', eventArgs);
-        }
+        this.trigger('change', eventArgs);
         this.invalidValueString = null;
         this.checkErrorState(this.value);
     }
@@ -11323,9 +11302,6 @@ let TimePicker = class TimePicker extends Component {
                             this.checkErrorState(this.invalidValueString);
                         }
                         this.checkValueChange(null, false);
-                        if (this.isAngular && this.preventChange) {
-                            this.preventChange = false;
-                        }
                     }
                     break;
                 case 'floatLabelType':

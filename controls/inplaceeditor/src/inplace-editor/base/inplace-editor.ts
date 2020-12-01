@@ -542,7 +542,12 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     private setClass(action: string, val: string): void {
         if (!this.isEmpty(val)) {
-            action === 'add' ? addClass([this.element], [val]) : removeClass([this.element], [val]);
+            let allClassName: string[] = val.split(' ');
+            for (let i: number = 0; i < allClassName.length; i++) {
+                if (allClassName[i].trim() !== '') {
+                    action === 'add' ? addClass([this.element], [allClassName[i]]) : removeClass([this.element], [allClassName[i]]);
+                }
+            }
         }
     }
     private appendValueElement(): void {

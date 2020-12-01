@@ -1404,6 +1404,7 @@ var CheckBoxFilterBase = /** @class */ (function () {
     CheckBoxFilterBase.prototype.getAndSetChkElem = function (options) {
         this.dlg = this.parent.createElement('div', {
             id: this.id + this.options.type + '_excelDlg',
+            attrs: { uid: this.options.column.uid },
             className: 'e-checkboxfilter e-filter-popup'
         });
         this.sBox = this.parent.createElement('div', { className: 'e-searchcontainer' });
@@ -4949,6 +4950,7 @@ var HeaderRender = /** @class */ (function () {
         this.frzIdx = 0;
         this.notfrzIdx = 0;
         this.isFirstCol = false;
+        this.isReplaceDragEle = true;
         this.helper = function (e) {
             var gObj = _this.parent;
             var target = _this.draggable.currentStateTarget;
@@ -5617,7 +5619,8 @@ var HeaderRender = /** @class */ (function () {
             dragStart: this.dragStart,
             drag: this.drag,
             dragStop: this.dragStop,
-            abort: '.e-rhandler'
+            abort: '.e-rhandler',
+            isReplaceDragEle: this.isReplaceDragEle
         });
     };
     HeaderRender.prototype.initializeHeaderDrop = function () {
@@ -7472,7 +7475,7 @@ var ColumnWidthService = /** @class */ (function () {
                     this.setWidth(collection[i].minWidth, this.parent.getColumnIndexByField(collection[i].field));
                 }
                 else if (tWidth !== 0 && difference > tmWidth) {
-                    this.setWidth('', this.parent.getColumnIndexByField(collection[i].field), true);
+                    this.setWidth('', this.parent.getColumnIndexByField(collection[i].field) + this.parent.getIndentCount(), true);
                 }
             }
         }
@@ -9085,10 +9088,10 @@ var Selection = /** @class */ (function () {
         var selectedMovableRow = this.getSelectedMovableRow(index);
         if (!isToggle && !isRemoved) {
             if (this.selectedRowIndexes.indexOf(index) <= -1) {
-                this.updateRowSelection(selectedRow, index);
                 if (gObj.getFrozenColumns()) {
                     this.updateRowSelection(selectedMovableRow, index);
                 }
+                this.updateRowSelection(selectedRow, index);
             }
             this.selectRowIndex(index);
         }
@@ -11073,6 +11076,7 @@ var Selection = /** @class */ (function () {
     };
     Selection.prototype.refreshPersistSelection = function () {
         var rows = this.parent.getRows();
+        this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         if (rows !== null && rows.length > 0 && (this.parent.isPersistSelection || this.chkField)) {
             var indexes = [];
             for (var j = 0; j < rows.length; j++) {
@@ -11083,7 +11087,8 @@ var Selection = /** @class */ (function () {
                 }
                 var checkState = void 0;
                 var chkBox = rows[j].querySelector('.e-checkselect');
-                if (this.selectedRowState[pKey] || (this.parent.checkAllRows === 'Check' && this.chkAllCollec.indexOf(pKey) < 0)
+                if (this.selectedRowState[pKey] || (this.parent.checkAllRows === 'Check' &&
+                    this.totalRecordsCount === Object.keys(this.selectedRowState).length && this.chkAllCollec.indexOf(pKey) < 0)
                     || (this.parent.checkAllRows === 'Uncheck' && this.chkAllCollec.indexOf(pKey) > 0)
                     || (this.parent.checkAllRows === 'Intermediate' && !sf.base.isNullOrUndefined(this.chkField) && rowObj.data[this.chkField])) {
                     indexes.push(parseInt(rows[j].getAttribute('aria-rowindex'), 10));
@@ -13670,7 +13675,13 @@ var Grid = /** @class */ (function (_super) {
             DialogEditARIA: 'Edit dialog',
             ColumnChooserDialogARIA: 'Column chooser dialog',
             ColumnMenuDialogARIA: 'Column menu dialog',
-            CustomFilterDialogARIA: 'Customer filter dialog'
+            CustomFilterDialogARIA: 'Customer filter dialog',
+            SortAtoZ: 'Sort A to Z',
+            SortZtoA: 'Sort Z to A',
+            SortByOldest: 'Sort by Oldest',
+            SortByNewest: 'Sort by Newest',
+            SortSmallestToLargest: 'Sort Smallest to Largest',
+            SortLargestToSmallest: 'Sort Largest to Smallest'
         };
         this.keyConfigs = {
             downArrow: 'downarrow',
@@ -13892,7 +13903,7 @@ var Grid = /** @class */ (function (_super) {
         }
         sf.base.classList(this.element, [], ['e-rtl', 'e-gridhover', 'e-responsive', 'e-default', 'e-device', 'e-grid-min-height']);
         if (this.isAngular) {
-            this.element.innerHTML = null;
+            this.element = null;
         }
     };
     Grid.prototype.destroyDependentModules = function () {
@@ -17263,6 +17274,9 @@ var Grid = /** @class */ (function (_super) {
     __decorate$2([
         sf.base.Property({})
     ], Grid.prototype, "currentAction", void 0);
+    __decorate$2([
+        sf.base.Property('default version')
+    ], Grid.prototype, "ej2StatePersistenceVersion", void 0);
     __decorate$2([
         sf.base.Event()
     ], Grid.prototype, "created", void 0);

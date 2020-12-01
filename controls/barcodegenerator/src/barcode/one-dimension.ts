@@ -191,7 +191,8 @@ export abstract class OneDimension extends BarcodeBase {
     /* tslint:disable */
     /** @private */
     public calculateBarCodeAttributes(code: number[] | string[], canvas: HTMLElement, isUpcE?: string): void {
-        let temp: boolean = false;let canDoubleWidth: number;
+        let temp: boolean = false;
+        let canDoubleWidth: number;
         let barcodeSize: Rect = this.getDrawableSize(this.margin, this.width as number, this.height as number);
         if (barcodeSize.height > 0 && barcodeSize.width > 0) {
             let tempBaseAttributes: BaseAttributes; let options: BaseAttributes[] = []; let offsetX: number = barcodeSize.x;

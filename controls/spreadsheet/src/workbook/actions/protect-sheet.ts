@@ -1,8 +1,9 @@
-import { Workbook, SheetModel } from '../base/index';
+import { Workbook, SheetModel, setColumn, ColumnModel } from '../base/index';
 import { ProtectSettings, applyLockCells, UnprotectArgs } from '../common/index';
 import { protectsheetHandler, protectSheetWorkBook, updateToggle, setLockCells } from '../common/index';
 import { unprotectsheetHandler } from '../common/index';
 import { getRangeIndexes,  getSwapRange } from '../common/index';
+import { isUndefined } from '@syncfusion/ej2-base';
 /**
  * The `WorkbookSpreadSheet` module is used to handle the Protecting functionalities in Workbook.
  */
@@ -25,6 +26,11 @@ export class WorkbookProtectSheet {
         });
         this.parent.notify(protectSheetWorkBook, sheet.protectSettings);
         this.parent.notify(updateToggle, { props: 'Protect' });
+        sheet.columns.forEach((column: ColumnModel) => {
+            if (column && isUndefined(column.isLocked)) {
+                column.isLocked = true;
+            }
+        });
     }
 
     private unprotectsheetHandler(args: UnprotectArgs): void {
@@ -72,6 +78,11 @@ export class WorkbookProtectSheet {
         } else {range = sheet.selectedRange; }
         let indexes: number[] = typeof (range) === 'object' ? <number[]>range :
             getSwapRange(getRangeIndexes(<string>range));
+        if (indexes[0] === 0 && indexes[2] === sheet.rowCount - 1) {
+            for (let i: number = indexes[1]; i <= indexes[3]; i++) {
+                setColumn(sheet, i, { isLocked: args.isLocked });
+            }
+        }
         for (let i: number = indexes[0]; i <= indexes[2]; i++) {
             for (let j: number = indexes[1]; j <= indexes[3]; j++) {
                 if (this.parent.getActiveSheet().id === sheet.id) {

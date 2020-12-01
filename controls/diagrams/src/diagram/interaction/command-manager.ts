@@ -4193,6 +4193,7 @@ export class CommandHandler {
         this.diagram.preventConnectorsUpdate = true;
         this.expandCollapse(node, expand, this.diagram);
         node.isExpanded = expand;
+        let fixedNode: string = this.diagram.layout.fixedNode;
         this.diagram.layout.fixedNode = node.id;
         if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation && this.diagram.organizationalChartModule) {
             this.diagram.organizationalChartModule.isAnimation = true;
@@ -4216,6 +4217,7 @@ export class CommandHandler {
                 this.diagram.resetSegments();
             }
         }
+        this.diagram.layout.fixedNode = fixedNode === "" ? "" : this.diagram.layout.fixedNode;
         return objects;
     }
 

@@ -317,7 +317,12 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
     };
     InPlaceEditor.prototype.setClass = function (action, val) {
         if (!this.isEmpty(val)) {
-            action === 'add' ? addClass([this.element], [val]) : removeClass([this.element], [val]);
+            var allClassName = val.split(' ');
+            for (var i = 0; i < allClassName.length; i++) {
+                if (allClassName[i].trim() !== '') {
+                    action === 'add' ? addClass([this.element], [allClassName[i]]) : removeClass([this.element], [allClassName[i]]);
+                }
+            }
         }
     };
     InPlaceEditor.prototype.appendValueElement = function () {

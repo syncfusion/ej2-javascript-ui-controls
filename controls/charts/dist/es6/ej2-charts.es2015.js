@@ -1436,6 +1436,10 @@ class Axis extends ChildProperty {
         this.isChart = true;
         /** @private */
         this.isIntervalInDecimal = true;
+        /** @private */
+        this.titleCollection = [];
+        /** @private */
+        this.titleSize = new Size(0, 0);
         /**
          * @private
          * Task: BLAZ-2044
@@ -1473,8 +1477,15 @@ class Axis extends ChildProperty {
      */
     findLabelSize(crossAxis, innerPadding) {
         let titleSize = 0;
+        let isHorizontal = this.orientation === 'Horizontal';
         if (this.title) {
-            titleSize = measureText(this.title, this.titleStyle).height + innerPadding;
+            this.titleSize = measureText(this.title, this.titleStyle);
+            titleSize = this.titleSize.height + innerPadding;
+            if (this.rect.width || this.rect.height) {
+                let length = isHorizontal ? this.rect.width : this.rect.height;
+                this.titleCollection = getTitle(this.title, this.titleStyle, length);
+                titleSize = (titleSize * this.titleCollection.length);
+            }
         }
         if (this.labelPosition === 'Inside') {
             return titleSize + innerPadding;
@@ -4567,8 +4578,8 @@ class CartesianAxisLayoutPanel {
         padding = axis.opposedPosition ? padding + axis.scrollBarHeight : -padding - axis.scrollBarHeight;
         let x = rect.x + padding;
         let y = rect.y + rect.height * 0.5;
-        let options = new TextOption(chart.element.id + '_AxisTitle_' + index, x, y - axis.labelPadding, 'middle', axis.title, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation);
-        options.text = textTrim(axis.updatedRect.height, options.text, axis.titleStyle);
+        let titleSize = (axis.titleSize.height * (axis.titleCollection.length - 1));
+        let options = new TextOption(chart.element.id + '_AxisTitle_' + index, x, y - axis.labelPadding - titleSize, 'middle', axis.titleCollection, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation);
         let element = textElement$1(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
         element.setAttribute('tabindex', axis.tabIndex.toString());
         element.setAttribute('aria-label', axis.description || axis.title);
@@ -5031,10 +5042,10 @@ class CartesianAxisLayoutPanel {
         let padding = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
             (axis.labelPosition === 'Inside' ? 0 :
                 axis.maxLabelSize.height + axis.multiLevelLabelHeight + axis.labelPadding);
-        padding = axis.opposedPosition ? -(padding + elementSize.height / 4 + scrollBarHeight) : (padding + (3 *
+        let titleSize = (axis.titleSize.height * (axis.titleCollection.length - 1));
+        padding = axis.opposedPosition ? -(padding + elementSize.height / 4 + scrollBarHeight + titleSize) : (padding + (3 *
             elementSize.height / 4) + scrollBarHeight);
-        let options = new TextOption(chart.element.id + '_AxisTitle_' + index, rect.x + rect.width * 0.5, rect.y + padding, 'middle', axis.title);
-        options.text = textTrim(axis.updatedRect.width, options.text, axis.titleStyle);
+        let options = new TextOption(chart.element.id + '_AxisTitle_' + index, rect.x + rect.width * 0.5, rect.y + padding, 'middle', axis.titleCollection);
         let element = textElement$1(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
         element.setAttribute('aria-label', axis.description || axis.title);
         element.setAttribute('tabindex', axis.tabIndex.toString());
@@ -32276,9 +32287,9 @@ let RangeNavigator = class RangeNavigator extends Component {
         let isDateTime = this.valueType === 'DateTime';
         let range = this.chartSeries.xAxis.actualRange;
         this.startValue = this.startValue ? this.startValue : (!this.value[0] ? range.min :
-            (isDateTime ? this.value[0].getTime() : +this.value[0]));
+            (isDateTime ? (new Date(this.value[0].toString())).getTime() : +this.value[0]));
         this.endValue = this.endValue ? this.endValue : (!this.value[1] ? range.max :
-            (isDateTime ? this.value[1].getTime() : +this.value[1]));
+            (isDateTime ? (new Date(this.value[1].toString())).getTime() : +this.value[1]));
     }
     /**
      * To render the range navigator

@@ -8341,10 +8341,14 @@ var DiagramHtmlElement = /** @__PURE__ @class */ (function (_super) {
          */
         set: function (value) {
             this.data = value;
-            if (!this.isTemplate) {
-                this.template = getContent(this, true);
+            if (!this.canReset) {
+                this.canReset = true;
+                if (!this.isTemplate) {
+                    this.template = getContent(this, true);
+                }
+                this.canReset = false;
+                this.isDirt = true;
             }
-            this.isDirt = true;
         },
         enumerable: true,
         configurable: true
@@ -16133,7 +16137,7 @@ function getSymbolSize(sourceElement, clonedObject, wrapper, size) {
         previewSize = sourceElement.symbolPreview[size];
     }
     else {
-        previewSize = clonedObject.width || wrapper.actualSize.width;
+        previewSize = clonedObject[size] || wrapper.actualSize[size];
     }
     return previewSize;
 }
@@ -24749,9 +24753,9 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
                         object = this.commandHandler.renderContainerHelper(args.source) || args.source || this.commandHandler.renderContainerHelper(args.source);
                         if ((object.id === 'helper' && !obj.nodes[0].isLane && !obj.nodes[0].isPhase)
                             || (object.id !== 'helper')) {
-                            if (((object instanceof Selector && object.width == this.undoElement.width && object.height == this.undoElement.height) || !(object instanceof Selector)) && (object.offsetX !== this.undoElement.offsetX || object.offsetY !== this.undoElement.offsetY ||
+                            if ((((object instanceof Selector && object.width == this.undoElement.width && object.height == this.undoElement.height) || !(object instanceof Selector)) && (object.offsetX !== this.undoElement.offsetX || object.offsetY !== this.undoElement.offsetY ||
                                 object.sourcePoint !== this.undoElement.sourcePoint
-                                || object.targetPoint !== this.undoElement.targetPoint)) {
+                                || object.targetPoint !== this.undoElement.targetPoint)) || this.isSelectionHasConnector(object)) {
                                 if (args.source) {
                                     newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
                                     oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
@@ -24850,6 +24854,13 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
                 }
             });
         });
+    };
+    MoveTool.prototype.isSelectionHasConnector = function (args) {
+        if (args.nodes && args.connectors && args.nodes.length > 0 && args.connectors.length > 0 &&
+            (args.width !== this.undoElement.width || args.height !== this.undoElement.height)) {
+            return true;
+        }
+        return false;
     };
     MoveTool.prototype.getBlazorPositionChangeEventArgs = function (args, target) {
         args = {
@@ -33313,6 +33324,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         this.diagram.preventConnectorsUpdate = true;
         this.expandCollapse(node, expand, this.diagram);
         node.isExpanded = expand;
+        var fixedNode = this.diagram.layout.fixedNode;
         this.diagram.layout.fixedNode = node.id;
         if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation && this.diagram.organizationalChartModule) {
             this.diagram.organizationalChartModule.isAnimation = true;
@@ -33336,6 +33348,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 this.diagram.resetSegments();
             }
         }
+        this.diagram.layout.fixedNode = fixedNode === "" ? "" : this.diagram.layout.fixedNode;
         return objects;
     };
     CommandHandler.prototype.getparentexpand = function (target, diagram, visibility, connector) {
@@ -40421,16 +40434,22 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             var rootNode = this.nodes[0];
             if (rootNode.outEdges.length > 1) {
                 var isProtectedChange = this.isProtectedOnChange;
-                var connector = this.nameTable[rootNode.outEdges[1]];
-                var isAllowServerUpdate = this.allowServerDataBinding;
-                this.protectPropertyChange(false);
-                this.enableServerDataBinding(false);
-                this.preventDiagramUpdate = true;
-                connector.sourcePortID = rootNode.ports[1].id;
-                this.dataBind();
-                this.preventDiagramUpdate = false;
-                this.enableServerDataBinding(isAllowServerUpdate);
-                this.protectPropertyChange(isProtectedChange);
+                for (var i = 1; i < rootNode.outEdges.length; i++) {
+                    var connector = this.nameTable[rootNode.outEdges[i]];
+                    var isAllowServerUpdate = this.allowServerDataBinding;
+                    this.protectPropertyChange(false);
+                    this.enableServerDataBinding(false);
+                    this.preventDiagramUpdate = true;
+                    var target = this.getObject(connector.targetID);
+                    // tslint:disable-next-line:no-any
+                    if (target.data.Branch === 'Left') {
+                        connector.sourcePortID = rootNode.ports[1].id;
+                    }
+                    this.dataBind();
+                    this.preventDiagramUpdate = false;
+                    this.enableServerDataBinding(isAllowServerUpdate);
+                    this.protectPropertyChange(isProtectedChange);
+                }
             }
         }
         if (isBlazor()) {
@@ -42489,6 +42508,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 var sourceNode = this.nameTable[actualObject.sourceID];
                 if (!sourceNode || (canOutConnect(sourceNode) || (actualObject.sourcePortID !== '' && canPortOutConnect(outPort)))) {
                     actualObject.sourcePortWrapper = source ? this.getWrapper(source, newProp.sourcePortID) : undefined;
+                }
+                else if (actualObject.sourcePortID === '' && !canOutConnect(sourceNode)) {
+                    actualObject.sourcePortWrapper = undefined;
                 }
             }
             if (newProp.targetPortID !== undefined && newProp.targetPortID !== oldProp.targetPortID) {
@@ -52791,18 +52813,20 @@ var LineDistribution = /** @__PURE__ @class */ (function () {
                     else if (type === 'internalEdge') {
                         var internalEdges = cell;
                         var parent_1 = matrixCell.visitedParents[0];
-                        for (var l = 0; l < parent_1.visitedChildren.length; l++) {
-                            var children = parent_1.visitedChildren[l];
-                            var cells = [];
-                            for (var m = 0; m < children.cells.length; m++) {
-                                var cell_1 = children.cells[m];
-                                var type_1 = this.getType(cell_1.type);
-                                if (type_1 === 'internalVertex') {
-                                    cells.push(cell_1);
+                        if (parent_1) {
+                            for (var l = 0; l < parent_1.visitedChildren.length; l++) {
+                                var children = parent_1.visitedChildren[l];
+                                var cells = [];
+                                for (var m = 0; m < children.cells.length; m++) {
+                                    var cell_1 = children.cells[m];
+                                    var type_1 = this.getType(cell_1.type);
+                                    if (type_1 === 'internalVertex') {
+                                        cells.push(cell_1);
+                                    }
                                 }
-                            }
-                            if (cells.length > 0) {
-                                break;
+                                if (cells.length > 0) {
+                                    break;
+                                }
                             }
                         }
                         // Need to updated line width

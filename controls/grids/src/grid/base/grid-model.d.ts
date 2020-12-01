@@ -1167,6 +1167,11 @@ export interface GridModel extends ComponentModel{
     currentAction?: ActionArgs;
 
     /**
+     * Defines the version for Grid persistence.
+     */
+    ej2StatePersistenceVersion?: string;
+
+    /**
      * Triggers when the component is created.
      * @event 
      * @blazorProperty 'Created'

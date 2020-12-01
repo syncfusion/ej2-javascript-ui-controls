@@ -8403,6 +8403,99 @@ var NodeSelection = /** @class */ (function () {
  * `Selection` module is used to handle RTE Selections.
  */
 
+/**
+ * Defines common util methods used by Rich Text Editor.
+ */
+var inlineNode$1 = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
+    'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'font', 'i', 'iframe', 'img', 'input',
+    'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
+    'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'strike', 'sub', 'sup', 'svg',
+    'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr'];
+function isIDevice$1() {
+    var result = false;
+    if (sf.base.Browser.isDevice && sf.base.Browser.isIos) {
+        result = true;
+    }
+    return result;
+}
+function setEditFrameFocus(editableElement, selector) {
+    if (editableElement.nodeName === 'BODY' && !sf.base.isNullOrUndefined(selector)) {
+        var iframe = top.window.document.querySelector(selector);
+        if (!sf.base.isNullOrUndefined(iframe)) {
+            iframe.contentWindow.focus();
+        }
+    }
+}
+function updateTextNode$1(value) {
+    var tempNode = document.createElement('div');
+    tempNode.innerHTML = value;
+    tempNode.setAttribute('class', 'tempDiv');
+    var resultElm = document.createElement('div');
+    var childNodes = tempNode.childNodes;
+    if (childNodes.length > 0) {
+        var isPreviousInlineElem = void 0;
+        var previousParent = void 0;
+        var paraElm = void 0;
+        while (tempNode.firstChild) {
+            if ((tempNode.firstChild.nodeName === '#text' &&
+                (tempNode.firstChild.textContent.indexOf('\n') < 0 || tempNode.firstChild.textContent.trim() !== '')) ||
+                inlineNode$1.indexOf(tempNode.firstChild.nodeName.toLocaleLowerCase()) >= 0) {
+                if (!isPreviousInlineElem) {
+                    paraElm = sf.base.createElement('p');
+                    resultElm.appendChild(paraElm);
+                    paraElm.appendChild(tempNode.firstChild);
+                }
+                else {
+                    previousParent.appendChild(tempNode.firstChild);
+                }
+                previousParent = paraElm;
+                isPreviousInlineElem = true;
+            }
+            else if (tempNode.firstChild.nodeName === '#text' && (tempNode.firstChild.textContent === '\n' ||
+                (tempNode.firstChild.textContent.indexOf('\n') >= 0 && tempNode.firstChild.textContent.trim() === ''))) {
+                sf.base.detach(tempNode.firstChild);
+            }
+            else {
+                resultElm.appendChild(tempNode.firstChild);
+                isPreviousInlineElem = false;
+            }
+        }
+        var tableElm = resultElm.querySelectorAll('table');
+        for (var i = 0; i < tableElm.length; i++) {
+            if (tableElm[i].getAttribute('border') === '0') {
+                tableElm[i].removeAttribute('border');
+            }
+            var tdElm = tableElm[i].querySelectorAll('td');
+            for (var j = 0; j < tdElm.length; j++) {
+                tdElm[j].style.removeProperty('border');
+            }
+            if (!tableElm[i].classList.contains(CLS_TABLE)) {
+                tableElm[i].classList.add(CLS_TABLE);
+            }
+        }
+        var imageElm = resultElm.querySelectorAll('img');
+        for (var i = 0; i < imageElm.length; i++) {
+            if (!imageElm[i].classList.contains(CLS_RTE_IMAGE)) {
+                imageElm[i].classList.add(CLS_RTE_IMAGE);
+            }
+            if (!(imageElm[i].classList.contains(CLS_IMGINLINE) ||
+                imageElm[i].classList.contains(CLS_IMGBREAK))) {
+                imageElm[i].classList.add(CLS_IMGINLINE);
+            }
+        }
+    }
+    return resultElm.innerHTML;
+}
+function getLastTextNode(startChildNodes) {
+    var finalNode = startChildNodes;
+    do {
+        if (finalNode.childNodes.length > 0) {
+            finalNode = finalNode.childNodes[0];
+        }
+    } while (finalNode.childNodes.length > 0);
+    return finalNode;
+}
+
 var markerClassName = {
     startSelection: 'e-editor-select-start',
     endSelection: 'e-editor-select-end'
@@ -8798,8 +8891,10 @@ var DOMNode = /** @class */ (function () {
      */
     DOMNode.prototype.setMarker = function (save) {
         var range = save.range;
-        var start = (range.startContainer.childNodes[range.startOffset]
-            || range.startContainer);
+        var startChildNodes = range.startContainer.childNodes;
+        var isTableStart = startChildNodes.length > 1 && startChildNodes[0].nodeName === 'TABLE';
+        var start = ((isTableStart ? getLastTextNode(startChildNodes[range.startOffset + 1]) :
+            startChildNodes[range.startOffset]) || range.startContainer);
         var end = (range.endContainer.childNodes[(range.endOffset > 0) ? (range.endOffset - 1) : range.endOffset]
             || range.endContainer);
         if ((start.nodeType === Node.ELEMENT_NODE && end.nodeType === Node.ELEMENT_NODE) && (start.contains(end) || end.contains(start))) {
@@ -9061,90 +9156,6 @@ var DOMNode = /** @class */ (function () {
     };
     return DOMNode;
 }());
-
-/**
- * Defines common util methods used by Rich Text Editor.
- */
-var inlineNode$1 = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
-    'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'font', 'i', 'iframe', 'img', 'input',
-    'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
-    'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'strike', 'sub', 'sup', 'svg',
-    'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr'];
-function isIDevice$1() {
-    var result = false;
-    if (sf.base.Browser.isDevice && sf.base.Browser.isIos) {
-        result = true;
-    }
-    return result;
-}
-function setEditFrameFocus(editableElement, selector) {
-    if (editableElement.nodeName === 'BODY' && !sf.base.isNullOrUndefined(selector)) {
-        var iframe = top.window.document.querySelector(selector);
-        if (!sf.base.isNullOrUndefined(iframe)) {
-            iframe.contentWindow.focus();
-        }
-    }
-}
-function updateTextNode$1(value) {
-    var tempNode = document.createElement('div');
-    tempNode.innerHTML = value;
-    tempNode.setAttribute('class', 'tempDiv');
-    var resultElm = document.createElement('div');
-    var childNodes = tempNode.childNodes;
-    if (childNodes.length > 0) {
-        var isPreviousInlineElem = void 0;
-        var previousParent = void 0;
-        var paraElm = void 0;
-        while (tempNode.firstChild) {
-            if ((tempNode.firstChild.nodeName === '#text' &&
-                (tempNode.firstChild.textContent.indexOf('\n') < 0 || tempNode.firstChild.textContent.trim() !== '')) ||
-                inlineNode$1.indexOf(tempNode.firstChild.nodeName.toLocaleLowerCase()) >= 0) {
-                if (!isPreviousInlineElem) {
-                    paraElm = sf.base.createElement('p');
-                    resultElm.appendChild(paraElm);
-                    paraElm.appendChild(tempNode.firstChild);
-                }
-                else {
-                    previousParent.appendChild(tempNode.firstChild);
-                }
-                previousParent = paraElm;
-                isPreviousInlineElem = true;
-            }
-            else if (tempNode.firstChild.nodeName === '#text' && (tempNode.firstChild.textContent === '\n' ||
-                (tempNode.firstChild.textContent.indexOf('\n') >= 0 && tempNode.firstChild.textContent.trim() === ''))) {
-                sf.base.detach(tempNode.firstChild);
-            }
-            else {
-                resultElm.appendChild(tempNode.firstChild);
-                isPreviousInlineElem = false;
-            }
-        }
-        var tableElm = resultElm.querySelectorAll('table');
-        for (var i = 0; i < tableElm.length; i++) {
-            if (tableElm[i].getAttribute('border') === '0') {
-                tableElm[i].removeAttribute('border');
-            }
-            var tdElm = tableElm[i].querySelectorAll('td');
-            for (var j = 0; j < tdElm.length; j++) {
-                tdElm[j].style.removeProperty('border');
-            }
-            if (!tableElm[i].classList.contains(CLS_TABLE)) {
-                tableElm[i].classList.add(CLS_TABLE);
-            }
-        }
-        var imageElm = resultElm.querySelectorAll('img');
-        for (var i = 0; i < imageElm.length; i++) {
-            if (!imageElm[i].classList.contains(CLS_RTE_IMAGE)) {
-                imageElm[i].classList.add(CLS_RTE_IMAGE);
-            }
-            if (!(imageElm[i].classList.contains(CLS_IMGINLINE) ||
-                imageElm[i].classList.contains(CLS_IMGBREAK))) {
-                imageElm[i].classList.add(CLS_IMGINLINE);
-            }
-        }
-    }
-    return resultElm.innerHTML;
-}
 
 /**
  * Lists internal component
@@ -12059,8 +12070,19 @@ var SelectionCommands = /** @class */ (function () {
                 }
             }
             isCursor = range.collapsed;
+            var isSubSup = false;
             for (var index = 0; index < nodes.length; index++) {
                 var formatNode = isFormatted.getFormattedNode(nodes[index], format, endNode);
+                if (formatNode === null) {
+                    if (format === 'subscript') {
+                        formatNode = isFormatted.getFormattedNode(nodes[index], 'superscript', endNode);
+                        isSubSup = formatNode === null ? false : true;
+                    }
+                    else if (format === 'superscript') {
+                        formatNode = isFormatted.getFormattedNode(nodes[index], 'subscript', endNode);
+                        isSubSup = formatNode === null ? false : true;
+                    }
+                }
                 if (index === 0 && formatNode === null) {
                     isFormat = true;
                 }
@@ -12076,6 +12098,9 @@ var SelectionCommands = /** @class */ (function () {
                 setEditFrameFocus(endNode, selector);
             }
             save.restore();
+            if (isSubSup) {
+                this.applyFormat(docElement, format, endNode);
+            }
         }
     };
     SelectionCommands.insertCursorNode = function (docElement, domSelection, range, isFormatted, nodeCutter, format, value, endNode) {
@@ -14432,12 +14457,19 @@ var HtmlEditor = /** @class */ (function () {
                             contentWithSpace += spaceSplit[j] + ' ';
                         }
                     }
-                    contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+                    if (i === 0) {
+                        contentInnerElem += '<span>' + contentWithSpace.trim() + '</span>';
+                    }
+                    else {
+                        contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+                    }
                 }
             }
             var divElement = this.parent.createElement('div');
+            divElement.setAttribute('class', 'pasteContent');
+            divElement.style.display = 'inline';
             divElement.innerHTML = contentInnerElem;
-            var paraElem = divElement.querySelectorAll('p');
+            var paraElem = divElement.querySelectorAll('span, p');
             for (var i = 0; i < paraElem.length; i++) {
                 var splitTextContent = paraElem[i].innerHTML.split(' ');
                 var resultSplitContent = '';
@@ -14456,7 +14488,7 @@ var HtmlEditor = /** @class */ (function () {
                 e.callBack(divElement.innerHTML);
             }
             else {
-                this.parent.executeCommand('insertHTML', divElement);
+                this.parent.formatter.editorManager.execCommand('insertHTML', null, null, null, divElement);
             }
         }
     };
@@ -15216,6 +15248,9 @@ var PasteCleanup = /** @class */ (function () {
             this.removeTempClass();
             this.parent.notify(toolbarRefresh, {});
             this.imgUploading(this.parent.inputElement);
+            if (this.parent.iframeSettings.enable) {
+                this.parent.updateValue();
+            }
         }
     };
     PasteCleanup.prototype.addTempClass = function (clipBoardElem) {
@@ -18433,8 +18468,7 @@ var ViewSource = /** @class */ (function () {
         this.parent.invokeChangeEvent();
     };
     ViewSource.prototype.getTextAreaValue = function () {
-        return (this.contentModule.getEditPanel().innerHTML === '<p><br></p>' ||
-            this.contentModule.getEditPanel().innerHTML.length === 12) ||
+        return (this.contentModule.getEditPanel().innerHTML === '<p><br></p>') ||
             (this.contentModule.getEditPanel().childNodes.length === 1 &&
                 this.contentModule.getEditPanel().childNodes[0].tagName === 'P' &&
                 this.contentModule.getEditPanel().innerHTML.length === 7) ? '' : this.parent.value;
@@ -20952,7 +20986,12 @@ var RichTextEditor = /** @class */ (function (_super) {
             this.placeHolderWrapper = null;
         }
         if (!sf.base.isNullOrUndefined(this.cssClass)) {
-            sf.base.removeClass([this.element], this.cssClass);
+            var allClassName = this.cssClass.split(' ');
+            for (var i = 0; i < allClassName.length; i++) {
+                if (allClassName[i].trim() !== '') {
+                    sf.base.removeClass([this.element], allClassName[i]);
+                }
+            }
         }
         this.removeHtmlAttributes();
         this.removeAttributes();
@@ -21300,7 +21339,12 @@ var RichTextEditor = /** @class */ (function (_super) {
     };
     RichTextEditor.prototype.setCssClass = function (cssClass) {
         if (!sf.base.isNullOrUndefined(cssClass)) {
-            this.element.classList.add(cssClass);
+            var allClassName = cssClass.split(' ');
+            for (var i = 0; i < allClassName.length; i++) {
+                if (allClassName[i].trim() !== '') {
+                    this.element.classList.add(allClassName[i]);
+                }
+            }
         }
     };
     RichTextEditor.prototype.updateRTL = function () {

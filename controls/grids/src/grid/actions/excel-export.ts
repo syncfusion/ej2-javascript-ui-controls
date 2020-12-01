@@ -271,6 +271,7 @@ export class ExcelExport {
             }
             /* tslint:disable-next-line:no-any */
             sheet.rows = this.rows as any;
+            sheet.enableRtl = this.parent.enableRtl;
             this.workSheet.push(sheet);
 
             this.book.worksheets = this.workSheet;

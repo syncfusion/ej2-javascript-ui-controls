@@ -21,8 +21,8 @@
     width: 0;
   }
 
-  .e-daterangepicker,
-  .e-bigger.e-small .e-daterangepicker {
+  #{&}.e-daterangepicker,
+  .e-bigger.e-small #{&}.e-daterangepicker {
     #{if(&, '&', '*')}.e-popup {
       border: $range-popup-border;
       border-radius: $range-popup-border-radius;
@@ -208,8 +208,8 @@
     }
   }
 
-  .e-bigger .e-daterangepicker.e-range-modal,
-  #{if(&, '&', '*')}.e-device.e-daterangepicker.e-range-modal {
+  .e-bigger #{&}.e-daterangepicker.e-range-modal,
+  #{if(&, '&', '*')}.e-device#{&}.e-daterangepicker.e-range-modal {
     background-color: $range-overlay;
     height: 100%;
     left: 0;
@@ -221,15 +221,15 @@
     z-index: 999;
   }
 
-  .e-bigger.e-small .e-daterangepicker #{&}.e-calendar {
+  .e-bigger.e-small #{&}.e-daterangepicker #{&}.e-calendar {
     max-width: $calendar-bigger-small-max-width;
   }
 
   //bigger style
 
-  .e-bigger .e-daterangepicker,
-  #{if(&, '&', '*')}.e-bigger.e-daterangepicker,
-  #{if(&, '&', '*')}.e-device.e-daterangepicker {
+  .e-bigger #{&}.e-daterangepicker,
+  #{if(&, '&', '*')}.e-bigger#{&}.e-daterangepicker,
+  #{if(&, '&', '*')}.e-device#{&}.e-daterangepicker {
     #{if(&, '&', '*')}.e-popup {
       #{if(&, '&', '*')}.e-preset-wrapper {
         max-width: $range-bigger-max-width;
@@ -377,8 +377,8 @@
     }
   }
 
-  .e-small .e-daterangepicker,
-  #{if(&, '&', '*')}.e-small.e-daterangepicker {
+  .e-small #{&}.e-daterangepicker,
+  #{if(&, '&', '*')}.e-small#{&}.e-daterangepicker {
     #{if(&, '&', '*')}.e-popup {
       #{if(&, '&', '*')} .e-range-header {
         margin: $range-control-small-header-margin;

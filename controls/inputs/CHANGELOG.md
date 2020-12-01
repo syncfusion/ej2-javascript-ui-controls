@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.52 (2020-12-01)
+
+### TextBox
+
+#### Bug Fixes
+
+- `#304117`,`#304560` - EJ1 and EJ2 controls theme compatibility issue resolved.
+
 ## 18.3.48 (2020-11-11)
 
 ### Uploader

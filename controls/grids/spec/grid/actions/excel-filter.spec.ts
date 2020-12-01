@@ -7,6 +7,7 @@ import { Grid } from '../../../src/grid/base/grid';
 import { Filter } from '../../../src/grid/actions/filter';
 import { Group } from '../../../src/grid/actions/group';
 import { Page } from '../../../src/grid/actions/page';
+import { Sort } from '../../../src/grid/actions/sort';
 import { Freeze } from '../../../src/grid/actions/freeze';
 import { createGrid, destroy, getClickObj } from '../base/specutil.spec';
 import { Selection } from '../../../src/grid/actions/selection';
@@ -16,7 +17,7 @@ import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { PredicateModel } from '../../../src/grid/base/grid-model';
 import * as events from '../../../src/grid/base/constant';
 
-Grid.Inject(Filter, Page, Selection, Group, Freeze);
+Grid.Inject(Filter, Page, Selection, Group, Freeze, Sort);
 
 let getActualProperties: Function = (obj: any): any => {
     if (obj instanceof ChildProperty) {
@@ -899,3 +900,45 @@ describe('Excel Filter =>', () => {
             });
         });
     });
+
+describe('Sorting feature testing in excel filter ', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                allowPaging: true,
+                allowSorting: true,
+                allowGrouping: true,
+                pageSettings: { currentPage: 1 },
+                filterSettings: { type: 'Excel' },
+                columns: [
+                    { field: 'OrderID', type: 'number' },
+                    { field: 'EmployeeID', type: 'number' },
+                    { field: 'Freight', format: 'C2', type: 'number' },
+                    { field: 'ShipCountry' },
+                    { field: 'OrderDate', format: 'yMd', type: 'date' }],
+            }, done);
+    });
+
+    it('testing the list of sort in excel popup', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelectorAll('.e-excel-ascending').length).toBe(1);
+                expect(gridObj.element.querySelectorAll('.e-excel-descending').length).toBe(1);
+                (gridObj.filterModule as any).filterModule.closeDialog();
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.element.querySelector('.e-headercell:nth-child(1)').querySelector('.e-filtermenudiv') as HTMLElement).click();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});

@@ -167,7 +167,7 @@ export class KeyboardInteraction {
         if (this.parent.options.quickInfoOnSelectionEnd) {
             this.parent.currentCell = target;
             let cellArgs: CellClickEventArgs =
-                <CellClickEventArgs>extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellClick' }, true);
+                <CellClickEventArgs>extend(this.parent.activeCellsData, { cancel: false, mouseEventArgs: e, name: 'cellClick' }, true);
             cellArgs.startTime = util.addLocalOffset(cellArgs.startTime);
             cellArgs.endTime = util.addLocalOffset(cellArgs.endTime);
             this.parent.dotNetRef.invokeMethodAsync('TriggerCellClick', cellArgs);
@@ -195,7 +195,7 @@ export class KeyboardInteraction {
         if (target.classList.contains(cls.WORK_CELLS_CLASS) || target.classList.contains(cls.ALLDAY_CELLS_CLASS)) {
             this.parent.activeCellsData = this.getSelectedElements(target);
             this.parent.currentCell = target;
-            let args: CellClickEventArgs = <CellClickEventArgs>extend(this.parent.activeCellsData, { cancel: false, event: e });
+            let args: CellClickEventArgs = <CellClickEventArgs>extend(this.parent.activeCellsData, { cancel: false, mouseEventArgs: e });
             if (this.parent.options.allowInline) {
                 this.parent.inlineModule.cellEdit();
             } else {

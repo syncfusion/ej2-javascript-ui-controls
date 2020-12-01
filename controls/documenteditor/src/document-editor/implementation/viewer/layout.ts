@@ -1031,6 +1031,10 @@ export class Layout {
                     newSpan2.line = span.line;
                     newSpan2.characterFormat.copyFormat(span.characterFormat);
                     span.line.children.splice(inlineIndex + j, 0, newSpan2);
+                    if (span.revisions.length > 0) {
+                        this.updateRevisionForSpittedElement(span, newSpan2, true);
+                        newSpan2.isMarkedForRevision = span.isMarkedForRevision;
+                    }
                     newSpan2.text = text;
                 } else {
                     //Replace the source text range with splitted text.
@@ -1449,6 +1453,7 @@ export class Layout {
             splittedElementBox.characterFormat.copyFormat(elementBox.characterFormat);
             splittedElementBox.width = this.documentHelper.textHelper.getWidth(splittedElementBox.text, characterFormat);
             splittedElementBox.trimEndWidth = splittedElementBox.width;
+            splittedElementBox.revisions = splittedElementBox.revisions;
             elementBox.text = elementBox.text.substr(0, index);
             elementBox.width -= splittedElementBox.width;
             elementBox.trimEndWidth = elementBox.width;
@@ -1607,6 +1612,10 @@ export class Layout {
                     splittedElement.height = textElement.height;
                     splittedElement.baselineOffset = textElement.baselineOffset;
                     lineWidget.children.splice(indexOf, 0, splittedElement);
+                    if (textElement.revisions.length > 0) {
+                        this.updateRevisionForSpittedElement(textElement, splittedElement, index > 0);
+                        splittedElement.isMarkedForRevision = textElement.isMarkedForRevision;
+                    }
                     textElement.text = text;
                     textElement.width -= splittedElement.width;
                     textElement.trimEndWidth = textElement.width;
@@ -2033,6 +2042,10 @@ export class Layout {
                     let splittedElement: TextElementBox = new TextElementBox();
                     splittedElement.text = text.substr(index);
                     splittedElement.characterFormat.copyFormat(textElement.characterFormat);
+                    if (textElement.revisions.length > 0) {
+                        this.updateRevisionForSpittedElement(textElement, splittedElement, index > 0);
+                        splittedElement.isMarkedForRevision = textElement.isMarkedForRevision;
+                    }
                     textElement.text = text.substr(0, index);
                     this.documentHelper.textHelper.getTextSize(splittedElement, characterFormat);
                     textElement.width -= splittedElement.width;
@@ -4054,7 +4067,8 @@ export class Layout {
      * @private
      */
     public updateCellVerticalPosition(cellWidget: TableCellWidget, isUpdateToTop: boolean, isInsideTable: boolean): void {
-        if (cellWidget.ownerTable.containerWidget instanceof BodyWidget || isInsideTable) {
+        let containerWidget: Widget = cellWidget.ownerTable.containerWidget;
+        if (containerWidget instanceof BlockContainer || containerWidget instanceof TextFrame || isInsideTable) {
             let displacement: number = this.getDisplacement(cellWidget, isUpdateToTop);
             //Update Y position alone for the child widget of cell
             this.updateCellContentVerticalPosition(cellWidget, displacement, isUpdateToTop);

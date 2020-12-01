@@ -52,6 +52,10 @@ export class DiagramHtmlElement extends DiagramElement {
      */
     public diagramId: string = '';
     /**
+     * Specifies whether the getcontent has to be executed or not.
+     */
+    private canReset: boolean;
+    /**
      * Gets or sets the geometry of the html element
      */
     public get content(): string | HTMLElement {
@@ -62,10 +66,14 @@ export class DiagramHtmlElement extends DiagramElement {
      */
     public set content(value: string | HTMLElement) {
         this.data = value;
-        if (!this.isTemplate) {
-            this.template = getContent(this, true) as HTMLElement;
+        if (!this.canReset) {
+            this.canReset = true;
+            if (!this.isTemplate) {
+                this.template = getContent(this, true) as HTMLElement;
+            }
+            this.canReset = false;
+            this.isDirt = true;
         }
-        this.isDirt = true;
     }
 
     /**

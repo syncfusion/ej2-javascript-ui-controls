@@ -623,7 +623,7 @@ export class SfGrid {
             e.preventDefault(); //prevent user select on shift pressing during selection
         }
         // e.button = 2 for right mouse button click
-        if ((e.button !== 2 && parentsUntil(<Element>e.target, 'e-headercell')) || parentsUntil(<Element>e.target, 'e-detailrowexpand') || parentsUntil(<Element>e.target, 'e-detailrowcollapse')
+        if ((e.button !== 2 && parentsUntil(<Element>e.target, 'e-headercell')) || (e.button !== 2 && parentsUntil(<Element>e.target, 'e-detailcell')) || parentsUntil(<Element>e.target, 'e-detailrowexpand') || parentsUntil(<Element>e.target, 'e-detailrowcollapse')
             || (<Element>e.target).classList.contains('e-content') || (<Element>e.target).classList.contains('e-headercontent') || closest(<Element>e.target, ".e-groupdroparea") || closest(<Element>e.target, ".e-gridpopup")
             || closest(<Element>e.target, ".e-summarycell") || closest(<Element>e.target, ".e-rhandler")
             || closest(<Element>e.target, ".e-filtermenudiv") || closest(<Element>e.target, ".e-filterbarcell")

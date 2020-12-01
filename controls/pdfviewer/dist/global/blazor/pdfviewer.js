@@ -22317,40 +22317,7 @@ var NavigationPane = /** @class */ (function () {
             }
         };
         this.bookmarkButtonOnClick = function (event) {
-            var proxy = _this;
-            if (document.getElementById(_this.pdfViewer.element.id + '_thumbnail_view')) {
-                document.getElementById(_this.pdfViewer.element.id + '_thumbnail_view').style.display = 'none';
-            }
-            _this.removeThumbnailSelectionIconTheme();
-            _this.sideBarTitle.textContent = _this.pdfViewer.localeObj.getConstant('Bookmarks');
-            _this.sideBarContent.setAttribute('aria-label', 'Bookmark View Panel');
-            _this.pdfViewer.bookmarkViewModule.renderBookmarkcontent();
-            if (_this.sideBarContentContainer) {
-                if (proxy.sideBarContentContainer.style.display !== 'none') {
-                    if (_this.isThumbnailOpen) {
-                        _this.setBookmarkSelectionIconTheme();
-                        _this.isBookmarkOpen = true;
-                        _this.updateViewerContainerOnExpand();
-                    }
-                    else {
-                        _this.removeBookmarkSelectionIconTheme();
-                        _this.isBookmarkOpen = false;
-                        _this.updateViewerContainerOnClose();
-                    }
-                }
-                else {
-                    _this.sideBarContent.focus();
-                    _this.setBookmarkSelectionIconTheme();
-                    _this.isBookmarkOpen = true;
-                    _this.updateViewerContainerOnExpand();
-                }
-            }
-            _this.isThumbnailOpen = false;
-            if (_this.pdfViewer.annotationModule && _this.pdfViewer.annotationModule.inkAnnotationModule) {
-                // tslint:disable-next-line
-                var currentPageNumber = parseInt(_this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber);
-                _this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(currentPageNumber);
-            }
+            _this.openBookmarkcontentInitially();
         };
         this.commentPanelMouseDown = function (event) {
             var proxy = _this;
@@ -23255,6 +23222,45 @@ var NavigationPane = /** @class */ (function () {
     };
     NavigationPane.prototype.sideBarTitleOnMouseup = function (event) {
         this.pdfViewerBase.focusViewerContainer();
+    };
+    /**
+     * @private
+     */
+    NavigationPane.prototype.openBookmarkcontentInitially = function () {
+        var proxy = this;
+        if (document.getElementById(this.pdfViewer.element.id + '_thumbnail_view')) {
+            document.getElementById(this.pdfViewer.element.id + '_thumbnail_view').style.display = 'none';
+        }
+        this.removeThumbnailSelectionIconTheme();
+        this.sideBarTitle.textContent = this.pdfViewer.localeObj.getConstant('Bookmarks');
+        this.sideBarContent.setAttribute('aria-label', 'Bookmark View Panel');
+        this.pdfViewer.bookmarkViewModule.renderBookmarkcontent();
+        if (this.sideBarContentContainer) {
+            if (proxy.sideBarContentContainer.style.display !== 'none') {
+                if (this.isThumbnailOpen) {
+                    this.setBookmarkSelectionIconTheme();
+                    this.isBookmarkOpen = true;
+                    this.updateViewerContainerOnExpand();
+                }
+                else {
+                    this.removeBookmarkSelectionIconTheme();
+                    this.isBookmarkOpen = false;
+                    this.updateViewerContainerOnClose();
+                }
+            }
+            else {
+                this.sideBarContent.focus();
+                this.setBookmarkSelectionIconTheme();
+                this.isBookmarkOpen = true;
+                this.updateViewerContainerOnExpand();
+            }
+        }
+        this.isThumbnailOpen = false;
+        if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule) {
+            // tslint:disable-next-line
+            var currentPageNumber = parseInt(this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber);
+            this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(currentPageNumber);
+        }
     };
     /**
      * @private
@@ -33213,6 +33219,11 @@ var Signature = /** @class */ (function () {
         this.fontsign = [];
         // tslint:disable-next-line
         this.signfontStyle = [];
+        this.isSaveSignature = false;
+        // tslint:disable-next-line
+        this.saveSignatureString = '';
+        // tslint:disable-next-line
+        this.saveImageString = '';
         // tslint:disable-next-line
         this.addStampImage = function (args) {
             // tslint:disable-next-line
@@ -33227,6 +33238,7 @@ var Signature = /** @class */ (function () {
                         var canvas = document.getElementById(_this.pdfViewer.element.id + '_signatureuploadCanvas_');
                         // tslint:disable-next-line
                         var context = canvas.getContext('2d');
+                        // tslint:disable-next-line
                         var image = new Image();
                         // tslint:disable-next-line
                         var proxy = _this;
@@ -33270,6 +33282,7 @@ var Signature = /** @class */ (function () {
                         _this.clearSignatureCanvas();
                         _this.signatureDialog.destroy();
                         _this.signatureDialog = null;
+                        _this.pdfViewerBase.isToolbarSignClicked = false;
                         if (_this.tabObj) {
                             _this.tabObj.destroy();
                         }
@@ -33314,6 +33327,21 @@ var Signature = /** @class */ (function () {
             }
             this.pdfViewer._dotnetInstance.invokeMethodAsync('OpenSignaturePanel');
         }
+        if (!this.pdfViewerBase.isToolbarSignClicked && this.isSaveSignature) {
+            this.outputString = this.saveSignatureString;
+            // tslint:disable-next-line
+            var canvas = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
+            // tslint:disable-next-line
+            var context_1 = canvas.getContext('2d');
+            // tslint:disable-next-line
+            var image_1 = new Image();
+            image_1.onload = function () {
+                context_1.drawImage(image_1, 0, 0);
+            };
+            image_1.src = this.saveImageString;
+            this.enableCreateButton(false);
+            this.enableClearbutton(false);
+        }
     };
     /**
      * @private
@@ -33354,6 +33382,26 @@ var Signature = /** @class */ (function () {
             this.pdfViewerBase.isToolbarSignClicked = false;
         }
         else {
+            // tslint:disable-next-line
+            var checkbox = void 0;
+            if (sf.base.isBlazor()) {
+                checkbox = document.getElementById(this.pdfViewer.element.id + '_signatureCheckBox');
+            }
+            else {
+                checkbox = document.getElementById('checkbox');
+            }
+            if (checkbox.checked) {
+                this.isSaveSignature = true;
+                this.saveSignatureString = this.outputString;
+                // tslint:disable-next-line
+                var canvas = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
+                this.saveImageString = canvas.toDataURL();
+            }
+            else {
+                this.isSaveSignature = false;
+                this.saveSignatureString = '';
+                this.saveImageString = '';
+            }
             this.pdfViewer.formFieldsModule.drawSignature();
         }
     };
@@ -33460,6 +33508,9 @@ var Signature = /** @class */ (function () {
         // tslint:disable-next-line
         var checkBoxObj = new sf.buttons.CheckBox({ label: 'Save signature', disabled: false, checked: false });
         checkBoxObj.appendTo(input);
+        if (this.isSaveSignature) {
+            checkBoxObj.checked = true;
+        }
         if (!this.pdfViewerBase.isToolbarSignClicked) {
             // tslint:disable-next-line
             var typeDiv = sf.base.createElement('div', { id: this.pdfViewer.element.id + 'type_appearance', className: 'e-pv-signature-apperance' });
@@ -33555,10 +33606,31 @@ var Signature = /** @class */ (function () {
         }
     };
     Signature.prototype.handleSelectEvent = function (e) {
-        this.clearSignatureCanvas();
+        // tslint:disable-next-line
+        var checkbox = document.getElementById('checkbox');
+        if (checkbox && checkbox.checked) {
+            if (e.previousIndex === 0 && this.outputString !== '') {
+                this.isSaveSignature = true;
+                this.saveSignatureString = this.outputString;
+                // tslint:disable-next-line
+                var canvas = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
+                this.saveImageString = canvas.toDataURL();
+            }
+        }
+        else {
+            if (this.isSaveSignature) {
+                this.isSaveSignature = false;
+                this.saveSignatureString = '';
+                this.saveImageString = '';
+            }
+            this.clearSignatureCanvas();
+        }
         // tslint:disable-next-line
         if (e.selectedIndex === 0) {
             this.signaturetype = 'Draw';
+            if (this.isSaveSignature) {
+                this.enableCreateButton(false);
+            }
         }
         else if (e.selectedIndex === 1) {
             this.signaturetype = 'Type';
@@ -43771,6 +43843,9 @@ var PdfViewer = /** @class */ (function (_super) {
         sf.base.Property(true)
     ], PdfViewer.prototype, "enableAnnotationToolbar", void 0);
     __decorate$2([
+        sf.base.Property(false)
+    ], PdfViewer.prototype, "isBookmarkPanelOpen", void 0);
+    __decorate$2([
         sf.base.Property('TextSelection')
     ], PdfViewer.prototype, "interactionMode", void 0);
     __decorate$2([
@@ -44186,6 +44261,9 @@ var BookmarkView = /** @class */ (function () {
                 else {
                     proxy.pdfViewerBase.navigationPane.enableBookmarkButton();
                     proxy.isBookmarkViewDiv = false;
+                    if (proxy.pdfViewer.isBookmarkPanelOpen) {
+                        proxy.pdfViewerBase.navigationPane.openBookmarkcontentInitially();
+                    }
                 }
             }
         };

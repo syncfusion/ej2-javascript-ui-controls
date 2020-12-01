@@ -2,6 +2,7 @@ import * as CONSTANT from './../base/constant';
 import { append, detach, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { NodeSelection } from './../../selection/index';
 import { selfClosingTags } from '../../common/config';
+import { getLastTextNode } from '../../common/util';
 
 export const markerClassName: { [key: string]: string } = {
     startSelection: 'e-editor-select-start',
@@ -419,8 +420,10 @@ export class DOMNode {
      */
     public setMarker(save: NodeSelection): void {
         let range: Range = save.range;
-        let start: Element = <Element>(range.startContainer.childNodes[range.startOffset]
-            || range.startContainer);
+        let startChildNodes: NodeListOf<Node> = range.startContainer.childNodes;
+        let isTableStart: boolean = startChildNodes.length > 1 && startChildNodes[0].nodeName === 'TABLE';
+        let start: Element = <Element>((isTableStart ? getLastTextNode(startChildNodes[range.startOffset + 1]) :
+            startChildNodes[range.startOffset]) || range.startContainer);
         let end: Element = <Element>(range.endContainer.childNodes[(range.endOffset > 0) ? (range.endOffset - 1) : range.endOffset]
             || range.endContainer);
         if ((start.nodeType === Node.ELEMENT_NODE && end.nodeType === Node.ELEMENT_NODE) && (start.contains(end) || end.contains(start))) {

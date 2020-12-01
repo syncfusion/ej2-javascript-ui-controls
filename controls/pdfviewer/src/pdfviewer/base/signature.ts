@@ -81,6 +81,11 @@ export class Signature {
     private signWidth: string;
     private signaturetype: string;
     private tabObj: Tab;
+    private isSaveSignature: boolean = false;
+    // tslint:disable-next-line
+    private saveSignatureString: string = '';
+    // tslint:disable-next-line
+    private saveImageString: string = '';
     /**
      * @private
      */
@@ -109,6 +114,7 @@ export class Signature {
                         this.clearSignatureCanvas();
                         this.signatureDialog.destroy();
                         this.signatureDialog = null;
+                        this.pdfViewerBase.isToolbarSignClicked = false;
                         if (this.tabObj) {
                             this.tabObj.destroy();
                         }
@@ -152,6 +158,21 @@ export class Signature {
             }
             this.pdfViewer._dotnetInstance.invokeMethodAsync('OpenSignaturePanel');
         }
+        if (!this.pdfViewerBase.isToolbarSignClicked && this.isSaveSignature) {
+            this.outputString = this.saveSignatureString;
+            // tslint:disable-next-line
+            let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
+            // tslint:disable-next-line
+            let context: any = canvas.getContext('2d');
+            // tslint:disable-next-line
+            let image: any = new Image();
+            image.onload = (): void => {
+                context.drawImage(image, 0, 0);
+            };
+            image.src = this.saveImageString;
+            this.enableCreateButton(false);
+            this.enableClearbutton(false);
+        }
     }
     /**
      * @private
@@ -190,6 +211,24 @@ export class Signature {
             this.pdfViewerBase.currentSignatureAnnot = annot;
             this.pdfViewerBase.isToolbarSignClicked = false;
         } else {
+            // tslint:disable-next-line
+            let checkbox: any;
+            if (isBlazor()) {
+                checkbox = document.getElementById(this.pdfViewer.element.id + '_signatureCheckBox');
+            } else {
+                checkbox = document.getElementById('checkbox');
+            }
+            if (checkbox.checked) {
+                this.isSaveSignature = true;
+                this.saveSignatureString = this.outputString;
+                // tslint:disable-next-line
+                let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
+                this.saveImageString = canvas.toDataURL();
+            } else {
+                this.isSaveSignature = false;
+                this.saveSignatureString = '';
+                this.saveImageString = '';
+            }
             this.pdfViewer.formFieldsModule.drawSignature();
         }
     }
@@ -293,6 +332,9 @@ export class Signature {
         // tslint:disable-next-line
         let checkBoxObj: any = new CheckBox({ label: 'Save signature', disabled: false, checked: false });
         checkBoxObj.appendTo(input);
+        if (this.isSaveSignature) {
+            checkBoxObj.checked = true;
+        }
         if (!this.pdfViewerBase.isToolbarSignClicked) {
             // tslint:disable-next-line
             let typeDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'type_appearance', className: 'e-pv-signature-apperance' });
@@ -386,10 +428,30 @@ export class Signature {
         }
     }
     private handleSelectEvent(e: SelectEventArgs): void {
-        this.clearSignatureCanvas();
+        // tslint:disable-next-line
+        let checkbox: any = document.getElementById('checkbox');
+        if (checkbox && checkbox.checked) {
+            if (e.previousIndex === 0 && this.outputString !== '') {
+                this.isSaveSignature = true;
+                this.saveSignatureString = this.outputString;
+                // tslint:disable-next-line
+                let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
+                this.saveImageString = canvas.toDataURL();
+            }
+        } else {
+            if (this.isSaveSignature) {
+                this.isSaveSignature = false;
+                this.saveSignatureString = '';
+                this.saveImageString = '';
+            }
+            this.clearSignatureCanvas();
+        }
         // tslint:disable-next-line
         if (e.selectedIndex === 0) {
             this.signaturetype = 'Draw';
+            if (this.isSaveSignature) {
+                this.enableCreateButton(false);
+            }
         } else if (e.selectedIndex === 1) {
             this.signaturetype = 'Type';
             // tslint:disable-next-line
@@ -433,7 +495,8 @@ export class Signature {
                     let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureuploadCanvas_');
                      // tslint:disable-next-line
                     let context: any = canvas.getContext('2d');
-                    let image: HTMLImageElement = new Image();
+                    // tslint:disable-next-line
+                    let image: any = new Image();
                     // tslint:disable-next-line
                     let proxy: any = this;
                     image.onload = (): void => {

@@ -6,7 +6,7 @@
     }
   }
 
-  .e-bigger .e-ddl.e-popup {
+  .e-bigger .e-ddl#{&}.e-popup {
     #{if(&, '&', '*')} .e-list-item,
     #{if(&, '&', '*')} .e-list-group-item {
       font-size: $ddl-bigger-list-font-size;
@@ -17,7 +17,7 @@
     }
   }
 
-  .e-bigger.e-ddl.e-popup {
+  .e-bigger.e-ddl#{&}.e-popup {
     #{if(&, '&', '*')} .e-list-item,
     #{if(&, '&', '*')} .e-list-group-item {
       font-size: $ddl-bigger-list-font-size;
@@ -72,7 +72,7 @@
     cursor: pointer;
   }
 
-  .e-ddl.e-popup.e-ddl-device-filter {
+  .e-ddl#{&}.e-popup.e-ddl-device-filter {
     @at-root {
       #{if(&, '&', '*')} .e-input-group.e-input-focus::before,
       #{if(&, '&', '*')} .e-input-group.e-input-focus::after {
@@ -81,7 +81,7 @@
      }
    }
 
-  .e-ddl.e-popup {
+  .e-ddl#{&}.e-popup {
     background: $ddl-popup-background-color;
     @if $skin-name != 'material' {
       border: 1px solid $ddl-default-border-color;
@@ -195,7 +195,7 @@
 
   // Small Size 
 
-  .e-small .e-ddl.e-popup,
+  .e-small .e-ddl#{&}.e-popup,
   .e-input-group.e-ddl.e-small {
     #{if(&, '&', '*')} .e-list-item,
     #{if(&, '&', '*')} .e-list-group-item {
@@ -203,7 +203,7 @@
     }
   }
 
-  .e-small.e-ddl.e-popup,
+  .e-small.e-ddl#{&}.e-popup,
   .e-input-group.e-ddl.e-small {
     #{if(&, '&', '*')} .e-list-item,
     #{if(&, '&', '*')} .e-list-group-item {
@@ -212,7 +212,7 @@
   }
 
   //touch small
-  .e-bigger.e-small .e-ddl.e-popup,
+  .e-bigger.e-small .e-ddl#{&}.e-popup,
   .e-bigger .e-input-group.e-ddl.e-small {
     #{if(&, '&', '*')} .e-list-item,
     #{if(&, '&', '*')} .e-list-group-item {
@@ -220,7 +220,7 @@
     }
   }
 
-  .e-bigger.e-small.e-ddl.e-popup,
+  .e-bigger.e-small.e-ddl#{&}.e-popup,
   .e-bigger .e-input-group.e-ddl.e-small {
     #{if(&, '&', '*')} .e-list-item,
     #{if(&, '&', '*')} .e-list-group-item {

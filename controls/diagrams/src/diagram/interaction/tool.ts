@@ -844,9 +844,9 @@ export class MoveTool extends ToolBase {
             object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Selector || (this.commandHandler.renderContainerHelper(args.source as ConnectorModel) as Connector);
             if (((object as Node).id === 'helper' && !(obj.nodes[0] as Node).isLane && !(obj.nodes[0] as Node).isPhase)
                 || ((object as Node).id !== 'helper')) {
-                if (((object instanceof Selector && object.width == this.undoElement.width && object.height == this.undoElement.height) || !(object instanceof Selector)) && ((object as NodeModel).offsetX !== this.undoElement.offsetX || (object as NodeModel).offsetY !== this.undoElement.offsetY ||
+                if ((((object instanceof Selector && object.width == this.undoElement.width && object.height == this.undoElement.height) || !(object instanceof Selector)) && ((object as NodeModel).offsetX !== this.undoElement.offsetX || (object as NodeModel).offsetY !== this.undoElement.offsetY ||
                     (object as ConnectorModel).sourcePoint !== (this.undoElement as any).sourcePoint
-                    || (object as ConnectorModel).targetPoint !== (this.undoElement as any).targetPoint)) {
+                    || (object as ConnectorModel).targetPoint !== (this.undoElement as any).targetPoint)) || this.isSelectionHasConnector(object)) {
                     if (args.source) {
                         newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
                         oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
@@ -932,6 +932,14 @@ export class MoveTool extends ToolBase {
         }
         this.commandHandler.updateBlazorSelector();
         super.mouseUp(args);
+    }
+
+    private isSelectionHasConnector(args: any): boolean {
+        if (args.nodes && args.connectors && args.nodes.length > 0 && args.connectors.length > 0 &&
+            (args.width !== this.undoElement.width || args.height !== this.undoElement.height)) {
+            return true;
+        }
+        return false;
     }
 
     private getBlazorPositionChangeEventArgs(args: IDraggingEventArgs | IBlazorDraggingEventArgs, target: IElement): IBlazorDraggingEventArgs {
@@ -1115,7 +1123,7 @@ export class RotateTool extends ToolBase {
         this.checkPropertyValue();
         if (isBlazor()) {
             let diagram: string = 'diagram'; let blazorInterop: string = 'sfBlazor'; let blazor: string = 'Blazor';
-            this.commandHandler.updatePropertiesToBlazor(args, false);            
+            this.commandHandler.updatePropertiesToBlazor(args, false);
             let object: NodeModel | ConnectorModel | SelectorModel;
             object = (this.commandHandler.renderContainerHelper(args.source) as Node) || args.source as Node | Selector;
             let oldValue: SelectorModel = { rotateAngle: this.tempArgs.oldValue.rotateAngle };
@@ -1128,7 +1136,7 @@ export class RotateTool extends ToolBase {
                 let eventObj: object = { 'EventName': 'rotateChange', args: JSON.stringify(arg) }
                 blazorArgs = await window[blazorInterop].updateBlazorDiagramEvents(eventObj, this.commandHandler[diagram]);
             }
-            if (blazorArgs && (blazorArgs as IRotationEventArgs).cancel) {                
+            if (blazorArgs && (blazorArgs as IRotationEventArgs).cancel) {
                 this.commandHandler.enableCloneObject(true); this.commandHandler.ismouseEvents(true);
                 this.canCancel = true;
             }

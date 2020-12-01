@@ -3,7 +3,7 @@ import { FontModel, BorderModel } from '../../common/model/base-model';
 import { Font, Border } from '../../common/model/base';
 import { Orientation, ChartRangePadding, SkeletonType, AxisPosition } from '../utils/enum';
 import { EdgeLabelPlacement, ValueType, IntervalType, LabelPlacement, LabelIntersectAction } from '../utils/enum';
-import { rotateTextSize, firstToLowerCase, valueToCoefficient, inside, isBreakLabel, isZoomSet } from '../../common/utils/helper';
+import { rotateTextSize, firstToLowerCase, valueToCoefficient, inside, isBreakLabel, isZoomSet, getTitle } from '../../common/utils/helper';
 import { Size, Rect, measureText } from '@syncfusion/ej2-svg-base';
 import { DoubleRange } from '../utils/double-range';
 import { Chart } from '../chart';
@@ -891,6 +891,10 @@ export class Axis extends ChildProperty<Axis> {
     public maxPointLength: number;
     /** @private */
     public isIntervalInDecimal: boolean = true;
+    /** @private */
+    public titleCollection: string[] = [];
+    /** @private */
+    public titleSize: Size = new Size(0, 0);
     /**
      * @private
      * Task: BLAZ-2044
@@ -934,9 +938,15 @@ export class Axis extends ChildProperty<Axis> {
      * @private
      */
     public findLabelSize(crossAxis: Axis, innerPadding: number): number {
-        let titleSize: number = 0;
+        let titleSize: number = 0; let isHorizontal: boolean = this.orientation === 'Horizontal';
         if (this.title) {
-            titleSize = measureText(this.title, this.titleStyle).height + innerPadding;
+            this.titleSize = measureText(this.title, this.titleStyle);
+            titleSize = this.titleSize.height + innerPadding;
+            if (this.rect.width || this.rect.height) {
+                let length: number = isHorizontal ? this.rect.width : this.rect.height;
+                this.titleCollection = getTitle(this.title, this.titleStyle, length);
+                titleSize = (titleSize * this.titleCollection.length);
+            }
         }
         if (this.labelPosition === 'Inside') {
             return titleSize + innerPadding;

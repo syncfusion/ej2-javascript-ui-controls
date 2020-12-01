@@ -6,7 +6,7 @@ import { CellModel, getSheetName, getTypeFromFormat, getSheet, SheetModel, check
 import { updateSelectedRange, getSheetNameFromAddress, getSheetIndex, DefineNameModel } from '../../workbook/index';
 import { ComboBox, ChangeEventArgs, DropDownList, SelectEventArgs as DdlSelectArgs } from '@syncfusion/ej2-dropdowns';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { rippleEffect, L10n, EventHandler, detach, Internationalization, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
+import { rippleEffect, L10n, EventHandler, detach, Internationalization, isNullOrUndefined, closest, select } from '@syncfusion/ej2-base';
 import { isUndefined } from '@syncfusion/ej2-base';
 import { editOperation, formulaBarOperation, keyDown, keyUp, formulaOperation, editAlert, editValue } from '../common/event';
 import { intToDate } from '../../workbook/common/math';
@@ -545,6 +545,6 @@ export class FormulaBar {
     }
 
     private getFormulaBar(): HTMLTextAreaElement {
-        return this.parent.element.querySelector('[id="' + this.parent.element.id + '_formula_input"]');
+        return select('#' + this.parent.element.id + '_formula_input', this.parent.element);
     }
 }

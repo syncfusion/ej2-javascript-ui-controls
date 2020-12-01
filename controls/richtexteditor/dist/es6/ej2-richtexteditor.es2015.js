@@ -8316,6 +8316,99 @@ class NodeSelection {
  * `Selection` module is used to handle RTE Selections.
  */
 
+/**
+ * Defines common util methods used by Rich Text Editor.
+ */
+let inlineNode$1 = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
+    'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'font', 'i', 'iframe', 'img', 'input',
+    'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
+    'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'strike', 'sub', 'sup', 'svg',
+    'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr'];
+function isIDevice$1() {
+    let result = false;
+    if (Browser.isDevice && Browser.isIos) {
+        result = true;
+    }
+    return result;
+}
+function setEditFrameFocus(editableElement, selector) {
+    if (editableElement.nodeName === 'BODY' && !isNullOrUndefined(selector)) {
+        let iframe = top.window.document.querySelector(selector);
+        if (!isNullOrUndefined(iframe)) {
+            iframe.contentWindow.focus();
+        }
+    }
+}
+function updateTextNode$1(value) {
+    let tempNode = document.createElement('div');
+    tempNode.innerHTML = value;
+    tempNode.setAttribute('class', 'tempDiv');
+    let resultElm = document.createElement('div');
+    let childNodes = tempNode.childNodes;
+    if (childNodes.length > 0) {
+        let isPreviousInlineElem;
+        let previousParent;
+        let paraElm;
+        while (tempNode.firstChild) {
+            if ((tempNode.firstChild.nodeName === '#text' &&
+                (tempNode.firstChild.textContent.indexOf('\n') < 0 || tempNode.firstChild.textContent.trim() !== '')) ||
+                inlineNode$1.indexOf(tempNode.firstChild.nodeName.toLocaleLowerCase()) >= 0) {
+                if (!isPreviousInlineElem) {
+                    paraElm = createElement('p');
+                    resultElm.appendChild(paraElm);
+                    paraElm.appendChild(tempNode.firstChild);
+                }
+                else {
+                    previousParent.appendChild(tempNode.firstChild);
+                }
+                previousParent = paraElm;
+                isPreviousInlineElem = true;
+            }
+            else if (tempNode.firstChild.nodeName === '#text' && (tempNode.firstChild.textContent === '\n' ||
+                (tempNode.firstChild.textContent.indexOf('\n') >= 0 && tempNode.firstChild.textContent.trim() === ''))) {
+                detach(tempNode.firstChild);
+            }
+            else {
+                resultElm.appendChild(tempNode.firstChild);
+                isPreviousInlineElem = false;
+            }
+        }
+        let tableElm = resultElm.querySelectorAll('table');
+        for (let i = 0; i < tableElm.length; i++) {
+            if (tableElm[i].getAttribute('border') === '0') {
+                tableElm[i].removeAttribute('border');
+            }
+            let tdElm = tableElm[i].querySelectorAll('td');
+            for (let j = 0; j < tdElm.length; j++) {
+                tdElm[j].style.removeProperty('border');
+            }
+            if (!tableElm[i].classList.contains(CLS_TABLE)) {
+                tableElm[i].classList.add(CLS_TABLE);
+            }
+        }
+        let imageElm = resultElm.querySelectorAll('img');
+        for (let i = 0; i < imageElm.length; i++) {
+            if (!imageElm[i].classList.contains(CLS_RTE_IMAGE)) {
+                imageElm[i].classList.add(CLS_RTE_IMAGE);
+            }
+            if (!(imageElm[i].classList.contains(CLS_IMGINLINE) ||
+                imageElm[i].classList.contains(CLS_IMGBREAK))) {
+                imageElm[i].classList.add(CLS_IMGINLINE);
+            }
+        }
+    }
+    return resultElm.innerHTML;
+}
+function getLastTextNode(startChildNodes) {
+    let finalNode = startChildNodes;
+    do {
+        if (finalNode.childNodes.length > 0) {
+            finalNode = finalNode.childNodes[0];
+        }
+    } while (finalNode.childNodes.length > 0);
+    return finalNode;
+}
+
 const markerClassName = {
     startSelection: 'e-editor-select-start',
     endSelection: 'e-editor-select-end'
@@ -8711,8 +8804,10 @@ class DOMNode {
      */
     setMarker(save) {
         let range = save.range;
-        let start = (range.startContainer.childNodes[range.startOffset]
-            || range.startContainer);
+        let startChildNodes = range.startContainer.childNodes;
+        let isTableStart = startChildNodes.length > 1 && startChildNodes[0].nodeName === 'TABLE';
+        let start = ((isTableStart ? getLastTextNode(startChildNodes[range.startOffset + 1]) :
+            startChildNodes[range.startOffset]) || range.startContainer);
         let end = (range.endContainer.childNodes[(range.endOffset > 0) ? (range.endOffset - 1) : range.endOffset]
             || range.endContainer);
         if ((start.nodeType === Node.ELEMENT_NODE && end.nodeType === Node.ELEMENT_NODE) && (start.contains(end) || end.contains(start))) {
@@ -8972,90 +9067,6 @@ class DOMNode {
     ignoreTableTag(element) {
         return !(TABLE_BLOCK_TAGS.indexOf(element.tagName.toLocaleLowerCase()) >= 0);
     }
-}
-
-/**
- * Defines common util methods used by Rich Text Editor.
- */
-let inlineNode$1 = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
-    'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'font', 'i', 'iframe', 'img', 'input',
-    'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
-    'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'strike', 'sub', 'sup', 'svg',
-    'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr'];
-function isIDevice$1() {
-    let result = false;
-    if (Browser.isDevice && Browser.isIos) {
-        result = true;
-    }
-    return result;
-}
-function setEditFrameFocus(editableElement, selector) {
-    if (editableElement.nodeName === 'BODY' && !isNullOrUndefined(selector)) {
-        let iframe = top.window.document.querySelector(selector);
-        if (!isNullOrUndefined(iframe)) {
-            iframe.contentWindow.focus();
-        }
-    }
-}
-function updateTextNode$1(value) {
-    let tempNode = document.createElement('div');
-    tempNode.innerHTML = value;
-    tempNode.setAttribute('class', 'tempDiv');
-    let resultElm = document.createElement('div');
-    let childNodes = tempNode.childNodes;
-    if (childNodes.length > 0) {
-        let isPreviousInlineElem;
-        let previousParent;
-        let paraElm;
-        while (tempNode.firstChild) {
-            if ((tempNode.firstChild.nodeName === '#text' &&
-                (tempNode.firstChild.textContent.indexOf('\n') < 0 || tempNode.firstChild.textContent.trim() !== '')) ||
-                inlineNode$1.indexOf(tempNode.firstChild.nodeName.toLocaleLowerCase()) >= 0) {
-                if (!isPreviousInlineElem) {
-                    paraElm = createElement('p');
-                    resultElm.appendChild(paraElm);
-                    paraElm.appendChild(tempNode.firstChild);
-                }
-                else {
-                    previousParent.appendChild(tempNode.firstChild);
-                }
-                previousParent = paraElm;
-                isPreviousInlineElem = true;
-            }
-            else if (tempNode.firstChild.nodeName === '#text' && (tempNode.firstChild.textContent === '\n' ||
-                (tempNode.firstChild.textContent.indexOf('\n') >= 0 && tempNode.firstChild.textContent.trim() === ''))) {
-                detach(tempNode.firstChild);
-            }
-            else {
-                resultElm.appendChild(tempNode.firstChild);
-                isPreviousInlineElem = false;
-            }
-        }
-        let tableElm = resultElm.querySelectorAll('table');
-        for (let i = 0; i < tableElm.length; i++) {
-            if (tableElm[i].getAttribute('border') === '0') {
-                tableElm[i].removeAttribute('border');
-            }
-            let tdElm = tableElm[i].querySelectorAll('td');
-            for (let j = 0; j < tdElm.length; j++) {
-                tdElm[j].style.removeProperty('border');
-            }
-            if (!tableElm[i].classList.contains(CLS_TABLE)) {
-                tableElm[i].classList.add(CLS_TABLE);
-            }
-        }
-        let imageElm = resultElm.querySelectorAll('img');
-        for (let i = 0; i < imageElm.length; i++) {
-            if (!imageElm[i].classList.contains(CLS_RTE_IMAGE)) {
-                imageElm[i].classList.add(CLS_RTE_IMAGE);
-            }
-            if (!(imageElm[i].classList.contains(CLS_IMGINLINE) ||
-                imageElm[i].classList.contains(CLS_IMGBREAK))) {
-                imageElm[i].classList.add(CLS_IMGINLINE);
-            }
-        }
-    }
-    return resultElm.innerHTML;
 }
 
 /**
@@ -11951,8 +11962,19 @@ class SelectionCommands {
                 }
             }
             isCursor = range.collapsed;
+            let isSubSup = false;
             for (let index = 0; index < nodes.length; index++) {
                 let formatNode = isFormatted.getFormattedNode(nodes[index], format, endNode);
+                if (formatNode === null) {
+                    if (format === 'subscript') {
+                        formatNode = isFormatted.getFormattedNode(nodes[index], 'superscript', endNode);
+                        isSubSup = formatNode === null ? false : true;
+                    }
+                    else if (format === 'superscript') {
+                        formatNode = isFormatted.getFormattedNode(nodes[index], 'subscript', endNode);
+                        isSubSup = formatNode === null ? false : true;
+                    }
+                }
                 if (index === 0 && formatNode === null) {
                     isFormat = true;
                 }
@@ -11968,6 +11990,9 @@ class SelectionCommands {
                 setEditFrameFocus(endNode, selector);
             }
             save.restore();
+            if (isSubSup) {
+                this.applyFormat(docElement, format, endNode);
+            }
         }
     }
     static insertCursorNode(docElement, domSelection, range, isFormatted, nodeCutter, format, value, endNode) {
@@ -14347,12 +14372,19 @@ class HtmlEditor {
                             contentWithSpace += spaceSplit[j] + ' ';
                         }
                     }
-                    contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+                    if (i === 0) {
+                        contentInnerElem += '<span>' + contentWithSpace.trim() + '</span>';
+                    }
+                    else {
+                        contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+                    }
                 }
             }
             let divElement = this.parent.createElement('div');
+            divElement.setAttribute('class', 'pasteContent');
+            divElement.style.display = 'inline';
             divElement.innerHTML = contentInnerElem;
-            let paraElem = divElement.querySelectorAll('p');
+            let paraElem = divElement.querySelectorAll('span, p');
             for (let i = 0; i < paraElem.length; i++) {
                 let splitTextContent = paraElem[i].innerHTML.split(' ');
                 let resultSplitContent = '';
@@ -14371,7 +14403,7 @@ class HtmlEditor {
                 e.callBack(divElement.innerHTML);
             }
             else {
-                this.parent.executeCommand('insertHTML', divElement);
+                this.parent.formatter.editorManager.execCommand('insertHTML', null, null, null, divElement);
             }
         }
     }
@@ -15125,6 +15157,9 @@ class PasteCleanup {
             this.removeTempClass();
             this.parent.notify(toolbarRefresh, {});
             this.imgUploading(this.parent.inputElement);
+            if (this.parent.iframeSettings.enable) {
+                this.parent.updateValue();
+            }
         }
     }
     addTempClass(clipBoardElem) {
@@ -18318,8 +18353,7 @@ class ViewSource {
         this.parent.invokeChangeEvent();
     }
     getTextAreaValue() {
-        return (this.contentModule.getEditPanel().innerHTML === '<p><br></p>' ||
-            this.contentModule.getEditPanel().innerHTML.length === 12) ||
+        return (this.contentModule.getEditPanel().innerHTML === '<p><br></p>') ||
             (this.contentModule.getEditPanel().childNodes.length === 1 &&
                 this.contentModule.getEditPanel().childNodes[0].tagName === 'P' &&
                 this.contentModule.getEditPanel().innerHTML.length === 7) ? '' : this.parent.value;
@@ -20698,7 +20732,12 @@ let RichTextEditor = class RichTextEditor extends Component {
             this.placeHolderWrapper = null;
         }
         if (!isNullOrUndefined(this.cssClass)) {
-            removeClass([this.element], this.cssClass);
+            let allClassName = this.cssClass.split(' ');
+            for (let i = 0; i < allClassName.length; i++) {
+                if (allClassName[i].trim() !== '') {
+                    removeClass([this.element], allClassName[i]);
+                }
+            }
         }
         this.removeHtmlAttributes();
         this.removeAttributes();
@@ -21045,7 +21084,12 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     setCssClass(cssClass) {
         if (!isNullOrUndefined(cssClass)) {
-            this.element.classList.add(cssClass);
+            let allClassName = cssClass.split(' ');
+            for (let i = 0; i < allClassName.length; i++) {
+                if (allClassName[i].trim() !== '') {
+                    this.element.classList.add(allClassName[i]);
+                }
+            }
         }
     }
     updateRTL() {

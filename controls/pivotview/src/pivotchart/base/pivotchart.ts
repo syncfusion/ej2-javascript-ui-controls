@@ -12,7 +12,7 @@ import { IAxisLabelRenderEventArgs, ScrollBar, Zoom, IResizeEventArgs, TooltipSe
 import { ZoomSettingsModel, ParetoSeries, Export, Crosshair, MultiLevelLabelsModel, MultiLevelLabel } from '@syncfusion/ej2-charts';
 import { ColumnModel, IPointEventArgs, IMultiLevelLabelClickEventArgs, LegendSettingsModel, BubbleSeries } from '@syncfusion/ej2-charts';
 import { AccumulationDataLabel, AccumulationSeriesModel } from '@syncfusion/ej2-charts';
-import { createElement, remove, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { createElement, remove, isNullOrUndefined, isBlazor, select } from '@syncfusion/ej2-base';
 import { ChartSettingsModel } from '../../pivotview/model/chartsettings-model';
 import { PivotView } from '../../pivotview';
 import {
@@ -76,7 +76,7 @@ export class PivotChart {
             : parent.dataSourceSettings.values.length > 0;
         if (isDataAvail) {
             if (!this.parent.chart && (this.parent.element.querySelector('.e-chart') || this.parent.element.querySelector('.e-accumulationchart'))) {
-                remove(this.parent.element.querySelector('#' + this.parent.element.id + '_chart'));
+                remove(select('#' + this.parent.element.id + '_chart', this.parent.element));
             }
             if (this.chartSettings.enableMultiAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0) {
                 this.measureList = this.dataSourceSettings.values.map((item) => { return item.name; });
@@ -107,7 +107,7 @@ export class PivotChart {
             this.parent.chart.refresh();
             return;
         } else {
-            if (!this.parent.element.querySelector('#' + this.parent.element.id + '_chart')) {
+            if (!select('#' + this.parent.element.id + '_chart', this.parent.element)) {
                 if (this.parent.displayOption.view === 'Both') {
                     this.parent.displayOption.primary === 'Chart' ?
                         (this.parent.element.insertBefore(
@@ -141,7 +141,7 @@ export class PivotChart {
                         this.parent.grid.element.style.display = 'none';
                     }
                     if (this.parent.currentView !== 'Chart') {
-                        (this.parent.element.querySelector('#' + this.parent.element.id + '_chart') as HTMLElement).style.display = 'none';
+                        (select('#' + this.parent.element.id + '_chart', this.parent.element) as HTMLElement).style.display = 'none';
                     }
                 }
             }
@@ -475,9 +475,9 @@ export class PivotChart {
             this.accumulationType.indexOf(type) < 0) || (this.parent.chart.getModuleName() === 'chart' &&
                 this.accumulationType.indexOf(type) > -1))) {
             this.parent.chart.destroy();
-            if (this.parent.element.querySelector('#' + this.parent.element.id + '_chart')) {
-                this.parent.element.querySelector('#' + this.parent.element.id + '_chart').innerHTML = '';
-                this.parent.element.querySelector('#' + this.parent.element.id + '_chart').appendChild(createElement('div', {
+            if (select('#' + this.parent.element.id + '_chart', this.parent.element)) {
+                select('#' + this.parent.element.id + '_chart', this.parent.element).innerHTML = '';
+                select('#' + this.parent.element.id + '_chart', this.parent.element).appendChild(createElement('div', {
                     className: cls.PIVOTCHART_INNER, id: this.parent.element.id + '_chartInner',
                 }));
             }
@@ -489,8 +489,8 @@ export class PivotChart {
                     this.parent.chart.destroy();
                 }
                 this.parent.chart = undefined;
-                this.parent.element.querySelector('#' + this.parent.element.id + '_chart').innerHTML = '';
-                this.parent.element.querySelector('#' + this.parent.element.id + '_chart').appendChild(createElement('div', {
+                select('#' + this.parent.element.id + '_chart', this.parent.element).innerHTML = '';
+                select('#' + this.parent.element.id + '_chart', this.parent.element).appendChild(createElement('div', {
                     className: cls.PIVOTCHART_INNER, id: this.parent.element.id + '_chartInner',
                 }));
                 this.parent.toolbarModule.isMultiAxisChange = false;
@@ -1067,7 +1067,7 @@ export class PivotChart {
             let multilabelAxisName: string =
                 PivotUtil.inArray(this.chartSettings.chartSeries.type, ['Bar', 'StackingBar', 'StackingBar100']) > -1 ?
                     '_chartYAxisMultiLevelLabel0' : '_chartXAxisMultiLevelLabel0';
-            if (!isNullOrUndefined(this.parent.element.querySelector('#' + this.parent.element.id + multilabelAxisName))) {
+            if (!isNullOrUndefined(select('#' + this.parent.element.id + multilabelAxisName, this.parent.element))) {
                 this.parent.element.querySelector(
                     '#' + this.parent.element.id + multilabelAxisName).setAttribute('cursor', 'pointer');
             }
@@ -1164,8 +1164,8 @@ export class PivotChart {
         };
         this.accumulationMenu = new ContextMenu(menuOptions);
         let contextMenu: HTMLElement;
-        if (this.parent.element.querySelector('#' + this.parent.element.id + '_accumulationChart')) {
-            contextMenu = this.parent.element.querySelector('#' + this.parent.element.id + '_accumulationChart');
+        if (select('#' + this.parent.element.id + '_accumulationChart', this.parent.element)) {
+            contextMenu = select('#' + this.parent.element.id + '_accumulationChart', this.parent.element);
             contextMenu.innerHTML = '';
         } else {
             contextMenu = createElement('ul', {

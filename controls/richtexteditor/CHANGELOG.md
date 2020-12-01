@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.52 (2020-12-01)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#F140345`, `F159759` - The issue with "Unable to configure multiple CSS classes using the `cssClass` API in the Rich Text Editor" has been resolved.
+
 ## 18.3.50 (2020-11-17)
 
 ### RichTextEditor

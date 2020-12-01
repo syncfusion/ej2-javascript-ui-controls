@@ -3,7 +3,7 @@ import { isValidation, checkDateFormat, applyCellFormat, workbookEditOperation, 
 import { getCell, setCell } from '../../workbook/base/cell';
 import { CellModel } from '../../workbook/base/cell-model';
 import { FormValidatorModel, FormValidator, NumericTextBox } from '@syncfusion/ej2-inputs';
-import { L10n, EventHandler, remove, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { L10n, EventHandler, remove, closest, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { Dialog } from '../services/dialog';
 import { dialog, locale, initiateDataValidation, invalidData, ICellRenderer, editOperation, keyUp } from '../common/index';
 import { formulaBarOperation, removeDataValidation } from '../common/index';
@@ -15,6 +15,7 @@ import { CellFormatArgs } from '../../workbook/common/interface';
 import { DropDownList, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { ValidationModel, ValidationType, ValidationOperator, CellStyleModel, getSheet, getSheetIndex } from '../../workbook/index';
+import { getColumn, isLocked } from '../../workbook/index';
 
 /**
  * Represents Data Validation support for Spreadsheet.
@@ -41,7 +42,7 @@ export class DataValidation {
      */
     protected destroy(): void {
         this.removeEventListener();
-        let dataValPopup: HTMLElement = document.querySelector('[id="' + this.parent.element.id + '_datavalidation-popup"]');
+        let dataValPopup: HTMLElement = select('#' + this.parent.element.id + '_datavalidation-popup');
         if (dataValPopup) { dataValPopup.remove(); }
         this.parent = null;
     }
@@ -211,9 +212,7 @@ export class DataValidation {
         let sheet: SheetModel = this.parent.getActiveSheet();
         let cellIdx: number[] = getIndexesFromAddress(sheet.activeCell);
         let cellObj: CellModel = getCell(cellIdx[0], cellIdx[1], sheet);
-        let isLocked: boolean = cellObj ? !isNullOrUndefined(cellObj.isLocked) ? cellObj.isLocked
-            : sheet.isProtected : sheet.isProtected;
-        if (isLocked) {
+        if (sheet.isProtected && isLocked(cellObj, getColumn(sheet, cellIdx[1]))) {
             this.parent.notify(editAlert, null);
         } else {
             this.parent.notify(

@@ -58,8 +58,12 @@ export class WorkCellInteraction {
             }
             this.parent.activeCellsData = this.parent.getCellDetails(target);
             this.parent.currentCell = target;
-            let args: CellClickEventArgs =
-                <CellClickEventArgs>extend({}, this.parent.activeCellsData, { cancel: false, event: e, name: 'cellClick' }, true);
+            let args: CellClickEventArgs = <CellClickEventArgs>extend(
+                {},
+                this.parent.activeCellsData,
+                { cancel: false, mouseEventArgs: this.parent.eventBase.getMouseEvent(e), name: 'cellClick' },
+                true
+            );
             args.startTime = util.addLocalOffset(args.startTime);
             args.endTime = util.addLocalOffset(args.endTime);
             this.parent.dotNetRef.invokeMethodAsync('TriggerCellClick', args);
@@ -72,12 +76,16 @@ export class WorkCellInteraction {
         }
     }
 
-    public cellDblClick(e: Event): void {
+    public cellDblClick(e: Event & MouseEvent): void {
         if (this.parent.activeViewOptions.readonly || this.isPreventAction(e)) {
             return;
         }
-        let args: CellClickEventArgs =
-            <CellClickEventArgs>extend({}, this.parent.activeCellsData, { cancel: false, event: e, name: 'OnCellDoubleClick' }, true);
+        let args: CellClickEventArgs = <CellClickEventArgs>extend(
+            {},
+            this.parent.activeCellsData,
+            { cancel: false, mouseEventArgs: this.parent.eventBase.getMouseEvent(e), name: 'OnCellDoubleClick' },
+            true
+        );
         args.startTime = util.addLocalOffset(args.startTime);
         args.endTime = util.addLocalOffset(args.endTime);
         this.parent.dotNetRef.invokeMethodAsync('OnOpenEditor', args, 'Add');

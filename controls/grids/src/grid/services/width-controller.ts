@@ -68,7 +68,7 @@ export class ColumnWidthService {
                 if (tWidth !== 0 && difference < tmWidth) {
                     this.setWidth(collection[i].minWidth, this.parent.getColumnIndexByField(collection[i].field));
                 } else if (tWidth !== 0 && difference > tmWidth) {
-                    this.setWidth('', this.parent.getColumnIndexByField(collection[i].field), true);
+                    this.setWidth('', this.parent.getColumnIndexByField(collection[i].field) + this.parent.getIndentCount(), true);
                 }
             }
         }

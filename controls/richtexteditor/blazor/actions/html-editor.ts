@@ -119,12 +119,18 @@ export class HtmlEditor {
                             contentWithSpace += spaceSplit[j] + ' ';
                         }
                     }
-                    contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+                    if (i === 0) {
+                        contentInnerElem += '<span>' + contentWithSpace.trim() + '</span>';
+                    } else {
+                        contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+                    }
                 }
             }
             let divElement: HTMLElement = document.createElement('div');
+            divElement.setAttribute('class', 'pasteContent');
+            divElement.style.display = 'inline';
             divElement.innerHTML = contentInnerElem;
-            let paraElem: NodeListOf<HTMLParagraphElement> = divElement.querySelectorAll('p');
+            let paraElem: NodeListOf<HTMLParagraphElement> = divElement.querySelectorAll('span, p');
             for (let i: number = 0; i < paraElem.length; i++) {
                 let splitTextContent: string[] = paraElem[i].innerHTML.split(' ');
                 let resultSplitContent: string = '';

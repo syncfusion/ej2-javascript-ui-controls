@@ -1,6 +1,6 @@
 import { PivotView } from '../../pivotview/base/pivotview';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { createElement, remove, extend } from '@syncfusion/ej2-base';
+import { createElement, remove, extend, select } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import { IAction, NumberFormattingEventArgs } from '../base/interface';
 import * as events from '../../common/base/constant';
@@ -201,7 +201,7 @@ export class NumberFormatting implements IAction {
     }
 
     private renderControls(): void {
-        if (this.dialog.element.querySelector('#' + this.parent.element.id + '_FormatValueDrop')) {
+        if (select('#' + this.parent.element.id + '_FormatValueDrop', this.dialog.element)) {
             let valueFields: { [key: string]: Object }[] = [];
             valueFields.push({
                 index: 0, name: this.parent.localeObj.getConstant('AllValues'), field: this.parent.localeObj.getConstant('AllValues')
@@ -220,7 +220,7 @@ export class NumberFormatting implements IAction {
             this.valuesDropDown.isStringTemplate = true;
             this.valuesDropDown.appendTo('#' + this.parent.element.id + '_FormatValueDrop');
         }
-        if (this.dialog.element.querySelector('#' + this.parent.element.id + '_FormatDrop')) {
+        if (select('#' + this.parent.element.id + '_FormatDrop', this.dialog.element)) {
             let fields: { [key: string]: Object }[] = [
                 { index: 0, name: this.parent.localeObj.getConstant('number') },
                 { index: 1, name: this.parent.localeObj.getConstant('currency') },
@@ -235,7 +235,7 @@ export class NumberFormatting implements IAction {
             this.formatDropDown.isStringTemplate = true;
             this.formatDropDown.appendTo('#' + this.parent.element.id + '_FormatDrop');
         }
-        if (this.dialog.element.querySelector('#' + this.parent.element.id + '_GroupingDrop')) {
+        if (select('#' + this.parent.element.id + '_GroupingDrop', this.dialog.element)) {
             let fields: { [key: string]: Object }[] = [
                 { index: 0, name: this.parent.localeObj.getConstant('true') },
                 { index: 1, name: this.parent.localeObj.getConstant('false') }
@@ -248,7 +248,7 @@ export class NumberFormatting implements IAction {
             this.groupingDropDown.isStringTemplate = true;
             this.groupingDropDown.appendTo('#' + this.parent.element.id + '_GroupingDrop');
         }
-        if (this.dialog.element.querySelector('#' + this.parent.element.id + '_DecimalDrop')) {
+        if (select('#' + this.parent.element.id + '_DecimalDrop', this.dialog.element)) {
             let fields: { [key: string]: Object }[] = [
                 { index: 0, name: 0 },
                 { index: 1, name: 1 },
